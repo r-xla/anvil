@@ -1,2 +1,65 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # anvil
-R code transformation framework
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of anvil is to …
+
+## Installation
+
+You can install the development version of anvil from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("r-xla/anvil")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+``` r
+library(anvil)
+#> Overwriting method ==(<stablehlo::BooleanType>, <stablehlo::BooleanType>)
+#> Overwriting method ==(<stablehlo::IntegerType>, <stablehlo::IntegerType>)
+#> Overwriting method ==(<stablehlo::FloatType>, <stablehlo::FloatType>)
+#> Warning: replacing previous import 'pjrt::dtype' by 'stablehlo::dtype' when
+#> loading 'anvil'
+#> Warning: replacing previous import 'pjrt::shape' by 'stablehlo::shape' when
+#> loading 'anvil'
+#> Warning: replacing previous import 'pjrt::as_array' by 'tengen::as_array' when
+#> loading 'anvil'
+#> Warning: replacing previous import 'pjrt::device' by 'tengen::device' when
+#> loading 'anvil'
+#> Warning: replacing previous import 'stablehlo::shape' by 'tengen::shape' when
+#> loading 'anvil'
+## basic example code
+```
+
+What is special about using `README.Rmd` instead of just `README.md`?
+You can include R chunks like so:
+
+``` r
+summary(cars)
+#>      speed           dist       
+#>  Min.   : 4.0   Min.   :  2.00  
+#>  1st Qu.:12.0   1st Qu.: 26.00  
+#>  Median :15.0   Median : 36.00  
+#>  Mean   :15.4   Mean   : 42.98  
+#>  3rd Qu.:19.0   3rd Qu.: 56.00  
+#>  Max.   :25.0   Max.   :120.00
+```
+
+You’ll still need to render `README.Rmd` regularly, to keep `README.md`
+up-to-date. `devtools::build_readme()` is handy for this.
+
+You can also embed plots, for example:
+
+<img src="man/figures/README-pressure-1.png" width="100%" />
+
+In that case, don’t forget to commit and push the resulting figure
+files, so they display on GitHub and CRAN.
