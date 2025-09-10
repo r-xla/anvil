@@ -1,4 +1,4 @@
-#' @include array.R
+#' @include tensor.R
 NULL
 
 aval <- S7::new_generic("aval", "x", function(x) {

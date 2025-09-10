@@ -31,19 +31,19 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Collate:
-    'array.R'
+    'tensor.R'
     'aval.R'
     'list_of.R'
     'reexports.R'
     'aaa.R'
     'api.R'
     'autodiff.R'
-    'compile.R'
     'expr-builder.R'
     'primitives.R'
     'ir.R'
     'interpreter.R'
     'interpreter-expr.R'
+    'interpreter-jit.R'
     'repr-ir.R'
     'tracer.R'
     'utils.R'

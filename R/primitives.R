@@ -1,22 +1,62 @@
 # Core Primitives
 
-nvl_op <- S7::new_S3_class("nvl_op")
+Primitive <- new_class("Primitive",
+  properties = list(
+    .rules = new_property(class_environment),
+    ir_rule = new_property(class_function,
+      setter = function(self, value) {
+        self@.rules[["ir_rule"]] <- value
+        self
+      },
+      getter = function(self) {
+        self@.rules[["ir_rule"]]
+      }
+    ),
+    jit_rule = S7::new_property(class_function,
+      setter = function(self, value) {
+        self@.rules[["jit_rule"]] <- value
+        self
+      },
+      getter = function(self) {
+        self@.rules[["jit_rule"]]
+      }
+    ),
+    backward_rule = S7::new_property(class_function,
+      setter = function(self, value) {
+        self@.rules[["backward_rule"]] <- value
+        self
+      },
+      getter = function(self) {
+        self@.rules[["backward_rule"]]
+      }
+    )
+  ),
+  constructor = function() {
+    new_object(S7_object(), .rules = new.env())
+  }
+)
 
-anvil_op <- function(name, dispatch_args, fun) {
-  gen <- S7::new_generic(name, dispatch_args, fun)
-  class(gen) <- c("anvil_op", class(gen))
-  gen
+method(print, Primitive) <- function(x) {
+  cat(sprintf("<%s>\n", class(x)[[1]]))
 }
 
-AnvilOp <- S7::new_S3_class("anvil_op")
-
-prim_add <- function(lhs, rhs) {
-  interprete(
-    op_add,
-    list(lhs, rhs)
-  )
+register_ir_rule <- function(primitive, rule) {
+  primitive@ir_rule <- rule
+  primitive
 }
 
-op_add <- anvil_op("AnvilAdd", c("lhs", "rhs"), function(lhs, rhs) {
-  S7::S7_dispatch()
-})
+register_jit_rule <- function(primitive, rule) {
+  primitive@jit_rule <- rule
+  primitive
+}
+
+register_backward_rule <- function(primitive, rule) {
+  primitive@backward_rule <- rule
+  primitive
+}
+
+new_primitive <- function(name) {
+  S7::new_class(paste0("Primitive", name), parent = Primitive)()
+}
+
+prim_add <- new_primitive("Add")

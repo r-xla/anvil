@@ -6,24 +6,35 @@ MainInterpreter <- S7::new_class(
   "MainInterpreter",
   properties = list(
     level = class_integer,
-    interpreter_type = class_any # Interpreter (class, not object)
-    # We have no global data, as we attach it to the tracers.
+    # TODO: Make issue in S7 with feature request
+    interpreter_type = class_any, # Interpreter (class, not object)
+    global_data = class_any
   )
 )
 
 globals$STACK <- list()
 
-local_main <- function(interpreter_type) {
+local_main <- function(interpreter_type, global_data = NULL) {
+  if (length(globals$STACK) == 0L) {
+    cls <- attr(interpreter_type, "name")
+    if (!(cls %in% c("JitInterpreter", "IRInterpreter"))) {
+      stop("Bottom interpreter must be a JitInterpreter or IRInterpreter")
+    }
+    return(MainInterpreter(0L, interpreter_type, global_data))
+  }
+
   withr::defer({
     globals$STACK <- globals$STACK[-length(globals$STACK)]
   })
   globals$STACK[[length(globals$STACK) + 1L]] <- MainInterpreter(
     length(globals$STACK) + 1L,
-    interpreter_type
+    interpreter_type,
+    global_data
   )
 }
 
-Interpreter <- S7::new_class("Interpreter",
+Interpreter <- S7::new_class(
+  "Interpreter",
   properties = list(
     main = MainInterpreter
   )
@@ -33,7 +44,7 @@ Interpreter <- S7::new_class("Interpreter",
 process_primitive <- S7::new_generic(
   "process_primitive",
   "interpreter",
-  function(interpreter, prim, args, params) {
+  function(interpreter, prim, boxes, params) {
     S7::S7_dispatch()
   }
 )
@@ -46,9 +57,9 @@ box <- S7::new_generic("box", c("interpreter", "x"), function(interpreter, x) {
 })
 
 
-
 # The object an Interpreter operates on
-Box <- S7::new_class("Box",
+Box <- S7::new_class(
+  "Box",
   properties = list(
     interpreter = Interpreter
   )
@@ -61,7 +72,7 @@ method(aval, Box) <- function(x) {
 
 method(aval, class_any) <- function(x) {
   if (is_nvl_type(box)) {
-    ConcreteArray(nvl_array(x))
+    ConcreteTensor(nvl_tensor(x))
   } else {
     stop("Type has no aval")
   }
@@ -85,7 +96,6 @@ interprete <- function(prim, args, params = list()) {
 }
 
 
-
 full_raise <- function(interpreter, val) {
   if (!inherits(val, Box)) {
     if (is_nvl_type(val)) {
@@ -95,7 +105,7 @@ full_raise <- function(interpreter, val) {
   }
   level <- interpreter@main@level
   if (inherits(val@.interpreter@main, interpreter@main)) {
-  # val is at the same level as top level interpreter
+    # val is at the same level as top level interpreter
     return(val)
   } else if (val@.interpreter@main@level < level) {
     # This can happen in nested transformations, when the inner transformation
@@ -109,7 +119,13 @@ full_raise <- function(interpreter, val) {
   } else if (val@.interpreter@main@level > level) {
     stop("Can't lift level ", val@.interpreter@main@level, " to ", level, ".")
   } else {
-    stop("Different traces at same level: ", val@.interpreter@main@level, " and ", level, ".")
+    stop(
+      "Different traces at same level: ",
+      val@.interpreter@main@level,
+      " and ",
+      level,
+      "."
+    )
   }
 }
 

@@ -86,7 +86,7 @@ Because
 \if{latex}{\out{\hypertarget{method-Builder-new_box}{}}}
 \subsection{Method \code{new_box()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Builder$new_box(aval)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Builder$new_box(interpreter, aval)}\if{html}{\out{</div>}}
 }
 
 }

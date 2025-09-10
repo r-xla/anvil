@@ -1,4 +1,4 @@
-# This is the user-facing API containing the exported array operations.
+# This is the user-facing API containing the exported tensor operations.
 
 broadcast_shapes <- function(shape_lhs, shape_rhs) {
   if (length(shape_lhs) > length(shape_rhs)) {
@@ -40,13 +40,13 @@ nvl_add <- function(lhs, rhs) {
 ## Group Generics
 
 #' @export
-Math.nvl_array <- function(e1, e2) {
+Math.nvl_tensor <- function(e1, e2) {
   args <- if (missing(e2)) list(e1) else list(e1, e2)
   bind_one(generic_to_primitive[[.Generic]], args) # nolint
 }
 
 #' @export
-matrixOps.nvl_array <- function(e1, e2) {
+matrixOps.nvl_tensor <- function(e1, e2) {
   if (!missing(e2)) {
     bind_one(generic_to_primitive[[.Generic]], list(e1, e2)) # nolint
   } else {
@@ -55,7 +55,7 @@ matrixOps.nvl_array <- function(e1, e2) {
 }
 
 #' @export
-Ops.nvl_array <- function(e1, e2) {
+Ops.nvl_tensor <- function(e1, e2) {
   if (!missing(e2)) {
     bind_one(generic_to_primitive[[.Generic]], list(e1, e2)) # nolint
   } else {
@@ -65,6 +65,6 @@ Ops.nvl_array <- function(e1, e2) {
 
 # TODO: transpose
 ##' @export
-#t.nvl_array <- function(x) {
+#t.nvl_tensor <- function(x) {
 #  bind_one(prim_transpose, list(x))
 #}

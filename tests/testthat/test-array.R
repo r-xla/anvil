@@ -1,29 +1,29 @@
-test_that("array", {
-  x <- nvl_array(1:4, dtype = "i32", shape = c(4, 1))
+test_that("tensor", {
+  x <- nvl_tensor(1:4, dtype = "i32", shape = c(4, 1))
   x
   expect_snapshot(x)
-  expect_class(x, "nvl_array")
+  expect_class(x, "nvl_tensor")
 })
 
 test_that("nvl_scalar", {
   x <- nvl_scalar(1, dtype = "f32")
   x
   expect_snapshot(x)
-  expect_class(x, "nvl_array")
+  expect_class(x, "nvl_tensor")
 })
 
-test_that("ShapedArray", {
-  x <- ShapedArray(
+test_that("ShapedTensor", {
+  x <- ShapedTensor(
     FloatType("f32"),
     Shape(c(2, 3))
   )
   expect_snapshot(x)
-  expect_true(inherits(x, ShapedArray))
+  expect_true(inherits(x, ShapedTensor))
   expect_true(x == x)
 
   expect_false(
     x ==
-      ShapedArray(
+      ShapedTensor(
         FloatType("f32"),
         Shape(c(2, 1))
       )
@@ -31,17 +31,17 @@ test_that("ShapedArray", {
 
   expect_false(
     x ==
-      ShapedArray(
+      ShapedTensor(
         FloatType("f64"),
         Shape(c(2, 3))
       )
   )
 })
 
-test_that("ConcreteArray", {
-  x <- ConcreteArray(
-    nvl_array(1:6, dtype = "f32", shape = c(2, 3))
+test_that("ConcreteTensor", {
+  x <- ConcreteTensor(
+    nvl_tensor(1:6, dtype = "f32", shape = c(2, 3))
   )
-  expect_true(inherits(x, ConcreteArray))
+  expect_true(inherits(x, ConcreteTensor))
   expect_snapshot(x)
 })

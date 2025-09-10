@@ -6,11 +6,6 @@ NULL
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom S7 method<-
-#' @importFrom S7 new_class
-#' @importFrom S7 new_object
-#' @importFrom S7 new_union
-#' @importFrom S7 S7_object
 #' @importFrom tengen shape dtype
 #' @import stablehlo
 #' @import pjrt
@@ -20,7 +15,7 @@ NULL
 NULL
 
 globals <- new.env()
-globals$nvl_types <- c("nvl_array", "nvl_scalar")
+globals$nvl_types <- c("nvl_tensor", "nvl_scalar")
 
 utils::globalVariables("globals")
 

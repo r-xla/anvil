@@ -4,29 +4,26 @@
 #' @include ops.R
 NULL
 
-Variable <- new_class(
-  "Variable",
+IRVariable <- new_class(
+  "IRVariable",
   properties = list(
-    aval = ShapedArray,
+    aval = ShapedTensor,
     # to get reference semantics and we can uniquely identify the variable
-    .id = class_environment
-  ),
-  constructor = function(aval) {
-    S7::new_object(S7::S7_object(), aval = aval, .id = new.env(size = 0L))
-  }
+    .id = S7::new_property(S7::class_environment, default = new.env(size = 0L))
+  )
 )
 
-Literal <- new_class(
-  "Literal",
+IRLiteral <- new_class(
+  "IRLiteral",
   properties = list(
-    value = Array,
-    aval = ShapedArray
+    value = Tensor,
+    aval = ShapedTensor
   ),
   constructor = function(value) {
-    if (!inherits(value, "nvl_array")) {
-      stop("Literals can currently only be nvl_arrays")
+    if (!inherits(value, "nvl_tensor")) {
+      stop("IRLiterals can currently only be nvl_tensors")
     }
-    aval <- ShapedArray(
+    aval <- ShapedTensor(
       dtype_from_buffer(value),
       Shape(shape(value))
     )
@@ -38,108 +35,116 @@ Literal <- new_class(
   }
 )
 
-Atom <- new_union(Variable, Literal)
-Atoms <- new_list_of("Atoms", Atom)
+IRAtom <- new_union(IRVariable, IRLiteral)
+IRAtoms <- new_list_of("IRAtoms", IRAtom)
 
-Variables <- new_list_of("Variables", Variable)
-Params <- new_list_of("Params", S7::class_any)
+IRVariables <- new_list_of("IRVariables", IRVariable)
+IRParams <- new_list_of("IRParams", S7::class_any)
 
-Equation <- new_class(
-  "Equation",
+IREquation <- new_class(
+  "IREquation",
   properties = list(
-    primitive = AnvilOp, # This is an S7 generic
-    inputs = Atoms,
-    params = Params,
-    out_binders = Variables
+    primitive = Primitive, # This is an S7 generic
+    inputs = IRAtoms,
+    params = IRParams,
+    out_binders = IRVariables
   )
 )
 
-Equations <- new_list_of("Equations", Equation)
+method(`==`, list(IREquation, IREquation)) <- function(e1, e2) {
+  identical(e1@primitive, e2@primitive) &&
+    identical(e1@inputs, e2@inputs) &&
+    identical(e1@params, e2@params) &&
+    identical(e1@out_binders, e2@out_binders)
+}
 
-Expr <- new_class(
-  "Expr",
+IREquations <- new_list_of("IREquations", IREquation)
+
+IR <- new_class(
+  "IR",
   properties = list(
-    in_binders = Variables,
-    equations = Equations,
-    outputs = Variables,
+    in_binders = IRVariables,
+    equations = IREquations,
+    outputs = IRVariables,
+    # TODO: Why is this needed?
     id = S7::new_property(S7::class_environment, default = new.env(size = 0L))
   )
 )
 
-method(`==`, list(Expr, Expr)) <- function(e1, e2) {
+method(`==`, list(IR, IR)) <- function(e1, e2) {
   identical(e1@id, e2@id)
 }
 
-method(hash, Expr) <- function(x) {
+method(hash, IR) <- function(x) {
   hash(x@id)
 }
 
-ShapedArrays <- new_list_of("ShapedArrays", ShapedArray)
+ShapedTensors <- new_list_of("ShapedTensors", ShapedTensor)
 
-ExprType <- new_class(
-  "ExprType",
+IRType <- new_class(
+  "IRType",
   properties = list(
-    in_types = ShapedArrays,
-    out_types = ShapedArrays
+    in_types = ShapedTensors,
+    out_types = ShapedTensors
   )
 )
 
-method(repr, ExprType) <- function(x) {
+method(repr, IRType) <- function(x) {
   vrepr <- function(x) {
     paste(sapply(x, repr), collapse = ", ")
   }
   sprintf("(%s) -> (%s)", vrepr(x@in_types), vrepr(x@out_types))
 }
 
-typecheck_expr <- function(expr) {
-  env <- set()
+#typecheck_ir <- function(ir) {
+#  env <- set()
+#
+#  for (v in ir@in_binders) {
+#    if (set_has(env, v)) {
+#      stop("Duplicate variable")
+#    }
+#    set_add(env, v)
+#  }
+#  for (eqn in ir@equations) {
+#    in_types <- lapply(eqn@inputs, typecheck_atom, env = env)
+#    out_types <- do.call(
+#      type_inference_rules[[eqn@primitive@name]],
+#      c(in_types, eqn@params)
+#    )
+#    lapply(seq_along(eqn@out_binders), function(i) {
+#      if (eqn@out_binders[[i]]@aval != out_types[[i]]) {
+#        stop("Type mismatch")
+#      }
+#    })
+#    for (out_binder in eqn@out_binders) {
+#      if (set_has(env, out_binder)) {
+#        stop("Duplicate variable")
+#      }
+#      set_add(env, out_binder)
+#    }
+#  }
+#  in_types <- lapply(ir@in_binders, typecheck_atom, env = env)
+#  out_types <- lapply(ir@outputs, typecheck_atom, env = env)
+#  IRType(in_types, out_types)
+#}
+#
+#typecheck_atom <- function(x, env) {
+#  if (inherits(x, IRVariable)) {
+#    if (!set_has(env, x)) {
+#      stop("Unbound variable")
+#    }
+#    x@aval
+#  } else if (inherits(x, IRLiteral)) {
+#    raise_to_shaped(get_aval(x@value))
+#  } else {
+#    stop("Unknown type")
+#  }
+#}
 
-  for (v in expr@in_binders) {
-    if (set_has(env, v)) {
-      stop("Duplicate variable")
-    }
-    set_add(env, v)
-  }
-  for (eqn in expr@equations) {
-    in_types <- lapply(eqn@inputs, typecheck_atom, env = env)
-    out_types <- do.call(
-      type_inference_rules[[eqn@primitive@name]],
-      c(in_types, eqn@params)
-    )
-    lapply(seq_along(eqn@out_binders), function(i) {
-      if (eqn@out_binders[[i]]@aval != out_types[[i]]) {
-        stop("Type mismatch")
-      }
-    })
-    for (out_binder in eqn@out_binders) {
-      if (set_has(env, out_binder)) {
-        stop("Duplicate variable")
-      }
-      set_add(env, out_binder)
-    }
-  }
-  in_types <- lapply(expr@in_binders, typecheck_atom, env = env)
-  out_types <- lapply(expr@outputs, typecheck_atom, env = env)
-  ExprType(in_types, out_types)
-}
-
-typecheck_atom <- function(x, env) {
-  if (inherits(x, Variable)) {
-    if (!set_has(env, x)) {
-      stop("Unbound variable")
-    }
-    x@aval
-  } else if (inherits(x, Literal)) {
-    raise_to_shaped(get_aval(x@value))
-  } else {
-    stop("Unknown type")
-  }
-}
-
-eval_expr <- function(expr, args) {
+eval_ir <- function(ir, args) {
   env <- hashtab()
   read <- function(x) {
-    if (inherits(x, Variable)) {
+    if (inherits(x, IRVariable)) {
       env[[x]]
     } else {
       x@value
@@ -151,13 +156,13 @@ eval_expr <- function(expr, args) {
     }
     env[[var]] <- value
   }
-  if (length(expr@in_binders) != length(args)) {
+  if (length(ir@in_binders) != length(args)) {
     stop("Wrong number of arguments")
   }
-  for (i in seq_along(expr@in_binders)) {
-    write(expr@in_binders[[i]], args[[i]])
+  for (i in seq_along(ir@in_binders)) {
+    write(ir@in_binders[[i]], args[[i]])
   }
-  for (eqn in expr@equations) {
+  for (eqn in ir@equations) {
     in_vals <- lapply(eqn@inputs, read)
     out_vals <- do.call(eqn@primitive@name, c(in_vals, eqn@params))
 
@@ -165,11 +170,13 @@ eval_expr <- function(expr, args) {
       write(eqn@out_binders[[i]], out_vals[[i]])
     }
   }
-  lapply(expr@outputs, read)
+  lapply(ir@outputs, read)
 }
 
-expr_to_function <- function(expr) {
+# TODO: Can probably make this into a proper R functioin that does not need
+# eval_ir
+ir_to_function <- function(ir) {
   function(...) {
-    eval_expr(expr, list(...))
+    eval_ir(ir, list(...))
   }
 }

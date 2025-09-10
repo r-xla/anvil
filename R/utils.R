@@ -24,11 +24,11 @@ get_aval <- function(x) {
   if (inherits(x, Box)) {
     x@aval
   } else if (typeof(x) %in% nvl_types) {
-    if (inherits(x, "nvl_array")) {
+    if (inherits(x, "nvl_tensor")) {
       stop("currently not supported")
     }
-    # TODO: Converter from other types to nvl_array
-    ConcreteArray(x)
+    # TODO: Converter from other types to nvl_tensor
+    ConcreteTensor(x)
   } else {
     stop("Type has no aval")
   }
@@ -54,7 +54,7 @@ dtype_from_buffer <- function(x) {
 }
 
 raise_to_shaped <- function(aval) {
-  ShapedArray(aval@dtype, aval@shape)
+  ShapedTensor(aval@dtype, aval@shape)
 }
 
 

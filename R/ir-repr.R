@@ -50,7 +50,7 @@ pp_to_string <- function(p) {
   )
 }
 
-# Variable naming utilities
+# IRVariable naming utilities
 make_name_generator <- function() {
   i <- 0L
   function() {
@@ -81,7 +81,7 @@ var_str <- function(names_env, namegen, v) {
   sprintf("%s:%s", get_var_name(names_env, namegen, v), repr(v@aval))
 }
 
-# Params pretty printer (sorted by name when available)
+# IRParams pretty printer (sorted by name when available)
 pp_params <- function(params) {
   if (length(params)) {
     nms <- names(params)
@@ -109,9 +109,9 @@ pp_params <- function(params) {
 pp_rules <- new.env(parent = emptyenv())
 
 pp_atom <- function(names_env, namegen, x) {
-  if (inherits(x, Variable)) {
+  if (inherits(x, IRVariable)) {
     get_var_name(names_env, namegen, x)
-  } else if (inherits(x, Literal)) {
+  } else if (inherits(x, IRLiteral)) {
     sprintf("const<%s>", repr(x@aval))
   } else {
     stop("Unknown atom type for pretty printing")
@@ -145,23 +145,23 @@ pp_eqn <- function(names_env, namegen, eqn) {
   lhs |> pp_hcat(pp(" = ")) |> pp_hcat(rhs)
 }
 
-pp_expr <- function(expr) {
+pp_ir <- function(ir) {
   namegen <- make_name_generator()
   names_env <- new.env(parent = emptyenv())
   in_binders <- paste(
     vapply(
-      expr@in_binders,
+      ir@in_binders,
       function(v) var_str(names_env, namegen, v),
       character(1)
     ),
     collapse = ", "
   )
-  eqns <- pp_vcat(lapply(expr@equations, function(e) {
+  eqns <- pp_vcat(lapply(ir@equations, function(e) {
     pp_eqn(names_env, namegen, e)
   }))
   outs <- paste(
     vapply(
-      expr@outputs,
+      ir@outputs,
       function(v) get_var_name(names_env, namegen, v),
       character(1)
     ),
@@ -173,6 +173,6 @@ pp_expr <- function(expr) {
   pp_indent(pp_concat(header, body), 2L)
 }
 
-method(repr, Expr) <- function(x) {
-  pp_to_string(pp_expr(x))
+method(repr, IR) <- function(x) {
+  pp_to_string(pp_ir(x))
 }

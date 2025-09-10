@@ -8,5 +8,6 @@
 
 library(testthat)
 library(anvil)
+library(stablehlo)
 
 test_check("anvil")
