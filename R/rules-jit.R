@@ -32,5 +32,5 @@ register_jit_rule(
 )
 
 register_jit_rule(p_transpose, function(operand, permutation) {
-  list(stablehlo:: hlo_transpose(operand, permutation))
+  list(stablehlo::hlo_transpose(operand, permutation))
 })
