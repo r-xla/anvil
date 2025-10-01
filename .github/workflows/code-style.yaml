@@ -1,0 +1,23 @@
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+name: Check Code Style
+
+jobs:
+  check-code-style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: R code
+        uses: rstudio/shiny-workflows/format-r-code@v1
+        with:
+          check: true
+      #- name: C++ code
+      #  uses: jidicula/clang-format-action@v4.15.0
+      #  with:
+      #    clang-format-version: '20'
+      #    check-path: ./src
+      #    exclude-regex: RcppExports

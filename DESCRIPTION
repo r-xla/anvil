@@ -1,0 +1,52 @@
+Package: anvil
+Title: Framework for R code transformations
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Daniel", "Falbel", , "daniel@posit.co", role = c("aut", "cre"),
+           comment = c(ORCID = "https://orcid.org/0009-0006-0143-2392")),
+    person("Sebastian", "Fischer", , "seb.fischer@tutamail.com", role = "aut",
+           comment = c(ORCID = "https://orcid.org/0000-0002-9609-3197"))
+  )
+Description: Code transformation framework for R.
+License: MIT + file LICENSE
+URL: https://r-xla.github.io/anvil/, https://github.com/r-xla/anvild
+BugReports: https://github.com/r-xla/anvil/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2.9000
+Imports:
+    carrier,
+    checkmate,
+    digest,
+    pjrt,
+    R6,
+    rlang,
+    S7,
+    stablehlo
+Remotes:
+    r-xla/pjrt,
+    r-xla/stablehlo
+Suggests:
+    knitr,
+    quarto,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Collate:
+    'list_of.R'
+    'reexports.R'
+    'aaa.R'
+    'tensor.R'
+    'interpreter.R'
+    'api-group-generics.R'
+    'primitives.R'
+    'api.R'
+    'flatten.R'
+    'interpreter-jit.R'
+    'interpreter-pullback.R'
+    'rules-jit.R'
+    'rules-pullback.R'
+    'tracer.R'
+    'type-converters.R'
+    'utils.R'
+VignetteBuilder: quarto

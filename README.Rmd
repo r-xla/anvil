@@ -1,0 +1,73 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# anvil
+
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+<!-- badges: end -->
+
+The goal of anvil is to provide a code transformation framework similar to [jax](https://docs.jax.dev/en/latest/) for R.
+It currently provides support for jit compilation and automatic differentiation.
+
+## Installation
+
+``` r
+pak::pak("r-xla/anvil")
+```
+
+## Quick Start
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(anvil)
+f <- function(weights, x) {
+  weights$beta * x + weights$alpha
+}
+weig
+
+exec <- jit(f,
+  nvl_type("f32", shape = 1),
+  nvl_type("f32", shape = 1)
+)
+out <- exec(
+  nvl_tensor(1.0),
+  nvl_tensor(-2.0)
+)
+```
+
+## Features
+
+- Automatic Differentiation:
+  - Pullback for reverse mode automatic differentiation.
+- Fast:
+  - Runs on CPU and GPU
+  - Code is JIT compiled
+- Easy to contribute:
+  - written almost entirely in R
+- Extendable:
+  - Easy to add new primitives and interpretation rules.
+
+## Acknowledgments
+
+- This work is supported by [MaRDI](https://www.mardi4nfdi.de).
+- The design of this package was inspired by and borrows from:
+  - JAX, especiall the [autodidax tutorial](https://docs.jax.dev/en/latest/autodidax.html), which explains the main ideas on which JAX is built.
+  - The [microjax](https://github.com/joey00072/microjax) repository.
+
+## License
+
+The package builds on the [stablehlo](https://github.com/r-xla/stablehlo) package, which is licensed under the MIT license.

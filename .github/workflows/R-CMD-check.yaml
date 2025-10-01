@@ -1,0 +1,90 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+name: R-CMD-check.yaml
+
+permissions: read-all
+
+jobs:
+  R-CMD-check:
+    runs-on: ${{ matrix.runner }}
+    container: ${{ matrix.container }}
+
+    name: ${{ matrix.config.os }} - ${{ matrix.config.platform }} (${{ matrix.config.r }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { os: "macos", r: "release", platform: "cpu" }
+          - { os: "macos", r: null, platform: "metal" }
+          - { os: "ubuntu", r: "release", platform: "cpu" }
+          - { os: "ubuntu", r: "release", platform: "cuda"}
+          - { os: "windows", r: "release", platform: "cpu"}
+
+        include:
+          - config: {os: "ubuntu", platform: "cuda"}
+            container: {image: 'nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04', options: '--gpus all --runtime=nvidia'}
+            runner: ['self-hosted', 'gpu']
+            setup: |
+              DEBIAN_FRONTEND="noninteractive" apt-get update -y
+              DEBIAN_FRONTEND="noninteractive" apt-get install -y sudo software-properties-common dialog apt-utils tzdata libpng-dev locales pkg-config
+              DEBIAN_FRONTEND="noninteractive" locale-gen en_US.UTF-8
+              DEBIAN_FRONTEND="noninteractive" update-locale LANG=en_US.UTF-8
+          - config: {os: "ubuntu", platform: "cpu"}
+            runner: 'ubuntu-latest'
+          - config: {os: "macos", platform: "cpu"}
+            runner: 'macos-latest'
+            setup: |
+              brew install protobuf@21
+              brew link protobuf@21 --force --overwrite
+          - config: {os: "macos", platform: "metal"}
+            runner: ['self-hosted', 'metal']
+            setup: |
+              brew install protobuf@21
+              brew link protobuf@21 --force --overwrite
+          - config: {os: "windows", platform: "cpu"}
+            runner: 'windows-latest'
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+      PJRT_PLATFORM: ${{ matrix.config.platform }}
+
+    steps:
+      - name: Setup
+        if: ${{ matrix.setup }}
+        run: ${{ matrix.setup }}
+
+      - uses: actions/checkout@v5
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        if: matrix.config.r != null
+        with:
+          r-version: ${{ matrix.config.r }}
+          http-user-agent: ${{ matrix.config.http-user-agent }}
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      # Not sure why this is needed, but otherwise we get an outdated pjrt package version
+      # Hopefully this resolves itself
+      - name: Install pjrt
+        run: |
+          Rscript -e 'install.packages("remotes")'
+          Rscript -e 'remotes::install_github("r-xla/pjrt", force = TRUE)'
+
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
+          build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
