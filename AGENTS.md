@@ -46,5 +46,5 @@ devtools::check()
 
 1. Use S7 (object-oriented system) for defining types and classes.
 2. Follow the established pattern for adding new operations and types
-3. Add tests in `tests/testthat/` with appropriate snapshots for validation
+3. Add tests in `tests/testthat/`
 4. Document functions with roxygen2 comments

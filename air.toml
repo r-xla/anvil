@@ -1,0 +1,9 @@
+[format]
+line-width = 120
+indent-width = 2
+indent-style = "space"
+line-ending = "lf"
+exclude = []
+persistent-line-breaks = true
+default-exclude = true
+skip = []

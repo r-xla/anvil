@@ -38,6 +38,7 @@ method(nv_scalar, class_any) <- function(x, ...) {
 
 #' @export
 print.AnvilTensor <- function(x, header = TRUE, ...) {
+  browser()
   if (assert_flag(header)) {
     s <- shape(x)
     cat(
@@ -55,7 +56,7 @@ print.AnvilTensor <- function(x, header = TRUE, ...) {
 AnvilTensor <- S7::new_S3_class("AnvilTensor")
 
 method(dtype, AnvilTensor) <- function(x) {
-  as_dtype(as.character(elt_type(x)))
+  as_dtype(as.character(pjrt::elt_type(x)))
 }
 
 # similar to stablehlo::TensorType

@@ -2,10 +2,10 @@ Package: anvil
 Title: Framework for R code transformations
 Version: 0.0.0.9000
 Authors@R: c(
-    person("Daniel", "Falbel", , "daniel@posit.co", role = c("aut", "cre"),
-           comment = c(ORCID = "https://orcid.org/0009-0006-0143-2392")),
-    person("Sebastian", "Fischer", , "seb.fischer@tutamail.com", role = "aut",
-           comment = c(ORCID = "https://orcid.org/0000-0002-9609-3197"))
+    person("Sebastian", "Fischer", , "seb.fischer@tutamail.com", role = c("cre", "aut"),
+           comment = c(ORCID = "https://orcid.org/0000-0002-9609-3197")),
+    person("Daniel", "Falbel", , "daniel@posit.co", role = "aut",
+           comment = c(ORCID = "https://orcid.org/0009-0006-0143-2392"))
   )
 Description: Code transformation framework for R.
 License: MIT + file LICENSE
@@ -18,14 +18,16 @@ Imports:
     carrier,
     checkmate,
     digest,
+    tengen,
     pjrt,
     R6,
     rlang,
-    S7,
     stablehlo
 Remotes:
     r-xla/pjrt,
-    r-xla/stablehlo
+    r-xla/stablehlo,
+    r-xla/tengen,
+    r-xla/xlamisc
 Suggests:
     knitr,
     quarto,
@@ -49,4 +51,5 @@ Collate:
     'tracer.R'
     'type-converters.R'
     'utils.R'
+    'zzz.R'
 VignetteBuilder: quarto

@@ -4,62 +4,76 @@
 # anvil
 
 <!-- badges: start -->
+
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-The goal of anvil is to …
+The goal of anvil is to provide a code transformation framework similar
+to [jax](https://docs.jax.dev/en/latest/) for R. It currently provides
+support for jit compilation and automatic differentiation.
 
 ## Installation
 
-You can install the development version of anvil from
-[GitHub](https://github.com/) with:
-
 ``` r
-# install.packages("pak")
 pak::pak("r-xla/anvil")
 ```
 
-## Example
+## Quick Start
 
-This is a basic example which shows you how to solve a common problem:
+Below, we create a simple R function, jit-compile and run it.
+Afterwards, we also evaluate its gradient.
 
 ``` r
 library(anvil)
-#> Overwriting method ==(<stablehlo::BooleanType>, <stablehlo::BooleanType>)
-#> Overwriting method ==(<stablehlo::IntegerType>, <stablehlo::IntegerType>)
-#> Overwriting method ==(<stablehlo::FloatType>, <stablehlo::FloatType>)
-#> Warning: replacing previous import 'pjrt::dtype' by 'stablehlo::dtype' when
-#> loading 'anvil'
-#> Warning: replacing previous import 'pjrt::shape' by 'stablehlo::shape' when
-#> loading 'anvil'
-#> Warning: replacing previous import 'pjrt::as_array' by 'tengen::as_array' when
-#> loading 'anvil'
-#> Warning: replacing previous import 'pjrt::device' by 'tengen::device' when
-#> loading 'anvil'
-#> Warning: replacing previous import 'stablehlo::shape' by 'tengen::shape' when
-#> loading 'anvil'
-## basic example code
+f <- function(a, b, x) {
+  a * x + b
+}
+
+a <- nv_scalar(1.0)
+b <- nv_scalar(-2.0)
+x <- nv_scalar(3.0)
+
+fj <- jit(f)
+fj(a, b, x)
+#> PJRTBuffer<f32> 
+#>  1.0000
+
+g <- jit(gradient(f))
+
+g(a, b, x)
+#> [[1]]
+#> PJRTBuffer<f32> 
+#>  3.0000
+#> 
+#> [[2]]
+#> PJRTBuffer<f32> 
+#>  1.0000
+#> 
+#> [[3]]
+#> PJRTBuffer<f32> 
+#>  1.0000
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+## Features
 
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
+- Automatic Differentiation:
+  - Pullback for reverse mode automatic differentiation.
+- Fast:
+  - Code is JIT compiled into a single kernel.
+  - Runs on various hardware, including CPU and GPU.
+- Easy to contribute:
+  - written almost entirely in R
+- Extendable:
+  - Easy to add new primitives and interpretation rules.
 
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this.
+## Acknowledgments
 
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+- This work is supported by [MaRDI](https://www.mardi4nfdi.de).
+- The design of this package was inspired by and borrows from:
+  - JAX, especiall the [autodidax
+    tutorial](https://docs.jax.dev/en/latest/autodidax.html).
+  - The [microjax](https://github.com/joey00072/microjax) project.
+- The project leverages [stableHLO](https://github.com/r-xla/stablehlo)
+  and [pjrt](https://github.com/r-xla/pjrt) which in turn build upon the
+  [OpenXLA](https://openxla.org/) project.

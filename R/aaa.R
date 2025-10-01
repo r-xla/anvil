@@ -5,11 +5,11 @@ NULL
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom tengen shape dtype
-#' @import stablehlo
-#' @import pjrt
+#' @importFrom stablehlo repr BooleanType IntegerType FloatType Shape FuncId Func as_dtype
 #' @import checkmate
 #' @import S7
+#' @import tengen
+#' @importFrom pjrt pjrt_buffer pjrt_scalar pjrt_execute pjrt_compile pjrt_program elt_type
 ## usethis namespace: end
 NULL
 

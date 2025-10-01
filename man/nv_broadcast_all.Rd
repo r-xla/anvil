@@ -4,7 +4,7 @@
 \alias{nv_broadcast_all}
 \title{Broadcast}
 \usage{
-nv_broadcast_all(..., shape = NULL)
+nv_broadcast_all(...)
 }
 \arguments{
 \item{...}{(\code{\link{nv_tensor}})}

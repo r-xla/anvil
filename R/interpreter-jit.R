@@ -35,7 +35,7 @@ jit <- function(f) {
     outs <- rlang::exec(f_flat, !!!boxes_in)
     boxes_out <- lapply(outs[[2L]], full_raise, interpreter = interpreter)
     func_vars_out <- lapply(boxes_out, \(box) box@func_var)
-    func <- do.call(hlo_return, func_vars_out)
+    func <- do.call(stablehlo::hlo_return, func_vars_out)
     program <- pjrt_program(src = repr(func), format = "mlir")
     exec <- pjrt_compile(program)
     cache[[hash]] <- list(

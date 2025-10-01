@@ -30,23 +30,25 @@ pak::pak("r-xla/anvil")
 
 ## Quick Start
 
-This is a basic example which shows you how to solve a common problem:
+Below, we create a simple R function, jit-compile and run it.
+Afterwards, we also evaluate its gradient.
 
 ```{r example}
 library(anvil)
-f <- function(weights, x) {
-  weights$beta * x + weights$alpha
+f <- function(a, b, x) {
+  a * x + b
 }
-weig
 
-exec <- jit(f,
-  nvl_type("f32", shape = 1),
-  nvl_type("f32", shape = 1)
-)
-out <- exec(
-  nvl_tensor(1.0),
-  nvl_tensor(-2.0)
-)
+a <- nv_scalar(1.0)
+b <- nv_scalar(-2.0)
+x <- nv_scalar(3.0)
+
+fj <- jit(f)
+fj(a, b, x)
+
+g <- jit(gradient(f))
+
+g(a, b, x)
 ```
 
 ## Features
@@ -54,8 +56,8 @@ out <- exec(
 - Automatic Differentiation:
   - Pullback for reverse mode automatic differentiation.
 - Fast:
-  - Runs on CPU and GPU
-  - Code is JIT compiled
+  - Code is JIT compiled into a single kernel.
+  - Runs on various hardware, including CPU and GPU.
 - Easy to contribute:
   - written almost entirely in R
 - Extendable:
@@ -65,9 +67,6 @@ out <- exec(
 
 - This work is supported by [MaRDI](https://www.mardi4nfdi.de).
 - The design of this package was inspired by and borrows from:
-  - JAX, especiall the [autodidax tutorial](https://docs.jax.dev/en/latest/autodidax.html), which explains the main ideas on which JAX is built.
-  - The [microjax](https://github.com/joey00072/microjax) repository.
-
-## License
-
-The package builds on the [stablehlo](https://github.com/r-xla/stablehlo) package, which is licensed under the MIT license.
+  - JAX, especiall the [autodidax tutorial](https://docs.jax.dev/en/latest/autodidax.html).
+  - The [microjax](https://github.com/joey00072/microjax) project.
+- The project leverages [stableHLO](https://github.com/r-xla/stablehlo) and [pjrt](https://github.com/r-xla/pjrt) which in turn build upon the [OpenXLA](https://openxla.org/) project.

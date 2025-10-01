@@ -1,0 +1,14 @@
+url: ~
+
+template:
+  bootstrap: 5
+  light-switch: true
+  math-rendering: mathjax
+
+toc:
+  depth: 3
+
+navbar:
+  structure:
+    left:  [reference, news]
+    right: [search, github, lightswitch]

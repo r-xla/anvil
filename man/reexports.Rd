@@ -4,9 +4,9 @@
 \name{reexports}
 \alias{reexports}
 \alias{shape}
-\alias{dtype}
 \alias{device}
 \alias{as_array}
+\alias{as_raw}
 \alias{ndims}
 \title{Objects exported from other packages}
 \keyword{internal}
@@ -15,6 +15,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{tengen}{\code{\link[tengen]{as_array}}, \code{\link[tengen]{device}}, \code{\link[tengen]{dtype}}, \code{\link[tengen]{ndims}}, \code{\link[tengen]{shape}}}
+  \item{tengen}{\code{\link[tengen]{as_array}}, \code{\link[tengen]{as_raw}}, \code{\link[tengen]{device}}, \code{\link[tengen]{ndims}}, \code{\link[tengen]{shape}}}
 }}
 
