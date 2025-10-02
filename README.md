@@ -13,10 +13,11 @@ status](https://www.r-pkg.org/badges/version/anvil)](https://CRAN.R-project.org/
 [![codecov](https://codecov.io/gh/r-xla/anvil/branch/main/graph/badge.svg)](https://codecov.io/gh/r-xla/anvil)
 <!-- badges: end -->
 
-This package provides a code transformation framework in R. It currently
-implements JIT compilation and backward-mode automatic differentiation.
-Programs can run on various hardware backends, including CPU and CUDA
-GPUs.
+This package is a code transformation framework for R, allowing you to
+easily implement performant numerical programs. It currently implements
+JIT compilation for very fast execution and backward-mode automatic
+differentiation. Programs can run on various hardware backends,
+including CPU and GPU.
 
 ## Installation
 
@@ -29,7 +30,7 @@ pak::pak("r-xla/anvil")
 Below, we create a standard R function. We cannot directly call this
 function, but first need to wrap it in a `jit()` call. If the resulting
 function is then called on `AnvilTensor`s – the primary data type in
-`anvil` – it will be JIT compiled and subsequently executed.
+{anvil} – it will be JIT compiled and subsequently executed.
 
 ``` r
 library(anvil)
@@ -73,9 +74,8 @@ g_jit(a, b, x)
 - Fast:
   - Code is JIT compiled into a single kernel.
   - Runs on various hardware, including CPU and GPU.
-- Easy to contribute:
-  - written almost entirely in R
-- Extendable:
+- Easy to extend and contribute:
+  - Written almost entirely in R.
   - Easy to add new primitives and interpretation rules.
 
 ## Acknowledgments
