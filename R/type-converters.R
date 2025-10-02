@@ -3,15 +3,15 @@
 # ShapedTensor -> FunctionInput (not really a type)
 st2fi <- function(x, func) {
   value_type <- st2vt(x)
-  value_id <- stablehlo:::ValueId()
-  func@inputs <- stablehlo:::FuncInputs(c(
+  value_id <- stablehlo::ValueId()
+  func@inputs <- stablehlo::FuncInputs(c(
     func@inputs@items,
-    list(stablehlo:::FuncInput(
+    list(stablehlo::FuncInput(
       id = value_id,
       type = value_type
     ))
   ))
-  stablehlo:::FuncVariable(
+  stablehlo::FuncVariable(
     value_id = value_id,
     value_type = value_type,
     func = func

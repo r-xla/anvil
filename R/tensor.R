@@ -22,6 +22,7 @@ method(nv_tensor, class_any) <- function(x, ...) {
   structure(pjrt::pjrt_buffer(x, ...), class = c("AnvilTensor", "PJRTBuffer"))
 }
 
+#' @rdname nv_tensor
 #' @export
 nv_scalar <- S7::new_generic("nv_scalar", "x", function(x, ...) {
   S7::S7_dispatch()
@@ -88,20 +89,20 @@ method(repr, ShapedTensor) <- function(x) {
   sprintf("%s[%s]", repr(x@dtype), repr(x@shape))
 }
 
-method(format, ShapedTensor) <- function(x) {
+method(format, ShapedTensor) <- function(x, ...) {
   sprintf("ShapedTensor(dtype=%s, shape=%s)", repr(x@dtype), repr(x@shape))
 }
 
-method(print, ShapedTensor) <- function(x) {
+method(print, ShapedTensor) <- function(x, ...) {
   cat(format(x), "\n")
 }
 
-method(print, ConcreteTensor) <- function(x) {
+method(print, ConcreteTensor) <- function(x, ...) {
   cat(format(x), "\n")
   print(x@data, header = FALSE)
 }
 
-method(format, ConcreteTensor) <- function(x) {
+method(format, ConcreteTensor) <- function(x, ...) {
   sprintf("ConcreteTensor(dtype=%s, shape=%s)", repr(x@dtype), repr(x@shape))
 }
 

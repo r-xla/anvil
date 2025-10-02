@@ -67,9 +67,9 @@ transpose_list <- function(.l) {
   if (length(.l) == 0L) {
     return(list())
   }
-  res = .mapply(list, .l, list())
+  res <- .mapply(list, .l, list())
   if (length(res) == length(.l[[1L]])) {
-    names(res) = names(.l[[1L]])
+    names(res) <- names(.l[[1L]])
   }
   res
 }

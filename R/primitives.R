@@ -31,7 +31,7 @@ Primitive <- new_class(
   }
 )
 
-method(print, Primitive) <- function(x) {
+method(print, Primitive) <- function(x, ...) {
   cat(sprintf("<Primitive:%s>\n", x@name))
 }
 

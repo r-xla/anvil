@@ -11,7 +11,6 @@ In this vignette, we will explore the different modes of autodiff.
 
 Let's say, we have a function
 
-
 $$
 \newcommand{\R}{\mathbb{R}}
 $$
@@ -83,7 +82,7 @@ $$
 $$
 
 The question is now, how we can actually **calculate** this computationally.
-For computational feasability, we want to avoid calculating the full intermediate matrices, as these can be very large.
+For computational feasibility, we want to avoid calculating the full intermediate matrices, as these can be very large.
 
 To ways to do this are:
 
@@ -194,7 +193,7 @@ $$
 
 If we look closely at the last equation, we see now, that this requires us to first calculate a forward pass, before we calculate the backward pass.
 This is, because we want to start with the rightmost multiplication, as this reduces the computational complexity.
-But the rightmost multiplication involes the derivative of $f$ with respect to the temporary variables $z$.
+But the rightmost multiplication involves the derivative of $f$ with respect to the temporary variables $z$.
 Therefore, we first need to obtain these values using a forward pass.
 
 Now, for the first step, we have computational complexity $O(m \times l)$ and for the second one $O(p \times l)$.

@@ -6,6 +6,13 @@
 \usage{
 jit(f)
 }
+\arguments{
+\item{f}{(\code{function})\cr
+Function to compile.}
+}
+\value{
+(\code{function})
+}
 \description{
-JIT compile a function
+Convert a function to a JIT compiled function.
 }

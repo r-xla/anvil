@@ -1,4 +1,3 @@
-#' @include list_of.R
 #' @include aaa.R
 #' @include tensor.R
 NULL
@@ -125,9 +124,9 @@ full_raise <- function(interpreter, val) {
       # TODO(IMPORTANT): This needs to be done properly, just a hack
       box <- JitBox(
         func_var = FuncVariable(
-          stablehlo:::ValueId(),
+          stablehlo::ValueId(),
           st2vt(val),
-          func = stablehlo:::Func(id = stablehlo:::FuncId("main"))
+          func = stablehlo::Func(id = stablehlo::FuncId("main"))
         ),
         interpreter = interpreter
       )

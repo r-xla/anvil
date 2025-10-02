@@ -2,9 +2,12 @@
 % Please edit documentation in R/tensor.R
 \name{nv_tensor}
 \alias{nv_tensor}
+\alias{nv_scalar}
 \title{Tensor}
 \usage{
 nv_tensor(x, ...)
+
+nv_scalar(x, ...)
 }
 \arguments{
 \item{x}{(any)\cr

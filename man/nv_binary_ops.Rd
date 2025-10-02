@@ -3,9 +3,15 @@
 \name{nv_binary_ops}
 \alias{nv_binary_ops}
 \alias{nv_add}
+\alias{nv_mul}
+\alias{nv_sub}
 \title{Binary Operations}
 \usage{
 nv_add(lhs, rhs)
+
+nv_mul(lhs, rhs)
+
+nv_sub(lhs, rhs)
 }
 \arguments{
 \item{lhs}{(\code{\link{nv_tensor}})}

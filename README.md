@@ -71,7 +71,7 @@ g(a, b, x)
 
 - This work is supported by [MaRDI](https://www.mardi4nfdi.de).
 - The design of this package was inspired by and borrows from:
-  - JAX, especiall the [autodidax
+  - JAX, especially the [autodidax
     tutorial](https://docs.jax.dev/en/latest/autodidax.html).
   - The [microjax](https://github.com/joey00072/microjax) project.
 - The project leverages [stableHLO](https://github.com/r-xla/stablehlo)

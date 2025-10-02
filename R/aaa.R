@@ -1,6 +1,5 @@
 #' @keywords internal
 #' @include reexports.R
-#' @include list_of.R
 NULL
 "_PACKAGE"
 
@@ -12,6 +11,7 @@ NULL
 #' @import tengen
 #' @importFrom pjrt pjrt_buffer pjrt_scalar pjrt_execute pjrt_compile pjrt_program elt_type
 #' @importFrom utils gethash hashtab maphash numhash
+#' @importFrom xlamisc list_of
 ## usethis namespace: end
 NULL
 

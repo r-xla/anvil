@@ -3,10 +3,13 @@
 
 #' @title JIT compile a function
 #' @description
-#'
+#' Convert a function to a JIT compiled function.
+#' @param f (`function`)\cr
+#'   Function to compile.
+#' @return (`function`)
 #' @export
 jit <- function(f) {
-  cache <- hashtab()
+  cache <- hashtab() # nolint
   f_jit <- function() {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
@@ -94,7 +97,7 @@ method(box, list(JitInterpreter, class_any)) <- function(interpreter, x) {
   stop("Not supported yet")
   JitBox(
     func_var = FuncVariable(
-      func = stablehlo:::Func(id = stablehlo:::FuncId("main"))
+      func = stablehlo::Func(id = stablehlo::FuncId("main"))
     )
   )
 }
