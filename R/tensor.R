@@ -36,23 +36,6 @@ method(nv_scalar, class_any) <- function(x, ...) {
   structure(pjrt::pjrt_scalar(x, ...), class = c("AnvilTensor", "PJRTBuffer"))
 }
 
-#' @export
-#' @exportS3Method print AnvilTensor
-print.AnvilTensor <- function(x, header = TRUE, ...) {
-  if (assert_flag(header)) {
-    s <- shape(x)
-    cat(
-      sprintf(
-        "AnvilTensor<%s%s>",
-        as.character(dtype(x)),
-        if (length(s)) paste0(": ", paste0(s, collapse = "x")) else ""
-      ),
-      "\n"
-    )
-  }
-  NextMethod("print", header = FALSE, ...)
-}
-
 AnvilTensor <- S7::new_S3_class("AnvilTensor")
 
 method(dtype, AnvilTensor) <- function(x) {
