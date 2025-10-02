@@ -65,7 +65,7 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>The goal of anvil is to provide a code transformation framework similar to <a href="https://docs.jax.dev/en/latest/" class="external-link">jax</a> for R. It currently provides support for jit compilation and automatic differentiation.</p>
+<p>This package provides a code transformation framework in R. It currently provides support for jit compilation and backward-mode automatic differentiation.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -75,25 +75,25 @@
 <div class="section level2">
 <h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<p>Below, we create a simple R function, jit-compile and run it. Afterwards, we also evaluate its gradient.</p>
+<p>Below, we create a standard R function. We cannot directly call this function, but first need to wrap it in a <code><a href="reference/jit.html">jit()</a></code> call. If the resulting function is then called on <code>AnvilTensor</code>s – the primary data type in <code>anvil</code> – it will be JIT compiled and subsequently executed.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/" class="external-link">anvil</a></span><span class="op">)</span></span>
 <span><span class="va">f</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">a</span> <span class="op">*</span> <span class="va">x</span> <span class="op">+</span> <span class="va">b</span></span>
 <span><span class="op">}</span></span>
+<span><span class="va">f_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jit.html">jit</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span><span class="op">)</span></span>
 <span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2.0</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">3.0</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">fj</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jit.html">jit</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
-<span><span class="fu">fj</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">x</span><span class="op">)</span></span>
+<span><span class="fu">f_jit</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">x</span><span class="op">)</span></span>
 <span><span class="co">#&gt; AnvilTensor&lt;f32&gt; </span></span>
-<span><span class="co">#&gt;  1.0000</span></span>
-<span></span>
-<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jit.html">jit</a></span><span class="op">(</span><span class="fu"><a href="reference/gradient.html">gradient</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">g</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">x</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  1.0000</span></span></code></pre></div>
+<p>Through automatic differentiation, we can also obtain the gradient of the function.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">g_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jit.html">jit</a></span><span class="op">(</span><span class="fu"><a href="reference/gradient.html">gradient</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">g_jit</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">x</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $a</span></span>
 <span><span class="co">#&gt; AnvilTensor&lt;f32&gt; </span></span>
 <span><span class="co">#&gt;  3.0000</span></span>
@@ -107,7 +107,7 @@
 <span><span class="co">#&gt;  1.0000</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
+<h2 id="main-features">Main Features<a class="anchor" aria-label="anchor" href="#main-features"></a>
 </h2>
 <ul>
 <li>Automatic Differentiation:
@@ -144,7 +144,7 @@
 <li>The <a href="https://github.com/joey00072/microjax" class="external-link">microjax</a> project.</li>
 </ul>
 </li>
-<li>The project leverages <a href="https://github.com/r-xla/stablehlo" class="external-link">stableHLO</a> and <a href="https://github.com/r-xla/pjrt" class="external-link">pjrt</a> which in turn build upon the <a href="https://openxla.org/" class="external-link">OpenXLA</a> project.</li>
+<li>For JIT compilation, we leverage the <a href="https://openxla.org/" class="external-link">OpenXLA</a> project.</li>
 </ul>
 </div>
 </div>
@@ -184,6 +184,8 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+<li><a href="https://CRAN.R-project.org/package=anvil" class="external-link"><img src="https://www.r-pkg.org/badges/version/anvil" alt="CRAN status"></a></li>
+<li><a href="https://codecov.io/gh/r-xla/anvil" class="external-link"><img src="https://codecov.io/gh/r-xla/anvil/branch/main/graph/badge.svg" alt="codecov"></a></li>
 </ul>
 </div>
 
