@@ -45,7 +45,7 @@ print.AnvilTensor <- function(x, header = TRUE, ...) {
       sprintf(
         "AnvilTensor<%s%s>",
         as.character(dtype(x)),
-        if (length(s)) paste0(": ", paste0(s, collapse = "x"))
+        if (length(s)) paste0(": ", paste0(s, collapse = "x")) else ""
       ),
       "\n"
     )

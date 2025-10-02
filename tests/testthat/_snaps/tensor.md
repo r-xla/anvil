@@ -14,7 +14,7 @@
     Code
       x
     Output
-       
+      AnvilTensor<f32> 
        1.0000
 
 # ShapedTensor
