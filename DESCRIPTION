@@ -11,29 +11,32 @@ Description: Code transformation framework for R.
 License: MIT + file LICENSE
 URL: https://r-xla.github.io/anvil/, https://github.com/r-xla/anvild
 BugReports: https://github.com/r-xla/anvil/issues
-Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2.9000
 Imports:
     carrier,
     checkmate,
     digest,
-    tengen,
     pjrt,
     R6,
     rlang,
-    stablehlo
-Remotes:
-    r-xla/pjrt,
-    r-xla/stablehlo,
-    r-xla/tengen,
-    r-xla/xlamisc
+    S7,
+    stablehlo,
+    tengen
 Suggests:
     knitr,
     quarto,
     rmarkdown,
     testthat (>= 3.0.0)
+VignetteBuilder: 
+    quarto
+Remotes:
+    r-xla/pjrt,
+    r-xla/stablehlo,
+    r-xla/tengen,
+    r-xla/xlamisc
 Config/testthat/edition: 3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2.9000
 Collate:
     'list_of.R'
     'reexports.R'
@@ -52,4 +55,3 @@ Collate:
     'type-converters.R'
     'utils.R'
     'zzz.R'
-VignetteBuilder: quarto

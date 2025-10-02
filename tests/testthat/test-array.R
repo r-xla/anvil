@@ -14,7 +14,7 @@ test_that("nv_scalar", {
 
 test_that("ShapedTensor", {
   x <- ShapedTensor(
-    FloatType("f32"),
+    FloatType(32),
     Shape(c(2, 3))
   )
   expect_snapshot(x)
@@ -24,7 +24,7 @@ test_that("ShapedTensor", {
   expect_false(
     x ==
       ShapedTensor(
-        FloatType("f32"),
+        FloatType(32),
         Shape(c(2, 1))
       )
   )
@@ -32,7 +32,7 @@ test_that("ShapedTensor", {
   expect_false(
     x ==
       ShapedTensor(
-        FloatType("f64"),
+        FloatType(64),
         Shape(c(2, 3))
       )
   )

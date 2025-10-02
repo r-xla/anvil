@@ -22,25 +22,7 @@ set_add <- function(set, key) {
 
 dtype_from_buffer <- function(x) {
   d <- as.character(dtype(x))
-  dtype_from_string(d)
-}
-
-dtype_from_string <- function(d) {
-  switch(
-    d,
-    pred = stablehlo::BooleanType(),
-    i8 = stablehlo::IntegerType("i8"),
-    i16 = stablehlo::IntegerType("i16"),
-    i32 = stablehlo::IntegerType("i32"),
-    i64 = stablehlo::IntegerType("i64"),
-    ui8 = stablehlo::IntegerType("ui8"),
-    ui16 = stablehlo::IntegerType("ui16"),
-    ui32 = stablehlo::IntegerType("ui32"),
-    ui64 = stablehlo::IntegerType("ui64"),
-    f32 = stablehlo::FloatType("f32"),
-    f64 = stablehlo::FloatType("f64"),
-    stop("Unsupported dtype: ", d)
-  )
+  as_dtype(d)
 }
 
 raise_to_shaped <- function(aval) {
