@@ -47,7 +47,7 @@ f_jit(a, b, x)
 ```
 
 Through automatic differentiation, we can also obtain the gradient of
-the function.
+`f`.
 
 ``` r
 g_jit <- jit(gradient(f))

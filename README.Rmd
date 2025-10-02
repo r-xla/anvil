@@ -50,7 +50,7 @@ x <- nv_scalar(3.0)
 f_jit(a, b, x)
 ```
 
-Through automatic differentiation, we can also obtain the gradient of the function.
+Through automatic differentiation, we can also obtain the gradient of `f`.
 
 ```{r}
 g_jit <- jit(gradient(f))
