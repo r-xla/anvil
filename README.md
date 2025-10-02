@@ -14,8 +14,9 @@ status](https://www.r-pkg.org/badges/version/anvil)](https://CRAN.R-project.org/
 <!-- badges: end -->
 
 This package provides a code transformation framework in R. It currently
-provides support for jit compilation and backward-mode automatic
-differentiation.
+implements JIT compilation and backward-mode automatic differentiation.
+Programs can run on various hardware backends, including CPU and CUDA
+GPUs.
 
 ## Installation
 
@@ -28,7 +29,7 @@ pak::pak("r-xla/anvil")
 Below, we create a standard R function. We cannot directly call this
 function, but first need to wrap it in a `jit()` call. If the resulting
 function is then called on `AnvilTensor`s – the primary data type in
-`anvil` – it will be jit compiled and subsequently executed.
+`anvil` – it will be JIT compiled and subsequently executed.
 
 ``` r
 library(anvil)
