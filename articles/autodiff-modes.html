@@ -67,7 +67,7 @@
       <h1>Autodiff Modes</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/autodiff-modes.Rmd" class="external-link"><code>vignettes/autodiff-modes.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/fix-rcmdcheck/vignettes/autodiff-modes.Rmd" class="external-link"><code>vignettes/autodiff-modes.Rmd</code></a></small>
       <div class="d-none name"><code>autodiff-modes.Rmd</code></div>
     </div>
 
@@ -149,7 +149,7 @@ z_l}{\partial b_p}
 \end{bmatrix}
 \]</span></p>
 <p>The question is now, how we can actually <strong>calculate</strong>
-this computationally. For computational feasability, we want to avoid
+this computationally. For computational feasibility, we want to avoid
 calculating the full intermediate matrices, as these can be very
 large.</p>
 <p>To ways to do this are:</p>
@@ -277,7 +277,7 @@ y_m}{\partial z_l}
 requires us to first calculate a forward pass, before we calculate the
 backward pass. This is, because we want to start with the rightmost
 multiplication, as this reduces the computational complexity. But the
-rightmost multiplication involes the derivative of <span class="math inline">\(f\)</span> with respect to the temporary variables
+rightmost multiplication involves the derivative of <span class="math inline">\(f\)</span> with respect to the temporary variables
 <span class="math inline">\(z\)</span>. Therefore, we first need to
 obtain these values using a forward pass.</p>
 <p>Now, for the first step, we have computational complexity <span class="math inline">\(O(m \times l)\)</span> and for the second one

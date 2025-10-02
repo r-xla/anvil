@@ -1,8 +1,9 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>/404.html</loc></url>
 <url><loc>/AGENTS.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/LICENSE.html</loc></url>
 <url><loc>/articles/autodiff-modes.html</loc></url>
-<url><loc>/articles/design.html</loc></url>
 <url><loc>/articles/index.html</loc></url>
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
@@ -17,6 +18,7 @@
 <url><loc>/reference/nv_dtype.html</loc></url>
 <url><loc>/reference/nv_tensor.html</loc></url>
 <url><loc>/reference/nv_unary_ops.html</loc></url>
+<url><loc>/reference/pullback.html</loc></url>
 <url><loc>/reference/reexports.html</loc></url>
 </urlset>
 
