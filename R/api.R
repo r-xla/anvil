@@ -35,8 +35,6 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
 
 #' @title Broadcast
 #' @param ... ([`nv_tensor`])
-#' @param shape (`integer()`)\cr
-#'   Output shape. If `NULL` (default),
 #' @return ([`nv_tensor`])
 #' @export
 nv_broadcast_all <- function(...) {
@@ -77,11 +75,13 @@ nv_add <- function(lhs, rhs) {
   do.call(nvl_add, nv_broadcast_all(lhs, rhs))
 }
 
+#' @rdname nv_binary_ops
 #' @export
 nv_mul <- function(lhs, rhs) {
   do.call(nvl_mul, nv_broadcast_all(lhs, rhs))
 }
 
+#' @rdname nv_binary_ops
 #' @export
 nv_sub <- function(lhs, rhs) {
   do.call(nvl_sub, nv_broadcast_all(lhs, rhs))
@@ -96,6 +96,7 @@ nv_sub <- function(lhs, rhs) {
 #' @param operand ([`nv_tensor`])
 #' @return [`nv_tensor`]
 
+#' @rdname nv_unary_ops
 #' @export
 nv_neg <- nvl_neg
 
@@ -110,7 +111,6 @@ nv_neg <- nvl_neg
 #' - `dt_i{8, 16, 32, 64}`: signed integer.
 #' - `dt_ui{8, 16, 32, 64}`: unsigned integer.
 #' - `dt_f{32, 64}`: float.
-#' @examples
 NULL
 
 #' @rdname data_types

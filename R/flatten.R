@@ -42,7 +42,8 @@ build_tree <- S7::new_generic("build_tree", "x", function(x, counter = NULL) {
 
 method(build_tree, S7::new_S3_class("list")) <- function(x, counter = NULL) {
   out <- lapply(unname(x), build_tree, counter = counter)
-  # basically non-recursive unlist that maintains list structure even for atomics (unlist(list(1, 2)) would become c(1, 2))
+  # basically non-recursive unlist that maintains list structure even for atomics (unlist(list(1, 2))
+  # would become c(1, 2))
   ListNode(
     out,
     names(x)
@@ -51,8 +52,8 @@ method(build_tree, S7::new_S3_class("list")) <- function(x, counter = NULL) {
 
 method(build_tree, S7::class_any) <- function(x, counter = NULL) {
   i <- counter[["i"]] + 1L
-  counter[["i"]] <- counter[["i"]] + 1L
-  LeafNode(counter[["i"]])
+  counter[["i"]] <- i
+  LeafNode(i)
 }
 
 unflatten <- S7::new_generic("unflatten", "node", function(node, x) {

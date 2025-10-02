@@ -31,7 +31,7 @@ test_that("flatten_fun", {
   f <- function(a, b) {
     list(a, b)
   }
-  args = list(
+  args <- list(
     list(list(a = 1), list(2)),
     list(b = -1)
   )

@@ -8,9 +8,6 @@ nv_broadcast_all(...)
 }
 \arguments{
 \item{...}{(\code{\link{nv_tensor}})}
-
-\item{shape}{(\code{integer()})\cr
-Output shape. If \code{NULL} (default),}
 }
 \value{
 (\code{\link{nv_tensor}})

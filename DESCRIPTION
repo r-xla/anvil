@@ -12,22 +12,23 @@ License: MIT + file LICENSE
 URL: https://r-xla.github.io/anvil/, https://github.com/r-xla/anvild
 BugReports: https://github.com/r-xla/anvil/issues
 Imports:
-    carrier,
     checkmate,
+    cli,
     digest,
     pjrt,
-    R6,
     rlang,
     S7,
     stablehlo,
-    tengen
+    tengen,
+    xlamisc,
+    withr
 Suggests:
     knitr,
     quarto,
     rmarkdown,
     testthat (>= 3.0.0)
-VignetteBuilder: 
-    quarto
+VignetteBuilder:
+    knitr
 Remotes:
     r-xla/pjrt,
     r-xla/stablehlo,
@@ -38,7 +39,6 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2.9000
 Collate:
-    'list_of.R'
     'reexports.R'
     'aaa.R'
     'tensor.R'

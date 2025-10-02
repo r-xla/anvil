@@ -20,3 +20,4 @@ SPEC.md
 ^.lintr$
 ^AGENTS.md$
 ^Makefile$
+^air.toml$

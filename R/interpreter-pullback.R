@@ -107,6 +107,14 @@ pullback2 <- function(f, ...) {
   )
 }
 
+#' @title Pullback of a function
+#' @description
+#' Compute the pullback (transposed derivative) of a function.
+#' @param f (`function`)\cr
+#'   Function to compute the pullback of.
+#' @param ... (`any`)\cr
+#'   Example arguments to pass to the function.
+#' @return (`function`)
 #' @export
 pullback <- function(f, ...) {
   pullback2(f, ...)[[2L]]
