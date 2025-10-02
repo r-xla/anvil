@@ -39,7 +39,6 @@ method(nv_scalar, class_any) <- function(x, ...) {
 #' @export
 #' @exportS3Method print AnvilTensor
 print.AnvilTensor <- function(x, header = TRUE, ...) {
-  print("hallo")
   if (assert_flag(header)) {
     s <- shape(x)
     cat(
