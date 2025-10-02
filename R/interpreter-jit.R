@@ -7,8 +7,9 @@
 #' @export
 jit <- function(f) {
   cache <- hashtab()
-  function(...) {
-    args <- list(...)
+  f_jit <- function() {
+    args <- as.list(match.call())[-1L]
+    args <- lapply(args, eval, envir = parent.frame())
     args_flat <- flatten(args)
     avals_in <- lapply(args_flat, \(a) raise_to_shaped(aval(a)))
     hash <- hash_shaped_tensors(avals_in)
@@ -42,8 +43,10 @@ jit <- function(f) {
       exec,
       outs[[1L]]
     )
-    Recall(...)
+    Recall()
   }
+  formals(f_jit) <- formals(args(f))
+  return(f_jit)
 }
 
 hash_shaped_tensors <- function(shaped_tensors) {

@@ -39,8 +39,10 @@ gradient <- function(f) {
   #    return x_bar
   #  return gradfun
 
-  function(...) {
-    out <- pullback2(f, ...)
+  f_gradient <- function() {
+    args <- as.list(match.call())[-1L]
+    args <- lapply(args, eval, envir = parent.frame())
+    out <- rlang::exec(pullback2, f, !!!args)
     g <- out[[2L]]
     y <- out[[1L]]
 
@@ -51,7 +53,7 @@ gradient <- function(f) {
 
     # TODO: check shape
 
-    one <- nv_scalar(1.0, dtype = dtype(y)@value)
+    one <- nv_scalar(1.0, dtype = repr(dtype(y)))
     grad <- g(one)
     if (length(grad) == 1L) {
       # single input
@@ -60,6 +62,9 @@ gradient <- function(f) {
 
     return(grad)
   }
+  # args() is needed for primitives, as they don't have formals
+  formals(f_gradient) <- formals(args(f))
+  return(f_gradient)
 }
 
 pullback2 <- function(f, ...) {

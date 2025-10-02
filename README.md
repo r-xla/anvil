@@ -42,15 +42,15 @@ fj(a, b, x)
 g <- jit(gradient(f))
 
 g(a, b, x)
-#> [[1]]
+#> $a
 #> PJRTBuffer<f32> 
 #>  3.0000
 #> 
-#> [[2]]
+#> $b
 #> PJRTBuffer<f32> 
 #>  1.0000
 #> 
-#> [[3]]
+#> $x
 #> PJRTBuffer<f32> 
 #>  1.0000
 ```

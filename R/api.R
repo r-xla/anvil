@@ -124,49 +124,49 @@ dt_i1 <- BooleanType()
 #' @format NULL
 #' @usage NULL
 #' @export
-dt_i8 <- IntegerType("i8")
+dt_i8 <- IntegerType(8)
 #' @export
 #' @rdname data_types
 #' @format NULL
 #' @usage NULL
-dt_i16 <- IntegerType("i16")
+dt_i16 <- IntegerType(16)
 #' @export
 #' @rdname data_types
 #' @format NULL
 #' @usage NULL
-dt_i32 <- IntegerType("i32")
+dt_i32 <- IntegerType(32)
 #' @export
 #' @rdname data_types
 #' @format NULL
 #' @usage NULL
-dt_i64 <- IntegerType("i64")
+dt_i64 <- IntegerType(64)
 #' @export
 #' @rdname data_types
 #' @format NULL
 #' @usage NULL
-dt_ui8 <- IntegerType("ui8")
+dt_ui8 <- UnsignedType(8)
 #' @export
 #' @rdname data_types
 #' @format NULL
 #' @usage NULL
-dt_ui16 <- IntegerType("ui16")
+dt_ui16 <- UnsignedType(16)
 #' @export
 #' @rdname data_types
 #' @format NULL
 #' @usage NULL
-dt_ui32 <- IntegerType("ui32")
+dt_ui32 <- UnsignedType(32)
 #' @export
 #' @rdname data_types
 #' @format NULL
 #' @usage NULL
-dt_ui64 <- IntegerType("ui64")
+dt_ui64 <- UnsignedType(64)
 #' @export
 #' @rdname data_types
 #' @format NULL
 #' @usage NULL
-dt_f32 <- FloatType("f32")
+dt_f32 <- FloatType(32)
 #' @export
 #' @rdname data_types
 #' @format NULL
 #' @usage NULL
-dt_f64 <- FloatType("f64")
+dt_f64 <- FloatType(64)

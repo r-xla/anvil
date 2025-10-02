@@ -115,7 +115,7 @@ test_that("dot_general: vector dot product gradient", {
 
 test_that("dot_general: matrix-vector with summed loss", {
   nv_hacky_sum <- function(y) {
-    ones <- nv_tensor(1, shape = shape(y)[1L], dtype = dtype(y)@value)
+    ones <- nv_tensor(1, shape = shape(y)[1L], dtype = repr(dtype(y)))
     out <- nvl_dot_general(
       y,
       ones,
@@ -160,7 +160,8 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
   make_ones_like <- function(Y) {
     nv_tensor(
       rep(1, prod(shape(Y))),
-      dtype = dtype(Y)@value,
+      # TODO: repr() should not be needed
+      dtype = repr(dtype(Y)),
       shape = shape(Y)
     )
   }
@@ -312,4 +313,31 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
     batching_dims = list(c(3L, 4L), c(0L, 1L))
   )
   # TODO: One super complicated test with many permutations
+})
+
+test_that("names for grad: primitive", {
+  g <- jit(gradient(`*`))
+  expect_equal(names(formals(g)), c("e1", "e2"))
+  expect_equal(
+    list(
+      e1 = nv_scalar(1),
+      e2 = nv_scalar(2)
+    ),
+    g(nv_scalar(2), nv_scalar(1))
+  )
+})
+
+test_that("names for grad: function", {
+  f <- function(e1, e2) {
+    e1 * e2
+  }
+  g <- jit(gradient(f))
+  expect_equal(formals(g), formals(f))
+  expect_equal(
+    list(
+      e1 = nv_scalar(1),
+      e2 = nv_scalar(2)
+    ),
+    g(nv_scalar(2), nv_scalar(1))
+  )
 })

@@ -49,3 +49,42 @@ test_that("multiple returns", {
 test_that("calling jit on jit", {
   # TODO: (Not sure what we want here)
 })
+
+test_that("keeps argument names", {
+  f1 <- function(x, y) {
+    x + y
+  }
+  f1_jit <- jit(f1)
+  expect_equal(
+    formals(f1_jit),
+    formals(f1)
+  )
+  expect_equal(
+    f1_jit(nv_tensor(1), nv_tensor(2)),
+    nv_tensor(3)
+  )
+  f2 <- function(x, y = nv_tensor(1)) {
+    x + y
+  }
+  f2_jit <- jit(f2)
+  expect_equal(
+    formals(f2_jit),
+    formals(f2)
+  )
+  expect_equal(
+    f2_jit(nv_tensor(1), nv_tensor(2)),
+    nv_tensor(3)
+  )
+  f3 <- function(a, ...) {
+    Reduce(`+`, list(...)) * a
+  }
+  f3_jit <- jit(f3)
+  expect_equal(
+    formals(f3_jit),
+    formals(f3)
+  )
+  expect_equal(
+    f3_jit(nv_tensor(2), nv_tensor(3), nv_tensor(4)),
+    nv_tensor(14)
+  )
+})
