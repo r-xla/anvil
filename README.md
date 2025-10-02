@@ -36,22 +36,22 @@ x <- nv_scalar(3.0)
 
 fj <- jit(f)
 fj(a, b, x)
-#> PJRTBuffer<f32> 
+#> AnvilTensor<f32> 
 #>  1.0000
 
 g <- jit(gradient(f))
 
 g(a, b, x)
 #> $a
-#> PJRTBuffer<f32> 
+#> AnvilTensor<f32> 
 #>  3.0000
 #> 
 #> $b
-#> PJRTBuffer<f32> 
+#> AnvilTensor<f32> 
 #>  1.0000
 #> 
 #> $x
-#> PJRTBuffer<f32> 
+#> AnvilTensor<f32> 
 #>  1.0000
 ```
 
