@@ -7,11 +7,15 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+![R-CMD-check](https://github.com/r-xla/anvil/actions/workflows/R-CMD-check.yaml/badge.svg)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/anvil)](https://CRAN.R-project.org/package=anvil)
+[![codecov](https://codecov.io/gh/r-xla/anvil/branch/main/graph/badge.svg)](https://codecov.io/gh/r-xla/anvil)
 <!-- badges: end -->
 
-The goal of anvil is to provide a code transformation framework similar
-to [jax](https://docs.jax.dev/en/latest/) for R. It currently provides
-support for jit compilation and automatic differentiation.
+This package provides a code transformation framework in R. It currently
+provides support for jit compilation and backward-mode automatic
+differentiation.
 
 ## Installation
 
@@ -21,27 +25,33 @@ pak::pak("r-xla/anvil")
 
 ## Quick Start
 
-Below, we create a simple R function, jit-compile and run it.
-Afterwards, we also evaluate its gradient.
+Below, we create a standard R function. We cannot directly call this
+function, but first need to wrap it in a `jit()` call. If the resulting
+function is then called on `AnvilTensor`s – the primary data type in
+`anvil` – it will be JIT compiled and subsequently executed.
 
 ``` r
 library(anvil)
 f <- function(a, b, x) {
   a * x + b
 }
+f_jit <- jit(f)
 
 a <- nv_scalar(1.0)
 b <- nv_scalar(-2.0)
 x <- nv_scalar(3.0)
 
-fj <- jit(f)
-fj(a, b, x)
+f_jit(a, b, x)
 #> AnvilTensor<f32> 
 #>  1.0000
+```
 
-g <- jit(gradient(f))
+Through automatic differentiation, we can also obtain the gradient of
+the function.
 
-g(a, b, x)
+``` r
+g_jit <- jit(gradient(f))
+g_jit(a, b, x)
 #> $a
 #> AnvilTensor<f32> 
 #>  3.0000
@@ -55,7 +65,7 @@ g(a, b, x)
 #>  1.0000
 ```
 
-## Features
+## Main Features
 
 - Automatic Differentiation:
   - Pullback for reverse mode automatic differentiation.
@@ -74,6 +84,5 @@ g(a, b, x)
   - JAX, especially the [autodidax
     tutorial](https://docs.jax.dev/en/latest/autodidax.html).
   - The [microjax](https://github.com/joey00072/microjax) project.
-- The project leverages [stableHLO](https://github.com/r-xla/stablehlo)
-  and [pjrt](https://github.com/r-xla/pjrt) which in turn build upon the
-  [OpenXLA](https://openxla.org/) project.
+- For JIT compilation, we leverage the [OpenXLA](https://openxla.org/)
+  project.
