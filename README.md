@@ -52,17 +52,13 @@ Through automatic differentiation, we can also obtain the gradient of
 `f`.
 
 ``` r
-g_jit <- jit(gradient(f))
+g_jit <- jit(gradient(f, wrt = c("a", "b")))
 g_jit(a, b, x)
 #> $a
 #> AnvilTensor<f32> 
 #>  3.0000
 #> 
 #> $b
-#> AnvilTensor<f32> 
-#>  1.0000
-#> 
-#> $x
 #> AnvilTensor<f32> 
 #>  1.0000
 ```
