@@ -90,13 +90,16 @@ test_that("keeps argument names", {
 })
 
 test_that("can mark arguments as static ", {
-  f <- jit(function(x, add_one) {
-    if (add_one) {
-      x + nv_tensor(1)
-    } else {
-      x
-    }
-  }, static = "add_one")
+  f <- jit(
+    function(x, add_one) {
+      if (add_one) {
+        x + nv_tensor(1)
+      } else {
+        x
+      }
+    },
+    static = "add_one"
+  )
   expect_equal(f(nv_tensor(1), TRUE), nv_tensor(2))
   expect_equal(f(nv_tensor(1), FALSE), nv_tensor(1))
 })

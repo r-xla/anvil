@@ -17,14 +17,16 @@ jit <- function(f, static = character()) {
     # TODO: Factor this out
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
-    # compute static mask over flattened args: any leaf under a top-level static arg is static
     in_node <- build_tree(mark_some(args, static))
     args_flat <- flatten(args)
     is_static_flat <- in_node$marked
-    # Build cache key parts: dynamic leaves use shaped avals, static leaves use raw values
-    avals_in <- Map(function(a, static) {
-      if (static) a else raise_to_shaped(aval(a))
-    }, args_flat, is_static_flat)
+    avals_in <- Map(
+      function(a, static) {
+        if (static) a else raise_to_shaped(aval(a))
+      },
+      args_flat,
+      is_static_flat
+    )
     cache_hit <- cache[[avals_in]]
     if (!is.null(cache_hit)) {
       res <- rlang::exec(
@@ -41,9 +43,13 @@ jit <- function(f, static = character()) {
     interpreter <- JitInterpreter(main)
     # TODO: better id
     func <- stablehlo::hlo_func(id = "main")
-    boxes_in <- Map(function(a, static) {
-      if (static) a else JitBox(st2fi(a, func), interpreter = interpreter)
-    }, avals_in, is_static_flat)
+    boxes_in <- Map(
+      function(a, static) {
+        if (static) a else JitBox(st2fi(a, func), interpreter = interpreter)
+      },
+      avals_in,
+      is_static_flat
+    )
     f_flat <- rlang::exec(flatten_fun, f, in_node = in_node)
     outs <- rlang::exec(f_flat, !!!boxes_in)
     boxes_out <- lapply(outs[[2L]], full_raise, interpreter = interpreter)
@@ -57,7 +63,6 @@ jit <- function(f, static = character()) {
     )
     Recall()
   }
-  # TODO: remove static params
   formals(f_jit) <- formals2(f)
   return(f_jit)
 }

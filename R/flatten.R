@@ -66,7 +66,9 @@ mark_some <- function(x, marked) {
 }
 
 method(build_tree, S7::new_S3_class("MarkedArgs")) <- function(x, counter = NULL) {
-  if (is.null(counter)) counter <- new_counter()
+  if (is.null(counter)) {
+    counter <- new_counter()
+  }
 
   n <- length(x$data)
   subsize <- vector("integer", n)
@@ -85,7 +87,7 @@ method(build_tree, S7::new_S3_class("MarkedArgs")) <- function(x, counter = NULL
     is_marked_flat <- FALSE
   }
 
-  MaskedListNode(nodes, names(x$data), is_marked_flat)
+  MarkedListNode(nodes, names(x$data), is_marked_flat)
 }
 
 
@@ -125,13 +127,13 @@ ListNode <- function(nodes, names) {
   )
 }
 
-MaskedListNode <- function(nodes, names, marked) {
+MarkedListNode <- function(nodes, names, marked) {
   structure(
     list(
       nodes = unname(nodes),
       names = names,
       marked = marked
     ),
-    class = c("MaskedListNode", "ListNode")
+    class = c("MarkedListNode", "ListNode")
   )
 }
