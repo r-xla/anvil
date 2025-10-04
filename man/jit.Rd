@@ -4,11 +4,14 @@
 \alias{jit}
 \title{JIT compile a function}
 \usage{
-jit(f)
+jit(f, static = character())
 }
 \arguments{
 \item{f}{(\code{function})\cr
 Function to compile.}
+
+\item{static}{(\code{character()})\cr
+Which parameters of \code{f} are static.}
 }
 \value{
 (\code{function})

@@ -317,7 +317,7 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
 
 test_that("names for grad: primitive", {
   g <- jit(gradient(`*`))
-  expect_equal(names(formals(g)), c("e1", "e2"))
+  expect_equal(formalArgs2(g), c("e1", "e2"))
   expect_equal(
     list(
       e1 = nv_scalar(1),

@@ -83,3 +83,12 @@ seq_along0 <- function(x) {
   x <- seq_along(x)
   if (length(x)) x - 1L else integer()
 }
+
+# these functions also work with primitives etc.
+formalArgs2 <- function(f) {
+  names(formals2(f))
+}
+
+formals2 <- function(f) {
+  formals(args(f))
+}
