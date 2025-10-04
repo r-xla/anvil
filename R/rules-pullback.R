@@ -71,17 +71,6 @@ register_pullback_rule(p_neg, function(primals, .required) {
   )
 })
 
-register_pullback_rule(p_transpose, function(primals, permutation, .required) {
-  x <- primals[[1L]]
-  list(
-    list(nvl_transpose(x, permutation)),
-    function(grad) {
-      # TODO:
-      .NotYetImplemented()
-    }
-  )
-})
-
 register_pullback_rule(
   p_dot_general,
   function(primals, contracting_dims, batching_dims, .required) {
