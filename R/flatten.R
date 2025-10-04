@@ -1,7 +1,10 @@
 # Pack and unpack
-flatten_fun <- function(f, ...) {
-  # (flat_args) -> (flat_out, out_node)
-  in_node <- build_tree(list(...))
+flatten_fun <- function(f, ..., in_node = NULL) {
+  if (is.null(in_node)) {
+    in_node <- build_tree(list(...))
+  } else if (...length()) {
+    stop("in_node is not compatible with ... arguments")
+  }
   function(...) {
     # We could do this out of the function and re-use,
     # but because we always jit, we don't worry about it
@@ -56,6 +59,36 @@ method(build_tree, S7::class_any) <- function(x, counter = NULL) {
   LeafNode(i)
 }
 
+
+mark_some <- function(x, marked) {
+  stopifnot(is.list(x))
+  structure(list(data = x, marked = marked), class = "MarkedArgs")
+}
+
+method(build_tree, S7::new_S3_class("MarkedArgs")) <- function(x, counter = NULL) {
+  if (is.null(counter)) counter <- new_counter()
+
+  n <- length(x$data)
+  subsize <- vector("integer", n)
+  nodes <- vector("list", n)
+  prev <- 0L
+  for (i in seq_along(x$data)) {
+    nodes[[i]] <- build_tree(x$data[[i]], counter = counter)
+    subsize[i] <- counter[["i"]] - prev
+    prev <- prev + subsize[i]
+  }
+
+  if (!is.null(x$marked)) {
+    is_marked <- names(x$data) %in% x$marked
+    is_marked_flat <- rep(is_marked, times = subsize)
+  } else {
+    is_marked_flat <- FALSE
+  }
+
+  MaskedListNode(nodes, names(x$data), is_marked_flat)
+}
+
+
 unflatten <- S7::new_generic("unflatten", "node", function(node, x) {
   S7::S7_dispatch()
 })
@@ -89,5 +122,16 @@ ListNode <- function(nodes, names) {
       names = names
     ),
     class = c("ListNode", "Node")
+  )
+}
+
+MaskedListNode <- function(nodes, names, marked) {
+  structure(
+    list(
+      nodes = unname(nodes),
+      names = names,
+      marked = marked
+    ),
+    class = c("MaskedListNode", "ListNode")
   )
 }

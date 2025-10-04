@@ -63,7 +63,7 @@ gradient <- function(f) {
     return(grad)
   }
   # args() is needed for primitives, as they don't have formals
-  formals(f_gradient) <- formals(args(f))
+  formals(f_gradient) <- formals2(f)
   return(f_gradient)
 }
 

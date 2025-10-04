@@ -12,6 +12,7 @@ NULL
 #' @importFrom pjrt pjrt_buffer pjrt_scalar pjrt_execute pjrt_compile pjrt_program elt_type
 #' @importFrom utils gethash hashtab maphash numhash
 #' @importFrom xlamisc list_of
+#' @importFrom dotty .
 ## usethis namespace: end
 NULL
 
