@@ -13,9 +13,9 @@ status](https://www.r-pkg.org/badges/version/anvil)](https://CRAN.R-project.org/
 [![codecov](https://codecov.io/gh/r-xla/anvil/branch/main/graph/badge.svg)](https://codecov.io/gh/r-xla/anvil)
 <!-- badges: end -->
 
-This package is a code transformation framework for R, allowing you to
-easily implement numerical programs efficiently. It currently implements
-JIT compilation for very fast execution and backward-mode automatic
+Composable code transformation framework for R, allowing you to easily
+implement numerical programs efficiently. It currently implements JIT
+compilation for very fast execution and backward-mode automatic
 differentiation. Programs can run on various hardware backends,
 including CPU and GPU.
 
