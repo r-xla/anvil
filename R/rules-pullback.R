@@ -112,6 +112,27 @@ register_pullback_rule(
         d_rhs_out <- seq_along0(rd_rhs) +
           if (length(d_lhs_out)) d_lhs_out[length(d_lhs_out)] + 1L else 0L
 
+        # lhs has dimensions (bd_lhs, cd_lhs, rd_lhs), not necessarily in this order.
+        # each "dimension" is a set of axes, not a single axis.
+        # rhs has (bd_rhs, cd_rhs, rd_rhs), not necessarily in this order.
+        # output has dimension (dims(bd_lhs), dims(rd_lhs), dims(rd_rhs))
+
+        # the dim of grad_lhs is (dims(bd_lhs), dims(rd_lhs), dims(cd_lhs))
+        # now, we transpose it to its original shape
+
+        # bd_lhs indicates the position of the original batching dimensions,
+        # the same for rd_lhs and cd_lhs.
+        # to revert them to their original position
+
+        # for grad_lhs we compute
+        # grad[(bd_lhs, rd_lhs, rd_rhs)] * rhs[some_order(bd_rhs, rd_rhs, cd_rhs)]
+        # (batch dims stay batch_dims, reducing dim becomes the rd_rhs)
+        # we get the gradient back in the shape:
+        # [bd_lhs, rd_lhs, some_order(cd_rhs)].
+        # But we want it in its original order, so we need to permute it back.
+        # If cd_rhs was [4, 2, 7], some_order would be cd_rhs[2], cd_rhs[1], cd_rhs[3]
+        # The some_order is given my how
+
         conv_perm <- function(x) {
           # x is a permutation vector so that if we permute y by x
           # y[x[i]] = i
@@ -126,6 +147,15 @@ register_pullback_rule(
 
         cd_lhs2 <- cd_lhs[order(cd_rhs)]
         perm_lhs <- conv_perm(c(bd_lhs, rd_lhs, cd_lhs2))
+
+        # For grad_rhs we compute
+        # grad[(bd_rhs, rd_rhs, rd_lhs)] * lhs[some_order(bd_lhs, rd_lhs, cd_lhs)]
+        # (batch dims stay batch_dims, reducing dim becomes the rd_lhs)
+        # We get the gradient back in the shape:
+        # [bd_rhs, rd_rhs, cd_lhs].
+
+        # But we want it in its original order, so we need to permute it back.
+
         cd_rhs2 <- cd_rhs[order(cd_lhs)]
         perm_rhs <- conv_perm(c(bd_rhs, rd_rhs, cd_rhs2))
 
