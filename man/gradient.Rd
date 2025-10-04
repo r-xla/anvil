@@ -4,10 +4,14 @@
 \alias{gradient}
 \title{Gradient of a function}
 \usage{
-gradient(f)
+gradient(f, wrt = NULL)
 }
 \arguments{
 \item{f}{(\code{function})}
+
+\item{wrt}{(\code{character()})
+Names of arguments to differentiate with respect to. If \code{NULL},
+compute gradients w.r.t. all differentiable arguments.}
 }
 \value{
 (\code{function})

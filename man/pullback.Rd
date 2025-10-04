@@ -4,7 +4,7 @@
 \alias{pullback}
 \title{Pullback of a function}
 \usage{
-pullback(f, ...)
+pullback(f, ..., wrt = NULL)
 }
 \arguments{
 \item{f}{(\code{function})\cr
@@ -12,6 +12,10 @@ Function to compute the pullback of.}
 
 \item{...}{(\code{any})\cr
 Example arguments to pass to the function.}
+
+\item{wrt}{(\code{character()})
+Names of arguments to differentiate with respect to. If \code{NULL},
+compute gradients w.r.t. all differentiable arguments.}
 }
 \value{
 (\code{function})
