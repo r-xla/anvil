@@ -51,7 +51,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pullback</span><span class="op">(</span><span class="va">f</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pullback</span><span class="op">(</span><span class="va">f</span>, <span class="va">...</span>, wrt <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -66,6 +66,12 @@ Function to compute the pullback of.</p></dd>
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>(<code>any</code>)<br>
 Example arguments to pass to the function.</p></dd>
+
+
+<dt id="arg-wrt">wrt<a class="anchor" aria-label="anchor" href="#arg-wrt"></a></dt>
+<dd><p>(<code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code>)
+Names of arguments to differentiate with respect to. If <code>NULL</code>,
+compute gradients w.r.t. all differentiable arguments.</p></dd>
 
 </dl></div>
     <div class="section level2">
