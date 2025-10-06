@@ -3,7 +3,7 @@
     Code
       x
     Output
-      AnvilTensor<i32: 4x1> 
+      AnvilTensor{4x1xi32} 
        1
        2
        3
@@ -14,7 +14,7 @@
     Code
       x
     Output
-      AnvilTensor<f32> 
+      AnvilTensor{f32} 
        1.0000
 
 # ShapedTensor
