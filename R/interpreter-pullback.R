@@ -35,13 +35,6 @@ node_id <- function(node) {
 #' @return (`function`)
 #' @export
 gradient <- function(f, wrt = NULL) {
-  #    def gradfun(x, *xs):
-  #    y, f_vjp = vjp(f, x, *xs)
-  #    if np.shape(y) != (): raise TypeError
-  #    x_bar, *_ = f_vjp(np.ones(np.shape(y), np.result_type(y)))
-  #    return x_bar
-  #  return gradfun
-
   f_gradient <- function() {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
@@ -61,11 +54,6 @@ gradient <- function(f, wrt = NULL) {
 
     one <- nv_scalar(1.0, dtype = repr(dtype(y)))
     grad <- g(one)
-
-    #if (length(grad) == 1L) {
-    #  # single input
-    #  grad <- grad[[1L]]
-    #}
 
     return(grad)
   }
@@ -93,8 +81,6 @@ pullback2 <- function(f, ..., wrt = NULL) {
   f_flat <- rlang::exec(flatten_fun, f, in_node = in_node)
 
   # The inputs are root nodes, because they have no parents
-  # TODO: When we allow for partial gradients, we need to set required = FALSE
-  # for those where we don't want gradients.
   boxes_in <- Map(
     function(arg, req) {
       PullbackBox(interpreter, arg, PullbackNode(NULL, list(), required = req))
@@ -163,7 +149,6 @@ backward_pass <- function(in_nodes, out_node, gradient) {
     nvl_add(grad1, grad2)
   }
 
-  # Use full reverse toposort as requested
   topo_sorted <- reverse_toposort(out_node)
   # walk from leaf to root
   for (node in topo_sorted) {
