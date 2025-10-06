@@ -65,7 +65,7 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>This package is a code transformation framework for R, allowing you to easily implement numerical programs efficiently. It currently implements JIT compilation for very fast execution and backward-mode automatic differentiation. Programs can run on various hardware backends, including CPU and GPU.</p>
+<p>Composable code transformation framework for R, allowing you to easily implement numerical programs efficiently. It currently implements JIT compilation for very fast execution and backward-mode automatic differentiation. Programs can run on various hardware backends, including CPU and GPU.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -92,17 +92,13 @@
 <span><span class="co">#&gt;  1.0000</span></span></code></pre></div>
 <p>Through automatic differentiation, we can also obtain the gradient of <code>f</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">g_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jit.html">jit</a></span><span class="op">(</span><span class="fu"><a href="reference/gradient.html">gradient</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">g_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jit.html">jit</a></span><span class="op">(</span><span class="fu"><a href="reference/gradient.html">gradient</a></span><span class="op">(</span><span class="va">f</span>, wrt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">g_jit</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">x</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $a</span></span>
 <span><span class="co">#&gt; AnvilTensor&lt;f32&gt; </span></span>
 <span><span class="co">#&gt;  3.0000</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b</span></span>
-<span><span class="co">#&gt; AnvilTensor&lt;f32&gt; </span></span>
-<span><span class="co">#&gt;  1.0000</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $x</span></span>
 <span><span class="co">#&gt; AnvilTensor&lt;f32&gt; </span></span>
 <span><span class="co">#&gt;  1.0000</span></span></code></pre></div>
 </div>
