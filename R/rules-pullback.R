@@ -15,62 +15,65 @@ mul_bwd <- function(grad, operand) {
   )
 }
 
-register_pullback_rule(p_add, function(primals) {
+keep <- function(.required, ...) {
+  funcs <- list(...)
+
+  Map(
+    function(f, id) {
+      if (.required[[id]]) f
+    },
+    funcs,
+    seq_along(.required)
+  )
+}
+
+register_pullback_rule(p_add, function(primals, .required) {
   lhs <- primals[[1L]]
   rhs <- primals[[2L]]
   list(
     list(nvl_add(lhs, rhs)),
     function(grad) {
-      list(grad, grad)
+      keep(.required, \() grad, \() grad)
     }
   )
 })
 
-register_pullback_rule(p_mul, function(primals) {
+register_pullback_rule(p_mul, function(primals, .required) {
   lhs <- primals[[1L]]
   rhs <- primals[[2L]]
   list(
     list(nvl_mul(lhs, rhs)),
     function(grad) {
-      list(nvl_mul(grad, rhs), nvl_mul(grad, lhs))
+      keep(.required, \() nvl_mul(grad, rhs), \() nvl_mul(grad, lhs))
     }
   )
 })
 
-register_pullback_rule(p_sub, function(primals) {
+register_pullback_rule(p_sub, function(primals, .required) {
   lhs <- primals[[1L]]
   rhs <- primals[[2L]]
   list(
     list(nvl_sub(lhs, rhs)),
     function(grad) {
-      list(grad, nvl_neg(grad))
+      keep(.required, \() grad, \() nvl_neg(grad))
     }
   )
 })
 
 
-register_pullback_rule(p_neg, function(primals) {
+register_pullback_rule(p_neg, function(primals, .required) {
   x <- primals[[1L]]
   list(
     list(nvl_neg(x)),
-    function(grad) list(nvl_neg(grad))
-  )
-})
-
-register_pullback_rule(p_transpose, function(primals, permutation) {
-  x <- primals[[1L]]
-  list(
-    list(nvl_transpose(x, permutation)),
     function(grad) {
-      # TODO:
-      .NotYetImplemented()
+      keep(.required, \() nvl_neg(grad))
     }
   )
 })
 
 register_pullback_rule(
   p_dot_general,
-  function(primals, contracting_dims, batching_dims) {
+  function(primals, contracting_dims, batching_dims, .required) {
     lhs <- primals[[1L]]
     rhs <- primals[[2L]]
     y <- nvl_dot_general(lhs, rhs, contracting_dims, batching_dims)
@@ -132,8 +135,8 @@ register_pullback_rule(
         }
 
         cd_lhs2 <- cd_lhs[order(cd_rhs)]
-
         perm_lhs <- conv_perm(c(bd_lhs, rd_lhs, cd_lhs2))
+
         # For grad_rhs we compute
         # grad[(bd_rhs, rd_rhs, rd_lhs)] * lhs[some_order(bd_lhs, rd_lhs, cd_lhs)]
         # (batch dims stay batch_dims, reducing dim becomes the rd_lhs)
@@ -141,42 +144,33 @@ register_pullback_rule(
         # [bd_rhs, rd_rhs, cd_lhs].
 
         # But we want it in its original order, so we need to permute it back.
+
         cd_rhs2 <- cd_rhs[order(cd_lhs)]
         perm_rhs <- conv_perm(c(bd_rhs, rd_rhs, cd_rhs2))
 
-        grad_lhs <- nvl_dot_general(
-          grad,
-          rhs,
-          contracting_dims = list(
-            d_rhs_out,
-            rd_rhs
-          ),
-          batching_dims = list(
-            bd_out,
-            bd_rhs
-          )
+        make_grad_closure <- function(x, d_x_out, rd_x, bd_x, perm_y) {
+          function() {
+            grad_x <- nvl_dot_general(
+              grad,
+              x,
+              contracting_dims = list(d_x_out, rd_x),
+              batching_dims = list(bd_out, bd_x)
+            )
+            nvl_transpose(grad_x, perm_y)
+          }
+        }
+
+        keep(
+          .required,
+          make_grad_closure(rhs, d_rhs_out, rd_rhs, bd_rhs, perm_lhs),
+          make_grad_closure(lhs, d_lhs_out, rd_lhs, bd_lhs, perm_rhs)
         )
-        grad_lhs <- nvl_transpose(grad_lhs, perm_lhs)
-        grad_rhs <- nvl_dot_general(
-          grad,
-          lhs,
-          contracting_dims = list(
-            d_lhs_out,
-            rd_lhs
-          ),
-          batching_dims = list(
-            bd_out,
-            bd_lhs
-          )
-        )
-        grad_rhs <- nvl_transpose(grad_rhs, perm_rhs)
-        list(grad_lhs, grad_rhs)
       }
     )
   }
 )
 
-register_pullback_rule(p_transpose, function(primals, permutation) {
+register_pullback_rule(p_transpose, function(primals, permutation, .required) {
   x <- primals[[1L]]
   y <- nvl_transpose(x, permutation)
   list(
@@ -187,7 +181,7 @@ register_pullback_rule(p_transpose, function(primals, permutation) {
       for (i in seq_along(permutation)) {
         inv[permutation[[i]] + 1L] <- i - 1L
       }
-      list(nvl_transpose(grad, inv))
+      keep(.required, \() nvl_transpose(grad, inv))
     }
   )
 })

@@ -28,6 +28,8 @@ jit <- function(f, static = character()) {
       is_static_flat
     )
     cache_hit <- cache[[avals_in]]
+    # TODO: Factor this out into a function and call it at the end
+    # instead of a recall, which does some work twice
     if (!is.null(cache_hit)) {
       res <- rlang::exec(
         pjrt::pjrt_execute,

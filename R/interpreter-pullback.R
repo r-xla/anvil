@@ -29,20 +29,19 @@ node_id <- function(node) {
 #' Compute the gradient of a function using reverse mode automatic differentiation.
 #' Output must be a 0-dimensional tensor.
 #' @param f (`function`)
+#' @param wrt (`character()`)
+#'   Names of arguments to differentiate with respect to. If `NULL`,
+#'   compute gradients w.r.t. all differentiable arguments.
 #' @return (`function`)
 #' @export
-gradient <- function(f) {
-  #    def gradfun(x, *xs):
-  #    y, f_vjp = vjp(f, x, *xs)
-  #    if np.shape(y) != (): raise TypeError
-  #    x_bar, *_ = f_vjp(np.ones(np.shape(y), np.result_type(y)))
-  #    return x_bar
-  #  return gradfun
-
+gradient <- function(f, wrt = NULL) {
   f_gradient <- function() {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
-    out <- rlang::exec(pullback2, f, !!!args)
+    if (!is.null(wrt)) {
+      assert_subset(wrt, formalArgs2(f))
+    }
+    out <- rlang::exec(pullback2, f, !!!args, wrt = wrt)
     g <- out[[2L]]
     y <- out[[1L]]
 
@@ -55,10 +54,6 @@ gradient <- function(f) {
 
     one <- nv_scalar(1.0, dtype = repr(dtype(y)))
     grad <- g(one)
-    if (length(grad) == 1L) {
-      # single input
-      grad <- grad[[1L]]
-    }
 
     return(grad)
   }
@@ -67,22 +62,32 @@ gradient <- function(f) {
   return(f_gradient)
 }
 
-pullback2 <- function(f, ...) {
+pullback2 <- function(f, ..., wrt = NULL) {
   main <- local_main(PullbackInterpreter)
   interpreter <- PullbackInterpreter(main)
+
+  if (!is.null(wrt)) {
+    assert_subset(wrt, formalArgs2(f))
+  } else {
+    wrt <- formalArgs2(f)
+  }
 
   args <- list(...)
 
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
-  f_flat <- rlang::exec(flatten_fun, f, !!!args)
+  in_node <- build_tree(mark_some(args, wrt))
+  is_required_flat <- if (is.null(wrt)) rep(TRUE, length(args_flat)) else in_node$marked
+  f_flat <- rlang::exec(flatten_fun, f, in_node = in_node)
 
   # The inputs are root nodes, because they have no parents
-  # TODO: When we allow for partial gradients, we need to set required = FALSE
-  # for those where we don't want gradients.
-  boxes_in <- lapply(args_flat, \(arg) {
-    PullbackBox(interpreter, arg, PullbackNode(NULL, list(), required = TRUE))
-  })
+  boxes_in <- Map(
+    function(arg, req) {
+      PullbackBox(interpreter, arg, PullbackNode(NULL, list(), required = req))
+    },
+    args_flat,
+    is_required_flat
+  )
 
   out_flat <- rlang::exec(f_flat, !!!boxes_in)
 
@@ -98,7 +103,9 @@ pullback2 <- function(f, ...) {
   # TODO: Crate
   f <- function(grad) {
     outs_flat <- backward_pass(in_nodes, out_node, grad)
-    rlang::exec(unflatten, in_tree, outs_flat)
+    out <- rlang::exec(unflatten, in_tree, outs_flat)
+    out <- out[names(args) %in% wrt]
+    out
   }
 
   list(
@@ -114,10 +121,14 @@ pullback2 <- function(f, ...) {
 #'   Function to compute the pullback of.
 #' @param ... (`any`)\cr
 #'   Example arguments to pass to the function.
+#' @param wrt (`character()`)
+#'   Names of arguments to differentiate with respect to. If `NULL`,
+#'   compute gradients w.r.t. all differentiable arguments.
 #' @return (`function`)
 #' @export
-pullback <- function(f, ...) {
-  pullback2(f, ...)[[2L]]
+pullback <- function(f, ..., wrt = NULL) {
+  assert_subset(wrt, formalArgs2(f))
+  pullback2(f, ..., wrt = wrt)[[2L]]
 }
 
 # Backward is essentially implemented like in pytorch or microjax
@@ -138,21 +149,30 @@ backward_pass <- function(in_nodes, out_node, gradient) {
     nvl_add(grad1, grad2)
   }
 
-  # TODO: prune
   topo_sorted <- reverse_toposort(out_node)
   # walk from leaf to root
   for (node in topo_sorted) {
     node_grad <- node_map[[node_id(node)]]
-    input_grads <- node@pullback(node_grad)
-    for (i in seq_along(input_grads)) {
-      parent_id <- node_id(node@parents[[i]])
-      node_map[[parent_id]] <- add_or_init(
-        node_map[[parent_id]],
-        input_grads[[i]]
-      )
+    closures <- node@pullback(node_grad)
+    if (length(closures)) {
+      for (i in seq_along(closures)) {
+        cl <- closures[[i]]
+        if (is.null(cl)) {
+          next
+        }
+        parent_id <- node_id(node@parents[[i]])
+        contrib <- cl()
+        node_map[[parent_id]] <- add_or_init(
+          node_map[[parent_id]],
+          contrib
+        )
+      }
     }
   }
-  outs <- lapply(in_nodes, \(node) node_map[[node_id(node)]])
+  outs <- lapply(seq_along(in_nodes), function(i) {
+    node <- in_nodes[[i]]
+    if (node@required) node_map[[node_id(node)]] else NULL
+  })
   outs
 }
 
@@ -208,10 +228,11 @@ method(process_primitive, PullbackInterpreter) <- function(
 ) {
   primals_in <- lapply(boxes, \(box) box@primal)
   nodes_in <- lapply(boxes, \(box) box@node)
-  out <- rlang::exec(prim@pullback_rule, primals = primals_in, !!!params)
+  req_in <- vapply(nodes_in, function(n) n@required, logical(1))
+  out <- rlang::exec(prim@pullback_rule, primals = primals_in, .required = req_in, !!!params)
   primals_out <- out[[1L]]
   pullback_out <- out[[2L]]
-  node_out <- PullbackNode(pullback_out, nodes_in)
+  node_out <- PullbackNode(pullback_out, nodes_in, required = any(req_in))
   # they all have the same node, because they are computed by the same op
   lapply(primals_out, \(primal) PullbackBox(interpreter, primal, node_out))
 }

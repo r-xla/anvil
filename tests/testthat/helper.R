@@ -16,7 +16,7 @@ expect_jit_binary <- function(nv_fun, rfun, x, y) {
 
 expect_grad_unary <- function(nv_fun, d_rfun, x) {
   gfun <- jit(gradient(function(a) nv_fun(a)))
-  gout <- gfun(nv_scalar(x))
+  gout <- gfun(nv_scalar(x))[[1L]]
   testthat::expect_equal(as_array(gout), d_rfun(x), tolerance = 1e-5)
 }
 
