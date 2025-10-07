@@ -14,7 +14,9 @@ AnvilTensor <- S7::new_S3_class("AnvilTensor")
 nv_tensor <- function(data, dtype = NULL, platform = NULL, shape = NULL) {
   x <- if (inherits(data, "PJRTBuffer")) {
     if (!is.null(platform) || !is.null(shape) || !is.null(dtype)) {
-      stop("Cannot specify platform, shape, or dtype when data is already a PJRTBuffer. Use nv_convert() for type conversions.") # nolint
+      stop(
+        "Cannot specify platform, shape, or dtype when data is already a PJRTBuffer. Use nv_convert() for type conversions."
+      ) # nolint
     }
     data
   } else {
@@ -39,7 +41,9 @@ ensure_nv_tensor <- function(x) {
 nv_scalar <- function(data, dtype = NULL, platform = "cpu") {
   x <- if (inherits(data, "PJRTBuffer")) {
     if (!is.null(platform) || !is.null(shape) || !is.null(dtype)) {
-      stop("Cannot specify platform, shape, or dtype when data is already a PJRTBuffer. Use nv_convert() for type conversions.") # nolint
+      stop(
+        "Cannot specify platform, shape, or dtype when data is already a PJRTBuffer. Use nv_convert() for type conversions."
+      ) # nolint
     }
     data
   } else {

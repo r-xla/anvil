@@ -140,3 +140,8 @@ test_that("partial gradient simple", {
 #  # TODO:
 #})
 #
+
+test_that("pullback", {
+  fbwd <- jit(pullback(nv_add, lhs = nv_scalar(1.0), rhs = nv_scalar(2.0), wrt = "lhs"))
+  expect_equal(fbwd(nv_scalar(10.0)), list(lhs = nv_scalar(10.0)))
+})
