@@ -45,3 +45,9 @@ test_that("ConcreteTensor", {
   expect_true(inherits(x, ConcreteTensor))
   expect_snapshot(x)
 })
+
+test_that("from TensorDataType", {
+  expect_class(nv_tensor(1L, dt_i32), "AnvilTensor")
+  expect_class(nv_scalar(1L, dt_i32), "AnvilTensor")
+  expect_class(nv_empty(dt_i32, c(4, 1)), "AnvilTensor")
+})
