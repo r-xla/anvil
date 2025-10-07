@@ -52,7 +52,7 @@ gradient <- function(f, wrt = NULL) {
 
     # TODO: check shape
 
-    one <- nv_scalar(1.0, dtype = repr(dtype(y)))
+    one <- nv_scalar(1.0, dtype = dtype(y))
     grad <- g(one)
 
     return(grad)

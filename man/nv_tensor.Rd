@@ -3,11 +3,14 @@
 \name{nv_tensor}
 \alias{nv_tensor}
 \alias{nv_scalar}
+\alias{nv_empty}
 \title{Tensor}
 \usage{
-nv_tensor(x, ...)
+nv_tensor(data, dtype = NULL, platform = NULL, shape = NULL)
 
-nv_scalar(x, ...)
+nv_scalar(data, dtype = NULL, platform = "cpu")
+
+nv_empty(dtype, shape, platform = "cpu")
 }
 \arguments{
 \item{x}{(any)\cr
