@@ -71,8 +71,13 @@ pullback2 <- function(f, ..., wrt = NULL) {
   } else {
     wrt <- formalArgs2(f)
   }
-
-  args <- list(...)
+  cl <- as.call(c(quote(f), list(...)))
+  # primitives "normally" match by position
+  args <- if (!is.primitive(f)) {
+    as.list(match.call(definition = f, call = cl))[-1L]
+  } else {
+    list(...)
+  }
 
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
@@ -114,29 +119,28 @@ pullback2 <- function(f, ..., wrt = NULL) {
   )
 }
 
-#' @title Pullback of a function
-#' @description
-#' Compute the pullback (transposed derivative) of a function.
-#' @param f (`function`)\cr
-#'   Function to compute the pullback of.
-#' @param ... (`any`)\cr
-#'   Example arguments to pass to the function.
-#' @param wrt (`character()`)
-#'   Names of arguments to differentiate with respect to. If `NULL`,
-#'   compute gradients w.r.t. all differentiable arguments.
-#' @return (`function`)
-#' @export
-pullback <- function(f, ..., wrt = NULL) {
-  args <- list(...)
-  if (!is.null(wrt)) {
-    assert_subset(wrt, formalArgs2(f))
-  }
-  function(contangent) {
-    grad <- rlang::exec(pullback2, f, !!!args, wrt = wrt)[[2L]]
-    rm("args", envir = parent.env(environment())) # Only needed for the first call
-    grad(contangent)
-  }
-}
+# @title Pullback of a function
+# @description
+# Compute the pullback (transposed derivative) of a function.
+# @param f (`function`)\cr
+#   Function to compute the pullback of.
+# @param ... (`any`)\cr
+#   Example arguments to pass to the function.
+# @param wrt (`character()`)
+#   Names of arguments to differentiate with respect to. If `NULL`,
+#   compute gradients w.r.t. all differentiable arguments.
+# @return (`function`)
+#pullback <- function(f, ..., wrt = NULL) {
+#  args <- list(...)
+#  if (!is.null(wrt)) {
+#    assert_subset(wrt, formalArgs2(f))
+#  }
+#  function(contangent) {
+#    grad <- rlang::exec(pullback2, f, !!!args, wrt = wrt)[[2L]]
+#    rm("args", envir = parent.env(environment())) # Only needed for the first call
+#    grad(contangent)
+#  }
+#}
 
 # Backward is essentially implemented like in pytorch or microjax
 

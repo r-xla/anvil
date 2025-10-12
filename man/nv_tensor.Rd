@@ -8,16 +8,22 @@
 \usage{
 nv_tensor(data, dtype = NULL, platform = NULL, shape = NULL)
 
-nv_scalar(data, dtype = NULL, platform = "cpu")
+nv_scalar(data, dtype = NULL, platform = NULL)
 
-nv_empty(dtype, shape, platform = "cpu")
+nv_empty(dtype, shape, platform = NULL)
 }
 \arguments{
-\item{x}{(any)\cr
-Object.}
+\item{data}{(any)\cr
+Object convertible to a \code{\link[pjrt:pjrt_buffer]{PJRTBuffer}}.}
 
-\item{...}{(any)\cr
-Additional arguments.}
+\item{dtype}{(\code{NULL} | \code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+One of pred, i8, i16, i32, i64, ui8, ui16, ui32, ui64, f32, f64 or a \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}}.}
+
+\item{platform}{(\code{character(1)})\cr
+Platform. Default is to use the CPU, unless the data is already a \code{\link[pjrt:pjrt_buffer]{PJRTBuffer}}.}
+
+\item{shape}{(integer())\cr
+Shape.}
 }
 \value{
 \code{nv_tensor}

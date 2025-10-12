@@ -15,3 +15,17 @@
     "*" = nv_mul(e1, e2)
   )
 }
+
+#' @export
+`matrixOps.anvil::Box` <- function(x, y) {
+  switch(
+    .Generic, # nolint
+    "%*%" = nv_matmul(x, y)
+  )
+}
+
+#' @rdname nv_transpose
+#' @export
+`t.anvil::Box` <- function(x) {
+  nv_transpose(x)
+}

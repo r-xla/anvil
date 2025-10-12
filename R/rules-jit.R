@@ -17,6 +17,14 @@ register_jit_rule(p_neg, function(operand) {
   list(stablehlo::hlo_negate(operand))
 })
 
+register_jit_rule(p_div, function(lhs, rhs) {
+  list(stablehlo::hlo_divide(lhs, rhs))
+})
+
+register_jit_rule(p_pow, function(lhs, rhs) {
+  list(stablehlo::hlo_power(lhs, rhs))
+})
+
 register_jit_rule(
   p_broadcast_in_dim,
   function(operand, shape_out, broadcast_dimensions) {
@@ -33,4 +41,23 @@ register_jit_rule(
 
 register_jit_rule(p_transpose, function(operand, permutation) {
   list(stablehlo::hlo_transpose(operand, permutation))
+})
+
+register_jit_rule(p_reduce_sum, function(operand, dims, drop) {
+  local_func("")
+  dt <- as.character(operand@value_type@type@dtype)
+  f <- hlo_return(stablehlo::hlo_add(
+    hlo_input("x", dt),
+    hlo_input("y", dt)
+  ))
+  init <- hlo_scalar(0, dtype = dt, func = operand@func)
+  out <- stablehlo::hlo_reduce(list(operand), init, dims - 1L, f)
+
+  if (drop) {
+    return(list(out))
+  }
+
+  shape_out <- shape(operand@value_type)
+  shape_out[dims] <- 1L
+  list(stablehlo::hlo_reshape(out, shape_out))
 })

@@ -1,8 +1,10 @@
 test_that("tensor", {
   x <- nv_tensor(1:4, dtype = "i32", shape = c(4, 1))
-  x
   expect_snapshot(x)
   expect_class(x, "AnvilTensor")
+  expect_equal(shape(x), c(4, 1))
+  expect_equal(dtype(x), dt_i32)
+  expect_equal(as_array(x), array(1:4, c(4, 1)))
 })
 
 test_that("nv_scalar", {
@@ -49,5 +51,14 @@ test_that("ConcreteTensor", {
 test_that("from TensorDataType", {
   expect_class(nv_tensor(1L, dt_i32), "AnvilTensor")
   expect_class(nv_scalar(1L, dt_i32), "AnvilTensor")
-  expect_class(nv_empty(dt_i32, c(4, 1)), "AnvilTensor")
+  expect_class(nv_empty(dt_i32, c(0, 1)), "AnvilTensor")
+})
+
+test_that("nv_tensor from nv_tensor", {
+  skip_if(!is_cuda())
+  x <- nv_tensor(1, platform = "cuda")
+  expect_equal(platform(nv_tensor(x)), "cuda")
+  expect_error(nv_tensor(x, platform = "cpu"))
+  expect_error(nv_tensor(x, shape = c(1, 1)))
+  expect_error(nv_tensor(x, dtype = "f64"))
 })

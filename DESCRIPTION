@@ -31,7 +31,7 @@ VignetteBuilder:
     knitr
 Remotes:
     r-xla/pjrt,
-    r-xla/stablehlo,
+    r-xla/stablehlo@ops,
     r-xla/tengen,
     r-xla/xlamisc,
     kevinushey/dotty

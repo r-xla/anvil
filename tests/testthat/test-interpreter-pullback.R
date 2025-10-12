@@ -141,7 +141,13 @@ test_that("partial gradient simple", {
 #})
 #
 
-test_that("pullback", {
-  fbwd <- jit(pullback(nv_add, lhs = nv_scalar(1.0), rhs = nv_scalar(2.0), wrt = "lhs"))
-  expect_equal(fbwd(nv_scalar(10.0)), list(lhs = nv_scalar(10.0)))
-})
+#test_that("pullback", {
+#  fbwd <- jit(pullback(nv_add, lhs = nv_scalar(1.0), rhs = nv_scalar(2.0), wrt = "lhs"))
+#  expect_equal(fbwd(nv_scalar(10.0)), list(lhs = nv_scalar(10.0)))
+#})
+#
+#test_that("pullback: non-scalar", {
+#  fbwd <- jit(pullback(nv_mul, lhs = nv_tensor(1:10), rhs = nv_tensor(2:11), wrt = "lhs"))
+#  x <- nv_tensor(1:10)
+#  expect_equal(fbwd(x), list(lhs = jit(nv_mul)(x, nv_tensor(2:11))))
+#})

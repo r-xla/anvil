@@ -21,3 +21,7 @@ tengen::ndims
 #' @importFrom stablehlo is_dtype
 #' @export
 stablehlo::is_dtype
+
+
+#' @importFrom pjrt platform
+pjrt::platform

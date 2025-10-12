@@ -59,28 +59,36 @@ register_pullback_rule <- function(primitive, rule) {
   nvl_sub(lhs, rhs)
 }
 
-p_add <- Primitive(name = "add")
+p_add <- Primitive("add")
 nvl_add <- function(lhs, rhs) {
   interprete(p_add, list(lhs, rhs))[[1L]]
 }
 
-p_mul <- Primitive(name = "mul")
+p_mul <- Primitive("mul")
 nvl_mul <- function(lhs, rhs) {
   interprete(p_mul, list(lhs, rhs))[[1L]]
 }
 
-p_sub <- Primitive(name = "sub")
+p_sub <- Primitive("sub")
 nvl_sub <- function(lhs, rhs) {
   interprete(p_sub, list(lhs, rhs))[[1L]]
 }
-p_neg <- Primitive(name = "negate")
+p_neg <- Primitive("negate")
 nvl_neg <- function(operand) {
   interprete(p_neg, list(operand))[[1L]]
 }
+p_div <- Primitive("divide")
+nvl_div <- function(lhs, rhs) {
+  interprete(p_div, list(lhs, rhs))[[1L]]
+}
+p_pow <- Primitive("power")
+nvl_pow <- function(lhs, rhs) {
+  interprete(p_pow, list(lhs, rhs))[[1L]]
+}
 
-p_broadcast_in_dim <- Primitive(name = "broadcast_in_dim")
+p_broadcast_in_dim <- Primitive("broadcast_in_dim")
 
-nv_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
+nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
   interprete(
     p_broadcast_in_dim,
     list(operand),
@@ -91,7 +99,7 @@ nv_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
   )[[1L]]
 }
 
-p_dot_general <- Primitive(name = "dot_general")
+p_dot_general <- Primitive("dot_general")
 nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
   interprete(
     p_dot_general,
@@ -101,11 +109,48 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
 }
 
 # transpose
-p_transpose <- Primitive(name = "transpose")
+p_transpose <- Primitive("transpose")
 nvl_transpose <- function(operand, permutation) {
   interprete(
     p_transpose,
     list(operand),
     list(permutation = permutation)
+  )[[1L]]
+}
+
+# reduction operators
+p_reduce_sum <- Primitive("sum")
+nvl_reduce_sum <- function(operand, dims, drop = TRUE) {
+  interprete(
+    p_reduce_sum,
+    list(operand),
+    params = list(
+      dims = dims,
+      drop = drop
+    )
+  )[[1L]]
+}
+
+p_reduce_min <- Primitive("min")
+nvl_reduce_min <- function(operand, dims, drop) {
+  interprete(
+    p_reduce_min,
+    list(operand),
+    params = list(
+      dims = dims,
+      drop = drop
+    )
+  )[[1L]]
+}
+
+p_reduce_max <- Primitive("max")
+nvl_reduce_max <- function(operand, dims, drop = TRUE) {
+  interprete(
+    p_reduce_max,
+    list(operand),
+    params = list(
+      dims = dims,
+      drop = drop
+    )
   )[[1L]]
 }

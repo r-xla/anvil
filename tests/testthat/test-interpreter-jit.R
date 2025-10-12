@@ -44,6 +44,14 @@ test_that("multiple returns", {
     nv_tensor(1.0),
     nv_tensor(2.0)
   )
+  expect_equal(
+    out[[1]],
+    nv_tensor(3.0)
+  )
+  expect_equal(
+    out[[2]],
+    nv_tensor(2.0)
+  )
 })
 
 test_that("calling jit on jit", {
@@ -59,6 +67,8 @@ test_that("keeps argument names", {
     formals(f1_jit),
     formals(f1)
   )
+  f1_jit(nv_tensor(1), nv_tensor(2))
+
   expect_equal(
     f1_jit(nv_tensor(1), nv_tensor(2)),
     nv_tensor(3)
@@ -102,4 +112,11 @@ test_that("can mark arguments as static ", {
   )
   expect_equal(f(nv_tensor(1), TRUE), nv_tensor(2))
   expect_equal(f(nv_tensor(1), FALSE), nv_tensor(1))
+})
+
+
+test_that("jit: tensor return value is not wrapped in list", {
+  f <- jit(nvl_add)
+  out <- f(nv_scalar(1.2), nv_scalar(-0.7))
+  expect_equal(as_array(out), 1.2 + (-0.7), tolerance = 1e-6)
 })

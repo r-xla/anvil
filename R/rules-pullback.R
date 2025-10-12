@@ -71,6 +71,26 @@ register_pullback_rule(p_neg, function(primals, .required) {
   )
 })
 
+register_pullback_rule(p_div, function(primals, .required) {
+  lhs <- primals[[1L]]
+  rhs <- primals[[2L]]
+  # 1 / x = x^{-1} ->
+  # ->
+  browser()
+  two <- nv_scalar(2, dtype(x))
+  one <- nv_scalar(1, dtype(x))
+
+  y <- nvl_div(lhs, rhs)
+  browser()
+
+  list(
+    list(y),
+    function(grad) {
+      keep(.required, \() nvl_div(one, rhs), \() nvl_div(nvl_neg(y), rhs))
+    }
+  )
+})
+
 register_pullback_rule(
   p_dot_general,
   function(primals, contracting_dims, batching_dims, .required) {
@@ -182,6 +202,44 @@ register_pullback_rule(p_transpose, function(primals, permutation, .required) {
         inv[permutation[[i]] + 1L] <- i - 1L
       }
       keep(.required, \() nvl_transpose(grad, inv))
+    }
+  )
+})
+
+register_pullback_rule(p_reduce_sum, function(primals, dims, drop, .required) {
+  operand <- primals[[1L]]
+  # [a,b,c] -> [a,c] | [a,1,c]
+
+  # the gradient we have has shape
+
+  y <- nvl_reduce_sum(operand, dims, drop)
+  list(
+    list(y),
+    function(grad) {
+      keep(.required, \() {
+        nv_broadcast_to(grad, shape(operand))
+      })
+    }
+  )
+})
+
+register_pullback_rule(p_broadcast_in_dim, function(primals, shape_out, broadcast_dimensions) {
+  operand <- primals[[1L]]
+  y <- nvl_broadcast_in_dim(operand, shape_out, broadcast_dimensions)
+
+  # grad: [a, b, c]
+  # operand is [b, c]
+  # -> How to get d_y/d_operand
+  # probably we have to sum across those dimensions and then we might have to transpose
+  # the result, because broadcast_dimensions might have screwed up the order
+
+  list(
+    list(y),
+    function(grad) {
+      keep(.required, \() {
+        x <- nvl_reduce_sum(operand, dims = broadcast_dimensions, drop = TRUE)
+        if (!ordered) {}
+      })
     }
   )
 })
