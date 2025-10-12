@@ -3,20 +3,30 @@ AnvilTensor <- S7::new_S3_class("AnvilTensor")
 #' @title Tensor
 #' @description
 #' Create a tensor.
-#' @param x (any)\cr
-#'   Object.
-#' @param ... (any)\cr
-#'   Additional arguments.
+#' @param data (any)\cr
+#'   Object from which to create a tensor.
+#'   Must be convertible to a [`PJRTBuffer`][pjrt::pjrt_buffer].
+#' @param dtype (`NULL` | `character(1)` | [`stablehlo::TensorDataType`][data_types])\cr
+#'   The type of the tensor.
+#'   The default (`NULL`) uses `f32` for numeric data, `i32` for integer data, and `pred` for logical data.
+#' @param platform (`NULL` | `character(1)`)\cr
+#'   The platform name for the tensor (`"cpu"`, `"cuda"`, `"metal"`).
+#' @param shape (`NULL` | `integer()`)\cr
+#'   The shape of the tensor.
+#'   The default (`NULL`) is to infer it from the data if possible.
+#'   Note that [`nv_tensor`] interpretes length 1 vectors as having shape `(1)`.
+#'   To create a "scalar" with dimension `()`, use [`nv_scalar`].
 #' @details
 #' Internally calls [`pjrt_buffer`][pjrt::pjrt_buffer].
-#' @return `nv_tensor`
+#' @return (`AnvilTensor`)
 #' @export
 nv_tensor <- function(data, dtype = NULL, platform = NULL, shape = NULL) {
   x <- if (inherits(data, "PJRTBuffer")) {
     if (!is.null(platform) || !is.null(shape) || !is.null(dtype)) {
       stop(
-        "Cannot specify platform, shape, or dtype when data is already a PJRTBuffer. Use nv_convert() for type conversions."
-      ) # nolint
+        # fmt: skip
+        "Cannot specify platform, shape, or dtype when data is already a PJRTBuffer. Use nv_convert() for type conversions." # nolint
+      )
     }
     data
   } else {
@@ -42,8 +52,9 @@ nv_scalar <- function(data, dtype = NULL, platform = "cpu") {
   x <- if (inherits(data, "PJRTBuffer")) {
     if (!is.null(platform) || !is.null(shape) || !is.null(dtype)) {
       stop(
-        "Cannot specify platform, shape, or dtype when data is already a PJRTBuffer. Use nv_convert() for type conversions."
-      ) # nolint
+        # fmt: skip
+        "Cannot specify platform, shape, or dtype when data is already a PJRTBuffer. Use nv_convert() for type conversions." # nolint
+      )
     }
     data
   } else {
