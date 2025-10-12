@@ -52,7 +52,7 @@ gradient <- function(f, wrt = NULL) {
 
     # TODO: check shape
 
-    one <- nv_scalar(1.0, dtype = repr(dtype(y)))
+    one <- nv_scalar(1.0, dtype = dtype(y))
     grad <- g(one)
 
     return(grad)
@@ -127,8 +127,15 @@ pullback2 <- function(f, ..., wrt = NULL) {
 #' @return (`function`)
 #' @export
 pullback <- function(f, ..., wrt = NULL) {
-  assert_subset(wrt, formalArgs2(f))
-  pullback2(f, ..., wrt = wrt)[[2L]]
+  args <- list(...)
+  if (!is.null(wrt)) {
+    assert_subset(wrt, formalArgs2(f))
+  }
+  function(contangent) {
+    grad <- rlang::exec(pullback2, f, !!!args, wrt = wrt)[[2L]]
+    rm("args", envir = parent.env(environment())) # Only needed for the first call
+    grad(contangent)
+  }
 }
 
 # Backward is essentially implemented like in pytorch or microjax
@@ -192,27 +199,6 @@ reverse_toposort <- function(end_node) {
   # Remove root nodes, because they don't have a grad
   # function. There we want to collect the gradients
   rev(x[sapply(x, \(node) length(node@parents) > 0L)])
-}
-
-pruned_reverse_toposort <- function(end_node) {
-  ordered_nodes <- reverse_toposort(end_node)
-  memo <- hashtab() # nolint
-  contributes <- function(node) {
-    id <- node_id(node)
-    if (!is.null(memo[[id]])) {
-      return(memo[[id]])
-    }
-    v <- if (!length(node@parents)) {
-      node@required
-    } else {
-      any(vapply(node@parents, contributes, logical(1)))
-    }
-
-    memo[[id]] <- v
-    v
-  }
-
-  ordered_nodes[vapply(ordered_nodes, contributes, logical(1))]
 }
 
 PullbackInterpreter <- new_class(

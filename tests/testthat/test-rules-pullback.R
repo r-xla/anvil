@@ -35,7 +35,7 @@ test_that("dot_general: vector dot product gradient", {
 
 test_that("dot_general: matrix-vector with summed loss", {
   nv_hacky_sum <- function(y) {
-    ones <- nv_tensor(1, shape = shape(y)[1L], dtype = repr(dtype(y)))
+    ones <- nv_tensor(1, shape = shape(y)[1L], dtype = dtype(y))
     out <- nvl_dot_general(
       y,
       ones,
@@ -81,7 +81,7 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
     nv_tensor(
       rep(1, prod(shape(Y))),
       # TODO: repr() should not be needed
-      dtype = repr(dtype(Y)),
+      dtype = dtype(Y),
       shape = shape(Y)
     )
   }

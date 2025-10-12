@@ -17,3 +17,7 @@ tengen::as_raw
 #' @importFrom tengen ndims
 #' @export
 tengen::ndims
+
+#' @importFrom stablehlo is_dtype
+#' @export
+stablehlo::is_dtype
