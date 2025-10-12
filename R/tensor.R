@@ -7,13 +7,19 @@ AnvilTensor <- S7::new_S3_class("AnvilTensor")
 #'   Object convertible to a [`PJRTBuffer`][pjrt::pjrt_buffer].
 #' @param dtype (`NULL` | `character(1)` | [`TensorDataType`])\cr
 #'   One of `r stablehlo:::roxy_dtypes()` or a [`stablehlo::TensorDataType`].
+#'   The default (`NULL`) uses `f32` for numeric data, `i32` for integer data, and `pred` for logical data.
 #' @param platform (`character(1)`)\cr
-#'   Platform. Default is to use the CPU, unless the data is already a [`PJRTBuffer`][pjrt::pjrt_buffer].
-#' @param shape (integer())\cr
+#'   The platform name for the tensor (`"cpu"`, `"cuda"`, `"metal"`).
+#'   Default is to use the CPU, unless the data is already a [`PJRTBuffer`][pjrt::pjrt_buffer].
+#'   You can change the default by setting the `PJRT_PLATFORM` environment variable.
+#' @param shape (`NULL` | `integer()`)\cr
 #'   Shape.
+#'   The default (`NULL`) is to infer it from the data if possible.
+#'   Note that [`nv_tensor`] interpretes length 1 vectors as having shape `(1)`.
+#'   To create a "scalar" with dimension `()`, use [`nv_scalar`].
 #' @details
 #' Internally calls [`pjrt_buffer`][pjrt::pjrt_buffer].
-#' @return `nv_tensor`
+#' @return (`AnvilTensor`)
 #' @export
 nv_tensor <- function(data, dtype = NULL, platform = NULL, shape = NULL) {
   if (is_dtype(dtype)) {
@@ -65,11 +71,13 @@ ShapedTensor <- S7::new_class(
   )
 )
 
+#' @method dtype anvil::ShapedTensor
 #' @export
 `dtype.anvil::ShapedTensor` <- function(x, ...) {
   x@dtype
 }
 
+#' @method shape anvil::ShapedTensor
 #' @export
 `shape.anvil::ShapedTensor` <- function(x, ...) {
   x@shape@dims

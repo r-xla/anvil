@@ -79,6 +79,7 @@ method(aval, Box) <- function(x) {
   stop("Abstract method")
 }
 
+#' @method shape anvil::Box
 #' @export
 `shape.anvil::Box` <- function(x, ...) {
   shape(aval(x))
@@ -175,11 +176,13 @@ current_interpreter <- function(xs) {
   top_main@interpreter_type(top_main)
 }
 
+#' @method device anvil::Box
 #' @export
 `device.anvil::Box` <- function(x, ...) {
   device(aval(x))
 }
 
+#' @method dtype anvil::Box
 #' @export
 `dtype.anvil::Box` <- function(x, ...) {
   dtype(aval(x))

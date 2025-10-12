@@ -61,4 +61,5 @@ test_that("nv_tensor from nv_tensor", {
   expect_error(nv_tensor(x, platform = "cpu"))
   expect_error(nv_tensor(x, shape = c(1, 1)))
   expect_error(nv_tensor(x, dtype = "f64"))
+  expect_class(nv_empty(dt_i32, c(4, 1)), "AnvilTensor")
 })
