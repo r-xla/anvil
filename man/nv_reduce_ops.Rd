@@ -18,5 +18,5 @@ The dimensions along which to reduce.}
 Whether to drop the reduced dimensions.}
 }
 \description{
-Reduce a tensor along specifies dimensions.
+Reduce a tensor along specified dimensions.
 }

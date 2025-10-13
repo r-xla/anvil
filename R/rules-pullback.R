@@ -74,19 +74,17 @@ register_pullback_rule(p_neg, function(primals, .required) {
 register_pullback_rule(p_div, function(primals, .required) {
   lhs <- primals[[1L]]
   rhs <- primals[[2L]]
-  # 1 / x = x^{-1} ->
-  # ->
-  browser()
-  two <- nv_scalar(2, dtype(x))
-  one <- nv_scalar(1, dtype(x))
+  two <- nv_scalar(2, dtype(lhs))
+  one <- nv_scalar(1, dtype(lhs))
 
   y <- nvl_div(lhs, rhs)
-  browser()
 
+  # note that we are using broadcasted functions here so we don't have to generate
+  # 'one' and 'two' for the full shape
   list(
     list(y),
     function(grad) {
-      keep(.required, \() nvl_div(one, rhs), \() nvl_div(nvl_neg(y), rhs))
+      keep(.required, \() nv_div(one, rhs), \() nv_div(nvl_neg(y), rhs))
     }
   )
 })
@@ -237,7 +235,8 @@ register_pullback_rule(p_broadcast_in_dim, function(primals, shape_out, broadcas
     list(y),
     function(grad) {
       keep(.required, \() {
-        x <- nvl_reduce_sum(operand, dims = broadcast_dimensions, drop = TRUE)
+        x <- nvl_reduce #_sum(operand, dims = broadcast_dimensions, drop = TRUE)
+        # TODO:
         if (!ordered) {}
       })
     }

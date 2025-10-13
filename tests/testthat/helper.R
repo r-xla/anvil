@@ -54,3 +54,26 @@ is_metal <- function() {
 is_cuda <- function() {
   Sys.getenv("PJRT_PLATFORM") == "cuda"
 }
+
+generate_test_array <- function(shp, dtype) {
+  nelts <- if (!length(shp)) {
+    1L
+  } else {
+    prod(shp)
+  }
+  x <- if (dtype == "pred") {
+    sample(c(TRUE, FALSE), size = nelts, replace = TRUE)
+  } else if (startsWith(dtype, "f")) {
+    rnorm(nelts)
+  } else if (startsWith(dtype, "i")) {
+    sample(-10:10, size = nelts, replace = TRUE)
+  } else if (startsWith(dtype, "ui")) {
+    sample(0:20, size = nelts, replace = TRUE)
+  } else {
+    stop(sprintf("Unsupported dtype: %s", dtype))
+  }
+  if (ndims == 0L) {
+    return(x)
+  }
+  array(x, shp)
+}

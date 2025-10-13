@@ -13,8 +13,8 @@ status](https://www.r-pkg.org/badges/version/anvil)](https://CRAN.R-project.org/
 [![codecov](https://codecov.io/gh/r-xla/anvil/branch/main/graph/badge.svg)](https://codecov.io/gh/r-xla/anvil)
 <!-- badges: end -->
 
-Composable code transformation framework for R, allowing you to easily
-implement numerical programs efficiently. It currently implements JIT
+Composable code transformation framework for R, allowing you to run
+numerical programs at the speed of light. It currently implements JIT
 compilation for very fast execution and backward-mode automatic
 differentiation. Programs can run on various hardware backends,
 including CPU and GPU.
@@ -44,8 +44,9 @@ b <- nv_scalar(-2.0)
 x <- nv_scalar(3.0)
 
 f_jit(a, b, x)
-#> AnvilTensor<f32> 
+#> AnvilTensor 
 #>  1.0000
+#> [ CPUf32{} ]
 ```
 
 Through automatic differentiation, we can also obtain the gradient of
@@ -55,24 +56,28 @@ Through automatic differentiation, we can also obtain the gradient of
 g_jit <- jit(gradient(f, wrt = c("a", "b")))
 g_jit(a, b, x)
 #> $a
-#> AnvilTensor<f32> 
+#> AnvilTensor 
 #>  3.0000
+#> [ CPUf32{} ] 
 #> 
 #> $b
-#> AnvilTensor<f32> 
+#> AnvilTensor 
 #>  1.0000
+#> [ CPUf32{} ]
 ```
 
 ## Main Features
 
 - Automatic Differentiation:
-  - Pullback for reverse mode automatic differentiation.
+  - Gradients for functions with scalar outputs are supported.
 - Fast:
   - Code is JIT compiled into a single kernel.
   - Runs on various hardware, including CPU and GPU.
 - Easy to extend and contribute:
-  - Written almost entirely in R.
-  - Easy to add new primitives and interpretation rules.
+  - The package is written almost entirely in R.
+  - It is easy to add new primitives.
+  - It is possible to add new transformations, a.k.a. interpretation
+    rules.
 
 ## Acknowledgments
 

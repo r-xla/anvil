@@ -58,7 +58,7 @@ nv_empty <- function(dtype, shape, platform = NULL) {
 }
 
 #' @export
-`dtype.AnvilTensor` <- function(x, ...) {
+dtype.AnvilTensor <- function(x, ...) {
   as_dtype(as.character(pjrt::elt_type(x)))
 }
 

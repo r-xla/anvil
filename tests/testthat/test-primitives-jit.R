@@ -51,7 +51,6 @@ test_that("matmul", {
   )
 })
 
-
 test_that("nv_reduce_sum", {
   x <- nv_tensor(1:3, dtype = "f32")
   f <- jit(

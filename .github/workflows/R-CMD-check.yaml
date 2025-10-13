@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     container: ${{ matrix.container }}
 
-    name: ${{ matrix.config.os }} - ${{ matrix.config.platform }} (${{ matrix.config.r }})
+    name: ${{ matrix.config.os }} - ${{ matrix.config.platform }} (${{ matrix.config.r }})${{ matrix.config.torch && ' – with torch' || '' }}
 
     strategy:
       fail-fast: false
@@ -23,6 +23,7 @@ jobs:
           - { os: "macos", r: "release", platform: "cpu" }
           - { os: "macos", r: null, platform: "metal" }
           - { os: "ubuntu", r: "release", platform: "cpu" }
+          - { os: "ubuntu", r: "release", platform: "cpu", torch: true }
           - { os: "ubuntu", r: "release", platform: "cuda"}
           - { os: "windows", r: "release", platform: "cpu"}
 
@@ -75,6 +76,12 @@ jobs:
         with:
           extra-packages: any::rcmdcheck
           needs: check
+
+      - name: Install torch
+        if: ${{ matrix.config.torch }}
+        run: |
+          Rscript -e 'install.packages("torch")'
+          Rscript -e 'torch::install_torch()'
 
       # Not sure why this is needed, but otherwise we get an outdated pjrt package version
       # Hopefully this resolves itself

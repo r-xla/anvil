@@ -28,7 +28,9 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
   rank_in <- length(shape_in)
   rank_out <- length(shape_out)
   if (rank_in == rank_out) {
-    return(integer())
+    # When ranks match, each input dimension maps to the same output dimension
+    # StableHLO expects a mapping for every input dim
+    return(seq_along0(shape_out))
   }
   tail(seq_len0(rank_out), rank_in)
 }
@@ -36,6 +38,15 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
 #' @title Broadcast Tensors to a Common Shape
 #' @description
 #' Broadcast tensors to a common shape.
+#'
+#' @section Broadcasting Rules:
+#' We follow the standard NumPy broadcasting rules:
+#' 1. If the tensors have different numbers of dimensions, prepend 1s to the shape of the smaller tensor.
+#' 2. For each dimensions, if:
+#'    - If the sizes are the same, do nothing.
+#'    - One of the tensors has size 1, expand it to the size of the other tensor.
+#'    - If the sizes are different and neither is 1, raise an error.
+#'
 #' @param ... (`list()` of [`nv_tensor`])
 #' @return (`list()` of [`nv_tensor`])
 #' @export
@@ -87,6 +98,12 @@ nv_mul <- function(lhs, rhs) {
 #' @export
 nv_sub <- function(lhs, rhs) {
   do.call(nvl_sub, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_div <- function(lhs, rhs) {
+  do.call(nvl_div, nv_broadcast_tensors(lhs, rhs))
 }
 
 #' @title Transpose
@@ -158,7 +175,7 @@ nv_neg <- nvl_neg
 
 #' @title Reduction Operators
 #' @description
-#' Reduce a tensor along specifies dimensions.
+#' Reduce a tensor along specified dimensions.
 #' @param operand ([`nv_tensor`])\cr
 #'   The tensor.
 #' @param dims (`integer()`)\cr
