@@ -2,6 +2,5 @@
 # heavy dependency
 # We have a CI job that installs torch
 
-extra_tests <- list.files(system.file("extra-tests", package = "anvil"), full.names = TRUE)
-
-lapply(extra_tests, source)
+skip_if_not_installed("torch")
+source(system.file("extra-tests", "test-pullback-torch.R", package = "anvil"))

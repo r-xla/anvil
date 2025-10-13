@@ -106,14 +106,7 @@ nv_div <- function(lhs, rhs) {
   do.call(nvl_div, nv_broadcast_tensors(lhs, rhs))
 }
 
-#' @title Transpose
-#' @description
-#' Transpose a tensor.
-#' @param x ([`nv_tensor`])
-#' @param permutation (`integer()` | `NULl`)\cr
-#'   Permutation of dimensions. If `NULL` (default), reverses the dimensions.
-#' @return [`nv_tensor`]
-#' @export
+#' @rdname nv_transpose
 nv_transpose <- function(x, permutation = NULL) {
   permutation <- permutation %??% rev(seq_len0(ndims(x)))
   nvl_transpose(x, permutation)
