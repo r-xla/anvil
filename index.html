@@ -65,7 +65,7 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>Composable code transformation framework for R, allowing you to easily implement numerical programs efficiently. It currently implements JIT compilation for very fast execution and backward-mode automatic differentiation. Programs can run on various hardware backends, including CPU and GPU.</p>
+<p>Composable code transformation framework for R, allowing you to run numerical programs at the speed of light. It currently implements JIT compilation for very fast execution and backward-mode automatic differentiation. Programs can run on various hardware backends, including CPU and GPU.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -88,19 +88,22 @@
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">3.0</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">f_jit</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">x</span><span class="op">)</span></span>
-<span><span class="co">#&gt; AnvilTensor&lt;f32&gt; </span></span>
-<span><span class="co">#&gt;  1.0000</span></span></code></pre></div>
+<span><span class="co">#&gt; AnvilTensor </span></span>
+<span><span class="co">#&gt;  1.0000</span></span>
+<span><span class="co">#&gt; [ CPUf32{} ]</span></span></code></pre></div>
 <p>Through automatic differentiation, we can also obtain the gradient of <code>f</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jit.html">jit</a></span><span class="op">(</span><span class="fu"><a href="reference/gradient.html">gradient</a></span><span class="op">(</span><span class="va">f</span>, wrt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">g_jit</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">x</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $a</span></span>
-<span><span class="co">#&gt; AnvilTensor&lt;f32&gt; </span></span>
+<span><span class="co">#&gt; AnvilTensor </span></span>
 <span><span class="co">#&gt;  3.0000</span></span>
+<span><span class="co">#&gt; [ CPUf32{} ] </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b</span></span>
-<span><span class="co">#&gt; AnvilTensor&lt;f32&gt; </span></span>
-<span><span class="co">#&gt;  1.0000</span></span></code></pre></div>
+<span><span class="co">#&gt; AnvilTensor </span></span>
+<span><span class="co">#&gt;  1.0000</span></span>
+<span><span class="co">#&gt; [ CPUf32{} ]</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="main-features">Main Features<a class="anchor" aria-label="anchor" href="#main-features"></a>
@@ -108,7 +111,7 @@
 <ul>
 <li>Automatic Differentiation:
 <ul>
-<li>Pullback for reverse mode automatic differentiation.</li>
+<li>Gradients for functions with scalar outputs are supported.</li>
 </ul>
 </li>
 <li>Fast:
@@ -119,8 +122,9 @@
 </li>
 <li>Easy to extend and contribute:
 <ul>
-<li>Written almost entirely in R.</li>
-<li>Easy to add new primitives and interpretation rules.</li>
+<li>The package is written almost entirely in R.</li>
+<li>It is easy to add new primitives.</li>
+<li>It is possible to add new transformations, a.k.a. interpretation rules.</li>
 </ul>
 </li>
 </ul>

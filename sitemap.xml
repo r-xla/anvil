@@ -13,12 +13,14 @@
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/jit.html</loc></url>
 <url><loc>/reference/nv_binary_ops.html</loc></url>
-<url><loc>/reference/nv_broadcast.html</loc></url>
-<url><loc>/reference/nv_broadcast_all.html</loc></url>
+<url><loc>/reference/nv_broadcast_tensors.html</loc></url>
+<url><loc>/reference/nv_broadcast_to.html</loc></url>
 <url><loc>/reference/nv_dtype.html</loc></url>
+<url><loc>/reference/nv_matmul.html</loc></url>
+<url><loc>/reference/nv_reduce_ops.html</loc></url>
 <url><loc>/reference/nv_tensor.html</loc></url>
+<url><loc>/reference/nv_transpose.html</loc></url>
 <url><loc>/reference/nv_unary_ops.html</loc></url>
-<url><loc>/reference/pullback.html</loc></url>
 <url><loc>/reference/reexports.html</loc></url>
 </urlset>
 

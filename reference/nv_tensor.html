@@ -41,7 +41,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Tensor</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-nv-tensor/R/tensor.R" class="external-link"><code>R/tensor.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feats/R/tensor.R" class="external-link"><code>R/tensor.R</code></a></small>
       <div class="d-none name"><code>nv_tensor.Rd</code></div>
     </div>
 
@@ -53,28 +53,44 @@
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nv_tensor</span><span class="op">(</span><span class="va">data</span>, dtype <span class="op">=</span> <span class="cn">NULL</span>, platform <span class="op">=</span> <span class="cn">NULL</span>, shape <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">nv_scalar</span><span class="op">(</span><span class="va">data</span>, dtype <span class="op">=</span> <span class="cn">NULL</span>, platform <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span>
+<span><span class="fu">nv_scalar</span><span class="op">(</span><span class="va">data</span>, dtype <span class="op">=</span> <span class="cn">NULL</span>, platform <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">nv_empty</span><span class="op">(</span><span class="va">dtype</span>, <span class="va">shape</span>, platform <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">nv_empty</span><span class="op">(</span><span class="va">dtype</span>, <span class="va">shape</span>, platform <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
+<dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>(any)<br>
-Object.</p></dd>
+Object convertible to a <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_buffer.html" class="external-link">PJRTBuffer</a></code>.</p></dd>
 
 
-<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>(any)<br>
-Additional arguments.</p></dd>
+<dt id="arg-dtype">dtype<a class="anchor" aria-label="anchor" href="#arg-dtype"></a></dt>
+<dd><p>(<code>NULL</code> | <code>character(1)</code> | <code><a href="https://r-xla.github.io/stablehlo/reference/TensorDataType.html" class="external-link">stablehlo::TensorDataType</a></code>)<br>
+One of pred, i8, i16, i32, i64, ui8, ui16, ui32, ui64, f32, f64 or a <code><a href="https://r-xla.github.io/stablehlo/reference/TensorDataType.html" class="external-link">stablehlo::TensorDataType</a></code>.
+The default (<code>NULL</code>) uses <code>f32</code> for numeric data, <code>i32</code> for integer data, and <code>pred</code> for logical data.</p></dd>
+
+
+<dt id="arg-platform">platform<a class="anchor" aria-label="anchor" href="#arg-platform"></a></dt>
+<dd><p>(<code>character(1)</code>)<br>
+The platform name for the tensor (<code>"cpu"</code>, <code>"cuda"</code>, <code>"metal"</code>).
+Default is to use the CPU, unless the data is already a <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_buffer.html" class="external-link">PJRTBuffer</a></code>.
+You can change the default by setting the <code>PJRT_PLATFORM</code> environment variable.</p></dd>
+
+
+<dt id="arg-shape">shape<a class="anchor" aria-label="anchor" href="#arg-shape"></a></dt>
+<dd><p>(<code>NULL</code> | <code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>)<br>
+Shape.
+The default (<code>NULL</code>) is to infer it from the data if possible.
+Note that <code>nv_tensor</code> interpretes length 1 vectors as having shape <code>(1)</code>.
+To create a "scalar" with dimension <code>()</code>, use <code>nv_scalar</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code>nv_tensor</code></p>
+    <p>(<code>AnvilTensor</code>)</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
