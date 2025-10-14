@@ -1,7 +1,8 @@
 #skip_if_not_installed("torch")
 
 str_to_torch_dtype <- function(str) {
-  switch(str,
+  switch(
+    str,
     "pred" = torch::torch_bool(),
     "f32" = torch::torch_float32(),
     "f64" = torch::torch_float64(),
@@ -83,7 +84,6 @@ wrap_biv_anvil <- function(.f, args_anvil, shp) {
       do.call(.f, c(list(lhs, rhs), args_anvil))
     })
   }
-
 
   \(lhs, rhs) {
     x <- do.call(.f, c(list(lhs, rhs), args_anvil))
@@ -270,14 +270,12 @@ test_that("div", {
 
 test_that("reduce_sum", {
   # TODO: add drop argument
-  verify_grad_uni(nvl_reduce_sum, torch::torch_sum,
-    args_f = \(shp, dtype) {
-      dims <- sample(seq_along(shp), sample(length(shp), 1L))
-      drop <- sample(c(TRUE, FALSE), 1L)
-      list(
-        list(dims = dims, drop = drop),
-        list(dim = dims, keepdim = !drop)
-      )
-    }
-  )
+  verify_grad_uni(nvl_reduce_sum, torch::torch_sum, args_f = \(shp, dtype) {
+    dims <- sample(seq_along(shp), sample(length(shp), 1L))
+    drop <- sample(c(TRUE, FALSE), 1L)
+    list(
+      list(dims = dims, drop = drop),
+      list(dim = dims, keepdim = !drop)
+    )
+  })
 })

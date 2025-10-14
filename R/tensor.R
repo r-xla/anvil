@@ -15,7 +15,7 @@ AnvilTensor <- S7::new_S3_class("AnvilTensor")
 #' @param shape (`NULL` | `integer()`)\cr
 #'   Shape.
 #'   The default (`NULL`) is to infer it from the data if possible.
-#'   Note that [`nv_tensor`] interpretes length 1 vectors as having shape `(1)`.
+#'   Note that [`nv_tensor`] interprets length 1 vectors as having shape `(1)`.
 #'   To create a "scalar" with dimension `()`, use [`nv_scalar`].
 #' @details
 #' Internally calls [`pjrt_buffer`][pjrt::pjrt_buffer].

@@ -28,7 +28,7 @@ You can change the default by setting the \code{PJRT_PLATFORM} environment varia
 \item{shape}{(\code{NULL} | \code{integer()})\cr
 Shape.
 The default (\code{NULL}) is to infer it from the data if possible.
-Note that \code{\link{nv_tensor}} interpretes length 1 vectors as having shape \code{(1)}.
+Note that \code{\link{nv_tensor}} interprets length 1 vectors as having shape \code{(1)}.
 To create a "scalar" with dimension \verb{()}, use \code{\link{nv_scalar}}.}
 }
 \value{
