@@ -106,11 +106,33 @@ nv_div <- function(lhs, rhs) {
   do.call(nvl_div, nv_broadcast_tensors(lhs, rhs))
 }
 
+#' @rdname nv_binary_ops
+#' @export
+nv_pow <- function(lhs, rhs) {
+  do.call(nvl_pow, nv_broadcast_tensors(lhs, rhs))
+}
+
 #' @rdname nv_transpose
+#' @export
 nv_transpose <- function(x, permutation = NULL) {
   permutation <- permutation %??% rev(seq_len0(ndims(x)))
   nvl_transpose(x, permutation)
 }
+
+
+## Unary ops ------------------------------------------------------------------
+
+#' @name nv_unary_ops
+#' @title Unary Operations
+#' @description
+#' Unary operations on tensors.
+#' @param operand ([`nv_tensor`])
+#' @return [`nv_tensor`]
+
+#' @rdname nv_unary_ops
+#' @export
+nv_neg <- nvl_neg
+
 
 #' @title Matrix Multiplication
 #' @description
@@ -151,20 +173,6 @@ nv_matmul <- function(lhs, rhs) {
     batching_dims = list(seq_along0(shape_leading), seq_along0(shape_leading))
   )
 }
-
-## Unary ops ------------------------------------------------------------------
-
-#' @name nv_unary_ops
-#' @title Unary Operations
-#' @description
-#' Unary operations on tensors.
-#' @param operand ([`nv_tensor`])
-#' @return [`nv_tensor`]
-
-#' @rdname nv_unary_ops
-#' @export
-nv_neg <- nvl_neg
-
 
 #' @title Reduction Operators
 #' @description

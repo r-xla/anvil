@@ -15,6 +15,16 @@ str_to_torch_dtype <- function(str) {
   )
 }
 
+as_array2 <- function(x) {
+  if (!length(dim(x))) {
+    torch::as_array(x)
+  } else if (length(dim(x)) == 1L) {
+    array(torch::as_array(x), dim = length(x))
+  } else {
+    torch::as_array(x)
+  }
+}
+
 generate_test_scalar <- function(dtype) {
   if (dtype == "pred") {
     sample(c(TRUE, FALSE), size = 1L)
@@ -95,10 +105,6 @@ wrap_biv_torch <- function(.g, args_torch, shp) {
   \(lhs, rhs) {
     x <- do.call(.g, c(list(lhs, rhs), args_torch))
     num_remaining <- length(shp)
-    if (length(args_torch) && ("dim" %in% names(args_torch) || "dims" %in% names(args_torch))) {
-      dims_t <- if ("dim" %in% names(args_torch)) args_torch$dim else args_torch$dims
-      num_remaining <- max(0L, num_remaining - length(dims_t))
-    }
     if (num_remaining > 0L) torch::torch_sum(x, dim = seq_len(num_remaining)) else x
   }
 }
@@ -111,7 +117,8 @@ verify_grad_uni_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = 
   operand_anvil <- nv_scalar(operand, dtype = dtype)
 
   # I think there is a bug in torch, so we can't use torch_scalar_tensor
-  operand_torch <- torch::torch_tensor(operand, requires_grad = TRUE, dtype = str_to_torch_dtype(dtype))
+  operand_torch <- torch::torch_scalar_tensor(operand, requires_grad = TRUE, dtype = str_to_torch_dtype(dtype))
+  operand_torch$retain_grad()
 
   args <- build_extra_args(args_f, shp, dtype)
   args_anvil <- args[[1L]]
@@ -125,12 +132,12 @@ verify_grad_uni_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = 
   }
 
   grads_anvil <- jit(gradient(.f_anvil))(operand_anvil)
-  out <- .g_torch(operand_torch$squeeze())
+  out <- .g_torch(operand_torch)
   out$backward(retrain_graph = TRUE)
 
   testthat::expect_equal(
-    c(as_array(grads_anvil[[1L]])),
-    c(torch::as_array(operand_torch$grad))
+    tengen::as_array(grads_anvil[[1L]]),
+    as_array2(operand_torch$grad)
   )
 }
 
@@ -158,8 +165,8 @@ verify_grad_uni_tensor <- function(.f, .g, ndims = sample(1:3, 1L), dtypes = "f3
   .g_torch(operand_torch)$backward()
 
   testthat::expect_equal(
-    c(as_array(grads_anvil[[1L]])),
-    c(torch::as_array(operand_torch$grad))
+    tengen::as_array(grads_anvil[[1L]]),
+    as_array2(operand_torch$grad)
   )
 }
 
@@ -174,8 +181,10 @@ verify_grad_biv_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = 
   rhs_anvil <- nv_scalar(rhs, dtype = dtype)
 
   # I think there is a bug in torch, so we can't use torch_scalar_tensor
-  lhs_torch <- torch::torch_tensor(lhs, requires_grad = TRUE, dtype = str_to_torch_dtype(dtype))
-  rhs_torch <- torch::torch_tensor(rhs, requires_grad = TRUE, dtype = str_to_torch_dtype(dtype))
+  lhs_torch <- torch::torch_scalar_tensor(lhs, requires_grad = TRUE, dtype = str_to_torch_dtype(dtype))
+  lhs_torch$retain_grad()
+  rhs_torch <- torch::torch_scalar_tensor(rhs, requires_grad = TRUE, dtype = str_to_torch_dtype(dtype))
+  rhs_torch$retain_grad()
 
   args <- build_extra_args(args_f, shp, dtype)
   args_anvil <- args[[1L]]
@@ -189,17 +198,17 @@ verify_grad_biv_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = 
   }
 
   grads_anvil <- jit(gradient(.f_anvil))(lhs_anvil, rhs_anvil)
-  out <- .g_torch(lhs_torch$squeeze(), rhs_torch$squeeze())
+  out <- .g_torch(lhs_torch, rhs_torch)
   out$backward(retrain_graph = TRUE)
 
   testthat::expect_equal(
-    c(as_array(grads_anvil[[1L]])),
-    c(torch::as_array(lhs_torch$grad))
+    tengen::as_array(grads_anvil[[1L]]),
+    as_array2(lhs_torch$grad)
   )
 
   testthat::expect_equal(
-    c(as_array(grads_anvil[[2L]])),
-    c(torch::as_array(rhs_torch$grad))
+    tengen::as_array(grads_anvil[[2L]]),
+    as_array2(rhs_torch$grad)
   )
 }
 
@@ -228,13 +237,13 @@ verify_grad_biv_tensor <- function(.f, .g, ndims = sample(1:3, 1L), dtypes = "f3
   .g_torch(lhs_torch, rhs_torch)$backward()
 
   testthat::expect_equal(
-    c(as_array(grads_anvil[[1L]])),
-    c(torch::as_array(lhs_torch$grad))
+    tengen::as_array(grads_anvil[[1L]]),
+    as_array2(lhs_torch$grad)
   )
 
   testthat::expect_equal(
-    c(as_array(grads_anvil[[2L]])),
-    c(torch::as_array(rhs_torch$grad))
+    tengen::as_array(grads_anvil[[2L]]),
+    as_array2(rhs_torch$grad)
   )
 }
 
@@ -265,11 +274,26 @@ test_that("neg", {
 })
 
 test_that("div", {
+  # Need to determine what to do with non-differentiable values:
+  # https://docs.pytorch.org/docs/stable/notes/autograd.html#gradients-for-non-differentiable-functions
   verify_grad_biv(nvl_div, torch::torch_div)
 })
 
+test_that("pow", {
+  # Need to determine what to do with non-differentiable values:
+  # https://docs.pytorch.org/docs/stable/notes/autograd.html#gradients-for-non-differentiable-functions
+  # TODO: uncomment
+  #verify_grad_biv(nvl_pow, torch::torch_pow)
+  #library(torch)
+  #x <- torch_scalar_tensor(0, requires_grad = TRUE)
+  #x$retain_grad()
+  #y <- torch_scalar_tensor(2, requires_grad = TRUE)
+  #y$retain_grad()
+  #(x^y)$backward()
+  #y$grad
+})
+
 test_that("reduce_sum", {
-  # TODO: add drop argument
   verify_grad_uni(nvl_reduce_sum, torch::torch_sum, args_f = \(shp, dtype) {
     dims <- sample(seq_along(shp), sample(length(shp), 1L))
     drop <- sample(c(TRUE, FALSE), 1L)
@@ -278,4 +302,8 @@ test_that("reduce_sum", {
       list(dim = dims, keepdim = !drop)
     )
   })
+})
+
+test_that("transpose", {
+  verify_grad_uni(nvl_transpose, torch::torch_transpose)
 })

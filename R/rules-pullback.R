@@ -89,6 +89,27 @@ register_pullback_rule(p_div, function(primals, .required) {
   )
 })
 
+register_pullback_rule(p_pow, function(primals, .required) {
+  lhs <- primals[[1L]]
+  rhs <- primals[[2L]]
+  list(
+    list(nvl_pow(lhs, rhs)),
+    function(grad) {
+      keep(
+        .required,
+        \() {
+          nv_pow(lhs, rhs - nv_scalar(1, dtype(lhs)))
+        },
+        \() {
+          # nee
+          # TODO: Need log for this
+          .NotYetImplemented()
+        }
+      )
+    }
+  )
+})
+
 register_pullback_rule(
   p_dot_general,
   function(primals, contracting_dims, batching_dims, .required) {
@@ -194,7 +215,6 @@ register_pullback_rule(p_transpose, function(primals, permutation, .required) {
   list(
     list(y),
     function(grad) {
-      # Inverse permutation: inv[p[i]] = i
       inv <- integer(length(permutation))
       for (i in seq_along(permutation)) {
         inv[permutation[[i]] + 1L] <- i - 1L
@@ -206,10 +226,6 @@ register_pullback_rule(p_transpose, function(primals, permutation, .required) {
 
 register_pullback_rule(p_reduce_sum, function(primals, dims, drop, .required) {
   operand <- primals[[1L]]
-  # [a,b,c] -> [a,c] | [a,1,c]
-
-  # the gradient we have has shape
-
   y <- nvl_reduce_sum(operand, dims, drop)
   list(
     list(y),
@@ -235,9 +251,19 @@ register_pullback_rule(p_broadcast_in_dim, function(primals, shape_out, broadcas
     list(y),
     function(grad) {
       keep(.required, \() {
-        x <- nvl_reduce #_sum(operand, dims = broadcast_dimensions, drop = TRUE)
+        # initially, we had dims [d1, d2], now they might be in [..., d2, ..., d1, ...]
+        # so broadcast_dimensions where e.g. 7, 3.
+        # then we want to get them to their original order
+        # so the index in the broadast dimension indicates the original position
+        # but their current position we need to compute first
+        # and we get [d2, d1]
+        x <- nvl_reduce_sum(operand, dims = broadcast_dimensions, drop = TRUE)
+        # check whether broadcast_dimensions is ordered
         # TODO:
-        if (!ordered) {}
+        if (is.unsorted(broadcast_dimensions)) {
+          x <- nvl_transpose(x, order(broadcast_dimensions))
+        }
+        x
       })
     }
   )

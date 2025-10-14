@@ -19,6 +19,10 @@ test_that("nvl_div", {
   expect_jit_binary(nvl_div, `/`, 1.2, 0.2)
 })
 
+test_that("nvl_pow", {
+  expect_jit_binary(nvl_pow, `^`, 1, 0.3)
+})
+
 
 test_that("nvl_transpose", {
   # just use nv_transpose for the default here

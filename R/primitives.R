@@ -130,27 +130,3 @@ nvl_reduce_sum <- function(operand, dims, drop = TRUE) {
     )
   )[[1L]]
 }
-
-p_reduce_min <- Primitive("min")
-nvl_reduce_min <- function(operand, dims, drop) {
-  interprete(
-    p_reduce_min,
-    list(operand),
-    params = list(
-      dims = dims,
-      drop = drop
-    )
-  )[[1L]]
-}
-
-p_reduce_max <- Primitive("max")
-nvl_reduce_max <- function(operand, dims, drop = TRUE) {
-  interprete(
-    p_reduce_max,
-    list(operand),
-    params = list(
-      dims = dims,
-      drop = drop
-    )
-  )[[1L]]
-}

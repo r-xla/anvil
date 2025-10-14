@@ -6,6 +6,7 @@
 \alias{nv_mul}
 \alias{nv_sub}
 \alias{nv_div}
+\alias{nv_pow}
 \title{Binary Operations}
 \usage{
 nv_add(lhs, rhs)
@@ -15,6 +16,8 @@ nv_mul(lhs, rhs)
 nv_sub(lhs, rhs)
 
 nv_div(lhs, rhs)
+
+nv_pow(lhs, rhs)
 }
 \arguments{
 \item{lhs}{(\code{\link{nv_tensor}})}
