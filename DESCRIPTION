@@ -11,18 +11,19 @@ Description: Code transformation framework for R.
 License: MIT + file LICENSE
 URL: https://r-xla.github.io/anvil/, https://github.com/r-xla/anvild
 BugReports: https://github.com/r-xla/anvil/issues
-Depends: R (>= 4.2.0)
+Depends: 
+    R (>= 4.2.0)
 Imports:
     checkmate,
-    dotty,
     cli,
+    dotty,
     pjrt,
     rlang,
     S7,
     stablehlo,
     tengen,
-    xlamisc,
-    withr
+    withr,
+    xlamisc
 Suggests:
     knitr,
     quarto,
@@ -31,11 +32,11 @@ Suggests:
 VignetteBuilder:
     knitr
 Remotes:
+    kevinushey/dotty,
     r-xla/pjrt,
     r-xla/stablehlo,
     r-xla/tengen,
-    r-xla/xlamisc,
-    kevinushey/dotty
+    r-xla/xlamisc
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

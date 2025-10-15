@@ -21,6 +21,10 @@ including CPU and GPU.
 
 ## Installation
 
+As we currently don’t have a CRAN release, you need to install the
+package from source. To do so, you need a C++20 compiler, as well as
+`libprotobuf` and the `protobuf-compiler`.
+
 ``` r
 pak::pak("r-xla/anvil")
 ```
