@@ -59,7 +59,8 @@
 
 
 <dl><dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>(<code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> of <code><a href="nv_tensor.html">nv_tensor</a></code>)</p></dd>
+<dd><p>(<code><a href="nv_tensor.html">nv_tensor</a></code>)<br>
+Tensors to broadcast.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -71,9 +72,9 @@
 
 
 <p>We follow the standard NumPy broadcasting rules:</p><ol><li><p>If the tensors have different numbers of dimensions, prepend 1s to the shape of the smaller tensor.</p></li>
-<li><p>For each dimensions, if:</p><ul><li><p>If the sizes are the same, do nothing.</p></li>
-<li><p>One of the tensors has size 1, expand it to the size of the other tensor.</p></li>
-<li><p>If the sizes are different and neither is 1, raise an error.</p></li>
+<li><p>For each dimension, if:</p><ul><li><p>the sizes are the same, do nothing.</p></li>
+<li><p>one of the tensors has size 1, expand it to the corresponding size of the other tensor.</p></li>
+<li><p>the sizes are different and neither is 1, raise an error.</p></li>
 </ul></li>
 </ol></div>
 
