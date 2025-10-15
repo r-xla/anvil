@@ -4,37 +4,28 @@ AnvilTensor <- S7::new_S3_class("AnvilTensor")
 #' @description
 #' Create a tensor.
 #' @param data (any)\cr
-#'   Object from which to create a tensor.
-#'   Must be convertible to a [`PJRTBuffer`][pjrt::pjrt_buffer].
-#' @param dtype (`NULL` | `character(1)` | [`stablehlo::TensorDataType`][data_types])\cr
-#'   The type of the tensor.
+#'   Object convertible to a [`PJRTBuffer`][pjrt::pjrt_buffer].
+#' @param dtype (`NULL` | `character(1)` | [`TensorDataType`])\cr
+#'   One of `r stablehlo:::roxy_dtypes()` or a [`stablehlo::TensorDataType`].
 #'   The default (`NULL`) uses `f32` for numeric data, `i32` for integer data, and `pred` for logical data.
-#' @param platform (`NULL` | `character(1)`)\cr
+#' @param platform (`character(1)`)\cr
 #'   The platform name for the tensor (`"cpu"`, `"cuda"`, `"metal"`).
+#'   Default is to use the CPU, unless the data is already a [`PJRTBuffer`][pjrt::pjrt_buffer].
+#'   You can change the default by setting the `PJRT_PLATFORM` environment variable.
 #' @param shape (`NULL` | `integer()`)\cr
-#'   The shape of the tensor.
+#'   Shape.
 #'   The default (`NULL`) is to infer it from the data if possible.
-#'   Note that [`nv_tensor`] interpretes length 1 vectors as having shape `(1)`.
+#'   Note that [`nv_tensor`] interprets length 1 vectors as having shape `(1)`.
 #'   To create a "scalar" with dimension `()`, use [`nv_scalar`].
 #' @details
 #' Internally calls [`pjrt_buffer`][pjrt::pjrt_buffer].
 #' @return (`AnvilTensor`)
 #' @export
 nv_tensor <- function(data, dtype = NULL, platform = NULL, shape = NULL) {
-  x <- if (inherits(data, "PJRTBuffer")) {
-    if (!is.null(platform) || !is.null(shape) || !is.null(dtype)) {
-      stop(
-        # fmt: skip
-        "Cannot specify platform, shape, or dtype when data is already a PJRTBuffer. Use nv_convert() for type conversions." # nolint
-      )
-    }
-    data
-  } else {
-    if (is_dtype(dtype)) {
-      dtype <- as.character(dtype)
-    }
-    pjrt_buffer(data, dtype, client = platform %??% pjrt::pjrt_client("cpu"), shape)
+  if (is_dtype(dtype)) {
+    dtype <- as.character(dtype)
   }
+  x <- pjrt_buffer(data, dtype, client = platform, shape = shape)
   ensure_nv_tensor(x)
 }
 
@@ -48,35 +39,26 @@ ensure_nv_tensor <- function(x) {
 
 #' @rdname nv_tensor
 #' @export
-nv_scalar <- function(data, dtype = NULL, platform = "cpu") {
-  x <- if (inherits(data, "PJRTBuffer")) {
-    if (!is.null(platform) || !is.null(shape) || !is.null(dtype)) {
-      stop(
-        # fmt: skip
-        "Cannot specify platform, shape, or dtype when data is already a PJRTBuffer. Use nv_convert() for type conversions." # nolint
-      )
-    }
-    data
-  } else {
-    if (is_dtype(dtype)) {
-      dtype <- as.character(dtype)
-    }
-    pjrt_scalar(data, dtype, client = platform %??% pjrt::pjrt_client("cpu"))
+nv_scalar <- function(data, dtype = NULL, platform = NULL) {
+  if (is_dtype(dtype)) {
+    dtype <- as.character(dtype)
   }
+  x <- pjrt_scalar(data, dtype, client = platform)
   ensure_nv_tensor(x)
 }
 
 #' @rdname nv_tensor
 #' @export
-nv_empty <- function(dtype, shape, platform = "cpu") {
+nv_empty <- function(dtype, shape, platform = NULL) {
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
   }
-  x <- pjrt::pjrt_empty(dtype, shape, client = platform %??% pjrt::pjrt_client("cpu"))
+  x <- pjrt::pjrt_empty(dtype, shape, client = platform)
   ensure_nv_tensor(x)
 }
 
-method(dtype, AnvilTensor) <- function(x) {
+#' @export
+dtype.AnvilTensor <- function(x, ...) {
   as_dtype(as.character(pjrt::elt_type(x)))
 }
 
@@ -89,11 +71,15 @@ ShapedTensor <- S7::new_class(
   )
 )
 
-method(dtype, ShapedTensor) <- function(x) {
+#' @method dtype anvil::ShapedTensor
+#' @export
+`dtype.anvil::ShapedTensor` <- function(x, ...) {
   x@dtype
 }
 
-method(shape, ShapedTensor) <- function(x) {
+#' @method shape anvil::ShapedTensor
+#' @export
+`shape.anvil::ShapedTensor` <- function(x, ...) {
   x@shape@dims
 }
 

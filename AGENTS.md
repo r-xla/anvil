@@ -48,3 +48,10 @@ devtools::check()
 2. Follow the established pattern for adding new operations and types
 3. Add tests in `tests/testthat/`
 4. Document functions with roxygen2 comments
+
+## Project Information
+
+1. `stablehlo` (the jit interpretation rules) uses 0-based indexing, but `anvil` uses 1-based indexing. When implementing a jit interpretation rule, convert indices by subtracting 1.
+2. The `rules-pullback.R` file contains the differentiation rules for the primitive operations.
+   There, `grad` is the gradient of the terminal output with respect to the function's output and the function should return the gradient of the terminal output with respect to the inputs.
+   The tests are in the file `insts/extra-tests/test-pullback-torch.R`

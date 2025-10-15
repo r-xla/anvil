@@ -28,33 +28,48 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
   rank_in <- length(shape_in)
   rank_out <- length(shape_out)
   if (rank_in == rank_out) {
-    return(integer())
+    # When ranks match, each input dimension maps to the same output dimension
+    # StableHLO expects a mapping for every input dim
+    return(seq_along(shape_out))
   }
-  rank_in + seq_along(rank_out - rank_in) - 1L
+  tail(seq_len(rank_out), rank_in)
 }
 
-#' @title Broadcast
-#' @param ... ([`nv_tensor`])
-#' @return ([`nv_tensor`])
+#' @title Broadcast Tensors to a Common Shape
+#' @description
+#' Broadcast tensors to a common shape.
+#'
+#' @section Broadcasting Rules:
+#' We follow the standard NumPy broadcasting rules:
+#' 1. If the tensors have different numbers of dimensions, prepend 1s to the shape of the smaller tensor.
+#' 2. For each dimension, if:
+#'    - the sizes are the same, do nothing.
+#'    - one of the tensors has size 1, expand it to the corresponding size of the other tensor.
+#'    - the sizes are different and neither is 1, raise an error.
+#'
+#' @param ... ([`nv_tensor`])\cr
+#'   Tensors to broadcast.
+#' @return (`list()` of [`nv_tensor`])
 #' @export
-nv_broadcast_all <- function(...) {
+nv_broadcast_tensors <- function(...) {
   args <- list(...)
   shape <- Reduce(broadcast_shapes, lapply(args, shape))
-  lapply(args, nv_broadcast, shape = shape)
+  lapply(args, nv_broadcast_to, shape = shape)
 }
 
 #' @title Broadcast
-#' @param x ([`nv_tensor`])
+#' @param operand ([`nv_tensor`])\cr
+#'   Operand.
 #' @param shape (`integer()`)\cr
 #'   Output shape.
 #' @return ([`nv_tensor`])
 #' @export
-nv_broadcast <- function(x, shape) {
-  if (!identical(shape(x), shape)) {
-    broadcast_dimensions <- make_broadcast_dimensions(shape(x), shape)
-    nv_broadcast_in_dim(x, shape, broadcast_dimensions)
+nv_broadcast_to <- function(operand, shape) {
+  if (!identical(shape(operand), shape)) {
+    broadcast_dimensions <- make_broadcast_dimensions(shape(operand), shape)
+    nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
   } else {
-    x
+    operand
   }
 }
 
@@ -72,19 +87,31 @@ NULL
 #' @rdname nv_binary_ops
 #' @export
 nv_add <- function(lhs, rhs) {
-  do.call(nvl_add, nv_broadcast_all(lhs, rhs))
+  do.call(nvl_add, nv_broadcast_tensors(lhs, rhs))
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_mul <- function(lhs, rhs) {
-  do.call(nvl_mul, nv_broadcast_all(lhs, rhs))
+  do.call(nvl_mul, nv_broadcast_tensors(lhs, rhs))
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_sub <- function(lhs, rhs) {
-  do.call(nvl_sub, nv_broadcast_all(lhs, rhs))
+  do.call(nvl_sub, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_div <- function(lhs, rhs) {
+  do.call(nvl_div, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_pow <- function(lhs, rhs) {
+  do.call(nvl_pow, nv_broadcast_tensors(lhs, rhs))
 }
 
 ## Unary ops ------------------------------------------------------------------
@@ -100,6 +127,80 @@ nv_sub <- function(lhs, rhs) {
 #' @export
 nv_neg <- nvl_neg
 
+
+## Other operations -----------------------------------------------------------
+
+#' @title Matrix Multiplication
+#' @description
+#' Matrix multiplication of two tensors.
+#' @section Shapes:
+#' - `lhs`: `(b1, ..., bk, m, n)`
+#' - `rhs`: `(b1, ..., bk, n, p)`
+#' - output: `(b1, ..., bk, m, p)`
+#' @section Broadcasting:
+#' All dimensions but the last two are broadcasted.
+#' @param lhs ([`nv_tensor`])
+#' @param rhs ([`nv_tensor`])
+#' @return [`nv_tensor`]
+#' @export
+nv_matmul <- function(lhs, rhs) {
+  if (ndims(rhs) < 2L) {
+    stop("lhs of matmul must have at least 2 dimensions")
+  }
+  if (ndims(lhs) < 2L) {
+    stop("rhs of matmul must have at least 2 dimensions")
+  }
+  shape_leading <- broadcast_shapes(head(shape(lhs), -2L), head(shape(rhs), -2L))
+
+  shape_lhs <- c(shape_leading, tail(shape(lhs), 2L))
+  shape_rhs <- c(shape_leading, tail(shape(rhs), 2L))
+
+  if (!identical(shape_lhs, shape(lhs))) {
+    lhs <- nv_broadcast_to(lhs, shape_lhs)
+  }
+  if (!identical(shape_rhs, shape(rhs))) {
+    rhs <- nv_broadcast_to(rhs, shape_rhs)
+  }
+
+  nvl_dot_general(
+    lhs,
+    rhs,
+    contracting_dims = list(ndims(lhs), ndims(rhs) - 1L),
+    batching_dims = list(seq_along(shape_leading), seq_along(shape_leading))
+  )
+}
+
+#' @rdname nv_transpose
+#' @export
+nv_transpose <- function(x, permutation = NULL) {
+  permutation <- permutation %??% rev(seq_len(ndims(x)))
+  nvl_transpose(x, permutation)
+}
+
+
+#' @title Reshape
+#' @description
+#' Reshape a tensor.
+#' @param operand ([`nv_tensor`])\cr
+#'   The tensor.
+#' @param shape (`integer()`)\cr
+#'   Output shape.
+#' @return ([`nv_tensor`])
+#' @export
+nv_reshape <- nvl_reshape
+
+#' @title Reduction Operators
+#' @description
+#' Reduce a tensor along specified dimensions.
+#' @param operand ([`nv_tensor`])\cr
+#'   The tensor.
+#' @param dims (`integer()`)\cr
+#'   The dimensions along which to reduce.
+#' @param drop (`logical(1)`)\cr
+#'   Whether to drop the reduced dimensions.
+#' @name nv_reduce_ops
+#' @export
+nv_reduce_sum <- nvl_reduce_sum
 
 ## Data Types ------------------------------------------------------------------
 

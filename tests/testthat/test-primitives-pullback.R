@@ -1,26 +1,10 @@
-test_that("nvl_add (scalar)", {
-  expect_grad_binary(nvl_add, \(x, y) 1, \(x, y) 1, 1.2, -0.7)
-})
-
-test_that("nvl_sub (scalar)", {
-  expect_grad_binary(nvl_sub, \(x, y) 1, \(x, y) -1, 1.2, -0.7)
-})
-
-test_that("nvl_mul", {
-  expect_grad_binary(nvl_mul, \(x, y) y, \(x, y) x, 1.2, -0.7)
-})
-
-test_that("nvl_neg", {
-  expect_grad_unary(nvl_neg, `-`, 1)
-})
-
 test_that("dot_general: vector dot product gradient", {
   # y = <x, y> = sum_i x_i * y_i, scalar output
   f <- function(x, y) {
     nvl_dot_general(
       x,
       y,
-      contracting_dims = list(0L, 0L),
+      contracting_dims = list(1L, 1L),
       batching_dims = list(integer(), integer())
     )
   }
@@ -39,7 +23,7 @@ test_that("dot_general: matrix-vector with summed loss", {
     out <- nvl_dot_general(
       y,
       ones,
-      contracting_dims = list(0L, 0L),
+      contracting_dims = list(1L, 1L),
       batching_dims = list(integer(), integer())
     )
     return(out)
@@ -49,7 +33,7 @@ test_that("dot_general: matrix-vector with summed loss", {
     y <- nvl_dot_general(
       A,
       x,
-      contracting_dims = list(1L, 0L),
+      contracting_dims = list(2L, 1L),
       batching_dims = list(integer(), integer())
     )
     nv_hacky_sum(y)
@@ -88,7 +72,7 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
   sum_all <- function(Y) {
     ones <- make_ones_like(Y)
     rank <- length(shape(Y))
-    all_dims <- as.integer(0:(rank - 1L))
+    all_dims <- 1:rank
     nvl_dot_general(
       Y,
       ones,
@@ -117,7 +101,7 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
     expect_equal(shape(dB), shape(B))
 
     # Verify linearization: <A, dA> == l(A,B) and <B, dB> == l(A,B)
-    all_dims_A <- seq_along0(shape(A))
+    all_dims_A <- seq_along(shape(A))
     lin_A <- function(A) {
       nvl_dot_general(
         A,
@@ -126,7 +110,7 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
         batching_dims = list(integer(), integer())
       )
     }
-    all_dims_B <- seq_along0(shape(B))
+    all_dims_B <- seq_along(shape(B))
     lin_B <- function(B) {
       nvl_dot_general(
         B,
@@ -154,7 +138,7 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
   check_case(
     A1,
     B1,
-    contracting_dims = list(2L, 1L),
+    contracting_dims = list(3L, 2L),
     batching_dims = list(integer(), integer())
   )
 
@@ -173,7 +157,7 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
   check_case(
     A2,
     B2,
-    contracting_dims = list(c(2L, 3L), c(2L, 1L)),
+    contracting_dims = list(c(3L, 4L), c(3L, 2L)),
     batching_dims = list(integer(), integer())
   )
 
@@ -192,8 +176,8 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
   check_case(
     A3,
     B3,
-    contracting_dims = list(4L, 2L),
-    batching_dims = list(c(0L, 1L), c(1L, 0L))
+    contracting_dims = list(5L, 3L),
+    batching_dims = list(c(1L, 2L), c(2L, 1L))
   )
 
   # Case 4: Multiple batching dims and multiple contracting dims
@@ -211,8 +195,8 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
   check_case(
     A4,
     B4,
-    contracting_dims = list(c(3L, 4L), c(2L, 3L)),
-    batching_dims = list(c(0L, 1L), c(0L, 1L))
+    contracting_dims = list(c(4L, 5L), c(3L, 4L)),
+    batching_dims = list(c(1L, 2L), c(1L, 2L))
   )
 
   # batching dims come at last
@@ -229,8 +213,8 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
   check_case(
     A5,
     B5,
-    contracting_dims = list(c(0L, 1L), c(2L, 3L)),
-    batching_dims = list(c(3L, 4L), c(0L, 1L))
+    contracting_dims = list(c(1L, 2L), c(3L, 4L)),
+    batching_dims = list(c(4L, 5L), c(1L, 2L))
   )
   # TODO: One super complicated test with many permutations
 })

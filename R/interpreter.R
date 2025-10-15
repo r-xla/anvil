@@ -75,11 +75,17 @@ Box <- S7::new_class(
   )
 )
 
+is_box <- function(x) {
+  inherits(x, "anvil::Box")
+}
+
 method(aval, Box) <- function(x) {
   stop("Abstract method")
 }
 
-method(shape, Box) <- function(x) {
+#' @method shape anvil::Box
+#' @export
+`shape.anvil::Box` <- function(x, ...) {
   shape(aval(x))
 }
 
@@ -174,10 +180,14 @@ current_interpreter <- function(xs) {
   top_main@interpreter_type(top_main)
 }
 
-method(device, Box) <- function(x) {
+#' @method device anvil::Box
+#' @export
+`device.anvil::Box` <- function(x, ...) {
   device(aval(x))
 }
 
-method(dtype, Box) <- function(x) {
+#' @method dtype anvil::Box
+#' @export
+`dtype.anvil::Box` <- function(x, ...) {
   dtype(aval(x))
 }

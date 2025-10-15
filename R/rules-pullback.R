@@ -3,18 +3,6 @@
 # Important: Don't use infix operators here, as they correspond to
 # the broadcasted version
 
-mul_bwd <- function(grad, operand) {
-  # grad is of shape [du1, ..., dun] (du/dy)
-  # operand is of shape [du1, ..., dun, dx1, ..., dxm] (du/dx)
-  dims <- seq_len0(ndims(grad))
-  nvl_dot_general(
-    grad,
-    operand,
-    contracting_dims = list(dims, dims),
-    batching_dims = list(integer(), integer())
-  )
-}
-
 keep <- function(.required, ...) {
   funcs <- list(...)
 
@@ -71,6 +59,45 @@ register_pullback_rule(p_neg, function(primals, .required) {
   )
 })
 
+register_pullback_rule(p_div, function(primals, .required) {
+  lhs <- primals[[1L]]
+  rhs <- primals[[2L]]
+  two <- nv_scalar(2L, dtype(lhs))
+  one <- nv_scalar(1L, dtype(lhs))
+
+  y <- nvl_div(lhs, rhs)
+
+  # note that we are using broadcasted functions here so we don't have to generate
+  # 'one' and 'two' for the full shape
+  list(
+    list(y),
+    function(grad) {
+      keep(.required, \() nv_div(one, rhs), \() nv_div(nvl_neg(y), rhs))
+    }
+  )
+})
+
+register_pullback_rule(p_pow, function(primals, .required) {
+  lhs <- primals[[1L]]
+  rhs <- primals[[2L]]
+  list(
+    list(nvl_pow(lhs, rhs)),
+    function(grad) {
+      keep(
+        .required,
+        \() {
+          nv_pow(lhs, rhs - nv_scalar(1, dtype(lhs)))
+        },
+        \() {
+          # nee
+          # TODO: Need log for this
+          .NotYetImplemented()
+        }
+      )
+    }
+  )
+})
+
 register_pullback_rule(
   p_dot_general,
   function(primals, contracting_dims, batching_dims, .required) {
@@ -88,18 +115,18 @@ register_pullback_rule(
         cd_rhs <- contracting_dims[[2L]]
         # remaining dimensions
         rem_dims <- function(operand, b_dims, c_dims) {
-          ii <- c(b_dims, c_dims) + 1L
-          seq_len0(ndims(operand))[if (length(ii)) -ii else TRUE]
+          ii <- c(b_dims, c_dims)
+          seq_len(ndims(operand))[if (length(ii)) -ii else TRUE]
         }
         rd_lhs <- rem_dims(lhs, bd_lhs, cd_lhs)
         rd_rhs <- rem_dims(rhs, bd_rhs, cd_rhs)
 
         # output dimensions
-        bd_out <- seq_along0(bd_lhs)
-        d_lhs_out <- seq_along0(rd_lhs) +
-          if (length(bd_out)) bd_out[length(bd_out)] + 1L else 0L
-        d_rhs_out <- seq_along0(rd_rhs) +
-          if (length(d_lhs_out)) d_lhs_out[length(d_lhs_out)] + 1L else 0L
+        bd_out <- seq_along(bd_lhs)
+        d_lhs_out <- seq_along(rd_lhs) +
+          if (length(bd_out)) bd_out[length(bd_out)] else 0L
+        d_rhs_out <- seq_along(rd_rhs) +
+          if (length(d_lhs_out)) d_lhs_out[length(d_lhs_out)] else 0L
 
         # lhs has dimensions (bd_lhs, cd_lhs, rd_lhs), not necessarily in this order.
         # each "dimension" is a set of axes, not a single axis.
@@ -129,7 +156,7 @@ register_pullback_rule(
           # y[i] = x[i]
           ids_new <- integer(length(x))
           for (i in seq_along(x)) {
-            ids_new[x[i] + 1L] <- i - 1L
+            ids_new[x[i]] <- i
           }
           ids_new
         }
@@ -176,12 +203,72 @@ register_pullback_rule(p_transpose, function(primals, permutation, .required) {
   list(
     list(y),
     function(grad) {
-      # Inverse permutation: inv[p[i]] = i
       inv <- integer(length(permutation))
       for (i in seq_along(permutation)) {
-        inv[permutation[[i]] + 1L] <- i - 1L
+        inv[permutation[[i]]] <- i
       }
       keep(.required, \() nvl_transpose(grad, inv))
+    }
+  )
+})
+
+register_pullback_rule(p_reshape, function(primals, shape, .required) {
+  operand <- primals[[1L]]
+  y <- nvl_reshape(operand, shape)
+  list(
+    list(y),
+    function(grad) {
+      keep(.required, \() nvl_reshape(grad, shape(operand)))
+    }
+  )
+})
+
+register_pullback_rule(p_reduce_sum, function(primals, dims, drop, .required) {
+  operand <- primals[[1L]]
+  y <- nvl_reduce_sum(operand, dims, drop)
+  list(
+    list(y),
+    function(grad) {
+      keep(.required, \() {
+        nv_broadcast_to(grad, shape(operand))
+      })
+    }
+  )
+})
+
+register_pullback_rule(p_broadcast_in_dim, function(primals, shape_out, broadcast_dimensions, .required) {
+  operand <- primals[[1L]]
+  y <- nvl_broadcast_in_dim(operand, shape_out, broadcast_dimensions)
+
+  list(
+    list(y),
+    function(grad) {
+      keep(.required, \() {
+        # Sum grad over the axes that were introduced by broadcasting
+        # (i.e., all output axes not present in broadcast_dimensions)
+        # we need to sum across dimensions that were added (not present in broadcast_dimensions)
+        # as well as those that were expanded from 1 to the new dimension
+
+        new_dims <- setdiff(seq_len(ndims(y)), broadcast_dimensions)
+        expand_dims <- broadcast_dimensions[(shape(y)[broadcast_dimensions] != 1L) & (shape(operand) == 1L)]
+        reduce_dims <- c(new_dims, expand_dims)
+
+        x <- if (length(reduce_dims)) nvl_reduce_sum(grad, dims = reduce_dims, drop = FALSE) else grad
+
+        # Drop the singlar added dimensions
+        if (length(new_dims)) {
+          reshape_dims <- shape(x)
+          reshape_dims <- reshape_dims[-new_dims]
+          x <- nvl_reshape(x, reshape_dims)
+        }
+
+        # If broadcast_dimensions are not in increasing order, reorder the
+        # remaining axes back to the original operand axis order.
+        if (is.unsorted(broadcast_dimensions)) {
+          x <- nvl_transpose(x, order(broadcast_dimensions))
+        }
+        x
+      })
     }
   )
 })

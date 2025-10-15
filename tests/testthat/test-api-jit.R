@@ -26,12 +26,6 @@ test_that("infix add", {
   )
 })
 
-test_that("jit single return without list wrapper", {
-  f <- jit(nvl_add)
-  out <- f(nv_scalar(1.2), nv_scalar(-0.7))
-  expect_equal(as_array(out), 1.2 + (-0.7), tolerance = 1e-6)
-})
-
 test_that("jit constant single return is bare tensor", {
   f <- jit(function() nv_scalar(0.5))
   out <- f()
