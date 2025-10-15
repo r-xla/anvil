@@ -7,6 +7,12 @@
 \alias{nv_sub}
 \alias{nv_div}
 \alias{nv_pow}
+\alias{nv_eq}
+\alias{nv_ne}
+\alias{nv_gt}
+\alias{nv_ge}
+\alias{nv_lt}
+\alias{nv_le}
 \title{Binary Operations}
 \usage{
 nv_add(lhs, rhs)
@@ -18,6 +24,18 @@ nv_sub(lhs, rhs)
 nv_div(lhs, rhs)
 
 nv_pow(lhs, rhs)
+
+nv_eq(lhs, rhs)
+
+nv_ne(lhs, rhs)
+
+nv_gt(lhs, rhs)
+
+nv_ge(lhs, rhs)
+
+nv_lt(lhs, rhs)
+
+nv_le(lhs, rhs)
 }
 \arguments{
 \item{lhs}{(\code{\link{nv_tensor}})}

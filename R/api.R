@@ -114,6 +114,42 @@ nv_pow <- function(lhs, rhs) {
   do.call(nvl_pow, nv_broadcast_tensors(lhs, rhs))
 }
 
+#' @rdname nv_binary_ops
+#' @export
+nv_eq <- function(lhs, rhs) {
+  do.call(nvl_eq, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_ne <- function(lhs, rhs) {
+  do.call(nvl_ne, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_gt <- function(lhs, rhs) {
+  do.call(nvl_gt, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_ge <- function(lhs, rhs) {
+  do.call(nvl_ge, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_lt <- function(lhs, rhs) {
+  do.call(nvl_lt, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_le <- function(lhs, rhs) {
+  do.call(nvl_le, nv_broadcast_tensors(lhs, rhs))
+}
+
 ## Unary ops ------------------------------------------------------------------
 
 #' @name nv_unary_ops
@@ -181,6 +217,7 @@ nv_transpose <- function(x, permutation = NULL) {
 #' @title Reshape
 #' @description
 #' Reshape a tensor.
+#' Note that row-major order is used, which is different from R's column-major order.
 #' @param operand ([`nv_tensor`])\cr
 #'   The tensor.
 #' @param shape (`integer()`)\cr

@@ -12,7 +12,12 @@ Primitive <- new_class(
         self
       },
       getter = function(self) {
-        self@.rules[["jit_rule"]]
+        rule <- self@.rules[["jit_rule"]]
+        if (is.null(rule)) {
+          function(...) stop("primitive ", self@name, " does not implement jit")
+        } else {
+          rule
+        }
       }
     ),
     pullback_rule = S7::new_property(
@@ -22,7 +27,12 @@ Primitive <- new_class(
         self
       },
       getter = function(self) {
-        self@.rules[["pullback_rule"]]
+        rule <- self@.rules[["pullback_rule"]]
+        if (is.null(rule)) {
+          function(...) stop("primitive ", self@name, " does not implement pullback")
+        } else {
+          rule
+        }
       }
     )
   ),
@@ -138,4 +148,36 @@ nvl_reduce_sum <- function(operand, dims, drop = TRUE) {
       drop = drop
     )
   )[[1L]]
+}
+
+# comparison primitives --------------------------------------------------------
+
+p_eq <- Primitive("equal")
+nvl_eq <- function(lhs, rhs) {
+  interprete(p_eq, list(lhs, rhs))[[1L]]
+}
+
+p_ne <- Primitive("not_equal")
+nvl_ne <- function(lhs, rhs) {
+  interprete(p_ne, list(lhs, rhs))[[1L]]
+}
+
+p_gt <- Primitive("greater")
+nvl_gt <- function(lhs, rhs) {
+  interprete(p_gt, list(lhs, rhs))[[1L]]
+}
+
+p_ge <- Primitive("greater_equal")
+nvl_ge <- function(lhs, rhs) {
+  interprete(p_ge, list(lhs, rhs))[[1L]]
+}
+
+p_lt <- Primitive("less")
+nvl_lt <- function(lhs, rhs) {
+  interprete(p_lt, list(lhs, rhs))[[1L]]
+}
+
+p_le <- Primitive("less_equal")
+nvl_le <- function(lhs, rhs) {
+  interprete(p_le, list(lhs, rhs))[[1L]]
 }
