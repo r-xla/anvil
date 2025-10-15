@@ -76,8 +76,8 @@ g_jit(a, b, x)
 - Easy to extend and contribute:
   - The package is written almost entirely in R.
   - It is easy to add new primitives.
-  - It is possible to add new transformations, a.k.a. interpretation
-    rules.
+  - It (will be) possible to add new transformations, a.k.a.
+    interpretation rules.
 
 ## Acknowledgments
 

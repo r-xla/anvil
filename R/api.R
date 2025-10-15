@@ -42,12 +42,13 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
 #' @section Broadcasting Rules:
 #' We follow the standard NumPy broadcasting rules:
 #' 1. If the tensors have different numbers of dimensions, prepend 1s to the shape of the smaller tensor.
-#' 2. For each dimensions, if:
-#'    - If the sizes are the same, do nothing.
-#'    - One of the tensors has size 1, expand it to the size of the other tensor.
-#'    - If the sizes are different and neither is 1, raise an error.
+#' 2. For each dimension, if:
+#'    - the sizes are the same, do nothing.
+#'    - one of the tensors has size 1, expand it to the corresponding size of the other tensor.
+#'    - the sizes are different and neither is 1, raise an error.
 #'
-#' @param ... (`list()` of [`nv_tensor`])
+#' @param ... ([`nv_tensor`])\cr
+#'   Tensors to broadcast.
 #' @return (`list()` of [`nv_tensor`])
 #' @export
 nv_broadcast_tensors <- function(...) {

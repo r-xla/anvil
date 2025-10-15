@@ -7,7 +7,8 @@
 nv_broadcast_tensors(...)
 }
 \arguments{
-\item{...}{(\code{list()} of \code{\link{nv_tensor}})}
+\item{...}{(\code{\link{nv_tensor}})\cr
+Tensors to broadcast.}
 }
 \value{
 (\code{list()} of \code{\link{nv_tensor}})
@@ -20,11 +21,11 @@ Broadcast tensors to a common shape.
 We follow the standard NumPy broadcasting rules:
 \enumerate{
 \item If the tensors have different numbers of dimensions, prepend 1s to the shape of the smaller tensor.
-\item For each dimensions, if:
+\item For each dimension, if:
 \itemize{
-\item If the sizes are the same, do nothing.
-\item One of the tensors has size 1, expand it to the size of the other tensor.
-\item If the sizes are different and neither is 1, raise an error.
+\item the sizes are the same, do nothing.
+\item one of the tensors has size 1, expand it to the corresponding size of the other tensor.
+\item the sizes are different and neither is 1, raise an error.
 }
 }
 }

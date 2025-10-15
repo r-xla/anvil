@@ -240,28 +240,22 @@ register_pullback_rule(p_broadcast_in_dim, function(primals, shape_out, broadcas
   operand <- primals[[1L]]
   y <- nvl_broadcast_in_dim(operand, shape_out, broadcast_dimensions)
 
-  # grad: [a, b, c]
-  # operand is [b, c]
-  # -> How to get d_y/d_operand
-  # probably we have to sum across those dimensions and then we might have to transpose
-  # the result, because broadcast_dimensions might have screwed up the order
-
   list(
     list(y),
     function(grad) {
       keep(.required, \() {
         # Sum grad over the axes that were introduced by broadcasting
         # (i.e., all output axes not present in broadcast_dimensions)
-
         # we need to sum across dimensions that were added (not present in broadcast_dimensions)
         # as well as those that were expanded from 1 to the new dimension
+
         new_dims <- setdiff(seq_len(ndims(y)), broadcast_dimensions)
-
         expand_dims <- broadcast_dimensions[(shape(y)[broadcast_dimensions] != 1L) & (shape(operand) == 1L)]
-
         reduce_dims <- c(new_dims, expand_dims)
+
         x <- if (length(reduce_dims)) nvl_reduce_sum(grad, dims = reduce_dims, drop = FALSE) else grad
 
+        # Drop the singlar added dimensions
         if (length(new_dims)) {
           reshape_dims <- shape(x)
           reshape_dims <- reshape_dims[-new_dims]
