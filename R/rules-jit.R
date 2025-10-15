@@ -67,3 +67,36 @@ register_jit_rule(p_reduce_sum, function(operand, dims, drop) {
   shape_out[dims] <- 1L
   list(stablehlo::hlo_reshape(out, shape_out))
 })
+
+
+# comparison jit rules ----------------------------------------------------------
+
+.compare_type_for <- function(vt) {
+  dt <- vt@value_type@type@dtype
+  if (inherits(dt, stablehlo::FloatType)) {
+    "FLOAT"
+  } else if (inherits(dt, stablehlo::IntegerType)) {
+    "SIGNED"
+  } else if (inherits(dt, stablehlo::UnsignedType)) {
+    "UNSIGNED"
+  } else if (inherits(dt, stablehlo::BooleanType)) {
+    # StableHLO uses SIGNED for i1 compares
+    "SIGNED"
+  } else {
+    stop("Unsupported dtype for compare")
+  }
+}
+
+.jit_compare_bin <- function(direction) {
+  function(lhs, rhs) {
+    ct <- .compare_type_for(lhs)
+    list(stablehlo::hlo_compare(lhs, rhs, comparison_direction = direction, compare_type = ct))
+  }
+}
+
+register_jit_rule(p_eq, .jit_compare_bin("EQ"))
+register_jit_rule(p_ne, .jit_compare_bin("NE"))
+register_jit_rule(p_gt, .jit_compare_bin("GT"))
+register_jit_rule(p_ge, .jit_compare_bin("GE"))
+register_jit_rule(p_lt, .jit_compare_bin("LT"))
+register_jit_rule(p_le, .jit_compare_bin("LE"))

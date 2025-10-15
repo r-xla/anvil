@@ -74,3 +74,44 @@ test_that("nvl_reshape", {
     nv_tensor(1:3, dtype = "f32", shape = c(3, 1))
   )
 })
+
+# comparisons
+test_that("nvl_eq", {
+  expect_jit_binary(nvl_eq, `==`, sample(1:10, 1), sample(1:10, 1))
+  expect_jit_binary(nvl_eq, `==`, rnorm(1), rnorm(1))
+  # unsigned
+  f <- jit(`==`)
+  expect_equal(
+    f(nv_scalar(1L, dtype = "ui32"), nv_scalar(1L, dtype = "ui32")),
+    nv_scalar(TRUE, dtype = "pred")
+  )
+  expect_equal(
+    f(nv_scalar(2L, dtype = "ui32"), nv_scalar(1L, dtype = "ui32")),
+    nv_scalar(FALSE, dtype = "pred")
+  )
+})
+
+test_that("nvl_ne", {
+  expect_jit_binary(nvl_ne, `!=`, sample(-10:10, 1), sample(-10:10, 1))
+  expect_jit_binary(nvl_ne, `!=`, rnorm(1), rnorm(1))
+})
+
+test_that("nvl_gt", {
+  expect_jit_binary(nvl_gt, `>`, sample(-10:10, 1), sample(-10:10, 1))
+  expect_jit_binary(nvl_gt, `>`, rnorm(1), rnorm(1))
+})
+
+test_that("nvl_ge", {
+  expect_jit_binary(nvl_ge, `>=`, sample(-10:10, 1), sample(-10:10, 1))
+  expect_jit_binary(nvl_ge, `>=`, rnorm(1), rnorm(1))
+})
+
+test_that("nvl_lt", {
+  expect_jit_binary(nvl_lt, `<`, sample(-10:10, 1), sample(-10:10, 1))
+  expect_jit_binary(nvl_lt, `<`, rnorm(1), rnorm(1))
+})
+
+test_that("nvl_le", {
+  expect_jit_binary(nvl_le, `<=`, sample(-10:10, 1), sample(-10:10, 1))
+  expect_jit_binary(nvl_le, `<=`, rnorm(1), rnorm(1))
+})

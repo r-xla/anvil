@@ -218,3 +218,11 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
   )
   # TODO: One super complicated test with many permutations
 })
+
+test_that("pullback for comparisons not implemented", {
+  g <- gradient(function(a, b) {
+    # any comparison; returns boolean but gradient shouldn't be requested
+    a < b
+  })
+  expect_error(g(nv_scalar(1L), nv_scalar(2L)))
+})
