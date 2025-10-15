@@ -52,7 +52,6 @@ Collate:
     'interpreter-pullback.R'
     'rules-jit.R'
     'rules-pullback.R'
-    'tracer.R'
     'type-converters.R'
     'utils.R'
     'zzz.R'

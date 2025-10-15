@@ -30,9 +30,9 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
   if (rank_in == rank_out) {
     # When ranks match, each input dimension maps to the same output dimension
     # StableHLO expects a mapping for every input dim
-    return(seq_along0(shape_out))
+    return(seq_along(shape_out))
   }
-  tail(seq_len0(rank_out), rank_in)
+  tail(seq_len(rank_out), rank_in)
 }
 
 #' @title Broadcast Tensors to a Common Shape
@@ -57,17 +57,18 @@ nv_broadcast_tensors <- function(...) {
 }
 
 #' @title Broadcast
-#' @param x ([`nv_tensor`])
+#' @param operand ([`nv_tensor`])\cr
+#'   Operand.
 #' @param shape (`integer()`)\cr
 #'   Output shape.
 #' @return ([`nv_tensor`])
 #' @export
-nv_broadcast_to <- function(x, shape) {
-  if (!identical(shape(x), shape)) {
-    broadcast_dimensions <- make_broadcast_dimensions(shape(x), shape)
-    nvl_broadcast_in_dim(x, shape, broadcast_dimensions)
+nv_broadcast_to <- function(operand, shape) {
+  if (!identical(shape(operand), shape)) {
+    broadcast_dimensions <- make_broadcast_dimensions(shape(operand), shape)
+    nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
   } else {
-    x
+    operand
   }
 }
 
@@ -112,14 +113,6 @@ nv_pow <- function(lhs, rhs) {
   do.call(nvl_pow, nv_broadcast_tensors(lhs, rhs))
 }
 
-#' @rdname nv_transpose
-#' @export
-nv_transpose <- function(x, permutation = NULL) {
-  permutation <- permutation %??% rev(seq_len0(ndims(x)))
-  nvl_transpose(x, permutation)
-}
-
-
 ## Unary ops ------------------------------------------------------------------
 
 #' @name nv_unary_ops
@@ -133,6 +126,8 @@ nv_transpose <- function(x, permutation = NULL) {
 #' @export
 nv_neg <- nvl_neg
 
+
+## Other operations -----------------------------------------------------------
 
 #' @title Matrix Multiplication
 #' @description
@@ -169,10 +164,29 @@ nv_matmul <- function(lhs, rhs) {
   nvl_dot_general(
     lhs,
     rhs,
-    contracting_dims = list(ndims(lhs) - 1L, ndims(rhs) - 2L),
-    batching_dims = list(seq_along0(shape_leading), seq_along0(shape_leading))
+    contracting_dims = list(ndims(lhs), ndims(rhs) - 1L),
+    batching_dims = list(seq_along(shape_leading), seq_along(shape_leading))
   )
 }
+
+#' @rdname nv_transpose
+#' @export
+nv_transpose <- function(x, permutation = NULL) {
+  permutation <- permutation %??% rev(seq_len(ndims(x)))
+  nvl_transpose(x, permutation)
+}
+
+
+#' @title Reshape
+#' @description
+#' Reshape a tensor.
+#' @param operand ([`nv_tensor`])\cr
+#'   The tensor.
+#' @param shape (`integer()`)\cr
+#'   Output shape.
+#' @return ([`nv_tensor`])
+#' @export
+nv_reshape <- nvl_reshape
 
 #' @title Reduction Operators
 #' @description

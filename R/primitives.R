@@ -118,6 +118,15 @@ nvl_transpose <- function(operand, permutation) {
   )[[1L]]
 }
 
+p_reshape <- Primitive("reshape")
+nvl_reshape <- function(operand, shape) {
+  interprete(
+    p_reshape,
+    list(operand),
+    params = list(shape = shape)
+  )[[1L]]
+}
+
 # reduction operators
 p_reduce_sum <- Primitive("sum")
 nvl_reduce_sum <- function(operand, dims, drop = TRUE) {

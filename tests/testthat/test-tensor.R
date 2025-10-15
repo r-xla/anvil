@@ -8,7 +8,7 @@ test_that("tensor", {
 })
 
 test_that("nv_scalar", {
-  x <- nv_scalar(1, dtype = "f32")
+  x <- nv_scalar(1L, dtype = "f32")
   x
   expect_snapshot(x)
   expect_class(x, "AnvilTensor")

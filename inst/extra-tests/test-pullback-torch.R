@@ -141,8 +141,8 @@ verify_grad_uni_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = 
   )
 }
 
-verify_grad_uni_tensor <- function(.f, .g, ndims = sample(1:3, 1L), dtypes = "f32", args_f = NULL) {
-  shp <- sample(1:3, ndims, replace = TRUE)
+verify_grad_uni_tensor <- function(.f, .g, ndims = sample(1:3, 1L), dtypes = "f32", args_f = NULL, shape = NULL) {
+  shp <- if (is.null(shape)) sample(1:3, ndims, replace = TRUE) else shape
   dtype <- sample(dtypes, 1L)
   operand <- generate_test_array_local(shp, dtype)
 
@@ -212,9 +212,9 @@ verify_grad_biv_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = 
   )
 }
 
-verify_grad_biv_tensor <- function(.f, .g, ndims = sample(1:3, 1L), dtypes = "f32", args_f = NULL) {
+verify_grad_biv_tensor <- function(.f, .g, ndims = sample(1:3, 1L), dtypes = "f32", args_f = NULL, shape = NULL) {
   # Prefer shapes without size-0 or size-1 axes to avoid backend broadcast edge-cases
-  shp <- sample(1:3, ndims, replace = TRUE)
+  shp <- if (is.null(shape)) sample(1:3, ndims, replace = TRUE) else shape
   dtype <- sample(dtypes, 1)
 
   lhs <- generate_test_array_local(shp, dtype)
@@ -305,5 +305,33 @@ test_that("reduce_sum", {
 })
 
 test_that("transpose", {
-  verify_grad_uni(nvl_transpose, torch::torch_transpose)
+  verify_grad_uni_tensor(nvl_transpose, \(x, permutation) x$permute(permutation), ndims = 3L, args_f = \(shp, dtype) {
+    dims <- sample(seq_along(shp))
+    list(
+      list(permutation = dims),
+      list(permutation = dims)
+    )
+  })
+})
+
+test_that("broadcast_to", {
+  input_shape <- c(2L, 1L, 3L)
+  target_shape <- c(4L, 2L, 5L, 3L)
+
+  f <- function(operand, shape) {
+    x <- nv_broadcast_to(operand, shape)
+    nv_reduce_sum(x, dims = seq_along(shape), drop = TRUE)
+  }
+
+  verify_grad_uni_tensor(
+    nv_broadcast_to,
+    \(x, shape) x$broadcast_to(shape),
+    shape = input_shape,
+    args_f = \(shp, dtype) {
+      list(
+        list(shape = target_shape),
+        list(shape = target_shape)
+      )
+    }
+  )
 })

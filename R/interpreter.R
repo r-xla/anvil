@@ -75,6 +75,10 @@ Box <- S7::new_class(
   )
 )
 
+is_box <- function(x) {
+  inherits(x, "anvil::Box")
+}
+
 method(aval, Box) <- function(x) {
   stop("Abstract method")
 }

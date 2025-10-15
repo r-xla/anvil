@@ -52,7 +52,7 @@ gradient <- function(f, wrt = NULL) {
 
     # TODO: check shape
 
-    one <- nv_scalar(1.0, dtype = dtype(y))
+    one <- nv_scalar(1L, dtype = dtype(y))
     grad <- g(one)
 
     return(grad)
@@ -60,6 +60,14 @@ gradient <- function(f, wrt = NULL) {
   # args() is needed for primitives, as they don't have formals
   formals(f_gradient) <- formals2(f)
   return(f_gradient)
+}
+
+is_pullback_node <- function(x) {
+  inherits(x, "anvil::PullbackNode")
+}
+
+is_pullback_box <- function(x) {
+  inherits(x, "anvil::PullbackBox")
 }
 
 pullback2 <- function(f, ..., wrt = NULL) {
@@ -79,7 +87,6 @@ pullback2 <- function(f, ..., wrt = NULL) {
     list(...)
   }
 
-  in_tree <- build_tree(args)
   args_flat <- flatten(args)
   in_node <- build_tree(mark_some(args, wrt))
   is_required_flat <- if (is.null(wrt)) rep(TRUE, length(args_flat)) else in_node$marked
@@ -88,7 +95,12 @@ pullback2 <- function(f, ..., wrt = NULL) {
   # The inputs are root nodes, because they have no parents
   boxes_in <- Map(
     function(arg, req) {
-      PullbackBox(interpreter, arg, PullbackNode(NULL, list(), required = req))
+      if (is_box(arg)) {
+        PullbackBox(interpreter, arg, PullbackNode(NULL, list(), required = req))
+      } else {
+        # These are static arguments
+        arg
+      }
     },
     args_flat,
     is_required_flat
@@ -98,18 +110,14 @@ pullback2 <- function(f, ..., wrt = NULL) {
 
   box_out <- rlang::exec(unflatten, !!!out_flat)
 
-  #if (length(boxes_out) != 1L) {
-  #  stop("Function must return a single value")
-  #}
-
-  in_nodes <- lapply(boxes_in, \(box) box@node)
+  in_nodes <- lapply(boxes_in, \(box) if (is_pullback_box(box)) box@node else box)
   out_node <- box_out@node
 
   # TODO: Crate
   f <- function(grad) {
     outs_flat <- backward_pass(in_nodes, out_node, grad)
-    out <- rlang::exec(unflatten, in_tree, outs_flat)
-    out <- out[names(args) %in% wrt]
+    out <- rlang::exec(unflatten, in_node, outs_flat)
+    out <- out[sapply(out, \(x) !is.null(x))]
     out
   }
 
@@ -181,6 +189,10 @@ backward_pass <- function(in_nodes, out_node, gradient) {
     }
   }
   outs <- lapply(seq_along(in_nodes), function(i) {
+    if (!is_pullback_node(in_nodes[[i]])) {
+      # static argument
+      return(NULL)
+    }
     node <- in_nodes[[i]]
     if (node@required) node_map[[node_id(node)]] else NULL
   })

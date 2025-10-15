@@ -28,19 +28,25 @@ register_jit_rule(p_pow, function(lhs, rhs) {
 register_jit_rule(
   p_broadcast_in_dim,
   function(operand, shape_out, broadcast_dimensions) {
-    list(stablehlo::hlo_broadcast_in_dim(operand, broadcast_dimensions, shape_out))
+    list(stablehlo::hlo_broadcast_in_dim(operand, broadcast_dimensions - 1L, shape_out))
   }
 )
 
 register_jit_rule(
   p_dot_general,
   function(lhs, rhs, contracting_dims, batching_dims = NULL) {
+    contracting_dims <- lapply(contracting_dims, \(x) x - 1L)
+    batching_dims <- lapply(batching_dims, \(x) x - 1L)
     list(stablehlo::hlo_dot_general(lhs, rhs, contracting_dims, batching_dims))
   }
 )
 
 register_jit_rule(p_transpose, function(operand, permutation) {
-  list(stablehlo::hlo_transpose(operand, permutation))
+  list(stablehlo::hlo_transpose(operand, permutation - 1L))
+})
+
+register_jit_rule(p_reshape, function(operand, shape) {
+  list(stablehlo::hlo_reshape(operand, shape))
 })
 
 register_jit_rule(p_reduce_sum, function(operand, dims, drop) {

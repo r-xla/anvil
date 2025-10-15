@@ -30,7 +30,7 @@ test_that("nvl_transpose", {
   expect_jit_unary(nv_transpose, t, x)
   x2 <- array(1:8, c(2, 2, 2))
   expect_jit_unary(
-    \(x) nv_transpose(x, c(0, 2, 1)),
+    \(x) nv_transpose(x, c(1, 3, 2)),
     \(x) aperm(x, c(1, 3, 2)),
     x2
   )
@@ -65,4 +65,12 @@ test_that("nv_reduce_sum", {
   )
   expect_equal(f(x, TRUE), nv_scalar(6))
   expect_equal(f(x, FALSE), nv_tensor(6))
+})
+
+test_that("nvl_reshape", {
+  x <- nv_tensor(1:3, dtype = "f32")
+  expect_equal(
+    jit(nvl_reshape, static = "shape")(x, c(3, 1)),
+    nv_tensor(1:3, dtype = "f32", shape = c(3, 1))
+  )
 })
