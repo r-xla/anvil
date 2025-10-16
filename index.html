@@ -92,7 +92,7 @@
 <span><span class="co">#&gt; AnvilTensor </span></span>
 <span><span class="co">#&gt;  1.0000</span></span>
 <span><span class="co">#&gt; [ CPUf32{} ]</span></span></code></pre></div>
-<p>Through automatic differentiation, we can also obtain the gradient of <code>f</code>.</p>
+<p>Through automatic differentiation, we can also obtain the gradient of the above function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jit.html">jit</a></span><span class="op">(</span><span class="fu"><a href="reference/gradient.html">gradient</a></span><span class="op">(</span><span class="va">f</span>, wrt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">g_jit</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">x</span><span class="op">)</span></span>
@@ -118,7 +118,7 @@
 <li>Fast:
 <ul>
 <li>Code is JIT compiled into a single kernel.</li>
-<li>Runs on various hardware, including CPU and GPU.</li>
+<li>Runs on different hardware backends, including CPU and GPU.</li>
 </ul>
 </li>
 <li>Easy to extend and contribute:
@@ -129,6 +129,11 @@
 </ul>
 </li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="when-to-use-this-package">When to use this package?<a class="anchor" aria-label="anchor" href="#when-to-use-this-package"></a>
+</h2>
+<p>While {anvil} allows to run certain types of programs extremely fast, it only applies to a certain category of problems. Specifically, it is suitable for numerical algorithms, such as optimizing bayesian models, training neural networks or more generally numerical optimization. Another restriction is that {anvil} needs to re-compile the code for each new unique input shape. This has the advantage, that the compiler can make memory optimizations, but the compilation overhead might be a problem for fast running programs.</p>
 </div>
 <div class="section level2">
 <h2 id="acknowledgments">Acknowledgments<a class="anchor" aria-label="anchor" href="#acknowledgments"></a>
