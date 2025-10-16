@@ -231,7 +231,7 @@ method(process_primitive, PullbackInterpreter) <- function(
   primals_in <- lapply(boxes, \(box) box@primal)
   nodes_in <- lapply(boxes, \(box) box@node)
   req_in <- vapply(nodes_in, function(n) n@required, logical(1))
-  out <- rlang::exec(prim@pullback_rule, primals = primals_in, .required = req_in, !!!params)
+  out <- rlang::exec(prim[["pullback"]], primals = primals_in, .required = req_in, !!!params)
   primals_out <- out[[1L]]
   pullback_out <- out[[2L]]
   node_out <- PullbackNode(pullback_out, nodes_in, required = any(req_in))

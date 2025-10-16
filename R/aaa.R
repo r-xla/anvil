@@ -15,11 +15,13 @@ NULL
 #' @importFrom xlamisc list_of seq_len0 seq_along0
 #' @importFrom dotty .
 #' @importFrom utils head tail
+#' @importFrom cli cli_abort
 ## usethis namespace: end
 NULL
 
 globals <- new.env()
-globals$nv_types <- c("AnvilTensor", "nv_scalar")
+globals$nv_types <- "AnvilTensor"
+globals$interpretation_rules <- c("jit", "pullback")
 
 utils::globalVariables("globals")
 

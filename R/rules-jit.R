@@ -1,55 +1,49 @@
 #' @include primitives.R
 #' @include interpreter-jit.R
 
-register_jit_rule(p_add, function(lhs, rhs) {
+p_add[["jit"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_add(lhs, rhs))
-})
+}
 
-register_jit_rule(p_mul, function(lhs, rhs) {
+p_mul[["jit"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_multiply(lhs, rhs))
-})
+}
 
-register_jit_rule(p_sub, function(lhs, rhs) {
+p_sub[["jit"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_subtract(lhs, rhs))
-})
+}
 
-register_jit_rule(p_neg, function(operand) {
+p_neg[["jit"]] <- function(operand) {
   list(stablehlo::hlo_negate(operand))
-})
+}
 
-register_jit_rule(p_div, function(lhs, rhs) {
+p_div[["jit"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_divide(lhs, rhs))
-})
+}
 
-register_jit_rule(p_pow, function(lhs, rhs) {
+p_pow[["jit"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_power(lhs, rhs))
-})
+}
 
-register_jit_rule(
-  p_broadcast_in_dim,
-  function(operand, shape_out, broadcast_dimensions) {
-    list(stablehlo::hlo_broadcast_in_dim(operand, broadcast_dimensions - 1L, shape_out))
-  }
-)
+p_broadcast_in_dim[["jit"]] <- function(operand, shape_out, broadcast_dimensions) {
+  list(stablehlo::hlo_broadcast_in_dim(operand, broadcast_dimensions - 1L, shape_out))
+}
 
-register_jit_rule(
-  p_dot_general,
-  function(lhs, rhs, contracting_dims, batching_dims = NULL) {
-    contracting_dims <- lapply(contracting_dims, \(x) x - 1L)
-    batching_dims <- lapply(batching_dims, \(x) x - 1L)
-    list(stablehlo::hlo_dot_general(lhs, rhs, contracting_dims, batching_dims))
-  }
-)
+p_dot_general[["jit"]] <- function(lhs, rhs, contracting_dims, batching_dims) {
+  contracting_dims <- lapply(contracting_dims, \(x) x - 1L)
+  batching_dims <- lapply(batching_dims, \(x) x - 1L)
+  list(stablehlo::hlo_dot_general(lhs, rhs, contracting_dims, batching_dims))
+}
 
-register_jit_rule(p_transpose, function(operand, permutation) {
+p_transpose[["jit"]] <- function(operand, permutation) {
   list(stablehlo::hlo_transpose(operand, permutation - 1L))
-})
+}
 
-register_jit_rule(p_reshape, function(operand, shape) {
+p_reshape[["jit"]] <- function(operand, shape) {
   list(stablehlo::hlo_reshape(operand, shape))
-})
+}
 
-register_jit_rule(p_reduce_sum, function(operand, dims, drop) {
+p_reduce_sum[["jit"]] <- function(operand, dims, drop) {
   local_func("")
   dt <- as.character(operand@value_type@type@dtype)
   f <- hlo_return(stablehlo::hlo_add(
@@ -66,7 +60,7 @@ register_jit_rule(p_reduce_sum, function(operand, dims, drop) {
   shape_out <- shape(operand@value_type)
   shape_out[dims] <- 1L
   list(stablehlo::hlo_reshape(out, shape_out))
-})
+}
 
 
 # comparison jit rules ----------------------------------------------------------
@@ -94,9 +88,9 @@ register_jit_rule(p_reduce_sum, function(operand, dims, drop) {
   }
 }
 
-register_jit_rule(p_eq, .jit_compare_bin("EQ"))
-register_jit_rule(p_ne, .jit_compare_bin("NE"))
-register_jit_rule(p_gt, .jit_compare_bin("GT"))
-register_jit_rule(p_ge, .jit_compare_bin("GE"))
-register_jit_rule(p_lt, .jit_compare_bin("LT"))
-register_jit_rule(p_le, .jit_compare_bin("LE"))
+p_eq[["jit"]] <- .jit_compare_bin("EQ")
+p_ne[["jit"]] <- .jit_compare_bin("NE")
+p_gt[["jit"]] <- .jit_compare_bin("GT")
+p_ge[["jit"]] <- .jit_compare_bin("GE")
+p_lt[["jit"]] <- .jit_compare_bin("LT")
+p_le[["jit"]] <- .jit_compare_bin("LE")

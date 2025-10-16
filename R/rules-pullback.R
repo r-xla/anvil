@@ -15,7 +15,7 @@ keep <- function(.required, ...) {
   )
 }
 
-register_pullback_rule(p_add, function(primals, .required) {
+p_add[["pullback"]] <- function(primals, .required) {
   lhs <- primals[[1L]]
   rhs <- primals[[2L]]
   list(
@@ -24,9 +24,9 @@ register_pullback_rule(p_add, function(primals, .required) {
       keep(.required, \() grad, \() grad)
     }
   )
-})
+}
 
-register_pullback_rule(p_mul, function(primals, .required) {
+p_mul[["pullback"]] <- function(primals, .required) {
   lhs <- primals[[1L]]
   rhs <- primals[[2L]]
   list(
@@ -35,9 +35,9 @@ register_pullback_rule(p_mul, function(primals, .required) {
       keep(.required, \() nvl_mul(grad, rhs), \() nvl_mul(grad, lhs))
     }
   )
-})
+}
 
-register_pullback_rule(p_sub, function(primals, .required) {
+p_sub[["pullback"]] <- function(primals, .required) {
   lhs <- primals[[1L]]
   rhs <- primals[[2L]]
   list(
@@ -46,10 +46,10 @@ register_pullback_rule(p_sub, function(primals, .required) {
       keep(.required, \() grad, \() nvl_neg(grad))
     }
   )
-})
+}
 
 
-register_pullback_rule(p_neg, function(primals, .required) {
+p_neg[["pullback"]] <- function(primals, .required) {
   x <- primals[[1L]]
   list(
     list(nvl_neg(x)),
@@ -57,9 +57,9 @@ register_pullback_rule(p_neg, function(primals, .required) {
       keep(.required, \() nvl_neg(grad))
     }
   )
-})
+}
 
-register_pullback_rule(p_div, function(primals, .required) {
+p_div[["pullback"]] <- function(primals, .required) {
   lhs <- primals[[1L]]
   rhs <- primals[[2L]]
   two <- nv_scalar(2L, dtype(lhs))
@@ -75,9 +75,9 @@ register_pullback_rule(p_div, function(primals, .required) {
       keep(.required, \() nv_div(one, rhs), \() nv_div(nvl_neg(y), rhs))
     }
   )
-})
+}
 
-register_pullback_rule(p_pow, function(primals, .required) {
+p_pow[["pullback"]] <- function(primals, .required) {
   lhs <- primals[[1L]]
   rhs <- primals[[2L]]
   list(
@@ -96,11 +96,9 @@ register_pullback_rule(p_pow, function(primals, .required) {
       )
     }
   )
-})
+}
 
-register_pullback_rule(
-  p_dot_general,
-  function(primals, contracting_dims, batching_dims, .required) {
+p_dot_general[["pullback"]] <- function(primals, contracting_dims, batching_dims, .required) {
     lhs <- primals[[1L]]
     rhs <- primals[[2L]]
     y <- nvl_dot_general(lhs, rhs, contracting_dims, batching_dims)
@@ -192,12 +190,11 @@ register_pullback_rule(
           make_grad_closure(rhs, d_rhs_out, rd_rhs, bd_rhs, perm_lhs),
           make_grad_closure(lhs, d_lhs_out, rd_lhs, bd_lhs, perm_rhs)
         )
-      }
-    )
-  }
-)
+    }
+  )
+}
 
-register_pullback_rule(p_transpose, function(primals, permutation, .required) {
+p_transpose[["pullback"]] <- function(primals, permutation, .required) {
   x <- primals[[1L]]
   y <- nvl_transpose(x, permutation)
   list(
@@ -210,9 +207,9 @@ register_pullback_rule(p_transpose, function(primals, permutation, .required) {
       keep(.required, \() nvl_transpose(grad, inv))
     }
   )
-})
+}
 
-register_pullback_rule(p_reshape, function(primals, shape, .required) {
+p_reshape[["pullback"]] <- function(primals, shape, .required) {
   operand <- primals[[1L]]
   y <- nvl_reshape(operand, shape)
   list(
@@ -221,9 +218,9 @@ register_pullback_rule(p_reshape, function(primals, shape, .required) {
       keep(.required, \() nvl_reshape(grad, shape(operand)))
     }
   )
-})
+}
 
-register_pullback_rule(p_reduce_sum, function(primals, dims, drop, .required) {
+p_reduce_sum[["pullback"]] <- function(primals, dims, drop, .required) {
   operand <- primals[[1L]]
   y <- nvl_reduce_sum(operand, dims, drop)
   list(
@@ -234,9 +231,9 @@ register_pullback_rule(p_reduce_sum, function(primals, dims, drop, .required) {
       })
     }
   )
-})
+}
 
-register_pullback_rule(p_broadcast_in_dim, function(primals, shape_out, broadcast_dimensions, .required) {
+p_broadcast_in_dim[["pullback"]] <- function(primals, shape_out, broadcast_dimensions, .required) {
   operand <- primals[[1L]]
   y <- nvl_broadcast_in_dim(operand, shape_out, broadcast_dimensions)
 
@@ -271,4 +268,4 @@ register_pullback_rule(p_broadcast_in_dim, function(primals, shape_out, broadcas
       })
     }
   )
-})
+}

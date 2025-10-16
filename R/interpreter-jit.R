@@ -91,7 +91,7 @@ method(process_primitive, JitInterpreter) <- function(
   params
 ) {
   avals_in <- lapply(boxes, \(box) box@func_var)
-  avals_out <- rlang::exec(prim@jit_rule, !!!c(avals_in, params))
+  avals_out <- rlang::exec(prim[["jit"]], !!!c(avals_in, params))
   lapply(avals_out, \(aval) JitBox(func_var = aval, interpreter = interpreter))
 }
 

@@ -54,7 +54,7 @@ x <- nv_scalar(3.0)
 f_jit(a, b, x)
 ```
 
-Through automatic differentiation, we can also obtain the gradient of `f`.
+Through automatic differentiation, we can also obtain the gradient of the above function.
 
 ```{r}
 g_jit <- jit(gradient(f, wrt = c("a", "b")))
@@ -67,11 +67,18 @@ g_jit(a, b, x)
   - Gradients for functions with scalar outputs are supported.
 - Fast:
   - Code is JIT compiled into a single kernel.
-  - Runs on various hardware, including CPU and GPU.
+  - Runs on different hardware backends, including CPU and GPU.
 - Easy to extend and contribute:
   - The package is written almost entirely in R.
   - It is easy to add new primitives.
   - It (will be) possible to add new transformations, a.k.a. interpretation rules.
+
+## When to use this package?
+
+While {anvil} allows to run certain types of programs extremely fast, it only applies to a certain category of problems.
+Specifically, it is suitable for numerical algorithms, such as optimizing bayesian models, training neural networks or more generally numerical optimization.
+Another restriction is that {anvil} needs to re-compile the code for each new unique input shape.
+This has the advantage, that the compiler can make memory optimizations, but the compilation overhead might be a problem for fast running programs.
 
 ## Acknowledgments
 
