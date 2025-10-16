@@ -1,58 +1,53 @@
-# Core Primitives
-
+#' @title Primitive
+#' @description
+#' Primitive interpretation rule.
+#' @param name (`character()`)\cr
+#'   The name of the primitive.
+#' @return (`Primitive`)
+#' @export
 Primitive <- new_class(
   "Primitive",
   properties = list(
     name = class_character,
-    .rules = new_property(class_environment),
-    jit_rule = S7::new_property(
-      class_function,
-      setter = function(self, value) {
-        self@.rules[["jit_rule"]] <- value
-        self
-      },
-      getter = function(self) {
-        rule <- self@.rules[["jit_rule"]]
-        if (is.null(rule)) {
-          function(...) stop("primitive ", self@name, " does not implement jit")
-        } else {
-          rule
-        }
-      }
-    ),
-    pullback_rule = S7::new_property(
-      class_function,
-      setter = function(self, value) {
-        self@.rules[["pullback_rule"]] <- value
-        self
-      },
-      getter = function(self) {
-        rule <- self@.rules[["pullback_rule"]]
-        if (is.null(rule)) {
-          function(...) stop("primitive ", self@name, " does not implement pullback")
-        } else {
-          rule
-        }
-      }
-    )
+    rules = S7::class_environment
   ),
   constructor = function(name) {
-    new_object(S7_object(), .rules = new.env(), name = name)
+    env <- new.env(parent = emptyenv())
+    new_object(S7_object(), rules = env, name = name)
   }
 )
 
+#' @export
+`[[<-.anvil::Primitive` <- function(x, name, value) {
+  if (!is.function(value)) {
+    cli_abort("Rule must be a function")
+  }
+  x@rules[[name]] <- value
+  if (!(name %in% globals$interpretation_rules)) {
+    cli_abort("Unknown interpretation rule: {name}")
+  }
+  x
+}
+
+method(`[[`, Primitive) <- function(x, name) {
+  rule <- x@rules[[name]]
+  if (is.null(rule)) {
+    if (!(name %in% globals$interpretation_rules)) {
+      cli_abort("Unknown rule: {name}")
+    }
+    cli_abort("Rule {name} not defined for primitive {x@name}")
+  }
+  rule
+}
+
+
 method(print, Primitive) <- function(x, ...) {
   cat(sprintf("<Primitive:%s>\n", x@name))
-}
-
-register_jit_rule <- function(primitive, rule) {
-  primitive@jit_rule <- rule
-  primitive
-}
-
-register_pullback_rule <- function(primitive, rule) {
-  primitive@pullback_rule <- rule
-  primitive
+  rules <- sapply(globals$interpretation_rules, \(rule) {
+    if (!is.null(x@rules[[rule]])) rule
+  })
+  rules_str <- if (length(rules) > 0L) paste0(rules, collapse = ", ") else "-"
+  cat(" implements:", rules_str, "\n")
 }
 
 # We define these infix operators, because `+` etc. are reserved for the broadcasted ones (nv_)
