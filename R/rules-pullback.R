@@ -62,7 +62,6 @@ p_neg[["pullback"]] <- function(primals, .required) {
 p_div[["pullback"]] <- function(primals, .required) {
   lhs <- primals[[1L]]
   rhs <- primals[[2L]]
-  two <- nv_scalar(2L, dtype(lhs))
   one <- nv_scalar(1L, dtype(lhs))
 
   y <- nvl_div(lhs, rhs)
@@ -99,97 +98,97 @@ p_pow[["pullback"]] <- function(primals, .required) {
 }
 
 p_dot_general[["pullback"]] <- function(primals, contracting_dims, batching_dims, .required) {
-    lhs <- primals[[1L]]
-    rhs <- primals[[2L]]
-    y <- nvl_dot_general(lhs, rhs, contracting_dims, batching_dims)
-    list(
-      list(y),
-      function(grad) {
-        # batching dimensions
-        bd_lhs <- batching_dims[[1L]]
-        bd_rhs <- batching_dims[[2L]]
-        # contracting dimensions
-        cd_lhs <- contracting_dims[[1L]]
-        cd_rhs <- contracting_dims[[2L]]
-        # remaining dimensions
-        rem_dims <- function(operand, b_dims, c_dims) {
-          ii <- c(b_dims, c_dims)
-          seq_len(ndims(operand))[if (length(ii)) -ii else TRUE]
+  lhs <- primals[[1L]]
+  rhs <- primals[[2L]]
+  y <- nvl_dot_general(lhs, rhs, contracting_dims, batching_dims)
+  list(
+    list(y),
+    function(grad) {
+      # batching dimensions
+      bd_lhs <- batching_dims[[1L]]
+      bd_rhs <- batching_dims[[2L]]
+      # contracting dimensions
+      cd_lhs <- contracting_dims[[1L]]
+      cd_rhs <- contracting_dims[[2L]]
+      # remaining dimensions
+      rem_dims <- function(operand, b_dims, c_dims) {
+        ii <- c(b_dims, c_dims)
+        seq_len(ndims(operand))[if (length(ii)) -ii else TRUE]
+      }
+      rd_lhs <- rem_dims(lhs, bd_lhs, cd_lhs)
+      rd_rhs <- rem_dims(rhs, bd_rhs, cd_rhs)
+
+      # output dimensions
+      bd_out <- seq_along(bd_lhs)
+      d_lhs_out <- seq_along(rd_lhs) +
+        if (length(bd_out)) bd_out[length(bd_out)] else 0L
+      d_rhs_out <- seq_along(rd_rhs) +
+        if (length(d_lhs_out)) d_lhs_out[length(d_lhs_out)] else 0L
+
+      # lhs has dimensions (bd_lhs, cd_lhs, rd_lhs), not necessarily in this order.
+      # each "dimension" is a set of axes, not a single axis.
+      # rhs has (bd_rhs, cd_rhs, rd_rhs), not necessarily in this order.
+      # output has dimension (dims(bd_lhs), dims(rd_lhs), dims(rd_rhs))
+
+      # the dim of grad_lhs is (dims(bd_lhs), dims(rd_lhs), dims(cd_lhs))
+      # now, we transpose it to its original shape
+
+      # bd_lhs indicates the position of the original batching dimensions,
+      # the same for rd_lhs and cd_lhs.
+      # to revert them to their original position
+
+      # for grad_lhs we compute
+      # grad[(bd_lhs, rd_lhs, rd_rhs)] * rhs[some_order(bd_rhs, rd_rhs, cd_rhs)]
+      # (batch dims stay batch_dims, reducing dim becomes the rd_rhs)
+      # we get the gradient back in the shape:
+      # [bd_lhs, rd_lhs, some_order(cd_rhs)].
+      # But we want it in its original order, so we need to permute it back.
+      # If cd_rhs was [4, 2, 7], some_order would be cd_rhs[2], cd_rhs[1], cd_rhs[3]
+      # The some_order is given my how
+
+      conv_perm <- function(x) {
+        # x is a permutation vector so that if we permute y by x
+        # y[x[i]] = i
+        # but stablehlo expects it so that:
+        # y[i] = x[i]
+        ids_new <- integer(length(x))
+        for (i in seq_along(x)) {
+          ids_new[x[i]] <- i
         }
-        rd_lhs <- rem_dims(lhs, bd_lhs, cd_lhs)
-        rd_rhs <- rem_dims(rhs, bd_rhs, cd_rhs)
+        ids_new
+      }
 
-        # output dimensions
-        bd_out <- seq_along(bd_lhs)
-        d_lhs_out <- seq_along(rd_lhs) +
-          if (length(bd_out)) bd_out[length(bd_out)] else 0L
-        d_rhs_out <- seq_along(rd_rhs) +
-          if (length(d_lhs_out)) d_lhs_out[length(d_lhs_out)] else 0L
+      cd_lhs2 <- cd_lhs[order(cd_rhs)]
+      perm_lhs <- conv_perm(c(bd_lhs, rd_lhs, cd_lhs2))
 
-        # lhs has dimensions (bd_lhs, cd_lhs, rd_lhs), not necessarily in this order.
-        # each "dimension" is a set of axes, not a single axis.
-        # rhs has (bd_rhs, cd_rhs, rd_rhs), not necessarily in this order.
-        # output has dimension (dims(bd_lhs), dims(rd_lhs), dims(rd_rhs))
+      # For grad_rhs we compute
+      # grad[(bd_rhs, rd_rhs, rd_lhs)] * lhs[some_order(bd_lhs, rd_lhs, cd_lhs)]
+      # (batch dims stay batch_dims, reducing dim becomes the rd_lhs)
+      # We get the gradient back in the shape:
+      # [bd_rhs, rd_rhs, cd_lhs].
 
-        # the dim of grad_lhs is (dims(bd_lhs), dims(rd_lhs), dims(cd_lhs))
-        # now, we transpose it to its original shape
+      # But we want it in its original order, so we need to permute it back.
 
-        # bd_lhs indicates the position of the original batching dimensions,
-        # the same for rd_lhs and cd_lhs.
-        # to revert them to their original position
+      cd_rhs2 <- cd_rhs[order(cd_lhs)]
+      perm_rhs <- conv_perm(c(bd_rhs, rd_rhs, cd_rhs2))
 
-        # for grad_lhs we compute
-        # grad[(bd_lhs, rd_lhs, rd_rhs)] * rhs[some_order(bd_rhs, rd_rhs, cd_rhs)]
-        # (batch dims stay batch_dims, reducing dim becomes the rd_rhs)
-        # we get the gradient back in the shape:
-        # [bd_lhs, rd_lhs, some_order(cd_rhs)].
-        # But we want it in its original order, so we need to permute it back.
-        # If cd_rhs was [4, 2, 7], some_order would be cd_rhs[2], cd_rhs[1], cd_rhs[3]
-        # The some_order is given my how
-
-        conv_perm <- function(x) {
-          # x is a permutation vector so that if we permute y by x
-          # y[x[i]] = i
-          # but stablehlo expects it so that:
-          # y[i] = x[i]
-          ids_new <- integer(length(x))
-          for (i in seq_along(x)) {
-            ids_new[x[i]] <- i
-          }
-          ids_new
+      make_grad_closure <- function(x, d_x_out, rd_x, bd_x, perm_y) {
+        function() {
+          grad_x <- nvl_dot_general(
+            grad,
+            x,
+            contracting_dims = list(d_x_out, rd_x),
+            batching_dims = list(bd_out, bd_x)
+          )
+          nvl_transpose(grad_x, perm_y)
         }
+      }
 
-        cd_lhs2 <- cd_lhs[order(cd_rhs)]
-        perm_lhs <- conv_perm(c(bd_lhs, rd_lhs, cd_lhs2))
-
-        # For grad_rhs we compute
-        # grad[(bd_rhs, rd_rhs, rd_lhs)] * lhs[some_order(bd_lhs, rd_lhs, cd_lhs)]
-        # (batch dims stay batch_dims, reducing dim becomes the rd_lhs)
-        # We get the gradient back in the shape:
-        # [bd_rhs, rd_rhs, cd_lhs].
-
-        # But we want it in its original order, so we need to permute it back.
-
-        cd_rhs2 <- cd_rhs[order(cd_lhs)]
-        perm_rhs <- conv_perm(c(bd_rhs, rd_rhs, cd_rhs2))
-
-        make_grad_closure <- function(x, d_x_out, rd_x, bd_x, perm_y) {
-          function() {
-            grad_x <- nvl_dot_general(
-              grad,
-              x,
-              contracting_dims = list(d_x_out, rd_x),
-              batching_dims = list(bd_out, bd_x)
-            )
-            nvl_transpose(grad_x, perm_y)
-          }
-        }
-
-        keep(
-          .required,
-          make_grad_closure(rhs, d_rhs_out, rd_rhs, bd_rhs, perm_lhs),
-          make_grad_closure(lhs, d_lhs_out, rd_lhs, bd_lhs, perm_rhs)
-        )
+      keep(
+        .required,
+        make_grad_closure(rhs, d_rhs_out, rd_rhs, bd_rhs, perm_lhs),
+        make_grad_closure(lhs, d_lhs_out, rd_lhs, bd_lhs, perm_rhs)
+      )
     }
   )
 }
