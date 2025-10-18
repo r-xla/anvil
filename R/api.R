@@ -150,6 +150,68 @@ nv_le <- function(lhs, rhs) {
   do.call(nvl_le, nv_broadcast_tensors(lhs, rhs))
 }
 
+## Additional binary ops -------------------------------------------------------
+
+#' @rdname nv_binary_ops
+#' @export
+nv_max <- function(lhs, rhs) {
+  do.call(nvl_max, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_min <- function(lhs, rhs) {
+  do.call(nvl_min, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_remainder <- function(lhs, rhs) {
+  do.call(nvl_remainder, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_and <- function(lhs, rhs) {
+  do.call(nvl_and, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_or <- function(lhs, rhs) {
+  do.call(nvl_or, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_xor <- function(lhs, rhs) {
+  do.call(nvl_xor, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_shift_left <- function(lhs, rhs) {
+  do.call(nvl_shift_left, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_shift_right_logical <- function(lhs, rhs) {
+  do.call(nvl_shift_right_logical, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_shift_right_arithmetic <- function(lhs, rhs) {
+  do.call(nvl_shift_right_arithmetic, nv_broadcast_tensors(lhs, rhs))
+}
+
+#' @rdname nv_binary_ops
+#' @export
+nv_atan2 <- function(lhs, rhs) {
+  do.call(nvl_atan2, nv_broadcast_tensors(lhs, rhs))
+}
+
 ## Unary ops ------------------------------------------------------------------
 
 #' @name nv_unary_ops
@@ -162,6 +224,50 @@ nv_le <- function(lhs, rhs) {
 #' @rdname nv_unary_ops
 #' @export
 nv_neg <- nvl_neg
+
+#' @rdname nv_unary_ops
+#' @export
+nv_abs <- nvl_abs
+
+#' @rdname nv_unary_ops
+#' @export
+nv_sqrt <- nvl_sqrt
+
+#' @rdname nv_unary_ops
+#' @export
+nv_rsqrt <- nvl_rsqrt
+
+#' @rdname nv_unary_ops
+#' @export
+nv_log <- nvl_log
+
+#' @rdname nv_unary_ops
+#' @export
+nv_tanh <- nvl_tanh
+
+#' @rdname nv_unary_ops
+#' @export
+nv_tan <- nvl_tan
+
+#' @rdname nv_unary_ops
+#' @export
+nv_floor <- nvl_floor
+
+#' @rdname nv_unary_ops
+#' @export
+nv_ceil <- nvl_ceil
+
+#' @rdname nv_unary_ops
+#' @export
+nv_sign <- nvl_sign
+
+#' @rdname nv_unary_ops
+#' @export
+nv_exp <- nvl_exp
+
+#' @rdname nv_unary_ops
+#' @export
+nv_round <- nvl_round
 
 
 ## Other operations -----------------------------------------------------------
@@ -238,6 +344,26 @@ nv_reshape <- nvl_reshape
 #' @name nv_reduce_ops
 #' @export
 nv_reduce_sum <- nvl_reduce_sum
+
+#' @rdname nv_reduce_ops
+#' @export
+nv_reduce_prod <- nvl_reduce_prod
+
+#' @rdname nv_reduce_ops
+#' @export
+nv_reduce_max <- nvl_reduce_max
+
+#' @rdname nv_reduce_ops
+#' @export
+nv_reduce_min <- nvl_reduce_min
+
+#' @rdname nv_reduce_ops
+#' @export
+nv_reduce_any <- nvl_reduce_any
+
+#' @rdname nv_reduce_ops
+#' @export
+nv_reduce_all <- nvl_reduce_all
 
 ## Data Types ------------------------------------------------------------------
 

@@ -3,9 +3,24 @@
 \name{nv_reduce_ops}
 \alias{nv_reduce_ops}
 \alias{nv_reduce_sum}
+\alias{nv_reduce_prod}
+\alias{nv_reduce_max}
+\alias{nv_reduce_min}
+\alias{nv_reduce_any}
+\alias{nv_reduce_all}
 \title{Reduction Operators}
 \usage{
 nv_reduce_sum(operand, dims, drop = TRUE)
+
+nv_reduce_prod(operand, dims, drop = TRUE)
+
+nv_reduce_max(operand, dims, drop = TRUE)
+
+nv_reduce_min(operand, dims, drop = TRUE)
+
+nv_reduce_any(operand, dims, drop = TRUE)
+
+nv_reduce_all(operand, dims, drop = TRUE)
 }
 \arguments{
 \item{operand}{(\code{\link{nv_tensor}})\cr

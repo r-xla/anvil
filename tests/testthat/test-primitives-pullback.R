@@ -226,3 +226,15 @@ test_that("pullback for comparisons not implemented", {
   })
   expect_error(g(nv_scalar(1L), nv_scalar(2L)))
 })
+
+test_that("atan2 pullback", {
+  g <- jit(gradient(nvl_atan2))
+  x <- nv_scalar(3.0)
+  y <- nv_scalar(4.0)
+  out <- g(x, y)
+  # d/dx atan2(x, y) = y / (x^2 + y^2)
+  # d/dy atan2(x, y) = -x / (x^2 + y^2)
+  denom <- 3^2 + 4^2
+  expect_equal(out[[1L]], nv_scalar(4 / denom))
+  expect_equal(out[[2L]], nv_scalar(-3 / denom))
+})

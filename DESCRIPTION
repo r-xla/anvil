@@ -44,11 +44,11 @@ RoxygenNote: 7.3.2.9000
 Collate:
     'reexports.R'
     'aaa.R'
+    'primitives.R'
     'tensor.R'
     'interpreter.R'
-    'api-group-generics.R'
-    'primitives.R'
     'api.R'
+    'api-group-generics.R'
     'flatten.R'
     'interpreter-jit.R'
     'interpreter-pullback.R'

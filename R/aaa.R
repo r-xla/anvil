@@ -6,7 +6,7 @@ NULL
 ## usethis namespace: start
 #' @importFrom stablehlo repr BooleanType IntegerType FloatType Shape FuncId Func as_dtype FuncVariable
 #' @importFrom stablehlo local_func hlo_input hlo_return hlo_tensor hlo_scalar
-#' @importFrom stablehlo UnsignedType
+#' @importFrom stablehlo UnsignedType TensorType
 #' @import checkmate
 #' @import S7
 #' @import tengen
@@ -24,7 +24,6 @@ globals$nv_types <- "AnvilTensor"
 globals$interpretation_rules <- c("jit", "pullback")
 
 utils::globalVariables("globals")
-
 
 hash <- S7::new_generic("hash", "x", function(x) {
   S7::S7_dispatch()

@@ -232,6 +232,20 @@ p_reduce_sum[["pullback"]] <- function(primals, dims, drop, .required) {
   )
 }
 
+p_reduce_prod[["pullback"]] <- function(primals, dims, drop, .required) {
+  operand <- primals[[1L]]
+  y <- nvl_reduce_prod(operand, dims, drop) # nolint
+  list(
+    list(y),
+    function(grad) {
+      keep(.required,\() {
+        #nv_where(operand == 0)
+        # TODO:
+      })
+    }
+  )
+}
+
 p_broadcast_in_dim[["pullback"]] <- function(primals, shape_out, broadcast_dimensions, .required) {
   operand <- primals[[1L]]
   y <- nvl_broadcast_in_dim(operand, shape_out, broadcast_dimensions)
@@ -265,6 +279,46 @@ p_broadcast_in_dim[["pullback"]] <- function(primals, shape_out, broadcast_dimen
         }
         x
       })
+    }
+  )
+}
+
+# atan2 pullback ----------------------------------------------------------------
+
+p_atan2[["pullback"]] <- function(primals, .required) {
+  lhs <- primals[[1L]]
+  rhs <- primals[[2L]]
+  y <- nvl_atan2(lhs, rhs) # nolint
+  list(
+    list(y),
+    function(grad) {
+      keep(
+        .required,
+        \() nv_mul(grad, nv_div(rhs, nv_add(nv_mul(lhs, lhs), nv_mul(rhs, rhs)))),
+        \() nv_mul(grad, nv_div(nv_neg(lhs), nv_add(nv_mul(lhs, lhs), nv_mul(rhs, rhs))))
+      )
+    }
+  )
+}
+
+# control flow pullback ---------------------------------------------------------
+
+p_select[["pullback"]] <- function(primals, .required) {
+  pred <- primals[[1L]]
+  true_value <- primals[[2L]]
+  false_value <- primals[[3L]]
+  y <- nvl_select(pred, true_value, false_value)
+  zero <- nv_tensor(0L, dtype = dtype(true_value), shape = shape(true_value))
+  # TODO: We really need to make the primitives broadcasted otherwise it's just
+  # unnecessarily expensive without the broadcasting, e.g. for the 0 here again.
+  list(
+    list(y),
+    function(grad) {
+      keep(.required,
+        \() stop("Predicate cannot be differentiated"),
+        \() nv_select(pred, true_value, zero),
+        \() nv_select(nv_neg(pred), zero, false_value)
+      )
     }
   )
 }
