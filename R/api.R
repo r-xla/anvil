@@ -2,7 +2,7 @@
 #' @include interpreter.R
 #' @include primitives.R
 
-## Broadcasting ----------------------------------------------------------------
+## Conversion ------------------------------------------------------------------
 
 broadcast_shapes <- function(shape_lhs, shape_rhs) {
   if (length(shape_lhs) > length(shape_rhs)) {
@@ -73,6 +73,39 @@ nv_broadcast_to <- function(operand, shape) {
   }
 }
 
+#' @title Convert Tensor to Different Data Type
+#' @description
+#' Convert a tensor to a different data type.
+#' @param operand ([`nv_tensor`])\cr
+#'   Tensor.
+#' @param dtype [`stablehlo::TensorDataType`]\cr
+#'   Data type to convert to.
+#' @return [`nv_tensor`]
+#' @export
+nv_convert <- function(operand, dtype) {
+  nvl_convert(operand, as_dtype(dtype))
+}
+
+
+#' @rdname nv_transpose
+#' @export
+nv_transpose <- function(x, permutation = NULL) {
+  permutation <- permutation %??% rev(seq_len(ndims(x)))
+  nvl_transpose(x, permutation)
+}
+
+
+#' @title Reshape
+#' @description
+#' Reshape a tensor.
+#' @param operand ([`nv_tensor`])\cr
+#'   The tensor.
+#' @param shape (`integer()`)\cr
+#'   The new shape.
+#' @return [`nv_tensor`]
+#' @export
+nv_reshape <- nvl_reshape
+
 ## Binary ops ------------------------------------------------------------------
 
 #' @name nv_binary_ops
@@ -86,131 +119,89 @@ NULL
 
 #' @rdname nv_binary_ops
 #' @export
-nv_add <- function(lhs, rhs) {
-  do.call(nvl_add, nv_broadcast_tensors(lhs, rhs))
-}
+nv_add <- nvl_add
 
 #' @rdname nv_binary_ops
 #' @export
-nv_mul <- function(lhs, rhs) {
-  do.call(nvl_mul, nv_broadcast_tensors(lhs, rhs))
-}
+nv_mul <- nvl_mul
 
 #' @rdname nv_binary_ops
 #' @export
-nv_sub <- function(lhs, rhs) {
-  do.call(nvl_sub, nv_broadcast_tensors(lhs, rhs))
-}
+nv_sub <- nvl_sub
 
 #' @rdname nv_binary_ops
 #' @export
-nv_div <- function(lhs, rhs) {
-  do.call(nvl_div, nv_broadcast_tensors(lhs, rhs))
-}
+nv_div <- nvl_div
 
 #' @rdname nv_binary_ops
 #' @export
-nv_pow <- function(lhs, rhs) {
-  do.call(nvl_pow, nv_broadcast_tensors(lhs, rhs))
-}
+nv_pow <- nvl_pow
 
 #' @rdname nv_binary_ops
 #' @export
-nv_eq <- function(lhs, rhs) {
-  do.call(nvl_eq, nv_broadcast_tensors(lhs, rhs))
-}
+nv_eq <- nvl_eq
 
 #' @rdname nv_binary_ops
 #' @export
-nv_ne <- function(lhs, rhs) {
-  do.call(nvl_ne, nv_broadcast_tensors(lhs, rhs))
-}
+nv_ne <- nvl_ne
 
 #' @rdname nv_binary_ops
 #' @export
-nv_gt <- function(lhs, rhs) {
-  do.call(nvl_gt, nv_broadcast_tensors(lhs, rhs))
-}
+nv_gt <- nvl_gt
 
 #' @rdname nv_binary_ops
 #' @export
-nv_ge <- function(lhs, rhs) {
-  do.call(nvl_ge, nv_broadcast_tensors(lhs, rhs))
-}
+nv_ge <- nvl_ge
 
 #' @rdname nv_binary_ops
 #' @export
-nv_lt <- function(lhs, rhs) {
-  do.call(nvl_lt, nv_broadcast_tensors(lhs, rhs))
-}
+nv_lt <- nvl_lt
 
 #' @rdname nv_binary_ops
 #' @export
-nv_le <- function(lhs, rhs) {
-  do.call(nvl_le, nv_broadcast_tensors(lhs, rhs))
-}
+nv_le <- nvl_le
 
 ## Additional binary ops -------------------------------------------------------
 
 #' @rdname nv_binary_ops
 #' @export
-nv_max <- function(lhs, rhs) {
-  do.call(nvl_max, nv_broadcast_tensors(lhs, rhs))
-}
+nv_max <- nvl_max
 
 #' @rdname nv_binary_ops
 #' @export
-nv_min <- function(lhs, rhs) {
-  do.call(nvl_min, nv_broadcast_tensors(lhs, rhs))
-}
+nv_min <- nvl_min
 
 #' @rdname nv_binary_ops
 #' @export
-nv_remainder <- function(lhs, rhs) {
-  do.call(nvl_remainder, nv_broadcast_tensors(lhs, rhs))
-}
+nv_remainder <- nvl_remainder
 
 #' @rdname nv_binary_ops
 #' @export
-nv_and <- function(lhs, rhs) {
-  do.call(nvl_and, nv_broadcast_tensors(lhs, rhs))
-}
+nv_and <- nvl_and
 
 #' @rdname nv_binary_ops
 #' @export
-nv_or <- function(lhs, rhs) {
-  do.call(nvl_or, nv_broadcast_tensors(lhs, rhs))
-}
+nv_or <- nvl_or
 
 #' @rdname nv_binary_ops
 #' @export
-nv_xor <- function(lhs, rhs) {
-  do.call(nvl_xor, nv_broadcast_tensors(lhs, rhs))
-}
+nv_xor <- nvl_xor
 
 #' @rdname nv_binary_ops
 #' @export
-nv_shift_left <- function(lhs, rhs) {
-  do.call(nvl_shift_left, nv_broadcast_tensors(lhs, rhs))
-}
+nv_shift_left <- nvl_shift_left
 
 #' @rdname nv_binary_ops
 #' @export
-nv_shift_right_logical <- function(lhs, rhs) {
-  do.call(nvl_shift_right_logical, nv_broadcast_tensors(lhs, rhs))
-}
+nv_shift_right_logical <- nvl_shift_right_logical
 
 #' @rdname nv_binary_ops
 #' @export
-nv_shift_right_arithmetic <- function(lhs, rhs) {
-  do.call(nvl_shift_right_arithmetic, nv_broadcast_tensors(lhs, rhs))
-}
+nv_shift_right_arithmetic <- nvl_shift_right_arithmetic
 
 #' @rdname nv_binary_ops
 #' @export
-nv_atan2 <- function(lhs, rhs) {
-  do.call(nvl_atan2, nv_broadcast_tensors(lhs, rhs))
-}
+nv_atan2 <- nvl_atan2
 
 ## Unary ops ------------------------------------------------------------------
 
@@ -312,38 +303,27 @@ nv_matmul <- function(lhs, rhs) {
   )
 }
 
-#' @rdname nv_transpose
-#' @export
-nv_transpose <- function(x, permutation = NULL) {
-  permutation <- permutation %??% rev(seq_len(ndims(x)))
-  nvl_transpose(x, permutation)
-}
-
-
-#' @title Reshape
-#' @description
-#' Reshape a tensor.
-#' Note that row-major order is used, which is different from R's column-major order.
-#' @param operand ([`nv_tensor`])\cr
-#'   The tensor.
-#' @param shape (`integer()`)\cr
-#'   Output shape.
-#' @return ([`nv_tensor`])
-#' @export
-nv_reshape <- nvl_reshape
-
 #' @title Reduction Operators
+#' @name nv_reduce_ops
 #' @description
 #' Reduce a tensor along specified dimensions.
 #' @param operand ([`nv_tensor`])\cr
 #'   The tensor.
 #' @param dims (`integer()`)\cr
-#'   The dimensions along which to reduce.
+#'   Dimensions to reduce.
 #' @param drop (`logical(1)`)\cr
 #'   Whether to drop the reduced dimensions.
-#' @name nv_reduce_ops
+#' @return [`nv_tensor`]
 #' @export
 nv_reduce_sum <- nvl_reduce_sum
+
+#' @rdname nv_reduce_ops
+#' @export
+nv_reduce_mean <- function(operand, dims, drop = TRUE) {
+  # TODO: division by zero?
+  nelts <- shape(operand)[dims]
+  nv_reduce_sum(operand, dims, drop) / nv_scalar(nelts)
+}
 
 #' @rdname nv_reduce_ops
 #' @export

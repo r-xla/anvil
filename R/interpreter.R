@@ -121,7 +121,8 @@ interprete <- function(prim, args, params = list()) {
 
 full_raise <- function(interpreter, val) {
   if (!inherits(val, Box)) {
-    # Closed-over constants (constants captured via lexical scoping)
+    # Closed-over constants (constants captured via lexical scoping) or
+    # simply constants (like 1, 2L, ...)
     if (is_nv_type(val)) {
       return(box(interpreter, val))
     }

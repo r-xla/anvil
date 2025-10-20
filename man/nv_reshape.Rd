@@ -11,12 +11,11 @@ nv_reshape(operand, shape)
 The tensor.}
 
 \item{shape}{(\code{integer()})\cr
-Output shape.}
+The new shape.}
 }
 \value{
-(\code{\link{nv_tensor}})
+\code{\link{nv_tensor}}
 }
 \description{
 Reshape a tensor.
-Note that row-major order is used, which is different from R's column-major order.
 }

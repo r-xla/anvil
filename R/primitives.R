@@ -1,8 +1,5 @@
 # Core Primitives
 
-# Reflection object for defined rule names
-.RULES_DEFINED <- c("jit", "pullback")
-
 Primitive <- new_class(
   "Primitive",
   properties = list(
@@ -11,10 +8,6 @@ Primitive <- new_class(
   ),
   constructor = function(name) {
     env <- new.env(parent = emptyenv())
-    # initialize lazy error stubs so missing rules error nicely
-    for (key in .RULES_DEFINED) {
-      env[[key]] <- NULL
-    }
     new_object(S7_object(), rules = env, name = name)
   }
 )
@@ -43,34 +36,8 @@ method(`[[`, Primitive) <- function(x, name) {
   rule
 }
 
-
-
 method(print, Primitive) <- function(x, ...) {
   cat(sprintf("<Primitive:%s>\n", x@name))
-}
-
-register_jit_rule <- function(primitive, rule) {
-  primitive@rules[["jit"]] <- rule
-  primitive
-}
-
-register_pullback_rule <- function(primitive, rule) {
-  primitive@rules[["pullback"]] <- rule
-  primitive
-}
-
-# We define these infix operators, because `+` etc. are reserved for the broadcasted ones (nv_)
-
-`%+%` <- function(lhs, rhs) {
-  nvl_add(lhs, rhs)
-}
-
-`%x%` <- function(lhs, rhs) {
-  nvl_mul(lhs, rhs)
-}
-
-`%-%` <- function(lhs, rhs) {
-  nvl_sub(lhs, rhs)
 }
 
 p_add <- Primitive("add")
@@ -122,7 +89,6 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
   )[[1L]]
 }
 
-# transpose
 p_transpose <- Primitive("transpose")
 nvl_transpose <- function(operand, permutation) {
   interprete(
@@ -357,6 +323,17 @@ nvl_round <- function(operand, method = "nearest_even") {
     cli_abort("method must be one of: 'nearest_even', 'afz', but is {method}")
   }
   interprete(p_round, list(operand), list(method = method))[[1L]]
+}
+
+# dtype conversion ----------------------------------------------------------------
+
+p_convert <- Primitive("convert")
+nvl_convert <- function(operand, dtype) {
+  interprete(
+    p_convert,
+    list(operand),
+    params = list(dtype = dtype)
+  )[[1L]]
 }
 
 # control flow primitives -------------------------------------------------------

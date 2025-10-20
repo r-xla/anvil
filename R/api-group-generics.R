@@ -84,6 +84,7 @@
     "sum" = nv_reduce_sum(x, dims = dims, drop = TRUE),
     "any" = nv_reduce_any(x, dims = dims, drop = TRUE),
     "all" = nv_reduce_all(x, dims = dims, drop = TRUE),
+    "mean" = nv_reduce_mean(x, dims = dims, drop = TRUE),
     stop(sprintf("Summary generic '%s' not implemented", .Generic))
   )
 }

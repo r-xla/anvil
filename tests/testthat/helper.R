@@ -77,3 +77,7 @@ generate_test_array <- function(shp, dtype) {
   }
   array(x, shp)
 }
+
+if (requireNamespace("torch", quietly = TRUE)) {
+  source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
+}

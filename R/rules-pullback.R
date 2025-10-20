@@ -238,9 +238,8 @@ p_reduce_prod[["pullback"]] <- function(primals, dims, drop, .required) {
   list(
     list(y),
     function(grad) {
-      keep(.required,\() {
-        #nv_where(operand == 0)
-        # TODO:
+      keep(.required, \() {
+        .NotYetImplemented()
       })
     }
   )
@@ -314,11 +313,9 @@ p_select[["pullback"]] <- function(primals, .required) {
   list(
     list(y),
     function(grad) {
-      keep(.required,
-        \() stop("Predicate cannot be differentiated"),
-        \() nv_select(pred, true_value, zero),
-        \() nv_select(nv_neg(pred), zero, false_value)
-      )
+      keep(.required, \() stop("Predicate cannot be differentiated"), \() nvl_select(pred, grad, zero), \() {
+        nvl_select(nv_xor(pred, nv_scalar(TRUE, dtype = "pred")), grad, zero)
+      })
     }
   )
 }

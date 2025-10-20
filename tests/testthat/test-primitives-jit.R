@@ -55,17 +55,83 @@ test_that("matmul", {
   )
 })
 
-test_that("nv_reduce_sum", {
+# reduction ops
+
+test_that("empty reduce", {
+  x <- nv_empty("f32", shape = c(0, 1))
+  f <- jit(function(x) {
+    nv_reduce_sum(x, dims = 1:2)
+  })
+  expect_equal(f(x), nv_scalar(0))
+})
+
+test_that("drop reduce", {
   x <- nv_tensor(1:3, dtype = "f32")
   f <- jit(
-    \(x, drop) {
-      nvl_reduce_sum(x, dims = 1L, drop = drop)
+    function(x, drop) {
+      nv_reduce_sum(x, dims = 1L, drop = drop)
     },
     static = "drop"
   )
   expect_equal(f(x, TRUE), nv_scalar(6))
   expect_equal(f(x, FALSE), nv_tensor(6))
 })
+
+test_that("p_reduce_sum", {
+  f <- jit(
+    function(x) {
+      nvl_reduce_sum(x, dims = 1L)
+    }
+  )
+  expect_equal(f(nv_tensor(1:3, dtype = "f32")), nv_scalar(6))
+})
+
+test_that("p_reduce_prod", {
+  f <- jit(
+    function(x) {
+      nvl_reduce_prod(x, dims = 1L)
+    }
+  )
+  expect_equal(f(nv_tensor(1:4, dtype = "f32")), nv_scalar(24))
+})
+
+test_that("p_reduce_max", {
+  f <- jit(
+    function(x) {
+      nvl_reduce_max(x, dims = 1L)
+    }
+  )
+  expect_equal(f(nv_tensor(c(FALSE, FALSE))), nv_scalar(FALSE))
+  expect_equal(f(nv_tensor(c(FALSE, TRUE))), nv_scalar(TRUE))
+  expect_equal(f(nv_tensor(c(1, 2, 3))), nv_scalar(3))
+})
+
+test_that("p_reduce_min", {
+  f <- jit(
+    function(x) {
+      nvl_reduce_min(x, dims = 1L)
+    }
+  )
+  expect_equal(f(nv_tensor(c(FALSE, TRUE))), nv_scalar(FALSE))
+  expect_equal(f(nv_tensor(c(1, 2, 3), dtype = "f32")), nv_scalar(1))
+})
+
+test_that("p_reduce_any", {
+  f <- jit(function(x) {
+    nvl_reduce_any(x, dims = 1L)
+  })
+  expect_equal(f(nv_tensor(c(FALSE, FALSE))), nv_scalar(FALSE))
+  expect_equal(f(nv_tensor(c(TRUE, FALSE))), nv_scalar(TRUE))
+})
+
+test_that("p_reduce_all", {
+  f <- jit(function(x) {
+    nvl_reduce_all(x, dims = 1L)
+  })
+  expect_equal(f(nv_tensor(c(TRUE, FALSE))), nv_scalar(FALSE))
+  expect_equal(f(nv_tensor(c(TRUE, TRUE))), nv_scalar(TRUE))
+})
+
 
 test_that("p_reshape", {
   x <- nv_tensor(1:3, dtype = "f32")
@@ -158,4 +224,101 @@ test_that("p_shift_left/right", {
 
 test_that("p_atan2", {
   expect_jit_binary(nvl_atan2, atan2, rnorm(1), rnorm(1))
+})
+
+# additional jit rule coverage required by meta-tests ---------------------------------
+
+test_that("p_abs", {
+  expect_jit_unary(nvl_abs, abs, 1.7)
+})
+
+test_that("p_sqrt", {
+  expect_jit_unary(nvl_sqrt, sqrt, 1.7)
+})
+
+test_that("p_rsqrt", {
+  expect_jit_unary(nvl_rsqrt, function(x) 1 / sqrt(x), 1.7)
+})
+
+test_that("p_log", {
+  expect_jit_unary(nvl_log, log, 1.7)
+})
+
+test_that("p_tanh", {
+  expect_jit_unary(nvl_tanh, tanh, 0.5)
+})
+
+test_that("p_tan", {
+  expect_jit_unary(nvl_tan, tan, 0.5)
+})
+
+test_that("p_floor", {
+  expect_jit_unary(nvl_floor, floor, 1.7)
+})
+
+test_that("p_ceil", {
+  expect_jit_unary(nvl_ceil, ceiling, 1.7)
+})
+
+test_that("p_sign", {
+  expect_jit_unary(nvl_sign, sign, -1.7)
+})
+
+test_that("p_exp", {
+  expect_jit_unary(nvl_exp, exp, 0.5)
+})
+
+test_that("p_round", {
+  x <- nv_tensor(c(-2.5, -1.5, -0.5, 0.5, 1.5), dtype = "f32")
+  f_even <- jit(function(a) nvl_round(a, method = "nearest_even"))
+  f_afz <- jit(function(a) nvl_round(a, method = "afz"))
+  expect_equal(as_array(f_even(x)), round(as_array(x)))
+  # away-from-zero
+  expect_equal(as_array(f_afz(x)), sign(as_array(x)) * floor(abs(as_array(x)) + 0.5))
+})
+
+test_that("p_convert", {
+  x <- nv_tensor(rnorm(4), dtype = "f32")
+  f <- jit(function(a) nvl_convert(a, "f64"))
+  expect_equal(as_array(f(x)), as_array(x))
+})
+
+test_that("p_shift_right_logical", {
+  f <- jit(function(x, y) nvl_shift_right_logical(x, y))
+  x <- nv_scalar(8L, dtype = "i32")
+  y <- nv_scalar(1L, dtype = "i32")
+  expect_equal(as_array(f(x, y)), bitwShiftR(8L, 1L))
+})
+
+test_that("p_shift_right_arithmetic", {
+  f <- jit(function(x, y) nvl_shift_right_arithmetic(x, y))
+  expect_equal(as_array(f(nv_scalar(-8L, dtype = "i32"), nv_scalar(1L, dtype = "i32"))), as.integer(-8L %/% 2L))
+})
+
+test_that("p_select", {
+  f <- jit(function(p, a, b) nvl_select(p, a, b))
+  p <- nv_tensor(c(TRUE, FALSE, TRUE), dtype = "pred")
+  a <- nv_tensor(as.integer(c(1, 2, 3)), dtype = "i32")
+  b <- nv_tensor(as.integer(c(10, 20, 30)), dtype = "i32")
+  expect_equal(as.integer(as_array(f(p, a, b))), as.integer(c(1, 20, 3)))
+})
+
+test_that("p_broadcast_in_dim", {
+  x <- nv_tensor(1:6, dtype = "i32", shape = c(2, 3))
+  shape_out <- c(4L, 2L, 3L)
+  bdims <- c(2L, 3L)
+  f <- jit(function(a) nvl_broadcast_in_dim(a, shape_out, bdims))
+  out <- f(x)
+  expect_equal(dim(as_array(out)), shape_out)
+  expect_equal(as_array(out)[1, , ], matrix(1:6, nrow = 2))
+})
+
+test_that("p_dot_general", {
+  # vector dot product
+  x <- nv_tensor(rnorm(4), dtype = "f32")
+  y <- nv_tensor(rnorm(4), dtype = "f32")
+  f <- jit(function(a, b) {
+    nvl_dot_general(a, b, contracting_dims = list(c(1L), c(1L)), batching_dims = list(integer(), integer()))
+  })
+  expect_equal(as_array(f(x, y)), sum(as_array(x) * as_array(y)), tolerance = 1e-6)
 })
