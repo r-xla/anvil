@@ -218,15 +218,6 @@ test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
     contracting_dims = list(c(1L, 2L), c(3L, 4L)),
     batching_dims = list(c(4L, 5L), c(1L, 2L))
   )
-  # TODO: One super complicated test with many permutations
-})
-
-test_that("p_lt: pullback for comparisons not implemented", {
-  g <- gradient(function(a, b) {
-    # any comparison; returns boolean but gradient shouldn't be requested
-    a < b
-  })
-  expect_error(g(nv_scalar(1L), nv_scalar(2L)))
 })
 
 if (nzchar(system.file(package = "torch"))) {

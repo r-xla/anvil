@@ -58,6 +58,8 @@ nv_broadcast_tensors <- function(...) {
 }
 
 #' @title Broadcast
+#' @description
+#' Broadcast a tensor to a given shape using NumPy broadcasting rules.
 #' @template param_operand
 #' @param shape (`integer()`)\cr
 #'   Output shape.

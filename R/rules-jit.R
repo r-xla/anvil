@@ -9,8 +9,8 @@
   args <- lapply(args, function(arg) {
     shp_in <- shape(arg)
     if (!identical(shp_in, shape_out)) {
-      bdims <- make_broadcast_dimensions(shp_in, shape_out)
-      stablehlo::hlo_broadcast_in_dim(arg, bdims - 1L, shape_out)
+      bdims <- make_broadcast_dimensions(shp_in, shape_out) - 1L
+      stablehlo::hlo_broadcast_in_dim(arg, bdims, shape_out)
     } else {
       arg
     }

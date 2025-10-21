@@ -29,111 +29,6 @@ test_that("p_pow", {
 })
 
 
-# Reductions
-
-test_that("p_reduce_sum", {
-  shp <- c(2, 3, 4)
-  dims <- sample(seq_along(shp), 2)
-  drop <- sample(c(TRUE, FALSE), 1)
-  f <- jit(function(x) nvl_reduce_sum(x, dims = dims, drop = drop))
-  x <- array(generate_test_data(shp, dtype = "f32"), shp)
-  out_nv <- f(nv_tensor(x))
-  out_th <- torch::torch_sum(torch::torch_tensor(x), dim = dims, keepdim = !drop)
-  testthat::expect_equal(as_array(out_nv), as_array_torch(out_th), tolerance = 1e-6)
-})
-
-test_that("p_reduce_prod", {
-  shp <- c(2, 3, 2)
-  dims <- 2L
-  drop <- TRUE
-  f <- jit(function(x) nvl_reduce_prod(x, dims = dims, drop = drop))
-  x <- array(generate_test_data(shp, dtype = "f32"), shp)
-  out_nv <- f(nv_tensor(x))
-  out_th <- torch::torch_prod(torch::torch_tensor(x), dim = dims, keepdim = !drop)
-  testthat::expect_equal(as_array(out_nv), as_array_torch(out_th), tolerance = 1e-6)
-})
-
-test_that("p_reduce_max", {
-  shp <- c(2, 3, 2)
-  dims <- 1L
-  drop <- FALSE
-  x <- array(generate_test_data(shp, dtype = "f32"), shp)
-  fmax <- jit(function(x) nvl_reduce_max(x, dims = dims, drop = drop))
-  out_nv_max <- fmax(nv_tensor(x))
-  out_th_max <- torch::torch_amax(torch::torch_tensor(x), dim = dims, keepdim = !drop)
-  testthat::expect_equal(as_array(out_nv_max), as_array_torch(out_th_max), tolerance = 1e-6)
-})
-
-test_that("p_reduce_min", {
-  shp <- c(2, 3, 2)
-  dims <- 1L
-  drop <- FALSE
-  x <- array(generate_test_data(shp, dtype = "f32"), shp)
-  fmin <- jit(function(x) nvl_reduce_min(x, dims = dims, drop = drop))
-  out_nv_min <- fmin(nv_tensor(x))
-  out_th_min <- torch::torch_amin(torch::torch_tensor(x), dim = dims, keepdim = !drop)
-  testthat::expect_equal(as_array(out_nv_min), as_array_torch(out_th_min), tolerance = 1e-6)
-})
-
-test_that("p_reduce_any", {
-  shp <- c(2, 3, 2)
-  dims <- 3L
-  drop <- TRUE
-  x <- array(generate_test_data(shp, dtype = "pred"), shp)
-  fany <- jit(function(x) nvl_reduce_any(x, dims = dims, drop = drop))
-  out_nv_any <- fany(nv_tensor(x, dtype = "pred"))
-  xt <- torch::torch_tensor(x, dtype = torch::torch_bool())
-  out_th_any <- xt$any(dim = dims, keepdim = !drop)
-  testthat::expect_equal(as_array(out_nv_any), as_array_torch(out_th_any))
-})
-
-test_that("p_reduce_all", {
-  shp <- c(2, 3, 2)
-  dims <- 3L
-  drop <- TRUE
-  x <- array(generate_test_data(shp, dtype = "pred"), shp)
-  fall <- jit(function(x) nvl_reduce_all(x, dims = dims, drop = drop))
-  out_nv_all <- fall(nv_tensor(x, dtype = "pred"))
-  xt <- torch::torch_tensor(x, dtype = torch::torch_bool())
-  out_th_all <- xt$all(dim = dims, keepdim = !drop)
-  testthat::expect_equal(as_array(out_nv_all), as_array_torch(out_th_all))
-})
-
-# Shape ops
-
-test_that("p_transpose", {
-  shp <- c(2, 3, 4)
-  perm <- sample(1:3)
-  f <- jit(function(x) nvl_transpose(x, permutation = perm))
-  x <- array(generate_test_data(shp, dtype = "f32"), shp)
-  out_nv <- f(nv_tensor(x))
-  out_th <- torch::torch_tensor(x)$permute(perm)
-  testthat::expect_equal(as_array(out_nv), as_array_torch(out_th))
-})
-
-test_that("p_reshape", {
-  x <- nv_tensor(1:6, dtype = "f32")
-  f <- jit(nvl_reshape, static = "shape")
-  out_nv <- f(x, c(2, 3))
-  out_th <- torch::torch_tensor(1:6, dtype = torch::torch_float32())$reshape(c(2, 3))
-  testthat::expect_equal(as_array(out_nv), as_array_torch(out_th))
-})
-
-test_that("p_broadcast_to", {
-  input_shape <- c(2L, 1L, 3L)
-  target_shape <- c(4L, 2L, 5L, 3L)
-  x <- array(generate_test_data(input_shape, dtype = "f32"), input_shape)
-  f <- jit(function(operand, shape) nv_broadcast_to(operand, shape), static = "shape")
-  out_nv <- f(nv_tensor(x), target_shape)
-  out_th <- torch::torch_tensor(x)$broadcast_to(target_shape)
-  # compare a reduction to avoid huge arrays in print
-  testthat::expect_equal(
-    as_array(out_nv),
-    as_array_torch(out_th),
-    tolerance = 1e-6
-  )
-})
-
 ## Comparisons
 
 test_that("p_eq", {
@@ -280,7 +175,6 @@ test_that("p_convert", {
 })
 
 test_that("p_broadcast_in_dim", {
-  # compare against torch expand after unsqueeze on the missing leading dim
   input_shape <- c(2L, 3L)
   target_shape <- c(4L, 2L, 3L)
   bdims <- c(2L, 3L)

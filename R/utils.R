@@ -123,3 +123,11 @@ nv_maxval <- function(dtype, platform) {
     nv_scalar(globals$ranges_raw[[dtype]]$max, dtype = dtype, platform = platform)
   }
 }
+
+without <- function(x, indices) {
+  if (length(indices)) {
+    x[-indices]
+  } else {
+    x
+  }
+}

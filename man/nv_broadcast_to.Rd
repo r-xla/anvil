@@ -17,5 +17,5 @@ Output shape.}
 (\code{\link{nv_tensor}})
 }
 \description{
-Broadcast
+Broadcast a tensor to a given shape using NumPy broadcasting rules.
 }

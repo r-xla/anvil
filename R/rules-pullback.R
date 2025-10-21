@@ -217,20 +217,13 @@ p_reduce_sum[["pullback"]] <- function(primals, dims, drop, .required) {
     list(y),
     function(grad) {
       keep(.required, \() {
-        nv_broadcast_to(grad, shape(operand))
-      })
-    }
-  )
-}
-
-p_reduce_prod[["pullback"]] <- function(primals, dims, drop, .required) {
-  operand <- primals[[1L]]
-  y <- nvl_reduce_prod(operand, dims, drop) # nolint
-  list(
-    list(y),
-    function(grad) {
-      keep(.required, \() {
-        .NotYetImplemented()
+        bdims <- if (drop) {
+          # the dimensions that were not reduced
+          without(seq_along(shape(operand)), dims)
+        } else {
+          seq_along(shape(grad))
+        }
+        nvl_broadcast_in_dim(grad, shape(operand), bdims)
       })
     }
   )

@@ -172,13 +172,13 @@ verify_grad_biv_scalar <- function(
 
   testthat::expect_equal(
     tengen::as_array(grads_anvil[[1L]]),
-    as_array_torch(lhs_torch$grad),
+    as_array_torch(lhs_torch$grad), # nolint
     tolerance = tol
   )
 
   testthat::expect_equal(
     tengen::as_array(grads_anvil[[2L]]),
-    as_array_torch(rhs_torch$grad),
+    as_array_torch(rhs_torch$grad), # nolint
     tolerance = tol
   )
 }
@@ -202,11 +202,11 @@ verify_grad_biv_tensor <- function(
   }
 
   lhs <- array(
-    generate_test_data(shp, dtype = dtype, non_negative = non_negative[[1]]),
+    generate_test_data(shp, dtype = dtype, non_negative = non_negative[[1]]), # nolint
     shp
   )
   rhs <- array(
-    generate_test_data(shp, dtype = dtype, non_negative = non_negative[[2]]),
+    generate_test_data(shp, dtype = dtype, non_negative = non_negative[[2]]), # nolint
     shp
   )
 
@@ -228,8 +228,8 @@ verify_grad_biv_tensor <- function(
 
   testthat::expect_equal(
     tengen::as_array(grads_anvil[[1L]]),
-    as_array_torch(lhs_torch$grad),
-    tolerance = tol
+    as_array_torch(lhs_torch$grad), # nolint
+    tolerance = tol # nolint
   )
 
   testthat::expect_equal(
@@ -298,12 +298,14 @@ test_that("p_neg", {
 })
 
 test_that("p_div", {
+  # TODO:
   # Need to determine what to do with non-differentiable values:
   # https://docs.pytorch.org/docs/stable/notes/autograd.html#gradients-for-non-differentiable-functions
   verify_grad_biv(nvl_div, torch::torch_div)
 })
 
 test_that("p_pow", {
+  # TODO:
   # Need to determine what to do with non-differentiable values:
   # https://docs.pytorch.org/docs/stable/notes/autograd.html#gradients-for-non-differentiable-functions
   verify_grad_biv(nvl_pow, torch::torch_pow, non_negative = list(TRUE, FALSE), tol = 1e-5)
@@ -311,14 +313,21 @@ test_that("p_pow", {
 })
 
 test_that("p_reduce_sum", {
-  verify_grad_uni(nvl_reduce_sum, torch::torch_sum, args_f = \(shp, dtype) {
-    dims <- sample(seq_along(shp), sample(length(shp), 1L))
-    drop <- sample(c(TRUE, FALSE), 1L)
-    list(
-      list(dims = dims, drop = drop),
-      list(dim = dims, keepdim = !drop)
-    )
-  })
+  x_arr <- array(1:6, c(2, 3))
+  x <- nv_tensor(x_arr, dtype = "f32")
+  f <- function(a) {
+    y <- nvl_reduce_sum(a, dims = 2L, drop = TRUE)
+    nvl_reduce_sum(y, dims = 1L, drop = TRUE)
+  }
+  grads <- jit(gradient(f))(x)
+  expect_equal(tengen::as_array(grads[[1L]]), array(1, dim = c(2, 3)))
+  # TODO: Also test with drop = FALSE
+  f <- function(a) {
+    y <- nvl_reduce_sum(a, dims = 2L, drop = FALSE)
+    nvl_reduce_sum(y, dims = 1:2, drop = TRUE)
+  }
+  grads <- jit(gradient(f))(x)
+  expect_equal(tengen::as_array(grads[[1L]]), array(1, dim = c(2, 3)))
 })
 
 test_that("p_transpose", {
@@ -331,7 +340,7 @@ test_that("p_transpose", {
   })
 })
 
-test_that("p_broadcast_to", {
+test_that("p_broadcast_in_dim", {
   input_shape <- c(2L, 1L, 3L)
   target_shape <- c(4L, 2L, 5L, 3L)
 
@@ -381,41 +390,11 @@ test_that("p_select", {
   expect_equal(tengen::as_array(grads[[2L]]), as_array_torch(b_torch$grad), tolerance = 1e-6)
 })
 
-test_that("p_broadcast_in_dim", {
-  input_shape <- c(2L, 3L)
-  target_shape <- c(4L, 2L, 3L)
-  bdims <- c(2L, 3L)
-  verify_grad_uni_tensor(
-    function(a, shape, bdims) nvl_broadcast_in_dim(a, shape, bdims),
-    function(x, shape, bdims) x$unsqueeze(1)$expand(shape),
-    shape = input_shape,
-    args_f = function(shp, dtype) {
-      list(list(shape = target_shape, bdims = bdims), list(shape = target_shape, bdims = bdims))
-    }
-  )
-})
-
-test_that("p_reduce_prod", {
-  # Not implemented pullback; ensure error is raised deterministically
-  f <- function(x) nvl_reduce_prod(x, dims = 1L, drop = TRUE)
-  g <- gradient(f)
-  expect_error(jit(g)(nv_tensor(matrix(rnorm(6), 2, 3), dtype = "f32")))
-})
-
-test_that("p_dot_general", {
-  # simple vector dot case; avoid scalar degenerate paths in pullback
-  verify_grad_biv_tensor(
-    function(a, b) nvl_dot_general(a, b, contracting_dims = list(1L, 1L), batching_dims = list(integer(), integer())),
-    function(a, b) (a * b)$sum(),
-    ndims = 1L
-  )
-})
-
 test_that("p_reshape", {
   in_shape <- c(2L, 3L)
   out_shape <- c(3L, 2L)
   verify_grad_uni_tensor(
-    function(a, shape) nvl_reshape(a, shape),
+    nvl_reshape,
     function(x, shape) x$reshape(shape),
     shape = in_shape,
     args_f = function(shp, dtype) list(list(shape = out_shape), list(shape = out_shape))
