@@ -30,3 +30,6 @@ NumPy
 pred
 ui
 bayesian
+donatable
+XLA
+precisions

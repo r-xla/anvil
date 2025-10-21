@@ -54,4 +54,4 @@ devtools::check()
 1. `stablehlo` (the jit interpretation rules) uses 0-based indexing, but `anvil` uses 1-based indexing. When implementing a jit interpretation rule, convert indices by subtracting 1.
 2. The `rules-pullback.R` file contains the differentiation rules for the primitive operations.
    There, `grad` is the gradient of the terminal output with respect to the function's output and the function should return the gradient of the terminal output with respect to the inputs.
-   The tests are in the file `insts/extra-tests/test-pullback-torch.R`
+   The tests are in the file `insts/extra-tests/test-primitives-pullback-torch.R`

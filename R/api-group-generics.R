@@ -1,4 +1,5 @@
 #' @include interpreter.R
+#' @include api.R
 
 #' @export
 `Ops.anvil::Box` <- function(e1, e2) {
@@ -15,12 +16,15 @@
     "*" = nv_mul(e1, e2),
     "/" = nv_div(e1, e2),
     "^" = nv_pow(e1, e2),
+    "%%" = nv_remainder(e1, e2),
     "==" = nv_eq(e1, e2),
     "!=" = nv_ne(e1, e2),
     ">" = nv_gt(e1, e2),
     ">=" = nv_ge(e1, e2),
     "<" = nv_lt(e1, e2),
-    "<=" = nv_le(e1, e2)
+    "<=" = nv_le(e1, e2),
+    "&" = nv_and(e1, e2),
+    "|" = nv_or(e1, e2)
   )
 }
 
@@ -30,6 +34,66 @@
     .Generic, # nolint
     "%*%" = nv_matmul(x, y)
   )
+}
+
+#' @export
+`Math.anvil::Box` <- function(x, ...) {
+  switch(
+    .Generic, # nolint
+    "abs" = nv_abs(x),
+    "exp" = nv_exp(x),
+    "sqrt" = nv_sqrt(x),
+    "log" = nv_log(x),
+    "tanh" = nv_tanh(x),
+    "tan" = nv_tan(x),
+    "floor" = nv_floor(x),
+    "ceiling" = nv_ceil(x),
+    "sign" = nv_sign(x),
+    cli_abort("invalid method: {.Generic}")
+  )
+}
+
+#' @method Math2 anvil::Box
+#' @export
+`Math2.anvil::Box` <- function(x, digits, ...) {
+  method <- list(...)$method
+  switch(
+    .Generic, # nolint
+    "round" = {
+      if (!missing(digits)) {
+        stop("Cannot specify digits")
+      }
+      nv_round(x, method = method)
+    },
+    cli_abort("invalid method: {.Generic}")
+  )
+}
+
+#' @export
+`Summary.anvil::Box` <- function(..., na.rm) {
+  if (...length() != 1L) {
+    stop("Currently only one argument is supported for Summary group generic")
+  }
+  x <- ...elt(1L)
+
+  dims <- seq_along(shape(x))
+  switch(
+    .Generic, # nolint
+    "max" = nv_reduce_max(x, dims = dims, drop = TRUE),
+    "min" = nv_reduce_min(x, dims = dims, drop = TRUE),
+    "prod" = nv_reduce_prod(x, dims = dims, drop = TRUE),
+    "sum" = nv_reduce_sum(x, dims = dims, drop = TRUE),
+    "any" = nv_reduce_any(x, dims = dims, drop = TRUE),
+    "all" = nv_reduce_all(x, dims = dims, drop = TRUE),
+    cli_abort("invalid method: {.Generic}")
+  )
+}
+
+
+#' @method mean anvil::Box
+#' @export
+`mean.anvil::Box` <- function(x, ...) {
+  nv_reduce_mean(x, dims = seq_along(shape(x)), drop = TRUE)
 }
 
 # if we don't give it the name nv_transpose, pkgdown thinks t.anvil is a package

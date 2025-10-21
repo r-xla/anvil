@@ -21,7 +21,7 @@ jobs:
           needs: lint
 
       - name: Lint R Code
-        run: lintr::lint_package()
+        run: lintr::lint_package(exclusions = list("inst/extra-tests", "R/RcppExports.R"))
         shell: Rscript {0}
         env:
           LINTR_ERROR_ON_LINT: true

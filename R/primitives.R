@@ -9,13 +9,14 @@ Primitive <- new_class(
   "Primitive",
   properties = list(
     name = class_character,
-    rules = S7::class_environment
+    rules = class_environment
   ),
   constructor = function(name) {
     env <- new.env(parent = emptyenv())
     new_object(S7_object(), rules = env, name = name)
   }
 )
+
 
 #' @export
 `[[<-.anvil::Primitive` <- function(x, name, value) {
@@ -40,28 +41,8 @@ method(`[[`, Primitive) <- function(x, name) {
   rule
 }
 
-
 method(print, Primitive) <- function(x, ...) {
   cat(sprintf("<Primitive:%s>\n", x@name))
-  rules <- sapply(globals$interpretation_rules, \(rule) {
-    if (!is.null(x@rules[[rule]])) rule
-  })
-  rules_str <- if (length(rules) > 0L) paste0(rules, collapse = ", ") else "-"
-  cat(" implements:", rules_str, "\n")
-}
-
-# We define these infix operators, because `+` etc. are reserved for the broadcasted ones (nv_)
-
-`%+%` <- function(lhs, rhs) {
-  nvl_add(lhs, rhs)
-}
-
-`%x%` <- function(lhs, rhs) {
-  nvl_mul(lhs, rhs)
-}
-
-`%-%` <- function(lhs, rhs) {
-  nvl_sub(lhs, rhs)
 }
 
 p_add <- Primitive("add")
@@ -113,7 +94,6 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
   )[[1L]]
 }
 
-# transpose
 p_transpose <- Primitive("transpose")
 nvl_transpose <- function(operand, permutation) {
   interprete(
@@ -133,10 +113,71 @@ nvl_reshape <- function(operand, shape) {
 }
 
 # reduction operators
+
 p_reduce_sum <- Primitive("sum")
 nvl_reduce_sum <- function(operand, dims, drop = TRUE) {
   interprete(
     p_reduce_sum,
+    list(operand),
+    params = list(
+      dims = dims,
+      drop = drop
+    )
+  )[[1L]]
+}
+
+p_reduce_prod <- Primitive("prod")
+nvl_reduce_prod <- function(operand, dims, drop = TRUE) {
+  interprete(
+    p_reduce_prod,
+    list(operand),
+    params = list(
+      dims = dims,
+      drop = drop
+    )
+  )[[1L]]
+}
+
+p_reduce_max <- Primitive("max")
+nvl_reduce_max <- function(operand, dims, drop = TRUE) {
+  interprete(
+    p_reduce_max,
+    list(operand),
+    params = list(
+      dims = dims,
+      drop = drop
+    )
+  )[[1L]]
+}
+
+p_reduce_min <- Primitive("min")
+nvl_reduce_min <- function(operand, dims, drop = TRUE) {
+  interprete(
+    p_reduce_min,
+    list(operand),
+    params = list(
+      dims = dims,
+      drop = drop
+    )
+  )[[1L]]
+}
+
+p_reduce_any <- Primitive("any")
+nvl_reduce_any <- function(operand, dims, drop = TRUE) {
+  interprete(
+    p_reduce_any,
+    list(operand),
+    params = list(
+      dims = dims,
+      drop = drop
+    )
+  )[[1L]]
+}
+
+p_reduce_all <- Primitive("all")
+nvl_reduce_all <- function(operand, dims, drop = TRUE) {
+  interprete(
+    p_reduce_all,
     list(operand),
     params = list(
       dims = dims,
@@ -175,4 +216,138 @@ nvl_lt <- function(lhs, rhs) {
 p_le <- Primitive("less_equal")
 nvl_le <- function(lhs, rhs) {
   interprete(p_le, list(lhs, rhs))[[1L]]
+}
+
+# additional simple binary primitives -----------------------------------------
+
+p_max <- Primitive("maximum")
+nvl_max <- function(lhs, rhs) {
+  interprete(p_max, list(lhs, rhs))[[1L]]
+}
+
+p_min <- Primitive("minimum")
+nvl_min <- function(lhs, rhs) {
+  interprete(p_min, list(lhs, rhs))[[1L]]
+}
+
+p_remainder <- Primitive("remainder")
+nvl_remainder <- function(lhs, rhs) {
+  interprete(p_remainder, list(lhs, rhs))[[1L]]
+}
+
+p_and <- Primitive("and")
+nvl_and <- function(lhs, rhs) {
+  interprete(p_and, list(lhs, rhs))[[1L]]
+}
+
+p_not <- Primitive("not")
+nvl_not <- function(operand) {
+  interprete(p_not, list(operand))[[1L]]
+}
+
+p_or <- Primitive("or")
+nvl_or <- function(lhs, rhs) {
+  interprete(p_or, list(lhs, rhs))[[1L]]
+}
+
+p_xor <- Primitive("xor")
+nvl_xor <- function(lhs, rhs) {
+  interprete(p_xor, list(lhs, rhs))[[1L]]
+}
+
+p_shift_left <- Primitive("shift_left")
+nvl_shift_left <- function(lhs, rhs) {
+  interprete(p_shift_left, list(lhs, rhs))[[1L]]
+}
+
+p_shift_right_logical <- Primitive("shift_right_logical")
+nvl_shift_right_logical <- function(lhs, rhs) {
+  interprete(p_shift_right_logical, list(lhs, rhs))[[1L]]
+}
+
+p_shift_right_arithmetic <- Primitive("shift_right_arithmetic")
+nvl_shift_right_arithmetic <- function(lhs, rhs) {
+  interprete(p_shift_right_arithmetic, list(lhs, rhs))[[1L]]
+}
+
+p_atan2 <- Primitive("atan2")
+nvl_atan2 <- function(lhs, rhs) {
+  interprete(p_atan2, list(lhs, rhs))[[1L]]
+}
+
+# unary math primitives ---------------------------------------------------------
+
+p_abs <- Primitive("abs")
+nvl_abs <- function(operand) {
+  interprete(p_abs, list(operand))[[1L]]
+}
+
+p_sqrt <- Primitive("sqrt")
+nvl_sqrt <- function(operand) {
+  interprete(p_sqrt, list(operand))[[1L]]
+}
+
+p_rsqrt <- Primitive("rsqrt")
+nvl_rsqrt <- function(operand) {
+  interprete(p_rsqrt, list(operand))[[1L]]
+}
+
+p_log <- Primitive("log")
+nvl_log <- function(operand) {
+  interprete(p_log, list(operand))[[1L]]
+}
+
+p_tanh <- Primitive("tanh")
+nvl_tanh <- function(operand) {
+  interprete(p_tanh, list(operand))[[1L]]
+}
+
+p_tan <- Primitive("tan")
+nvl_tan <- function(operand) {
+  interprete(p_tan, list(operand))[[1L]]
+}
+
+p_floor <- Primitive("floor")
+nvl_floor <- function(operand) {
+  interprete(p_floor, list(operand))[[1L]]
+}
+
+p_ceil <- Primitive("ceil")
+nvl_ceil <- function(operand) {
+  interprete(p_ceil, list(operand))[[1L]]
+}
+
+p_sign <- Primitive("sign")
+nvl_sign <- function(operand) {
+  interprete(p_sign, list(operand))[[1L]]
+}
+
+p_exp <- Primitive("exp")
+nvl_exp <- function(operand) {
+  interprete(p_exp, list(operand))[[1L]]
+}
+
+p_round <- Primitive("round")
+nvl_round <- function(operand, method = "nearest_even") {
+  if (!(method %in% c("nearest_even", "afz"))) {
+    cli_abort("method must be one of: 'nearest_even', 'afz', but is {method}")
+  }
+  interprete(p_round, list(operand), list(method = method))[[1L]]
+}
+
+# dtype conversion ----------------------------------------------------------------
+
+p_convert <- Primitive("convert")
+nvl_convert <- function(operand, dtype) {
+  interprete(
+    p_convert,
+    list(operand),
+    params = list(dtype = dtype)
+  )[[1L]]
+}
+
+# control flow primitives -------------------------------------------------------
+p_select <- Primitive("select")
+nvl_select <- function(pred, true_value, false_value) {
+  interprete(p_select, list(pred, true_value, false_value))[[1L]]
 }

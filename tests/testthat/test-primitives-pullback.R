@@ -1,4 +1,7 @@
-test_that("dot_general: vector dot product gradient", {
+# most pullback tests are in extra-tests for comparison with torch
+# Just a few selected ones that don't use torch are here
+
+test_that("p_dot_general: vector dot product gradient", {
   # y = <x, y> = sum_i x_i * y_i, scalar output
   f <- function(x, y) {
     nvl_dot_general(
@@ -17,7 +20,7 @@ test_that("dot_general: vector dot product gradient", {
   expect_equal(as.numeric(pjrt::as_array(out[[2L]])), c(1, 2, 3))
 })
 
-test_that("dot_general: matrix-vector with summed loss", {
+test_that("p_dot_general: matrix-vector with summed loss", {
   nv_hacky_sum <- function(y) {
     ones <- nv_tensor(1, shape = shape(y)[1L], dtype = dtype(y))
     out <- nvl_dot_general(
@@ -58,8 +61,7 @@ test_that("dot_general: matrix-vector with summed loss", {
   expect_equal(dx, dx_true)
 })
 
-test_that("dot_general: batched matmul gradient w.r.t both inputs", {
-  skip_if_not_installed("pjrt")
+test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
   # Helpers to reduce repetition
   make_ones_like <- function(Y) {
     nv_tensor(
@@ -216,13 +218,20 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
     contracting_dims = list(c(1L, 2L), c(3L, 4L)),
     batching_dims = list(c(4L, 5L), c(1L, 2L))
   )
-  # TODO: One super complicated test with many permutations
 })
 
-test_that("pullback for comparisons not implemented", {
-  g <- gradient(function(a, b) {
-    # any comparison; returns boolean but gradient shouldn't be requested
-    a < b
-  })
-  expect_error(g(nv_scalar(1L), nv_scalar(2L)))
+test_that("broadcasting", {
+  f <- jit(gradient(
+    function(x, y) {
+      mean(x + y)
+    },
+    wrt = "x"
+  ))
+
+  out <- f(nv_tensor(1), nv_tensor(0, shape = c(1, 2)))
+  expect_equal(out[[1L]], nv_tensor(0.5, shape = c(1, 2)))
 })
+
+if (nzchar(system.file(package = "torch"))) {
+  source(system.file("extra-tests", "test-primitives-pullback-torch.R", package = "anvil"))
+}

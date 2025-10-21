@@ -55,25 +55,26 @@ is_cuda <- function() {
   Sys.getenv("PJRT_PLATFORM") == "cuda"
 }
 
-generate_test_array <- function(shp, dtype) {
-  nelts <- if (!length(shp)) {
-    1L
+generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
+  if (dtype == "pred") {
+    sample(c(TRUE, FALSE), size = prod(dimension), replace = TRUE)
+  } else if (dtype %in% c("ui8", "ui16", "ui32", "ui64")) {
+    sample(0:20, size = prod(dimension), replace = TRUE)
+  } else if (dtype %in% c("i8", "i16", "i32", "i64")) {
+    test_data <- as.integer(rgeom(prod(dimension), .5))
+    if (!non_negative) {
+      test_data <- as.integer((-1)^rbinom(prod(dimension), 1, .5) * test_data)
+    }
+    test_data
   } else {
-    prod(shp)
+    if (!non_negative) {
+      rnorm(prod(dimension), mean = 0, sd = 1)
+    } else {
+      rchisq(prod(dimension), df = 1)
+    }
   }
-  x <- if (dtype == "pred") {
-    sample(c(TRUE, FALSE), size = nelts, replace = TRUE)
-  } else if (startsWith(dtype, "f")) {
-    rnorm(nelts)
-  } else if (startsWith(dtype, "i")) {
-    sample(-10:10, size = nelts, replace = TRUE)
-  } else if (startsWith(dtype, "ui")) {
-    sample(0:20, size = nelts, replace = TRUE)
-  } else {
-    stop(sprintf("Unsupported dtype: %s", dtype))
-  }
-  if (ndims == 0L) {
-    return(x)
-  }
-  array(x, shp)
+}
+
+if (nzchar(system.file(package = "torch"))) {
+  source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
 }

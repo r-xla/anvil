@@ -82,3 +82,52 @@ formalArgs2 <- function(f) {
 formals2 <- function(f) {
   formals(args(f))
 }
+
+
+# We assume little endian
+minmax_raw <- function(bits, signed = TRUE) {
+  stopifnot(bits %% 8 == 0, bits >= 8)
+  n <- bits %/% 8
+  if (!signed) {
+    return(list(
+      min = as.raw(rep(0x00, n)),
+      max = as.raw(rep(0xFF, n))
+    ))
+  }
+  hi_min <- as.raw(0x80) # 1000 0000
+  hi_max <- as.raw(0x7F) # 0111 1111
+  zeros <- as.raw(rep(0x00, n - 1))
+  ff <- as.raw(rep(0xFF, n - 1))
+  list(min = c(zeros, hi_min), max = c(ff, hi_max))
+}
+
+
+nv_minval <- function(dtype, platform) {
+  dtype <- as.character(dtype)
+  if (grepl("^f", dtype)) {
+    nv_scalar(-Inf, dtype = dtype, platform = platform)
+  } else if (dtype %in% c("i1", "pred")) {
+    nv_scalar(FALSE, dtype = "pred", platform = platform)
+  } else {
+    nv_scalar(globals$ranges_raw[[dtype]]$min, dtype = dtype, platform = platform)
+  }
+}
+
+nv_maxval <- function(dtype, platform) {
+  dtype <- as.character(dtype)
+  if (grepl("^f", dtype)) {
+    nv_scalar(Inf, dtype = dtype, platform = platform)
+  } else if (dtype %in% c("i1", "pred")) {
+    nv_scalar(TRUE, dtype = "pred", platform = platform)
+  } else {
+    nv_scalar(globals$ranges_raw[[dtype]]$max, dtype = dtype, platform = platform)
+  }
+}
+
+without <- function(x, indices) {
+  if (length(indices)) {
+    x[-indices]
+  } else {
+    x
+  }
+}

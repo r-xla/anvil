@@ -2,7 +2,7 @@
 #' @include interpreter.R
 #' @include primitives.R
 
-## Broadcasting ----------------------------------------------------------------
+## Conversion ------------------------------------------------------------------
 
 broadcast_shapes <- function(shape_lhs, shape_rhs) {
   if (length(shape_lhs) > length(shape_rhs)) {
@@ -58,8 +58,9 @@ nv_broadcast_tensors <- function(...) {
 }
 
 #' @title Broadcast
-#' @param operand ([`nv_tensor`])\cr
-#'   Operand.
+#' @description
+#' Broadcast a tensor to a given shape using NumPy broadcasting rules.
+#' @template param_operand
 #' @param shape (`integer()`)\cr
 #'   Output shape.
 #' @return ([`nv_tensor`])
@@ -72,6 +73,37 @@ nv_broadcast_to <- function(operand, shape) {
     operand
   }
 }
+
+#' @title Convert Tensor to Different Data Type
+#' @description
+#' Convert a tensor to a different data type.
+#' @template param_operand
+#' @template param_dtype
+#' @return [`nv_tensor`]
+#' @export
+nv_convert <- function(operand, dtype) {
+  nvl_convert(operand, as_dtype(dtype))
+}
+
+
+#' @rdname nv_transpose
+#' @export
+nv_transpose <- function(x, permutation = NULL) {
+  permutation <- permutation %??% rev(seq_len(ndims(x)))
+  nvl_transpose(x, permutation)
+}
+
+
+#' @title Reshape
+#' @description
+#' Reshape a tensor.
+#' Note that row-major order is used, which differs from R's column-major order.
+#' @template param_operand
+#' @param shape (`integer()`)\cr
+#'   The new shape.
+#' @return [`nv_tensor`]
+#' @export
+nv_reshape <- nvl_reshape
 
 ## Binary ops ------------------------------------------------------------------
 
@@ -86,69 +118,89 @@ NULL
 
 #' @rdname nv_binary_ops
 #' @export
-nv_add <- function(lhs, rhs) {
-  do.call(nvl_add, nv_broadcast_tensors(lhs, rhs))
-}
+nv_add <- nvl_add
 
 #' @rdname nv_binary_ops
 #' @export
-nv_mul <- function(lhs, rhs) {
-  do.call(nvl_mul, nv_broadcast_tensors(lhs, rhs))
-}
+nv_mul <- nvl_mul
 
 #' @rdname nv_binary_ops
 #' @export
-nv_sub <- function(lhs, rhs) {
-  do.call(nvl_sub, nv_broadcast_tensors(lhs, rhs))
-}
+nv_sub <- nvl_sub
 
 #' @rdname nv_binary_ops
 #' @export
-nv_div <- function(lhs, rhs) {
-  do.call(nvl_div, nv_broadcast_tensors(lhs, rhs))
-}
+nv_div <- nvl_div
 
 #' @rdname nv_binary_ops
 #' @export
-nv_pow <- function(lhs, rhs) {
-  do.call(nvl_pow, nv_broadcast_tensors(lhs, rhs))
-}
+nv_pow <- nvl_pow
 
 #' @rdname nv_binary_ops
 #' @export
-nv_eq <- function(lhs, rhs) {
-  do.call(nvl_eq, nv_broadcast_tensors(lhs, rhs))
-}
+nv_eq <- nvl_eq
 
 #' @rdname nv_binary_ops
 #' @export
-nv_ne <- function(lhs, rhs) {
-  do.call(nvl_ne, nv_broadcast_tensors(lhs, rhs))
-}
+nv_ne <- nvl_ne
 
 #' @rdname nv_binary_ops
 #' @export
-nv_gt <- function(lhs, rhs) {
-  do.call(nvl_gt, nv_broadcast_tensors(lhs, rhs))
-}
+nv_gt <- nvl_gt
 
 #' @rdname nv_binary_ops
 #' @export
-nv_ge <- function(lhs, rhs) {
-  do.call(nvl_ge, nv_broadcast_tensors(lhs, rhs))
-}
+nv_ge <- nvl_ge
 
 #' @rdname nv_binary_ops
 #' @export
-nv_lt <- function(lhs, rhs) {
-  do.call(nvl_lt, nv_broadcast_tensors(lhs, rhs))
-}
+nv_lt <- nvl_lt
 
 #' @rdname nv_binary_ops
 #' @export
-nv_le <- function(lhs, rhs) {
-  do.call(nvl_le, nv_broadcast_tensors(lhs, rhs))
-}
+nv_le <- nvl_le
+
+## Additional binary ops -------------------------------------------------------
+
+#' @rdname nv_binary_ops
+#' @export
+nv_max <- nvl_max
+
+#' @rdname nv_binary_ops
+#' @export
+nv_min <- nvl_min
+
+#' @rdname nv_binary_ops
+#' @export
+nv_remainder <- nvl_remainder
+
+#' @rdname nv_binary_ops
+#' @export
+nv_and <- nvl_and
+
+#' @rdname nv_binary_ops
+#' @export
+nv_or <- nvl_or
+
+#' @rdname nv_binary_ops
+#' @export
+nv_xor <- nvl_xor
+
+#' @rdname nv_binary_ops
+#' @export
+nv_shift_left <- nvl_shift_left
+
+#' @rdname nv_binary_ops
+#' @export
+nv_shift_right_logical <- nvl_shift_right_logical
+
+#' @rdname nv_binary_ops
+#' @export
+nv_shift_right_arithmetic <- nvl_shift_right_arithmetic
+
+#' @rdname nv_binary_ops
+#' @export
+nv_atan2 <- nvl_atan2
 
 ## Unary ops ------------------------------------------------------------------
 
@@ -156,12 +208,59 @@ nv_le <- function(lhs, rhs) {
 #' @title Unary Operations
 #' @description
 #' Unary operations on tensors.
-#' @param operand ([`nv_tensor`])
+#' @template param_operand
 #' @return [`nv_tensor`]
 
 #' @rdname nv_unary_ops
 #' @export
 nv_neg <- nvl_neg
+
+#' @rdname nv_unary_ops
+#' @export
+nv_abs <- nvl_abs
+
+#' @rdname nv_unary_ops
+#' @export
+nv_sqrt <- nvl_sqrt
+
+#' @rdname nv_unary_ops
+#' @export
+nv_rsqrt <- nvl_rsqrt
+
+#' @rdname nv_unary_ops
+#' @export
+nv_log <- nvl_log
+
+#' @rdname nv_unary_ops
+#' @export
+nv_tanh <- nvl_tanh
+
+#' @rdname nv_unary_ops
+#' @export
+nv_tan <- nvl_tan
+
+#' @rdname nv_unary_ops
+#' @export
+nv_floor <- nvl_floor
+
+#' @rdname nv_unary_ops
+#' @export
+nv_ceil <- nvl_ceil
+
+#' @rdname nv_unary_ops
+#' @export
+nv_sign <- nvl_sign
+
+#' @rdname nv_unary_ops
+#' @export
+nv_exp <- nvl_exp
+
+#' @rdname nv_unary_ops
+#' @export
+#' @param method (`character(1)`)\cr
+#'   Method to use for rounding.
+#'   Either `"nearest_even"` (default) or `"afz"` (away from zero).
+nv_round <- nvl_round
 
 
 ## Other operations -----------------------------------------------------------
@@ -206,38 +305,47 @@ nv_matmul <- function(lhs, rhs) {
   )
 }
 
-#' @rdname nv_transpose
-#' @export
-nv_transpose <- function(x, permutation = NULL) {
-  permutation <- permutation %??% rev(seq_len(ndims(x)))
-  nvl_transpose(x, permutation)
-}
-
-
-#' @title Reshape
-#' @description
-#' Reshape a tensor.
-#' Note that row-major order is used, which is different from R's column-major order.
-#' @param operand ([`nv_tensor`])\cr
-#'   The tensor.
-#' @param shape (`integer()`)\cr
-#'   Output shape.
-#' @return ([`nv_tensor`])
-#' @export
-nv_reshape <- nvl_reshape
-
 #' @title Reduction Operators
+#' @name nv_reduce_ops
 #' @description
 #' Reduce a tensor along specified dimensions.
-#' @param operand ([`nv_tensor`])\cr
-#'   The tensor.
+#' @template param_operand
 #' @param dims (`integer()`)\cr
-#'   The dimensions along which to reduce.
+#'   Dimensions to reduce.
 #' @param drop (`logical(1)`)\cr
 #'   Whether to drop the reduced dimensions.
-#' @name nv_reduce_ops
+#' @return [`nv_tensor`]
 #' @export
 nv_reduce_sum <- nvl_reduce_sum
+
+#' @rdname nv_reduce_ops
+#' @export
+nv_reduce_mean <- function(operand, dims, drop = TRUE) {
+  # TODO: division by zero?
+  nelts <- prod(shape(operand)[dims])
+  # TODO: Should just be able to do use autocasting and divide by nelts scalar
+  nv_reduce_sum(operand, dims, drop) / nv_scalar(nelts, dtype(operand))
+}
+
+#' @rdname nv_reduce_ops
+#' @export
+nv_reduce_prod <- nvl_reduce_prod
+
+#' @rdname nv_reduce_ops
+#' @export
+nv_reduce_max <- nvl_reduce_max
+
+#' @rdname nv_reduce_ops
+#' @export
+nv_reduce_min <- nvl_reduce_min
+
+#' @rdname nv_reduce_ops
+#' @export
+nv_reduce_any <- nvl_reduce_any
+
+#' @rdname nv_reduce_ops
+#' @export
+nv_reduce_all <- nvl_reduce_all
 
 ## Data Types ------------------------------------------------------------------
 

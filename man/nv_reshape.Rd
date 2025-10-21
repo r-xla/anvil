@@ -8,15 +8,15 @@ nv_reshape(operand, shape)
 }
 \arguments{
 \item{operand}{(\code{\link{nv_tensor}})\cr
-The tensor.}
+Operand.}
 
 \item{shape}{(\code{integer()})\cr
-Output shape.}
+The new shape.}
 }
 \value{
-(\code{\link{nv_tensor}})
+\code{\link{nv_tensor}}
 }
 \description{
 Reshape a tensor.
-Note that row-major order is used, which is different from R's column-major order.
+Note that row-major order is used, which differs from R's column-major order.
 }

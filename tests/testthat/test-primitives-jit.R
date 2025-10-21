@@ -1,117 +1,99 @@
-# binary ops
-
-test_that("nvl_add", {
-  expect_jit_binary(nvl_add, `+`, 1.2, -0.7)
-})
-test_that("nvl_sub", {
-  expect_jit_binary(nvl_sub, `-`, 1.2, -0.7)
+test_that("p_shift_left", {
+  x <- nv_tensor(as.integer(c(1L, 2L, 3L, 8L)), dtype = "i32")
+  y <- nv_tensor(as.integer(c(0L, 1L, 2L, 3L)), dtype = "i32")
+  out <- as.integer(as_array(jit(nvl_shift_left)(x, y)))
+  expect_equal(out, as.integer(c(1L, 4L, 12L, 64L)))
 })
 
-test_that("nvl_mul", {
-  expect_jit_binary(nvl_mul, `*`, 1.2, -0.7)
+test_that("p_shift_right_logical", {
+  x <- nv_tensor(as.integer(c(16L, 8L, 7L, 1L)), dtype = "i32")
+  y <- nv_tensor(as.integer(c(0L, 1L, 2L, 0L)), dtype = "i32")
+  out <- as.integer(as_array(jit(nvl_shift_right_logical)(x, y)))
+  expect_equal(out, as.integer(c(16L, 4L, 1L, 1L)))
 })
 
-test_that("nvl_neg", {
-  expect_jit_unary(nvl_neg, \(x) -x, 1.7)
+test_that("p_shift_right_arithmetic", {
+  x <- nv_tensor(as.integer(c(-8L, -1L, 8L, -17L)), dtype = "i32")
+  y <- nv_tensor(as.integer(c(1L, 3L, 2L, 4L)), dtype = "i32")
+  out <- as.integer(as_array(jit(nvl_shift_right_arithmetic)(x, y)))
+  expect_equal(out, as.integer(c(-4L, -1L, 2L, -2L)))
 })
 
-test_that("nvl_div", {
-  expect_jit_binary(nvl_div, `/`, 1.2, 0.2)
+# Reduction ops (simplified hardcoded examples, no torch comparisons)
+
+test_that("p_reduce_sum", {
+  x <- array(1:6, c(2, 3))
+  f <- jit(function(a) nvl_reduce_sum(a, dims = 2L, drop = TRUE))
+  out <- as_array(f(nv_tensor(x, dtype = "f32")))
+  expect_equal(out, array(c(9, 12)))
 })
 
-test_that("nvl_pow", {
-  expect_jit_binary(nvl_pow, `^`, 1, 0.3)
+test_that("p_reduce_prod", {
+  x <- array(1:6, c(2, 3))
+  f <- jit(function(a) nvl_reduce_prod(a, dims = 1L, drop = FALSE))
+  out <- as_array(f(nv_tensor(x, dtype = "f32")))
+  expect_equal(out, array(c(2, 12, 30), c(1, 3)))
 })
 
+test_that("p_reduce_max", {
+  x <- array(c(-1, 4, 0, 2), c(2, 2))
+  f <- jit(function(a) nvl_reduce_max(a, dims = 2L, drop = TRUE))
+  out <- as_array(f(nv_tensor(x, dtype = "f32")))
+  expect_equal(out, array(c(0, 4)))
+})
 
-test_that("nvl_transpose", {
-  # just use nv_transpose for the default here
+test_that("p_reduce_min", {
+  x <- array(c(-1, 4, 0, 2), c(2, 2))
+  f <- jit(function(a) nvl_reduce_min(a, dims = 2L, drop = TRUE))
+  out <- as_array(f(nv_tensor(x, dtype = "f32")))
+  expect_equal(out, array(c(-1, 2)))
+})
+
+test_that("p_reduce_any", {
+  x <- array(c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE), c(2, 3))
+  f <- jit(function(a) nvl_reduce_any(a, dims = 2L, drop = TRUE))
+  out <- as_array(f(nv_tensor(x, dtype = "pred")))
+  expect_equal(out, array(c(TRUE, FALSE)))
+})
+
+test_that("p_reduce_all", {
+  x <- array(c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE), c(2, 3))
+  f <- jit(function(a) nvl_reduce_all(a, dims = 1L, drop = FALSE))
+  out <- as_array(f(nv_tensor(x, dtype = "pred")))
+  expect_equal(out, array(rep(FALSE, 3), c(1, 3)))
+})
+
+test_that("p_broadcast_in_dim", {
+  x <- 1L
+  f <- jit(nvl_broadcast_in_dim, static = c("shape_out", "broadcast_dimensions"))
+  expect_equal(
+    f(nv_scalar(1L), shape_out <- c(1, 2), integer()),
+    nv_tensor(1L, shape = c(1, 2))
+  )
+})
+
+test_that("p_reshape", {
+  f <- jit(nvl_reshape, static = "shape")
+  x <- array(1:6, c(3, 2))
+  expect_equal(
+    f(nv_tensor(x), shape = 6),
+    nv_tensor(as.integer(c(1, 4, 2, 5, 3, 6)), "i32")
+  )
+})
+
+test_that("p_transpose", {
   x <- array(1:4, c(2, 2))
-  expect_jit_unary(nv_transpose, t, x)
-  x2 <- array(1:8, c(2, 2, 2))
-  expect_jit_unary(
-    \(x) nv_transpose(x, c(1, 3, 2)),
-    \(x) aperm(x, c(1, 3, 2)),
-    x2
-  )
-})
-
-test_that("matmul", {
-  # simple
-  A <- array(1:9, dim = c(3, 3))
-  B <- array(1:9, dim = c(3, 3))
+  f <- jit(\(x) nvl_transpose(x, c(2, 1)))
   expect_equal(
-    as_array(jit(nv_matmul)(nv_tensor(A), nv_tensor(B))),
-    A %*% B
-  )
-
-  # broadcasting
-  x <- nv_tensor(A, shape = c(1, 1, 3, 3))
-  y <- nv_tensor(B, shape = c(1, 3, 3))
-  out <- jit(nv_matmul)(x, y)
-  expect_equal(
-    as_array(out),
-    array(A %*% B, dim = c(1, 1, 3, 3))
+    t(x),
+    as_array(f(nv_tensor(x)))
   )
 })
 
-test_that("nv_reduce_sum", {
-  x <- nv_tensor(1:3, dtype = "f32")
-  f <- jit(
-    \(x, drop) {
-      nvl_reduce_sum(x, dims = 1L, drop = drop)
-    },
-    static = "drop"
-  )
-  expect_equal(f(x, TRUE), nv_scalar(6))
-  expect_equal(f(x, FALSE), nv_tensor(6))
-})
+# we don't want to include torch in Suggests just for the tests, as it's a relatively
+# heavy dependency
+# We have a CI job that installs torch, so it's at least tested once
 
-test_that("nvl_reshape", {
-  x <- nv_tensor(1:3, dtype = "f32")
-  expect_equal(
-    jit(nvl_reshape, static = "shape")(x, c(3, 1)),
-    nv_tensor(1:3, dtype = "f32", shape = c(3, 1))
-  )
-})
-
-# comparisons
-test_that("nvl_eq", {
-  expect_jit_binary(nvl_eq, `==`, sample(1:10, 1), sample(1:10, 1))
-  expect_jit_binary(nvl_eq, `==`, rnorm(1), rnorm(1))
-  # unsigned
-  f <- jit(`==`)
-  expect_equal(
-    f(nv_scalar(1L, dtype = "ui32"), nv_scalar(1L, dtype = "ui32")),
-    nv_scalar(TRUE, dtype = "pred")
-  )
-  expect_equal(
-    f(nv_scalar(2L, dtype = "ui32"), nv_scalar(1L, dtype = "ui32")),
-    nv_scalar(FALSE, dtype = "pred")
-  )
-})
-
-test_that("nvl_ne", {
-  expect_jit_binary(nvl_ne, `!=`, sample(-10:10, 1), sample(-10:10, 1))
-  expect_jit_binary(nvl_ne, `!=`, rnorm(1), rnorm(1))
-})
-
-test_that("nvl_gt", {
-  expect_jit_binary(nvl_gt, `>`, sample(-10:10, 1), sample(-10:10, 1))
-  expect_jit_binary(nvl_gt, `>`, rnorm(1), rnorm(1))
-})
-
-test_that("nvl_ge", {
-  expect_jit_binary(nvl_ge, `>=`, sample(-10:10, 1), sample(-10:10, 1))
-  expect_jit_binary(nvl_ge, `>=`, rnorm(1), rnorm(1))
-})
-
-test_that("nvl_lt", {
-  expect_jit_binary(nvl_lt, `<`, sample(-10:10, 1), sample(-10:10, 1))
-  expect_jit_binary(nvl_lt, `<`, rnorm(1), rnorm(1))
-})
-
-test_that("nvl_le", {
-  expect_jit_binary(nvl_le, `<=`, sample(-10:10, 1), sample(-10:10, 1))
-  expect_jit_binary(nvl_le, `<=`, rnorm(1), rnorm(1))
-})
+if (nzchar(system.file(package = "torch"))) {
+  source(system.file("extra-tests", "test-primitives-jit-torch.R", package = "anvil"))
+}

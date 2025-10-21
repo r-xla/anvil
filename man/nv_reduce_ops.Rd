@@ -3,19 +3,40 @@
 \name{nv_reduce_ops}
 \alias{nv_reduce_ops}
 \alias{nv_reduce_sum}
+\alias{nv_reduce_mean}
+\alias{nv_reduce_prod}
+\alias{nv_reduce_max}
+\alias{nv_reduce_min}
+\alias{nv_reduce_any}
+\alias{nv_reduce_all}
 \title{Reduction Operators}
 \usage{
 nv_reduce_sum(operand, dims, drop = TRUE)
+
+nv_reduce_mean(operand, dims, drop = TRUE)
+
+nv_reduce_prod(operand, dims, drop = TRUE)
+
+nv_reduce_max(operand, dims, drop = TRUE)
+
+nv_reduce_min(operand, dims, drop = TRUE)
+
+nv_reduce_any(operand, dims, drop = TRUE)
+
+nv_reduce_all(operand, dims, drop = TRUE)
 }
 \arguments{
 \item{operand}{(\code{\link{nv_tensor}})\cr
-The tensor.}
+Operand.}
 
 \item{dims}{(\code{integer()})\cr
-The dimensions along which to reduce.}
+Dimensions to reduce.}
 
 \item{drop}{(\code{logical(1)})\cr
 Whether to drop the reduced dimensions.}
+}
+\value{
+\code{\link{nv_tensor}}
 }
 \description{
 Reduce a tensor along specified dimensions.

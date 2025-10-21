@@ -1,12 +1,11 @@
 #' @keywords internal
-#' @include reexports.R
 NULL
 "_PACKAGE"
 
 ## usethis namespace: start
 #' @importFrom stablehlo repr BooleanType IntegerType FloatType Shape FuncId Func as_dtype FuncVariable
 #' @importFrom stablehlo local_func hlo_input hlo_return hlo_tensor hlo_scalar
-#' @importFrom stablehlo UnsignedType
+#' @importFrom stablehlo UnsignedType TensorType
 #' @import checkmate
 #' @import S7
 #' @import tengen
@@ -16,6 +15,7 @@ NULL
 #' @importFrom dotty .
 #' @importFrom utils head tail
 #' @importFrom cli cli_abort
+#' @importFrom methods Math2
 ## usethis namespace: end
 NULL
 
@@ -24,7 +24,6 @@ globals$nv_types <- "AnvilTensor"
 globals$interpretation_rules <- c("jit", "pullback")
 
 utils::globalVariables("globals")
-
 
 hash <- S7::new_generic("hash", "x", function(x) {
   S7::S7_dispatch()

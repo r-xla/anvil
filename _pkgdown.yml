@@ -10,5 +10,5 @@ toc:
 
 navbar:
   structure:
-    left:  [reference, news]
+    left:  [intro, reference, news]
     right: [search, github, lightswitch]

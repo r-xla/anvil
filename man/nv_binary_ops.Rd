@@ -13,6 +13,16 @@
 \alias{nv_ge}
 \alias{nv_lt}
 \alias{nv_le}
+\alias{nv_max}
+\alias{nv_min}
+\alias{nv_remainder}
+\alias{nv_and}
+\alias{nv_or}
+\alias{nv_xor}
+\alias{nv_shift_left}
+\alias{nv_shift_right_logical}
+\alias{nv_shift_right_arithmetic}
+\alias{nv_atan2}
 \title{Binary Operations}
 \usage{
 nv_add(lhs, rhs)
@@ -36,6 +46,26 @@ nv_ge(lhs, rhs)
 nv_lt(lhs, rhs)
 
 nv_le(lhs, rhs)
+
+nv_max(lhs, rhs)
+
+nv_min(lhs, rhs)
+
+nv_remainder(lhs, rhs)
+
+nv_and(lhs, rhs)
+
+nv_or(lhs, rhs)
+
+nv_xor(lhs, rhs)
+
+nv_shift_left(lhs, rhs)
+
+nv_shift_right_logical(lhs, rhs)
+
+nv_shift_right_arithmetic(lhs, rhs)
+
+nv_atan2(lhs, rhs)
 }
 \arguments{
 \item{lhs}{(\code{\link{nv_tensor}})}

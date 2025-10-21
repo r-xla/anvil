@@ -31,3 +31,13 @@ test_that("jit constant single return is bare tensor", {
   out <- f()
   expect_equal(as_array(out), 0.5, tolerance = 1e-6)
 })
+
+test_that("Summary group generics", {
+  fsum <- jit(function(x) sum(x))
+  expect_equal(as_array(fsum(nv_tensor(1:10))), 55)
+})
+
+test_that("mean", {
+  fmean <- jit(function(x) mean(x))
+  expect_equal(as_array(fmean(nv_tensor(1:10, "f32"))), 5.5)
+})
