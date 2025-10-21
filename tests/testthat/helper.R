@@ -75,6 +75,6 @@ generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
   }
 }
 
-if (requireNamespace("torch", quietly = TRUE)) {
+if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
 }

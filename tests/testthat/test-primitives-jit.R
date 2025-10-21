@@ -2,9 +2,6 @@
 # heavy dependency
 # We have a CI job that installs torch
 
-skip_if_not_installed("torch")
-source(system.file("extra-tests", "test-primitives-jit-torch.R", package = "anvil"))
-
 test_that("p_shift_left", {
   x <- nv_tensor(as.integer(c(1L, 2L, 3L, 8L)), dtype = "i32")
   y <- nv_tensor(as.integer(c(0L, 1L, 2L, 3L)), dtype = "i32")
@@ -25,3 +22,7 @@ test_that("p_shift_right_arithmetic", {
   out <- as.integer(as_array(jit(nvl_shift_right_arithmetic)(x, y)))
   expect_equal(out, as.integer(c(-4L, -1L, 2L, -2L)))
 })
+
+if (nzchar(system.file(package = "torch"))) {
+  source(system.file("extra-tests", "test-primitives-jit-torch.R", package = "anvil"))
+}

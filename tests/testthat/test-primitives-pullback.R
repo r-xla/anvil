@@ -62,7 +62,6 @@ test_that("p_dot_general: matrix-vector with summed loss", {
 })
 
 test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
-  skip_if_not_installed("pjrt")
   # Helpers to reduce repetition
   make_ones_like <- function(Y) {
     nv_tensor(
@@ -229,3 +228,7 @@ test_that("p_lt: pullback for comparisons not implemented", {
   })
   expect_error(g(nv_scalar(1L), nv_scalar(2L)))
 })
+
+if (nzchar(system.file(package = "torch"))) {
+  source(system.file("extra-tests", "test-primitives-pullback-torch.R", package = "anvil"))
+}
