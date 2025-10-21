@@ -27,7 +27,7 @@ nv_reduce_all(operand, dims, drop = TRUE)
 }
 \arguments{
 \item{operand}{(\code{\link{nv_tensor}})\cr
-The tensor.}
+Operand.}
 
 \item{dims}{(\code{integer()})\cr
 Dimensions to reduce.}

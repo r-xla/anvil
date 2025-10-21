@@ -8,7 +8,7 @@ nv_reshape(operand, shape)
 }
 \arguments{
 \item{operand}{(\code{\link{nv_tensor}})\cr
-The tensor.}
+Operand.}
 
 \item{shape}{(\code{integer()})\cr
 The new shape.}

@@ -1,4 +1,7 @@
-test_that("dot_general: vector dot product gradient", {
+# most pullback tests are in extra-tests for comparison with torch
+# Just a few selected ones that don't use torch are here
+
+test_that("p_dot_general: vector dot product gradient", {
   # y = <x, y> = sum_i x_i * y_i, scalar output
   f <- function(x, y) {
     nvl_dot_general(
@@ -17,7 +20,7 @@ test_that("dot_general: vector dot product gradient", {
   expect_equal(as.numeric(pjrt::as_array(out[[2L]])), c(1, 2, 3))
 })
 
-test_that("dot_general: matrix-vector with summed loss", {
+test_that("p_dot_general: matrix-vector with summed loss", {
   nv_hacky_sum <- function(y) {
     ones <- nv_tensor(1, shape = shape(y)[1L], dtype = dtype(y))
     out <- nvl_dot_general(
@@ -58,7 +61,7 @@ test_that("dot_general: matrix-vector with summed loss", {
   expect_equal(dx, dx_true)
 })
 
-test_that("dot_general: batched matmul gradient w.r.t both inputs", {
+test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
   skip_if_not_installed("pjrt")
   # Helpers to reduce repetition
   make_ones_like <- function(Y) {
@@ -219,22 +222,10 @@ test_that("dot_general: batched matmul gradient w.r.t both inputs", {
   # TODO: One super complicated test with many permutations
 })
 
-test_that("pullback for comparisons not implemented", {
+test_that("p_lt: pullback for comparisons not implemented", {
   g <- gradient(function(a, b) {
     # any comparison; returns boolean but gradient shouldn't be requested
     a < b
   })
   expect_error(g(nv_scalar(1L), nv_scalar(2L)))
-})
-
-test_that("atan2 pullback", {
-  g <- jit(gradient(nvl_atan2))
-  x <- nv_scalar(3.0)
-  y <- nv_scalar(4.0)
-  out <- g(x, y)
-  # d/dx atan2(x, y) = y / (x^2 + y^2)
-  # d/dy atan2(x, y) = -x / (x^2 + y^2)
-  denom <- 3^2 + 4^2
-  expect_equal(out[[1L]], nv_scalar(4 / denom))
-  expect_equal(out[[2L]], nv_scalar(-3 / denom))
 })

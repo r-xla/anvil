@@ -1,5 +1,10 @@
-# Core Primitives
-
+#' @title Primitive
+#' @description
+#' Primitive interpretation rule.
+#' @param name (`character()`)\cr
+#'   The name of the primitive.
+#' @return (`Primitive`)
+#' @export
 Primitive <- new_class(
   "Primitive",
   properties = list(

@@ -8,10 +8,10 @@ nv_convert(operand, dtype)
 }
 \arguments{
 \item{operand}{(\code{\link{nv_tensor}})\cr
-Tensor.}
+Operand.}
 
-\item{dtype}{\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}}\cr
-Data type to convert to.}
+\item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+Data type.}
 }
 \value{
 \code{\link{nv_tensor}}

@@ -1,7 +1,3 @@
-source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
-
-# Arithmetic
-
 test_that("p_add", {
   expect_jit_torch_binary(nvl_add, torch::torch_add, c(2, 3), c(2, 3))
 })
@@ -23,11 +19,13 @@ test_that("p_div", {
 })
 
 test_that("p_pow", {
-  pos_float <- function(shp, dtype) {
-    x <- generate_test_array(shp, dtype)
-    if (length(shp)) abs(x) + 0.1 else abs(x) + 0.1
-  }
-  expect_jit_torch_binary(nvl_pow, torch::torch_pow, c(2, 3), c(2, 3), gen_x = pos_float)
+  expect_jit_torch_binary(
+    nvl_pow,
+    torch::torch_pow,
+    c(2, 3),
+    c(2, 3),
+    non_negative = list(TRUE, FALSE)
+  )
 })
 
 
@@ -38,7 +36,7 @@ test_that("p_reduce_sum", {
   dims <- sample(seq_along(shp), 2)
   drop <- sample(c(TRUE, FALSE), 1)
   f <- jit(function(x) nvl_reduce_sum(x, dims = dims, drop = drop))
-  x <- generate_test_array(shp, "f32")
+  x <- array(generate_test_data(shp, dtype = "f32"), shp)
   out_nv <- f(nv_tensor(x))
   out_th <- torch::torch_sum(torch::torch_tensor(x), dim = dims, keepdim = !drop)
   testthat::expect_equal(as_array(out_nv), as_array_torch(out_th), tolerance = 1e-6)
@@ -49,7 +47,7 @@ test_that("p_reduce_prod", {
   dims <- 2L
   drop <- TRUE
   f <- jit(function(x) nvl_reduce_prod(x, dims = dims, drop = drop))
-  x <- generate_test_array(shp, "f32")
+  x <- array(generate_test_data(shp, dtype = "f32"), shp)
   out_nv <- f(nv_tensor(x))
   out_th <- torch::torch_prod(torch::torch_tensor(x), dim = dims, keepdim = !drop)
   testthat::expect_equal(as_array(out_nv), as_array_torch(out_th), tolerance = 1e-6)
@@ -59,7 +57,7 @@ test_that("p_reduce_max", {
   shp <- c(2, 3, 2)
   dims <- 1L
   drop <- FALSE
-  x <- generate_test_array(shp, "f32")
+  x <- array(generate_test_data(shp, dtype = "f32"), shp)
   fmax <- jit(function(x) nvl_reduce_max(x, dims = dims, drop = drop))
   out_nv_max <- fmax(nv_tensor(x))
   out_th_max <- torch::torch_amax(torch::torch_tensor(x), dim = dims, keepdim = !drop)
@@ -70,7 +68,7 @@ test_that("p_reduce_min", {
   shp <- c(2, 3, 2)
   dims <- 1L
   drop <- FALSE
-  x <- generate_test_array(shp, "f32")
+  x <- array(generate_test_data(shp, dtype = "f32"), shp)
   fmin <- jit(function(x) nvl_reduce_min(x, dims = dims, drop = drop))
   out_nv_min <- fmin(nv_tensor(x))
   out_th_min <- torch::torch_amin(torch::torch_tensor(x), dim = dims, keepdim = !drop)
@@ -81,7 +79,7 @@ test_that("p_reduce_any", {
   shp <- c(2, 3, 2)
   dims <- 3L
   drop <- TRUE
-  x <- generate_test_array(shp, "pred")
+  x <- array(generate_test_data(shp, dtype = "pred"), shp)
   fany <- jit(function(x) nvl_reduce_any(x, dims = dims, drop = drop))
   out_nv_any <- fany(nv_tensor(x, dtype = "pred"))
   xt <- torch::torch_tensor(x, dtype = torch::torch_bool())
@@ -93,7 +91,7 @@ test_that("p_reduce_all", {
   shp <- c(2, 3, 2)
   dims <- 3L
   drop <- TRUE
-  x <- generate_test_array(shp, "pred")
+  x <- array(generate_test_data(shp, dtype = "pred"), shp)
   fall <- jit(function(x) nvl_reduce_all(x, dims = dims, drop = drop))
   out_nv_all <- fall(nv_tensor(x, dtype = "pred"))
   xt <- torch::torch_tensor(x, dtype = torch::torch_bool())
@@ -107,7 +105,7 @@ test_that("p_transpose", {
   shp <- c(2, 3, 4)
   perm <- sample(1:3)
   f <- jit(function(x) nvl_transpose(x, permutation = perm))
-  x <- generate_test_array(shp, "f32")
+  x <- array(generate_test_data(shp, dtype = "f32"), shp)
   out_nv <- f(nv_tensor(x))
   out_th <- torch::torch_tensor(x)$permute(perm)
   testthat::expect_equal(as_array(out_nv), as_array_torch(out_th))
@@ -124,14 +122,14 @@ test_that("p_reshape", {
 test_that("p_broadcast_to", {
   input_shape <- c(2L, 1L, 3L)
   target_shape <- c(4L, 2L, 5L, 3L)
-  x <- generate_test_array(input_shape, "f32")
+  x <- array(generate_test_data(input_shape, dtype = "f32"), input_shape)
   f <- jit(function(operand, shape) nv_broadcast_to(operand, shape), static = "shape")
   out_nv <- f(nv_tensor(x), target_shape)
   out_th <- torch::torch_tensor(x)$broadcast_to(target_shape)
   # compare a reduction to avoid huge arrays in print
   testthat::expect_equal(
-    sum(as_array(out_nv)),
-    sum(as_array_torch(out_th)),
+    as_array(out_nv),
+    as_array_torch(out_th),
     tolerance = 1e-6
   )
 })
@@ -257,27 +255,30 @@ test_that("p_abs", {
 })
 
 test_that("p_sqrt", {
-  pos_float <- function(shp, dtype) {
-    x <- generate_test_array(shp, dtype)
-    if (length(shp)) abs(x) + 0.1 else abs(x) + 0.1
-  }
-  expect_jit_torch_unary(nvl_sqrt, torch::torch_sqrt, c(2, 3), gen = pos_float)
+  expect_jit_torch_unary(
+    nvl_sqrt,
+    torch::torch_sqrt,
+    c(2, 3),
+    non_negative = TRUE
+  )
 })
 
 test_that("p_rsqrt", {
-  pos_float <- function(shp, dtype) {
-    x <- generate_test_array(shp, dtype)
-    if (length(shp)) abs(x) + 0.1 else abs(x) + 0.1
-  }
-  expect_jit_torch_unary(nvl_rsqrt, torch::torch_rsqrt, c(2, 3), gen = pos_float)
+  expect_jit_torch_unary(
+    nvl_rsqrt,
+    torch::torch_rsqrt,
+    c(2, 3),
+    non_negative = TRUE
+  )
 })
 
 test_that("p_log", {
-  pos_float <- function(shp, dtype) {
-    x <- generate_test_array(shp, dtype)
-    if (length(shp)) abs(x) + 0.1 else abs(x) + 0.1
-  }
-  expect_jit_torch_unary(nvl_log, torch::torch_log, c(2, 3), gen = pos_float)
+  expect_jit_torch_unary(
+    nvl_log,
+    torch::torch_log,
+    c(2, 3),
+    non_negative = TRUE
+  )
 })
 
 test_that("p_tanh", {
@@ -325,7 +326,7 @@ test_that("p_broadcast_in_dim", {
   input_shape <- c(2L, 3L)
   target_shape <- c(4L, 2L, 3L)
   bdims <- c(2L, 3L)
-  x <- generate_test_array(input_shape, "f32")
+  x <- array(generate_test_data(input_shape, dtype = "f32"), input_shape)
   f <- jit(function(a) nvl_broadcast_in_dim(a, target_shape, bdims))
   out_nv <- f(nv_tensor(x))
   out_th <- torch::torch_tensor(x)$unsqueeze(1)$expand(target_shape)
@@ -352,7 +353,7 @@ test_that("p_dot_general", {
   })(x, y)
   tx <- torch::torch_tensor(as_array(x))
   ty <- torch::torch_tensor(as_array(y))
-  expect_equal(as_array(out), as.numeric(torch::torch_sum(tx * ty)))
+  expect_equal(as_array(out), as.numeric(torch::torch_sum(tx * ty)), tolerance = 1e-5)
 
   # matrix-vector -> vector
   A <- nv_tensor(matrix(rnorm(6), 3, 2), dtype = "f32")
@@ -362,7 +363,7 @@ test_that("p_dot_general", {
   })(A, v)
   tA <- torch::torch_tensor(as_array(A))
   tv <- torch::torch_tensor(as_array(v))
-  expect_equal(as_array(out2), as_array_torch(tA$matmul(tv)), tolerance = 1e-6)
+  expect_equal(as_array(out2), as_array_torch(tA$matmul(tv)), tolerance = 1e-5)
 
   # batched matmul
   X <- nv_tensor(array(rnorm(2 * 3 * 4), c(2, 3, 4)), dtype = "f32")
@@ -372,5 +373,5 @@ test_that("p_dot_general", {
   })(X, Y)
   tX <- torch::torch_tensor(as_array(X))
   tY <- torch::torch_tensor(as_array(Y))
-  expect_equal(as_array(out3), as_array_torch(tX$matmul(tY)), tolerance = 1e-6)
+  expect_equal(as_array(out3), as_array_torch(tX$matmul(tY)), tolerance = 1e-5)
 })

@@ -11,12 +11,13 @@ Description: Code transformation framework for R.
 License: MIT + file LICENSE
 URL: https://r-xla.github.io/anvil/, https://github.com/r-xla/anvild
 BugReports: https://github.com/r-xla/anvil/issues
-Depends: 
+Depends:
     R (>= 4.2.0)
 Imports:
     checkmate,
     cli,
     dotty,
+    methods,
     pjrt,
     rlang,
     S7,
@@ -42,7 +43,6 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2.9000
 Collate:
-    'reexports.R'
     'aaa.R'
     'primitives.R'
     'tensor.R'
@@ -52,6 +52,7 @@ Collate:
     'flatten.R'
     'interpreter-jit.R'
     'interpreter-pullback.R'
+    'reexports.R'
     'rules-jit.R'
     'rules-pullback.R'
     'type-converters.R'

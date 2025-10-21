@@ -89,13 +89,11 @@ method(aval, Box) <- function(x) {
   shape(aval(x))
 }
 
-#method(aval, class_any) <- function(x) {
-#  if (is_nv_type(box)) {
-#    ConcreteTensor(nv_tensor(x))
-#  } else {
-#    stop("Type has no aval")
-#  }
-#}
+
+#' @importFrom pjrt platform
+method(platform, Box) <- function(x, ...) {
+  pjrt::platform(aval(x))
+}
 
 method(aval, AnvilTensor) <- function(x) {
   ConcreteTensor(x)

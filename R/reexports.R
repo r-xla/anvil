@@ -22,6 +22,18 @@ tengen::ndims
 #' @export
 stablehlo::is_dtype
 
-#' @importFrom pjrt platform
+#' @include interpreter.R
+# FIXME(hack): https://github.com/sebffischer/S7-issue
+#' @title Platform
+#' @description
+#' Get the platform of a tensor.
+#' @param x (`anvil::Box`)\cr
+#'   The tensor.
+#' @param ... (`any`)\cr
+#'   Additional argument (unused).
+#' @return (`character(1)`)\cr
+#'   The platform of the tensor.
 #' @export
-pjrt::platform
+platform <- function(x, ...) {
+  pjrt::platform(aval(x))
+}

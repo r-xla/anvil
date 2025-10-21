@@ -58,8 +58,7 @@ nv_broadcast_tensors <- function(...) {
 }
 
 #' @title Broadcast
-#' @param operand ([`nv_tensor`])\cr
-#'   Operand.
+#' @template param_operand
 #' @param shape (`integer()`)\cr
 #'   Output shape.
 #' @return ([`nv_tensor`])
@@ -76,10 +75,8 @@ nv_broadcast_to <- function(operand, shape) {
 #' @title Convert Tensor to Different Data Type
 #' @description
 #' Convert a tensor to a different data type.
-#' @param operand ([`nv_tensor`])\cr
-#'   Tensor.
-#' @param dtype [`stablehlo::TensorDataType`]\cr
-#'   Data type to convert to.
+#' @template param_operand
+#' @template param_dtype
 #' @return [`nv_tensor`]
 #' @export
 nv_convert <- function(operand, dtype) {
@@ -98,8 +95,7 @@ nv_transpose <- function(x, permutation = NULL) {
 #' @title Reshape
 #' @description
 #' Reshape a tensor.
-#' @param operand ([`nv_tensor`])\cr
-#'   The tensor.
+#' @template param_operand
 #' @param shape (`integer()`)\cr
 #'   The new shape.
 #' @return [`nv_tensor`]
@@ -209,7 +205,7 @@ nv_atan2 <- nvl_atan2
 #' @title Unary Operations
 #' @description
 #' Unary operations on tensors.
-#' @param operand ([`nv_tensor`])
+#' @template param_operand
 #' @return [`nv_tensor`]
 
 #' @rdname nv_unary_ops
@@ -258,6 +254,9 @@ nv_exp <- nvl_exp
 
 #' @rdname nv_unary_ops
 #' @export
+#' @param method (`character(1)`)\cr
+#'   Method to use for rounding.
+#'   Either `"nearest_even"` (default) or `"afz"` (away from zero).
 nv_round <- nvl_round
 
 
@@ -307,8 +306,7 @@ nv_matmul <- function(lhs, rhs) {
 #' @name nv_reduce_ops
 #' @description
 #' Reduce a tensor along specified dimensions.
-#' @param operand ([`nv_tensor`])\cr
-#'   The tensor.
+#' @template param_operand
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reduce.
 #' @param drop (`logical(1)`)\cr
@@ -322,7 +320,8 @@ nv_reduce_sum <- nvl_reduce_sum
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
   # TODO: division by zero?
   nelts <- shape(operand)[dims]
-  nv_reduce_sum(operand, dims, drop) / nv_scalar(nelts)
+  # TODO: Should just be able to do use autocasting and divide by nelts scalar
+  nv_reduce_sum(operand, dims, drop) / nv_scalar(nelts, dtype(operand))
 }
 
 #' @rdname nv_reduce_ops

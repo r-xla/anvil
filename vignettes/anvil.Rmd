@@ -57,7 +57,7 @@ At first, working with `AnvilTensor`s may feel a bit cumbersome, because you can
 
 ```{r, error = TRUE}
 x + x
-y + y
+#y + y
 ```
 
 ## JIT Compilation
@@ -84,7 +84,7 @@ linear_model <- jit(linear_model_r)
 
 X <- nv_tensor(rnorm(6), dtype = "f32", shape = c(2, 3))
 beta <- nv_tensor(rnorm(3), dtype = "f32", shape = c(3, 1))
-alpha <- nv_scalar(rnorm(3), dtype = "f32")
+alpha <- nv_scalar(rnorm(1), dtype = "f32")
 
 linear_model(X, beta, alpha)
 ```
@@ -246,29 +246,29 @@ update_weights <- jit(function(X, beta, alpha, y, lr) {
 This already allows us to train our linear model using gradient descent:
 
 ```{r}
-weights <- list(beta = beta_hat, alpha = alpha_hat)
-for (i in 1:100) {
-  weights <- update_weights(X, weights$beta, weights$alpha, y)
-}
+#weights <- list(beta = beta_hat, alpha = alpha_hat)
+#for (i in 1:100) {
+#  weights <- update_weights(X, weights$beta, weights$alpha, y)
+#}
 ```
 
 While this might seem like a reasonable solution, it continuously switches between the R interpreter and the XLA runtime. Moreover, we allocate new tensors in each iteration for the weights.
-While the latter might not be a big problem for small models, it can lead to significant overhead when training larger models.
-Next, we will briefly address the concept of immutability in anvil and how to work around it.
+While the latter might not be a big problem for small models, it can lead to significant overhead when working with bigger tensors.
+Next, we will briefly address the concept of immutability in anvil and which options you have have to work around it.
 
 ## Immutability
 
 Conceptually, whenever we are defining programs in anvil, we are strictly follwing **value semantics**.
-This means, in-place modifications like updating an array element are conceptually not allowed.
+This means, in-place modifications like updating an array element are conceptually impossible.
 
 When we are dealing with updating an existing tensor, this might either be:
 1. Updating an `AnvilTensor` that "lives within" a jit-compiled function.
 2. Updating an `AnvilTensor` living in R through a jit-compiled function.
    
-For the first category, there is function ABC demonstrated below.
+For the first category, there is function TODO demonstrated below.
 
 ```{r}
-# ...
+# TODO
 ```
 
 The thing to note is that while conceptually, this is *not* an in-place update, but creates a new tensor, the XLA compiler is able to optimize this, ensuring that no unnecessary copies are actually made.
@@ -279,7 +279,7 @@ The XLA compiler will therefore be able to reuse the memory.
 
 
 ```{r}
-# ...
+# TODO
 ```
 
 ### Control Flow

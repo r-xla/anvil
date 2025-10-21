@@ -23,20 +23,24 @@ as_array_torch <- function(x) {
   }
 }
 
-generate_test_array <- function(shp, dtype) {
-  nelts <- if (!length(shp)) 1L else prod(shp)
-  x <- if (dtype == "pred") {
-    sample(c(TRUE, FALSE), size = nelts, replace = TRUE)
-  } else if (startsWith(dtype, "f")) {
-    rnorm(nelts)
-  } else if (startsWith(dtype, "i")) {
-    sample(-5:5, size = nelts, replace = TRUE)
-  } else if (startsWith(dtype, "ui")) {
-    sample(0:10, size = nelts, replace = TRUE)
+generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
+  if (dtype == "pred") {
+    sample(c(TRUE, FALSE), size = prod(dimension), replace = TRUE)
+  } else if (dtype %in% c("ui8", "ui16", "ui32", "ui64")) {
+    sample(0:20, size = prod(dimension), replace = TRUE)
+  } else if (dtype %in% c("i8", "i16", "i32", "i64")) {
+    test_data <- as.integer(rgeom(prod(dimension), .5))
+    if (!non_negative) {
+      test_data <- as.integer((-1)^rbinom(prod(dimension), 1, .5) * test_data)
+    }
+    test_data
   } else {
-    stop(sprintf("Unsupported dtype: %s", dtype))
+    if (!non_negative) {
+      rnorm(prod(dimension), mean = 0, sd = 1)
+    } else {
+      rchisq(prod(dimension), df = 1)
+    }
   }
-  if (!length(shp)) x else array(x, shp)
 }
 
 make_nv <- function(x, dtype) {
@@ -51,8 +55,21 @@ make_torch <- function(x, dtype) {
   }
 }
 
-expect_jit_torch_unary <- function(nv_fun, torch_fun, shp = integer(), dtype = "f32", args_list = list(), gen = NULL) {
-  x <- if (is.null(gen)) generate_test_array(shp, dtype) else gen(shp, dtype)
+expect_jit_torch_unary <- function(
+  nv_fun,
+  torch_fun,
+  shp = integer(),
+  dtype = "f32",
+  args_list = list(),
+  gen = NULL,
+  non_negative = FALSE
+) {
+  if (is.null(gen)) {
+    vals <- generate_test_data(if (length(shp)) shp else integer(0), dtype = dtype, non_negative = non_negative)
+    x <- if (length(shp)) array(vals, shp) else vals
+  } else {
+    x <- gen(shp, dtype)
+  }
   x_nv <- make_nv(x, dtype)
   x_th <- make_torch(x, dtype)
 
@@ -71,10 +88,32 @@ expect_jit_torch_binary <- function(
   dtype = "f32",
   args_list = list(),
   gen_x = NULL,
-  gen_y = NULL
+  gen_y = NULL,
+  non_negative = list(FALSE, FALSE)
 ) {
-  x <- if (is.null(gen_x)) generate_test_array(shp_x, dtype) else gen_x(shp_x, dtype)
-  y <- if (is.null(gen_y)) generate_test_array(shp_y, dtype) else gen_y(shp_y, dtype)
+  if (length(non_negative) < 2) {
+    non_negative <- rep(non_negative, 2)
+  }
+  if (is.null(gen_x)) {
+    vals_x <- generate_test_data(
+      if (length(shp_x)) shp_x else integer(0),
+      dtype = dtype,
+      non_negative = non_negative[[1]]
+    )
+    x <- if (length(shp_x)) array(vals_x, shp_x) else vals_x
+  } else {
+    x <- gen_x(shp_x, dtype)
+  }
+  if (is.null(gen_y)) {
+    vals_y <- generate_test_data(
+      if (length(shp_y)) shp_y else integer(0),
+      dtype = dtype,
+      non_negative = non_negative[[2]]
+    )
+    y <- if (length(shp_y)) array(vals_y, shp_y) else vals_y
+  } else {
+    y <- gen_y(shp_y, dtype)
+  }
   x_nv <- make_nv(x, dtype)
   y_nv <- make_nv(y, dtype)
   x_th <- make_torch(x, dtype)

@@ -41,7 +41,12 @@ nv_exp(operand)
 nv_round(operand, method = "nearest_even")
 }
 \arguments{
-\item{operand}{(\code{\link{nv_tensor}})}
+\item{operand}{(\code{\link{nv_tensor}})\cr
+Operand.}
+
+\item{method}{(\code{character(1)})\cr
+Method to use for rounding.
+Either \code{"nearest_even"} (default) or \code{"afz"} (away from zero).}
 }
 \value{
 \code{\link{nv_tensor}}

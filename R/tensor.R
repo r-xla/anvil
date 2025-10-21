@@ -71,6 +71,10 @@ ShapedTensor <- S7::new_class(
   )
 )
 
+method(platform, ShapedTensor) <- function(x, ...) {
+  .NotYetImplemented()
+}
+
 #' @method dtype anvil::ShapedTensor
 #' @export
 `dtype.anvil::ShapedTensor` <- function(x, ...) {
@@ -103,6 +107,10 @@ ConcreteTensor <- S7::new_class(
     )
   }
 )
+
+method(platform, ConcreteTensor) <- function(x, ...) {
+  pjrt::platform(x@data)
+}
 
 method(`==`, list(ShapedTensor, ShapedTensor)) <- function(e1, e2) {
   e1@dtype == e2@dtype && e1@shape == e2@shape

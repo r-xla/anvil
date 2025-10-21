@@ -1,35 +1,3 @@
-source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
-
-generate_test_scalar <- function(dtype) {
-  if (dtype == "pred") {
-    sample(c(TRUE, FALSE), size = 1L)
-  } else if (startsWith(dtype, "f")) {
-    rnorm(1L)
-  } else if (startsWith(dtype, "i")) {
-    sample(-10:10, size = 1L)
-  } else if (startsWith(dtype, "ui")) {
-    sample(0:20, size = 1L)
-  } else {
-    stop(sprintf("Unsupported dtype: %s", dtype))
-  }
-}
-
-generate_test_array_local <- function(shp, dtype) {
-  nelts <- if (!length(shp)) 1L else prod(shp)
-  x <- if (dtype == "pred") {
-    sample(c(TRUE, FALSE), size = nelts, replace = TRUE)
-  } else if (startsWith(dtype, "f")) {
-    rnorm(nelts)
-  } else if (startsWith(dtype, "i")) {
-    sample(-10:10, size = nelts, replace = TRUE)
-  } else if (startsWith(dtype, "ui")) {
-    sample(0:20, size = nelts, replace = TRUE)
-  } else {
-    stop(sprintf("Unsupported dtype: %s", dtype))
-  }
-  if (!length(shp)) x else array(x, shp)
-}
-
 build_extra_args <- function(args_f, shp, dtype) {
   if (is.null(args_f)) {
     return(list(list(), list()))
@@ -87,7 +55,7 @@ wrap_biv_torch <- function(.g, args_torch, shp) {
 verify_grad_uni_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = NULL, tol = 0) {
   dtype <- sample(dtypes, 1L)
   shp <- integer()
-  operand <- generate_test_scalar(dtype)
+  operand <- generate_test_data(integer(), dtype)
 
   operand_anvil <- nv_scalar(operand, dtype = dtype)
 
@@ -124,11 +92,15 @@ verify_grad_uni_tensor <- function(
   dtypes = "f32",
   args_f = NULL,
   shape = NULL,
-  tol = 0
+  tol = 0,
+  non_negative = FALSE
 ) {
   shp <- if (is.null(shape)) sample(1:3, ndims, replace = TRUE) else shape
   dtype <- sample(dtypes, 1L)
-  operand <- generate_test_array_local(shp, dtype)
+  operand <- array(
+    generate_test_data(shp, dtype = dtype, non_negative = non_negative),
+    shp
+  )
 
   operand_anvil <- nv_tensor(operand, dtype = dtype)
 
@@ -159,8 +131,8 @@ verify_grad_biv_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = 
   dtype <- sample(dtypes, 1L)
   shp <- integer()
 
-  lhs <- generate_test_scalar(dtype)
-  rhs <- generate_test_scalar(dtype)
+  lhs <- generate_test_data(integer(), dtype)
+  rhs <- generate_test_data(integer(), dtype)
 
   lhs_anvil <- nv_scalar(lhs, dtype = dtype)
   rhs_anvil <- nv_scalar(rhs, dtype = dtype)
@@ -206,14 +178,25 @@ verify_grad_biv_tensor <- function(
   dtypes = "f32",
   args_f = NULL,
   shape = NULL,
-  tol = 0
+  tol = 0,
+  non_negative = list(FALSE, FALSE)
 ) {
   # Prefer shapes without size-0 or size-1 axes to avoid backend broadcast edge-cases
   shp <- if (is.null(shape)) sample(1:3, ndims, replace = TRUE) else shape
   dtype <- sample(dtypes, 1)
 
-  lhs <- generate_test_array_local(shp, dtype)
-  rhs <- generate_test_array_local(shp, dtype)
+  if (length(non_negative) < 2) {
+    non_negative <- rep(non_negative, 2)
+  }
+
+  lhs <- array(
+    generate_test_data(shp, dtype = dtype, non_negative = non_negative[[1]]),
+    shp
+  )
+  rhs <- array(
+    generate_test_data(shp, dtype = dtype, non_negative = non_negative[[2]]),
+    shp
+  )
 
   lhs_anvil <- nv_tensor(lhs)
   rhs_anvil <- nv_tensor(rhs)
@@ -244,14 +227,46 @@ verify_grad_biv_tensor <- function(
   )
 }
 
-verify_grad_biv <- function(f, g, ndims = sample(1:3, 1L), dtypes = "f32", args_f = NULL, tol = 0) {
+verify_grad_biv <- function(
+  f,
+  g,
+  ndims = sample(1:3, 1L),
+  dtypes = "f32",
+  args_f = NULL,
+  tol = 0,
+  non_negative = list(FALSE, FALSE)
+) {
   verify_grad_biv_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol)
-  verify_grad_biv_tensor(f, g, ndims = ndims, dtypes = dtypes, args_f = args_f, tol = tol)
+  verify_grad_biv_tensor(
+    f,
+    g,
+    ndims = ndims,
+    dtypes = dtypes,
+    args_f = args_f,
+    tol = tol,
+    non_negative = non_negative
+  )
 }
 
-verify_grad_uni <- function(f, g, ndims = sample(1:3, 1L), dtypes = "f32", args_f = NULL, tol = 0) {
+verify_grad_uni <- function(
+  f,
+  g,
+  ndims = sample(1:3, 1L),
+  dtypes = "f32",
+  args_f = NULL,
+  tol = 0,
+  non_negative = FALSE
+) {
   verify_grad_uni_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol)
-  verify_grad_uni_tensor(f, g, ndims = ndims, dtypes = dtypes, args_f = args_f, tol = tol)
+  verify_grad_uni_tensor(
+    f,
+    g,
+    ndims = ndims,
+    dtypes = dtypes,
+    args_f = args_f,
+    tol = tol,
+    non_negative = non_negative
+  )
 }
 
 test_that("p_add", {
@@ -288,6 +303,7 @@ test_that("p_pow", {
   #y$retain_grad()
   #(x^y)$backward()
   #y$grad
+  verify_grad_biv(nvl_pow, torch::torch_pow, non_negative = list(TRUE, FALSE))
 })
 
 test_that("p_reduce_sum", {
@@ -337,12 +353,12 @@ test_that("p_broadcast_to", {
 test_that("p_select", {
   # Fixed predicate; gradients w.r.t a and b should match torch where
   shp <- c(2L, 3L)
-  p_arr <- generate_test_array_local(shp, "pred")
+  p_arr <- array(generate_test_data(shp, dtype = "pred"), shp)
   p_anvil <- nv_tensor(p_arr, dtype = "pred")
   p_torch <- torch::torch_tensor(p_arr, dtype = torch::torch_bool())
 
-  a_arr <- generate_test_array_local(shp, "f32")
-  b_arr <- generate_test_array_local(shp, "f32")
+  a_arr <- array(generate_test_data(shp, dtype = "f32"), shp)
+  b_arr <- array(generate_test_data(shp, dtype = "f32"), shp)
   a_anvil <- nv_tensor(a_arr, dtype = "f32")
   b_anvil <- nv_tensor(b_arr, dtype = "f32")
   a_torch <- torch::torch_tensor(a_arr, requires_grad = TRUE, dtype = torch::torch_float32())

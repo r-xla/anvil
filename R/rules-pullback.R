@@ -1,8 +1,5 @@
 # Each pullback rule needs to define how to do the forward pass
 # and backward pass
-# Important: Don't use infix operators here, as they correspond to
-# the broadcasted version
-
 keep <- function(.required, ...) {
   funcs <- list(...)
 
@@ -62,16 +59,11 @@ p_neg[["pullback"]] <- function(primals, .required) {
 p_div[["pullback"]] <- function(primals, .required) {
   lhs <- primals[[1L]]
   rhs <- primals[[2L]]
-  one <- nv_scalar(1L, dtype(lhs))
-
   y <- nvl_div(lhs, rhs)
-
-  # note that we are using broadcasted functions here so we don't have to generate
-  # 'one' and 'two' for the full shape
   list(
     list(y),
     function(grad) {
-      keep(.required, \() nv_div(one, rhs), \() nv_div(nvl_neg(y), rhs))
+      keep(.required, \() nv_div(grad, rhs), \() nv_div(nvl_mul(grad, nvl_neg(y)), rhs))
     }
   )
 }
@@ -79,18 +71,17 @@ p_div[["pullback"]] <- function(primals, .required) {
 p_pow[["pullback"]] <- function(primals, .required) {
   lhs <- primals[[1L]]
   rhs <- primals[[2L]]
+  y <- nvl_pow(lhs, rhs)
   list(
-    list(nvl_pow(lhs, rhs)),
+    list(y),
     function(grad) {
       keep(
         .required,
         \() {
-          nv_pow(lhs, rhs - nv_scalar(1, dtype(lhs)))
+          nvl_mul(nvl_mul(grad, rhs), nvl_pow(lhs, nvl_sub(rhs, nv_scalar(1, dtype = dtype(lhs)))))
         },
         \() {
-          # nee
-          # TODO: Need log for this
-          .NotYetImplemented()
+          nvl_mul(grad, nvl_mul(nvl_log(lhs), y))
         }
       )
     }
@@ -307,15 +298,18 @@ p_select[["pullback"]] <- function(primals, .required) {
   true_value <- primals[[2L]]
   false_value <- primals[[3L]]
   y <- nvl_select(pred, true_value, false_value)
-  zero <- nv_tensor(0L, dtype = dtype(true_value), shape = shape(true_value))
-  # TODO: We really need to make the primitives broadcasted otherwise it's just
-  # unnecessarily expensive without the broadcasting, e.g. for the 0 here again.
+  zero <- nv_tensor(0L, dtype = dtype(true_value))
   list(
     list(y),
     function(grad) {
-      keep(.required, \() stop("Predicate cannot be differentiated"), \() nvl_select(pred, grad, zero), \() {
-        nvl_select(nv_xor(pred, nv_scalar(TRUE, dtype = "pred")), grad, zero)
-      })
+      # fmt: skip
+      keep(.required,
+        \() cli_abort("Predicate cannot be differentiated"),
+        \() nvl_select(pred, grad, zero),
+        \() {
+          nvl_select(nv_xor(pred, nv_scalar(TRUE, dtype = "pred")), grad, zero)
+        }
+      )
     }
   )
 }

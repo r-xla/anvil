@@ -1,5 +1,4 @@
 #' @keywords internal
-#' @include reexports.R
 NULL
 "_PACKAGE"
 
@@ -16,6 +15,7 @@ NULL
 #' @importFrom dotty .
 #' @importFrom utils head tail
 #' @importFrom cli cli_abort
+#' @importFrom methods Math2
 ## usethis namespace: end
 NULL
 
