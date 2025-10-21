@@ -98,7 +98,7 @@
 <h2 id="project-information">Project Information<a class="anchor" aria-label="anchor" href="#project-information"></a></h2>
 <ol style="list-style-type: decimal"><li>
 <code>stablehlo</code> (the jit interpretation rules) uses 0-based indexing, but <code>anvil</code> uses 1-based indexing. When implementing a jit interpretation rule, convert indices by subtracting 1.</li>
-<li>The <code>rules-pullback.R</code> file contains the differentiation rules for the primitive operations. There, <code>grad</code> is the gradient of the terminal output with respect to the function’s output and the function should return the gradient of the terminal output with respect to the inputs. The tests are in the file <code>insts/extra-tests/test-pullback-torch.R</code>
+<li>The <code>rules-pullback.R</code> file contains the differentiation rules for the primitive operations. There, <code>grad</code> is the gradient of the terminal output with respect to the function’s output and the function should return the gradient of the terminal output with respect to the inputs. The tests are in the file <code>insts/extra-tests/test-primitives-pullback-torch.R</code>
 </li>
 </ol></div>
 
