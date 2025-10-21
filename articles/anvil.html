@@ -68,7 +68,7 @@
       <h1>Get Started</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/anvil.Rmd" class="external-link"><code>vignettes/anvil.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-gpu/vignettes/anvil.Rmd" class="external-link"><code>vignettes/anvil.Rmd</code></a></small>
       <div class="d-none name"><code>anvil.Rmd</code></div>
     </div>
 
@@ -154,6 +154,10 @@ the function you want to apply to a jit-compiled version via
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plus_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">`+`</span><span class="op">)</span></span>
 <span><span class="fu">plus_jit</span><span class="op">(</span><span class="va">y</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Called from: plus_jit(y, y)</span></span>
+<span><span class="co">## debug: exec &lt;- pjrt_compile(program, client = platform(boxes_out[[1L]]))</span></span>
+<span><span class="co">## debug: cache[[avals_in]] &lt;- list(exec, outs[[1L]])</span></span>
+<span><span class="co">## debug: Recall()</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##   2.0000  6.0000 10.0000</span></span>
 <span><span class="co">##   4.0000  8.0000 12.0000</span></span>
@@ -163,7 +167,7 @@ the function you want to apply to a jit-compiled version via
 <p>Below, we define a function that takes in a data matrix
 <code>X</code>, a weight vector <code>beta</code> and a scalar bias
 <code>b</code>, and computes the linear model output <span class="math inline">\(y = X \times \beta + \alpha\)</span>.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_model_r</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta</span> <span class="op">+</span> <span class="va">alpha</span></span>
 <span><span class="op">}</span></span>
@@ -175,6 +179,10 @@ the function you want to apply to a jit-compiled version via
 <span><span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">linear_model</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Called from: linear_model(X, beta, alpha)</span></span>
+<span><span class="co">## debug: exec &lt;- pjrt_compile(program, client = platform(boxes_out[[1L]]))</span></span>
+<span><span class="co">## debug: cache[[avals_in]] &lt;- list(exec, outs[[1L]])</span></span>
+<span><span class="co">## debug: Recall()</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##   2.7911</span></span>
 <span><span class="co">##  -1.1904</span></span>
@@ -184,14 +192,14 @@ re-compiled for every unique combination of inputs shapes, data-types,
 and platforms.</p>
 <p>To demonstrate this, we create a slightly modified version of
 <code>linear_model</code>.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_model2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"compiling ...\n"</span><span class="op">)</span></span>
 <span>  <span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta</span> <span class="op">+</span> <span class="va">alpha</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>To demonstrate this, we create a little helper function that creates
 example input data with different numbers of observations:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">simul_data</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span>, <span class="va">p</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    X <span class="op">=</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span> <span class="op">*</span> <span class="va">p</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">n</span>, <span class="va">p</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -200,14 +208,59 @@ example input data with different numbers of observations:</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Below, we call the function twice on data with the same shapes.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">linear_model2</span>, <span class="fu">simul_data</span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## compiling ...</span></span></code></pre>
+<pre><code><span><span class="co">## compiling ...</span></span>
+<span><span class="co">## Called from: (function (X, beta, alpha) </span></span>
+<span><span class="co">## {</span></span>
+<span><span class="co">##     args &lt;- as.list(match.call())[-1L]</span></span>
+<span><span class="co">##     args &lt;- lapply(args, eval, envir = parent.frame())</span></span>
+<span><span class="co">##     in_node &lt;- build_tree(mark_some(args, static))</span></span>
+<span><span class="co">##     args_flat &lt;- flatten(args)</span></span>
+<span><span class="co">##     is_static_flat &lt;- in_node$marked</span></span>
+<span><span class="co">##     avals_in &lt;- Map(function(a, static) {</span></span>
+<span><span class="co">##         if (static) </span></span>
+<span><span class="co">##             a</span></span>
+<span><span class="co">##         else raise_to_shaped(aval(a))</span></span>
+<span><span class="co">##     }, args_flat, is_static_flat)</span></span>
+<span><span class="co">##     cache_hit &lt;- cache[[avals_in]]</span></span>
+<span><span class="co">##     if (!is.null(cache_hit)) {</span></span>
+<span><span class="co">##         res &lt;- rlang::exec(pjrt::pjrt_execute, cache_hit[[1L]], </span></span>
+<span><span class="co">##             !!!args_flat[!is_static_flat], simplify = FALSE)</span></span>
+<span><span class="co">##         res &lt;- lapply(res, nv_tensor)</span></span>
+<span><span class="co">##         return(unflatten(cache_hit[[2]], res))</span></span>
+<span><span class="co">##     }</span></span>
+<span><span class="co">##     main &lt;- local_main(JitInterpreter)</span></span>
+<span><span class="co">##     interpreter &lt;- JitInterpreter(main)</span></span>
+<span><span class="co">##     func &lt;- stablehlo::hlo_func(id = "main")</span></span>
+<span><span class="co">##     boxes_in &lt;- Map(function(a, static) {</span></span>
+<span><span class="co">##         if (static) </span></span>
+<span><span class="co">##             a</span></span>
+<span><span class="co">##         else JitBox(st2fi(a, func), interpreter = interpreter)</span></span>
+<span><span class="co">##     }, avals_in, is_static_flat)</span></span>
+<span><span class="co">##     f_flat &lt;- rlang::exec(flatten_fun, f, in_node = in_node)</span></span>
+<span><span class="co">##     outs &lt;- rlang::exec(f_flat, !!!boxes_in)</span></span>
+<span><span class="co">##     boxes_out &lt;- lapply(outs[[2L]], full_raise, interpreter = interpreter)</span></span>
+<span><span class="co">##     if (!length(boxes_out)) {</span></span>
+<span><span class="co">##         cli_abort("Function f did not return any values")</span></span>
+<span><span class="co">##     }</span></span>
+<span><span class="co">##     func_vars_out &lt;- lapply(boxes_out, function(box) box@func_var)</span></span>
+<span><span class="co">##     func &lt;- do.call(stablehlo::hlo_return, func_vars_out)</span></span>
+<span><span class="co">##     program &lt;- pjrt_program(src = repr(func), format = "mlir")</span></span>
+<span><span class="co">##     browser()</span></span>
+<span><span class="co">##     exec &lt;- pjrt_compile(program, client = platform(boxes_out[[1L]]))</span></span>
+<span><span class="co">##     cache[[avals_in]] &lt;- list(exec, outs[[1L]])</span></span>
+<span><span class="co">##     Recall()</span></span>
+<span><span class="co">## })(X = &lt;pointer: 0x55cc5c02c6f0&gt;, beta = &lt;pointer: 0x55cc596f9410&gt;, </span></span>
+<span><span class="co">##     alpha = &lt;pointer: 0x55cc5d146860&gt;)</span></span>
+<span><span class="co">## debug: exec &lt;- pjrt_compile(program, client = platform(boxes_out[[1L]]))</span></span>
+<span><span class="co">## debug: cache[[avals_in]] &lt;- list(exec, outs[[1L]])</span></span>
+<span><span class="co">## debug: Recall()</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##   4.9640</span></span>
 <span><span class="co">##  -0.1413</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">linear_model2</span>, <span class="fu">simul_data</span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##   0.6140</span></span>
@@ -223,9 +276,54 @@ but records only the operations applied to
 <code>AnvilTensor</code>s.</p>
 <p>If we now call the function on data with different shapes, we see
 that the function is re-compiled.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">linear_model2</span>, <span class="fu">simul_data</span><span class="op">(</span><span class="fl">4</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## compiling ...</span></span></code></pre>
+<pre><code><span><span class="co">## compiling ...</span></span>
+<span><span class="co">## Called from: (function (X, beta, alpha) </span></span>
+<span><span class="co">## {</span></span>
+<span><span class="co">##     args &lt;- as.list(match.call())[-1L]</span></span>
+<span><span class="co">##     args &lt;- lapply(args, eval, envir = parent.frame())</span></span>
+<span><span class="co">##     in_node &lt;- build_tree(mark_some(args, static))</span></span>
+<span><span class="co">##     args_flat &lt;- flatten(args)</span></span>
+<span><span class="co">##     is_static_flat &lt;- in_node$marked</span></span>
+<span><span class="co">##     avals_in &lt;- Map(function(a, static) {</span></span>
+<span><span class="co">##         if (static) </span></span>
+<span><span class="co">##             a</span></span>
+<span><span class="co">##         else raise_to_shaped(aval(a))</span></span>
+<span><span class="co">##     }, args_flat, is_static_flat)</span></span>
+<span><span class="co">##     cache_hit &lt;- cache[[avals_in]]</span></span>
+<span><span class="co">##     if (!is.null(cache_hit)) {</span></span>
+<span><span class="co">##         res &lt;- rlang::exec(pjrt::pjrt_execute, cache_hit[[1L]], </span></span>
+<span><span class="co">##             !!!args_flat[!is_static_flat], simplify = FALSE)</span></span>
+<span><span class="co">##         res &lt;- lapply(res, nv_tensor)</span></span>
+<span><span class="co">##         return(unflatten(cache_hit[[2]], res))</span></span>
+<span><span class="co">##     }</span></span>
+<span><span class="co">##     main &lt;- local_main(JitInterpreter)</span></span>
+<span><span class="co">##     interpreter &lt;- JitInterpreter(main)</span></span>
+<span><span class="co">##     func &lt;- stablehlo::hlo_func(id = "main")</span></span>
+<span><span class="co">##     boxes_in &lt;- Map(function(a, static) {</span></span>
+<span><span class="co">##         if (static) </span></span>
+<span><span class="co">##             a</span></span>
+<span><span class="co">##         else JitBox(st2fi(a, func), interpreter = interpreter)</span></span>
+<span><span class="co">##     }, avals_in, is_static_flat)</span></span>
+<span><span class="co">##     f_flat &lt;- rlang::exec(flatten_fun, f, in_node = in_node)</span></span>
+<span><span class="co">##     outs &lt;- rlang::exec(f_flat, !!!boxes_in)</span></span>
+<span><span class="co">##     boxes_out &lt;- lapply(outs[[2L]], full_raise, interpreter = interpreter)</span></span>
+<span><span class="co">##     if (!length(boxes_out)) {</span></span>
+<span><span class="co">##         cli_abort("Function f did not return any values")</span></span>
+<span><span class="co">##     }</span></span>
+<span><span class="co">##     func_vars_out &lt;- lapply(boxes_out, function(box) box@func_var)</span></span>
+<span><span class="co">##     func &lt;- do.call(stablehlo::hlo_return, func_vars_out)</span></span>
+<span><span class="co">##     program &lt;- pjrt_program(src = repr(func), format = "mlir")</span></span>
+<span><span class="co">##     browser()</span></span>
+<span><span class="co">##     exec &lt;- pjrt_compile(program, client = platform(boxes_out[[1L]]))</span></span>
+<span><span class="co">##     cache[[avals_in]] &lt;- list(exec, outs[[1L]])</span></span>
+<span><span class="co">##     Recall()</span></span>
+<span><span class="co">## })(X = &lt;pointer: 0x55cc5d1429b0&gt;, beta = &lt;pointer: 0x55cc55010d20&gt;, </span></span>
+<span><span class="co">##     alpha = &lt;pointer: 0x55cc59d677f0&gt;)</span></span>
+<span><span class="co">## debug: exec &lt;- pjrt_compile(program, client = platform(boxes_out[[1L]]))</span></span>
+<span><span class="co">## debug: cache[[avals_in]] &lt;- list(exec, outs[[1L]])</span></span>
+<span><span class="co">## debug: Recall()</span></span></code></pre>
 <p>Because the compilation step itself can take some time, {anvil}
 therefore gives the best results when the same function is called many
 times with the same input shapes, data types, and platforms, or the
@@ -242,7 +340,7 @@ with or without an intercept term. To do so, we add the logical argument
 <code>with_bias</code> to our function. We need to mark this argument as
 <code>static</code>, so {anvil} knows to treat this as a regular R value
 instead of an <code>AnvilTensor</code>.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_model3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">with_bias</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="va">with_bias</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Compiling without bias ...\n"</span><span class="op">)</span></span>
@@ -253,16 +351,24 @@ instead of an <code>AnvilTensor</code>.</p>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span>, static <span class="op">=</span> <span class="st">"with_bias"</span><span class="op">)</span></span></code></pre></div>
 <p>We can call this function now with or without a bias term:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">linear_model3</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, with_bias <span class="op">=</span>  <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Compiling with bias ...</span></span></code></pre>
+<pre><code><span><span class="co">## Compiling with bias ...</span></span>
+<span><span class="co">## Called from: linear_model3(X, beta, with_bias = FALSE)</span></span>
+<span><span class="co">## debug: exec &lt;- pjrt_compile(program, client = platform(boxes_out[[1L]]))</span></span>
+<span><span class="co">## debug: cache[[avals_in]] &lt;- list(exec, outs[[1L]])</span></span>
+<span><span class="co">## debug: Recall()</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##   2.8538</span></span>
 <span><span class="co">##  -1.1277</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">linear_model3</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, with_bias <span class="op">=</span>  <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Compiling without bias ...</span></span></code></pre>
+<pre><code><span><span class="co">## Compiling without bias ...</span></span>
+<span><span class="co">## Called from: linear_model3(X, beta, alpha, with_bias = TRUE)</span></span>
+<span><span class="co">## debug: exec &lt;- pjrt_compile(program, client = platform(boxes_out[[1L]]))</span></span>
+<span><span class="co">## debug: cache[[avals_in]] &lt;- list(exec, outs[[1L]])</span></span>
+<span><span class="co">## debug: Recall()</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##   2.7911</span></span>
 <span><span class="co">##  -1.1904</span></span>
@@ -277,11 +383,15 @@ static argument.</p>
 <p>Note also, that the inputs, as well as the outputs, can also contain
 nested data structures that contain <code>AnvilTensor</code>s, although
 we currently only support (named) lists.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_model4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">inputs</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>y_hat <span class="op">=</span> <span class="va">inputs</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">inputs</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="va">inputs</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu">linear_model4</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Called from: linear_model4(list(X, beta, alpha))</span></span>
+<span><span class="co">## debug: exec &lt;- pjrt_compile(program, client = platform(boxes_out[[1L]]))</span></span>
+<span><span class="co">## debug: cache[[avals_in]] &lt;- list(exec, outs[[1L]])</span></span>
+<span><span class="co">## debug: Recall()</span></span></code></pre>
 <pre><code><span><span class="co">## $y_hat</span></span>
 <span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##   2.7911</span></span>
@@ -300,30 +410,30 @@ We will start with gradients.</p>
 scalar-valued function using <code><a href="../reference/gradient.html">gradient()</a></code>: Currently,
 vector-valued functions cannot be differentiated. Below, we implement
 implement the loss function for our linear model.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mse</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">y_hat</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">y_hat</span> <span class="op">-</span> <span class="va">y</span><span class="op">)</span><span class="op">^</span><span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2.0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>We now need some target variables <code>y</code>, so we simulate some
 data from a linear model:</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">beta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta</span> <span class="op">+</span> <span class="va">alpha</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">100</span>, sd <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <p><img src="anvil_files/figure-html/unnamed-chunk-16-1.png" width="700"></p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <p>Next, we randomly initialize the model parameters:</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
 <span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></code></pre></div>
 <p>We can now define a function that does the prediction and calculates
 the loss. Note that we are calling into the original R function that
 does the prediction and not its jit-compiled version.</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_loss</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">y_hat</span> <span class="op">&lt;-</span> <span class="fu">linear_model_r</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span><span class="op">)</span></span>
 <span>  <span class="fu">mse</span><span class="op">(</span><span class="va">y_hat</span>, <span class="va">y</span><span class="op">)</span></span>
@@ -331,14 +441,14 @@ does the prediction and not its jit-compiled version.</p>
 <p>Using the <code><a href="../reference/gradient.html">gradient()</a></code> transformation, we can
 automatically obtain the gradient function of <code>model_loss</code>
 with respect to some of its arguments, which we specify.</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_loss_grad</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gradient.html">gradient</a></span><span class="op">(</span></span>
 <span>  <span class="va">model_loss</span>,</span>
 <span>  wrt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"beta"</span>, <span class="st">"alpha"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Finally, we define the update step for the weights using gradient
 descent.</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">update_weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span>, <span class="va">lr</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span></span>
 <span>  <span class="va">grads</span> <span class="op">&lt;-</span> <span class="fu">model_loss_grad</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span></span>
@@ -348,7 +458,7 @@ descent.</p>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>This already allows us to train our linear model using gradient
 descent:</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#weights &lt;- list(beta = beta_hat, alpha = alpha_hat)</span></span>
 <span><span class="co">#for (i in 1:100) {</span></span>
 <span><span class="co">#  weights &lt;- update_weights(X, weights$beta, weights$alpha, y)</span></span>
@@ -374,7 +484,7 @@ jit-compiled function. 2. Updating an <code>AnvilTensor</code> living in
 R through a jit-compiled function.</p>
 <p>For the first category, there is function TODO demonstrated
 below.</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># TODO</span></span></code></pre></div>
 <p>The thing to note is that while conceptually, this is <em>not</em> an
 in-place update, but creates a new tensor, the XLA compiler is able to
@@ -385,7 +495,7 @@ function as “donatable”. This means, we are telling the XLA runtime that
 after we pass those tensors marked as donatable into the function, we
 will no longer use them in R. The XLA compiler will therefore be able to
 reuse the memory.</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># TODO</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="control-flow">Control Flow<a class="anchor" aria-label="anchor" href="#control-flow"></a>
