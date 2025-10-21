@@ -84,13 +84,13 @@ experience with JAX in Python, you should feel right at home.</p>
 <code>AnvilTensor</code>. It is essentially like an <code>R</code>
 array, with some differences:</p>
 <ol style="list-style-type: decimal">
-<li>It supports more datatypes, such as different precisions, as well as
-unsigned integers.</li>
+<li>It supports more data types, such as different precisions, as well
+as unsigned integers.</li>
 <li>The tensor can live on different <em>platforms</em>, such as CPU or
 GPU.</li>
 <li>0-dimensional tensors can be used to represent scalars.</li>
 </ol>
-<p>We can create such an object from R datatypes using the
+<p>We can create such an object from R data types using the
 <code>nv_tensor</code> and friends functions. Below, we create a
 0-dimensional tensor (i.e., a scalar) of type <code>int16</code> on the
 CPU.</p>
@@ -109,7 +109,7 @@ CPU.</p>
 <span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUi16{} ]</span></span></code></pre>
 <p>We can also create higher-dimensional tensors, for example a 2x3 CPU
-tensor of type <code>f32</code>. Below, we ommit specifying the platform
+tensor of type <code>f32</code>. Below, we omit specifying the platform
 and datatype, as it will default to <code>"cpu"</code> and
 <code>"f32"</code>. Note that the default datatype depends on the input
 datatype.</p>
@@ -213,7 +213,7 @@ example input data with different numbers of observations:</p>
 <span><span class="co">##   0.6140</span></span>
 <span><span class="co">##  -2.5214</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
-<p>We can notice that we only see th <code>"compiling ..."</code>
+<p>We can notice that we only see the <code>"compiling ..."</code>
 message the first and third time. This is, because the first time, the
 function is compiled into an <code>XLA</code> executable and cached for
 later reuse. The second time, we don’t execute the R function at all,
@@ -228,7 +228,7 @@ that the function is re-compiled.</p>
 <pre><code><span><span class="co">## compiling ...</span></span></code></pre>
 <p>Because the compilation step itself can take some time, {anvil}
 therefore gives the best results when the same function is called many
-times with the same input shapes, datatypes, and platforms, or the
+times with the same input shapes, data types, and platforms, or the
 computation itself is sufficiently large to amortize the compilation
 overhead. One common application scenario where this assumption holds
 are iterative optimization algorithms.</p>
@@ -365,8 +365,8 @@ work around it.</p>
 <h2 id="immutability">Immutability<a class="anchor" aria-label="anchor" href="#immutability"></a>
 </h2>
 <p>Conceptually, whenever we are defining programs in anvil, we are
-strictly follwing <strong>value semantics</strong>. This means, in-place
-modifications like updating an array element are conceptually
+strictly following <strong>value semantics</strong>. This means,
+in-place modifications like updating an array element are conceptually
 impossible.</p>
 <p>When we are dealing with updating an existing tensor, this might
 either be: 1. Updating an <code>AnvilTensor</code> that “lives within” a
@@ -382,8 +382,8 @@ optimize this, ensuring that no unnecessary copies are actually
 made.</p>
 <p>For the second category, we can mark arguments of a jit-compiled
 function as “donatable”. This means, we are telling the XLA runtime that
-after we pass those tensors marked as donable into the function, we will
-no longer use them in R. The XLA compiler will therefore be able to
+after we pass those tensors marked as donatable into the function, we
+will no longer use them in R. The XLA compiler will therefore be able to
 reuse the memory.</p>
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># TODO</span></span></code></pre></div>
@@ -415,7 +415,7 @@ the loop as part of the jit-compiled function itself.</p>
 <p>The advantage of the former is that this allows including standard R
 code in the loop, which can e.g. be useful for logging purposes.
 However, depending on the duration of each iteration, there might be a
-signficant overhead from switching between R and the compiled code.</p>
+significant overhead from switching between R and the compiled code.</p>
 <p>As an example, we will fit the above linear model using gradient
 descent. Of course, we would usually fit the model by solving the normal
 equations directly, but this is just for demonstration purposes.</p>
