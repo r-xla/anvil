@@ -1,9 +1,3 @@
-# we don't want to include torch in Suggests just for the tests, as it's a relatively
-# heavy dependency
-# We have a CI job that installs torch
-# Where we basicallt just call into stablehlo functions, the tests don't need to
-# be too exhaustive
-
 test_that("p_shift_left", {
   x <- nv_tensor(as.integer(c(1L, 2L, 3L, 8L)), dtype = "i32")
   y <- nv_tensor(as.integer(c(0L, 1L, 2L, 3L)), dtype = "i32")
@@ -96,6 +90,9 @@ test_that("p_transpose", {
   )
 })
 
+# we don't want to include torch in Suggests just for the tests, as it's a relatively
+# heavy dependency
+# We have a CI job that installs torch, so it's at least tested once
 
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "test-primitives-jit-torch.R", package = "anvil"))
