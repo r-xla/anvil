@@ -16,13 +16,13 @@ If you have experience with JAX in Python, you should feel right at home.
 We will start by introducing the main data structure, which is the `AnvilTensor`.
 It is essentially like an `R` array, with some differences:
 
-1. It supports more datatypes, such as different precisions, as well as unsigned integers.
+1. It supports more data types, such as different precisions, as well as unsigned integers.
 2. The tensor can live on different *platforms*, such as CPU or GPU.
 3. 0-dimensional tensors can be used to represent scalars.
-   
-We can create such an object from R datatypes using the `nv_tensor` and friends functions.
+
+We can create such an object from R data types using the `nv_tensor` and friends functions.
 Below, we create a 0-dimensional tensor (i.e., a scalar) of type `int16` on the CPU.
-   
+
 ```{r}
 library(anvil)
 set.seed(42)
@@ -36,7 +36,7 @@ nv_scalar(1L, dtype = "i16", platform = "cpu")
 ```
 
 We can also create higher-dimensional tensors, for example a 2x3 CPU tensor of type `f32`.
-Below, we ommit specifying the platform and datatype, as it will default to `"cpu"` and `"f32"`.
+Below, we omit specifying the platform and datatype, as it will default to `"cpu"` and `"f32"`.
 Note that the default datatype depends on the input datatype.
 
 ```{r}
@@ -119,7 +119,7 @@ do.call(linear_model2, simul_data(2, 3))
 do.call(linear_model2, simul_data(2, 3))
 ```
 
-We can notice that we only see th `"compiling ..."` message the first and third time.
+We can notice that we only see the `"compiling ..."` message the first and third time.
 This is, because the first time, the function is compiled into an `XLA` executable and cached for later reuse.
 The second time, we don't execute the R function at all, but directly run the cached `XLA` executable.
 This executable does not contain "standard" R code, like the `cat()` call, but records only the operations applied to `AnvilTensor`s.
@@ -131,7 +131,7 @@ y_hat <- do.call(linear_model2, simul_data(4, 3))
 ```
 
 
-Because the compilation step itself can take some time, {anvil} therefore gives the best results when the same function is called many times with the same input shapes, datatypes, and platforms, or the computation itself is sufficiently large to amortize the compilation overhead.
+Because the compilation step itself can take some time, {anvil} therefore gives the best results when the same function is called many times with the same input shapes, data types, and platforms, or the computation itself is sufficiently large to amortize the compilation overhead.
 One common application scenario where this assumption holds are iterative optimization algorithms.
 
 
@@ -258,13 +258,13 @@ Next, we will briefly address the concept of immutability in anvil and which opt
 
 ## Immutability
 
-Conceptually, whenever we are defining programs in anvil, we are strictly follwing **value semantics**.
+Conceptually, whenever we are defining programs in anvil, we are strictly following **value semantics**.
 This means, in-place modifications like updating an array element are conceptually impossible.
 
 When we are dealing with updating an existing tensor, this might either be:
 1. Updating an `AnvilTensor` that "lives within" a jit-compiled function.
 2. Updating an `AnvilTensor` living in R through a jit-compiled function.
-   
+
 For the first category, there is function TODO demonstrated below.
 
 ```{r}
@@ -274,7 +274,7 @@ For the first category, there is function TODO demonstrated below.
 The thing to note is that while conceptually, this is *not* an in-place update, but creates a new tensor, the XLA compiler is able to optimize this, ensuring that no unnecessary copies are actually made.
 
 For the second category, we can mark arguments of a jit-compiled function as "donatable".
-This means, we are telling the XLA runtime that after we pass those tensors marked as donable into the function, we will no longer use them in R.
+This means, we are telling the XLA runtime that after we pass those tensors marked as donatable into the function, we will no longer use them in R.
 The XLA compiler will therefore be able to reuse the memory.
 
 
@@ -291,13 +291,13 @@ In principle, there are three ways to handle control-flow in anvil:
 1. Embed jit-compiled functions inside R control-flow constructs, which we have seen earlier.
 2. Embed R control flow inside a jit-compiled function (we have also seen this earlier when our linear model allowed to optionally include a bias term).
 3. Use special control-flow primitives provided by anvil, such as `nv_while()` and `nv_if()`.
-   
+
 What's the best solution depends on the specific scenario.
 
 One thing to be aware of is that we usually don't want R loops within the jit-compiled function.
 This is, because the loop will be unrolled during compilation, which can lead to very large compilation times and big executables.
 
-The only thing we have not demonstrated so far is how 
+The only thing we have not demonstrated so far is how
 
 ```{r}
 ```
@@ -307,7 +307,7 @@ The only thing we have not demonstrated so far is how
 When doing this, we have the choice to either implement the loop in R, and call into a jit-compiled function in each iteration, or implement the loop as part of the jit-compiled function itself.
 
 The advantage of the former is that this allows including standard R code in the loop, which can e.g. be useful for logging purposes.
-However, depending on the duration of each iteration, there might be a signficant overhead from switching between R and the compiled code.
+However, depending on the duration of each iteration, there might be a significant overhead from switching between R and the compiled code.
 
 As an example, we will fit the above linear model using gradient descent.
 Of course, we would usually fit the model by solving the normal equations directly, but this is just for demonstration purposes.
