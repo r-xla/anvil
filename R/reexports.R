@@ -22,6 +22,7 @@ tengen::ndims
 #' @export
 stablehlo::is_dtype
 
+# FIXME(hack): https://github.com/sebffischer/S7-issue
 #' @include interpreter.R
 #' @title Platform
 #' @description
@@ -33,6 +34,5 @@ stablehlo::is_dtype
 #' @return (`character(1)`)
 #' @export
 platform <- function(x, ...) {
-  # FIXME(hack): https://github.com/sebffischer/S7-issue
   pjrt::platform(x)
 }
