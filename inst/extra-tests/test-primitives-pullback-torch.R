@@ -306,16 +306,8 @@ test_that("p_div", {
 test_that("p_pow", {
   # Need to determine what to do with non-differentiable values:
   # https://docs.pytorch.org/docs/stable/notes/autograd.html#gradients-for-non-differentiable-functions
-  # TODO: uncomment
-  #verify_grad_biv(nvl_pow, torch::torch_pow)
-  #library(torch)
-  #x <- torch_scalar_tensor(0, requires_grad = TRUE)
-  #x$retain_grad()
-  #y <- torch_scalar_tensor(2, requires_grad = TRUE)
-  #y$retain_grad()
-  #(x^y)$backward()
-  #y$grad
-  verify_grad_biv(nvl_pow, torch::torch_pow, non_negative = list(TRUE, TRUE))
+  verify_grad_biv(nvl_pow, torch::torch_pow, non_negative = list(TRUE, FALSE), tol = 1e-5)
+  verify_grad_biv(nvl_pow, torch::torch_pow, non_negative = list(FALSE, TRUE), tol = 1e-5)
 })
 
 test_that("p_reduce_sum", {
