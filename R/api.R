@@ -97,6 +97,7 @@ nv_transpose <- function(x, permutation = NULL) {
 #' @title Reshape
 #' @description
 #' Reshape a tensor.
+#' Note that row-major order is used, which differs from R's column-major order.
 #' @template param_operand
 #' @param shape (`integer()`)\cr
 #'   The new shape.

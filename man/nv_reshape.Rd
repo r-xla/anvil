@@ -18,4 +18,5 @@ The new shape.}
 }
 \description{
 Reshape a tensor.
+Note that row-major order is used, which differs from R's column-major order.
 }

@@ -23,16 +23,16 @@ tengen::ndims
 stablehlo::is_dtype
 
 #' @include interpreter.R
-# FIXME(hack): https://github.com/sebffischer/S7-issue
 #' @title Platform
 #' @description
-#' Get the platform of a tensor.
-#' @param x (`anvil::Box`)\cr
+#' Get the platform of a tensor-like object.
+#' @param x (any)\cr
 #'   The tensor.
 #' @param ... (`any`)\cr
 #'   Additional argument (unused).
 #' @return (`character(1)`)
 #' @export
 platform <- function(x, ...) {
+  # FIXME(hack): https://github.com/sebffischer/S7-issue
   pjrt::platform(x)
 }

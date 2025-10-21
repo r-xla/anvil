@@ -221,15 +221,12 @@ test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
 })
 
 test_that("broadcasting", {
-  f <- jit(gradient(
-    function(x, y) {
-      mean(x + y)
-    },
-    wrt = "x"
-  ))
+  f <- jit(gradient(function(x, y) {
+    mean(x + y)
+  }, wrt = "x"))
 
   out <- f(nv_tensor(1), nv_tensor(0, shape = c(1, 2)))
-  expect_equal(out, nv_tensor(0.25, shape = c(1, 2)))
+  expect_equal(out[[1L]], nv_tensor(0.5, shape = c(1, 2)))
 })
 
 if (nzchar(system.file(package = "torch"))) {

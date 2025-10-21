@@ -7,7 +7,7 @@
 platform(x, ...)
 }
 \arguments{
-\item{x}{(\code{anvil::Box})\cr
+\item{x}{(any)\cr
 The tensor.}
 
 \item{...}{(\code{any})\cr
@@ -17,5 +17,5 @@ Additional argument (unused).}
 (\code{character(1)})
 }
 \description{
-Get the platform of a tensor.
+Get the platform of a tensor-like object.
 }
