@@ -72,6 +72,7 @@ ShapedTensor <- S7::new_class(
 )
 
 method(platform, ShapedTensor) <- function(x, ...) {
+  # TODO: Need platform as part of ShapedTensor
   .NotYetImplemented()
 }
 

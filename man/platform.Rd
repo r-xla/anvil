@@ -14,8 +14,7 @@ The tensor.}
 Additional argument (unused).}
 }
 \value{
-(\code{character(1)})\cr
-The platform of the tensor.
+(\code{character(1)})
 }
 \description{
 Get the platform of a tensor.

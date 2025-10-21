@@ -273,24 +273,6 @@ p_broadcast_in_dim[["pullback"]] <- function(primals, shape_out, broadcast_dimen
   )
 }
 
-# atan2 pullback ----------------------------------------------------------------
-
-p_atan2[["pullback"]] <- function(primals, .required) {
-  lhs <- primals[[1L]]
-  rhs <- primals[[2L]]
-  y <- nvl_atan2(lhs, rhs) # nolint
-  list(
-    list(y),
-    function(grad) {
-      keep(
-        .required,
-        \() nv_mul(grad, nv_div(rhs, nv_add(nv_mul(lhs, lhs), nv_mul(rhs, rhs)))),
-        \() nv_mul(grad, nv_div(nv_neg(lhs), nv_add(nv_mul(lhs, lhs), nv_mul(rhs, rhs))))
-      )
-    }
-  )
-}
-
 # control flow pullback ---------------------------------------------------------
 
 p_select[["pullback"]] <- function(primals, .required) {
@@ -306,9 +288,7 @@ p_select[["pullback"]] <- function(primals, .required) {
       keep(.required,
         \() cli_abort("Predicate cannot be differentiated"),
         \() nvl_select(pred, grad, zero),
-        \() {
-          nvl_select(nv_xor(pred, nv_scalar(TRUE, dtype = "pred")), grad, zero)
-        }
+        \() nvl_select(nvl_not(pred), grad, zero)
       )
     }
   )

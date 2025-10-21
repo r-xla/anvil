@@ -240,6 +240,11 @@ nvl_and <- function(lhs, rhs) {
   interprete(p_and, list(lhs, rhs))[[1L]]
 }
 
+p_not <- Primitive("not")
+nvl_not <- function(operand) {
+  interprete(p_not, list(operand))[[1L]]
+}
+
 p_or <- Primitive("or")
 nvl_or <- function(lhs, rhs) {
   interprete(p_or, list(lhs, rhs))[[1L]]

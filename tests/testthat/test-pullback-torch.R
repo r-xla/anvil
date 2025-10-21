@@ -3,4 +3,4 @@
 # We have a CI job that installs torch
 
 skip_if_not_installed("torch")
-source(system.file("extra-tests", "test-pullback-torch.R", package = "anvil"))
+source(system.file("extra-tests", "test-primitives-pullback-torch.R", package = "anvil"))

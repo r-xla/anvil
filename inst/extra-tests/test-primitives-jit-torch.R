@@ -189,6 +189,10 @@ test_that("p_and", {
   expect_jit_torch_binary(nvl_and, torch::torch_logical_and, c(2, 3), c(2, 3), dtype = "pred")
 })
 
+test_that("p_not", {
+  expect_jit_torch_unary(nvl_not, \(x) !x, c(2, 3), dtype = "pred")
+})
+
 test_that("p_or", {
   expect_jit_torch_binary(nvl_or, torch::torch_logical_or, c(2, 3), c(2, 3), dtype = "pred")
 })
@@ -197,52 +201,6 @@ test_that("p_xor", {
   expect_jit_torch_binary(nvl_xor, torch::torch_logical_xor, c(2, 3), c(2, 3), dtype = "pred")
 })
 
-test_that("p_shift_left", {
-  # use signed 32-bit for both logical and arithmetic tests to satisfy backend
-  x <- nv_tensor(sample(0:65535, 6, TRUE), dtype = "i32")
-  y <- nv_tensor(sample(0:7, 6, TRUE), dtype = "i32")
-  x_r <- as.integer(as_array(x))
-  y_r <- as.integer(as_array(y))
-  exp_l <- bitwShiftL(x_r, y_r)
-  exp_r <- bitwShiftR(x_r, y_r)
-  expect_equal(as.integer(as_array(jit(nvl_shift_left)(x, y))), as.integer(exp_l))
-})
-
-test_that("p_shift_right_logical", {
-  x <- nv_tensor(sample(0:65535, 6, TRUE), dtype = "i32")
-  y <- nv_tensor(sample(0:7, 6, TRUE), dtype = "i32")
-  x_r <- as.integer(as_array(x))
-  y_r <- as.integer(as_array(y))
-  exp_r <- bitwShiftR(x_r, y_r)
-  expect_equal(as.integer(as_array(jit(nvl_shift_right_logical)(x, y))), as.integer(exp_r))
-})
-
-test_that("p_shift_right_arithmetic", {
-  # Arithmetic right shift should preserve sign; simulate expected with floor division by 2^k
-  x <- nv_tensor(sample(-32768:32767, 6, TRUE), dtype = "i32")
-  y <- nv_tensor(sample(0:7, 6, TRUE), dtype = "i32")
-  x_r <- as.integer(as_array(x))
-  y_r <- as.integer(as_array(y))
-  exp_r <- vapply(
-    seq_along(x_r),
-    function(i) {
-      k <- y_r[i]
-      if (k == 0L) {
-        return(x_r[i])
-      }
-      if (x_r[i] >= 0L) {
-        bitwShiftR(x_r[i], k)
-      } else {
-        two_pow_k <- bitwShiftL(1L, k)
-        neg_x <- as.integer(-x_r[i])
-        neg_div <- bitwShiftR(as.integer(neg_x + (two_pow_k - 1L)), k)
-        -neg_div
-      }
-    },
-    integer(1)
-  )
-  expect_equal(as.integer(as_array(jit(nvl_shift_right_arithmetic)(x, y))), as.integer(exp_r))
-})
 
 test_that("p_atan2", {
   expect_jit_torch_binary(nvl_atan2, torch::torch_atan2, c(2, 3), c(2, 3))

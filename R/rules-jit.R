@@ -96,7 +96,7 @@ p_reduce_prod[["jit"]] <- function(operand, dims, drop) {
 
 p_reduce_max[["jit"]] <- function(operand, dims, drop) {
   init <- function(operand) {
-    # platform does not matter when we just embed the min value in stablehlo
+    # platform does not matter when we just embed the init value in stablehlo
     hlo_scalar(nv_minval(dtype(operand), "cpu"))
   }
   .jit_apply_reduce(stablehlo::hlo_maximum, operand, init, dims, drop)
@@ -104,7 +104,7 @@ p_reduce_max[["jit"]] <- function(operand, dims, drop) {
 
 p_reduce_min[["jit"]] <- function(operand, dims, drop) {
   init <- function(operand) {
-    # platform does not matter when we just embed the min value in stablehlo
+    # platform does not matter when we just embed the init value in stablehlo
     hlo_scalar(nv_maxval(dtype(operand), "cpu"))
   }
   .jit_apply_reduce(stablehlo::hlo_minimum, operand, init, dims, drop)
@@ -179,6 +179,10 @@ p_remainder[["jit"]] <- function(lhs, rhs) {
 
 p_and[["jit"]] <- function(lhs, rhs) {
   .jit_apply_broadcasted(stablehlo::hlo_and, lhs, rhs)
+}
+
+p_not[["jit"]] <- function(operand) {
+  list(stablehlo::hlo_not(operand))
 }
 
 p_or[["jit"]] <- function(lhs, rhs) {

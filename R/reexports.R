@@ -31,9 +31,8 @@ stablehlo::is_dtype
 #'   The tensor.
 #' @param ... (`any`)\cr
 #'   Additional argument (unused).
-#' @return (`character(1)`)\cr
-#'   The platform of the tensor.
+#' @return (`character(1)`)
 #' @export
 platform <- function(x, ...) {
-  pjrt::platform(aval(x))
+  pjrt::platform(x)
 }

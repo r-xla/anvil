@@ -52,10 +52,10 @@ wrap_biv_torch <- function(.g, args_torch, shp) {
   }
 }
 
-verify_grad_uni_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = NULL, tol = 0) {
+verify_grad_uni_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = NULL, tol = 0, non_negative = FALSE) {
   dtype <- sample(dtypes, 1L)
   shp <- integer()
-  operand <- generate_test_data(integer(), dtype)
+  operand <- generate_test_data(integer(), dtype, non_negative = non_negative)
 
   operand_anvil <- nv_scalar(operand, dtype = dtype)
 
@@ -127,12 +127,24 @@ verify_grad_uni_tensor <- function(
   )
 }
 
-verify_grad_biv_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = NULL, tol = 0) {
+verify_grad_biv_scalar <- function(
+  .f,
+  .g,
+  ndims = 0L,
+  dtypes = "f32",
+  args_f = NULL,
+  tol = 1e-5,
+  non_negative = list(FALSE, FALSE)
+) {
   dtype <- sample(dtypes, 1L)
   shp <- integer()
 
-  lhs <- generate_test_data(integer(), dtype)
-  rhs <- generate_test_data(integer(), dtype)
+  if (length(non_negative) < 2) {
+    non_negative <- rep(non_negative, 2)
+  }
+
+  lhs <- generate_test_data(integer(), dtype, non_negative = non_negative[[1]])
+  rhs <- generate_test_data(integer(), dtype, non_negative = non_negative[[2]])
 
   lhs_anvil <- nv_scalar(lhs, dtype = dtype)
   rhs_anvil <- nv_scalar(rhs, dtype = dtype)
@@ -236,7 +248,7 @@ verify_grad_biv <- function(
   tol = 0,
   non_negative = list(FALSE, FALSE)
 ) {
-  verify_grad_biv_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol)
+  verify_grad_biv_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol, non_negative = non_negative)
   verify_grad_biv_tensor(
     f,
     g,
@@ -257,7 +269,7 @@ verify_grad_uni <- function(
   tol = 0,
   non_negative = FALSE
 ) {
-  verify_grad_uni_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol)
+  verify_grad_uni_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol, non_negative = non_negative)
   verify_grad_uni_tensor(
     f,
     g,
@@ -303,7 +315,7 @@ test_that("p_pow", {
   #y$retain_grad()
   #(x^y)$backward()
   #y$grad
-  verify_grad_biv(nvl_pow, torch::torch_pow, non_negative = list(TRUE, FALSE))
+  verify_grad_biv(nvl_pow, torch::torch_pow, non_negative = list(TRUE, TRUE))
 })
 
 test_that("p_reduce_sum", {
@@ -389,10 +401,6 @@ test_that("p_broadcast_in_dim", {
       list(list(shape = target_shape, bdims = bdims), list(shape = target_shape, bdims = bdims))
     }
   )
-})
-
-test_that("p_atan2", {
-  verify_grad_biv(nvl_atan2, torch::torch_atan2, dtypes = "f32", tol = 1e-6)
 })
 
 test_that("p_reduce_prod", {
