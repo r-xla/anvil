@@ -21,7 +21,8 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/anvil.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -80,7 +81,7 @@
         <dd>JIT compile a function</dd>
       </dl><dl><dt>
 
-          <code><a href="nv_binary_ops.html">nv_add()</a></code> <code><a href="nv_binary_ops.html">nv_mul()</a></code> <code><a href="nv_binary_ops.html">nv_sub()</a></code> <code><a href="nv_binary_ops.html">nv_div()</a></code> <code><a href="nv_binary_ops.html">nv_pow()</a></code> <code><a href="nv_binary_ops.html">nv_eq()</a></code> <code><a href="nv_binary_ops.html">nv_ne()</a></code> <code><a href="nv_binary_ops.html">nv_gt()</a></code> <code><a href="nv_binary_ops.html">nv_ge()</a></code> <code><a href="nv_binary_ops.html">nv_lt()</a></code> <code><a href="nv_binary_ops.html">nv_le()</a></code>
+          <code><a href="nv_binary_ops.html">nv_add()</a></code> <code><a href="nv_binary_ops.html">nv_mul()</a></code> <code><a href="nv_binary_ops.html">nv_sub()</a></code> <code><a href="nv_binary_ops.html">nv_div()</a></code> <code><a href="nv_binary_ops.html">nv_pow()</a></code> <code><a href="nv_binary_ops.html">nv_eq()</a></code> <code><a href="nv_binary_ops.html">nv_ne()</a></code> <code><a href="nv_binary_ops.html">nv_gt()</a></code> <code><a href="nv_binary_ops.html">nv_ge()</a></code> <code><a href="nv_binary_ops.html">nv_lt()</a></code> <code><a href="nv_binary_ops.html">nv_le()</a></code> <code><a href="nv_binary_ops.html">nv_max()</a></code> <code><a href="nv_binary_ops.html">nv_min()</a></code> <code><a href="nv_binary_ops.html">nv_remainder()</a></code> <code><a href="nv_binary_ops.html">nv_and()</a></code> <code><a href="nv_binary_ops.html">nv_or()</a></code> <code><a href="nv_binary_ops.html">nv_xor()</a></code> <code><a href="nv_binary_ops.html">nv_shift_left()</a></code> <code><a href="nv_binary_ops.html">nv_shift_right_logical()</a></code> <code><a href="nv_binary_ops.html">nv_shift_right_arithmetic()</a></code> <code><a href="nv_binary_ops.html">nv_atan2()</a></code>
 
         </dt>
         <dd>Binary Operations</dd>
@@ -98,6 +99,12 @@
         <dd>Broadcast</dd>
       </dl><dl><dt>
 
+          <code><a href="nv_convert.html">nv_convert()</a></code>
+
+        </dt>
+        <dd>Convert Tensor to Different Data Type</dd>
+      </dl><dl><dt>
+
           <code><a href="nv_dtype.html">nv_dtype()</a></code>
 
         </dt>
@@ -110,7 +117,7 @@
         <dd>Matrix Multiplication</dd>
       </dl><dl><dt>
 
-          <code><a href="nv_reduce_ops.html">nv_reduce_sum()</a></code>
+          <code><a href="nv_reduce_ops.html">nv_reduce_sum()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_mean()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_prod()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_max()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_min()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_any()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_all()</a></code>
 
         </dt>
         <dd>Reduction Operators</dd>
@@ -128,16 +135,22 @@
         <dd>Tensor</dd>
       </dl><dl><dt>
 
-          <code><a href="nv_transpose.html">t(<i>&lt;anvil::Box&gt;</i>)</a></code> <code><a href="nv_transpose.html">nv_transpose()</a></code>
+          <code><a href="nv_transpose.html">nv_transpose()</a></code> <code><a href="nv_transpose.html">t(<i>&lt;anvil::Box&gt;</i>)</a></code>
 
         </dt>
         <dd>Transpose</dd>
       </dl><dl><dt>
 
-          <code><a href="nv_unary_ops.html">nv_neg()</a></code>
+          <code><a href="nv_unary_ops.html">nv_neg()</a></code> <code><a href="nv_unary_ops.html">nv_abs()</a></code> <code><a href="nv_unary_ops.html">nv_sqrt()</a></code> <code><a href="nv_unary_ops.html">nv_rsqrt()</a></code> <code><a href="nv_unary_ops.html">nv_log()</a></code> <code><a href="nv_unary_ops.html">nv_tanh()</a></code> <code><a href="nv_unary_ops.html">nv_tan()</a></code> <code><a href="nv_unary_ops.html">nv_floor()</a></code> <code><a href="nv_unary_ops.html">nv_ceil()</a></code> <code><a href="nv_unary_ops.html">nv_sign()</a></code> <code><a href="nv_unary_ops.html">nv_exp()</a></code> <code><a href="nv_unary_ops.html">nv_round()</a></code>
 
         </dt>
         <dd>Unary Operations</dd>
+      </dl><dl><dt>
+
+          <code><a href="platform.html">platform()</a></code>
+
+        </dt>
+        <dd>Platform</dd>
       </dl></div>
   </main></div>
 

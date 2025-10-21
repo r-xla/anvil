@@ -2,5 +2,6 @@ pandoc: 3.1.11
 pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
+  anvil: anvil.html
   autodiff-modes: autodiff-modes.html
-last_built: 2025-10-16T12:23Z
+last_built: 2025-10-21T10:25Z

@@ -21,7 +21,8 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/anvil.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -41,7 +42,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Binary Operations</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/R/api.R" class="external-link"><code>R/api.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/many-ops/R/api.R" class="external-link"><code>R/api.R</code></a></small>
       <div class="d-none name"><code>nv_binary_ops.Rd</code></div>
     </div>
 
@@ -71,7 +72,27 @@
 <span></span>
 <span><span class="fu">nv_lt</span><span class="op">(</span><span class="va">lhs</span>, <span class="va">rhs</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">nv_le</span><span class="op">(</span><span class="va">lhs</span>, <span class="va">rhs</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">nv_le</span><span class="op">(</span><span class="va">lhs</span>, <span class="va">rhs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">nv_max</span><span class="op">(</span><span class="va">lhs</span>, <span class="va">rhs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">nv_min</span><span class="op">(</span><span class="va">lhs</span>, <span class="va">rhs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">nv_remainder</span><span class="op">(</span><span class="va">lhs</span>, <span class="va">rhs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">nv_and</span><span class="op">(</span><span class="va">lhs</span>, <span class="va">rhs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">nv_or</span><span class="op">(</span><span class="va">lhs</span>, <span class="va">rhs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">nv_xor</span><span class="op">(</span><span class="va">lhs</span>, <span class="va">rhs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">nv_shift_left</span><span class="op">(</span><span class="va">lhs</span>, <span class="va">rhs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">nv_shift_right_logical</span><span class="op">(</span><span class="va">lhs</span>, <span class="va">rhs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">nv_shift_right_arithmetic</span><span class="op">(</span><span class="va">lhs</span>, <span class="va">rhs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">nv_atan2</span><span class="op">(</span><span class="va">lhs</span>, <span class="va">rhs</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">

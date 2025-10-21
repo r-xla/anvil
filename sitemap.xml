@@ -3,6 +3,7 @@
 <url><loc>/AGENTS.html</loc></url>
 <url><loc>/LICENSE-text.html</loc></url>
 <url><loc>/LICENSE.html</loc></url>
+<url><loc>/articles/anvil.html</loc></url>
 <url><loc>/articles/autodiff-modes.html</loc></url>
 <url><loc>/articles/index.html</loc></url>
 <url><loc>/authors.html</loc></url>
@@ -16,6 +17,7 @@
 <url><loc>/reference/nv_binary_ops.html</loc></url>
 <url><loc>/reference/nv_broadcast_tensors.html</loc></url>
 <url><loc>/reference/nv_broadcast_to.html</loc></url>
+<url><loc>/reference/nv_convert.html</loc></url>
 <url><loc>/reference/nv_dtype.html</loc></url>
 <url><loc>/reference/nv_matmul.html</loc></url>
 <url><loc>/reference/nv_reduce_ops.html</loc></url>
@@ -23,6 +25,7 @@
 <url><loc>/reference/nv_tensor.html</loc></url>
 <url><loc>/reference/nv_transpose.html</loc></url>
 <url><loc>/reference/nv_unary_ops.html</loc></url>
+<url><loc>/reference/platform.html</loc></url>
 <url><loc>/reference/reexports.html</loc></url>
 </urlset>
 
