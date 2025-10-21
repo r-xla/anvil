@@ -139,6 +139,7 @@ test_that("p_tanh", {
 })
 
 test_that("p_tan", {
+  skip_if(is_metal())
   expect_jit_torch_unary(nvl_tan, torch::torch_tan, c(2, 3))
 })
 

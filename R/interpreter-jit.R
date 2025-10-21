@@ -54,11 +54,19 @@ jit <- function(f, static = character()) {
     )
     f_flat <- rlang::exec(flatten_fun, f, in_node = in_node)
     outs <- rlang::exec(f_flat, !!!boxes_in)
+
+
     boxes_out <- lapply(outs[[2L]], full_raise, interpreter = interpreter)
+
+    if (!length(boxes_out)) {
+      cli_abort("Function f did not return any values")
+    }
     func_vars_out <- lapply(boxes_out, \(box) box@func_var)
     func <- do.call(stablehlo::hlo_return, func_vars_out)
     program <- pjrt_program(src = repr(func), format = "mlir")
-    exec <- pjrt_compile(program)
+    # TODO: Do this properly and check that all tensors live on the same platform
+    browser()
+    exec <- pjrt_compile(program, client = platform(boxes_out[[1L]]))
     cache[[avals_in]] <- list(
       exec,
       outs[[1L]]

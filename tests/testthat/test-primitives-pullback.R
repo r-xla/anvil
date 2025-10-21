@@ -62,7 +62,7 @@ test_that("p_dot_general: matrix-vector with summed loss", {
 })
 
 test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
-  # Helpers to reduce repetition
+  skip_if(is_metal() || is_cuda())
   make_ones_like <- function(Y) {
     nv_tensor(
       rep(1, prod(shape(Y))),

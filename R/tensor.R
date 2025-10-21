@@ -67,13 +67,21 @@ ShapedTensor <- S7::new_class(
   "ShapedTensor",
   properties = list(
     dtype = stablehlo::TensorDataType,
-    shape = stablehlo::Shape
-  )
+    shape = stablehlo::Shape,
+    platform = NULL | class_character
+  ),
+  constructor = function(dtype, shape, platform = "cpu") {
+    S7::new_object(
+      S7::S7_object(),
+      dtype = dtype,
+      shape = shape,
+      platform = platform
+    )
+  }
 )
 
 method(platform, ShapedTensor) <- function(x, ...) {
-  # TODO: Need platform as part of ShapedTensor
-  .NotYetImplemented()
+  x@platform
 }
 
 #' @method dtype anvil::ShapedTensor
@@ -104,6 +112,7 @@ ConcreteTensor <- S7::new_class(
       S7::S7_object(),
       dtype = dtype_from_buffer(data),
       shape = Shape(shape(data)),
+      platform = pjrt::platform(data),
       data = data
     )
   }
@@ -114,15 +123,19 @@ method(platform, ConcreteTensor) <- function(x, ...) {
 }
 
 method(`==`, list(ShapedTensor, ShapedTensor)) <- function(e1, e2) {
-  e1@dtype == e2@dtype && e1@shape == e2@shape
+  e1@dtype == e2@dtype && e1@shape == e2@shape && e1@platform == e2@platform
 }
 
 method(repr, ShapedTensor) <- function(x) {
-  sprintf("%s[%s]", repr(x@dtype), repr(x@shape))
+  if (is.null(x@platform)) {
+    sprintf("%s[%s]", repr(x@dtype), repr(x@shape))
+  } else {
+    sprintf("%s[%s] @ %s", repr(x@dtype), repr(x@shape), x@platform)
+  }
 }
 
 method(format, ShapedTensor) <- function(x, ...) {
-  sprintf("ShapedTensor(dtype=%s, shape=%s)", repr(x@dtype), repr(x@shape))
+  sprintf("ShapedTensor(dtype=%s, shape=%s, platform=%s)", repr(x@dtype), repr(x@shape), x@platform)
 }
 
 method(print, ShapedTensor) <- function(x, ...) {

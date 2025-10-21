@@ -120,3 +120,17 @@ test_that("jit: tensor return value is not wrapped in list", {
   out <- f(nv_scalar(1.2), nv_scalar(-0.7))
   expect_equal(as_array(out), 1.2 + (-0.7), tolerance = 1e-6)
 })
+
+test_that("cache respects platform", {
+  skip_if(!(is_metal() || is_cuda()))
+  #platform <- if (is_metal()) "metal" else "cuda"
+  platform <- "metal"
+  xcpu <- nv_tensor(2, platform = "cpu")
+  xplatform <- nv_tensor(2, platform = platform)
+  f <- jit(\(x) nv_mul(x, x))
+  expect_equal(f(xcpu), nv_tensor(4, platform = "cpu"))
+  expect_equal(f(xplatform), nv_tensor(4, platform = platform))
+
+
+
+})

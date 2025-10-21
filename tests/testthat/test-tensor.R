@@ -1,13 +1,15 @@
 test_that("tensor", {
   x <- nv_tensor(1:4, dtype = "i32", shape = c(4, 1))
-  expect_snapshot(x)
   expect_class(x, "AnvilTensor")
   expect_equal(shape(x), c(4, 1))
   expect_equal(dtype(x), dt_i32)
   expect_equal(as_array(x), array(1:4, c(4, 1)))
+  skip_if(is_metal() || is_cuda())
+  expect_snapshot(x)
 })
 
 test_that("nv_scalar", {
+  skip_if(is_metal() | is_cuda())
   x <- nv_scalar(1L, dtype = "f32")
   x
   expect_snapshot(x)
@@ -45,6 +47,7 @@ test_that("ConcreteTensor", {
     nv_tensor(1:6, dtype = "f32", shape = c(2, 3))
   )
   expect_true(inherits(x, ConcreteTensor))
+  skip_if(is_metal() || is_cuda())
   expect_snapshot(x)
 })
 

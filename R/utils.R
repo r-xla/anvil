@@ -26,7 +26,8 @@ dtype_from_buffer <- function(x) {
 }
 
 raise_to_shaped <- function(aval) {
-  ShapedTensor(aval@dtype, aval@shape)
+  x <- ShapedTensor(aval@dtype, aval@shape, platform(aval))
+  x
 }
 
 

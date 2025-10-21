@@ -24,7 +24,7 @@
     Code
       x
     Output
-      ShapedTensor(dtype=f32, shape=2x3) 
+      ShapedTensor(dtype=f32, shape=2x3, platform=cpu) 
 
 # ConcreteTensor
 
