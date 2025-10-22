@@ -138,7 +138,7 @@ p_reduce_all[["jit"]] <- function(operand, dims, drop) {
     # StableHLO uses SIGNED for i1 compares
     "SIGNED"
   } else {
-    stop("Unsupported dtype for compare")
+    cli_abort("Unsupported dtype for compare")
   }
 }
 

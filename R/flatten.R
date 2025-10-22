@@ -3,9 +3,9 @@ flatten_fun <- function(f, ..., in_node = NULL) {
   if (is.null(in_node)) {
     in_node <- build_tree(list(...))
   } else if (...length()) {
-    stop("in_node is not compatible with ... arguments")
+    cli_abort("in_node is not compatible with ... arguments")
   }
-  function(...) {
+  f <- function(...) {
     # We could do this out of the function and re-use,
     # but because we always jit, we don't worry about it
     # (at least for now)
@@ -17,6 +17,8 @@ flatten_fun <- function(f, ..., in_node = NULL) {
       flatten(outs)
     )
   }
+  class(f) <- "anvil::FlattenedFunction"
+  f
 }
 
 new_counter <- function() {

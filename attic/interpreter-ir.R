@@ -19,7 +19,7 @@ IRInterpreter <- S7::new_class(
       },
       setter = function(self, value) {
         if (!identical(self@builder, value)) {
-          stop("Can only modify builder in-place")
+          cli_abort("Can only modify builder in-place")
         }
         self@builder <- value
         invisible(self)

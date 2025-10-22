@@ -61,7 +61,7 @@
     .Generic, # nolint
     "round" = {
       if (!missing(digits)) {
-        stop("Cannot specify digits")
+        cli_abort("Cannot specify digits")
       }
       nv_round(x, method = method)
     },
@@ -72,7 +72,7 @@
 #' @export
 `Summary.anvil::Box` <- function(..., na.rm) {
   if (...length() != 1L) {
-    stop("Currently only one argument is supported for Summary group generic")
+    cli_abort("Currently only one argument is supported for Summary group generic")
   }
   x <- ...elt(1L)
 

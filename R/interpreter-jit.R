@@ -1,6 +1,43 @@
 # We interprete jitting directly as a transformation and not as a higher order primitive
 # because this seems simpler for now.
 
+#' @title Lower a function to StableHLO
+#' @description
+#' Immediately lower a flattened function to a StableHLO Func object.
+#' @param .f (`function`)\cr
+#'   Flattened function to lower.
+#' @param .avals (`list()`)\cr
+#'   List of flattened abstract values (avals) for the function arguments.
+#'   ShapedTensors will be traced (wrapped in HloBox), while other values
+#'   will be passed through as-is (static).
+#' @return (`list`) with elements:
+#'   - `func`: The StableHLO `Func` object
+#'   - `out_tree`: The output tree structure
+#' @export
+stablehlo <- function(.f, .avals) {
+  main <- local_main(HloInterpreter)
+  interpreter <- HloInterpreter(main)
+  # TODO: better id
+  func <- stablehlo::hlo_func(id = "main")
+  boxes_in <- lapply(.avals, function(aval) {
+    if (!inherits(aval, "anvil::ShapedTensor")) {
+      # Non-ShapedTensors are static, pass through as-is
+      aval
+    } else {
+      # ShapedTensors are traced, wrap in HloBox
+      HloBox(st2fi(aval, func), interpreter = interpreter)
+    }
+  })
+
+  outs <- rlang::exec(.f, !!!boxes_in)
+  boxes_out <- lapply(outs[[2L]], full_raise, interpreter = interpreter)
+  func_vars_out <- lapply(boxes_out, \(box) box@func_var)
+  func <- do.call(stablehlo::hlo_return, func_vars_out)
+
+  # Return both the func and the output tree structure
+  list(func = func, out_tree = outs[[1L]])
+}
+
 #' @title JIT compile a function
 #' @description
 #' Convert a function to a JIT compiled function.
@@ -14,7 +51,6 @@ jit <- function(f, static = character()) {
   cache <- hashtab() # nolint
   assert_subset(static, formalArgs2(f))
   f_jit <- function() {
-    # TODO: Factor this out
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
     in_node <- build_tree(mark_some(args, static))
@@ -27,6 +63,9 @@ jit <- function(f, static = character()) {
       args_flat,
       is_static_flat
     )
+    # Determine which avals are ShapedTensors (non-static)
+    is_shaped <- vapply(avals_in, inherits, logical(1), "anvil::ShapedTensor")
+
     cache_hit <- cache[[avals_in]]
     # TODO: Factor this out into a function and call it at the end
     # instead of a recall, which does some work twice
@@ -34,34 +73,22 @@ jit <- function(f, static = character()) {
       res <- rlang::exec(
         pjrt::pjrt_execute,
         cache_hit[[1L]],
-        !!!args_flat[!is_static_flat],
+        !!!args_flat[is_shaped],
         simplify = FALSE
       )
       res <- lapply(res, nv_tensor)
       return(unflatten(cache_hit[[2]], res))
     }
 
-    main <- local_main(JitInterpreter)
-    interpreter <- JitInterpreter(main)
-    # TODO: better id
-    func <- stablehlo::hlo_func(id = "main")
-    boxes_in <- Map(
-      function(a, static) {
-        if (static) a else JitBox(st2fi(a, func), interpreter = interpreter)
-      },
-      avals_in,
-      is_static_flat
-    )
+    # Prepare flattened function and avals for lowering
     f_flat <- rlang::exec(flatten_fun, f, in_node = in_node)
-    outs <- rlang::exec(f_flat, !!!boxes_in)
-    boxes_out <- lapply(outs[[2L]], full_raise, interpreter = interpreter)
-    func_vars_out <- lapply(boxes_out, \(box) box@func_var)
-    func <- do.call(stablehlo::hlo_return, func_vars_out)
-    program <- pjrt_program(src = repr(func), format = "mlir")
+
+    lowered <- stablehlo(f_flat, avals_in)
+    program <- pjrt_program(src = repr(lowered$func), format = "mlir")
     exec <- pjrt_compile(program)
     cache[[avals_in]] <- list(
       exec,
-      outs[[1L]]
+      lowered$out_tree
     )
     Recall()
   }
@@ -69,22 +96,22 @@ jit <- function(f, static = character()) {
   return(f_jit)
 }
 
-JitBox <- S7::new_class(
-  "JitBox",
+HloBox <- S7::new_class(
+  "HloBox",
   parent = Box,
   properties = list(
     func_var = stablehlo::FuncVariable
   )
 )
 
-JitInterpreter <- S7::new_class(
-  "JitInterpreter",
+HloInterpreter <- S7::new_class(
+  "HloInterpreter",
   parent = Interpreter,
   # TODO: Should also get a builder, once stablehlo has one
   # It definitely needs to keep track of the constants
 )
 
-method(process_primitive, JitInterpreter) <- function(
+method(process_primitive, HloInterpreter) <- function(
   interpreter,
   prim,
   boxes,
@@ -92,26 +119,26 @@ method(process_primitive, JitInterpreter) <- function(
 ) {
   avals_in <- lapply(boxes, \(box) box@func_var)
   avals_out <- rlang::exec(prim[["jit"]], !!!c(avals_in, params))
-  lapply(avals_out, \(aval) JitBox(func_var = aval, interpreter = interpreter))
+  lapply(avals_out, \(aval) HloBox(func_var = aval, interpreter = interpreter))
 }
 
-method(box, list(JitInterpreter, class_any)) <- function(interpreter, x) {
+method(box, list(HloInterpreter, class_any)) <- function(interpreter, x) {
   # TODO: Now we have to duplicate the constant handling from the IR interpreter
   # But we can just ignore this for now
   if (inherits(x, "AnvilTensor")) {
     func_var <- stablehlo::hlo_tensor(x)
-    return(JitBox(
+    return(HloBox(
       func_var = func_var
     ))
   }
-  stop("Not supported yet")
-  JitBox(
+  cli_abort("Not supported yet")
+  HloBox(
     func_var = FuncVariable(
       func = stablehlo::Func(id = stablehlo::FuncId("main"))
     )
   )
 }
 
-method(aval, JitBox) <- function(x) {
+method(aval, HloBox) <- function(x) {
   vt2st(x@func_var@value_type)
 }

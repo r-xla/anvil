@@ -25,10 +25,10 @@ IRLiteral <- new_class(
   ),
   constructor = function(value) {
     if (!inherits(value, "AnvilTensor")) {
-      stop("IRLiterals can currently only be nv_tensors")
+      cli_abort("IRLiterals can currently only be nv_tensors")
     }
     if (tengen::ndims(value) != 0L) {
-      stop("Only scalars can be IRLiterals")
+      cli_abort("Only scalars can be IRLiterals")
     }
     aval <- ShapedTensor(
       dtype_from_buffer(value),
@@ -114,7 +114,7 @@ IRType <- new_class(
 #
 #  for (v in ir@in_binders) {
 #    if (set_has(env, v)) {
-#      stop("Duplicate variable")
+#      cli_abort("Duplicate variable")
 #    }
 #    set_add(env, v)
 #  }
@@ -126,12 +126,12 @@ IRType <- new_class(
 #    )
 #    lapply(seq_along(eqn@out_binders), function(i) {
 #      if (eqn@out_binders[[i]]@aval != out_types[[i]]) {
-#        stop("Type mismatch")
+#        cli_abort("Type mismatch")
 #      }
 #    })
 #    for (out_binder in eqn@out_binders) {
 #      if (set_has(env, out_binder)) {
-#        stop("Duplicate variable")
+#        cli_abort("Duplicate variable")
 #      }
 #      set_add(env, out_binder)
 #    }
@@ -144,13 +144,13 @@ IRType <- new_class(
 #typecheck_atom <- function(x, env) {
 #  if (inherits(x, IRVariable)) {
 #    if (!set_has(env, x)) {
-#      stop("Unbound variable")
+#      cli_abort("Unbound variable")
 #    }
 #    x@aval
 #  } else if (inherits(x, IRLiteral)) {
 #    raise_to_shaped(aval(x@value))
 #  } else {
-#    stop("Unknown type")
+#    cli_abort("Unknown type")
 #  }
 #}
 
@@ -165,12 +165,12 @@ eval_ir <- function(ir, args) {
   }
   write <- function(var, value) {
     if (!is.null(env[[var]])) {
-      stop("Duplicate variable")
+      cli_abort("Duplicate variable")
     }
     env[[var]] <- value
   }
   if (length(ir@in_binders) != length(args)) {
-    stop("Wrong number of arguments")
+    cli_abort("Wrong number of arguments")
   }
   for (i in seq_along(ir@in_binders)) {
     write(ir@in_binders[[i]], args[[i]])
