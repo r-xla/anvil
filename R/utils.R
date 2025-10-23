@@ -102,25 +102,25 @@ minmax_raw <- function(bits, signed = TRUE) {
 }
 
 
-nv_minval <- function(dtype, platform) {
+nv_minval <- function(dtype, device) {
   dtype <- as.character(dtype)
   if (grepl("^f", dtype)) {
-    nv_scalar(-Inf, dtype = dtype, platform = platform)
+    nv_scalar(-Inf, dtype = dtype, device = device)
   } else if (dtype %in% c("i1", "pred")) {
-    nv_scalar(FALSE, dtype = "pred", platform = platform)
+    nv_scalar(FALSE, dtype = "pred", device = device)
   } else {
-    nv_scalar(globals$ranges_raw[[dtype]]$min, dtype = dtype, platform = platform)
+    nv_scalar(globals$ranges_raw[[dtype]]$min, dtype = dtype, device = device)
   }
 }
 
-nv_maxval <- function(dtype, platform) {
+nv_maxval <- function(dtype, device) {
   dtype <- as.character(dtype)
   if (grepl("^f", dtype)) {
-    nv_scalar(Inf, dtype = dtype, platform = platform)
+    nv_scalar(Inf, dtype = dtype, device = device)
   } else if (dtype %in% c("i1", "pred")) {
-    nv_scalar(TRUE, dtype = "pred", platform = platform)
+    nv_scalar(TRUE, dtype = "pred", device = device)
   } else {
-    nv_scalar(globals$ranges_raw[[dtype]]$max, dtype = dtype, platform = platform)
+    nv_scalar(globals$ranges_raw[[dtype]]$max, dtype = dtype, device = device)
   }
 }
 

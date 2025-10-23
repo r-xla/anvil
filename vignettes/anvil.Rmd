@@ -26,13 +26,13 @@ Below, we create a 0-dimensional tensor (i.e., a scalar) of type `int16` on the 
 ```{r}
 library(anvil)
 set.seed(42)
-nv_tensor(1L, dtype = "i16", platform = "cpu", shape = integer())
+nv_tensor(1L, dtype = "i16", device = "cpu", shape = integer())
 ```
 
 Note that for creation of scalars, you can also use `nv_scalar` as a shorthand to skip specifying the shape.
 
 ```{r}
-nv_scalar(1L, dtype = "i16", platform = "cpu")
+nv_scalar(1L, dtype = "i16", device = "cpu")
 ```
 
 We can also create higher-dimensional tensors, for example a 2x3 CPU tensor of type `f32`.

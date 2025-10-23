@@ -8,11 +8,18 @@
 #'   Function to compile.
 #' @param static (`character()`)\cr
 #'   Which parameters of `f` are static.
+#' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
+#'   The device to use for the compiled function.
+#'   The default (`NULL`) uses `PJRT_PLATFORM` environment variable or defaults to "cpu".
+#' @param cache_size (`integer(1)`)\cr
+#'   The size of the cache for the jit-compiled functions.
 #' @return (`function`)
 #' @export
-jit <- function(f, static = character()) {
-  cache <- hashtab() # nolint
+jit <- function(f, static = character(), device = NULL, cache_size = 100L) {
+  device <- device %??% Sys.getenv("PJRT_PLATFORM", "cpu")
+  cache <- xlamisc::LRUCache$new(cache_size)
   assert_subset(static, formalArgs2(f))
+  device_str <- as.character(device)
   f_jit <- function() {
     # TODO: Factor this out
     args <- as.list(match.call())[-1L]
@@ -22,12 +29,19 @@ jit <- function(f, static = character()) {
     is_static_flat <- in_node$marked
     avals_in <- Map(
       function(a, static) {
+        if (static) {
+          a
+        } else {
+          if (platform(a) != device_str) {
+            cli_abort("Expected device {device_str}, but buffer has device {platform(a)}")
+          }
+        }
         if (static) a else raise_to_shaped(aval(a))
       },
       args_flat,
       is_static_flat
     )
-    cache_hit <- cache[[avals_in]]
+    cache_hit <- cache$get(avals_in)
     # TODO: Factor this out into a function and call it at the end
     # instead of a recall, which does some work twice
     if (!is.null(cache_hit)) {
@@ -58,10 +72,13 @@ jit <- function(f, static = character()) {
     func_vars_out <- lapply(boxes_out, \(box) box@func_var)
     func <- do.call(stablehlo::hlo_return, func_vars_out)
     program <- pjrt_program(src = repr(func), format = "mlir")
-    exec <- pjrt_compile(program)
-    cache[[avals_in]] <- list(
-      exec,
-      outs[[1L]]
+    exec <- pjrt_compile(program, client = device)
+    cache$set(
+      avals_in,
+      list(
+        exec,
+        outs[[1L]]
+      )
     )
     Recall()
   }
