@@ -42,7 +42,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Tensor</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-gpu/R/tensor.R" class="external-link"><code>R/tensor.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-device/R/tensor.R" class="external-link"><code>R/tensor.R</code></a></small>
       <div class="d-none name"><code>nv_tensor.Rd</code></div>
     </div>
 
@@ -52,11 +52,11 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nv_tensor</span><span class="op">(</span><span class="va">data</span>, dtype <span class="op">=</span> <span class="cn">NULL</span>, platform <span class="op">=</span> <span class="cn">NULL</span>, shape <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nv_tensor</span><span class="op">(</span><span class="va">data</span>, dtype <span class="op">=</span> <span class="cn">NULL</span>, device <span class="op">=</span> <span class="cn">NULL</span>, shape <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">nv_scalar</span><span class="op">(</span><span class="va">data</span>, dtype <span class="op">=</span> <span class="cn">NULL</span>, platform <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span><span class="fu">nv_scalar</span><span class="op">(</span><span class="va">data</span>, dtype <span class="op">=</span> <span class="cn">NULL</span>, device <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">nv_empty</span><span class="op">(</span><span class="va">dtype</span>, <span class="va">shape</span>, platform <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">nv_empty</span><span class="op">(</span><span class="va">dtype</span>, <span class="va">shape</span>, device <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -74,8 +74,8 @@ One of pred, i8, i16, i32, i64, ui8, ui16, ui32, ui64, f32, f64 or a <code><a hr
 The default (<code>NULL</code>) uses <code>f32</code> for numeric data, <code>i32</code> for integer data, and <code>pred</code> for logical data.</p></dd>
 
 
-<dt id="arg-platform">platform<a class="anchor" aria-label="anchor" href="#arg-platform"></a></dt>
-<dd><p>(<code>character(1)</code>)<br>
+<dt id="arg-device">device<a class="anchor" aria-label="anchor" href="#arg-device"></a></dt>
+<dd><p>(<code>NULL</code> | <code>character(1)</code> | <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_device.html" class="external-link">PJRTDevice</a></code>)<br>
 The platform name for the tensor (<code>"cpu"</code>, <code>"cuda"</code>, <code>"metal"</code>).
 Default is to use the CPU, unless the data is already a <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_buffer.html" class="external-link">PJRTBuffer</a></code>.
 You can change the default by setting the <code>PJRT_PLATFORM</code> environment variable.</p></dd>

@@ -42,7 +42,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>JIT compile a function</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-gpu/R/interpreter-jit.R" class="external-link"><code>R/interpreter-jit.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-device/R/interpreter-jit.R" class="external-link"><code>R/interpreter-jit.R</code></a></small>
       <div class="d-none name"><code>jit.Rd</code></div>
     </div>
 
@@ -52,7 +52,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">jit</span><span class="op">(</span><span class="va">f</span>, static <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">jit</span><span class="op">(</span><span class="va">f</span>, static <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>, device <span class="op">=</span> <span class="cn">NULL</span>, cache_size <span class="op">=</span> <span class="fl">100L</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -67,6 +67,17 @@ Function to compile.</p></dd>
 <dt id="arg-static">static<a class="anchor" aria-label="anchor" href="#arg-static"></a></dt>
 <dd><p>(<code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code>)<br>
 Which parameters of <code>f</code> are static.</p></dd>
+
+
+<dt id="arg-device">device<a class="anchor" aria-label="anchor" href="#arg-device"></a></dt>
+<dd><p>(<code>NULL</code> | <code>character(1)</code> | <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_device.html" class="external-link">PJRTDevice</a></code>)<br>
+The device to use for the compiled function.
+The default (<code>NULL</code>) uses <code>PJRT_PLATFORM</code> environment variable or defaults to "cpu".</p></dd>
+
+
+<dt id="arg-cache-size">cache_size<a class="anchor" aria-label="anchor" href="#arg-cache-size"></a></dt>
+<dd><p>(<code>integer(1)</code>)<br>
+The size of the cache for the jit-compiled functions.</p></dd>
 
 </dl></div>
     <div class="section level2">
