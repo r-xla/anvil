@@ -75,7 +75,6 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
-          cache: false
           needs: check
 
       - name: Install torch
@@ -90,6 +89,7 @@ jobs:
         run: |
           Rscript -e 'install.packages("remotes")'
           Rscript -e 'remotes::install_github("r-xla/pjrt", force = TRUE)'
+          Rscript -e 'remotes::install_github("r-xla/tengen", force = TRUE)'
 
 
       - uses: r-lib/actions/check-r-package@v2
