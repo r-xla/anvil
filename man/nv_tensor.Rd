@@ -6,11 +6,11 @@
 \alias{nv_empty}
 \title{Tensor}
 \usage{
-nv_tensor(data, dtype = NULL, platform = NULL, shape = NULL)
+nv_tensor(data, dtype = NULL, device = NULL, shape = NULL)
 
-nv_scalar(data, dtype = NULL, platform = NULL)
+nv_scalar(data, dtype = NULL, device = NULL)
 
-nv_empty(dtype, shape, platform = NULL)
+nv_empty(dtype, shape, device = NULL)
 }
 \arguments{
 \item{data}{(any)\cr
@@ -20,7 +20,7 @@ Object convertible to a \code{\link[pjrt:pjrt_buffer]{PJRTBuffer}}.}
 One of pred, i8, i16, i32, i64, ui8, ui16, ui32, ui64, f32, f64 or a \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}}.
 The default (\code{NULL}) uses \code{f32} for numeric data, \code{i32} for integer data, and \code{pred} for logical data.}
 
-\item{platform}{(\code{character(1)})\cr
+\item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
 The platform name for the tensor (\code{"cpu"}, \code{"cuda"}, \code{"metal"}).
 Default is to use the CPU, unless the data is already a \code{\link[pjrt:pjrt_buffer]{PJRTBuffer}}.
 You can change the default by setting the \code{PJRT_PLATFORM} environment variable.}

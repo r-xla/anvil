@@ -8,7 +8,7 @@ AnvilTensor <- S7::new_S3_class("AnvilTensor")
 #' @param dtype (`NULL` | `character(1)` | [`TensorDataType`])\cr
 #'   One of `r stablehlo:::roxy_dtypes()` or a [`stablehlo::TensorDataType`].
 #'   The default (`NULL`) uses `f32` for numeric data, `i32` for integer data, and `pred` for logical data.
-#' @param platform (`character(1)`)\cr
+#' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
 #'   The platform name for the tensor (`"cpu"`, `"cuda"`, `"metal"`).
 #'   Default is to use the CPU, unless the data is already a [`PJRTBuffer`][pjrt::pjrt_buffer].
 #'   You can change the default by setting the `PJRT_PLATFORM` environment variable.
@@ -21,11 +21,11 @@ AnvilTensor <- S7::new_S3_class("AnvilTensor")
 #' Internally calls [`pjrt_buffer`][pjrt::pjrt_buffer].
 #' @return (`AnvilTensor`)
 #' @export
-nv_tensor <- function(data, dtype = NULL, platform = NULL, shape = NULL) {
+nv_tensor <- function(data, dtype = NULL, device = NULL, shape = NULL) {
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
   }
-  x <- pjrt_buffer(data, dtype, client = platform, shape = shape)
+  x <- pjrt_buffer(data, dtype, device = device, shape = shape)
   ensure_nv_tensor(x)
 }
 
@@ -39,21 +39,21 @@ ensure_nv_tensor <- function(x) {
 
 #' @rdname nv_tensor
 #' @export
-nv_scalar <- function(data, dtype = NULL, platform = NULL) {
+nv_scalar <- function(data, dtype = NULL, device = NULL) {
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
   }
-  x <- pjrt_scalar(data, dtype, client = platform)
+  x <- pjrt_scalar(data, dtype, device = device)
   ensure_nv_tensor(x)
 }
 
 #' @rdname nv_tensor
 #' @export
-nv_empty <- function(dtype, shape, platform = NULL) {
+nv_empty <- function(dtype, shape, device = NULL) {
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
   }
-  x <- pjrt::pjrt_empty(dtype, shape, client = platform)
+  x <- pjrt::pjrt_empty(dtype, shape, device = device)
   ensure_nv_tensor(x)
 }
 

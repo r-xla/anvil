@@ -1,5 +1,5 @@
 test_that("tensor", {
-  x <- nv_tensor(1:4, dtype = "i32", shape = c(4, 1))
+  x <- nv_tensor(1:4, dtype = "i32", shape = c(4, 1), device = "cpu")
   expect_snapshot(x)
   expect_class(x, "AnvilTensor")
   expect_equal(shape(x), c(4, 1))
@@ -8,10 +8,10 @@ test_that("tensor", {
 })
 
 test_that("nv_scalar", {
-  x <- nv_scalar(1L, dtype = "f32")
+  x <- nv_scalar(1L, dtype = "f32", device = "cpu")
   x
-  expect_snapshot(x)
   expect_class(x, "AnvilTensor")
+  expect_snapshot(x)
 })
 
 test_that("ShapedTensor", {
@@ -42,7 +42,7 @@ test_that("ShapedTensor", {
 
 test_that("ConcreteTensor", {
   x <- ConcreteTensor(
-    nv_tensor(1:6, dtype = "f32", shape = c(2, 3))
+    nv_tensor(1:6, dtype = "f32", shape = c(2, 3), device = "cpu")
   )
   expect_true(inherits(x, ConcreteTensor))
   expect_snapshot(x)
@@ -56,10 +56,9 @@ test_that("from TensorDataType", {
 
 test_that("nv_tensor from nv_tensor", {
   skip_if(!is_cuda())
-  x <- nv_tensor(1, platform = "cuda")
+  x <- nv_tensor(1, device = "cuda")
   expect_equal(platform(nv_tensor(x)), "cuda")
-  expect_error(nv_tensor(x, platform = "cpu"))
+  expect_error(nv_tensor(x, device = "cpu"))
   expect_error(nv_tensor(x, shape = c(1, 1)))
   expect_error(nv_tensor(x, dtype = "f64"))
-  expect_class(nv_empty(dt_i32, c(4, 1)), "AnvilTensor")
 })

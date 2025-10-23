@@ -351,3 +351,10 @@ p_select <- Primitive("select")
 nvl_select <- function(pred, true_value, false_value) {
   interprete(p_select, list(pred, true_value, false_value))[[1L]]
 }
+
+p_if <- Primitive("if")
+nvl_if <- function(pred, true, false) {
+  true_quo <- rlang::enquo(true)
+  false_quo <- rlang::enquo(false)
+  interprete(p_if, list(pred), params = list(true = true_quo, false = false_quo))[[1L]]
+}

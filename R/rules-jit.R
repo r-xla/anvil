@@ -269,3 +269,25 @@ p_convert[["jit"]] <- function(operand, dtype) {
 p_select[["jit"]] <- function(pred, true_value, false_value) {
   .jit_apply_broadcasted(stablehlo::hlo_select, pred, true_value, false_value)
 }
+
+p_if[["jit"]] <- function(pred, true, false) {
+  # Evaluate quosures in their original environments
+  true_val <- rlang::eval_tidy(true)
+  false_val <- rlang::eval_tidy(false)
+
+  to_branch_func <- function(val) {
+    # Support single or multiple outputs
+    vals <- if (inherits(val, "anvil::Box")) list(val) else val
+    if (!is.list(vals) || !all(vapply(vals, inherits, logical(1), what = "anvil::Box"))) {
+      cli_abort("Branch expressions must evaluate to an anvil value")
+    }
+    # Capture produced values into a zero-arg function and return it
+    captured <- do.call(stablehlo::hlo_closure, lapply(vals, function(b) b@func_var))
+    do.call(stablehlo::hlo_return, captured)
+  }
+
+  true_func <- to_branch_func(true_val)
+  false_func <- to_branch_func(false_val)
+
+  list(stablehlo::hlo_if(pred, true_func, false_func))
+}

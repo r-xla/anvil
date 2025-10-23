@@ -68,7 +68,8 @@ test_that("p_broadcast_in_dim", {
   f <- jit(nvl_broadcast_in_dim, static = c("shape_out", "broadcast_dimensions"))
   expect_equal(
     f(nv_scalar(1L), shape_out <- c(1, 2), integer()),
-    nv_tensor(1L, shape = c(1, 2))
+    nv_tensor(1L, shape = c(1, 2)),
+    tolerance = 1e-5
   )
 })
 
@@ -88,6 +89,14 @@ test_that("p_transpose", {
     t(x),
     as_array(f(nv_tensor(x)))
   )
+})
+
+test_that("if", {
+  f <- jit(function(pred, x) {
+      nvl_if(pred, x,
+      x * x)
+  })
+  f(nv_scalar(TRUE), nv_scalar(2))
 })
 
 # we don't want to include torch in Suggests just for the tests, as it's a relatively

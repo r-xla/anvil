@@ -120,3 +120,10 @@ test_that("jit: tensor return value is not wrapped in list", {
   out <- f(nv_scalar(1.2), nv_scalar(-0.7))
   expect_equal(as_array(out), 1.2 + (-0.7), tolerance = 1e-6)
 })
+
+test_that("error message when using wrong device", {
+  skip_if(!is_metal())
+  f <- jit(\(x) x, device = "cpu")
+  x <- nv_tensor(1, device = "metal")
+  expect_error(f(x), "but buffer has device metal")
+})

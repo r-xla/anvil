@@ -45,11 +45,18 @@ stablehlo <- function(.f, .avals) {
 #'   Function to compile.
 #' @param static (`character()`)\cr
 #'   Which parameters of `f` are static.
+#' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
+#'   The device to use for the compiled function.
+#'   The default (`NULL`) uses `PJRT_PLATFORM` environment variable or defaults to "cpu".
+#' @param cache_size (`integer(1)`)\cr
+#'   The size of the cache for the jit-compiled functions.
 #' @return (`function`)
 #' @export
-jit <- function(f, static = character()) {
-  cache <- hashtab() # nolint
+jit <- function(f, static = character(), device = NULL, cache_size = 100L) {
+  device <- device %??% Sys.getenv("PJRT_PLATFORM", "cpu")
+  cache <- xlamisc::LRUCache$new(cache_size)
   assert_subset(static, formalArgs2(f))
+  device_str <- as.character(device)
   f_jit <- function() {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
@@ -58,22 +65,28 @@ jit <- function(f, static = character()) {
     is_static_flat <- in_node$marked
     avals_in <- Map(
       function(a, static) {
+        if (static) {
+          a
+        } else {
+          if (platform(a) != device_str) {
+            cli_abort("Expected device {device_str}, but buffer has device {platform(a)}")
+          }
+        }
         if (static) a else raise_to_shaped(aval(a))
       },
       args_flat,
       is_static_flat
     )
-    # Determine which avals are ShapedTensors (non-static)
-    is_shaped <- vapply(avals_in, inherits, logical(1), "anvil::ShapedTensor")
-
-    cache_hit <- cache[[avals_in]]
+    cache_hit <- cache$get(avals_in)
     # TODO: Factor this out into a function and call it at the end
     # instead of a recall, which does some work twice
     if (!is.null(cache_hit)) {
+      # Only pass non-static arguments to pjrt_execute
+      args_nonstatic <- args_flat[!is_static_flat]
       res <- rlang::exec(
         pjrt::pjrt_execute,
         cache_hit[[1L]],
-        !!!args_flat[is_shaped],
+        !!!args_nonstatic,
         simplify = FALSE
       )
       res <- lapply(res, nv_tensor)
@@ -86,10 +99,10 @@ jit <- function(f, static = character()) {
     lowered <- stablehlo(f_flat, avals_in)
     program <- pjrt_program(src = repr(lowered$func), format = "mlir")
     exec <- pjrt_compile(program)
-    cache[[avals_in]] <- list(
+    cache$set(avals_in, list(
       exec,
       lowered$out_tree
-    )
+    ))
     Recall()
   }
   formals(f_jit) <- formals2(f)

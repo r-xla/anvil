@@ -5,13 +5,14 @@ flatten_fun <- function(f, ..., in_node = NULL) {
   } else if (...length()) {
     cli_abort("in_node is not compatible with ... arguments")
   }
+  f_orig <- f
   f <- function(...) {
     # We could do this out of the function and re-use,
     # but because we always jit, we don't worry about it
     # (at least for now)
     args <- unflatten(in_node, list(...))
 
-    outs <- do.call(f, args)
+    outs <- do.call(f_orig, args)
     list(
       build_tree(outs),
       flatten(outs)
