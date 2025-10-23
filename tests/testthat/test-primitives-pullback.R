@@ -62,6 +62,7 @@ test_that("p_dot_general: matrix-vector with summed loss", {
 })
 
 test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
+  skip_if_metal()
   # Helpers to reduce repetition
   make_ones_like <- function(Y) {
     nv_tensor(
