@@ -24,7 +24,7 @@ jobs:
           - { os: "macos", r: null, platform: "metal" }
           - { os: "ubuntu", r: "release", platform: "cpu" }
           - { os: "ubuntu", r: "release", platform: "cpu", torch: true }
-          - { os: "ubuntu", r: "release", platform: "cuda"}
+          - { os: "ubuntu", r: "release", platform: "cuda", torch: true}
           - { os: "windows", r: "release", platform: "cpu"}
 
         include:
