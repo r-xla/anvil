@@ -151,3 +151,14 @@ test_that("partial gradient simple", {
 #  x <- nv_tensor(1:10)
 #  expect_equal(fbwd(x), list(lhs = jit(nv_mul)(x, nv_tensor(2:11))))
 #})
+
+test_that("format and print for PullbackBox", {
+  local_func()
+  x <- hlo_input("x", "f32", c(2, 3))
+  jit_interpreter <- JitInterpreter()
+  box <- JitBox(jit_interpreter, x)
+  pull <- PullbackInterpreter()
+  box_pull <- PullbackBox(pull, box, PullbackNode(NULL, list(), required = FALSE))
+  expect_equal(format(box_pull), "PullbackBox(JitBox(tensor<2x3xf32>))")
+  expect_snapshot(box_pull)
+})

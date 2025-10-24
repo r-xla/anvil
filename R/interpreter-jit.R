@@ -94,6 +94,14 @@ JitBox <- S7::new_class(
   )
 )
 
+method(print, JitBox) <- function(x, ...) {
+  cat(format(x), "\n")
+}
+
+method(format, JitBox) <- function(x, ...) {
+  sprintf("JitBox(%s)", repr(x@func_var@value_type))
+}
+
 JitInterpreter <- S7::new_class(
   "JitInterpreter",
   parent = Interpreter,
@@ -118,15 +126,11 @@ method(box, list(JitInterpreter, class_any)) <- function(interpreter, x) {
   if (inherits(x, "AnvilTensor")) {
     func_var <- stablehlo::hlo_tensor(x)
     return(JitBox(
-      func_var = func_var
+      func_var = func_var,
+      interpreter = interpreter
     ))
   }
-  stop("Not supported yet")
-  JitBox(
-    func_var = FuncVariable(
-      func = stablehlo::Func(id = stablehlo::FuncId("main"))
-    )
-  )
+  cli_abort("Not supported yet")
 }
 
 method(aval, JitBox) <- function(x) {

@@ -90,6 +90,8 @@ jobs:
           Rscript -e 'install.packages("remotes")'
           Rscript -e 'remotes::install_github("r-xla/pjrt", force = TRUE)'
           Rscript -e 'remotes::install_github("r-xla/tengen", force = TRUE)'
+          Rscript -e 'remotes::install_github("r-xla/stablehlo", force = TRUE)'
+          Rscript -e 'remotes::install_github("r-xla/xlamisc", force = TRUE)'
 
 
       - uses: r-lib/actions/check-r-package@v2

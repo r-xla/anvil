@@ -41,3 +41,20 @@ test_that("mean", {
   fmean <- jit(function(x) mean(x))
   expect_equal(as_array(fmean(nv_tensor(1:10, "f32"))), 5.5)
 })
+
+test_that("constants can be lifted to the appropriate level", {
+  f <- function(x) {
+    nv_pow(x, nv_scalar(1))
+  }
+  jit(gradient(f, wrt = "x"))(nv_scalar(2))
+})
+
+test_that("wrt non-existent argument", {
+  f <- function(x) {
+    nv_pow(x, nv_scalar(1))
+  }
+  expect_error(
+    jit(gradient(f, wrt = "y"))(nv_tensor(2)),
+    "Must be a subset"
+  )
+})
