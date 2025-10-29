@@ -68,7 +68,7 @@
       <h1>Get Started</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/fix-cuda-runner/vignettes/anvil.Rmd" class="external-link"><code>vignettes/anvil.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/anvil.Rmd" class="external-link"><code>vignettes/anvil.Rmd</code></a></small>
       <div class="d-none name"><code>anvil.Rmd</code></div>
     </div>
 
@@ -349,12 +349,10 @@ descent.</p>
 <p>This already allows us to train our linear model using gradient
 descent:</p>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">beta_hat</span>, alpha <span class="op">=</span> <span class="va">alpha_hat</span><span class="op">)</span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">weights</span> <span class="op">&lt;-</span> <span class="fu">update_weights</span><span class="op">(</span><span class="va">X</span>, <span class="va">weights</span><span class="op">$</span><span class="va">beta</span>, <span class="va">weights</span><span class="op">$</span><span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 100</span></span></code></pre>
-<p><img src="anvil_files/figure-html/unnamed-chunk-22-1.png" width="700"></p>
+<code class="sourceCode R"><span><span class="co">#weights &lt;- list(beta = beta_hat, alpha = alpha_hat)</span></span>
+<span><span class="co">#for (i in 1:100) {</span></span>
+<span><span class="co">#  weights &lt;- update_weights(X, weights$beta, weights$alpha, y)</span></span>
+<span><span class="co">#}</span></span></code></pre></div>
 <p>While this might seem like a reasonable solution, it continuously
 switches between the R interpreter and the XLA runtime. Moreover, we
 allocate new tensors in each iteration for the weights. While the latter
@@ -376,7 +374,7 @@ jit-compiled function. 2. Updating an <code>AnvilTensor</code> living in
 R through a jit-compiled function.</p>
 <p>For the first category, there is function TODO demonstrated
 below.</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># TODO</span></span></code></pre></div>
 <p>The thing to note is that while conceptually, this is <em>not</em> an
 in-place update, but creates a new tensor, the XLA compiler is able to
@@ -387,7 +385,7 @@ function as “donatable”. This means, we are telling the XLA runtime that
 after we pass those tensors marked as donatable into the function, we
 will no longer use them in R. The XLA compiler will therefore be able to
 reuse the memory.</p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># TODO</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="control-flow">Control Flow<a class="anchor" aria-label="anchor" href="#control-flow"></a>
