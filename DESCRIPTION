@@ -29,10 +29,13 @@ Suggests:
     quarto,
     rmarkdown,
     testthat (>= 3.0.0)
+Remotes:
+    r-xla/pjrt,
+    r-xla/tengen,
+    r-xla/xlamisc,
+    r-xla/stablehlo
 VignetteBuilder:
     knitr
-Additional_repositories:
-  https://r-xla.r-universe.dev
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
