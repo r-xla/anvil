@@ -86,7 +86,7 @@ jobs:
       # Not sure why this is needed, but otherwise we get an outdated pjrt package version
       # Hopefully this resolves itself
       - name: Install pjrt
-        if: matrix.config.torch != "cpu"
+        if: matrix.config.platform != "cpu"
         run: |
           Rscript -e 'install.packages("remotes")'
           Rscript -e 'remotes::install_github("r-xla/pjrt", force = TRUE)'
