@@ -16,7 +16,6 @@ Depends:
 Imports:
     checkmate,
     cli,
-    dotty,
     methods,
     pjrt,
     rlang,
@@ -30,14 +29,10 @@ Suggests:
     quarto,
     rmarkdown,
     testthat (>= 3.0.0)
+Additional_repositories:
+    https://r-xla.r-universe.dev
 VignetteBuilder:
     knitr
-Remotes:
-    kevinushey/dotty,
-    r-xla/pjrt,
-    r-xla/stablehlo,
-    r-xla/tengen,
-    r-xla/xlamisc
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

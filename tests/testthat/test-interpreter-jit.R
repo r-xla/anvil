@@ -127,3 +127,17 @@ test_that("error message when using wrong device", {
   x <- nv_tensor(1, device = "metal")
   expect_error(f(x), "but buffer has device metal")
 })
+
+test_that("constants can be part of the program", {
+  f <- jit(function(x) x + nv_scalar(1))
+  expect_equal(f(nv_tensor(1)), nv_tensor(2))
+})
+
+test_that("JitBox printer", {
+  local_func()
+  x <- hlo_input("x", "f32", c(2, 3))
+  interpreter <- JitInterpreter()
+  box <- JitBox(interpreter, x)
+  expect_equal(format(box), "JitBox(tensor<2x3xf32>)")
+  expect_snapshot(box)
+})

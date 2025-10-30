@@ -246,10 +246,17 @@ update_weights <- jit(function(X, beta, alpha, y, lr) {
 This already allows us to train our linear model using gradient descent:
 
 ```{r}
-#weights <- list(beta = beta_hat, alpha = alpha_hat)
-#for (i in 1:100) {
-#  weights <- update_weights(X, weights$beta, weights$alpha, y)
-#}
+weights <- list(beta = beta_hat, alpha = alpha_hat)
+for (i in 1:100) {
+  weights <- update_weights(X, weights$beta, weights$alpha, y)
+}
+```
+
+```{r, echo = FALSE}
+slope <- as_array(weights$beta)
+intercept <- as_array(weights$alpha)
+plot(as_array(X), as_array(y))
+abline(as_array(weights$alpha), as_array(weights$beta), col = "red")
 ```
 
 While this might seem like a reasonable solution, it continuously switches between the R interpreter and the XLA runtime. Moreover, we allocate new tensors in each iteration for the weights.

@@ -63,7 +63,7 @@ p_div[["pullback"]] <- function(primals, .required) {
   list(
     list(y),
     function(grad) {
-      keep(.required, \() nv_div(grad, rhs), \() nv_div(nvl_mul(grad, nvl_neg(y)), rhs))
+      keep(.required, \() nvl_div(grad, rhs), \() nvl_div(nvl_mul(grad, nvl_neg(y)), rhs))
     }
   )
 }
@@ -78,7 +78,8 @@ p_pow[["pullback"]] <- function(primals, .required) {
       keep(
         .required,
         \() {
-          nvl_mul(nvl_mul(grad, rhs), nvl_pow(lhs, nvl_sub(rhs, nv_scalar(1, dtype = dtype(lhs)))))
+          one <- nv_constant(1, dtype = dtype(lhs), shape = shape(rhs))
+          nvl_mul(nvl_mul(grad, rhs), nvl_pow(lhs, nvl_sub(rhs, one)))
         },
         \() {
           nvl_mul(grad, nvl_mul(nvl_log(lhs), y))
@@ -273,7 +274,8 @@ p_select[["pullback"]] <- function(primals, .required) {
   true_value <- primals[[2L]]
   false_value <- primals[[3L]]
   y <- nvl_select(pred, true_value, false_value)
-  zero <- nv_tensor(0L, dtype = dtype(true_value))
+  # TODO: This should only be generated once we are doing the backward pass
+  zero <- nv_constant(0L, dtype = dtype(true_value), shape = shape(true_value))
   list(
     list(y),
     function(grad) {

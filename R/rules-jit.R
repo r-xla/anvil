@@ -1,34 +1,16 @@
 #' @include primitives.R
 #' @include interpreter-jit.R
 
-.jit_apply_broadcasted <- function(f, ...) {
-  args <- list(...)
-  shapes <- lapply(args, function(a) shape(a@value_type))
-  shape_out <- Reduce(broadcast_shapes, shapes)
-
-  args <- lapply(args, function(arg) {
-    shp_in <- shape(arg)
-    if (!identical(shp_in, shape_out)) {
-      bdims <- make_broadcast_dimensions(shp_in, shape_out) - 1L
-      stablehlo::hlo_broadcast_in_dim(arg, bdims, shape_out)
-    } else {
-      arg
-    }
-  })
-
-  list(do.call(f, args))
-}
-
 p_add[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_add, lhs, rhs)
+  list(stablehlo::hlo_add(lhs, rhs))
 }
 
 p_mul[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_multiply, lhs, rhs)
+  list(stablehlo::hlo_multiply(lhs, rhs))
 }
 
 p_sub[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_subtract, lhs, rhs)
+  list(stablehlo::hlo_subtract(lhs, rhs))
 }
 
 p_neg[["jit"]] <- function(operand) {
@@ -36,11 +18,11 @@ p_neg[["jit"]] <- function(operand) {
 }
 
 p_div[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_divide, lhs, rhs)
+  list(stablehlo::hlo_divide(lhs, rhs))
 }
 
 p_pow[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_power, lhs, rhs)
+  list(stablehlo::hlo_power(lhs, rhs))
 }
 
 p_broadcast_in_dim[["jit"]] <- function(operand, shape_out, broadcast_dimensions) {
@@ -144,14 +126,8 @@ p_reduce_all[["jit"]] <- function(operand, dims, drop) {
 
 .jit_compare_bin <- function(direction) {
   function(lhs, rhs) {
-    .jit_apply_broadcasted(
-      function(lhs, rhs) {
-        ct <- .compare_type_for(lhs)
-        stablehlo::hlo_compare(lhs, rhs, comparison_direction = direction, compare_type = ct)
-      },
-      lhs,
-      rhs
-    )
+    ct <- .compare_type_for(lhs)
+    list(stablehlo::hlo_compare(lhs, rhs, comparison_direction = direction, compare_type = ct))
   }
 }
 
@@ -166,19 +142,19 @@ p_le[["jit"]] <- .jit_compare_bin("LE")
 # binary simple math jit rules ---------------------------------------------------
 
 p_max[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_maximum, lhs, rhs)
+  list(stablehlo::hlo_maximum(lhs, rhs))
 }
 
 p_min[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_minimum, lhs, rhs)
+  list(stablehlo::hlo_minimum(lhs, rhs))
 }
 
 p_remainder[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_remainder, lhs, rhs)
+  list(stablehlo::hlo_remainder(lhs, rhs))
 }
 
 p_and[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_and, lhs, rhs)
+  list(stablehlo::hlo_and(lhs, rhs))
 }
 
 p_not[["jit"]] <- function(operand) {
@@ -186,27 +162,27 @@ p_not[["jit"]] <- function(operand) {
 }
 
 p_or[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_or, lhs, rhs)
+  list(stablehlo::hlo_or(lhs, rhs))
 }
 
 p_xor[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_xor, lhs, rhs)
+  list(stablehlo::hlo_xor(lhs, rhs))
 }
 
 p_shift_left[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_shift_left, lhs, rhs)
+  list(stablehlo::hlo_shift_left(lhs, rhs))
 }
 
 p_shift_right_logical[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_shift_right_logical, lhs, rhs)
+  list(stablehlo::hlo_shift_right_logical(lhs, rhs))
 }
 
 p_shift_right_arithmetic[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_shift_right_arithmetic, lhs, rhs)
+  list(stablehlo::hlo_shift_right_arithmetic(lhs, rhs))
 }
 
 p_atan2[["jit"]] <- function(lhs, rhs) {
-  .jit_apply_broadcasted(stablehlo::hlo_atan2, lhs, rhs)
+  list(stablehlo::hlo_atan2(lhs, rhs))
 }
 
 # unary simple math jit rules ---------------------------------------------------
@@ -267,5 +243,5 @@ p_convert[["jit"]] <- function(operand, dtype) {
 # control flow jit rules --------------------------------------------------------
 
 p_select[["jit"]] <- function(pred, true_value, false_value) {
-  .jit_apply_broadcasted(stablehlo::hlo_select, pred, true_value, false_value)
+  list(stablehlo::hlo_select(pred, true_value, false_value))
 }
