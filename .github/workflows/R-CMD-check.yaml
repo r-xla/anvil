@@ -73,9 +73,11 @@ jobs:
           use-public-rspm: true
           extra-repositories: https://r-xla.r-universe.dev
 
-       # We need this because:
-       # 1. The custom cuda runner has a bug, where it somehow installs old dependency versions
-       # 2. The custom metal runner does not run the setup-r workflow above
+      - name: Configure R repositories
+        if: matrix.config.r == null
+        run: |
+          echo 'options(repos = c(rxla = "https://r-xla.r-universe.dev", getOption("repos"))' >> ~/.Rprofile
+
       - name: Install pjrt
         if: matrix.config.platform != 'cpu'
         run: |
