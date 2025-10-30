@@ -29,11 +29,8 @@ Suggests:
     quarto,
     rmarkdown,
     testthat (>= 3.0.0)
-Remotes:
-    r-xla/pjrt,
-    r-xla/tengen,
-    r-xla/xlamisc,
-    r-xla/stablehlo
+Additional_repositories:
+    https://r-xla.r-universe.dev
 VignetteBuilder:
     knitr
 Config/testthat/edition: 3
