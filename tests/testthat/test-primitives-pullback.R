@@ -229,8 +229,8 @@ test_that("broadcasting", {
     wrt = c("x", "y")
   ))
 
-  out <- f(nv_tensor(1), nv_tensor(0, shape = c(1, 2)))
-  expect_equal(out[[1L]], nv_tensor(1))
+  out <- f(nv_scalar(1), nv_tensor(0, shape = c(1, 2)))
+  expect_equal(out[[1L]], nv_scalar(1))
   expect_equal(out[[2L]], nv_tensor(0.5, shape = c(1, 2)))
 })
 

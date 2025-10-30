@@ -93,6 +93,15 @@ jobs:
           Rscript -e 'install.packages("torch")'
           Rscript -e 'torch::install_torch()'
 
+      - name: Install deps on cuda
+        if: ${{ matrix.config.platform == 'cuda' }}
+        run: |
+          Rscript -e 'install.packages("remotes")'
+          Rscript -e 'remotes::install_github("r-xla/pjrt")'
+          Rscript -e 'remotes::install_github("r-xla/stablehlo")'
+          Rscript -e 'remotes::install_github("r-xla/tengen")'
+          Rscript -e 'remotes::install_github("r-xla/xlamisc")'
+
 
       - uses: r-lib/actions/check-r-package@v2
         with:

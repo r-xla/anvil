@@ -1,24 +1,6 @@
 #' @include primitives.R
 #' @include interpreter-jit.R
 
-.jit_apply_broadcasted <- function(f, ...) {
-  args <- list(...)
-  shapes <- lapply(args, function(a) shape(a@value_type))
-  shape_out <- Reduce(broadcast_shapes, shapes)
-
-  args <- lapply(args, function(arg) {
-    shp_in <- shape(arg)
-    if (!identical(shp_in, shape_out)) {
-      bdims <- make_broadcast_dimensions(shp_in, shape_out) - 1L
-      stablehlo::hlo_broadcast_in_dim(arg, bdims, shape_out)
-    } else {
-      arg
-    }
-  })
-
-  list(do.call(f, args))
-}
-
 p_add[["jit"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_add(lhs, rhs))
 }

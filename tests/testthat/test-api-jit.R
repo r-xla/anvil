@@ -1,8 +1,17 @@
-test_that("broadcasting", {
+test_that("auto-broadcasting higher-dimensional tensors is not supported (it's bug prone)", {
+  x <- nv_tensor(1:2, shape = c(2, 1))
+  y <- nv_tensor(1:2, shape = c(1, 2))
+  expect_error(
+    nv_add(x, y),
+    "By default, only scalar broadcasting is supported"
+  )
+})
+
+test_that("broadcasting scalars", {
   fjit <- jit(nv_add)
   expect_equal(
     fjit(
-      nv_tensor(1),
+      nv_scalar(1),
       nv_tensor(0, shape = c(2, 2))
     ),
     nv_tensor(1, shape = c(2, 2))
@@ -13,13 +22,9 @@ test_that("infix add", {
   f <- jit(function(x, y) {
     x + y
   })
-  f(
-    nv_tensor(1),
-    nv_tensor(0, shape = c(2, 2))
-  )
   expect_equal(
     f(
-      nv_tensor(1),
+      nv_tensor(1, shape = c(2, 2)),
       nv_tensor(0, shape = c(2, 2))
     ),
     nv_tensor(1, shape = c(2, 2))
