@@ -73,6 +73,17 @@ jobs:
           use-public-rspm: true
           extra-repositories: https://r-xla.r-universe.dev
 
+       # We need this because:
+       # 1. The custom cuda runner has a bug, where it somehow installs old dependency versions
+       # 2. The custom metal runner does not run the setup-r workflow above
+      - name: Install pjrt
+        if: matrix.config.platform != 'cpu'
+        run: |
+          Rscript -e 'install.packages("remotes")'
+          Rscript -e 'remotes::install_github("r-xla/pjrt", force = TRUE)'
+          Rscript -e 'remotes::install_github("r-xla/tengen", force = TRUE)'
+          Rscript -e 'remotes::install_github("r-xla/stablehlo", force = TRUE)'
+          Rscript -e 'remotes::install_github("r-xla/xlamisc", force = TRUE)'
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -84,17 +95,6 @@ jobs:
         run: |
           Rscript -e 'install.packages("torch")'
           Rscript -e 'torch::install_torch()'
-
-      # Not sure why this is needed, but otherwise we get an outdated pjrt package version
-      # Hopefully this resolves itself
-      - name: Install pjrt
-        if: matrix.config.platform != 'cpu'
-        run: |
-          Rscript -e 'install.packages("remotes")'
-          Rscript -e 'remotes::install_github("r-xla/pjrt", force = TRUE)'
-          Rscript -e 'remotes::install_github("r-xla/tengen", force = TRUE)'
-          Rscript -e 'remotes::install_github("r-xla/stablehlo", force = TRUE)'
-          Rscript -e 'remotes::install_github("r-xla/xlamisc", force = TRUE)'
 
 
       - uses: r-lib/actions/check-r-package@v2
