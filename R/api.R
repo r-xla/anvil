@@ -417,7 +417,6 @@ nv_reduce_sum <- nvl_reduce_sum
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
   # TODO: division by zero?
   nelts <- prod(shape(operand)[dims])
-  print(nelts)
   # TODO: Should just be able to do use autocasting and divide by nelts scalar
   nv_reduce_sum(operand, dims, drop) / nv_scalar(nelts, dtype(operand))
 }

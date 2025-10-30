@@ -15,7 +15,7 @@ Which parameters of \code{f} are static.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
 The device to use for the compiled function.
-The default (\code{NULL}) uses \code{PJRT_PLATFORM} environment variable or defaults to "cpu".}
+The default (\code{NULL}) uses the \code{PJRT_PLATFORM} environment variable or defaults to "cpu".}
 
 \item{cache_size}{(\code{integer(1)})\cr
 The size of the cache for the jit-compiled functions.}

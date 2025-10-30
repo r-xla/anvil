@@ -3,5 +3,5 @@
     Code
       box_pull
     Output
-      PullbackBox(JitBox(tensor<2x3xf32>)) 
+      PullbackBox(HloBox(tensor<2x3xf32>))
 

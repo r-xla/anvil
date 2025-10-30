@@ -247,23 +247,26 @@ p_select[["jit"]] <- function(pred, true_value, false_value) {
 }
 
 p_if[["jit"]] <- function(pred, true, false) {
-  # Evaluate quosures in their original environments
-  true_val <- rlang::eval_tidy(true)
-  false_val <- rlang::eval_tidy(false)
-
-  to_branch_func <- function(val) {
-    # Support single or multiple outputs
-    vals <- if (inherits(val, "anvil::Box")) list(val) else val
-    if (!is.list(vals) || !all(vapply(vals, inherits, logical(1), what = "anvil::Box"))) {
-      cli_abort("Branch expressions must evaluate to an anvil value")
-    }
-    # Capture produced values into a zero-arg function and return it
-    captured <- do.call(stablehlo::hlo_closure, lapply(vals, function(b) b@func_var))
-    do.call(stablehlo::hlo_return, captured)
+  # What we are doing here?
+  # We are building stablehlo functions so we can pass them to the if-primitive
+  f1 <- flatten_fun(function() {
+    rlang::eval_tidy(true)
+  })
+  f2 <- flatten_fun(function() {
+    rlang::eval_tidy(false)
+  })
+  browser()
+  true_fn <- stablehlo(f1, list())
+  false_fn <- stablehlo(f2, list())
+  if (!identical(true_fn[[2L]], false_fn[[2L]])) {
+    cli_abort("true and false must have the same output tree")
   }
+  out <- stablehlo::hlo_if(pred, true_fn[[1L]], false_fn[[1L]])
+  if (!is.list(out)) {
+    out <- list(out)
+  }
+  out <- lapply(out, \(x) HloBox(func_var = x, interpreter = current_interpreter(list(pred, true, false))))
+  out <- unflatten(true_fn[[2L]], out)
 
-  true_func <- to_branch_func(true_val)
-  false_func <- to_branch_func(false_val)
-
-  list(stablehlo::hlo_if(pred, true_func, false_func))
+  structure(out, class = "Special")
 }

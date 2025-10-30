@@ -133,11 +133,11 @@ test_that("constants can be part of the program", {
   expect_equal(f(nv_tensor(1)), nv_tensor(2))
 })
 
-test_that("JitBox printer", {
+test_that("HloBox printer", {
   local_func()
   x <- hlo_input("x", "f32", c(2, 3))
-  interpreter <- JitInterpreter()
-  box <- JitBox(interpreter, x)
-  expect_equal(format(box), "JitBox(tensor<2x3xf32>)")
+  interpreter <- HloInterpreter()
+  box <- HloBox(interpreter, x)
+  expect_equal(format(box), "HloBox(tensor<2x3xf32>)")
   expect_snapshot(box)
 })

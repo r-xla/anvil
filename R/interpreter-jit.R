@@ -30,6 +30,7 @@ stablehlo <- function(.f, .avals) {
   })
 
   outs <- rlang::exec(.f, !!!boxes_in)
+  browser()
   boxes_out <- lapply(outs[[2L]], full_raise, interpreter = interpreter)
   func_vars_out <- lapply(boxes_out, \(box) box@func_var)
   func <- do.call(stablehlo::hlo_return, func_vars_out)
@@ -96,6 +97,7 @@ jit <- function(f, static = character(), device = NULL, cache_size = 100L) {
     # Prepare flattened function and avals for lowering
     f_flat <- rlang::exec(flatten_fun, f, in_node = in_node)
 
+    browser()
     lowered <- stablehlo(f_flat, avals_in)
     program <- pjrt_program(src = repr(lowered$func), format = "mlir")
     exec <- pjrt_compile(program)
@@ -132,7 +134,11 @@ method(process_primitive, HloInterpreter) <- function(
 ) {
   avals_in <- lapply(boxes, \(box) box@func_var)
   avals_out <- rlang::exec(prim[["jit"]], !!!c(avals_in, params))
-  lapply(avals_out, \(aval) HloBox(func_var = aval, interpreter = interpreter))
+  if (!inherits(avals_out, "Special")) {
+    lapply(avals_out, \(aval) HloBox(func_var = aval, interpreter = interpreter))
+  } else {
+    unclass(avals_out)
+  }
 }
 
 method(box, list(HloInterpreter, class_any)) <- function(interpreter, x) {

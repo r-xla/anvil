@@ -347,6 +347,7 @@ nvl_convert <- function(operand, dtype) {
 }
 
 # control flow primitives -------------------------------------------------------
+
 p_select <- Primitive("select")
 nvl_select <- function(pred, true_value, false_value) {
   interprete(p_select, list(pred, true_value, false_value))[[1L]]

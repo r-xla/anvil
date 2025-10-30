@@ -1,7 +1,7 @@
-# JitBox printer
+# HloBox printer
 
     Code
       box
     Output
-      JitBox(tensor<2x3xf32>) 
+      HloBox(tensor<2x3xf32>)
 
