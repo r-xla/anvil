@@ -91,12 +91,36 @@ test_that("p_transpose", {
   )
 })
 
-test_that("if", {
+test_that("p_if", {
   f <- jit(function(pred, x) {
-      nvl_if(pred, x,
-      x * x)
+    nvl_if(pred, list(list(x)), list(list(x * x)))
   })
-  f(nv_scalar(TRUE), nv_scalar(2))
+  expect_equal(
+    f(nv_scalar(TRUE), nv_scalar(2)),
+    list(list(nv_scalar(2)))
+  )
+  expect_equal(
+    f(nv_scalar(FALSE), nv_scalar(2)),
+    list(list(nv_scalar(4)))
+  )
+
+  g <- jit(function(pred, x) {
+    nvl_if(pred, list(x[[1]]), list(x[[1]] * x[[1]]))
+  })
+  expect_equal(
+    g(nv_scalar(FALSE), list(nv_scalar(2))),
+    list(nv_scalar(4))
+  )
+})
+
+test_that("error when multiplying lists in if-statement", {
+  f <- jit(function(pred, x) {
+    nvl_if(pred, x + x, x * x)
+  })
+  expect_error(
+    f(nv_scalar(FALSE), list(nv_scalar(2))),
+    "non-numeric argument to binary operator"
+  )
 })
 
 # we don't want to include torch in Suggests just for the tests, as it's a relatively

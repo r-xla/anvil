@@ -15,10 +15,10 @@
 #'   - `out_tree`: The output tree structure
 #' @export
 stablehlo <- function(.f, .avals) {
-  main <- local_main(HloInterpreter)
-  interpreter <- HloInterpreter(main)
+  func <- stablehlo::local_func(id = "main")
+  main <- local_main(HloInterpreter, global_data = func)
   # TODO: better id
-  func <- stablehlo::hlo_func(id = "main")
+  interpreter <- HloInterpreter(main = main, func = func)
   boxes_in <- lapply(.avals, function(aval) {
     if (!inherits(aval, "anvil::ShapedTensor")) {
       # Non-ShapedTensors are static, pass through as-is
@@ -30,7 +30,6 @@ stablehlo <- function(.f, .avals) {
   })
 
   outs <- rlang::exec(.f, !!!boxes_in)
-  browser()
   boxes_out <- lapply(outs[[2L]], full_raise, interpreter = interpreter)
   func_vars_out <- lapply(boxes_out, \(box) box@func_var)
   func <- do.call(stablehlo::hlo_return, func_vars_out)
@@ -97,14 +96,16 @@ jit <- function(f, static = character(), device = NULL, cache_size = 100L) {
     # Prepare flattened function and avals for lowering
     f_flat <- rlang::exec(flatten_fun, f, in_node = in_node)
 
-    browser()
     lowered <- stablehlo(f_flat, avals_in)
     program <- pjrt_program(src = repr(lowered$func), format = "mlir")
     exec <- pjrt_compile(program)
-    cache$set(avals_in, list(
-      exec,
-      lowered$out_tree
-    ))
+    cache$set(
+      avals_in,
+      list(
+        exec,
+        lowered$out_tree
+      )
+    )
     Recall()
   }
   formals(f_jit) <- formals2(f)
@@ -119,9 +120,16 @@ HloBox <- S7::new_class(
   )
 )
 
+method(format, HloBox) <- function(x, ...) {
+  sprintf("HloBox(%s)", format(aval(x)))
+}
+
 HloInterpreter <- S7::new_class(
   "HloInterpreter",
   parent = Interpreter,
+  properties = list(
+    func = stablehlo::Func
+  )
   # TODO: Should also get a builder, once stablehlo has one
   # It definitely needs to keep track of the constants
 )
@@ -134,23 +142,51 @@ method(process_primitive, HloInterpreter) <- function(
 ) {
   avals_in <- lapply(boxes, \(box) box@func_var)
   avals_out <- rlang::exec(prim[["jit"]], !!!c(avals_in, params))
-  if (!inherits(avals_out, "Special")) {
-    lapply(avals_out, \(aval) HloBox(func_var = aval, interpreter = interpreter))
-  } else {
-    unclass(avals_out)
-  }
+  lapply(avals_out, \(aval) HloBox(func_var = aval, interpreter = interpreter))
+}
+
+#method(box, list(HloInterpreter, class_any)) <- function(interpreter, x) {
+#  box(interpreter, aval(x))
+#}
+
+method(box, list(HloInterpreter, AnvilTensor)) <- function(interpreter, x) {
+  box(interpreter, aval(x))
+}
+
+method(box, list(HloInterpreter, ShapedTensor)) <- function(interpreter, x) {
+  HloBox(
+    func_var = FuncVariable(
+      value_id = stablehlo::ValueId(),
+      value_type = st2vt(x),
+      func = interpreter@main@global_data
+    ),
+    interpreter = interpreter
+  )
+}
+
+method(box, list(HloInterpreter, ConcreteTensor)) <- function(interpreter, x) {
+  func_var <- stablehlo::hlo_tensor(x@data, func = interpreter@main@global_data)
+  return(HloBox(
+    func_var = func_var,
+    interpreter = interpreter
+  ))
 }
 
 method(box, list(HloInterpreter, class_any)) <- function(interpreter, x) {
-  # TODO: Now we have to duplicate the constant handling from the IR interpreter
-  # But we can just ignore this for now
-  if (inherits(x, "AnvilTensor")) {
-    func_var <- stablehlo::hlo_tensor(x)
-    return(HloBox(
-      func_var = func_var
-    ))
-  }
-  cli_abort("Not supported yet")
+  box(interpreter, aval(x))
+}
+
+
+# Preserve value identity when something is already boxed
+method(box, list(HloInterpreter, HloBox)) <- function(interpreter, x) {
+  HloBox(
+    func_var = FuncVariable(
+      value_id = x@func_var@value_id,
+      value_type = x@func_var@value_type,
+      func = interpreter@main@global_data
+    ),
+    interpreter = interpreter
+  )
 }
 
 method(aval, HloBox) <- function(x) {

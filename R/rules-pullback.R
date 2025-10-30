@@ -288,3 +288,8 @@ p_select[["pullback"]] <- function(primals, .required) {
     }
   )
 }
+
+p_if[["pullback"]] <- function(primals, true, false, .required) {
+  # We need to get the pullback of TRUE and FALSE respectively
+  cli_abort("Not implemented")
+}

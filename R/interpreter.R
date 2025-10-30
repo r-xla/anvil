@@ -89,6 +89,10 @@ method(aval, Box) <- function(x) {
   shape(aval(x))
 }
 
+method(print, Box) <- function(x, ...) {
+  cat(format(x), "\n")
+}
+
 
 #' @importFrom pjrt platform
 method(platform, Box) <- function(x, ...) {
@@ -117,10 +121,11 @@ interprete <- function(prim, args, params = list()) {
 }
 
 
+# This function is called to increase the abstraction level to the provided interpreter
 full_raise <- function(interpreter, val) {
+  # Closed-over constants (constants captured via lexical scoping) or
+  # simply constants (like 1, 2L, ...)
   if (!inherits(val, Box)) {
-    # Closed-over constants (constants captured via lexical scoping) or
-    # simply constants (like 1, 2L, ...)
     if (is_nv_type(val)) {
       return(box(interpreter, val))
     }
@@ -131,7 +136,7 @@ full_raise <- function(interpreter, val) {
         func_var = FuncVariable(
           stablehlo::ValueId(),
           st2vt(val),
-          func = stablehlo::Func(id = stablehlo::FuncId("main"))
+          func = interpreter@main@global_data
         ),
         interpreter = interpreter
       )
@@ -140,7 +145,7 @@ full_raise <- function(interpreter, val) {
     cli_abort("Unsupported type: ", class(val)[1L])
   }
   level <- interpreter@main@level
-  if (identical(val@interpreter@main@interpreter_type, interpreter@main@interpreter_type)) {
+  if (identical(val@interpreter@main, interpreter@main)) {
     # val is at the same level as top level interpreter
     return(val)
   } else if (val@interpreter@main@level < level) {

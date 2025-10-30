@@ -247,26 +247,5 @@ p_select[["jit"]] <- function(pred, true_value, false_value) {
 }
 
 p_if[["jit"]] <- function(pred, true, false) {
-  # What we are doing here?
-  # We are building stablehlo functions so we can pass them to the if-primitive
-  f1 <- flatten_fun(function() {
-    rlang::eval_tidy(true)
-  })
-  f2 <- flatten_fun(function() {
-    rlang::eval_tidy(false)
-  })
-  browser()
-  true_fn <- stablehlo(f1, list())
-  false_fn <- stablehlo(f2, list())
-  if (!identical(true_fn[[2L]], false_fn[[2L]])) {
-    cli_abort("true and false must have the same output tree")
-  }
-  out <- stablehlo::hlo_if(pred, true_fn[[1L]], false_fn[[1L]])
-  if (!is.list(out)) {
-    out <- list(out)
-  }
-  out <- lapply(out, \(x) HloBox(func_var = x, interpreter = current_interpreter(list(pred, true, false))))
-  out <- unflatten(true_fn[[2L]], out)
-
-  structure(out, class = "Special")
+  stablehlo::hlo_if(pred, true, false, simplify = FALSE)
 }

@@ -355,7 +355,21 @@ nvl_select <- function(pred, true_value, false_value) {
 
 p_if <- Primitive("if")
 nvl_if <- function(pred, true, false) {
-  true_quo <- rlang::enquo(true)
-  false_quo <- rlang::enquo(false)
-  interprete(p_if, list(pred), params = list(true = true_quo, false = false_quo))[[1L]]
+  true_expr <- rlang::enquo(true)
+  false_expr <- rlang::enquo(false)
+  true_fn <- flatten_fun(function() {
+    rlang::eval_tidy(true_expr)
+  })
+  false_fn <- flatten_fun(function() {
+    rlang::eval_tidy(false_expr)
+  })
+
+  true_out <- stablehlo(true_fn, list())
+  false_out <- stablehlo(false_fn, list())
+
+  if (!identical(true_out[[2L]], false_out[[2L]])) {
+    cli_abort("true and false must have the same output tree")
+  }
+  out <- interprete(p_if, list(pred), params = list(true = true_out[[1L]], false = false_out[[1L]]))
+  unflatten(true_out[[2L]], out)
 }

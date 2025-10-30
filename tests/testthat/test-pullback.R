@@ -153,12 +153,13 @@ test_that("partial gradient simple", {
 #})
 
 test_that("format and print for PullbackBox", {
-  local_func()
+  func <- local_func()
   x <- hlo_input("x", "f32", c(2, 3))
-  jit_interpreter <- HloInterpreter()
+  main <- local_main(HloInterpreter)
+  jit_interpreter <- HloInterpreter(main = main, func = func)
   box <- HloBox(jit_interpreter, x)
   pull <- PullbackInterpreter()
   box_pull <- PullbackBox(pull, box, PullbackNode(NULL, list(), required = FALSE))
-  expect_equal(format(box_pull), "PullbackBox(HloBox(tensor<2x3xf32>))")
+  expect_equal(format(box_pull), "PullbackBox(HloBox(ShapedTensor(dtype=f32, shape=2x3)))")
   expect_snapshot(box_pull)
 })
