@@ -42,7 +42,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>JIT compile a function</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/R/interpreter-jit.R" class="external-link"><code>R/interpreter-jit.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-trafo-hlo/R/interpreter-jit.R" class="external-link"><code>R/interpreter-jit.R</code></a></small>
       <div class="d-none name"><code>jit.Rd</code></div>
     </div>
 
@@ -72,7 +72,7 @@ Which parameters of <code>f</code> are static.</p></dd>
 <dt id="arg-device">device<a class="anchor" aria-label="anchor" href="#arg-device"></a></dt>
 <dd><p>(<code>NULL</code> | <code>character(1)</code> | <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_device.html" class="external-link">PJRTDevice</a></code>)<br>
 The device to use for the compiled function.
-The default (<code>NULL</code>) uses the <code>PJRT_PLATFORM</code> environment variable or defaults to "cpu".</p></dd>
+The default (<code>NULL</code>) uses <code>PJRT_PLATFORM</code> environment variable or defaults to "cpu".</p></dd>
 
 
 <dt id="arg-cache-size">cache_size<a class="anchor" aria-label="anchor" href="#arg-cache-size"></a></dt>
