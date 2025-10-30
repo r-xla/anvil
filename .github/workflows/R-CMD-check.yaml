@@ -73,24 +73,16 @@ jobs:
           use-public-rspm: true
           extra-repositories: https://r-xla.r-universe.dev
 
-      - name: Configure R repositories
+      - name: Configure R-universe on metal runner
         if: matrix.config.r == null
         run: |
-          echo 'options(repos = c(rxla = "https://r-xla.r-universe.dev", getOption("repos"))' >> ~/.Rprofile
-
-      - name: Install pjrt
-        if: matrix.config.platform != 'cpu'
-        run: |
-          Rscript -e 'install.packages("remotes")'
-          Rscript -e 'remotes::install_github("r-xla/pjrt", force = TRUE)'
-          Rscript -e 'remotes::install_github("r-xla/tengen", force = TRUE)'
-          Rscript -e 'remotes::install_github("r-xla/stablehlo", force = TRUE)'
-          Rscript -e 'remotes::install_github("r-xla/xlamisc", force = TRUE)'
+          echo 'options(repos = c(rxla = "https://r-xla.r-universe.dev", getOption("repos")))' >> ~/.Rprofile
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
           needs: check
+          cache: false
 
       - name: Install torch
         if: ${{ matrix.config.torch }}
