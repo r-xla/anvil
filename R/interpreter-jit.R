@@ -47,7 +47,7 @@ stablehlo <- function(.f, .avals) {
 #'   Which parameters of `f` are static.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
 #'   The device to use for the compiled function.
-#'   The default (`NULL`) uses `PJRT_PLATFORM` environment variable or defaults to "cpu".
+#'   The default (`NULL`) uses the `PJRT_PLATFORM` environment variable or defaults to "cpu".
 #' @param cache_size (`integer(1)`)\cr
 #'   The size of the cache for the jit-compiled functions.
 #' @return (`function`)
@@ -145,11 +145,6 @@ method(box, list(HloInterpreter, class_any)) <- function(interpreter, x) {
     ))
   }
   cli_abort("Not supported yet")
-  HloBox(
-    func_var = FuncVariable(
-      func = stablehlo::Func(id = stablehlo::FuncId("main"))
-    )
-  )
 }
 
 method(aval, HloBox) <- function(x) {

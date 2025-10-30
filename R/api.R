@@ -2,6 +2,17 @@
 #' @include interpreter.R
 #' @include primitives.R
 
+# Special tensor creators
+
+# TODO: We can remove this once we can lift R scalars (nv_broadcast_to(1, c(2, 3, 4)))
+nv_constant <- function(value, dtype = NULL, device = NULL, shape) {
+  if (length(value) != 1L) {
+    stop("value must be a scalar")
+  }
+  nv_broadcast_to(nv_scalar(value, dtype = dtype, device = device), shape = shape)
+}
+
+
 ## Conversion ------------------------------------------------------------------
 
 broadcast_shapes <- function(shape_lhs, shape_rhs) {
@@ -33,6 +44,26 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
     return(seq_along(shape_out))
   }
   tail(seq_len(rank_out), rank_in)
+}
+
+nv_broadcast_scalar <- function(lhs, rhs) {
+  shape_lhs <- shape(lhs)
+  shape_rhs <- shape(rhs)
+  if (identical(shape_lhs, shape_rhs)) {
+    return(list(lhs, rhs))
+  }
+  if (length(shape_lhs) && length(shape_rhs)) {
+    cli_abort(
+      "By default, only scalar broadcasting is supported, use {.fn nv_broadcast_tensors} to broadcast higher-dimensional tensors."
+    ) # nolint
+  }
+  if (!length(shape_lhs)) {
+    lhs <- nv_broadcast_to(lhs, shape_rhs)
+  }
+  if (!length(shape_rhs)) {
+    rhs <- nv_broadcast_to(rhs, shape_lhs)
+  }
+  list(lhs, rhs)
 }
 
 #' @title Broadcast Tensors to a Common Shape
@@ -118,89 +149,152 @@ NULL
 
 #' @rdname nv_binary_ops
 #' @export
-nv_add <- nvl_add
+nv_add <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_add(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_mul <- nvl_mul
+nv_mul <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_mul(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_sub <- nvl_sub
+nv_sub <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_sub(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_div <- nvl_div
+nv_div <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_div(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_pow <- nvl_pow
+nv_pow <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_pow(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_eq <- nvl_eq
+nv_eq <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_eq(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_ne <- nvl_ne
+nv_ne <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_ne(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_gt <- nvl_gt
+nv_gt <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_gt(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_ge <- nvl_ge
+nv_ge <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_ge(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_lt <- nvl_lt
+nv_lt <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_lt(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_le <- nvl_le
+nv_le <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_le(args[[1]], args[[2]])
+}
 
 ## Additional binary ops -------------------------------------------------------
 
 #' @rdname nv_binary_ops
 #' @export
-nv_max <- nvl_max
+nv_max <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_max(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_min <- nvl_min
+nv_min <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_min(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_remainder <- nvl_remainder
+nv_remainder <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_remainder(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_and <- nvl_and
+nv_and <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_and(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_or <- nvl_or
+nv_or <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_or(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_xor <- nvl_xor
+nv_xor <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_xor(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_shift_left <- nvl_shift_left
+nv_shift_left <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_shift_left(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_shift_right_logical <- nvl_shift_right_logical
+nv_shift_right_logical <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_shift_right_logical(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_shift_right_arithmetic <- nvl_shift_right_arithmetic
+nv_shift_right_arithmetic <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_shift_right_arithmetic(args[[1]], args[[2]])
+}
 
 #' @rdname nv_binary_ops
 #' @export
-nv_atan2 <- nvl_atan2
+nv_atan2 <- function(lhs, rhs) {
+  args <- nv_broadcast_scalar(lhs, rhs)
+  nvl_atan2(args[[1]], args[[2]])
+}
 
 ## Unary ops ------------------------------------------------------------------
 
@@ -323,6 +417,7 @@ nv_reduce_sum <- nvl_reduce_sum
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
   # TODO: division by zero?
   nelts <- prod(shape(operand)[dims])
+  print(nelts)
   # TODO: Should just be able to do use autocasting and divide by nelts scalar
   nv_reduce_sum(operand, dims, drop) / nv_scalar(nelts, dtype(operand))
 }

@@ -149,3 +149,8 @@ method(format, ConcreteTensor) <- function(x, ...) {
 nv_dtype <- function(x) {
   stablehlo::as_dtype(x)
 }
+
+#' @export
+format.AnvilTensor <- function(x, ...) {
+  sprintf("AnvilTensor(dtype=%s, shape=%s)", repr(dtype(x)), paste(shape(x), collapse = "x"))
+}

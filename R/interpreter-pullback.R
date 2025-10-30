@@ -260,3 +260,11 @@ method(box, list(PullbackInterpreter, class_any)) <- function(interpreter, x) {
 method(aval, PullbackBox) <- function(x) {
   x@primal
 }
+
+method(print, PullbackBox) <- function(x, ...) {
+  cat(format(x), "\n")
+}
+
+method(format, PullbackBox) <- function(x, ...) {
+  sprintf("PullbackBox(%s)", format(x@primal))
+}

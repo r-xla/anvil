@@ -140,7 +140,7 @@ full_raise <- function(interpreter, val) {
     cli_abort("Unsupported type: ", class(val)[1L])
   }
   level <- interpreter@main@level
-  if (inherits(val@interpreter@main, S7_class(interpreter@main))) {
+  if (identical(val@interpreter@main@interpreter_type, interpreter@main@interpreter_type)) {
     # val is at the same level as top level interpreter
     return(val)
   } else if (val@interpreter@main@level < level) {
