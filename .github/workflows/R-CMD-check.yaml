@@ -78,6 +78,12 @@ jobs:
         run: |
           echo 'options(repos = c(rxla = "https://r-xla.r-universe.dev", getOption("repos")))' >> ~/.Rprofile
 
+
+      - name: Debug R library
+        if: matrix.config.platform == 'cuda'
+        run: |
+          ls -la /opt/R/4.5.1/lib/R/site-library
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
