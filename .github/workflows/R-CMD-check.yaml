@@ -80,12 +80,6 @@ jobs:
           Rscript -e 'print(.libPaths()); print(Sys.getenv(c("R_LIBS_USER","R_LIBS","HOME")));'
           Rscript -e 'if (requireNamespace("pak", quietly=TRUE)) pak::cache_summary()'
 
-      - name: Configure R-universe on metal runner
-        if: matrix.config.r == null
-        run: |
-          echo 'options(repos = c(rxla = "https://r-xla.r-universe.dev", getOption("repos")))' >> ~/.Rprofile
-
-
       - name: Debug R library
         if: matrix.config.platform == 'cuda'
         run: |
