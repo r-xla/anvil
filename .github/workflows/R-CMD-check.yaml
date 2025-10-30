@@ -80,11 +80,6 @@ jobs:
           Rscript -e 'print(.libPaths()); print(Sys.getenv(c("R_LIBS_USER","R_LIBS","HOME")));'
           Rscript -e 'if (requireNamespace("pak", quietly=TRUE)) pak::cache_summary()'
 
-      - name: Debug R library
-        if: matrix.config.platform == 'cuda'
-        run: |
-          ls -la /opt/R/4.5.1/lib/R/site-library
-
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
