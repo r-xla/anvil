@@ -120,7 +120,7 @@ p_reduce_all[["jit"]] <- function(operand, dims, drop) {
     # StableHLO uses SIGNED for i1 compares
     "SIGNED"
   } else {
-    stop("Unsupported dtype for compare")
+    cli_abort("Unsupported dtype for compare")
   }
 }
 
@@ -244,4 +244,8 @@ p_convert[["jit"]] <- function(operand, dtype) {
 
 p_select[["jit"]] <- function(pred, true_value, false_value) {
   list(stablehlo::hlo_select(pred, true_value, false_value))
+}
+
+p_if[["jit"]] <- function(pred, true, false) {
+  stablehlo::hlo_if(pred, true, false, simplify = FALSE)
 }

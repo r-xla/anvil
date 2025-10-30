@@ -28,7 +28,7 @@ broadcast_shapes <- function(shape_lhs, shape_rhs) {
     d_lhs <- shape_lhs[i]
     d_rhs <- shape_rhs[i]
     if (d_lhs != d_rhs && d_lhs != 1L && d_rhs != 1L) {
-      stop("lhs and rhs are not broadcastable")
+      cli_abort("lhs and rhs are not broadcastable")
     }
     shape_out[i] <- max(d_lhs, d_rhs)
   }
@@ -374,10 +374,10 @@ nv_round <- nvl_round
 #' @export
 nv_matmul <- function(lhs, rhs) {
   if (ndims(rhs) < 2L) {
-    stop("lhs of matmul must have at least 2 dimensions")
+    cli_abort("lhs of matmul must have at least 2 dimensions")
   }
   if (ndims(lhs) < 2L) {
-    stop("rhs of matmul must have at least 2 dimensions")
+    cli_abort("rhs of matmul must have at least 2 dimensions")
   }
   shape_leading <- broadcast_shapes(head(shape(lhs), -2L), head(shape(rhs), -2L))
 
@@ -417,7 +417,6 @@ nv_reduce_sum <- nvl_reduce_sum
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
   # TODO: division by zero?
   nelts <- prod(shape(operand)[dims])
-  print(nelts)
   # TODO: Should just be able to do use autocasting and divide by nelts scalar
   nv_reduce_sum(operand, dims, drop) / nv_scalar(nelts, dtype(operand))
 }

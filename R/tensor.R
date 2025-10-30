@@ -97,7 +97,7 @@ ConcreteTensor <- S7::new_class(
   ),
   constructor = function(data) {
     if (!inherits(data, "AnvilTensor")) {
-      stop("data must be an nv_tensor")
+      cli_abort("data must be an nv_tensor")
     }
 
     S7::new_object(
