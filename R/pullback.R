@@ -111,6 +111,7 @@ pullback2 <- function(f, ..., wrt = NULL) {
   box_out <- rlang::exec(unflatten, !!!out_flat)
 
   in_nodes <- lapply(boxes_in, \(box) if (is_pullback_box(box)) box@node else box)
+  # TODO: Here we should allow for all sorts of output structures so we can make nvl_if work.
   out_node <- box_out@node
 
   # TODO: Crate
@@ -152,8 +153,10 @@ pullback2 <- function(f, ..., wrt = NULL) {
 
 # Backward is essentially implemented like in pytorch or microjax
 
-backward_pass <- function(in_nodes, out_node, gradient) {
-  node_map <- hashtab()
+backward_pass <- function(in_nodes, out_node, gradient, node_map = NULL) {
+  if (is.null(node_map)) {
+    node_map <- hashtab()
+  }
   node_map[[node_id(out_node)]] <- gradient
 
   # 1. Reverse the topological sorting
@@ -268,3 +271,13 @@ method(print, PullbackBox) <- function(x, ...) {
 method(format, PullbackBox) <- function(x, ...) {
   sprintf("PullbackBox(%s)", format(x@primal))
 }
+
+
+f <- function(x, y) {
+  y
+}
+
+g <- jit(gradient(f, wrt = c("x", "y")))
+
+
+g(nv_scalar(1), nv_scalar(2))

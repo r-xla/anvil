@@ -163,3 +163,11 @@ test_that("format and print for PullbackBox", {
   expect_equal(format(box_pull), "PullbackBox(HloBox(ShapedTensor(dtype=f32, shape=2x3)))")
   expect_snapshot(box_pull)
 })
+
+test_that("gradients are present even if they don't influence the output", {
+  g <- jit(gradient(function(x, y) x, wrt = "y"))
+  expect_equal(
+    g(nv_scalar(1), nv_scalar(1)),
+    list(y = nv_scalar(0))
+  )
+})

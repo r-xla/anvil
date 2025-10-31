@@ -373,3 +373,8 @@ nvl_if <- function(pred, true, false) {
   out <- interprete(p_if, list(pred), params = list(true = true_out[[1L]], false = false_out[[1L]]))
   unflatten(true_out[[2L]], out)
 }
+
+p_while <- Primitive("while")
+nvl_while <- function(cond, body, init) {
+  # TODO:
+}

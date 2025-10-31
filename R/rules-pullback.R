@@ -289,7 +289,37 @@ p_select[["pullback"]] <- function(primals, .required) {
   )
 }
 
-p_if[["pullback"]] <- function(primals, true, false, .required) {
-  # We need to get the pullback of TRUE and FALSE respectively
-  cli_abort("Not implemented")
+p_if[["pullback"]] <- function(primals, true, false, node_map) {
+  cli_abort("Not yet implemented")
+  # Okay, this is tricky.
+  # The problem is that we currently don't know the parents of the true and false branches.
+  # Note that they might be different if we use capture variables lexically, because their
+  # "parents" are the captured variables in the closure.
+  # But I think determining the parents is hard, so maybe we can modify backward_pass instead.
+  pred <- primals[[1L]]
+
+  y <- nvl_if(pred, true, false)
+
+  out_node_true <- rlang::eval_tidy(true)
+  out_node_false <- rlang::eval_tidy(false)
+  zero <- "TODO"
+  list(
+    list(y),
+    function(grad) {
+      list(
+        function(node_map) {
+          nv_if(pred,
+            backward_pass(list(), out_node_true, grad, node_map),
+            zero
+          )
+        },
+        function(node_map) {
+          nv_if(pred,
+            zero,
+            backward_pass(list(), out_node_false, grad, node_map)
+          )
+        }
+      )
+    }
+  )
 }
