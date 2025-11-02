@@ -131,3 +131,8 @@ without <- function(x, indices) {
     x
   }
 }
+
+
+zero_env <- function() {
+  new.env(size = 0L, parent = emptyenv())
+}

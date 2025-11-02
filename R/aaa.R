@@ -20,7 +20,7 @@ NULL
 
 globals <- new.env()
 globals$nv_types <- "AnvilTensor"
-globals$interpretation_rules <- c("jit", "pullback")
+globals$interpretation_rules <- c("jit", "pullback", "graph")
 
 utils::globalVariables("globals")
 

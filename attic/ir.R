@@ -13,7 +13,7 @@ IRVariable <- new_class(
     id = S7::new_property(S7::class_environment)
   ),
   constructor = function(aval) {
-    S7::new_object(S7::S7_object(), aval = aval, id = new.env(size = 0L))
+    S7::new_object(S7::S7_object(), aval = aval, id = zero_env())
   }
 )
 

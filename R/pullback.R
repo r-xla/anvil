@@ -1,4 +1,5 @@
 #' @include interpreter.R
+#' @include type-conversion.R
 
 PullbackNode <- S7::new_class(
   "PullbackNode",
@@ -14,7 +15,7 @@ PullbackNode <- S7::new_class(
       S7::S7_object(),
       pullback = pullback,
       parents = parents,
-      id = new.env(size = 0L),
+      id = zero_env(),
       required = required
     )
   }
@@ -74,6 +75,8 @@ pullback2 <- function(f, ..., wrt = NULL) {
   main <- local_main(PullbackInterpreter)
   interpreter <- PullbackInterpreter(main)
 
+  # TODO: Can we use graphify here?
+
   if (!is.null(wrt)) {
     assert_subset(wrt, formalArgs2(f))
   } else {
@@ -91,6 +94,11 @@ pullback2 <- function(f, ..., wrt = NULL) {
   in_node <- build_tree(mark_some(args, wrt))
   is_required_flat <- if (is.null(wrt)) rep(TRUE, length(args_flat)) else in_node$marked
   f_flat <- rlang::exec(flatten_fun, f, in_node = in_node)
+
+  # It would be cool if we could just use graphify here and then interpreter the graph
+  # with a special interpretation rule.
+  # Maybe we could also embedd the flattening in graphify, so we don't have this code
+  # everywhere
 
   # The inputs are root nodes, because they have no parents
   boxes_in <- Map(
@@ -153,6 +161,7 @@ pullback2 <- function(f, ..., wrt = NULL) {
 
 # Backward is essentially implemented like in pytorch or microjax
 
+# TODO: Support out_nodes and not only a single one
 backward_pass <- function(in_nodes, out_node, gradient, node_map = NULL) {
   if (is.null(node_map)) {
     node_map <- hashtab()

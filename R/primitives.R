@@ -1,3 +1,6 @@
+#' @include utils.R
+#' @include type-converters.R
+
 #' @title Primitive
 #' @description
 #' Primitive interpretation rule.
@@ -12,7 +15,7 @@ Primitive <- new_class(
     rules = class_environment
   ),
   constructor = function(name) {
-    env <- new.env(parent = emptyenv())
+    env <- zero_env()
     new_object(S7_object(), rules = env, name = name)
   }
 )
