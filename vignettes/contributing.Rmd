@@ -1,0 +1,35 @@
+---
+title: "Contributing"
+format: html
+vignette: >
+  %\VignetteIndexEntry{Contributing}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+## Overview
+
+The functionality for the {anvil} package is split across several packages:
+
+1. The [stablehlo](https://github.com/r-xla/stablehlo) package, which {anvil} uses to lower R code to stableHLO.
+2. The [pjrt](https://github.com/r-xla/pjrt) package, which {anvil} uses to JIT-compile and execute stableHLO programs, execute them, allocate buffers etc.
+3. This package, which implements the code transformation framework.
+
+## Ways to Contribute
+
+There are many ways to contribute to the development of this package.
+The most natural way is to use the package and report bugs, poor error messages, missing documentation or other issues you encounter.
+
+The package is still in a very early development stage, so many features are still missing and internal interfaces are still subject to change.
+If you still want to directly contribute to the development of the package, there are a few options, sorted in in creasing order of difficulty:
+
+- **Improve documentation**: The documentation of many functions, (e.g. the  `nv_` functions) are still rather minimal, so this would be a good place to start.
+- **Implement new primitives**: The code transformation framework comes with its own set of primitives.
+
+## Contributing Guidelines
+
+
+
+
+
