@@ -54,7 +54,7 @@ nv_broadcast_scalar <- function(lhs, rhs) {
   }
   if (length(shape_lhs) && length(shape_rhs)) {
     cli_abort(
-      "By default, only scalar broadcasting is supported, use {.fn nv_broadcast_tensors} to broadcast higher-dimensional tensors."
+      "By default, only scalar broadcasting is supported, use {.fn nv_broadcast_tensors} to broadcast higher-dimensional tensors." # nolint
     ) # nolint
   }
   if (!length(shape_lhs)) {

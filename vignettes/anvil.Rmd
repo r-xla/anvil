@@ -1,15 +1,14 @@
 ---
 title: "Get Started"
-output: rmarkdown::html_vignette
+format: html
 vignette: >
   %\VignetteIndexEntry{Get Started}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
 ---
 
 In this vignette, you will learn everything you need to know to get started implementing numerical algorithms using {anvil}.
 If you have experience with JAX in Python, you should feel right at home.
-
 
 ## The `AnvilTensor`
 
@@ -269,6 +268,7 @@ Conceptually, whenever we are defining programs in anvil, we are strictly follow
 This means, in-place modifications like updating an array element are conceptually impossible.
 
 When we are dealing with updating an existing tensor, this might either be:
+
 1. Updating an `AnvilTensor` that "lives within" a jit-compiled function.
 2. Updating an `AnvilTensor` living in R through a jit-compiled function.
 
