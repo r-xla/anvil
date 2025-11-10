@@ -12,13 +12,13 @@ nv_rng_bit_generator(
 )
 }
 \arguments{
+\item{initial_state}{state seed}
+
+\item{rng_algorithm}{one of 'DEFAULT', 'THREE_FRY', 'PHILOX'}
+
 \item{dtype}{datatype of output}
 
 \item{shape_out}{output shape}
-
-\item{initial}{state seed}
-
-\item{rng_alogorithm}{one of 'DEFAULT', 'THREE_FRY', 'PHILOX'}
 }
 \description{
 generate random bits of desired shape and dtype

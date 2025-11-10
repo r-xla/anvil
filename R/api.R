@@ -335,6 +335,14 @@ nv_tan <- nvl_tan
 
 #' @rdname nv_unary_ops
 #' @export
+nv_sine <- nvl_sine
+
+#' @rdname nv_unary_ops
+#' @export
+nv_cosine <- nvl_cosine
+
+#' @rdname nv_unary_ops
+#' @export
 nv_floor <- nvl_floor
 
 #' @rdname nv_unary_ops
@@ -446,12 +454,56 @@ nv_reduce_all <- nvl_reduce_all
 #' @name nv_rng_bit_generator
 #' @description
 #' generate random bits of desired shape and dtype
-#' @param initial state seed
-#' @param rng_alogorithm one of 'DEFAULT', 'THREE_FRY', 'PHILOX'
+#' @param initial_state state seed
+#' @param rng_algorithm one of 'DEFAULT', 'THREE_FRY', 'PHILOX'
 #' @param dtype datatype of output
 #' @param shape_out output shape
 #' @export
 nv_rng_bit_generator <- nvl_rng_bit_generator
+
+#' @title Random Uniform Numbers
+#' @name nv_runif
+#' @description
+#' generate random uniform numbers
+#' @param initial_state state seed
+#' @param shape_out output shape
+#' @param lower lower bound
+#' @param upper upper bound
+#' @export
+nv_runif <- function(initial_state, shape_out, lower = 0, upper = 1) {
+  rbits <- nv_rng_bit_generator(initial_state = initial_state, "THREE_FRY", "ui64", shape_out = shape_out)
+  lhs <- nv_convert(rbits[[2]], "f64")
+  rhs <- nv_tensor(rep(2^64 - 1, prod(shape_out)), dtype = "f64", shape = shape_out)
+  U <- nv_div(lhs, rhs)
+  range <- nv_tensor(rep((upper - lower), prod(shape_out)), dtype = "f64", shape = shape_out)
+  U <- nv_mul(U, range)
+  U <- nv_add(nv_tensor(rep(lower, prod(shape_out)), dtype = "f64", shape = shape_out), U)
+  list(rbits[[1]], U)
+}
+
+#' @title Random Normal Numbers
+#' @name nv_rnorm
+#' @description
+#' generate random normal numbers
+#' @param initial_state state seed
+#' @param shape_out output shape
+#' @param mu scalar: expected value
+#' @param sigma scalar: standard deviation
+#' #' @section Covariance:
+#' To implement a covariance structure use cholesky decomposition
+#' @export
+nv_rnorm <- function(initial_state, shape_out, mu = 0, sigma = 1) {
+  U <- nv_runif(initial_state = initial_state, shape_out = shape_out, lower = 0, upper = 1)
+  R <- nv_log(U[[2]])
+  R <- nv_mul(R, nv_tensor(rep(-2, prod(shape_out)), dtype = "f64", shape = shape_out))
+  sqrt_R <- nv_sqrt(R)
+  Theta <- nv_runif(initial_state = U[[1]], shape_out = shape_out, lower = 0, upper = 2 * pi)
+  sin_Theta <- nv_sine(Theta[[2]])
+  Z <- nv_mul(sqrt_R, sin_Theta)
+  N <- nv_mul(Z, nv_tensor(rep(sigma, prod(shape_out)), dtype = "f64", shape = shape_out))
+  N <- nv_add(N, nv_tensor(rep(mu, prod(shape_out)), dtype = "f64", shape = shape_out))
+  list(Theta[[1]], N)
+}
 
 ## Data Types ------------------------------------------------------------------
 

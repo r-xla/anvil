@@ -307,6 +307,21 @@ nvl_tan <- function(operand) {
   interprete(p_tan, list(operand))[[1L]]
 }
 
+p_tan <- Primitive("tan")
+nvl_tan <- function(operand) {
+  interprete(p_tan, list(operand))[[1L]]
+}
+
+p_sine <- Primitive("sine")
+nvl_sine <- function(operand) {
+  interprete(p_sine, list(operand))[[1L]]
+}
+
+p_cosine <- Primitive("cosine")
+nvl_cosine <- function(operand) {
+  interprete(p_cosine, list(operand))[[1L]]
+}
+
 p_floor <- Primitive("floor")
 nvl_floor <- function(operand) {
   interprete(p_floor, list(operand))[[1L]]
@@ -362,5 +377,5 @@ nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dt
     p_rng_bit_generator,
     list(initial_state),
     params = list(rng_algorithm = rng_algorithm, dtype = dtype, shape_out = shape_out)
-  )[[1L]]
+  )
 }
