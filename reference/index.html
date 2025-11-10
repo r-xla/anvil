@@ -24,10 +24,6 @@
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/anvil.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/contributing.html">Contributing</a></li>
-  </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvil/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -53,8 +49,7 @@
 
 
 
-
-    </div><div class="section level2">
+      <dl></dl></div><div class="section level2">
 
 
 
@@ -65,91 +60,106 @@
 
         </dt>
         <dd>Primitive</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="data_types.html">data_types</a></code> <code><a href="data_types.html">dt_i1</a></code> <code><a href="data_types.html">dt_i8</a></code> <code><a href="data_types.html">dt_i16</a></code> <code><a href="data_types.html">dt_i32</a></code> <code><a href="data_types.html">dt_i64</a></code> <code><a href="data_types.html">dt_ui8</a></code> <code><a href="data_types.html">dt_ui16</a></code> <code><a href="data_types.html">dt_ui32</a></code> <code><a href="data_types.html">dt_ui64</a></code> <code><a href="data_types.html">dt_f32</a></code> <code><a href="data_types.html">dt_f64</a></code>
 
         </dt>
         <dd>Tensor Data Types</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="gradient.html">gradient()</a></code>
 
         </dt>
         <dd>Gradient of a function</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="jit.html">jit()</a></code>
 
         </dt>
         <dd>JIT compile a function</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="nv_binary_ops.html">nv_add()</a></code> <code><a href="nv_binary_ops.html">nv_mul()</a></code> <code><a href="nv_binary_ops.html">nv_sub()</a></code> <code><a href="nv_binary_ops.html">nv_div()</a></code> <code><a href="nv_binary_ops.html">nv_pow()</a></code> <code><a href="nv_binary_ops.html">nv_eq()</a></code> <code><a href="nv_binary_ops.html">nv_ne()</a></code> <code><a href="nv_binary_ops.html">nv_gt()</a></code> <code><a href="nv_binary_ops.html">nv_ge()</a></code> <code><a href="nv_binary_ops.html">nv_lt()</a></code> <code><a href="nv_binary_ops.html">nv_le()</a></code> <code><a href="nv_binary_ops.html">nv_max()</a></code> <code><a href="nv_binary_ops.html">nv_min()</a></code> <code><a href="nv_binary_ops.html">nv_remainder()</a></code> <code><a href="nv_binary_ops.html">nv_and()</a></code> <code><a href="nv_binary_ops.html">nv_or()</a></code> <code><a href="nv_binary_ops.html">nv_xor()</a></code> <code><a href="nv_binary_ops.html">nv_shift_left()</a></code> <code><a href="nv_binary_ops.html">nv_shift_right_logical()</a></code> <code><a href="nv_binary_ops.html">nv_shift_right_arithmetic()</a></code> <code><a href="nv_binary_ops.html">nv_atan2()</a></code>
 
         </dt>
         <dd>Binary Operations</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="nv_broadcast_tensors.html">nv_broadcast_tensors()</a></code>
 
         </dt>
         <dd>Broadcast Tensors to a Common Shape</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="nv_broadcast_to.html">nv_broadcast_to()</a></code>
 
         </dt>
         <dd>Broadcast</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="nv_convert.html">nv_convert()</a></code>
 
         </dt>
         <dd>Convert Tensor to Different Data Type</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="nv_dtype.html">nv_dtype()</a></code>
 
         </dt>
         <dd>Create a TensorDataType</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="nv_matmul.html">nv_matmul()</a></code>
 
         </dt>
         <dd>Matrix Multiplication</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="nv_reduce_ops.html">nv_reduce_sum()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_mean()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_prod()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_max()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_min()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_any()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_all()</a></code>
 
         </dt>
         <dd>Reduction Operators</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="nv_reshape.html">nv_reshape()</a></code>
 
         </dt>
         <dd>Reshape</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="nv_tensor.html">nv_tensor()</a></code> <code><a href="nv_tensor.html">nv_scalar()</a></code> <code><a href="nv_tensor.html">nv_empty()</a></code>
 
         </dt>
         <dd>Tensor</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="nv_transpose.html">nv_transpose()</a></code> <code><a href="nv_transpose.html">t(<i>&lt;anvil::Box&gt;</i>)</a></code>
 
         </dt>
         <dd>Transpose</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="nv_unary_ops.html">nv_neg()</a></code> <code><a href="nv_unary_ops.html">nv_abs()</a></code> <code><a href="nv_unary_ops.html">nv_sqrt()</a></code> <code><a href="nv_unary_ops.html">nv_rsqrt()</a></code> <code><a href="nv_unary_ops.html">nv_log()</a></code> <code><a href="nv_unary_ops.html">nv_tanh()</a></code> <code><a href="nv_unary_ops.html">nv_tan()</a></code> <code><a href="nv_unary_ops.html">nv_floor()</a></code> <code><a href="nv_unary_ops.html">nv_ceil()</a></code> <code><a href="nv_unary_ops.html">nv_sign()</a></code> <code><a href="nv_unary_ops.html">nv_exp()</a></code> <code><a href="nv_unary_ops.html">nv_round()</a></code>
 
         </dt>
         <dd>Unary Operations</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="platform.html">platform()</a></code>
 
@@ -164,7 +174,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>
