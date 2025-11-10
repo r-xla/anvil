@@ -140,3 +140,20 @@ MarkedListNode <- function(nodes, names, marked) {
     class = c("MarkedListNode", "ListNode")
   )
 }
+
+tree_size <- new_generic("tree_size", "x", function(x) {
+  S7::S7_dispatch()
+})
+
+method(tree_size, S7::new_S3_class("LeafNode")) <- function(x) {
+  1L
+}
+
+method(tree_size, S7::new_S3_class("ListNode")) <- function(x) {
+  sum(vapply(x$nodes, tree_size, integer(1L)))
+}
+
+method(tree_size, S7::new_S3_class("MarkedListNode")) <- function(x) {
+  sum(vapply(x$nodes, tree_size, integer(1L)))
+}
+

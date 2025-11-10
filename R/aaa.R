@@ -31,3 +31,6 @@ hash <- S7::new_generic("hash", "x", function(x) {
 aval <- S7::new_generic("aval", "x", function(x) {
   S7::S7_dispatch()
 })
+
+class_hashtab <- S7::new_S3_class("hashtab")
+class_node <- S7::new_S3_class("Node")

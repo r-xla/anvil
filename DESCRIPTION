@@ -47,6 +47,7 @@ Collate:
     'api.R'
     'api-group-generics.R'
     'flatten.R'
+    'mut.R'
     'graph.R'
     'jit.R'
     'pullback.R'

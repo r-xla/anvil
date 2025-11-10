@@ -21,6 +21,108 @@ PullbackNode <- S7::new_class(
   }
 )
 
+PullbackTransformation <- new_class("PullbackTransformation",
+  properties = list(
+    wrt = list_of(class_character)
+  )
+)
+
+#' @return `Graph`
+#' @include graph.R
+method(transform, PullbackTransformation) <- function(x, wrt, .args = NULL) {
+  if (!is_graph(x)) {
+    if (is.null(args)) {
+      cli_abort("Need to provide args if 'x' is not yet a graph")
+    }
+    graph <- do.call(graphify, c(list(.f = x), args))
+  }
+
+  out_vars <- output_vars(graph)
+
+  if (length(out_vars) != 1L) {
+    cli_abort("Pullback can only be computed for functions that return a single output")
+  }
+  out <- out_vars[[1L]]
+  if (shape(out@aval) != integer()) {
+    cli_abort("Pullback can only be computed for functions that return a scalar")
+  }
+  # Now we need to:
+  # 1. Create a new graph that represents the backward pass
+  #    We can use the existin logic for this I think.
+  # 2. Append the new graph to the existing graph
+  # 3. Return the extended graph.
+
+  # We should pay attention that we can do this properly for `if`, as this is
+  # the reason we started this refactor in the first place.
+
+  # compute wrt flat
+  in_tree <- graph@in_tree
+
+  # TODO: I don't think we need the marking anymore
+  wrt_flat <- Reduce(c, lapply(seq_along(in_tree$nodes), \(i) {
+    wrt_i <- in_tree$names[[i]] %in% wrt
+    rep(wrt_i, times = tree_size(in_tree$nodes[[i]]))
+  }))
+  # TODO: This assumes that the invars are sorted like the nodes.
+  # We need to ensure this in graphify
+
+  invars <- input_vars(graph)
+  if (length(wrt_flat) != invars) {
+    cli_abort("internal error")
+  }
+
+  #
+  for (i in seq_along(invars)) {
+    invars[[i]]@state <- list(required = wrt_flat[i])
+  }
+
+
+  for (call in graph@calls) {
+    out <- do.call(call@primitive[["pullback"]], c(
+      list(call[["inputs"]], call[["params"]])
+    ))
+    outvals <- out[[1L]]
+    backward_fns <- out[[2L]]
+
+    # set the outputs
+    for (i in seq_along(outvals)) {
+      call@outputs[[i]]@state <- outvals[[i]]
+    }
+
+    for (i in seq_along(call@outputs)) {
+      call@outputs[[i]]@state$backward_fns <- backward_fns
+    }
+  }
+
+  node_map <- hashtab()
+  node_map[[node_id(out)]] <- gradient
+
+  # 1. Reverse the topological sorting
+  # 2. Prune it to compute only the backward ops that
+  #    are needed for the required roots.
+  #    This is important when we only want gradients of a subset of the inputs.
+
+  # here we essentially need backward_pass
+  add_or_init <- function(grad1, grad2) {
+    if (is.null(grad1)) {
+      return(grad2)
+    }
+    nvl_add(grad1, grad2)
+  }
+
+  grad <- nv_scalar(1L, dtype = dtype(out), shape = shape(out))
+
+  # Now we simply reverse the calls
+  for (call in rev(graph@calls)) {
+    for (output in call@outputs) {
+      backward_fns <- output@state$backward_fns
+      backward_fns(grad)
+    }
+    backward_fns <- call@outputs[[i]]@state$backward_fns
+  }
+}
+
+
 node_id <- function(node) {
   rlang::obj_address(node)
 }
@@ -160,6 +262,25 @@ pullback2 <- function(f, ..., wrt = NULL) {
 #}
 
 # Backward is essentially implemented like in pytorch or microjax
+
+backward_pass2 <- function(graph, out_node, gradient) {
+  node_map <- hashtab()
+  add_or_init <- function(grad1, grad2) {
+    if (is.null(grad1)) {
+      return(grad2)
+    }
+    nvl_add(grad1, grad2)
+  }
+
+  for (call in rev(graph@calls)) {
+    for (output in call@outputs) {
+      backward_fns <- output@state$backward_fns
+      backward_fns(grad)
+    }
+    backward_fns <- call@outputs[[i]]@state$backward_fns
+  }
+
+}
 
 # TODO: Support out_nodes and not only a single one
 backward_pass <- function(in_nodes, out_node, gradient, node_map = NULL) {

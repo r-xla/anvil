@@ -112,6 +112,11 @@ jit <- function(f, static = character(), device = NULL, cache_size = 100L) {
   return(f_jit)
 }
 
+jit2 <- function(.f, ...) {
+  if (is_graph_graph)
+  materialize(f, ...)
+}
+
 HloBox <- S7::new_class(
   "HloBox",
   parent = Box,
