@@ -245,3 +245,9 @@ p_convert[["jit"]] <- function(operand, dtype) {
 p_select[["jit"]] <- function(pred, true_value, false_value) {
   list(stablehlo::hlo_select(pred, true_value, false_value))
 }
+
+# RNG jit rules --------------------------------------------------------
+
+p_rng_bit_generator[["jit"]] <- function(initial_state, rng_algorithm, dtype, shape_out) {
+  list(stablehlo::hlo_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out))
+}

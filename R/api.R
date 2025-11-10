@@ -442,6 +442,17 @@ nv_reduce_any <- nvl_reduce_any
 #' @export
 nv_reduce_all <- nvl_reduce_all
 
+#' @title Random Numbers
+#' @name nv_rng_bit_generator
+#' @description
+#' generate random bits of desired shape and dtype
+#' @param initial state seed
+#' @param rng_alogorithm one of 'DEFAULT', 'THREE_FRY', 'PHILOX'
+#' @param dtype datatype of output
+#' @param shape_out output shape
+#' @export
+nv_rng_bit_generator <- nvl_rng_bit_generator
+
 ## Data Types ------------------------------------------------------------------
 
 #' @title Tensor Data Types

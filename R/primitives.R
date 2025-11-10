@@ -351,3 +351,16 @@ p_select <- Primitive("select")
 nvl_select <- function(pred, true_value, false_value) {
   interprete(p_select, list(pred, true_value, false_value))[[1L]]
 }
+
+# RNG primitives
+p_rng_bit_generator <- Primitive("rng_bit_generator")
+nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape_out) {
+  if (!(rng_algorithm %in% c("DEFAULT", "THREE_FRY", "PHILOX"))) {
+    cli_abort("rng_algorithm must be one of: 'DEFAULT', 'THREE_FRY', 'PHILOX' but is {rng_algorithm}")
+  }
+  interprete(
+    p_rng_bit_generator,
+    list(initial_state),
+    params = list(rng_algorithm = rng_algorithm, dtype = dtype, shape_out = shape_out)
+  )[[1L]]
+}
