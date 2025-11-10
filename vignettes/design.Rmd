@@ -1,0 +1,104 @@
+---
+title: "Design"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Design}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Just like a real anvil, the {anvil} package is a tool that allows to reshape or transform objects.
+While a real anvil is used to shape metal, in our context we are shaping code into other code, represented as computational graphs.
+In this vignette we will first give a high-level overview of the main concepts and then dive into the details.
+
+## Bird's Eye View
+
+We will demonstrate the package's main functionality by means of an example.
+We start by creating the simple R function `f`, that simply adds two objects.
+
+```{r, eval = FALSE}
+library(anvil)
+f <- function(x, y) {
+  nv_add(x, y)
+}
+```
+
+Then, we transform this function using the `gradient()` transformation, which creates a `GradientTransformation` object.
+Such a `Transformation` object (`GradientTransformation` is a subclass) is created by a transformation function like `gradient()` (others will follow later).
+
+```{r, eval = FALSE}
+f1 <- gradient(f, wrt = "x")
+```
+
+The above transformation essentially has the signature: `(Function | Graph) -> ((..., ) -> Graph)`.
+I.e., we can either apply it to a standard R function, or to a `Graph` object and get out a function that creates a transformed `Graph` object for given example inputs.
+We apply the transformation via `transform(...)`, which outputs a `list(Graph, list(<any>))`, where the first element is the transformed graph and the second element is the (possibly transformed) abstract input values.
+The latter are needed when chaining multiple transformations, as a graph transformation might also modify the inputs of the `Graph`, such as the types (think of a `Vectorize`-like transformation).
+If a an R function is provided, then the transformation step will implicitly create the `Graph` from `Function` by passing the example inputs (`(...,)`) to `anvil::graphify()` and then apply the pure graph-transformation.
+
+```{r, eval = FALSE}
+x <- nv_scalar(1.0)
+y <- nv_scalar(2.0)
+g1 <- transform(f1, x, y)[[1L]]
+
+# is the same as:
+transform(gradient(graphify(f, x, y)))(x, y)[[1L]]
+```
+
+We can also build up chained transformations:
+
+```{r, eval = FALSE}
+f2 <- gradient(f1)
+```
+
+The output type is now:
+
+`(..., ) -> ((..., ) -> Graph)
+
+In order to obtain the actual transformed graph, we therefore need to recursively apply the transformations to the input graph, which is done by the `transform()` function.
+We can also apply them individually, by calling `transform(..., .recursive = FALSE)`.
+
+```{r, eval = FALSE}
+g21 <- transform(f2, x, y, .recursive = FALSE)
+g22 <- transform(g21$transformation, g21$inputs[[1]], g21$inputs[[2]], .recursive = FALSE)
+g22
+```
+
+Now we have seen how to transform graphs, but how can we do something with them?
+This is where the JIT-compilation step comes in.
+In principle, {anvil} allows for different backends that handle conversion of `Graph` objects to executables.
+Currently, we only have the `XLA` backend via the R package [pjrt](https://github.com/r-xla/pjrt) and [stablehlo](https://github.com/r-xla/stablehlo).
+
+In order to compile this function, we can convert the `Graph` to a `stablehlo::Func` object via `stablehlo()`.
+
+In this sense, `stablehlo()` is not a standard `Graph -> Graph` transformation, but a **lowering transformation**.
+
+```{r, eval = FALSE}
+func <- stablehlo(g22, list(x, y))
+func
+```
+
+We can now compile this `Func` object to an `XLA` executable via `pjrt_compile()`.
+
+```{r, eval = FALSE}
+library(pjrt)
+exec <- pjrt_compile(func)
+```
+
+And execute it:
+
+```{r, eval = FALSE}
+pjrt_execute(exec, x, y)
+```
+
+In order to allow for a more convenient user interface, `jit()` (or `xla()` ???) wraps this and also handles the caching of the compiled functions.
+
+TO CONTINNUE
+
+
+
+## Close Up View
+
+* Primitives
+* Tracing and Graph-building
+* Flattening
