@@ -1,3 +1,25 @@
+test_that("p_sine", {
+  x <- nv_tensor(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
+  out <- as_array(jit(nvl_sine)(x))
+  expect_equal(c(out), c(0, 1, 0, -1), tolerance = 1e-15)
+})
+
+test_that("p_cosine", {
+  x <- nv_tensor(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
+  out <- as_array(jit(nvl_cosine)(x))
+  expect_equal(c(out), c(1, 0, -1, 0), tolerance = 1e-15)
+})
+
+test_that("p_rng_bit_generator", {
+  f <- function() {
+    nv_rng_bit_generator(nv_tensor(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
+  }
+  g <- jit(f)
+  out <- g()
+  expect_equal(c(as_array(out[[1]])), c(1L, 6L))
+  expect_equal(as_array(out[[2]]), array(c(43444564L, 1672743891L, -315321645L, 2109414752L), c(2, 2)))
+})
+
 test_that("p_shift_left", {
   x <- nv_tensor(as.integer(c(1L, 2L, 3L, 8L)), dtype = "i32")
   y <- nv_tensor(as.integer(c(0L, 1L, 2L, 3L)), dtype = "i32")

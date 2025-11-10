@@ -211,6 +211,14 @@ p_tan[["jit"]] <- function(operand) {
   list(stablehlo::hlo_tan(operand))
 }
 
+p_sine[["jit"]] <- function(operand) {
+  list(stablehlo::hlo_sine(operand))
+}
+
+p_cosine[["jit"]] <- function(operand) {
+  list(stablehlo::hlo_cosine(operand))
+}
+
 p_floor[["jit"]] <- function(operand) {
   list(stablehlo::hlo_floor(operand))
 }
@@ -244,4 +252,10 @@ p_convert[["jit"]] <- function(operand, dtype) {
 
 p_select[["jit"]] <- function(pred, true_value, false_value) {
   list(stablehlo::hlo_select(pred, true_value, false_value))
+}
+
+# RNG jit rules --------------------------------------------------------
+
+p_rng_bit_generator[["jit"]] <- function(initial_state, rng_algorithm, dtype, shape_out) {
+  stablehlo::hlo_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out)
 }
