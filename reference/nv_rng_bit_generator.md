@@ -15,6 +15,14 @@ nv_rng_bit_generator(
 
 ## Arguments
 
+- initial_state:
+
+  state seed
+
+- rng_algorithm:
+
+  one of 'DEFAULT', 'THREE_FRY', 'PHILOX'
+
 - dtype:
 
   datatype of output
@@ -22,11 +30,3 @@ nv_rng_bit_generator(
 - shape_out:
 
   output shape
-
-- initial:
-
-  state seed
-
-- rng_alogorithm:
-
-  one of 'DEFAULT', 'THREE_FRY', 'PHILOX'

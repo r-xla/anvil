@@ -23,6 +23,8 @@
 <url><loc>/reference/nv_reduce_ops.html</loc></url>
 <url><loc>/reference/nv_reshape.html</loc></url>
 <url><loc>/reference/nv_rng_bit_generator.html</loc></url>
+<url><loc>/reference/nv_rnorm.html</loc></url>
+<url><loc>/reference/nv_runif.html</loc></url>
 <url><loc>/reference/nv_tensor.html</loc></url>
 <url><loc>/reference/nv_transpose.html</loc></url>
 <url><loc>/reference/nv_unary_ops.html</loc></url>
