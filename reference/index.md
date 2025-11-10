@@ -39,6 +39,7 @@
   [`nv_reduce_any()`](nv_reduce_ops.md)
   [`nv_reduce_all()`](nv_reduce_ops.md) : Reduction Operators
 - [`nv_reshape()`](nv_reshape.md) : Reshape
+- [`nv_rng_bit_generator()`](nv_rng_bit_generator.md) : Random Numbers
 - [`nv_tensor()`](nv_tensor.md) [`nv_scalar()`](nv_tensor.md)
   [`nv_empty()`](nv_tensor.md) : Tensor
 - [`nv_transpose()`](nv_transpose.md)
