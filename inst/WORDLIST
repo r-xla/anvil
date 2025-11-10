@@ -33,3 +33,7 @@ precisions
 pred
 ui
 vdots
+bayesian
+jax
+pjrt
+stableHLO
