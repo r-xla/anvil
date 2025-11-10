@@ -24,7 +24,7 @@ local_main <- function(
   if (length(globals$STACK) == 0L) {
     pop <- 1
     if (insert_jit) {
-      globals$STACK[[1L]] <- MainInterpreter(1L, JitInterpreter)
+      globals$STACK[[1L]] <- MainInterpreter(1L, HloInterpreter)
     }
   }
   pop <- c(pop, length(globals$STACK) + 1L)
@@ -80,13 +80,17 @@ is_box <- function(x) {
 }
 
 method(aval, Box) <- function(x) {
-  stop("Abstract method")
+  cli_abort("Abstract method")
 }
 
 #' @method shape anvil::Box
 #' @export
 `shape.anvil::Box` <- function(x, ...) {
   shape(aval(x))
+}
+
+method(print, Box) <- function(x, ...) {
+  cat(format(x), "\n")
 }
 
 
@@ -117,30 +121,31 @@ interprete <- function(prim, args, params = list()) {
 }
 
 
+# This function is called to increase the abstraction level to the provided interpreter
 full_raise <- function(interpreter, val) {
+  # Closed-over constants (constants captured via lexical scoping) or
+  # simply constants (like 1, 2L, ...)
   if (!inherits(val, Box)) {
-    # Closed-over constants (constants captured via lexical scoping) or
-    # simply constants (like 1, 2L, ...)
     if (is_nv_type(val)) {
       return(box(interpreter, val))
     }
     # our bottom of the stack interpreter is a jit interpreter
-    if (inherits(interpreter, JitInterpreter) && inherits(val, ShapedTensor)) {
+    if (inherits(interpreter, HloInterpreter) && inherits(val, ShapedTensor)) {
       # TODO(IMPORTANT): This needs to be done properly, just a hack
-      box <- JitBox(
+      box <- HloBox(
         func_var = FuncVariable(
           stablehlo::ValueId(),
           st2vt(val),
-          func = stablehlo::Func(id = stablehlo::FuncId("main"))
+          func = interpreter@main@global_data
         ),
         interpreter = interpreter
       )
       return(box)
     }
-    stop("Unsupported type: ", class(val)[1L])
+    cli_abort("Unsupported type: ", class(val)[1L])
   }
   level <- interpreter@main@level
-  if (identical(val@interpreter@main@interpreter_type, interpreter@main@interpreter_type)) {
+  if (identical(val@interpreter@main, interpreter@main)) {
     # val is at the same level as top level interpreter
     return(val)
   } else if (val@interpreter@main@level < level) {
@@ -153,9 +158,9 @@ full_raise <- function(interpreter, val) {
     # here, the variable y is at a lower level than x, because x is also transformed via grad()
     return(box(interpreter, val))
   } else if (val@interpreter@main@level > level) {
-    stop("Can't lift level ", val@interpreter@main@level, " to ", level, ".")
+    cli_abort("Can't lift level ", val@interpreter@main@level, " to ", level, ".")
   } else {
-    stop(
+    cli_abort(
       "Different traces at same level: ",
       val@interpreter@main@level,
       " and ",

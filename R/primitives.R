@@ -347,7 +347,29 @@ nvl_convert <- function(operand, dtype) {
 }
 
 # control flow primitives -------------------------------------------------------
+
 p_select <- Primitive("select")
 nvl_select <- function(pred, true_value, false_value) {
   interprete(p_select, list(pred, true_value, false_value))[[1L]]
+}
+
+p_if <- Primitive("if")
+nvl_if <- function(pred, true, false) {
+  true_expr <- rlang::enquo(true)
+  false_expr <- rlang::enquo(false)
+  true_fn <- flatten_fun(function() {
+    rlang::eval_tidy(true_expr)
+  })
+  false_fn <- flatten_fun(function() {
+    rlang::eval_tidy(false_expr)
+  })
+
+  true_out <- stablehlo(true_fn, list())
+  false_out <- stablehlo(false_fn, list())
+
+  if (!identical(true_out[[2L]], false_out[[2L]])) {
+    cli_abort("true and false must have the same output tree")
+  }
+  out <- interprete(p_if, list(pred), params = list(true = true_out[[1L]], false = false_out[[1L]]))
+  unflatten(true_out[[2L]], out)
 }
