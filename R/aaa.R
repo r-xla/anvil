@@ -20,7 +20,9 @@ NULL
 
 globals <- new.env()
 globals$nv_types <- "AnvilTensor"
-globals$interpretation_rules <- c("jit", "pullback", "graph")
+globals$interpretation_rules <- c("jit", "stablehlo", "pullback", "graph", "backward")
+globals[["GRAPH_STASH"]] <- list()
+globals[["CURRENT_GRAPH"]] <- NULL
 
 utils::globalVariables("globals")
 
@@ -34,3 +36,10 @@ aval <- S7::new_generic("aval", "x", function(x) {
 
 class_hashtab <- S7::new_S3_class("hashtab")
 class_node <- S7::new_S3_class("Node")
+
+
+Transformation <- new_class("Transformation")
+
+is_transformation <- function(x) {
+  inherits(x, "anvil::Transformation")
+}

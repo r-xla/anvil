@@ -48,9 +48,15 @@ method(print, Primitive) <- function(x, ...) {
   cat(sprintf("<Primitive:%s>\n", x@name))
 }
 
+p_graph_call <- Primitive("graph_call")
+nvl_graph_call <- function(..., .graph) {
+  # The only time where we actually call into the functions is when we build up the graph.
+  interprete(p_graph_call, list(..., .graph))[[1L]]
+}
+
 p_add <- Primitive("add")
 nvl_add <- function(lhs, rhs) {
-  interprete(p_add, list(lhs, rhs))[[1L]]
+  graph_call(p_add, list(lhs, rhs))[[1L]]
 }
 
 p_mul <- Primitive("mul")

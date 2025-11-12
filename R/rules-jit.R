@@ -1,11 +1,19 @@
 #' @include primitives.R
 #' @include interpreter-jit.R
 
-p_add[["jit"]] <- function(lhs, rhs) {
+p_graph_call[["stablehlo"]] <- function(.graph, ...) {
+  # TODO:
+  # The only way we can call into another graph is when we call into the result of a non-jitted
+  # transformation, such as
+  # jit(gradient((function(x) gradient(f)(x))))
+}
+
+# TODO: Here we don't have to do the type inference again, because it was already done.
+p_add[["stablehlo"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_add(lhs, rhs))
 }
 
-p_mul[["jit"]] <- function(lhs, rhs) {
+p_mul[["stablehlo"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_multiply(lhs, rhs))
 }
 

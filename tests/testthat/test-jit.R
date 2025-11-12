@@ -1,3 +1,32 @@
+test_that("hlo basic test", {
+  f <- function(x, y) {
+    x + y
+  }
+  tf <- stablehlo(f)
+  expect_class(tf, "anvil::StableHloTransformation")
+  func <- apply_transform(tf, list(nv_tensor(1), nv_tensor(2)))[[1L]]
+  expect_snapshot(repr(func))
+})
+
+test
+
+test_that("jit basic test", {
+  f <- function(x, y) {
+    x + y
+  }
+  f_jit <- jit(f)
+
+  expect_equal(
+    f_jit(nv_tensor(1), nv_tensor(2)),
+    nv_tensor(3)
+  )
+  # cache hit:
+  expect_equal(
+    f_jit(nv_tensor(1), nv_tensor(2)),
+    nv_tensor(3)
+  )
+})
+
 test_that("can return single tensor", {
   f <- jit(nvl_add)
   expect_equal(
@@ -6,7 +35,7 @@ test_that("can return single tensor", {
       nv_tensor(-2.0)
     ),
     nv_tensor(-1.0)
-  )
+)
 })
 
 test_that("can return nested list", {

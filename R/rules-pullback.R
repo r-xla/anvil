@@ -12,6 +12,12 @@ keep <- function(.required, ...) {
   )
 }
 
+p_graph_call[["pullback"]] <- function(primals, .graph, .required) {
+  .NotYetImplemented()
+  # Only for second-order derivatives, but currently anyway only for scalars, so postpone this for
+  # now.
+}
+
 p_add[["pullback"]] <- function(primals, .required) {
   lhs <- primals[[1L]]
   rhs <- primals[[2L]]

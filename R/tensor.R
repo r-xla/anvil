@@ -29,6 +29,10 @@ nv_tensor <- function(data, dtype = NULL, device = NULL, shape = NULL) {
   ensure_nv_tensor(x)
 }
 
+is_anvil_tensor <- function(x) {
+  inherits(x, "AnvilTensor")
+}
+
 ensure_nv_tensor <- function(x) {
   if (inherits(x, "AnvilTensor")) {
     return(x)

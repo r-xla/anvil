@@ -4,7 +4,7 @@
 #' @title Lower a function to StableHLO
 #' @description
 #' Immediately lower a flattened function to a StableHLO Func object.
-#' @param .f (`function`)\cr
+#' @param f (`function` | `Gr`)\cr
 #'   Flattened function to lower.
 #' @param .avals (`list()`)\cr
 #'   List of flattened abstract values (avals) for the function arguments.
@@ -14,28 +14,38 @@
 #'   - `func`: The StableHLO `Func` object
 #'   - `out_tree`: The output tree structure
 #' @export
-stablehlo <- function(.f, .avals) {
+stablehlo <- function(f, static = character()) {
+  StableHloTransformation(f, static)
+}
+
+LoweringTransformation <- new_class(
+  parent = Transformation,
+  "LoweringTransformation"
+)
+
+#' @include graph.R
+StableHloTransformation <- new_class(
+  "StableHloTransformation",
+  parent = LoweringTransformation,
+  properties = list(
+    input = class_function | Graph | GraphTransformation,
+    static = class_character
+  )
+)
+
+method(apply_transform, StableHloTransformation) <- function(gt, args) {
   func <- stablehlo::local_func(id = "main")
-  main <- local_main(HloInterpreter, global_data = func)
-  # TODO: better id
-  interpreter <- HloInterpreter(main = main, func = func)
-  boxes_in <- lapply(.avals, function(aval) {
-    if (!inherits(aval, "anvil::ShapedTensor")) {
-      # Non-ShapedTensors are static, pass through as-is
-      aval
-    } else {
-      # ShapedTensors are traced, wrap in HloBox
-      HloBox(st2fi(aval, func), interpreter = interpreter)
-    }
-  })
 
-  outs <- rlang::exec(.f, !!!boxes_in)
-  boxes_out <- lapply(outs[[2L]], full_raise, interpreter = interpreter)
-  func_vars_out <- lapply(boxes_out, \(box) box@func_var)
-  func <- do.call(stablehlo::hlo_return, func_vars_out)
+  fvars_in <- lapply(args, \(x) st2fv(x, func))
+  # TODO: StableHloBox
 
-  # Return both the func and the output tree structure
-  list(func = func, out_tree = outs[[1L]])
+  reducer <- function(prim, inputs, params) {
+    rlang::exec(prim[["stablehlo"]], !!!c(inputs, params))
+  }
+
+  fvars_out <- graph_reduce(gt@input, reducer, fvars_in)
+  func <- do.call(stablehlo::hlo_return, fvars_out)
+  list(func, gt@input@out_tree)
 }
 
 #' @title JIT compile a function
@@ -52,7 +62,62 @@ stablehlo <- function(.f, .avals) {
 #'   The size of the cache for the jit-compiled functions.
 #' @return (`function`)
 #' @export
-jit <- function(f, static = character(), device = NULL, cache_size = 100L) {
+jit <- function(f, static = character(), device = NULL, cache_size = 100L, backend) {
+  device <- device %??% Sys.getenv("PJRT_PLATFORM", "cpu")
+  cache <- xlamisc::LRUCache$new(cache_size)
+  assert_subset(static, formalArgs2(f))
+  device_str <- as.character(device)
+
+  tf <- stablehlo(f, static)
+
+  f_jit <- function() {
+    args <- as.list(match.call())[-1L]
+    args <- lapply(args, eval, envir = parent.frame())
+    in_node <- build_tree(mark_some(args, static))
+    args_flat <- flatten(args)
+    is_static_flat <- in_node$marked
+
+    call_xla <- function(exec, out_node, args_flat, is_static_flat) {
+      args_nonstatic <- args_flat[!is_static_flat]
+      out_vals <- rlang::exec(
+        pjrt::pjrt_execute,
+        exec,
+        !!!args_nonstatic,
+        simplify = FALSE
+      )
+      out_vals <- lapply(out_vals, nv_tensor)
+      unflatten(out_node, out_vals)
+    }
+
+    avals_in <- Map(function(x, is_static) {
+      if (is_static) {
+        x
+      } else {
+        if (platform(x) != device_str) {
+          cli_abort("Expected device {device_str}, but buffer has device {platform(x)}")
+        }
+        raise_to_shaped(aval(x))
+      }
+    }, args_flat, is_static_flat)
+
+    cache_hit <- cache$get(avals_in)
+    if (!is.null(cache_hit)) {
+      call_xla(cache_hit[[1]], cache_hit[[2]], args_flat, is_static_flat)
+    }
+    # TODO: Can we also pass the avals here already? I think it should be possible
+    out <- apply_transform(tf, args_flat)
+    src <- stablehlo::repr(out[[1L]])
+    program <- pjrt_program(src = src, format = "mlir")
+    exec <- pjrt_compile(program)
+    cache$set(avals_in, list(exec, out[[2L]]))
+    call_xla(exec, out[[2L]], args_flat, is_static_flat)
+  }
+  formals(f_jit) <- formals2(f)
+  f_jit
+}
+
+
+jit2 <- function(f, static = character(), device = NULL, cache_size = 100L) {
   device <- device %??% Sys.getenv("PJRT_PLATFORM", "cpu")
   cache <- xlamisc::LRUCache$new(cache_size)
   assert_subset(static, formalArgs2(f))

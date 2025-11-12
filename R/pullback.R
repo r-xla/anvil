@@ -1,43 +1,18 @@
-#' @include interpreter.R
-#' @include type-conversion.R
-
-PullbackNode <- S7::new_class(
-  "PullbackNode",
+GradientTransformation <- new_class("GradientTransformation",
+  parent = GraphTransformation,
   properties = list(
-    pullback = class_function | NULL,
-    # List of PullbackNode, but see: https://github.com/RConsortium/S7/issues/565
-    parents = list_of(new_class("PullbackNode")),
-    id = class_environment,
-    required = class_logical
-  ),
-  constructor = function(pullback, parents, id, required = FALSE) {
-    S7::new_object(
-      S7::S7_object(),
-      pullback = pullback,
-      parents = parents,
-      id = zero_env(),
-      required = required
-    )
-  }
-)
-
-PullbackTransformation <- new_class("PullbackTransformation",
-  properties = list(
-    wrt = list_of(class_character)
+    wrt = class_character
   )
 )
 
-#' @return `Graph`
-#' @include graph.R
-method(transform, PullbackTransformation) <- function(x, wrt, .args = NULL) {
-  if (!is_graph(x)) {
-    if (is.null(args)) {
-      cli_abort("Need to provide args if 'x' is not yet a graph")
-    }
-    graph <- do.call(graphify, c(list(.f = x), args))
-  }
+method(apply_transform, GradientTransformation) <- function(gt, args) {
+  # this is the forward graph
+  graph <- gt@input
 
-  out_vars <- output_vars(graph)
+  # the thing here is that we don't have to compute the forward graph anymore, because
+  # we already know the graph.
+  # TODO: We still have to handle `wrt`, but we ignore it for now.
+  out_vars <- graph@outputs
 
   if (length(out_vars) != 1L) {
     cli_abort("Pullback can only be computed for functions that return a single output")
@@ -46,63 +21,18 @@ method(transform, PullbackTransformation) <- function(x, wrt, .args = NULL) {
   if (shape(out@aval) != integer()) {
     cli_abort("Pullback can only be computed for functions that return a scalar")
   }
-  # Now we need to:
-  # 1. Create a new graph that represents the backward pass
-  #    We can use the existin logic for this I think.
-  # 2. Append the new graph to the existing graph
-  # 3. Return the extended graph.
+  # TODO: Check for float
 
-  # We should pay attention that we can do this properly for `if`, as this is
-  # the reason we started this refactor in the first place.
+  # TODO: Can we really modify the graph in place?
+  # I don't think so, because we  might call twice
+  # --> Need to create a graph copy here maybe
+  graph <- clone(graph)
 
-  # compute wrt flat
-  in_tree <- graph@in_tree
-
-  # TODO: I don't think we need the marking anymore
-  wrt_flat <- Reduce(c, lapply(seq_along(in_tree$nodes), \(i) {
-    wrt_i <- in_tree$names[[i]] %in% wrt
-    rep(wrt_i, times = tree_size(in_tree$nodes[[i]]))
-  }))
-  # TODO: This assumes that the invars are sorted like the nodes.
-  # We need to ensure this in graphify
-
-  invars <- input_vars(graph)
-  if (length(wrt_flat) != invars) {
-    cli_abort("internal error")
-  }
-
-  #
-  for (i in seq_along(invars)) {
-    invars[[i]]@state <- list(required = wrt_flat[i])
-  }
+  # TODO: So far we don't handle constants properly, need to do this before autodiff
+  # works
+  grad_env[[out]] <- ConcreteTensor(nv_scalar(1L, dtype = dtype(out)))
 
 
-  for (call in graph@calls) {
-    out <- do.call(call@primitive[["pullback"]], c(
-      list(call[["inputs"]], call[["params"]])
-    ))
-    outvals <- out[[1L]]
-    backward_fns <- out[[2L]]
-
-    # set the outputs
-    for (i in seq_along(outvals)) {
-      call@outputs[[i]]@state <- outvals[[i]]
-    }
-
-    for (i in seq_along(call@outputs)) {
-      call@outputs[[i]]@state$backward_fns <- backward_fns
-    }
-  }
-
-  node_map <- hashtab()
-  node_map[[node_id(out)]] <- gradient
-
-  # 1. Reverse the topological sorting
-  # 2. Prune it to compute only the backward ops that
-  #    are needed for the required roots.
-  #    This is important when we only want gradients of a subset of the inputs.
-
-  # here we essentially need backward_pass
   add_or_init <- function(grad1, grad2) {
     if (is.null(grad1)) {
       return(grad2)
@@ -110,304 +40,31 @@ method(transform, PullbackTransformation) <- function(x, wrt, .args = NULL) {
     nvl_add(grad1, grad2)
   }
 
-  grad <- nv_scalar(1L, dtype = dtype(out), shape = shape(out))
-
-  # Now we simply reverse the calls
   for (call in rev(graph@calls)) {
-    for (output in call@outputs) {
-      backward_fns <- output@state$backward_fns
-      backward_fns(grad)
+    required <- call@required
+    output_grads <- lapply(call@outputs, \(output) grad_env[[output]])
+    input_grads <- rlang::exec(call@primitive[["backward"]], call@inputs, call@outputs, output_grads, .required = call@required)
+    for (i in seq_along(call@inputs)[required]) {
+      input_gvar <- call@inputs[[i]]
+      grad_env[[input_gvar]] <- add_or_init(grad_env[[input_gvar]], input_grads[[i]])
     }
-    backward_fns <- call@outputs[[i]]@state$backward_fns
   }
+  lapply(graph@inputs, \(input) grad_env[[input]])
 }
 
-
-node_id <- function(node) {
-  rlang::obj_address(node)
-}
-
-#' @title Gradient of a function
-#' @description
-#' Compute the gradient of a function using reverse mode automatic differentiation.
-#' Output must be a 0-dimensional tensor.
-#' @param f (`function`)
-#' @param wrt (`character()`)
-#'   Names of arguments to differentiate with respect to. If `NULL`,
-#'   compute gradients w.r.t. all differentiable arguments.
-#' @return (`function`)
-#' @export
-gradient <- function(f, wrt = NULL) {
+gradient <- function(f, wrt = character()) {
+  gt <- GradientTransformation(f, wrt)
   f_gradient <- function() {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
-    if (!is.null(wrt)) {
-      assert_subset(wrt, formalArgs2(f))
-    }
-    out <- rlang::exec(pullback2, f, !!!args, wrt = wrt)
-    g <- out[[2L]]
-    y <- out[[1L]]
 
-    if (!identical(shape(y), integer())) {
-      cli_abort("Function must return a scalar")
-    }
-    # TODO: Assert float
 
-    # TODO: check shape
 
-    one <- nv_scalar(1L, dtype = dtype(y))
-    grad <- g(one)
+    g <- graphify(f, args)
 
-    return(grad)
+    grad_graph <- gradient_transform(gt, args)
+    rlang::exec(nvl_graph_call, !!!args, .graph = grad_graph)
   }
-  # args() is needed for primitives, as they don't have formals
   formals(f_gradient) <- formals2(f)
   return(f_gradient)
 }
-
-is_pullback_node <- function(x) {
-  inherits(x, "anvil::PullbackNode")
-}
-
-is_pullback_box <- function(x) {
-  inherits(x, "anvil::PullbackBox")
-}
-
-pullback2 <- function(f, ..., wrt = NULL) {
-  main <- local_main(PullbackInterpreter)
-  interpreter <- PullbackInterpreter(main)
-
-  # TODO: Can we use graphify here?
-
-  if (!is.null(wrt)) {
-    assert_subset(wrt, formalArgs2(f))
-  } else {
-    wrt <- formalArgs2(f)
-  }
-  cl <- as.call(c(quote(f), list(...)))
-  # primitives "normally" match by position
-  args <- if (!is.primitive(f)) {
-    as.list(match.call(definition = f, call = cl))[-1L]
-  } else {
-    list(...)
-  }
-
-  args_flat <- flatten(args)
-  in_node <- build_tree(mark_some(args, wrt))
-  is_required_flat <- if (is.null(wrt)) rep(TRUE, length(args_flat)) else in_node$marked
-  f_flat <- rlang::exec(flatten_fun, f, in_node = in_node)
-
-  # It would be cool if we could just use graphify here and then interpreter the graph
-  # with a special interpretation rule.
-  # Maybe we could also embedd the flattening in graphify, so we don't have this code
-  # everywhere
-
-  # The inputs are root nodes, because they have no parents
-  boxes_in <- Map(
-    function(arg, req) {
-      if (is_box(arg)) {
-        PullbackBox(interpreter, arg, PullbackNode(NULL, list(), required = req))
-      } else {
-        # These are static arguments
-        arg
-      }
-    },
-    args_flat,
-    is_required_flat
-  )
-
-  out_flat <- rlang::exec(f_flat, !!!boxes_in)
-
-  box_out <- rlang::exec(unflatten, !!!out_flat)
-
-  in_nodes <- lapply(boxes_in, \(box) if (is_pullback_box(box)) box@node else box)
-  # TODO: Here we should allow for all sorts of output structures so we can make nvl_if work.
-  out_node <- box_out@node
-
-  # TODO: Crate
-  f <- function(grad) {
-    outs_flat <- backward_pass(in_nodes, out_node, grad)
-    out <- rlang::exec(unflatten, in_node, outs_flat)
-    out <- out[sapply(out, \(x) !is.null(x))]
-    out
-  }
-
-  list(
-    box_out@primal,
-    f
-  )
-}
-
-# @title Pullback of a function
-# @description
-# Compute the pullback (transposed derivative) of a function.
-# @param f (`function`)\cr
-#   Function to compute the pullback of.
-# @param ... (`any`)\cr
-#   Example arguments to pass to the function.
-# @param wrt (`character()`)
-#   Names of arguments to differentiate with respect to. If `NULL`,
-#   compute gradients w.r.t. all differentiable arguments.
-# @return (`function`)
-#pullback <- function(f, ..., wrt = NULL) {
-#  args <- list(...)
-#  if (!is.null(wrt)) {
-#    assert_subset(wrt, formalArgs2(f))
-#  }
-#  function(contangent) {
-#    grad <- rlang::exec(pullback2, f, !!!args, wrt = wrt)[[2L]]
-#    rm("args", envir = parent.env(environment())) # Only needed for the first call
-#    grad(contangent)
-#  }
-#}
-
-# Backward is essentially implemented like in pytorch or microjax
-
-backward_pass2 <- function(graph, out_node, gradient) {
-  node_map <- hashtab()
-  add_or_init <- function(grad1, grad2) {
-    if (is.null(grad1)) {
-      return(grad2)
-    }
-    nvl_add(grad1, grad2)
-  }
-
-  for (call in rev(graph@calls)) {
-    for (output in call@outputs) {
-      backward_fns <- output@state$backward_fns
-      backward_fns(grad)
-    }
-    backward_fns <- call@outputs[[i]]@state$backward_fns
-  }
-
-}
-
-# TODO: Support out_nodes and not only a single one
-backward_pass <- function(in_nodes, out_node, gradient, node_map = NULL) {
-  if (is.null(node_map)) {
-    node_map <- hashtab()
-  }
-  node_map[[node_id(out_node)]] <- gradient
-
-  # 1. Reverse the topological sorting
-  # 2. Prune it to compute only the backward ops that
-  #    are needed for the required roots.
-  #    This is important when we only want gradients of a subset of the inputs.
-
-  add_or_init <- function(grad1, grad2) {
-    if (is.null(grad1)) {
-      return(grad2)
-    }
-    nvl_add(grad1, grad2)
-  }
-
-  topo_sorted <- reverse_toposort(out_node)
-  # walk from leaf to root
-  for (node in topo_sorted) {
-    node_grad <- node_map[[node_id(node)]]
-    closures <- node@pullback(node_grad)
-    if (length(closures)) {
-      for (i in seq_along(closures)) {
-        cl <- closures[[i]]
-        if (is.null(cl)) {
-          next
-        }
-        parent_id <- node_id(node@parents[[i]])
-        contrib <- cl()
-        node_map[[parent_id]] <- add_or_init(
-          node_map[[parent_id]],
-          contrib
-        )
-      }
-    }
-  }
-  outs <- lapply(seq_along(in_nodes), function(i) {
-    if (!is_pullback_node(in_nodes[[i]])) {
-      # static argument
-      return(NULL)
-    }
-    node <- in_nodes[[i]]
-    if (node@required) node_map[[node_id(node)]] else NULL
-  })
-  outs
-}
-
-reverse_toposort <- function(end_node) {
-  .toposort <- function(seen, node) {
-    result <- list()
-    if (!(set_has(seen, node_id(node)))) {
-      set_add(seen, node_id(node))
-      for (parent in node@parents) {
-        result <- c(result, .toposort(seen, parent))
-      }
-      result <- c(result, list(node))
-    }
-    return(result)
-  }
-  x <- .toposort(set(), end_node)
-  # Remove root nodes, because they don't have a grad
-  # function. There we want to collect the gradients
-  rev(x[sapply(x, \(node) length(node@parents) > 0L)])
-}
-
-PullbackInterpreter <- new_class(
-  "PullbackInterpreter",
-  parent = Interpreter
-)
-
-method(process_primitive, PullbackInterpreter) <- function(
-  interpreter,
-  prim,
-  boxes,
-  params
-) {
-  primals_in <- lapply(boxes, \(box) box@primal)
-  nodes_in <- lapply(boxes, \(box) box@node)
-  req_in <- vapply(nodes_in, function(n) n@required, logical(1))
-  out <- rlang::exec(prim[["pullback"]], primals = primals_in, .required = req_in, !!!params)
-  primals_out <- out[[1L]]
-  pullback_out <- out[[2L]]
-  node_out <- PullbackNode(pullback_out, nodes_in, required = any(req_in))
-  # they all have the same node, because they are computed by the same op
-  lapply(primals_out, \(primal) PullbackBox(interpreter, primal, node_out))
-}
-
-PullbackBox <- new_class(
-  "PullbackBox",
-  parent = Box,
-  properties = list(
-    # TODO: What type is this?
-    primal = class_any,
-    node = PullbackNode
-  )
-)
-
-method(box, list(PullbackInterpreter, class_any)) <- function(interpreter, x) {
-  PullbackBox(
-    interpreter = interpreter,
-    primal = x,
-    node = PullbackNode(NULL, list(), required = FALSE)
-  )
-}
-
-method(aval, PullbackBox) <- function(x) {
-  x@primal
-}
-
-method(print, PullbackBox) <- function(x, ...) {
-  cat(format(x), "\n")
-}
-
-method(format, PullbackBox) <- function(x, ...) {
-  sprintf("PullbackBox(%s)", format(x@primal))
-}
-
-
-f <- function(x, y) {
-  y
-}
-
-g <- jit(gradient(f, wrt = c("x", "y")))
-
-
-g(nv_scalar(1), nv_scalar(2))

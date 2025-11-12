@@ -68,12 +68,7 @@ box <- S7::new_generic("box", c("interpreter", "x"), function(interpreter, x) {
 
 
 # The object an Interpreter operates on
-Box <- S7::new_class(
-  "Box",
-  properties = list(
-    interpreter = Interpreter
-  )
-)
+Box <- S7::new_class("Box")
 
 is_box <- function(x) {
   inherits(x, "anvil::Box")
@@ -112,6 +107,9 @@ method(full_lower, class_any) <- function(x) {
 }
 
 
+# TODO: I don't think we need this anymore.
+# Only graphify needs to do this, the rest just operates on Graphs and the inputs
+# Are already on the right abstraction level
 # same as bind() in jax
 interprete <- function(prim, args, params = list()) {
   interpreter <- current_interpreter(args)

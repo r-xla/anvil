@@ -1,3 +1,26 @@
+f <- func(x, y, {
+
+})
+
+test_that("basic pullback test", {
+  f <- function(x, y) {
+    nvl_add(x, y)
+  }
+  g <- stablehlo(gradient(f))
+  out <- f_grad(nv_scalar(1.0), nv_scalar(2.0))
+  expect_equal(out[[1L]], nv_scalar(1.0))
+  expect_equal(out[[2L]], nv_scalar(1.0))
+})
+
+# What happens here when tracing?
+# gradient(h) becomes a function that:
+# 1. Generates a graph
+# 2. Calls into this graph (p_call_graph) with its inputs.
+f <- function(x, y) {
+  g <- gradient(h)
+  g(x, y)
+}
+
 test_that("simple function works (scalar)", {
   f_grad <- jit(gradient(nvl_mul))
 

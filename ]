@@ -1,12 +1,9 @@
-
-
 #' @title Graph Variable
 #' @description
 #' Variable in a [`Graph`].
 #' @section Fields:
 #' * `state` :: (`any`)\cr
 #'   The state of the variable. Populated when the graph is executed.
-#' @include mut.R
 GraphVariable <- mut(new_class(
   "GraphVariable",
   properties = list(
@@ -18,10 +15,10 @@ is_graph_variable <- function(x) {
   inherits(x, "anvil::mut<GraphVariable>")
 }
 
+
 #' @title Primitive Call
 #' @description
-#' Call of a primitive in a [`Graph`]
-#' Note that a primitive call also be a call into another graph (`p_graph`).
+#' Call of a primitive in a [`Graph`].
 #' @section Fields:
 #' * `primitive` :: ([`Primitive`])\cr
 #'   The function.
@@ -43,23 +40,8 @@ PrimitiveCall <- new_class(
   )
 )
 
-# TODO: Nicer
-method(format, PrimitiveCall) <- function(x, ...) {
-  inputs <- paste(lapply(x@inputs, \(x) format(x@aval)), collapse = ", ")
-  outputs <- paste(lapply(x@outputs, \(x) format(x@aval)), collapse = ", ")
-  sprintf("%s(%s, %s params) -> %s", x@primitive@name, inputs, length(x@params), outputs)
-}
-
-
-method(print, PrimitiveCall) <- function(x, ...) {
-  cat(format(x), "\n")
-}
-
-# This is like hlo_return, but for graphs
-# It discards the current graph
-graph_return <- function(graph, outputs, out_tree) {
+set_graph_outputs <- function(graph, outputs) {
   graph@outputs <- outputs
-  graph@out_tree <- out_tree
   maybe_restore_previous_graph(graph)
   graph
 }
@@ -102,8 +84,8 @@ maybe_restore_previous_graph <- function(graph = NULL) {
 #'   [`Graph`] if it was not returned yet.
 #' @return A [`Graph`] object.
 #' @export
-local_graph <- function(..., envir = parent.frame()) {
-  graph <- Graph(...)
+local_graph <- function(envir = parent.frame()) {
+  graph <- Graph()
   if (!is.null(globals[["CURRENT_GRAPH"]])) {
     globals[["GRAPH_STASH"]] <- c(
       globals[["GRAPH_STASH"]],
@@ -141,7 +123,7 @@ local_graph <- function(..., envir = parent.frame()) {
 #'   The outputs of the graph.
 #'
 #' @export
-Graph <- mut(new_class(
+Graph <- new_class(
   "Graph",
   properties = list(
     # Primitive: list(GraphVariable) --[params]--> list(GraphVariable)
@@ -154,52 +136,46 @@ Graph <- mut(new_class(
     inputs = list_of(GraphVariable),
     outputs = list_of(GraphVariable)
   )
-))
+)
 
-
-eval_primitive_call <- function(call, mode, env) {
-  in_vals <- lapply(call@inputs, \(x) env[[x]])
-  out_vals <- do.call(call@primitive[[mode]], in_vals)
-
-  for (i in seq_along(out_vals)) {
-    env[[call@outputs[[i]]]] <- out_vals[[i]]
+eval_primitive_call <- function(.call) {
+  outputs <- do.call(call@primitive[["graph"]], lapply(call@inputs, \(x) x@state))
+  for (i in seq_along(outputs)) {
+    call@outputs[[i]]@aval <- outputs[[i]]
   }
 }
 
-graph_reduce <- function(graph, reducer, args) {
-  env <- hashtab()
-
+graph_reduce <- function(.graph, ...) {
+  args <- list(...)
   args_flat <- flatten(args)
 
-  if (length(args_flat) != length(graph@inputs)) {
-    cli_abort("Expected {length(graph@inputs)} arguments, but got {length(args_flat)}")
+  if (length(args_flat) != length(.graph@inputs)) {
+    cli_abort("Expected {length(.graph@inputs)} arguments, but got {length(args_flat)}")
   }
 
   # bind inputs
   for (i in seq_along(args_flat)) {
-    env[[graph@inputs[[i]]]] <- args_flat[[i]]
+    .graph@inputs[[i]]@aval <- args_flat[[i]]
   }
 
-  for (call in graph@calls) {
-    inputs <- lapply(call@inputs, \(x) env[[x]])
-    output_vals <- reducer(call@primitive, inputs, call@params)
-    for (i in seq_along(output_vals)) {
-      env[[call@outputs[[i]]]] <- output_vals[[i]]
-    }
+  for (.call in .graph@calls) {
+    eval_primitive_call(.call)
   }
 
-  lapply(graph@outputs, \(x) env[[x]])
+  outs_flat <- lapply(.call@outputs, \(x) x@aval)
+
+  unflatten(.graph@out_tree, outs_flat)
 }
 
-graph_to_function <- function(graph, class = NULL) {
+graph_to_function <- function(.graph, .class = NULL) {
   structure(function(...) {
-    graph_reduce(graph, list(...))
-  }, class = c(class, "anvil::GraphFunction"))
+    graph_reduce(.graph, list(...))
+  }, class = c(.class, "anvil::GraphFunction"))
 }
 
 
 is_graph <- function(x) {
-  inherits(x, "anvil::mut<Graph>")
+  inherits(x, "anvil::Graph")
 }
 
 #' @title Graph Transformation
@@ -208,10 +184,8 @@ is_graph <- function(x) {
 #' To apply such a (chained) transformation, use [`apply_transform()`].
 #' @export
 GraphTransformation <- new_class("GraphTransformation",
-  parent = Transformation,
   properties = list(
-    # TODO: Remove GraphTransformation here?
-    input = class_function | Graph | new_class("GraphTransformation")
+    input = class_function | new_S3_class("anvil::GraphTransformation")
   )
 )
 
@@ -245,14 +219,11 @@ is_graph_transformation <- function(x) {
 #'   The transformed graph(-transformation) and (possibly transformed) input values.
 #' @export
 apply_transform <- new_generic("transform", "gt", function(gt, args) {
-  if (is_transformation(gt@input)) {
+  if (is_graph_transformation(gt)) {
     Recall(do.call(apply_transform, gt@input), args)
   }
-  # TODO(optional, cleaner): Maybe graphify should instead be inserted as its own transformation
-  if (!is_graph(gt@input)) {
-    out <- graphify(gt@input, args)
-    gt@input <- out[[1L]]
-    args <- out[[2L]]
+  if (!is_graph_transformation(gt)) {
+    gt <- graphify(gt, args)
   }
   S7::S7_dispatch()
 })
@@ -274,39 +245,34 @@ GraphBox <- new_class(
   )
 )
 
-is_graph_box <- function(x) {
-  inherits(x, "anvil::GraphBox")
-}
-
-graph_call <- function(prim, args, params = list()) {
-  graph <- .current_graph()
-  gvars_in <- lapply(args, \(arg) {
-    if (is_anvil_tensor(arg)) {
-      # Constants
-      .NotYetImplemented()
-    }
-    if (is_graph_box(arg)) {
-      if (identical(arg@graph, graph)) {
-        return(arg@gvar)
-      } else {
-        return(GraphVariable(aval(arg), graph))
-      }
-    }
-    cli_abort("Unsupported type: {class(arg)[1L]}")
-  })
-
-  avals_in <- lapply(gvars_in, aval)
-  args <- lapply(avals_in, \(aval) st2vt(aval))
-  outputs <- rlang::exec(prim[["graph"]], !!!c(args, params))
-
-  outputs <- lapply(outputs, vt2st)
-  gvars_out <- lapply(outputs, GraphVariable)
-  call <- PrimitiveCall(prim, params, gvars_in, gvars_out)
+append_primitive_call <- function(graph, call) {
   graph@calls <- c(graph@calls, call)
-
-  lapply(gvars_out, GraphBox, graph = graph)
+  graph
 }
 
+method(process_primitive, GraphInterpreter) <- function(
+  interpreter,
+  prim,
+  boxes,
+  params
+) {
+  avals_in <- lapply(boxes, aval)
+  outputs <- rlang::exec(prim[["graph"]], !!!c(avals_in, params))
+
+  gvars_out <- lapply(outputs, GraphVariable)
+  gvars_in <- lapply(boxes, \(b) b@gvar)
+
+  # Here, we need to determine graph
+  # Ideally, I would like to do this from the inputs.
+
+
+  # in-place modification
+  append_primitive_call(interpreter@main@global_data,
+    PrimitiveCall(prim, params, gvars_in, gvars_out)
+  )
+
+  lapply(gvars_out, GraphBox, interpreter = interpreter)
+}
 
 # f <- function(x, y, type) {
 #   if (type == "mul") {
@@ -318,16 +284,17 @@ graph_call <- function(prim, args, params = list()) {
 # Let's say we do jit(gradient(f, wrt = "x"), static = "type")
 # The problem is that
 
-graphify <- function(f, args) {
+graphify <- function(.f, ...) {
   # The output graph here still contains static inputs I think.
   # Maybe one does not even have to specify this explicitly but just treat all the
   # AnvilTensor inputs as non-static and everything else as static.
   # TODO: flattening
+  args <- list(...)
   args_flat <- flatten(args)
-  in_tree <- build_tree(args)
-  f_flat <- flatten_fun(f, in_node = in_tree)
+  in_tree <- build_tree(args_flat)
+  f_flat <- flatten_fun(.f, in_node = in_tree)
 
-  graph <- local_graph(in_tree = in_tree)
+  graph <- Graph(in_tree = in_tree)
 
   gvars <- lapply(args_flat, \(x) {
     if (is_anvil_tensor(x)) {
@@ -339,7 +306,9 @@ graphify <- function(f, args) {
     }
   })
 
-  gboxes <- lapply(gvars, GraphBox, graph = graph)
+  main <- local_main(GraphInterpreter)
+  interpreter <- GraphInterpreter(main = main)
+  gboxes <- lapply(gvars, GraphBox, interpreter = interpreter)
 
   # TODO(maybe): remove 'static' argument from jit, as we assume here
   # that every non-AnvilTensor is static.
@@ -350,14 +319,21 @@ graphify <- function(f, args) {
   out_tree <- out[[1L]]
   outputs <- out[[2L]]
 
-  if (any(vapply(outputs, \(x) !is_graph_box(x), logical(1L)))) {
-    cli_abort("Function .f must return only objects of type `GraphBox`.")
+  if (any(outputs, vapply(outputs, \(x) !is_graph_variable(x), logical(1L)))) {
+    cli_abort("Function .f must return only `AnvilTensor`s")
   }
 
-  graph_return(graph, lapply(outputs, \(box) box@gvar), out_tree)
+  graph@out_tree <- out_tree
+  graph@outputs <- outputs
 
 
-  inputs <- lapply(graph@inputs, aval)
+  inputs <- lapply(gvars, \(x) {
+    if (is_anvil_tensor(x@type)) {
+      x@aval
+    } else {
+      x
+    }
+  })
 
   list(graph, inputs)
 }
@@ -412,9 +388,4 @@ method(format, GraphBox) <- function(x) {
 
 method(print, GraphBox) <- function(x) {
   cat(format(x), "\n")
-}
-
-
-method(aval, GraphVariable) <- function(x) {
-  x@aval
 }
