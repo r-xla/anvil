@@ -470,15 +470,26 @@ nv_rng_bit_generator <- nvl_rng_bit_generator
 #' @param lower lower bound
 #' @param upper upper bound
 #' @export
-nv_runif <- function(initial_state, shape_out, lower = 0, upper = 1) {
-  rbits <- nv_rng_bit_generator(initial_state = initial_state, "THREE_FRY", "ui64", shape_out = shape_out)
-  lhs <- nv_convert(rbits[[2]], "f64")
-  rhs <- nv_tensor(rep(2^64 - 1, prod(shape_out)), dtype = "f64", shape = shape_out)
+nv_runif <- function(initial_state, dtype = "f64", shape_out, lower = 0, upper = 1) {
+  checkmate::assertChoice(dtype, c("f32", "f64"))
+  checkmate::assertNumeric(lower, len = 1, any.missing = FALSE, upper = upper)
+  checkmate::assertNumeric(upper, len = 1, any.missing = FALSE, lower = lower)
+  checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
+  rbits <- nv_rng_bit_generator(
+    initial_state = initial_state,
+    "THREE_FRY",
+    paste0("ui", sub("f(\\d+)", "\\1", dtype)),
+    shape_out = shape_out
+  )
+  lhs <- nv_convert(rbits[[2]], dtype = dtype)
+  rhs <- nv_scalar(ifelse(dtype == "f64", 2^64 - 1, 2^32 - 1), dtype = dtype)
   U <- nv_div(lhs, rhs)
-  range <- nv_tensor(rep((upper - lower), prod(shape_out)), dtype = "f64", shape = shape_out)
-  U <- nv_mul(U, range)
-  U <- nv_add(nv_tensor(rep(lower, prod(shape_out)), dtype = "f64", shape = shape_out), U)
-  list(rbits[[1]], U)
+  if (lower != 0 | upper != 1) {
+    range <- nv_scalar(upper - lower, dtype = dtype)
+    U <- nv_mul(U, range)
+    U <- nv_add(nv_scalar(lower, dtype = dtype), U)
+  }
+  return(list(rbits[[1]], U))
 }
 
 #' @title Random Normal Numbers
