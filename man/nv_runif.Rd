@@ -4,10 +4,12 @@
 \alias{nv_runif}
 \title{Random Uniform Numbers}
 \usage{
-nv_runif(initial_state, shape_out, lower = 0, upper = 1)
+nv_runif(initial_state, dtype = "f64", shape_out, lower = 0, upper = 1)
 }
 \arguments{
 \item{initial_state}{state seed}
+
+\item{dtype}{output dtype either "f32" or "f64"}
 
 \item{shape_out}{output shape}
 

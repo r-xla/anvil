@@ -22,12 +22,16 @@ test_that("p_rng_bit_generator", {
 
 test_that("nv_runif", {
   f <- function() {
-    nv_runif(nv_tensor(c(1, 2), dtype = "ui64"), shape_out = c(2, 3), lower = -1, upper = 1)
+    nv_runif(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape_out = c(2, 3), lower = -1, upper = 1)
   }
   g <- jit(f)
   out <- g()
-  expect_equal(c(as_array(out[[1]])), c(1L, 8L))
-  expect_equal(as_array(out[[2]]), array(c(0.0015, -0.7118, 0.7442, 0.7808, 0.9746, 0.7480), c(2, 3)), tolerance = 1e-4)
+  expect_equal(c(as_array(out[[1]])), c(1L, 5L))
+  expect_equal(
+    as_array(out[[2]]),
+    array(c(-0.9798, 0.0015, 0.8532, 0.7442, -0.2211, 0.9746), c(2, 3)),
+    tolerance = 1e-4
+  )
 })
 
 test_that("p_shift_left", {

@@ -466,6 +466,7 @@ nv_rng_bit_generator <- nvl_rng_bit_generator
 #' @description
 #' generate random uniform numbers
 #' @param initial_state state seed
+#' @param dtype output dtype either "f32" or "f64"
 #' @param shape_out output shape
 #' @param lower lower bound
 #' @param upper upper bound
