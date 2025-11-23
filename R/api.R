@@ -476,6 +476,7 @@ nv_runif <- function(initial_state, dtype = "f64", shape_out, lower = 0, upper =
   checkmate::assertNumeric(lower, len = 1, any.missing = FALSE, upper = upper)
   checkmate::assertNumeric(upper, len = 1, any.missing = FALSE, lower = lower)
   checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
+  range <- upper - lower
   rbits <- nv_rng_bit_generator(
     initial_state = initial_state,
     "THREE_FRY",
@@ -485,9 +486,10 @@ nv_runif <- function(initial_state, dtype = "f64", shape_out, lower = 0, upper =
   lhs <- nv_convert(rbits[[2]], dtype = dtype)
   rhs <- nv_scalar(ifelse(dtype == "f64", 2^64 - 1, 2^32 - 1), dtype = dtype)
   U <- nv_div(lhs, rhs)
-  if (lower != 0 | upper != 1) {
-    range <- nv_scalar(upper - lower, dtype = dtype)
-    U <- nv_mul(U, range)
+  if (range != 1) {
+    U <- nv_mul(U, nv_scalar(range, dtype = dtype))
+  }
+  if (lower != 0) {
     U <- nv_add(nv_scalar(lower, dtype = dtype), U)
   }
   return(list(rbits[[1]], U))
