@@ -53,9 +53,10 @@ nv_broadcast_scalar <- function(lhs, rhs) {
     return(list(lhs, rhs))
   }
   if (length(shape_lhs) && length(shape_rhs)) {
+    # fmt: skip
     cli_abort(
-      "By default, only scalar broadcasting is supported, use {.fn nv_broadcast_tensors} to broadcast higher-dimensional tensors."
-    ) # nolint
+      "By default, only scalar broadcasting is supported, use {.fn nv_broadcast_tensors} to broadcast higher-dimensional tensors." # nolint
+    )
   }
   if (!length(shape_lhs)) {
     lhs <- nv_broadcast_to(lhs, shape_rhs)
@@ -425,7 +426,6 @@ nv_reduce_sum <- nvl_reduce_sum
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
   # TODO: division by zero?
   nelts <- prod(shape(operand)[dims])
-  print(nelts)
   # TODO: Should just be able to do use autocasting and divide by nelts scalar
   nv_reduce_sum(operand, dims, drop) / nv_scalar(nelts, dtype(operand))
 }

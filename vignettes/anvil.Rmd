@@ -57,7 +57,7 @@ At first, working with `AnvilTensor`s may feel a bit cumbersome, because you can
 
 ```{r, error = TRUE}
 x + x
-#y + y
+y + y
 ```
 
 ## JIT Compilation
@@ -90,8 +90,7 @@ linear_model(X, beta, alpha)
 ```
 
 One current restriction of {anvil} is that the function has to be re-compiled for every unique combination of inputs shapes, data-types, and platforms.
-
-To demonstrate this, we create a slightly modified version of `linear_model`.
+To show this, we create a slightly modified version of `linear_model`.
 
 ```{r}
 linear_model2 <- jit(function(X, beta, alpha) {
@@ -100,7 +99,7 @@ linear_model2 <- jit(function(X, beta, alpha) {
 })
 ```
 
-To demonstrate this, we create a little helper function that creates example input data with different numbers of observations:
+Next, we create a little helper function that creates example input data with different numbers of observations:
 
 ```{r}
 simul_data <- function(n, p) {
@@ -119,10 +118,10 @@ do.call(linear_model2, simul_data(2, 3))
 do.call(linear_model2, simul_data(2, 3))
 ```
 
-We can notice that we only see the `"compiling ..."` message the first and third time.
+We can notice that we only see the `"compiling ..."` message the first and not the second time.
 This is, because the first time, the function is compiled into an `XLA` executable and cached for later reuse.
-The second time, we don't execute the R function at all, but directly run the cached `XLA` executable.
-This executable does not contain "standard" R code, like the `cat()` call, but records only the operations applied to `AnvilTensor`s.
+When we call into `linear_model2` the second time, we don't execute the R function at all, but directly run the cached `XLA` executable.
+This executable does not contain "standard" R code, like the `cat()` call, but only operations applied to `AnvilTensor`s.
 
 If we now call the function on data with different shapes, we see that the function is re-compiled.
 
@@ -161,10 +160,9 @@ linear_model3(X, beta, with_bias =  FALSE)
 linear_model3(X, beta, alpha, with_bias =  TRUE)
 ```
 
+Static arguments work differently than `AnvilTensors` as the function will not be re-compiled for each new observed value of the static argument.
 
 ### Nested Inputs and Outputs
-
-Static arguments work differently than `AnvilTensors` as the function will not be re-compiled for each new observed value of the static argument.
 
 Note also, that the inputs, as well as the outputs, can also contain nested data structures that contain `AnvilTensor`s, although we currently only support (named) lists.
 
@@ -289,33 +287,22 @@ The XLA compiler will therefore be able to reuse the memory.
 # TODO
 ```
 
-### Control Flow
+## Control Flow
 
 Earlier, we  have already used R control flow to train our linear model.
 
 In principle, there are three ways to handle control-flow in anvil:
 
 1. Embed jit-compiled functions inside R control-flow constructs, which we have seen earlier.
-2. Embed R control flow inside a jit-compiled function (we have also seen this earlier when our linear model allowed to optionally include a bias term).
-3. Use special control-flow primitives provided by anvil, such as `nv_while()` and `nv_if()`.
+2. Embed R control flow inside a jit-compiled function:
+
+   - We have seen this earlier for conditionals, where -- depending on the value of the static argument -- only one of the branches was part of the XLA executable.
+   - Loops get unrolled.
+3. Use special control-flow primitives provided by anvil, such as `nv_while()` and `nv_if()` (to be implemented).
 
 What's the best solution depends on the specific scenario.
 
 One thing to be aware of is that we usually don't want R loops within the jit-compiled function.
 This is, because the loop will be unrolled during compilation, which can lead to very large compilation times and big executables.
 
-The only thing we have not demonstrated so far is how
-
-```{r}
-```
-
-
-
-When doing this, we have the choice to either implement the loop in R, and call into a jit-compiled function in each iteration, or implement the loop as part of the jit-compiled function itself.
-
-The advantage of the former is that this allows including standard R code in the loop, which can e.g. be useful for logging purposes.
-However, depending on the duration of each iteration, there might be a significant overhead from switching between R and the compiled code.
-
-As an example, we will fit the above linear model using gradient descent.
-Of course, we would usually fit the model by solving the normal equations directly, but this is just for demonstration purposes.
-
+TODO
