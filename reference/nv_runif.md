@@ -5,7 +5,7 @@ generate random uniform numbers
 ## Usage
 
 ``` r
-nv_runif(initial_state, shape_out, lower = 0, upper = 1)
+nv_runif(initial_state, dtype = "f64", shape_out, lower = 0, upper = 1)
 ```
 
 ## Arguments
@@ -13,6 +13,10 @@ nv_runif(initial_state, shape_out, lower = 0, upper = 1)
 - initial_state:
 
   state seed
+
+- dtype:
+
+  output dtype either "f32" or "f64"
 
 - shape_out:
 
