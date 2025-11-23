@@ -157,4 +157,3 @@ method(tree_size, S7::new_S3_class("ListNode")) <- function(x) {
 method(tree_size, S7::new_S3_class("MarkedListNode")) <- function(x) {
   sum(vapply(x$nodes, tree_size, integer(1L)))
 }
-

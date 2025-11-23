@@ -4,7 +4,7 @@
 \alias{jit}
 \title{JIT compile a function}
 \usage{
-jit(f, static = character(), device = NULL, cache_size = 100L)
+jit(f, static = character(), device = NULL, cache_size = 100L, backend)
 }
 \arguments{
 \item{f}{(\code{function})\cr

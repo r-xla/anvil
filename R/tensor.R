@@ -75,6 +75,21 @@ ShapedTensor <- S7::new_class(
   )
 )
 
+shaped_tensor <- function(x) {
+  if (is_anvil_tensor(x)) {
+    ConcreteTensor(x)
+  } else if (is_shaped_tensor(x)) {
+    x
+  } else {
+    cli_abort("internal error")
+  }
+}
+
+
+is_shaped_tensor <- function(x) {
+  inherits(x, "anvil::ShapedTensor")
+}
+
 method(platform, ShapedTensor) <- function(x, ...) {
   # TODO: Need platform as part of ShapedTensor
   .NotYetImplemented()

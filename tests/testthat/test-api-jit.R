@@ -59,7 +59,7 @@ test_that("wrt non-existent argument", {
     nv_pow(x, nv_scalar(1))
   }
   expect_error(
-    jit(gradient(f, wrt = "y"))(nv_tensor(2)),
+    jit(gradient(f, wrt = "y"))(nv_scalar(2)),
     "Must be a subset"
   )
 })

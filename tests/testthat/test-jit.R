@@ -1,14 +1,35 @@
-test_that("hlo basic test", {
-  f <- function(x, y) {
-    x + y
-  }
-  tf <- stablehlo(f)
-  expect_class(tf, "anvil::StableHloTransformation")
-  func <- apply_transform(tf, list(nv_tensor(1), nv_tensor(2)))[[1L]]
-  expect_snapshot(repr(func))
+test_that("jit: basic test", {
+  f <- jit(function(x, y) {
+    nvl_add(x, y)
+  })
+
+  expect_equal(
+    f(nv_scalar(1), nv_scalar(2)),
+    nv_scalar(3)
+  )
+  expect_equal(
+    f(nv_scalar(1), nv_scalar(2)),
+    nv_scalar(3)
+  )
 })
 
-test
+test_that("jit: a constant", {
+  x <- nv_scalar(1)
+  f <- function(y) {
+    nvl_add(x, y)
+  }
+  f_jit <- jit(f)
+  expect_equal(
+    f_jit(nv_scalar(2)),
+    nv_scalar(3)
+  )
+  x <- nv_scalar(2)
+  f_jit(nv_scalar(2))
+  expect_equal(
+    f_jit(nv_scalar(2)),
+    nv_scalar(4)
+  )
+})
 
 test_that("jit basic test", {
   f <- function(x, y) {
@@ -35,7 +56,7 @@ test_that("can return single tensor", {
       nv_tensor(-2.0)
     ),
     nv_tensor(-1.0)
-)
+  )
 })
 
 test_that("can return nested list", {
@@ -170,13 +191,4 @@ test_that("error message when using wrong device", {
 test_that("constants can be part of the program", {
   f <- jit(function(x) x + nv_scalar(1))
   expect_equal(f(nv_tensor(1)), nv_tensor(2))
-})
-
-test_that("HloBox printer", {
-  func <- local_func()
-  x <- hlo_input("x", "f32", c(2, 3))
-  interpreter <- HloInterpreter(main = local_main(HloInterpreter, global_data = func))
-  box <- HloBox(interpreter, x)
-  expect_equal(format(box), "HloBox(ShapedTensor(dtype=f32, shape=2x3))")
-  expect_snapshot(box)
 })

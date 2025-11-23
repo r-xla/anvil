@@ -45,7 +45,8 @@ mut_setter <- function(fn, name, .state = ".state") {
   fn
 }
 
-as_mut_S7_object <- function(x, .state = ".state") {  # nolint: object_name_linter, line_length_linter.
+as_mut_S7_object <- function(x, .state = ".state") {
+  # nolint: object_name_linter, line_length_linter.
   # initialize state, since we don't include it in our constructor
   default_state <- attr(x, "S7_class")@properties[[.state]]$default
   prop(x, .state) <- if (is.language(default_state)) {

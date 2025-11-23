@@ -21,16 +21,12 @@ NULL
 globals <- new.env()
 globals$nv_types <- "AnvilTensor"
 globals$interpretation_rules <- c("jit", "stablehlo", "pullback", "graph", "backward")
-globals[["GRAPH_STASH"]] <- list()
-globals[["CURRENT_GRAPH"]] <- NULL
+globals[["DESCRIPTOR_STASH"]] <- list()
+globals[["CURRENT_DESCRIPTOR"]] <- NULL
 
 utils::globalVariables("globals")
 
 hash <- S7::new_generic("hash", "x", function(x) {
-  S7::S7_dispatch()
-})
-
-aval <- S7::new_generic("aval", "x", function(x) {
   S7::S7_dispatch()
 })
 

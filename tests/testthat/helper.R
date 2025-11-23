@@ -38,8 +38,8 @@ expect_grad_binary <- function(nv_fun, d_rx, d_ry, x, y) {
   testthat::expect_equal(gy, d_ry(x, y), tolerance = 1e-5)
 }
 
-nvj_add <- jit(nv_add)
-nvj_mul <- jit(nv_mul)
+#nvj_add <- jit(nv_add)
+#nvj_mul <- jit(nv_mul)
 
 skip_if_not_cpu <- function(msg = "") {
   if (is_metal() || is_cuda()) {

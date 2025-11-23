@@ -9,7 +9,8 @@ Graph(
   in_tree = NULL,
   out_tree = NULL,
   inputs = list(),
-  outputs = list()
+  outputs = list(),
+  constants = list()
 )
 }
 \description{

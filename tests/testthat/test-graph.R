@@ -1,75 +1,107 @@
-test_that("basic test", {
+test_that("graphify: simple test", {
   f <- function(x, y) {
-    x + y
+    nvl_add(x, y)
   }
-
-  out <- graphify(f, list(x = nv_scalar(1), y = nv_scalar(2)))
-  graph <- out[[1]]
-  inputs <- out[[2]]
-  expect_equal(inputs[[1]], ShapedTensor(dt_f32, Shape(c())))
-  expect_equal(inputs[[2]], ShapedTensor(dt_f32, Shape(c())))
+  graph <- graphify(f, list(x = nv_scalar(1), y = nv_scalar(2)))
   expect_true(is_graph(graph))
-
-  graph_fn <- graph_to_function(graph)
-  expect_equal(graph_fn(inputs[[1]], inputs[[2]]), 3)
+  expect_list(graph@inputs, len = 2L, types = "anvil::mut<GraphVariable>")
+  expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
+  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphVariable>")
+  expect_true(identical(graph@outputs, graph@calls[[1]]@outputs))
 })
 
-test_that("sub-graph", {
-  # TODO: Need gradient() for this
+test_that("graphify: in- and outputs are reference identical to the outputs of the calls that produced them", {
+  f <- function(x, y) {
+    nvl_add(x, y)
+  }
+  graph <- graphify(f, list(x = nv_scalar(1), y = nv_scalar(2)))
+  expect_true(identical(graph@outputs, graph@calls[[1]]@outputs))
+  expect_true(identical(graph@inputs, graph@calls[[1]]@inputs))
 })
 
-test_that("nested inputs and outputs", {
+test_that("graphify: nested inputs and outputs", {
   f <- function(lst) {
-    list(lst[[1]] + lst[[2]])
+    list(nvl_add(lst[[1]], lst[[2]]))
   }
 
-  out <- graphify(f, list(lst = list(nv_scalar(1), nv_scalar(2))))
-  graph <- out[[1]]
-  inputs <- out[[2]]
-  expect_equal(inputs[[1]], ShapedTensor(dt_f32, Shape(c())))
-  expect_equal(inputs[[2]], ShapedTensor(dt_f32, Shape(c())))
-  expect_true(is_graph(graph))
+  graph <- graphify(f, list(lst = list(nv_scalar(1), nv_scalar(2))))
+  expect_list(graph@inputs, len = 2L, types = "anvil::mut<GraphVariable>")
+  expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
+  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphVariable>")
+  expect_equal(
+    unflatten(graph@in_tree, list(1, 2)),
+    list(lst = list(1, 2))
+  )
+  expect_equal(
+    unflatten(graph@out_tree, 1),
+    list(1)
+  )
 })
 
-test_that("graph_to_function", {
-})
-
-test_that("closed-over constants", {
-  f <- function(c) {
-
+test_that("graphify: closed-over constants", {
+  x <- nv_scalar(1)
+  f <- function(y) {
+    nvl_add(x, y)
   }
+  graph <- graphify(f, list(y = nv_scalar(2)))
+  expect_list(graph@inputs, len = 1L, types = "anvil::mut<GraphVariable>")
+  expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
+  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphVariable>")
+
+  # What do we expect here?
+  # We want the resulting graph to have a constant and two inputs
+
+  expect_true(is_graph_constant(graph@calls[[1]]@inputs[[1]]))
+  expect_true(is_graph_variable(graph@calls[[1]]@inputs[[2]]))
+  expect_true(identical(x, graph@constants[[1]]@aval@data))
+  expect_equal(length(graph@constants), 1L)
+})
+
+test_that("graphify can deduplicate constants", {
+  x <- nv_scalar(1)
+  f <- function(y) {
+    nvl_add(x, x)
+  }
+  graph <- graphify(f, list(y = nv_scalar(2)))
+  expect_equal(length(graph@constants), 1L)
+  expect_identical(graph@constants[[1]]@aval@data, x)
+})
+
+test_that("graphify works without arguments", {
+  # For this it is necessary to also box outputs in graphify()
+  x <- nv_scalar(1)
+  f <- function() {
+    x
+  }
+  graph <- graphify(f, list())
+  expect_equal(length(graph@inputs), 0L)
+  expect_equal(length(graph@outputs), 1L)
+  expect_identical(graph@outputs[[1]]@aval@data, x)
+  expect_equal(length(graph@outputs), 1L)
+  expect_equal(length(graph@calls), 0L)
 })
 
 
-test_that("captured constants are added to inputs of graph", {
+test_that("local_descriptor creates a graph", {
+  globals[["CURRENT_DESCRIPTOR"]] <- NULL
+  g <- local_descriptor()
+  expect_false(is.null(globals[["CURRENT_DESCRIPTOR"]]))
+  expect_true(is_graph_descriptor(globals[["CURRENT_DESCRIPTOR"]]))
 })
 
-test_that("can call graph function", {
-})
-
-test_that("graph can call into other graph", {
-})
-
-test_that("local_graph creates a graph", {
-  globals[["CURRENT_GRAPH"]] <- NULL
-  g <- local_graph()
-  expect_false(is.null(globals[["CURRENT_GRAPH"]]))
-  expect_true(inherits(g, "anvil::Graph"))
-})
-
-test_that("local_graph restores previous graph", {
-  globals[["CURRENT_GRAPH"]] <- NULL
-  g1 <- local_graph()
+test_that("local_descriptor restores previous graph", {
+  globals[["CURRENT_DESCRIPTOR"]] <- NULL
+  g1 <- local_descriptor()
   inner_test <- function() {
-    g2 <- local_graph()
-    (function() local_graph())()
-    expect_equal(.current_graph(), g2)
+    g2 <- local_descriptor()
+    (function() local_descriptor())()
+    expect_equal(.current_descriptor(), g2)
   }
   inner_test()
-  expect_equal(g1, .current_graph())
+  expect_equal(g1, .current_descriptor())
 })
 
-test_that(".current_graph errors when no graph exists", {
-  globals[["CURRENT_GRAPH"]] <- NULL
-  expect_error(.current_graph(), "No graph is currently being built")
+test_that(".current_descriptor errors when no graph exists", {
+  globals[["CURRENT_DESCRIPTOR"]] <- NULL
+  expect_error(.current_descriptor(), "No graph is currently being built")
 })

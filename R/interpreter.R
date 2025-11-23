@@ -74,28 +74,17 @@ is_box <- function(x) {
   inherits(x, "anvil::Box")
 }
 
-method(aval, Box) <- function(x) {
-  cli_abort("Abstract method")
-}
-
 #' @method shape anvil::Box
 #' @export
 `shape.anvil::Box` <- function(x, ...) {
   shape(aval(x))
 }
 
-method(print, Box) <- function(x, ...) {
-  cat(format(x), "\n")
-}
-
+# TODO: Remove Box, we only have GraphBox
 
 #' @importFrom pjrt platform
 method(platform, Box) <- function(x, ...) {
   pjrt::platform(aval(x))
-}
-
-method(aval, AnvilTensor) <- function(x) {
-  ConcreteTensor(x)
 }
 
 full_lower <- S7::new_generic("full_lower", "x", function(x) {

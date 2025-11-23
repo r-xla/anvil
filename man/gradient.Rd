@@ -2,21 +2,17 @@
 % Please edit documentation in R/pullback.R
 \name{gradient}
 \alias{gradient}
-\title{Gradient of a function}
+\title{Gradient}
 \usage{
-gradient(f, wrt = NULL)
-}
-\arguments{
-\item{f}{(\code{function})}
-
-\item{wrt}{(\code{character()})
-Names of arguments to differentiate with respect to. If \code{NULL},
-compute gradients w.r.t. all differentiable arguments.}
-}
-\value{
-(\code{function})
+gradient(f, wrt = character())
 }
 \description{
-Compute the gradient of a function using reverse mode automatic differentiation.
-Output must be a 0-dimensional tensor.
+Returns a function such when called, it will build up the gradient graph, insert it into its parent graph and return the outputs of the gradient graph.
 }
+\section{Signature of the output Function}{
+
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{f: (Box | StaticInput).. -> (Box | StaticInput)..
+}\if{html}{\out{</div>}}
+}
+

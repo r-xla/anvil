@@ -1,5 +1,3 @@
-
-
 #' @title Graph Variable
 #' @description
 #' Variable in a [`Graph`].
@@ -14,9 +12,23 @@ GraphVariable <- mut(new_class(
   )
 ))
 
-is_graph_variable <- function(x) {
-  inherits(x, "anvil::mut<GraphVariable>")
+method(format, GraphVariable) <- function(x, ...) {
+  sprintf("GraphVariable(%s)", format(x@aval))
 }
+
+GraphConstant <- mut(new_class(
+  "GraphConstant",
+  properties = list(
+    aval = ConcreteTensor
+  )
+  # TODO: Why does fwd_graph not have inputs?
+))
+
+method(format, GraphConstant) <- function(x, ...) {
+  sprintf("GraphConstant(%s)", format(x@aval))
+}
+
+GraphNode <- S7::new_union(GraphVariable, GraphConstant)
 
 #' @title Primitive Call
 #' @description
@@ -36,91 +48,11 @@ PrimitiveCall <- new_class(
   "PrimitiveCall",
   properties = list(
     primitive = Primitive,
-    # TODO: Params
     params = list_of(class_any),
-    inputs = list_of(GraphVariable),
-    outputs = list_of(GraphVariable)
+    inputs = list_of(GraphNode),
+    outputs = list_of(GraphNode)
   )
 )
-
-# TODO: Nicer
-method(format, PrimitiveCall) <- function(x, ...) {
-  inputs <- paste(lapply(x@inputs, \(x) format(x@aval)), collapse = ", ")
-  outputs <- paste(lapply(x@outputs, \(x) format(x@aval)), collapse = ", ")
-  sprintf("%s(%s, %s params) -> %s", x@primitive@name, inputs, length(x@params), outputs)
-}
-
-
-method(print, PrimitiveCall) <- function(x, ...) {
-  cat(format(x), "\n")
-}
-
-# This is like hlo_return, but for graphs
-# It discards the current graph
-graph_return <- function(graph, outputs, out_tree) {
-  graph@outputs <- outputs
-  graph@out_tree <- out_tree
-  maybe_restore_previous_graph(graph)
-  graph
-}
-
-maybe_restore_previous_graph <- function(graph = NULL) {
-  if (!is.null(graph) && !identical(graph, globals[["CURRENT_GRAPH"]])) {
-    # graph has already been returned
-    return()
-  }
-
-  stash_size <- length(globals[["GRAPH_STASH"]])
-  if (stash_size) {
-    globals[["CURRENT_GRAPH"]] <- globals[["GRAPH_STASH"]][[stash_size]]
-    globals[["GRAPH_STASH"]] <- globals[["GRAPH_STASH"]][-stash_size]
-  } else {
-    globals[["CURRENT_GRAPH"]] <- NULL
-  }
-}
-
-#' @title Get the current graph
-#' @description
-#' Get the current graph being built (via [`local_graph`]).
-#' @return A [`Graph`] object.
-#' @export
-.current_graph <- function() {
-  globals[["CURRENT_GRAPH"]] %??%
-    cli_abort("No graph is currently being built")
-}
-
-#' @title Create a graph
-#' @description
-#' Creates a new [`Graph`] which is afterwards accessible via [`.current_graph()`].
-#' The graph is automatically removed when exiting the current scope.
-#' After the graph is either cleaned up automatically (by exiting the scope)
-#' or finalized, the previously built graph is restored,
-#' i.e., accessible via [`.current_graph()`].
-#'
-#' @param envir (`environment`)\cr
-#'   Environment where exit handler will be registered for cleaning up the
-#'   [`Graph`] if it was not returned yet.
-#' @return A [`Graph`] object.
-#' @export
-local_graph <- function(..., envir = parent.frame()) {
-  graph <- Graph(...)
-  if (!is.null(globals[["CURRENT_GRAPH"]])) {
-    globals[["GRAPH_STASH"]] <- c(
-      globals[["GRAPH_STASH"]],
-      list(globals[["CURRENT_GRAPH"]])
-    )
-  }
-  globals[["CURRENT_GRAPH"]] <- graph
-
-  withr::defer(
-    envir = envir,
-    {
-      maybe_restore_previous_graph(graph)
-    },
-    priority = "first"
-  )
-  return(graph)
-}
 
 #' @title Graph of Primitive Calls
 #'
@@ -148,13 +80,282 @@ Graph <- mut(new_class(
     # All the GraphVariables that are inputs will already have a binding.
     # Those that are constants as well
     calls = list_of(PrimitiveCall),
-    # Used to (un-)flatten inputs and outputs
+    ## Used to (un-)flatten inputs and outputs
     in_tree = NULL | new_S3_class("Node"),
     out_tree = NULL | new_S3_class("Node"),
     inputs = list_of(GraphVariable),
-    outputs = list_of(GraphVariable)
+    outputs = list_of(GraphNode),
+    constants = list_of(GraphConstant)
   )
 ))
+
+GraphDescriptor <- mut(new_class(
+  "GraphDescriptor",
+  properties = list(
+    calls = list_of(PrimitiveCall),
+    # hashtab, because we will deduplicate them during tracing
+    constants = new_property(class_hashtab, default = quote(hashtab())),
+    #constants = new_property(class_hashtab, default = quote(hashtab())),
+    # AnvilTensor -> GraphConstant
+    tensor_to_const = new_property(class_hashtab, default = quote(hashtab())),
+    in_tree = NULL | new_S3_class("Node"),
+    out_tree = NULL | new_S3_class("Node"),
+    inputs = list_of(GraphVariable),
+    outputs = list_of(GraphNode)
+  )
+))
+
+method(shape, GraphVariable) <- function(x, ...) {
+  shape(x@aval)
+}
+
+method(dtype, GraphVariable) <- function(x, ...) {
+  dtype(x@aval)
+}
+
+method(shape, GraphConstant) <- function(x, ...) {
+  shape(x@aval)
+}
+
+method(dtype, GraphConstant) <- function(x, ...) {
+  dtype(x@aval)
+}
+
+# identical() fails for some reason on graph descriptors with the same .state
+method(`==`, list(GraphDescriptor, GraphDescriptor)) <- function(e1, e2) {
+  identical(e1@.state, e2@.state)
+}
+
+is_graph_descriptor <- function(x) {
+  inherits(x, "anvil::mut<GraphDescriptor>")
+}
+
+descriptor_to_graph <- function(descriptor) {
+  graph <- Graph(
+    calls = descriptor@calls,
+    inputs = descriptor@inputs,
+    outputs = descriptor@outputs,
+    constants = hashvalues(descriptor@tensor_to_const)
+  )
+  graph@in_tree <- descriptor@in_tree
+  graph@out_tree <- descriptor@out_tree
+  maybe_restore_previous_desc(descriptor)
+  graph
+}
+
+# Now the graph-building
+
+GraphBox <- new_class(
+  "GraphBox",
+  parent = Box,
+  properties = list(
+    # TODO: rename to gnode
+    gvar = GraphNode,
+    desc = GraphDescriptor
+  )
+)
+
+method(shape, GraphBox) <- function(x, ...) {
+  shape(x@gvar)
+}
+
+method(dtype, GraphBox) <- function(x, ...) {
+  dtype(x@gvar)
+}
+
+method(print, GraphBox) <- function(x, ...) {
+  cat(format(x), "\n")
+}
+
+method(format, GraphBox) <- function(x, ...) {
+  sprintf("GraphBox(%s)", format(x@gvar))
+}
+
+aval <- function(x) {
+  if (is_anvil_tensor(x)) {
+    return(ConcreteTensor(x))
+  }
+  if (is_graph_box(x)) {
+    return(x@gvar@aval)
+  }
+  cli_abort("internal error")
+}
+
+
+# TODO(aesthetics): can we unify maybe_box_variable and maybe_box_input?
+
+maybe_box_variable <- function(x) {
+  if (is_graph_box(x)) {
+    if (x@desc == .current_descriptor()) {
+      x
+    } else {
+      # closed over constants in nested graphify calls
+      cli::cli_abort("Descriptor mismatch! x@desc: {format(x@desc)} current: {format(.current_descriptor())}")
+    }
+  } else if (is_anvil_tensor(x)) {
+    desc <- .current_descriptor()
+
+    const <- desc@tensor_to_const[[x]]
+
+    if (!is.null(const)) {
+      return(GraphBox(const, desc))
+    }
+
+    const <- GraphConstant(aval = ConcreteTensor(x))
+    register_constant(desc, x, const)
+    GraphBox(const, .current_descriptor())
+  } else if (is_graph_node(x)) {
+    GraphBox(x, .current_descriptor())
+  } else {
+    x
+  }
+}
+
+register_constant <- function(desc, tensor, const) {
+  desc@tensor_to_const[[tensor]] <- const
+  desc@constants[[const]] <- const
+}
+
+initialize_descriptor_from_graph <- function(desc, graph) {
+  desc@calls <- graph@calls
+  for (const in graph@constants) {
+    desc@constants[[const]] <- const
+    desc@tensor_to_const[[const@aval@data]] <- const
+  }
+  desc@in_tree <- graph@in_tree
+  desc@inputs <- graph@inputs
+  desc@outputs <- graph@outputs
+  desc@out_tree <- graph@out_tree
+
+  graph
+}
+
+maybe_box_input <- function(x, desc) {
+  if (is_anvil_tensor(x)) {
+    # top-level graphify call
+    gvar <- GraphVariable(aval = ShapedTensor(dtype(x), Shape(shape(x))))
+    desc@inputs <- c(desc@inputs, gvar)
+    GraphBox(gvar, desc)
+  } else if (is_graph_box(x)) {
+    # Nested graphify call
+    # Because we will inline the child graph into the parent graph, we re-use
+    # the same box, because this will make the inlining straightforward.
+    desc@inputs <- c(desc@inputs, x@gvar)
+    GraphBox(x@gvar, desc)
+  } else {
+    x
+  }
+}
+
+graphify <- function(f, args) {
+  in_tree <- build_tree(args)
+  args_flat <- flatten(args)
+  f_flat <- flatten_fun(f, in_node = in_tree)
+  desc <- local_descriptor(in_tree = in_tree)
+
+  # box tensors and add them as inputs to the current graph
+  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc)
+  output <- do.call(f_flat, inputs_flat)
+
+  out_tree <- output[[1L]]
+  # function() x; -> output can be an closed-over constant
+  outputs_flat <- lapply(output[[2L]], maybe_box_variable)
+
+  desc@out_tree <- out_tree
+  desc@outputs <- lapply(outputs_flat, \(x) x@gvar)
+
+  if (any(vapply(outputs_flat, \(x) !is_graph_box(x), logical(1L)))) {
+    cli_abort("Function .f must return only objects of type `GraphBox`.")
+  }
+
+  descriptor_to_graph(desc)
+}
+
+is_graph_node <- function(x) {
+  is_graph_variable(x) || is_graph_constant(x)
+}
+
+is_graph_constant <- function(x) {
+  inherits(x, "anvil::mut<GraphConstant>")
+}
+
+is_graph_variable <- function(x) {
+  inherits(x, "anvil::mut<GraphVariable>")
+}
+
+# TODO: Nicer
+#method(format, PrimitiveCall) <- function(x, ...) {
+#  inputs <- paste(lapply(x@inputs, \(x) format(x@aval)), collapse = ", ")
+#  outputs <- paste(lapply(x@outputs, \(x) format(x@aval)), collapse = ", ")
+#  sprintf("%s(%s, %s params) -> %s", x@primitive@name, inputs, length(x@params), outputs)
+#}
+
+# This is like hlo_return, but for graphs
+# It discards the current graph
+#graph_return <- function(graph, outputs, out_tree) {
+#  graph@outputs <- outputs
+#  graph@out_tree <- out_tree
+#  maybe_restore_previous_desc(graph)
+#  graph
+#}
+
+maybe_restore_previous_desc <- function(graph = NULL) {
+  if (!is.null(graph) && !identical(graph, globals[["CURRENT_DESCRIPTOR"]])) {
+    # graph has already been returned
+    return()
+  }
+
+  stash_size <- length(globals[["DESCRIPTOR_STASH"]])
+  if (stash_size) {
+    globals[["CURRENT_DESCRIPTOR"]] <- globals[["DESCRIPTOR_STASH"]][[stash_size]]
+    globals[["DESCRIPTOR_STASH"]] <- globals[["DESCRIPTOR_STASH"]][-stash_size]
+  } else {
+    globals[["CURRENT_DESCRIPTOR"]] <- NULL
+  }
+}
+
+#' @title Get the current graph
+#' @description
+#' Get the current graph being built (via [`local_descriptor`]).
+#' @return A [`Graph`] object.
+#' @export
+.current_descriptor <- function() {
+  globals[["CURRENT_DESCRIPTOR"]] %??%
+    cli_abort("No graph is currently being built")
+}
+
+#' @title Create a graph
+#' @description
+#' Creates a new [`Graph`] which is afterwards accessible via [`.current_descriptor()`].
+#' The graph is automatically removed when exiting the current scope.
+#' After the graph is either cleaned up automatically (by exiting the scope)
+#' or finalized, the previously built graph is restored,
+#' i.e., accessible via [`.current_descriptor()`].
+#'
+#' @param envir (`environment`)\cr
+#'   Environment where exit handler will be registered for cleaning up the
+#'   [`Graph`] if it was not returned yet.
+#' @return A [`Graph`] object.
+#' @export
+local_descriptor <- function(..., envir = parent.frame()) {
+  desc <- GraphDescriptor(...)
+  if (!is.null(globals[["CURRENT_DESCRIPTOR"]])) {
+    globals[["DESCRIPTOR_STASH"]] <- c(
+      globals[["DESCRIPTOR_STASH"]],
+      list(globals[["CURRENT_DESCRIPTOR"]])
+    )
+  }
+  globals[["CURRENT_DESCRIPTOR"]] <- desc
+
+  withr::defer(
+    envir = envir,
+    {
+      maybe_restore_previous_desc(desc)
+    },
+    priority = "first"
+  )
+  return(desc)
+}
 
 
 eval_primitive_call <- function(call, mode, env) {
@@ -191,12 +392,11 @@ graph_reduce <- function(graph, reducer, args) {
   lapply(graph@outputs, \(x) env[[x]])
 }
 
-graph_to_function <- function(graph, class = NULL) {
-  structure(function(...) {
-    graph_reduce(graph, list(...))
-  }, class = c(class, "anvil::GraphFunction"))
+graph_inline <- function(parent_desc, graph) {
+  # TODO: constants
+  parent_desc@calls <- c(parent_desc@calls, graph@calls)
+  parent_desc
 }
-
 
 is_graph <- function(x) {
   inherits(x, "anvil::mut<Graph>")
@@ -207,7 +407,8 @@ is_graph <- function(x) {
 #' Abstract base class for a (chained) graph transformation.
 #' To apply such a (chained) transformation, use [`apply_transform()`].
 #' @export
-GraphTransformation <- new_class("GraphTransformation",
+GraphTransformation <- new_class(
+  "GraphTransformation",
   parent = Transformation,
   properties = list(
     # TODO: Remove GraphTransformation here?
@@ -265,156 +466,51 @@ GraphInterpreter <- new_class(
   )
 )
 
-GraphBox <- new_class(
-  "GraphBox",
-  parent = Box,
-  properties = list(
-    gvar = GraphVariable,
-    graph = Graph
-  )
-)
 
 is_graph_box <- function(x) {
   inherits(x, "anvil::GraphBox")
 }
 
 graph_call <- function(prim, args, params = list()) {
-  graph <- .current_graph()
-  gvars_in <- lapply(args, \(arg) {
-    if (is_anvil_tensor(arg)) {
-      # Constants
-      .NotYetImplemented()
-    }
-    if (is_graph_box(arg)) {
-      if (identical(arg@graph, graph)) {
-        return(arg@gvar)
-      } else {
-        return(GraphVariable(aval(arg), graph))
-      }
-    }
-    cli_abort("Unsupported type: {class(arg)[1L]}")
-  })
+  boxes_in <- lapply(args, maybe_box_variable)
+  gvars_in <- lapply(boxes_in, \(x) x@gvar)
+  avals_in <- lapply(boxes_in, aval)
 
-  avals_in <- lapply(gvars_in, aval)
-  args <- lapply(avals_in, \(aval) st2vt(aval))
-  outputs <- rlang::exec(prim[["graph"]], !!!c(args, params))
+  vts_in <- lapply(avals_in, \(aval) st2vt(aval))
+  outputs <- rlang::exec(prim[["graph"]], !!!c(vts_in, params))
+  sts_out <- lapply(outputs, vt2st)
 
-  outputs <- lapply(outputs, vt2st)
-  gvars_out <- lapply(outputs, GraphVariable)
+  gvars_out <- lapply(sts_out, GraphVariable)
+
   call <- PrimitiveCall(prim, params, gvars_in, gvars_out)
+
+  graph <- .current_descriptor()
   graph@calls <- c(graph@calls, call)
 
-  lapply(gvars_out, GraphBox, graph = graph)
-}
-
-
-# f <- function(x, y, type) {
-#   if (type == "mul") {
-#     x * y
-#   } else {
-#     x + y
-#   }
-# }
-# Let's say we do jit(gradient(f, wrt = "x"), static = "type")
-# The problem is that
-
-graphify <- function(f, args) {
-  # The output graph here still contains static inputs I think.
-  # Maybe one does not even have to specify this explicitly but just treat all the
-  # AnvilTensor inputs as non-static and everything else as static.
-  # TODO: flattening
-  args_flat <- flatten(args)
-  in_tree <- build_tree(args)
-  f_flat <- flatten_fun(f, in_node = in_tree)
-
-  graph <- local_graph(in_tree = in_tree)
-
-  gvars <- lapply(args_flat, \(x) {
-    if (is_anvil_tensor(x)) {
-      type <- ShapedTensor(dtype(x), Shape(shape(x)))
-      GraphVariable(aval = type)
-    } else {
-      # this is a static input
-      x
-    }
+  boxes_out <- lapply(gvars_out, \(gvar) {
+    GraphBox(gvar, .current_descriptor())
   })
 
-  gboxes <- lapply(gvars, GraphBox, graph = graph)
+  return(boxes_out)
+}
 
-  # TODO(maybe): remove 'static' argument from jit, as we assume here
-  # that every non-AnvilTensor is static.
-  graph@inputs <- gvars[vapply(gvars, is_graph_variable, logical(1L))]
 
-  out <- do.call(f_flat, gboxes)
-
-  out_tree <- out[[1L]]
-  outputs <- out[[2L]]
-
-  if (any(vapply(outputs, \(x) !is_graph_box(x), logical(1L)))) {
-    cli_abort("Function .f must return only objects of type `GraphBox`.")
+inline_graph_into_desc <- function(desc, graph) {
+  desc@calls <- c(desc@calls, graph@calls)
+  for (const in graph@constants) {
+    desc@constants[[const]] <- const
+    val <- const@aval@data
+    if (!is_anvil_tensor(val)) {
+      cli_abort("Constant {format(const)} is not an Anvil tensor")
+    }
+    desc@tensor_to_const[[val]] <- const
   }
+  #desc@inputs <- c(desc@inputs, graph@inputs)
+  #desc@outputs <- c(desc@outputs, graph@outputs)
 
-  graph_return(graph, lapply(outputs, \(box) box@gvar), out_tree)
+  # they are graph variables
+  gvars_out_flat <- graph@outputs
+  boxes_out_flat <- lapply(gvars_out_flat, GraphBox, .current_descriptor())
 
-
-  inputs <- lapply(graph@inputs, aval)
-
-  list(graph, inputs)
-}
-# Boxing only happens during graphify.
-# Afterwards, all variables that need to be boxed are the input(-constants)
-
-# What happens in:
-#
-# g <- gradient(function(x, y) {
-#   # this will be inlined
-#   out <- gradient(f)(x, y)
-#   f(out[[1]], out[[2]])
-# })
-# # What happens here?
-# # 1. We start building the outer graph
-# # 2. When we call into gradient(f)(x, y), x and y are already GraphVariables,
-# #    but we will:
-#      2.1 Create a new graph
-#      2.2 Transform this new graph into a backward graph
-#      2.3 Call into this backward graph with x and y just to embed the inner graph in the
-#          outer graph
-#      --> This does work twice.
-# Therefore, what we should to is to skip 2.3 and just embed the inner graph into the outer graph.
-# But, how can we do this?
-# We can do this by creating a Primitive('call') and making
-# gradient(f) return a function that calls into Primitive('call') and that has the
-# inner graph as a parameter.
-#
-# But what do we do about
-# g <- gradient(function(x, y) {
-#   # this will be inlined
-#   out <- gradient(f)()
-#   f(out[[1]], out[[2]])
-# })
-#
-method(box, list(GraphInterpreter, ShapedTensor)) <- function(interpreter, x) {
-  GraphBox(interpreter, GraphVariable(aval = x))
-}
-
-method(box, list(GraphInterpreter, class_any)) <- function(interpreter, x) {
-  box(interpreter, aval(x))
-}
-
-method(aval, GraphBox) <- function(x) {
-  x@gvar@aval
-}
-
-
-method(format, GraphBox) <- function(x) {
-  sprintf("GraphBox(%s)", format(x@gvar@aval))
-}
-
-method(print, GraphBox) <- function(x) {
-  cat(format(x), "\n")
-}
-
-
-method(aval, GraphVariable) <- function(x) {
-  x@aval
+  unflatten(graph@out_tree, boxes_out_flat)
 }
