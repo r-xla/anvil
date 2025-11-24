@@ -506,7 +506,7 @@ nv_runif <- function(initial_state, dtype = "f64", shape_out, lower = 0, upper =
   )
 
   lhs <- nv_convert(rbits[[2]], dtype = dtype)
-  # this should work, but does not
+  # this works when integer conversion in stablehlo is fixed
   # rhs <- nv_convert(
   #   nv_maxval(paste0("ui", sub("f(\\d+)", "\\1", dtype)), device = NULL),
   #   dtype = dtype
