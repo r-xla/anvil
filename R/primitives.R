@@ -122,6 +122,21 @@ nvl_concatenate <- function(..., dimension) {
   )[[1L]]
 }
 
+p_slice <- Primitive("slice")
+nvl_slice <- function(operand, start_indices, limit_indices, strides) {
+  interprete(
+    p_slice,
+    args = list(
+      operand = operand
+    ),
+    params = list(
+      start_indices = start_indices,
+      limit_indices = limit_indices,
+      strides = strides
+    )
+  )[[1L]]
+}
+
 # reduction operators
 
 p_reduce_sum <- Primitive("sum")

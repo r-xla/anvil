@@ -4,10 +4,12 @@
 \alias{nv_rnorm}
 \title{Random Normal Numbers}
 \usage{
-nv_rnorm(initial_state, shape_out, mu = 0, sigma = 1)
+nv_rnorm(initial_state, dtype, shape_out, mu = 0, sigma = 1)
 }
 \arguments{
 \item{initial_state}{state seed}
+
+\item{dtype}{output dtype either "f32" or "f64"}
 
 \item{shape_out}{output shape}
 

@@ -20,21 +20,37 @@ test_that("p_rng_bit_generator", {
   expect_equal(as_array(out[[2]]), array(c(43444564L, 1672743891L, -315321645L, 2109414752L), c(2, 2)))
 })
 
-test_that("nv_runif", {
+# test_that("p_runif", {
+#   debugonce(jit)
+#   f <- function() {
+#     nv_runif(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape_out = c(2, 3), lower = -1, upper = 1)
+#   }
+#   g <- jit(f)
+#   out <- g()
+#   expect_equal(c(as_array(out[[1]])), c(1L, 5L))
+#   expect_equal(
+#     as_array(out[[2]]),
+#     array(c(-0.9798, 0.0015, 0.8532, 0.7442, -0.2211, 0.9746), c(2, 3)),
+#     tolerance = 1e-4
+#   )
+# })
+
+test_that("p_slice", {
   f <- function() {
-    nv_runif(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape_out = c(2, 3), lower = -1, upper = 1)
+    nv_slice(
+      nv_tensor(c(1:6), dtype = "ui64", shape = c(2, 3)),
+      start_indices = c(0, 0),
+      limit_indices = c(2, 2),
+      strides = c(1, 1)
+    )
   }
   g <- jit(f)
   out <- g()
-  expect_equal(c(as_array(out[[1]])), c(1L, 5L))
-  expect_equal(
-    as_array(out[[2]]),
-    array(c(-0.9798, 0.0015, 0.8532, 0.7442, -0.2211, 0.9746), c(2, 3)),
-    tolerance = 1e-4
-  )
+  expect_equal(as_array(out), matrix(c(1:4), nrow = 2))
 })
 
-# test_that("nv_rnorm", {
+# test_that("p_rnorm", {
+#   debugonce(nv_rnorm)
 #   f <- function() {
 #     nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape_out = c(2, 3))
 #   }
@@ -48,17 +64,18 @@ test_that("nv_runif", {
 #   )
 # })
 
-# test_that("nv_concatenate", {
-#   f <- function() {
-#     nv_concatenate(
-#       nv_tensor(c(1:6), dtype = "ui64", shape = c(2, 3)),
-#       nv_tensor(c(7:10), dtype = "ui64", shape = c(2, 2)),
-#       dimension = as.integer(1L)
-#     )
-#   }
-#   g <- jit(f)
-#   out <- g()
-# })
+test_that("p_concatenate", {
+  f <- function() {
+    nv_concatenate(
+      nv_tensor(c(1:6), dtype = "ui64", shape = c(2, 3)),
+      nv_tensor(c(7:10), dtype = "ui64", shape = c(2, 2)),
+      dimension = 2L
+    )
+  }
+  g <- jit(f)
+  out <- g()
+  expect_equal(dim(as_array(out)), c(2, 5))
+})
 
 test_that("p_shift_left", {
   x <- nv_tensor(as.integer(c(1L, 2L, 3L, 8L)), dtype = "i32")

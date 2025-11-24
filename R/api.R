@@ -148,6 +148,18 @@ nv_reshape <- nvl_reshape
 #' @export
 nv_concatenate <- nvl_concatenate
 
+#' @title Slice
+#' @description
+#' return slice of operand.
+#' @template param_operand
+#' @param operand tensor
+#' @param start_indices start of slice
+#' @param limit_indices end of slice
+#' @param strides stride size
+#' @return [`nv_tensor`]
+#' @export
+nv_slice <- nvl_slice
+
 ## Binary ops ------------------------------------------------------------------
 
 #' @name nv_binary_ops
@@ -496,7 +508,10 @@ nv_runif <- function(initial_state, dtype = "f64", shape_out, lower = 0, upper =
   )
 
   lhs <- nv_convert(rbits[[2]], dtype = dtype)
-  rhs <- nv_maxval(paste0("ui", sub("f(\\d+)", "\\1", dtype)), device = NULL)
+  rhs <- nv_convert(
+    nv_maxval(paste0("ui", sub("f(\\d+)", "\\1", dtype)), device = NULL),
+    dtype = dtype
+  )
   U <- nv_div(lhs, rhs)
   if (range != 1) {
     U <- nv_mul(U, nv_scalar(range, dtype = dtype))
@@ -524,27 +539,22 @@ nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
   checkmate::assertNumeric(mu, len = 1, any.missing = FALSE)
   checkmate::assertNumeric(sigma, len = 1, any.missing = FALSE, lower = 0)
   checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
-
   n <- prod(shape_out)
-  U <- nv_runif(initial_state = initial_state, dtype = dtype, shape_out = c(ceiling(n / 2)))
-  # U <- nv_runif(initial_state = initial_state, shape_out = shape_out, lower = 0, upper = 1)
-  # R <- nv_log(U[[2]])
+  U <- nv_runif(initial_state = initial_state, dtype = dtype, shape_out = as.integer(ceiling(n / 2)))
   R <- nv_mul(nv_log(U[[2]]), nv_scalar(-2, dtype = dtype))
   sqrt_R <- nv_sqrt(R)
-  # Theta <- nv_runif(initial_state = U[[1]], shape_out = shape_out, lower = 0, upper = 2 * pi)
   Theta <- nv_runif(initial_state = U[[1]], dtype = dtype, shape_out = c(ceiling(n / 2)), lower = 0, upper = 2 * pi)
   sin_Theta <- nv_sine(Theta[[2]])
   cos_Theta <- nv_cosine(Theta[[2]])
   Z1 <- nv_mul(sqrt_R, sin_Theta)
   Z2 <- nv_mul(sqrt_R, cos_Theta)
-
-  # todo: nv_concatenate, nv_dynamic_slice/nv_scatter
-
-  Z <- nv_concatenate(Z1, Z2, dimension = 0L)
+  Z <- nv_concatenate(Z1, Z2, dimension = 1L)
   N <- nv_mul(Z, nv_scalar(sigma, dtype = dtype))
   N <- nv_add(N, nv_scalar(mu, dtype = dtype))
-
-  # N <- nv_reshape(N, shape = shape_out)
+  if (n %% 2 == 1) {
+    N <- nv_slice(N, start_indices = c(0L), limit_indices = c(as.integer(n)), strides = c(1L))
+  }
+  N <- nv_reshape(N, shape = shape_out)
   list(Theta[[1]], N)
 }
 

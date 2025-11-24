@@ -44,8 +44,11 @@ p_reshape[["jit"]] <- function(operand, shape) {
 }
 
 p_concatenate[["jit"]] <- function(..., dimension) {
-  dots <- list(...)
-  list(stablehlo::hlo_concatenate(unlist(dots), dimension = dimension))
+  list(stablehlo::hlo_concatenate(..., dimension = dimension))
+}
+
+p_slice[["jit"]] <- function(operand, start_indices, limit_indices, strides) {
+  list(stablehlo::hlo_slice(operand, start_indices, limit_indices, strides))
 }
 
 .jit_apply_reduce <- function(reductor, operand, init, dims, drop) {
