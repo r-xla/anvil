@@ -5,7 +5,7 @@ generate random normal numbers
 ## Usage
 
 ``` r
-nv_rnorm(initial_state, shape_out, mu = 0, sigma = 1)
+nv_rnorm(initial_state, dtype, shape_out, mu = 0, sigma = 1)
 ```
 
 ## Arguments
@@ -13,6 +13,10 @@ nv_rnorm(initial_state, shape_out, mu = 0, sigma = 1)
 - initial_state:
 
   state seed
+
+- dtype:
+
+  output dtype either "f32" or "f64"
 
 - shape_out:
 

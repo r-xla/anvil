@@ -27,6 +27,7 @@
 - [`nv_broadcast_tensors()`](nv_broadcast_tensors.md) : Broadcast
   Tensors to a Common Shape
 - [`nv_broadcast_to()`](nv_broadcast_to.md) : Broadcast
+- [`nv_concatenate()`](nv_concatenate.md) : Concatenate
 - [`nv_convert()`](nv_convert.md) : Convert Tensor to Different Data
   Type
 - [`nv_dtype()`](nv_dtype.md) : Create a TensorDataType
@@ -42,6 +43,7 @@
 - [`nv_rng_bit_generator()`](nv_rng_bit_generator.md) : Random Numbers
 - [`nv_rnorm()`](nv_rnorm.md) : Random Normal Numbers
 - [`nv_runif()`](nv_runif.md) : Random Uniform Numbers
+- [`nv_slice()`](nv_slice.md) : Slice
 - [`nv_tensor()`](nv_tensor.md) [`nv_scalar()`](nv_tensor.md)
   [`nv_empty()`](nv_tensor.md) : Tensor
 - [`nv_transpose()`](nv_transpose.md)
