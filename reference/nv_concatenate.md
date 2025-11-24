@@ -20,11 +20,6 @@ nv_concatenate(..., dimension)
   The dimension to concatenate along to. Other dimensions must be the
   same.
 
-- operand:
-
-  ([`nv_tensor`](nv_tensor.md))  
-  Operand.
-
 ## Value
 
 [`nv_tensor`](nv_tensor.md)

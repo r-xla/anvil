@@ -12,7 +12,8 @@ nv_slice(operand, start_indices, limit_indices, strides)
 
 - operand:
 
-  tensor
+  ([`nv_tensor`](nv_tensor.md))  
+  Operand.
 
 - start_indices:
 
