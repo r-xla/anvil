@@ -39,6 +39,9 @@
   [`nv_reduce_any()`](nv_reduce_ops.md)
   [`nv_reduce_all()`](nv_reduce_ops.md) : Reduction Operators
 - [`nv_reshape()`](nv_reshape.md) : Reshape
+- [`nv_rng_bit_generator()`](nv_rng_bit_generator.md) : Random Numbers
+- [`nv_rnorm()`](nv_rnorm.md) : Random Normal Numbers
+- [`nv_runif()`](nv_runif.md) : Random Uniform Numbers
 - [`nv_tensor()`](nv_tensor.md) [`nv_scalar()`](nv_tensor.md)
   [`nv_empty()`](nv_tensor.md) : Tensor
 - [`nv_transpose()`](nv_transpose.md)
@@ -46,7 +49,8 @@
 - [`nv_neg()`](nv_unary_ops.md) [`nv_abs()`](nv_unary_ops.md)
   [`nv_sqrt()`](nv_unary_ops.md) [`nv_rsqrt()`](nv_unary_ops.md)
   [`nv_log()`](nv_unary_ops.md) [`nv_tanh()`](nv_unary_ops.md)
-  [`nv_tan()`](nv_unary_ops.md) [`nv_floor()`](nv_unary_ops.md)
+  [`nv_tan()`](nv_unary_ops.md) [`nv_sine()`](nv_unary_ops.md)
+  [`nv_cosine()`](nv_unary_ops.md) [`nv_floor()`](nv_unary_ops.md)
   [`nv_ceil()`](nv_unary_ops.md) [`nv_sign()`](nv_unary_ops.md)
   [`nv_exp()`](nv_unary_ops.md) [`nv_round()`](nv_unary_ops.md) : Unary
   Operations
