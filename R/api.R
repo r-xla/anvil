@@ -508,7 +508,10 @@ nv_runif <- function(initial_state, dtype = "f64", shape_out, lower = 0, upper =
   )
 
   lhs <- nv_convert(rbits[[2]], dtype = dtype)
-  rhs <- nv_maxval(dtype, device(initial_state))
+  rhs <- nv_convert(
+    nv_maxval(paste0("ui", sub("f(\\d+)", "\\1", dtype)), device = NULL),
+    dtype = dtype
+  )
   U <- nv_div(lhs, rhs)
   if (range != 1) {
     U <- nv_mul(U, nv_scalar(range, dtype = dtype))
