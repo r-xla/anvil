@@ -61,7 +61,7 @@ jobs:
         if: ${{ matrix.setup }}
         run: ${{ matrix.setup }}
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
 
       - uses: r-lib/actions/setup-pandoc@v2

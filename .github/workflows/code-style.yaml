@@ -9,7 +9,7 @@ jobs:
   check-code-style:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: R code
         uses: rstudio/shiny-workflows/format-r-code@v1
