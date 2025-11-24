@@ -34,6 +34,32 @@ test_that("nv_runif", {
   )
 })
 
+# test_that("nv_rnorm", {
+#   f <- function() {
+#     nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape_out = c(2, 3))
+#   }
+#   g <- jit(f)
+#   out <- g()
+#   expect_equal(c(as_array(out[[1]])), c(1L, 5L))
+#   expect_equal(
+#     as_array(out[[2]]),
+#     array(c(-0.9798, 0.0015, 0.8532, 0.7442, -0.2211, 0.9746), c(2, 3)),
+#     tolerance = 1e-4
+#   )
+# })
+
+# test_that("nv_concatenate", {
+#   f <- function() {
+#     nv_concatenate(
+#       nv_tensor(c(1:6), dtype = "ui64", shape = c(2, 3)),
+#       nv_tensor(c(7:10), dtype = "ui64", shape = c(2, 2)),
+#       dimension = as.integer(1L)
+#     )
+#   }
+#   g <- jit(f)
+#   out <- g()
+# })
+
 test_that("p_shift_left", {
   x <- nv_tensor(as.integer(c(1L, 2L, 3L, 8L)), dtype = "i32")
   y <- nv_tensor(as.integer(c(0L, 1L, 2L, 3L)), dtype = "i32")

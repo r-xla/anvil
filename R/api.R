@@ -137,6 +137,17 @@ nv_transpose <- function(x, permutation = NULL) {
 #' @export
 nv_reshape <- nvl_reshape
 
+#' @title Concatenate
+#' @description
+#' Concatenate a variadic amaount of tensors.
+#' @template param_operand
+#' @param ... tensors
+#' @param dimension (`integer()`)\cr
+#'   The dimension to concatenate along to. Other dimensions must be the same.
+#' @return [`nv_tensor`]
+#' @export
+nv_concatenate <- nvl_concatenate
+
 ## Binary ops ------------------------------------------------------------------
 
 #' @name nv_binary_ops
@@ -483,8 +494,9 @@ nv_runif <- function(initial_state, dtype = "f64", shape_out, lower = 0, upper =
     paste0("ui", sub("f(\\d+)", "\\1", dtype)),
     shape_out = shape_out
   )
+
   lhs <- nv_convert(rbits[[2]], dtype = dtype)
-  rhs <- nv_scalar(ifelse(dtype == "f64", 2^64 - 1, 2^32 - 1), dtype = dtype)
+  rhs <- nv_maxval(paste0("ui", sub("f(\\d+)", "\\1", dtype)), device = NULL)
   U <- nv_div(lhs, rhs)
   if (range != 1) {
     U <- nv_mul(U, nv_scalar(range, dtype = dtype))
@@ -500,22 +512,39 @@ nv_runif <- function(initial_state, dtype = "f64", shape_out, lower = 0, upper =
 #' @description
 #' generate random normal numbers
 #' @param initial_state state seed
+#' @param dtype output dtype either "f32" or "f64"
 #' @param shape_out output shape
 #' @param mu scalar: expected value
 #' @param sigma scalar: standard deviation
 #' #' @section Covariance:
 #' To implement a covariance structure use cholesky decomposition
 #' @export
-nv_rnorm <- function(initial_state, shape_out, mu = 0, sigma = 1) {
-  U <- nv_runif(initial_state = initial_state, shape_out = shape_out, lower = 0, upper = 1)
-  R <- nv_log(U[[2]])
-  R <- nv_mul(R, nv_tensor(rep(-2, prod(shape_out)), dtype = "f64", shape = shape_out))
+nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
+  checkmate::assertChoice(dtype, c("f32", "f64"))
+  checkmate::assertNumeric(mu, len = 1, any.missing = FALSE)
+  checkmate::assertNumeric(sigma, len = 1, any.missing = FALSE, lower = 0)
+  checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
+
+  n <- prod(shape_out)
+  U <- nv_runif(initial_state = initial_state, dtype = dtype, shape_out = c(ceiling(n / 2)))
+  # U <- nv_runif(initial_state = initial_state, shape_out = shape_out, lower = 0, upper = 1)
+  # R <- nv_log(U[[2]])
+  R <- nv_mul(nv_log(U[[2]]), nv_scalar(-2, dtype = dtype))
   sqrt_R <- nv_sqrt(R)
-  Theta <- nv_runif(initial_state = U[[1]], shape_out = shape_out, lower = 0, upper = 2 * pi)
+  # Theta <- nv_runif(initial_state = U[[1]], shape_out = shape_out, lower = 0, upper = 2 * pi)
+  Theta <- nv_runif(initial_state = U[[1]], dtype = dtype, shape_out = c(ceiling(n / 2)), lower = 0, upper = 2 * pi)
   sin_Theta <- nv_sine(Theta[[2]])
-  Z <- nv_mul(sqrt_R, sin_Theta)
-  N <- nv_mul(Z, nv_tensor(rep(sigma, prod(shape_out)), dtype = "f64", shape = shape_out))
-  N <- nv_add(N, nv_tensor(rep(mu, prod(shape_out)), dtype = "f64", shape = shape_out))
+  cos_Theta <- nv_cosine(Theta[[2]])
+  Z1 <- nv_mul(sqrt_R, sin_Theta)
+  Z2 <- nv_mul(sqrt_R, cos_Theta)
+
+  # todo: nv_concatenate, nv_dynamic_slice/nv_scatter
+
+  Z <- nv_concatenate(Z1, Z2, dimension = 0L)
+  N <- nv_mul(Z, nv_scalar(sigma, dtype = dtype))
+  N <- nv_add(N, nv_scalar(mu, dtype = dtype))
+
+  # N <- nv_reshape(N, shape = shape_out)
   list(Theta[[1]], N)
 }
 

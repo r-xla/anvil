@@ -43,6 +43,11 @@ p_reshape[["jit"]] <- function(operand, shape) {
   list(stablehlo::hlo_reshape(operand, shape))
 }
 
+p_concatenate[["jit"]] <- function(..., dimension) {
+  dots <- list(...)
+  list(stablehlo::hlo_concatenate(unlist(dots), dimension = dimension))
+}
+
 .jit_apply_reduce <- function(reductor, operand, init, dims, drop) {
   local_func("")
   dt <- as.character(operand@value_type@type@dtype)

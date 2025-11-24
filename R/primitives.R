@@ -112,6 +112,16 @@ nvl_reshape <- function(operand, shape) {
   )[[1L]]
 }
 
+p_concatenate <- Primitive("concatenate")
+nvl_concatenate <- function(..., dimension) {
+  dots <- list(...)
+  interprete(
+    p_concatenate,
+    args = dots,
+    params = list(dimension = dimension)
+  )[[1L]]
+}
+
 # reduction operators
 
 p_reduce_sum <- Primitive("sum")
