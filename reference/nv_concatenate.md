@@ -1,6 +1,6 @@
 # Concatenate
 
-Concatenate a variadic amaount of tensors.
+Concatenate a variadic number of tensors.
 
 ## Usage
 
