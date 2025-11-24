@@ -11,9 +11,6 @@ nv_concatenate(..., dimension)
 
 \item{dimension}{(\code{integer()})\cr
 The dimension to concatenate along to. Other dimensions must be the same.}
-
-\item{operand}{(\code{\link{nv_tensor}})\cr
-Operand.}
 }
 \value{
 \code{\link{nv_tensor}}

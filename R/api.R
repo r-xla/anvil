@@ -140,7 +140,6 @@ nv_reshape <- nvl_reshape
 #' @title Concatenate
 #' @description
 #' Concatenate a variadic amaount of tensors.
-#' @template param_operand
 #' @param ... tensors
 #' @param dimension (`integer()`)\cr
 #'   The dimension to concatenate along to. Other dimensions must be the same.
@@ -152,7 +151,6 @@ nv_concatenate <- nvl_concatenate
 #' @description
 #' return slice of operand.
 #' @template param_operand
-#' @param operand tensor
 #' @param start_indices start of slice
 #' @param limit_indices end of slice
 #' @param strides stride size
@@ -508,7 +506,12 @@ nv_runif <- function(initial_state, dtype = "f64", shape_out, lower = 0, upper =
   )
 
   lhs <- nv_convert(rbits[[2]], dtype = dtype)
-  rhs <- nv_maxval(dtype, device(initial_state))
+  # this should work, but does not
+  # rhs <- nv_convert(
+  #   nv_maxval(paste0("ui", sub("f(\\d+)", "\\1", dtype)), device = NULL),
+  #   dtype = dtype
+  # )
+  rhs <- nv_scalar(ifelse(dtype == "f32", 2^32 - 1, 2^64 - 1), dtype = dtype)
   U <- nv_div(lhs, rhs)
   if (range != 1) {
     U <- nv_mul(U, nv_scalar(range, dtype = dtype))

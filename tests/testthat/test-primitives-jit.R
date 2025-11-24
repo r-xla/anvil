@@ -20,21 +20,6 @@ test_that("p_rng_bit_generator", {
   expect_equal(as_array(out[[2]]), array(c(43444564L, 1672743891L, -315321645L, 2109414752L), c(2, 2)))
 })
 
-# test_that("p_runif", {
-#   debugonce(jit)
-#   f <- function() {
-#     nv_runif(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape_out = c(2, 3), lower = -1, upper = 1)
-#   }
-#   g <- jit(f)
-#   out <- g()
-#   expect_equal(c(as_array(out[[1]])), c(1L, 5L))
-#   expect_equal(
-#     as_array(out[[2]]),
-#     array(c(-0.9798, 0.0015, 0.8532, 0.7442, -0.2211, 0.9746), c(2, 3)),
-#     tolerance = 1e-4
-#   )
-# })
-
 test_that("p_slice", {
   f <- function() {
     nv_slice(
@@ -49,20 +34,33 @@ test_that("p_slice", {
   expect_equal(as_array(out), matrix(c(1:4), nrow = 2))
 })
 
-# test_that("p_rnorm", {
-#   debugonce(nv_rnorm)
-#   f <- function() {
-#     nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape_out = c(2, 3))
-#   }
-#   g <- jit(f)
-#   out <- g()
-#   expect_equal(c(as_array(out[[1]])), c(1L, 5L))
-#   expect_equal(
-#     as_array(out[[2]]),
-#     array(c(-0.9798, 0.0015, 0.8532, 0.7442, -0.2211, 0.9746), c(2, 3)),
-#     tolerance = 1e-4
-#   )
-# })
+test_that("p_runif", {
+  f <- function() {
+    nv_runif(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape_out = c(2, 3), lower = -1, upper = 1)
+  }
+  g <- jit(f)
+  out <- g()
+  expect_equal(c(as_array(out[[1]])), c(1L, 5L))
+  expect_equal(
+    as_array(out[[2]]),
+    array(c(-0.9798, 0.0015, 0.8532, 0.7442, -0.2211, 0.9746), c(2, 3)),
+    tolerance = 1e-4
+  )
+})
+
+test_that("p_rnorm", {
+  f <- function() {
+    nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape_out = c(2, 3))
+  }
+  g <- jit(f)
+  out <- g()
+  expect_equal(c(as_array(out[[1]])), c(1L, 6L))
+  expect_equal(
+    as_array(out[[2]]),
+    array(c(1.9399, -2.3290, -0.0936, 1.1724, 0.0217, -0.3899), c(2, 3)),
+    tolerance = 1e-4
+  )
+})
 
 test_that("p_concatenate", {
   f <- function() {

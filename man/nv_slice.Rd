@@ -7,7 +7,8 @@
 nv_slice(operand, start_indices, limit_indices, strides)
 }
 \arguments{
-\item{operand}{tensor}
+\item{operand}{(\code{\link{nv_tensor}})\cr
+Operand.}
 
 \item{start_indices}{start of slice}
 
