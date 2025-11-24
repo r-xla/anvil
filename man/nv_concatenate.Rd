@@ -16,5 +16,5 @@ The dimension to concatenate along to. Other dimensions must be the same.}
 \code{\link{nv_tensor}}
 }
 \description{
-Concatenate a variadic amaount of tensors.
+Concatenate a variadic number of tensors.
 }
