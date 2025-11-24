@@ -139,7 +139,7 @@ nv_reshape <- nvl_reshape
 
 #' @title Concatenate
 #' @description
-#' Concatenate a variadic amaount of tensors.
+#' Concatenate a variadic number of tensors.
 #' @param ... tensors
 #' @param dimension (`integer()`)\cr
 #'   The dimension to concatenate along to. Other dimensions must be the same.

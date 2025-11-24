@@ -37,3 +37,4 @@ bayesian
 jax
 pjrt
 stableHLO
+variadic
