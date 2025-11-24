@@ -1,5 +1,17 @@
 test_that("p_rnorm", {
   f <- function() {
+    nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape_out = c(2, 3))
+  }
+  g <- jit(f)
+  out <- g()
+  expect_equal(c(as_array(out[[1]])), c(1L, 6L))
+  expect_equal(
+    as_array(out[[2]]),
+    array(c(1.9399, -2.3290, -0.0936, 1.1724, 0.0217, -0.3899), c(2, 3)),
+    tolerance = 1e-4
+  )
+
+  f <- function() {
     nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f64", shape_out = c(200L, 300L, 400L))
   }
   g <- jit(f)
