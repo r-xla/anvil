@@ -137,6 +137,27 @@ nv_transpose <- function(x, permutation = NULL) {
 #' @export
 nv_reshape <- nvl_reshape
 
+#' @title Concatenate
+#' @description
+#' Concatenate a variadic number of tensors.
+#' @param ... tensors
+#' @param dimension (`integer()`)\cr
+#'   The dimension to concatenate along to. Other dimensions must be the same.
+#' @return [`nv_tensor`]
+#' @export
+nv_concatenate <- nvl_concatenate
+
+#' @title Slice
+#' @description
+#' return slice of operand.
+#' @template param_operand
+#' @param start_indices start of slice
+#' @param limit_indices end of slice
+#' @param strides stride size
+#' @return [`nv_tensor`]
+#' @export
+nv_slice <- nvl_slice
+
 ## Binary ops ------------------------------------------------------------------
 
 #' @name nv_binary_ops
@@ -297,6 +318,16 @@ nv_atan2 <- function(lhs, rhs) {
   nvl_atan2(args[[1]], args[[2]])
 }
 
+
+#' @title Bitcast Conversion
+#' @name nv_bitcast_convert
+#' @description
+#' Reinterpret Bits
+#' @param operand tensor
+#' @param dtype requested dtype
+#' @export
+nv_bitcast_convert <- nvl_bitcast_convert
+
 ## Unary ops ------------------------------------------------------------------
 
 #' @name nv_unary_ops
@@ -333,6 +364,14 @@ nv_tanh <- nvl_tanh
 #' @rdname nv_unary_ops
 #' @export
 nv_tan <- nvl_tan
+
+#' @rdname nv_unary_ops
+#' @export
+nv_sine <- nvl_sine
+
+#' @rdname nv_unary_ops
+#' @export
+nv_cosine <- nvl_cosine
 
 #' @rdname nv_unary_ops
 #' @export
@@ -441,6 +480,167 @@ nv_reduce_any <- nvl_reduce_any
 #' @rdname nv_reduce_ops
 #' @export
 nv_reduce_all <- nvl_reduce_all
+
+#' @title Random Numbers
+#' @name nv_rng_bit_generator
+#' @description
+#' generate random bits of desired shape and dtype
+#' @param initial_state state seed
+#' @param rng_algorithm one of 'DEFAULT', 'THREE_FRY', 'PHILOX'
+#' @param dtype datatype of output
+#' @param shape_out output shape
+#' @export
+nv_rng_bit_generator <- nvl_rng_bit_generator
+
+# #' @title Random Uniform Numbers
+# #' @name nv_runif
+# #' @description
+# #' generate random uniform numbers
+# #' @param initial_state state seed
+# #' @param dtype output dtype either "f32" or "f64"
+# #' @param shape_out output shape
+# #' @param lower lower bound
+# #' @param upper upper bound
+# #' @export
+# nv_runif <- function(initial_state, dtype = "f64", shape_out, lower = 0, upper = 1) {
+#   checkmate::assertChoice(dtype, c("f32", "f64"))
+#   checkmate::assertNumeric(lower, len = 1, any.missing = FALSE, upper = upper)
+#   checkmate::assertNumeric(upper, len = 1, any.missing = FALSE, lower = lower)
+#   checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
+#   range <- upper - lower
+#   rbits <- nv_rng_bit_generator(
+#     initial_state = initial_state,
+#     "THREE_FRY",
+#     paste0("ui", sub("f(\\d+)", "\\1", dtype)),
+#     shape_out = shape_out
+#   )
+#
+#   lhs <- nv_convert(rbits[[2]], dtype = dtype)
+#   # this works when integer conversion in stablehlo is fixed
+#   # rhs <- nv_convert(
+#   #   nv_maxval(paste0("ui", sub("f(\\d+)", "\\1", dtype)), device = NULL),
+#   #   dtype = dtype
+#   # )
+#   rhs <- nv_scalar(ifelse(dtype == "f32", 2^32 - 1, 2^64 - 1), dtype = dtype)
+#   U <- nv_div(lhs, rhs)
+#   if (range != 1) {
+#     U <- nv_mul(U, nv_scalar(range, dtype = dtype))
+#   }
+#   if (lower != 0) {
+#     U <- nv_add(nv_scalar(lower, dtype = dtype), U)
+#   }
+#   return(list(rbits[[1]], U))
+# }
+
+#' @title Random Uniform Numbers
+#' @name nv_runif
+#' @description
+#' generate random uniform numbers
+#' @param initial_state state seed
+#' @param dtype output dtype either "f32" or "f64"
+#' @param shape_out output shape
+#' @param lower lower bound
+#' @param upper upper bound
+#' @param include_lower Flag, whether to sample from lower bound
+#' @export
+nv_runif <- function(
+  initial_state,
+  dtype = "f64",
+  shape_out,
+  lower = 0,
+  upper = 1,
+  include_lower = FALSE
+) {
+  checkmate::assertChoice(dtype, c("f32", "f64"))
+  checkmate::assertNumeric(lower, len = 1, any.missing = FALSE, upper = upper)
+  checkmate::assertNumeric(upper, len = 1, any.missing = FALSE, lower = lower)
+  checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
+  checkmate::assertFlag(include_lower)
+
+  if (upper == lower) {
+    return(nv_broadcast_to(nv_scalar(upper, dtype = dtype), shape = shape_out))
+  }
+
+  .eps <- nv_scalar(ifelse(dtype == "f32", 2^-23, 2^-52), dtype = dtype)
+  .lower <- nv_scalar(lower, dtype = dtype)
+  .upper <- nv_scalar(upper, dtype = dtype)
+  .range <- nv_sub(.upper, .lower)
+
+  rbits <- nv_rng_bit_generator(
+    initial_state = initial_state,
+    "THREE_FRY",
+    paste0("ui", sub("f(\\d+)", "\\1", dtype)),
+    shape_out = shape_out
+  )
+  shift <- nv_scalar(
+    ifelse(dtype == "f32", 9L, 11L),
+    dtype = paste0("ui", sub("f(\\d+)", "\\1", dtype))
+  )
+  # ensure exponent bits are 0
+  mantissa <- nv_shift_right_logical(rbits[[2]], shift)
+  # TODO
+  # interpretation of 1.0 (float) as unsigned
+  one_bits <- nv_bitcast_convert(
+    nv_scalar(1.0, dtype = dtype),
+    dtype = paste0("ui", sub("f(\\d+)", "\\1", dtype))
+  )
+  # bitwise or -> exponent from 1.0 (float), mantissa is random
+  U <- nv_or(mantissa, one_bits)
+  # convert back to requested dtype
+  # RVs  are in [1, 2)
+  U <- nv_bitcast_convert(U, dtype = dtype)
+  # shift to [0, 1)
+  U <- nv_add(U, nv_scalar(-1, dtype = dtype))
+  # expand to range
+  U <- nv_mul(U, .range)
+  # shift to interval
+  U <- nv_add(U, .lower)
+  # exclude lower
+  if (!include_lower) {
+    U <- nv_add(U, .eps)
+  }
+  return(list(rbits[[1]], U))
+}
+
+#' @title Random Normal Numbers
+#' @name nv_rnorm
+#' @description
+#' generate random normal numbers
+#' @param initial_state state seed
+#' @param dtype output dtype either "f32" or "f64"
+#' @param shape_out output shape
+#' @param mu scalar: expected value
+#' @param sigma scalar: standard deviation
+#' #' @section Covariance:
+#' To implement a covariance structure use cholesky decomposition
+#' @export
+nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
+  checkmate::assertChoice(dtype, c("f32", "f64"))
+  checkmate::assertNumeric(mu, len = 1, any.missing = FALSE)
+  checkmate::assertNumeric(sigma, len = 1, any.missing = FALSE, lower = 0)
+  checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
+  n <- prod(shape_out)
+  U <- nv_runif(
+    initial_state = initial_state,
+    dtype = dtype,
+    shape_out = as.integer(ceiling(n / 2))
+  )
+  R <- nv_mul(nv_log(U[[2]]), nv_scalar(-2, dtype = dtype))
+  sqrt_R <- nv_sqrt(R)
+  Theta <- nv_runif(initial_state = U[[1]], dtype = dtype, shape_out = c(ceiling(n / 2)), lower = 0, upper = 2 * pi)
+  sin_Theta <- nv_sine(Theta[[2]])
+  cos_Theta <- nv_cosine(Theta[[2]])
+  Z1 <- nv_mul(sqrt_R, sin_Theta)
+  Z2 <- nv_mul(sqrt_R, cos_Theta)
+  Z <- nv_concatenate(Z1, Z2, dimension = 1L)
+  N <- nv_mul(Z, nv_scalar(sigma, dtype = dtype))
+  N <- nv_add(N, nv_scalar(mu, dtype = dtype))
+  if (n %% 2 == 1) {
+    N <- nv_slice(N, start_indices = c(0L), limit_indices = c(as.integer(n)), strides = c(1L))
+  }
+  N <- nv_reshape(N, shape = shape_out)
+  list(Theta[[1]], N)
+}
 
 ## Data Types ------------------------------------------------------------------
 

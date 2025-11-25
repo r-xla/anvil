@@ -43,6 +43,14 @@ p_reshape[["jit"]] <- function(operand, shape) {
   list(stablehlo::hlo_reshape(operand, shape))
 }
 
+p_concatenate[["jit"]] <- function(..., dimension) {
+  list(stablehlo::hlo_concatenate(..., dimension = dimension))
+}
+
+p_slice[["jit"]] <- function(operand, start_indices, limit_indices, strides) {
+  list(stablehlo::hlo_slice(operand, start_indices, limit_indices, strides))
+}
+
 .jit_apply_reduce <- function(reductor, operand, init, dims, drop) {
   local_func("")
   dt <- as.character(operand@value_type@type@dtype)
@@ -185,6 +193,10 @@ p_atan2[["jit"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_atan2(lhs, rhs))
 }
 
+p_bitcast_convert[["jit"]] <- function(operand, dtype) {
+  list(stablehlo::hlo_bitcast_convert(operand, dtype))
+}
+
 # unary simple math jit rules ---------------------------------------------------
 
 p_abs[["jit"]] <- function(operand) {
@@ -209,6 +221,14 @@ p_tanh[["jit"]] <- function(operand) {
 
 p_tan[["jit"]] <- function(operand) {
   list(stablehlo::hlo_tan(operand))
+}
+
+p_sine[["jit"]] <- function(operand) {
+  list(stablehlo::hlo_sine(operand))
+}
+
+p_cosine[["jit"]] <- function(operand) {
+  list(stablehlo::hlo_cosine(operand))
 }
 
 p_floor[["jit"]] <- function(operand) {
@@ -244,4 +264,10 @@ p_convert[["jit"]] <- function(operand, dtype) {
 
 p_select[["jit"]] <- function(pred, true_value, false_value) {
   list(stablehlo::hlo_select(pred, true_value, false_value))
+}
+
+# RNG jit rules --------------------------------------------------------
+
+p_rng_bit_generator[["jit"]] <- function(initial_state, rng_algorithm, dtype, shape_out) {
+  stablehlo::hlo_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out)
 }

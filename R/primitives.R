@@ -112,6 +112,31 @@ nvl_reshape <- function(operand, shape) {
   )[[1L]]
 }
 
+p_concatenate <- Primitive("concatenate")
+nvl_concatenate <- function(..., dimension) {
+  dots <- list(...)
+  interprete(
+    p_concatenate,
+    args = dots,
+    params = list(dimension = dimension)
+  )[[1L]]
+}
+
+p_slice <- Primitive("slice")
+nvl_slice <- function(operand, start_indices, limit_indices, strides) {
+  interprete(
+    p_slice,
+    args = list(
+      operand = operand
+    ),
+    params = list(
+      start_indices = start_indices,
+      limit_indices = limit_indices,
+      strides = strides
+    )
+  )[[1L]]
+}
+
 # reduction operators
 
 p_reduce_sum <- Primitive("sum")
@@ -275,6 +300,11 @@ nvl_atan2 <- function(lhs, rhs) {
   interprete(p_atan2, list(lhs, rhs))[[1L]]
 }
 
+p_bitcast_convert <- Primitive("bitcast_convert")
+nvl_bitcast_convert <- function(operand, dtype) {
+  interprete(p_bitcast_convert, list(operand), params = list(dtype = dtype))[[1]]
+}
+
 # unary math primitives ---------------------------------------------------------
 
 p_abs <- Primitive("abs")
@@ -305,6 +335,21 @@ nvl_tanh <- function(operand) {
 p_tan <- Primitive("tan")
 nvl_tan <- function(operand) {
   interprete(p_tan, list(operand))[[1L]]
+}
+
+p_tan <- Primitive("tan")
+nvl_tan <- function(operand) {
+  interprete(p_tan, list(operand))[[1L]]
+}
+
+p_sine <- Primitive("sine")
+nvl_sine <- function(operand) {
+  interprete(p_sine, list(operand))[[1L]]
+}
+
+p_cosine <- Primitive("cosine")
+nvl_cosine <- function(operand) {
+  interprete(p_cosine, list(operand))[[1L]]
 }
 
 p_floor <- Primitive("floor")
@@ -350,4 +395,17 @@ nvl_convert <- function(operand, dtype) {
 p_select <- Primitive("select")
 nvl_select <- function(pred, true_value, false_value) {
   interprete(p_select, list(pred, true_value, false_value))[[1L]]
+}
+
+# RNG primitives
+p_rng_bit_generator <- Primitive("rng_bit_generator")
+nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape_out) {
+  if (!(rng_algorithm %in% c("DEFAULT", "THREE_FRY", "PHILOX"))) {
+    cli_abort("rng_algorithm must be one of: 'DEFAULT', 'THREE_FRY', 'PHILOX' but is {rng_algorithm}")
+  }
+  interprete(
+    p_rng_bit_generator,
+    list(initial_state),
+    params = list(rng_algorithm = rng_algorithm, dtype = dtype, shape_out = shape_out)
+  )
 }

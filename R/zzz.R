@@ -7,7 +7,7 @@
     ui8  = minmax_raw(8, FALSE),
     ui16 = minmax_raw(16, FALSE),
     ui32 = minmax_raw(32, FALSE),
-    u64  = minmax_raw(64, FALSE),
+    ui64 = minmax_raw(64, FALSE),
     i8   = minmax_raw(8, TRUE),
     i16  = minmax_raw(16, TRUE),
     i32  = minmax_raw(32, TRUE),
