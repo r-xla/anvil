@@ -24,7 +24,7 @@ nv_runif(
 
 \item{upper}{upper bound}
 
-\item{include_upper}{Flag, whether to sample from upper bound}
+\item{include_lower}{Flag, whether to sample from lower bound}
 }
 \description{
 generate random uniform numbers

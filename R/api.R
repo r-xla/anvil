@@ -324,7 +324,7 @@ nv_atan2 <- function(lhs, rhs) {
 #' @description
 #' Reinterpret Bits
 #' @param operand tensor
-#' @param cast_to_dtype result dtype
+#' @param dtype requested dtype
 #' @export
 nv_bitcast_convert <- nvl_bitcast_convert
 
@@ -541,7 +541,7 @@ nv_rng_bit_generator <- nvl_rng_bit_generator
 #' @param shape_out output shape
 #' @param lower lower bound
 #' @param upper upper bound
-#' @param include_upper Flag, whether to sample from upper bound
+#' @param include_lower Flag, whether to sample from lower bound
 #' @export
 nv_runif <- function(
   initial_state,

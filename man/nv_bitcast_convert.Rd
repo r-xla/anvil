@@ -9,7 +9,7 @@ nv_bitcast_convert(operand, dtype)
 \arguments{
 \item{operand}{tensor}
 
-\item{cast_to_dtype}{result dtype}
+\item{dtype}{requested dtype}
 }
 \description{
 Reinterpret Bits
