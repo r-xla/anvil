@@ -4,7 +4,14 @@
 \alias{nv_runif}
 \title{Random Uniform Numbers}
 \usage{
-nv_runif(initial_state, dtype = "f64", shape_out, lower = 0, upper = 1)
+nv_runif(
+  initial_state,
+  dtype = "f64",
+  shape_out,
+  lower = 0,
+  upper = 1,
+  include_lower = FALSE
+)
 }
 \arguments{
 \item{initial_state}{state seed}
@@ -16,6 +23,8 @@ nv_runif(initial_state, dtype = "f64", shape_out, lower = 0, upper = 1)
 \item{lower}{lower bound}
 
 \item{upper}{upper bound}
+
+\item{include_upper}{Flag, whether to sample from upper bound}
 }
 \description{
 generate random uniform numbers

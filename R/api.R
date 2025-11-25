@@ -318,6 +318,16 @@ nv_atan2 <- function(lhs, rhs) {
   nvl_atan2(args[[1]], args[[2]])
 }
 
+
+#' @title Bitcast Conversion
+#' @name nv_bitcast_convert
+#' @description
+#' Reinterpret Bits
+#' @param operand tensor
+#' @param cast_to_dtype result dtype
+#' @export
+nv_bitcast_convert <- nvl_bitcast_convert
+
 ## Unary ops ------------------------------------------------------------------
 
 #' @name nv_unary_ops
@@ -482,6 +492,46 @@ nv_reduce_all <- nvl_reduce_all
 #' @export
 nv_rng_bit_generator <- nvl_rng_bit_generator
 
+# #' @title Random Uniform Numbers
+# #' @name nv_runif
+# #' @description
+# #' generate random uniform numbers
+# #' @param initial_state state seed
+# #' @param dtype output dtype either "f32" or "f64"
+# #' @param shape_out output shape
+# #' @param lower lower bound
+# #' @param upper upper bound
+# #' @export
+# nv_runif <- function(initial_state, dtype = "f64", shape_out, lower = 0, upper = 1) {
+#   checkmate::assertChoice(dtype, c("f32", "f64"))
+#   checkmate::assertNumeric(lower, len = 1, any.missing = FALSE, upper = upper)
+#   checkmate::assertNumeric(upper, len = 1, any.missing = FALSE, lower = lower)
+#   checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
+#   range <- upper - lower
+#   rbits <- nv_rng_bit_generator(
+#     initial_state = initial_state,
+#     "THREE_FRY",
+#     paste0("ui", sub("f(\\d+)", "\\1", dtype)),
+#     shape_out = shape_out
+#   )
+#
+#   lhs <- nv_convert(rbits[[2]], dtype = dtype)
+#   # this works when integer conversion in stablehlo is fixed
+#   # rhs <- nv_convert(
+#   #   nv_maxval(paste0("ui", sub("f(\\d+)", "\\1", dtype)), device = NULL),
+#   #   dtype = dtype
+#   # )
+#   rhs <- nv_scalar(ifelse(dtype == "f32", 2^32 - 1, 2^64 - 1), dtype = dtype)
+#   U <- nv_div(lhs, rhs)
+#   if (range != 1) {
+#     U <- nv_mul(U, nv_scalar(range, dtype = dtype))
+#   }
+#   if (lower != 0) {
+#     U <- nv_add(nv_scalar(lower, dtype = dtype), U)
+#   }
+#   return(list(rbits[[1]], U))
+# }
+
 #' @title Random Uniform Numbers
 #' @name nv_runif
 #' @description
@@ -491,33 +541,63 @@ nv_rng_bit_generator <- nvl_rng_bit_generator
 #' @param shape_out output shape
 #' @param lower lower bound
 #' @param upper upper bound
+#' @param include_upper Flag, whether to sample from upper bound
 #' @export
-nv_runif <- function(initial_state, dtype = "f64", shape_out, lower = 0, upper = 1) {
+nv_runif <- function(
+  initial_state,
+  dtype = "f64",
+  shape_out,
+  lower = 0,
+  upper = 1,
+  include_lower = FALSE
+) {
   checkmate::assertChoice(dtype, c("f32", "f64"))
   checkmate::assertNumeric(lower, len = 1, any.missing = FALSE, upper = upper)
   checkmate::assertNumeric(upper, len = 1, any.missing = FALSE, lower = lower)
   checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
-  range <- upper - lower
+  checkmate::assertFlag(include_lower)
+
+  if (upper == lower) {
+    return(nv_broadcast_to(nv_scalar(upper, dtype = dtype), shape = shape_out))
+  }
+
+  .eps <- nv_scalar(ifelse(dtype == "f32", 2^-23, 2^-52), dtype = dtype)
+  .lower <- nv_scalar(lower, dtype = dtype)
+  .upper <- nv_scalar(upper, dtype = dtype)
+  .range <- nv_sub(.upper, .lower)
+
   rbits <- nv_rng_bit_generator(
     initial_state = initial_state,
     "THREE_FRY",
     paste0("ui", sub("f(\\d+)", "\\1", dtype)),
     shape_out = shape_out
   )
-
-  lhs <- nv_convert(rbits[[2]], dtype = dtype)
-  # this works when integer conversion in stablehlo is fixed
-  # rhs <- nv_convert(
-  #   nv_maxval(paste0("ui", sub("f(\\d+)", "\\1", dtype)), device = NULL),
-  #   dtype = dtype
-  # )
-  rhs <- nv_scalar(ifelse(dtype == "f32", 2^32 - 1, 2^64 - 1), dtype = dtype)
-  U <- nv_div(lhs, rhs)
-  if (range != 1) {
-    U <- nv_mul(U, nv_scalar(range, dtype = dtype))
-  }
-  if (lower != 0) {
-    U <- nv_add(nv_scalar(lower, dtype = dtype), U)
+  shift <- nv_scalar(
+    ifelse(dtype == "f32", 9L, 11L),
+    dtype = paste0("ui", sub("f(\\d+)", "\\1", dtype))
+  )
+  # ensure exponent bits are 0
+  mantissa <- nv_shift_right_logical(rbits[[2]], shift)
+  # TODO
+  # interpretation of 1.0 (float) as unsigned
+  one_bits <- nv_bitcast_convert(
+    nv_scalar(1.0, dtype = dtype),
+    dtype = paste0("ui", sub("f(\\d+)", "\\1", dtype))
+  )
+  # bitwise or -> exponent from 1.0 (float), mantissa is random
+  U <- nv_or(mantissa, one_bits)
+  # convert back to requested dtype
+  # RVs  are in [1, 2)
+  U <- nv_bitcast_convert(U, dtype = dtype)
+  # shift to [0, 1)
+  U <- nv_add(U, nv_scalar(-1, dtype = dtype))
+  # expand to range
+  U <- nv_mul(U, .range)
+  # shift to interval
+  U <- nv_add(U, .lower)
+  # exclude lower
+  if (!include_lower) {
+    U <- nv_add(U, .eps)
   }
   return(list(rbits[[1]], U))
 }
@@ -540,7 +620,11 @@ nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
   checkmate::assertNumeric(sigma, len = 1, any.missing = FALSE, lower = 0)
   checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
   n <- prod(shape_out)
-  U <- nv_runif(initial_state = initial_state, dtype = dtype, shape_out = as.integer(ceiling(n / 2)))
+  U <- nv_runif(
+    initial_state = initial_state,
+    dtype = dtype,
+    shape_out = as.integer(ceiling(n / 2))
+  )
   R <- nv_mul(nv_log(U[[2]]), nv_scalar(-2, dtype = dtype))
   sqrt_R <- nv_sqrt(R)
   Theta <- nv_runif(initial_state = U[[1]], dtype = dtype, shape_out = c(ceiling(n / 2)), lower = 0, upper = 2 * pi)

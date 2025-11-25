@@ -193,6 +193,10 @@ p_atan2[["jit"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_atan2(lhs, rhs))
 }
 
+p_bitcast_convert[["jit"]] <- function(operand, dtype) {
+  list(stablehlo::hlo_bitcast_convert(operand, dtype))
+}
+
 # unary simple math jit rules ---------------------------------------------------
 
 p_abs[["jit"]] <- function(operand) {

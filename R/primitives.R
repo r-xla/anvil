@@ -300,6 +300,11 @@ nvl_atan2 <- function(lhs, rhs) {
   interprete(p_atan2, list(lhs, rhs))[[1L]]
 }
 
+p_bitcast_convert <- Primitive("bitcast_convert")
+nvl_bitcast_convert <- function(operand, dtype) {
+  interprete(p_bitcast_convert, list(operand), params = list(dtype = dtype))[[1]]
+}
+
 # unary math primitives ---------------------------------------------------------
 
 p_abs <- Primitive("abs")

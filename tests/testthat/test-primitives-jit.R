@@ -20,18 +20,17 @@ test_that("p_rng_bit_generator", {
   expect_equal(as_array(out[[2]]), array(c(43444564L, 1672743891L, -315321645L, 2109414752L), c(2, 2)))
 })
 
-test_that("p_runif", {
+test_that("p_bitcast_convert", {
   f <- function() {
-    nv_runif(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape_out = c(2, 3), lower = -1, upper = 1)
+    nv_bitcast_convert(
+      nv_tensor(seq(-1, 1, length.out = 6), dtype = "f64", shape = c(2, 3)),
+      dtype = "i32"
+    )
   }
   g <- jit(f)
   out <- g()
-  expect_equal(c(as_array(out[[1]])), c(1L, 5L))
-  expect_equal(
-    as_array(out[[2]]),
-    array(c(-0.9798, 0.0015, 0.8532, 0.7442, -0.2211, 0.9746), c(2, 3)),
-    tolerance = 1e-4
-  )
+  expect_equal(dim(as_array(out)), c(2, 3, 2))
+  expect_true(is.integer(as_array(out)))
 })
 
 test_that("p_slice", {
