@@ -38,3 +38,4 @@ jax
 pjrt
 stableHLO
 variadic
+Bitcast
