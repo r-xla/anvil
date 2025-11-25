@@ -5,7 +5,14 @@ generate random uniform numbers
 ## Usage
 
 ``` r
-nv_runif(initial_state, dtype = "f64", shape_out, lower = 0, upper = 1)
+nv_runif(
+  initial_state,
+  dtype = "f64",
+  shape_out,
+  lower = 0,
+  upper = 1,
+  include_lower = FALSE
+)
 ```
 
 ## Arguments
@@ -29,3 +36,7 @@ nv_runif(initial_state, dtype = "f64", shape_out, lower = 0, upper = 1)
 - upper:
 
   upper bound
+
+- include_upper:
+
+  Flag, whether to sample from upper bound

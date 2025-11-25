@@ -15,6 +15,7 @@
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/jit.html</loc></url>
 <url><loc>/reference/nv_binary_ops.html</loc></url>
+<url><loc>/reference/nv_bitcast_convert.html</loc></url>
 <url><loc>/reference/nv_broadcast_tensors.html</loc></url>
 <url><loc>/reference/nv_broadcast_to.html</loc></url>
 <url><loc>/reference/nv_concatenate.html</loc></url>
