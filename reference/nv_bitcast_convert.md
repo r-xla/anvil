@@ -14,6 +14,6 @@ nv_bitcast_convert(operand, dtype)
 
   tensor
 
-- cast_to_dtype:
+- dtype:
 
-  result dtype
+  requested dtype

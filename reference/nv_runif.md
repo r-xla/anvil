@@ -37,6 +37,6 @@ nv_runif(
 
   upper bound
 
-- include_upper:
+- include_lower:
 
-  Flag, whether to sample from upper bound
+  Flag, whether to sample from lower bound
