@@ -34,4 +34,7 @@ donatable
 XLA
 precisions
 cpu
+dtype
+Init
+DotDimensionNumbers
 

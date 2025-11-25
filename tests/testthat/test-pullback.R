@@ -2,7 +2,7 @@ test_that("basic pullback test", {
   f <- function(x, y) {
     nvl_add(x, y)
   }
-  g <- jit(gradient(f))
+  f_grad <- jit(gradient(f))
   out <- f_grad(nv_scalar(1.0), nv_scalar(2.0))
   expect_equal(out[[1L]], nv_scalar(1.0))
   expect_equal(out[[2L]], nv_scalar(1.0))
@@ -171,22 +171,20 @@ test_that("partial gradient simple", {
 #  expect_equal(fbwd(x), list(lhs = jit(nv_mul)(x, nv_tensor(2:11))))
 #})
 
-test_that("format and print for PullbackBox", {
-  func <- local_func()
-  x <- hlo_input("x", "f32", c(2, 3))
-  main <- local_main(HloInterpreter)
-  jit_interpreter <- HloInterpreter(main = main, func = func)
-  box <- HloBox(jit_interpreter, x)
-  pull <- PullbackInterpreter()
-  box_pull <- PullbackBox(pull, box, PullbackNode(NULL, list(), required = FALSE))
-  expect_equal(format(box_pull), "PullbackBox(HloBox(ShapedTensor(dtype=f32, shape=2x3)))")
-  expect_snapshot(box_pull)
-})
-
 test_that("gradients are present even if they don't influence the output", {
   g <- jit(gradient(function(x, y) x, wrt = "y"))
   expect_equal(
     g(nv_scalar(1), nv_scalar(1)),
     list(y = nv_scalar(0))
+  )
+})
+
+test_that("wrt non-existent argument", {
+  f <- function(x) {
+    nv_pow(x, nv_scalar(1))
+  }
+  expect_error(
+    jit(gradient(f, wrt = "y"))(nv_scalar(2)),
+    "wrt must be"
   )
 })

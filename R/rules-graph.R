@@ -176,7 +176,7 @@ p_convert[["graph"]] <- function(operand, dtype) {
 # Shape-manipulating operations
 
 p_broadcast_in_dim[["graph"]] <- function(operand, shape_out, broadcast_dimensions) {
-  bd_attr <- stablehlo::r_to_constant(
+  bd_attr <- stablehlo:::r_to_constant(
     as.integer(broadcast_dimensions - 1L),
     dtype = "i64",
     shape = length(broadcast_dimensions)
