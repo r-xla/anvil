@@ -358,24 +358,23 @@ nvl_select <- function(pred, true_value, false_value) {
 
 p_if <- Primitive("if")
 nvl_if <- function(pred, true, false) {
-  .NotYetImplemented()
   true_expr <- rlang::enquo(true)
   false_expr <- rlang::enquo(false)
-  true_fn <- flatten_fun(function() {
-    rlang::eval_tidy(true_expr)
-  })
-  false_fn <- flatten_fun(function() {
-    rlang::eval_tidy(false_expr)
-  })
 
-  true_out <- stablehlo(true_fn, list())
-  false_out <- stablehlo(false_fn, list())
+  # Build sub-graphs for each branch (no inputs, just capture closed-over values)
+  true_graph <- graphify(function() rlang::eval_tidy(true_expr), list())
+  false_graph <- graphify(function() rlang::eval_tidy(false_expr), list())
 
-  if (!identical(true_out[[2L]], false_out[[2L]])) {
-    cli_abort("true and false must have the same output tree")
+  if (!identical(true_graph@out_tree, false_graph@out_tree)) {
+    cli_abort("true and false branches must have the same output structure")
   }
-  out <- graph_call(p_if, list(pred), params = list(true = true_out[[1L]], false = false_out[[1L]]))
-  unflatten(true_out[[2L]], out)
+
+  out <- graph_call(
+    p_if,
+    list(pred),
+    params = list(true_graph = true_graph, false_graph = false_graph)
+  )
+  unflatten(true_graph@out_tree, out)
 }
 
 p_while <- Primitive("while")

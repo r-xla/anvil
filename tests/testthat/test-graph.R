@@ -4,9 +4,9 @@ test_that("graphify: simple test", {
   }
   graph <- graphify(f, list(x = nv_scalar(1), y = nv_scalar(2)))
   expect_true(is_graph(graph))
-  expect_list(graph@inputs, len = 2L, types = "anvil::mut<GraphVariable>")
+  expect_list(graph@inputs, len = 2L, types = "anvil::mut<GraphValue>")
   expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
-  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphVariable>")
+  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphValue>")
   expect_true(identical(graph@outputs, graph@calls[[1]]@outputs))
 })
 
@@ -25,9 +25,9 @@ test_that("graphify: nested inputs and outputs", {
   }
 
   graph <- graphify(f, list(lst = list(nv_scalar(1), nv_scalar(2))))
-  expect_list(graph@inputs, len = 2L, types = "anvil::mut<GraphVariable>")
+  expect_list(graph@inputs, len = 2L, types = "anvil::mut<GraphValue>")
   expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
-  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphVariable>")
+  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphValue>")
   expect_equal(
     unflatten(graph@in_tree, list(1, 2)),
     list(lst = list(1, 2))
@@ -44,15 +44,15 @@ test_that("graphify: closed-over constants", {
     nvl_add(x, y)
   }
   graph <- graphify(f, list(y = nv_scalar(2)))
-  expect_list(graph@inputs, len = 1L, types = "anvil::mut<GraphVariable>")
+  expect_list(graph@inputs, len = 1L, types = "anvil::mut<GraphValue>")
   expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
-  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphVariable>")
+  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphValue>")
 
   # What do we expect here?
   # We want the resulting graph to have a constant and two inputs
 
-  expect_true(is_graph_constant(graph@calls[[1]]@inputs[[1]]))
-  expect_true(is_graph_variable(graph@calls[[1]]@inputs[[2]]))
+  expect_true(is_graph_value(graph@calls[[1]]@inputs[[1]]))
+  expect_true(is_graph_value(graph@calls[[1]]@inputs[[2]]))
   expect_true(identical(x, graph@constants[[1]]@aval@data))
   expect_equal(length(graph@constants), 1L)
 })
@@ -104,4 +104,88 @@ test_that("local_descriptor restores previous graph", {
 test_that(".current_descriptor errors when no graph exists", {
   globals[["CURRENT_DESCRIPTOR"]] <- NULL
   expect_error(.current_descriptor(), "No graph is currently being built")
+})
+
+test_that("graphify removes dead code", {
+  f <- function(x, y) {
+    # This addition doesn't contribute to the output
+    dead <- nvl_add(x, y)
+    # Only this multiplication is used in the output
+    nvl_mul(x, y)
+  }
+  graph <- graphify(f, list(x = nv_scalar(3), y = nv_scalar(4)))
+
+  # Should only have the multiply call, not the add call
+  expect_equal(length(graph@calls), 1L)
+  expect_equal(graph@calls[[1L]]@primitive@name, "mul")
+})
+
+test_that("graphify removes dead constants", {
+  dead_const <- nv_scalar(99)
+  used_const <- nv_scalar(2)
+
+  f <- function(x) {
+    # dead_const is not used in output
+    dead <- nvl_add(x, dead_const)
+    # only used_const contributes
+    nvl_mul(x, used_const)
+  }
+  graph <- graphify(f, list(x = nv_scalar(3)))
+
+  # Should only have the multiply call
+  expect_equal(length(graph@calls), 1L)
+  expect_equal(graph@calls[[1L]]@primitive@name, "mul")
+
+  # Should only have the used constant
+  expect_equal(length(graph@constants), 1L)
+  expect_equal(as.numeric(as_array(graph@constants[[1L]]@aval@data)), 2)
+})
+
+test_that("graphify keeps transitively needed calls", {
+  f <- function(x, y) {
+    # This is needed because it's used by the second operation
+    intermediate <- nvl_add(x, y)
+    nvl_mul(intermediate, x)
+  }
+  graph <- graphify(f, list(x = nv_scalar(3), y = nv_scalar(4)))
+
+  # Both calls should be kept
+  expect_equal(length(graph@calls), 2L)
+})
+
+test_that("constants: same tensor is constant and input at the same time", {
+  # Not sure what we want to happen here.
+  f <- jit(function(x) {
+    h <- function(x) x * y
+    y <- nv_scalar(2)
+    gradient(h)(y)
+  })
+  f(nv_scalar(1))
+})
+
+test_that("closed-over constant is passed as argument to transformation", {
+  x <- nv_scalar(1)
+  f <- jit(function() {
+    h <- function(y) y * y
+    gradient(h)(x)
+  })
+  f()
+})
+
+test_that("can pass constant to nested graphify call if it does not exist in the parent graph", {
+  f <- jit(function() {
+    g <- function(y) y * y
+    gradient(g)(nv_scalar(2))
+  })
+  expect_equal(f(), list(y = nv_scalar(4)))
+})
+
+test_that("can pass constant to nested graphify call if it is defined in the parent graph", {
+  f <- jit(function() {
+    nv_add(y, y)
+    g <- function(y) y * y
+    gradient(g)(y)
+  })
+  y <- nv_scalar(2)
+  expect_equal(f(), list(y = nv_scalar(4)))
 })

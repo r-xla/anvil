@@ -2,6 +2,7 @@
 #' @include interpreter-jit.R
 
 # TODO: Here we don't have to re-do the type inference again, because it was already done.
+
 p_add[["stablehlo"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_add(lhs, rhs))
 }
@@ -247,6 +248,9 @@ p_select[["stablehlo"]] <- function(pred, true_value, false_value) {
   list(stablehlo::hlo_select(pred, true_value, false_value))
 }
 
-p_if[["stablehlo"]] <- function(pred, true, false) {
-  stablehlo::hlo_if(pred, true, false, simplify = FALSE)
+p_if[["stablehlo"]] <- function(pred, true_graph, false_graph) {
+  browser()
+  true_func <- stablehlo(true_graph)[[1L]]
+  false_func <- stablehlo(false_graph)[[1L]]
+  stablehlo::hlo_if(pred, true_func, false_func, simplify = FALSE)
 }

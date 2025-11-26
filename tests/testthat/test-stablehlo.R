@@ -13,6 +13,7 @@ test_that("stablehlo: a constant", {
   graph <- graphify(f, list(y = nv_scalar(2)))
   out <- stablehlo(graph)
   func <- out[[1L]]
-  const <- out[[2L]]
-  expect_identical(const, list(x))
+  const <- out[[2L]][[1L]]
+  expect_true(is_graph_value(const))
+  expect_identical(const@aval@data, x)
 })

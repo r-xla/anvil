@@ -1,34 +1,49 @@
-#' @title Graph Variable
+#' @title Graph Value
 #' @description
-#' Variable in a [`Graph`].
+#' Value in a [`Graph`].
 #' @section Fields:
 #' * `state` :: (`any`)\cr
 #'   The state of the variable. Populated when the graph is executed.
 #' @include mut.R
-GraphVariable <- mut(new_class(
-  "GraphVariable",
+GraphValue <- mut(new_class(
+  "GraphValue",
   properties = list(
     aval = ShapedTensor
   )
 ))
 
-method(format, GraphVariable) <- function(x, ...) {
-  sprintf("GraphVariable(%s)", format(x@aval))
-}
-
-GraphConstant <- mut(new_class(
-  "GraphConstant",
+#' @title Graph Literal
+#' @description
+#' Literal in a [`Graph`].
+#' @section Fields:
+#' * `aval` :: (`any`)\cr
+#'   The value of the literal.
+#' * `dtype` :: (`stablehlo::TensorDataType`)\cr
+#'   The dtype of the literal.
+#' @export
+GraphLiteral <- mut(new_class(
+  "GraphLiteral",
   properties = list(
-    aval = ConcreteTensor
+    aval = new_property(class_any, validator = function(value) {
+      checkmate::check_scalar(value)
+    }),
+    dtype = stablehlo::TensorDataType
   )
-  # TODO: Why does fwd_graph not have inputs?
 ))
 
-method(format, GraphConstant) <- function(x, ...) {
-  sprintf("GraphConstant(%s)", format(x@aval))
+is_graph_literal <- function(x) {
+  inherits(x, "anvil::mut<GraphLiteral>")
 }
 
-GraphNode <- S7::new_union(GraphVariable, GraphConstant)
+method(format, GraphValue) <- function(x, ...) {
+  sprintf("GraphValue(%s)", format(x@aval))
+}
+
+method(format, GraphLiteral) <- function(x, ...) {
+  sprintf("GraphLiteral(%s, %s)", format(x@aval), format(x@dtype))
+}
+
+GraphNode <- S7::new_union(GraphValue, GraphLiteral)
 
 #' @title Primitive Call
 #' @description
@@ -37,11 +52,11 @@ GraphNode <- S7::new_union(GraphVariable, GraphConstant)
 #' @section Fields:
 #' * `primitive` :: ([`Primitive`])\cr
 #'   The function.
-#' * `inputs` :: (`list(GraphVariable)`)\cr
+#' * `inputs` :: (`list(GraphValue)`)\cr
 #'   The (tensor) inputs to the primitive.
 #' * `params` :: (`list(<any>)`)\cr
 #'   The (static) parameters of the function call.
-#' * `outputs` :: (`list(GraphVariable)`)\cr
+#' * `outputs` :: (`list(GraphValue)`)\cr
 #'   The (tensor) outputs of the primitive.
 #' @export
 PrimitiveCall <- new_class(
@@ -67,58 +82,72 @@ PrimitiveCall <- new_class(
 #'   The tree of inputs.
 #' * `out_tree` :: (`NULL | Node`)\cr
 #'   The tree of outputs.
-#' * `inputs` :: (`list(GraphVariable)`)\cr
+#' * `inputs` :: (`list(GraphValue)`)\cr
 #'   The inputs to the graph.
-#' * `outputs` :: (`list(GraphVariable)`)\cr
+#' * `outputs` :: (`list(GraphValue)`)\cr
 #'   The outputs of the graph.
 #'
 #' @export
 Graph <- mut(new_class(
   "Graph",
   properties = list(
-    # Primitive: list(GraphVariable) --[params]--> list(GraphVariable)
-    # All the GraphVariables that are inputs will already have a binding.
+    # Primitive: list(GraphValue) --[params]--> list(GraphValue)
+    # All the GraphValues that are inputs will already have a binding.
     # Those that are constants as well
     calls = list_of(PrimitiveCall),
     ## Used to (un-)flatten inputs and outputs
     in_tree = NULL | new_S3_class("Node"),
     out_tree = NULL | new_S3_class("Node"),
-    inputs = list_of(GraphVariable),
+    inputs = list_of(GraphValue),
     outputs = list_of(GraphNode),
-    constants = list_of(GraphConstant)
+    constants = list_of(GraphValue)
   )
 ))
 
+#' @title Graph Descriptor
+#' @description
+#' Descriptor of a [`Graph`].
+#' @section Fields:
+#' * `calls` :: (`list(PrimitiveCall)`)\cr
+#'   The primitive calls that make up the graph.
+#' * `tensor_to_gval` :: (`hashtab`)\cr
+#'   Mapping: `AnvilTensor` -> `GraphValue`
+#' * `gval_to_box` :: (`hashtab`)\cr
+#'
+#' @details
+#' The trickiest thing in our setup are how we ensure that the same values receive the same identifier
+#' (GraphValue) across nested graphs.
+#' There are two cases:
+#' 1. When a
 GraphDescriptor <- mut(new_class(
   "GraphDescriptor",
   properties = list(
     calls = list_of(PrimitiveCall),
-    # hashtab, because we will deduplicate them during tracing
-    constants = new_property(class_hashtab, default = quote(hashtab())),
-    #constants = new_property(class_hashtab, default = quote(hashtab())),
-    # AnvilTensor -> GraphConstant
-    tensor_to_const = new_property(class_hashtab, default = quote(hashtab())),
+    # We either get boxes as GraphValue or Tensor
+    tensor_to_gval = new_property(class_hashtab, default = quote(hashtab())),
+    gval_to_box = new_property(class_hashtab, default = quote(hashtab())),
+    constants = list_of(GraphValue),
     in_tree = NULL | new_S3_class("Node"),
     out_tree = NULL | new_S3_class("Node"),
-    inputs = list_of(GraphVariable),
+    inputs = list_of(GraphValue),
     outputs = list_of(GraphNode)
   )
 ))
 
-method(shape, GraphVariable) <- function(x, ...) {
+method(shape, GraphValue) <- function(x, ...) {
   shape(x@aval)
 }
 
-method(dtype, GraphVariable) <- function(x, ...) {
+method(dtype, GraphValue) <- function(x, ...) {
   dtype(x@aval)
 }
 
-method(shape, GraphConstant) <- function(x, ...) {
-  shape(x@aval)
+method(shape, GraphLiteral) <- function(x, ...) {
+  integer()
 }
 
-method(dtype, GraphConstant) <- function(x, ...) {
-  dtype(x@aval)
+method(dtype, GraphLiteral) <- function(x, ...) {
+  x@dtype
 }
 
 # identical() fails for some reason on graph descriptors with the same .state
@@ -135,7 +164,7 @@ descriptor_to_graph <- function(descriptor) {
     calls = descriptor@calls,
     inputs = descriptor@inputs,
     outputs = descriptor@outputs,
-    constants = hashvalues(descriptor@tensor_to_const)
+    constants = descriptor@constants
   )
   graph@in_tree <- descriptor@in_tree
   graph@out_tree <- descriptor@out_tree
@@ -150,17 +179,17 @@ GraphBox <- new_class(
   parent = Box,
   properties = list(
     # TODO: rename to gnode
-    gvar = GraphNode,
+    gval = GraphNode,
     desc = GraphDescriptor
   )
 )
 
 method(shape, GraphBox) <- function(x, ...) {
-  shape(x@gvar)
+  shape(x@gval)
 }
 
 method(dtype, GraphBox) <- function(x, ...) {
-  dtype(x@gvar)
+  dtype(x@gval)
 }
 
 method(print, GraphBox) <- function(x, ...) {
@@ -168,7 +197,7 @@ method(print, GraphBox) <- function(x, ...) {
 }
 
 method(format, GraphBox) <- function(x, ...) {
-  sprintf("GraphBox(%s)", format(x@gvar))
+  sprintf("GraphBox(%s)", format(x@gval))
 }
 
 aval <- function(x) {
@@ -176,75 +205,156 @@ aval <- function(x) {
     return(ConcreteTensor(x))
   }
   if (is_graph_box(x)) {
-    return(x@gvar@aval)
+    return(x@gval@aval)
   }
   cli_abort("internal error")
 }
 
 
-# TODO(aesthetics): can we unify maybe_box_variable and maybe_box_input?
 
 maybe_box_variable <- function(x) {
+  current_desc <- .current_descriptor()
   if (is_graph_box(x)) {
-    if (x@desc == .current_descriptor()) {
-      x
-    } else {
-      # closed over constants in nested graphify calls
-      cli::cli_abort("Descriptor mismatch! x@desc: {format(x@desc)} current: {format(.current_descriptor())}")
+    if (x@desc == current_desc) {
+      return(x)
     }
+    gval <- x@gval
+    get_box_or_register_cont(current_desc, gval)
   } else if (is_anvil_tensor(x)) {
-    desc <- .current_descriptor()
-
-    const <- desc@tensor_to_const[[x]]
-
-    if (!is.null(const)) {
-      return(GraphBox(const, desc))
-    }
-
-    const <- GraphConstant(aval = ConcreteTensor(x))
-    register_constant(desc, x, const)
-    GraphBox(const, .current_descriptor())
+    get_box_or_register_cont(current_desc, x)
   } else if (is_graph_node(x)) {
-    GraphBox(x, .current_descriptor())
+    # FIXME: !!!
+    # We use this in gradient, but I am not sure this is such a great idea
+    #browser()
+    #cli_abort("Internal error: trying to lift a GraphNode")
+    get_box_or_register_cont(current_desc, x)
+    #GraphBox(x, .current_descriptor())
   } else {
     x
   }
-}
-
-register_constant <- function(desc, tensor, const) {
-  desc@tensor_to_const[[tensor]] <- const
-  desc@constants[[const]] <- const
-}
-
-initialize_descriptor_from_graph <- function(desc, graph) {
-  desc@calls <- graph@calls
-  for (const in graph@constants) {
-    desc@constants[[const]] <- const
-    desc@tensor_to_const[[const@aval@data]] <- const
-  }
-  desc@in_tree <- graph@in_tree
-  desc@inputs <- graph@inputs
-  desc@outputs <- graph@outputs
-  desc@out_tree <- graph@out_tree
-
-  graph
 }
 
 maybe_box_input <- function(x, desc) {
+  # this function is on the inputs of graphify()
   if (is_anvil_tensor(x)) {
-    # top-level graphify call
-    gvar <- GraphVariable(aval = ShapedTensor(dtype(x), Shape(shape(x))))
-    desc@inputs <- c(desc@inputs, gvar)
-    GraphBox(gvar, desc)
+    # cases:
+    # 1. top-level graphify call
+    # 2. a constant is passed to a nested graphify call
+    #    this constant can be a closed-over constant or defined in the environment of the nested graphify call
+    # For the first scenario, it would be sufficient to create a ShapedTensor,
+    # because the input will be provided by the user
+    # For the second scenario, we will inline the descriptor into the parent descriptor,
+    # but it the input to the nested graphify call does not become an input to the parent graph,
+    # but is simply an existing value, that is a value from the parent graph
+    # however, if the value does not exist in the parent graph, we need to add it as a constant
+    # for that, we need to keep the value of the actual tensor, so we can later register it
+    # see test: "can pass constant to nested graphify call if it ..." in test-graph.R
+    gval <- GraphValue(aval = ConcreteTensor(x))
+    register_input(desc, gval)
   } else if (is_graph_box(x)) {
     # Nested graphify call
     # Because we will inline the child graph into the parent graph, we re-use
-    # the same box, because this will make the inlining straightforward.
-    desc@inputs <- c(desc@inputs, x@gvar)
-    GraphBox(x@gvar, desc)
+    # the same GraphValue, because this will make the inlining straightforward.
+    register_input(desc, x@gval)
   } else {
+    # parameter
     x
   }
+}
+
+register_input <- function(desc, x) {
+  if (!is_graph_descriptor(desc)) {
+    cli_abort("Internal error: trying to register an input in a non-graph descriptor")
+  }
+  if (!is_graph_value(x)) {
+    cli_abort("Internal error: trying to register an invalid input")
+  }
+  desc@inputs <- c(desc@inputs, x)
+  box <- GraphBox(x, desc)
+  desc@gval_to_box[[x]] <- box
+  box
+}
+
+register_gval <- function(desc, x) {
+  if (!is_graph_descriptor(desc)) {
+    cli_abort("Internal error: trying to register a gval in a non-graph descriptor")
+  }
+  if (!is_graph_value(x)) {
+    cli_abort("Internal error: trying to register an invalid gval")
+  }
+  box <- desc@gval_to_box[[x]]
+  if (!is.null(box)) {
+    return(box)
+  }
+  box <- GraphBox(x, desc)
+  desc@gval_to_box[[x]] <- box
+  box
+}
+
+# Returns a Box
+get_box_or_register_cont <- function(desc, x) {
+  if (!is_graph_descriptor(desc)) {
+    cli_abort("Internal error: trying to register a constant in a non-graph descriptor")
+  }
+  if (is_anvil_tensor(x)) {
+    gval <- desc@tensor_to_gval[[x]]
+    if (!is.null(gval)) {
+      return(desc@gval_to_box[[gval]])
+    }
+    gval <- GraphValue(aval = ConcreteTensor(x))
+    desc@tensor_to_gval[[x]] <- gval
+    desc@constants <- c(desc@constants, gval)
+    box <- GraphBox(gval, desc)
+    desc@gval_to_box[[gval]] <- box
+    return(box)
+  }
+  if (!is_graph_value(x)) {
+    cli_abort("Internal error: trying to register an invalid constant")
+  }
+  # gval@aval can either be a
+  # * ConcreteTensor: AnvilTensor that is captured from the parent environment
+  # * ShapedTensor: Output of a computation in a parent graph
+  # In either case, we first check whether the value is already registered in the current graph
+  # and if so, return it:
+  box <- desc@gval_to_box[[x]]
+  if (!is.null(box)) {
+    return(box)
+  }
+
+  # Now, we create the new box and register it, so if we see it again, we can return it immediately.
+  new_box <- GraphBox(x, desc)
+
+  if (is_concrete_tensor(aval)) {
+    desc@tensor_to_gval[[x@data]] <- x
+  }
+  desc@gval_to_box[[x]] <- new_box
+  desc@constants <- c(desc@constants, x)
+  return(new_box)
+}
+
+init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
+  for (input in graph@inputs) {
+    register_input(desc, input)
+  }
+  for (const in graph@constants) {
+    get_box_or_register_cont(desc, const)
+  }
+  for (call in graph@calls) {
+    for (input in c(call@inputs, call@outputs)) {
+      if (is.null(desc@gval_to_box[[input]])) {
+        desc@gval_to_box[[input]] <- GraphBox(input, desc)
+      }
+    }
+  }
+
+  desc@calls <- graph@calls
+  desc@in_tree <- graph@in_tree
+  if (outputs) {
+    desc@outputs <- graph@outputs
+  }
+  desc@out_tree <- graph@out_tree
+
+  graph
 }
 
 graphify <- function(f, args) {
@@ -262,42 +372,23 @@ graphify <- function(f, args) {
   outputs_flat <- lapply(output[[2L]], maybe_box_variable)
 
   desc@out_tree <- out_tree
-  desc@outputs <- lapply(outputs_flat, \(x) x@gvar)
+  desc@outputs <- lapply(outputs_flat, \(x) x@gval)
 
   if (any(vapply(outputs_flat, \(x) !is_graph_box(x), logical(1L)))) {
     cli_abort("Function .f must return only objects of type `GraphBox`.")
   }
 
-  descriptor_to_graph(desc)
+  graph <- descriptor_to_graph(desc)
+  pass_dead_code(graph)
 }
 
 is_graph_node <- function(x) {
-  is_graph_variable(x) || is_graph_constant(x)
+  is_graph_value(x) || is_graph_literal(x)
 }
 
-is_graph_constant <- function(x) {
-  inherits(x, "anvil::mut<GraphConstant>")
+is_graph_value <- function(x) {
+  inherits(x, "anvil::mut<GraphValue>")
 }
-
-is_graph_variable <- function(x) {
-  inherits(x, "anvil::mut<GraphVariable>")
-}
-
-# TODO: Nicer
-#method(format, PrimitiveCall) <- function(x, ...) {
-#  inputs <- paste(lapply(x@inputs, \(x) format(x@aval)), collapse = ", ")
-#  outputs <- paste(lapply(x@outputs, \(x) format(x@aval)), collapse = ", ")
-#  sprintf("%s(%s, %s params) -> %s", x@primitive@name, inputs, length(x@params), outputs)
-#}
-
-# This is like hlo_return, but for graphs
-# It discards the current graph
-#graph_return <- function(graph, outputs, out_tree) {
-#  graph@outputs <- outputs
-#  graph@out_tree <- out_tree
-#  maybe_restore_previous_desc(graph)
-#  graph
-#}
 
 maybe_restore_previous_desc <- function(graph = NULL) {
   if (!is.null(graph) && !identical(graph, globals[["CURRENT_DESCRIPTOR"]])) {
@@ -357,160 +448,51 @@ local_descriptor <- function(..., envir = parent.frame()) {
   return(desc)
 }
 
-
-eval_primitive_call <- function(call, mode, env) {
-  in_vals <- lapply(call@inputs, \(x) env[[x]])
-  out_vals <- do.call(call@primitive[[mode]], in_vals)
-
-  for (i in seq_along(out_vals)) {
-    env[[call@outputs[[i]]]] <- out_vals[[i]]
-  }
-}
-
-graph_reduce <- function(graph, reducer, args) {
-  env <- hashtab()
-
-  args_flat <- flatten(args)
-
-  if (length(args_flat) != length(graph@inputs)) {
-    cli_abort("Expected {length(graph@inputs)} arguments, but got {length(args_flat)}")
-  }
-
-  # bind inputs
-  for (i in seq_along(args_flat)) {
-    env[[graph@inputs[[i]]]] <- args_flat[[i]]
-  }
-
-  for (call in graph@calls) {
-    inputs <- lapply(call@inputs, \(x) env[[x]])
-    output_vals <- reducer(call@primitive, inputs, call@params)
-    for (i in seq_along(output_vals)) {
-      env[[call@outputs[[i]]]] <- output_vals[[i]]
-    }
-  }
-
-  lapply(graph@outputs, \(x) env[[x]])
-}
-
-graph_inline <- function(parent_desc, graph) {
-  # TODO: constants
-  parent_desc@calls <- c(parent_desc@calls, graph@calls)
-  parent_desc
-}
-
 is_graph <- function(x) {
   inherits(x, "anvil::mut<Graph>")
 }
-
-#' @title Graph Transformation
-#' @description
-#' Abstract base class for a (chained) graph transformation.
-#' To apply such a (chained) transformation, use [`apply_transform()`].
-#' @export
-GraphTransformation <- new_class(
-  "GraphTransformation",
-  parent = Transformation,
-  properties = list(
-    # TODO: Remove GraphTransformation here?
-    input = class_function | Graph | new_class("GraphTransformation")
-  )
-)
-
-is_graph_transformation <- function(x) {
-  inherits(x, "anvil::GraphTransformation")
-}
-
-#' @title Transform a graph
-#' @description
-#' Apply a given transformation using the provided inputs.
-#'
-#' @section Adding a new Transformation:
-#' In order to create a new transformatin, you need to:
-#' 1. Create a custom subclass of `GraphTransformation`.
-#' 1. Create a transformation function (like `gradient()`) that returns this subclass.
-#' 1. Implement the `apply_transform()` method for this subclass.
-#'    This is where the real complexity lies.
-#'    Here, you can assume that the `@inputs` field is a [`Graph`], as recursion and conversion
-#'    from a `function` to a [`Graph`] is handled by the generic.
-#'
-#' **Modifying Inputs or Outputs**:
-#' When implementing a new transformation that modified the inputs or outputs of the graph,
-#' it's important to ensure that `in_tree` and `out_tree` are updated accordingly.
-#'
-#' TODO:
-#' @param x (`GraphTransformation`)\cr
-#'   The transformation to apply.
-#' @param args (`list(<any>)`)\cr
-#'   The inputs to the transformation.
-#' @return (`list(GraphTransformation | Graph, list(<any>))`)\cr
-#'   The transformed graph(-transformation) and (possibly transformed) input values.
-#' @export
-apply_transform <- new_generic("transform", "gt", function(gt, args) {
-  if (is_transformation(gt@input)) {
-    Recall(do.call(apply_transform, gt@input), args)
-  }
-  # TODO(optional, cleaner): Maybe graphify should instead be inserted as its own transformation
-  if (!is_graph(gt@input)) {
-    out <- graphify(gt@input, args)
-    gt@input <- out[[1L]]
-    args <- out[[2L]]
-  }
-  S7::S7_dispatch()
-})
-
-GraphInterpreter <- new_class(
-  "GraphInterpreter",
-  parent = Interpreter,
-  properties = list(
-    graph = Graph
-  )
-)
-
-
 is_graph_box <- function(x) {
   inherits(x, "anvil::GraphBox")
 }
 
 graph_call <- function(prim, args, params = list()) {
   boxes_in <- lapply(args, maybe_box_variable)
-  gvars_in <- lapply(boxes_in, \(x) x@gvar)
+  gvals_in <- lapply(boxes_in, \(x) x@gval)
   avals_in <- lapply(boxes_in, aval)
 
   vts_in <- lapply(avals_in, \(aval) st2vt(aval))
   outputs <- rlang::exec(prim[["graph"]], !!!c(vts_in, params))
   sts_out <- lapply(outputs, vt2st)
 
-  gvars_out <- lapply(sts_out, GraphVariable)
+  gvals_out <- lapply(sts_out, GraphValue)
 
-  call <- PrimitiveCall(prim, params, gvars_in, gvars_out)
+  call <- PrimitiveCall(prim, params, gvals_in, gvals_out)
 
-  graph <- .current_descriptor()
-  graph@calls <- c(graph@calls, call)
-
-  boxes_out <- lapply(gvars_out, \(gvar) {
-    GraphBox(gvar, .current_descriptor())
-  })
+  desc <- .current_descriptor()
+  desc@calls <- c(desc@calls, call)
+  boxes_out <- lapply(gvals_out, register_gval, desc = desc)
 
   return(boxes_out)
 }
 
 
 inline_graph_into_desc <- function(desc, graph) {
-  desc@calls <- c(desc@calls, graph@calls)
   for (const in graph@constants) {
-    desc@constants[[const]] <- const
-    val <- const@aval@data
-    if (!is_anvil_tensor(val)) {
-      cli_abort("Constant {format(const)} is not an Anvil tensor")
-    }
-    desc@tensor_to_const[[val]] <- const
+    # The following can happen:
+    # 1. a constant is already present in the parent descriptor -> do nothing
+    # 2. the constant is not present in the parent descriptor -> register it
+    get_box_or_register_cont(desc, const)
   }
-  #desc@inputs <- c(desc@inputs, graph@inputs)
-  #desc@outputs <- c(desc@outputs, graph@outputs)
+  for (input in graph@inputs) {
+    if (is.null(desc@gval_to_box[[input]])) {
+      #
+    }
+    get_box_or_register_cont(desc, input)
+  }
 
-  # they are graph variables
-  gvars_out_flat <- graph@outputs
-  boxes_out_flat <- lapply(gvars_out_flat, GraphBox, .current_descriptor())
+  desc@calls <- c(desc@calls, graph@calls)
 
+  gvals_out_flat <- graph@outputs
+  boxes_out_flat <- lapply(gvals_out_flat, GraphBox, desc)
   unflatten(graph@out_tree, boxes_out_flat)
 }

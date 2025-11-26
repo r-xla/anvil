@@ -7,10 +7,10 @@ Overwriting method repr(<anvil::ShapedTensor>)
 Overwriting method platform(<anvil::Box>)
 v | F W  S  OK | Context
 
-/ |          0 | api-jit                                                        
-\ |          2 | api-jit                                                        
-/ |          4 | api-jit                                                        
-| | 1        6 | api-jit                                                        
+/ |          0 | api-jit
+\ |          2 | api-jit
+/ |          4 | api-jit
+| | 1        6 | api-jit
 x | 2        6 | api-jit
 --------------------------------------------------------------------------------
 Error ('test-api-jit.R:54:3'): constants can be lifted to the appropriate level
@@ -51,7 +51,7 @@ Backtrace:
  15.             \-rlang::abort(...)
 --------------------------------------------------------------------------------
 
-/ |          0 | api-pullback                                                   
+/ |          0 | api-pullback
 x | 1        0 | api-pullback
 --------------------------------------------------------------------------------
 Error ('test-api-pullback.R:8:3'): nv_mean
@@ -72,14 +72,14 @@ Backtrace:
  12.               \-rlang::abort(...)
 --------------------------------------------------------------------------------
 
-/ |          0 | flatten                                                        
+/ |          0 | flatten
 v |         10 | flatten
 
-/ |          0 | gradient                                                       
+/ |          0 | gradient
 x | 3        0 | gradient
 --------------------------------------------------------------------------------
 Error ('test-gradient.R:6:3'): gradient: simple example
-Error: <anvil::mut<Graph>>@outputs must only contain elements of class <anvil::mut<GraphVariable>> or <anvil::mut<GraphConstant>>
+Error: <anvil::mut<Graph>>@outputs must only contain elements of class <anvil::mut<GraphValue>> or <anvil::mut<GraphConstant>>
 Backtrace:
      x
   1. +-anvil (local) g(nv_scalar(1), nv_scalar(2)) at test-gradient.R:6:3
@@ -112,32 +112,32 @@ Error ('test-gradient.R:35:1'): (code run outside of `test_that()`)
 Error in `eval(code, test_env)`: '...' used in an incorrect context
 --------------------------------------------------------------------------------
 
-/ |          0 | graph                                                          
+/ |          0 | graph
 v |         31 | graph
 
-/ |          0 | jit                                                            
-/ |          4 | jit                                                            
-- |          9 | jit                                                            
-- |      1  16 | jit                                                            
-/ |      2  22 | jit                                                            
+/ |          0 | jit
+/ |          4 | jit
+- |          9 | jit
+- |      1  16 | jit
+/ |      2  22 | jit
 x | 1    2  22 | jit
 --------------------------------------------------------------------------------
 Error ('test-jit.R:199:3'): HloBox printer
 Error in `HloInterpreter(main = local_main(HloInterpreter, global_data = func))`: could not find function "HloInterpreter"
 --------------------------------------------------------------------------------
 
-/ |          0 | primitives-jit                                                 
-/ |          4 | primitives-jit                                                 
-| |          7 | primitives-jit                                                 
-\ |         10 | primitives-jit                                                 
-| | 2       13 | primitives-jit                                                 
-| | 3       16 | primitives-jit                                                 
-| | 3       20 | primitives-jit                                                 
-| | 3       24 | primitives-jit                                                 
-| | 4       27 | primitives-jit                                                 
-| | 5       30 | primitives-jit                                                 
-/ | 14       30 | primitives-jit                                                
-- | 16       33 | primitives-jit                                                
+/ |          0 | primitives-jit
+/ |          4 | primitives-jit
+| |          7 | primitives-jit
+\ |         10 | primitives-jit
+| | 2       13 | primitives-jit
+| | 3       16 | primitives-jit
+| | 3       20 | primitives-jit
+| | 3       24 | primitives-jit
+| | 4       27 | primitives-jit
+| | 5       30 | primitives-jit
+/ | 14       30 | primitives-jit
+- | 16       33 | primitives-jit
 x | 17       33 | primitives-jit [2.8s]
 --------------------------------------------------------------------------------
 Error ('test-primitives-jit.R:96:5'): p_if
@@ -462,7 +462,7 @@ Backtrace:
  13.                   \-base::stopifnot(lhs@type == rhs@type)
 --------------------------------------------------------------------------------
 Maximum number of failures exceeded; quitting at end of file.
-i Increase this number with (e.g.) `testthat::set_max_fails(Inf)` 
+i Increase this number with (e.g.) `testthat::set_max_fails(Inf)`
 
 == Results =====================================================================
 Duration: 4.2 s
@@ -527,7 +527,7 @@ Backtrace:
  12.               \-rlang::abort(...)
 
 Error ('test-gradient.R:6:3'): gradient: simple example
-Error: <anvil::mut<Graph>>@outputs must only contain elements of class <anvil::mut<GraphVariable>> or <anvil::mut<GraphConstant>>
+Error: <anvil::mut<Graph>>@outputs must only contain elements of class <anvil::mut<GraphValue>> or <anvil::mut<GraphConstant>>
 Backtrace:
      x
   1. +-anvil (local) g(nv_scalar(1), nv_scalar(2)) at test-gradient.R:6:3
@@ -885,4 +885,4 @@ Backtrace:
 
 [ FAIL 24 | WARN 0 | SKIP 2 | PASS 102 ]
 == Terminated early ============================================================
-> 
+>

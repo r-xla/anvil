@@ -27,6 +27,9 @@ stablehlo <- function(graph, static = character()) {
     prim <- call@primitive
     params <- call@params
     inputs <- lapply(call@inputs, \(x) env[[x]])
+    if (any(vapply(inputs, is.null, logical(1L)))) {
+      #browser()
+    }
     fvars_out <- rlang::exec(prim[["stablehlo"]], !!!c(inputs, params))
     if (length(call@outputs) != length(fvars_out)) {
       cli_abort("Expected {length(call@outputs)} outputs, but got {length(fvars_out)}")
@@ -43,7 +46,7 @@ stablehlo <- function(graph, static = character()) {
   outputs <- lapply(graph@outputs, \(x) env[[x]])
   func <- do.call(stablehlo::hlo_return, outputs)
 
-  const_tensors <- lapply(graph@constants, \(x) x@aval@data)
+  constants <- graph@constants
 
-  list(func, const_tensors)
+  list(func, constants)
 }

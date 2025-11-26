@@ -90,6 +90,10 @@ is_shaped_tensor <- function(x) {
   inherits(x, "anvil::ShapedTensor")
 }
 
+is_concrete_tensor <- function(x) {
+  inherits(x, "anvil::ConcreteTensor")
+}
+
 method(platform, ShapedTensor) <- function(x, ...) {
   # TODO: Need platform as part of ShapedTensor
   .NotYetImplemented()

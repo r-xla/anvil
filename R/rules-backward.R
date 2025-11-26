@@ -1,4 +1,4 @@
-# All the backward rules are only operating on GraphVariables
+# All the backward rules are only operating on GraphValues
 
 # length(grads) == length(outputs)
 p_add[["backward"]] <- function(inputs, outputs, grads, .required) {

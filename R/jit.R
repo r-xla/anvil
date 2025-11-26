@@ -63,7 +63,15 @@ jit <- function(f, static = character(), device = NULL, cache_size = 100L, backe
 
     out <- stablehlo(graph)
     func <- out[[1L]]
-    const_tensors <- out[[2L]]
+    constants <- out[[2L]]
+
+    const_tensors <- lapply(constants, \(const) {
+      if (!is_concrete_tensor(const@aval)) {
+        cli_abort("Internal error: Not all constants are concrete tensors")
+      }
+      const@aval@data
+    })
+
     out_tree <- graph@out_tree
     src <- stablehlo::repr(func)
     program <- pjrt_program(src = src, format = "mlir")

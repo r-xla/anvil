@@ -92,6 +92,17 @@ test_that("p_transpose", {
 })
 
 test_that("p_if", {
+  # simple
+  f <- jit(function(pred, x) nvl_if(pred, x, x * x))
+
+    f(nv_scalar(TRUE), nv_scalar(2))
+
+    nv_scalar(2)
+  expect_equal(
+  )
+
+
+
   f <- jit(function(pred, x) {
     nvl_if(pred, list(list(x)), list(list(x * x)))
   })

@@ -47,10 +47,10 @@ graph <- local_graph()
 
 Such a graph contains:
 
-- `inputs`: (`list<GraphVariable>`) The function inputs.
-- `outputs`: (`list<GraphVariable>`) The function outputs.
+- `inputs`: (`list<GraphValue>`) The function inputs.
+- `outputs`: (`list<GraphValue>`) The function outputs.
 - `calls`: (`list<PrimitiveCall>`) A list of `PrimitiveCall` objects that represent the body of the function.
-  A primitive call takes the values from some input `GraphVariable`s (plus some, optional, static parameters) and assigns the results to some output `GraphVariable`s.
+  A primitive call takes the values from some input `GraphValue`s (plus some, optional, static parameters) and assigns the results to some output `GraphValue`s.
 - ... (other fields we ignore for now)
 
 Our goal is now to evaluate the function `f` and to populate the empty `Graph` from above to represent the structur of `f`.
@@ -59,8 +59,8 @@ This is necessary, because the intermediate graph representation is strongly typ
 All subsequent types within the function `f` will be derived from these input types.
 
 ```{r}
-x_gvar <- GraphVariable(ShapedTensor(dt_i32, Shape(c(2, 2))))
-y_gvar <- GraphVariable(ShapedTensor(dt_i32, Shape(c(2, 2))))
+x_gval <- GraphValue(ShapedTensor(dt_i32, Shape(c(2, 2))))
+y_gval <- GraphValue(ShapedTensor(dt_i32, Shape(c(2, 2))))
 ```
 
 However, we cannot execute `grad` directly with these input types.

@@ -88,13 +88,11 @@ test_that("broadcasting works", {
 
 test_that("second order gradient (scalar)", {
   # this works only for scalar functions, so this is primarily a stress
-  # test for the interpreter as it is not that useful
+  # test for out transformation implementation, not because it's useful in itself.
   f <- function(x) {
     nvl_mul(x, x)
   }
   fg2 <- jit(gradient(\(x) gradient(f)(x)[[1L]]))
-  fg2(nv_scalar(1))
-
   expect_equal(fg2(nv_scalar(1)), list(x = nv_scalar(2)))
 })
 

@@ -279,9 +279,8 @@ p_select[["graph"]] <- function(pred, true_value, false_value) {
   stablehlo::infer_types_select(pred, on_true = true_value, on_false = false_value)@items
 }
 
-p_if[["graph"]] <- function(pred, true, false) {
-  # if is handled specially - it returns the output of the true branch
-  # In graph mode, we need to get the output type from the branches
-  # For now, just return the true branch output type
-  list(true)
+p_if[["graph"]] <- function(pred, true_graph, false_graph) {
+  # Return output types based on the true branch's outputs
+  # Both branches should have the same output types
+  lapply(true_graph@outputs, \(out) st2vt(out@aval))
 }

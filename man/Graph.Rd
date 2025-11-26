@@ -26,9 +26,9 @@ This can also be another call into a graph when the primitive is a \code{p_call}
 The tree of inputs.
 \item \code{out_tree} :: (\code{NULL | Node})\cr
 The tree of outputs.
-\item \code{inputs} :: (\code{list(GraphVariable)})\cr
+\item \code{inputs} :: (\code{list(GraphValue)})\cr
 The inputs to the graph.
-\item \code{outputs} :: (\code{list(GraphVariable)})\cr
+\item \code{outputs} :: (\code{list(GraphValue)})\cr
 The outputs of the graph.
 }
 }

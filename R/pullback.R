@@ -2,30 +2,34 @@ build_gradient_graph <- function(graph, wrt) {
   grad_env <- hashtab()
   required_env <- hashtab()
 
-  out_gvars <- graph@outputs
+  out_gvals <- graph@outputs
 
-  if (length(out_gvars) != 1L) {
+  if (length(out_gvals) != 1L) {
     cli_abort("Pullback can only be computed for functions that return a single output")
   }
-  out <- out_gvars[[1L]]
+  out <- out_gvals[[1L]]
   if (!identical(shape(out@aval), integer())) {
     cli_abort("Pullback can only be computed for functions that return a scalar")
   }
-  # TODO: Check for float
+  dt <- out@aval@dtype
+  if (!(dt == dt_f32 || dt == dt_f64)) {
+    cli_abort("Pullback can only be computed for functions that return float scalar")
+  }
 
-  # Compute which flat inputs require gradients based on wrt
   requires_grad <- requires_grad_flat(graph@in_tree, wrt)
 
-  # Initialize required status for inputs
   for (i in seq_along(graph@inputs)) {
     required_env[[graph@inputs[[i]]]] <- requires_grad[[i]]
+  }
+  for (i in seq_along(graph@constants)) {
+    required_env[[graph@constants[[i]]]] <- FALSE
   }
 
   # Forward pass: propagate required status through the graph
   # A node requires grad if any of its inputs requires grad
   for (call in graph@calls) {
     any_input_requires <- any(vapply(call@inputs, function(x) {
-      required_env[[x]] %||% FALSE # Constants don't require grad
+      required_env[[x]]
     }, logical(1L)))
 
     for (out_node in call@outputs) {
@@ -35,12 +39,6 @@ build_gradient_graph <- function(graph, wrt) {
 
   desc <- local_descriptor()
 
-  # Initialize gradients for all inputs to NULL (will be set if used)
-  for (input in graph@inputs) {
-    grad_env[[input]] <- NULL
-  }
-
-  grad_env[[out]] <- maybe_box_variable(nv_scalar(1L, dtype = out@aval@dtype))
 
   add_or_init <- function(grad1, grad2) {
     if (is.null(grad1)) {
@@ -53,8 +51,8 @@ build_gradient_graph <- function(graph, wrt) {
   # otherwise the nvl_<op> functions in the backward rules will extend the wrong descriptor.
   # By copying the calls and in_tree from the forward graph, we ensure that the backward
   # operations are added to the correct context.
-  initialize_descriptor_from_graph(desc, graph)
-  desc@outputs <- list()
+  init_desc_from_graph(desc, graph, outputs = FALSE)
+  grad_env[[out]] <- get_box_or_register_cont(desc, nv_scalar(1L, dtype = out@aval@dtype))
 
   # Backward pass
   for (call in rev(graph@calls)) {
@@ -68,6 +66,10 @@ build_gradient_graph <- function(graph, wrt) {
     }
 
     output_grads <- lapply(call@outputs, \(output) grad_env[[output]])
+    #if (identical(output_grads, list(NULL))) {
+    #  browser()
+    #}
+
     input_grads <- rlang::exec(
       call@primitive[["backward"]],
       call@inputs,
@@ -76,9 +78,10 @@ build_gradient_graph <- function(graph, wrt) {
       !!!call@params,
       .required = input_required
     )
+    # input_grads[!input_required] is list of NULLs
     for (i in seq_along(call@inputs)) {
-      input_gvar <- call@inputs[[i]]
-      grad_env[[input_gvar]] <- add_or_init(grad_env[[input_gvar]], input_grads[[i]])
+      input_gval <- call@inputs[[i]]
+      grad_env[[input_gval]] <- add_or_init(grad_env[[input_gval]], input_grads[[i]])
     }
   }
 
@@ -91,20 +94,22 @@ build_gradient_graph <- function(graph, wrt) {
     input <- graph@inputs[[i]]
     grad <- grad_env[[input]]
     x <- if (is.null(grad)) {
-      maybe_box_variable(nv_constant(0L, dtype = input@aval@dtype, shape = shape(input@aval)))
+      # FIXME:!!!!
+      const <- get_box_or_register_cont(desc, nv_scalar(0L, dtype = input@aval@dtype))
+      nv_broadcast_to(const, shape(input@aval))
     } else {
       grad
     }
-    input_grads <- c(input_grads, list(x@gvar))
+    input_grads <- c(input_grads, list(x@gval))
   }
 
   desc@outputs <- input_grads
 
   # Adjust out_tree based on wrt
-  if (length(wrt)) {
-    desc@out_tree <- filter_tree_by_names(graph@in_tree, wrt)
+  desc@out_tree <- if (length(wrt)) {
+    filter_tree_by_names(graph@in_tree, wrt)
   } else {
-    desc@out_tree <- graph@in_tree
+    graph@in_tree
   }
 
   graph <- descriptor_to_graph(desc)
