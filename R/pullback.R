@@ -28,9 +28,13 @@ build_gradient_graph <- function(graph, wrt) {
   # Forward pass: propagate required status through the graph
   # A node requires grad if any of its inputs requires grad
   for (call in graph@calls) {
-    any_input_requires <- any(vapply(call@inputs, function(x) {
-      required_env[[x]]
-    }, logical(1L)))
+    any_input_requires <- any(vapply(
+      call@inputs,
+      function(x) {
+        required_env[[x]]
+      },
+      logical(1L)
+    ))
 
     for (out_node in call@outputs) {
       required_env[[out_node]] <- any_input_requires
@@ -38,7 +42,6 @@ build_gradient_graph <- function(graph, wrt) {
   }
 
   desc <- local_descriptor()
-
 
   add_or_init <- function(grad1, grad2) {
     if (is.null(grad1)) {
@@ -57,9 +60,13 @@ build_gradient_graph <- function(graph, wrt) {
   # Backward pass
   for (call in rev(graph@calls)) {
     # Check if any input requires grad - if not, skip this call
-    input_required <- vapply(call@inputs, function(x) {
-      required_env[[x]] %||% FALSE
-    }, logical(1L))
+    input_required <- vapply(
+      call@inputs,
+      function(x) {
+        required_env[[x]] %||% FALSE
+      },
+      logical(1L)
+    )
 
     if (!any(input_required)) {
       next

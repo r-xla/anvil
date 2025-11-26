@@ -1,7 +1,8 @@
 # We interprete jitting directly as a transformation and not as a higher order primitive
 # because this seems simpler for now.
 
-HloEnv <- S7::new_class("HloEnv",
+HloEnv <- S7::new_class(
+  "HloEnv",
   properties = list(
     parent = NULL | new_S3_class("anvil::HloEnv"),
     gval_to_fvar = new_property(class_hashtab, default = quote(hashtab()))

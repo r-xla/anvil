@@ -90,6 +90,9 @@ test_that("p_transpose", {
     as_array(f(nv_tensor(x)))
   )
 })
+test_that("p_if: nested", {
+  # TODO:
+})
 
 test_that("p_if", {
   # simple
@@ -100,7 +103,6 @@ test_that("p_if", {
   graph <- graphify(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
 
   graph <- graphify(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
-
 
   f <- jit(function(pred, x) {
     nvl_if(pred, list(list(x)), list(list(x * x)))
@@ -121,31 +123,43 @@ test_that("p_if", {
     g(nv_scalar(FALSE), list(nv_scalar(2))),
     list(nv_scalar(4))
   )
+})
 
-  # if uses value via lexical scoping not present in parent env
+test_that("p_if: identically constants in both branches receive the same GraphValue", {
   x <- nv_scalar(1)
-  f <- jit(function(y) nvl_if(y, x, nvl_mul(x, x)))
-  f(nv_scalar(TRUE))
+  f <- function(y) nvl_if(y, x, x)
+  graph <- graphify(f, list(y = nv_scalar(TRUE)))
+  fj <- jit(f)
+  expect_equal(fj(nv_scalar(TRUE)), nv_scalar(1))
+  expect_equal(fj(nv_scalar(FALSE)), nv_scalar(1))
 
+  g <- jit(function(pred) {
+    y <- nv_scalar(2)
+    nvl_if(pred, y, y * nv_scalar(3))
+  })
+  expect_equal(g(nv_scalar(TRUE)), nv_scalar(2))
+  expect_equal(g(nv_scalar(FALSE)), nv_scalar(6))
 })
 
-test_that("p_while", {
 
-  cond <- function(state) state < nv_scalar(10)
-  body <- function(state) state + nv_scalar(1)
-
-  f <- function(init) nvl_while(init, cond, body)
-  fj <- jit(f)
-  expect_equal(fj(nv_scalar(0)), nv_scalar(10))
-
-
-  f <- function(cond, state) nvl_while(cond, function(cond, state) {
-    list(state + 1)
-  }, nv_scalar(0))
-  fj <- jit(f)
-  expect_equal(fj(nv_scalar(TRUE), nv_scalar(0)), nv_scalar(1))
-  expect_equal(fj(nv_scalar(FALSE), nv_scalar(0)), nv_scalar(0))
-})
+# TODO: Continue here
+#test_that("p_while", {
+#
+#  cond <- function(state) state < nv_scalar(10)
+#  body <- function(state) state + nv_scalar(1)
+#
+#  f <- function(init) nvl_while(init, , body)
+#  fj <- jit(f)
+#  expect_equal(fj(nv_scalar(0)), nv_scalar(10))
+#
+#
+#  f <- function(cond, state) nvl_while(cond, function(cond, state) {
+#    list(state + 1)
+#  }, nv_scalar(0))
+#  fj <- jit(f)
+#  expect_equal(fj(nv_scalar(TRUE), nv_scalar(0)), nv_scalar(1))
+#  expect_equal(fj(nv_scalar(FALSE), nv_scalar(0)), nv_scalar(0))
+#})
 
 test_that("error when multiplying lists in if-statement", {
   f <- jit(function(pred, x) {

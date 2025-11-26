@@ -375,20 +375,22 @@ nvl_if <- function(pred, true, false) {
   # We need to ensure that constants that are captured in both branches receive the same
   # GraphValue if they capture the same constant
 
-  true_graph <- graphify(function() rlang::eval_tidy(true_expr), list())
-
   current_desc <- .current_descriptor()
-  for (const in true_graph@constants) {
-    get_box_or_register_const(current_desc, const)
+  desc_true <- local_descriptor()
+  true_graph <- graphify(function() rlang::eval_tidy(true_expr), list(), desc = desc_true)
+  desc_false <- local_descriptor()
+
+  for (const in desc_true@constants) {
+    get_box_or_register_const(desc_false, const)
   }
-  false_graph <- graphify(function() rlang::eval_tidy(false_expr), list())
-  for (const in false_graph@constants) {
-    get_box_or_register_const(current_desc, const)
-  }
-  browser()
+  false_graph <- graphify(function() rlang::eval_tidy(false_expr), list(), desc = desc_false)
 
   if (!identical(true_graph@out_tree, false_graph@out_tree)) {
     cli_abort("true and false branches must have the same output structure")
+  }
+
+  for (const in desc_false@constants) {
+    get_box_or_register_const(current_desc, const)
   }
 
   out <- graph_call(
@@ -400,7 +402,8 @@ nvl_if <- function(pred, true, false) {
 }
 
 p_while <- HigherOrderPrimitive("while")
-nvl_while <- function(init, cond, body) {
+nvl_while <- function(..., cond, body) {
+  init <- list(...)
   if (!is.function(body)) {
     cli_abort("body must be a function")
   }

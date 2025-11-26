@@ -156,6 +156,22 @@ method(dtype, GraphLiteral) <- function(x, ...) {
 method(`==`, list(GraphDescriptor, GraphDescriptor)) <- function(e1, e2) {
   identical(e1@.state, e2@.state)
 }
+method(`==`, list(GraphDescriptor, class_any)) <- function(e1, e2) {
+  FALSE
+}
+method(`==`, list(class_any, GraphDescriptor)) <- function(e1, e2) {
+  FALSE
+}
+method(`!=`, list(GraphDescriptor, GraphDescriptor)) <- function(e1, e2) {
+  !identical(e1@.state, e2@.state)
+}
+
+method(`!=`, list(GraphDescriptor, class_any)) <- function(e1, e2) {
+  FALSE
+}
+method(`!=`, list(class_any, GraphDescriptor)) <- function(e1, e2) {
+  FALSE
+}
 
 is_graph_descriptor <- function(x) {
   inherits(x, "anvil::mut<GraphDescriptor>")
@@ -210,7 +226,6 @@ aval <- function(x) {
   }
   cli_abort("internal error")
 }
-
 
 
 maybe_box_variable <- function(x) {
@@ -325,8 +340,8 @@ get_box_or_register_const <- function(desc, x) {
   # Now, we create the new box and register it, so if we see it again, we can return it immediately.
   new_box <- GraphBox(x, desc)
 
-  if (is_concrete_tensor(aval)) {
-    desc@tensor_to_gval[[x@data]] <- x
+  if (is_concrete_tensor(x@aval)) {
+    desc@tensor_to_gval[[x@aval@data]] <- x
   }
   desc@gval_to_box[[x]] <- new_box
   desc@constants <- c(desc@constants, x)
@@ -358,11 +373,13 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
   graph
 }
 
-graphify <- function(f, args) {
+graphify <- function(f, args, desc = NULL) {
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
   f_flat <- flatten_fun(f, in_node = in_tree)
-  desc <- local_descriptor(in_tree = in_tree)
+  if (is.null(desc)) {
+    desc <- local_descriptor(in_tree = in_tree)
+  }
 
   # box tensors and add them as inputs to the current graph
   inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc)
@@ -391,8 +408,8 @@ is_graph_value <- function(x) {
   inherits(x, "anvil::mut<GraphValue>")
 }
 
-maybe_restore_previous_desc <- function(graph = NULL) {
-  if (!is.null(graph) && !identical(graph, globals[["CURRENT_DESCRIPTOR"]])) {
+maybe_restore_previous_desc <- function(desc = NULL) {
+  if (!is.null(desc) && (desc != globals[["CURRENT_DESCRIPTOR"]])) {
     # graph has already been returned
     return()
   }

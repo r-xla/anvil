@@ -57,10 +57,7 @@ format_call <- function(call, node_ids, indent = "  ") {
   if (length(call@outputs) == 1L) {
     outputs_str <- sprintf("%s: %s", output_ids, output_types)
   } else {
-    outputs_str <- sprintf("(%s): (%s)",
-      paste(output_ids, collapse = ", "),
-      paste(output_types, collapse = ", ")
-    )
+    outputs_str <- sprintf("(%s): (%s)", paste(output_ids, collapse = ", "), paste(output_types, collapse = ", "))
   }
 
   # Format params if present
@@ -101,9 +98,13 @@ format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph"
 
   # Inputs section
   if (length(inputs) > 0L) {
-    input_strs <- vapply(inputs, function(node) {
-      sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node@aval))
-    }, character(1))
+    input_strs <- vapply(
+      inputs,
+      function(node) {
+        sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node@aval))
+      },
+      character(1)
+    )
     lines <- c(lines, "  Inputs:", input_strs)
   } else {
     lines <- c(lines, "  Inputs: (none)")
@@ -111,9 +112,13 @@ format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph"
 
   # Constants section
   if (length(constants) > 0L) {
-    const_strs <- vapply(constants, function(node) {
-      sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node@aval))
-    }, character(1))
+    const_strs <- vapply(
+      constants,
+      function(node) {
+        sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node@aval))
+      },
+      character(1)
+    )
     lines <- c(lines, "  Constants:", const_strs)
   }
 
@@ -129,9 +134,13 @@ format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph"
 
   # Outputs section
   if (length(outputs) > 0L) {
-    output_strs <- vapply(outputs, function(node) {
-      sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node@aval))
-    }, character(1))
+    output_strs <- vapply(
+      outputs,
+      function(node) {
+        sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node@aval))
+      },
+      character(1)
+    )
     lines <- c(lines, "  Outputs:", output_strs)
   } else {
     lines <- c(lines, "  Outputs: (none)")
@@ -176,4 +185,3 @@ method(format, GraphDescriptor) <- function(x, ...) {
 method(print, GraphDescriptor) <- function(x, ...) {
   cat(format(x), "\n")
 }
-
