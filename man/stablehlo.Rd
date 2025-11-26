@@ -4,7 +4,7 @@
 \alias{stablehlo}
 \title{Lower a function to StableHLO}
 \usage{
-stablehlo(graph, static = character())
+stablehlo(graph, static = character(), constants_as_inputs = TRUE, env = NULL)
 }
 \arguments{
 \item{f}{(\code{function} | \code{Gr})\cr

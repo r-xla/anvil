@@ -93,14 +93,13 @@ test_that("p_transpose", {
 
 test_that("p_if", {
   # simple
-  f <- jit(function(pred, x) nvl_if(pred, x, x * x))
+  f <- function(pred, x) nvl_if(pred, x, x * x)
+  fj <- jit(f)
+  expect_equal(fj(nv_scalar(TRUE), nv_scalar(2)), nv_scalar(2))
+  expect_equal(fj(nv_scalar(FALSE), nv_scalar(2)), nv_scalar(4))
+  graph <- graphify(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
 
-    f(nv_scalar(TRUE), nv_scalar(2))
-
-    nv_scalar(2)
-  expect_equal(
-  )
-
+  graph <- graphify(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
 
 
   f <- jit(function(pred, x) {
@@ -122,6 +121,30 @@ test_that("p_if", {
     g(nv_scalar(FALSE), list(nv_scalar(2))),
     list(nv_scalar(4))
   )
+
+  # if uses value via lexical scoping not present in parent env
+  x <- nv_scalar(1)
+  f <- jit(function(y) nvl_if(y, x, nvl_mul(x, x)))
+  f(nv_scalar(TRUE))
+
+})
+
+test_that("p_while", {
+
+  cond <- function(state) state < nv_scalar(10)
+  body <- function(state) state + nv_scalar(1)
+
+  f <- function(init) nvl_while(init, cond, body)
+  fj <- jit(f)
+  expect_equal(fj(nv_scalar(0)), nv_scalar(10))
+
+
+  f <- function(cond, state) nvl_while(cond, function(cond, state) {
+    list(state + 1)
+  }, nv_scalar(0))
+  fj <- jit(f)
+  expect_equal(fj(nv_scalar(TRUE), nv_scalar(0)), nv_scalar(1))
+  expect_equal(fj(nv_scalar(FALSE), nv_scalar(0)), nv_scalar(0))
 })
 
 test_that("error when multiplying lists in if-statement", {

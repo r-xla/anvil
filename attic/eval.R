@@ -1,6 +1,5 @@
 # Evaluation Interpreter:
 
-#' @include interpreter.R
 EvalInterpreter <- R6Class("")
 
 

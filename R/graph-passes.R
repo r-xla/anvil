@@ -3,7 +3,7 @@
 #' @param graph A Graph object
 #' @return A new Graph with dead code removed
 #' @noRd
-pass_dead_code <- function(graph) {
+remove_dead_code <- function(graph) {
   if (length(graph@calls) == 0L) {
     return(graph)
   }

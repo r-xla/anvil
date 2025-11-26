@@ -242,15 +242,21 @@ p_convert[["stablehlo"]] <- function(operand, dtype) {
   list(stablehlo::hlo_convert(operand, dtype))
 }
 
-# control flow jit rules --------------------------------------------------------
 
 p_select[["stablehlo"]] <- function(pred, true_value, false_value) {
   list(stablehlo::hlo_select(pred, true_value, false_value))
 }
 
-p_if[["stablehlo"]] <- function(pred, true_graph, false_graph) {
-  browser()
-  true_func <- stablehlo(true_graph)[[1L]]
-  false_func <- stablehlo(false_graph)[[1L]]
+# higher order primitives --------------------------------------------------------
+
+p_if[["stablehlo"]] <- function(pred, true_graph, false_graph, .env) {
+  true_func <- stablehlo(true_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
+  false_func <- stablehlo(false_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
   stablehlo::hlo_if(pred, true_func, false_func, simplify = FALSE)
+}
+
+p_while[["stablehlo"]] <- function(init, cond_graph, body_graph, .env) {
+  body_func <- stablehlo(body_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
+  cond_func <- stablehlo(cond_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
+  stablehlo::hlo_while(cond_func, body_func, init, simplify = FALSE)
 }

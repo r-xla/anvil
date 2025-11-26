@@ -284,3 +284,7 @@ p_if[["graph"]] <- function(pred, true_graph, false_graph) {
   # Both branches should have the same output types
   lapply(true_graph@outputs, \(out) st2vt(out@aval))
 }
+
+p_while[["graph"]] <- function(init, cond_graph, body_graph) {
+  lapply(body_graph@outputs, \(out) st2vt(out@aval))
+}

@@ -1,5 +1,7 @@
 AnvilTensor <- S7::new_S3_class("AnvilTensor")
 
+#' @importFrom pjrt platform
+
 #' @title Tensor
 #' @description
 #' Create a tensor.

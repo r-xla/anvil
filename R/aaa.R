@@ -26,16 +26,5 @@ globals[["CURRENT_DESCRIPTOR"]] <- NULL
 
 utils::globalVariables("globals")
 
-hash <- S7::new_generic("hash", "x", function(x) {
-  S7::S7_dispatch()
-})
-
 class_hashtab <- S7::new_S3_class("hashtab")
 class_node <- S7::new_S3_class("Node")
-
-
-Transformation <- new_class("Transformation")
-
-is_transformation <- function(x) {
-  inherits(x, "anvil::Transformation")
-}

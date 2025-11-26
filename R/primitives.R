@@ -20,6 +20,15 @@ Primitive <- new_class(
   }
 )
 
+HigherOrderPrimitive <- new_class(
+  "HigherOrderPrimitive",
+  parent = Primitive
+)
+
+is_higher_order_primitive <- function(x) {
+  inherits(x, "anvil::HigherOrderPrimitive")
+}
+
 
 #' @export
 `[[<-.anvil::Primitive` <- function(x, name, value) {
@@ -349,21 +358,34 @@ nvl_convert <- function(operand, dtype) {
   )[[1L]]
 }
 
-# control flow primitives -------------------------------------------------------
 
 p_select <- Primitive("select")
 nvl_select <- function(pred, true_value, false_value) {
   graph_call(p_select, list(pred, true_value, false_value))[[1L]]
 }
 
-p_if <- Primitive("if")
+# Higher order primitives -------------------------------------------------------
+
+p_if <- HigherOrderPrimitive("if")
 nvl_if <- function(pred, true, false) {
   true_expr <- rlang::enquo(true)
   false_expr <- rlang::enquo(false)
 
   # Build sub-graphs for each branch (no inputs, just capture closed-over values)
+  # We need to ensure that constants that are captured in both branches receive the same
+  # GraphValue if they capture the same constant
+
   true_graph <- graphify(function() rlang::eval_tidy(true_expr), list())
+
+  current_desc <- .current_descriptor()
+  for (const in true_graph@constants) {
+    get_box_or_register_const(current_desc, const)
+  }
   false_graph <- graphify(function() rlang::eval_tidy(false_expr), list())
+  for (const in false_graph@constants) {
+    get_box_or_register_const(current_desc, const)
+  }
+  browser()
 
   if (!identical(true_graph@out_tree, false_graph@out_tree)) {
     cli_abort("true and false branches must have the same output structure")
@@ -377,7 +399,15 @@ nvl_if <- function(pred, true, false) {
   unflatten(true_graph@out_tree, out)
 }
 
-p_while <- Primitive("while")
-nvl_while <- function(cond, body, init) {
-  # TODO:
+p_while <- HigherOrderPrimitive("while")
+nvl_while <- function(init, cond, body) {
+  if (!is.function(body)) {
+    cli_abort("body must be a function")
+  }
+  # TODO: better checks
+  cond_graph <- graphify(cond, list(init))
+  body_graph <- graphify(body, list(init))
+
+  out <- graph_call(p_while, list(init), params = list(cond_graph = cond_graph, body_graph = body_graph))
+  unflatten(body_graph@out_tree, out)
 }

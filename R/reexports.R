@@ -23,7 +23,6 @@ tengen::ndims
 stablehlo::is_dtype
 
 # FIXME(hack): https://github.com/sebffischer/S7-issue
-#' @include interpreter.R
 #' @title Platform
 #' @description
 #' Get the platform of a tensor-like object.

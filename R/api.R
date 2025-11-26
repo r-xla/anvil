@@ -1,5 +1,4 @@
 # This is the user-facing API containing the exported tensor operations.
-#' @include interpreter.R
 #' @include primitives.R
 
 # Special tensor creators

@@ -1,8 +1,7 @@
-#' @include interpreter.R
 #' @include api.R
 
 #' @export
-`Ops.anvil::Box` <- function(e1, e2) {
+`Ops.anvil::GraphBox` <- function(e1, e2) {
   switch(
     .Generic, # nolint
     "+" = nv_add(e1, e2),
@@ -29,7 +28,7 @@
 }
 
 #' @export
-`matrixOps.anvil::Box` <- function(x, y) {
+`matrixOps.anvil::GraphBox` <- function(x, y) {
   switch(
     .Generic, # nolint
     "%*%" = nv_matmul(x, y)
@@ -37,7 +36,7 @@
 }
 
 #' @export
-`Math.anvil::Box` <- function(x, ...) {
+`Math.anvil::GraphBox` <- function(x, ...) {
   switch(
     .Generic, # nolint
     "abs" = nv_abs(x),
@@ -53,9 +52,9 @@
   )
 }
 
-#' @method Math2 anvil::Box
+#' @method Math2 anvil::GraphBox
 #' @export
-`Math2.anvil::Box` <- function(x, digits, ...) {
+`Math2.anvil::GraphBox` <- function(x, digits, ...) {
   method <- list(...)$method
   switch(
     .Generic, # nolint
@@ -70,7 +69,7 @@
 }
 
 #' @export
-`Summary.anvil::Box` <- function(..., na.rm) {
+`Summary.anvil::GraphBox` <- function(..., na.rm) {
   if (...length() != 1L) {
     cli_abort("Currently only one argument is supported for Summary group generic")
   }
@@ -90,9 +89,9 @@
 }
 
 
-#' @method mean anvil::Box
+#' @method mean anvil::GraphBox
 #' @export
-`mean.anvil::Box` <- function(x, ...) {
+`mean.anvil::GraphBox` <- function(x, ...) {
   nv_reduce_mean(x, dims = seq_along(shape(x)), drop = TRUE)
 }
 
@@ -107,6 +106,6 @@
 #'   Permutation of dimensions. If `NULL` (default), reverses the dimensions.
 #' @return [`nv_tensor`]
 #' @export
-`t.anvil::Box` <- function(x) {
+`t.anvil::GraphBox` <- function(x) {
   nv_transpose(x)
 }

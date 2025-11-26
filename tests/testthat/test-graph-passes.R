@@ -1,4 +1,4 @@
-test_that("pass_dead_code removes dead code", {
+test_that("remove_dead_code removes dead code", {
   f <- function(x, y) {
     # This addition doesn't contribute to the output
     dead <- nvl_add(x, y)
@@ -12,7 +12,7 @@ test_that("pass_dead_code removes dead code", {
   expect_equal(graph@calls[[1L]]@primitive@name, "mul")
 })
 
-test_that("pass_dead_code removes dead constants", {
+test_that("remove_dead_code removes dead constants", {
   dead_const <- nv_scalar(99)
   used_const <- nv_scalar(2)
 
@@ -33,7 +33,7 @@ test_that("pass_dead_code removes dead constants", {
   expect_equal(as.numeric(as_array(graph@constants[[1L]]@aval@data)), 2)
 })
 
-test_that("pass_dead_code keeps transitively needed calls", {
+test_that("remove_dead_code keeps transitively needed calls", {
   f <- function(x, y) {
     # This is needed because it's used by the second operation
     intermediate <- nvl_add(x, y)

@@ -1,3 +1,5 @@
+#' @include tensor.R
+
 #' @title Graph Value
 #' @description
 #' Value in a [`Graph`].
@@ -176,7 +178,6 @@ descriptor_to_graph <- function(descriptor) {
 
 GraphBox <- new_class(
   "GraphBox",
-  parent = Box,
   properties = list(
     # TODO: rename to gnode
     gval = GraphNode,
@@ -219,15 +220,15 @@ maybe_box_variable <- function(x) {
       return(x)
     }
     gval <- x@gval
-    get_box_or_register_cont(current_desc, gval)
+    get_box_or_register_const(current_desc, gval)
   } else if (is_anvil_tensor(x)) {
-    get_box_or_register_cont(current_desc, x)
+    get_box_or_register_const(current_desc, x)
   } else if (is_graph_node(x)) {
     # FIXME: !!!
     # We use this in gradient, but I am not sure this is such a great idea
     #browser()
     #cli_abort("Internal error: trying to lift a GraphNode")
-    get_box_or_register_cont(current_desc, x)
+    get_box_or_register_const(current_desc, x)
     #GraphBox(x, .current_descriptor())
   } else {
     x
@@ -292,7 +293,7 @@ register_gval <- function(desc, x) {
 }
 
 # Returns a Box
-get_box_or_register_cont <- function(desc, x) {
+get_box_or_register_const <- function(desc, x) {
   if (!is_graph_descriptor(desc)) {
     cli_abort("Internal error: trying to register a constant in a non-graph descriptor")
   }
@@ -337,7 +338,7 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
     register_input(desc, input)
   }
   for (const in graph@constants) {
-    get_box_or_register_cont(desc, const)
+    get_box_or_register_const(desc, const)
   }
   for (call in graph@calls) {
     for (input in c(call@inputs, call@outputs)) {
@@ -379,7 +380,7 @@ graphify <- function(f, args) {
   }
 
   graph <- descriptor_to_graph(desc)
-  pass_dead_code(graph)
+  remove_dead_code(graph)
 }
 
 is_graph_node <- function(x) {
@@ -481,13 +482,13 @@ inline_graph_into_desc <- function(desc, graph) {
     # The following can happen:
     # 1. a constant is already present in the parent descriptor -> do nothing
     # 2. the constant is not present in the parent descriptor -> register it
-    get_box_or_register_cont(desc, const)
+    get_box_or_register_const(desc, const)
   }
   for (input in graph@inputs) {
     if (is.null(desc@gval_to_box[[input]])) {
       #
     }
-    get_box_or_register_cont(desc, input)
+    get_box_or_register_const(desc, input)
   }
 
   desc@calls <- c(desc@calls, graph@calls)
