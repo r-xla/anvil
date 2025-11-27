@@ -59,35 +59,35 @@ method(print, Primitive) <- function(x, ...) {
 
 p_add <- Primitive("add")
 nvl_add <- function(lhs, rhs) {
-  graph_call(p_add, list(lhs, rhs))[[1L]]
+  graph_add(p_add, list(lhs, rhs))[[1L]]
 }
 
 p_mul <- Primitive("mul")
 nvl_mul <- function(lhs, rhs) {
-  graph_call(p_mul, list(lhs, rhs))[[1L]]
+  graph_add(p_mul, list(lhs, rhs))[[1L]]
 }
 
 p_sub <- Primitive("sub")
 nvl_sub <- function(lhs, rhs) {
-  graph_call(p_sub, list(lhs, rhs))[[1L]]
+  graph_add(p_sub, list(lhs, rhs))[[1L]]
 }
 p_neg <- Primitive("negate")
 nvl_neg <- function(operand) {
-  graph_call(p_neg, list(operand))[[1L]]
+  graph_add(p_neg, list(operand))[[1L]]
 }
 p_div <- Primitive("divide")
 nvl_div <- function(lhs, rhs) {
-  graph_call(p_div, list(lhs, rhs))[[1L]]
+  graph_add(p_div, list(lhs, rhs))[[1L]]
 }
 p_pow <- Primitive("power")
 nvl_pow <- function(lhs, rhs) {
-  graph_call(p_pow, list(lhs, rhs))[[1L]]
+  graph_add(p_pow, list(lhs, rhs))[[1L]]
 }
 
 p_broadcast_in_dim <- Primitive("broadcast_in_dim")
 
 nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
-  graph_call(
+  graph_add(
     p_broadcast_in_dim,
     list(operand),
     params = list(
@@ -99,7 +99,7 @@ nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
 
 p_dot_general <- Primitive("dot_general")
 nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
-  graph_call(
+  graph_add(
     p_dot_general,
     list(lhs, rhs),
     list(contracting_dims = contracting_dims, batching_dims = batching_dims)
@@ -108,7 +108,7 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
 
 p_transpose <- Primitive("transpose")
 nvl_transpose <- function(operand, permutation) {
-  graph_call(
+  graph_add(
     p_transpose,
     list(operand),
     list(permutation = permutation)
@@ -117,7 +117,7 @@ nvl_transpose <- function(operand, permutation) {
 
 p_reshape <- Primitive("reshape")
 nvl_reshape <- function(operand, shape) {
-  graph_call(
+  graph_add(
     p_reshape,
     list(operand),
     params = list(shape = shape)
@@ -128,7 +128,7 @@ nvl_reshape <- function(operand, shape) {
 
 p_reduce_sum <- Primitive("sum")
 nvl_reduce_sum <- function(operand, dims, drop = TRUE) {
-  graph_call(
+  graph_add(
     p_reduce_sum,
     list(operand),
     params = list(
@@ -140,7 +140,7 @@ nvl_reduce_sum <- function(operand, dims, drop = TRUE) {
 
 p_reduce_prod <- Primitive("prod")
 nvl_reduce_prod <- function(operand, dims, drop = TRUE) {
-  graph_call(
+  graph_add(
     p_reduce_prod,
     list(operand),
     params = list(
@@ -152,7 +152,7 @@ nvl_reduce_prod <- function(operand, dims, drop = TRUE) {
 
 p_reduce_max <- Primitive("max")
 nvl_reduce_max <- function(operand, dims, drop = TRUE) {
-  graph_call(
+  graph_add(
     p_reduce_max,
     list(operand),
     params = list(
@@ -164,7 +164,7 @@ nvl_reduce_max <- function(operand, dims, drop = TRUE) {
 
 p_reduce_min <- Primitive("min")
 nvl_reduce_min <- function(operand, dims, drop = TRUE) {
-  graph_call(
+  graph_add(
     p_reduce_min,
     list(operand),
     params = list(
@@ -176,7 +176,7 @@ nvl_reduce_min <- function(operand, dims, drop = TRUE) {
 
 p_reduce_any <- Primitive("any")
 nvl_reduce_any <- function(operand, dims, drop = TRUE) {
-  graph_call(
+  graph_add(
     p_reduce_any,
     list(operand),
     params = list(
@@ -188,7 +188,7 @@ nvl_reduce_any <- function(operand, dims, drop = TRUE) {
 
 p_reduce_all <- Primitive("all")
 nvl_reduce_all <- function(operand, dims, drop = TRUE) {
-  graph_call(
+  graph_add(
     p_reduce_all,
     list(operand),
     params = list(
@@ -202,141 +202,141 @@ nvl_reduce_all <- function(operand, dims, drop = TRUE) {
 
 p_eq <- Primitive("equal")
 nvl_eq <- function(lhs, rhs) {
-  graph_call(p_eq, list(lhs, rhs))[[1L]]
+  graph_add(p_eq, list(lhs, rhs))[[1L]]
 }
 
 p_ne <- Primitive("not_equal")
 nvl_ne <- function(lhs, rhs) {
-  graph_call(p_ne, list(lhs, rhs))[[1L]]
+  graph_add(p_ne, list(lhs, rhs))[[1L]]
 }
 
 p_gt <- Primitive("greater")
 nvl_gt <- function(lhs, rhs) {
-  graph_call(p_gt, list(lhs, rhs))[[1L]]
+  graph_add(p_gt, list(lhs, rhs))[[1L]]
 }
 
 p_ge <- Primitive("greater_equal")
 nvl_ge <- function(lhs, rhs) {
-  graph_call(p_ge, list(lhs, rhs))[[1L]]
+  graph_add(p_ge, list(lhs, rhs))[[1L]]
 }
 
 p_lt <- Primitive("less")
 nvl_lt <- function(lhs, rhs) {
-  graph_call(p_lt, list(lhs, rhs))[[1L]]
+  graph_add(p_lt, list(lhs, rhs))[[1L]]
 }
 
 p_le <- Primitive("less_equal")
 nvl_le <- function(lhs, rhs) {
-  graph_call(p_le, list(lhs, rhs))[[1L]]
+  graph_add(p_le, list(lhs, rhs))[[1L]]
 }
 
 # additional simple binary primitives -----------------------------------------
 
 p_max <- Primitive("maximum")
 nvl_max <- function(lhs, rhs) {
-  graph_call(p_max, list(lhs, rhs))[[1L]]
+  graph_add(p_max, list(lhs, rhs))[[1L]]
 }
 
 p_min <- Primitive("minimum")
 nvl_min <- function(lhs, rhs) {
-  graph_call(p_min, list(lhs, rhs))[[1L]]
+  graph_add(p_min, list(lhs, rhs))[[1L]]
 }
 
 p_remainder <- Primitive("remainder")
 nvl_remainder <- function(lhs, rhs) {
-  graph_call(p_remainder, list(lhs, rhs))[[1L]]
+  graph_add(p_remainder, list(lhs, rhs))[[1L]]
 }
 
 p_and <- Primitive("and")
 nvl_and <- function(lhs, rhs) {
-  graph_call(p_and, list(lhs, rhs))[[1L]]
+  graph_add(p_and, list(lhs, rhs))[[1L]]
 }
 
 p_not <- Primitive("not")
 nvl_not <- function(operand) {
-  graph_call(p_not, list(operand))[[1L]]
+  graph_add(p_not, list(operand))[[1L]]
 }
 
 p_or <- Primitive("or")
 nvl_or <- function(lhs, rhs) {
-  graph_call(p_or, list(lhs, rhs))[[1L]]
+  graph_add(p_or, list(lhs, rhs))[[1L]]
 }
 
 p_xor <- Primitive("xor")
 nvl_xor <- function(lhs, rhs) {
-  graph_call(p_xor, list(lhs, rhs))[[1L]]
+  graph_add(p_xor, list(lhs, rhs))[[1L]]
 }
 
 p_shift_left <- Primitive("shift_left")
 nvl_shift_left <- function(lhs, rhs) {
-  graph_call(p_shift_left, list(lhs, rhs))[[1L]]
+  graph_add(p_shift_left, list(lhs, rhs))[[1L]]
 }
 
 p_shift_right_logical <- Primitive("shift_right_logical")
 nvl_shift_right_logical <- function(lhs, rhs) {
-  graph_call(p_shift_right_logical, list(lhs, rhs))[[1L]]
+  graph_add(p_shift_right_logical, list(lhs, rhs))[[1L]]
 }
 
 p_shift_right_arithmetic <- Primitive("shift_right_arithmetic")
 nvl_shift_right_arithmetic <- function(lhs, rhs) {
-  graph_call(p_shift_right_arithmetic, list(lhs, rhs))[[1L]]
+  graph_add(p_shift_right_arithmetic, list(lhs, rhs))[[1L]]
 }
 
 p_atan2 <- Primitive("atan2")
 nvl_atan2 <- function(lhs, rhs) {
-  graph_call(p_atan2, list(lhs, rhs))[[1L]]
+  graph_add(p_atan2, list(lhs, rhs))[[1L]]
 }
 
 # unary math primitives ---------------------------------------------------------
 
 p_abs <- Primitive("abs")
 nvl_abs <- function(operand) {
-  graph_call(p_abs, list(operand))[[1L]]
+  graph_add(p_abs, list(operand))[[1L]]
 }
 
 p_sqrt <- Primitive("sqrt")
 nvl_sqrt <- function(operand) {
-  graph_call(p_sqrt, list(operand))[[1L]]
+  graph_add(p_sqrt, list(operand))[[1L]]
 }
 
 p_rsqrt <- Primitive("rsqrt")
 nvl_rsqrt <- function(operand) {
-  graph_call(p_rsqrt, list(operand))[[1L]]
+  graph_add(p_rsqrt, list(operand))[[1L]]
 }
 
 p_log <- Primitive("log")
 nvl_log <- function(operand) {
-  graph_call(p_log, list(operand))[[1L]]
+  graph_add(p_log, list(operand))[[1L]]
 }
 
 p_tanh <- Primitive("tanh")
 nvl_tanh <- function(operand) {
-  graph_call(p_tanh, list(operand))[[1L]]
+  graph_add(p_tanh, list(operand))[[1L]]
 }
 
 p_tan <- Primitive("tan")
 nvl_tan <- function(operand) {
-  graph_call(p_tan, list(operand))[[1L]]
+  graph_add(p_tan, list(operand))[[1L]]
 }
 
 p_floor <- Primitive("floor")
 nvl_floor <- function(operand) {
-  graph_call(p_floor, list(operand))[[1L]]
+  graph_add(p_floor, list(operand))[[1L]]
 }
 
 p_ceil <- Primitive("ceil")
 nvl_ceil <- function(operand) {
-  graph_call(p_ceil, list(operand))[[1L]]
+  graph_add(p_ceil, list(operand))[[1L]]
 }
 
 p_sign <- Primitive("sign")
 nvl_sign <- function(operand) {
-  graph_call(p_sign, list(operand))[[1L]]
+  graph_add(p_sign, list(operand))[[1L]]
 }
 
 p_exp <- Primitive("exp")
 nvl_exp <- function(operand) {
-  graph_call(p_exp, list(operand))[[1L]]
+  graph_add(p_exp, list(operand))[[1L]]
 }
 
 p_round <- Primitive("round")
@@ -344,14 +344,14 @@ nvl_round <- function(operand, method = "nearest_even") {
   if (!(method %in% c("nearest_even", "afz"))) {
     cli_abort("method must be one of: 'nearest_even', 'afz', but is {method}")
   }
-  graph_call(p_round, list(operand), list(method = method))[[1L]]
+  graph_add(p_round, list(operand), list(method = method))[[1L]]
 }
 
 # dtype conversion ----------------------------------------------------------------
 
 p_convert <- Primitive("convert")
 nvl_convert <- function(operand, dtype) {
-  graph_call(
+  graph_add(
     p_convert,
     list(operand),
     params = list(dtype = dtype)
@@ -361,7 +361,7 @@ nvl_convert <- function(operand, dtype) {
 
 p_select <- Primitive("select")
 nvl_select <- function(pred, true_value, false_value) {
-  graph_call(p_select, list(pred, true_value, false_value))[[1L]]
+  graph_add(p_select, list(pred, true_value, false_value))[[1L]]
 }
 
 # Higher order primitives -------------------------------------------------------
@@ -385,15 +385,12 @@ nvl_if <- function(pred, true, false) {
   }
   false_graph <- graphify(function() rlang::eval_tidy(false_expr), list(), desc = desc_false)
 
-  if (!identical(true_graph@out_tree, false_graph@out_tree)) {
-    cli_abort("true and false branches must have the same output structure")
-  }
 
   for (const in desc_false@constants) {
     get_box_or_register_const(current_desc, const)
   }
 
-  out <- graph_call(
+  out <- graph_add(
     p_if,
     list(pred),
     params = list(true_graph = true_graph, false_graph = false_graph)
@@ -402,15 +399,45 @@ nvl_if <- function(pred, true, false) {
 }
 
 p_while <- HigherOrderPrimitive("while")
-nvl_while <- function(..., cond, body) {
-  init <- list(...)
+nvl_while <- function(init, cond, body) {
+  cond_expr <- rlang::enquo(cond)
+
   if (!is.function(body)) {
     cli_abort("body must be a function")
   }
-  # TODO: better checks
-  cond_graph <- graphify(cond, list(init))
-  body_graph <- graphify(body, list(init))
 
-  out <- graph_call(p_while, list(init), params = list(cond_graph = cond_graph, body_graph = body_graph))
-  unflatten(body_graph@out_tree, out)
+  state_names <- names(init)
+
+  if (any(state_names == "")) {
+    cli_abort("init must have only named arguments")
+  }
+
+  desc_body <- local_descriptor()
+
+  cond_graph <- graphify(function(...) {
+    rlang::eval_tidy(cond_expr, list(...))
+  }, init, desc = desc_body)
+
+  for (const in desc_body@constants) {
+    get_box_or_register_const(desc_body, const)
+  }
+
+  body_graph <- graphify(
+    body,
+    init
+  )
+
+  current_desc <- .current_descriptor()
+  for (const in body_graph@constants) {
+    get_box_or_register_const(current_desc, const)
+  }
+  # TODO(feat): Support nested structures by flattening etc.
+
+  out <- graph_add(
+    p_while,
+    args = init,
+    params = list(cond_graph = cond_graph, body_graph = body_graph)
+  )
+
+  out
 }

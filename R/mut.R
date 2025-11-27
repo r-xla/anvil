@@ -32,12 +32,14 @@ mut_setter <- function(fn, name, .state = ".state") {
   if (is.null(fn)) {
     fn <- function(self, value) {
       prop(self, .state)[[name]] <- prop(self, name) <- value
+      attr(self, name) <- NULL
       self
     }
   } else {
     body(fn) <- bquote({
       .(body(fn))
       prop(self, .state)[[name]] <- prop(self, name)
+      attr(self, name) <- NULL
       self
     })
   }
@@ -47,7 +49,7 @@ mut_setter <- function(fn, name, .state = ".state") {
 
 as_mut_S7_object <- function(x, .state = ".state") {
   # nolint: object_name_linter, line_length_linter.
-  # initialize state, since we don't include it in our constructor
+  # initialize state, since we don't include it inour constructor
   default_state <- attr(x, "S7_class")@properties[[.state]]$default
   prop(x, .state) <- if (is.language(default_state)) {
     eval.parent(default_state)

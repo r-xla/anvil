@@ -473,7 +473,7 @@ is_graph_box <- function(x) {
   inherits(x, "anvil::GraphBox")
 }
 
-graph_call <- function(prim, args, params = list()) {
+graph_add <- function(prim, args, params = list()) {
   boxes_in <- lapply(args, maybe_box_variable)
   gvals_in <- lapply(boxes_in, \(x) x@gval)
   avals_in <- lapply(boxes_in, aval)

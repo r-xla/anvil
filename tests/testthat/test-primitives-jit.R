@@ -143,23 +143,73 @@ test_that("p_if: identically constants in both branches receive the same GraphVa
 
 
 # TODO: Continue here
-#test_that("p_while", {
-#
-#  cond <- function(state) state < nv_scalar(10)
-#  body <- function(state) state + nv_scalar(1)
-#
-#  f <- function(init) nvl_while(init, , body)
-#  fj <- jit(f)
-#  expect_equal(fj(nv_scalar(0)), nv_scalar(10))
-#
-#
-#  f <- function(cond, state) nvl_while(cond, function(cond, state) {
-#    list(state + 1)
-#  }, nv_scalar(0))
-#  fj <- jit(f)
-#  expect_equal(fj(nv_scalar(TRUE), nv_scalar(0)), nv_scalar(1))
-#  expect_equal(fj(nv_scalar(FALSE), nv_scalar(0)), nv_scalar(0))
-#})
+test_that("p_while: simle case", {
+  f <- jit(function(n) {
+    nv_while(list(i = nv_scalar(1L)), i <= n, \(i) {
+      i <- i + nv_scalar(1L)
+      list(i = i)
+    })
+  })
+
+  expect_equal(
+    f(nv_scalar(10L)),
+    list(i = nv_scalar(11L))
+  )
+})
+
+test_that("p_while: two state variables", {
+  f <- jit(function(n) {
+    nv_while(
+      list(i = nv_scalar(1L), s = nv_scalar(0L)),
+      i <= n,
+      \(i, s) {
+        i <- i + nv_scalar(1L)
+        s <- s + i
+        list(i = i, s = s)
+      }
+    )
+  })
+
+  res <- f(nv_scalar(10L))
+  expect_equal(
+    res$i,
+    nv_scalar(11L)
+  )
+  # s counts sum of i at each increment; i advances from 2 to 11
+  # s = sum(2:11) = 2+3+...+11 = 65
+  expect_equal(
+    res$s,
+    nv_scalar(sum(2:11))
+  )
+})
+
+test_that("p_while: two states", {
+  f <- jit(function(n) {
+    nv_while(list(i = nv_scalar(1L), j = ), i <= n, \(i) {
+      i <- i + nv_scalar(1L)
+      list(i = i)
+    })
+  })
+
+  expect_equal(
+    f(nv_scalar(10L)),
+    list(i = nv_scalar(11L))
+  )
+})
+
+test_that("p_while: nested state", {
+  f <- jit(function(n) {
+    nv_while(list(i = list(nv_scalar(1L))), i <= n, \(i) {
+      i <- i[[1L]]
+      i <- i + nv_scalar(1L)
+      list(list(i = i))
+    })
+  })
+  expect_equal(
+    f(nv_scalar(10L)),
+    list(i = list(nv_scalar(11L)))
+  )
+})
 
 test_that("error when multiplying lists in if-statement", {
   f <- jit(function(pred, x) {

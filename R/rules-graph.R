@@ -280,11 +280,19 @@ p_select[["graph"]] <- function(pred, true_value, false_value) {
 }
 
 p_if[["graph"]] <- function(pred, true_graph, false_graph) {
-  # Return output types based on the true branch's outputs
-  # Both branches should have the same output types
+  if (!identical(true_graph@out_tree, false_graph@out_tree)) {
+    cli_abort("true and false branches must have the same output structure")
+  }
   lapply(true_graph@outputs, \(out) st2vt(out@aval))
 }
 
-p_while[["graph"]] <- function(init, cond_graph, body_graph) {
-  lapply(body_graph@outputs, \(out) st2vt(out@aval))
+p_while[["graph"]] <- function(..., cond_graph, body_graph) {
+  outs <- list(...)
+  outs_body <- lapply(body_graph@outputs, \(out) st2vt(out@aval))
+  inputs_body <- lapply(body_graph@inputs, \(inp) st2vt(inp@aval))
+  browser
+  if (!identical(unname(outs), inputs_body) || !identical(inputs_body, outs_body)) {
+    cli_abort("init must be the same as inputs and outputs of body")
+  }
+  return(outs)
 }

@@ -355,7 +355,6 @@ nv_exp <- nvl_exp
 #'   Either `"nearest_even"` (default) or `"afz"` (away from zero).
 nv_round <- nvl_round
 
-
 ## Other operations -----------------------------------------------------------
 
 #' @title Matrix Multiplication
@@ -509,3 +508,11 @@ dt_f32 <- FloatType(32)
 #' @format NULL
 #' @usage NULL
 dt_f64 <- FloatType(64)
+
+
+# Higher order primitives
+
+#' @export
+nv_if <- nvl_if
+#' @export
+nv_while <- nvl_while

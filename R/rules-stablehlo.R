@@ -255,8 +255,8 @@ p_if[["stablehlo"]] <- function(pred, true_graph, false_graph, .env) {
   stablehlo::hlo_if(pred, true_func, false_func, simplify = FALSE)
 }
 
-p_while[["stablehlo"]] <- function(init, cond_graph, body_graph, .env) {
+p_while[["stablehlo"]] <- function(..., cond_graph, body_graph, .env) {
   body_func <- stablehlo(body_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
   cond_func <- stablehlo(cond_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
-  stablehlo::hlo_while(cond_func, body_func, init, simplify = FALSE)
+  stablehlo::hlo_while(..., cond = cond_func, body = body_func, simplify = FALSE)
 }
