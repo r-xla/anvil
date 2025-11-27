@@ -32,6 +32,16 @@ test_that("can take in nested list", {
   )
 })
 
+test_that("Can multiply values from lists", {
+  f <- jit(function(x, y) {
+    x[[1]] * y[[1]]
+  })
+  expect_equal(
+    f(list(nv_scalar(2)), list(nv_scalar(3))),
+    nv_scalar(6)
+  )
+})
+
 test_that("multiple returns", {
   f <- jit(function(x, y) {
     list(
@@ -133,11 +143,11 @@ test_that("constants can be part of the program", {
   expect_equal(f(nv_tensor(1)), nv_tensor(2))
 })
 
-test_that("JitBox printer", {
-  local_func()
+test_that("HloBox printer", {
+  func <- local_func()
   x <- hlo_input("x", "f32", c(2, 3))
-  interpreter <- JitInterpreter()
-  box <- JitBox(interpreter, x)
-  expect_equal(format(box), "JitBox(tensor<2x3xf32>)")
+  interpreter <- HloInterpreter(main = local_main(HloInterpreter, global_data = func))
+  box <- HloBox(interpreter, x)
+  expect_equal(format(box), "HloBox(ShapedTensor(dtype=f32, shape=2x3))")
   expect_snapshot(box)
 })

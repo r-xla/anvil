@@ -37,6 +37,7 @@ test_that("flatten_fun", {
   )
 
   f_flat <- rlang::exec(flatten_fun, f, !!!args)
+  expect_class(f_flat, "anvil::FlattenedFunction")
   out <- rlang::exec(f_flat, !!!flatten(args))
   args_flat <- flatten(args)
   out <- do.call(unflatten, out)

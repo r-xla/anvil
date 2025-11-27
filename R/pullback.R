@@ -46,7 +46,7 @@ gradient <- function(f, wrt = NULL) {
     y <- out[[1L]]
 
     if (!identical(shape(y), integer())) {
-      stop("Function must return a scalar")
+      cli_abort("Function must return a scalar")
     }
     # TODO: Assert float
 

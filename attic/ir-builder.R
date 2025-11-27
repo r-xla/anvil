@@ -40,7 +40,7 @@ Builder <- R6::R6Class(
     #' @return `IRBox`
     new_box = function(interpreter, aval) {
       if (!inherits(aval, ShapedTensor)) {
-        stop("aval must be a ShapedTensor")
+        cli_abort("aval must be a ShapedTensor")
       }
       box <- IRBox(
         interpreter = interpreter,
@@ -56,7 +56,7 @@ Builder <- R6::R6Class(
     },
     add_variable = function(box) {
       if (ir_id(box) %in% hashkeys(self$boxes_to_variables)) {
-        stop("box already added")
+        cli_abort("box already added")
       }
       var <- IRVariable(box@aval)
       self$boxes_to_variables[[ir_id(box)]] <- var
@@ -65,7 +65,7 @@ Builder <- R6::R6Class(
     get_variable = function(box) {
       var <- self$boxes_to_variables[[ir_id(box)]]
       if (is.null(var)) {
-        stop("box not found")
+        cli_abort("box not found")
       }
       var
     },
