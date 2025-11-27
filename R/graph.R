@@ -379,6 +379,8 @@ graphify <- function(f, args, desc = NULL) {
   f_flat <- flatten_fun(f, in_node = in_tree)
   if (is.null(desc)) {
     desc <- local_descriptor(in_tree = in_tree)
+  } else {
+    desc@in_tree <- in_tree
   }
 
   # box tensors and add them as inputs to the current graph

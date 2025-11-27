@@ -400,10 +400,11 @@ nvl_if <- function(pred, true, false) {
 
 p_while <- HigherOrderPrimitive("while")
 nvl_while <- function(init, cond, body) {
-  cond_expr <- rlang::enquo(cond)
-
   if (!is.function(body)) {
     cli_abort("body must be a function")
+  }
+  if (!is.function(cond)) {
+    cli_abort("cond must be a function")
   }
 
   state_names <- names(init)
@@ -412,32 +413,41 @@ nvl_while <- function(init, cond, body) {
     cli_abort("init must have only named arguments")
   }
 
+
+  desc_cond <- local_descriptor()
+
+  cond_graph <- graphify(cond, init, desc = desc_cond)
+
   desc_body <- local_descriptor()
 
-  cond_graph <- graphify(function(...) {
-    rlang::eval_tidy(cond_expr, list(...))
-  }, init, desc = desc_body)
-
-  for (const in desc_body@constants) {
+  # ensure that constant ids are the same between cond and body
+  # inputs don't matter, because we don't inline the sub-graphs into the parent graph
+  for (const in desc_cond@constants) {
     get_box_or_register_const(desc_body, const)
   }
+  body_graph <- graphify(body, init, desc_body)
 
-  body_graph <- graphify(
-    body,
-    init
-  )
+  if (!identical(cond_graph@in_tree, body_graph@in_tree)) {
+    cli_abort("cond and body must have the same input structure")
+  }
+
+  if (!identical(body_graph@in_tree, body_graph@out_tree)) {
+    cli_abort("body must have the same input and output structure")
+  }
+
 
   current_desc <- .current_descriptor()
+
+  # now we register the constants of both sub-graphs (body includes cond's constants) into the graph
   for (const in body_graph@constants) {
     get_box_or_register_const(current_desc, const)
   }
-  # TODO(feat): Support nested structures by flattening etc.
 
   out <- graph_add(
     p_while,
-    args = init,
+    args = flatten(init),
     params = list(cond_graph = cond_graph, body_graph = body_graph)
   )
 
-  out
+  unflatten(body_graph@out_tree, out)
 }

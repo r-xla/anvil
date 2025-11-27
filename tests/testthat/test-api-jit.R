@@ -53,3 +53,13 @@ test_that("constants can be lifted to the appropriate level", {
   }
   jit(gradient(f, wrt = "x"))(nv_scalar(2))
 })
+
+test_that("wrt non-existent argument", {
+  f <- function(x) {
+    nv_pow(x, nv_scalar(1))
+  }
+  expect_error(
+    jit(gradient(f, wrt = "y"))(nv_tensor(2)),
+    "must be a subset"
+  )
+})

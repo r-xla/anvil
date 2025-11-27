@@ -8,80 +8,65 @@ format_node_id <- function(node, node_ids) {
   sprintf("%%%s", id)
 }
 
-# Format aval as type signature
 format_aval_short <- function(aval) {
   sprintf("%s[%s]", repr(dtype(aval)), paste(shape(aval), collapse = ", "))
 }
 
-# Build a mapping from nodes to unique IDs
 build_node_ids <- function(inputs, constants, calls) {
   node_ids <- hashtab()
+  for (i in seq_along0(inputs)) {
+    node_ids[[inputs[[i]]]] <- paste0("i", i)
+  }
+  for (i in seq_along0(constants)) {
+    node_ids[[constants[[i]]]] <- paste0("c", i)
+  }
   counter <- 0L
-
-  # Inputs get sequential IDs: a, b, c, ...
-  for (node in inputs) {
-    # FIXME: !!!
-    node_ids[[node]] <- letters[counter + 1L]
-    counter <- counter + 1L
-  }
-
-  # Constants get c0, c1, c2, ...
-  const_counter <- 0L
-  for (node in constants) {
-    node_ids[[node]] <- sprintf("c%d", const_counter)
-    const_counter <- const_counter + 1L
-  }
-
-  # Outputs of calls get numeric IDs: 0, 1, 2, ...
-  num_counter <- 0L
   for (call in calls) {
     for (out in call@outputs) {
-      node_ids[[out]] <- as.character(num_counter)
-      num_counter <- num_counter + 1L
+      node_ids[[out]] <- as.character(counter)
+      counter <- counter + 1L
     }
   }
-
   node_ids
 }
 
-# Format a single PrimitiveCall given a node_id mapping
+format_param <- function(param) {
+  if (test_scalar(param)) {
+    as.character(param)
+  } else if (is.atomic(param) && length(param) > 1L) {
+    sprintf("c(%s)", paste(param, collapse = ", "))
+  } else if (is.list(param)) {
+    if (!is.null(names(param))) {
+      sprintf("list(%s)", paste(names(param), "=", sapply(param, format_param), collapse = ", "))
+    } else {
+      sprintf("list(%s)", paste(sapply(param, format_param), collapse = ", "))
+    }
+  } else if (is_graph(param)) {
+    sprintf("graph: [%s] -> [%s]", length(param@inputs), length(param@outputs))
+  } else {
+    "<any>"
+  }
+}
+
 format_call <- function(call, node_ids, indent = "  ") {
-  # Format inputs
   input_ids <- vapply(call@inputs, format_node_id, character(1), node_ids = node_ids)
   inputs_str <- paste(input_ids, collapse = ", ")
 
-  # Format outputs
   output_ids <- vapply(call@outputs, format_node_id, character(1), node_ids = node_ids)
   output_types <- vapply(call@outputs, \(x) format_aval_short(x@aval), character(1))
 
-  if (length(call@outputs) == 1L) {
-    outputs_str <- sprintf("%s: %s", output_ids, output_types)
+  outputs_str <- if (length(call@outputs) == 1L) {
+    sprintf("%s: %s", output_ids, output_types)
   } else {
-    outputs_str <- sprintf("(%s): (%s)", paste(output_ids, collapse = ", "), paste(output_types, collapse = ", "))
+    sprintf("(%s): (%s)", paste(output_ids, collapse = ", "), paste(output_types, collapse = ", "))
   }
 
   # Format params if present
   params_str <- sprintf(" [%d params]", length(call@params))
-  #if (length(call@params) > 0L) {
-  #  param_parts <- vapply(seq_along(call@params), function(i) {
-  #    val <- call@params[[i]]
-  #    nm <- names(call@params)[i]
-  #    # Format vectors/lists nicely
-  #    val_str <- if (is.atomic(val) && length(val) > 1L) {
-  #      sprintf("c(%s)", paste(val, collapse = ", "))
-  #    } else if (is.list(val)) {
-  #      deparse1(val)
-  #    } else {
-  #      as.character(val)
-  #    }
-  #    if (is.null(nm) || nm == "") {
-  #      val_str
-  #    } else {
-  #      sprintf("%s=%s", nm, val_str)
-  #    }
-  #  }, character(1))
-  #  params_str <- sprintf("{%s}", paste(param_parts, collapse = ", "))
-  #}
+  if (length(call@params) > 0L) {
+    param_parts <- vapply(seq_along(call@params), format_param, character(1))
+    params_str <- sprintf("{%s}", paste(param_parts, collapse = ", "))
+  }
 
   sprintf("%s%s = %s%s(%s)", indent, outputs_str, call@primitive@name, params_str, inputs_str)
 }

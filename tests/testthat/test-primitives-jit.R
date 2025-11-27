@@ -67,7 +67,7 @@ test_that("p_broadcast_in_dim", {
   x <- 1L
   f <- jit(nvl_broadcast_in_dim, static = c("shape_out", "broadcast_dimensions"))
   expect_equal(
-    f(nv_scalar(1L), shape_out <- c(1, 2), integer()),
+    f(nv_scalar(1L), c(1, 2), integer()),
     nv_tensor(1L, shape = c(1, 2)),
     tolerance = 1e-5
   )
@@ -141,13 +141,28 @@ test_that("p_if: identically constants in both branches receive the same GraphVa
   expect_equal(g(nv_scalar(FALSE)), nv_scalar(6))
 })
 
+describe("p_while", {
+  it("simple case", {
+    f <- jit(function(n) {
+      nv_while(list(i = nv_scalar(1L)),
+        \(i) i <= n,
+        \(i) {
+          i <- i + nv_scalar(1L)
+          list(i = i)
+        }
+      )
+    })
+  })
+})
 
 # TODO: Continue here
 test_that("p_while: simle case", {
   f <- jit(function(n) {
-    nv_while(list(i = nv_scalar(1L)), i <= n, \(i) {
-      i <- i + nv_scalar(1L)
-      list(i = i)
+    nv_while(list(i = nv_scalar(1L)),
+      \(i) i <= n,
+      \(i) {
+        i <- i + nv_scalar(1L)
+        list(i = i)
     })
   })
 
@@ -161,7 +176,7 @@ test_that("p_while: two state variables", {
   f <- jit(function(n) {
     nv_while(
       list(i = nv_scalar(1L), s = nv_scalar(0L)),
-      i <= n,
+      \(i, s) i <= n,
       \(i, s) {
         i <- i + nv_scalar(1L)
         s <- s + i
@@ -185,24 +200,30 @@ test_that("p_while: two state variables", {
 
 test_that("p_while: two states", {
   f <- jit(function(n) {
-    nv_while(list(i = nv_scalar(1L), j = ), i <= n, \(i) {
-      i <- i + nv_scalar(1L)
-      list(i = i)
-    })
+    nv_while(list(i = nv_scalar(1L), j = nv_scalar(2L)),
+      \(i, j) { # nolint
+        i <= n
+      },
+      \(i, j) {
+        i <- i + nv_scalar(1L)
+        list(i = i, j = j)
+    }) # nolint
   })
 
   expect_equal(
     f(nv_scalar(10L)),
-    list(i = nv_scalar(11L))
+    list(i = nv_scalar(11L), j = nv_scalar(2L))
   )
 })
 
 test_that("p_while: nested state", {
   f <- jit(function(n) {
-    nv_while(list(i = list(nv_scalar(1L))), i <= n, \(i) {
+    nv_while(list(i = list(nv_scalar(1L))), \(i) { # nolint
+      i[[1]] <= n
+    }, \(i) { # nolint
       i <- i[[1L]]
       i <- i + nv_scalar(1L)
-      list(list(i = i))
+      list(i = list(i))
     })
   })
   expect_equal(
@@ -210,6 +231,11 @@ test_that("p_while: nested state", {
     list(i = list(nv_scalar(11L)))
   )
 })
+
+test_that("p_while: errors", {
+  # TODO:
+})
+
 
 test_that("error when multiplying lists in if-statement", {
   f <- jit(function(pred, x) {
