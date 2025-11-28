@@ -1,6 +1,5 @@
 # Articles
 
-### All vignettes
+### Articles
 
-- [Get Started](anvil.md):
-- [Autodiff Modes](autodiff-modes.md):
+- [Internals](internals.md):

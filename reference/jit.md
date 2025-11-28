@@ -5,7 +5,13 @@ Convert a function to a JIT compiled function.
 ## Usage
 
 ``` r
-jit(f, static = character(), device = NULL, cache_size = 100L)
+jit(
+  f,
+  static = character(),
+  device = NULL,
+  cache_size = 100L,
+  donate = character()
+)
 ```
 
 ## Arguments
@@ -31,6 +37,13 @@ jit(f, static = character(), device = NULL, cache_size = 100L)
 
   (`integer(1)`)  
   The size of the cache for the jit-compiled functions.
+
+- donate:
+
+  ([`character()`](https://rdrr.io/r/base/character.html))  
+  Names of the arguments whose buffers should be donated. Donated
+  buffers can be aliased with outputs of the same type, allowing
+  in-place operations and reducing memory usage.
 
 ## Value
 

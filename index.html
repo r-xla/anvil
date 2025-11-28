@@ -40,6 +40,12 @@
 <li class="nav-item"><a class="nav-link" href="articles/anvil.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="articles/internals.html">Internals</a></li>
+  </ul>
+</li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -128,11 +134,10 @@
 <li>Runs on different hardware backends, including CPU and GPU.</li>
 </ul>
 </li>
-<li>Easy to extend and contribute:
+<li>Extendable:
 <ul>
+<li>It is possible to add new primitives, transformations, and (with some effort) new backends.</li>
 <li>The package is written almost entirely in R.</li>
-<li>It is easy to add new primitives.</li>
-<li>It (will be) possible to add new transformations, a.k.a. interpretation rules.</li>
 </ul>
 </li>
 </ul>

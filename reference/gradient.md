@@ -1,7 +1,6 @@
-# Gradient of a function
+# Gradient
 
-Compute the gradient of a function using reverse mode automatic
-differentiation. Output must be a 0-dimensional tensor.
+Transform a function to its gradient.
 
 ## Usage
 
@@ -13,14 +12,10 @@ gradient(f, wrt = NULL)
 
 - f:
 
-  (`function`)
+  (`function`)  
+  Function to compute the gradient of.
 
 - wrt:
 
-  ([`character()`](https://rdrr.io/r/base/character.html)) Names of
-  arguments to differentiate with respect to. If `NULL`, compute
-  gradients w.r.t. all differentiable arguments.
-
-## Value
-
-(`function`)
+  (`character`)  
+  Names of the arguments to compute the gradient with respect to.

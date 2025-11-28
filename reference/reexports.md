@@ -5,7 +5,8 @@ to see their documentation.
 
 - stablehlo:
 
-  [`is_dtype`](https://r-xla.github.io/stablehlo/reference/is_dtype.html)
+  [`is_dtype`](https://r-xla.github.io/stablehlo/reference/is_dtype.html),
+  [`Shape`](https://r-xla.github.io/stablehlo/reference/Shape.html)
 
 - tengen:
 

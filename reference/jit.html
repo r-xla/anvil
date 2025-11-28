@@ -24,6 +24,10 @@
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/anvil.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
+  </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvil/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -42,7 +46,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>JIT compile a function</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-rngs/R/interpreter-jit.R" class="external-link"><code>R/interpreter-jit.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/graph-refactor/R/jit.R" class="external-link"><code>R/jit.R</code></a></small>
       <div class="d-none name"><code>jit.Rd</code></div>
     </div>
 
@@ -52,7 +56,13 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">jit</span><span class="op">(</span><span class="va">f</span>, static <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>, device <span class="op">=</span> <span class="cn">NULL</span>, cache_size <span class="op">=</span> <span class="fl">100L</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">jit</span><span class="op">(</span></span>
+<span>  <span class="va">f</span>,</span>
+<span>  static <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  device <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cache_size <span class="op">=</span> <span class="fl">100L</span>,</span>
+<span>  donate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -78,6 +88,13 @@ The default (<code>NULL</code>) uses the <code>PJRT_PLATFORM</code> environment 
 <dt id="arg-cache-size">cache_size<a class="anchor" aria-label="anchor" href="#arg-cache-size"></a></dt>
 <dd><p>(<code>integer(1)</code>)<br>
 The size of the cache for the jit-compiled functions.</p></dd>
+
+
+<dt id="arg-donate">donate<a class="anchor" aria-label="anchor" href="#arg-donate"></a></dt>
+<dd><p>(<code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code>)<br>
+Names of the arguments whose buffers should be donated.
+Donated buffers can be aliased with outputs of the same type,
+allowing in-place operations and reducing memory usage.</p></dd>
 
 </dl></div>
     <div class="section level2">

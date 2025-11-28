@@ -5,12 +5,18 @@ Create a tensor.
 ## Usage
 
 ``` r
+AnvilTensor
+
 nv_tensor(data, dtype = NULL, device = NULL, shape = NULL)
 
 nv_scalar(data, dtype = NULL, device = NULL)
 
 nv_empty(dtype, shape, device = NULL)
 ```
+
+## Format
+
+An object of class `S7_S3_class` of length 3.
 
 ## Arguments
 

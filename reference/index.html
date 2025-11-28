@@ -24,6 +24,10 @@
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/anvil.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
+  </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvil/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -56,10 +60,45 @@
 
       <dl><dt>
 
+          <code><a href="Graph.html">Graph()</a></code>
+
+        </dt>
+        <dd>Graph of Primitive Calls</dd>
+
+        <dt>
+
+          <code><a href="GraphDescriptor.html">GraphDescriptor()</a></code>
+
+        </dt>
+        <dd>Graph Descriptor</dd>
+
+        <dt>
+
+          <code><a href="GraphLiteral.html">GraphLiteral()</a></code>
+
+        </dt>
+        <dd>Graph Literal</dd>
+
+        <dt>
+
+          <code><a href="GraphValue.html">GraphValue()</a></code>
+
+        </dt>
+        <dd>Graph Value</dd>
+
+        <dt>
+
           <code><a href="Primitive.html">Primitive()</a></code>
 
         </dt>
         <dd>Primitive</dd>
+
+        <dt>
+
+          <code><a href="PrimitiveCall.html">PrimitiveCall()</a></code>
+
+        </dt>
+        <dd>Primitive Call</dd>
 
         <dt>
 
@@ -70,10 +109,24 @@
 
         <dt>
 
+          <code><a href="dot-current_descriptor.html">.current_descriptor()</a></code>
+
+        </dt>
+        <dd>Get the current graph</dd>
+
+        <dt>
+
           <code><a href="gradient.html">gradient()</a></code>
 
         </dt>
-        <dd>Gradient of a function</dd>
+        <dd>Gradient</dd>
+
+        <dt>
+
+          <code><a href="graphify.html">graphify()</a></code>
+
+        </dt>
+        <dd>Graphify an R function</dd>
 
         <dt>
 
@@ -84,17 +137,24 @@
 
         <dt>
 
+          <code><a href="local_descriptor.html">local_descriptor()</a></code>
+
+        </dt>
+        <dd>Create a graph</dd>
+
+        <dt>
+
+          <code><a href="mut.html">mut()</a></code>
+
+        </dt>
+        <dd>Convert an <code>S7</code> class to a mutable <code>S7</code> object</dd>
+
+        <dt>
+
           <code><a href="nv_binary_ops.html">nv_add()</a></code> <code><a href="nv_binary_ops.html">nv_mul()</a></code> <code><a href="nv_binary_ops.html">nv_sub()</a></code> <code><a href="nv_binary_ops.html">nv_div()</a></code> <code><a href="nv_binary_ops.html">nv_pow()</a></code> <code><a href="nv_binary_ops.html">nv_eq()</a></code> <code><a href="nv_binary_ops.html">nv_ne()</a></code> <code><a href="nv_binary_ops.html">nv_gt()</a></code> <code><a href="nv_binary_ops.html">nv_ge()</a></code> <code><a href="nv_binary_ops.html">nv_lt()</a></code> <code><a href="nv_binary_ops.html">nv_le()</a></code> <code><a href="nv_binary_ops.html">nv_max()</a></code> <code><a href="nv_binary_ops.html">nv_min()</a></code> <code><a href="nv_binary_ops.html">nv_remainder()</a></code> <code><a href="nv_binary_ops.html">nv_and()</a></code> <code><a href="nv_binary_ops.html">nv_or()</a></code> <code><a href="nv_binary_ops.html">nv_xor()</a></code> <code><a href="nv_binary_ops.html">nv_shift_left()</a></code> <code><a href="nv_binary_ops.html">nv_shift_right_logical()</a></code> <code><a href="nv_binary_ops.html">nv_shift_right_arithmetic()</a></code> <code><a href="nv_binary_ops.html">nv_atan2()</a></code>
 
         </dt>
         <dd>Binary Operations</dd>
-
-        <dt>
-
-          <code><a href="nv_bitcast_convert.html">nv_bitcast_convert()</a></code>
-
-        </dt>
-        <dd>Bitcast Conversion</dd>
 
         <dt>
 
@@ -112,13 +172,6 @@
 
         <dt>
 
-          <code><a href="nv_concatenate.html">nv_concatenate()</a></code>
-
-        </dt>
-        <dd>Concatenate</dd>
-
-        <dt>
-
           <code><a href="nv_convert.html">nv_convert()</a></code>
 
         </dt>
@@ -126,10 +179,10 @@
 
         <dt>
 
-          <code><a href="nv_dtype.html">nv_dtype()</a></code>
+          <code><a href="nv_if.html">nv_if()</a></code>
 
         </dt>
-        <dd>Create a TensorDataType</dd>
+        <dd>If</dd>
 
         <dt>
 
@@ -154,52 +207,31 @@
 
         <dt>
 
-          <code><a href="nv_rng_bit_generator.html">nv_rng_bit_generator()</a></code>
-
-        </dt>
-        <dd>Random Numbers</dd>
-
-        <dt>
-
-          <code><a href="nv_rnorm.html">nv_rnorm()</a></code>
-
-        </dt>
-        <dd>Random Normal Numbers</dd>
-
-        <dt>
-
-          <code><a href="nv_runif.html">nv_runif()</a></code>
-
-        </dt>
-        <dd>Random Uniform Numbers</dd>
-
-        <dt>
-
-          <code><a href="nv_slice.html">nv_slice()</a></code>
-
-        </dt>
-        <dd>Slice</dd>
-
-        <dt>
-
-          <code><a href="nv_tensor.html">nv_tensor()</a></code> <code><a href="nv_tensor.html">nv_scalar()</a></code> <code><a href="nv_tensor.html">nv_empty()</a></code>
+          <code><a href="nv_tensor.html">AnvilTensor</a></code> <code><a href="nv_tensor.html">nv_tensor()</a></code> <code><a href="nv_tensor.html">nv_scalar()</a></code> <code><a href="nv_tensor.html">nv_empty()</a></code>
 
         </dt>
         <dd>Tensor</dd>
 
         <dt>
 
-          <code><a href="nv_transpose.html">nv_transpose()</a></code> <code><a href="nv_transpose.html">t(<i>&lt;anvil::Box&gt;</i>)</a></code>
+          <code><a href="nv_transpose.html">nv_transpose()</a></code> <code><a href="nv_transpose.html">t(<i>&lt;anvil::GraphBox&gt;</i>)</a></code>
 
         </dt>
         <dd>Transpose</dd>
 
         <dt>
 
-          <code><a href="nv_unary_ops.html">nv_neg()</a></code> <code><a href="nv_unary_ops.html">nv_abs()</a></code> <code><a href="nv_unary_ops.html">nv_sqrt()</a></code> <code><a href="nv_unary_ops.html">nv_rsqrt()</a></code> <code><a href="nv_unary_ops.html">nv_log()</a></code> <code><a href="nv_unary_ops.html">nv_tanh()</a></code> <code><a href="nv_unary_ops.html">nv_tan()</a></code> <code><a href="nv_unary_ops.html">nv_sine()</a></code> <code><a href="nv_unary_ops.html">nv_cosine()</a></code> <code><a href="nv_unary_ops.html">nv_floor()</a></code> <code><a href="nv_unary_ops.html">nv_ceil()</a></code> <code><a href="nv_unary_ops.html">nv_sign()</a></code> <code><a href="nv_unary_ops.html">nv_exp()</a></code> <code><a href="nv_unary_ops.html">nv_round()</a></code>
+          <code><a href="nv_unary_ops.html">nv_neg()</a></code> <code><a href="nv_unary_ops.html">nv_abs()</a></code> <code><a href="nv_unary_ops.html">nv_sqrt()</a></code> <code><a href="nv_unary_ops.html">nv_rsqrt()</a></code> <code><a href="nv_unary_ops.html">nv_log()</a></code> <code><a href="nv_unary_ops.html">nv_tanh()</a></code> <code><a href="nv_unary_ops.html">nv_tan()</a></code> <code><a href="nv_unary_ops.html">nv_floor()</a></code> <code><a href="nv_unary_ops.html">nv_ceil()</a></code> <code><a href="nv_unary_ops.html">nv_sign()</a></code> <code><a href="nv_unary_ops.html">nv_exp()</a></code> <code><a href="nv_unary_ops.html">nv_round()</a></code>
 
         </dt>
         <dd>Unary Operations</dd>
+
+        <dt>
+
+          <code><a href="nv_while.html">nv_while()</a></code>
+
+        </dt>
+        <dd>While</dd>
 
         <dt>
 
@@ -207,6 +239,13 @@
 
         </dt>
         <dd>Platform</dd>
+
+        <dt>
+
+          <code><a href="stablehlo.html">stablehlo()</a></code>
+
+        </dt>
+        <dd>Lower a function to StableHLO</dd>
       </dl></div>
   </main></div>
 
