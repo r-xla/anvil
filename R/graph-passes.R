@@ -60,20 +60,3 @@ remove_dead_code <- function(graph) {
   graph@calls <- live_calls
   graph
 }
-
-remove_unused_constants <- function(graph) {
-  live <- hashtab()
-  for (node in graph@outputs) {
-    live[[node]] <- TRUE
-  }
-
-  for (call in rev(graph@calls)) {
-    any_output_live <- any(vapply(
-      call@outputs,
-      function(out) {
-        isTRUE(live[[out]])
-      },
-      logical(1L)
-    ))
-  }
-}

@@ -41,7 +41,7 @@ The first two arguments are expected to be `AnvilTensor`s, while the third is ei
 ```{r}
 library(anvil)
 f <- function(x, y, op) {
-  z <- if (op == "add") {
+  if (op == "add") {
     nv_add(x, y)
   } else if (op == "sub") {
     nv_sub(x, y)
@@ -238,4 +238,4 @@ After that, this graph is lowered to stablehlo and subsequently compiled.
 
 ### Constant Handling
 
-### Nested Inputs
+### Nested Inputs and Outputs
