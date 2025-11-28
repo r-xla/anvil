@@ -516,7 +516,7 @@ dt_f64 <- FloatType(64)
 #' @title If
 #' @description
 #' Functional if statement.
-#' @param pred ([nv_tensor])\cr
+#' @param pred ([`nv_tensor`])\cr
 #'   Flag.
 #' @param true (NSE)\cr
 #'   Expression to evaluate if the condition is true.

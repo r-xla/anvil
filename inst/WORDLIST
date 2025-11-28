@@ -47,3 +47,6 @@ quickr
 stablehlo
 StableHLO
 transpile
+func
+Func
+nv
