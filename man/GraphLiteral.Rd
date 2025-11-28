@@ -6,16 +6,13 @@
 \usage{
 GraphLiteral(aval = NULL, dtype = stablehlo::BooleanType())
 }
+\arguments{
+\item{aval}{(\code{any})\cr
+The value of the literal.}
+
+\item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+Data type.}
+}
 \description{
 Literal in a \code{\link{Graph}}.
 }
-\section{Fields}{
-
-\itemize{
-\item \code{aval} :: (\code{any})\cr
-The value of the literal.
-\item \code{dtype} :: (\code{stablehlo::TensorDataType})\cr
-The dtype of the literal.
-}
-}
-

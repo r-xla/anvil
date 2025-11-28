@@ -371,10 +371,10 @@ nv_round <- nvl_round
 #' @return [`nv_tensor`]
 #' @export
 nv_matmul <- function(lhs, rhs) {
-  if (ndims(rhs) < 2L) {
+  if (ndims(lhs) < 2L) {
     cli_abort("lhs of matmul must have at least 2 dimensions")
   }
-  if (ndims(lhs) < 2L) {
+  if (ndims(rhs) < 2L) {
     cli_abort("rhs of matmul must have at least 2 dimensions")
   }
   shape_leading <- broadcast_shapes(head(shape(lhs), -2L), head(shape(rhs), -2L))
@@ -512,7 +512,28 @@ dt_f64 <- FloatType(64)
 
 # Higher order primitives
 
+#' @title If
+#' @description
+#' Functional if statement.
+#' @param pred ([nv_tensor])\cr
+#'   Flag.
+#' @param true (NSE)\cr
+#'   Expression to evaluate if the condition is true.
+#' @param false (NSE)\cr
+#'   Expression to evaluate if the condition is false.
+#' @return [`nv_tensor`]
 #' @export
 nv_if <- nvl_if
+
+#' @title While
+#' @description
+#' Functional while loop.
+#' @param init (`list()`)\cr
+#'   Initial state.
+#' @param cond (`function`)\cr
+#'   Condition function: `f: state -> bool`.
+#' @param body (`function`)\cr
+#'   Body function. `f: state -> state`.
+#' @return [`nv_tensor`]
 #' @export
 nv_while <- nvl_while

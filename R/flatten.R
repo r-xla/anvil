@@ -158,46 +158,18 @@ method(tree_size, S7::new_S3_class("MarkedListNode")) <- function(x) {
   sum(vapply(x$nodes, tree_size, integer(1L)))
 }
 
-# Given an in_tree (ListNode) and wrt names, return a logical vector indicating
-# which flat inputs require gradients.
-# If wrt is empty, all inputs require gradients.
-requires_grad_flat <- function(in_tree, wrt) {
-  n <- tree_size(in_tree)
-  if (!length(wrt)) {
-    return(rep(TRUE, n))
-  }
-
-  stopifnot(inherits(in_tree, "ListNode"))
-
-  names <- in_tree$names
-  nodes <- in_tree$nodes
-
-  # Compute which top-level args are in wrt
-  is_in_wrt <- names %in% wrt
-
-  # Compute sizes of each subtree
-  sizes <- vapply(nodes, tree_size, integer(1L))
-
-  # Replicate the logical to get flat indices
-  rep(is_in_wrt, times = sizes)
-}
-
-# Filter a tree to only include children with given names, renumbering leaf indices
-filter_tree_by_names <- function(tree, names) {
+filter_list_node <- function(tree, names) {
   stopifnot(inherits(tree, "ListNode"))
-
-  # Which children to keep
+  if (is.null(tree$names)) {
+    cli_abort("tree must have names")
+  }
   keep_idx <- which(tree$names %in% names)
-
-  # Keep only selected children
-  kept_nodes <- tree$nodes[keep_idx]
-  kept_names <- tree$names[keep_idx]
-
-  # Renumber leaf indices
+  if (length(keep_idx) == length(tree$names)) {
+    return(tree)
+  }
   counter <- new_counter()
-  renumbered_nodes <- lapply(kept_nodes, reindex_tree, counter = counter)
-
-  ListNode(renumbered_nodes, kept_names)
+  renumbered_nodes <- lapply(tree$nodes[keep_idx], reindex_tree, counter = counter)
+  ListNode(renumbered_nodes, tree$names[keep_idx])
 }
 
 # Recursively reindex leaf nodes starting from counter
@@ -214,4 +186,13 @@ method(reindex_tree, S7::new_S3_class("LeafNode")) <- function(x, counter) {
 method(reindex_tree, S7::new_S3_class("ListNode")) <- function(x, counter) {
   reindexed <- lapply(x$nodes, reindex_tree, counter = counter)
   ListNode(reindexed, x$names)
+}
+
+flat_mask_from_names <- function(tree, names) {
+  if (is.null(names) || length(names) == 0L) {
+    rep(TRUE, times = tree_size(tree))
+  } else {
+    mask <- tree$names %in% names
+    rep(mask, times = vapply(tree$nodes, tree_size, integer(1L)))
+  }
 }

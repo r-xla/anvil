@@ -7,6 +7,9 @@
 local_descriptor(..., envir = parent.frame())
 }
 \arguments{
+\item{...}{(\code{any})\cr
+Additional arguments to pass to the \code{\link{GraphDescriptor}} constructor.}
+
 \item{envir}{(\code{environment})\cr
 Environment where exit handler will be registered for cleaning up the
 \code{\link{Graph}} if it was not returned yet.}

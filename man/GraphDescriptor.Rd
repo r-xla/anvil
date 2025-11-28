@@ -15,6 +15,31 @@ GraphDescriptor(
   outputs = list()
 )
 }
+\arguments{
+\item{calls}{(\code{list(PrimitiveCall)})\cr
+The primitive calls that make up the graph.}
+
+\item{tensor_to_gval}{(\code{hashtab})\cr
+Mapping: \code{AnvilTensor} -> \code{GraphValue}}
+
+\item{gval_to_box}{(\code{hashtab})\cr
+Mapping: \code{GraphValue} -> \code{GraphBox}}
+
+\item{constants}{(\code{list(GraphValue)})\cr
+The constants of the graph.}
+
+\item{in_tree}{(\code{NULL | Node})\cr
+The tree of inputs.}
+
+\item{out_tree}{(\code{NULL | Node})\cr
+The tree of outputs.}
+
+\item{inputs}{(\code{list(GraphValue)})\cr
+The inputs to the graph.}
+
+\item{outputs}{(\code{list(GraphValue)})\cr
+The outputs of the graph.}
+}
 \description{
 Descriptor of a \code{\link{Graph}}.
 }
@@ -26,14 +51,3 @@ There are two cases:
 \item When a
 }
 }
-\section{Fields}{
-
-\itemize{
-\item \code{calls} :: (\code{list(PrimitiveCall)})\cr
-The primitive calls that make up the graph.
-\item \code{tensor_to_gval} :: (\code{hashtab})\cr
-Mapping: \code{AnvilTensor} -> \code{GraphValue}
-\item \code{gval_to_box} :: (\code{hashtab})\cr
-}
-}
-

@@ -29,13 +29,21 @@ env_get <- function(env, gval) {
 #' @title Lower a function to StableHLO
 #' @description
 #' Immediately lower a flattened function to a StableHLO Func object.
-#' @param f (`function` | `Gr`)\cr
-#'   Flattened function to lower.
+#' @param graph (`Graph`)\cr
+#'   The graph to lower.
+#' @param constants_as_inputs (`logical(1)`)\cr
+#'   Whether to add constants as inputs.
+#' @param env (`HloEnv` | `NULL`)\cr
+#'   The environment for storing graph value to func variable mappings.
+#' @param donate (`character()`)\cr
+#'   Names of the arguments whose buffers should be donated.
+#'   Donated buffers can be aliased with outputs of the same type.
 #' @return (`list`) with elements:
 #'   - `func`: The StableHLO `Func` object
-#'   - `out_tree`: The output tree structure
+#'   - `constants`: The constants of the graph
 #' @export
-stablehlo <- function(graph, static = character(), constants_as_inputs = TRUE, env = NULL) {
+stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL,
+                      donate = character()) {
   # Node -> FuncVariable
   env <- HloEnv(parent = env)
   func <- stablehlo::local_func(id = "main")
@@ -50,13 +58,62 @@ stablehlo <- function(graph, static = character(), constants_as_inputs = TRUE, e
     }
   }
 
-  for (node in inps) {
+  # Compute which inputs are donated (only graph@inputs, not constants)
+  donate_flat <- if (length(donate) > 0L && !is.null(graph@in_tree)) {
+    # Constants are never donated, inputs may be
+    c(
+      rep(FALSE, length(graph@constants)),
+      flat_mask_from_names(graph@in_tree, donate)
+    )
+  } else {
+    rep(FALSE, length(inps))
+  }
+
+  # Get output types for aliasing
+  out_types <- lapply(graph@outputs, function(out) {
+    if (is_graph_value(out)) {
+      st2vt(out@aval)
+    } else {
+      # GraphLiteral
+      stablehlo::ValueType(as.character(out@dtype), integer())
+    }
+  })
+
+  # Track which outputs have been aliased (0-based indices)
+  aliased_outputs <- integer()
+
+  for (i in seq_along(inps)) {
+    node <- inps[[i]]
     vt <- st2vt(node@aval)
     id <- stablehlo::ValueId()
-    fi <- stablehlo::FuncInput(id, vt)
+
+    # Check if this input is donated and find a matching output
+    alias <- NULL
+    if (donate_flat[[i]]) {
+      # Find an output with matching type that hasn't been aliased yet
+      for (j in seq_along(out_types)) {
+        if ((j - 1L) %in% aliased_outputs) next
+        out_vt <- out_types[[j]]
+        if (vt == out_vt) {
+          alias <- j - 1L  # 0-based index for stablehlo
+          aliased_outputs <- c(aliased_outputs, alias)
+          break
+        }
+      }
+    }
+
+    fi <- stablehlo::FuncInput(id, vt, alias = alias)
     func@inputs@items <- c(func@inputs@items, fi)
     fvar <- stablehlo::FuncVariable(id, vt, func)
     env_add(env, node, fvar)
+  }
+
+  if (!constants_as_inputs) {
+    for (const in graph@constants) {
+      if (is.null(env_get(env, const))) {
+        cli_abort("Internal error: constant not found in environment")
+      }
+    }
   }
 
   do_call <- function(call) {

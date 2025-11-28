@@ -142,3 +142,17 @@ test_that("can pass constant to nested graphify call if it is defined in the par
   y <- nv_scalar(2)
   expect_equal(f(), list(y = nv_scalar(4)))
 })
+
+test_that("Graph: printing", {
+  f <- function(x, y) {
+    nvl_add(x, y)
+  }
+  graph <- graphify(f, list(x = nv_scalar(1), y = nv_scalar(2)))
+  expect_snapshot(graph)
+  # with param
+  f1 <- function(x) {
+    mean(x)
+  }
+  graph1 <- graphify(f1, list(x = nv_tensor(1:10, dtype = "f32", shape = c(2, 5))))
+  expect_snapshot(graph1)
+})

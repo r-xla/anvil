@@ -1,22 +1,22 @@
-build_gradient_graph <- function(graph, wrt) {
+transform_gradient <- function(graph, wrt) {
   grad_env <- hashtab()
   required_env <- hashtab()
 
   out_gvals <- graph@outputs
 
   if (length(out_gvals) != 1L) {
-    cli_abort("Pullback can only be computed for functions that return a single output")
+    cli_abort("gradient can only be computed for functions that return a single output")
   }
   out <- out_gvals[[1L]]
   if (!identical(shape(out@aval), integer())) {
-    cli_abort("Pullback can only be computed for functions that return a scalar")
+    cli_abort("gradient can only be computed for functions that return a scalar")
   }
   dt <- out@aval@dtype
   if (!(dt == dt_f32 || dt == dt_f64)) {
-    cli_abort("Pullback can only be computed for functions that return float scalar")
+    cli_abort("gradient can only be computed for functions that return float scalar")
   }
 
-  requires_grad <- requires_grad_flat(graph@in_tree, wrt)
+  requires_grad <- flat_mask_from_names(graph@in_tree, wrt)
 
   for (i in seq_along(graph@inputs)) {
     required_env[[graph@inputs[[i]]]] <- requires_grad[[i]]
@@ -73,9 +73,6 @@ build_gradient_graph <- function(graph, wrt) {
     }
 
     output_grads <- lapply(call@outputs, \(output) grad_env[[output]])
-    #if (identical(output_grads, list(NULL))) {
-    #  browser()
-    #}
 
     input_grads <- rlang::exec(
       call@primitive[["backward"]],
@@ -101,7 +98,6 @@ build_gradient_graph <- function(graph, wrt) {
     input <- graph@inputs[[i]]
     grad <- grad_env[[input]]
     x <- if (is.null(grad)) {
-      # FIXME:!!!!
       const <- get_box_or_register_const(desc, nv_scalar(0L, dtype = input@aval@dtype))
       nv_broadcast_to(const, shape(input@aval))
     } else {
@@ -114,7 +110,7 @@ build_gradient_graph <- function(graph, wrt) {
 
   # Adjust out_tree based on wrt
   desc@out_tree <- if (length(wrt)) {
-    filter_tree_by_names(graph@in_tree, wrt)
+    filter_list_node(graph@in_tree, wrt)
   } else {
     graph@in_tree
   }
@@ -123,18 +119,19 @@ build_gradient_graph <- function(graph, wrt) {
   return(graph)
 }
 
+
 # A non-lowering transformation builds a graph and inserts it into the parent graph.
 # This is fine, because such a parent graph always exists.
 
 #' @title Gradient
 #' @description
-#' Returns a function such when called, it will build up the gradient graph, insert it into its parent graph and return the outputs of the gradient graph.
-#' @section Signature of the output Function:
-#' ```
-#' f: (Box | StaticInput).. -> (Box | StaticInput)..
-#' ```
+#' Transform a function to its gradient.
+#' @param f (`function`)\cr
+#'   Function to compute the gradient of.
+#' @param wrt (`character`)\cr
+#'   Names of the arguments to compute the gradient with respect to.
 #' @export
-gradient <- function(f, wrt = character()) {
+gradient <- function(f, wrt = NULL) {
   if (!is.null(wrt) && !all(wrt %in% formalArgs(f))) {
     cli_abort("wrt must be a subset of the formal arguments of f")
   }
@@ -143,7 +140,7 @@ gradient <- function(f, wrt = character()) {
     args <- lapply(args, eval, envir = parent.frame())
     parent_desc <- .current_descriptor()
     fwd_graph <- graphify(f, args)
-    grad_graph <- build_gradient_graph(fwd_graph, wrt)
+    grad_graph <- transform_gradient(fwd_graph, wrt)
     # parent_desc is modified in place
     outputs <- inline_graph_into_desc(parent_desc, grad_graph)
     return(outputs)

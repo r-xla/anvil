@@ -1,5 +1,4 @@
 #' @include primitives.R
-#' @include interpreter-jit.R
 
 # TODO: Here we don't have to re-do the type inference again, because it was already done.
 

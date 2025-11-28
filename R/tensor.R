@@ -1,3 +1,4 @@
+#' @rdname nv_tensor
 AnvilTensor <- S7::new_S3_class("AnvilTensor")
 
 #' @importFrom pjrt platform
@@ -68,7 +69,6 @@ dtype.AnvilTensor <- function(x, ...) {
   as_dtype(as.character(pjrt::elt_type(x)))
 }
 
-# similar to stablehlo::TensorType
 ShapedTensor <- S7::new_class(
   "ShapedTensor",
   properties = list(
@@ -97,8 +97,7 @@ is_concrete_tensor <- function(x) {
 }
 
 method(platform, ShapedTensor) <- function(x, ...) {
-  # TODO: Need platform as part of ShapedTensor
-  .NotYetImplemented()
+  cli_abort("platform is not accessible during tracing")
 }
 
 #' @method dtype anvil::ShapedTensor
@@ -163,17 +162,6 @@ method(format, ConcreteTensor) <- function(x, ...) {
   sprintf("ConcreteTensor(dtype=%s, shape=%s)", repr(x@dtype), repr(x@shape))
 }
 
-
-#' @title Create a TensorDataType
-#' @description
-#' Create a [`stablehlo::TensorDataType`].
-#' @param x (any)\cr
-#'   Object convertible to a [`stablehlo::TensorDataType`] (via [`stablehlo::as_dtype`])
-#' @return [`stablehlo::TensorDataType`]
-#' @export
-nv_dtype <- function(x) {
-  stablehlo::as_dtype(x)
-}
 
 #' @export
 format.AnvilTensor <- function(x, ...) {

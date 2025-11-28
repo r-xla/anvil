@@ -24,10 +24,10 @@ test_that("jit: a constant", {
     nv_scalar(3)
   )
   x <- nv_scalar(2)
-  f_jit(nv_scalar(2))
+  # the constant is now saved in f_jit, so new x is not foundj
   expect_equal(
     f_jit(nv_scalar(2)),
-    nv_scalar(4)
+    nv_scalar(3)
   )
 })
 
@@ -201,4 +201,13 @@ test_that("Only constants in group generics", {
   expect_equal(f(), nv_scalar(3))
 })
 
-test_that
+test_that("donate: no aliasing with type mismatch", {
+  skip_if(!is_cpu()) # might get a segfault on other platforms
+  f <- jit(function(x) x, donate = "x")
+  x <- nv_tensor(1)
+  out <- f(x)
+  expect_error(capture.output(x), "called on deleted or donated buffer")
+})
+
+
+

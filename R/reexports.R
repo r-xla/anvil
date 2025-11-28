@@ -35,3 +35,8 @@ stablehlo::is_dtype
 platform <- function(x, ...) {
   pjrt::platform(x)
 }
+
+
+#' @importFrom stablehlo Shape
+#' @export
+stablehlo::Shape

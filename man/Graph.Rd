@@ -13,23 +13,26 @@ Graph(
   constants = list()
 )
 }
+\arguments{
+\item{calls}{(\code{list(PrimitiveCall)})\cr
+The primitive calls that make up the graph.
+This can also be another call into a graph when the primitive is a \code{p_call}.}
+
+\item{in_tree}{(\code{NULL | Node})\cr
+The tree of inputs.}
+
+\item{out_tree}{(\code{NULL | Node})\cr
+The tree of outputs.}
+
+\item{inputs}{(\code{list(GraphValue)})\cr
+The inputs to the graph.}
+
+\item{outputs}{(\code{list(GraphValue)})\cr
+The outputs of the graph.}
+
+\item{constants}{(\code{list(GraphValue)})\cr
+The constants of the graph.}
+}
 \description{
 Computational graph consisting exclusively of primitive calls.
 }
-\section{Fields}{
-
-\itemize{
-\item \code{calls} :: (\code{list(PrimitiveCall)})\cr
-The primitive calls that make up the graph.
-This can also be another call into a graph when the primitive is a \code{p_call}.
-\item \code{in_tree} :: (\code{NULL | Node})\cr
-The tree of inputs.
-\item \code{out_tree} :: (\code{NULL | Node})\cr
-The tree of outputs.
-\item \code{inputs} :: (\code{list(GraphValue)})\cr
-The inputs to the graph.
-\item \code{outputs} :: (\code{list(GraphValue)})\cr
-The outputs of the graph.
-}
-}
-

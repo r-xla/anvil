@@ -14,13 +14,14 @@ format_aval_short <- function(aval) {
 
 build_node_ids <- function(inputs, constants, calls) {
   node_ids <- hashtab()
-  for (i in seq_along0(inputs)) {
-    node_ids[[inputs[[i]]]] <- paste0("i", i)
+  for (i in seq_along(inputs)) {
+    # don't use i, because i1 looks like a the boolean type
+    node_ids[[inputs[[i]]]] <- paste0("x", i)
   }
-  for (i in seq_along0(constants)) {
+  for (i in seq_along(constants)) {
     node_ids[[constants[[i]]]] <- paste0("c", i)
   }
-  counter <- 0L
+  counter <- 1L
   for (call in calls) {
     for (out in call@outputs) {
       node_ids[[out]] <- as.character(counter)
@@ -31,18 +32,21 @@ build_node_ids <- function(inputs, constants, calls) {
 }
 
 format_param <- function(param) {
+  if (identical(param, list())) {
+    return("")
+  }
   if (test_scalar(param)) {
     as.character(param)
   } else if (is.atomic(param) && length(param) > 1L) {
     sprintf("c(%s)", paste(param, collapse = ", "))
   } else if (is.list(param)) {
     if (!is.null(names(param))) {
-      sprintf("list(%s)", paste(names(param), "=", sapply(param, format_param), collapse = ", "))
+      sprintf("[%s]", paste(names(param), "=", sapply(param, format_param), collapse = ", "))
     } else {
-      sprintf("list(%s)", paste(sapply(param, format_param), collapse = ", "))
+      sprintf("[%s]", paste(sapply(param, format_param), collapse = ", "))
     }
   } else if (is_graph(param)) {
-    sprintf("graph: [%s] -> [%s]", length(param@inputs), length(param@outputs))
+    sprintf("graph[%s -> %s]", length(param@inputs), length(param@outputs))
   } else {
     "<any>"
   }
@@ -61,13 +65,10 @@ format_call <- function(call, node_ids, indent = "  ") {
     sprintf("(%s): (%s)", paste(output_ids, collapse = ", "), paste(output_types, collapse = ", "))
   }
 
-  # Format params if present
-  params_str <- sprintf(" [%d params]", length(call@params))
-  if (length(call@params) > 0L) {
-    param_parts <- vapply(seq_along(call@params), format_param, character(1))
-    params_str <- sprintf("{%s}", paste(param_parts, collapse = ", "))
+  params_str <- format_param(call@params)
+  if (params_str != "") {
+    params_str <- sprintf(" %s ", params_str)
   }
-
   sprintf("%s%s = %s%s(%s)", indent, outputs_str, call@primitive@name, params_str, inputs_str)
 }
 

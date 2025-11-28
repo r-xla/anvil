@@ -10,9 +10,13 @@
 #'   The default (`NULL`) uses the `PJRT_PLATFORM` environment variable or defaults to "cpu".
 #' @param cache_size (`integer(1)`)\cr
 #'   The size of the cache for the jit-compiled functions.
+#' @param donate (`character()`)\cr
+#'   Names of the arguments whose buffers should be donated.
+#'   Donated buffers can be aliased with outputs of the same type,
+#'   allowing in-place operations and reducing memory usage.
 #' @return (`function`)
 #' @export
-jit <- function(f, static = character(), device = NULL, cache_size = 100L, backend) {
+jit <- function(f, static = character(), device = NULL, cache_size = 100L, donate = character()) {
   device <- device %??% Sys.getenv("PJRT_PLATFORM", "cpu")
   cache <- xlamisc::LRUCache$new(cache_size)
   assert_subset(static, formalArgs2(f))
@@ -56,12 +60,12 @@ jit <- function(f, static = character(), device = NULL, cache_size = 100L, backe
 
     cache_hit <- cache$get(avals_in)
     if (!is.null(cache_hit)) {
-      call_xla(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat)
+      return(call_xla(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat))
     }
     # TODO: Give graphify() argument in_tree, so we don't have to do this twice
     graph <- graphify(f, args)
 
-    out <- stablehlo(graph)
+    out <- stablehlo(graph, donate = donate)
     func <- out[[1L]]
     constants <- out[[2L]]
 

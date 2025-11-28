@@ -11,21 +11,20 @@ PrimitiveCall(
   outputs = list()
 )
 }
+\arguments{
+\item{primitive}{(\code{Primitive})\cr
+The function.}
+
+\item{params}{(\verb{list(<any>)})\cr
+The (static) parameters of the function call.}
+
+\item{inputs}{(\code{list(GraphValue)})\cr
+The (tensor) inputs to the primitive.}
+
+\item{outputs}{(\code{list(GraphValue)})\cr
+The (tensor) outputs of the primitive.}
+}
 \description{
 Call of a primitive in a \code{\link{Graph}}
 Note that a primitive call also be a call into another graph (\code{p_graph}).
 }
-\section{Fields}{
-
-\itemize{
-\item \code{primitive} :: (\code{\link{Primitive}})\cr
-The function.
-\item \code{inputs} :: (\code{list(GraphValue)})\cr
-The (tensor) inputs to the primitive.
-\item \code{params} :: (\verb{list(<any>)})\cr
-The (static) parameters of the function call.
-\item \code{outputs} :: (\code{list(GraphValue)})\cr
-The (tensor) outputs of the primitive.
-}
-}
-

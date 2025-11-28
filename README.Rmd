@@ -68,10 +68,9 @@ g_jit(a, b, x)
 - Fast:
   - Code is JIT compiled into a single kernel.
   - Runs on different hardware backends, including CPU and GPU.
-- Easy to extend and contribute:
+- Extendable:
+  - It is possibel to add new primitives, transformations, and (with some effort) new backends.
   - The package is written almost entirely in R.
-  - It is easy to add new primitives.
-  - It (will be) possible to add new transformations, a.k.a. interpretation rules.
 
 ## When to use this package?
 

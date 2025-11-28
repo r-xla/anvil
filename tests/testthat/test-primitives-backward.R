@@ -248,5 +248,5 @@ test_that("p_if", {
 })
 
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "test-primitives-pullback-torch.R", package = "anvil"))
+  source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
 }

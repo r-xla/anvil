@@ -6,14 +6,10 @@
 \usage{
 GraphValue(aval = ShapedTensor())
 }
+\arguments{
+\item{aval}{(\code{ShapedTensor})\cr
+The abstract value of the variable.}
+}
 \description{
 Value in a \code{\link{Graph}}.
 }
-\section{Fields}{
-
-\itemize{
-\item \code{state} :: (\code{any})\cr
-The state of the variable. Populated when the graph is executed.
-}
-}
-

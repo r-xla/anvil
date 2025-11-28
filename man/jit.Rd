@@ -4,7 +4,13 @@
 \alias{jit}
 \title{JIT compile a function}
 \usage{
-jit(f, static = character(), device = NULL, cache_size = 100L, backend)
+jit(
+  f,
+  static = character(),
+  device = NULL,
+  cache_size = 100L,
+  donate = character()
+)
 }
 \arguments{
 \item{f}{(\code{function})\cr
@@ -19,6 +25,11 @@ The default (\code{NULL}) uses the \code{PJRT_PLATFORM} environment variable or 
 
 \item{cache_size}{(\code{integer(1)})\cr
 The size of the cache for the jit-compiled functions.}
+
+\item{donate}{(\code{character()})\cr
+Names of the arguments whose buffers should be donated.
+Donated buffers can be aliased with outputs of the same type,
+allowing in-place operations and reducing memory usage.}
 }
 \value{
 (\code{function})

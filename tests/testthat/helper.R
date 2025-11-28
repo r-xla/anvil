@@ -61,6 +61,10 @@ is_cuda <- function() {
   Sys.getenv("PJRT_PLATFORM") == "cuda"
 }
 
+is_cpu <- function() {
+  Sys.getenv("PJRT_PLATFORM", "cpu") == "cpu"
+}
+
 generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
   if (dtype == "pred") {
     sample(c(TRUE, FALSE), size = prod(dimension), replace = TRUE)

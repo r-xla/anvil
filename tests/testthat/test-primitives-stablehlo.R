@@ -252,5 +252,5 @@ test_that("error when multiplying lists in if-statement", {
 # We have a CI job that installs torch, so it's at least tested once
 
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "test-primitives-jit-torch.R", package = "anvil"))
+  source(system.file("extra-tests", "test-primitives-stablehlo-torch.R", package = "anvil"))
 }

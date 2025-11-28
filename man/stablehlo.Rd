@@ -4,17 +4,27 @@
 \alias{stablehlo}
 \title{Lower a function to StableHLO}
 \usage{
-stablehlo(graph, static = character(), constants_as_inputs = TRUE, env = NULL)
+stablehlo(graph, constants_as_inputs = TRUE, env = NULL, donate = character())
 }
 \arguments{
-\item{f}{(\code{function} | \code{Gr})\cr
-Flattened function to lower.}
+\item{graph}{(\code{Graph})\cr
+The graph to lower.}
+
+\item{constants_as_inputs}{(\code{logical(1)})\cr
+Whether to add constants as inputs.}
+
+\item{env}{(\code{HloEnv} | \code{NULL})\cr
+The environment for storing graph value to func variable mappings.}
+
+\item{donate}{(\code{character()})\cr
+Names of the arguments whose buffers should be donated.
+Donated buffers can be aliased with outputs of the same type.}
 }
 \value{
 (\code{list}) with elements:
 \itemize{
 \item \code{func}: The StableHLO \code{Func} object
-\item \code{out_tree}: The output tree structure
+\item \code{constants}: The constants of the graph
 }
 }
 \description{

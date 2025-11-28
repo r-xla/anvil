@@ -3,9 +3,8 @@
 #' @title Graph Value
 #' @description
 #' Value in a [`Graph`].
-#' @section Fields:
-#' * `state` :: (`any`)\cr
-#'   The state of the variable. Populated when the graph is executed.
+#' @param aval (`ShapedTensor`)\cr
+#'   The abstract value of the variable.
 #' @include mut.R
 GraphValue <- mut(new_class(
   "GraphValue",
@@ -17,11 +16,9 @@ GraphValue <- mut(new_class(
 #' @title Graph Literal
 #' @description
 #' Literal in a [`Graph`].
-#' @section Fields:
-#' * `aval` :: (`any`)\cr
+#' @param aval (`any`)\cr
 #'   The value of the literal.
-#' * `dtype` :: (`stablehlo::TensorDataType`)\cr
-#'   The dtype of the literal.
+#' @template param_dtype
 #' @export
 GraphLiteral <- mut(new_class(
   "GraphLiteral",
@@ -51,14 +48,13 @@ GraphNode <- S7::new_union(GraphValue, GraphLiteral)
 #' @description
 #' Call of a primitive in a [`Graph`]
 #' Note that a primitive call also be a call into another graph (`p_graph`).
-#' @section Fields:
-#' * `primitive` :: ([`Primitive`])\cr
+#' @param primitive (`Primitive`)\cr
 #'   The function.
-#' * `inputs` :: (`list(GraphValue)`)\cr
+#' @param inputs (`list(GraphValue)`)\cr
 #'   The (tensor) inputs to the primitive.
-#' * `params` :: (`list(<any>)`)\cr
+#' @param params (`list(<any>)`)\cr
 #'   The (static) parameters of the function call.
-#' * `outputs` :: (`list(GraphValue)`)\cr
+#' @param outputs (`list(GraphValue)`)\cr
 #'   The (tensor) outputs of the primitive.
 #' @export
 PrimitiveCall <- new_class(
@@ -76,18 +72,19 @@ PrimitiveCall <- new_class(
 #' @description
 #' Computational graph consisting exclusively of primitive calls.
 #'
-#' @section Fields:
-#' * `calls` :: (`list(PrimitiveCall)`)\cr
+#' @param calls (`list(PrimitiveCall)`)\cr
 #'   The primitive calls that make up the graph.
 #'   This can also be another call into a graph when the primitive is a `p_call`.
-#' * `in_tree` :: (`NULL | Node`)\cr
+#' @param in_tree (`NULL | Node`)\cr
 #'   The tree of inputs.
-#' * `out_tree` :: (`NULL | Node`)\cr
+#' @param out_tree (`NULL | Node`)\cr
 #'   The tree of outputs.
-#' * `inputs` :: (`list(GraphValue)`)\cr
+#' @param inputs (`list(GraphValue)`)\cr
 #'   The inputs to the graph.
-#' * `outputs` :: (`list(GraphValue)`)\cr
+#' @param outputs (`list(GraphValue)`)\cr
 #'   The outputs of the graph.
+#' @param constants (`list(GraphValue)`)\cr
+#'   The constants of the graph.
 #'
 #' @export
 Graph <- mut(new_class(
@@ -109,12 +106,22 @@ Graph <- mut(new_class(
 #' @title Graph Descriptor
 #' @description
 #' Descriptor of a [`Graph`].
-#' @section Fields:
-#' * `calls` :: (`list(PrimitiveCall)`)\cr
+#' @param calls (`list(PrimitiveCall)`)\cr
 #'   The primitive calls that make up the graph.
-#' * `tensor_to_gval` :: (`hashtab`)\cr
+#' @param tensor_to_gval (`hashtab`)\cr
 #'   Mapping: `AnvilTensor` -> `GraphValue`
-#' * `gval_to_box` :: (`hashtab`)\cr
+#' @param gval_to_box (`hashtab`)\cr
+#'   Mapping: `GraphValue` -> `GraphBox`
+#' @param constants (`list(GraphValue)`)\cr
+#'   The constants of the graph.
+#' @param in_tree (`NULL | Node`)\cr
+#'   The tree of inputs.
+#' @param out_tree (`NULL | Node`)\cr
+#'   The tree of outputs.
+#' @param inputs (`list(GraphValue)`)\cr
+#'   The inputs to the graph.
+#' @param outputs (`list(GraphValue)`)\cr
+#'   The outputs of the graph.
 #'
 #' @details
 #' The trickiest thing in our setup are how we ensure that the same values receive the same identifier
@@ -152,26 +159,6 @@ method(dtype, GraphLiteral) <- function(x, ...) {
   x@dtype
 }
 
-# identical() fails for some reason on graph descriptors with the same .state
-method(`==`, list(GraphDescriptor, GraphDescriptor)) <- function(e1, e2) {
-  identical(e1@.state, e2@.state)
-}
-method(`==`, list(GraphDescriptor, class_any)) <- function(e1, e2) {
-  FALSE
-}
-method(`==`, list(class_any, GraphDescriptor)) <- function(e1, e2) {
-  FALSE
-}
-method(`!=`, list(GraphDescriptor, GraphDescriptor)) <- function(e1, e2) {
-  !identical(e1@.state, e2@.state)
-}
-
-method(`!=`, list(GraphDescriptor, class_any)) <- function(e1, e2) {
-  FALSE
-}
-method(`!=`, list(class_any, GraphDescriptor)) <- function(e1, e2) {
-  FALSE
-}
 
 is_graph_descriptor <- function(x) {
   inherits(x, "anvil::mut<GraphDescriptor>")
@@ -231,7 +218,7 @@ aval <- function(x) {
 maybe_box_variable <- function(x) {
   current_desc <- .current_descriptor()
   if (is_graph_box(x)) {
-    if (x@desc == current_desc) {
+    if (identical(x@desc, current_desc)) {
       return(x)
     }
     gval <- x@gval
@@ -373,6 +360,16 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
   graph
 }
 
+#' @title Graphify an R function
+#' @description
+#' Graphify an R function.
+#' @param f (`function`)\cr
+#'   The function to graphify.
+#' @param args (`list`)\cr
+#'   The arguments to the function.
+#' @param desc (`NULL` | `GraphDescriptor`)\cr
+#'   The descriptor to use for the graph.
+#' @export
 graphify <- function(f, args, desc = NULL) {
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
@@ -446,6 +443,8 @@ maybe_restore_previous_desc <- function(desc = NULL) {
 #' @param envir (`environment`)\cr
 #'   Environment where exit handler will be registered for cleaning up the
 #'   [`Graph`] if it was not returned yet.
+#' @param ... (`any`)\cr
+#'   Additional arguments to pass to the [`GraphDescriptor`] constructor.
 #' @return A [`Graph`] object.
 #' @export
 local_descriptor <- function(..., envir = parent.frame()) {
@@ -475,13 +474,13 @@ is_graph_box <- function(x) {
   inherits(x, "anvil::GraphBox")
 }
 
-graph_add <- function(prim, args, params = list()) {
+graph_desc_add <- function(prim, args, params = list(), infer_fn) {
   boxes_in <- lapply(args, maybe_box_variable)
   gvals_in <- lapply(boxes_in, \(x) x@gval)
   avals_in <- lapply(boxes_in, aval)
 
   vts_in <- lapply(avals_in, \(aval) st2vt(aval))
-  outputs <- rlang::exec(prim[["graph"]], !!!c(vts_in, params))
+  outputs <- rlang::exec(infer_fn, !!!c(vts_in, params))
   sts_out <- lapply(outputs, vt2st)
 
   gvals_out <- lapply(sts_out, GraphValue)
@@ -515,4 +514,8 @@ inline_graph_into_desc <- function(desc, graph) {
   gvals_out_flat <- graph@outputs
   boxes_out_flat <- lapply(gvals_out_flat, GraphBox, desc)
   unflatten(graph@out_tree, boxes_out_flat)
+}
+
+method(format, GraphLiteral) <- function(x, ...) {
+  sprintf("GraphLiteral(%s, %s)", format(x@aval), format(x@dtype))
 }
