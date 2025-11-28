@@ -21,12 +21,22 @@ including CPU and GPU.
 
 ## Installation
 
-As we currently don’t have a CRAN release, you need to install the
-package from source. To do so, you need a C++20 compiler, as well as
+In order to install from source, you need a C++20 compiler, as well as
 `libprotobuf` and the `protobuf-compiler`.
 
 ``` r
 pak::pak("r-xla/anvil")
+```
+
+You can also install from
+[r-universe](https://r-xla.r-universe.dev/builds), by adding the code
+below to your `.Rprofile`.
+
+``` r
+options(repos = c(
+  rxla = "https://r-xla.r-universe.dev",
+  CRAN = "https://cloud.r-project.org/"
+))
 ```
 
 ## Quick Start

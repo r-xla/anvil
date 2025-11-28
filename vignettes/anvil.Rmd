@@ -56,7 +56,7 @@ At first, working with `AnvilTensor`s may feel a bit cumbersome, because you can
 
 ```{r, error = TRUE}
 x + x
-#y + y
+y + y
 ```
 
 ## JIT Compilation
@@ -99,7 +99,7 @@ linear_model2 <- jit(function(X, beta, alpha) {
 })
 ```
 
-To demonstrate this, we create a little helper function that creates example input data with different numbers of observations:
+Next, we create a little helper function that creates example input data with different numbers of observations:
 
 ```{r}
 simul_data <- function(n, p) {
@@ -160,6 +160,7 @@ linear_model3(X, beta, with_bias = FALSE)
 linear_model3(X, beta, alpha, with_bias = TRUE)
 ```
 
+Static arguments work differently than `AnvilTensors` as the function will not be re-compiled for each new observed value of the static argument.
 
 ### Nested Inputs and Outputs
 
