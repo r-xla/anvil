@@ -3,20 +3,23 @@ flatten_fun <- function(f, ..., in_node = NULL) {
   if (is.null(in_node)) {
     in_node <- build_tree(list(...))
   } else if (...length()) {
-    stop("in_node is not compatible with ... arguments")
+    cli_abort("in_node is not compatible with ... arguments")
   }
-  function(...) {
+  f_orig <- f
+  f <- function(...) {
     # We could do this out of the function and re-use,
     # but because we always jit, we don't worry about it
     # (at least for now)
     args <- unflatten(in_node, list(...))
 
-    outs <- do.call(f, args)
+    outs <- do.call(f_orig, args)
     list(
       build_tree(outs),
       flatten(outs)
     )
   }
+  class(f) <- "anvil::FlattenedFunction"
+  f
 }
 
 new_counter <- function() {
@@ -83,6 +86,7 @@ method(build_tree, S7::new_S3_class("MarkedArgs")) <- function(x, counter = NULL
   if (!is.null(x$marked)) {
     is_marked <- names(x$data) %in% x$marked
     is_marked_flat <- rep(is_marked, times = subsize)
+    # TODO: I think this is wrong???
   } else {
     is_marked_flat <- FALSE
   }
@@ -136,4 +140,59 @@ MarkedListNode <- function(nodes, names, marked) {
     ),
     class = c("MarkedListNode", "ListNode")
   )
+}
+
+tree_size <- new_generic("tree_size", "x", function(x) {
+  S7::S7_dispatch()
+})
+
+method(tree_size, S7::new_S3_class("LeafNode")) <- function(x) {
+  1L
+}
+
+method(tree_size, S7::new_S3_class("ListNode")) <- function(x) {
+  sum(vapply(x$nodes, tree_size, integer(1L)))
+}
+
+method(tree_size, S7::new_S3_class("MarkedListNode")) <- function(x) {
+  sum(vapply(x$nodes, tree_size, integer(1L)))
+}
+
+filter_list_node <- function(tree, names) {
+  stopifnot(inherits(tree, "ListNode"))
+  if (is.null(tree$names)) {
+    cli_abort("tree must have names")
+  }
+  keep_idx <- which(tree$names %in% names)
+  if (length(keep_idx) == length(tree$names)) {
+    return(tree)
+  }
+  counter <- new_counter()
+  renumbered_nodes <- lapply(tree$nodes[keep_idx], reindex_tree, counter = counter)
+  ListNode(renumbered_nodes, tree$names[keep_idx])
+}
+
+# Recursively reindex leaf nodes starting from counter
+reindex_tree <- new_generic("reindex_tree", "x", function(x, counter) {
+  S7::S7_dispatch()
+})
+
+method(reindex_tree, S7::new_S3_class("LeafNode")) <- function(x, counter) {
+  i <- counter[["i"]] + 1L
+  counter[["i"]] <- i
+  LeafNode(i)
+}
+
+method(reindex_tree, S7::new_S3_class("ListNode")) <- function(x, counter) {
+  reindexed <- lapply(x$nodes, reindex_tree, counter = counter)
+  ListNode(reindexed, x$names)
+}
+
+flat_mask_from_names <- function(tree, names) {
+  if (is.null(names) || length(names) == 0L) {
+    rep(TRUE, times = tree_size(tree))
+  } else {
+    mask <- tree$names %in% names
+    rep(mask, times = vapply(tree$nodes, tree_size, integer(1L)))
+  }
 }

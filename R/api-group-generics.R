@@ -1,8 +1,6 @@
-#' @include interpreter.R
 #' @include api.R
 
-#' @export
-`Ops.anvil::Box` <- function(e1, e2) {
+ops_impl <- function(e1, e2) {
   switch(
     .Generic, # nolint
     "+" = nv_add(e1, e2),
@@ -28,16 +26,30 @@
   )
 }
 
+#' @method Ops anvil::GraphBox
 #' @export
-`matrixOps.anvil::Box` <- function(x, y) {
+`Ops.anvil::GraphBox` <- ops_impl
+
+#' @method Ops AnvilTensor
+#' @export
+Ops.AnvilTensor <- ops_impl
+
+matrix_ops_impl <- function(x, y) {
   switch(
     .Generic, # nolint
     "%*%" = nv_matmul(x, y)
   )
 }
 
+#' @method matrixOps anvil::GraphBox
 #' @export
-`Math.anvil::Box` <- function(x, ...) {
+`matrixOps.anvil::GraphBox` <- matrix_ops_impl
+
+#' @method matrixOps AnvilTensor
+#' @export
+matrixOps.AnvilTensor <- matrix_ops_impl
+
+math_impl <- function(x, ...) {
   switch(
     .Generic, # nolint
     "abs" = nv_abs(x),
@@ -53,15 +65,21 @@
   )
 }
 
-#' @method Math2 anvil::Box
+#' @method Math anvil::GraphBox
 #' @export
-`Math2.anvil::Box` <- function(x, digits, ...) {
+`Math.anvil::GraphBox` <- math_impl
+
+#' @method Math AnvilTensor
+#' @export
+Math.AnvilTensor <- math_impl
+
+math2_impl <- function(x, digits, ...) {
   method <- list(...)$method
   switch(
     .Generic, # nolint
     "round" = {
       if (!missing(digits)) {
-        stop("Cannot specify digits")
+        cli_abort("Cannot specify digits")
       }
       nv_round(x, method = method)
     },
@@ -69,10 +87,17 @@
   )
 }
 
+#' @method Math2 anvil::GraphBox
 #' @export
-`Summary.anvil::Box` <- function(..., na.rm) {
+`Math2.anvil::GraphBox` <- math2_impl
+
+#' @method Math2 AnvilTensor
+#' @export
+Math2.AnvilTensor <- math2_impl
+
+summary_impl <- function(..., na.rm) {
   if (...length() != 1L) {
-    stop("Currently only one argument is supported for Summary group generic")
+    cli_abort("Currently only one argument is supported for Summary group generic")
   }
   x <- ...elt(1L)
 
@@ -89,12 +114,26 @@
   )
 }
 
-
-#' @method mean anvil::Box
+#' @method Summary anvil::GraphBox
 #' @export
-`mean.anvil::Box` <- function(x, ...) {
+`Summary.anvil::GraphBox` <- summary_impl
+
+#' @method Summary AnvilTensor
+#' @export
+Summary.AnvilTensor <- summary_impl
+
+
+mean_impl <- function(x, ...) {
   nv_reduce_mean(x, dims = seq_along(shape(x)), drop = TRUE)
 }
+
+#' @method mean anvil::GraphBox
+#' @export
+`mean.anvil::GraphBox` <- mean_impl
+
+#' @method mean AnvilTensor
+#' @export
+mean.AnvilTensor <- mean_impl
 
 # if we don't give it the name nv_transpose, pkgdown thinks t.anvil is a package
 
@@ -107,6 +146,13 @@
 #'   Permutation of dimensions. If `NULL` (default), reverses the dimensions.
 #' @return [`nv_tensor`]
 #' @export
-`t.anvil::Box` <- function(x) {
+#' @method t anvil::GraphBox
+`t.anvil::GraphBox` <- function(x) {
+  nv_transpose(x)
+}
+
+#' @method t AnvilTensor
+#' @export
+t.AnvilTensor <- function(x) {
   nv_transpose(x)
 }

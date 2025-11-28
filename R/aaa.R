@@ -14,20 +14,18 @@ NULL
 #' @importFrom xlamisc list_of seq_len0 seq_along0
 #' @importFrom utils head tail
 #' @importFrom cli cli_abort
-#' @importFrom methods Math2
+#' @importFrom methods Math2 formalArgs
 ## usethis namespace: end
 NULL
 
 globals <- new.env()
 globals$nv_types <- "AnvilTensor"
-globals$interpretation_rules <- c("jit", "pullback")
+globals$interpretation_rules <- c("stablehlo", "backward")
+globals[["DESCRIPTOR_STASH"]] <- list()
+globals[["CURRENT_DESCRIPTOR"]] <- NULL
 
-utils::globalVariables("globals")
+# FIXME(hack): mut<GraphValue> is used as defult of the constructor in GraphDescriptor (print.default(GraphBox))
+# should fix this
+utils::globalVariables(c("globals", "mut<GraphValue>", "mut<GraphDescriptor>"))
 
-hash <- S7::new_generic("hash", "x", function(x) {
-  S7::S7_dispatch()
-})
-
-aval <- S7::new_generic("aval", "x", function(x) {
-  S7::S7_dispatch()
-})
+class_hashtab <- S7::new_S3_class("hashtab")

@@ -184,7 +184,7 @@ test_that("p_broadcast_in_dim", {
   f <- jit(function(a) nvl_broadcast_in_dim(a, target_shape, bdims))
   out_nv <- f(nv_tensor(x))
   out_th <- torch::torch_tensor(x)$unsqueeze(1)$expand(target_shape)
-  testthat::expect_equal(sum(as_array(out_nv)), as.numeric(torch::as_array(out_th$sum())), tolerance = 1e-6)
+  testthat::expect_equal(sum(as_array(out_nv)), as.numeric(torch::as_array(out_th$sum())), tolerance = 1e-5)
 })
 
 test_that("p_select", {

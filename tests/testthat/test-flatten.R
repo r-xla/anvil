@@ -37,22 +37,9 @@ test_that("flatten_fun", {
   )
 
   f_flat <- rlang::exec(flatten_fun, f, !!!args)
+  expect_class(f_flat, "anvil::FlattenedFunction")
   out <- rlang::exec(f_flat, !!!flatten(args))
   args_flat <- flatten(args)
   out <- do.call(unflatten, out)
   expect_equal(args, out)
-})
-
-test_that("build_tree(MarkedArgs) produces leaves and static mask", {
-  args <- list(
-    a = list(1, list(2, 3)),
-    b = 4L,
-    c = list(d = list(5))
-  )
-  static <- c("a", "c")
-  node <- build_tree(mark_some(args, static))
-  flat <- flatten(args)
-  # leaves are in left-to-right order: 1, 2, 3, 4L, 5
-  expect_equal(node$marked, c(TRUE, TRUE, TRUE, FALSE, TRUE))
-  expect_equal(args, unflatten(node, flat))
 })

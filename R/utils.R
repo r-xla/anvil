@@ -2,11 +2,6 @@ hash <- S7::new_generic("hash", "x", function(x) {
   S7::S7_dispatch()
 })
 
-method(hash, class_environment) <- function(x) {
-  # TODO: Make this nicer
-  format(x)
-}
-
 # set utils
 set <- function() {
   hashtab()
@@ -130,4 +125,8 @@ without <- function(x, indices) {
   } else {
     x
   }
+}
+
+zero_env <- function() {
+  new.env(size = 0L, parent = emptyenv())
 }
