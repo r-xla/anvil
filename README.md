@@ -88,7 +88,7 @@ g_jit(a, b, x)
   - Code is JIT compiled into a single kernel.
   - Runs on different hardware backends, including CPU and GPU.
 - Extendable:
-  - It is possibel to add new primitives, transformations, and (with
+  - It is possible to add new primitives, transformations, and (with
     some effort) new backends.
   - The package is written almost entirely in R.
 

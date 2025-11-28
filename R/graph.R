@@ -408,7 +408,7 @@ is_graph_value <- function(x) {
 }
 
 maybe_restore_previous_desc <- function(desc = NULL) {
-  if (!is.null(desc) && (desc != globals[["CURRENT_DESCRIPTOR"]])) {
+  if (!is.null(desc) && (!identical(desc, globals[["CURRENT_DESCRIPTOR"]]))) {
     # graph has already been returned
     return()
   }

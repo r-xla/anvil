@@ -42,8 +42,7 @@ env_get <- function(env, gval) {
 #'   - `func`: The StableHLO `Func` object
 #'   - `constants`: The constants of the graph
 #' @export
-stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL,
-                      donate = character()) {
+stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = character()) {
   # Node -> FuncVariable
   env <- HloEnv(parent = env)
   func <- stablehlo::local_func(id = "main")
@@ -92,10 +91,12 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL,
     if (donate_flat[[i]]) {
       # Find an output with matching type that hasn't been aliased yet
       for (j in seq_along(out_types)) {
-        if ((j - 1L) %in% aliased_outputs) next
+        if ((j - 1L) %in% aliased_outputs) {
+          next
+        }
         out_vt <- out_types[[j]]
         if (vt == out_vt) {
-          alias <- j - 1L  # 0-based index for stablehlo
+          alias <- j - 1L # 0-based index for stablehlo
           aliased_outputs <- c(aliased_outputs, alias)
           break
         }

@@ -144,13 +144,10 @@ test_that("p_if: identically constants in both branches receive the same GraphVa
 describe("p_while", {
   it("simple case", {
     f <- jit(function(n) {
-      nv_while(list(i = nv_scalar(1L)),
-        \(i) i <= n,
-        \(i) {
-          i <- i + nv_scalar(1L)
-          list(i = i)
-        }
-      )
+      nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
+        i <- i + nv_scalar(1L)
+        list(i = i)
+      })
     })
   })
 })
@@ -158,11 +155,9 @@ describe("p_while", {
 # TODO: Continue here
 test_that("p_while: simle case", {
   f <- jit(function(n) {
-    nv_while(list(i = nv_scalar(1L)),
-      \(i) i <= n,
-      \(i) {
-        i <- i + nv_scalar(1L)
-        list(i = i)
+    nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
+      i <- i + nv_scalar(1L)
+      list(i = i)
     })
   })
 
@@ -200,14 +195,17 @@ test_that("p_while: two state variables", {
 
 test_that("p_while: two states", {
   f <- jit(function(n) {
-    nv_while(list(i = nv_scalar(1L), j = nv_scalar(2L)),
-      \(i, j) { # nolint
+    nv_while(
+      list(i = nv_scalar(1L), j = nv_scalar(2L)),
+      \(i, j) {
+        # nolint
         i <= n
       },
       \(i, j) {
         i <- i + nv_scalar(1L)
         list(i = i, j = j)
-    }) # nolint
+      }
+    ) # nolint
   })
 
   expect_equal(
@@ -218,13 +216,19 @@ test_that("p_while: two states", {
 
 test_that("p_while: nested state", {
   f <- jit(function(n) {
-    nv_while(list(i = list(nv_scalar(1L))), \(i) { # nolint
-      i[[1]] <= n
-    }, \(i) { # nolint
-      i <- i[[1L]]
-      i <- i + nv_scalar(1L)
-      list(i = list(i))
-    })
+    nv_while(
+      list(i = list(nv_scalar(1L))),
+      \(i) {
+        # nolint
+        i[[1]] <= n
+      },
+      \(i) {
+        # nolint
+        i <- i[[1L]]
+        i <- i + nv_scalar(1L)
+        list(i = list(i))
+      }
+    )
   })
   expect_equal(
     f(nv_scalar(10L)),

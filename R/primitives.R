@@ -495,7 +495,6 @@ nvl_if <- function(pred, true, false) {
   }
   false_graph <- graphify(function() rlang::eval_tidy(false_expr), list(), desc = desc_false)
 
-
   for (const in desc_false@constants) {
     get_box_or_register_const(current_desc, const)
   }
@@ -532,7 +531,6 @@ nvl_while <- function(init, cond, body) {
     cli_abort("init must have only named arguments")
   }
 
-
   desc_cond <- local_descriptor()
 
   cond_graph <- graphify(cond, init, desc = desc_cond)
@@ -553,7 +551,6 @@ nvl_while <- function(init, cond, body) {
   if (!identical(body_graph@in_tree, body_graph@out_tree)) {
     cli_abort("body must have the same input and output structure")
   }
-
 
   current_desc <- .current_descriptor()
 

@@ -208,6 +208,3 @@ test_that("donate: no aliasing with type mismatch", {
   out <- f(x)
   expect_error(capture.output(x), "called on deleted or donated buffer")
 })
-
-
-

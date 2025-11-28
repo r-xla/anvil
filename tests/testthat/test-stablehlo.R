@@ -26,10 +26,13 @@ test_that("donate: simple example", {
 
 test_that("donate: multiple inputs, only some donated", {
   f <- function(x, y) x + y
-  graph <- graphify(f, list(
-    x = nv_tensor(array(1:4, c(2, 2))),
-    y = nv_tensor(array(5:8, c(2, 2)))
-  ))
+  graph <- graphify(
+    f,
+    list(
+      x = nv_tensor(array(1:4, c(2, 2))),
+      y = nv_tensor(array(5:8, c(2, 2)))
+    )
+  )
   out <- stablehlo(graph, donate = "x")
   expect_true(
     out[[1]]@inputs@items[[1]]@alias == 0L || out[[1]]@inputs@items[[2]]@alias == 0L
