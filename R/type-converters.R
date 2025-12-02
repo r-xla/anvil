@@ -1,7 +1,7 @@
 # Converters between stablehlo and anvil types
 
-# ShapedTensor -> FunctionInput (not really a type)
-st2fi <- function(x, func) {
+# ShapedTensor -> FuncVariable
+st2fv <- function(x, func) {
   value_type <- st2vt(x)
   value_id <- stablehlo::ValueId()
   func@inputs <- stablehlo::FuncInputs(c(

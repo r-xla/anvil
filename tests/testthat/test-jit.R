@@ -1,3 +1,53 @@
+test_that("jit: basic test", {
+  f <- jit(function(x, y) {
+    nvl_add(x, y)
+  })
+
+  expect_equal(
+    f(nv_scalar(1), nv_scalar(2)),
+    nv_scalar(3)
+  )
+  expect_equal(
+    f(nv_scalar(1), nv_scalar(2)),
+    nv_scalar(3)
+  )
+})
+
+test_that("jit: a constant", {
+  x <- nv_scalar(1)
+  f <- function(y) {
+    nvl_add(x, y)
+  }
+  f_jit <- jit(f)
+  expect_equal(
+    f_jit(nv_scalar(2)),
+    nv_scalar(3)
+  )
+  x <- nv_scalar(2)
+  # the constant is now saved in f_jit, so new x is not foundj
+  expect_equal(
+    f_jit(nv_scalar(2)),
+    nv_scalar(3)
+  )
+})
+
+test_that("jit basic test", {
+  f <- function(x, y) {
+    x + y
+  }
+  f_jit <- jit(f)
+
+  expect_equal(
+    f_jit(nv_tensor(1), nv_tensor(2)),
+    nv_tensor(3)
+  )
+  # cache hit:
+  expect_equal(
+    f_jit(nv_tensor(1), nv_tensor(2)),
+    nv_tensor(3)
+  )
+})
+
 test_that("can return single tensor", {
   f <- jit(nvl_add)
   expect_equal(
@@ -29,6 +79,16 @@ test_that("can take in nested list", {
   expect_equal(
     f(list(a = x)),
     x
+  )
+})
+
+test_that("Can multiply values from lists", {
+  f <- jit(function(x, y) {
+    x[[1]] * y[[1]]
+  })
+  expect_equal(
+    f(list(nv_scalar(2)), list(nv_scalar(3))),
+    nv_scalar(6)
   )
 })
 
@@ -133,11 +193,18 @@ test_that("constants can be part of the program", {
   expect_equal(f(nv_tensor(1)), nv_tensor(2))
 })
 
-test_that("JitBox printer", {
-  local_func()
-  x <- hlo_input("x", "f32", c(2, 3))
-  interpreter <- JitInterpreter()
-  box <- JitBox(interpreter, x)
-  expect_equal(format(box), "JitBox(tensor<2x3xf32>)")
-  expect_snapshot(box)
+test_that("Only constants in group generics", {
+  f <- jit(function() {
+    nv_scalar(1) + nv_scalar(2)
+    #nv_add(nv_scalar(1), nv_scalar(2))
+  })
+  expect_equal(f(), nv_scalar(3))
+})
+
+test_that("donate: no aliasing with type mismatch", {
+  skip_if(!is_cpu()) # might get a segfault on other platforms
+  f <- jit(function(x) x, donate = "x")
+  x <- nv_tensor(1)
+  out <- f(x)
+  expect_error(capture.output(x), "called on deleted or donated buffer")
 })

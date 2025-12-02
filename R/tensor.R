@@ -1,4 +1,7 @@
+#' @rdname nv_tensor
 AnvilTensor <- S7::new_S3_class("AnvilTensor")
+
+#' @importFrom pjrt platform
 
 #' @title Tensor
 #' @description
@@ -27,6 +30,10 @@ nv_tensor <- function(data, dtype = NULL, device = NULL, shape = NULL) {
   }
   x <- pjrt_buffer(data, dtype, device = device, shape = shape)
   ensure_nv_tensor(x)
+}
+
+is_anvil_tensor <- function(x) {
+  inherits(x, "AnvilTensor")
 }
 
 ensure_nv_tensor <- function(x) {
@@ -62,7 +69,6 @@ dtype.AnvilTensor <- function(x, ...) {
   as_dtype(as.character(pjrt::elt_type(x)))
 }
 
-# similar to stablehlo::TensorType
 ShapedTensor <- S7::new_class(
   "ShapedTensor",
   properties = list(
@@ -71,9 +77,27 @@ ShapedTensor <- S7::new_class(
   )
 )
 
+shaped_tensor <- function(x) {
+  if (is_anvil_tensor(x)) {
+    ConcreteTensor(x)
+  } else if (is_shaped_tensor(x)) {
+    x
+  } else {
+    cli_abort("internal error")
+  }
+}
+
+
+is_shaped_tensor <- function(x) {
+  inherits(x, "anvil::ShapedTensor")
+}
+
+is_concrete_tensor <- function(x) {
+  inherits(x, "anvil::ConcreteTensor")
+}
+
 method(platform, ShapedTensor) <- function(x, ...) {
-  # TODO: Need platform as part of ShapedTensor
-  .NotYetImplemented()
+  cli_abort("platform is not accessible during tracing")
 }
 
 #' @method dtype anvil::ShapedTensor
@@ -97,7 +121,7 @@ ConcreteTensor <- S7::new_class(
   ),
   constructor = function(data) {
     if (!inherits(data, "AnvilTensor")) {
-      stop("data must be an nv_tensor")
+      cli_abort("data must be an nv_tensor")
     }
 
     S7::new_object(
@@ -138,17 +162,6 @@ method(format, ConcreteTensor) <- function(x, ...) {
   sprintf("ConcreteTensor(dtype=%s, shape=%s)", repr(x@dtype), repr(x@shape))
 }
 
-
-#' @title Create a TensorDataType
-#' @description
-#' Create a [`stablehlo::TensorDataType`].
-#' @param x (any)\cr
-#'   Object convertible to a [`stablehlo::TensorDataType`] (via [`stablehlo::as_dtype`])
-#' @return [`stablehlo::TensorDataType`]
-#' @export
-nv_dtype <- function(x) {
-  stablehlo::as_dtype(x)
-}
 
 #' @export
 format.AnvilTensor <- function(x, ...) {

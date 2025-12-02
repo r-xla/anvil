@@ -234,6 +234,19 @@ test_that("broadcasting", {
   expect_equal(out[[2L]], nv_tensor(0.5, shape = c(1, 2)))
 })
 
+test_that("p_if", {
+  # TODO:
+  #f <- jit(gradient(
+  #  function(pred, x) {
+  #    nvl_if(pred, x * nv_scalar(1), x * nv_scalar(2))
+  #  },
+  #  wrt = "x"
+  #))
+  #out <- f(nv_scalar(TRUE), nv_scalar(2))
+  #expect_equal(out[[1L]], nv_scalar(2))
+  #expect_equal(out[[2L]], nv_scalar(1))
+})
+
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "test-primitives-pullback-torch.R", package = "anvil"))
+  source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
 }

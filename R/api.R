@@ -1,5 +1,4 @@
 # This is the user-facing API containing the exported tensor operations.
-#' @include interpreter.R
 #' @include primitives.R
 
 # Special tensor creators
@@ -28,7 +27,7 @@ broadcast_shapes <- function(shape_lhs, shape_rhs) {
     d_lhs <- shape_lhs[i]
     d_rhs <- shape_rhs[i]
     if (d_lhs != d_rhs && d_lhs != 1L && d_rhs != 1L) {
-      stop("lhs and rhs are not broadcastable")
+      cli_abort("lhs and rhs are not broadcastable")
     }
     shape_out[i] <- max(d_lhs, d_rhs)
   }
@@ -396,7 +395,6 @@ nv_exp <- nvl_exp
 #'   Either `"nearest_even"` (default) or `"afz"` (away from zero).
 nv_round <- nvl_round
 
-
 ## Other operations -----------------------------------------------------------
 
 #' @title Matrix Multiplication
@@ -413,11 +411,11 @@ nv_round <- nvl_round
 #' @return [`nv_tensor`]
 #' @export
 nv_matmul <- function(lhs, rhs) {
-  if (ndims(rhs) < 2L) {
-    stop("lhs of matmul must have at least 2 dimensions")
-  }
   if (ndims(lhs) < 2L) {
-    stop("rhs of matmul must have at least 2 dimensions")
+    cli_abort("lhs of matmul must have at least 2 dimensions")
+  }
+  if (ndims(rhs) < 2L) {
+    cli_abort("rhs of matmul must have at least 2 dimensions")
   }
   shape_leading <- broadcast_shapes(head(shape(lhs), -2L), head(shape(rhs), -2L))
 
@@ -636,7 +634,7 @@ nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
   N <- nv_mul(Z, nv_scalar(sigma, dtype = dtype))
   N <- nv_add(N, nv_scalar(mu, dtype = dtype))
   if (n %% 2 == 1) {
-    N <- nv_slice(N, start_indices = c(0L), limit_indices = c(as.integer(n)), strides = c(1L))
+    N <- nv_slice(N, start_indices = 1L, limit_indices = as.integer(n), strides = 1L)
   }
   N <- nv_reshape(N, shape = shape_out)
   list(Theta[[1]], N)
@@ -711,3 +709,32 @@ dt_f32 <- FloatType(32)
 #' @format NULL
 #' @usage NULL
 dt_f64 <- FloatType(64)
+
+
+# Higher order primitives
+
+#' @title If
+#' @description
+#' Functional if statement.
+#' @param pred ([`nv_tensor`])\cr
+#'   Flag.
+#' @param true (NSE)\cr
+#'   Expression to evaluate if the condition is true.
+#' @param false (NSE)\cr
+#'   Expression to evaluate if the condition is false.
+#' @return [`nv_tensor`]
+#' @export
+nv_if <- nvl_if
+
+#' @title While
+#' @description
+#' Functional while loop.
+#' @param init (`list()`)\cr
+#'   Initial state.
+#' @param cond (`function`)\cr
+#'   Condition function: `f: state -> bool`.
+#' @param body (`function`)\cr
+#'   Body function. `f: state -> state`.
+#' @return [`nv_tensor`]
+#' @export
+nv_while <- nvl_while

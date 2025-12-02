@@ -1,0 +1,158 @@
+test_that("graphify: simple test", {
+  f <- function(x, y) {
+    nvl_add(x, y)
+  }
+  graph <- graphify(f, list(x = nv_scalar(1), y = nv_scalar(2)))
+  expect_true(is_graph(graph))
+  expect_list(graph@inputs, len = 2L, types = "anvil::mut<GraphValue>")
+  expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
+  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphValue>")
+  expect_true(identical(graph@outputs, graph@calls[[1]]@outputs))
+})
+
+test_that("graphify: in- and outputs are reference identical to the outputs of the calls that produced them", {
+  f <- function(x, y) {
+    nvl_add(x, y)
+  }
+  graph <- graphify(f, list(x = nv_scalar(1), y = nv_scalar(2)))
+  expect_true(identical(graph@outputs, graph@calls[[1]]@outputs))
+  expect_true(identical(graph@inputs, graph@calls[[1]]@inputs))
+})
+
+test_that("graphify: nested inputs and outputs", {
+  f <- function(lst) {
+    list(nvl_add(lst[[1]], lst[[2]]))
+  }
+
+  graph <- graphify(f, list(lst = list(nv_scalar(1), nv_scalar(2))))
+  expect_list(graph@inputs, len = 2L, types = "anvil::mut<GraphValue>")
+  expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
+  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphValue>")
+  expect_equal(
+    unflatten(graph@in_tree, list(1, 2)),
+    list(lst = list(1, 2))
+  )
+  expect_equal(
+    unflatten(graph@out_tree, 1),
+    list(1)
+  )
+})
+
+test_that("graphify: closed-over constants", {
+  x <- nv_scalar(1)
+  f <- function(y) {
+    nvl_add(x, y)
+  }
+  graph <- graphify(f, list(y = nv_scalar(2)))
+  expect_list(graph@inputs, len = 1L, types = "anvil::mut<GraphValue>")
+  expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
+  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphValue>")
+
+  # What do we expect here?
+  # We want the resulting graph to have a constant and two inputs
+
+  expect_true(is_graph_value(graph@calls[[1]]@inputs[[1]]))
+  expect_true(is_graph_value(graph@calls[[1]]@inputs[[2]]))
+  expect_true(identical(x, graph@constants[[1]]@aval@data))
+  expect_equal(length(graph@constants), 1L)
+})
+
+test_that("graphify can deduplicate constants", {
+  x <- nv_scalar(1)
+  f <- function(y) {
+    nvl_add(x, x)
+  }
+  graph <- graphify(f, list(y = nv_scalar(2)))
+  expect_equal(length(graph@constants), 1L)
+  expect_identical(graph@constants[[1]]@aval@data, x)
+})
+
+test_that("graphify works without arguments", {
+  # For this it is necessary to also box outputs in graphify()
+  x <- nv_scalar(1)
+  f <- function() {
+    x
+  }
+  graph <- graphify(f, list())
+  expect_equal(length(graph@inputs), 0L)
+  expect_equal(length(graph@outputs), 1L)
+  expect_identical(graph@outputs[[1]]@aval@data, x)
+  expect_equal(length(graph@outputs), 1L)
+  expect_equal(length(graph@calls), 0L)
+})
+
+
+test_that("local_descriptor creates a graph", {
+  globals[["CURRENT_DESCRIPTOR"]] <- NULL
+  g <- local_descriptor()
+  expect_false(is.null(globals[["CURRENT_DESCRIPTOR"]]))
+  expect_true(is_graph_descriptor(globals[["CURRENT_DESCRIPTOR"]]))
+})
+
+test_that("local_descriptor restores previous graph", {
+  globals[["CURRENT_DESCRIPTOR"]] <- NULL
+  g1 <- local_descriptor()
+  inner_test <- function() {
+    g2 <- local_descriptor()
+    (function() local_descriptor())()
+    expect_equal(.current_descriptor(), g2)
+  }
+  inner_test()
+  expect_equal(g1, .current_descriptor())
+})
+
+test_that(".current_descriptor errors when no graph exists", {
+  globals[["CURRENT_DESCRIPTOR"]] <- NULL
+  expect_error(.current_descriptor(), "No graph is currently being built")
+})
+
+test_that("constants: same tensor is constant and input at the same time", {
+  # Not sure what we want to happen here.
+  f <- jit(function(x) {
+    h <- function(x) x * y
+    y <- nv_scalar(2)
+    gradient(h)(y)
+  })
+  f(nv_scalar(1))
+})
+
+test_that("closed-over constant is passed as argument to transformation", {
+  x <- nv_scalar(1)
+  f <- jit(function() {
+    h <- function(y) y * y
+    gradient(h)(x)
+  })
+  f()
+})
+
+test_that("can pass constant to nested graphify call if it does not exist in the parent graph", {
+  f <- jit(function() {
+    g <- function(y) y * y
+    gradient(g)(nv_scalar(2))
+  })
+  expect_equal(f(), list(y = nv_scalar(4)))
+})
+
+test_that("can pass constant to nested graphify call if it is defined in the parent graph", {
+  f <- jit(function() {
+    nv_add(y, y)
+    g <- function(y) y * y
+    gradient(g)(y)
+  })
+  y <- nv_scalar(2)
+  expect_equal(f(), list(y = nv_scalar(4)))
+})
+
+test_that("Graph: printing", {
+  f <- function(x, y) {
+    nvl_add(x, y)
+  }
+  graph <- graphify(f, list(x = nv_scalar(1), y = nv_scalar(2)))
+  expect_snapshot(graph)
+  # with param
+  f1 <- function(x) {
+    mean(x)
+  }
+  graph1 <- graphify(f1, list(x = nv_tensor(1:10, dtype = "f32", shape = c(2, 5))))
+  expect_snapshot(graph1)
+})

@@ -9,7 +9,7 @@ str_to_torch_dtype <- function(str) {
     "i32" = torch::torch_int32(),
     "i64" = torch::torch_int64(),
     "ui8" = torch::torch_uint8(),
-    stop(sprintf("Unsupported dtype: %s", str))
+    cli_abort(sprintf("Unsupported dtype: %s", str))
   )
 }
 
