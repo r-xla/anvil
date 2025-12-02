@@ -407,10 +407,12 @@ test_that("p_convert", {
     nvl_convert,
     function(x, dtype) x$to(dtype = dtype),
     dtypes = "f32",
-    args_f = function(shp, dtype) list(
-      list(dtype = target_dtype),
-      list(dtype = torch::torch_float64())
-    )
+    args_f = function(shp, dtype) {
+      list(
+        list(dtype = target_dtype),
+        list(dtype = torch::torch_float64())
+      )
+    }
   )
 })
 
