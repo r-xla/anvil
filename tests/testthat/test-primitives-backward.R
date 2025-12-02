@@ -247,6 +247,48 @@ test_that("p_if", {
   #expect_equal(out[[2L]], nv_scalar(1))
 })
 
+test_that("p_convert backward converts gradients to the input dtype", {
+  x_arr <- array(1:6, c(2, 3))
+  x <- nv_tensor(x_arr, dtype = "f32")
+  f <- jit(gradient(function(x) {
+    y <- nvl_convert(x, dtype = "f64")
+    nv_reduce_sum(y, dims = 1:2, drop = TRUE)
+  }))
+
+  grads <- f(x)
+  expect_equal(as_array(grads[[1L]]), array(1, dim = dim(x_arr)))
+  expect_equal(dtype(grads[[1L]]), as_dtype("f32"))
+})
+
+test_that("comparison primitives return zero gradients", {
+  a_arr <- array(c(1, 2, 3, 4, 5, 6), c(2, 3))
+  b_arr <- array(c(6, 5, 4, 3, 2, 1), c(2, 3))
+  a_nv <- nv_tensor(a_arr, dtype = "f32")
+  b_nv <- nv_tensor(b_arr, dtype = "f32")
+
+  comparators <- list(
+    list(fun = nvl_eq, expected = a_arr == b_arr),
+    list(fun = nvl_ne, expected = a_arr != b_arr),
+    list(fun = nvl_gt, expected = a_arr > b_arr),
+    list(fun = nvl_ge, expected = a_arr >= b_arr),
+    list(fun = nvl_lt, expected = a_arr < b_arr),
+    list(fun = nvl_le, expected = a_arr <= b_arr)
+  )
+
+  for (cmp in comparators) {
+    out <- as_array(jit(cmp$fun)(a_nv, b_nv))
+    expect_identical(out, cmp$expected)
+
+    g <- jit(gradient(function(a, b) {
+      pred <- cmp$fun(a, b)
+      nv_reduce_sum(nvl_convert(pred, dtype = "f32"), dims = 1:2, drop = TRUE)
+    }))
+    grads <- g(a_nv, b_nv)
+    expect_equal(as_array(grads[[1L]]), array(0, dim = dim(a_arr)))
+    expect_equal(as_array(grads[[2L]]), array(0, dim = dim(a_arr)))
+  }
+})
+
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
 }

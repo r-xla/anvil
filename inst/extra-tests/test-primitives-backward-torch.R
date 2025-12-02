@@ -400,3 +400,49 @@ test_that("p_reshape", {
     args_f = function(shp, dtype) list(list(shape = out_shape), list(shape = out_shape))
   )
 })
+
+test_that("p_convert", {
+  target_dtype <- "f64"
+  verify_grad_uni_tensor(
+    nvl_convert,
+    function(x, dtype) x$to(dtype = dtype),
+    dtypes = "f32",
+    args_f = function(shp, dtype) list(
+      list(dtype = target_dtype),
+      list(dtype = torch::torch_float64())
+    )
+  )
+})
+
+test_that("comparison primitives return zero gradients", {
+  shp <- c(2L, 3L)
+  a_arr <- array(generate_test_data(shp, dtype = "f32"), shp)
+  b_arr <- array(generate_test_data(shp, dtype = "f32"), shp)
+  a_nv <- nv_tensor(a_arr, dtype = "f32")
+  b_nv <- nv_tensor(b_arr, dtype = "f32")
+  a_th <- torch::torch_tensor(a_arr, dtype = torch::torch_float32())
+  b_th <- torch::torch_tensor(b_arr, dtype = torch::torch_float32())
+
+  comparators <- list(
+    list(nv = nvl_eq, th = torch::torch_eq),
+    list(nv = nvl_ne, th = torch::torch_ne),
+    list(nv = nvl_gt, th = torch::torch_gt),
+    list(nv = nvl_ge, th = torch::torch_ge),
+    list(nv = nvl_lt, th = torch::torch_lt),
+    list(nv = nvl_le, th = torch::torch_le)
+  )
+
+  for (cmp in comparators) {
+    out_nv <- jit(cmp$nv)(a_nv, b_nv)
+    out_th <- cmp$th(a_th, b_th)
+    expect_equal(tengen::as_array(out_nv), as_array_torch(out_th))
+
+    f <- function(a, b) {
+      out <- cmp$nv(a, b)
+      nv_reduce_sum(nvl_convert(out, "f32"), dims = 1:2, drop = TRUE)
+    }
+    grads <- jit(gradient(f))(a_nv, b_nv)
+    expect_equal(tengen::as_array(grads[[1L]]), array(0, dim = shp))
+    expect_equal(tengen::as_array(grads[[2L]]), array(0, dim = shp))
+  }
+})
