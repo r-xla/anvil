@@ -88,7 +88,7 @@ is_higher_order_primitive <- function(x) {
   }
   x@rules[[name]] <- value
   if (!(name %in% globals$interpretation_rules)) {
-    cli_abort("Unknown interpretation rule: {name}")
+    cli_abort("Unknown interpretation rule: {.val {name}}")
   }
   x
 }
@@ -99,7 +99,7 @@ method(`[[`, Primitive) <- function(x, name) {
     if (!(name %in% globals$interpretation_rules)) {
       cli_abort("Unknown rule: {name}")
     }
-    cli_abort("Rule {name} not defined for primitive {x@name}")
+    cli_abort("Rule {.field {name}} not defined for primitive {.field {x@name}}")
   }
   rule
 }
