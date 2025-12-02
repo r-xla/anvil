@@ -12,7 +12,7 @@ nv_if(pred, true, false)
 
 - pred:
 
-  ([`nv_tensor`](nv_tensor.md))  
+  ([nv_tensor](nv_tensor.md))  
   Flag.
 
 - true:
