@@ -263,7 +263,7 @@ While the latter might not be a big problem for small models, it can lead to sig
 
 Next, we will address immutability in anvil before we briefly discuss control flow.
 
-### Control Flow
+## Control Flow
 
 Earlier, we have already used R control flow to train our linear model.
 In principle, there are three ways to implement control-flow in anvil:
