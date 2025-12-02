@@ -13,7 +13,10 @@ transform_gradient <- function(graph, wrt) {
   }
   dt <- out@aval@dtype
   if (!(dt == dt_f32 || dt == dt_f64)) {
-    cli_abort("gradient can only be computed for functions that return float scalar")
+    cli_abort(c(
+      x = "gradient can only be computed for functions that return float scalar",
+      i = "Got dtype={.field {repr(dt)}}"
+    ))
   }
 
   requires_grad <- flat_mask_from_names(graph@in_tree, wrt)

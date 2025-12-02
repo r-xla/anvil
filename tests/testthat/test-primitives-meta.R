@@ -34,10 +34,9 @@ test_that("backward rule is tested", {
     file.path(testthat::test_path(), "test-primitives-backward.R")
   )
 
-  content <- paste(
-    vapply(candidate_files, function(file) paste(readLines(file, warn = FALSE), collapse = "\n"), character(1L)),
-    collapse = "\n"
-  )
-  missing <- Filter(function(nm) !grepl(paste0('test_that("', nm), content, fixed = TRUE), primitive_names)
+  content <- do.call(c, lapply(candidate_files, readLines))
+  content <- content[grepl("test_that(", content, fixed=TRUE)]
+  missing <- Filter(function(nm) !any(grepl(nm, content, fixed = TRUE)), primitive_names)
+
   expect_true(length(missing) == 0L, info = paste(missing, collapse = ", "), label = "Backward rule is tested")
 })

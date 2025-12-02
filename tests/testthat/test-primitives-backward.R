@@ -260,32 +260,45 @@ test_that("p_convert backward converts gradients to the input dtype", {
   expect_equal(dtype(grads[[1L]]), as_dtype("f32"))
 })
 
-test_that("comparison primitives return zero gradients", {
-  a_arr <- array(c(1, 2, 3, 4, 5, 6), c(2, 3))
-  b_arr <- array(c(6, 5, 4, 3, 2, 1), c(2, 3))
-  a_nv <- nv_tensor(a_arr, dtype = "f32")
-  b_nv <- nv_tensor(b_arr, dtype = "f32")
+test_that("p_eq, p_ne, p_gt, p_ge, p_lt, p_le", {
+
+  a <- 1
+  b <- 2
+
+  a_nv <- nv_scalar(a)
+  b_nv <- nv_scalar(b)
 
   comparators <- list(
-    list(fun = nvl_eq, expected = a_arr == b_arr),
-    list(fun = nvl_ne, expected = a_arr != b_arr),
-    list(fun = nvl_gt, expected = a_arr > b_arr),
-    list(fun = nvl_ge, expected = a_arr >= b_arr),
-    list(fun = nvl_lt, expected = a_arr < b_arr),
-    list(fun = nvl_le, expected = a_arr <= b_arr)
+    list(fun = nv_eq, expected = a == b),
+    list(fun = nv_ne, expected = a != b),
+    list(fun = nv_gt, expected = a > b),
+    list(fun = nv_ge, expected = a >= b),
+    list(fun = nv_lt, expected = a < b),
+    list(fun = nv_le, expected = a <= b)
   )
 
   for (cmp in comparators) {
+
     out <- as_array(jit(cmp$fun)(a_nv, b_nv))
     expect_identical(out, cmp$expected)
 
     g <- jit(gradient(function(a, b) {
-      pred <- cmp$fun(a, b)
-      nv_reduce_sum(nvl_convert(pred, dtype = "f32"), dims = 1:2, drop = TRUE)
+      cmp$fun(a, b)
     }))
+    
+    # can't compute gradients if function doesn't return
+    # float
+    expect_snapshot_error({
+      grads <- g(a_nv, b_nv)
+    })
+
+    g <- jit(gradient(function(a, b) {
+      nv_convert(cmp$fun(a, b), "f32")
+    }))
+
     grads <- g(a_nv, b_nv)
-    expect_equal(as_array(grads[[1L]]), array(0, dim = dim(a_arr)))
-    expect_equal(as_array(grads[[2L]]), array(0, dim = dim(a_arr)))
+    expect_equal(as_array(grads[[1L]]), 0)
+    expect_equal(as_array(grads[[2L]]), 0)
   }
 })
 
