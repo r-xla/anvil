@@ -74,7 +74,7 @@
       <h1>Get Started</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-rngs/vignettes/anvil.Rmd" class="external-link"><code>vignettes/anvil.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/anvil.Rmd" class="external-link"><code>vignettes/anvil.Rmd</code></a></small>
       <div class="d-none name"><code>anvil.Rmd</code></div>
     </div>
 
@@ -373,9 +373,10 @@ might not be a big problem for small models, it can lead to significant
 overhead when working with bigger tensors.</p>
 <p>Next, we will address immutability in anvil before we briefly discuss
 control flow.</p>
-<div class="section level3">
-<h3 id="control-flow">Control Flow<a class="anchor" aria-label="anchor" href="#control-flow"></a>
-</h3>
+</div>
+<div class="section level2">
+<h2 id="control-flow">Control Flow<a class="anchor" aria-label="anchor" href="#control-flow"></a>
+</h2>
 <p>Earlier, we have already used R control flow to train our linear
 model. In principle, there are three ways to implement control-flow in
 anvil:</p>
@@ -496,7 +497,6 @@ takes as input the current state and returns a new state</p>
 <span><span class="co">## [ CPUi32{} ]</span></span></code></pre>
 <p>The same approach works analogously for <code>if</code>-statements,
 where the {anvil} primitive <code>nv_if</code> is available.</p>
-</div>
 </div>
 </div>
 <div class="section level2">

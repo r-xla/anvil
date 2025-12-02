@@ -384,7 +384,7 @@ overhead when working with bigger tensors.
 Next, we will address immutability in anvil before we briefly discuss
 control flow.
 
-### Control Flow
+## Control Flow
 
 Earlier, we have already used R control flow to train our linear model.
 In principle, there are three ways to implement control-flow in anvil:
