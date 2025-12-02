@@ -261,7 +261,6 @@ test_that("p_convert backward converts gradients to the input dtype", {
 })
 
 test_that("p_eq, p_ne, p_gt, p_ge, p_lt, p_le", {
-
   a <- 1
   b <- 2
 
@@ -278,14 +277,13 @@ test_that("p_eq, p_ne, p_gt, p_ge, p_lt, p_le", {
   )
 
   for (cmp in comparators) {
-
     out <- as_array(jit(cmp$fun)(a_nv, b_nv))
     expect_identical(out, cmp$expected)
 
     g <- jit(gradient(function(a, b) {
       cmp$fun(a, b)
     }))
-    
+
     # can't compute gradients if function doesn't return
     # float
     expect_snapshot_error({
