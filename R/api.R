@@ -631,7 +631,7 @@ nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
   checkmate::assertNumeric(mu, len = 1, any.missing = FALSE)
   checkmate::assertNumeric(sigma, len = 1, any.missing = FALSE, lower = 0)
   checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
-  # amount of rvs needed
+  # n: amount of rvs needed
   n <- prod(shape_out)
 
   # Box-Muller Method:
