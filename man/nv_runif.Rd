@@ -2,16 +2,12 @@
 % Please edit documentation in R/api.R
 \name{nv_runif}
 \alias{nv_runif}
-\title{Random Uniform Numbers}
+\alias{nv_unif_rand}
+\title{Internal: Random Unit Uniform Numbers}
 \usage{
-nv_runif(
-  initial_state,
-  dtype = "f64",
-  shape_out,
-  lower = 0,
-  upper = 1,
-  include_lower = FALSE
-)
+nv_unif_rand(initial_state, dtype = "f64", shape_out)
+
+nv_runif(initial_state, dtype = "f64", shape_out, lower = 0, upper = 1)
 }
 \arguments{
 \item{initial_state}{state seed}
@@ -23,9 +19,9 @@ nv_runif(
 \item{lower}{lower bound}
 
 \item{upper}{upper bound}
-
-\item{include_lower}{Flag, whether to sample from lower bound}
 }
 \description{
-generate random uniform numbers
+generate random uniform numbers in [0, 1)
+
+generate random uniform numbers in ]lower, upper[
 }
