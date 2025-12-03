@@ -48,17 +48,15 @@
   [`nv_shift_right_arithmetic()`](nv_binary_ops.md)
   [`nv_atan2()`](nv_binary_ops.md) : Binary Operations
 
-- [`nv_bitcast_convert()`](nv_bitcast_convert.md) : Bitcast Conversion
-
 - [`nv_broadcast_tensors()`](nv_broadcast_tensors.md) : Broadcast
   Tensors to a Common Shape
 
 - [`nv_broadcast_to()`](nv_broadcast_to.md) : Broadcast
 
-- [`nv_concatenate()`](nv_concatenate.md) : Concatenate
-
 - [`nv_convert()`](nv_convert.md) : Convert Tensor to Different Data
   Type
+
+- [`nv_full()`](nv_full.md) : Constant
 
 - [`nv_if()`](nv_if.md) : If
 
@@ -74,19 +72,6 @@
 
 - [`nv_reshape()`](nv_reshape.md) : Reshape
 
-- [`nv_rng_bit_generator()`](nv_rng_bit_generator.md) : Random Numbers
-
-- [`nv_rnorm()`](nv_rnorm.md) : Random Normal Numbers
-
-- [`nv_unif_rand()`](nv_runif.md) [`nv_runif()`](nv_runif.md) :
-  Internal: Random Unit Uniform Numbers
-
-- [`nv_seed2state()`](nv_seed2state.md) : Make initial state
-
-- [`nv_select()`](nv_select.md) : Select
-
-- [`nv_slice()`](nv_slice.md) : Slice
-
 - [`AnvilTensor`](nv_tensor.md) [`nv_tensor()`](nv_tensor.md)
   [`nv_scalar()`](nv_tensor.md) [`nv_empty()`](nv_tensor.md) : Tensor
 
@@ -96,8 +81,7 @@
 - [`nv_neg()`](nv_unary_ops.md) [`nv_abs()`](nv_unary_ops.md)
   [`nv_sqrt()`](nv_unary_ops.md) [`nv_rsqrt()`](nv_unary_ops.md)
   [`nv_log()`](nv_unary_ops.md) [`nv_tanh()`](nv_unary_ops.md)
-  [`nv_tan()`](nv_unary_ops.md) [`nv_sine()`](nv_unary_ops.md)
-  [`nv_cosine()`](nv_unary_ops.md) [`nv_floor()`](nv_unary_ops.md)
+  [`nv_tan()`](nv_unary_ops.md) [`nv_floor()`](nv_unary_ops.md)
   [`nv_ceil()`](nv_unary_ops.md) [`nv_sign()`](nv_unary_ops.md)
   [`nv_exp()`](nv_unary_ops.md) [`nv_round()`](nv_unary_ops.md) : Unary
   Operations

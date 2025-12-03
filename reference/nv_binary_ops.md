@@ -61,3 +61,28 @@ nv_atan2(lhs, rhs)
 ## Value
 
 [`nv_tensor`](nv_tensor.md)
+
+## Examples
+
+``` r
+# Comparison operators such `nv_eq`, `nv_le`, `nv_gt`, etc
+# are nondifferentiable and contribute zero to gradients. 
+relu <- function(x) {
+  nv_convert(x > nv_scalar(0), "f32")*x
+}
+# df/dx = 1 if x > 0 else 0
+g_relu <- jit(gradient(relu, "x"))
+
+g_relu(nv_scalar(1, dtype = "f32"))
+#> $x
+#> AnvilTensor 
+#>  1.0000
+#> [ CPUf32{} ] 
+#> 
+g_relu(nv_scalar(-1, dtype = "f32"))
+#> $x
+#> AnvilTensor 
+#>  0.0000
+#> [ CPUf32{} ] 
+#> 
+```
