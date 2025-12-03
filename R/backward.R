@@ -139,7 +139,7 @@ gradient <- function(f, wrt = NULL) {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
     parent_desc <- .current_descriptor()
-    fwd_graph <- graphify(f, args)
+    fwd_graph <- trace_fn(f, args)
     grad_graph <- transform_gradient(fwd_graph, wrt)
     # parent_desc is modified in place
     outputs <- inline_graph_into_desc(parent_desc, grad_graph)

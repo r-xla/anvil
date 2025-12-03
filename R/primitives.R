@@ -487,13 +487,13 @@ nvl_if <- function(pred, true, false) {
 
   current_desc <- .current_descriptor()
   desc_true <- local_descriptor()
-  true_graph <- graphify(function() rlang::eval_tidy(true_expr), list(), desc = desc_true)
+  true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true)
   desc_false <- local_descriptor()
 
   for (const in desc_true@constants) {
     get_box_or_register_const(desc_false, const)
   }
-  false_graph <- graphify(function() rlang::eval_tidy(false_expr), list(), desc = desc_false)
+  false_graph <- trace_fn(function() rlang::eval_tidy(false_expr), list(), desc = desc_false)
 
   for (const in desc_false@constants) {
     get_box_or_register_const(current_desc, const)
@@ -533,7 +533,7 @@ nvl_while <- function(init, cond, body) {
 
   desc_cond <- local_descriptor()
 
-  cond_graph <- graphify(cond, init, desc = desc_cond)
+  cond_graph <- trace_fn(cond, init, desc = desc_cond)
 
   desc_body <- local_descriptor()
 
@@ -542,7 +542,7 @@ nvl_while <- function(init, cond, body) {
   for (const in desc_cond@constants) {
     get_box_or_register_const(desc_body, const)
   }
-  body_graph <- graphify(body, init, desc_body)
+  body_graph <- trace_fn(body, init, desc_body)
 
   if (!identical(cond_graph@in_tree, body_graph@in_tree)) {
     cli_abort("cond and body must have the same input structure")

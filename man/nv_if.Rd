@@ -7,7 +7,7 @@
 nv_if(pred, true, false)
 }
 \arguments{
-\item{pred}{(\link{nv_tensor})\cr
+\item{pred}{(\code{\link{nv_tensor}})\cr
 Flag.}
 
 \item{true}{(NSE)\cr
