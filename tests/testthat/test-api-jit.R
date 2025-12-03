@@ -1,3 +1,38 @@
+test_that("seed2state", {
+  # auto-detect state
+  set.seed(42)
+  f <- function() {
+    nv_seed2state(shape_out = c(3, 2))
+  }
+  g <- jit(f)
+  out1 <- g()
+
+  # explicitly provide state
+  set.seed(42)
+  f <- function() {
+    nv_seed2state(shape_out = c(3, 2), random_seed = .Random.seed)
+  }
+  g <- jit(f)
+  out2 <- g()
+
+  expect_true(identical(as_array(out1), as_array(out2)))
+  expect_equal(shape(out2), c(3, 2))
+  expect_true(inherits(dtype.AnvilTensor(out1), UnsignedType))
+  expect_equal(dtype.AnvilTensor(out1)@value, 64L)
+
+  # test ui32
+  set.seed(1)
+  f <- function() {
+    nv_seed2state(shape_out = 2, dtype = "ui32")
+  }
+  g <- jit(f)
+  out3 <- g()
+  expect_equal(shape(out3), 2)
+  expect_true(inherits(dtype.AnvilTensor(out3), UnsignedType))
+  expect_equal(dtype.AnvilTensor(out3)@value, 32L)
+})
+
+
 test_that("p_rnorm", {
   # basic test
   f <- function() {
