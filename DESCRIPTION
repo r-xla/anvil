@@ -16,6 +16,7 @@ Depends:
 Imports:
     checkmate,
     cli,
+    digest,
     methods,
     pjrt,
     rlang,
