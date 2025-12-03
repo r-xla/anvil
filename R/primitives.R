@@ -642,9 +642,6 @@ nvl_while <- function(init, cond, body) {
 # RNG primitives
 p_rng_bit_generator <- Primitive("rng_bit_generator")
 nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape_out) {
-  if (!(rng_algorithm %in% c("DEFAULT", "THREE_FRY", "PHILOX"))) {
-    cli_abort("rng_algorithm must be one of: 'DEFAULT', 'THREE_FRY', 'PHILOX' but is {rng_algorithm}")
-  }
   infer_fn <- function(initial_state, rng_algorithm, dtype, shape_out) {
     stablehlo::infer_types_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out)@items
   }
