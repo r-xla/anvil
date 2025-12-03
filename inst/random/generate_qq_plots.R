@@ -6,7 +6,7 @@ out <- g()
 Z <- as_array(out[[2]])
 
 # Open PNG device first
-png("qq_rnorm.png", width = 800, height = 800)
+png("inst/random/qq_rnorm.png", width = 800, height = 800)
 
 # Create plots
 set.seed(1)
