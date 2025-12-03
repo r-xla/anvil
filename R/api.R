@@ -154,16 +154,16 @@ nv_reshape <- nvl_reshape
 
 #' @name nv_binary_ops
 #' @title Binary Operations
-#' 
+#'
 #' @examples
 #' # Comparison operators such `nv_eq`, `nv_le`, `nv_gt`, etc
-#' # are nondifferentiable and contribute zero to gradients. 
+#' # are nondifferentiable and contribute zero to gradients.
 #' relu <- function(x) {
 #'   nv_convert(x > nv_scalar(0), "f32")*x
 #' }
 #' # df/dx = 1 if x > 0 else 0
 #' g_relu <- jit(gradient(relu, "x"))
-#' 
+#'
 #' g_relu(nv_scalar(1, dtype = "f32"))
 #' g_relu(nv_scalar(-1, dtype = "f32"))
 #' @description
