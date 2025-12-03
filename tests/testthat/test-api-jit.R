@@ -1,3 +1,32 @@
+test_that("generate state", {
+  f <- function() {
+    state <- jit(nv_generate_state, static = "seed")(1) #this should not be necessary
+    nv_runif(
+      initial_state = state,
+      dtype = "f64",
+      shape_out = c(10, 5)
+    )
+  }
+  g <- jit(f)
+  out1 <- g()
+
+  f <- function() {
+    state <- jit(nv_generate_state, static = "seed")(1) #this should not be necessary
+    nv_runif(
+      initial_state = state,
+      dtype = "f64",
+      shape_out = c(10, 5)
+    )
+  }
+  g <- jit(f)
+  out2 <- g()
+
+  # check resulting states
+  expect_equal(as_array(out1[[1]]), as_array(out2[[1]]))
+  # check random variables
+  expect_equal(as_array(out1[[2]]), as_array(out2[[2]]))
+})
+
 test_that("seed2state", {
   # auto-detect state
   set.seed(42)
