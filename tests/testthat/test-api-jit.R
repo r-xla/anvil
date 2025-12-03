@@ -95,6 +95,8 @@ test_that("p_runif", {
 
   expect_false(any(as_array(out[[2]]) == -1))
   expect_false(any(as_array(out[[2]]) == 1))
+  expect_equal(mean(as_array(out[[2]])), 0, tolerance = 1e-3)
+  expect_equal(var(as_array(out[[2]])), 1 / 3, tolerance = 1e-3)
 
   expect_equal(c(as_array(out[[1]])), c(1L, 6000002L))
   expect_equal(
