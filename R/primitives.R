@@ -108,6 +108,19 @@ method(print, Primitive) <- function(x, ...) {
   cat(sprintf("<Primitive:%s>\n", x@name))
 }
 
+p_full <- Primitive("constant")
+nvl_full <- function(value, shape, dtype) {
+  infer_constant <- function(value, shape, dtype) {
+    list(stablehlo::ValueType(stablehlo::TensorType(as_dtype(dtype), stablehlo::Shape(shape))))
+  }
+  graph_desc_add(
+    p_full,
+    list(),
+    params = list(value = value, dtype = dtype, shape = shape),
+    infer_fn = infer_constant
+  )[[1L]]
+}
+
 p_add <- Primitive("add")
 nvl_add <- function(lhs, rhs) {
   graph_desc_add(p_add, list(lhs, rhs), infer_fn = infer_binary)[[1L]]

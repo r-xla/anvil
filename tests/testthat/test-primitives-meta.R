@@ -14,7 +14,7 @@ test_that("stablehlo rule is tested", {
   )
   missing <- Filter(function(nm) !grepl(paste0('test_that("', nm), content, fixed = TRUE), primitive_names)
 
-  expect_true(length(missing) == 0L, info = paste(missing, collapse = ", "), label = "Jit rule is tested")
+  expect_true(length(missing) == 0L, info = paste(missing, collapse = ", "), label = "stablehlo rule is tested")
 })
 
 

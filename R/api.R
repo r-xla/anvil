@@ -3,12 +3,26 @@
 
 # Special tensor creators
 
-# TODO: We can remove this once we can lift R scalars (nv_broadcast_to(1, c(2, 3, 4)))
-nv_constant <- function(value, dtype = NULL, device = NULL, shape) {
-  if (length(value) != 1L) {
-    stop("value must be a scalar")
-  }
-  nv_broadcast_to(nv_scalar(value, dtype = dtype, device = device), shape = shape)
+#' @title Constant
+#' @description
+#' Create a constant.
+#' @param value (any)\cr
+#'   Value.
+#' @param shape (integer())\cr
+#'   Shape.
+#' @param dtype (character(1))\cr
+#'   Data type.
+#' @export
+nv_full <- function(value, shape, dtype = NULL) {
+  dtype <- dtype %??%
+    if (is.double(value)) {
+      "f32"
+    } else if (is.integer(value)) {
+      "i32"
+    } else if (is.logical(value)) {
+      "pred"
+    }
+  nvl_full(value, shape, dtype)
 }
 
 
