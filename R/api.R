@@ -573,7 +573,7 @@ nv_seed2state <- function(
 
   # auto detect random_seed
   if (is.null(random_seed)) {
-    random_seed <- .Random.seed
+    random_seed <- .Random.seed # nolint
   }
 
   # hash the seed
