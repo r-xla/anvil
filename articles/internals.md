@@ -137,7 +137,7 @@ anvil:::p_add@rules[["backward"]]
     ##     grad <- grads[[1L]]
     ##     list(if (.required[[1L]]) grad, if (.required[[2L]]) grad)
     ## }
-    ## <bytecode: 0x55c35f4d9898>
+    ## <bytecode: 0x557f63893b68>
     ## <environment: namespace:anvil>
 
 The `anvil:::transform_gradient` function uses these rules to compute
@@ -184,7 +184,7 @@ anvil:::p_add@rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_add(lhs, rhs))
     ## }
-    ## <bytecode: 0x55c35f4d9080>
+    ## <bytecode: 0x557f63893350>
     ## <environment: namespace:anvil>
 
 They are applied in the [`anvil::stablehlo`](../reference/stablehlo.md)
