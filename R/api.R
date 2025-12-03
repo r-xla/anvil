@@ -553,6 +553,21 @@ nv_unif_rand <- function(
   list(rbits[[1]], U)
 }
 
+#' @title Generate random state
+#' @name nv_generate_state
+#' @description
+#' lightweight function to generate an initial state
+#' @param seed (`integer(1)`)\cr
+#'   Seed value
+#' @return [`nv_tensor`] of dtype `ui64` and shape (2)
+#' @export
+nv_generate_state <- function(seed) {
+  checkmate::assertIntegerish(seed, lower = 0, len = 1, any.missing = FALSE)
+  state <- nv_scalar(seed, dtype = "i32")
+  state <- nv_bitcast_convert(state, dtype = "ui16")
+  nv_convert(state, "ui64")
+}
+
 #' @title Make initial state
 #' @name nv_seed2state
 #' @description
