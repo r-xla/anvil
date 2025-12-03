@@ -58,6 +58,8 @@ math_impl <- function(x, ...) {
     "log" = nv_log(x),
     "tanh" = nv_tanh(x),
     "tan" = nv_tan(x),
+    "cosine" = nv_cosine(x),
+    "sine" = nv_sine(x),
     "floor" = nv_floor(x),
     "ceiling" = nv_ceil(x),
     "sign" = nv_sign(x),

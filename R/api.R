@@ -136,6 +136,37 @@ nv_transpose <- function(x, permutation = NULL) {
 #' @export
 nv_reshape <- nvl_reshape
 
+#' @title Concatenate
+#' @description
+#' Concatenate a variadic number of tensors.
+#' @param ... tensors
+#' @param dimension (`integer()`)\cr
+#'   The dimension to concatenate along to. Other dimensions must be the same.
+#' @return [`nv_tensor`]
+#' @export
+nv_concatenate <- nvl_concatenate
+
+#' @title Slice
+#' @description
+#' return slice of operand.
+#' @template param_operand
+#' @param start_indices start of slice
+#' @param limit_indices end of slice
+#' @param strides stride size
+#' @return [`nv_tensor`]
+#' @export
+nv_slice <- nvl_slice
+
+#' @title Select
+#' @description
+#' return values from true_value and false_value conditioned on pred
+#' @param pred condition
+#' @param true_value on true
+#' @param false_value on false
+#' @return [`nv_tensor`]
+#' @export
+nv_select <- nvl_select
+
 ## Binary ops ------------------------------------------------------------------
 
 #' @name nv_binary_ops
@@ -296,6 +327,16 @@ nv_atan2 <- function(lhs, rhs) {
   nvl_atan2(args[[1]], args[[2]])
 }
 
+
+#' @title Bitcast Conversion
+#' @name nv_bitcast_convert
+#' @description
+#' Reinterpret Bits
+#' @param operand tensor
+#' @param dtype requested dtype
+#' @export
+nv_bitcast_convert <- nvl_bitcast_convert
+
 ## Unary ops ------------------------------------------------------------------
 
 #' @name nv_unary_ops
@@ -332,6 +373,14 @@ nv_tanh <- nvl_tanh
 #' @rdname nv_unary_ops
 #' @export
 nv_tan <- nvl_tan
+
+#' @rdname nv_unary_ops
+#' @export
+nv_sine <- nvl_sine
+
+#' @rdname nv_unary_ops
+#' @export
+nv_cosine <- nvl_cosine
 
 #' @rdname nv_unary_ops
 #' @export
@@ -439,6 +488,269 @@ nv_reduce_any <- nvl_reduce_any
 #' @rdname nv_reduce_ops
 #' @export
 nv_reduce_all <- nvl_reduce_all
+
+#' @title Random Numbers
+#' @name nv_rng_bit_generator
+#' @description
+#' generate random bits of desired shape and dtype
+#' @param initial_state state seed
+#' @param rng_algorithm one of 'DEFAULT', 'THREE_FRY', 'PHILOX'
+#' @param dtype datatype of output
+#' @param shape_out output shape
+#' @export
+nv_rng_bit_generator <- nvl_rng_bit_generator
+
+#' @title Internal: Random Unit Uniform Numbers
+#' @name nv_runif
+#' @description
+#' generate random uniform numbers in [0, 1)
+#' @param initial_state state seed
+#' @param dtype output dtype either "f32" or "f64"
+#' @param shape_out output shape
+nv_unif_rand <- function(
+  initial_state,
+  dtype = "f64",
+  shape_out
+) {
+  checkmate::assertChoice(dtype, c("f32", "f64"))
+  checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
+
+  # generate random bits
+  # use THREE_FRY as rng algorithm: JAX default
+  rbits <- nv_rng_bit_generator(
+    initial_state = initial_state,
+    "THREE_FRY",
+    paste0("ui", sub("f(\\d+)", "\\1", dtype)),
+    shape_out = shape_out
+  )
+
+  # shift value: 9 for f32, 11 for f64
+  shift <- nv_scalar(
+    ifelse(dtype == "f32", 9L, 11L),
+    dtype = paste0("ui", sub("f(\\d+)", "\\1", dtype))
+  )
+
+  # shift to the right, s.t. exponent bits are all 0
+  mantissa <- nv_shift_right_logical(rbits[[2]], shift)
+
+  # interpretation of 1.0 (float) as unsigned
+  one_bits <- nv_bitcast_convert(
+    nv_scalar(1.0, dtype = dtype),
+    dtype = paste0("ui", sub("f(\\d+)", "\\1", dtype))
+  )
+
+  # bitwise or -> exponent from 1.0 (float), mantissa is random
+  U <- nv_or(mantissa, one_bits)
+
+  # convert back to requested dtype
+  # resulting RVs  are in [1, 2)
+  U <- nv_bitcast_convert(U, dtype = dtype)
+
+  # shift to [0, 1)
+  U <- nv_add(U, nv_scalar(-1, dtype = dtype))
+
+  # return state and RVs
+  list(rbits[[1]], U)
+}
+
+#' @title Make initial state
+#' @name nv_seed2state
+#' @description
+#' converts a random seed into a initial state tensor
+#' @param dtype output dtype either "ui32" or "ui64"
+#' @param shape_out output shape
+#' @param random_seed explicitly provide the random seed of a R session. auto-detects if not provided.
+#' @param hash_algo hash algorithm to hash the random state with. Default is 'sha512'.
+#' @export
+nv_seed2state <- function(
+  dtype = "ui64",
+  shape_out = 2,
+  random_seed = NULL,
+  hash_algo = "sha512"
+) {
+  checkmate::assertChoice(dtype, c("ui32", "ui64"))
+  n_states <- prod(shape_out)
+
+  # auto detect random_seed
+  if (is.null(random_seed)) {
+    random_seed <- .Random.seed # nolint
+  }
+
+  # hash the seed
+  hash_hex <- digest::digest(
+    random_seed,
+    algo = hash_algo,
+    serialize = TRUE
+  )
+
+  # convert hex string to bytes
+  hex_pairs <- substring(
+    hash_hex,
+    seq(1, nchar(hash_hex), 2),
+    seq(2, nchar(hash_hex), 2)
+  )
+  hash_bytes <- strtoi(hex_pairs, base = 16)
+
+  # calculate bytes needed/available
+  bytes_per_value <- if (dtype == "ui32") 4 else 8
+  bytes_needed <- n_states * bytes_per_value
+  total_bytes_available <- length(hash_bytes)
+
+  # throw error if not enough bytes available
+  if (bytes_needed > total_bytes_available) {
+    cli_abort(
+      "Requested {n_states} {dtype} values (total {bytes_needed} bytes) but hash
+      algorithm '{hash_algo}' only provides {total_bytes_available} bytes. "
+    )
+  }
+
+  # tensor of type i8 of shape (shape_out, 4/8)
+  raw8 <- nv_tensor(
+    as.integer(hash_bytes[seq_len(bytes_needed)]),
+    shape = c(shape_out, bytes_per_value),
+    dtype = "i8"
+  )
+
+  # upcast raw8 to requested dtype, last dimension vanished
+  # returns tensor of shape = shape_out
+  nv_bitcast_convert(raw8, dtype = dtype)
+}
+
+
+#' @title Random Uniform Numbers
+#' @name nv_runif
+#' @description
+#' generate random uniform numbers in ]lower, upper[
+#' @param initial_state state seed
+#' @param dtype output dtype either "f32" or "f64"
+#' @param shape_out output shape
+#' @param lower lower bound
+#' @param upper upper bound
+#' @export
+nv_runif <- function(
+  initial_state,
+  dtype = "f64",
+  shape_out,
+  lower = 0,
+  upper = 1
+) {
+  checkmate::assertChoice(dtype, c("f32", "f64"))
+  checkmate::assertNumeric(lower, len = 1, any.missing = FALSE, upper = upper)
+  checkmate::assertNumeric(upper, len = 1, any.missing = FALSE, lower = lower)
+  checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
+
+  if (upper == lower) {
+    return(nv_broadcast_to(nv_scalar(upper, dtype = dtype), shape = shape_out))
+  }
+
+  .lower <- nv_scalar(lower, dtype = dtype)
+  .upper <- nv_scalar(upper, dtype = dtype)
+  .range <- nv_sub(.upper, .lower)
+
+  # generate samples in [0, 1)
+  Unif <- nv_unif_rand(initial_state = initial_state, shape_out = shape_out, dtype = dtype)
+  U <- Unif[[2]]
+
+  # check if some values are <= 0
+  le_zero <- nv_le(U, nv_scalar(0, dtype = dtype))
+
+  # Define smallest step (like R's 0.5 * i2_32m1 philosophy)
+  # for f32 and 23 mantissa bits 2^-24 lies between 0 and 2^-23,
+  # the next smallest generated value.
+  # Same applies for f64 and 2^-53 and 52 mantissa bits.
+  smallest_step <- nv_broadcast_to(
+    nv_scalar(
+      ifelse(dtype == "f32", 2^-24, 2^-53),
+      dtype = dtype
+    ),
+    shape = shape_out
+  )
+
+  # Replace values <= 0 with smallest_step
+  U <- nv_select(le_zero, smallest_step, U)
+
+  # expand to range
+  U <- nv_mul(U, .range)
+  # shift to interval
+  U <- nv_add(U, .lower)
+
+  return(list(Unif[[1]], U))
+}
+
+#' @title Random Normal Numbers
+#' @name nv_rnorm
+#' @description
+#' generate random normal numbers
+#' @param initial_state state seed
+#' @param dtype output dtype either "f32" or "f64"
+#' @param shape_out output shape
+#' @param mu scalar: expected value
+#' @param sigma scalar: standard deviation
+#' #' @section Covariance:
+#' To implement a covariance structure use cholesky decomposition
+#' @export
+nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
+  checkmate::assertChoice(dtype, c("f32", "f64"))
+  checkmate::assertNumeric(mu, len = 1, any.missing = FALSE)
+  checkmate::assertNumeric(sigma, len = 1, any.missing = FALSE, lower = 0)
+  checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
+  # n: amount of rvs needed
+  n <- prod(shape_out)
+
+  # Box-Muller Method:
+  # from to random uniform variables u1 and u2 we can produce to normals z1, z2
+  # z1 = sqrt(-2 * log(u1)) * cos(2 * pi * u2)
+  # z2 = sqrt(-2 * log(u1)) * sin(2 * pi * u2)
+  # Box-Muller works via polar representation of coordinates.
+  # We scale this approach and genereate ceil(n/2) uniform rvs twice (U, Theta)
+
+  # generate the first ceil(n/2) random uniform variables
+  U <- nv_unif_rand(
+    initial_state = initial_state,
+    dtype = dtype,
+    shape_out = as.integer(ceiling(n / 2))
+  )
+
+  # compute the radius R = sqrt(-2 * log(u1))
+  R <- nv_mul(nv_log(U[[2]]), nv_scalar(-2, dtype = dtype))
+  sqrt_R <- nv_sqrt(R)
+
+  # generate second batch of ceil(n/2) random uniform variables
+  Theta <- nv_unif_rand(initial_state = U[[1]], dtype = dtype, shape_out = c(ceiling(n / 2)))
+
+  # compute cos(2 * pi * u2) / sin(2 * pi * u2)
+  Theta[[2]] <- nv_mul(Theta[[2]], nv_scalar(2 * pi, dtype = dtype))
+  sin_Theta <- nv_sine(Theta[[2]])
+  cos_Theta <- nv_cosine(Theta[[2]])
+
+  # compue z1, z2
+  Z1 <- nv_mul(sqrt_R, sin_Theta)
+  Z2 <- nv_mul(sqrt_R, cos_Theta)
+
+  # concatenate z = (z1, z2)
+  Z <- nv_concatenate(Z1, Z2, dimension = 1L)
+
+  # multiply with requested sd:
+  # was:    var(Z) = 1
+  # now:    var(Z) = sd^2
+  N <- nv_mul(Z, nv_scalar(sigma, dtype = dtype))
+
+  # add requested mu:
+  # was:    mean(Z) = 0
+  # now:    mean(Z) = mu
+  N <- nv_add(N, nv_scalar(mu, dtype = dtype))
+
+  # if n is uneven, only keep N(1,...,n-1), i.e. discard last entry of N
+  if (n %% 2 == 1) {
+    N <- nv_slice(N, start_indices = 1L, limit_indices = as.integer(n + 1), strides = 1L)
+  }
+
+  # reshape N to match requested shape
+  N <- nv_reshape(N, shape = shape_out)
+
+  # return state and Normals N
+  list(Theta[[1]], N)
+}
 
 ## Data Types ------------------------------------------------------------------
 

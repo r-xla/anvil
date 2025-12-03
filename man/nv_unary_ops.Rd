@@ -9,6 +9,8 @@
 \alias{nv_log}
 \alias{nv_tanh}
 \alias{nv_tan}
+\alias{nv_sine}
+\alias{nv_cosine}
 \alias{nv_floor}
 \alias{nv_ceil}
 \alias{nv_sign}
@@ -29,6 +31,10 @@ nv_log(operand)
 nv_tanh(operand)
 
 nv_tan(operand)
+
+nv_sine(operand)
+
+nv_cosine(operand)
 
 nv_floor(operand)
 
