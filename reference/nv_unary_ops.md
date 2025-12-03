@@ -19,6 +19,10 @@ nv_tanh(operand)
 
 nv_tan(operand)
 
+nv_sine(operand)
+
+nv_cosine(operand)
+
 nv_floor(operand)
 
 nv_ceil(operand)
