@@ -35,7 +35,7 @@ In general, when we want to convert some code into another form, there are two a
 
 The former approach is followed by the {quickr} package, which allows you to transpile R code into Fortran.
 In {anvil}, we are following the dynamic approach, which we will now illustrate.
-Our goal will be to graphify the following function, which either adds or subtracts two tensors.
+Our goal will be to trace_fn the following function, which either adds or subtracts two tensors.
 The first two arguments are expected to be `AnvilTensor`s, while the third is either `"add"` or `"sub"`.
 
 ```{r}
@@ -51,16 +51,16 @@ f <- function(x, y, op) {
 }
 ```
 
-To do this, we use `anvil::graphify()`, which takes in an `R` function and a list of example arguments that specify the types of the inputs.
+To do this, we use `anvil::trace_fn()`, which takes in an `R` function and a list of example arguments that specify the types of the inputs.
 
 ```{r}
 x <- nv_scalar(1, "f32")
 y <- nv_scalar(5, "f32")
-graph <- graphify(f, list(x = x, y = y, op = "add"))
+graph <- trace_fn(f, list(x = x, y = y, op = "add"))
 graph
 ```
 
-The output of `graphify()` is now a `Graph` object that represents the computation.
+The output of `trace_fn()` is now a `Graph` object that represents the computation.
 The fields of the `Graph` are:
 
 * `inputs`, which are `GraphValue`s that represent the inputs to the function.
@@ -68,7 +68,7 @@ The fields of the `Graph` are:
 * `calls`, which are `PrimitiveCall`s that take in `GraphValue`s (and parameters) and produce output `GraphValue`s.
 * `in_tree`, `out_tree`, which we will cover later (do we??)
 
-What happens internally in `graphify()` is that a new `GraphDescriptor` is created and the inputs `x` and `y` are converted into `anvil::GraphBox` objects.
+What happens internally in `trace_fn()` is that a new `GraphDescriptor` is created and the inputs `x` and `y` are converted into `anvil::GraphBox` objects.
 Then, the function `f` is simply evaluated with the `GraphBox` objects as inputs.
 During this evaluation, we need to distinguish between two cases:
 
@@ -95,7 +95,7 @@ The only difference between the `Graph` and the `GraphDescriptor` is that the la
 
 Once we have staged out our `R` function into a simpler format, we can do all sorts of things with it, e.g., compute its gradient.
 The {anvil} package does not in any way dictate how such a `Graph` to `Graph` transformation can be implemented.
-For most interesting transformations, however, we need to store some information for each anvil primitive function.
+For most interesting transformations, however, we need to store some information for each {anvil} primitive function.
 In the case of the gradient, we need to store the derivative rules.
 For this, `anvil::Primitive` objects have a `@rules` field that can be populated.
 The derivative rules are stored as functions under the `"backward"` name.
@@ -160,7 +160,7 @@ f_jit <-  jit(f, static = "op")
 f_jit(x, y, "add")
 ```
 
-It might be intuitive to think that `jit()` first calls `graphify()`, then runs `stablehlo()`, followed by `pjrt_compile()`.
+It might be intuitive to think that `jit()` first calls `trace_fn()`, then runs `stablehlo()`, followed by `pjrt_compile()`.
 This is, however, not what is happening, because for all of this, we need example inputs to the function.
 The function `f_jit` should instead be seen as a recipe to do all of this Just In Time (JIT).
 
@@ -229,7 +229,7 @@ Once this is done, the sub-graph is inlined into the parent graph (that so far o
 We can look at this graph below:
 
 ```{r}
-h_graph <- graphify(h, list(x = x, y = y))
+h_graph <- trace_fn(h, list(x = x, y = y))
 ```
 
 After that, this graph is lowered to stablehlo and subsequently compiled.

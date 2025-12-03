@@ -38,8 +38,8 @@ dtype
 Init
 DotDimensionNumbers
 AST
-graphify
-Graphify
+trace_fn
+trace_fn
 GraphValue
 inlined
 NSE
@@ -50,3 +50,4 @@ transpile
 func
 Func
 nv
+fn

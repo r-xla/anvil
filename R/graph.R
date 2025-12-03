@@ -238,24 +238,24 @@ maybe_box_variable <- function(x) {
 }
 
 maybe_box_input <- function(x, desc) {
-  # this function is on the inputs of graphify()
+  # this function is on the inputs of trace_fn()
   if (is_anvil_tensor(x)) {
     # cases:
-    # 1. top-level graphify call
-    # 2. a constant is passed to a nested graphify call
-    #    this constant can be a closed-over constant or defined in the environment of the nested graphify call
+    # 1. top-level trace_fn call
+    # 2. a constant is passed to a nested trace_fn call
+    #    this constant can be a closed-over constant or defined in the environment of the nested trace_fn call
     # For the first scenario, it would be sufficient to create a ShapedTensor,
     # because the input will be provided by the user
     # For the second scenario, we will inline the descriptor into the parent descriptor,
-    # but it the input to the nested graphify call does not become an input to the parent graph,
+    # but it the input to the nested trace_fn call does not become an input to the parent graph,
     # but is simply an existing value, that is a value from the parent graph
     # however, if the value does not exist in the parent graph, we need to add it as a constant
     # for that, we need to keep the value of the actual tensor, so we can later register it
-    # see test: "can pass constant to nested graphify call if it ..." in test-graph.R
+    # see test: "can pass constant to nested trace_fn call if it ..." in test-graph.R
     gval <- GraphValue(aval = ConcreteTensor(x))
     register_input(desc, gval)
   } else if (is_graph_box(x)) {
-    # Nested graphify call
+    # Nested trace_fn call
     # Because we will inline the child graph into the parent graph, we re-use
     # the same GraphValue, because this will make the inlining straightforward.
     register_input(desc, x@gval)
@@ -360,17 +360,18 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
   graph
 }
 
-#' @title Graphify an R function
+#' @title Trace an R function into a Graph
 #' @description
-#' Graphify an R function.
+#' Create a graph representation of an R function by tracing.
 #' @param f (`function`)\cr
-#'   The function to graphify.
+#'   The function to trace_fn.
 #' @param args (`list`)\cr
 #'   The arguments to the function.
 #' @param desc (`NULL` | `GraphDescriptor`)\cr
 #'   The descriptor to use for the graph.
+#' @return ([`Graph`])
 #' @export
-graphify <- function(f, args, desc = NULL) {
+trace_fn <- function(f, args, desc = NULL) {
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
   f_flat <- flatten_fun(f, in_node = in_tree)
@@ -429,7 +430,7 @@ maybe_restore_previous_desc <- function(desc = NULL) {
 #' @export
 .current_descriptor <- function() {
   globals[["CURRENT_DESCRIPTOR"]] %??%
-    cli_abort("No graph is currently being built")
+    cli_abort("No graph is currently being built. Did you forget to use `jit()`?")
 }
 
 #' @title Create a graph

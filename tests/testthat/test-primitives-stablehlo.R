@@ -100,9 +100,9 @@ test_that("p_if", {
   fj <- jit(f)
   expect_equal(fj(nv_scalar(TRUE), nv_scalar(2)), nv_scalar(2))
   expect_equal(fj(nv_scalar(FALSE), nv_scalar(2)), nv_scalar(4))
-  graph <- graphify(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
+  graph <- trace_fn(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
 
-  graph <- graphify(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
+  graph <- trace_fn(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
 
   f <- jit(function(pred, x) {
     nvl_if(pred, list(list(x)), list(list(x * x)))
@@ -128,7 +128,7 @@ test_that("p_if", {
 test_that("p_if: identically constants in both branches receive the same GraphValue", {
   x <- nv_scalar(1)
   f <- function(y) nvl_if(y, x, x)
-  graph <- graphify(f, list(y = nv_scalar(TRUE)))
+  graph <- trace_fn(f, list(y = nv_scalar(TRUE)))
   fj <- jit(f)
   expect_equal(fj(nv_scalar(TRUE)), nv_scalar(1))
   expect_equal(fj(nv_scalar(FALSE)), nv_scalar(1))
