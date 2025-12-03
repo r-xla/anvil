@@ -1,11 +1,11 @@
-# Graphify an R function
+# Trace an R function into a Graph
 
-Graphify an R function.
+Create a graph representation of an R function by tracing.
 
 ## Usage
 
 ``` r
-graphify(f, args, desc = NULL)
+trace_fn(f, args, desc = NULL)
 ```
 
 ## Arguments
@@ -13,7 +13,7 @@ graphify(f, args, desc = NULL)
 - f:
 
   (`function`)  
-  The function to graphify.
+  The function to trace_fn.
 
 - args:
 
@@ -24,3 +24,7 @@ graphify(f, args, desc = NULL)
 
   (`NULL` \| `GraphDescriptor`)  
   The descriptor to use for the graph.
+
+## Value
+
+([`Graph`](Graph.md))

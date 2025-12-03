@@ -18,7 +18,6 @@
 <url><loc>/reference/data_types.html</loc></url>
 <url><loc>/reference/dot-current_descriptor.html</loc></url>
 <url><loc>/reference/gradient.html</loc></url>
-<url><loc>/reference/graphify.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/jit.html</loc></url>
 <url><loc>/reference/local_descriptor.html</loc></url>
@@ -38,5 +37,6 @@
 <url><loc>/reference/platform.html</loc></url>
 <url><loc>/reference/reexports.html</loc></url>
 <url><loc>/reference/stablehlo.html</loc></url>
+<url><loc>/reference/trace_fn.html</loc></url>
 </urlset>
 

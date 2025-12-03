@@ -12,7 +12,7 @@ differences:
 
 1.  It supports more data types, such as different precisions, as well
     as unsigned integers.
-2.  The tensor can live on different *platforms*, such as CPU or GPU.
+2.  The tensor can live on different *device*s, such as CPU or GPU.
 3.  0-dimensional tensors can be used to represent scalars.
 
 We can create such an object from R data types using the `nv_tensor` and
@@ -42,8 +42,9 @@ nv_scalar(1L, dtype = "i16", device = "cpu")
 
 We can also create higher-dimensional tensors, for example a 2x3 CPU
 tensor of type `f32`. Below, we omit specifying the platform and data
-type, as it will default to `"cpu"` and `"f32"`. Note that the default
-data type depends on the input data type.
+type, as it will default to `"cpu"`. The default data type depends on
+the input data type. It is `"f32"` for R doubles and `"i32"` for
+integers.
 
 ``` r
 x <- array(1:6, dim = c(2, 3))
@@ -95,7 +96,7 @@ y + y
 ```
 
     ## Error in `.current_descriptor()`:
-    ## ! No graph is currently being built
+    ## ! No graph is currently being built. Did you forget to use `jit()`?
 
 ## JIT Compilation
 
@@ -141,11 +142,9 @@ linear_model(X, beta, alpha)
     ## [ CPUf32{2x1} ]
 
 One current restriction of {anvil} is that the function has to be
-re-compiled for every unique combination of input shapes, data types,
-and platforms.
-
-To demonstrate this, we create a slightly modified version of
-`linear_model`.
+re-compiled for every unique combination of input types, each consisting
+of a specific shape and data type. To demonstrate this, we create a
+slightly modified version of `linear_model`:
 
 ``` r
 linear_model2 <- jit(function(X, beta, alpha) {
@@ -210,8 +209,7 @@ Because the compilation step itself can take some time, {anvil}
 therefore gives the best results when the same function is called many
 times with the same input shapes, data types, and platforms, or the
 computation itself is sufficiently large to amortize the compilation
-overhead. One common application scenario where this assumption holds is
-iterative optimization algorithms.
+overhead.
 
 ### Static Arguments
 
@@ -225,10 +223,10 @@ an `AnvilTensor`.
 ``` r
 linear_model3 <- jit(function(X, beta, alpha = NULL, with_bias) {
   if (with_bias) {
-    cat("Compiling without bias ...\n")
+    cat("Compiling with bias ...\n")
     X %*% beta + alpha
   } else {
-    cat("Compiling with bias ...\n")
+    cat("Compiling without bias ...\n")
     X %*% beta
   }
 }, static = "with_bias")
@@ -240,7 +238,7 @@ We can now call this function with or without a bias term:
 linear_model3(X, beta, with_bias = FALSE)
 ```
 
-    ## Compiling with bias ...
+    ## Compiling without bias ...
 
     ## AnvilTensor 
     ##   2.8538
@@ -251,7 +249,7 @@ linear_model3(X, beta, with_bias = FALSE)
 linear_model3(X, beta, alpha, with_bias = TRUE)
 ```
 
-    ## Compiling without bias ...
+    ## Compiling with bias ...
 
     ## AnvilTensor 
     ##   2.7911
@@ -399,15 +397,9 @@ In principle, there are three ways to implement control-flow in anvil:
     [`nv_if()`](../reference/nv_if.md).
 
 Which solution is best depends on the specific scenario, so we will
-cover all three cases, at the risk of being a bit repetitive.
-
-#### Training Loops
-
-We will now revisit our linear model training example from earlier and
-implement the training loop using the three different control flow
-approaches.
-
-The first implementation is what we have already seen earlier: we
+cover all three cases, at the risk of being a bit repetitive. We will
+illustrate this with our linear model training example from earlier. The
+first implementation is what we have already seen earlier: we
 jit-compile the update step and then repeatedly call it in an R loop:
 
 ``` r
@@ -435,7 +427,7 @@ weights
 For simple update steps, this solution can be inefficient because every
 call into a jit-compiled function has some overhead. How important this
 overhead is depends on how expensive each call in the loop is – for
-large models, the overhead becomes negligible.
+expensive functions the overhead becomes negligible.
 
 The second approach is to use an R loop within the jit-compiled
 function. There, the loop will be unrolled during the compilation step.
@@ -473,11 +465,13 @@ train_unrolled(X, beta_hat, alpha_hat, y, n_steps = 10L)
 Finally, the third approach is to use the `nv_while` function. It is not
 like the standard while loop, because `anvil` is purely functional.
 
-The function takes in: 1. An initial state, which is a (nested) list of
-`AnvilTensor`s. 2. A `cond` function, which takes as input the current
-state and returns a boolean tensor indicating whether to continue the
-loop. 3. A `body` function, which takes as input the current state and
-returns a new state
+The function takes in:
+
+1.  An initial state, which is a (nested) list of `AnvilTensor`s.
+2.  A `cond` function, which takes as input the current state and
+    returns a boolean tensor indicating whether to continue the loop.
+3.  A `body` function, which takes as input the current state and
+    returns a new state.
 
 ``` r
 train_while <- jit(function(X, beta, alpha, y, n_steps) {
@@ -527,10 +521,12 @@ updates like `x[1] <- x[1] + 1`. In other words, {anvil} follows **value
 semantics**, or functions are **pure**. This means every function in
 {anvil} is a pure function, i.e., it does not have any side effects and
 always returns new values. Naturally, this raises the question of how
-this impacts performance. We need to distinguish two scenarios: 1.
-Updating an `AnvilTensor` living in `R` through a jit-compiled
-function. 1. Updating an `AnvilTensor` that “lives within” a
-jit-compiled function.
+this impacts performance. We need to distinguish two scenarios:
+
+1.  Updating an `AnvilTensor` living in `R` through a jit-compiled
+    function.
+2.  Updating an `AnvilTensor` that “lives within” a jit-compiled
+    function.
 
 For the first scenario, there is nothing to worry about. The XLA
 compiler is able to optimize this, ensuring that no unnecessary copies

@@ -27,8 +27,6 @@
 
 - [`gradient()`](gradient.md) : Gradient
 
-- [`graphify()`](graphify.md) : Graphify an R function
-
 - [`jit()`](jit.md) : JIT compile a function
 
 - [`local_descriptor()`](local_descriptor.md) : Create a graph
@@ -91,3 +89,5 @@
 - [`platform()`](platform.md) : Platform
 
 - [`stablehlo()`](stablehlo.md) : Lower a function to StableHLO
+
+- [`trace_fn()`](trace_fn.md) : Trace an R function into a Graph

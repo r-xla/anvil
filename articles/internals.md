@@ -37,7 +37,7 @@ approaches:
 The former approach is followed by the {quickr} package, which allows
 you to transpile R code into Fortran. In {anvil}, we are following the
 dynamic approach, which we will now illustrate. Our goal will be to
-graphify the following function, which either adds or subtracts two
+trace_fn the following function, which either adds or subtracts two
 tensors. The first two arguments are expected to be `AnvilTensor`s,
 while the third is either `"add"` or `"sub"`.
 
@@ -54,14 +54,14 @@ f <- function(x, y, op) {
 }
 ```
 
-To do this, we use [`anvil::graphify()`](../reference/graphify.md),
+To do this, we use [`anvil::trace_fn()`](../reference/trace_fn.md),
 which takes in an `R` function and a list of example arguments that
 specify the types of the inputs.
 
 ``` r
 x <- nv_scalar(1, "f32")
 y <- nv_scalar(5, "f32")
-graph <- graphify(f, list(x = x, y = y, op = "add"))
+graph <- trace_fn(f, list(x = x, y = y, op = "add"))
 graph
 ```
 
@@ -74,7 +74,7 @@ graph
     ##   Outputs:
     ##     %1: f32[]
 
-The output of [`graphify()`](../reference/graphify.md) is now a `Graph`
+The output of [`trace_fn()`](../reference/trace_fn.md) is now a `Graph`
 object that represents the computation. The fields of the `Graph` are:
 
 - `inputs`, which are `GraphValue`s that represent the inputs to the
@@ -85,7 +85,7 @@ object that represents the computation. The fields of the `Graph` are:
   parameters) and produce output `GraphValue`s.
 - `in_tree`, `out_tree`, which we will cover later (do we??)
 
-What happens internally in [`graphify()`](../reference/graphify.md) is
+What happens internally in [`trace_fn()`](../reference/trace_fn.md) is
 that a new `GraphDescriptor` is created and the inputs `x` and `y` are
 converted into `anvil::GraphBox` objects. Then, the function `f` is
 simply evaluated with the `GraphBox` objects as inputs. During this
@@ -122,7 +122,7 @@ Once we have staged out our `R` function into a simpler format, we can
 do all sorts of things with it, e.g., compute its gradient. The {anvil}
 package does not in any way dictate how such a `Graph` to `Graph`
 transformation can be implemented. For most interesting transformations,
-however, we need to store some information for each anvil primitive
+however, we need to store some information for each {anvil} primitive
 function. In the case of the gradient, we need to store the derivative
 rules. For this, [`anvil::Primitive`](../reference/Primitive.md) objects
 have a `@rules` field that can be populated. The derivative rules are
@@ -137,7 +137,7 @@ anvil:::p_add@rules[["backward"]]
     ##     grad <- grads[[1L]]
     ##     list(if (.required[[1L]]) grad, if (.required[[2L]]) grad)
     ## }
-    ## <bytecode: 0x55bec380e290>
+    ## <bytecode: 0x55d0ff6cfd80>
     ## <environment: namespace:anvil>
 
 The `anvil:::transform_gradient` function uses these rules to compute
@@ -184,7 +184,7 @@ anvil:::p_add@rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_add(lhs, rhs))
     ## }
-    ## <bytecode: 0x55bec380da78>
+    ## <bytecode: 0x55d0ff6cf568>
     ## <environment: namespace:anvil>
 
 They are applied in the [`anvil::stablehlo`](../reference/stablehlo.md)
@@ -239,7 +239,7 @@ f_jit(x, y, "add")
     ## [ CPUf32{} ]
 
 It might be intuitive to think that [`jit()`](../reference/jit.md) first
-calls [`graphify()`](../reference/graphify.md), then runs
+calls [`trace_fn()`](../reference/trace_fn.md), then runs
 [`stablehlo()`](../reference/stablehlo.md), followed by
 `pjrt_compile()`. This is, however, not what is happening, because for
 all of this, we need example inputs to the function. The function
@@ -377,7 +377,7 @@ sub-graph is inlined into the parent graph (that so far only holds the
 addition of `x` and `y`). We can look at this graph below:
 
 ``` r
-h_graph <- graphify(h, list(x = x, y = y))
+h_graph <- trace_fn(h, list(x = x, y = y))
 ```
 
 After that, this graph is lowered to stablehlo and subsequently
