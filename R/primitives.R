@@ -427,7 +427,7 @@ nvl_atan2 <- function(lhs, rhs) {
 p_bitcast_convert <- Primitive("bitcast_convert")
 nvl_bitcast_convert <- function(operand, dtype) {
   infer_fn <- function(operand, dtype) {
-    stablehlo::infer_types_convert(operand, dtype)@items
+    stablehlo::infer_types_bitcast_convert(operand, dtype)@items
   }
   graph_desc_add(p_bitcast_convert, list(operand), params = list(dtype = dtype), infer_fn = infer_fn)[[1L]]
 }
