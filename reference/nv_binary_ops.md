@@ -66,7 +66,7 @@ nv_atan2(lhs, rhs)
 
 ``` r
 # Comparison operators such `nv_eq`, `nv_le`, `nv_gt`, etc
-# are nondifferentiable and contribute zero to gradients. 
+# are nondifferentiable and contribute zero to gradients.
 relu <- function(x) {
   nv_convert(x > nv_scalar(0), "f32")*x
 }
