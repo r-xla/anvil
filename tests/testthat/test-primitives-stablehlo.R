@@ -1,3 +1,9 @@
+test_that("p_full", {
+  f <- jit(function(x) nv_full(x, shape = c(2, 3), dtype = "f32"), static = "x")
+  expect_equal(f(1), nv_tensor(1, shape = c(2, 3), dtype = "f32"))
+  expect_equal(f(2), nv_tensor(2, shape = c(2, 3), dtype = "f32"))
+})
+
 test_that("p_shift_left", {
   x <- nv_tensor(as.integer(c(1L, 2L, 3L, 8L)), dtype = "i32")
   y <- nv_tensor(as.integer(c(0L, 1L, 2L, 3L)), dtype = "i32")

@@ -3,12 +3,26 @@
 
 # Special tensor creators
 
-# TODO: We can remove this once we can lift R scalars (nv_broadcast_to(1, c(2, 3, 4)))
-nv_constant <- function(value, dtype = NULL, device = NULL, shape) {
-  if (length(value) != 1L) {
-    stop("value must be a scalar")
-  }
-  nv_broadcast_to(nv_scalar(value, dtype = dtype, device = device), shape = shape)
+#' @title Constant
+#' @description
+#' Create a constant.
+#' @param value (any)\cr
+#'   Value.
+#' @param shape (integer())\cr
+#'   Shape.
+#' @param dtype (character(1))\cr
+#'   Data type.
+#' @export
+nv_full <- function(value, shape, dtype = NULL) {
+  dtype <- dtype %??%
+    if (is.double(value)) {
+      "f32"
+    } else if (is.integer(value)) {
+      "i32"
+    } else if (is.logical(value)) {
+      "pred"
+    }
+  nvl_full(value, shape, dtype)
 }
 
 
@@ -140,6 +154,18 @@ nv_reshape <- nvl_reshape
 
 #' @name nv_binary_ops
 #' @title Binary Operations
+#'
+#' @examples
+#' # Comparison operators such `nv_eq`, `nv_le`, `nv_gt`, etc
+#' # are nondifferentiable and contribute zero to gradients.
+#' relu <- function(x) {
+#'   nv_convert(x > nv_scalar(0), "f32")*x
+#' }
+#' # df/dx = 1 if x > 0 else 0
+#' g_relu <- jit(gradient(relu, "x"))
+#'
+#' g_relu(nv_scalar(1, dtype = "f32"))
+#' g_relu(nv_scalar(-1, dtype = "f32"))
 #' @description
 #' Binary operations on tensors.
 #' @param lhs ([`nv_tensor`])

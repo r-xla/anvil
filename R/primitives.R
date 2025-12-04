@@ -88,7 +88,7 @@ is_higher_order_primitive <- function(x) {
   }
   x@rules[[name]] <- value
   if (!(name %in% globals$interpretation_rules)) {
-    cli_abort("Unknown interpretation rule: {name}")
+    cli_abort("Unknown interpretation rule: {.val {name}}")
   }
   x
 }
@@ -99,13 +99,26 @@ method(`[[`, Primitive) <- function(x, name) {
     if (!(name %in% globals$interpretation_rules)) {
       cli_abort("Unknown rule: {name}")
     }
-    cli_abort("Rule {name} not defined for primitive {x@name}")
+    cli_abort("Rule {.field {name}} not defined for primitive {.field {x@name}}")
   }
   rule
 }
 
 method(print, Primitive) <- function(x, ...) {
   cat(sprintf("<Primitive:%s>\n", x@name))
+}
+
+p_full <- Primitive("constant")
+nvl_full <- function(value, shape, dtype) {
+  infer_constant <- function(value, shape, dtype) {
+    list(stablehlo::ValueType(stablehlo::TensorType(as_dtype(dtype), stablehlo::Shape(shape))))
+  }
+  graph_desc_add(
+    p_full,
+    list(),
+    params = list(value = value, dtype = dtype, shape = shape),
+    infer_fn = infer_constant
+  )[[1L]]
 }
 
 p_add <- Primitive("add")

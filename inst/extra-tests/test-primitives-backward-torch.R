@@ -362,13 +362,11 @@ test_that("p_broadcast_in_dim", {
   )
 })
 
-# Minimal name-anchoring tests for meta-check coverage
 test_that("p_select", {
-  # Fixed predicate; gradients w.r.t a and b should match torch where
   shp <- c(2L, 3L)
-  p_arr <- array(generate_test_data(shp, dtype = "pred"), shp)
-  p_anvil <- nv_tensor(p_arr, dtype = "pred")
-  p_torch <- torch::torch_tensor(p_arr, dtype = torch::torch_bool())
+  x_arr <- array(generate_test_data(shp, dtype = "pred"), shp)
+  x_anvil <- nv_tensor(x_arr, dtype = "pred")
+  x_torch <- torch::torch_tensor(x_arr, dtype = torch::torch_bool())
 
   a_arr <- array(generate_test_data(shp, dtype = "f32"), shp)
   b_arr <- array(generate_test_data(shp, dtype = "f32"), shp)
@@ -378,12 +376,12 @@ test_that("p_select", {
   b_torch <- torch::torch_tensor(b_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
   f_anvil <- function(a, b) {
-    out <- nvl_select(p_anvil, a, b)
+    out <- nvl_select(x_anvil, a, b)
     nv_reduce_sum(out, dims = 1:2, drop = TRUE)
   }
   grads <- jit(gradient(f_anvil))(a_anvil, b_anvil)
 
-  out_t <- torch::torch_where(p_torch, a_torch, b_torch)
+  out_t <- torch::torch_where(x_torch, a_torch, b_torch)
   torch::torch_sum(out_t)$backward()
 
   expect_equal(tengen::as_array(grads[[1L]]), as_array_torch(a_torch$grad), tolerance = 1e-6)
@@ -398,5 +396,20 @@ test_that("p_reshape", {
     function(x, shape) x$reshape(shape),
     shape = in_shape,
     args_f = function(shp, dtype) list(list(shape = out_shape), list(shape = out_shape))
+  )
+})
+
+test_that("p_convert", {
+  target_dtype <- "f64"
+  verify_grad_uni_tensor(
+    nvl_convert,
+    function(x, dtype) x$to(dtype = dtype),
+    dtypes = "f32",
+    args_f = function(shp, dtype) {
+      list(
+        list(dtype = target_dtype),
+        list(dtype = torch::torch_float64())
+      )
+    }
   )
 })
