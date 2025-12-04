@@ -299,6 +299,26 @@ test_that("p_max on ties", {
   expect_equal(as_array(grads$x), array(c(0, 0.5, 0.5), dim = 3))
 })
 
+test_that("p_max", {
+  x <- nv_tensor(c(1,2,3))
+  y <- nv_tensor(c(3,2,1))
+
+  grads <- jit(gradient(\(x, y) nv_reduce_sum(nv_max(x, y), dims = 1)))(x, y)
+
+  expect_equal(as_array(grads$x), array(c(0, 0.5, 1), dim = 3))
+  expect_equal(as_array(grads$y), array(c(1, 0.5, 0), dim = 3))
+})
+
+test_that("p_min", {
+  x <- nv_tensor(c(1,2,3))
+  y <- nv_tensor(c(3,2,1))
+
+  grads <- jit(gradient(\(x, y) nv_reduce_sum(nv_min(x, y), dims = 1)))(x, y)
+
+  expect_equal(as_array(grads$x), array(c(1, 0.5, 0), dim = 3))
+  expect_equal(as_array(grads$y), array(c(0, 0.5, 1), dim = 3))
+})
+
 test_that("p_convert backward converts gradients to the input dtype", {
   x_arr <- array(1:6, c(2, 3))
   x <- nv_tensor(x_arr, dtype = "f32")
