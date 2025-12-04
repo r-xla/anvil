@@ -247,6 +247,58 @@ test_that("p_if", {
   #expect_equal(out[[2L]], nv_scalar(1))
 })
 
+test_that("p_log backward", {
+  f <- jit(gradient(function(x) {
+    nv_log(x)
+  }))
+
+  x <- nv_scalar(2, dtype = "f32")
+  grad <- f(x)[[1L]]
+
+  expect_equal(as_array(grad), 0.5)
+})
+
+test_that("p_exp", {
+  f <- jit(gradient(function(x) {
+    nv_exp(x)
+  }))
+
+  x <- nv_scalar(2, dtype = "f32")
+  grad <- f(x)[[1L]]
+
+  expect_equal(as_array(grad), exp(2))
+})
+
+test_that("p_reduce_max backward", {
+  f <- jit(gradient(function(x) {
+    rows_max <- nvl_reduce_max(x, dims = 2L, drop = TRUE)
+    nv_reduce_sum(rows_max, dims = 1L, drop = TRUE)
+  }))
+
+  x <- nv_tensor(
+    rbind(
+      c(1, 3, 2),
+      c(2, 4, 5)
+    )
+  )
+
+  grads <- f(x)[[1L]]
+
+  expect_equal(
+    as_array(grads),
+    rbind(
+      c(0, 1, 0),
+      c(0, 0, 1)
+    )
+  )
+})
+
+test_that("p_max on ties", {
+  x <- nv_tensor(c(1,2,2))
+  grads <- jit(gradient(\(x) nv_reduce_max(x, dims = 1)))(x)
+  expect_equal(as_array(grads$x), array(c(0, 0.5, 0.5), dim = 3))
+})
+
 test_that("p_convert backward converts gradients to the input dtype", {
   x_arr <- array(1:6, c(2, 3))
   x <- nv_tensor(x_arr, dtype = "f32")
