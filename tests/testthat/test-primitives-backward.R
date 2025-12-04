@@ -294,14 +294,14 @@ test_that("p_reduce_max backward", {
 })
 
 test_that("p_max on ties", {
-  x <- nv_tensor(c(1,2,2))
+  x <- nv_tensor(c(1, 2, 2))
   grads <- jit(gradient(\(x) nv_reduce_max(x, dims = 1)))(x)
   expect_equal(as_array(grads$x), array(c(0, 0.5, 0.5), dim = 3))
 })
 
 test_that("p_max", {
-  x <- nv_tensor(c(1,2,3))
-  y <- nv_tensor(c(3,2,1))
+  x <- nv_tensor(c(1, 2, 3))
+  y <- nv_tensor(c(3, 2, 1))
 
   grads <- jit(gradient(\(x, y) nv_reduce_sum(nv_max(x, y), dims = 1)))(x, y)
 
@@ -310,8 +310,8 @@ test_that("p_max", {
 })
 
 test_that("p_min", {
-  x <- nv_tensor(c(1,2,3))
-  y <- nv_tensor(c(3,2,1))
+  x <- nv_tensor(c(1, 2, 3))
+  y <- nv_tensor(c(3, 2, 1))
 
   grads <- jit(gradient(\(x, y) nv_reduce_sum(nv_min(x, y), dims = 1)))(x, y)
 
