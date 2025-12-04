@@ -76,6 +76,42 @@ p_exp[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
+p_max[["backward"]] <- function(inputs, outputs, grads, .required) {
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
+  grad <- grads[[1L]]
+
+  if (.required[[1L]] || .required[[2L]]) {
+    y <- outputs[[1L]]
+    mask_lhs <- nvl_convert(nvl_eq(lhs, y), dtype = dtype(grad))
+    mask_rhs <- nvl_convert(nvl_eq(rhs, y), dtype = dtype(grad))
+    count <- nvl_add(mask_lhs, mask_rhs)
+  }
+
+  list(
+    if (.required[[1L]]) nvl_div(nvl_mul(grad, mask_lhs), count),
+    if (.required[[2L]]) nvl_div(nvl_mul(grad, mask_rhs), count)
+  )
+}
+
+p_min[["backward"]] <- function(inputs, outputs, grads, .required) {
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
+  grad <- grads[[1L]]
+
+  if (.required[[1L]] || .required[[2L]]) {
+    y <- outputs[[1L]]
+    mask_lhs <- nvl_convert(nvl_eq(lhs, y), dtype = dtype(grad))
+    mask_rhs <- nvl_convert(nvl_eq(rhs, y), dtype = dtype(grad))
+    count <- nvl_add(mask_lhs, mask_rhs)
+  }
+
+  list(
+    if (.required[[1L]]) nvl_div(nvl_mul(grad, mask_lhs), count),
+    if (.required[[2L]]) nvl_div(nvl_mul(grad, mask_rhs), count)
+  )
+}
+
 p_dot_general[["backward"]] <- function(inputs, outputs, grads, contracting_dims, batching_dims, .required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
