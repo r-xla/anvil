@@ -1,8 +1,7 @@
 test_that("generate state", {
   f <- function() {
-    state <- jit(nv_generate_state, static = "seed")(1) #this should not be necessary
     nv_runif(
-      initial_state = state,
+      initial_state = nv_generate_state(1),
       dtype = "f64",
       shape_out = c(10, 5)
     )
@@ -11,9 +10,8 @@ test_that("generate state", {
   out1 <- g()
 
   f <- function() {
-    state <- jit(nv_generate_state, static = "seed")(1) #this should not be necessary
     nv_runif(
-      initial_state = state,
+      initial_state = nv_generate_state(1),
       dtype = "f64",
       shape_out = c(10, 5)
     )
