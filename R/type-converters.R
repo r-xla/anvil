@@ -1,6 +1,6 @@
 # Converters between stablehlo and anvil types
 
-# ShapedTensor -> FuncVariable
+# ShapedTensor -> FuncValue
 st2fv <- function(x, func) {
   value_type <- st2vt(x)
   value_id <- stablehlo::ValueId()
@@ -11,7 +11,7 @@ st2fv <- function(x, func) {
       type = value_type
     ))
   ))
-  stablehlo::FuncVariable(
+  stablehlo::FuncValue(
     value_id = value_id,
     value_type = value_type,
     func = func

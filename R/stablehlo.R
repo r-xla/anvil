@@ -5,19 +5,19 @@ HloEnv <- S7::new_class(
   "HloEnv",
   properties = list(
     parent = NULL | new_S3_class("anvil::HloEnv"),
-    gval_to_fvar = new_property(class_hashtab, default = quote(hashtab()))
+    gval_to_fval = new_property(class_hashtab, default = quote(hashtab()))
   )
 )
 
-env_add <- function(env, gval, fvar) {
-  env@gval_to_fvar[[gval]] <- fvar
+env_add <- function(env, gval, fval) {
+  env@gval_to_fval[[gval]] <- fval
   invisible(env)
 }
 
 env_get <- function(env, gval) {
-  fvar <- env@gval_to_fvar[[gval]]
-  if (!is.null(fvar)) {
-    return(fvar)
+  fval <- env@gval_to_fval[[gval]]
+  if (!is.null(fval)) {
+    return(fval)
   }
   parent <- env@parent
   if (!is.null(parent)) {
@@ -43,17 +43,17 @@ env_get <- function(env, gval) {
 #'   - `constants`: The constants of the graph
 #' @export
 stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = character()) {
-  # Node -> FuncVariable
+  # Node -> FuncValue
   env <- HloEnv(parent = env)
   func <- stablehlo::local_func(id = "main")
   inps <- if (constants_as_inputs) c(graph@constants, graph@inputs) else graph@inputs
 
   get2 <- function(gval) {
-    fvar <- env_get(env, gval)
-    if (!identical(fvar@func, func)) {
-      FuncVariable(fvar@value_id, fvar@value_type, func)
+    fval <- env_get(env, gval)
+    if (!identical(fval@func, func)) {
+      FuncValue(fval@value_id, fval@value_type, func)
     } else {
-      fvar
+      fval
     }
   }
 
@@ -105,8 +105,8 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
 
     fi <- stablehlo::FuncInput(id, vt, alias = alias)
     func@inputs@items <- c(func@inputs@items, fi)
-    fvar <- stablehlo::FuncVariable(id, vt, func)
-    env_add(env, node, fvar)
+    fval <- stablehlo::FuncValue(id, vt, func)
+    env_add(env, node, fval)
   }
 
   if (!constants_as_inputs) {
@@ -124,12 +124,12 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
     if (is_higher_order_primitive(prim)) {
       params <- c(params, list(.env = env))
     }
-    fvars_out <- rlang::exec(prim[["stablehlo"]], !!!c(inputs, params))
-    if (length(call@outputs) != length(fvars_out)) {
-      cli_abort("Expected {length(call@outputs)} outputs, but got {length(fvars_out)}")
+    fvals_out <- rlang::exec(prim[["stablehlo"]], !!!c(inputs, params))
+    if (length(call@outputs) != length(fvals_out)) {
+      cli_abort("Expected {length(call@outputs)} outputs, but got {length(fvals_out)}")
     }
-    for (i in seq_along(fvars_out)) {
-      env_add(env, call@outputs[[i]], fvars_out[[i]])
+    for (i in seq_along(fvals_out)) {
+      env_add(env, call@outputs[[i]], fvals_out[[i]])
     }
   }
 
