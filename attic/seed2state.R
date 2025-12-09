@@ -95,4 +95,3 @@ test_that("seed2state", {
   expect_true(inherits(dtype.AnvilTensor(out3), UnsignedType))
   expect_equal(dtype.AnvilTensor(out3)@value, 32L)
 })
-
