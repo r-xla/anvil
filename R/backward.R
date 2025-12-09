@@ -13,7 +13,10 @@ transform_gradient <- function(graph, wrt) {
   }
   dt <- out@aval@dtype
   if (!(dt == dt_f32 || dt == dt_f64)) {
-    cli_abort("gradient can only be computed for functions that return float scalar")
+    cli_abort(c(
+      x = "gradient can only be computed for functions that return float scalar",
+      i = "Got dtype={.field {repr(dt)}}"
+    ))
   }
 
   requires_grad <- flat_mask_from_names(graph@in_tree, wrt)
@@ -103,6 +106,7 @@ transform_gradient <- function(graph, wrt) {
     } else {
       grad
     }
+    # browser()
     input_grads <- c(input_grads, list(x@gval))
   }
 
@@ -139,7 +143,7 @@ gradient <- function(f, wrt = NULL) {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
     parent_desc <- .current_descriptor()
-    fwd_graph <- graphify(f, args)
+    fwd_graph <- trace_fn(f, args)
     grad_graph <- transform_gradient(fwd_graph, wrt)
     # parent_desc is modified in place
     outputs <- inline_graph_into_desc(parent_desc, grad_graph)

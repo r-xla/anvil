@@ -5,7 +5,7 @@ test_that("remove_dead_code removes dead code", {
     # Only this multiplication is used in the output
     nvl_mul(x, y)
   }
-  graph <- graphify(f, list(x = nv_scalar(3), y = nv_scalar(4)))
+  graph <- trace_fn(f, list(x = nv_scalar(3), y = nv_scalar(4)))
 
   # Should only have the multiply call, not the add call
   expect_equal(length(graph@calls), 1L)
@@ -22,7 +22,7 @@ test_that("remove_dead_code removes dead code", {
 #    # only used_const contributes
 #    nvl_mul(x, used_const)
 #  }
-#  graph <- graphify(f, list(x = nv_scalar(3)))
+#  graph <- trace_fn(f, list(x = nv_scalar(3)))
 #
 #  # Should only have the multiply call
 #  expect_equal(length(graph@calls), 1L)
@@ -39,7 +39,7 @@ test_that("remove_dead_code keeps transitively needed calls", {
     intermediate <- nvl_add(x, y)
     nvl_mul(intermediate, x)
   }
-  graph <- graphify(f, list(x = nv_scalar(3), y = nv_scalar(4)))
+  graph <- trace_fn(f, list(x = nv_scalar(3), y = nv_scalar(4)))
 
   # Both calls should be kept
   expect_equal(length(graph@calls), 2L)

@@ -84,11 +84,10 @@ method(build_tree, S7::new_S3_class("MarkedArgs")) <- function(x, counter = NULL
   }
 
   if (!is.null(x$marked)) {
-    is_marked <- names(x$data) %in% x$marked
+    is_marked <- rlang::names2(x$data) %in% x$marked
     is_marked_flat <- rep(is_marked, times = subsize)
-    # TODO: I think this is wrong???
   } else {
-    is_marked_flat <- FALSE
+    cli_abort("Internal error: marked must be non-NULL")
   }
 
   MarkedListNode(nodes, names(x$data), is_marked_flat)

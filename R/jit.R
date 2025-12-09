@@ -62,8 +62,8 @@ jit <- function(f, static = character(), device = NULL, cache_size = 100L, donat
     if (!is.null(cache_hit)) {
       return(call_xla(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat))
     }
-    # TODO: Give graphify() argument in_tree, so we don't have to do this twice
-    graph <- graphify(f, args)
+    # TODO: Give trace_fn() argument in_tree, so we don't have to do this twice
+    graph <- trace_fn(f, args)
 
     out <- stablehlo(graph, donate = donate)
     func <- out[[1L]]

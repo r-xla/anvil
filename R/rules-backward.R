@@ -51,7 +51,7 @@ p_pow[["backward"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
     if (.required[[1L]]) {
-      one <- nv_constant(1, dtype = dtype(lhs), shape = shape(rhs))
+      one <- nv_full(1, dtype = dtype(lhs), shape = shape(rhs))
       nvl_mul(nvl_mul(grad, rhs), nvl_pow(lhs, nvl_sub(rhs, one)))
     },
     if (.required[[2L]]) {
@@ -194,7 +194,7 @@ p_select[["backward"]] <- function(inputs, outputs, grads, .required) {
   pred <- inputs[[1L]]
   true_value <- inputs[[2L]]
   grad <- grads[[1L]]
-  zero <- nv_constant(0L, dtype = dtype(true_value), shape = shape(true_value))
+  zero <- nv_full(0L, dtype = dtype(true_value), shape = shape(true_value))
 
   list(
     if (.required[[1L]]) cli_abort("Predicate cannot be differentiated"),
@@ -205,4 +205,58 @@ p_select[["backward"]] <- function(inputs, outputs, grads, .required) {
 
 p_if[["backward"]] <- function(inputs, outputs, grads, true, false, node_map, .required) {
   cli_abort("Not yet implemented")
+}
+
+# convert backward -----------------
+
+p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) nvl_convert(grad, dtype(operand))
+  )
+}
+
+# for comparison primitives --------------------------
+# they are actually not differentiable, but instead of throwing, we
+# return zeros for everything.
+
+zero_grads <- function(inputs, .required) {
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
+  req_lhs <- .required[[1L]]
+  req_rhs <- .required[[2L]]
+
+  zero_like <- function(x) {
+    nv_full(0L, dtype = dtype(x), shape = shape(x))
+  }
+
+  list(
+    if (req_lhs) zero_like(lhs),
+    if (req_rhs) zero_like(rhs)
+  )
+}
+
+p_eq[["backward"]] <- function(inputs, outputs, grads, .required) {
+  zero_grads(inputs, .required)
+}
+
+p_ne[["backward"]] <- function(inputs, outputs, grads, .required) {
+  zero_grads(inputs, .required)
+}
+
+p_gt[["backward"]] <- function(inputs, outputs, grads, .required) {
+  zero_grads(inputs, .required)
+}
+
+p_ge[["backward"]] <- function(inputs, outputs, grads, .required) {
+  zero_grads(inputs, .required)
+}
+
+p_lt[["backward"]] <- function(inputs, outputs, grads, .required) {
+  zero_grads(inputs, .required)
+}
+
+p_le[["backward"]] <- function(inputs, outputs, grads, .required) {
+  zero_grads(inputs, .required)
 }

@@ -208,3 +208,18 @@ test_that("donate: no aliasing with type mismatch", {
   out <- f(x)
   expect_error(capture.output(x), "called on deleted or donated buffer")
 })
+
+test_that("... works (#19)", {
+  expect_equal(
+    jit(sum)(nv_tensor(1:10)),
+    nv_scalar(55L)
+  )
+
+  f <- function(..., a) {
+    a + sum(...)
+  }
+  expect_equal(
+    jit(f)(a = nv_scalar(1L), nv_tensor(1:10)),
+    nv_scalar(56L)
+  )
+})

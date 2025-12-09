@@ -1,8 +1,8 @@
-test_that("graphify: simple test", {
+test_that("trace_fn: simple test", {
   f <- function(x, y) {
     nvl_add(x, y)
   }
-  graph <- graphify(f, list(x = nv_scalar(1), y = nv_scalar(2)))
+  graph <- trace_fn(f, list(x = nv_scalar(1), y = nv_scalar(2)))
   expect_true(is_graph(graph))
   expect_list(graph@inputs, len = 2L, types = "anvil::mut<GraphValue>")
   expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
@@ -10,21 +10,21 @@ test_that("graphify: simple test", {
   expect_true(identical(graph@outputs, graph@calls[[1]]@outputs))
 })
 
-test_that("graphify: in- and outputs are reference identical to the outputs of the calls that produced them", {
+test_that("trace_fn: in- and outputs are reference identical to the outputs of the calls that produced them", {
   f <- function(x, y) {
     nvl_add(x, y)
   }
-  graph <- graphify(f, list(x = nv_scalar(1), y = nv_scalar(2)))
+  graph <- trace_fn(f, list(x = nv_scalar(1), y = nv_scalar(2)))
   expect_true(identical(graph@outputs, graph@calls[[1]]@outputs))
   expect_true(identical(graph@inputs, graph@calls[[1]]@inputs))
 })
 
-test_that("graphify: nested inputs and outputs", {
+test_that("trace_fn: nested inputs and outputs", {
   f <- function(lst) {
     list(nvl_add(lst[[1]], lst[[2]]))
   }
 
-  graph <- graphify(f, list(lst = list(nv_scalar(1), nv_scalar(2))))
+  graph <- trace_fn(f, list(lst = list(nv_scalar(1), nv_scalar(2))))
   expect_list(graph@inputs, len = 2L, types = "anvil::mut<GraphValue>")
   expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
   expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphValue>")
@@ -38,12 +38,12 @@ test_that("graphify: nested inputs and outputs", {
   )
 })
 
-test_that("graphify: closed-over constants", {
+test_that("trace_fn: closed-over constants", {
   x <- nv_scalar(1)
   f <- function(y) {
     nvl_add(x, y)
   }
-  graph <- graphify(f, list(y = nv_scalar(2)))
+  graph <- trace_fn(f, list(y = nv_scalar(2)))
   expect_list(graph@inputs, len = 1L, types = "anvil::mut<GraphValue>")
   expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
   expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphValue>")
@@ -57,23 +57,23 @@ test_that("graphify: closed-over constants", {
   expect_equal(length(graph@constants), 1L)
 })
 
-test_that("graphify can deduplicate constants", {
+test_that("trace_fn can deduplicate constants", {
   x <- nv_scalar(1)
   f <- function(y) {
     nvl_add(x, x)
   }
-  graph <- graphify(f, list(y = nv_scalar(2)))
+  graph <- trace_fn(f, list(y = nv_scalar(2)))
   expect_equal(length(graph@constants), 1L)
   expect_identical(graph@constants[[1]]@aval@data, x)
 })
 
-test_that("graphify works without arguments", {
-  # For this it is necessary to also box outputs in graphify()
+test_that("trace_fn works without arguments", {
+  # For this it is necessary to also box outputs in trace_fn()
   x <- nv_scalar(1)
   f <- function() {
     x
   }
-  graph <- graphify(f, list())
+  graph <- trace_fn(f, list())
   expect_equal(length(graph@inputs), 0L)
   expect_equal(length(graph@outputs), 1L)
   expect_identical(graph@outputs[[1]]@aval@data, x)
@@ -125,7 +125,7 @@ test_that("closed-over constant is passed as argument to transformation", {
   f()
 })
 
-test_that("can pass constant to nested graphify call if it does not exist in the parent graph", {
+test_that("can pass constant to nested trace_fn call if it does not exist in the parent graph", {
   f <- jit(function() {
     g <- function(y) y * y
     gradient(g)(nv_scalar(2))
@@ -133,7 +133,7 @@ test_that("can pass constant to nested graphify call if it does not exist in the
   expect_equal(f(), list(y = nv_scalar(4)))
 })
 
-test_that("can pass constant to nested graphify call if it is defined in the parent graph", {
+test_that("can pass constant to nested trace_fn call if it is defined in the parent graph", {
   f <- jit(function() {
     nv_add(y, y)
     g <- function(y) y * y
@@ -147,12 +147,12 @@ test_that("Graph: printing", {
   f <- function(x, y) {
     nvl_add(x, y)
   }
-  graph <- graphify(f, list(x = nv_scalar(1), y = nv_scalar(2)))
+  graph <- trace_fn(f, list(x = nv_scalar(1), y = nv_scalar(2)))
   expect_snapshot(graph)
   # with param
   f1 <- function(x) {
     mean(x)
   }
-  graph1 <- graphify(f1, list(x = nv_tensor(1:10, dtype = "f32", shape = c(2, 5))))
+  graph1 <- trace_fn(f1, list(x = nv_tensor(1:10, dtype = "f32", shape = c(2, 5))))
   expect_snapshot(graph1)
 })

@@ -3,7 +3,7 @@ NULL
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom stablehlo repr BooleanType IntegerType FloatType Shape FuncId Func as_dtype FuncVariable
+#' @importFrom stablehlo repr BooleanType IntegerType FloatType Shape FuncId Func as_dtype FuncValue
 #' @importFrom stablehlo local_func hlo_input hlo_return hlo_tensor hlo_scalar
 #' @importFrom stablehlo UnsignedType TensorType
 #' @import checkmate

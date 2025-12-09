@@ -3,12 +3,26 @@
 
 # Special tensor creators
 
-# TODO: We can remove this once we can lift R scalars (nv_broadcast_to(1, c(2, 3, 4)))
-nv_constant <- function(value, dtype = NULL, device = NULL, shape) {
-  if (length(value) != 1L) {
-    stop("value must be a scalar")
-  }
-  nv_broadcast_to(nv_scalar(value, dtype = dtype, device = device), shape = shape)
+#' @title Constant
+#' @description
+#' Create a constant.
+#' @param value (any)\cr
+#'   Value.
+#' @param shape (integer())\cr
+#'   Shape.
+#' @param dtype (character(1))\cr
+#'   Data type.
+#' @export
+nv_full <- function(value, shape, dtype = NULL) {
+  dtype <- dtype %??%
+    if (is.double(value)) {
+      "f32"
+    } else if (is.integer(value)) {
+      "i32"
+    } else if (is.logical(value)) {
+      "pred"
+    }
+  nvl_full(value, shape, dtype)
 }
 
 
@@ -171,6 +185,18 @@ nv_select <- nvl_select
 
 #' @name nv_binary_ops
 #' @title Binary Operations
+#'
+#' @examples
+#' # Comparison operators such `nv_eq`, `nv_le`, `nv_gt`, etc
+#' # are nondifferentiable and contribute zero to gradients.
+#' relu <- function(x) {
+#'   nv_convert(x > nv_scalar(0), "f32")*x
+#' }
+#' # df/dx = 1 if x > 0 else 0
+#' g_relu <- jit(gradient(relu, "x"))
+#'
+#' g_relu(nv_scalar(1, dtype = "f32"))
+#' g_relu(nv_scalar(-1, dtype = "f32"))
 #' @description
 #' Binary operations on tensors.
 #' @param lhs ([`nv_tensor`])
@@ -499,138 +525,6 @@ nv_reduce_all <- nvl_reduce_all
 #' @param shape_out output shape
 #' @export
 nv_rng_bit_generator <- nvl_rng_bit_generator
-
-#' @title Internal: Random Unit Uniform Numbers
-#' @name nv_runif
-#' @description
-#' generate random uniform numbers in [0, 1)
-#' @param initial_state state seed
-#' @param dtype output dtype either "f32" or "f64"
-#' @param shape_out output shape
-nv_unif_rand <- function(
-  initial_state,
-  dtype = "f64",
-  shape_out
-) {
-  checkmate::assertChoice(dtype, c("f32", "f64"))
-  checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
-
-  # generate random bits
-  # use THREE_FRY as rng algorithm: JAX default
-  rbits <- nv_rng_bit_generator(
-    initial_state = initial_state,
-    "THREE_FRY",
-    paste0("ui", sub("f(\\d+)", "\\1", dtype)),
-    shape_out = shape_out
-  )
-
-  # shift value: 9 for f32, 11 for f64
-  shift <- nv_scalar(
-    ifelse(dtype == "f32", 9L, 11L),
-    dtype = paste0("ui", sub("f(\\d+)", "\\1", dtype))
-  )
-
-  # shift to the right, s.t. exponent bits are all 0
-  mantissa <- nv_shift_right_logical(rbits[[2]], shift)
-
-  # interpretation of 1.0 (float) as unsigned
-  one_bits <- nv_bitcast_convert(
-    nv_scalar(1.0, dtype = dtype),
-    dtype = paste0("ui", sub("f(\\d+)", "\\1", dtype))
-  )
-
-  # bitwise or -> exponent from 1.0 (float), mantissa is random
-  U <- nv_or(mantissa, one_bits)
-
-  # convert back to requested dtype
-  # resulting RVs  are in [1, 2)
-  U <- nv_bitcast_convert(U, dtype = dtype)
-
-  # shift to [0, 1)
-  U <- nv_add(U, nv_scalar(-1, dtype = dtype))
-
-  # return state and RVs
-  list(rbits[[1]], U)
-}
-
-#' @title Generate random state
-#' @name nv_generate_state
-#' @description
-#' lightweight function to generate an initial state
-#' @param seed (`integer(1)`)\cr
-#'   Seed value
-#' @return [`nv_tensor`] of dtype `ui64` and shape (2)
-#' @export
-nv_generate_state <- function(seed) {
-  checkmate::assertIntegerish(seed, lower = 0, len = 1, any.missing = FALSE)
-  state <- nv_scalar(seed, dtype = "i32")
-  state <- nv_bitcast_convert(state, dtype = "ui16")
-  nv_convert(state, "ui64")
-}
-
-#' @title Make initial state
-#' @name nv_seed2state
-#' @description
-#' converts a random seed into a initial state tensor
-#' @param dtype output dtype either "ui32" or "ui64"
-#' @param shape_out output shape
-#' @param random_seed explicitly provide the random seed of a R session. auto-detects if not provided.
-#' @param hash_algo hash algorithm to hash the random state with. Default is 'sha512'.
-#' @export
-nv_seed2state <- function(
-  dtype = "ui64",
-  shape_out = 2,
-  random_seed = NULL,
-  hash_algo = "sha512"
-) {
-  checkmate::assertChoice(dtype, c("ui32", "ui64"))
-  n_states <- prod(shape_out)
-
-  # auto detect random_seed
-  if (is.null(random_seed)) {
-    random_seed <- .Random.seed # nolint
-  }
-
-  # hash the seed
-  hash_hex <- digest::digest(
-    random_seed,
-    algo = hash_algo,
-    serialize = TRUE
-  )
-
-  # convert hex string to bytes
-  hex_pairs <- substring(
-    hash_hex,
-    seq(1, nchar(hash_hex), 2),
-    seq(2, nchar(hash_hex), 2)
-  )
-  hash_bytes <- strtoi(hex_pairs, base = 16)
-
-  # calculate bytes needed/available
-  bytes_per_value <- if (dtype == "ui32") 4 else 8
-  bytes_needed <- n_states * bytes_per_value
-  total_bytes_available <- length(hash_bytes)
-
-  # throw error if not enough bytes available
-  if (bytes_needed > total_bytes_available) {
-    cli_abort(
-      "Requested {n_states} {dtype} values (total {bytes_needed} bytes) but hash
-      algorithm '{hash_algo}' only provides {total_bytes_available} bytes. "
-    )
-  }
-
-  # tensor of type i8 of shape (shape_out, 4/8)
-  raw8 <- nv_tensor(
-    as.integer(hash_bytes[seq_len(bytes_needed)]),
-    shape = c(shape_out, bytes_per_value),
-    dtype = "i8"
-  )
-
-  # upcast raw8 to requested dtype, last dimension vanished
-  # returns tensor of shape = shape_out
-  nv_bitcast_convert(raw8, dtype = dtype)
-}
-
 
 #' @title Random Uniform Numbers
 #' @name nv_runif

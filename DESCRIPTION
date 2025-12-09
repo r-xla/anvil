@@ -18,7 +18,6 @@ Depends:
 Imports:
     checkmate,
     cli,
-    digest,
     methods,
     pjrt,
     rlang,
@@ -47,6 +46,7 @@ Collate:
     'primitives.R'
     'api.R'
     'api-group-generics.R'
+    'api-internal.R'
     'backward.R'
     'flatten.R'
     'graph-passes.R'
@@ -59,4 +59,5 @@ Collate:
     'rules-backward.R'
     'rules-stablehlo.R'
     'stablehlo.R'
+    'utilities.R'
     'zzz.R'

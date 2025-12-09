@@ -247,6 +247,59 @@ test_that("p_if", {
   #expect_equal(out[[2L]], nv_scalar(1))
 })
 
+test_that("p_convert backward converts gradients to the input dtype", {
+  x_arr <- array(1:6, c(2, 3))
+  x <- nv_tensor(x_arr, dtype = "f32")
+  f <- jit(gradient(function(x) {
+    y <- nvl_convert(x, dtype = "f64")
+    nv_reduce_sum(y, dims = 1:2, drop = TRUE)
+  }))
+
+  grads <- f(x)
+  expect_equal(as_array(grads[[1L]]), array(1, dim = dim(x_arr)))
+  expect_equal(dtype(grads[[1L]]), as_dtype("f32"))
+})
+
+test_that("p_eq, p_ne, p_gt, p_ge, p_lt, p_le", {
+  a <- 1
+  b <- 2
+
+  a_nv <- nv_scalar(a)
+  b_nv <- nv_scalar(b)
+
+  comparators <- list(
+    list(fun = nv_eq, expected = a == b),
+    list(fun = nv_ne, expected = a != b),
+    list(fun = nv_gt, expected = a > b),
+    list(fun = nv_ge, expected = a >= b),
+    list(fun = nv_lt, expected = a < b),
+    list(fun = nv_le, expected = a <= b)
+  )
+
+  for (cmp in comparators) {
+    out <- as_array(jit(cmp$fun)(a_nv, b_nv))
+    expect_identical(out, cmp$expected)
+
+    g <- jit(gradient(function(a, b) {
+      cmp$fun(a, b)
+    }))
+
+    # can't compute gradients if function doesn't return
+    # float
+    expect_snapshot_error({
+      grads <- g(a_nv, b_nv)
+    })
+
+    g <- jit(gradient(function(a, b) {
+      nv_convert(cmp$fun(a, b), "f32")
+    }))
+
+    grads <- g(a_nv, b_nv)
+    expect_equal(as_array(grads[[1L]]), 0)
+    expect_equal(as_array(grads[[2L]]), 0)
+  }
+})
+
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
 }
