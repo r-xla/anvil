@@ -74,11 +74,8 @@ relu <- function(x) {
 g_relu <- jit(gradient(relu, "x"))
 
 g_relu(nv_scalar(1, dtype = "f32"))
-#> $x
-#> AnvilTensor 
-#>  1.0000
-#> [ CPUf32{} ] 
-#> 
+#> Warning: cannot open URL 'https://github.com/zml/pjrt-artifacts/releases/download/v11.0.0/pjrt-cpu_linux-amd64.tar.gz': HTTP status was '503 Service Unavailable'
+#> Error in utils::download.file(url, tempfile): cannot open URL 'https://github.com/zml/pjrt-artifacts/releases/download/v11.0.0/pjrt-cpu_linux-amd64.tar.gz'
 g_relu(nv_scalar(-1, dtype = "f32"))
 #> $x
 #> AnvilTensor 

@@ -1,4 +1,4 @@
-# Type Casting
+# Type Promotion
 
 ## Type Promotion Rules
 
@@ -119,8 +119,7 @@ common_dtype(dt_f32, dt_f64, FALSE, FALSE)
 
 The promotion rules only change when one type is ambiguous and the other
 is not. There, we usually promote the ambiguous type to the known type,
-unless: We see, that we here only cast to the ambiguous type in two
-cases:
+unless:
 
 1.  The ambiguous type is a float and the known type is not.
 2.  The known type is a bool but the ambiguous type is not.

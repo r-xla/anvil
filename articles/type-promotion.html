@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Type Casting • anvil</title>
+<title>Type Promotion • anvil</title>
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Type Casting">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Type Promotion">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -42,7 +42,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
-    <li><a class="dropdown-item" href="../articles/type-casting.html">Type Casting</a></li>
+    <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
   </ul>
 </li>
       </ul>
@@ -72,11 +72,11 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Type Casting</h1>
+      <h1>Type Promotion</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-literals/vignettes/type-casting.Rmd" class="external-link"><code>vignettes/type-casting.Rmd</code></a></small>
-      <div class="d-none name"><code>type-casting.Rmd</code></div>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-literals/vignettes/type-promotion.Rmd" class="external-link"><code>vignettes/type-promotion.Rmd</code></a></small>
+      <div class="d-none name"><code>type-promotion.Rmd</code></div>
     </div>
 
     
@@ -630,8 +630,7 @@ the same as if both were known.</p>
 <span><span class="co">##  @ value: int 64</span></span></code></pre>
 <p>The promotion rules only change when one type is ambiguous and the
 other is not. There, we usually promote the ambiguous type to the known
-type, unless: We see, that we here only cast to the ambiguous type in
-two cases:</p>
+type, unless:</p>
 <ol style="list-style-type: decimal">
 <li>The ambiguous type is a float and the known type is not.</li>
 <li>The known type is a bool but the ambiguous type is not.</li>

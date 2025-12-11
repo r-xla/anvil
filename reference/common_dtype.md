@@ -2,9 +2,9 @@
 
 Computes the common dtype for a set of abstract types, respecting
 whether a type is ambiguous or not. A type is ambiguous if it comes from
-a literal (like 1, 1.0, TRUE) or was cast to an ambiguous type. Casting
-to an ambiguous type can happen in scenarios like `x + 1.2`, where `x`
-is a bool or an int.
+a literal (like 1, 1.0, TRUE) or was cast to an ambiguous type.
+Promoting to an ambiguous type can happen in scenarios like `x + 1.2`,
+where `x` is a bool or an int.
 
 ## Usage
 
