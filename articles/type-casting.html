@@ -630,10 +630,10 @@ the same as if both were known.</p>
 <span><span class="co">##  @ value: int 64</span></span></code></pre>
 <p>The promotion rules only change when one type is ambiguous and the
 other is not. There, we usually promote the ambiguous type to the known
-type, unless: We see, that we here only cast to the abiguous type in two
-cases:</p>
+type, unless: We see, that we here only cast to the ambiguous type in
+two cases:</p>
 <ol style="list-style-type: decimal">
-<li>The ambiguos type is a float and the known type is not.</li>
+<li>The ambiguous type is a float and the known type is not.</li>
 <li>The known type is a bool but the ambiguous type is not.</li>
 </ol>
 <p>In both case, we promote the known type to the default type of the
