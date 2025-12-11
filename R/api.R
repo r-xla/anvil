@@ -73,7 +73,6 @@ nv_broadcast_scalars <- function(...) {
   shapes <- lapply(args, \(x) shape(st(x)))
   non_scalar_shapes <- Filter(\(s) length(s) > 0L, shapes)
 
-
   if (length(non_scalar_shapes) == 0L) {
     return(args)
   }

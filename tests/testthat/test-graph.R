@@ -162,7 +162,6 @@ test_that("literals", {
     x * 2
   }
   graph <- trace_fn(f, list(x = nv_scalar(1)))
-
 })
 
 test_that("ambiguous shaped tensor check", {
@@ -171,6 +170,4 @@ test_that("ambiguous shaped tensor check", {
 })
 
 
-test_that("ambiguous type information is propagated", {
-
-})
+test_that("ambiguous type information is propagated", {})

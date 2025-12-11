@@ -55,7 +55,6 @@ test_that("literals work in gradient", {
     grad(nv_scalar(1)),
     list(x = nv_scalar(2))
   )
-
 })
 
 test_that("literals work in infix functions", {

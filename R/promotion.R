@@ -99,7 +99,8 @@ promote_dt_known <- function(dt1, dt2) {
     if (inherits(dt2, IntegerType)) {
       return(IntegerType(max(dt1@value, dt2@value)))
     }
-    if (dt2@value < dt1@value) { # the int can hold the unsigned int
+    if (dt2@value < dt1@value) {
+      # the int can hold the unsigned int
       return(dt1)
     }
     # int can't hold the unsigned int
@@ -131,4 +132,3 @@ default_dtype <- function(x) {
     cli_abort("No default type for: {.class class(x)[1L]}")
   }
 }
-

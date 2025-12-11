@@ -1,7 +1,6 @@
 #' @include graph.R
 
 format_node_id <- function(node, node_ids) {
-
   # GraphLiterals are formatted inline with their value
   if (is_graph_literal(node)) {
     return(format_literal(node))
@@ -158,13 +157,20 @@ format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph"
 }
 
 method(format, PrimitiveCall) <- function(x, ...) {
-  inputs <- paste(vapply(x@inputs, function(inp) {
-    if (is_graph_literal(inp)) {
-      format_literal(inp)
-    } else {
-      format_aval_short(inp@aval)
-    }
-  }, character(1)), collapse = ", ")
+  inputs <- paste(
+    vapply(
+      x@inputs,
+      function(inp) {
+        if (is_graph_literal(inp)) {
+          format_literal(inp)
+        } else {
+          format_aval_short(inp@aval)
+        }
+      },
+      character(1)
+    ),
+    collapse = ", "
+  )
   outputs <- paste(vapply(x@outputs, \(out) format_aval_short(out@aval), character(1)), collapse = ", ")
   params_str <- if (length(x@params) > 0L) sprintf(" {%d params}", length(x@params)) else ""
   sprintf("%s(%s)%s -> %s", x@primitive@name, inputs, params_str, outputs)

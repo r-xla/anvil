@@ -241,7 +241,11 @@ method(repr, ShapedTensor) <- function(x) {
 }
 
 method(format, ShapedTensor) <- function(x, ...) {
-  sprintf("ShapedTensor(dtype=%s, shape=%s)", if(x@ambiguous) paste0(repr(x@dtype), "?") else repr(x@dtype), repr(x@shape)) # nolint
+  sprintf(
+    "ShapedTensor(dtype=%s, shape=%s)",
+    if (x@ambiguous) paste0(repr(x@dtype), "?") else repr(x@dtype),
+    repr(x@shape)
+  ) # nolint
 }
 
 method(print, ShapedTensor) <- function(x, ...) {

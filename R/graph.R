@@ -234,7 +234,6 @@ maybe_box_variable <- function(x) {
 }
 
 maybe_box_input <- function(x, desc) {
-
   # this function is on the inputs of trace_fn()
   if (is_shaped_tensor(x)) {
     # Abstract value provided directly (via avals parameter)
