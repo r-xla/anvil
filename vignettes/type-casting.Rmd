@@ -7,6 +7,12 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  eval = !(Sys.getenv("PJRT_PLATFORM", "cpu")  == "metal")
+)
+```
+
 ## Type Promotion Rules
 
 When combining tensors of different types (e.g., adding an `f32` to an `i32`), {anvil} needs to determine a common type.

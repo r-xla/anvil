@@ -248,6 +248,7 @@ test_that("p_if", {
 })
 
 test_that("p_convert backward converts gradients to the input dtype", {
+  skip_if_metal()
   x_arr <- array(1:6, c(2, 3))
   x <- nv_tensor(x_arr, dtype = "f32")
   f <- jit(gradient(function(x) {

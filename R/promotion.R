@@ -21,6 +21,7 @@ common_dtype <- function(lhs, rhs, lhs_ambiguous = FALSE, rhs_ambiguous = FALSE)
 }
 
 # Like common_dtype, but for multiple arguments and also determines whether the result type is ambiguous.
+# For internal use
 common_type_info <- function(...) {
   args <- list(...)
   if (length(args) == 0L) {
