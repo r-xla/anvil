@@ -73,6 +73,7 @@ nv_broadcast_scalars <- function(...) {
   shapes <- lapply(args, \(x) shape(st(x)))
   non_scalar_shapes <- Filter(\(s) length(s) > 0L, shapes)
 
+
   if (length(non_scalar_shapes) == 0L) {
     return(args)
   }
@@ -109,7 +110,7 @@ nv_promote_to_common <- function(...) {
     if (cdt == dtype(avals[[i]])) {
       args[[i]]
     } else {
-      # don't propagate ambiguity for now
+      # don't promote ambiguity for now
       nvl_convert(args[[i]], dtype = cdt, ambiguous = FALSE)
     }
   })
@@ -147,8 +148,9 @@ nv_broadcast_tensors <- function(...) {
 #' @return ([`nv_tensor`])
 #' @export
 nv_broadcast_to <- function(operand, shape) {
-  if (!identical(shape(operand), shape)) {
-    broadcast_dimensions <- make_broadcast_dimensions(shape(operand), shape)
+  shape_op <- shape(st(operand))
+  if (!identical(shape_op, shape)) {
+    broadcast_dimensions <- make_broadcast_dimensions(shape_op, shape)
     nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
   } else {
     operand
