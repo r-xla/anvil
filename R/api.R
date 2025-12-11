@@ -109,7 +109,7 @@ nv_promote_to_common <- function(...) {
     if (cdt == dtype(avals[[i]])) {
       args[[i]]
     } else {
-      # don't promote ambiguity for now
+      # don't propagate ambiguity for now
       nvl_convert(args[[i]], dtype = cdt, ambiguous = FALSE)
     }
   })
