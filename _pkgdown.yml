@@ -19,3 +19,4 @@ articles:
   navbar: ~
   contents:
   - internals
+  - type-casting

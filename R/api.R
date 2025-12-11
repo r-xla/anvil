@@ -59,25 +59,62 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
   tail(seq_len(rank_out), rank_in)
 }
 
-nv_broadcast_scalar <- function(lhs, rhs) {
-  shape_lhs <- shape(lhs)
-  shape_rhs <- shape(rhs)
-  if (identical(shape_lhs, shape_rhs)) {
-    return(list(lhs, rhs))
+
+#' @title Broadcast Scalars to Common Shape
+#' @description
+#' Broadcast scalar tensors to match the shape of non-scalar tensors.
+#' All non-scalar tensors must have the same shape.
+#' @param ... ([`nv_tensor`])\cr
+#'   Tensors to broadcast. Scalars will be broadcast to the common non-scalar shape.
+#' @return (`list()` of [`nv_tensor`])
+#' @export
+nv_broadcast_scalars <- function(...) {
+  args <- list(...)
+  shapes <- lapply(args, \(x) shape(st(x)))
+  non_scalar_shapes <- Filter(\(s) length(s) > 0L, shapes)
+
+
+  if (length(non_scalar_shapes) == 0L) {
+    return(args)
   }
-  if (length(shape_lhs) && length(shape_rhs)) {
-    # fmt: skip
+
+  target_shape <- non_scalar_shapes[[1L]]
+  if (!all(vapply(non_scalar_shapes, identical, logical(1L), target_shape))) {
     cli_abort(
-      "By default, only scalar broadcasting is supported, use {.fn nv_broadcast_tensors} to broadcast higher-dimensional tensors." # nolint
+      "All non-scalar tensors must have the same shape. Use {.fn nv_broadcast_tensors} for general broadcasting." # nolint
     )
   }
-  if (!length(shape_lhs)) {
-    lhs <- nv_broadcast_to(lhs, shape_rhs)
-  }
-  if (!length(shape_rhs)) {
-    rhs <- nv_broadcast_to(rhs, shape_lhs)
-  }
-  list(lhs, rhs)
+
+  lapply(args, \(x) {
+    if (length(shape(st(x))) == 0L) {
+      nv_broadcast_to(x, target_shape)
+    } else {
+      x
+    }
+  })
+}
+
+#' @title Promote Tensors to a Common Dtype
+#' @description
+#' Promote tensors to a common type.
+#' @param ... ([`nv_tensor`])\cr
+#'   Tensors to promote.
+#' @return (`list()` of [`nv_tensor`])
+#' @export
+nv_promote_to_common <- function(...) {
+  args <- list(...)
+  avals <- lapply(args, st)
+  tmp <- do.call(common_type_info, avals)
+  cdt <- tmp[[1L]]
+  out <- lapply(seq_along(args), \(i) {
+    if (cdt == dtype(avals[[i]])) {
+      args[[i]]
+    } else {
+      # don't promote ambiguity for now
+      nvl_convert(args[[i]], dtype = cdt, ambiguous = FALSE)
+    }
+  })
+  return(out)
 }
 
 #' @title Broadcast Tensors to a Common Shape
@@ -98,7 +135,7 @@ nv_broadcast_scalar <- function(lhs, rhs) {
 #' @export
 nv_broadcast_tensors <- function(...) {
   args <- list(...)
-  shape <- Reduce(broadcast_shapes, lapply(args, shape))
+  shape <- Reduce(broadcast_shapes, lapply(args, \(x) shape(st(x))))
   lapply(args, nv_broadcast_to, shape = shape)
 }
 
@@ -127,9 +164,8 @@ nv_broadcast_to <- function(operand, shape) {
 #' @return [`nv_tensor`]
 #' @export
 nv_convert <- function(operand, dtype) {
-  nvl_convert(operand, as_dtype(dtype))
+  nvl_convert(operand, dtype = dtype, ambiguous = FALSE)
 }
-
 
 #' @rdname nv_transpose
 #' @export
@@ -173,81 +209,77 @@ nv_reshape <- nvl_reshape
 #' @return [`nv_tensor`]
 NULL
 
+
+do_binary <- function(f, lhs, rhs) {
+  args <- nv_promote_to_common(lhs, rhs)
+  args <- nv_broadcast_scalars(args[[1L]], args[[2L]])
+  do.call(f, args)
+}
+
 #' @rdname nv_binary_ops
 #' @export
 nv_add <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_add(args[[1]], args[[2]])
+  do_binary(nvl_add, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_mul <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_mul(args[[1]], args[[2]])
+  do_binary(nvl_mul, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_sub <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_sub(args[[1]], args[[2]])
+  do_binary(nvl_sub, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_div <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_div(args[[1]], args[[2]])
+  do_binary(nvl_div, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_pow <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_pow(args[[1]], args[[2]])
+  do_binary(nvl_pow, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_eq <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_eq(args[[1]], args[[2]])
+  do_binary(nvl_eq, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_ne <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_ne(args[[1]], args[[2]])
+  do_binary(nvl_ne, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_gt <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_gt(args[[1]], args[[2]])
+  do_binary(nvl_gt, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_ge <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_ge(args[[1]], args[[2]])
+  do_binary(nvl_ge, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_lt <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_lt(args[[1]], args[[2]])
+  do_binary(nvl_lt, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_le <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_le(args[[1]], args[[2]])
+  do_binary(nvl_le, lhs, rhs)
 }
 
 ## Additional binary ops -------------------------------------------------------
@@ -255,71 +287,61 @@ nv_le <- function(lhs, rhs) {
 #' @rdname nv_binary_ops
 #' @export
 nv_max <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_max(args[[1]], args[[2]])
+  do_binary(nvl_max, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_min <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_min(args[[1]], args[[2]])
+  do_binary(nvl_min, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_remainder <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_remainder(args[[1]], args[[2]])
+  do_binary(nvl_remainder, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_and <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_and(args[[1]], args[[2]])
+  do_binary(nvl_and, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_or <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_or(args[[1]], args[[2]])
+  do_binary(nvl_or, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_xor <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_xor(args[[1]], args[[2]])
+  do_binary(nvl_xor, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_shift_left <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_shift_left(args[[1]], args[[2]])
+  do_binary(nvl_shift_left, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_shift_right_logical <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_shift_right_logical(args[[1]], args[[2]])
+  do_binary(nvl_shift_right_logical, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_shift_right_arithmetic <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_shift_right_arithmetic(args[[1]], args[[2]])
+  do_binary(nvl_shift_right_arithmetic, lhs, rhs)
 }
 
 #' @rdname nv_binary_ops
 #' @export
 nv_atan2 <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_atan2(args[[1]], args[[2]])
+  do_binary(nvl_atan2, lhs, rhs)
 }
 
 ## Unary ops ------------------------------------------------------------------
@@ -398,6 +420,9 @@ nv_round <- nvl_round
 #' @return [`nv_tensor`]
 #' @export
 nv_matmul <- function(lhs, rhs) {
+  args <- nv_promote_to_common(lhs, rhs)
+  lhs <- args[[1L]]
+  rhs <- args[[2L]]
   if (ndims(lhs) < 2L) {
     cli_abort("lhs of matmul must have at least 2 dimensions")
   }

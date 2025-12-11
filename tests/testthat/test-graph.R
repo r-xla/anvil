@@ -156,3 +156,21 @@ test_that("Graph: printing", {
   graph1 <- trace_fn(f1, list(x = nv_tensor(1:10, dtype = "f32", shape = c(2, 5))))
   expect_snapshot(graph1)
 })
+
+test_that("literals", {
+  f <- function(x) {
+    x * 2
+  }
+  graph <- trace_fn(f, list(x = nv_scalar(1)))
+
+})
+
+test_that("ambiguous shaped tensor check", {
+  expect_error(ShapedTensor(dt_i64, Shape(c()), TRUE))
+  expect_error(ShapedTensor(dt_i64, Shape(c()), FALSE), NA)
+})
+
+
+test_that("ambiguous type information is propagated", {
+
+})

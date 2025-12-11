@@ -3,7 +3,7 @@
 #' @title Graph Value
 #' @description
 #' Value in a [`Graph`].
-#' @param aval (`ShapedTensor`)\cr
+#' @param aval ([`ShapedTensor`])\cr
 #'   The abstract value of the variable.
 #' @include mut.R
 GraphValue <- mut(new_class(
@@ -18,15 +18,11 @@ GraphValue <- mut(new_class(
 #' Literal in a [`Graph`].
 #' @param aval (`any`)\cr
 #'   The value of the literal.
-#' @template param_dtype
 #' @export
 GraphLiteral <- mut(new_class(
   "GraphLiteral",
   properties = list(
-    aval = new_property(class_any, validator = function(value) {
-      checkmate::check_scalar(value)
-    }),
-    dtype = stablehlo::TensorDataType
+    aval = LiteralTensor
   )
 ))
 
@@ -39,7 +35,7 @@ method(format, GraphValue) <- function(x, ...) {
 }
 
 method(format, GraphLiteral) <- function(x, ...) {
-  sprintf("GraphLiteral(%s, %s)", format(x@aval), format(x@dtype))
+  sprintf("GraphLiteral(%s, %s)", x@aval@data, repr(x@aval@dtype))
 }
 
 GraphNode <- S7::new_union(GraphValue, GraphLiteral)
@@ -61,8 +57,8 @@ PrimitiveCall <- new_class(
   "PrimitiveCall",
   properties = list(
     primitive = Primitive,
-    params = list_of(class_any),
     inputs = list_of(GraphNode),
+    params = list_of(class_any),
     outputs = list_of(GraphNode)
   )
 )
@@ -152,11 +148,11 @@ method(dtype, GraphValue) <- function(x, ...) {
 }
 
 method(shape, GraphLiteral) <- function(x, ...) {
-  integer()
+  x@aval@shape
 }
 
 method(dtype, GraphLiteral) <- function(x, ...) {
-  x@dtype
+  x@aval@dtype
 }
 
 
@@ -183,17 +179,17 @@ GraphBox <- new_class(
   "GraphBox",
   properties = list(
     # TODO: rename to gnode
-    gval = GraphNode,
+    gnode = GraphNode,
     desc = GraphDescriptor
   )
 )
 
 method(shape, GraphBox) <- function(x, ...) {
-  shape(x@gval)
+  shape(x@gnode)
 }
 
 method(dtype, GraphBox) <- function(x, ...) {
-  dtype(x@gval)
+  dtype(x@gnode)
 }
 
 method(print, GraphBox) <- function(x, ...) {
@@ -201,7 +197,7 @@ method(print, GraphBox) <- function(x, ...) {
 }
 
 method(format, GraphBox) <- function(x, ...) {
-  sprintf("GraphBox(%s)", format(x@gval))
+  sprintf("GraphBox(%s)", format(x@gnode))
 }
 
 aval <- function(x) {
@@ -209,7 +205,7 @@ aval <- function(x) {
     return(ConcreteTensor(x))
   }
   if (is_graph_box(x)) {
-    return(x@gval@aval)
+    return(x@gnode@aval)
   }
   cli_abort("internal error")
 }
@@ -221,9 +217,9 @@ maybe_box_variable <- function(x) {
     if (identical(x@desc, current_desc)) {
       return(x)
     }
-    gval <- x@gval
+    gval <- x@gnode
     get_box_or_register_const(current_desc, gval)
-  } else if (is_anvil_tensor(x)) {
+  } else if (is_anvil_tensor(x) || test_scalar(x)) {
     get_box_or_register_const(current_desc, x)
   } else if (is_graph_node(x)) {
     # FIXME: !!!
@@ -238,8 +234,13 @@ maybe_box_variable <- function(x) {
 }
 
 maybe_box_input <- function(x, desc) {
+
   # this function is on the inputs of trace_fn()
-  if (is_anvil_tensor(x)) {
+  if (is_shaped_tensor(x)) {
+    # Abstract value provided directly (via avals parameter)
+    gval <- GraphValue(aval = x)
+    register_input(desc, gval)
+  } else if (is_anvil_tensor(x)) {
     # cases:
     # 1. top-level trace_fn call
     # 2. a constant is passed to a nested trace_fn call
@@ -258,7 +259,7 @@ maybe_box_input <- function(x, desc) {
     # Nested trace_fn call
     # Because we will inline the child graph into the parent graph, we re-use
     # the same GraphValue, because this will make the inlining straightforward.
-    register_input(desc, x@gval)
+    register_input(desc, x@gnode)
   } else {
     # parameter
     x
@@ -309,6 +310,16 @@ get_box_or_register_const <- function(desc, x) {
     desc@constants <- c(desc@constants, gval)
     box <- GraphBox(gval, desc)
     desc@gval_to_box[[gval]] <- box
+    return(box)
+  }
+  if (test_scalar(x)) {
+    gval <- GraphLiteral(LiteralTensor(x, integer()))
+    box <- desc@gval_to_box[[gval]] <- GraphBox(gval, desc)
+    return(box)
+  }
+  if (is_graph_literal(x)) {
+    gval <- GraphLiteral(LiteralTensor(x@aval@data, integer()))
+    box <- desc@gval_to_box[[gval]] <- GraphBox(gval, desc)
     return(box)
   }
   if (!is_graph_value(x)) {
@@ -390,7 +401,7 @@ trace_fn <- function(f, args, desc = NULL) {
   outputs_flat <- lapply(output[[2L]], maybe_box_variable)
 
   desc@out_tree <- out_tree
-  desc@outputs <- lapply(outputs_flat, \(x) x@gval)
+  desc@outputs <- lapply(outputs_flat, \(x) x@gnode)
 
   if (any(vapply(outputs_flat, \(x) !is_graph_box(x), logical(1L)))) {
     cli_abort("Function .f must return only objects of type `GraphBox`.")
@@ -475,18 +486,22 @@ is_graph_box <- function(x) {
   inherits(x, "anvil::GraphBox")
 }
 
-graph_desc_add <- function(prim, args, params = list(), infer_fn) {
+graph_desc_add <- function(prim, args, params = list(), infer_fn, infer_hlo = TRUE) {
   boxes_in <- lapply(args, maybe_box_variable)
-  gvals_in <- lapply(boxes_in, \(x) x@gval)
+  gnodes_in <- lapply(boxes_in, \(box) box@gnode)
   avals_in <- lapply(boxes_in, aval)
 
-  vts_in <- lapply(avals_in, \(aval) st2vt(aval))
-  outputs <- rlang::exec(infer_fn, !!!c(vts_in, params))
-  sts_out <- lapply(outputs, vt2st)
+  if (infer_hlo) {
+    vts_in <- lapply(avals_in, \(aval) st2vt(aval))
+    outputs <- rlang::exec(infer_fn, !!!c(vts_in, params))
+    sts_out <- lapply(outputs, vt2st)
+  } else {
+    sts_out <- rlang::exec(infer_fn, !!!c(avals_in, params))
+  }
 
   gvals_out <- lapply(sts_out, GraphValue)
 
-  call <- PrimitiveCall(prim, params, gvals_in, gvals_out)
+  call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)
 
   desc <- .current_descriptor()
   desc@calls <- c(desc@calls, call)
@@ -515,8 +530,4 @@ inline_graph_into_desc <- function(desc, graph) {
   gvals_out_flat <- graph@outputs
   boxes_out_flat <- lapply(gvals_out_flat, GraphBox, desc)
   unflatten(graph@out_tree, boxes_out_flat)
-}
-
-method(format, GraphLiteral) <- function(x, ...) {
-  sprintf("GraphLiteral(%s, %s)", format(x@aval), format(x@dtype))
 }

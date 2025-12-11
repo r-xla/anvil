@@ -2,8 +2,8 @@ test_that("auto-broadcasting higher-dimensional tensors is not supported (it's b
   x <- nv_tensor(1:2, shape = c(2, 1))
   y <- nv_tensor(1:2, shape = c(1, 2))
   expect_error(
-    nv_add(x, y),
-    "By default, only scalar broadcasting is supported"
+    jit(nv_add)(x, y),
+    "must have the same shape"
   )
 })
 
@@ -62,4 +62,11 @@ test_that("wrt non-existent argument", {
     jit(gradient(f, wrt = "y"))(nv_tensor(2)),
     "must be a subset"
   )
+})
+
+test_that("promote to common", {
+  f <- function(x, y) {
+    nv_add(x, y)
+  }
+  jit(f)(nv_tensor(1, dtype = "i32"), nv_tensor(1.0, dtype = "f32"))
 })

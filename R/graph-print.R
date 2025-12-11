@@ -1,11 +1,22 @@
 #' @include graph.R
 
 format_node_id <- function(node, node_ids) {
+
+  # GraphLiterals are formatted inline with their value
+  if (is_graph_literal(node)) {
+    return(format_literal(node))
+  }
   id <- node_ids[[node]]
   if (is.null(id)) {
     return("???")
   }
   sprintf("%%%s", id)
+}
+
+format_literal <- function(node) {
+  val <- node@aval@data
+  dt <- repr(dtype(node@aval))
+  sprintf("%s:%s", val, dt)
 }
 
 format_aval_short <- function(aval) {
@@ -47,8 +58,15 @@ format_param <- function(param) {
     }
   } else if (is_graph(param)) {
     sprintf("graph[%s -> %s]", length(param@inputs), length(param@outputs))
+  } else if (is_dtype(param)) {
+    repr(param)
   } else {
-    "<any>"
+    x <- try(format(param), silent = TRUE)
+    if (length(x) == 1L) {
+      x
+    } else {
+      "<any>"
+    }
   }
 }
 
@@ -123,7 +141,11 @@ format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph"
     output_strs <- vapply(
       outputs,
       function(node) {
-        sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node@aval))
+        if (is_graph_literal(node)) {
+          sprintf("    %s", format_literal(node))
+        } else {
+          sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node@aval))
+        }
       },
       character(1)
     )
@@ -136,7 +158,13 @@ format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph"
 }
 
 method(format, PrimitiveCall) <- function(x, ...) {
-  inputs <- paste(vapply(x@inputs, \(inp) format_aval_short(inp@aval), character(1)), collapse = ", ")
+  inputs <- paste(vapply(x@inputs, function(inp) {
+    if (is_graph_literal(inp)) {
+      format_literal(inp)
+    } else {
+      format_aval_short(inp@aval)
+    }
+  }, character(1)), collapse = ", ")
   outputs <- paste(vapply(x@outputs, \(out) format_aval_short(out@aval), character(1)), collapse = ", ")
   params_str <- if (length(x@params) > 0L) sprintf(" {%d params}", length(x@params)) else ""
   sprintf("%s(%s)%s -> %s", x@primitive@name, inputs, params_str, outputs)

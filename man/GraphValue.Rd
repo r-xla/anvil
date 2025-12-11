@@ -7,7 +7,7 @@
 GraphValue(aval = ShapedTensor())
 }
 \arguments{
-\item{aval}{(\code{ShapedTensor})\cr
+\item{aval}{(\code{\link{ShapedTensor}})\cr
 The abstract value of the variable.}
 }
 \description{

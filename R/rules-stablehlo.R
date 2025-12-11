@@ -241,7 +241,7 @@ p_round[["stablehlo"]] <- function(operand, method) {
   )
 }
 
-p_convert[["stablehlo"]] <- function(operand, dtype) {
+p_convert[["stablehlo"]] <- function(operand, dtype, ambiguous) {
   list(stablehlo::hlo_convert(operand, dtype))
 }
 
