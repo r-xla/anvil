@@ -27,6 +27,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
+    <li><a class="dropdown-item" href="../articles/type-casting.html">Type Casting</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -60,6 +61,13 @@
 
       <dl><dt>
 
+          <code><a href="ConcreteTensor.html">ConcreteTensor()</a></code>
+
+        </dt>
+        <dd>Concrete Tensor Class</dd>
+
+        <dt>
+
           <code><a href="Graph.html">Graph()</a></code>
 
         </dt>
@@ -88,6 +96,13 @@
 
         <dt>
 
+          <code><a href="LiteralTensor.html">LiteralTensor()</a></code>
+
+        </dt>
+        <dd>Literal Tensor Class</dd>
+
+        <dt>
+
           <code><a href="Primitive.html">Primitive()</a></code>
 
         </dt>
@@ -99,6 +114,20 @@
 
         </dt>
         <dd>Primitive Call</dd>
+
+        <dt>
+
+          <code><a href="ShapedTensor.html">ShapedTensor()</a></code>
+
+        </dt>
+        <dd>Shaped Tensor Class</dd>
+
+        <dt>
+
+          <code><a href="common_dtype.html">common_dtype()</a></code>
+
+        </dt>
+        <dd>Type Promotion Rules</dd>
 
         <dt>
 
@@ -151,10 +180,10 @@
 
         <dt>
 
-          <code><a href="nv_bitcast_convert.html">nv_bitcast_convert()</a></code>
+          <code><a href="nv_broadcast_scalars.html">nv_broadcast_scalars()</a></code>
 
         </dt>
-        <dd>Bitcast Conversion</dd>
+        <dd>Broadcast Scalars to Common Shape</dd>
 
         <dt>
 
@@ -169,13 +198,6 @@
 
         </dt>
         <dd>Broadcast</dd>
-
-        <dt>
-
-          <code><a href="nv_concatenate.html">nv_concatenate()</a></code>
-
-        </dt>
-        <dd>Concatenate</dd>
 
         <dt>
 
@@ -207,6 +229,13 @@
 
         <dt>
 
+          <code><a href="nv_promote_to_common.html">nv_promote_to_common()</a></code>
+
+        </dt>
+        <dd>Promote Tensors to a Common Dtype</dd>
+
+        <dt>
+
           <code><a href="nv_reduce_ops.html">nv_reduce_sum()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_mean()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_prod()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_max()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_min()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_any()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_all()</a></code>
 
         </dt>
@@ -218,48 +247,6 @@
 
         </dt>
         <dd>Reshape</dd>
-
-        <dt>
-
-          <code><a href="nv_rng_bit_generator.html">nv_rng_bit_generator()</a></code>
-
-        </dt>
-        <dd>Random Numbers</dd>
-
-        <dt>
-
-          <code><a href="nv_rng_state.html">nv_rng_state()</a></code>
-
-        </dt>
-        <dd>Generate random state</dd>
-
-        <dt>
-
-          <code><a href="nv_rnorm.html">nv_rnorm()</a></code>
-
-        </dt>
-        <dd>Random Normal Numbers</dd>
-
-        <dt>
-
-          <code><a href="nv_runif.html">nv_runif()</a></code> <code><a href="nv_runif.html">nv_unif_rand()</a></code>
-
-        </dt>
-        <dd>Random Uniform Numbers</dd>
-
-        <dt>
-
-          <code><a href="nv_select.html">nv_select()</a></code>
-
-        </dt>
-        <dd>Select</dd>
-
-        <dt>
-
-          <code><a href="nv_slice.html">nv_slice()</a></code>
-
-        </dt>
-        <dd>Slice</dd>
 
         <dt>
 
@@ -277,7 +264,7 @@
 
         <dt>
 
-          <code><a href="nv_unary_ops.html">nv_neg()</a></code> <code><a href="nv_unary_ops.html">nv_abs()</a></code> <code><a href="nv_unary_ops.html">nv_sqrt()</a></code> <code><a href="nv_unary_ops.html">nv_rsqrt()</a></code> <code><a href="nv_unary_ops.html">nv_log()</a></code> <code><a href="nv_unary_ops.html">nv_tanh()</a></code> <code><a href="nv_unary_ops.html">nv_tan()</a></code> <code><a href="nv_unary_ops.html">nv_sine()</a></code> <code><a href="nv_unary_ops.html">nv_cosine()</a></code> <code><a href="nv_unary_ops.html">nv_floor()</a></code> <code><a href="nv_unary_ops.html">nv_ceil()</a></code> <code><a href="nv_unary_ops.html">nv_sign()</a></code> <code><a href="nv_unary_ops.html">nv_exp()</a></code> <code><a href="nv_unary_ops.html">nv_round()</a></code>
+          <code><a href="nv_unary_ops.html">nv_neg()</a></code> <code><a href="nv_unary_ops.html">nv_abs()</a></code> <code><a href="nv_unary_ops.html">nv_sqrt()</a></code> <code><a href="nv_unary_ops.html">nv_rsqrt()</a></code> <code><a href="nv_unary_ops.html">nv_log()</a></code> <code><a href="nv_unary_ops.html">nv_tanh()</a></code> <code><a href="nv_unary_ops.html">nv_tan()</a></code> <code><a href="nv_unary_ops.html">nv_floor()</a></code> <code><a href="nv_unary_ops.html">nv_ceil()</a></code> <code><a href="nv_unary_ops.html">nv_sign()</a></code> <code><a href="nv_unary_ops.html">nv_exp()</a></code> <code><a href="nv_unary_ops.html">nv_round()</a></code>
 
         </dt>
         <dd>Unary Operations</dd>
@@ -298,6 +285,13 @@
 
         <dt>
 
+          <code><a href="st.html">st()</a></code>
+
+        </dt>
+        <dd>Convert to Shaped Tensor</dd>
+
+        <dt>
+
           <code><a href="stablehlo.html">stablehlo()</a></code>
 
         </dt>
@@ -314,7 +308,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sebastian Fischer, Daniel Falbel, Nikolai German.</p>
+  <p>Developed by Sebastian Fischer, Daniel Falbel.</p>
 </div>
 
 <div class="pkgdown-footer-right">

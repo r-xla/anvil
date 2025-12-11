@@ -42,6 +42,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
+    <li><a class="dropdown-item" href="../articles/type-casting.html">Type Casting</a></li>
   </ul>
 </li>
       </ul>
@@ -74,7 +75,7 @@
       <h1>Internals</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-rngs/vignettes/internals.Rmd" class="external-link"><code>vignettes/internals.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-literals/vignettes/internals.Rmd" class="external-link"><code>vignettes/internals.Rmd</code></a></small>
       <div class="d-none name"><code>internals.Rmd</code></div>
     </div>
 
@@ -123,7 +124,7 @@ records (selected) operations.</li>
 <p>The former approach is followed by the {quickr} package, which allows
 you to transpile R code into Fortran. In {anvil}, we are following the
 dynamic approach, which we will now illustrate. Our goal will be to
-trace the following function, which either adds or subtracts two
+trace_fn the following function, which either adds or subtracts two
 tensors. The first two arguments are expected to be
 <code>AnvilTensor</code>s, while the third is either <code>"add"</code>
 or <code>"sub"</code>.</p>
@@ -233,7 +234,7 @@ under the <code>"backward"</code> name.</p>
 <span><span class="co">##     grad &lt;- grads[[1L]]</span></span>
 <span><span class="co">##     list(if (.required[[1L]]) grad, if (.required[[2L]]) grad)</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x55d11f52b7c0&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x5592fd667a20&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code>anvil:::transform_gradient</code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -273,7 +274,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_add(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x55d11f52afa8&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x5592fd667208&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>They are applied in the <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
@@ -446,7 +447,7 @@ compiled.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sebastian Fischer, Daniel Falbel, Nikolai German.</p>
+  <p>Developed by Sebastian Fischer, Daniel Falbel.</p>
 </div>
 
 <div class="pkgdown-footer-right">
