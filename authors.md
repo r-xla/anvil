@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/r-xla/anvil/blob/feat-literals/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/r-xla/anvil/blob/backward/log-exp-max/DESCRIPTION)
 
 Fischer S, Falbel D (2025). *anvil: Framework for R code
 transformations*. R package version 0.0.0.9000,

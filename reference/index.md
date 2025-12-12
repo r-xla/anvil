@@ -2,8 +2,6 @@
 
 ## All functions
 
-- [`ConcreteTensor()`](ConcreteTensor.md) : Concrete Tensor Class
-
 - [`Graph()`](Graph.md) : Graph of Primitive Calls
 
 - [`GraphDescriptor()`](GraphDescriptor.md) : Graph Descriptor
@@ -12,15 +10,9 @@
 
 - [`GraphValue()`](GraphValue.md) : Graph Value
 
-- [`LiteralTensor()`](LiteralTensor.md) : Literal Tensor Class
-
 - [`Primitive()`](Primitive.md) : Primitive
 
 - [`PrimitiveCall()`](PrimitiveCall.md) : Primitive Call
-
-- [`ShapedTensor()`](ShapedTensor.md) : Shaped Tensor Class
-
-- [`common_dtype()`](common_dtype.md) : Type Promotion Rules
 
 - [`data_types`](data_types.md) [`dt_i1`](data_types.md)
   [`dt_i8`](data_types.md) [`dt_i16`](data_types.md)
@@ -33,7 +25,8 @@
 - [`.current_descriptor()`](dot-current_descriptor.md) : Get the current
   graph
 
-- [`gradient()`](gradient.md) : Gradient
+- [`gradient()`](gradient.md) [`value_and_gradient()`](gradient.md) :
+  Gradient
 
 - [`jit()`](jit.md) : JIT compile a function
 
@@ -56,9 +49,6 @@
   [`nv_shift_right_arithmetic()`](nv_binary_ops.md)
   [`nv_atan2()`](nv_binary_ops.md) : Binary Operations
 
-- [`nv_broadcast_scalars()`](nv_broadcast_scalars.md) : Broadcast
-  Scalars to Common Shape
-
 - [`nv_broadcast_tensors()`](nv_broadcast_tensors.md) : Broadcast
   Tensors to a Common Shape
 
@@ -72,9 +62,6 @@
 - [`nv_if()`](nv_if.md) : If
 
 - [`nv_matmul()`](nv_matmul.md) : Matrix Multiplication
-
-- [`nv_promote_to_common()`](nv_promote_to_common.md) : Promote Tensors
-  to a Common Dtype
 
 - [`nv_reduce_sum()`](nv_reduce_ops.md)
   [`nv_reduce_mean()`](nv_reduce_ops.md)
@@ -103,8 +90,6 @@
 - [`nv_while()`](nv_while.md) : While
 
 - [`platform()`](platform.md) : Platform
-
-- [`st()`](st.md) : Convert to Shaped Tensor
 
 - [`stablehlo()`](stablehlo.md) : Lower a function to StableHLO
 
