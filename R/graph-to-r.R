@@ -1118,6 +1118,103 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     cli_abort("all: only rank-1/2 tensors are currently supported")
   }
 
+  .emit_reduce_any_base <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
+    dims <- as.integer(dims)
+    rank <- length(shape_in)
+
+    if (rank == 1L && identical(dims, 1L)) {
+      expr <- .call2("any", operand_expr)
+      if (!isTRUE(drop)) {
+        expr <- .call2("c", expr)
+      }
+      return(.emit_assign(out_sym, expr))
+    }
+
+    if (rank == 2L) {
+      m <- as.integer(shape_in[[1L]])
+      n <- as.integer(shape_in[[2L]])
+
+      if (identical(dims, c(1L, 2L))) {
+        expr <- .call2("any", operand_expr)
+        if (!isTRUE(drop)) {
+          expr <- .call2("matrix", expr, nrow = 1L, ncol = 1L)
+        }
+        return(.emit_assign(out_sym, expr))
+      }
+
+      if (identical(dims, 2L)) {
+        expr <- .call2("!=", .call2("rowSums", operand_expr), 0L)
+        if (!isTRUE(drop)) {
+          expr <- .call2("matrix", expr, nrow = m, ncol = 1L)
+        }
+        return(.emit_assign(out_sym, expr))
+      }
+
+      if (identical(dims, 1L)) {
+        expr <- .call2("!=", .call2("colSums", operand_expr), 0L)
+        if (!isTRUE(drop)) {
+          expr <- .call2("matrix", expr, nrow = 1L, ncol = n)
+        }
+        return(.emit_assign(out_sym, expr))
+      }
+
+      cli_abort("any: unsupported reduction dims for rank-2 tensor")
+    }
+
+    cli_abort("any: only rank-1/2 tensors are currently supported")
+  }
+
+  .emit_reduce_all_base <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
+    dims <- as.integer(dims)
+    rank <- length(shape_in)
+
+    if (rank == 1L && identical(dims, 1L)) {
+      expr <- .call2("all", operand_expr)
+      if (!isTRUE(drop)) {
+        expr <- .call2("c", expr)
+      }
+      return(.emit_assign(out_sym, expr))
+    }
+
+    if (rank == 2L) {
+      m <- as.integer(shape_in[[1L]])
+      n <- as.integer(shape_in[[2L]])
+
+      if (identical(dims, c(1L, 2L))) {
+        expr <- .call2("all", operand_expr)
+        if (!isTRUE(drop)) {
+          expr <- .call2("matrix", expr, nrow = 1L, ncol = 1L)
+        }
+        return(.emit_assign(out_sym, expr))
+      }
+
+      if (identical(dims, 2L)) {
+        expr <- .call2("==", .call2("rowSums", operand_expr), n)
+        if (!isTRUE(drop)) {
+          expr <- .call2("matrix", expr, nrow = m, ncol = 1L)
+        }
+        return(.emit_assign(out_sym, expr))
+      }
+
+      if (identical(dims, 1L)) {
+        expr <- .call2("==", .call2("colSums", operand_expr), m)
+        if (!isTRUE(drop)) {
+          expr <- .call2("matrix", expr, nrow = 1L, ncol = n)
+        }
+        return(.emit_assign(out_sym, expr))
+      }
+
+      cli_abort("all: unsupported reduction dims for rank-2 tensor")
+    }
+
+    cli_abort("all: only rank-1/2 tensors are currently supported")
+  }
+
+  if (!isTRUE(include_declare)) {
+    .emit_reduce_any <- .emit_reduce_any_base
+    .emit_reduce_all <- .emit_reduce_all_base
+  }
+
   .emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_aval) {
     if (length(shape_in) > 2L || length(shape_out) > 2L) {
       cli_abort("reshape: only rank-0/1/2 tensors are currently supported")
@@ -1232,159 +1329,256 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     cli_abort("select: only rank-0/1/2 tensors are currently supported")
   }
 
-  .emit_prim <- function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
-    out_sym <- out_syms[[1L]]
-    out_aval <- out_avals[[1L]]
+  .make_slice <- function(target_sym, axis, axis_sym, rank) {
+    target_nm <- as.character(target_sym)
+    axis_nm <- as.character(axis_sym)
+    idxs <- rep("", rank)
+    idxs[[axis]] <- axis_nm
+    str2lang(paste0(target_nm, "[", paste(idxs, collapse = ","), "]"))
+  }
 
-    switch(
-      prim_name,
-      constant = {
-        dt_chr <- as.character(params$dtype)
-        value <- params$value
-        shp <- params$shape
-        if (!checkmate::test_scalar(value)) {
-          cli_abort("Only scalar `constant` values are supported")
-        }
-        value <- .scalar_cast(value, dt_chr)
-        .emit_full_like(out_sym, value, shp, out_aval)
-      },
-      add = .emit_assign(out_sym, .call2("+", inputs[[1L]], inputs[[2L]])),
-      sub = .emit_assign(out_sym, .call2("-", inputs[[1L]], inputs[[2L]])),
-      mul = .emit_assign(out_sym, .call2("*", inputs[[1L]], inputs[[2L]])),
-      divide = .emit_assign(out_sym, .call2("/", inputs[[1L]], inputs[[2L]])),
-      power = .emit_assign(out_sym, .call2("^", inputs[[1L]], inputs[[2L]])),
-      negate = .emit_assign(out_sym, .call2("-", inputs[[1L]])),
-      abs = .emit_assign(out_sym, .call2("abs", inputs[[1L]])),
-      exp = .emit_assign(out_sym, .call2("exp", inputs[[1L]])),
-      sqrt = .emit_assign(out_sym, .call2("sqrt", inputs[[1L]])),
-      rsqrt = .emit_assign(out_sym, .call2("/", 1.0, .call2("sqrt", inputs[[1L]]))),
-      log = .emit_assign(out_sym, .call2("log", inputs[[1L]])),
-      tanh = .emit_assign(out_sym, .call2("tanh", inputs[[1L]])),
-      tan = .emit_assign(out_sym, .call2("tan", inputs[[1L]])),
-      floor = .emit_assign(out_sym, .call2("floor", inputs[[1L]])),
-      ceil = .emit_assign(out_sym, .call2("ceiling", inputs[[1L]])),
-      sign = .emit_assign(out_sym, .call2("sign", inputs[[1L]])),
-      round = .emit_assign(out_sym, .call2("round", inputs[[1L]])),
+  .emit_mul_broadcast_axis <- function(out_sym, x_expr, y_expr, axis, shape_out) {
+    rank <- length(shape_out)
+    if (rank < 1L) {
+      cli_abort("Internal error: cannot broadcast into rank-0 output")
+    }
+    axis <- as.integer(axis[[1L]])
+    axis_size <- as.integer(shape_out[[axis]])
+    k <- as.name(paste0("k_", as.character(out_sym), "_", axis))
 
-      equal = .emit_assign(out_sym, .call2("==", inputs[[1L]], inputs[[2L]])),
-      not_equal = .emit_assign(out_sym, .call2("!=", inputs[[1L]], inputs[[2L]])),
-      greater = .emit_assign(out_sym, .call2(">", inputs[[1L]], inputs[[2L]])),
-      greater_equal = .emit_assign(out_sym, .call2(">=", inputs[[1L]], inputs[[2L]])),
-      less = .emit_assign(out_sym, .call2("<", inputs[[1L]], inputs[[2L]])),
-      less_equal = .emit_assign(out_sym, .call2("<=", inputs[[1L]], inputs[[2L]])),
+    slice <- .make_slice(out_sym, axis, k, rank)
+    rhs <- .call2("*", slice, .call2("[", y_expr, k))
+    assign_slice <- .call2("<-", slice, rhs)
 
-      maximum = .emit_elementwise_maxmin(out_sym, inputs[[1L]], inputs[[2L]], shape(out_aval), TRUE, out_aval),
-      minimum = .emit_elementwise_maxmin(out_sym, inputs[[1L]], inputs[[2L]], shape(out_aval), FALSE, out_aval),
-      remainder = .emit_assign(out_sym, .call2("%%", inputs[[1L]], inputs[[2L]])),
-      not = .emit_assign(out_sym, .call2("!", inputs[[1L]])),
-      and = .emit_assign(out_sym, .call2("&", inputs[[1L]], inputs[[2L]])),
-      or = .emit_assign(out_sym, .call2("|", inputs[[1L]], inputs[[2L]])),
-      xor = .emit_assign(out_sym, .call2("!=", inputs[[1L]], inputs[[2L]])),
-      shift_left = .emit_assign(out_sym, .call2("*", inputs[[1L]], .call2("^", 2L, inputs[[2L]]))),
-      shift_right_logical = .emit_assign(out_sym, .call2("%/%", inputs[[1L]], .call2("^", 2L, inputs[[2L]]))),
-      shift_right_arithmetic = .emit_assign(out_sym, .call2("%/%", inputs[[1L]], .call2("^", 2L, inputs[[2L]]))),
-      atan2 = .emit_assign(out_sym, .call2("atan2", inputs[[1L]], inputs[[2L]])),
-
-      select = {
-        pred_node <- input_nodes[[1L]]
-        pred_shape <- if (is_graph_value(pred_node)) shape(pred_node@aval) else integer()
-        .emit_select(
-          out_sym,
-          inputs[[1L]],
-          inputs[[2L]],
-          inputs[[3L]],
-          pred_shape = pred_shape,
-          out_shape = shape(out_aval),
-          out_aval = out_aval
-        )
-      },
-
-      convert = {
-        dt_chr <- as.character(params$dtype)
-        conv <- .dtype_to_quickr_ctor(dt_chr)
-        .emit_assign(out_sym, .call2(paste0("as.", conv), inputs[[1L]]))
-      },
-
-      broadcast_in_dim = {
-        shape_out <- params$shape_out
-        broadcast_dimensions <- params$broadcast_dimensions
-        operand_node <- input_nodes[[1L]]
-        shape_in <- if (is_graph_value(operand_node)) shape(operand_node@aval) else integer()
-        .emit_broadcast_in_dim(out_sym, inputs[[1L]], shape_in, shape_out, broadcast_dimensions, out_aval)
-      },
-
-      dot_general = {
-        lhs_node <- input_nodes[[1L]]
-        rhs_node <- input_nodes[[2L]]
-        if (!is_graph_value(lhs_node) || !is_graph_value(rhs_node)) {
-          cli_abort("dot_general: only GraphValue inputs are supported")
-        }
-        .emit_dot_general(
-          out_sym,
-          inputs[[1L]],
-          inputs[[2L]],
-          shape(lhs_node@aval),
-          shape(rhs_node@aval),
-          shape(out_aval),
-          out_aval
-        )
-      },
-
-      transpose = .emit_transpose(out_sym, inputs[[1L]], params$permutation, shape(out_aval), out_aval),
-
-      reshape = {
-        operand_node <- input_nodes[[1L]]
-        if (!is_graph_value(operand_node)) {
-          cli_abort("reshape: only GraphValue inputs are supported")
-        }
-        .emit_reshape(out_sym, inputs[[1L]], shape(operand_node@aval), params$shape, out_aval)
-      },
-
-      sum = {
-        operand_node <- input_nodes[[1L]]
-        if (!is_graph_value(operand_node)) {
-          cli_abort("sum: only GraphValue inputs are supported")
-        }
-        .emit_reduce_sum(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval)
-      },
-      prod = {
-        operand_node <- input_nodes[[1L]]
-        if (!is_graph_value(operand_node)) {
-          cli_abort("prod: only GraphValue inputs are supported")
-        }
-        .emit_reduce_prod(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval)
-      },
-      max = {
-        operand_node <- input_nodes[[1L]]
-        if (!is_graph_value(operand_node)) {
-          cli_abort("max: only GraphValue inputs are supported")
-        }
-        .emit_reduce_max(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval)
-      },
-      min = {
-        operand_node <- input_nodes[[1L]]
-        if (!is_graph_value(operand_node)) {
-          cli_abort("min: only GraphValue inputs are supported")
-        }
-        .emit_reduce_min(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval)
-      },
-      any = {
-        operand_node <- input_nodes[[1L]]
-        if (!is_graph_value(operand_node)) {
-          cli_abort("any: only GraphValue inputs are supported")
-        }
-        .emit_reduce_any(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval)
-      },
-      all = {
-        operand_node <- input_nodes[[1L]]
-        if (!is_graph_value(operand_node)) {
-          cli_abort("all: only GraphValue inputs are supported")
-        }
-        .emit_reduce_all(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval)
-      },
-
-      cli_abort("Unsupported primitive in graph_to_r_function(): {.val {prim_name}}")
+    list(
+      .call2("<-", out_sym, x_expr),
+      as.call(list(
+        as.name("for"),
+        k,
+        .call2("seq_len", axis_size),
+        assign_slice
+      ))
     )
+  }
+
+  .register_prim_lowerer <- function(registry, name, fun) {
+    for (nm in name) {
+      registry[[nm]] <- fun
+    }
+    invisible(fun)
+  }
+
+  .lower_registry <- local({
+    reg <- new.env(parent = emptyenv())
+
+    .register_prim_lowerer(reg, "constant", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      dt_chr <- as.character(params$dtype)
+      value <- params$value
+      shp <- params$shape
+      if (!checkmate::test_scalar(value)) {
+        cli_abort("Only scalar `constant` values are supported")
+      }
+      value <- .scalar_cast(value, dt_chr)
+      .emit_full_like(out_sym, value, shp, out_aval)
+    })
+
+    .register_prim_lowerer(reg, c("add", "sub", "mul", "divide", "power"), function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      op <- switch(
+        prim_name,
+        add = "+",
+        sub = "-",
+        mul = "*",
+        divide = "/",
+        power = "^",
+        cli_abort("Internal error: unknown binary op primitive: {.val {prim_name}}")
+      )
+      .emit_assign(out_syms[[1L]], .call2(op, inputs[[1L]], inputs[[2L]]))
+    })
+
+    .register_prim_lowerer(reg, "mul_broadcast_axis", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      x_expr <- inputs[[1L]]
+      y_expr <- inputs[[2L]]
+      .emit_mul_broadcast_axis(out_sym, x_expr, y_expr, params$axis, params$shape_out)
+    })
+
+    .register_prim_lowerer(reg, c("negate", "abs", "exp", "sqrt", "log", "tanh", "tan", "floor", "ceil", "sign", "round"), function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      expr <- switch(
+        prim_name,
+        negate = .call2("-", inputs[[1L]]),
+        abs = .call2("abs", inputs[[1L]]),
+        exp = .call2("exp", inputs[[1L]]),
+        sqrt = .call2("sqrt", inputs[[1L]]),
+        log = .call2("log", inputs[[1L]]),
+        tanh = .call2("tanh", inputs[[1L]]),
+        tan = .call2("tan", inputs[[1L]]),
+        floor = .call2("floor", inputs[[1L]]),
+        ceil = .call2("ceiling", inputs[[1L]]),
+        sign = .call2("sign", inputs[[1L]]),
+        round = .call2("round", inputs[[1L]]),
+        cli_abort("Internal error: unknown unary primitive: {.val {prim_name}}")
+      )
+      .emit_assign(out_syms[[1L]], expr)
+    })
+
+    .register_prim_lowerer(reg, "rsqrt", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      .emit_assign(out_syms[[1L]], .call2("/", 1.0, .call2("sqrt", inputs[[1L]])))
+    })
+
+    .register_prim_lowerer(reg, c("equal", "not_equal", "greater", "greater_equal", "less", "less_equal"), function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      op <- switch(
+        prim_name,
+        equal = "==",
+        not_equal = "!=",
+        greater = ">",
+        greater_equal = ">=",
+        less = "<",
+        less_equal = "<=",
+        cli_abort("Internal error: unknown comparison primitive: {.val {prim_name}}")
+      )
+      .emit_assign(out_syms[[1L]], .call2(op, inputs[[1L]], inputs[[2L]]))
+    })
+
+    .register_prim_lowerer(reg, "maximum", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      .emit_elementwise_maxmin(out_sym, inputs[[1L]], inputs[[2L]], shape(out_aval), TRUE, out_aval)
+    })
+    .register_prim_lowerer(reg, "minimum", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      .emit_elementwise_maxmin(out_sym, inputs[[1L]], inputs[[2L]], shape(out_aval), FALSE, out_aval)
+    })
+
+    .register_prim_lowerer(reg, "remainder", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      .emit_assign(out_syms[[1L]], .call2("%%", inputs[[1L]], inputs[[2L]]))
+    })
+
+    .register_prim_lowerer(reg, "not", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      .emit_assign(out_syms[[1L]], .call2("!", inputs[[1L]]))
+    })
+    .register_prim_lowerer(reg, c("and", "or"), function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      op <- switch(
+        prim_name,
+        and = "&",
+        or = "|",
+        cli_abort("Internal error: unknown boolean binary primitive: {.val {prim_name}}")
+      )
+      .emit_assign(out_syms[[1L]], .call2(op, inputs[[1L]], inputs[[2L]]))
+    })
+    .register_prim_lowerer(reg, "xor", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      .emit_assign(out_syms[[1L]], .call2("!=", inputs[[1L]], inputs[[2L]]))
+    })
+
+    .register_prim_lowerer(reg, c("shift_left", "shift_right_logical", "shift_right_arithmetic"), function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      if (prim_name == "shift_left") {
+        .emit_assign(out_syms[[1L]], .call2("*", inputs[[1L]], .call2("^", 2L, inputs[[2L]])))
+      } else {
+        .emit_assign(out_syms[[1L]], .call2("%/%", inputs[[1L]], .call2("^", 2L, inputs[[2L]])))
+      }
+    })
+
+    .register_prim_lowerer(reg, "atan2", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      .emit_assign(out_syms[[1L]], .call2("atan2", inputs[[1L]], inputs[[2L]]))
+    })
+
+    .register_prim_lowerer(reg, "select", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      pred_node <- input_nodes[[1L]]
+      pred_shape <- if (is_graph_value(pred_node)) shape(pred_node@aval) else integer()
+      .emit_select(
+        out_sym,
+        inputs[[1L]],
+        inputs[[2L]],
+        inputs[[3L]],
+        pred_shape = pred_shape,
+        out_shape = shape(out_aval),
+        out_aval = out_aval
+      )
+    })
+
+    .register_prim_lowerer(reg, "convert", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      dt_chr <- as.character(params$dtype)
+      conv <- .dtype_to_quickr_ctor(dt_chr)
+      .emit_assign(out_syms[[1L]], .call2(paste0("as.", conv), inputs[[1L]]))
+    })
+
+    .register_prim_lowerer(reg, "broadcast_in_dim", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      shape_out <- params$shape_out
+      broadcast_dimensions <- params$broadcast_dimensions
+      operand_node <- input_nodes[[1L]]
+      shape_in <- if (is_graph_value(operand_node)) shape(operand_node@aval) else integer()
+      .emit_broadcast_in_dim(out_sym, inputs[[1L]], shape_in, shape_out, broadcast_dimensions, out_aval)
+    })
+
+    .register_prim_lowerer(reg, "dot_general", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      lhs_node <- input_nodes[[1L]]
+      rhs_node <- input_nodes[[2L]]
+      if (!is_graph_value(lhs_node) || !is_graph_value(rhs_node)) {
+        cli_abort("dot_general: only GraphValue inputs are supported")
+      }
+      .emit_dot_general(
+        out_sym,
+        inputs[[1L]],
+        inputs[[2L]],
+        shape(lhs_node@aval),
+        shape(rhs_node@aval),
+        shape(out_aval),
+        out_aval
+      )
+    })
+
+    .register_prim_lowerer(reg, "transpose", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      .emit_transpose(out_sym, inputs[[1L]], params$permutation, shape(out_aval), out_aval)
+    })
+
+    .register_prim_lowerer(reg, "reshape", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      operand_node <- input_nodes[[1L]]
+      if (!is_graph_value(operand_node)) {
+        cli_abort("reshape: only GraphValue inputs are supported")
+      }
+      .emit_reshape(out_sym, inputs[[1L]], shape(operand_node@aval), params$shape, out_aval)
+    })
+
+    .register_prim_lowerer(reg, c("sum", "prod", "max", "min", "any", "all"), function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      operand_node <- input_nodes[[1L]]
+      if (!is_graph_value(operand_node)) {
+        cli_abort("{.val {prim_name}}: only GraphValue inputs are supported")
+      }
+      switch(
+        prim_name,
+        sum = .emit_reduce_sum(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval),
+        prod = .emit_reduce_prod(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval),
+        max = .emit_reduce_max(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval),
+        min = .emit_reduce_min(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval),
+        any = .emit_reduce_any(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval),
+        all = .emit_reduce_all(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval),
+        cli_abort("Internal error: unknown reduction primitive: {.val {prim_name}}")
+      )
+    })
+
+    reg
+  })
+
+  .emit_prim <- function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+    lower <- get0(prim_name, envir = .lower_registry, inherits = FALSE)
+    if (is.null(lower)) {
+      cli_abort("Unsupported primitive in graph_to_r_function(): {.val {prim_name}}")
+    }
+    lower(prim_name, inputs, params, out_syms, input_nodes, out_avals)
   }
 
   .build_output_expr <- function(node, leaves) {
@@ -1445,7 +1639,19 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     }
   }
 
+  supported_prims <- ls(envir = .lower_registry, all.names = TRUE)
+  call_prims <- unique(vapply(graph@calls, \(x) x@primitive@name, character(1L)))
+  unsupported_prims <- setdiff(call_prims, supported_prims)
+  if (length(unsupported_prims)) {
+    cli_abort(c(
+      "graph_to_r_function() does not support these primitives: {toString(unsupported_prims)}",
+      i = "Supported primitives: {toString(sort(supported_prims))}"
+    ))
+  }
+
   tmp_counter <- 0L
+  ops <- vector("list", length(graph@calls))
+  op_i <- 0L
   for (call in graph@calls) {
     input_exprs <- lapply(call@inputs, .expr_of_node, node_expr = node_expr)
     out_syms <- vector("list", length(call@outputs))
@@ -1462,7 +1668,84 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
       out_syms[[i]] <- sym
       out_avals[[i]] <- out_node@aval
     }
-    stmts <- c(stmts, .emit_prim(call@primitive@name, input_exprs, call@params, out_syms, call@inputs, out_avals))
+    op_i <- op_i + 1L
+    ops[[op_i]] <- list(
+      prim_name = call@primitive@name,
+      inputs = input_exprs,
+      params = call@params,
+      out_syms = out_syms,
+      input_nodes = call@inputs,
+      out_avals = out_avals
+    )
+  }
+
+  .fuse_broadcast_mul <- function(ops) {
+    is_same_sym <- function(expr, sym) {
+      is.name(expr) && identical(expr, sym)
+    }
+
+    count_sym_uses <- function(ops, sym) {
+      n <- 0L
+      for (op in ops) {
+        for (inp in op$inputs) {
+          if (is_same_sym(inp, sym)) n <- n + 1L
+        }
+      }
+      n
+    }
+
+    out <- list()
+    i <- 1L
+    n <- length(ops)
+    while (i <= n) {
+      op <- ops[[i]]
+      if (op$prim_name == "broadcast_in_dim" && i < n && length(op$out_syms) == 1L) {
+        b_sym <- op$out_syms[[1L]]
+        if (count_sym_uses(ops, b_sym) == 1L) {
+          next_op <- ops[[i + 1L]]
+          if (next_op$prim_name == "mul" && length(next_op$out_syms) == 1L) {
+            b_pos <- which(vapply(next_op$inputs, is_same_sym, logical(1L), sym = b_sym))
+            if (length(b_pos) == 1L) {
+              other_pos <- if (b_pos == 1L) 2L else 1L
+
+              y_node <- op$input_nodes[[1L]]
+              if (is_graph_value(y_node) && length(shape(y_node@aval)) == 1L) {
+                shape_out <- op$params$shape_out
+                bd <- as.integer(op$params$broadcast_dimensions)
+                if (length(bd) == 1L) {
+                  axis <- bd[[1L]]
+                  ok_axis <- axis >= 1L && axis <= length(shape_out)
+                  ok_len <- as.integer(shape_out[[axis]]) == as.integer(shape(y_node@aval)[[1L]])
+
+                  x_node <- next_op$input_nodes[[other_pos]]
+                  if (ok_axis && ok_len && is_graph_value(x_node) && identical(shape(x_node@aval), shape_out)) {
+                    fused <- list(
+                      prim_name = "mul_broadcast_axis",
+                      inputs = list(next_op$inputs[[other_pos]], op$inputs[[1L]]),
+                      params = list(axis = axis, shape_out = shape_out),
+                      out_syms = next_op$out_syms,
+                      input_nodes = next_op$input_nodes,
+                      out_avals = next_op$out_avals
+                    )
+                    out <- c(out, list(fused))
+                    i <- i + 2L
+                    next
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      out <- c(out, list(op))
+      i <- i + 1L
+    }
+    out
+  }
+
+  ops <- .fuse_broadcast_mul(ops)
+  for (op in ops) {
+    stmts <- c(stmts, .emit_prim(op$prim_name, op$inputs, op$params, op$out_syms, op$input_nodes, op$out_avals))
   }
 
   out_leaves <- lapply(graph@outputs, .expr_of_node, node_expr = node_expr)
