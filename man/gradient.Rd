@@ -2,9 +2,12 @@
 % Please edit documentation in R/backward.R
 \name{gradient}
 \alias{gradient}
+\alias{value_and_gradient}
 \title{Gradient}
 \usage{
 gradient(f, wrt = NULL)
+
+value_and_gradient(f, wrt = NULL)
 }
 \arguments{
 \item{f}{(\code{function})\cr
@@ -16,3 +19,8 @@ Names of the arguments to compute the gradient with respect to.}
 \description{
 Transform a function to its gradient.
 }
+\section{Functions}{
+\itemize{
+\item \code{value_and_gradient()}: Returns both the value and the gradient
+
+}}

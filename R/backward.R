@@ -152,3 +152,33 @@ gradient <- function(f, wrt = NULL) {
   formals(f_gradient) <- formals2(f)
   return(f_gradient)
 }
+
+#' @export
+#' @describeIn gradient Returns both the value and the gradient
+value_and_gradient <- function(f, wrt = NULL) {
+  if (!is.null(wrt) && !all(wrt %in% formalArgs(f))) {
+    cli_abort("wrt must be a subset of the formal arguments of f")
+  }
+  f_value_and_grad <- function() {
+    args <- as.list(match.call())[-1L]
+    args <- lapply(args, eval, envir = parent.frame())
+    parent_desc <- .current_descriptor()
+    fwd_graph <- trace_fn(f, args)
+    grad_graph <- transform_gradient(fwd_graph, wrt)
+
+    combined_graph <- grad_graph
+    combined_graph@outputs <- c(fwd_graph@outputs, grad_graph@outputs)
+
+    counter <- new_counter()
+    value_tree <- reindex_tree(fwd_graph@out_tree, counter)
+    grad_tree <- reindex_tree(grad_graph@out_tree, counter)
+    combined_graph@out_tree <- ListNode(
+      list(value_tree, grad_tree),
+      names = c("value", "grad")
+    )
+
+    inline_graph_into_desc(parent_desc, combined_graph)
+  }
+  formals(f_value_and_grad) <- formals2(f)
+  f_value_and_grad
+}
