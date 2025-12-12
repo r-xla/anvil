@@ -283,3 +283,178 @@ test_that("graph_to_quickr_function matches PJRT for broadcasted vector mul alon
 
   expect_equal(out_quick, out_pjrt, tolerance = 1e-4)
 })
+
+test_that("graph_to_quickr_function matches PJRT for broadcasted vector mul (axis=1)", {
+  testthat::skip_if_not_installed("quickr")
+
+  shape_x <- c(3L, 4L, 5L)
+  x <- array(runif(prod(shape_x)), dim = shape_x)
+  y <- as.numeric(seq_len(shape_x[[1L]]))
+
+  graph <- trace_fn(
+    function(x, y) {
+      anvil:::nvl_mul(
+        x,
+        anvil:::nvl_broadcast_in_dim(y, shape_out = shape_x, broadcast_dimensions = 1L)
+      )
+    },
+    list(
+      x = nv_tensor(x, dtype = "f32", shape = shape_x),
+      y = nv_tensor(y, dtype = "f32", shape = c(length(y)))
+    )
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+
+  out_quick <- f_quick(x, y)
+  out_pjrt <- eval_graph_pjrt(graph, x, y)
+
+  expect_equal(out_quick, out_pjrt, tolerance = 1e-4)
+})
+
+test_that("graph_to_quickr_function matches PJRT when broadcasted vector is lhs of mul", {
+  testthat::skip_if_not_installed("quickr")
+
+  shape_x <- c(2L, 3L, 4L)
+  x <- array(runif(prod(shape_x)), dim = shape_x)
+  y <- as.numeric(seq_len(shape_x[[2L]]))
+
+  graph <- trace_fn(
+    function(x, y) {
+      anvil:::nvl_mul(
+        anvil:::nvl_broadcast_in_dim(y, shape_out = shape_x, broadcast_dimensions = 2L),
+        x
+      )
+    },
+    list(
+      x = nv_tensor(x, dtype = "f32", shape = shape_x),
+      y = nv_tensor(y, dtype = "f32", shape = c(length(y)))
+    )
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+
+  out_quick <- f_quick(x, y)
+  out_pjrt <- eval_graph_pjrt(graph, x, y)
+
+  expect_equal(out_quick, out_pjrt, tolerance = 1e-4)
+})
+
+test_that("graph_to_quickr_function matches PJRT for if (scalar output)", {
+  testthat::skip_if_not_installed("quickr")
+
+  graph <- trace_fn(
+    function(pred) {
+      anvil:::nvl_if(
+        pred,
+        nv_scalar(1.25, dtype = "f32"),
+        nv_scalar(-2.0, dtype = "f32")
+      )
+    },
+    list(pred = nv_scalar(TRUE, dtype = "pred"))
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+
+  got_true <- f_quick(TRUE)
+  got_false <- f_quick(FALSE)
+  expect_equal(as.numeric(got_true), as.numeric(eval_graph_pjrt(graph, TRUE)), tolerance = 1e-6)
+  expect_equal(as.numeric(got_false), as.numeric(eval_graph_pjrt(graph, FALSE)), tolerance = 1e-6)
+})
+
+test_that("graph_to_quickr_function matches PJRT for if (tensor output)", {
+  testthat::skip_if_not_installed("quickr")
+
+  graph <- trace_fn(
+    function(pred) {
+      anvil:::nvl_if(
+        pred,
+        nv_full(1.0, shape = c(2L, 3L), dtype = "f32"),
+        nv_full(2.0, shape = c(2L, 3L), dtype = "f32")
+      )
+    },
+    list(pred = nv_scalar(TRUE, dtype = "pred"))
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+
+  got_true <- f_quick(TRUE)
+  got_false <- f_quick(FALSE)
+  expect_equal(got_true, eval_graph_pjrt(graph, TRUE), tolerance = 1e-6)
+  expect_equal(got_false, eval_graph_pjrt(graph, FALSE), tolerance = 1e-6)
+})
+
+test_that("graph_to_quickr_function matches PJRT for if with input-dependent branches", {
+  testthat::skip_if_not_installed("quickr")
+
+  graph <- trace_fn(
+    function(pred, x) {
+      anvil:::nvl_if(
+        pred,
+        x + nv_scalar(1.0, dtype = "f32"),
+        x - nv_scalar(1.0, dtype = "f32")
+      )
+    },
+    list(
+      pred = nv_scalar(TRUE, dtype = "pred"),
+      x = nv_scalar(0.0, dtype = "f32")
+    )
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+  expect_equal(f_quick(TRUE, 3), eval_graph_pjrt(graph, TRUE, 3), tolerance = 1e-6)
+  expect_equal(f_quick(FALSE, 3), eval_graph_pjrt(graph, FALSE, 3), tolerance = 1e-6)
+})
+
+test_that("graph_to_quickr_function matches PJRT for nested if", {
+  testthat::skip_if_not_installed("quickr")
+
+  graph <- trace_fn(
+    function(p1, p2) {
+      anvil:::nvl_if(
+        p1,
+        anvil:::nvl_if(p2, nv_scalar(1.0, dtype = "f32"), nv_scalar(2.0, dtype = "f32")),
+        nv_scalar(3.0, dtype = "f32")
+      )
+    },
+    list(
+      p1 = nv_scalar(TRUE, dtype = "pred"),
+      p2 = nv_scalar(TRUE, dtype = "pred")
+    )
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+  expect_equal(f_quick(TRUE, TRUE), eval_graph_pjrt(graph, TRUE, TRUE), tolerance = 1e-6)
+  expect_equal(f_quick(TRUE, FALSE), eval_graph_pjrt(graph, TRUE, FALSE), tolerance = 1e-6)
+  expect_equal(f_quick(FALSE, TRUE), eval_graph_pjrt(graph, FALSE, TRUE), tolerance = 1e-6)
+})
+
+test_that("graph_to_quickr_function matches PJRT for if with broadcast fusion inside branch", {
+  testthat::skip_if_not_installed("quickr")
+
+  shape_x <- c(3L, 4L, 5L, 6L)
+  x <- array(runif(prod(shape_x)), dim = shape_x)
+  y <- as.numeric(seq_len(shape_x[[3L]]))
+
+  graph <- trace_fn(
+    function(pred, x, y) {
+      anvil:::nvl_if(
+        pred,
+        anvil:::nvl_mul(
+          x,
+          anvil:::nvl_broadcast_in_dim(y, shape_out = shape_x, broadcast_dimensions = 3L)
+        ),
+        x
+      )
+    },
+    list(
+      pred = nv_scalar(TRUE, dtype = "pred"),
+      x = nv_tensor(x, dtype = "f32", shape = shape_x),
+      y = nv_tensor(y, dtype = "f32", shape = c(length(y)))
+    )
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+  expect_equal(f_quick(TRUE, x, y), eval_graph_pjrt(graph, TRUE, x, y), tolerance = 1e-4)
+  expect_equal(f_quick(FALSE, x, y), eval_graph_pjrt(graph, FALSE, x, y), tolerance = 1e-4)
+})

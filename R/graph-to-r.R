@@ -1368,6 +1368,13 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     invisible(fun)
   }
 
+  counter <- local({
+    e <- new.env(parent = emptyenv())
+    e$tmp <- 0L
+    e$const <- 0L
+    e
+  })
+
   .lower_registry <- local({
     reg <- new.env(parent = emptyenv())
 
@@ -1402,6 +1409,17 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
       x_expr <- inputs[[1L]]
       y_expr <- inputs[[2L]]
       .emit_mul_broadcast_axis(out_sym, x_expr, y_expr, params$axis, params$shape_out)
+    })
+
+    .register_prim_lowerer(reg, "if", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      pred_node <- input_nodes[[1L]]
+      if (is_graph_value(pred_node) && length(shape(pred_node@aval)) != 0L) {
+        cli_abort("if: predicate must be a scalar (rank-0) boolean")
+      }
+      if (!is_graph(params$true_graph) || !is_graph(params$false_graph)) {
+        cli_abort("if: expected {.field true_graph} and {.field false_graph} to be {.cls anvil::mut<Graph>}")
+      }
+      .emit_if(inputs[[1L]], params$true_graph, params$false_graph, out_syms)
     })
 
     .register_prim_lowerer(reg, c("negate", "abs", "exp", "sqrt", "log", "tanh", "tan", "floor", "ceil", "sign", "round"), function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
@@ -1581,6 +1599,86 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     lower(prim_name, inputs, params, out_syms, input_nodes, out_avals)
   }
 
+  .inline_constants_for_graph <- function(graph, node_expr) {
+    if (!length(graph@constants)) {
+      return(list())
+    }
+    stmts <- list()
+    for (gval in graph@constants) {
+      if (!is.null(node_expr[[gval]])) {
+        next
+      }
+      counter$const <- counter$const + 1L
+      nm <- as.name(paste0("c_inline_", counter$const))
+      node_expr[[gval]] <- nm
+      stmts <- c(stmts, .emit_inline_const(nm, gval))
+    }
+    stmts
+  }
+
+  .ops_from_graph <- function(graph, node_expr) {
+    supported_prims <- ls(envir = .lower_registry, all.names = TRUE)
+    call_prims <- unique(vapply(graph@calls, \(x) x@primitive@name, character(1L)))
+    unsupported_prims <- setdiff(call_prims, supported_prims)
+    if (length(unsupported_prims)) {
+      cli_abort(c(
+        "graph_to_r_function() does not support these primitives: {toString(unsupported_prims)}",
+        i = "Supported primitives: {toString(sort(supported_prims))}"
+      ))
+    }
+
+    ops <- vector("list", length(graph@calls))
+    op_i <- 0L
+    for (call in graph@calls) {
+      input_exprs <- lapply(call@inputs, .expr_of_node, node_expr = node_expr)
+      out_syms <- vector("list", length(call@outputs))
+      out_avals <- vector("list", length(call@outputs))
+      for (i in seq_along(call@outputs)) {
+        out_node <- call@outputs[[i]]
+        if (!is_graph_value(out_node)) {
+          cli_abort("Unsupported: non-GraphValue outputs")
+        }
+        counter$tmp <- counter$tmp + 1L
+        sym <- as.name(paste0("v", counter$tmp))
+        node_expr[[out_node]] <- sym
+        out_syms[[i]] <- sym
+        out_avals[[i]] <- out_node@aval
+      }
+      op_i <- op_i + 1L
+      ops[[op_i]] <- list(
+        prim_name = call@primitive@name,
+        inputs = input_exprs,
+        params = call@params,
+        out_syms = out_syms,
+        input_nodes = call@inputs,
+        out_avals = out_avals
+      )
+    }
+    ops
+  }
+
+  .emit_if <- function(pred_expr, true_graph, false_graph, out_syms) {
+    emit_branch <- function(branch_graph) {
+      if (length(branch_graph@outputs) != length(out_syms)) {
+        cli_abort("if: branch output count does not match parent call outputs")
+      }
+
+      stmts <- .inline_constants_for_graph(branch_graph, node_expr)
+      ops <- .ops_from_graph(branch_graph, node_expr)
+      ops <- .fuse_broadcast_mul(ops)
+      for (op in ops) {
+        stmts <- c(stmts, .emit_prim(op$prim_name, op$inputs, op$params, op$out_syms, op$input_nodes, op$out_avals))
+      }
+      out_exprs <- lapply(branch_graph@outputs, .expr_of_node, node_expr = node_expr)
+      for (i in seq_along(out_syms)) {
+        stmts <- c(stmts, .emit_assign(out_syms[[i]], out_exprs[[i]]))
+      }
+      as.call(c(list(as.name("{")), stmts))
+    }
+
+    as.call(list(as.name("if"), pred_expr, emit_branch(true_graph), emit_branch(false_graph)))
+  }
+
   .build_output_expr <- function(node, leaves) {
     if (inherits(node, "LeafNode")) {
       return(leaves[[node$i]])
@@ -1639,45 +1737,9 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     }
   }
 
-  supported_prims <- ls(envir = .lower_registry, all.names = TRUE)
-  call_prims <- unique(vapply(graph@calls, \(x) x@primitive@name, character(1L)))
-  unsupported_prims <- setdiff(call_prims, supported_prims)
-  if (length(unsupported_prims)) {
-    cli_abort(c(
-      "graph_to_r_function() does not support these primitives: {toString(unsupported_prims)}",
-      i = "Supported primitives: {toString(sort(supported_prims))}"
-    ))
-  }
-
-  tmp_counter <- 0L
-  ops <- vector("list", length(graph@calls))
-  op_i <- 0L
-  for (call in graph@calls) {
-    input_exprs <- lapply(call@inputs, .expr_of_node, node_expr = node_expr)
-    out_syms <- vector("list", length(call@outputs))
-    out_avals <- vector("list", length(call@outputs))
-    for (i in seq_along(call@outputs)) {
-      out_node <- call@outputs[[i]]
-      if (!is_graph_value(out_node)) {
-        cli_abort("Unsupported: non-GraphValue outputs")
-      }
-      tmp_counter <- tmp_counter + 1L
-      nm <- paste0("v", tmp_counter)
-      sym <- as.name(nm)
-      node_expr[[out_node]] <- sym
-      out_syms[[i]] <- sym
-      out_avals[[i]] <- out_node@aval
-    }
-    op_i <- op_i + 1L
-    ops[[op_i]] <- list(
-      prim_name = call@primitive@name,
-      inputs = input_exprs,
-      params = call@params,
-      out_syms = out_syms,
-      input_nodes = call@inputs,
-      out_avals = out_avals
-    )
-  }
+  counter$tmp <- 0L
+  counter$const <- 0L
+  ops <- .ops_from_graph(graph, node_expr)
 
   .fuse_broadcast_mul <- function(ops) {
     is_same_sym <- function(expr, sym) {

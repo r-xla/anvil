@@ -33,3 +33,22 @@ test_that("graph_to_r_function matches PJRT for random scalar graphs", {
   }
 })
 
+test_that("graph_to_r_function matches PJRT for if", {
+  testthat::skip_if_not_installed("pjrt")
+  testthat::skip_if_not_installed("stablehlo")
+
+  graph <- trace_fn(
+    function(pred) {
+      anvil:::nvl_if(
+        pred,
+        nv_scalar(1.25, dtype = "f32"),
+        nv_scalar(-2.0, dtype = "f32")
+      )
+    },
+    list(pred = nv_scalar(TRUE, dtype = "pred"))
+  )
+
+  f_r <- graph_to_r_function(graph)
+  expect_equal(as.numeric(f_r(TRUE)), as.numeric(eval_graph_pjrt(graph, TRUE)), tolerance = 1e-6)
+  expect_equal(as.numeric(f_r(FALSE)), as.numeric(eval_graph_pjrt(graph, FALSE)), tolerance = 1e-6)
+})
