@@ -28,6 +28,7 @@ Suggests:
     knitr,
     quarto,
     rmarkdown,
+    quickr,
     testthat (>= 3.0.0)
 Additional_repositories:
     https://r-xla.r-universe.dev
@@ -51,6 +52,8 @@ Collate:
     'tensor.R'
     'graph.R'
     'graph-print.R'
+    'graph-to-r.R'
+    'graph-to-quickr.R'
     'jit.R'
     'reexports.R'
     'rules-backward.R'
