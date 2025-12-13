@@ -1,6 +1,6 @@
 run_mnist_mlp_training <- function(
-  train_n = 20000L,
-  test_n = 2000L,
+  train_n = 60000L,
+  test_n = 10000L,
   hidden = 64L,
   epochs = 5L,
   batch_size = 256L,
@@ -14,8 +14,9 @@ run_mnist_mlp_training <- function(
   set.seed(seed)
 
   mnist <- NULL
-  if (file.exists("mnist.rds")) {
-    mnist <- readRDS("mnist.rds")
+  rds_path <- Sys.getenv("ANVIL_MNIST_RDS", "mnist.rds")
+  if (nzchar(rds_path) && file.exists(rds_path)) {
+    mnist <- readRDS(rds_path)
   } else {
     for (pkg in c("keras3", "keras")) {
       if (!requireNamespace(pkg, quietly = TRUE)) {

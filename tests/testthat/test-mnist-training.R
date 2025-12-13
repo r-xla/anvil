@@ -11,7 +11,7 @@ test_that("integration: MNIST MLP trains to >=90% accuracy", {
     testthat::skip("MNIST not available; provide mnist.rds or install/configure keras/keras3")
   }
 
-  train_n <- as.integer(Sys.getenv("ANVIL_MNIST_TRAIN_N", "20000"))
+  train_n <- as.integer(Sys.getenv("ANVIL_MNIST_TRAIN_N", "60000"))
   test_n <- as.integer(Sys.getenv("ANVIL_MNIST_TEST_N", "2000"))
   hidden <- as.integer(Sys.getenv("ANVIL_MNIST_HIDDEN", "64"))
   epochs <- as.integer(Sys.getenv("ANVIL_MNIST_EPOCHS", "5"))

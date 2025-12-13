@@ -38,24 +38,9 @@ expect_grad_binary <- function(nv_fun, d_rx, d_ry, x, y) {
   testthat::expect_equal(gy, d_ry(x, y), tolerance = 1e-5)
 }
 
-load_mnist <- function(rds_path = Sys.getenv("ANVIL_MNIST_RDS", "")) {
-  candidates <- unique(Filter(
-    nzchar,
-    c(
-      rds_path,
-      "mnist.rds",
-      file.path(getwd(), "mnist.rds"),
-      tryCatch(testthat::test_path("..", "..", "mnist.rds"), error = function(e) ""),
-      tryCatch(normalizePath(file.path("..", "mnist.rds"), winslash = "/", mustWork = FALSE), error = function(e) ""),
-      tryCatch(normalizePath(file.path("..", "..", "mnist.rds"), winslash = "/", mustWork = FALSE), error = function(e) "")
-    )
-  ))
-
-  for (path in candidates) {
-    if (!file.exists(path)) {
-      next
-    }
-    mnist <- readRDS(path)
+load_mnist <- function(rds_path = Sys.getenv("ANVIL_MNIST_RDS", "mnist.rds")) {
+  if (nzchar(rds_path) && file.exists(rds_path)) {
+    mnist <- readRDS(rds_path)
     ok <- is.list(mnist) &&
       !is.null(mnist$train) &&
       !is.null(mnist$test) &&
