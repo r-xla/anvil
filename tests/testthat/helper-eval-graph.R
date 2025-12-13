@@ -2,7 +2,7 @@ eval_graph_pjrt <- function(graph, ...) {
   testthat::skip_if_not_installed("pjrt")
   testthat::skip_if_not_installed("stablehlo")
 
-  args <- list(...)
+  args <- anvil:::flatten(list(...))
 
   args_nv <- lapply(args, function(x) {
     if (inherits(x, "AnvilTensor")) {
@@ -40,4 +40,3 @@ eval_graph_pjrt <- function(graph, ...) {
 
   as_array(out_nv)
 }
-

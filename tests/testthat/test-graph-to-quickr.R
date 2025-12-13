@@ -439,3 +439,78 @@ test_that("graph_to_quickr_function matches PJRT for if with broadcast fusion in
   expect_equal(f_quick(TRUE, x, y), eval_graph_pjrt(graph, TRUE, x, y), tolerance = 1e-4)
   expect_equal(f_quick(FALSE, x, y), eval_graph_pjrt(graph, FALSE, x, y), tolerance = 1e-4)
 })
+
+test_that("graph_to_quickr_function supports nested list inputs via wrapper", {
+  testthat::skip_if_not_installed("quickr")
+
+  batch <- 4L
+  nin <- 3L
+  hidden <- 5L
+  nout <- 2L
+
+  set.seed(123)
+  X <- matrix(rnorm(batch * nin), nrow = batch, ncol = nin)
+  W1 <- matrix(rnorm(nin * hidden), nrow = nin, ncol = hidden)
+  b1 <- matrix(0, nrow = 1, ncol = hidden)
+  W2 <- matrix(rnorm(hidden * nout), nrow = hidden, ncol = nout)
+  b2 <- matrix(0, nrow = 1, ncol = nout)
+  y_idx <- sample.int(nout, size = batch, replace = TRUE)
+  y <- matrix(0, nrow = batch, ncol = nout)
+  for (i in seq_len(batch)) {
+    y[i, y_idx[[i]]] <- 1
+  }
+
+  params <- list(
+    list(W = W1, b = b1),
+    list(W = W2, b = b2)
+  )
+
+  linear <- function(x, p) {
+    out <- nv_matmul(x, p$W)
+    out + nv_broadcast_to(p$b, shape = shape(out))
+  }
+
+  relu <- function(x) {
+    nv_max(x, nv_scalar(0, dtype = "f32"))
+  }
+
+  model <- function(x, params) {
+    for (p in params[-length(params)]) {
+      x <- relu(linear(x, p))
+    }
+    linear(x, params[[length(params)]])
+  }
+
+  loss <- function(X, y, params) {
+    logits <- model(X, params)
+    z_max <- nv_reduce_max(logits, dims = 2, drop = FALSE)
+    logits_shift <- logits - nv_broadcast_to(z_max, shape = shape(logits))
+    logsumexp <- z_max + nv_log(nv_reduce_sum(nv_exp(logits_shift), dims = 2, drop = FALSE))
+    correct_logit <- nv_reduce_sum(y * logits, dims = 2, drop = FALSE)
+    nv_reduce_mean(-correct_logit + logsumexp, dims = c(1, 2))
+  }
+
+  graph <- trace_fn(
+    loss,
+    list(
+      X = nv_tensor(X, dtype = "f32", shape = dim(X)),
+      y = nv_tensor(y, dtype = "f32", shape = dim(y)),
+      params = list(
+        list(
+          W = nv_tensor(W1, dtype = "f32", shape = dim(W1)),
+          b = nv_tensor(b1, dtype = "f32", shape = dim(b1))
+        ),
+        list(
+          W = nv_tensor(W2, dtype = "f32", shape = dim(W2)),
+          b = nv_tensor(b2, dtype = "f32", shape = dim(b2))
+        )
+      )
+    )
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+  out_quick <- f_quick(X, y, params)
+  out_pjrt <- eval_graph_pjrt(graph, X, y, params)
+
+  expect_equal(as.numeric(out_quick), as.numeric(out_pjrt), tolerance = 1e-4)
+})
