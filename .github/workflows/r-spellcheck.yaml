@@ -16,7 +16,7 @@ jobs:
       image: rocker/tidyverse:4.1.2
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Run Spelling Check test
         uses: insightsengineering/r-spellcheck-action@v3
