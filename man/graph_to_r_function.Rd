@@ -4,7 +4,12 @@
 \alias{graph_to_r_function}
 \title{Convert a Graph to an R function}
 \usage{
-graph_to_r_function(graph, include_declare = TRUE, pack_output = FALSE)
+graph_to_r_function(
+  graph,
+  include_declare = TRUE,
+  pack_output = FALSE,
+  target = c("base", "quickr")
+)
 }
 \arguments{
 \item{graph}{(\code{\link{Graph}})\cr
@@ -18,6 +23,10 @@ body (useful for {quickr}). In plain R it is treated as a no-op. Default is \cod
 Whether to force the function to return a single flat \code{double()} vector
 containing all output leaves (for {quickr} compatibility when the graph
 returns a nested output tree). Default is \code{FALSE}.}
+
+\item{target}{(\code{character(1)})\cr
+Code generation target. Use \code{"base"} for plain R evaluation and \code{"quickr"}
+to restrict the generated code to a subset that can be compiled by {quickr}.}
 }
 \value{
 (\code{function})

@@ -11,7 +11,7 @@ NULL
 #' @return (`function`)
 #' @export
 as_r_function <- function(graph) {
-  graph_to_r_function(graph, include_declare = TRUE)
+  graph_to_r_function(graph, include_declare = TRUE, target = "base")
 }
 
 #' Convert to a quickr-compiled function

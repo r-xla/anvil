@@ -19,11 +19,15 @@ NULL
 #'   Whether to force the function to return a single flat `double()` vector
 #'   containing all output leaves (for {quickr} compatibility when the graph
 #'   returns a nested output tree). Default is `FALSE`.
+#' @param target (`character(1)`)\cr
+#'   Code generation target. Use `"base"` for plain R evaluation and `"quickr"`
+#'   to restrict the generated code to a subset that can be compiled by {quickr}.
 #' @return (`function`)
 #' @export
-graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FALSE) {
+graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FALSE, target = c("base", "quickr")) {
   include_declare <- as.logical(include_declare)
   pack_output <- as.logical(pack_output)
+  target <- match.arg(target)
 
   if (!is_graph(graph)) {
     cli_abort("{.arg graph} must be a {.cls anvil::Graph}")
@@ -1340,8 +1344,8 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
     cli_abort("all: only rank-1/2 tensors are currently supported")
   }
 
-  .emit_reduce_any <- if (isTRUE(include_declare)) .emit_reduce_any_quickr else .emit_reduce_any_base
-  .emit_reduce_all <- if (isTRUE(include_declare)) .emit_reduce_all_quickr else .emit_reduce_all_base
+  .emit_reduce_any <- if (target == "quickr") .emit_reduce_any_quickr else .emit_reduce_any_base
+  .emit_reduce_all <- if (target == "quickr") .emit_reduce_all_quickr else .emit_reduce_all_base
 
   .emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_aval) {
     if (length(shape_in) > 2L || length(shape_out) > 2L) {

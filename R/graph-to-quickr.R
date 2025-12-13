@@ -19,7 +19,7 @@ graph_to_quickr_function <- function(graph) {
 
   needs_pack <- !(inherits(graph@out_tree, "LeafNode") && length(graph@outputs) == 1L)
 
-  inner_fun <- graph_to_r_function(graph, include_declare = TRUE, pack_output = needs_pack)
+  inner_fun <- graph_to_r_function(graph, include_declare = TRUE, pack_output = needs_pack, target = "quickr")
   inner_quick <- quickr_eager_compile(inner_fun)
 
   # If the graph's input tree contains nested list structure, graph_to_r_function()

@@ -434,3 +434,47 @@ test_that("graph_to_r_function supports while", {
   f <- graph_to_r_function(graph)
   expect_equal(as.numeric(f(3.0)), 10.0, tolerance = 1e-6)
 })
+
+test_that("graph_to_r_function target controls any/all lowering", {
+  x <- matrix(sample(c(TRUE, FALSE), 12, replace = TRUE), nrow = 3, ncol = 4)
+
+  graph_any_rows <- trace_fn(
+    function(x) {
+      nv_reduce_any(x, dims = 2, drop = TRUE)
+    },
+    list(x = nv_tensor(x, dtype = "pred", shape = dim(x)))
+  )
+
+  f_base_any <- graph_to_r_function(graph_any_rows, include_declare = FALSE, target = "base")
+  expect_equal(f_base_any(x), apply(x, 1, any))
+  txt <- paste(deparse(body(f_base_any)), collapse = "\n")
+  expect_match(txt, "rowSums")
+
+  f_quick_any <- graph_to_r_function(graph_any_rows, include_declare = FALSE, target = "quickr")
+  expect_equal(f_quick_any(x), apply(x, 1, any))
+  txt <- paste(deparse(body(f_quick_any)), collapse = "\n")
+  expect_match(txt, "opint_")
+  expect_no_match(txt, "rowSums")
+
+  graph_all_cols <- trace_fn(
+    function(x) {
+      nv_reduce_all(x, dims = 1, drop = FALSE)
+    },
+    list(x = nv_tensor(x, dtype = "pred", shape = dim(x)))
+  )
+
+  f_base_all <- graph_to_r_function(graph_all_cols, include_declare = FALSE, target = "base")
+  got <- f_base_all(x)
+  expect_equal(dim(got), c(1, ncol(x)))
+  expect_equal(as.vector(got), as.vector(matrix(apply(x, 2, all), nrow = 1)))
+  txt <- paste(deparse(body(f_base_all)), collapse = "\n")
+  expect_match(txt, "colSums")
+
+  f_quick_all <- graph_to_r_function(graph_all_cols, include_declare = FALSE, target = "quickr")
+  got <- f_quick_all(x)
+  expect_equal(dim(got), c(1, ncol(x)))
+  expect_equal(as.vector(got), as.vector(matrix(apply(x, 2, all), nrow = 1)))
+  txt <- paste(deparse(body(f_quick_all)), collapse = "\n")
+  expect_match(txt, "opint_")
+  expect_no_match(txt, "colSums")
+})
