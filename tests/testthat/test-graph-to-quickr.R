@@ -63,6 +63,48 @@ test_that("graph_to_quickr_function matches PJRT for matmul", {
   expect_equal(out_quick, out_pjrt, tolerance = 1e-5)
 })
 
+test_that("graph_to_quickr_function matches PJRT for sign", {
+  testthat::skip_if_not_installed("quickr")
+
+  graph <- trace_fn(
+    function(x) {
+      nv_sign(x)
+    },
+    list(x = nv_tensor(c(-2, -0.5, 0, 0.5, 3), dtype = "f32", shape = 5L))
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+  x <- c(-2, -0.5, 0, 0.5, 3)
+
+  out_quick <- f_quick(x)
+  out_pjrt <- eval_graph_pjrt(graph, x)
+
+  expect_equal(as.numeric(out_quick), as.numeric(out_pjrt), tolerance = 1e-6)
+})
+
+test_that("graph_to_quickr_function matches PJRT for atan2", {
+  testthat::skip_if_not_installed("quickr")
+
+  graph <- trace_fn(
+    function(y, x) {
+      nv_atan2(y, x)
+    },
+    list(
+      y = nv_tensor(c(-1, 1, 2, -2), dtype = "f32", shape = 4L),
+      x = nv_tensor(c(1, -1, 0, 0.5), dtype = "f32", shape = 4L)
+    )
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+  y <- c(-1, 1, 2, -2)
+  x <- c(1, -1, 0, 0.5)
+
+  out_quick <- f_quick(y, x)
+  out_pjrt <- eval_graph_pjrt(graph, y, x)
+
+  expect_equal(as.numeric(out_quick), as.numeric(out_pjrt), tolerance = 1e-5)
+})
+
 test_that("graph_to_quickr_function matches PJRT for sum reduction", {
   testthat::skip_if_not_installed("quickr")
 
@@ -513,4 +555,50 @@ test_that("graph_to_quickr_function supports nested list inputs via wrapper", {
   out_pjrt <- eval_graph_pjrt(graph, X, y, params)
 
   expect_equal(as.numeric(out_quick), as.numeric(out_pjrt), tolerance = 1e-4)
+})
+
+test_that("graph_to_quickr_function supports list outputs via packing wrapper (gradient)", {
+  testthat::skip_if_not_installed("quickr")
+
+  f <- function(x, y) x * y
+  g <- gradient(f, wrt = c("x", "y"))
+
+  graph <- trace_fn(
+    g,
+    list(
+      x = nv_scalar(1.25, dtype = "f32"),
+      y = nv_scalar(-0.5, dtype = "f32")
+    )
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+
+  out_quick <- f_quick(3.0, 2.0)
+  out_pjrt <- eval_graph_pjrt(graph, 3.0, 2.0)
+
+  expect_equal(out_quick, out_pjrt, tolerance = 1e-5)
+})
+
+test_that("graph_to_quickr_function matches PJRT for while loop (scalar output)", {
+  testthat::skip_if_not_installed("quickr")
+
+  f <- function(n) {
+    state <- nv_while(
+      list(i = nv_scalar(0L, dtype = "i32"), acc = nv_scalar(0.0, dtype = "f32")),
+      \(i, acc) i < n,
+      \(i, acc) list(i = i + nv_scalar(1L, dtype = "i32"), acc = acc + nv_convert(i, "f32"))
+    )
+    state$acc
+  }
+
+  graph <- trace_fn(
+    f,
+    list(n = nv_scalar(5L, dtype = "i32"))
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+  out_quick <- f_quick(7L)
+  out_pjrt <- eval_graph_pjrt(graph, 7L)
+
+  expect_equal(as.numeric(out_quick), as.numeric(out_pjrt), tolerance = 1e-5)
 })

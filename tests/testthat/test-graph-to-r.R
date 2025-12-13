@@ -419,7 +419,7 @@ test_that("graph_to_r_function: if predicate must be scalar", {
   expect_error(graph_to_r_function(graph), "predicate must be a scalar")
 })
 
-test_that("graph_to_r_function errors on unsupported higher-order primitives", {
+test_that("graph_to_r_function supports while", {
   graph <- trace_fn(
     function(x) {
       anvil:::nvl_while(
@@ -431,5 +431,6 @@ test_that("graph_to_r_function errors on unsupported higher-order primitives", {
     list(x = nv_scalar(0.0, dtype = "f32"))
   )
 
-  expect_error(graph_to_r_function(graph), "does not support.*\\bwhile\\b")
+  f <- graph_to_r_function(graph)
+  expect_equal(as.numeric(f(3.0)), 10.0, tolerance = 1e-6)
 })

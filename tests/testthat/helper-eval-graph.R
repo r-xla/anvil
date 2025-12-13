@@ -3,22 +3,28 @@ eval_graph_pjrt <- function(graph, ...) {
   testthat::skip_if_not_installed("stablehlo")
 
   args <- anvil:::flatten(list(...))
+  if (length(args) != length(graph@inputs)) {
+    cli::cli_abort("Expected {length(graph@inputs)} inputs, got {length(args)}")
+  }
 
-  args_nv <- lapply(args, function(x) {
+  args_nv <- Map(function(x, gval) {
     if (inherits(x, "AnvilTensor")) {
       return(x)
     }
-    dt <- if (is.logical(x)) "pred" else "f32"
-    if (is.null(dim(x))) {
-      if (length(x) == 1L) {
-        nv_scalar(x, dtype = dt)
-      } else {
-        nv_tensor(x, dtype = dt, shape = c(length(x)))
-      }
-    } else {
-      nv_tensor(x, dtype = dt, shape = dim(x))
+    expected_shape <- shape(gval@aval)
+    expected_dtype <- as.character(dtype(gval@aval))
+    if (expected_dtype == "i1") {
+      expected_dtype <- "pred"
     }
-  })
+    if (!length(expected_shape)) {
+      if (length(x) != 1L) {
+        cli::cli_abort("Expected scalar input")
+      }
+      nv_scalar(x, dtype = expected_dtype)
+    } else {
+      nv_tensor(x, dtype = expected_dtype, shape = expected_shape)
+    }
+  }, args, graph@inputs)
 
   out <- stablehlo(graph)
   func <- out[[1L]]
@@ -38,5 +44,15 @@ eval_graph_pjrt <- function(graph, ...) {
   out_vals <- lapply(out_vals, nv_tensor)
   out_nv <- unflatten(graph@out_tree, out_vals)
 
-  as_array(out_nv)
+  as_r <- function(x) {
+    if (inherits(x, "AnvilTensor")) {
+      return(as_array(x))
+    }
+    if (is.list(x)) {
+      return(lapply(x, as_r))
+    }
+    x
+  }
+
+  as_r(out_nv)
 }

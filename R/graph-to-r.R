@@ -15,10 +15,15 @@ NULL
 #' @param include_declare (`logical(1)`)\cr
 #'   Whether to include a `declare(type(...))` call at the top of the function
 #'   body (useful for {quickr}). In plain R it is treated as a no-op. Default is `TRUE`.
+#' @param pack_output (`logical(1)`)\cr
+#'   Whether to force the function to return a single flat `double()` vector
+#'   containing all output leaves (for {quickr} compatibility when the graph
+#'   returns a nested output tree). Default is `FALSE`.
 #' @return (`function`)
 #' @export
-graph_to_r_function <- function(graph, include_declare = TRUE) {
+graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FALSE) {
   include_declare <- as.logical(include_declare)
+  pack_output <- as.logical(pack_output)
 
   if (!is_graph(graph)) {
     cli_abort("{.arg graph} must be a {.cls anvil::Graph}")
@@ -146,6 +151,67 @@ graph_to_r_function <- function(graph, include_declare = TRUE) {
 
   .emit_assign <- function(lhs_sym, rhs_expr) {
     list(.call2("<-", lhs_sym, rhs_expr))
+  }
+
+  .emit_sign_expr <- function(x_expr, out_aval) {
+    dt_chr <- as.character(dtype(out_aval))
+    ctor <- .dtype_to_r_ctor(dt_chr)
+
+    one <- if (dt_chr %in% c("f32", "f64")) 1.0 else 1L
+    neg_one <- if (dt_chr %in% c("f32", "f64")) -1.0 else -1L
+    zero <- .zero_literal_for(out_aval)
+
+    .call2(
+      paste0("as.", ctor),
+      .call2(
+        "ifelse",
+        .call2(">", x_expr, zero),
+        one,
+        .call2("ifelse", .call2("<", x_expr, zero), neg_one, zero)
+      )
+    )
+  }
+
+  .emit_atan2_expr <- function(y_expr, x_expr, out_aval) {
+    # quickr doesn't support atan2(), but it does support atan() and ifelse().
+    # Implement atan2(y, x) with quadrant correction using only supported ops.
+    pi_val <- 3.1415926535897932384626433832795028841971693993751
+    zero <- .zero_literal_for(out_aval)
+
+    atan_yx <- .call2("atan", .call2("/", y_expr, x_expr))
+
+    # if (x > 0) atan(y/x)
+    # else if (x < 0 & y >= 0) atan(y/x) + pi
+    # else if (x < 0 & y < 0)  atan(y/x) - pi
+    # else if (x == 0 & y > 0)  pi/2
+    # else if (x == 0 & y < 0) -pi/2
+    # else 0
+    .call2(
+      "ifelse",
+      .call2(">", x_expr, zero),
+      atan_yx,
+      .call2(
+        "ifelse",
+        .call2("&", .call2("<", x_expr, zero), .call2(">=", y_expr, zero)),
+        .call2("+", atan_yx, pi_val),
+        .call2(
+          "ifelse",
+          .call2("&", .call2("<", x_expr, zero), .call2("<", y_expr, zero)),
+          .call2("-", atan_yx, pi_val),
+          .call2(
+            "ifelse",
+            .call2("&", .call2("==", x_expr, zero), .call2(">", y_expr, zero)),
+            .call2("/", pi_val, 2.0),
+            .call2(
+              "ifelse",
+              .call2("&", .call2("==", x_expr, zero), .call2("<", y_expr, zero)),
+              .call2("/", -pi_val, 2.0),
+              zero
+            )
+          )
+        )
+      )
+    )
   }
 
   .emit_dim_assign <- function(x_sym, dims) {
@@ -1484,7 +1550,14 @@ graph_to_r_function <- function(graph, include_declare = TRUE) {
       .emit_if(inputs[[1L]], params$true_graph, params$false_graph, out_syms)
     })
 
-    .register_prim_lowerer(reg, c("negate", "abs", "exp", "sqrt", "log", "tanh", "tan", "floor", "ceil", "sign", "round"), function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+    .register_prim_lowerer(reg, "while", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      if (!is_graph(params$cond_graph) || !is_graph(params$body_graph)) {
+        cli_abort("while: expected {.field cond_graph} and {.field body_graph} to be {.cls anvil::mut<Graph>}")
+      }
+      .emit_while(inputs, params$cond_graph, params$body_graph, out_syms)
+    })
+
+    .register_prim_lowerer(reg, c("negate", "abs", "exp", "sqrt", "log", "tanh", "tan", "floor", "ceil", "round"), function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
       expr <- switch(
         prim_name,
         negate = .call2("-", inputs[[1L]]),
@@ -1496,11 +1569,14 @@ graph_to_r_function <- function(graph, include_declare = TRUE) {
         tan = .call2("tan", inputs[[1L]]),
         floor = .call2("floor", inputs[[1L]]),
         ceil = .call2("ceiling", inputs[[1L]]),
-        sign = .call2("sign", inputs[[1L]]),
         round = .call2("round", inputs[[1L]]),
         cli_abort("Internal error: unknown unary primitive: {.val {prim_name}}")
       )
       .emit_assign(out_syms[[1L]], expr)
+    })
+
+    .register_prim_lowerer(reg, "sign", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      .emit_assign(out_syms[[1L]], .emit_sign_expr(inputs[[1L]], out_avals[[1L]]))
     })
 
     .register_prim_lowerer(reg, "rsqrt", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
@@ -1561,7 +1637,8 @@ graph_to_r_function <- function(graph, include_declare = TRUE) {
     })
 
     .register_prim_lowerer(reg, "atan2", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
-      .emit_assign(out_syms[[1L]], .call2("atan2", inputs[[1L]], inputs[[2L]]))
+      out_aval <- out_avals[[1L]]
+      .emit_assign(out_syms[[1L]], .emit_atan2_expr(inputs[[1L]], inputs[[2L]], out_aval))
     })
 
     .register_prim_lowerer(reg, "select", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
@@ -1743,6 +1820,80 @@ graph_to_r_function <- function(graph, include_declare = TRUE) {
     as.call(list(as.name("if"), pred_expr, emit_branch(true_graph), emit_branch(false_graph)))
   }
 
+  .emit_while <- function(init_exprs, cond_graph, body_graph, state_syms) {
+    if (length(cond_graph@outputs) != 1L) {
+      cli_abort("while: cond_graph must have exactly one output")
+    }
+    cond_out <- cond_graph@outputs[[1L]]
+    if (!is_graph_value(cond_out) || !(as.character(dtype(cond_out@aval)) %in% c("pred", "i1")) || length(shape(cond_out@aval)) != 0L) {
+      cli_abort("while: cond_graph output must be a scalar boolean")
+    }
+
+    if (length(body_graph@outputs) != length(state_syms)) {
+      cli_abort("while: body_graph output count does not match parent call outputs")
+    }
+    if (length(cond_graph@inputs) != length(state_syms) || length(body_graph@inputs) != length(state_syms)) {
+      cli_abort("while: cond_graph/body_graph input count does not match parent call inputs")
+    }
+
+    # Hoist constants used by cond/body graphs outside the loop
+    stmts <- .inline_constants_for_graph(cond_graph, node_expr)
+    stmts <- c(stmts, .inline_constants_for_graph(body_graph, node_expr))
+
+    # Initialize state from the primitive's inputs
+    for (i in seq_along(state_syms)) {
+      stmts <- c(stmts, .emit_assign(state_syms[[i]], init_exprs[[i]]))
+    }
+
+    # Build per-iteration condition block: { <cond ops>; <cond_expr> }
+    node_expr_cond <- hashtab()
+    for (i in seq_along(state_syms)) {
+      node_expr_cond[[cond_graph@inputs[[i]]]] <- state_syms[[i]]
+    }
+    for (gval in cond_graph@constants) {
+      node_expr_cond[[gval]] <- .expr_of_node(gval, node_expr = node_expr)
+    }
+    cond_ops <- .ops_from_graph(cond_graph, node_expr_cond)
+    cond_ops <- .fuse_broadcast_mul(cond_ops)
+    cond_stmts <- list()
+    for (op in cond_ops) {
+      cond_stmts <- c(cond_stmts, .emit_prim(op$prim_name, op$inputs, op$params, op$out_syms, op$input_nodes, op$out_avals))
+    }
+    cond_sym <- .expr_of_node(cond_out, node_expr = node_expr_cond)
+
+    # Build per-iteration body block: compute new state then assign simultaneously
+    node_expr_body <- hashtab()
+    for (i in seq_along(state_syms)) {
+      node_expr_body[[body_graph@inputs[[i]]]] <- state_syms[[i]]
+    }
+    for (gval in body_graph@constants) {
+      node_expr_body[[gval]] <- .expr_of_node(gval, node_expr = node_expr)
+    }
+    body_ops <- .ops_from_graph(body_graph, node_expr_body)
+    body_ops <- .fuse_broadcast_mul(body_ops)
+    body_stmts <- list()
+    for (op in body_ops) {
+      body_stmts <- c(body_stmts, .emit_prim(op$prim_name, op$inputs, op$params, op$out_syms, op$input_nodes, op$out_avals))
+    }
+
+    tmp_syms <- vector("list", length(state_syms))
+    for (i in seq_along(state_syms)) {
+      counter$tmp <- counter$tmp + 1L
+      tmp_syms[[i]] <- as.name(paste0("v", counter$tmp))
+    }
+    body_out_exprs <- lapply(body_graph@outputs, .expr_of_node, node_expr = node_expr_body)
+    for (i in seq_along(tmp_syms)) {
+      body_stmts <- c(body_stmts, .emit_assign(tmp_syms[[i]], body_out_exprs[[i]]))
+    }
+    for (i in seq_along(state_syms)) {
+      body_stmts <- c(body_stmts, .emit_assign(state_syms[[i]], tmp_syms[[i]]))
+    }
+
+    body_block <- as.call(c(list(as.name("{")), c(body_stmts, cond_stmts)))
+
+    c(stmts, cond_stmts, list(as.call(list(as.name("while"), cond_sym, body_block))))
+  }
+
   .build_output_expr <- function(node, leaves) {
     if (inherits(node, "LeafNode")) {
       return(leaves[[node$i]])
@@ -1871,8 +2022,69 @@ graph_to_r_function <- function(graph, include_declare = TRUE) {
   }
 
   out_leaves <- lapply(graph@outputs, .expr_of_node, node_expr = node_expr)
-  out_expr <- .build_output_expr(graph@out_tree, out_leaves)
-  stmts <- c(stmts, list(.call2("<-", as.name("out"), out_expr), as.name("out")))
+
+  if (isTRUE(pack_output)) {
+    out_nodes <- graph@outputs
+    out_shapes <- lapply(out_nodes, function(node) {
+      if (is_graph_value(node)) {
+        shape(node@aval)
+      } else {
+        integer()
+      }
+    })
+    out_lens <- vapply(out_shapes, function(shp) {
+      if (!length(shp)) 1L else Reduce(`*`, as.integer(shp), init = 1L)
+    }, integer(1L))
+    total_len <- sum(out_lens)
+
+    out_sym <- as.name("out")
+    idx_sym <- as.name("out_i")
+    stmts <- c(stmts, list(.call2("<-", out_sym, .call2("double", as.integer(total_len)))))
+    stmts <- c(stmts, list(.call2("<-", idx_sym, 0L)))
+
+    emit_pack_scalar <- function(src_expr) {
+      list(
+        .call2("<-", idx_sym, .call2("+", idx_sym, 1L)),
+        .call2("<-", .call2("[", out_sym, idx_sym), .call2("as.double", src_expr))
+      )
+    }
+
+    emit_pack_array <- function(src_expr, shp, tag) {
+      rank <- length(shp)
+      if (rank == 0L) {
+        return(emit_pack_scalar(src_expr))
+      }
+      idxs <- lapply(seq_len(rank), function(d) as.name(paste0("i_", tag, "_", d)))
+
+      elem <- as.call(c(list(as.name("[")), list(src_expr), idxs))
+      inner <- as.call(c(list(as.name("{")), c(
+        list(.call2("<-", idx_sym, .call2("+", idx_sym, 1L))),
+        list(.call2("<-", .call2("[", out_sym, idx_sym), .call2("as.double", elem)))
+      )))
+
+      body <- inner
+      for (d in seq_len(rank)) {
+        body <- as.call(list(
+          as.name("for"),
+          idxs[[d]],
+          .call2("seq_len", as.integer(shp[[d]])),
+          body
+        ))
+      }
+      list(body)
+    }
+
+    for (i in seq_along(out_leaves)) {
+      tag <- paste0("out", i)
+      shp <- out_shapes[[i]]
+      stmts <- c(stmts, emit_pack_array(out_leaves[[i]], shp, tag))
+    }
+
+    stmts <- c(stmts, list(out_sym))
+  } else {
+    out_expr <- .build_output_expr(graph@out_tree, out_leaves)
+    stmts <- c(stmts, list(.call2("<-", as.name("out"), out_expr), as.name("out")))
+  }
   body_expr <- as.call(c(list(as.name("{")), stmts))
 
   f <- function() {
