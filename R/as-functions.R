@@ -18,6 +18,8 @@ as_r_function <- function(graph) {
 #'
 #' Convenience wrapper around [graph_to_quickr_function()].
 #'
+#' @param graph ([`Graph`])\cr
+#'   Graph to convert.
 #' @return (`function`)
 #' @export
 as_quickr_function <- function(graph) {

@@ -4,7 +4,7 @@
 \alias{graph_to_r_function}
 \title{Convert a Graph to an R function}
 \usage{
-graph_to_r_function(graph, include_declare = TRUE)
+graph_to_r_function(graph, include_declare = TRUE, pack_output = FALSE)
 }
 \arguments{
 \item{graph}{(\code{\link{Graph}})\cr
@@ -13,6 +13,11 @@ Graph to convert.}
 \item{include_declare}{(\code{logical(1)})\cr
 Whether to include a \code{declare(type(...))} call at the top of the function
 body (useful for {quickr}). In plain R it is treated as a no-op. Default is \code{TRUE}.}
+
+\item{pack_output}{(\code{logical(1)})\cr
+Whether to force the function to return a single flat \code{double()} vector
+containing all output leaves (for {quickr} compatibility when the graph
+returns a nested output tree). Default is \code{FALSE}.}
 }
 \value{
 (\code{function})

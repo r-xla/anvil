@@ -6,6 +6,10 @@
 \usage{
 as_quickr_function(graph)
 }
+\arguments{
+\item{graph}{(\code{\link{Graph}})\cr
+Graph to convert.}
+}
 \value{
 (\code{function})
 }
