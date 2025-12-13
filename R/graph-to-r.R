@@ -578,378 +578,236 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
     }
   }
 
-  .emit_reduce_sum <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
+  .emit_reduce_rank1_loop <- function(out_sym, n, drop, init_acc_expr, inner_start, update_builder) {
+    ii <- as.name(paste0("i_", as.character(out_sym)))
+    acc <- as.name(paste0("acc_", as.character(out_sym)))
+
+    stmts <- list(.call2("<-", acc, init_acc_expr))
+    if (as.integer(n) >= as.integer(inner_start)) {
+      stmts <- c(stmts, list(as.call(list(
+        as.name("for"),
+        ii,
+        as.call(list(as.name(":"), as.integer(inner_start), as.integer(n))),
+        update_builder(ii, acc)
+      ))))
+    }
+
+    if (isTRUE(drop)) {
+      c(stmts, .emit_assign(out_sym, acc))
+    } else {
+      c(stmts, .emit_assign(out_sym, .call2("c", acc)))
+    }
+  }
+
+  .emit_reduce_rank2_axis_loop <- function(out_sym, m, n, dims, drop, alloc_stmts, init_acc_expr, inner_start, update_builder) {
     dims <- as.integer(dims)
-    rank <- length(shape_in)
-    zero <- .zero_literal_for(out_aval)
     ii <- as.name(paste0("i_", as.character(out_sym)))
     jj <- as.name(paste0("j_", as.character(out_sym)))
     acc <- as.name(paste0("acc_", as.character(out_sym)))
 
+    outer_sym <- if (identical(dims, 2L)) ii else jj
+    outer_n <- if (identical(dims, 2L)) m else n
+    inner_sym <- if (identical(dims, 2L)) jj else ii
+    inner_n <- if (identical(dims, 2L)) n else m
+
+    assign_out <- if (identical(dims, 2L)) {
+      if (isTRUE(drop)) {
+        .call2("<-", .call2("[", out_sym, ii), acc)
+      } else {
+        .call2("<-", .call2("[", out_sym, ii, 1L), acc)
+      }
+    } else {
+      if (isTRUE(drop)) {
+        .call2("<-", .call2("[", out_sym, jj), acc)
+      } else {
+        .call2("<-", .call2("[", out_sym, 1L, jj), acc)
+      }
+    }
+
+    body_parts <- list(.call2("<-", acc, init_acc_expr))
+    if (as.integer(inner_n) >= as.integer(inner_start)) {
+      body_parts <- c(body_parts, list(as.call(list(
+        as.name("for"),
+        inner_sym,
+        as.call(list(as.name(":"), as.integer(inner_start), as.integer(inner_n))),
+        update_builder(ii, jj, acc)
+      ))))
+    }
+    body_parts <- c(body_parts, list(assign_out))
+    outer_body <- as.call(c(list(as.name("{")), body_parts))
+
+    c(
+      alloc_stmts,
+      list(as.call(list(
+        as.name("for"),
+        outer_sym,
+        as.call(list(as.name(":"), 1L, as.integer(outer_n))),
+        outer_body
+      )))
+    )
+  }
+
+  .emit_reduce_extreme <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval, op_label, cmp_op, full_fun) {
+    dims <- as.integer(dims)
+    rank <- length(shape_in)
+
     if (rank == 1L && identical(dims, 1L)) {
       n <- as.integer(shape_in[[1L]])
-      if (isTRUE(drop)) {
-        stmts <- list(.call2("<-", acc, zero))
-        stmts <- c(stmts, list(as.call(list(
-          as.name("for"),
-          ii,
-          as.call(list(as.name(":"), 1L, n)),
-          .call2("<-", acc, .call2("+", acc, .call2("[", operand_expr, ii)))
-        ))))
-        c(stmts, .emit_assign(out_sym, acc))
-      } else {
-        stmts <- list(.call2("<-", acc, zero))
-        stmts <- c(stmts, list(as.call(list(
-          as.name("for"),
-          ii,
-          as.call(list(as.name(":"), 1L, n)),
-          .call2("<-", acc, .call2("+", acc, .call2("[", operand_expr, ii)))
-        ))))
-        c(stmts, .emit_assign(out_sym, .call2("c", acc)))
+      init <- .call2("[", operand_expr, 1L)
+      update <- function(ii, acc) {
+        elem <- .call2("[", operand_expr, ii)
+        as.call(list(
+          as.name("if"),
+          .call2(cmp_op, elem, acc),
+          .call2("<-", acc, elem)
+        ))
       }
-    } else if (rank == 2L) {
+      return(.emit_reduce_rank1_loop(out_sym, n, drop, init, 2L, update))
+    }
+
+    if (rank == 2L) {
+      m <- as.integer(shape_in[[1L]])
+      n <- as.integer(shape_in[[2L]])
+      ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
+      zero <- .zero_literal_for(out_aval)
+
+      if (identical(dims, c(1L, 2L))) {
+        if (isTRUE(drop)) {
+          return(.emit_assign(out_sym, .call2(full_fun, operand_expr)))
+        }
+        return(.emit_assign(out_sym, .call2("matrix", .call2(full_fun, operand_expr), nrow = 1L, ncol = 1L)))
+      }
+
+      update <- function(ii, jj, acc) {
+        elem <- .call2("[", operand_expr, ii, jj)
+        as.call(list(
+          as.name("if"),
+          .call2(cmp_op, elem, acc),
+          .call2("<-", acc, elem)
+        ))
+      }
+
+      if (identical(dims, 2L)) {
+        ii <- as.name(paste0("i_", as.character(out_sym)))
+        init <- .call2("[", operand_expr, ii, 1L)
+        alloc <- if (isTRUE(drop)) {
+          .emit_assign(out_sym, .call2(ctor, m))
+        } else {
+          .emit_assign(out_sym, .call2("matrix", zero, nrow = m, ncol = 1L))
+        }
+        return(.emit_reduce_rank2_axis_loop(out_sym, m, n, 2L, drop, alloc, init, 2L, update))
+      }
+
+      if (identical(dims, 1L)) {
+        jj <- as.name(paste0("j_", as.character(out_sym)))
+        init <- .call2("[", operand_expr, 1L, jj)
+        alloc <- if (isTRUE(drop)) {
+          .emit_assign(out_sym, .call2(ctor, n))
+        } else {
+          .emit_assign(out_sym, .call2("matrix", zero, nrow = 1L, ncol = n))
+        }
+        return(.emit_reduce_rank2_axis_loop(out_sym, m, n, 1L, drop, alloc, init, 2L, update))
+      }
+
+      cli_abort("{op_label}: unsupported reduction dims for rank-2 tensor")
+    }
+
+    cli_abort("{op_label}: only rank-1/2 tensors are currently supported")
+  }
+
+  .emit_reduce_sum <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
+    dims <- as.integer(dims)
+    rank <- length(shape_in)
+    zero <- .zero_literal_for(out_aval)
+
+    if (rank == 1L && identical(dims, 1L)) {
+      n <- as.integer(shape_in[[1L]])
+      update <- function(ii, acc) .call2("<-", acc, .call2("+", acc, .call2("[", operand_expr, ii)))
+      return(.emit_reduce_rank1_loop(out_sym, n, drop, zero, 1L, update))
+    }
+
+    if (rank == 2L) {
       m <- as.integer(shape_in[[1L]])
       n <- as.integer(shape_in[[2L]])
       ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
 
       if (identical(dims, c(1L, 2L))) {
-        # Full reduction
         if (isTRUE(drop)) {
           return(.emit_assign(out_sym, .call2("sum", operand_expr)))
         }
         return(.emit_assign(out_sym, .call2("matrix", .call2("sum", operand_expr), nrow = 1L, ncol = 1L)))
       }
 
+      update <- function(ii, jj, acc) .call2("<-", acc, .call2("+", acc, .call2("[", operand_expr, ii, jj)))
+
       if (identical(dims, 2L)) {
-        if (isTRUE(drop)) {
-          stmts <- .emit_assign(out_sym, .call2(ctor, m))
-          outer_body <- as.call(c(
-            list(as.name("{")),
-            list(.call2("<-", acc, zero)),
-            list(as.call(list(
-              as.name("for"),
-              jj,
-              as.call(list(as.name(":"), 1L, n)),
-              .call2("<-", acc, .call2("+", acc, .call2("[", operand_expr, ii, jj)))
-            ))),
-            list(.call2("<-", .call2("[", out_sym, ii), acc))
-          ))
-          c(stmts, list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 1L, m)), outer_body))))
+        alloc <- if (isTRUE(drop)) {
+          .emit_assign(out_sym, .call2(ctor, m))
         } else {
-          stmts <- .emit_assign(out_sym, .call2("matrix", zero, nrow = m, ncol = 1L))
-          outer_body <- as.call(c(
-            list(as.name("{")),
-            list(.call2("<-", acc, zero)),
-            list(as.call(list(
-              as.name("for"),
-              jj,
-              as.call(list(as.name(":"), 1L, n)),
-              .call2("<-", acc, .call2("+", acc, .call2("[", operand_expr, ii, jj)))
-            ))),
-            list(.call2("<-", .call2("[", out_sym, ii, 1L), acc))
-          ))
-          c(stmts, list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 1L, m)), outer_body))))
+          .emit_assign(out_sym, .call2("matrix", zero, nrow = m, ncol = 1L))
         }
-      } else if (identical(dims, 1L)) {
-        if (isTRUE(drop)) {
-          stmts <- .emit_assign(out_sym, .call2(ctor, n))
-          outer_body <- as.call(c(
-            list(as.name("{")),
-            list(.call2("<-", acc, zero)),
-            list(as.call(list(
-              as.name("for"),
-              ii,
-              as.call(list(as.name(":"), 1L, m)),
-              .call2("<-", acc, .call2("+", acc, .call2("[", operand_expr, ii, jj)))
-            ))),
-            list(.call2("<-", .call2("[", out_sym, jj), acc))
-          ))
-          c(stmts, list(as.call(list(as.name("for"), jj, as.call(list(as.name(":"), 1L, n)), outer_body))))
-        } else {
-          stmts <- .emit_assign(out_sym, .call2("matrix", zero, nrow = 1L, ncol = n))
-          outer_body <- as.call(c(
-            list(as.name("{")),
-            list(.call2("<-", acc, zero)),
-            list(as.call(list(
-              as.name("for"),
-              ii,
-              as.call(list(as.name(":"), 1L, m)),
-              .call2("<-", acc, .call2("+", acc, .call2("[", operand_expr, ii, jj)))
-            ))),
-            list(.call2("<-", .call2("[", out_sym, 1L, jj), acc))
-          ))
-          c(stmts, list(as.call(list(as.name("for"), jj, as.call(list(as.name(":"), 1L, n)), outer_body))))
-        }
-      } else {
-        cli_abort("sum: unsupported reduction dims for rank-2 tensor")
+        return(.emit_reduce_rank2_axis_loop(out_sym, m, n, 2L, drop, alloc, zero, 1L, update))
       }
-    } else {
-      cli_abort("sum: only rank-1/2 tensors are currently supported")
+
+      if (identical(dims, 1L)) {
+        alloc <- if (isTRUE(drop)) {
+          .emit_assign(out_sym, .call2(ctor, n))
+        } else {
+          .emit_assign(out_sym, .call2("matrix", zero, nrow = 1L, ncol = n))
+        }
+        return(.emit_reduce_rank2_axis_loop(out_sym, m, n, 1L, drop, alloc, zero, 1L, update))
+      }
+
+      cli_abort("sum: unsupported reduction dims for rank-2 tensor")
     }
+
+    cli_abort("sum: only rank-1/2 tensors are currently supported")
   }
 
   .emit_reduce_max <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
-    dims <- as.integer(dims)
-    rank <- length(shape_in)
-    ii <- as.name(paste0("i_", as.character(out_sym)))
-    jj <- as.name(paste0("j_", as.character(out_sym)))
-    acc <- as.name(paste0("acc_", as.character(out_sym)))
-
-    if (rank == 1L && identical(dims, 1L)) {
-      n <- as.integer(shape_in[[1L]])
-      init <- .call2("[", operand_expr, 1L)
-      update <- as.call(list(
-        as.name("if"),
-        .call2(">", .call2("[", operand_expr, ii), acc),
-        .call2("<-", acc, .call2("[", operand_expr, ii))
-      ))
-      stmts <- list(.call2("<-", acc, init))
-      if (n > 1L) {
-        stmts <- c(stmts, list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 2L, n)), update))))
-      }
-      if (isTRUE(drop)) {
-        c(stmts, .emit_assign(out_sym, acc))
-      } else {
-        c(stmts, .emit_assign(out_sym, .call2("c", acc)))
-      }
-    } else if (rank == 2L) {
-      m <- as.integer(shape_in[[1L]])
-      n <- as.integer(shape_in[[2L]])
-      ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
-
-      if (identical(dims, c(1L, 2L))) {
-        if (isTRUE(drop)) {
-          return(.emit_assign(out_sym, .call2("max", operand_expr)))
-        }
-        return(.emit_assign(out_sym, .call2("matrix", .call2("max", operand_expr), nrow = 1L, ncol = 1L)))
-      }
-
-      if (identical(dims, 2L)) {
-        zero <- .zero_literal_for(out_aval)
-        if (isTRUE(drop)) {
-          stmts <- .emit_assign(out_sym, .call2(ctor, m))
-          outer_body <- {
-            init <- .call2("[", operand_expr, ii, 1L)
-            update <- as.call(list(
-              as.name("if"),
-              .call2(">", .call2("[", operand_expr, ii, jj), acc),
-              .call2("<-", acc, .call2("[", operand_expr, ii, jj))
-            ))
-            as.call(c(
-              list(as.name("{")),
-              list(.call2("<-", acc, init)),
-              if (n > 1L) list(as.call(list(as.name("for"), jj, as.call(list(as.name(":"), 2L, n)), update))) else list(),
-              list(.call2("<-", .call2("[", out_sym, ii), acc))
-            ))
-          }
-          c(stmts, list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 1L, m)), outer_body))))
-        } else {
-          stmts <- .emit_assign(out_sym, .call2("matrix", zero, nrow = m, ncol = 1L))
-          outer_body <- {
-            init <- .call2("[", operand_expr, ii, 1L)
-            update <- as.call(list(
-              as.name("if"),
-              .call2(">", .call2("[", operand_expr, ii, jj), acc),
-              .call2("<-", acc, .call2("[", operand_expr, ii, jj))
-            ))
-            as.call(c(
-              list(as.name("{")),
-              list(.call2("<-", acc, init)),
-              if (n > 1L) list(as.call(list(as.name("for"), jj, as.call(list(as.name(":"), 2L, n)), update))) else list(),
-              list(.call2("<-", .call2("[", out_sym, ii, 1L), acc))
-            ))
-          }
-          c(stmts, list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 1L, m)), outer_body))))
-        }
-      } else if (identical(dims, 1L)) {
-        zero <- .zero_literal_for(out_aval)
-        if (isTRUE(drop)) {
-          stmts <- .emit_assign(out_sym, .call2(ctor, n))
-          outer_body <- {
-            init <- .call2("[", operand_expr, 1L, jj)
-            update <- as.call(list(
-              as.name("if"),
-              .call2(">", .call2("[", operand_expr, ii, jj), acc),
-              .call2("<-", acc, .call2("[", operand_expr, ii, jj))
-            ))
-            as.call(c(
-              list(as.name("{")),
-              list(.call2("<-", acc, init)),
-              if (m > 1L) list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 2L, m)), update))) else list(),
-              list(.call2("<-", .call2("[", out_sym, jj), acc))
-            ))
-          }
-          c(stmts, list(as.call(list(as.name("for"), jj, as.call(list(as.name(":"), 1L, n)), outer_body))))
-        } else {
-          stmts <- .emit_assign(out_sym, .call2("matrix", zero, nrow = 1L, ncol = n))
-          outer_body <- {
-            init <- .call2("[", operand_expr, 1L, jj)
-            update <- as.call(list(
-              as.name("if"),
-              .call2(">", .call2("[", operand_expr, ii, jj), acc),
-              .call2("<-", acc, .call2("[", operand_expr, ii, jj))
-            ))
-            as.call(c(
-              list(as.name("{")),
-              list(.call2("<-", acc, init)),
-              if (m > 1L) list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 2L, m)), update))) else list(),
-              list(.call2("<-", .call2("[", out_sym, 1L, jj), acc))
-            ))
-          }
-          c(stmts, list(as.call(list(as.name("for"), jj, as.call(list(as.name(":"), 1L, n)), outer_body))))
-        }
-      } else {
-        cli_abort("max: unsupported reduction dims for rank-2 tensor")
-      }
-    } else {
-      cli_abort("max: only rank-1/2 tensors are currently supported")
-    }
+    .emit_reduce_extreme(
+      out_sym,
+      operand_expr,
+      shape_in,
+      dims,
+      drop,
+      out_aval,
+      op_label = "max",
+      cmp_op = ">",
+      full_fun = "max"
+    )
   }
 
   .emit_reduce_min <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
-    dims <- as.integer(dims)
-    rank <- length(shape_in)
-    ii <- as.name(paste0("i_", as.character(out_sym)))
-    jj <- as.name(paste0("j_", as.character(out_sym)))
-    acc <- as.name(paste0("acc_", as.character(out_sym)))
-
-    if (rank == 1L && identical(dims, 1L)) {
-      n <- as.integer(shape_in[[1L]])
-      init <- .call2("[", operand_expr, 1L)
-      update <- as.call(list(
-        as.name("if"),
-        .call2("<", .call2("[", operand_expr, ii), acc),
-        .call2("<-", acc, .call2("[", operand_expr, ii))
-      ))
-      stmts <- list(.call2("<-", acc, init))
-      if (n > 1L) {
-        stmts <- c(stmts, list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 2L, n)), update))))
-      }
-      if (isTRUE(drop)) {
-        c(stmts, .emit_assign(out_sym, acc))
-      } else {
-        c(stmts, .emit_assign(out_sym, .call2("c", acc)))
-      }
-    } else if (rank == 2L) {
-      m <- as.integer(shape_in[[1L]])
-      n <- as.integer(shape_in[[2L]])
-      ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
-
-      if (identical(dims, c(1L, 2L))) {
-        if (isTRUE(drop)) {
-          return(.emit_assign(out_sym, .call2("min", operand_expr)))
-        }
-        return(.emit_assign(out_sym, .call2("matrix", .call2("min", operand_expr), nrow = 1L, ncol = 1L)))
-      }
-
-      if (identical(dims, 2L)) {
-        zero <- .zero_literal_for(out_aval)
-        if (isTRUE(drop)) {
-          stmts <- .emit_assign(out_sym, .call2(ctor, m))
-          outer_body <- {
-            init <- .call2("[", operand_expr, ii, 1L)
-            update <- as.call(list(
-              as.name("if"),
-              .call2("<", .call2("[", operand_expr, ii, jj), acc),
-              .call2("<-", acc, .call2("[", operand_expr, ii, jj))
-            ))
-            as.call(c(
-              list(as.name("{")),
-              list(.call2("<-", acc, init)),
-              if (n > 1L) list(as.call(list(as.name("for"), jj, as.call(list(as.name(":"), 2L, n)), update))) else list(),
-              list(.call2("<-", .call2("[", out_sym, ii), acc))
-            ))
-          }
-          c(stmts, list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 1L, m)), outer_body))))
-        } else {
-          stmts <- .emit_assign(out_sym, .call2("matrix", zero, nrow = m, ncol = 1L))
-          outer_body <- {
-            init <- .call2("[", operand_expr, ii, 1L)
-            update <- as.call(list(
-              as.name("if"),
-              .call2("<", .call2("[", operand_expr, ii, jj), acc),
-              .call2("<-", acc, .call2("[", operand_expr, ii, jj))
-            ))
-            as.call(c(
-              list(as.name("{")),
-              list(.call2("<-", acc, init)),
-              if (n > 1L) list(as.call(list(as.name("for"), jj, as.call(list(as.name(":"), 2L, n)), update))) else list(),
-              list(.call2("<-", .call2("[", out_sym, ii, 1L), acc))
-            ))
-          }
-          c(stmts, list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 1L, m)), outer_body))))
-        }
-      } else if (identical(dims, 1L)) {
-        zero <- .zero_literal_for(out_aval)
-        if (isTRUE(drop)) {
-          stmts <- .emit_assign(out_sym, .call2(ctor, n))
-          outer_body <- {
-            init <- .call2("[", operand_expr, 1L, jj)
-            update <- as.call(list(
-              as.name("if"),
-              .call2("<", .call2("[", operand_expr, ii, jj), acc),
-              .call2("<-", acc, .call2("[", operand_expr, ii, jj))
-            ))
-            as.call(c(
-              list(as.name("{")),
-              list(.call2("<-", acc, init)),
-              if (m > 1L) list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 2L, m)), update))) else list(),
-              list(.call2("<-", .call2("[", out_sym, jj), acc))
-            ))
-          }
-          c(stmts, list(as.call(list(as.name("for"), jj, as.call(list(as.name(":"), 1L, n)), outer_body))))
-        } else {
-          stmts <- .emit_assign(out_sym, .call2("matrix", zero, nrow = 1L, ncol = n))
-          outer_body <- {
-            init <- .call2("[", operand_expr, 1L, jj)
-            update <- as.call(list(
-              as.name("if"),
-              .call2("<", .call2("[", operand_expr, ii, jj), acc),
-              .call2("<-", acc, .call2("[", operand_expr, ii, jj))
-            ))
-            as.call(c(
-              list(as.name("{")),
-              list(.call2("<-", acc, init)),
-              if (m > 1L) list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 2L, m)), update))) else list(),
-              list(.call2("<-", .call2("[", out_sym, 1L, jj), acc))
-            ))
-          }
-          c(stmts, list(as.call(list(as.name("for"), jj, as.call(list(as.name(":"), 1L, n)), outer_body))))
-        }
-      } else {
-        cli_abort("min: unsupported reduction dims for rank-2 tensor")
-      }
-    } else {
-      cli_abort("min: only rank-1/2 tensors are currently supported")
-    }
+    .emit_reduce_extreme(
+      out_sym,
+      operand_expr,
+      shape_in,
+      dims,
+      drop,
+      out_aval,
+      op_label = "min",
+      cmp_op = "<",
+      full_fun = "min"
+    )
   }
 
   .emit_reduce_prod <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
     dims <- as.integer(dims)
     rank <- length(shape_in)
     one <- if (as.character(dtype(out_aval)) %in% c("f32", "f64")) 1.0 else 1L
-    ii <- as.name(paste0("i_", as.character(out_sym)))
-    jj <- as.name(paste0("j_", as.character(out_sym)))
-    acc <- as.name(paste0("acc_", as.character(out_sym)))
 
     if (rank == 1L && identical(dims, 1L)) {
       n <- as.integer(shape_in[[1L]])
-      stmts <- list(.call2("<-", acc, one))
-      stmts <- c(stmts, list(as.call(list(
-        as.name("for"),
-        ii,
-        as.call(list(as.name(":"), 1L, n)),
-        .call2("<-", acc, .call2("*", acc, .call2("[", operand_expr, ii)))
-      ))))
-      if (isTRUE(drop)) {
-        c(stmts, .emit_assign(out_sym, acc))
-      } else {
-        c(stmts, .emit_assign(out_sym, .call2("c", acc)))
-      }
-    } else if (rank == 2L) {
+      update <- function(ii, acc) .call2("<-", acc, .call2("*", acc, .call2("[", operand_expr, ii)))
+      return(.emit_reduce_rank1_loop(out_sym, n, drop, one, 1L, update))
+    }
+
+    if (rank == 2L) {
       m <- as.integer(shape_in[[1L]])
       n <- as.integer(shape_in[[2L]])
       ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
+      zero <- .zero_literal_for(out_aval)
 
       if (identical(dims, c(1L, 2L))) {
         if (isTRUE(drop)) {
@@ -958,74 +816,30 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
         return(.emit_assign(out_sym, .call2("matrix", .call2("prod", operand_expr), nrow = 1L, ncol = 1L)))
       }
 
+      update <- function(ii, jj, acc) .call2("<-", acc, .call2("*", acc, .call2("[", operand_expr, ii, jj)))
+
       if (identical(dims, 2L)) {
-        if (isTRUE(drop)) {
-          stmts <- .emit_assign(out_sym, .call2(ctor, m))
-          outer_body <- as.call(c(
-            list(as.name("{")),
-            list(.call2("<-", acc, one)),
-            list(as.call(list(
-              as.name("for"),
-              jj,
-              as.call(list(as.name(":"), 1L, n)),
-              .call2("<-", acc, .call2("*", acc, .call2("[", operand_expr, ii, jj)))
-            ))),
-            list(.call2("<-", .call2("[", out_sym, ii), acc))
-          ))
-          c(stmts, list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 1L, m)), outer_body))))
+        alloc <- if (isTRUE(drop)) {
+          .emit_assign(out_sym, .call2(ctor, m))
         } else {
-          zero <- .zero_literal_for(out_aval)
-          stmts <- .emit_assign(out_sym, .call2("matrix", zero, nrow = m, ncol = 1L))
-          outer_body <- as.call(c(
-            list(as.name("{")),
-            list(.call2("<-", acc, one)),
-            list(as.call(list(
-              as.name("for"),
-              jj,
-              as.call(list(as.name(":"), 1L, n)),
-              .call2("<-", acc, .call2("*", acc, .call2("[", operand_expr, ii, jj)))
-            ))),
-            list(.call2("<-", .call2("[", out_sym, ii, 1L), acc))
-          ))
-          c(stmts, list(as.call(list(as.name("for"), ii, as.call(list(as.name(":"), 1L, m)), outer_body))))
+          .emit_assign(out_sym, .call2("matrix", zero, nrow = m, ncol = 1L))
         }
-      } else if (identical(dims, 1L)) {
-        if (isTRUE(drop)) {
-          stmts <- .emit_assign(out_sym, .call2(ctor, n))
-          outer_body <- as.call(c(
-            list(as.name("{")),
-            list(.call2("<-", acc, one)),
-            list(as.call(list(
-              as.name("for"),
-              ii,
-              as.call(list(as.name(":"), 1L, m)),
-              .call2("<-", acc, .call2("*", acc, .call2("[", operand_expr, ii, jj)))
-            ))),
-            list(.call2("<-", .call2("[", out_sym, jj), acc))
-          ))
-          c(stmts, list(as.call(list(as.name("for"), jj, as.call(list(as.name(":"), 1L, n)), outer_body))))
-        } else {
-          zero <- .zero_literal_for(out_aval)
-          stmts <- .emit_assign(out_sym, .call2("matrix", zero, nrow = 1L, ncol = n))
-          outer_body <- as.call(c(
-            list(as.name("{")),
-            list(.call2("<-", acc, one)),
-            list(as.call(list(
-              as.name("for"),
-              ii,
-              as.call(list(as.name(":"), 1L, m)),
-              .call2("<-", acc, .call2("*", acc, .call2("[", operand_expr, ii, jj)))
-            ))),
-            list(.call2("<-", .call2("[", out_sym, 1L, jj), acc))
-          ))
-          c(stmts, list(as.call(list(as.name("for"), jj, as.call(list(as.name(":"), 1L, n)), outer_body))))
-        }
-      } else {
-        cli_abort("prod: unsupported reduction dims for rank-2 tensor")
+        return(.emit_reduce_rank2_axis_loop(out_sym, m, n, 2L, drop, alloc, one, 1L, update))
       }
-    } else {
-      cli_abort("prod: only rank-1/2 tensors are currently supported")
+
+      if (identical(dims, 1L)) {
+        alloc <- if (isTRUE(drop)) {
+          .emit_assign(out_sym, .call2(ctor, n))
+        } else {
+          .emit_assign(out_sym, .call2("matrix", zero, nrow = 1L, ncol = n))
+        }
+        return(.emit_reduce_rank2_axis_loop(out_sym, m, n, 1L, drop, alloc, one, 1L, update))
+      }
+
+      cli_abort("prod: unsupported reduction dims for rank-2 tensor")
     }
+
+    cli_abort("prod: only rank-1/2 tensors are currently supported")
   }
 
   .emit_reduce_any_quickr <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
