@@ -22,3 +22,4 @@ SPEC.md
 ^Makefile$
 ^air.toml$
 ^TODO.md$
+^mnist\\.rds$

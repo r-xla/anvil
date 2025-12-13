@@ -210,7 +210,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     expr
   }
 
-  .emit_dot_general <- function(out_sym, lhs_expr, rhs_expr, lhs_shape, rhs_shape, out_shape, out_aval) {
+  .emit_dot_general <- function(out_sym, lhs_expr, rhs_expr, lhs_shape, rhs_shape, out_shape, out_aval, contracting_dims, batching_dims) {
     rank <- length(out_shape)
     if (!(rank %in% c(2L, 3L))) {
       cli_abort("dot_general: only rank-2 and rank-3 outputs are supported")
@@ -225,6 +225,12 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
       ))
     }
     .block <- function(...) as.call(c(list(as.name("{")), list(...)))
+    .subscript <- function(expr, idxs) as.call(c(list(as.name("["), expr), idxs))
+
+    cd_lhs <- as.integer(contracting_dims[[1L]])
+    cd_rhs <- as.integer(contracting_dims[[2L]])
+    bd_lhs <- as.integer(batching_dims[[1L]])
+    bd_rhs <- as.integer(batching_dims[[2L]])
 
     zero <- .zero_literal_for(out_aval)
     out_i <- as.name(paste0("i_", as.character(out_sym)))
@@ -234,57 +240,113 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     out_acc <- as.name(paste0("acc_", as.character(out_sym)))
 
     if (rank == 2L) {
-      m <- as.integer(out_shape[[1L]])
-      p <- as.integer(out_shape[[2L]])
-      n <- as.integer(lhs_shape[[2L]])
+      if (length(bd_lhs) || length(bd_rhs)) {
+        cli_abort("dot_general: rank-2 output does not support batching dims")
+      }
+      if (!(length(cd_lhs) == 1L && length(cd_rhs) == 1L)) {
+        cli_abort("dot_general: rank-2 output supports only one contracting dim")
+      }
+      cd_lhs <- cd_lhs[[1L]]
+      cd_rhs <- cd_rhs[[1L]]
+      if (!(cd_lhs %in% 1:2 && cd_rhs %in% 1:2)) {
+        cli_abort("dot_general: unsupported contracting dims for rank-2 output")
+      }
 
-      update_acc <- .call2(
-        "<-",
-        out_acc,
-        .call2("+", out_acc, .call2("*",
-          .call2("[", lhs_expr, out_i, out_k),
-          .call2("[", rhs_expr, out_k, out_j)
-        ))
-      )
+      rd_lhs <- setdiff(1:2, cd_lhs)
+      rd_rhs <- setdiff(1:2, cd_rhs)
+      if (!(length(rd_lhs) == 1L && length(rd_rhs) == 1L)) {
+        cli_abort("dot_general: unsupported contracting dims for rank-2 output")
+      }
+
+      m <- as.integer(lhs_shape[[rd_lhs]])
+      n <- as.integer(rhs_shape[[rd_rhs]])
+      k <- as.integer(lhs_shape[[cd_lhs]])
+      if (!identical(k, as.integer(rhs_shape[[cd_rhs]]))) {
+        cli_abort("dot_general: contracting dims sizes differ")
+      }
+      if (!identical(as.integer(out_shape), c(m, n))) {
+        cli_abort("dot_general: output shape mismatch")
+      }
+
+      idx_lhs <- vector("list", 2L)
+      idx_rhs <- vector("list", 2L)
+      idx_lhs[[rd_lhs]] <- out_i
+      idx_lhs[[cd_lhs]] <- out_k
+      idx_rhs[[rd_rhs]] <- out_j
+      idx_rhs[[cd_rhs]] <- out_k
+
+      lhs_at <- .subscript(lhs_expr, idx_lhs)
+      rhs_at <- .subscript(rhs_expr, idx_rhs)
+
+      update_acc <- .call2("<-", out_acc, .call2("+", out_acc, .call2("*", lhs_at, rhs_at)))
 
       inner <- .block(
         .emit_assign(out_acc, zero)[[1L]],
-        .for_loop(out_k, n, update_acc),
+        .for_loop(out_k, k, update_acc),
         .call2("<-", .call2("[", out_sym, out_i, out_j), out_acc)
       )
 
       list(
-        .emit_assign(out_sym, .call2("matrix", zero, nrow = m, ncol = p))[[1L]],
-        .for_loop(out_i, m, .for_loop(out_j, p, inner))
+        .emit_assign(out_sym, .call2("matrix", zero, nrow = m, ncol = n))[[1L]],
+        .for_loop(out_i, m, .for_loop(out_j, n, inner))
       )
     } else {
+      if (!(length(bd_lhs) == 1L && length(bd_rhs) == 1L && bd_lhs[[1L]] == 1L && bd_rhs[[1L]] == 1L)) {
+        cli_abort("dot_general: rank-3 output supports only batching_dims=1")
+      }
+      if (!(length(cd_lhs) == 1L && length(cd_rhs) == 1L)) {
+        cli_abort("dot_general: rank-3 output supports only one contracting dim")
+      }
+      cd_lhs <- cd_lhs[[1L]]
+      cd_rhs <- cd_rhs[[1L]]
+      if (!(cd_lhs %in% 2:3 && cd_rhs %in% 2:3)) {
+        cli_abort("dot_general: unsupported contracting dims for rank-3 output")
+      }
+
+      rd_lhs <- setdiff(2:3, cd_lhs)
+      rd_rhs <- setdiff(2:3, cd_rhs)
+      if (!(length(rd_lhs) == 1L && length(rd_rhs) == 1L)) {
+        cli_abort("dot_general: unsupported contracting dims for rank-3 output")
+      }
+
       b <- as.integer(out_shape[[1L]])
-      m <- as.integer(out_shape[[2L]])
-      p <- as.integer(out_shape[[3L]])
-      n <- as.integer(lhs_shape[[3L]])
+      m <- as.integer(lhs_shape[[rd_lhs]])
+      n <- as.integer(rhs_shape[[rd_rhs]])
+      k <- as.integer(lhs_shape[[cd_lhs]])
+      if (!identical(k, as.integer(rhs_shape[[cd_rhs]]))) {
+        cli_abort("dot_general: contracting dims sizes differ")
+      }
+      if (!identical(as.integer(out_shape), c(b, m, n))) {
+        cli_abort("dot_general: output shape mismatch")
+      }
 
       ctor <- .dtype_to_quickr_ctor(as.character(dtype(out_aval)))
-      out_len <- as.integer(b * m * p)
+      out_len <- as.integer(b * m * n)
 
-      update_acc <- .call2(
-        "<-",
-        out_acc,
-        .call2("+", out_acc, .call2("*",
-          .call2("[", lhs_expr, out_b, out_i, out_k),
-          .call2("[", rhs_expr, out_b, out_k, out_j)
-        ))
-      )
+      idx_lhs <- vector("list", 3L)
+      idx_rhs <- vector("list", 3L)
+      idx_lhs[[1L]] <- out_b
+      idx_rhs[[1L]] <- out_b
+      idx_lhs[[rd_lhs]] <- out_i
+      idx_lhs[[cd_lhs]] <- out_k
+      idx_rhs[[rd_rhs]] <- out_j
+      idx_rhs[[cd_rhs]] <- out_k
+
+      lhs_at <- .subscript(lhs_expr, idx_lhs)
+      rhs_at <- .subscript(rhs_expr, idx_rhs)
+
+      update_acc <- .call2("<-", out_acc, .call2("+", out_acc, .call2("*", lhs_at, rhs_at)))
 
       inner <- .block(
         .emit_assign(out_acc, zero)[[1L]],
-        .for_loop(out_k, n, update_acc),
+        .for_loop(out_k, k, update_acc),
         .call2("<-", .call2("[", out_sym, out_b, out_i, out_j), out_acc)
       )
 
       c(
         .emit_assign(out_sym, .call2(ctor, out_len)),
-        .emit_dim_assign(out_sym, c(b, m, p)),
-        list(.for_loop(out_b, b, .for_loop(out_i, m, .for_loop(out_j, p, inner))))
+        .emit_dim_assign(out_sym, c(b, m, n)),
+        list(.for_loop(out_b, b, .for_loop(out_i, m, .for_loop(out_j, n, inner))))
       )
     }
   }
@@ -1549,7 +1611,9 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
         shape(lhs_node@aval),
         shape(rhs_node@aval),
         shape(out_aval),
-        out_aval
+        out_aval,
+        contracting_dims = params$contracting_dims,
+        batching_dims = params$batching_dims
       )
     })
 

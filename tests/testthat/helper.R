@@ -38,6 +38,56 @@ expect_grad_binary <- function(nv_fun, d_rx, d_ry, x, y) {
   testthat::expect_equal(gy, d_ry(x, y), tolerance = 1e-5)
 }
 
+load_mnist <- function(rds_path = Sys.getenv("ANVIL_MNIST_RDS", "")) {
+  candidates <- unique(Filter(
+    nzchar,
+    c(
+      rds_path,
+      "mnist.rds",
+      file.path(getwd(), "mnist.rds"),
+      tryCatch(testthat::test_path("..", "..", "mnist.rds"), error = function(e) ""),
+      tryCatch(normalizePath(file.path("..", "mnist.rds"), winslash = "/", mustWork = FALSE), error = function(e) ""),
+      tryCatch(normalizePath(file.path("..", "..", "mnist.rds"), winslash = "/", mustWork = FALSE), error = function(e) "")
+    )
+  ))
+
+  for (path in candidates) {
+    if (!file.exists(path)) {
+      next
+    }
+    mnist <- readRDS(path)
+    ok <- is.list(mnist) &&
+      !is.null(mnist$train) &&
+      !is.null(mnist$test) &&
+      !is.null(mnist$train$x) &&
+      !is.null(mnist$train$y) &&
+      !is.null(mnist$test$x) &&
+      !is.null(mnist$test$y)
+    if (ok) {
+      return(mnist)
+    }
+  }
+
+  for (pkg in c("keras3", "keras")) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      next
+    }
+    dataset_mnist <- tryCatch(
+      getExportedValue(pkg, "dataset_mnist"),
+      error = function(e) NULL
+    )
+    if (is.null(dataset_mnist)) {
+      next
+    }
+    mnist <- tryCatch(suppressWarnings(dataset_mnist()), error = function(e) e)
+    if (!inherits(mnist, "error")) {
+      return(mnist)
+    }
+  }
+
+  NULL
+}
+
 #nvj_add <- jit(nv_add)
 #nvj_mul <- jit(nv_mul)
 

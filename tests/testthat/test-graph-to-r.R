@@ -106,6 +106,37 @@ test_that("graph_to_r_function: transpose and reshape are supported", {
   expect_equal(as.vector(f_r(X)), as.numeric(1:6))
 })
 
+test_that("graph_to_r_function: dot_general supports nonstandard contracting dims (rank-2)", {
+  A <- matrix(rnorm(6 * 5), nrow = 6, ncol = 5)
+  B <- matrix(rnorm(12 * 5), nrow = 12, ncol = 5)
+
+  g_22 <- trace_fn(
+    function(A, B) {
+      anvil:::nvl_dot_general(A, B, contracting_dims = list(2L, 2L), batching_dims = list(integer(), integer()))
+    },
+    list(
+      A = nv_tensor(A, dtype = "f32", shape = dim(A)),
+      B = nv_tensor(B, dtype = "f32", shape = dim(B))
+    )
+  )
+  f_22 <- graph_to_r_function(g_22)
+  expect_equal(f_22(A, B), A %*% t(B), tolerance = 1e-5)
+
+  C <- matrix(rnorm(6 * 12), nrow = 6, ncol = 12)
+  D <- matrix(rnorm(6 * 8), nrow = 6, ncol = 8)
+  g_11 <- trace_fn(
+    function(C, D) {
+      anvil:::nvl_dot_general(C, D, contracting_dims = list(1L, 1L), batching_dims = list(integer(), integer()))
+    },
+    list(
+      C = nv_tensor(C, dtype = "f32", shape = dim(C)),
+      D = nv_tensor(D, dtype = "f32", shape = dim(D))
+    )
+  )
+  f_11 <- graph_to_r_function(g_11)
+  expect_equal(f_11(C, D), t(C) %*% D, tolerance = 1e-5)
+})
+
 test_that("graph_to_r_function: convert is supported", {
   graph <- trace_fn(
     function(x) nv_convert(x, "i32"),
