@@ -108,16 +108,17 @@ method(print, Primitive) <- function(x, ...) {
   cat(sprintf("<Primitive:%s>\n", x@name))
 }
 
-p_full <- Primitive("constant")
+p_full <- Primitive("full")
 nvl_full <- function(value, shape, dtype) {
-  infer_constant <- function(value, shape, dtype) {
-    list(stablehlo::ValueType(stablehlo::TensorType(as_dtype(dtype), stablehlo::Shape(shape))))
+  infer_full <- function(value, shape, dtype) {
+    list(ShapedTensor(dtype = as_dtype(dtype), shape = shape, ambiguous = FALSE))
   }
   graph_desc_add(
     p_full,
     list(),
     params = list(value = value, dtype = dtype, shape = shape),
-    infer_fn = infer_constant
+    infer_fn = infer_full,
+    infer_hlo = FALSE
   )[[1L]]
 }
 
@@ -466,15 +467,21 @@ nvl_round <- function(operand, method = "nearest_even") {
 # dtype conversion ----------------------------------------------------------------
 
 p_convert <- Primitive("convert")
-nvl_convert <- function(operand, dtype) {
-  infer_fn <- function(operand, dtype) {
-    stablehlo::infer_types_convert(operand, dtype)@items
+nvl_convert <- function(operand, dtype, ambiguous = FALSE) {
+  dtype <- as_dtype(dtype)
+  infer_fn <- function(operand, dtype, ambiguous) {
+    list(ShapedTensor(
+      dtype = dtype,
+      shape = Shape(shape(operand)),
+      ambiguous = ambiguous
+    ))
   }
   graph_desc_add(
     p_convert,
     list(operand),
-    params = list(dtype = dtype),
-    infer_fn = infer_fn
+    params = list(dtype = dtype, ambiguous = ambiguous),
+    infer_fn = infer_fn,
+    infer_hlo = FALSE
   )[[1L]]
 }
 
@@ -577,7 +584,7 @@ nvl_while <- function(init, cond, body) {
     outs_body <- lapply(body_graph@outputs, \(out) st2vt(out@aval))
     inputs_body <- lapply(body_graph@inputs, \(inp) st2vt(inp@aval))
     if (!identical(unname(outs), inputs_body) || !identical(inputs_body, outs_body)) {
-      cli_abort("init must be the same as inputs and outputs of body")
+      cli_abort("init must be have same type as inputs and outputs of body")
     }
     return(outs)
   }

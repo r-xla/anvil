@@ -34,6 +34,9 @@ transform_gradient <- function(graph, wrt) {
     any_input_requires <- any(vapply(
       call@inputs,
       function(x) {
+        if (is_graph_literal(x)) {
+          return(FALSE)
+        }
         required_env[[x]]
       },
       logical(1L)
@@ -107,7 +110,7 @@ transform_gradient <- function(graph, wrt) {
       grad
     }
     # browser()
-    input_grads <- c(input_grads, list(x@gval))
+    input_grads <- c(input_grads, list(x@gnode))
   }
 
   desc@outputs <- input_grads

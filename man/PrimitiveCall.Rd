@@ -6,8 +6,8 @@
 \usage{
 PrimitiveCall(
   primitive = Primitive(),
-  params = list(),
   inputs = list(),
+  params = list(),
   outputs = list()
 )
 }
@@ -15,11 +15,11 @@ PrimitiveCall(
 \item{primitive}{(\code{Primitive})\cr
 The function.}
 
-\item{params}{(\verb{list(<any>)})\cr
-The (static) parameters of the function call.}
-
 \item{inputs}{(\code{list(GraphValue)})\cr
 The (tensor) inputs to the primitive.}
+
+\item{params}{(\verb{list(<any>)})\cr
+The (static) parameters of the function call.}
 
 \item{outputs}{(\code{list(GraphValue)})\cr
 The (tensor) outputs of the primitive.}

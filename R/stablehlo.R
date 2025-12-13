@@ -48,8 +48,8 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
   func <- stablehlo::local_func(id = "main")
   inps <- if (constants_as_inputs) c(graph@constants, graph@inputs) else graph@inputs
 
-  get2 <- function(gval) {
-    fval <- env_get(env, gval)
+  gnode_to_fval <- function(gnode) {
+    fval <- env_get(env, gnode)
     if (!identical(fval@func, func)) {
       FuncValue(fval@value_id, fval@value_type, func)
     } else {
@@ -70,12 +70,7 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
 
   # Get output types for aliasing
   out_types <- lapply(graph@outputs, function(out) {
-    if (is_graph_value(out)) {
-      st2vt(out@aval)
-    } else {
-      # GraphLiteral
-      stablehlo::ValueType(as.character(out@dtype), integer())
-    }
+    st2vt(out@aval)
   })
 
   # Track which outputs have been aliased (0-based indices)
@@ -120,7 +115,16 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
   do_call <- function(call) {
     prim <- call@primitive
     params <- call@params
-    inputs <- lapply(call@inputs, \(x) get2(x))
+    inputs <- lapply(call@inputs, \(x) {
+      if (is_graph_literal(x)) {
+        # need to add a literal to the program
+        fval <- hlo_tensor(value = x@aval@data, dtype = x@aval@dtype, shape = x@aval@shape@dims, func = func)
+        env_add(env, x, fval)
+        fval
+      } else {
+        gnode_to_fval(x)
+      }
+    })
     if (is_higher_order_primitive(prim)) {
       params <- c(params, list(.env = env))
     }
@@ -137,7 +141,14 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
     do_call(call)
   }
 
-  outputs <- lapply(graph@outputs, \(x) get2(x))
+  outputs <- lapply(graph@outputs, \(x) {
+    if (is_graph_literal(x)) {
+      # this only happens when a literal is directlu returned
+      hlo_tensor(value = x@aval@data, dtype = x@aval@dtype, shape = x@aval@shape@dims, func = func)
+    } else {
+      gnode_to_fval(x)
+    }
+  })
   func <- do.call(stablehlo::hlo_return, outputs)
 
   constants <- graph@constants

@@ -52,6 +52,7 @@ Collate:
     'graph.R'
     'graph-print.R'
     'jit.R'
+    'promotion.R'
     'reexports.R'
     'rules-backward.R'
     'rules-stablehlo.R'

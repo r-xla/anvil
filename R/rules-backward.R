@@ -209,7 +209,7 @@ p_if[["backward"]] <- function(inputs, outputs, grads, true, false, node_map, .r
 
 # convert backward -----------------
 
-p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, .required) {
+p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(

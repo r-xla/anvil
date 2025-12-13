@@ -51,3 +51,8 @@ func
 Func
 nv
 fn
+bool
+GPUs
+ShapedTensor
+ConcreteTensor
+LiteralTensor
