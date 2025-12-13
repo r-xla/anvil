@@ -52,6 +52,7 @@ Collate:
     'tensor.R'
     'graph.R'
     'graph-print.R'
+    'quickr.R'
     'graph-to-r.R'
     'graph-to-quickr.R'
     'jit.R'

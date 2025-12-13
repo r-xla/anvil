@@ -66,7 +66,8 @@ transform_gradient <- function(graph, wrt) {
     input_required <- vapply(
       call@inputs,
       function(x) {
-        required_env[[x]] %||% FALSE
+        val <- required_env[[x]]
+        if (is.null(val)) FALSE else val
       },
       logical(1L)
     )

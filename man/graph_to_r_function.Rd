@@ -7,7 +7,7 @@
 graph_to_r_function(
   graph,
   constants = c("inline", "args"),
-  include_declare = FALSE
+  include_declare = TRUE
 )
 }
 \arguments{
@@ -23,7 +23,7 @@ How to handle \code{graph@constants} (closed-over tensors):
 
 \item{include_declare}{(\code{logical(1)})\cr
 Whether to include a \code{declare(type(...))} call at the top of the function
-body (useful for {quickr}). Default is \code{FALSE}.}
+body (useful for {quickr}). In plain R it is treated as a no-op. Default is \code{TRUE}.}
 }
 \value{
 (\code{function})

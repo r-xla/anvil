@@ -1,3 +1,7 @@
+#' @include quickr.R
+#' @keywords internal
+NULL
+
 #' Convert a Graph to an R function
 #'
 #' Converts (a supported subset of) `anvil::Graph` objects into a plain R
@@ -14,10 +18,10 @@
 #'   - `"args"`: add them as additional function arguments (named `c1`, `c2`, ...).
 #' @param include_declare (`logical(1)`)\cr
 #'   Whether to include a `declare(type(...))` call at the top of the function
-#'   body (useful for {quickr}). Default is `FALSE`.
+#'   body (useful for {quickr}). In plain R it is treated as a no-op. Default is `TRUE`.
 #' @return (`function`)
 #' @export
-graph_to_r_function <- function(graph, constants = c("inline", "args"), include_declare = FALSE) {
+graph_to_r_function <- function(graph, constants = c("inline", "args"), include_declare = TRUE) {
   constants <- match.arg(constants)
   include_declare <- as.logical(include_declare)
 
@@ -73,7 +77,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     make.unique(make.names(raw))
   }
 
-  .dtype_to_quickr_ctor <- function(dt_chr) {
+  .dtype_to_r_ctor <- function(dt_chr) {
     if (dt_chr %in% c("f32", "f64")) {
       return("double")
     }
@@ -83,28 +87,31 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     if (dt_chr %in% c("pred", "i1")) {
       return("logical")
     }
-    cli_abort("Unsupported dtype for {quickr} declaration: {.val {dt_chr}}")
+    cli_abort("Unsupported dtype for R code generation: {.val {dt_chr}}")
   }
 
-  .aval_to_quickr_type_call <- function(aval) {
-    dt_chr <- as.character(dtype(aval))
-    ctor <- .dtype_to_quickr_ctor(dt_chr)
-    sh <- shape(aval)
-    dims <- if (!length(sh)) 1L else sh
-    as.call(c(list(as.name(ctor)), as.list(dims)))
-  }
+  .declare_stmt <- NULL
+  if (isTRUE(include_declare)) {
+    .aval_to_declare_type_call <- function(aval) {
+      dt_chr <- as.character(dtype(aval))
+      ctor <- .dtype_to_r_ctor(dt_chr)
+      sh <- shape(aval)
+      dims <- if (!length(sh)) 1L else sh
+      as.call(c(list(as.name(ctor)), as.list(dims)))
+    }
 
-  .declare_stmt <- function(arg_names, arg_avals) {
-    type_calls <- Map(
-      function(nm, aval) {
-        arg <- list(.aval_to_quickr_type_call(aval))
-        names(arg) <- nm
-        as.call(c(list(as.name("type")), arg))
-      },
-      arg_names,
-      arg_avals
-    )
-    as.call(c(list(as.name("declare")), type_calls))
+    .declare_stmt <- function(arg_names, arg_avals) {
+      type_calls <- Map(
+        function(nm, aval) {
+          arg <- list(.aval_to_declare_type_call(aval))
+          names(arg) <- nm
+          as.call(c(list(as.name("type")), arg))
+        },
+        arg_names,
+        arg_avals
+      )
+      as.call(c(list(as.name("declare")), type_calls))
+    }
   }
 
   .scalar_cast <- function(value, dt_chr) {
@@ -161,7 +168,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
   }
 
   .emit_full_like <- function(out_sym, value_expr, shape_out, out_aval) {
-    ctor <- .dtype_to_quickr_ctor(as.character(dtype(out_aval)))
+    ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
     if (!length(shape_out)) {
       return(.emit_assign(out_sym, value_expr))
     }
@@ -320,7 +327,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
         cli_abort("dot_general: output shape mismatch")
       }
 
-      ctor <- .dtype_to_quickr_ctor(as.character(dtype(out_aval)))
+      ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
       out_len <- as.integer(b * m * n)
 
       idx_lhs <- vector("list", 3L)
@@ -395,7 +402,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
 
     if (rank == 1L) {
       n <- as.integer(out_shape[[1L]])
-      ctor <- .dtype_to_quickr_ctor(as.character(dtype(out_aval)))
+      ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
       stmts <- .emit_assign(out_sym, .call2(ctor, n))
       for_body <- {
         lhs_i <- .call2("[", lhs_expr, ii)
@@ -460,7 +467,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
         cli_abort("broadcast_in_dim: unsupported rank-1 broadcast mapping")
       }
       n <- as.integer(shape_out[[1L]])
-      ctor <- .dtype_to_quickr_ctor(as.character(dtype(out_aval)))
+      ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
       stmts <- .emit_assign(out_sym, .call2(ctor, n))
       idx <- if (as.integer(shape_in[[1L]]) == 1L) 1L else ii
       body <- .call2("<-", .call2("[", out_sym, ii), .call2("[", operand_expr, idx))
@@ -538,7 +545,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     } else if (rank == 2L) {
       m <- as.integer(shape_in[[1L]])
       n <- as.integer(shape_in[[2L]])
-      ctor <- .dtype_to_quickr_ctor(as.character(dtype(out_aval)))
+      ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
 
       if (identical(dims, c(1L, 2L))) {
         # Full reduction
@@ -643,7 +650,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     } else if (rank == 2L) {
       m <- as.integer(shape_in[[1L]])
       n <- as.integer(shape_in[[2L]])
-      ctor <- .dtype_to_quickr_ctor(as.character(dtype(out_aval)))
+      ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
 
       if (identical(dims, c(1L, 2L))) {
         if (isTRUE(drop)) {
@@ -761,7 +768,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     } else if (rank == 2L) {
       m <- as.integer(shape_in[[1L]])
       n <- as.integer(shape_in[[2L]])
-      ctor <- .dtype_to_quickr_ctor(as.character(dtype(out_aval)))
+      ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
 
       if (identical(dims, c(1L, 2L))) {
         if (isTRUE(drop)) {
@@ -877,7 +884,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     } else if (rank == 2L) {
       m <- as.integer(shape_in[[1L]])
       n <- as.integer(shape_in[[2L]])
-      ctor <- .dtype_to_quickr_ctor(as.character(dtype(out_aval)))
+      ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
 
       if (identical(dims, c(1L, 2L))) {
         if (isTRUE(drop)) {
@@ -956,7 +963,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     }
   }
 
-  .emit_reduce_any <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
+  .emit_reduce_any_quickr <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
     dims <- as.integer(dims)
     rank <- length(shape_in)
     ii <- as.name(paste0("i_", as.character(out_sym)))
@@ -1073,7 +1080,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     cli_abort("any: only rank-1/2 tensors are currently supported")
   }
 
-  .emit_reduce_all <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
+  .emit_reduce_all_quickr <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
     dims <- as.integer(dims)
     rank <- length(shape_in)
     ii <- as.name(paste0("i_", as.character(out_sym)))
@@ -1272,10 +1279,8 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
     cli_abort("all: only rank-1/2 tensors are currently supported")
   }
 
-  if (!isTRUE(include_declare)) {
-    .emit_reduce_any <- .emit_reduce_any_base
-    .emit_reduce_all <- .emit_reduce_all_base
-  }
+  .emit_reduce_any <- if (isTRUE(include_declare)) .emit_reduce_any_quickr else .emit_reduce_any_base
+  .emit_reduce_all <- if (isTRUE(include_declare)) .emit_reduce_all_quickr else .emit_reduce_all_base
 
   .emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_aval) {
     if (length(shape_in) > 2L || length(shape_out) > 2L) {
@@ -1285,7 +1290,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
       cli_abort("reshape: input and output sizes differ")
     }
 
-    ctor <- .dtype_to_quickr_ctor(as.character(dtype(out_aval)))
+    ctor <- .dtype_to_r_ctor(as.character(dtype(out_aval)))
     zero <- .zero_literal_for(out_aval)
     flat_sym <- as.name(paste0("flat_", as.character(out_sym)))
     idx_sym <- as.name(paste0("idx_", as.character(out_sym)))
@@ -1582,7 +1587,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
 
     .register_prim_lowerer(reg, "convert", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
       dt_chr <- as.character(params$dtype)
-      conv <- .dtype_to_quickr_ctor(dt_chr)
+      conv <- .dtype_to_r_ctor(dt_chr)
       .emit_assign(out_syms[[1L]], .call2(paste0("as.", conv), inputs[[1L]]))
     })
 
@@ -1781,7 +1786,7 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
 
   stmts <- list()
 
-  if (include_declare) {
+  if (isTRUE(include_declare)) {
     avs <- c(
       lapply(graph@inputs, \(x) x@aval),
       if (constants == "args") lapply(graph@constants, \(x) x@aval) else list()
@@ -1884,5 +1889,8 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
   }
   formals(f) <- make_formals(arg_names)
   body(f) <- body_expr
+  if (isTRUE(include_declare) && !exists("declare", envir = baseenv(), inherits = FALSE)) {
+    declare <- function(...) invisible(NULL)
+  }
   f
 }

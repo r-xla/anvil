@@ -17,9 +17,7 @@ NULL
 #' @export
 graph_to_quickr_function <- function(graph, constants = c("inline", "args")) {
   constants <- match.arg(constants)
-  if (!requireNamespace("quickr", quietly = TRUE)) {
-    cli_abort("{.pkg quickr} must be installed to use {.fn graph_to_quickr_function}")
-  }
+  assert_quickr_installed("{.fn graph_to_quickr_function}")
   if (!is_graph(graph)) {
     cli_abort("{.arg graph} must be a {.cls anvil::Graph}")
   }
@@ -28,12 +26,5 @@ graph_to_quickr_function <- function(graph, constants = c("inline", "args")) {
   }
 
   f <- graph_to_r_function(graph, constants = constants, include_declare = TRUE)
-
-  # quickr::quick() behaves differently when called from a package namespace
-  # (it creates a closure expecting precompiled artifacts). For anvil's use-case
-  # we want eager compilation at runtime, so we evaluate quickr::quick() from a
-  # non-namespace environment.
-  tmp <- new.env(parent = globalenv())
-  tmp$fun <- f
-  eval(quote(quickr::quick(fun)), envir = tmp)
+  quickr_eager_compile(f)
 }
