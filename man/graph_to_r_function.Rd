@@ -4,22 +4,11 @@
 \alias{graph_to_r_function}
 \title{Convert a Graph to an R function}
 \usage{
-graph_to_r_function(
-  graph,
-  constants = c("inline", "args"),
-  include_declare = TRUE
-)
+graph_to_r_function(graph, include_declare = TRUE)
 }
 \arguments{
 \item{graph}{(\code{\link{Graph}})\cr
 Graph to convert.}
-
-\item{constants}{(\code{character(1)})\cr
-How to handle \code{graph@constants} (closed-over tensors):
-\itemize{
-\item \code{"inline"}: embed them as R literals in the function body (default).
-\item \code{"args"}: add them as additional function arguments (named \code{c1}, \code{c2}, ...).
-}}
 
 \item{include_declare}{(\code{logical(1)})\cr
 Whether to include a \code{declare(type(...))} call at the top of the function

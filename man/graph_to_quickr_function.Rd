@@ -4,18 +4,11 @@
 \alias{graph_to_quickr_function}
 \title{Convert a Graph to a quickr-compiled function}
 \usage{
-graph_to_quickr_function(graph, constants = c("inline", "args"))
+graph_to_quickr_function(graph)
 }
 \arguments{
 \item{graph}{(\code{\link{Graph}})\cr
 Graph to convert.}
-
-\item{constants}{(\code{character(1)})\cr
-How to handle \code{graph@constants} (closed-over tensors):
-\itemize{
-\item \code{"inline"}: embed them as R literals in the function body (default).
-\item \code{"args"}: add them as additional function arguments (named \code{c1}, \code{c2}, ...).
-}}
 }
 \value{
 (\code{function})

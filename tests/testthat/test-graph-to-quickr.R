@@ -174,29 +174,10 @@ test_that("graph_to_quickr_function matches PJRT for closed-over scalar constant
     list(y = nv_scalar(2.0, dtype = "f32"))
   )
 
-  f_quick <- graph_to_quickr_function(graph, constants = "inline")
+  f_quick <- graph_to_quickr_function(graph)
 
   y <- 2.25
   out_quick <- f_quick(y)
-  out_pjrt <- eval_graph_pjrt(graph, y)
-  expect_equal(out_quick, out_pjrt, tolerance = 1e-6)
-})
-
-test_that("graph_to_quickr_function matches PJRT for closed-over scalar constant (args)", {
-  testthat::skip_if_not_installed("quickr")
-
-  x <- nv_scalar(1.0, dtype = "f32")
-  graph <- trace_fn(
-    function(y) {
-      x + y
-    },
-    list(y = nv_scalar(2.0, dtype = "f32"))
-  )
-
-  f_quick <- graph_to_quickr_function(graph, constants = "args")
-
-  y <- 2.25
-  out_quick <- f_quick(y, 1.0)
   out_pjrt <- eval_graph_pjrt(graph, y)
   expect_equal(out_quick, out_pjrt, tolerance = 1e-6)
 })

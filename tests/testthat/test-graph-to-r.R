@@ -19,21 +19,8 @@ test_that("graph_to_r_function: closed-over constants can be inlined", {
     list(y = nv_scalar(2.0, dtype = "f32"))
   )
 
-  f <- graph_to_r_function(graph, constants = "inline")
+  f <- graph_to_r_function(graph)
   expect_equal(f(2), 3)
-})
-
-test_that("graph_to_r_function: closed-over constants can be arguments", {
-  x <- nv_scalar(1.0, dtype = "f32")
-  graph <- trace_fn(
-    function(y) {
-      nvl_add(x, y)
-    },
-    list(y = nv_scalar(2.0, dtype = "f32"))
-  )
-
-  f <- graph_to_r_function(graph, constants = "args")
-  expect_equal(f(2, 1), 3)
 })
 
 test_that("graph_to_r_function: constant primitive is supported", {

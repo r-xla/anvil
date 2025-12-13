@@ -12,17 +12,12 @@ NULL
 #'
 #' @param graph ([`Graph`])\cr
 #'   Graph to convert.
-#' @param constants (`character(1)`)\cr
-#'   How to handle `graph@constants` (closed-over tensors):
-#'   - `"inline"`: embed them as R literals in the function body (default).
-#'   - `"args"`: add them as additional function arguments (named `c1`, `c2`, ...).
 #' @param include_declare (`logical(1)`)\cr
 #'   Whether to include a `declare(type(...))` call at the top of the function
 #'   body (useful for {quickr}). In plain R it is treated as a no-op. Default is `TRUE`.
 #' @return (`function`)
 #' @export
-graph_to_r_function <- function(graph, constants = c("inline", "args"), include_declare = TRUE) {
-  constants <- match.arg(constants)
+graph_to_r_function <- function(graph, include_declare = TRUE) {
   include_declare <- as.logical(include_declare)
 
   if (!is_graph(graph)) {
@@ -1768,11 +1763,14 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
   }
   input_arg_names <- .paths_to_names(in_paths)
 
-  const_names <- paste0("c", seq_along(graph@constants))
-  if (constants == "args") {
-    arg_names <- c(input_arg_names, const_names)
+  arg_names <- input_arg_names
+
+  const_names <- if (length(graph@constants)) {
+    raw <- paste0("const", seq_along(graph@constants))
+    combined <- make.unique(c(arg_names, raw))
+    combined[(length(arg_names) + 1L):length(combined)]
   } else {
-    arg_names <- input_arg_names
+    character()
   }
 
   make_formals <- function(nms) {
@@ -1787,22 +1785,15 @@ graph_to_r_function <- function(graph, constants = c("inline", "args"), include_
   stmts <- list()
 
   if (isTRUE(include_declare)) {
-    avs <- c(
-      lapply(graph@inputs, \(x) x@aval),
-      if (constants == "args") lapply(graph@constants, \(x) x@aval) else list()
-    )
+    avs <- lapply(graph@inputs, \(x) x@aval)
     stmts <- c(stmts, list(.declare_stmt(arg_names, avs)))
   }
 
-  if (constants == "inline" && length(graph@constants)) {
+  if (length(graph@constants)) {
     for (i in seq_along(graph@constants)) {
       nm <- const_names[[i]]
       node_expr[[graph@constants[[i]]]] <- as.name(nm)
       stmts <- c(stmts, .emit_inline_const(as.name(nm), graph@constants[[i]]))
-    }
-  } else if (constants == "args" && length(graph@constants)) {
-    for (i in seq_along(graph@constants)) {
-      node_expr[[graph@constants[[i]]]] <- as.name(const_names[[i]])
     }
   }
 
