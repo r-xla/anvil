@@ -22,48 +22,13 @@
     return(NULL)
   }
 
-  load_mnist <- tryCatch(getExportedValue("mnist", "load_mnist"), error = function(e) NULL)
-  if (is.function(load_mnist)) {
-    out <- tryCatch(load_mnist(), error = function(e) e)
-    if (!inherits(out, "error")) {
-      if (.is_mnist_dataset(out)) {
-        return(out)
-      }
-      if (is.list(out) && !is.null(out$x_train) && !is.null(out$y_train) && !is.null(out$x_test) && !is.null(out$y_test)) {
-        out <- list(
-          train = list(x = out$x_train, y = out$y_train),
-          test = list(x = out$x_test, y = out$y_test)
-        )
-        if (.is_mnist_dataset(out)) {
-          return(out)
-        }
-      }
-    }
-  }
-
-  mnist_train <- tryCatch(getExportedValue("mnist", "mnist_train"), error = function(e) NULL)
-  mnist_test <- tryCatch(getExportedValue("mnist", "mnist_test"), error = function(e) NULL)
-  if (is.function(mnist_train) && is.function(mnist_test)) {
-    train <- tryCatch(mnist_train(), error = function(e) e)
-    test <- tryCatch(mnist_test(), error = function(e) e)
-    if (!inherits(train, "error") && !inherits(test, "error")) {
-      normalize_split <- function(split) {
-        if (is.list(split) && !is.null(split$x) && !is.null(split$y)) {
-          return(list(x = split$x, y = split$y))
-        }
-        if (is.list(split) && !is.null(split$images) && !is.null(split$labels)) {
-          return(list(x = split$images, y = split$labels))
-        }
-        if (is.list(split) && length(split) == 2L && is.null(names(split))) {
-          return(list(x = split[[1L]], y = split[[2L]]))
-        }
-        NULL
-      }
-      out <- list(train = normalize_split(train), test = normalize_split(test))
-      if (.is_mnist_dataset(out)) {
-        return(out)
-      }
-    }
+  mnist <- mnist::mnist
+  out <- list(
+    train = list(x = mnist$train_images, y = mnist$train_labels),
+    test = list(x = mnist$test_images, y = mnist$test_labels)
+  )
+  if (.is_mnist_dataset(out)) {
+    return(out)
   }
 
   NULL

@@ -36,7 +36,12 @@ test_that("internal MNIST helpers: load and preprocess", {
 test_that("internal MNIST helpers: invalid rds returns NULL", {
   tmp <- tempfile(fileext = ".rds")
   saveRDS(list(not_mnist = TRUE), tmp)
-  expect_null(anvil:::.load_mnist(rds_path = tmp))
+  out <- anvil:::.load_mnist(rds_path = tmp)
+  if (requireNamespace("mnist", quietly = TRUE)) {
+    expect_true(anvil:::.is_mnist_dataset(out))
+  } else {
+    expect_null(out)
+  }
 })
 
 test_that("internal MNIST helpers: one_hot does not shift 1-based labels", {
@@ -64,4 +69,13 @@ test_that("internal MNIST helpers: preprocess respects train_n/test_n", {
   expect_equal(dim(data$test$x), c(2L, 784L))
   expect_equal(as.numeric(range(data$train$x)), c(1, 1))
   expect_equal(as.numeric(range(data$test$x)), c(0, 0))
+})
+
+test_that("internal MNIST helpers: loader supports mnist::mnist", {
+  testthat::skip_if_not_installed("mnist")
+
+  mnist <- anvil:::.load_mnist(rds_path = tempfile(fileext = ".rds"))
+  expect_true(anvil:::.is_mnist_dataset(mnist))
+  expect_equal(dim(mnist$train$x)[[2L]], 28L)
+  expect_equal(dim(mnist$train$x)[[3L]], 28L)
 })
