@@ -61,4 +61,5 @@ Collate:
     'rules-backward.R'
     'rules-stablehlo.R'
     'stablehlo.R'
+    'mnist.R'
     'zzz.R'
