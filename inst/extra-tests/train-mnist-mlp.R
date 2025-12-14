@@ -13,56 +13,24 @@ run_mnist_mlp_training <- function(
 
   set.seed(seed)
 
-  mnist <- NULL
-  rds_path <- Sys.getenv("ANVIL_MNIST_RDS", "mnist.rds")
-  if (nzchar(rds_path) && file.exists(rds_path)) {
-    mnist <- readRDS(rds_path)
-  } else {
-    for (pkg in c("keras3", "keras")) {
-      if (!requireNamespace(pkg, quietly = TRUE)) {
-        next
-      }
-      dataset_mnist <- tryCatch(getExportedValue(pkg, "dataset_mnist"), error = function(e) NULL)
-      if (is.null(dataset_mnist)) {
-        next
-      }
-      mnist <- tryCatch(dataset_mnist(), error = function(e) e)
-      if (!inherits(mnist, "error")) {
-        break
-      }
-      mnist <- NULL
-    }
+  if (!requireNamespace("anvil", quietly = TRUE)) {
+    cli::cli_abort("{.pkg anvil} must be installed to run MNIST training")
   }
 
+  mnist <- anvil:::.load_mnist()
   if (is.null(mnist)) {
-    cli::cli_abort("MNIST not available; provide mnist.rds or install/configure keras/keras3")
-  }
-  x_train <- mnist$train$x
-  y_train <- mnist$train$y
-  x_test <- mnist$test$x
-  y_test <- mnist$test$y
-
-  train_n <- min(train_n, dim(x_train)[[1L]])
-  test_n <- min(test_n, dim(x_test)[[1L]])
-
-  x_train <- x_train[seq_len(train_n), , , drop = FALSE]
-  y_train <- y_train[seq_len(train_n)]
-  x_test <- x_test[seq_len(test_n), , , drop = FALSE]
-  y_test <- y_test[seq_len(test_n)]
-
-  x_train <- array(as.numeric(x_train) / 255, dim = c(train_n, 784L))
-  x_test <- array(as.numeric(x_test) / 255, dim = c(test_n, 784L))
-
-  one_hot <- function(y, nclass = 10L) {
-    y <- as.integer(y)
-    if (min(y) == 0L) y <- y + 1L
-    out <- matrix(0, nrow = length(y), ncol = nclass)
-    for (i in seq_along(y)) out[i, y[[i]]] <- 1
-    out
+    cli::cli_abort("MNIST not available; provide mnist.rds or install mnist")
   }
 
-  y_train_oh <- one_hot(y_train)
-  y_test_oh <- one_hot(y_test)
+  data <- anvil:::.prepare_mnist_mlp_data(mnist, train_n = train_n, test_n = test_n)
+  x_train <- data$train$x
+  y_train <- data$train$y
+  y_train_oh <- data$train$y_one_hot
+  x_test <- data$test$x
+  y_test <- data$test$y
+  y_test_oh <- data$test$y_one_hot
+  train_n <- dim(x_train)[[1L]]
+  test_n <- dim(x_test)[[1L]]
 
   relu <- function(x) {
     nv_convert(x > nv_scalar(0, dtype = "f32"), "f32") * x

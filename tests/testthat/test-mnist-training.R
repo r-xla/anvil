@@ -6,9 +6,9 @@ test_that("integration: MNIST MLP trains to >=90% accuracy", {
   testthat::skip_if_not_installed("pjrt")
   testthat::skip_if_not_installed("stablehlo")
 
-  mnist <- load_mnist()
+  mnist <- anvil:::.load_mnist()
   if (is.null(mnist)) {
-    testthat::skip("MNIST not available; provide mnist.rds or install/configure keras/keras3")
+    testthat::skip("MNIST not available; provide mnist.rds or install mnist")
   }
 
   train_n <- as.integer(Sys.getenv("ANVIL_MNIST_TRAIN_N", "60000"))
@@ -21,30 +21,14 @@ test_that("integration: MNIST MLP trains to >=90% accuracy", {
 
   set.seed(123)
 
-  x_train <- mnist$train$x
-  y_train <- mnist$train$y
-  x_test <- mnist$test$x
-  y_test <- mnist$test$y
-
-  train_n <- min(train_n, dim(x_train)[[1L]])
-  test_n <- min(test_n, dim(x_test)[[1L]])
-
-  x_train <- x_train[seq_len(train_n), , , drop = FALSE]
-  y_train <- y_train[seq_len(train_n)]
-  x_test <- x_test[seq_len(test_n), , , drop = FALSE]
-  y_test <- y_test[seq_len(test_n)]
-
-  x_train <- array(as.numeric(x_train) / 255, dim = c(train_n, 784L))
-  x_test <- array(as.numeric(x_test) / 255, dim = c(test_n, 784L))
-
-  one_hot <- function(y, nclass = 10L) {
-    y <- as.integer(y)
-    if (min(y) == 0L) y <- y + 1L
-    out <- matrix(0, nrow = length(y), ncol = nclass)
-    for (i in seq_along(y)) out[i, y[[i]]] <- 1
-    out
-  }
-  y_train_oh <- one_hot(y_train)
+  data <- anvil:::.prepare_mnist_mlp_data(mnist, train_n = train_n, test_n = test_n)
+  x_train <- data$train$x
+  y_train <- data$train$y
+  y_train_oh <- data$train$y_one_hot
+  x_test <- data$test$x
+  y_test <- data$test$y
+  train_n <- dim(x_train)[[1L]]
+  test_n <- dim(x_test)[[1L]]
 
   relu <- function(x) {
     nv_convert(x > nv_scalar(0, dtype = "f32"), "f32") * x

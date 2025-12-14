@@ -38,10 +38,6 @@ expect_grad_binary <- function(nv_fun, d_rx, d_ry, x, y) {
   testthat::expect_equal(gy, d_ry(x, y), tolerance = 1e-5)
 }
 
-load_mnist <- function(rds_path = Sys.getenv("ANVIL_MNIST_RDS", "mnist.rds")) {
-  anvil:::.load_mnist(rds_path = rds_path)
-}
-
 #nvj_add <- jit(nv_add)
 #nvj_mul <- jit(nv_mul)
 
