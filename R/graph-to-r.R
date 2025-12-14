@@ -1616,6 +1616,17 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
     ops
   }
 
+  .emit_ops_for_graph <- function(graph, node_expr) {
+    ops <- .ops_from_graph(graph, node_expr)
+    ops <- fuse_broadcast_in_dim_mul_ops(ops)
+    stmts <- list()
+    for (op in ops) {
+      stmts <- c(stmts, .emit_prim(op$prim_name, op$inputs, op$params, op$out_syms, op$input_nodes, op$out_avals))
+    }
+    out_exprs <- lapply(graph@outputs, .expr_of_node, node_expr = node_expr)
+    list(stmts = stmts, out_exprs = out_exprs)
+  }
+
   .emit_if <- function(pred_expr, true_graph, false_graph, out_syms) {
     emit_branch <- function(branch_graph) {
       if (length(branch_graph@outputs) != length(out_syms)) {
@@ -1623,12 +1634,9 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
       }
 
       stmts <- .inline_constants_for_graph(branch_graph, node_expr)
-      ops <- .ops_from_graph(branch_graph, node_expr)
-      ops <- fuse_broadcast_in_dim_mul_ops(ops)
-      for (op in ops) {
-        stmts <- c(stmts, .emit_prim(op$prim_name, op$inputs, op$params, op$out_syms, op$input_nodes, op$out_avals))
-      }
-      out_exprs <- lapply(branch_graph@outputs, .expr_of_node, node_expr = node_expr)
+      emit <- .emit_ops_for_graph(branch_graph, node_expr)
+      stmts <- c(stmts, emit$stmts)
+      out_exprs <- emit$out_exprs
       for (i in seq_along(out_syms)) {
         stmts <- c(stmts, .emit_assign(out_syms[[i]], out_exprs[[i]]))
       }
@@ -1671,13 +1679,9 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
     for (gval in cond_graph@constants) {
       node_expr_cond[[gval]] <- .expr_of_node(gval, node_expr = node_expr)
     }
-    cond_ops <- .ops_from_graph(cond_graph, node_expr_cond)
-    cond_ops <- fuse_broadcast_in_dim_mul_ops(cond_ops)
-    cond_stmts <- list()
-    for (op in cond_ops) {
-      cond_stmts <- c(cond_stmts, .emit_prim(op$prim_name, op$inputs, op$params, op$out_syms, op$input_nodes, op$out_avals))
-    }
-    cond_sym <- .expr_of_node(cond_out, node_expr = node_expr_cond)
+    emit_cond <- .emit_ops_for_graph(cond_graph, node_expr_cond)
+    cond_stmts <- emit_cond$stmts
+    cond_sym <- emit_cond$out_exprs[[1L]]
 
     # Build per-iteration body block: compute new state then assign simultaneously
     node_expr_body <- hashtab()
@@ -1687,19 +1691,15 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
     for (gval in body_graph@constants) {
       node_expr_body[[gval]] <- .expr_of_node(gval, node_expr = node_expr)
     }
-    body_ops <- .ops_from_graph(body_graph, node_expr_body)
-    body_ops <- fuse_broadcast_in_dim_mul_ops(body_ops)
-    body_stmts <- list()
-    for (op in body_ops) {
-      body_stmts <- c(body_stmts, .emit_prim(op$prim_name, op$inputs, op$params, op$out_syms, op$input_nodes, op$out_avals))
-    }
+    emit_body <- .emit_ops_for_graph(body_graph, node_expr_body)
+    body_stmts <- emit_body$stmts
 
     tmp_syms <- vector("list", length(state_syms))
     for (i in seq_along(state_syms)) {
       counter$tmp <- counter$tmp + 1L
       tmp_syms[[i]] <- as.name(paste0("v", counter$tmp))
     }
-    body_out_exprs <- lapply(body_graph@outputs, .expr_of_node, node_expr = node_expr_body)
+    body_out_exprs <- emit_body$out_exprs
     for (i in seq_along(tmp_syms)) {
       body_stmts <- c(body_stmts, .emit_assign(tmp_syms[[i]], body_out_exprs[[i]]))
     }
@@ -1768,13 +1768,9 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
 
   counter$tmp <- 0L
   counter$const <- 0L
-  ops <- .ops_from_graph(graph, node_expr)
-  ops <- fuse_broadcast_in_dim_mul_ops(ops)
-  for (op in ops) {
-    stmts <- c(stmts, .emit_prim(op$prim_name, op$inputs, op$params, op$out_syms, op$input_nodes, op$out_avals))
-  }
-
-  out_leaves <- lapply(graph@outputs, .expr_of_node, node_expr = node_expr)
+  emit <- .emit_ops_for_graph(graph, node_expr)
+  stmts <- c(stmts, emit$stmts)
+  out_leaves <- emit$out_exprs
 
   if (isTRUE(pack_output)) {
     out_nodes <- graph@outputs
