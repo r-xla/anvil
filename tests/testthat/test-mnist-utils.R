@@ -13,7 +13,7 @@ test_that("internal MNIST helpers: load and preprocess", {
   tmp <- tempfile(fileext = ".rds")
   saveRDS(mnist, tmp)
 
-  loaded <- anvil:::.load_mnist(rds_path = tmp, pkgs = character())
+  loaded <- anvil:::.load_mnist(rds_path = tmp)
   expect_true(is.list(loaded))
   expect_true(is.list(loaded$train))
   expect_true(is.list(loaded$test))
@@ -36,7 +36,7 @@ test_that("internal MNIST helpers: load and preprocess", {
 test_that("internal MNIST helpers: invalid rds returns NULL", {
   tmp <- tempfile(fileext = ".rds")
   saveRDS(list(not_mnist = TRUE), tmp)
-  expect_null(anvil:::.load_mnist(rds_path = tmp, pkgs = character()))
+  expect_null(anvil:::.load_mnist(rds_path = tmp))
 })
 
 test_that("internal MNIST helpers: one_hot does not shift 1-based labels", {

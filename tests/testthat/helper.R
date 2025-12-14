@@ -39,38 +39,7 @@ expect_grad_binary <- function(nv_fun, d_rx, d_ry, x, y) {
 }
 
 load_mnist <- function(rds_path = Sys.getenv("ANVIL_MNIST_RDS", "mnist.rds")) {
-  if (nzchar(rds_path) && file.exists(rds_path)) {
-    mnist <- readRDS(rds_path)
-    ok <- is.list(mnist) &&
-      !is.null(mnist$train) &&
-      !is.null(mnist$test) &&
-      !is.null(mnist$train$x) &&
-      !is.null(mnist$train$y) &&
-      !is.null(mnist$test$x) &&
-      !is.null(mnist$test$y)
-    if (ok) {
-      return(mnist)
-    }
-  }
-
-  for (pkg in c("keras3", "keras")) {
-    if (!requireNamespace(pkg, quietly = TRUE)) {
-      next
-    }
-    dataset_mnist <- tryCatch(
-      getExportedValue(pkg, "dataset_mnist"),
-      error = function(e) NULL
-    )
-    if (is.null(dataset_mnist)) {
-      next
-    }
-    mnist <- tryCatch(suppressWarnings(dataset_mnist()), error = function(e) e)
-    if (!inherits(mnist, "error")) {
-      return(mnist)
-    }
-  }
-
-  NULL
+  anvil:::.load_mnist(rds_path = rds_path)
 }
 
 #nvj_add <- jit(nv_add)

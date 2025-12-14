@@ -28,6 +28,7 @@ Suggests:
     knitr,
     quarto,
     rmarkdown,
+    mnist,
     quickr,
     testthat (>= 3.0.0)
 Additional_repositories:
