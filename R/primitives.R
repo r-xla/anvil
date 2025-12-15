@@ -3,7 +3,7 @@
 
 # Type inference helper functions for graph building
 #' @importFrom stablehlo infer_types_generic_biv infer_types_generic_uni
-#' @importFrom stablehlo infer_types_integerish_biv infer_types_boolean_uni
+#' @importFrom stablehlo infer_types_integerish_biv
 #' @importFrom stablehlo infer_types_compare infer_types_transpose infer_types_reshape
 #' @importFrom stablehlo infer_types_broadcast_in_dim infer_types_convert
 #' @importFrom stablehlo infer_types_dot_general infer_types_select
@@ -61,14 +61,6 @@ make_unary_integerish_op <- function(prim) {
   function(operand) {
     graph_desc_add(prim, list(operand), infer_fn = infer_unary_integerish, infer_hlo = FALSE)[[1L]]
   }
-}
-
-infer_binary_integerish <- function(lhs, rhs) {
-  stablehlo::infer_types_integerish_biv(lhs, rhs)@items
-}
-
-infer_unary_integerish <- function(operand) {
-  stablehlo::infer_types_integerish_uni(operand)@items
 }
 
 infer_reduce <- function(operand, dims, drop) {
@@ -391,16 +383,16 @@ nvl_remainder <- make_binary_op(p_remainder)
 
 p_and <- Primitive("and")
 
-nvl_and <- make_binary_boolean_op(p_and)
+nvl_and <- make_binary_integerish_op(p_and)
 
 p_not <- Primitive("not")
-nvl_not <- make_unary_boolean_op(p_not)
+nvl_not <- make_unary_integerish_op(p_not)
 
 p_or <- Primitive("or")
-nvl_or <- make_binary_boolean_op(p_or)
+nvl_or <- make_binary_integerish_op(p_or)
 
 p_xor <- Primitive("xor")
-nvl_xor <- make_binary_boolean_op(p_xor)
+nvl_xor <- make_binary_integerish_op(p_xor)
 
 infer_shift <- function(lhs, rhs, shift_fn) {
   both_ambiguous <- lhs@ambiguous && rhs@ambiguous
@@ -459,20 +451,11 @@ nvl_tanh <- make_unary_op(p_tanh)
 p_tan <- Primitive("tan")
 nvl_tan <- make_unary_op(p_tan)
 
-p_tan <- Primitive("tan")
-nvl_tan <- function(operand) {
-  graph_desc_add(p_tan, list(operand), infer_fn = infer_unary)[[1L]]
-}
-
 p_sine <- Primitive("sine")
-nvl_sine <- function(operand) {
-  graph_desc_add(p_sine, list(operand), infer_fn = infer_unary)[[1L]]
-}
+nvl_sine <- make_unary_op(p_sine)
 
 p_cosine <- Primitive("cosine")
-nvl_cosine <- function(operand) {
-  graph_desc_add(p_cosine, list(operand), infer_fn = infer_unary)[[1L]]
-}
+nvl_cosine <- make_unary_op(p_cosine)
 
 p_floor <- Primitive("floor")
 nvl_floor <- make_unary_op(p_floor)

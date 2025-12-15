@@ -56,7 +56,6 @@ Collate:
     'tensor.R'
     'graph.R'
     'graph-print.R'
-    'jit.R'
     'promotion.R'
     'reexports.R'
     'rules-backward.R'
