@@ -51,7 +51,6 @@ Collate:
     'api-utilities.R'
     'backward.R'
     'flatten.R'
-    'graph-passes.R'
     'mut.R'
     'tensor.R'
     'graph.R'

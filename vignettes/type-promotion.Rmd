@@ -92,7 +92,7 @@ dtypes <- c("i1", "i8", "i16", "i32", "i64", "ui8", "ui16", "ui32", "ui64", "f32
 tbl <- matrix(NA_character_, length(dtypes), length(dtypes))
 for (i in seq_along(dtypes)) {
   for (j in seq_along(dtypes)) {
-    tbl[i, j] <- repr(common_dtype(dtypes[i], dtypes[j], TRUE, FALSE))
+    tbl[i, j] <- repr(common_dtype(dtypes[i], dtypes[j], TRUE, FALSE)$dtype)
   }
 }
 rownames(tbl) <- dtypes
@@ -102,6 +102,17 @@ knitr::kable(tbl, format = "html", caption = "Promotion rules: ambiguous (row) Ã
 
 ## Propagating Ambiguity
 
-Currently, we are not propagating ambiguity through operations.
-I.e., once an operation is applied to an ambiguous type, it becomes known.
-We might change this in the future.
+Ambiguity is propagated through operations.
+Consider the following example:
+
+```{r}
+f <- jit(function(x, y) {
+  z <- x + 1L
+  z * y
+})
+f(nv_scalar(TRUE), nv_scalar(2L, dtype = "i16"))
+```
+
+The type of `z` is an ambiguous `i32`, because `x` is promoted to an `i32`, the default type of the `1L` literal.
+If `z` was not ambiguous, the output would be an `i32`, because the `y` would be promoted to an `i32` in the multiplication.
+Because we propagate the ambiguity, the `z` is actually down-promoted to an `i16`, because the `z` is ambiguous, while the `y` is known.
