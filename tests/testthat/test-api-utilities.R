@@ -1,4 +1,4 @@
-test_that("generate state", {
+test_that("nv_rng_state", {
   f <- function() {
     nv_runif(
       initial_state = nv_rng_state(1),

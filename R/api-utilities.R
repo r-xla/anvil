@@ -11,6 +11,7 @@ nv_rng_state <- function(seed) {
   .nv_rng_state(nv_scalar(seed, dtype = "i32"))
 }
 
+#' @include jit.R
 .nv_rng_state <- jit(function(state) {
   state <- nv_bitcast_convert(state, dtype = "ui16")
   nv_convert(state, "ui64")

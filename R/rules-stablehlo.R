@@ -53,7 +53,7 @@ p_concatenate[["stablehlo"]] <- function(..., dimension) {
 }
 
 p_slice[["stablehlo"]] <- function(operand, start_indices, limit_indices, strides) {
-  list(stablehlo::hlo_slice(operand, start_indices - 1L, limit_indices - 1L, strides))
+  list(stablehlo::hlo_slice(operand, start_indices - 1L, limit_indices, strides))
 }
 
 .stablehlo_apply_reduce <- function(reductor, operand, init, dims, drop) {

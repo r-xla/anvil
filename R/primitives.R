@@ -3,7 +3,7 @@
 
 # Type inference helper functions for graph building
 #' @importFrom stablehlo infer_types_generic_biv infer_types_generic_uni
-#' @importFrom stablehlo infer_types_boolean_biv infer_types_boolean_uni
+#' @importFrom stablehlo infer_types_integerish_biv infer_types_boolean_uni
 #' @importFrom stablehlo infer_types_compare infer_types_transpose infer_types_reshape
 #' @importFrom stablehlo infer_types_broadcast_in_dim infer_types_convert
 #' @importFrom stablehlo infer_types_dot_general infer_types_select
@@ -16,11 +16,11 @@ infer_unary <- function(operand) {
   stablehlo::infer_types_generic_uni(operand)@items
 }
 
-infer_binary_boolean <- function(lhs, rhs) {
-  stablehlo::infer_types_boolean_biv(lhs, rhs)@items
+infer_binary_integerish <- function(lhs, rhs) {
+  stablehlo::infer_types_integerish_biv(lhs, rhs)@items
 }
 
-infer_unary_boolean <- function(operand) {
+infer_unary_integerish <- function(operand) {
   stablehlo::infer_types_boolean_uni(operand)@items
 }
 
@@ -241,7 +241,7 @@ p_slice <- Primitive("slice")
 nvl_slice <- function(operand, start_indices, limit_indices, strides) {
   infer_fn <- function(operand, start_indices, limit_indices, strides) {
     start_indices <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
-    limit_indices <- r_to_constant(limit_indices - 1L, dtype = "i64", shape = length(limit_indices))
+    limit_indices <- r_to_constant(limit_indices, dtype = "i64", shape = length(limit_indices))
     strides <- r_to_constant(strides, dtype = "i64", shape = length(strides))
     stablehlo::infer_types_slice(operand, start_indices, limit_indices, strides)@items
   }
@@ -390,22 +390,22 @@ nvl_remainder <- function(lhs, rhs) {
 
 p_and <- Primitive("and")
 nvl_and <- function(lhs, rhs) {
-  graph_desc_add(p_and, list(lhs, rhs), infer_fn = infer_binary_boolean)[[1L]]
+  graph_desc_add(p_and, list(lhs, rhs), infer_fn = infer_binary_integerish)[[1L]]
 }
 
 p_not <- Primitive("not")
 nvl_not <- function(operand) {
-  graph_desc_add(p_not, list(operand), infer_fn = infer_unary_boolean)[[1L]]
+  graph_desc_add(p_not, list(operand), infer_fn = infer_unary_integerish)[[1L]]
 }
 
 p_or <- Primitive("or")
 nvl_or <- function(lhs, rhs) {
-  graph_desc_add(p_or, list(lhs, rhs), infer_fn = infer_binary_boolean)[[1L]]
+  graph_desc_add(p_or, list(lhs, rhs), infer_fn = infer_binary_integerish)[[1L]]
 }
 
 p_xor <- Primitive("xor")
 nvl_xor <- function(lhs, rhs) {
-  graph_desc_add(p_xor, list(lhs, rhs), infer_fn = infer_binary_boolean)[[1L]]
+  graph_desc_add(p_xor, list(lhs, rhs), infer_fn = infer_binary_integerish)[[1L]]
 }
 
 p_shift_left <- Primitive("shift_left")

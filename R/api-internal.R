@@ -13,6 +13,10 @@ nv_unif_rand <- function(
   checkmate::assertChoice(dtype, c("f32", "f64"))
   checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
 
+  # 1. Generate random bits (64)
+  # 2. We use these as mantissa bits for float, where we set the exponent to 1.0
+  # 3. Because we have an implicit leading 1, we get a number in [1, 2) -> need to shift to [0, 1)
+
   # generate random bits
   # use THREE_FRY as rng algorithm: JAX default
   rbits <- nv_rng_bit_generator(

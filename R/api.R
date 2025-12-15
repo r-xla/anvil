@@ -607,7 +607,7 @@ nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
   n <- prod(shape_out)
 
   # Box-Muller Method:
-  # from to random uniform variables u1 and u2 we can produce to normals z1, z2
+  # from two random uniform variables u1 and u2 we can produce to normals z1, z2
   # z1 = sqrt(-2 * log(u1)) * cos(2 * pi * u2)
   # z2 = sqrt(-2 * log(u1)) * sin(2 * pi * u2)
   # Box-Muller works via polar representation of coordinates.
@@ -632,7 +632,7 @@ nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
   sin_Theta <- nv_sine(Theta[[2]])
   cos_Theta <- nv_cosine(Theta[[2]])
 
-  # compue z1, z2
+  # compute z1, z2
   Z1 <- nv_mul(sqrt_R, sin_Theta)
   Z2 <- nv_mul(sqrt_R, cos_Theta)
 
@@ -649,9 +649,9 @@ nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
   # now:    mean(Z) = mu
   N <- nv_add(N, nv_scalar(mu, dtype = dtype))
 
-  # if n is uneven, only keep N(1,...,n-1), i.e. discard last entry of N
+  # if n is uneven, only keep N(1,...,n), i.e. discard last entry of N
   if (n %% 2 == 1) {
-    N <- nv_slice(N, start_indices = 1L, limit_indices = as.integer(n + 1), strides = 1L)
+    N <- nv_slice(N, start_indices = 1L, limit_indices = n, strides = 1L)
   }
 
   # reshape N to match requested shape

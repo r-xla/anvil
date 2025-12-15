@@ -38,7 +38,7 @@ test_that("p_slice", {
     nv_slice(
       nv_tensor(1:6, dtype = "ui64", shape = c(2, 3)),
       start_indices = c(1, 1),
-      limit_indices = c(3, 3),
+      limit_indices = c(2, 2),
       strides = c(1, 1)
     )
   }
