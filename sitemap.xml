@@ -6,16 +6,20 @@
 <url><loc>/articles/anvil.html</loc></url>
 <url><loc>/articles/index.html</loc></url>
 <url><loc>/articles/internals.html</loc></url>
+<url><loc>/articles/type-promotion.html</loc></url>
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
 <url><loc>/news/index.html</loc></url>
+<url><loc>/reference/ConcreteTensor.html</loc></url>
 <url><loc>/reference/Graph.html</loc></url>
 <url><loc>/reference/GraphDescriptor.html</loc></url>
 <url><loc>/reference/GraphLiteral.html</loc></url>
 <url><loc>/reference/GraphValue.html</loc></url>
+<url><loc>/reference/LiteralTensor.html</loc></url>
 <url><loc>/reference/Primitive.html</loc></url>
 <url><loc>/reference/PrimitiveCall.html</loc></url>
-<url><loc>/reference/data_types.html</loc></url>
+<url><loc>/reference/ShapedTensor.html</loc></url>
+<url><loc>/reference/common_dtype.html</loc></url>
 <url><loc>/reference/dot-current_descriptor.html</loc></url>
 <url><loc>/reference/gradient.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
@@ -24,6 +28,7 @@
 <url><loc>/reference/mut.html</loc></url>
 <url><loc>/reference/nv_binary_ops.html</loc></url>
 <url><loc>/reference/nv_bitcast_convert.html</loc></url>
+<url><loc>/reference/nv_broadcast_scalars.html</loc></url>
 <url><loc>/reference/nv_broadcast_tensors.html</loc></url>
 <url><loc>/reference/nv_broadcast_to.html</loc></url>
 <url><loc>/reference/nv_concatenate.html</loc></url>
@@ -31,6 +36,7 @@
 <url><loc>/reference/nv_full.html</loc></url>
 <url><loc>/reference/nv_if.html</loc></url>
 <url><loc>/reference/nv_matmul.html</loc></url>
+<url><loc>/reference/nv_promote_to_common.html</loc></url>
 <url><loc>/reference/nv_reduce_ops.html</loc></url>
 <url><loc>/reference/nv_reshape.html</loc></url>
 <url><loc>/reference/nv_rng_bit_generator.html</loc></url>
@@ -45,6 +51,7 @@
 <url><loc>/reference/nv_while.html</loc></url>
 <url><loc>/reference/platform.html</loc></url>
 <url><loc>/reference/reexports.html</loc></url>
+<url><loc>/reference/st.html</loc></url>
 <url><loc>/reference/stablehlo.html</loc></url>
 <url><loc>/reference/trace_fn.html</loc></url>
 </urlset>

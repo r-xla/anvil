@@ -12,5 +12,5 @@ GraphValue(aval = ShapedTensor())
 
 - aval:
 
-  (`ShapedTensor`)  
+  ([`ShapedTensor`](ShapedTensor.md))  
   The abstract value of the variable.
