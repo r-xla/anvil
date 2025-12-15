@@ -572,7 +572,7 @@ weights
     ## $beta
     ## AnvilTensor
 
-    ## Error: CopyToHostAsync() called on deleted or donated buffer
+    ## Error: ToLiteral() called on deleted or donated buffer: INVALID_ARGUMENT: Buffer has been deleted or donated.
 
 But the new weights are still there.
 
