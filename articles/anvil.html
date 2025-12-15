@@ -74,7 +74,7 @@
       <h1>Get Started</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/backward/log-exp-max/vignettes/anvil.Rmd" class="external-link"><code>vignettes/anvil.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/anvil.Rmd" class="external-link"><code>vignettes/anvil.Rmd</code></a></small>
       <div class="d-none name"><code>anvil.Rmd</code></div>
     </div>
 
@@ -544,7 +544,7 @@ tensors have been deleted.</p>
 <code class="sourceCode R"><span><span class="va">weights</span></span></code></pre></div>
 <pre><code><span><span class="co">## $beta</span></span>
 <span><span class="co">## AnvilTensor</span></span></code></pre>
-<pre><code><span><span class="co">## Error: CopyToHostAsync() called on deleted or donated buffer</span></span></code></pre>
+<pre><code><span><span class="co">## Error: ToLiteral() called on deleted or donated buffer: INVALID_ARGUMENT: Buffer has been deleted or donated.</span></span></code></pre>
 <p>But the new weights are still there.</p>
 <div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">weights_out</span></span></code></pre></div>
@@ -565,7 +565,7 @@ tensors have been deleted.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sebastian Fischer, Daniel Falbel.</p>
+  <p>Developed by Sebastian Fischer, Daniel Falbel, Nikolai German.</p>
 </div>
 
 <div class="pkgdown-footer-right">
