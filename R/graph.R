@@ -484,26 +484,15 @@ is_graph_box <- function(x) {
   inherits(x, "anvil::GraphBox")
 }
 
-graph_desc_add <- function(prim, args, params = list(), infer_fn, infer_hlo = TRUE, desc = .current_descriptor()) {
+graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = .current_descriptor()) {
   boxes_in <- lapply(args, maybe_box_variable)
   gnodes_in <- lapply(boxes_in, \(box) box@gnode)
   avals_in <- lapply(boxes_in, aval)
-
-  if (infer_hlo) {
-    vts_in <- lapply(avals_in, \(aval) st2vt(aval))
-    outputs <- rlang::exec(infer_fn, !!!c(vts_in, params))
-    sts_out <- lapply(outputs, vt2st)
-  } else {
-    sts_out <- rlang::exec(infer_fn, !!!c(avals_in, params))
-  }
-
+  sts_out <- rlang::exec(infer_fn, !!!c(avals_in, params))
   gvals_out <- lapply(sts_out, GraphValue)
-
   call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)
-
   desc@calls <- c(desc@calls, call)
   boxes_out <- lapply(gvals_out, register_gval, desc = desc)
-
   return(boxes_out)
 }
 

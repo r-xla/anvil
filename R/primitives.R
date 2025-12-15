@@ -34,13 +34,13 @@ infer_unary <- function(operand) {
 
 make_binary_op <- function(prim) {
   function(lhs, rhs) {
-    graph_desc_add(prim, list(lhs, rhs), infer_fn = infer_binary, infer_hlo = FALSE)[[1L]]
+    graph_desc_add(prim, list(lhs, rhs), infer_fn = infer_binary)[[1L]]
   }
 }
 
 make_binary_integerish_op <- function(prim) {
   function(lhs, rhs) {
-    graph_desc_add(prim, list(lhs, rhs), infer_fn = infer_binary_integerish, infer_hlo = FALSE)[[1L]]
+    graph_desc_add(prim, list(lhs, rhs), infer_fn = infer_binary_integerish)[[1L]]
   }
 }
 
@@ -53,13 +53,13 @@ infer_unary_integerish <- function(operand) {
 
 make_unary_op <- function(prim) {
   function(operand) {
-    graph_desc_add(prim, list(operand), infer_fn = infer_unary, infer_hlo = FALSE)[[1L]]
+    graph_desc_add(prim, list(operand), infer_fn = infer_unary)[[1L]]
   }
 }
 
 make_unary_integerish_op <- function(prim) {
   function(operand) {
-    graph_desc_add(prim, list(operand), infer_fn = infer_unary_integerish, infer_hlo = FALSE)[[1L]]
+    graph_desc_add(prim, list(operand), infer_fn = infer_unary_integerish)[[1L]]
   }
 }
 
@@ -158,8 +158,7 @@ nvl_full <- function(value, shape, dtype) {
     p_full,
     list(),
     params = list(value = value, dtype = dtype, shape = shape),
-    infer_fn = infer_full,
-    infer_hlo = FALSE
+    infer_fn = infer_full
   )[[1L]]
 }
 
@@ -207,8 +206,7 @@ nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
       shape_out = shape_out,
       broadcast_dimensions = broadcast_dimensions
     ),
-    infer_fn = infer_fn,
-    infer_hlo = FALSE
+    infer_fn = infer_fn
   )[[1L]]
 }
 
@@ -226,8 +224,7 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
     p_dot_general,
     list(lhs, rhs),
     list(contracting_dims = contracting_dims, batching_dims = batching_dims),
-    infer_fn = infer_fn,
-    infer_hlo = FALSE
+    infer_fn = infer_fn
   )[[1L]]
 }
 
@@ -248,8 +245,7 @@ nvl_transpose <- function(operand, permutation) {
     p_transpose,
     list(operand),
     list(permutation = permutation),
-    infer_fn = infer_fn,
-    infer_hlo = FALSE
+    infer_fn = infer_fn
   )[[1L]]
 }
 
@@ -265,8 +261,7 @@ nvl_reshape <- function(operand, shape) {
     p_reshape,
     list(operand),
     params = list(shape = shape),
-    infer_fn = infer_fn,
-    infer_hlo = FALSE
+    infer_fn = infer_fn
   )[[1L]]
 }
 
@@ -274,7 +269,13 @@ p_concatenate <- Primitive("concatenate")
 nvl_concatenate <- function(..., dimension) {
   dots <- list(...)
   infer_fn <- function(..., dimension) {
-    stablehlo::infer_types_concatenate(..., dimension = dimension)@items
+    operands <- list(...)
+    all_ambiguous <- all(vapply(operands, \(x) x@ambiguous, logical(1L)))
+    vts <- lapply(operands, st2vt)
+    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dimension)@items[[1L]]
+    out <- vt2st(out)
+    out@ambiguous <- all_ambiguous
+    list(out)
   }
   graph_desc_add(
     p_concatenate,
@@ -287,10 +288,13 @@ nvl_concatenate <- function(..., dimension) {
 p_slice <- Primitive("slice")
 nvl_slice <- function(operand, start_indices, limit_indices, strides) {
   infer_fn <- function(operand, start_indices, limit_indices, strides) {
-    start_indices <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
-    limit_indices <- r_to_constant(limit_indices, dtype = "i64", shape = length(limit_indices))
-    strides <- r_to_constant(strides, dtype = "i64", shape = length(strides))
-    stablehlo::infer_types_slice(operand, start_indices, limit_indices, strides)@items
+    start_attr <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
+    limit_attr <- r_to_constant(limit_indices, dtype = "i64", shape = length(limit_indices))
+    strides_attr <- r_to_constant(strides, dtype = "i64", shape = length(strides))
+    out <- stablehlo::infer_types_slice(st2vt(operand), start_attr, limit_attr, strides_attr)@items[[1L]]
+    out <- vt2st(out)
+    out@ambiguous <- operand@ambiguous
+    list(out)
   }
   graph_desc_add(
     p_slice,
@@ -314,8 +318,7 @@ make_reduce_op <- function(prim, infer_fn = infer_reduce) {
       prim,
       list(operand),
       params = list(dims = dims, drop = drop),
-      infer_fn = infer_fn,
-      infer_hlo = FALSE
+      infer_fn = infer_fn
     )[[1L]]
   }
 }
@@ -348,7 +351,7 @@ infer_compare <- function(lhs, rhs, comparison_direction) {
 make_compare_op <- function(prim, direction) {
   infer_fn <- function(lhs, rhs) infer_compare(lhs, rhs, direction)
   function(lhs, rhs) {
-    graph_desc_add(prim, list(lhs, rhs), infer_fn = infer_fn, infer_hlo = FALSE)[[1L]]
+    graph_desc_add(prim, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
   }
 }
 
@@ -405,19 +408,19 @@ infer_shift <- function(lhs, rhs, shift_fn) {
 p_shift_left <- Primitive("shift_left")
 nvl_shift_left <- function(lhs, rhs) {
   infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_left)
-  graph_desc_add(p_shift_left, list(lhs, rhs), infer_fn = infer_fn, infer_hlo = FALSE)[[1L]]
+  graph_desc_add(p_shift_left, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
 }
 
 p_shift_right_logical <- Primitive("shift_right_logical")
 nvl_shift_right_logical <- function(lhs, rhs) {
   infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_logical)
-  graph_desc_add(p_shift_right_logical, list(lhs, rhs), infer_fn = infer_fn, infer_hlo = FALSE)[[1L]]
+  graph_desc_add(p_shift_right_logical, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
 }
 
 p_shift_right_arithmetic <- Primitive("shift_right_arithmetic")
 nvl_shift_right_arithmetic <- function(lhs, rhs) {
   infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_arithmetic)
-  graph_desc_add(p_shift_right_arithmetic, list(lhs, rhs), infer_fn = infer_fn, infer_hlo = FALSE)[[1L]]
+  graph_desc_add(p_shift_right_arithmetic, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
 }
 
 p_atan2 <- Primitive("atan2")
@@ -426,7 +429,7 @@ nvl_atan2 <- make_binary_op(p_atan2)
 p_bitcast_convert <- Primitive("bitcast_convert")
 nvl_bitcast_convert <- function(operand, dtype) {
   infer_fn <- function(operand, dtype) {
-    stablehlo::infer_types_bitcast_convert(operand, dtype)@items
+    lapply(stablehlo::infer_types_bitcast_convert(st2vt(operand), dtype)@items, vt2st)
   }
   graph_desc_add(p_bitcast_convert, list(operand), params = list(dtype = dtype), infer_fn = infer_fn)[[1L]]
 }
@@ -477,7 +480,7 @@ nvl_round <- function(operand, method = "nearest_even") {
   infer_fn <- function(operand, method) {
     infer_unary(operand)
   }
-  graph_desc_add(p_round, list(operand), list(method = method), infer_fn = infer_fn, infer_hlo = FALSE)[[1L]]
+  graph_desc_add(p_round, list(operand), list(method = method), infer_fn = infer_fn)[[1L]]
 }
 
 # dtype conversion ----------------------------------------------------------------
@@ -496,8 +499,7 @@ nvl_convert <- function(operand, dtype, ambiguous = FALSE) {
     p_convert,
     list(operand),
     params = list(dtype = dtype, ambiguous = ambiguous),
-    infer_fn = infer_fn,
-    infer_hlo = FALSE
+    infer_fn = infer_fn
   )[[1L]]
 }
 
@@ -515,7 +517,7 @@ nvl_select <- function(pred, true_value, false_value) {
     out@ambiguous <- both_ambiguous
     list(out)
   }
-  graph_desc_add(p_select, list(pred, true_value, false_value), infer_fn = infer_fn, infer_hlo = FALSE)[[1L]]
+  graph_desc_add(p_select, list(pred, true_value, false_value), infer_fn = infer_fn)[[1L]]
 }
 
 # Higher order primitives -------------------------------------------------------
@@ -570,7 +572,6 @@ nvl_if <- function(pred, true, false) {
     list(pred),
     params = list(true_graph = true_graph, false_graph = false_graph),
     infer_fn = infer_fn,
-    infer_hlo = FALSE,
     desc = current_desc
   )
   unflatten(true_graph@out_tree, out)
@@ -639,7 +640,6 @@ nvl_while <- function(init, cond, body) {
     args = flatten(init),
     params = list(cond_graph = cond_graph, body_graph = body_graph),
     infer_fn = infer_fn,
-    infer_hlo = FALSE,
     desc = current_desc
   )
 
@@ -650,7 +650,7 @@ nvl_while <- function(init, cond, body) {
 p_rng_bit_generator <- Primitive("rng_bit_generator")
 nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape_out) {
   infer_fn <- function(initial_state, rng_algorithm, dtype, shape_out) {
-    stablehlo::infer_types_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out)@items
+    lapply(stablehlo::infer_types_rng_bit_generator(st2vt(initial_state), rng_algorithm, dtype, shape_out)@items, vt2st)
   }
   graph_desc_add(
     p_rng_bit_generator,

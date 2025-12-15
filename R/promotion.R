@@ -16,19 +16,21 @@
 #' @return (`list(dtype = [`stablehlo::TensorDataType`], ambiguous = `logical(1)`)\cr
 #' @export
 common_dtype <- function(lhs_dtype, rhs_dtype, lhs_ambiguous = FALSE, rhs_ambiguous = FALSE) {
+  lhs_dtype <- as_dtype(lhs_dtype)
+  rhs_dtype <- as_dtype(rhs_dtype)
   # because ambiguous types can't be unsigned types, we can just use the normal promotion rules
   if (lhs_ambiguous && rhs_ambiguous) {
     dt <- promote_dt_ambiguous(lhs_dtype, rhs_dtype)
-    return(list(dt, TRUE))
+    return(list(dtype = dt, ambiguous = TRUE))
   } else if (lhs_ambiguous) {
     dt <- promote_dt_ambiguous_to_known(lhs_dtype, rhs_dtype)
-    return(list(dt, (dt == lhs_dtype) && (dt != rhs_dtype)))
+    return(list(dtype = dt, ambiguous = (dt == lhs_dtype) && (dt != rhs_dtype)))
   } else if (rhs_ambiguous) {
     dt <- promote_dt_ambiguous_to_known(rhs_dtype, lhs_dtype)
-    return(list(dt, (dt == rhs_dtype) && (dt != lhs_dtype)))
+    return(list(dtype = dt, ambiguous = (dt == rhs_dtype) && (dt != lhs_dtype)))
   } else {
     dt <- promote_dt_known(lhs_dtype, rhs_dtype)
-    return(list(dt, FALSE))
+    return(list(dtype = dt, ambiguous = FALSE))
   }
 }
 
