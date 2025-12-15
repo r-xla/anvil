@@ -28,6 +28,5 @@ Currently supported primitives are:
 \code{constant}, \code{add}, \code{sub}, \code{mul}, \code{divide}, \code{negate}, \code{broadcast_in_dim},
 \code{dot_general}, \code{transpose}, \code{reshape}, \code{sum}.
 The code generator currently supports tensors up to rank 5. Some primitives
-are more restricted (e.g. \code{dot_general} and \code{transpose} currently only handle
-rank-2 tensors).
+are more restricted (e.g. \code{transpose} currently only handles rank-2 tensors).
 }

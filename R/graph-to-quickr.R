@@ -16,8 +16,7 @@ NULL
 #' `constant`, `add`, `sub`, `mul`, `divide`, `negate`, `broadcast_in_dim`,
 #' `dot_general`, `transpose`, `reshape`, `sum`.
 #' The code generator currently supports tensors up to rank 5. Some primitives
-#' are more restricted (e.g. `dot_general` and `transpose` currently only handle
-#' rank-2 tensors).
+#' are more restricted (e.g. `transpose` currently only handles rank-2 tensors).
 #'
 #' @param graph ([`Graph`])\cr
 #'   Graph to convert.

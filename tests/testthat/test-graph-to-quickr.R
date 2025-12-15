@@ -44,6 +44,39 @@ test_that("graph_to_quickr_function matches PJRT for matmul", {
   expect_equal(out_quick, out_pjrt, tolerance = 1e-5)
 })
 
+test_that("graph_to_quickr_function matches PJRT for batched matmul (rank-5)", {
+  testthat::skip_if_not_installed("quickr")
+
+  set.seed(3)
+
+  b <- 2L
+  t <- 3L
+  h <- 2L
+  m <- 4L
+  n <- 3L
+  p <- 5L
+
+  A <- array(rnorm(b * t * h * m * n, sd = 0.2), dim = c(b, t, h, m, n))
+  B <- array(rnorm(b * t * h * n * p, sd = 0.2), dim = c(b, t, h, n, p))
+
+  graph <- trace_fn(
+    function(A, B) {
+      nv_matmul(A, B)
+    },
+    list(
+      A = nv_tensor(A, dtype = "f32", shape = dim(A)),
+      B = nv_tensor(B, dtype = "f32", shape = dim(B))
+    )
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+  out_quick <- f_quick(A, B)
+  out_pjrt <- eval_graph_pjrt(graph, A, B)
+
+  expect_equal(dim(out_quick), c(b, t, h, m, p))
+  expect_equal(out_quick, out_pjrt, tolerance = 1e-4)
+})
+
 test_that("graph_to_quickr_function matches PJRT for sum reduction", {
   testthat::skip_if_not_installed("quickr")
 

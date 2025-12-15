@@ -154,76 +154,187 @@ NULL
 # Primitive emission ------------------------------------------------------------
 
 .quickr_emit_dot_general <- function(out_sym, lhs_expr, rhs_expr, lhs_shape, rhs_shape, out_shape, out_aval, contracting_dims, batching_dims) {
-  if (!(length(lhs_shape) == 2L && length(rhs_shape) == 2L && length(out_shape) == 2L)) {
-    cli_abort("dot_general: only rank-2 tensors are supported")
+  lhs_shape <- as.integer(lhs_shape)
+  rhs_shape <- as.integer(rhs_shape)
+  out_shape <- as.integer(out_shape)
+
+  lhs_rank <- length(lhs_shape)
+  rhs_rank <- length(rhs_shape)
+  out_rank <- length(out_shape)
+
+  if (lhs_rank > 5L || rhs_rank > 5L || out_rank > 5L) {
+    cli_abort("dot_general: only tensors up to rank 5 are supported")
   }
-  if (length(batching_dims[[1L]]) || length(batching_dims[[2L]])) {
-    cli_abort("dot_general: batching_dims are not supported")
+
+  cd_lhs <- as.integer(contracting_dims[[1L]])
+  cd_rhs <- as.integer(contracting_dims[[2L]])
+  bd_lhs <- as.integer(batching_dims[[1L]])
+  bd_rhs <- as.integer(batching_dims[[2L]])
+
+  if (length(cd_lhs) != length(cd_rhs)) {
+    cli_abort("dot_general: contracting_dims must have the same length for lhs and rhs")
   }
-  if (!(length(contracting_dims[[1L]]) == 1L && length(contracting_dims[[2L]]) == 1L)) {
-    cli_abort("dot_general: expected exactly one contracting dim per operand")
+  if (length(bd_lhs) != length(bd_rhs)) {
+    cli_abort("dot_general: batching_dims must have the same length for lhs and rhs")
+  }
+
+  .check_dims <- function(dims, rank, label) {
+    if (!length(dims)) {
+      return(invisible(NULL))
+    }
+    if (any(is.na(dims))) {
+      cli_abort("dot_general: {label} must not contain missing values")
+    }
+    if (any(dims < 1L) || any(dims > rank)) {
+      cli_abort("dot_general: {label} out of range for rank {rank}")
+    }
+    if (anyDuplicated(dims)) {
+      cli_abort("dot_general: {label} must be unique")
+    }
+    invisible(NULL)
+  }
+
+  .check_dims(cd_lhs, lhs_rank, "lhs contracting_dims")
+  .check_dims(cd_rhs, rhs_rank, "rhs contracting_dims")
+  .check_dims(bd_lhs, lhs_rank, "lhs batching_dims")
+  .check_dims(bd_rhs, rhs_rank, "rhs batching_dims")
+
+  if (length(intersect(cd_lhs, bd_lhs))) {
+    cli_abort("dot_general: lhs contracting_dims and batching_dims must be disjoint")
+  }
+  if (length(intersect(cd_rhs, bd_rhs))) {
+    cli_abort("dot_general: rhs contracting_dims and batching_dims must be disjoint")
+  }
+
+  for (i in seq_along(bd_lhs)) {
+    n_lhs <- lhs_shape[[bd_lhs[[i]]]]
+    n_rhs <- rhs_shape[[bd_rhs[[i]]]]
+    if (!identical(n_lhs, n_rhs)) {
+      cli_abort("dot_general: batch dim sizes differ between lhs and rhs")
+    }
+  }
+  for (i in seq_along(cd_lhs)) {
+    n_lhs <- lhs_shape[[cd_lhs[[i]]]]
+    n_rhs <- rhs_shape[[cd_rhs[[i]]]]
+    if (!identical(n_lhs, n_rhs)) {
+      cli_abort("dot_general: contracting dim sizes differ between lhs and rhs")
+    }
+  }
+
+  free_lhs <- setdiff(seq_len(lhs_rank), c(bd_lhs, cd_lhs))
+  free_rhs <- setdiff(seq_len(rhs_rank), c(bd_rhs, cd_rhs))
+  expected_out <- c(lhs_shape[bd_lhs], lhs_shape[free_lhs], rhs_shape[free_rhs])
+  if (!identical(out_shape, as.integer(expected_out))) {
+    cli_abort("dot_general: output shape mismatch")
   }
 
   .for_loop <- function(var_sym, upper, body) {
     as.call(list(
       as.name("for"),
       var_sym,
-      as.call(list(as.name(":"), 1L, upper)),
+      .quickr_call2("seq_len", as.integer(upper)),
       body
     ))
   }
   .block <- function(...) as.call(c(list(as.name("{")), list(...)))
-  .subscript <- function(expr, idxs) as.call(c(list(as.name("["), expr), idxs))
-
-  cd_lhs <- as.integer(contracting_dims[[1L]][[1L]])
-  cd_rhs <- as.integer(contracting_dims[[2L]][[1L]])
-  if (!(cd_lhs %in% 1:2 && cd_rhs %in% 1:2)) {
-    cli_abort("dot_general: contracting dims must be 1 or 2")
+  .subscript <- function(expr, idxs) {
+    if (!length(idxs)) {
+      return(expr)
+    }
+    as.call(c(list(as.name("["), expr), idxs))
   }
 
-  rd_lhs <- setdiff(1:2, cd_lhs)
-  rd_rhs <- setdiff(1:2, cd_rhs)
-  if (!(length(rd_lhs) == 1L && length(rd_rhs) == 1L)) {
-    cli_abort("dot_general: internal error: could not identify remaining dims")
+  nbatch <- length(bd_lhs)
+  nfree_lhs <- length(free_lhs)
+
+  out_idxs <- lapply(seq_len(out_rank), function(d) as.name(paste0("i_", as.character(out_sym), "_", d)))
+  k_idxs <- lapply(seq_along(cd_lhs), function(i) as.name(paste0("k_", as.character(out_sym), "_", i)))
+  acc <- as.name(paste0("acc_", as.character(out_sym)))
+
+  lhs_idxs <- vector("list", lhs_rank)
+  for (d in seq_len(lhs_rank)) {
+    if (d %in% bd_lhs) {
+      lhs_idxs[[d]] <- out_idxs[[match(d, bd_lhs)]]
+    } else if (d %in% free_lhs) {
+      lhs_idxs[[d]] <- out_idxs[[nbatch + match(d, free_lhs)]]
+    } else {
+      lhs_idxs[[d]] <- k_idxs[[match(d, cd_lhs)]]
+    }
   }
 
-  m <- as.integer(lhs_shape[[rd_lhs]])
-  n <- as.integer(rhs_shape[[rd_rhs]])
-  k <- as.integer(lhs_shape[[cd_lhs]])
-  if (!identical(k, as.integer(rhs_shape[[cd_rhs]]))) {
-    cli_abort("dot_general: contracting dims sizes differ")
-  }
-  if (!identical(as.integer(out_shape), c(m, n))) {
-    cli_abort("dot_general: output shape mismatch")
+  rhs_idxs <- vector("list", rhs_rank)
+  for (d in seq_len(rhs_rank)) {
+    if (d %in% bd_rhs) {
+      rhs_idxs[[d]] <- out_idxs[[match(d, bd_rhs)]]
+    } else if (d %in% free_rhs) {
+      rhs_idxs[[d]] <- out_idxs[[nbatch + nfree_lhs + match(d, free_rhs)]]
+    } else {
+      rhs_idxs[[d]] <- k_idxs[[match(d, cd_rhs)]]
+    }
   }
 
+  lhs_at <- .subscript(lhs_expr, lhs_idxs)
+  rhs_at <- .subscript(rhs_expr, rhs_idxs)
   zero <- .quickr_zero_literal_for(out_aval)
-  out_i <- as.name(paste0("i_", as.character(out_sym)))
-  out_j <- as.name(paste0("j_", as.character(out_sym)))
-  out_k <- as.name(paste0("k_", as.character(out_sym)))
-  out_acc <- as.name(paste0("acc_", as.character(out_sym)))
 
-  idx_lhs <- vector("list", 2L)
-  idx_rhs <- vector("list", 2L)
-  idx_lhs[[rd_lhs]] <- out_i
-  idx_lhs[[cd_lhs]] <- out_k
-  idx_rhs[[rd_rhs]] <- out_j
-  idx_rhs[[cd_rhs]] <- out_k
+  .alloc_out <- function() {
+    if (out_rank == 1L) {
+      .quickr_call2("array", zero, dim = out_shape[[1L]])
+    } else if (out_rank == 2L) {
+      .quickr_call2("matrix", zero, nrow = out_shape[[1L]], ncol = out_shape[[2L]])
+    } else {
+      .quickr_call2("array", zero, dim = out_shape)
+    }
+  }
+  .wrap_out_loops <- function(inner) {
+    body <- inner
+    for (d in seq_len(out_rank)) {
+      body <- .for_loop(out_idxs[[d]], out_shape[[d]], body)
+    }
+    body
+  }
 
-  lhs_at <- .subscript(lhs_expr, idx_lhs)
-  rhs_at <- .subscript(rhs_expr, idx_rhs)
-  update_acc <- .quickr_call2("<-", out_acc, .quickr_call2("+", out_acc, .quickr_call2("*", lhs_at, rhs_at)))
+  if (!length(cd_lhs)) {
+    if (out_rank == 0L) {
+      return(.quickr_emit_assign(out_sym, .quickr_call2("*", lhs_at, rhs_at)))
+    }
 
-  inner <- .block(
-    .quickr_emit_assign(out_acc, zero)[[1L]],
-    .for_loop(out_k, k, update_acc),
-    .quickr_call2("<-", .quickr_call2("[", out_sym, out_i, out_j), out_acc)
+    alloc <- .alloc_out()
+
+    out_at <- .subscript(out_sym, out_idxs)
+    assign_elem <- .quickr_call2("<-", out_at, .quickr_call2("*", lhs_at, rhs_at))
+
+    body <- .wrap_out_loops(assign_elem)
+
+    return(list(.quickr_call2("<-", out_sym, alloc), body))
+  }
+
+  update_acc <- .quickr_call2("<-", acc, .quickr_call2("+", acc, .quickr_call2("*", lhs_at, rhs_at)))
+  contract_body <- update_acc
+  for (i in seq_along(k_idxs)) {
+    contract_body <- .for_loop(k_idxs[[i]], lhs_shape[[cd_lhs[[i]]]], contract_body)
+  }
+
+  if (out_rank == 0L) {
+    return(list(
+      .quickr_call2("<-", acc, zero),
+      contract_body,
+      .quickr_call2("<-", out_sym, acc)
+    ))
+  }
+
+  alloc <- .alloc_out()
+
+  out_at <- .subscript(out_sym, out_idxs)
+  elem_body <- .block(
+    .quickr_call2("<-", acc, zero),
+    contract_body,
+    .quickr_call2("<-", out_at, acc)
   )
 
-  list(
-    .quickr_emit_assign(out_sym, .quickr_call2("matrix", zero, nrow = m, ncol = n))[[1L]],
-    .for_loop(out_i, m, .for_loop(out_j, n, inner))
-  )
+  body <- .wrap_out_loops(elem_body)
+
+  list(.quickr_call2("<-", out_sym, alloc), body)
 }
 
 .quickr_emit_transpose <- function(out_sym, operand_expr, permutation, out_shape, out_aval) {
