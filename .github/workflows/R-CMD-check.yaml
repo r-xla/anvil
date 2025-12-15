@@ -33,9 +33,15 @@ jobs:
             runner: ['self-hosted', 'gpu']
             setup: |
               DEBIAN_FRONTEND="noninteractive" apt-get update -y
-              DEBIAN_FRONTEND="noninteractive" apt-get install -y sudo software-properties-common dialog apt-utils tzdata libpng-dev locales pkg-config
+              DEBIAN_FRONTEND="noninteractive" apt-get install -y sudo software-properties-common dialog apt-utils tzdata libpng-dev locales pkg-config wget
               DEBIAN_FRONTEND="noninteractive" locale-gen en_US.UTF-8
               DEBIAN_FRONTEND="noninteractive" update-locale LANG=en_US.UTF-8
+              cd /tmp
+              wget https://developer.download.nvidia.com/compute/nvshmem/3.2.5/local_installers/nvshmem-local-repo-ubuntu2404-3.2.5_3.2.5-1_amd64.deb
+              sudo dpkg -i nvshmem-local-repo-ubuntu2404-3.2.5_3.2.5-1_amd64.deb
+              sudo cp /var/nvshmem-local-repo-ubuntu2404-3.2.5/nvshmem-*-keyring.gpg /usr/share/keyrings/
+              sudo apt-get update
+              sudo apt-get -y --allow-change-held-packages install nvshmem-cuda-12 libnccl2 libnccl-dev
           - config: {os: "ubuntu", platform: "cpu"}
             runner: 'ubuntu-latest'
           - config: {os: "macos", platform: "cpu"}
