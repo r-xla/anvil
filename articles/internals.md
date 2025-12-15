@@ -37,7 +37,7 @@ approaches:
 The former approach is followed by the {quickr} package, which allows
 you to transpile R code into Fortran. In {anvil}, we are following the
 dynamic approach, which we will now illustrate. Our goal will be to
-trace the following function, which either adds or subtracts two
+trace_fn the following function, which either adds or subtracts two
 tensors. The first two arguments are expected to be `AnvilTensor`s,
 while the third is either `"add"` or `"sub"`.
 
@@ -137,7 +137,7 @@ anvil:::p_add@rules[["backward"]]
     ##     grad <- grads[[1L]]
     ##     list(if (.required[[1L]]) grad, if (.required[[2L]]) grad)
     ## }
-    ## <bytecode: 0x555cc740a7b0>
+    ## <bytecode: 0x560c738c6590>
     ## <environment: namespace:anvil>
 
 The `anvil:::transform_gradient` function uses these rules to compute
@@ -184,7 +184,7 @@ anvil:::p_add@rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_add(lhs, rhs))
     ## }
-    ## <bytecode: 0x555cc7411a18>
+    ## <bytecode: 0x560c738c5d78>
     ## <environment: namespace:anvil>
 
 They are applied in the [`anvil::stablehlo`](../reference/stablehlo.md)

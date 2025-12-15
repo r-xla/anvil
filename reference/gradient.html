@@ -46,7 +46,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Gradient</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-rngs/R/backward.R" class="external-link"><code>R/backward.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/backward/log-exp-max/R/backward.R" class="external-link"><code>R/backward.R</code></a></small>
       <div class="d-none name"><code>gradient.Rd</code></div>
     </div>
 
@@ -56,7 +56,9 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">gradient</span><span class="op">(</span><span class="va">f</span>, wrt <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">gradient</span><span class="op">(</span><span class="va">f</span>, wrt <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">value_and_gradient</span><span class="op">(</span><span class="va">f</span>, wrt <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -73,13 +75,18 @@ Function to compute the gradient of.</p></dd>
 Names of the arguments to compute the gradient with respect to.</p></dd>
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
+
+<ul><li><p><code>value_and_gradient()</code>: Returns both the value and the gradient</p></li>
+</ul></div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sebastian Fischer, Daniel Falbel, Nikolai German.</p>
+  <p>Developed by Sebastian Fischer, Daniel Falbel.</p>
 </div>
 
 <div class="pkgdown-footer-right">
