@@ -28,7 +28,6 @@ Suggests:
     knitr,
     quarto,
     rmarkdown,
-    mnist,
     quickr,
     testthat (>= 3.0.0)
 Additional_repositories:
@@ -49,7 +48,6 @@ Collate:
     'quickr.R'
     'graph-to-r.R'
     'graph-to-quickr.R'
-    'as-functions.R'
     'backward.R'
     'flatten.R'
     'graph-passes.R'
@@ -62,5 +60,4 @@ Collate:
     'rules-backward.R'
     'rules-stablehlo.R'
     'stablehlo.R'
-    'mnist.R'
     'zzz.R'

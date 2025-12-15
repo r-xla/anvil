@@ -234,83 +234,6 @@ test_that("broadcasting", {
   expect_equal(out[[2L]], nv_tensor(0.5, shape = c(1, 2)))
 })
 
-test_that("p_exp: exp gradient", {
-  f <- function(x) {
-    nv_reduce_sum(nv_exp(x), dims = 1L, drop = TRUE)
-  }
-  g <- jit(gradient(f))
-
-  x <- nv_tensor(c(-1, 0, 2), dtype = "f32", shape = 3L)
-  got <- pjrt::as_array(g(x)[[1L]])
-  expect_equal(as.numeric(got), as.numeric(exp(as_array(x))), tolerance = 1e-6)
-})
-
-test_that("p_log: log gradient", {
-  f <- function(x) {
-    nv_reduce_sum(nv_log(x), dims = 1L, drop = TRUE)
-  }
-  g <- jit(gradient(f))
-
-  x <- nv_tensor(c(0.5, 2, 4), dtype = "f32", shape = 3L)
-  got <- pjrt::as_array(g(x)[[1L]])
-  expect_equal(as.numeric(got), 1 / as.numeric(as_array(x)), tolerance = 1e-6)
-})
-
-test_that("p_reduce_max: reduce_max gradient (ties split)", {
-  g <- jit(gradient(function(x) nv_reduce_max(x, dims = 1L, drop = TRUE)))
-
-  x1 <- nv_tensor(c(1, 3, 2), dtype = "f32", shape = 3L)
-  got1 <- pjrt::as_array(g(x1)[[1L]])
-  expect_equal(as.numeric(got1), c(0, 1, 0))
-
-  x2 <- nv_tensor(c(3, 3, 2), dtype = "f32", shape = 3L)
-  got2 <- pjrt::as_array(g(x2)[[1L]])
-  expect_equal(as.numeric(got2), c(0.5, 0.5, 0))
-})
-
-test_that("p_reduce_max: row-wise reduce_max gradient", {
-  f <- function(x) {
-    nv_reduce_sum(nv_reduce_max(x, dims = 2L, drop = TRUE), dims = 1L, drop = TRUE)
-  }
-  g <- jit(gradient(f))
-
-  x <- nv_tensor(matrix(c(
-    1, 5, 2,
-    3, 3, 0
-  ), nrow = 2, ncol = 3, byrow = TRUE), dtype = "f32", shape = c(2L, 3L))
-
-  got <- pjrt::as_array(g(x)[[1L]])
-  expect_equal(
-    got,
-    array(
-      matrix(c(0, 1, 0, 0.5, 0.5, 0), nrow = 2, ncol = 3, byrow = TRUE),
-      dim = c(2L, 3L)
-    )
-  )
-})
-
-test_that("p_max: maximum gradient (relu-like)", {
-  f <- function(x) {
-    nv_reduce_sum(nv_max(x, nv_scalar(0, dtype = "f32")), dims = 1L, drop = TRUE)
-  }
-  g <- jit(gradient(f))
-
-  x <- nv_tensor(c(-2, 3, -1, 4), dtype = "f32", shape = 4L)
-  got <- pjrt::as_array(g(x)[[1L]])
-  expect_equal(as.numeric(got), c(0, 1, 0, 1))
-})
-
-test_that("p_min: minimum gradient", {
-  f <- function(x) {
-    nv_reduce_sum(nv_min(x, nv_scalar(0, dtype = "f32")), dims = 1L, drop = TRUE)
-  }
-  g <- jit(gradient(f))
-
-  x <- nv_tensor(c(-2, 3, -1, 4), dtype = "f32", shape = 4L)
-  got <- pjrt::as_array(g(x)[[1L]])
-  expect_equal(as.numeric(got), c(1, 0, 1, 0))
-})
-
 test_that("p_if", {
   # TODO:
   #f <- jit(gradient(
@@ -378,12 +301,5 @@ test_that("p_eq, p_ne, p_gt, p_ge, p_lt, p_le", {
 })
 
 if (nzchar(system.file(package = "torch"))) {
-  can_processx <- isTRUE(tryCatch(
-    requireNamespace("processx", quietly = TRUE),
-    error = function(e) FALSE
-  ))
-
-  if (can_processx) {
-    source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
-  }
+  source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
 }

@@ -60,49 +60,6 @@ p_pow[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_exp[["backward"]] <- function(inputs, outputs, grads, .required) {
-  y <- outputs[[1L]]
-  grad <- grads[[1L]]
-  list(
-    if (.required[[1L]]) nvl_mul(grad, y)
-  )
-}
-
-p_log[["backward"]] <- function(inputs, outputs, grads, .required) {
-  operand <- inputs[[1L]]
-  grad <- grads[[1L]]
-  one <- nv_full(1L, dtype = dtype(operand), shape = shape(operand))
-  list(
-    if (.required[[1L]]) nvl_mul(grad, nvl_div(one, operand))
-  )
-}
-
-p_max[["backward"]] <- function(inputs, outputs, grads, .required) {
-  lhs <- inputs[[1L]]
-  rhs <- inputs[[2L]]
-  grad <- grads[[1L]]
-  zero <- nv_full(0L, dtype = dtype(lhs), shape = shape(lhs))
-
-  # We pick a tie-breaking convention: send ties to lhs.
-  list(
-    if (.required[[1L]]) nvl_select(nvl_ge(lhs, rhs), grad, zero),
-    if (.required[[2L]]) nvl_select(nvl_gt(rhs, lhs), grad, zero)
-  )
-}
-
-p_min[["backward"]] <- function(inputs, outputs, grads, .required) {
-  lhs <- inputs[[1L]]
-  rhs <- inputs[[2L]]
-  grad <- grads[[1L]]
-  zero <- nv_full(0L, dtype = dtype(lhs), shape = shape(lhs))
-
-  # We pick a tie-breaking convention: send ties to lhs.
-  list(
-    if (.required[[1L]]) nvl_select(nvl_le(lhs, rhs), grad, zero),
-    if (.required[[2L]]) nvl_select(nvl_lt(rhs, lhs), grad, zero)
-  )
-}
-
 
 p_dot_general[["backward"]] <- function(inputs, outputs, grads, contracting_dims, batching_dims, .required) {
   lhs <- inputs[[1L]]
@@ -196,33 +153,6 @@ p_reduce_sum[["backward"]] <- function(inputs, outputs, grads, dims, drop, .requ
         seq_along(shape(grad))
       }
       nvl_broadcast_in_dim(grad, shape(operand), bdims)
-    }
-  )
-}
-
-p_reduce_max[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
-  operand <- inputs[[1L]]
-  y <- outputs[[1L]]
-  grad <- grads[[1L]]
-
-  list(
-    if (.required[[1L]]) {
-      bdims <- if (drop) {
-        without(seq_along(shape(operand)), dims)
-      } else {
-        seq_along(shape(grad))
-      }
-
-      y_b <- nvl_broadcast_in_dim(y, shape(operand), bdims)
-      g_b <- nvl_broadcast_in_dim(grad, shape(operand), bdims)
-
-      mask <- nvl_eq(operand, y_b)
-      mask_f <- nvl_convert(mask, dtype(operand))
-
-      # Split gradients across ties.
-      denom <- nvl_reduce_sum(mask_f, dims = dims, drop = FALSE)
-      denom_b <- nvl_broadcast_in_dim(denom, shape(operand), seq_along(shape(operand)))
-      nvl_div(nvl_mul(g_b, mask_f), denom_b)
     }
   )
 }

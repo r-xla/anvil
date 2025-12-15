@@ -11,8 +11,8 @@ eval_graph_pjrt <- function(graph, ...) {
     if (inherits(x, "AnvilTensor")) {
       return(x)
     }
-    expected_shape <- shape(gval@aval)
-    expected_dtype <- as.character(dtype(gval@aval))
+    expected_shape <- gval@aval@shape@dims
+    expected_dtype <- as.character(gval@aval@dtype)
     if (expected_dtype == "i1") {
       expected_dtype <- "pred"
     }

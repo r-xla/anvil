@@ -2,32 +2,9 @@
 #' @keywords internal
 NULL
 
-#' Convert a Graph to an R function
-#'
-#' Converts (a supported subset of) `anvil::Graph` objects into a plain R
-#' function that evaluates the same computation using base R operators.
-#'
-#' This is intended as a bridge to tools like {quickr}, which can consume R
-#' functions.
-#'
-#' @param graph ([`Graph`])\cr
-#'   Graph to convert.
-#' @param include_declare (`logical(1)`)\cr
-#'   Whether to include a `declare(type(...))` call at the top of the function
-#'   body (useful for {quickr}). In plain R it is treated as a no-op. Default is `TRUE`.
-#' @param pack_output (`logical(1)`)\cr
-#'   Whether to force the function to return a single flat `double()` vector
-#'   containing all output leaves (for {quickr} compatibility when the graph
-#'   returns a nested output tree). Default is `FALSE`.
-#' @param target (`character(1)`)\cr
-#'   Code generation target. Use `"base"` for plain R evaluation and `"quickr"`
-#'   to restrict the generated code to a subset that can be compiled by {quickr}.
-#' @return (`function`)
-#' @export
-graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FALSE, target = c("base", "quickr")) {
+graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_output = FALSE) {
   include_declare <- as.logical(include_declare)
   pack_output <- as.logical(pack_output)
-  target <- match.arg(target)
 
   if (!is_graph(graph)) {
     cli_abort("{.arg graph} must be a {.cls anvil::Graph}")
@@ -592,18 +569,11 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
       ))))
     }
 
-    if (isTRUE(drop)) {
-      c(stmts, .emit_assign(out_sym, acc))
-    } else {
-      if (target == "quickr") {
-        # quickr does not reliably distinguish rank-0 scalars from length-1
-        # vectors, and `c(acc)` can lead to invalid Fortran. A scalar is fine
-        # here since it behaves like a length-1 vector in subsequent arithmetic.
-        c(stmts, .emit_assign(out_sym, acc))
-      } else {
-        c(stmts, .emit_assign(out_sym, .call2("c", acc)))
-      }
+    if (!isTRUE(drop)) {
+      # quickr does not reliably distinguish rank-0 scalars from length-1 vectors.
+      # A scalar is fine here since it behaves like a length-1 vector in subsequent arithmetic.
     }
+    c(stmts, .emit_assign(out_sym, acc))
   }
 
   .emit_reduce_rank2_axis_loop <- function(out_sym, m, n, dims, drop, alloc_stmts, init_acc_expr, inner_start, update_builder) {
@@ -1165,8 +1135,8 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
     cli_abort("all: only rank-1/2 tensors are currently supported")
   }
 
-  .emit_reduce_any <- if (target == "quickr") .emit_reduce_any_quickr else .emit_reduce_any_base
-  .emit_reduce_all <- if (target == "quickr") .emit_reduce_all_quickr else .emit_reduce_all_base
+  .emit_reduce_any <- .emit_reduce_any_quickr
+  .emit_reduce_all <- .emit_reduce_all_quickr
 
   .emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_aval) {
     if (length(shape_in) > 2L || length(shape_out) > 2L) {
@@ -1286,38 +1256,6 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
     cli_abort("select: only rank-0/1/2 tensors are currently supported")
   }
 
-  .make_slice <- function(target_sym, axis, axis_sym, rank) {
-    target_nm <- as.character(target_sym)
-    axis_nm <- as.character(axis_sym)
-    idxs <- rep("", rank)
-    idxs[[axis]] <- axis_nm
-    str2lang(paste0(target_nm, "[", paste(idxs, collapse = ","), "]"))
-  }
-
-  .emit_mul_broadcast_axis <- function(out_sym, x_expr, y_expr, axis, shape_out) {
-    rank <- length(shape_out)
-    if (rank < 1L) {
-      cli_abort("Internal error: cannot broadcast into rank-0 output")
-    }
-    axis <- as.integer(axis[[1L]])
-    axis_size <- as.integer(shape_out[[axis]])
-    k <- as.name(paste0("k_", as.character(out_sym), "_", axis))
-
-    slice <- .make_slice(out_sym, axis, k, rank)
-    rhs <- .call2("*", slice, .call2("[", y_expr, k))
-    assign_slice <- .call2("<-", slice, rhs)
-
-    list(
-      .call2("<-", out_sym, x_expr),
-      as.call(list(
-        as.name("for"),
-        k,
-        .call2("seq_len", axis_size),
-        assign_slice
-      ))
-    )
-  }
-
   .register_prim_lowerer <- function(registry, name, fun) {
     for (nm in name) {
       registry[[nm]] <- fun
@@ -1359,13 +1297,6 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
         cli_abort("Internal error: unknown binary op primitive: {.val {prim_name}}")
       )
       .emit_assign(out_syms[[1L]], .call2(op, inputs[[1L]], inputs[[2L]]))
-    })
-
-    .register_prim_lowerer(reg, "mul_broadcast_axis", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
-      out_sym <- out_syms[[1L]]
-      x_expr <- inputs[[1L]]
-      y_expr <- inputs[[2L]]
-      .emit_mul_broadcast_axis(out_sym, x_expr, y_expr, params$axis, params$shape_out)
     })
 
     .register_prim_lowerer(reg, "if", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
@@ -1564,7 +1495,7 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
   .emit_prim <- function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
     lower <- get0(prim_name, envir = .lower_registry, inherits = FALSE)
     if (is.null(lower)) {
-      cli_abort("Unsupported primitive in graph_to_r_function(): {.val {prim_name}}")
+      cli_abort("Unsupported primitive in {.fn graph_to_quickr_function}: {.val {prim_name}}")
     }
     lower(prim_name, inputs, params, out_syms, input_nodes, out_avals)
   }
@@ -1592,7 +1523,7 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
     unsupported_prims <- setdiff(call_prims, supported_prims)
     if (length(unsupported_prims)) {
       cli_abort(c(
-        "graph_to_r_function() does not support these primitives: {toString(unsupported_prims)}",
+        "{.fn graph_to_quickr_function} does not support these primitives: {toString(unsupported_prims)}",
         i = "Supported primitives: {toString(sort(supported_prims))}"
       ))
     }
@@ -1629,7 +1560,6 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
 
   .emit_ops_for_graph <- function(graph, node_expr) {
     ops <- .ops_from_graph(graph, node_expr)
-    ops <- fuse_broadcast_in_dim_mul_ops(ops)
     stmts <- list()
     for (op in ops) {
       stmts <- c(stmts, .emit_prim(op$prim_name, op$inputs, op$params, op$out_syms, op$input_nodes, op$out_avals))
@@ -1723,20 +1653,6 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
     c(stmts, cond_stmts, list(as.call(list(as.name("while"), cond_sym, body_block))))
   }
 
-  .build_output_expr <- function(node, leaves) {
-    if (inherits(node, "LeafNode")) {
-      return(leaves[[node$i]])
-    }
-    if (!inherits(node, "ListNode")) {
-      cli_abort("Unsupported output tree node type: {.cls {class(node)[[1L]]}}")
-    }
-    args <- lapply(node$nodes, .build_output_expr, leaves = leaves)
-    if (!is.null(node$names)) {
-      names(args) <- node$names
-    }
-    as.call(c(list(as.name("list")), args))
-  }
-
   in_paths <- .tree_leaf_paths(graph@in_tree)
   if (length(in_paths) != length(graph@inputs)) {
     cli_abort("Internal error: input tree size does not match graph inputs")
@@ -1781,13 +1697,12 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
   counter$const <- 0L
   emit <- .emit_ops_for_graph(graph, node_expr)
   stmts <- c(stmts, emit$stmts)
-  out_leaves <- emit$out_exprs
+  out_exprs <- emit$out_exprs
 
   if (isTRUE(pack_output)) {
-    out_nodes <- graph@outputs
-    out_shapes <- lapply(out_nodes, function(node) {
+    out_shapes <- lapply(graph@outputs, function(node) {
       if (is_graph_value(node)) {
-        shape(node@aval)
+        node@aval@shape@dims
       } else {
         integer()
       }
@@ -1834,16 +1749,17 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
       list(body)
     }
 
-    for (i in seq_along(out_leaves)) {
+    for (i in seq_along(out_exprs)) {
       tag <- paste0("out", i)
-      shp <- out_shapes[[i]]
-      stmts <- c(stmts, emit_pack_array(out_leaves[[i]], shp, tag))
+      stmts <- c(stmts, emit_pack_array(out_exprs[[i]], out_shapes[[i]], tag))
     }
 
     stmts <- c(stmts, list(out_sym))
   } else {
-    out_expr <- .build_output_expr(graph@out_tree, out_leaves)
-    stmts <- c(stmts, list(.call2("<-", as.name("out"), out_expr), as.name("out")))
+    if (!inherits(graph@out_tree, "LeafNode") || length(out_exprs) != 1L) {
+      cli_abort("Internal error: {.arg pack_output} must be TRUE for graphs with multiple outputs")
+    }
+    stmts <- c(stmts, list(.call2("<-", as.name("out"), out_exprs[[1L]]), as.name("out")))
   }
   body_expr <- as.call(c(list(as.name("{")), stmts))
 

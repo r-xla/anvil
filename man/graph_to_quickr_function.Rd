@@ -14,7 +14,11 @@ Graph to convert.}
 (\code{function})
 }
 \description{
-Convenience wrapper around \code{\link[=graph_to_r_function]{graph_to_r_function()}} that inserts a
-\code{declare(type(...))} header and compiles the resulting function with
-\code{quickr::quick()}.
+Lowers a supported subset of \code{anvil::Graph} objects to a plain R function and
+compiles it with \code{quickr::quick()}.
+
+If the graph returns multiple outputs (e.g. a nested list), the compiled function
+returns the same structure by packing/unpacking values for \{quickr\}.
+
+At the moment this only supports graphs with a flat (non-nested) argument list.
 }
