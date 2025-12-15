@@ -5,7 +5,9 @@ Authors@R: c(
     person("Sebastian", "Fischer", , "seb.fischer@tutamail.com", role = c("cre", "aut"),
            comment = c(ORCID = "https://orcid.org/0000-0002-9609-3197")),
     person("Daniel", "Falbel", , "daniel@posit.co", role = "aut",
-           comment = c(ORCID = "https://orcid.org/0009-0006-0143-2392"))
+           comment = c(ORCID = "https://orcid.org/0009-0006-0143-2392")),
+    person("Nikolai", "German", , "niko.german@gmail.com", role = "aut",
+           comment = c(ORCID = "https://orcid.org/0009-0001-7394-8367"))
   )
 Description: Code transformation framework for R.
 License: MIT + file LICENSE
@@ -48,6 +50,9 @@ Collate:
     'quickr.R'
     'graph-to-r.R'
     'graph-to-quickr.R'
+    'api-internal.R'
+    'jit.R'
+    'api-utilities.R'
     'backward.R'
     'flatten.R'
     'graph-passes.R'
@@ -55,7 +60,6 @@ Collate:
     'tensor.R'
     'graph.R'
     'graph-print.R'
-    'jit.R'
     'reexports.R'
     'rules-backward.R'
     'rules-stablehlo.R'

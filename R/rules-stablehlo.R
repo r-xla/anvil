@@ -48,7 +48,15 @@ p_reshape[["stablehlo"]] <- function(operand, shape) {
   list(stablehlo::hlo_reshape(operand, shape))
 }
 
-.jit_apply_reduce <- function(reductor, operand, init, dims, drop) {
+p_concatenate[["stablehlo"]] <- function(..., dimension) {
+  list(stablehlo::hlo_concatenate(..., dimension = dimension))
+}
+
+p_slice[["stablehlo"]] <- function(operand, start_indices, limit_indices, strides) {
+  list(stablehlo::hlo_slice(operand, start_indices - 1L, limit_indices, strides))
+}
+
+.stablehlo_apply_reduce <- function(reductor, operand, init, dims, drop) {
   local_func("")
   dt <- as.character(operand@value_type@type@dtype)
   f <- hlo_return(reductor(
@@ -70,14 +78,14 @@ p_reduce_sum[["stablehlo"]] <- function(operand, dims, drop) {
   init <- function(operand) {
     hlo_scalar(0, dtype = dtype(operand), func = operand@func)
   }
-  .jit_apply_reduce(stablehlo::hlo_add, operand, init, dims, drop)
+  .stablehlo_apply_reduce(stablehlo::hlo_add, operand, init, dims, drop)
 }
 
 p_reduce_prod[["stablehlo"]] <- function(operand, dims, drop) {
   init <- function(operand) {
     hlo_scalar(1, dtype = dtype(operand), func = operand@func)
   }
-  .jit_apply_reduce(stablehlo::hlo_multiply, operand, init, dims, drop)
+  .stablehlo_apply_reduce(stablehlo::hlo_multiply, operand, init, dims, drop)
 }
 
 
@@ -86,7 +94,7 @@ p_reduce_max[["stablehlo"]] <- function(operand, dims, drop) {
     # platform does not matter when we just embed the init value in stablehlo
     hlo_scalar(nv_minval(dtype(operand), "cpu"))
   }
-  .jit_apply_reduce(stablehlo::hlo_maximum, operand, init, dims, drop)
+  .stablehlo_apply_reduce(stablehlo::hlo_maximum, operand, init, dims, drop)
 }
 
 p_reduce_min[["stablehlo"]] <- function(operand, dims, drop) {
@@ -94,21 +102,21 @@ p_reduce_min[["stablehlo"]] <- function(operand, dims, drop) {
     # platform does not matter when we just embed the init value in stablehlo
     hlo_scalar(nv_maxval(dtype(operand), "cpu"))
   }
-  .jit_apply_reduce(stablehlo::hlo_minimum, operand, init, dims, drop)
+  .stablehlo_apply_reduce(stablehlo::hlo_minimum, operand, init, dims, drop)
 }
 
 p_reduce_any[["stablehlo"]] <- function(operand, dims, drop) {
   init <- function(operand) {
     hlo_scalar(FALSE)
   }
-  .jit_apply_reduce(stablehlo::hlo_or, operand, init, dims, drop)
+  .stablehlo_apply_reduce(stablehlo::hlo_or, operand, init, dims, drop)
 }
 
 p_reduce_all[["stablehlo"]] <- function(operand, dims, drop) {
   init <- function(operand) {
     hlo_scalar(TRUE)
   }
-  .jit_apply_reduce(stablehlo::hlo_and, operand, init, dims, drop)
+  .stablehlo_apply_reduce(stablehlo::hlo_and, operand, init, dims, drop)
 }
 
 # comparison jit rules ----------------------------------------------------------
@@ -129,19 +137,19 @@ p_reduce_all[["stablehlo"]] <- function(operand, dims, drop) {
   }
 }
 
-.jit_compare_bin <- function(direction) {
+.stablehlo_compare_bin <- function(direction) {
   function(lhs, rhs) {
     ct <- .compare_type_for(lhs)
     list(stablehlo::hlo_compare(lhs, rhs, comparison_direction = direction, compare_type = ct))
   }
 }
 
-p_eq[["stablehlo"]] <- .jit_compare_bin("EQ")
-p_ne[["stablehlo"]] <- .jit_compare_bin("NE")
-p_gt[["stablehlo"]] <- .jit_compare_bin("GT")
-p_ge[["stablehlo"]] <- .jit_compare_bin("GE")
-p_lt[["stablehlo"]] <- .jit_compare_bin("LT")
-p_le[["stablehlo"]] <- .jit_compare_bin("LE")
+p_eq[["stablehlo"]] <- .stablehlo_compare_bin("EQ")
+p_ne[["stablehlo"]] <- .stablehlo_compare_bin("NE")
+p_gt[["stablehlo"]] <- .stablehlo_compare_bin("GT")
+p_ge[["stablehlo"]] <- .stablehlo_compare_bin("GE")
+p_lt[["stablehlo"]] <- .stablehlo_compare_bin("LT")
+p_le[["stablehlo"]] <- .stablehlo_compare_bin("LE")
 
 
 # binary simple math jit rules ---------------------------------------------------
@@ -190,6 +198,10 @@ p_atan2[["stablehlo"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_atan2(lhs, rhs))
 }
 
+p_bitcast_convert[["stablehlo"]] <- function(operand, dtype) {
+  list(stablehlo::hlo_bitcast_convert(operand, dtype))
+}
+
 # unary simple math jit rules ---------------------------------------------------
 
 p_abs[["stablehlo"]] <- function(operand) {
@@ -214,6 +226,14 @@ p_tanh[["stablehlo"]] <- function(operand) {
 
 p_tan[["stablehlo"]] <- function(operand) {
   list(stablehlo::hlo_tan(operand))
+}
+
+p_sine[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_sine(operand))
+}
+
+p_cosine[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_cosine(operand))
 }
 
 p_floor[["stablehlo"]] <- function(operand) {
@@ -248,6 +268,12 @@ p_convert[["stablehlo"]] <- function(operand, dtype) {
 
 p_select[["stablehlo"]] <- function(pred, true_value, false_value) {
   list(stablehlo::hlo_select(pred, true_value, false_value))
+}
+
+# RNG jit rules --------------------------------------------------------
+
+p_rng_bit_generator[["stablehlo"]] <- function(initial_state, rng_algorithm, dtype, shape_out) {
+  stablehlo::hlo_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out)
 }
 
 # higher order primitives --------------------------------------------------------

@@ -1,3 +1,64 @@
+test_that("p_sine", {
+  x <- nv_tensor(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
+  out <- as_array(jit(nvl_sine)(x))
+  expect_equal(c(out), c(0, 1, 0, -1), tolerance = 1e-15)
+})
+
+test_that("p_cosine", {
+  x <- nv_tensor(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
+  out <- as_array(jit(nvl_cosine)(x))
+  expect_equal(c(out), c(1, 0, -1, 0), tolerance = 1e-15)
+})
+
+test_that("p_rng_bit_generator", {
+  f <- function() {
+    nv_rng_bit_generator(nv_tensor(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
+  }
+  g <- jit(f)
+  out <- g()
+  expect_equal(c(as_array(out[[1]])), c(1L, 6L))
+  expect_equal(as_array(out[[2]]), array(c(43444564L, 1672743891L, -315321645L, 2109414752L), c(2, 2)))
+})
+
+test_that("p_bitcast_convert", {
+  f <- function() {
+    nv_bitcast_convert(
+      nv_tensor(seq(-1, 1, length.out = 6), dtype = "f64", shape = c(2, 3)),
+      dtype = "i32"
+    )
+  }
+  g <- jit(f)
+  out <- g()
+  expect_equal(dim(as_array(out)), c(2, 3, 2))
+  expect_true(is.integer(as_array(out)))
+})
+
+test_that("p_slice", {
+  f <- function() {
+    nv_slice(
+      nv_tensor(1:6, dtype = "ui64", shape = c(2, 3)),
+      start_indices = c(1, 1),
+      limit_indices = c(2, 2),
+      strides = c(1, 1)
+    )
+  }
+  g <- jit(f)
+  out <- g()
+  expect_equal(as_array(out), matrix(c(1:4), nrow = 2))
+})
+
+test_that("p_concatenate", {
+  f <- function() {
+    nv_concatenate(
+      nv_tensor(c(1:6), dtype = "ui64", shape = c(2, 3)),
+      nv_tensor(c(7:10), dtype = "ui64", shape = c(2, 2)),
+      dimension = 2L
+    )
+  }
+  g <- jit(f)
+  out <- g()
+  expect_equal(dim(as_array(out)), c(2, 5))
+})
 test_that("p_full", {
   f <- jit(function(x) nv_full(x, shape = c(2, 3), dtype = "f32"), static = "x")
   expect_equal(f(1), nv_tensor(1, shape = c(2, 3), dtype = "f32"))
@@ -23,6 +84,16 @@ test_that("p_shift_right_arithmetic", {
   y <- nv_tensor(as.integer(c(1L, 3L, 2L, 4L)), dtype = "i32")
   out <- as.integer(as_array(jit(nvl_shift_right_arithmetic)(x, y)))
   expect_equal(out, as.integer(c(-4L, -1L, 2L, -2L)))
+})
+
+test_that("p_rng_bit_generator", {
+  f <- function() {
+    nv_rng_bit_generator(nv_tensor(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
+  }
+  g <- jit(f)
+  out <- g()
+  expect_equal(c(as_array(out[[1]])), c(1L, 6L))
+  expect_equal(as_array(out[[2]]), array(c(43444564L, 1672743891L, -315321645L, 2109414752L), c(2, 2)))
 })
 
 # Reduction ops (simplified hardcoded examples, no torch comparisons)

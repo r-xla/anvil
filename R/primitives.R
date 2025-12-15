@@ -3,7 +3,7 @@
 
 # Type inference helper functions for graph building
 #' @importFrom stablehlo infer_types_generic_biv infer_types_generic_uni
-#' @importFrom stablehlo infer_types_boolean_biv infer_types_boolean_uni
+#' @importFrom stablehlo infer_types_integerish_biv infer_types_boolean_uni
 #' @importFrom stablehlo infer_types_compare infer_types_transpose infer_types_reshape
 #' @importFrom stablehlo infer_types_broadcast_in_dim infer_types_convert
 #' @importFrom stablehlo infer_types_dot_general infer_types_select
@@ -16,11 +16,11 @@ infer_unary <- function(operand) {
   stablehlo::infer_types_generic_uni(operand)@items
 }
 
-infer_binary_boolean <- function(lhs, rhs) {
-  stablehlo::infer_types_boolean_biv(lhs, rhs)@items
+infer_binary_integerish <- function(lhs, rhs) {
+  stablehlo::infer_types_integerish_biv(lhs, rhs)@items
 }
 
-infer_unary_boolean <- function(operand) {
+infer_unary_integerish <- function(operand) {
   stablehlo::infer_types_boolean_uni(operand)@items
 }
 
@@ -150,9 +150,10 @@ nvl_pow <- function(lhs, rhs) {
 
 p_broadcast_in_dim <- Primitive("broadcast_in_dim")
 
+#' @importFrom stablehlo r_to_constant
 nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
   infer_fn <- function(operand, shape_out, broadcast_dimensions) {
-    bd_attr <- stablehlo::r_to_constant(
+    bd_attr <- r_to_constant(
       as.integer(broadcast_dimensions - 1L),
       dtype = "i64",
       shape = length(broadcast_dimensions)
@@ -194,7 +195,7 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
 p_transpose <- Primitive("transpose")
 nvl_transpose <- function(operand, permutation) {
   infer_fn <- function(operand, permutation) {
-    perm_attr <- stablehlo::r_to_constant(
+    perm_attr <- r_to_constant(
       as.integer(permutation - 1L),
       dtype = "i64",
       shape = length(permutation)
@@ -218,6 +219,42 @@ nvl_reshape <- function(operand, shape) {
     p_reshape,
     list(operand),
     params = list(shape = shape),
+    infer_fn = infer_fn
+  )[[1L]]
+}
+
+p_concatenate <- Primitive("concatenate")
+nvl_concatenate <- function(..., dimension) {
+  dots <- list(...)
+  infer_fn <- function(..., dimension) {
+    stablehlo::infer_types_concatenate(..., dimension = dimension)@items
+  }
+  graph_desc_add(
+    p_concatenate,
+    args = dots,
+    params = list(dimension = dimension),
+    infer_fn = infer_fn
+  )[[1L]]
+}
+
+p_slice <- Primitive("slice")
+nvl_slice <- function(operand, start_indices, limit_indices, strides) {
+  infer_fn <- function(operand, start_indices, limit_indices, strides) {
+    start_indices <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
+    limit_indices <- r_to_constant(limit_indices, dtype = "i64", shape = length(limit_indices))
+    strides <- r_to_constant(strides, dtype = "i64", shape = length(strides))
+    stablehlo::infer_types_slice(operand, start_indices, limit_indices, strides)@items
+  }
+  graph_desc_add(
+    p_slice,
+    args = list(
+      operand = operand
+    ),
+    params = list(
+      start_indices = start_indices,
+      limit_indices = limit_indices,
+      strides = strides
+    ),
     infer_fn = infer_fn
   )[[1L]]
 }
@@ -353,22 +390,22 @@ nvl_remainder <- function(lhs, rhs) {
 
 p_and <- Primitive("and")
 nvl_and <- function(lhs, rhs) {
-  graph_desc_add(p_and, list(lhs, rhs), infer_fn = infer_binary_boolean)[[1L]]
+  graph_desc_add(p_and, list(lhs, rhs), infer_fn = infer_binary_integerish)[[1L]]
 }
 
 p_not <- Primitive("not")
 nvl_not <- function(operand) {
-  graph_desc_add(p_not, list(operand), infer_fn = infer_unary_boolean)[[1L]]
+  graph_desc_add(p_not, list(operand), infer_fn = infer_unary_integerish)[[1L]]
 }
 
 p_or <- Primitive("or")
 nvl_or <- function(lhs, rhs) {
-  graph_desc_add(p_or, list(lhs, rhs), infer_fn = infer_binary_boolean)[[1L]]
+  graph_desc_add(p_or, list(lhs, rhs), infer_fn = infer_binary_integerish)[[1L]]
 }
 
 p_xor <- Primitive("xor")
 nvl_xor <- function(lhs, rhs) {
-  graph_desc_add(p_xor, list(lhs, rhs), infer_fn = infer_binary_boolean)[[1L]]
+  graph_desc_add(p_xor, list(lhs, rhs), infer_fn = infer_binary_integerish)[[1L]]
 }
 
 p_shift_left <- Primitive("shift_left")
@@ -398,6 +435,14 @@ nvl_shift_right_arithmetic <- function(lhs, rhs) {
 p_atan2 <- Primitive("atan2")
 nvl_atan2 <- function(lhs, rhs) {
   graph_desc_add(p_atan2, list(lhs, rhs), infer_fn = infer_binary)[[1L]]
+}
+
+p_bitcast_convert <- Primitive("bitcast_convert")
+nvl_bitcast_convert <- function(operand, dtype) {
+  infer_fn <- function(operand, dtype) {
+    stablehlo::infer_types_bitcast_convert(operand, dtype)@items
+  }
+  graph_desc_add(p_bitcast_convert, list(operand), params = list(dtype = dtype), infer_fn = infer_fn)[[1L]]
 }
 
 # unary math primitives ---------------------------------------------------------
@@ -430,6 +475,21 @@ nvl_tanh <- function(operand) {
 p_tan <- Primitive("tan")
 nvl_tan <- function(operand) {
   graph_desc_add(p_tan, list(operand), infer_fn = infer_unary)[[1L]]
+}
+
+p_tan <- Primitive("tan")
+nvl_tan <- function(operand) {
+  graph_desc_add(p_tan, list(operand), infer_fn = infer_unary)[[1L]]
+}
+
+p_sine <- Primitive("sine")
+nvl_sine <- function(operand) {
+  graph_desc_add(p_sine, list(operand), infer_fn = infer_unary)[[1L]]
+}
+
+p_cosine <- Primitive("cosine")
+nvl_cosine <- function(operand) {
+  graph_desc_add(p_cosine, list(operand), infer_fn = infer_unary)[[1L]]
 }
 
 p_floor <- Primitive("floor")
@@ -590,4 +650,18 @@ nvl_while <- function(init, cond, body) {
   )
 
   unflatten(body_graph@out_tree, out)
+}
+
+# RNG primitives
+p_rng_bit_generator <- Primitive("rng_bit_generator")
+nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape_out) {
+  infer_fn <- function(initial_state, rng_algorithm, dtype, shape_out) {
+    stablehlo::infer_types_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out)@items
+  }
+  graph_desc_add(
+    p_rng_bit_generator,
+    list(initial_state),
+    params = list(rng_algorithm = rng_algorithm, dtype = dtype, shape_out = shape_out),
+    infer_fn = infer_fn
+  )
 }

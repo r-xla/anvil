@@ -21,6 +21,7 @@ jobs:
         with:
           extra-packages: any::lintr, local::.
           needs: lint
+          cache: false
 
       - name: Lint R Code
         run: lintr::lint_package(exclusions = list("inst/extra-tests", "R/RcppExports.R"))
