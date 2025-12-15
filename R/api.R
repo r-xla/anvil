@@ -503,65 +503,6 @@ nv_reduce_all <- nvl_reduce_all
 #' - `dt_f{32, 64}`: float.
 NULL
 
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-#' @export
-dt_i1 <- BooleanType()
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-#' @format NULL
-#' @usage NULL
-#' @export
-dt_i8 <- IntegerType(8)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_i16 <- IntegerType(16)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_i32 <- IntegerType(32)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_i64 <- IntegerType(64)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_ui8 <- UnsignedType(8)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_ui16 <- UnsignedType(16)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_ui32 <- UnsignedType(32)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_ui64 <- UnsignedType(64)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_f32 <- FloatType(32)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_f64 <- FloatType(64)
-
-
 # Higher order primitives
 
 #' @title If

@@ -101,7 +101,7 @@ ShapedTensor <- S7::new_class(
       shape <- Shape(as.integer(shape))
     }
     if (ambiguous) {
-      ok <- (dtype == dt_f32) || (dtype == dt_i32) || (dtype == dt_i1)
+      ok <- is_dtype(dtype) && (dtype == dtype("f32") || dtype == dtype("i32") || dtype == dtype("i1"))
       if (!ok) {
         cli_abort("Ambiguous types must have dtype f32, i32 or bool")
       }
@@ -291,4 +291,9 @@ st <- function(x) {
   } else {
     cli_abort("internal error")
   }
+}
+
+#' @export
+dtype.character <- function(x, ...) {
+  as_dtype(x)
 }

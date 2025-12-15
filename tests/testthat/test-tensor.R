@@ -3,7 +3,7 @@ test_that("tensor", {
   expect_snapshot(x)
   expect_class(x, "AnvilTensor")
   expect_equal(shape(x), c(4, 1))
-  expect_equal(dtype(x), dt_i32)
+  expect_equal(dtype(x), dtype("i32"))
   expect_equal(as_array(x), array(1:4, c(4, 1)))
 })
 

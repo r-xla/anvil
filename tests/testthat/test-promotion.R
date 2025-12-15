@@ -1,12 +1,12 @@
 test_that("common_type_info: single argument", {
-  s1 <- ShapedTensor(dt_i32, Shape(c(1, 2)), FALSE)
+  s1 <- ShapedTensor(dtype("i32"), Shape(c(1, 2)), FALSE)
   result <- common_type_info(s1)
-  expect_equal(result[[1L]], dt_i32)
+  expect_equal(result[[1L]], dtype("i32"))
   expect_equal(result[[2L]], FALSE)
 
-  s2 <- ShapedTensor(dt_f32, Shape(c(2, 3)), TRUE)
+  s2 <- ShapedTensor(dtype("f32"), Shape(c(2, 3)), TRUE)
   result <- common_type_info(s2)
-  expect_equal(result[[1L]], dt_f32)
+  expect_equal(result[[1L]], dtype("f32"))
   expect_equal(result[[2L]], TRUE)
 })
 
@@ -24,47 +24,47 @@ test_that("common_type_info: two arguments", {
 
   # both are ambiguous -> result is ambiguous
 
-  check(dt_i32, dt_i32, TRUE, TRUE, dt_i32, TRUE)
-  check(dt_i32, dt_f32, TRUE, TRUE, dt_f32, TRUE)
+  check(dtype("i32"), dtype("i32"), TRUE, TRUE, dtype("i32"), TRUE)
+  check(dtype("i32"), dtype("f32"), TRUE, TRUE, dtype("f32"), TRUE)
 
   # one is ambiguous
   # ambiguous float + known int -> ambiguous float (ambiguous wins because it's float)
-  check(dt_f32, dt_i32, TRUE, FALSE, dt_f32, TRUE)
+  check(dtype("f32"), dtype("i32"), TRUE, FALSE, dtype("f32"), TRUE)
   # ambiguous int + known float -> known float (known wins)
-  check(dt_i32, dt_f32, TRUE, FALSE, dt_f32, FALSE)
+  check(dtype("i32"), dtype("f32"), TRUE, FALSE, dtype("f32"), FALSE)
   # both types same -> known wins
 
-  check(dt_i32, dt_i32, TRUE, FALSE, dt_i32, FALSE)
+  check(dtype("i32"), dtype("i32"), TRUE, FALSE, dtype("i32"), FALSE)
 
   # neither is ambiguous -> result is not ambiguous
-  check(dt_f32, dt_i32, FALSE, FALSE, dt_f32, FALSE)
-  check(dt_f32, dt_f64, FALSE, FALSE, dt_f64, FALSE)
-  check(dt_ui32, dt_i32, FALSE, FALSE, dt_i64, FALSE)
+  check(dtype("f32"), dtype("i32"), FALSE, FALSE, dtype("f32"), FALSE)
+  check(dtype("f32"), dtype("f64"), FALSE, FALSE, dtype("f64"), FALSE)
+  check(dtype("ui32"), dtype("i32"), FALSE, FALSE, dtype("i64"), FALSE)
 })
 
 test_that("common_type_info: multiple arguments", {
-  i32 <- ShapedTensor(dt_i32, Shape(1), FALSE)
-  f32 <- ShapedTensor(dt_f32, Shape(2), FALSE)
-  f64 <- ShapedTensor(dt_f64, Shape(3), FALSE)
+  i32 <- ShapedTensor(dtype("i32"), Shape(1), FALSE)
+  f32 <- ShapedTensor(dtype("f32"), Shape(2), FALSE)
+  f64 <- ShapedTensor(dtype("f64"), Shape(3), FALSE)
 
   result <- common_type_info(i32, f32, f64)
-  expect_equal(result[[1L]], dt_f64)
+  expect_equal(result[[1L]], dtype("f64"))
   expect_equal(result[[2L]], FALSE)
 
   result <- common_type_info(f64, f32, i32)
-  expect_equal(result[[1L]], dt_f64)
+  expect_equal(result[[1L]], dtype("f64"))
   expect_equal(result[[2L]], FALSE)
 
   result <- common_type_info(i32, i32, i32)
-  expect_equal(result[[1L]], dt_i32)
+  expect_equal(result[[1L]], dtype("i32"))
   expect_equal(result[[2L]], FALSE)
 
   # With ambiguous types
-  i32_amb <- ShapedTensor(dt_i32, Shape(1), TRUE)
-  i64_known <- ShapedTensor(dt_i64, Shape(2), FALSE)
+  i32_amb <- ShapedTensor(dtype("i32"), Shape(1), TRUE)
+  i64_known <- ShapedTensor(dtype("i64"), Shape(2), FALSE)
 
   result <- common_type_info(i32_amb, i64_known)
-  expect_equal(result[[1L]], dt_i64)
+  expect_equal(result[[1L]], dtype("i64"))
   expect_equal(result[[2L]], FALSE)
 })
 
@@ -84,27 +84,27 @@ test_that("promote_dt_known", {
     )
   }
 
-  check(dt_f64, dt_f64, dt_f64)
-  check(dt_i32, dt_i32, dt_i32)
-  check(dt_i1, dt_i1, dt_i1)
+  check(dtype("f64"), dtype("f64"), dtype("f64"))
+  check(dtype("i32"), dtype("i32"), dtype("i32"))
+  check(dtype("i1"), dtype("i1"), dtype("i1"))
 
   # floats dominate
-  check(dt_f64, dt_f32, dt_f64)
-  check(dt_f64, dt_i32, dt_f64)
-  check(dt_f32, dt_i32, dt_f32)
-  check(dt_f32, dt_i1, dt_f32)
+  check(dtype("f64"), dtype("f32"), dtype("f64"))
+  check(dtype("f64"), dtype("i32"), dtype("f64"))
+  check(dtype("f32"), dtype("i32"), dtype("f32"))
+  check(dtype("f32"), dtype("i1"), dtype("f32"))
 
   # signed ints
-  check(dt_i32, dt_i16, dt_i32)
-  check(dt_i64, dt_i32, dt_i64)
-  check(dt_i64, dt_i16, dt_i64)
-  check(dt_i64, dt_i1, dt_i64)
+  check(dtype("i32"), dtype("i16"), dtype("i32"))
+  check(dtype("i64"), dtype("i32"), dtype("i64"))
+  check(dtype("i64"), dtype("i16"), dtype("i64"))
+  check(dtype("i64"), dtype("i1"), dtype("i64"))
   # against unsigned ints
-  check(dt_i32, dt_ui8, dt_i32)
-  check(dt_i32, dt_ui32, dt_i64)
-  check(dt_i64, dt_ui64, dt_i64)
+  check(dtype("i32"), dtype("ui8"), dtype("i32"))
+  check(dtype("i32"), dtype("ui32"), dtype("i64"))
+  check(dtype("i64"), dtype("ui64"), dtype("i64"))
   # unsigned vs unsigned
-  check(dt_ui64, dt_ui32, dt_ui64)
+  check(dtype("ui64"), dtype("ui32"), dtype("ui64"))
 })
 
 test_that("promote_dt_ambiguous", {
@@ -118,13 +118,13 @@ test_that("promote_dt_ambiguous", {
       z
     )
   }
-  check(dt_i32, dt_i32, dt_i32)
-  check(dt_f32, dt_f32, dt_f32)
-  check(dt_i1, dt_i1, dt_i1)
+  check(dtype("i32"), dtype("i32"), dtype("i32"))
+  check(dtype("f32"), dtype("f32"), dtype("f32"))
+  check(dtype("i1"), dtype("i1"), dtype("i1"))
 
-  check(dt_i32, dt_f32, dt_f32)
-  check(dt_i1, dt_f32, dt_f32)
-  check(dt_i1, dt_i32, dt_i32)
+  check(dtype("i32"), dtype("f32"), dtype("f32"))
+  check(dtype("i1"), dtype("f32"), dtype("f32"))
+  check(dtype("i1"), dtype("i32"), dtype("i32"))
 })
 
 test_that("promote_dt_ambiguous_to_known", {
@@ -134,20 +134,20 @@ test_that("promote_dt_ambiguous_to_known", {
       z
     )
   }
-  check(dt_i32, dt_i32, dt_i32)
-  check(dt_i1, dt_i1, dt_i1)
-  check(dt_f32, dt_f32, dt_f32)
+  check(dtype("i32"), dtype("i32"), dtype("i32"))
+  check(dtype("i1"), dtype("i1"), dtype("i1"))
+  check(dtype("f32"), dtype("f32"), dtype("f32"))
   # ambiguous can only be i32, f32 or bool
 
-  check(dt_i32, dt_i8, dt_i8)
-  check(dt_i32, dt_i64, dt_i64)
-  check(dt_i32, dt_i1, dt_i32)
-  check(dt_i64, dt_f32, dt_f32)
+  check(dtype("i32"), dtype("i8"), dtype("i8"))
+  check(dtype("i32"), dtype("i64"), dtype("i64"))
+  check(dtype("i32"), dtype("i1"), dtype("i32"))
+  check(dtype("i64"), dtype("f32"), dtype("f32"))
 
-  check(dt_f32, dt_f64, dt_f64)
-  check(dt_f64, dt_f32, dt_f32)
-  check(dt_f32, dt_i32, dt_f32)
+  check(dtype("f32"), dtype("f64"), dtype("f64"))
+  check(dtype("f64"), dtype("f32"), dtype("f32"))
+  check(dtype("f32"), dtype("i32"), dtype("f32"))
 
-  check(dt_i1, dt_f32, dt_f32)
-  check(dt_i1, dt_i32, dt_i32)
+  check(dtype("i1"), dtype("f32"), dtype("f32"))
+  check(dtype("i1"), dtype("i32"), dtype("i32"))
 })
