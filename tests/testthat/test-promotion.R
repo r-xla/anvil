@@ -75,79 +75,79 @@ test_that("common_type_info: error on no arguments", {
 test_that("promote_dt_known", {
   check <- function(dt1, dt2, dt3) {
     expect_equal(
-      promote_dt_known(dt1, dt2),
-      dt3
+      promote_dt_known(as_dtype(dt1), as_dtype(dt2)),
+      as_dtype(dt3)
     )
     expect_equal(
-      promote_dt_known(dt2, dt1),
-      dt3
+      promote_dt_known(as_dtype(dt2), as_dtype(dt1)),
+      as_dtype(dt3)
     )
   }
 
-  check(dtype("f64"), dtype("f64"), dtype("f64"))
-  check(dtype("i32"), dtype("i32"), dtype("i32"))
-  check(dtype("i1"), dtype("i1"), dtype("i1"))
+  check("f64", "f64", "f64")
+  check("i32", "i32", "i32")
+  check("i1", "i1", "i1")
 
   # floats dominate
-  check(dtype("f64"), dtype("f32"), dtype("f64"))
-  check(dtype("f64"), dtype("i32"), dtype("f64"))
-  check(dtype("f32"), dtype("i32"), dtype("f32"))
-  check(dtype("f32"), dtype("i1"), dtype("f32"))
+  check("f64", "f32", "f64")
+  check("f64", "i32", "f64")
+  check("f32", "i32", "f32")
+  check("f32", "i1", "f32")
 
   # signed ints
-  check(dtype("i32"), dtype("i16"), dtype("i32"))
-  check(dtype("i64"), dtype("i32"), dtype("i64"))
-  check(dtype("i64"), dtype("i16"), dtype("i64"))
-  check(dtype("i64"), dtype("i1"), dtype("i64"))
+  check("i32", "i16", "i32")
+  check("i64", "i32", "i64")
+  check("i64", "i16", "i64")
+  check("i64", "i1", "i64")
   # against unsigned ints
-  check(dtype("i32"), dtype("ui8"), dtype("i32"))
-  check(dtype("i32"), dtype("ui32"), dtype("i64"))
-  check(dtype("i64"), dtype("ui64"), dtype("i64"))
+  check("i32", "ui8", "i32")
+  check("i32", "ui32", "i64")
+  check("i64", "ui64", "i64")
   # unsigned vs unsigned
-  check(dtype("ui64"), dtype("ui32"), dtype("ui64"))
+  check("ui64", "ui32", "ui64")
 })
 
 test_that("promote_dt_ambiguous", {
   check <- function(x, y, z) {
     expect_equal(
-      promote_dt_ambiguous(x, y),
-      z
+      promote_dt_ambiguous(as_dtype(x), as_dtype(y)),
+      as_dtype(z)
     )
     expect_equal(
-      promote_dt_ambiguous(y, x),
-      z
+      promote_dt_ambiguous(as_dtype(y), as_dtype(x)),
+      as_dtype(z)
     )
   }
-  check(dtype("i32"), dtype("i32"), dtype("i32"))
-  check(dtype("f32"), dtype("f32"), dtype("f32"))
-  check(dtype("i1"), dtype("i1"), dtype("i1"))
+  check("i32", "i32", "i32")
+  check("f32", "f32", "f32")
+  check("i1", "i1", "i1")
 
-  check(dtype("i32"), dtype("f32"), dtype("f32"))
-  check(dtype("i1"), dtype("f32"), dtype("f32"))
-  check(dtype("i1"), dtype("i32"), dtype("i32"))
+  check("i32", "f32", "f32")
+  check("i1", "f32", "f32")
+  check("i1", "i32", "i32")
 })
 
 test_that("promote_dt_ambiguous_to_known", {
   check <- function(amb, known, z) {
     expect_equal(
-      promote_dt_ambiguous_to_known(amb, known),
-      z
+      promote_dt_ambiguous_to_known(as_dtype(amb), as_dtype(known)),
+      as_dtype(z)
     )
   }
-  check(dtype("i32"), dtype("i32"), dtype("i32"))
-  check(dtype("i1"), dtype("i1"), dtype("i1"))
-  check(dtype("f32"), dtype("f32"), dtype("f32"))
+  check("i32", "i32", "i32")
+  check("i1", "i1", "i1")
+  check("f32", "f32", "f32")
   # ambiguous can only be i32, f32 or bool
 
-  check(dtype("i32"), dtype("i8"), dtype("i8"))
-  check(dtype("i32"), dtype("i64"), dtype("i64"))
-  check(dtype("i32"), dtype("i1"), dtype("i32"))
-  check(dtype("i64"), dtype("f32"), dtype("f32"))
+  check("i32", "i8", "i8")
+  check("i32", "i64", "i64")
+  check("i32", "i1", "i32")
+  check("i64", "f32", "f32")
 
-  check(dtype("f32"), dtype("f64"), dtype("f64"))
-  check(dtype("f64"), dtype("f32"), dtype("f32"))
-  check(dtype("f32"), dtype("i32"), dtype("f32"))
+  check("f32", "f64", "f64")
+  check("f64", "f32", "f32")
+  check("f32", "i32", "f32")
 
-  check(dtype("i1"), dtype("f32"), dtype("f32"))
-  check(dtype("i1"), dtype("i32"), dtype("i32"))
+  check("i1", "f32", "f32")
+  check("i1", "i32", "i32")
 })

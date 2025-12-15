@@ -491,18 +491,6 @@ nv_reduce_any <- nvl_reduce_any
 #' @export
 nv_reduce_all <- nvl_reduce_all
 
-## Data Types ------------------------------------------------------------------
-
-#' @title Tensor Data Types
-#' @name data_types
-#' @description
-#' Data types for tensors:
-#' - `dt_i1`: boolean.
-#' - `dt_i{8, 16, 32, 64}`: signed integer.
-#' - `dt_ui{8, 16, 32, 64}`: unsigned integer.
-#' - `dt_f{32, 64}`: float.
-NULL
-
 # Higher order primitives
 
 #' @title If

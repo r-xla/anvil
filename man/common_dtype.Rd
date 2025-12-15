@@ -4,24 +4,23 @@
 \alias{common_dtype}
 \title{Type Promotion Rules}
 \usage{
-common_dtype(lhs, rhs, lhs_ambiguous = FALSE, rhs_ambiguous = FALSE)
+common_dtype(lhs_dtype, rhs_dtype, lhs_ambiguous, rhs_ambiguous)
 }
 \arguments{
-\item{lhs}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
-The left-hand side type.}
-
-\item{rhs}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
-The right-hand side type.}
-
 \item{lhs_ambiguous}{(\code{logical(1)})\cr
 Whether the left-hand side type is ambiguous.}
 
 \item{rhs_ambiguous}{(\code{logical(1)})\cr
 Whether the right-hand side type is ambiguous.}
+
+\item{lhs}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+The left-hand side type.}
+
+\item{rhs}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+The right-hand side type.}
 }
 \value{
-(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
-Indicating the common type.
+(\verb{list(dtype = [}stablehlo::TensorDataType\verb{], ambiguous = }logical(1)`)\cr
 }
 \description{
 Computes the common dtype for a set of abstract types, respecting whether a type is ambiguous or not.

@@ -12,7 +12,7 @@ transform_gradient <- function(graph, wrt) {
     cli_abort("gradient can only be computed for functions that return a scalar")
   }
   dt <- out@aval@dtype
-  if (!(dt == dt_f32 || dt == dt_f64)) {
+  if (!(dt == dtype("f32") || dt == dtype("f64"))) {
     cli_abort(c(
       x = "gradient can only be computed for functions that return float scalar",
       i = "Got dtype={.field {repr(dt)}}"

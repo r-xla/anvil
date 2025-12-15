@@ -97,9 +97,8 @@ ShapedTensor <- S7::new_class(
     })
   ),
   constructor = function(dtype, shape, ambiguous = FALSE) {
-    if (is.numeric(shape)) {
-      shape <- Shape(as.integer(shape))
-    }
+    shape <- as_shape(shape)
+    dtype <- as_dtype(dtype)
     if (ambiguous) {
       ok <- is_dtype(dtype) && (dtype == dtype("f32") || dtype == dtype("i32") || dtype == dtype("i1"))
       if (!ok) {
@@ -296,4 +295,20 @@ st <- function(x) {
 #' @export
 dtype.character <- function(x, ...) {
   as_dtype(x)
+}
+
+as_shape <- function(x) {
+  if (test_integerish(x, any.missing = FALSE, lower = 0)) {
+    Shape(as.integer(x))
+  } else if (is_shape(x)) {
+    x
+  } else if (is.null(x)) {
+    Shape(integer())
+  } else {
+    cli_abort("x must be an integer vector or a stablehlo::Shape")
+  }
+}
+
+is_shape <- function(x) {
+  inherits(x, "stablehlo::Shape")
 }

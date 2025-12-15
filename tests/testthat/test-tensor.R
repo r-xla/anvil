@@ -49,9 +49,9 @@ test_that("ConcreteTensor", {
 })
 
 test_that("from TensorDataType", {
-  expect_class(nv_tensor(1L, dt_i32), "AnvilTensor")
-  expect_class(nv_scalar(1L, dt_i32), "AnvilTensor")
-  expect_class(nv_empty(dt_i32, c(0, 1)), "AnvilTensor")
+  expect_class(nv_tensor(1L, "i32"), "AnvilTensor")
+  expect_class(nv_scalar(1L, "i32"), "AnvilTensor")
+  expect_class(nv_empty("i32", c(0, 1)), "AnvilTensor")
 })
 
 test_that("nv_tensor from nv_tensor", {

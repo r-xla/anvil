@@ -165,8 +165,8 @@ test_that("literals", {
 })
 
 test_that("ambiguous shaped tensor check", {
-  expect_error(ShapedTensor(dt_i64, Shape(c()), TRUE))
-  expect_error(ShapedTensor(dt_i64, Shape(c()), FALSE), NA)
+  expect_error(ShapedTensor("i64", integer(), TRUE))
+  expect_error(ShapedTensor("i64", integer(), FALSE), NA)
 })
 
 

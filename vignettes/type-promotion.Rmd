@@ -29,10 +29,11 @@ jit(nv_add)(
 The type-promotion rules are inspired by JAX, and they are designed for execution on accelerators like GPUs, where one often wants speed instead of precision.
 
 The rules are defined by the `common_dtype()` function.
+It returns a `list()` with two values: the common dtype and a flag indicating whether the result is ambiguous, which we will cover later.
 
 ```{r}
-common_dtype(dt_f64, dt_f32)
-common_dtype(dt_i64, dt_f32)
+common_dtype(dt_f64, dt_f32)$dtype
+common_dtype(dt_i64, dt_f32)$dtype
 ```
 
 A table with the promotion rules is below.
@@ -43,7 +44,7 @@ dtypes <- c("i1", "i8", "i16", "i32", "i64", "ui8", "ui16", "ui32", "ui64", "f32
 tbl <- matrix(NA_character_, length(dtypes), length(dtypes))
 for (i in seq_along(dtypes)) {
   for (j in seq_along(dtypes)) {
-    tbl[i, j] <- repr(common_dtype(as_dtype(dtypes[i]), as_dtype(dtypes[j])))
+    tbl[i, j] <- repr(common_dtype(as_dtype(dtypes[i]), as_dtype(dtypes[j])$dtype))
   }
 }
 rownames(tbl) <- dtypes
