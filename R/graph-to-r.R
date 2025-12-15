@@ -578,7 +578,7 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
     }
   }
 
-  .emit_reduce_rank1_loop <- function(out_sym, n, drop, init_acc_expr, inner_start, update_builder) {
+  .emit_reduce_rank1_loop <- function(out_sym, n, drop, init_acc_expr, inner_start, update_builder, out_aval) {
     ii <- as.name(paste0("i_", as.character(out_sym)))
     acc <- as.name(paste0("acc_", as.character(out_sym)))
 
@@ -595,7 +595,14 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
     if (isTRUE(drop)) {
       c(stmts, .emit_assign(out_sym, acc))
     } else {
-      c(stmts, .emit_assign(out_sym, .call2("c", acc)))
+      if (target == "quickr") {
+        # quickr does not reliably distinguish rank-0 scalars from length-1
+        # vectors, and `c(acc)` can lead to invalid Fortran. A scalar is fine
+        # here since it behaves like a length-1 vector in subsequent arithmetic.
+        c(stmts, .emit_assign(out_sym, acc))
+      } else {
+        c(stmts, .emit_assign(out_sym, .call2("c", acc)))
+      }
     }
   }
 
@@ -662,7 +669,7 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
           .call2("<-", acc, elem)
         ))
       }
-      return(.emit_reduce_rank1_loop(out_sym, n, drop, init, 2L, update))
+      return(.emit_reduce_rank1_loop(out_sym, n, drop, init, 2L, update, out_aval))
     }
 
     if (rank == 2L) {
@@ -723,7 +730,7 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
     if (rank == 1L && identical(dims, 1L)) {
       n <- as.integer(shape_in[[1L]])
       update <- function(ii, acc) .call2("<-", acc, .call2("+", acc, .call2("[", operand_expr, ii)))
-      return(.emit_reduce_rank1_loop(out_sym, n, drop, zero, 1L, update))
+      return(.emit_reduce_rank1_loop(out_sym, n, drop, zero, 1L, update, out_aval))
     }
 
     if (rank == 2L) {
@@ -800,7 +807,7 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
     if (rank == 1L && identical(dims, 1L)) {
       n <- as.integer(shape_in[[1L]])
       update <- function(ii, acc) .call2("<-", acc, .call2("*", acc, .call2("[", operand_expr, ii)))
-      return(.emit_reduce_rank1_loop(out_sym, n, drop, one, 1L, update))
+      return(.emit_reduce_rank1_loop(out_sym, n, drop, one, 1L, update, out_aval))
     }
 
     if (rank == 2L) {
@@ -1180,6 +1187,10 @@ graph_to_r_function <- function(graph, include_declare = TRUE, pack_output = FAL
 
     # Fill flat in row-major order
     if (!length(shape_in)) {
+      stmts <- c(stmts, list(.call2("<-", idx_sym, 1L), .call2("<-", .call2("[", flat_sym, 1L), operand_expr)))
+    } else if (as.integer(nflat) == 1L) {
+      # quickr may represent length-1 vectors as scalars; avoid indexing the
+      # operand in that case.
       stmts <- c(stmts, list(.call2("<-", idx_sym, 1L), .call2("<-", .call2("[", flat_sym, 1L), operand_expr)))
     } else if (length(shape_in) == 1L) {
       ii <- as.name(paste0("i_", as.character(out_sym)))
