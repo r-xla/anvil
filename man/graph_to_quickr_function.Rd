@@ -16,9 +16,18 @@ Graph to convert.}
 \description{
 Lowers a supported subset of \code{anvil::Graph} objects to a plain R function and
 compiles it with \code{quickr::quick()}.
+}
+\details{
+If the graph returns multiple outputs (e.g. a nested list), the compiled
+function returns the same structure by packing/unpacking values for {quickr}.
 
-If the graph returns multiple outputs (e.g. a nested list), the compiled function
-returns the same structure by packing/unpacking values for \{quickr\}.
+At the moment this only supports graphs with a flat (non-nested) argument
+list.
 
-At the moment this only supports graphs with a flat (non-nested) argument list.
+Currently supported primitives are:
+\code{constant}, \code{add}, \code{sub}, \code{mul}, \code{divide}, \code{negate}, \code{broadcast_in_dim},
+\code{dot_general}, \code{transpose}, \code{reshape}, \code{sum}.
+The code generator currently supports tensors up to rank 5. Some primitives
+are more restricted (e.g. \code{dot_general} and \code{transpose} currently only handle
+rank-2 tensors).
 }

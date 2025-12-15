@@ -1,4 +1,4 @@
-#' @include graph-to-r.R
+#' @include graph-to-quickr-r.R
 NULL
 
 #' Convert a Graph to a quickr-compiled function
@@ -11,6 +11,13 @@ NULL
 #'
 #' At the moment this only supports graphs with a flat (non-nested) argument
 #' list.
+#'
+#' Currently supported primitives are:
+#' `constant`, `add`, `sub`, `mul`, `divide`, `negate`, `broadcast_in_dim`,
+#' `dot_general`, `transpose`, `reshape`, `sum`.
+#' The code generator currently supports tensors up to rank 5. Some primitives
+#' are more restricted (e.g. `dot_general` and `transpose` currently only handle
+#' rank-2 tensors).
 #'
 #' @param graph ([`Graph`])\cr
 #'   Graph to convert.
@@ -32,12 +39,46 @@ graph_to_quickr_function <- function(graph) {
   }
 
   needs_pack <- !(inherits(graph@out_tree, "LeafNode") && length(graph@outputs) == 1L)
+  needs_wrapper <- isTRUE(needs_pack) || length(graph@constants)
 
   r_fun <- graph_to_quickr_r_function(graph, include_declare = TRUE, pack_output = needs_pack)
   inner_quick <- quickr_eager_compile(r_fun)
 
-  if (!isTRUE(needs_pack)) {
+  if (!isTRUE(needs_wrapper)) {
     return(inner_quick)
+  }
+
+  r_arg_names <- names(formals(r_fun))
+  n_user <- length(graph@inputs)
+  user_arg_names <- r_arg_names[seq_len(n_user)]
+
+  const_args <- list()
+  if (length(graph@constants)) {
+    const_arg_names <- r_arg_names[(n_user + 1L):(n_user + length(graph@constants))]
+    const_vals <- lapply(graph@constants, function(node) {
+      as_array(node@aval@data)
+    })
+    const_args <- stats::setNames(const_vals, const_arg_names)
+  }
+
+  if (!isTRUE(needs_pack)) {
+    wrapper <- function() {
+      stop("internal placeholder")
+    }
+    formals(wrapper) <- formals(r_fun)[seq_len(n_user)]
+
+    wrapper_env <- new.env(parent = environment())
+    wrapper_env$inner_quick <- inner_quick
+    wrapper_env$user_arg_names <- user_arg_names
+    wrapper_env$const_args <- const_args
+
+    body(wrapper) <- quote({
+      args <- mget(user_arg_names, envir = environment(), inherits = FALSE)
+      do.call(inner_quick, c(const_args, args))
+    })
+
+    environment(wrapper) <- wrapper_env
+    return(wrapper)
   }
 
   out_infos <- lapply(graph@outputs, function(node) {
@@ -50,26 +91,23 @@ graph_to_quickr_function <- function(graph) {
   out_lens <- vapply(out_infos, function(info) {
     if (!length(info$shape)) 1L else Reduce(`*`, as.integer(info$shape), init = 1L)
   }, integer(1L))
-  arg_names <- names(formals(r_fun))
 
   wrapper <- function() {
     stop("internal placeholder")
   }
-  formals(wrapper) <- formals(r_fun)
+  formals(wrapper) <- formals(r_fun)[seq_len(n_user)]
 
   wrapper_env <- new.env(parent = environment())
   wrapper_env$inner_quick <- inner_quick
   wrapper_env$out_tree <- graph@out_tree
   wrapper_env$out_infos <- out_infos
   wrapper_env$out_lens <- out_lens
-  wrapper_env$arg_names <- arg_names
+  wrapper_env$user_arg_names <- user_arg_names
+  wrapper_env$const_args <- const_args
 
   body(wrapper) <- quote({
-    args <- as.list(match.call())[-1L]
-    args <- lapply(args, eval, envir = parent.frame())
-    args <- args[arg_names]
-
-    packed <- do.call(inner_quick, args)
+    args <- mget(user_arg_names, envir = environment(), inherits = FALSE)
+    packed <- do.call(inner_quick, c(const_args, args))
 
     decode_leaf <- function(seg, shape, dtype) {
       base <- if (dtype %in% c("pred", "i1")) {
