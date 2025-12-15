@@ -123,5 +123,5 @@ zero_env <- function() {
   new.env(size = 0L, parent = emptyenv())
 }
 shape2string <- function(x) {
-  paste0("(", x, ")", collapse = ",")
+  sprintf("(%s)", paste0(x, collapse = ","))
 }

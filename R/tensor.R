@@ -302,8 +302,6 @@ as_shape <- function(x) {
     Shape(as.integer(x))
   } else if (is_shape(x)) {
     x
-  } else if (is.null(x)) {
-    Shape(integer())
   } else {
     cli_abort("x must be an integer vector or a stablehlo::Shape")
   }

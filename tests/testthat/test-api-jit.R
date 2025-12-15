@@ -68,5 +68,8 @@ test_that("promote to common", {
   f <- function(x, y) {
     nv_add(x, y)
   }
-  jit(f)(nv_tensor(1, dtype = "i32"), nv_tensor(1.0, dtype = "f32"))
+  expect_equal(
+    jit(f)(nv_tensor(1, dtype = "i32"), nv_tensor(1.0, dtype = "f32")),
+    nv_tensor(2.0, dtype = "f32")
+  )
 })

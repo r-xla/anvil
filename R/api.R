@@ -79,8 +79,9 @@ nv_broadcast_scalars <- function(...) {
 
   target_shape <- non_scalar_shapes[[1L]]
   if (!all(vapply(non_scalar_shapes, identical, logical(1L), target_shape))) {
+    shapes <- paste0(sapply(shapes, shape2string), sep = ", ")
     cli_abort(
-      "All non-scalar tensors must have the same shape. Use {.fn nv_broadcast_tensors} for general broadcasting." # nolint
+      "All non-scalar tensors must have the same shape, but got {shapes}. Use {.fn nv_broadcast_tensors} for general broadcasting." # nolint
     )
   }
 
