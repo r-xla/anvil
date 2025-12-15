@@ -28,6 +28,7 @@ jobs:
         with:
           extra-packages: any::covr, any::xml2
           needs: coverage
+          cache: false
 
       - name: Test coverage
         run: |
