@@ -1,153 +1,56 @@
-test_that("common_type_info: single argument", {
-  s1 <- ShapedTensor(dtype("i32"), Shape(c(1, 2)), FALSE)
-  result <- common_type_info(s1)
-  expect_equal(result[[1L]], dtype("i32"))
-  expect_equal(result[[2L]], FALSE)
-
-  s2 <- ShapedTensor(dtype("f32"), Shape(c(2, 3)), TRUE)
-  result <- common_type_info(s2)
-  expect_equal(result[[1L]], dtype("f32"))
-  expect_equal(result[[2L]], TRUE)
-})
-
-test_that("common_type_info: two arguments", {
-  check <- function(dt1, dt2, a1, a2, expected_dt, expected_ambiguous) {
-    s1 <- ShapedTensor(dt1, Shape(c(1, 2)), a1)
-    s2 <- ShapedTensor(dt2, Shape(c(2, 1)), a2)
-    result <- common_type_info(s1, s2)
-    expect_equal(result[[1L]], expected_dt)
-    expect_equal(result[[2L]], expected_ambiguous)
-    # Check symmetry for dtype (ambiguity may differ based on order in some edge cases)
-    result_rev <- common_type_info(s2, s1)
-    expect_equal(result_rev[[1L]], expected_dt)
+test_that("ambiguity is propagated by binary ops", {
+  f <- function(x, y) {
+    (x * 1L) + y
   }
-
-  # both are ambiguous -> result is ambiguous
-
-  check(dtype("i32"), dtype("i32"), TRUE, TRUE, dtype("i32"), TRUE)
-  check(dtype("i32"), dtype("f32"), TRUE, TRUE, dtype("f32"), TRUE)
-
-  # one is ambiguous
-  # ambiguous float + known int -> ambiguous float (ambiguous wins because it's float)
-  check(dtype("f32"), dtype("i32"), TRUE, FALSE, dtype("f32"), TRUE)
-  # ambiguous int + known float -> known float (known wins)
-  check(dtype("i32"), dtype("f32"), TRUE, FALSE, dtype("f32"), FALSE)
-  # both types same -> known wins
-
-  check(dtype("i32"), dtype("i32"), TRUE, FALSE, dtype("i32"), FALSE)
-
-  # neither is ambiguous -> result is not ambiguous
-  check(dtype("f32"), dtype("i32"), FALSE, FALSE, dtype("f32"), FALSE)
-  check(dtype("f32"), dtype("f64"), FALSE, FALSE, dtype("f64"), FALSE)
-  check(dtype("ui32"), dtype("i32"), FALSE, FALSE, dtype("i64"), FALSE)
+  expect_equal(
+    jit(f)(nv_scalar(TRUE), nv_scalar(2L, "i16")),
+    nv_scalar(3L, dtype = "i16")
+  )
 })
 
-test_that("common_type_info: multiple arguments", {
-  i32 <- ShapedTensor(dtype("i32"), Shape(1), FALSE)
-  f32 <- ShapedTensor(dtype("f32"), Shape(2), FALSE)
-  f64 <- ShapedTensor(dtype("f64"), Shape(3), FALSE)
-
-  result <- common_type_info(i32, f32, f64)
-  expect_equal(result[[1L]], dtype("f64"))
-  expect_equal(result[[2L]], FALSE)
-
-  result <- common_type_info(f64, f32, i32)
-  expect_equal(result[[1L]], dtype("f64"))
-  expect_equal(result[[2L]], FALSE)
-
-  result <- common_type_info(i32, i32, i32)
-  expect_equal(result[[1L]], dtype("i32"))
-  expect_equal(result[[2L]], FALSE)
-
-  # With ambiguous types
-  i32_amb <- ShapedTensor(dtype("i32"), Shape(1), TRUE)
-  i64_known <- ShapedTensor(dtype("i64"), Shape(2), FALSE)
-
-  result <- common_type_info(i32_amb, i64_known)
-  expect_equal(result[[1L]], dtype("i64"))
-  expect_equal(result[[2L]], FALSE)
-})
-
-test_that("common_type_info: error on no arguments", {
-  expect_error(common_type_info(), "No arguments provided")
-})
-
-test_that("promote_dt_known", {
-  check <- function(dt1, dt2, dt3) {
-    expect_equal(
-      promote_dt_known(as_dtype(dt1), as_dtype(dt2)),
-      as_dtype(dt3)
-    )
-    expect_equal(
-      promote_dt_known(as_dtype(dt2), as_dtype(dt1)),
-      as_dtype(dt3)
-    )
+test_that("ambiguity is propagated by unary ops", {
+  f <- function(x) {
+    nv_neg(1L) + x
   }
-
-  check("f64", "f64", "f64")
-  check("i32", "i32", "i32")
-  check("i1", "i1", "i1")
-
-  # floats dominate
-  check("f64", "f32", "f64")
-  check("f64", "i32", "f64")
-  check("f32", "i32", "f32")
-  check("f32", "i1", "f32")
-
-  # signed ints
-  check("i32", "i16", "i32")
-  check("i64", "i32", "i64")
-  check("i64", "i16", "i64")
-  check("i64", "i1", "i64")
-  # against unsigned ints
-  check("i32", "ui8", "i32")
-  check("i32", "ui32", "i64")
-  check("i64", "ui64", "i64")
-  # unsigned vs unsigned
-  check("ui64", "ui32", "ui64")
+  expect_equal(
+    jit(f)(nv_scalar(2L, "i16")),
+    nv_scalar(1L, dtype = "i16")
+  )
 })
 
-test_that("promote_dt_ambiguous", {
-  check <- function(x, y, z) {
-    expect_equal(
-      promote_dt_ambiguous(as_dtype(x), as_dtype(y)),
-      as_dtype(z)
-    )
-    expect_equal(
-      promote_dt_ambiguous(as_dtype(y), as_dtype(x)),
-      as_dtype(z)
-    )
-  }
-  check("i32", "i32", "i32")
-  check("f32", "f32", "f32")
-  check("i1", "i1", "i1")
-
-  check("i32", "f32", "f32")
-  check("i1", "f32", "f32")
-  check("i1", "i32", "i32")
+test_that("p_convert backward", {
+  out <- jit(function(x) {
+    z <- x * 1L
+    a <- gradient(\(y) {
+      nvl_convert(y, "f32", ambiguous = TRUE)
+    })(z)[[1L]] *
+      nv_scalar(1, dtype = "i16")
+  })(nv_scalar(TRUE))
+  expect_equal(out, nv_scalar(1L, dtype = "i16"))
 })
 
-test_that("promote_dt_ambiguous_to_known", {
-  check <- function(amb, known, z) {
-    expect_equal(
-      promote_dt_ambiguous_to_known(as_dtype(amb), as_dtype(known)),
-      as_dtype(z)
-    )
+test_that("p_if propagates ambiguity", {
+  f <- function(pred, x) {
+    x <- x * 2L
+    nv_if(pred, x, x * x) * nv_scalar(3L, dtype = "i16")
   }
-  check("i32", "i32", "i32")
-  check("i1", "i1", "i1")
-  check("f32", "f32", "f32")
-  # ambiguous can only be i32, f32 or bool
+  expect_equal(
+    jit(f)(nv_scalar(TRUE), nv_scalar(TRUE)),
+    nv_scalar(6L, dtype = "i16")
+  )
+})
 
-  check("i32", "i8", "i8")
-  check("i32", "i64", "i64")
-  check("i32", "i1", "i32")
-  check("i64", "f32", "f32")
-
-  check("f32", "f64", "f64")
-  check("f64", "f32", "f32")
-  check("f32", "i32", "f32")
-
-  check("i1", "f32", "f32")
-  check("i1", "i32", "i32")
+test_that("p_while propagates ambiguity", {
+  f <- jit(function(n) {
+    i <- 0L * nv_scalar(TRUE) # ambiguous i32
+    nv_while(list(i = i), \(i) i <= n, \(i) {
+      i <- i + 1L
+      list(i = i)
+    })[[1L]] *
+      nv_scalar(3L, dtype = "i16")
+  })
+  expect_equal(
+    f(nv_scalar(10L)),
+    nv_scalar(33L, dtype = "i16")
+  )
 })

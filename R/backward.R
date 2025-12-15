@@ -78,7 +78,19 @@ transform_gradient <- function(graph, wrt) {
       next
     }
 
-    output_grads <- lapply(call@outputs, \(output) grad_env[[output]])
+    output_grads <- lapply(call@outputs, \(output) {
+      grad <- grad_env[[output]]
+      if (is.null(grad)) {
+        nvl_full(0L, dtype = dtype(output), shape = shape(output))
+      } else {
+        grad
+      }
+    })
+
+    # Skip if all output gradients are NULL (dead code)
+    if (all(vapply(output_grads, is.null, logical(1L)))) {
+      next
+    }
 
     input_grads <- rlang::exec(
       call@primitive[["backward"]],

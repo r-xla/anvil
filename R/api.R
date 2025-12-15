@@ -106,12 +106,12 @@ nv_promote_to_common <- function(...) {
   avals <- lapply(args, st)
   tmp <- do.call(common_type_info, avals)
   cdt <- tmp[[1L]]
+  ambiguous <- tmp[[2L]]
   out <- lapply(seq_along(args), \(i) {
     if (cdt == dtype(avals[[i]])) {
       args[[i]]
     } else {
-      # don't promote ambiguity for now
-      nvl_convert(args[[i]], dtype = cdt, ambiguous = FALSE)
+      nvl_convert(args[[i]], dtype = cdt, ambiguous = ambiguous)
     }
   })
   return(out)

@@ -178,7 +178,6 @@ descriptor_to_graph <- function(descriptor) {
 GraphBox <- new_class(
   "GraphBox",
   properties = list(
-    # TODO: rename to gnode
     gnode = GraphNode,
     desc = GraphDescriptor
   )
@@ -407,7 +406,7 @@ trace_fn <- function(f, args, desc = NULL) {
   }
 
   graph <- descriptor_to_graph(desc)
-  remove_dead_code(graph)
+  return(graph)
 }
 
 is_graph_node <- function(x) {
@@ -485,7 +484,7 @@ is_graph_box <- function(x) {
   inherits(x, "anvil::GraphBox")
 }
 
-graph_desc_add <- function(prim, args, params = list(), infer_fn, infer_hlo = TRUE) {
+graph_desc_add <- function(prim, args, params = list(), infer_fn, infer_hlo = TRUE, desc = .current_descriptor()) {
   boxes_in <- lapply(args, maybe_box_variable)
   gnodes_in <- lapply(boxes_in, \(box) box@gnode)
   avals_in <- lapply(boxes_in, aval)
@@ -502,7 +501,6 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, infer_hlo = TR
 
   call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)
 
-  desc <- .current_descriptor()
   desc@calls <- c(desc@calls, call)
   boxes_out <- lapply(gvals_out, register_gval, desc = desc)
 

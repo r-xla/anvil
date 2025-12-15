@@ -16,6 +16,7 @@ remove_dead_code <- function(graph) {
 
   # Walk backwards through calls
   # If any output of a call is live, all its inputs become live
+  # For higher-order primitives, also mark constants used by sub-graphs as live
   for (call in rev(graph@calls)) {
     any_output_live <- any(vapply(
       call@outputs,
@@ -29,19 +30,12 @@ remove_dead_code <- function(graph) {
       for (input in call@inputs) {
         live[[input]] <- TRUE
       }
+      # Mark constants used by sub-graphs as live
+      for (const in collect_subgraph_constants(call)) {
+        live[[const]] <- TRUE
+      }
     }
   }
-
-  #
-  # We don't remove constants, because they might be needed
-  # by closures (nv_if etc.)
-  #if (unused_constants) {
-  #  # Filter constants: keep only those that are live
-  #  live_constants <- Filter(function(const) {
-  #    isTRUE(live[[const]])
-  #  }, graph@constants)
-  #  graph@constants <- live_constants
-  #}
 
   # Filter calls: keep only those with at least one live output
   live_calls <- Filter(

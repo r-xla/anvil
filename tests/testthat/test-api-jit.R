@@ -51,7 +51,10 @@ test_that("constants can be lifted to the appropriate level", {
   f <- function(x) {
     nv_pow(x, nv_scalar(1))
   }
-  jit(gradient(f, wrt = "x"))(nv_scalar(2))
+  expect_equal(
+    jit(gradient(f, wrt = "x"))(nv_scalar(2))[[1L]],
+    nv_scalar(1)
+  )
 })
 
 test_that("wrt non-existent argument", {

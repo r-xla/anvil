@@ -213,7 +213,7 @@ p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .r
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
-    if (.required[[1L]]) nvl_convert(grad, dtype(operand))
+    if (.required[[1L]]) nvl_convert(grad, dtype(operand), inputs[[1L]]@aval@ambiguous)
   )
 }
 

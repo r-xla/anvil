@@ -4,7 +4,12 @@
 \alias{common_dtype}
 \title{Type Promotion Rules}
 \usage{
-common_dtype(lhs_dtype, rhs_dtype, lhs_ambiguous, rhs_ambiguous)
+common_dtype(
+  lhs_dtype,
+  rhs_dtype,
+  lhs_ambiguous = FALSE,
+  rhs_ambiguous = FALSE
+)
 }
 \arguments{
 \item{lhs_ambiguous}{(\code{logical(1)})\cr

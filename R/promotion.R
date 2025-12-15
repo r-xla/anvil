@@ -15,7 +15,7 @@
 #'   Whether the right-hand side type is ambiguous.
 #' @return (`list(dtype = [`stablehlo::TensorDataType`], ambiguous = `logical(1)`)\cr
 #' @export
-common_dtype <- function(lhs_dtype, rhs_dtype, lhs_ambiguous, rhs_ambiguous) {
+common_dtype <- function(lhs_dtype, rhs_dtype, lhs_ambiguous = FALSE, rhs_ambiguous = FALSE) {
   # because ambiguous types can't be unsigned types, we can just use the normal promotion rules
   if (lhs_ambiguous && rhs_ambiguous) {
     dt <- promote_dt_ambiguous(lhs_dtype, rhs_dtype)

@@ -96,8 +96,14 @@ test_that("p_transpose", {
     as_array(f(nv_tensor(x)))
   )
 })
-test_that("p_if: nested", {
-  # TODO:
+
+test_that("p_if: capture non-argument", {
+  f <- jit(function(pred, x) {
+    x1 <- nv_mul(x, x)
+    x2 <- nv_add(x, x)
+    nv_if(pred, x1, x2)
+  })
+  f(nv_scalar(TRUE), nv_scalar(2))
 })
 
 test_that("p_if", {

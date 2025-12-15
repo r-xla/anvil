@@ -9,47 +9,88 @@
 #' @importFrom stablehlo infer_types_dot_general infer_types_select
 
 infer_binary <- function(lhs, rhs) {
-  stablehlo::infer_types_generic_biv(lhs, rhs)@items
+  both_ambiguous <- lhs@ambiguous && rhs@ambiguous
+  out <- stablehlo::infer_types_generic_biv(st2vt(lhs), st2vt(rhs))@items[[1L]]
+  out <- vt2st(out)
+  out@ambiguous <- both_ambiguous
+  list(out)
+}
+
+# boolean is i1 -> integerish
+infer_binary_integerish <- function(lhs, rhs) {
+  both_ambiguous <- lhs@ambiguous && rhs@ambiguous
+  out <- stablehlo::infer_types_integerish_biv(st2vt(lhs), st2vt(rhs))@items[[1L]]
+  out <- vt2st(out)
+  out@ambiguous <- both_ambiguous
+  list(out)
 }
 
 infer_unary <- function(operand) {
-  stablehlo::infer_types_generic_uni(operand)@items
+  out <- stablehlo::infer_types_generic_uni(st2vt(operand))@items[[1L]]
+  out <- vt2st(out)
+  out@ambiguous <- operand@ambiguous
+  list(out)
 }
 
-infer_binary_boolean <- function(lhs, rhs) {
-  stablehlo::infer_types_integerish_biv(lhs, rhs)@items
+make_binary_op <- function(prim) {
+  function(lhs, rhs) {
+    graph_desc_add(prim, list(lhs, rhs), infer_fn = infer_binary, infer_hlo = FALSE)[[1L]]
+  }
+}
+
+make_binary_boolean_op <- function(prim) {
+  function(lhs, rhs) {
+    graph_desc_add(prim, list(lhs, rhs), infer_fn = infer_binary_integerish, infer_hlo = FALSE)[[1L]]
+  }
 }
 
 infer_unary_boolean <- function(operand) {
-  stablehlo::infer_types_boolean_uni(operand)@items
+  out <- stablehlo::infer_types_boolean_uni(st2vt(operand))@items[[1L]]
+  out <- vt2st(out)
+  out@ambiguous <- operand@ambiguous
+  list(out)
+}
+
+make_unary_op <- function(prim) {
+  function(operand) {
+    graph_desc_add(prim, list(operand), infer_fn = infer_unary, infer_hlo = FALSE)[[1L]]
+  }
+}
+
+make_unary_boolean_op <- function(prim) {
+  function(operand) {
+    graph_desc_add(prim, list(operand), infer_fn = infer_unary_boolean, infer_hlo = FALSE)[[1L]]
+  }
 }
 
 infer_reduce <- function(operand, dims, drop) {
-  old_shape <- operand@type@shape@dims
+  old_shape <- shape(operand)
   if (drop) {
     new_shape <- old_shape[-dims]
   } else {
     new_shape <- old_shape
     new_shape[dims] <- 1L
   }
-  list(stablehlo::ValueType(stablehlo::TensorType(
-    operand@type@dtype,
-    stablehlo::Shape(new_shape)
-  )))
+  list(ShapedTensor(
+    dtype = dtype(operand),
+    shape = Shape(new_shape),
+    ambiguous = operand@ambiguous
+  ))
 }
 
 infer_reduce_boolean <- function(operand, dims, drop) {
-  old_shape <- operand@type@shape@dims
+  old_shape <- shape(operand)
   if (drop) {
     new_shape <- old_shape[-dims]
   } else {
     new_shape <- old_shape
     new_shape[dims] <- 1L
   }
-  list(stablehlo::ValueType(stablehlo::TensorType(
-    stablehlo::BooleanType(),
-    stablehlo::Shape(new_shape)
-  )))
+  list(ShapedTensor(
+    dtype = "pred",
+    shape = Shape(new_shape),
+    ambiguous = operand@ambiguous
+  ))
 }
 
 #' @title Primitive
@@ -123,31 +164,22 @@ nvl_full <- function(value, shape, dtype) {
 }
 
 p_add <- Primitive("add")
-nvl_add <- function(lhs, rhs) {
-  graph_desc_add(p_add, list(lhs, rhs), infer_fn = infer_binary)[[1L]]
-}
+nvl_add <- make_binary_op(p_add)
 
 p_mul <- Primitive("mul")
-nvl_mul <- function(lhs, rhs) {
-  graph_desc_add(p_mul, list(lhs, rhs), infer_fn = infer_binary)[[1L]]
-}
+nvl_mul <- make_binary_op(p_mul)
 
 p_sub <- Primitive("sub")
-nvl_sub <- function(lhs, rhs) {
-  graph_desc_add(p_sub, list(lhs, rhs), infer_fn = infer_binary)[[1L]]
-}
+nvl_sub <- make_binary_op(p_sub)
+
 p_neg <- Primitive("negate")
-nvl_neg <- function(operand) {
-  graph_desc_add(p_neg, list(operand), infer_fn = infer_unary)[[1L]]
-}
+nvl_neg <- make_unary_op(p_neg)
+
 p_div <- Primitive("divide")
-nvl_div <- function(lhs, rhs) {
-  graph_desc_add(p_div, list(lhs, rhs), infer_fn = infer_binary)[[1L]]
-}
+nvl_div <- make_binary_op(p_div)
+
 p_pow <- Primitive("power")
-nvl_pow <- function(lhs, rhs) {
-  graph_desc_add(p_pow, list(lhs, rhs), infer_fn = infer_binary)[[1L]]
-}
+nvl_pow <- make_binary_op(p_pow)
 
 p_broadcast_in_dim <- Primitive("broadcast_in_dim")
 
@@ -158,11 +190,14 @@ nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
       dtype = "i64",
       shape = length(broadcast_dimensions)
     )
-    stablehlo::infer_types_broadcast_in_dim(
-      operand,
+    out <- stablehlo::infer_types_broadcast_in_dim(
+      st2vt(operand),
       broadcast_dimensions = bd_attr,
       shape_out = shape_out
-    )@items
+    )@items[[1L]]
+    out <- vt2st(out)
+    out@ambiguous <- operand@ambiguous
+    list(out)
   }
   graph_desc_add(
     p_broadcast_in_dim,
@@ -171,7 +206,8 @@ nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
       shape_out = shape_out,
       broadcast_dimensions = broadcast_dimensions
     ),
-    infer_fn = infer_fn
+    infer_fn = infer_fn,
+    infer_hlo = FALSE
   )[[1L]]
 }
 
@@ -182,13 +218,15 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
       contracting_dims = lapply(contracting_dims, \(x) x - 1L),
       batching_dims = lapply(batching_dims, \(x) x - 1L)
     )
-    stablehlo::infer_types_dot_general(lhs, rhs, dot_dimension_numbers = ddn)@items
+    out <- stablehlo::infer_types_dot_general(st2vt(lhs), st2vt(rhs), dot_dimension_numbers = ddn)@items[[1L]]
+    list(vt2st(out))
   }
   graph_desc_add(
     p_dot_general,
     list(lhs, rhs),
     list(contracting_dims = contracting_dims, batching_dims = batching_dims),
-    infer_fn = infer_fn
+    infer_fn = infer_fn,
+    infer_hlo = FALSE
   )[[1L]]
 }
 
@@ -200,258 +238,184 @@ nvl_transpose <- function(operand, permutation) {
       dtype = "i64",
       shape = length(permutation)
     )
-    stablehlo::infer_types_transpose(operand, permutation = perm_attr)@items
+    out <- stablehlo::infer_types_transpose(st2vt(operand), permutation = perm_attr)@items[[1L]]
+    out <- vt2st(out)
+    out@ambiguous <- operand@ambiguous
+    list(out)
   }
   graph_desc_add(
     p_transpose,
     list(operand),
     list(permutation = permutation),
-    infer_fn = infer_fn
+    infer_fn = infer_fn,
+    infer_hlo = FALSE
   )[[1L]]
 }
 
 p_reshape <- Primitive("reshape")
 nvl_reshape <- function(operand, shape) {
   infer_fn <- function(operand, shape) {
-    stablehlo::infer_types_reshape(operand, shape_out = shape)@items
+    out <- stablehlo::infer_types_reshape(st2vt(operand), shape_out = shape)@items[[1L]]
+    out <- vt2st(out)
+    out@ambiguous <- operand@ambiguous
+    list(out)
   }
   graph_desc_add(
     p_reshape,
     list(operand),
     params = list(shape = shape),
-    infer_fn = infer_fn
+    infer_fn = infer_fn,
+    infer_hlo = FALSE
   )[[1L]]
 }
 
 # reduction operators
 
-p_reduce_sum <- Primitive("sum")
-nvl_reduce_sum <- function(operand, dims, drop = TRUE) {
-  graph_desc_add(
-    p_reduce_sum,
-    list(operand),
-    params = list(dims = dims, drop = drop),
-    infer_fn = infer_reduce
-  )[[1L]]
+make_reduce_op <- function(prim, infer_fn = infer_reduce) {
+  function(operand, dims, drop = TRUE) {
+    graph_desc_add(
+      prim,
+      list(operand),
+      params = list(dims = dims, drop = drop),
+      infer_fn = infer_fn,
+      infer_hlo = FALSE
+    )[[1L]]
+  }
 }
+
+p_reduce_sum <- Primitive("sum")
+nvl_reduce_sum <- make_reduce_op(p_reduce_sum)
 
 p_reduce_prod <- Primitive("prod")
-nvl_reduce_prod <- function(operand, dims, drop = TRUE) {
-  graph_desc_add(
-    p_reduce_prod,
-    list(operand),
-    params = list(dims = dims, drop = drop),
-    infer_fn = infer_reduce
-  )[[1L]]
-}
+nvl_reduce_prod <- make_reduce_op(p_reduce_prod)
 
 p_reduce_max <- Primitive("max")
-nvl_reduce_max <- function(operand, dims, drop = TRUE) {
-  graph_desc_add(
-    p_reduce_max,
-    list(operand),
-    params = list(dims = dims, drop = drop),
-    infer_fn = infer_reduce
-  )[[1L]]
-}
+nvl_reduce_max <- make_reduce_op(p_reduce_max)
 
 p_reduce_min <- Primitive("min")
-nvl_reduce_min <- function(operand, dims, drop = TRUE) {
-  graph_desc_add(
-    p_reduce_min,
-    list(operand),
-    params = list(dims = dims, drop = drop),
-    infer_fn = infer_reduce
-  )[[1L]]
-}
+nvl_reduce_min <- make_reduce_op(p_reduce_min)
 
 p_reduce_any <- Primitive("any")
-nvl_reduce_any <- function(operand, dims, drop = TRUE) {
-  graph_desc_add(
-    p_reduce_any,
-    list(operand),
-    params = list(dims = dims, drop = drop),
-    infer_fn = infer_reduce_boolean
-  )[[1L]]
-}
+nvl_reduce_any <- make_reduce_op(p_reduce_any, infer_reduce_boolean)
 
 p_reduce_all <- Primitive("all")
-nvl_reduce_all <- function(operand, dims, drop = TRUE) {
-  graph_desc_add(
-    p_reduce_all,
-    list(operand),
-    params = list(dims = dims, drop = drop),
-    infer_fn = infer_reduce_boolean
-  )[[1L]]
-}
+nvl_reduce_all <- make_reduce_op(p_reduce_all, infer_reduce_boolean)
 
 # comparison primitives --------------------------------------------------------
 
-p_eq <- Primitive("equal")
-nvl_eq <- function(lhs, rhs) {
-  infer_fn <- function(lhs, rhs) {
-    stablehlo::infer_types_compare(lhs, rhs, "EQ", "FLOAT")@items
-  }
-  graph_desc_add(p_eq, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
+infer_compare <- function(lhs, rhs, comparison_direction) {
+  out <- stablehlo::infer_types_compare(st2vt(lhs), st2vt(rhs), comparison_direction, "FLOAT")@items[[1L]]
+  list(vt2st(out))
 }
+
+make_compare_op <- function(prim, direction) {
+  infer_fn <- function(lhs, rhs) infer_compare(lhs, rhs, direction)
+  function(lhs, rhs) {
+    graph_desc_add(prim, list(lhs, rhs), infer_fn = infer_fn, infer_hlo = FALSE)[[1L]]
+  }
+}
+
+p_eq <- Primitive("equal")
+nvl_eq <- make_compare_op(p_eq, "EQ")
 
 p_ne <- Primitive("not_equal")
-nvl_ne <- function(lhs, rhs) {
-  infer_fn <- function(lhs, rhs) {
-    stablehlo::infer_types_compare(lhs, rhs, "NE", "FLOAT")@items
-  }
-  graph_desc_add(p_ne, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
-}
+nvl_ne <- make_compare_op(p_ne, "NE")
 
 p_gt <- Primitive("greater")
-nvl_gt <- function(lhs, rhs) {
-  infer_fn <- function(lhs, rhs) {
-    stablehlo::infer_types_compare(lhs, rhs, "GT", "FLOAT")@items
-  }
-  graph_desc_add(p_gt, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
-}
+nvl_gt <- make_compare_op(p_gt, "GT")
 
 p_ge <- Primitive("greater_equal")
-nvl_ge <- function(lhs, rhs) {
-  infer_fn <- function(lhs, rhs) {
-    stablehlo::infer_types_compare(lhs, rhs, "GE", "FLOAT")@items
-  }
-  graph_desc_add(p_ge, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
-}
+nvl_ge <- make_compare_op(p_ge, "GE")
 
 p_lt <- Primitive("less")
-nvl_lt <- function(lhs, rhs) {
-  infer_fn <- function(lhs, rhs) {
-    stablehlo::infer_types_compare(lhs, rhs, "LT", "FLOAT")@items
-  }
-  graph_desc_add(p_lt, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
-}
+nvl_lt <- make_compare_op(p_lt, "LT")
 
 p_le <- Primitive("less_equal")
-nvl_le <- function(lhs, rhs) {
-  infer_fn <- function(lhs, rhs) {
-    stablehlo::infer_types_compare(lhs, rhs, "LE", "FLOAT")@items
-  }
-  graph_desc_add(p_le, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
-}
+nvl_le <- make_compare_op(p_le, "LE")
 
 # additional simple binary primitives -----------------------------------------
 
 p_max <- Primitive("maximum")
-nvl_max <- function(lhs, rhs) {
-  graph_desc_add(p_max, list(lhs, rhs), infer_fn = infer_binary)[[1L]]
-}
+nvl_max <- make_binary_op(p_max)
 
 p_min <- Primitive("minimum")
-nvl_min <- function(lhs, rhs) {
-  graph_desc_add(p_min, list(lhs, rhs), infer_fn = infer_binary)[[1L]]
-}
+nvl_min <- make_binary_op(p_min)
 
 p_remainder <- Primitive("remainder")
-nvl_remainder <- function(lhs, rhs) {
-  graph_desc_add(p_remainder, list(lhs, rhs), infer_fn = infer_binary)[[1L]]
-}
+nvl_remainder <- make_binary_op(p_remainder)
 
 p_and <- Primitive("and")
-nvl_and <- function(lhs, rhs) {
-  graph_desc_add(p_and, list(lhs, rhs), infer_fn = infer_binary_boolean)[[1L]]
-}
+nvl_and <- make_binary_boolean_op(p_and)
 
 p_not <- Primitive("not")
-nvl_not <- function(operand) {
-  graph_desc_add(p_not, list(operand), infer_fn = infer_unary_boolean)[[1L]]
-}
+nvl_not <- make_unary_boolean_op(p_not)
 
 p_or <- Primitive("or")
-nvl_or <- function(lhs, rhs) {
-  graph_desc_add(p_or, list(lhs, rhs), infer_fn = infer_binary_boolean)[[1L]]
-}
+nvl_or <- make_binary_boolean_op(p_or)
 
 p_xor <- Primitive("xor")
-nvl_xor <- function(lhs, rhs) {
-  graph_desc_add(p_xor, list(lhs, rhs), infer_fn = infer_binary_boolean)[[1L]]
+nvl_xor <- make_binary_boolean_op(p_xor)
+
+infer_shift <- function(lhs, rhs, shift_fn) {
+  both_ambiguous <- lhs@ambiguous && rhs@ambiguous
+  out <- shift_fn(st2vt(lhs), st2vt(rhs))@items[[1L]]
+  out <- vt2st(out)
+  out@ambiguous <- both_ambiguous
+  list(out)
 }
 
 p_shift_left <- Primitive("shift_left")
 nvl_shift_left <- function(lhs, rhs) {
-  infer_fn <- function(lhs, rhs) {
-    stablehlo::infer_types_shift_left(lhs, rhs)@items
-  }
-  graph_desc_add(p_shift_left, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
+  infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_left)
+  graph_desc_add(p_shift_left, list(lhs, rhs), infer_fn = infer_fn, infer_hlo = FALSE)[[1L]]
 }
 
 p_shift_right_logical <- Primitive("shift_right_logical")
 nvl_shift_right_logical <- function(lhs, rhs) {
-  infer_fn <- function(lhs, rhs) {
-    stablehlo::infer_types_shift_right_logical(lhs, rhs)@items
-  }
-  graph_desc_add(p_shift_right_logical, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
+  infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_logical)
+  graph_desc_add(p_shift_right_logical, list(lhs, rhs), infer_fn = infer_fn, infer_hlo = FALSE)[[1L]]
 }
 
 p_shift_right_arithmetic <- Primitive("shift_right_arithmetic")
 nvl_shift_right_arithmetic <- function(lhs, rhs) {
-  infer_fn <- function(lhs, rhs) {
-    stablehlo::infer_types_shift_right_arithmetic(lhs, rhs)@items
-  }
-  graph_desc_add(p_shift_right_arithmetic, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
+  infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_arithmetic)
+  graph_desc_add(p_shift_right_arithmetic, list(lhs, rhs), infer_fn = infer_fn, infer_hlo = FALSE)[[1L]]
 }
 
 p_atan2 <- Primitive("atan2")
-nvl_atan2 <- function(lhs, rhs) {
-  graph_desc_add(p_atan2, list(lhs, rhs), infer_fn = infer_binary)[[1L]]
-}
+nvl_atan2 <- make_binary_op(p_atan2)
 
 # unary math primitives ---------------------------------------------------------
 
 p_abs <- Primitive("abs")
-nvl_abs <- function(operand) {
-  graph_desc_add(p_abs, list(operand), infer_fn = infer_unary)[[1L]]
-}
+nvl_abs <- make_unary_op(p_abs)
 
 p_sqrt <- Primitive("sqrt")
-nvl_sqrt <- function(operand) {
-  graph_desc_add(p_sqrt, list(operand), infer_fn = infer_unary)[[1L]]
-}
+nvl_sqrt <- make_unary_op(p_sqrt)
 
 p_rsqrt <- Primitive("rsqrt")
-nvl_rsqrt <- function(operand) {
-  graph_desc_add(p_rsqrt, list(operand), infer_fn = infer_unary)[[1L]]
-}
+nvl_rsqrt <- make_unary_op(p_rsqrt)
 
 p_log <- Primitive("log")
-nvl_log <- function(operand) {
-  graph_desc_add(p_log, list(operand), infer_fn = infer_unary)[[1L]]
-}
+nvl_log <- make_unary_op(p_log)
 
 p_tanh <- Primitive("tanh")
-nvl_tanh <- function(operand) {
-  graph_desc_add(p_tanh, list(operand), infer_fn = infer_unary)[[1L]]
-}
+nvl_tanh <- make_unary_op(p_tanh)
 
 p_tan <- Primitive("tan")
-nvl_tan <- function(operand) {
-  graph_desc_add(p_tan, list(operand), infer_fn = infer_unary)[[1L]]
-}
+nvl_tan <- make_unary_op(p_tan)
 
 p_floor <- Primitive("floor")
-nvl_floor <- function(operand) {
-  graph_desc_add(p_floor, list(operand), infer_fn = infer_unary)[[1L]]
-}
+nvl_floor <- make_unary_op(p_floor)
 
 p_ceil <- Primitive("ceil")
-nvl_ceil <- function(operand) {
-  graph_desc_add(p_ceil, list(operand), infer_fn = infer_unary)[[1L]]
-}
+nvl_ceil <- make_unary_op(p_ceil)
 
 p_sign <- Primitive("sign")
-nvl_sign <- function(operand) {
-  graph_desc_add(p_sign, list(operand), infer_fn = infer_unary)[[1L]]
-}
+nvl_sign <- make_unary_op(p_sign)
 
 p_exp <- Primitive("exp")
-nvl_exp <- function(operand) {
-  graph_desc_add(p_exp, list(operand), infer_fn = infer_unary)[[1L]]
-}
+nvl_exp <- make_unary_op(p_exp)
 
 p_round <- Primitive("round")
 nvl_round <- function(operand, method = "nearest_even") {
@@ -461,7 +425,7 @@ nvl_round <- function(operand, method = "nearest_even") {
   infer_fn <- function(operand, method) {
     infer_unary(operand)
   }
-  graph_desc_add(p_round, list(operand), list(method = method), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_round, list(operand), list(method = method), infer_fn = infer_fn, infer_hlo = FALSE)[[1L]]
 }
 
 # dtype conversion ----------------------------------------------------------------
@@ -489,9 +453,17 @@ nvl_convert <- function(operand, dtype, ambiguous = FALSE) {
 p_select <- Primitive("select")
 nvl_select <- function(pred, true_value, false_value) {
   infer_fn <- function(pred, true_value, false_value) {
-    stablehlo::infer_types_select(pred, on_true = true_value, on_false = false_value)@items
+    both_ambiguous <- true_value@ambiguous && false_value@ambiguous
+    out <- stablehlo::infer_types_select(
+      st2vt(pred),
+      on_true = st2vt(true_value),
+      on_false = st2vt(false_value)
+    )@items[[1L]]
+    out <- vt2st(out)
+    out@ambiguous <- both_ambiguous
+    list(out)
   }
-  graph_desc_add(p_select, list(pred, true_value, false_value), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_select, list(pred, true_value, false_value), infer_fn = infer_fn, infer_hlo = FALSE)[[1L]]
 }
 
 # Higher order primitives -------------------------------------------------------
@@ -506,9 +478,12 @@ nvl_if <- function(pred, true, false) {
   # GraphValue if they capture the same constant
 
   current_desc <- .current_descriptor()
+
   desc_true <- local_descriptor()
   true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true)
   desc_false <- local_descriptor()
+
+  # TODO: Apply promotion rules to the outputs of the branches
 
   for (const in desc_true@constants) {
     get_box_or_register_const(desc_false, const)
@@ -524,14 +499,27 @@ nvl_if <- function(pred, true, false) {
   }
 
   infer_fn <- function(pred, true_graph, false_graph) {
-    lapply(true_graph@outputs, \(out) st2vt(out@aval))
+    # the returned values might have different ambiguity, so we need to handle it
+    # an output is ambiguous if it's type is ambiguous in both branches
+    lapply(seq_along(true_graph@outputs), function(i) {
+      aval_true <- true_graph@outputs[[i]]@aval
+      aval_false <- true_graph@outputs[[i]]@aval
+      if (aval_true@ambiguous && aval_false@ambiguous) {
+        return(aval_true)
+      }
+
+      aval_true@ambiguous <- FALSE
+      return(aval_true)
+    })
   }
 
   out <- graph_desc_add(
     p_if,
     list(pred),
     params = list(true_graph = true_graph, false_graph = false_graph),
-    infer_fn = infer_fn
+    infer_fn = infer_fn,
+    infer_hlo = FALSE,
+    desc = current_desc
   )
   unflatten(true_graph@out_tree, out)
 }
@@ -550,6 +538,8 @@ nvl_while <- function(init, cond, body) {
   if (any(state_names == "")) {
     cli_abort("init must have only named arguments")
   }
+
+  current_desc <- .current_descriptor()
 
   desc_cond <- local_descriptor()
 
@@ -572,8 +562,6 @@ nvl_while <- function(init, cond, body) {
     cli_abort("body must have the same input and output structure")
   }
 
-  current_desc <- .current_descriptor()
-
   # now we register the constants of both sub-graphs (body includes cond's constants) into the graph
   for (const in body_graph@constants) {
     get_box_or_register_const(current_desc, const)
@@ -581,19 +569,26 @@ nvl_while <- function(init, cond, body) {
 
   infer_fn <- function(..., cond_graph, body_graph) {
     outs <- list(...)
-    outs_body <- lapply(body_graph@outputs, \(out) st2vt(out@aval))
-    inputs_body <- lapply(body_graph@inputs, \(inp) st2vt(inp@aval))
-    if (!identical(unname(outs), inputs_body) || !identical(inputs_body, outs_body)) {
-      cli_abort("init must be have same type as inputs and outputs of body")
+    outs_body <- lapply(body_graph@outputs, \(out) out@aval)
+    inputs_body <- lapply(body_graph@inputs, \(inp) inp@aval)
+    # == ignores ambiguity
+    if (!all(sapply(seq_along(outs), \(i) outs[[i]] == outs_body[[i]]))) {
+      cli_abort("outs must be have same type as outs_body")
     }
-    return(outs)
+    if (!all(sapply(seq_along(inputs_body), \(i) inputs_body[[i]] == outs_body[[i]]))) {
+      cli_abort("inputs_body must be have same type as outs_body")
+    }
+    # function might change the ambiguity, so we return the body outputs and not the inputs
+    return(outs_body)
   }
 
   out <- graph_desc_add(
     p_while,
     args = flatten(init),
     params = list(cond_graph = cond_graph, body_graph = body_graph),
-    infer_fn = infer_fn
+    infer_fn = infer_fn,
+    infer_hlo = FALSE,
+    desc = current_desc
   )
 
   unflatten(body_graph@out_tree, out)

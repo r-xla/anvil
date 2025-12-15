@@ -66,3 +66,9 @@ test_that("nv_tensor from nv_tensor", {
 test_that("format", {
   expect_equal(format(nv_tensor(1:4, shape = c(4, 1))), "AnvilTensor(dtype=i32, shape=4x1)")
 })
+
+test_that("== ignores ambiguity", {
+  expect_true(
+    ShapedTensor("f32", 1L, TRUE) == ShapedTensor("f32", 1L, FALSE)
+  )
+})

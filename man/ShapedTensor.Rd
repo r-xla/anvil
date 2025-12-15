@@ -22,6 +22,9 @@ Only \code{f32}, \code{i32}, and \code{i1} (bool) can be ambiguous.}
 Abstract representation of a tensor with a known dtype and shape, but no concrete data.
 Used during tracing to represent tensor metadata without actual values.
 }
+\details{
+Two tensors are considered equal (\code{==}) if they have the same dtype and shape, ignoring ambiguity.
+}
 \seealso{
 \link{ConcreteTensor}, \link{LiteralTensor}, \code{\link[=st]{st()}}
 }

@@ -84,6 +84,7 @@ test_that("second order gradient (scalar)", {
     nvl_mul(x, x)
   }
   fg2 <- jit(gradient(\(x) gradient(f)(x)[[1L]]))
+  fg2(nv_scalar(1))
   expect_equal(fg2(nv_scalar(1)), list(x = nv_scalar(2)))
 })
 
@@ -166,6 +167,12 @@ test_that("gradients are present even if they don't influence the output", {
     g(nv_scalar(1), nv_scalar(1)),
     list(y = nv_scalar(0))
   )
+
+  g2 <- jit(gradient(function(x, y) {
+    z <- nv_mul(x, x)
+    return(y)
+  }))
+  expect_equal(g2(nv_scalar(1), nv_scalar(1)), list(x = nv_scalar(0), y = nv_scalar(1)))
 })
 
 test_that("wrt non-existent argument", {
@@ -197,3 +204,5 @@ test_that("gradient: does not depend on input", {
   expect_equal(out[[1L]], nv_scalar(1.0))
   expect_equal(out[[2L]], nv_scalar(1.0))
 })
+
+test_that("")
