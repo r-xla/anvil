@@ -38,14 +38,14 @@ make_binary_op <- function(prim) {
   }
 }
 
-make_binary_boolean_op <- function(prim) {
+make_binary_integerish_op <- function(prim) {
   function(lhs, rhs) {
     graph_desc_add(prim, list(lhs, rhs), infer_fn = infer_binary_integerish, infer_hlo = FALSE)[[1L]]
   }
 }
 
-infer_unary_boolean <- function(operand) {
-  out <- stablehlo::infer_types_boolean_uni(st2vt(operand))@items[[1L]]
+infer_unary_integerish <- function(operand) {
+  out <- stablehlo::infer_types_integerish_uni(st2vt(operand))@items[[1L]]
   out <- vt2st(out)
   out@ambiguous <- operand@ambiguous
   list(out)
@@ -57,10 +57,18 @@ make_unary_op <- function(prim) {
   }
 }
 
-make_unary_boolean_op <- function(prim) {
+make_unary_integerish_op <- function(prim) {
   function(operand) {
-    graph_desc_add(prim, list(operand), infer_fn = infer_unary_boolean, infer_hlo = FALSE)[[1L]]
+    graph_desc_add(prim, list(operand), infer_fn = infer_unary_integerish, infer_hlo = FALSE)[[1L]]
   }
+}
+
+infer_binary_integerish <- function(lhs, rhs) {
+  stablehlo::infer_types_integerish_biv(lhs, rhs)@items
+}
+
+infer_unary_integerish <- function(operand) {
+  stablehlo::infer_types_integerish_uni(operand)@items
 }
 
 infer_reduce <- function(operand, dims, drop) {
@@ -183,9 +191,10 @@ nvl_pow <- make_binary_op(p_pow)
 
 p_broadcast_in_dim <- Primitive("broadcast_in_dim")
 
+#' @importFrom stablehlo r_to_constant
 nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
   infer_fn <- function(operand, shape_out, broadcast_dimensions) {
-    bd_attr <- stablehlo::r_to_constant(
+    bd_attr <- r_to_constant(
       as.integer(broadcast_dimensions - 1L),
       dtype = "i64",
       shape = length(broadcast_dimensions)
@@ -233,7 +242,7 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
 p_transpose <- Primitive("transpose")
 nvl_transpose <- function(operand, permutation) {
   infer_fn <- function(operand, permutation) {
-    perm_attr <- stablehlo::r_to_constant(
+    perm_attr <- r_to_constant(
       as.integer(permutation - 1L),
       dtype = "i64",
       shape = length(permutation)
@@ -266,6 +275,42 @@ nvl_reshape <- function(operand, shape) {
     params = list(shape = shape),
     infer_fn = infer_fn,
     infer_hlo = FALSE
+  )[[1L]]
+}
+
+p_concatenate <- Primitive("concatenate")
+nvl_concatenate <- function(..., dimension) {
+  dots <- list(...)
+  infer_fn <- function(..., dimension) {
+    stablehlo::infer_types_concatenate(..., dimension = dimension)@items
+  }
+  graph_desc_add(
+    p_concatenate,
+    args = dots,
+    params = list(dimension = dimension),
+    infer_fn = infer_fn
+  )[[1L]]
+}
+
+p_slice <- Primitive("slice")
+nvl_slice <- function(operand, start_indices, limit_indices, strides) {
+  infer_fn <- function(operand, start_indices, limit_indices, strides) {
+    start_indices <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
+    limit_indices <- r_to_constant(limit_indices, dtype = "i64", shape = length(limit_indices))
+    strides <- r_to_constant(strides, dtype = "i64", shape = length(strides))
+    stablehlo::infer_types_slice(operand, start_indices, limit_indices, strides)@items
+  }
+  graph_desc_add(
+    p_slice,
+    args = list(
+      operand = operand
+    ),
+    params = list(
+      start_indices = start_indices,
+      limit_indices = limit_indices,
+      strides = strides
+    ),
+    infer_fn = infer_fn
   )[[1L]]
 }
 
@@ -345,6 +390,7 @@ p_remainder <- Primitive("remainder")
 nvl_remainder <- make_binary_op(p_remainder)
 
 p_and <- Primitive("and")
+
 nvl_and <- make_binary_boolean_op(p_and)
 
 p_not <- Primitive("not")
@@ -385,6 +431,14 @@ nvl_shift_right_arithmetic <- function(lhs, rhs) {
 p_atan2 <- Primitive("atan2")
 nvl_atan2 <- make_binary_op(p_atan2)
 
+p_bitcast_convert <- Primitive("bitcast_convert")
+nvl_bitcast_convert <- function(operand, dtype) {
+  infer_fn <- function(operand, dtype) {
+    stablehlo::infer_types_bitcast_convert(operand, dtype)@items
+  }
+  graph_desc_add(p_bitcast_convert, list(operand), params = list(dtype = dtype), infer_fn = infer_fn)[[1L]]
+}
+
 # unary math primitives ---------------------------------------------------------
 
 p_abs <- Primitive("abs")
@@ -404,6 +458,21 @@ nvl_tanh <- make_unary_op(p_tanh)
 
 p_tan <- Primitive("tan")
 nvl_tan <- make_unary_op(p_tan)
+
+p_tan <- Primitive("tan")
+nvl_tan <- function(operand) {
+  graph_desc_add(p_tan, list(operand), infer_fn = infer_unary)[[1L]]
+}
+
+p_sine <- Primitive("sine")
+nvl_sine <- function(operand) {
+  graph_desc_add(p_sine, list(operand), infer_fn = infer_unary)[[1L]]
+}
+
+p_cosine <- Primitive("cosine")
+nvl_cosine <- function(operand) {
+  graph_desc_add(p_cosine, list(operand), infer_fn = infer_unary)[[1L]]
+}
 
 p_floor <- Primitive("floor")
 nvl_floor <- make_unary_op(p_floor)
@@ -592,4 +661,18 @@ nvl_while <- function(init, cond, body) {
   )
 
   unflatten(body_graph@out_tree, out)
+}
+
+# RNG primitives
+p_rng_bit_generator <- Primitive("rng_bit_generator")
+nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape_out) {
+  infer_fn <- function(initial_state, rng_algorithm, dtype, shape_out) {
+    stablehlo::infer_types_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out)@items
+  }
+  graph_desc_add(
+    p_rng_bit_generator,
+    list(initial_state),
+    params = list(rng_algorithm = rng_algorithm, dtype = dtype, shape_out = shape_out),
+    infer_fn = infer_fn
+  )
 }
