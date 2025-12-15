@@ -84,7 +84,7 @@ graph_to_quickr_function <- function(graph) {
         return(base[[1L]])
       }
       if (length(shape) == 1L) {
-        return(base)
+        return(array(base, dim = shape))
       }
       if (length(shape) == 2L) {
         return(matrix(base, nrow = shape[[1L]], ncol = shape[[2L]]))

@@ -1160,8 +1160,13 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
       stmts <- c(stmts, list(.call2("<-", idx_sym, 1L), .call2("<-", .call2("[", flat_sym, 1L), operand_expr)))
     } else if (as.integer(nflat) == 1L) {
       # quickr may represent length-1 vectors as scalars; avoid indexing the
-      # operand in that case.
-      stmts <- c(stmts, list(.call2("<-", idx_sym, 1L), .call2("<-", .call2("[", flat_sym, 1L), operand_expr)))
+      # operand unless we need to extract from a 1x1 matrix.
+      val_expr <- if (length(shape_in) == 2L) {
+        .call2("[", operand_expr, 1L, 1L)
+      } else {
+        operand_expr
+      }
+      stmts <- c(stmts, list(.call2("<-", idx_sym, 1L), .call2("<-", .call2("[", flat_sym, 1L), val_expr)))
     } else if (length(shape_in) == 1L) {
       ii <- as.name(paste0("i_", as.character(out_sym)))
       n1 <- as.integer(shape_in[[1L]])
