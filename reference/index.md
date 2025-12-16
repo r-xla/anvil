@@ -2,6 +2,8 @@
 
 ## All functions
 
+- [`AbstractTensor()`](AbstractTensor.md) : Abstract Tensor Class
+
 - [`ConcreteTensor()`](ConcreteTensor.md) : Concrete Tensor Class
 
 - [`Graph()`](Graph.md) : Graph of Primitive Calls
@@ -17,8 +19,6 @@
 - [`Primitive()`](Primitive.md) : Primitive
 
 - [`PrimitiveCall()`](PrimitiveCall.md) : Primitive Call
-
-- [`ShapedTensor()`](ShapedTensor.md) : Shaped Tensor Class
 
 - [`common_dtype()`](common_dtype.md) : Type Promotion Rules
 
@@ -63,7 +63,7 @@
 - [`nv_convert()`](nv_convert.md) : Convert Tensor to Different Data
   Type
 
-- [`nv_full()`](nv_full.md) : Constant
+- [`nv_fill()`](nv_fill.md) : Constant
 
 - [`nv_if()`](nv_if.md) : If
 
@@ -114,8 +114,8 @@
 
 - [`platform()`](platform.md) : Platform
 
-- [`st()`](st.md) : Convert to Shaped Tensor
-
 - [`stablehlo()`](stablehlo.md) : Lower a function to StableHLO
+
+- [`to_abstract()`](to_abstract.md) : Convert to Abstract Tensor
 
 - [`trace_fn()`](trace_fn.md) : Trace an R function into a Graph

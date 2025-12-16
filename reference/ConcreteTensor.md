@@ -1,8 +1,9 @@
 # Concrete Tensor Class
 
-A [`ShapedTensor`](ShapedTensor.md) that also holds a reference to the
-actual tensor data. Used to represent constants captured during tracing.
-Because it comes from a concrete tensor, it's type is not ambiguous.
+A [`AbstractTensor`](AbstractTensor.md) that also holds a reference to
+the actual tensor data. Used to represent constants captured during
+tracing. Because it comes from a concrete tensor, it's type is never
+ambiguous.
 
 ## Usage
 
@@ -19,4 +20,4 @@ ConcreteTensor(data)
 
 ## See also
 
-[ShapedTensor](ShapedTensor.md), [LiteralTensor](LiteralTensor.md)
+[AbstractTensor](AbstractTensor.md), [LiteralTensor](LiteralTensor.md)

@@ -1,4 +1,4 @@
-# Shaped Tensor Class
+# Abstract Tensor Class
 
 Abstract representation of a tensor with a known dtype and shape, but no
 concrete data. Used during tracing to represent tensor metadata without
@@ -7,7 +7,7 @@ actual values.
 ## Usage
 
 ``` r
-ShapedTensor(dtype, shape, ambiguous = FALSE)
+AbstractTensor(dtype, shape, ambiguous = FALSE)
 ```
 
 ## Arguments
@@ -28,7 +28,7 @@ ShapedTensor(dtype, shape, ambiguous = FALSE)
   (`logical(1)`)  
   Whether the type is ambiguous. Ambiguous usually arise from R literals
   (e.g., `1L`, `1.0`, `TRUE`) and follow special promotion rules. Only
-  `f32`, `i32`, and `i1` (bool) can be ambiguous.
+  `f32`, `i32`, and `i1` (bool) can be ambiguous during tracing.
 
 ## Details
 
@@ -38,4 +38,4 @@ shape, ignoring ambiguity.
 ## See also
 
 [ConcreteTensor](ConcreteTensor.md), [LiteralTensor](LiteralTensor.md),
-[`st()`](st.md)
+[`to_abstract()`](to_abstract.md)

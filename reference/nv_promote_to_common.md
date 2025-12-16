@@ -1,6 +1,7 @@
 # Promote Tensors to a Common Dtype
 
-Promote tensors to a common type.
+Promote tensors to a common data type, see
+[`common_dtype`](common_dtype.md) for more details.
 
 ## Usage
 

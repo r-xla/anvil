@@ -278,7 +278,7 @@ We will start with gradients.
 In {anvil}, you can easily obtain the gradient function of a
 scalar-valued function via [`gradient()`](../reference/gradient.md).
 Currently, we don’t support jacobians or hessians, but this will
-hopefully be added in the future. Below, we implement the loss function
+hopefilly be added in the future. Below, we implement the loss function
 for our linear model.
 
 ``` r

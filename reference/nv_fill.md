@@ -5,7 +5,7 @@ Create a constant.
 ## Usage
 
 ``` r
-nv_full(value, shape, dtype = NULL)
+nv_fill(value, shape, dtype = NULL)
 ```
 
 ## Arguments

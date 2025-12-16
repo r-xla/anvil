@@ -1,14 +1,13 @@
 # Literal Tensor Class
 
-A [`ShapedTensor`](ShapedTensor.md) representing a tensor where the data
-is a R scalar literal (e.g., `1L`, `2.5`, `TRUE`). Their type is
-ambiguous, and they adapt (if possible) to the types of non-literal
-tensors they interact with.
+A [`AbstractTensor`](AbstractTensor.md) representing a tensor where the
+data is a R scalar literal (e.g., `1L`, `2.5`, `TRUE`). Usually, their
+type is ambiguous, unless created via [`nv_fill`](nv_fill.md).
 
 ## Usage
 
 ``` r
-LiteralTensor(data, shape, dtype = default_dtype(data))
+LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
 ```
 
 ## Arguments
@@ -30,6 +29,13 @@ LiteralTensor(data, shape, dtype = default_dtype(data))
   The data type. Defaults to `f32` for numeric, `i32` for integer, `i1`
   for logical.
 
+- ambiguous:
+
+  (`logical(1)`)  
+  Whether the type is ambiguous. Ambiguous usually arise from R literals
+  (e.g., `1L`, `1.0`, `TRUE`) and follow special promotion rules. Only
+  `f32`, `i32`, and `i1` (bool) can be ambiguous during tracing.
+
 ## See also
 
-[ShapedTensor](ShapedTensor.md), [ConcreteTensor](ConcreteTensor.md)
+[AbstractTensor](AbstractTensor.md), [ConcreteTensor](ConcreteTensor.md)

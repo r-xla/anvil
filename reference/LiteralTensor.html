@@ -5,11 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Literal Tensor Class — LiteralTensor"><meta name="description" content="A ShapedTensor representing a tensor where the data is a R scalar literal (e.g., 1L, 2.5, TRUE).
-Their type is ambiguous, and they adapt (if possible) to the types of
-non-literal tensors they interact with."><meta property="og:description" content="A ShapedTensor representing a tensor where the data is a R scalar literal (e.g., 1L, 2.5, TRUE).
-Their type is ambiguous, and they adapt (if possible) to the types of
-non-literal tensors they interact with."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Literal Tensor Class — LiteralTensor"><meta name="description" content="A AbstractTensor representing a tensor where the data is a R scalar literal (e.g., 1L, 2.5, TRUE).
+Usually, their type is ambiguous, unless created via nv_fill."><meta property="og:description" content="A AbstractTensor representing a tensor where the data is a R scalar literal (e.g., 1L, 2.5, TRUE).
+Usually, their type is ambiguous, unless created via nv_fill."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -56,14 +54,13 @@ non-literal tensors they interact with."></head><body>
     </div>
 
     <div class="ref-description section level2">
-    <p>A <code><a href="ShapedTensor.html">ShapedTensor</a></code> representing a tensor where the data is a R scalar literal (e.g., <code>1L</code>, <code>2.5</code>, <code>TRUE</code>).
-Their type is ambiguous, and they adapt (if possible) to the types of
-non-literal tensors they interact with.</p>
+    <p>A <code><a href="AbstractTensor.html">AbstractTensor</a></code> representing a tensor where the data is a R scalar literal (e.g., <code>1L</code>, <code>2.5</code>, <code>TRUE</code>).
+Usually, their type is ambiguous, unless created via <code><a href="nv_fill.html">nv_fill</a></code>.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">LiteralTensor</span><span class="op">(</span><span class="va">data</span>, <span class="va">shape</span>, dtype <span class="op">=</span> <span class="fu">default_dtype</span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">LiteralTensor</span><span class="op">(</span><span class="va">data</span>, <span class="va">shape</span>, dtype <span class="op">=</span> <span class="fu">default_dtype</span><span class="op">(</span><span class="va">data</span><span class="op">)</span>, <span class="va">ambiguous</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -84,10 +81,17 @@ The shape of the tensor.</p></dd>
 <dd><p>(<code><a href="https://r-xla.github.io/stablehlo/reference/TensorDataType.html" class="external-link">stablehlo::TensorDataType</a></code>)<br>
 The data type. Defaults to <code>f32</code> for numeric, <code>i32</code> for integer, <code>i1</code> for logical.</p></dd>
 
+
+<dt id="arg-ambiguous">ambiguous<a class="anchor" aria-label="anchor" href="#arg-ambiguous"></a></dt>
+<dd><p>(<code>logical(1)</code>)<br>
+Whether the type is ambiguous. Ambiguous usually arise from R literals
+(e.g., <code>1L</code>, <code>1.0</code>, <code>TRUE</code>) and follow special promotion rules.
+Only <code>f32</code>, <code>i32</code>, and <code>i1</code> (bool) can be ambiguous during tracing.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><a href="ShapedTensor.html">ShapedTensor</a>, <a href="ConcreteTensor.html">ConcreteTensor</a></p></div>
+    <div class="dont-index"><p><a href="AbstractTensor.html">AbstractTensor</a>, <a href="ConcreteTensor.html">ConcreteTensor</a></p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

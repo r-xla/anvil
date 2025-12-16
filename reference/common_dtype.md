@@ -19,6 +19,16 @@ common_dtype(
 
 ## Arguments
 
+- lhs_dtype:
+
+  ([`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
+  The left-hand side type.
+
+- rhs_dtype:
+
+  ([`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
+  The right-hand side type.
+
 - lhs_ambiguous:
 
   (`logical(1)`)  
@@ -28,16 +38,6 @@ common_dtype(
 
   (`logical(1)`)  
   Whether the right-hand side type is ambiguous.
-
-- lhs:
-
-  ([`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
-  The left-hand side type.
-
-- rhs:
-
-  ([`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
-  The right-hand side type.
 
 ## Value
 

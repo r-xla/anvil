@@ -1,12 +1,12 @@
-# Convert to Shaped Tensor
+# Convert to Abstract Tensor
 
 Convert an object to its abstract tensor representation
-([`ShapedTensor`](ShapedTensor.md)).
+([`AbstractTensor`](AbstractTensor.md)).
 
 ## Usage
 
 ``` r
-st(x)
+to_abstract(x)
 ```
 
 ## Arguments
@@ -18,4 +18,4 @@ st(x)
 
 ## Value
 
-[`ShapedTensor`](ShapedTensor.md)
+[`AbstractTensor`](AbstractTensor.md)
