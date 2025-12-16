@@ -780,6 +780,13 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
   const_arg_names <- quickr_make_const_arg_names(user_arg_names, length(graph@constants))
   all_arg_names <- c(user_arg_names, const_arg_names)
 
+  prefix <- "anvil_quickr_"
+  prefix_i <- 0L
+  while (any(grepl(prefix, all_arg_names, fixed = TRUE))) {
+    prefix_i <- prefix_i + 1L
+    prefix <- paste0("anvil_quickr", prefix_i, "_")
+  }
+
   supported_prims <- ls(envir = quickr_lower_registry, all.names = TRUE)
   call_prims <- unique(vapply(graph@calls, \(x) x@primitive@name, character(1L)))
   unsupported_prims <- setdiff(call_prims, supported_prims)
@@ -831,7 +838,7 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
         cli_abort("Unsupported: non-GraphValue primitive outputs")
       }
       tmp_i <- tmp_i + 1L
-      sym <- as.name(paste0("v", tmp_i))
+      sym <- as.name(paste0(prefix, "v", tmp_i))
       node_expr[[out_node]] <- sym
       out_syms[[i]] <- sym
       out_avals[[i]] <- out_node@aval
@@ -841,6 +848,7 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
   }
 
   out_exprs <- lapply(graph@outputs, quickr_expr_of_node, node_expr = node_expr)
+  result_sym <- as.name(paste0(prefix, "out"))
 
   if (isTRUE(pack_output)) {
     out_shapes <- lapply(graph@outputs, function(node) {
@@ -855,8 +863,8 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
     }, integer(1L))
     total_len <- sum(out_lens)
 
-    out_sym <- as.name("out")
-    idx_sym <- as.name("out_i")
+    out_sym <- result_sym
+    idx_sym <- as.name(paste0(prefix, "out_i"))
     stmts <- c(stmts, list(rlang::call2("<-", out_sym, rlang::call2("double", as.integer(total_len)))))
     stmts <- c(stmts, list(rlang::call2("<-", idx_sym, 0L)))
 
@@ -884,7 +892,7 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
     }
 
     for (i in seq_along(out_exprs)) {
-      tag <- paste0("out", i)
+      tag <- paste0(prefix, "out", i)
       stmts <- c(stmts, emit_pack_array(out_exprs[[i]], out_shapes[[i]], tag))
     }
 
@@ -893,7 +901,7 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
     if (!inherits(graph@out_tree, "LeafNode") || length(out_exprs) != 1L) {
       cli_abort("Internal error: {.arg pack_output} must be TRUE for graphs with multiple outputs")
     }
-    stmts <- c(stmts, list(rlang::call2("<-", as.name("out"), out_exprs[[1L]]), as.name("out")))
+    stmts <- c(stmts, list(rlang::call2("<-", result_sym, out_exprs[[1L]]), result_sym))
   }
 
   f <- function() {
