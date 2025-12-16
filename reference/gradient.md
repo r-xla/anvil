@@ -6,8 +6,6 @@ Transform a function to its gradient.
 
 ``` r
 gradient(f, wrt = NULL)
-
-value_and_gradient(f, wrt = NULL)
 ```
 
 ## Arguments
@@ -21,7 +19,3 @@ value_and_gradient(f, wrt = NULL)
 
   (`character`)  
   Names of the arguments to compute the gradient with respect to.
-
-## Functions
-
-- `value_and_gradient()`: Returns both the value and the gradient
