@@ -119,11 +119,25 @@ test_that("p_reduce_max", {
   expect_equal(out, array(c(0, 4)))
 })
 
+test_that("p_reduce_max drop = FALSE", {
+  x <- array(c(-1, 4, 0, 2), c(2, 2))
+  f <- jit(function(a) nvl_reduce_max(a, dims = 2L, drop = FALSE))
+  out <- as_array(f(nv_tensor(x, dtype = "f32")))
+  expect_equal(out, array(c(0, 4), c(2, 1)))
+})
+
 test_that("p_reduce_min", {
   x <- array(c(-1, 4, 0, 2), c(2, 2))
   f <- jit(function(a) nvl_reduce_min(a, dims = 2L, drop = TRUE))
   out <- as_array(f(nv_tensor(x, dtype = "f32")))
   expect_equal(out, array(c(-1, 2)))
+})
+
+test_that("p_reduce_min drop = FALSE", {
+  x <- array(c(-1, 4, 0, 2), c(2, 2))
+  f <- jit(function(a) nvl_reduce_min(a, dims = 2L, drop = FALSE))
+  out <- as_array(f(nv_tensor(x, dtype = "f32")))
+  expect_equal(out, array(c(-1, 2), c(2, 1)))
 })
 
 test_that("p_reduce_any", {

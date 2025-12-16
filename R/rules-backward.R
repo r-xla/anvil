@@ -60,6 +60,39 @@ p_pow[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
+p_log[["backward"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) nvl_div(grad, operand)
+  )
+}
+
+p_exp[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) nvl_mul(grad, y)
+  )
+}
+
+p_max[["backward"]] <- p_min[["backward"]] <- function(inputs, outputs, grads, .required) {
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
+  grad <- grads[[1L]]
+
+  if (.required[[1L]] || .required[[2L]]) {
+    y <- outputs[[1L]]
+    mask_lhs <- nvl_convert(nvl_eq(lhs, y), dtype = dtype(grad))
+    mask_rhs <- nvl_convert(nvl_eq(rhs, y), dtype = dtype(grad))
+    count <- nvl_add(mask_lhs, mask_rhs)
+  }
+
+  list(
+    if (.required[[1L]]) nvl_div(nvl_mul(grad, mask_lhs), count),
+    if (.required[[2L]]) nvl_div(nvl_mul(grad, mask_rhs), count)
+  )
+}
 
 p_dot_general[["backward"]] <- function(inputs, outputs, grads, contracting_dims, batching_dims, .required) {
   lhs <- inputs[[1L]]
@@ -153,6 +186,33 @@ p_reduce_sum[["backward"]] <- function(inputs, outputs, grads, dims, drop, .requ
         seq_along(shape(grad))
       }
       nvl_broadcast_in_dim(grad, shape(operand), bdims)
+    }
+  )
+}
+
+p_reduce_max[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+
+  list(
+    if (.required[[1L]]) {
+      bdims <- if (drop) {
+        without(seq_along(shape(operand)), dims)
+      } else {
+        seq_along(shape(grad))
+      }
+
+      y <- outputs[[1L]]
+      y_bc <- nvl_broadcast_in_dim(y, shape(operand), bdims)
+
+      grad_bc <- nvl_broadcast_in_dim(grad, shape(operand), bdims)
+      mask <- nvl_eq(operand, y_bc)
+      mask_f <- nvl_convert(mask, dtype = dtype(grad_bc))
+
+      count <- nvl_reduce_sum(mask_f, dims = dims, drop = drop)
+      count_bc <- nvl_broadcast_in_dim(count, shape(operand), bdims)
+
+      nvl_div(nvl_mul(grad_bc, mask_f), count_bc)
     }
   )
 }

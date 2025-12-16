@@ -297,6 +297,14 @@ test_that("p_neg", {
   verify_grad_uni(nvl_neg, torch::torch_neg)
 })
 
+test_that("p_exp", {
+  verify_grad_uni(nvl_exp, torch::torch_exp)
+})
+
+test_that("p_log", {
+  verify_grad_uni(nvl_log, torch::torch_log)
+})
+
 test_that("p_div", {
   # TODO:
   # Need to determine what to do with non-differentiable values:
