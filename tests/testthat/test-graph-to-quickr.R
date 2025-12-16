@@ -6,8 +6,8 @@ test_that("graph_to_quickr_function matches PJRT for scalar add", {
       x1 + x2
     },
     list(
-      x1 = nv_scalar(1.25, dtype = "f32"),
-      x2 = nv_scalar(-0.5, dtype = "f32")
+      x1 = nv_scalar(1.25, dtype = "f64"),
+      x2 = nv_scalar(-0.5, dtype = "f64")
     )
   )
 
@@ -17,7 +17,7 @@ test_that("graph_to_quickr_function matches PJRT for scalar add", {
   x2 <- -2.25
   out_quick <- f_quick(x1, x2)
   out_pjrt <- eval_graph_pjrt(graph, x1, x2)
-  expect_equal(out_quick, out_pjrt, tolerance = 1e-6)
+  expect_equal(out_quick, out_pjrt)
 })
 
 test_that("graph_to_quickr_function matches PJRT for matmul", {
@@ -31,8 +31,8 @@ test_that("graph_to_quickr_function matches PJRT for matmul", {
       nv_matmul(X, B)
     },
     list(
-      X = nv_tensor(X, dtype = "f32", shape = dim(X)),
-      B = nv_tensor(B, dtype = "f32", shape = dim(B))
+      X = nv_tensor(X, dtype = "f64", shape = dim(X)),
+      B = nv_tensor(B, dtype = "f64", shape = dim(B))
     )
   )
 
@@ -41,7 +41,7 @@ test_that("graph_to_quickr_function matches PJRT for matmul", {
   out_quick <- f_quick(X, B)
   out_pjrt <- eval_graph_pjrt(graph, X, B)
 
-  expect_equal(out_quick, out_pjrt, tolerance = 1e-5)
+  expect_equal(out_quick, out_pjrt)
 })
 
 test_that("graph_to_quickr_function matches PJRT for batched matmul (rank-5)", {
@@ -64,8 +64,8 @@ test_that("graph_to_quickr_function matches PJRT for batched matmul (rank-5)", {
       nv_matmul(A, B)
     },
     list(
-      A = nv_tensor(A, dtype = "f32", shape = dim(A)),
-      B = nv_tensor(B, dtype = "f32", shape = dim(B))
+      A = nv_tensor(A, dtype = "f64", shape = dim(A)),
+      B = nv_tensor(B, dtype = "f64", shape = dim(B))
     )
   )
 
@@ -74,7 +74,7 @@ test_that("graph_to_quickr_function matches PJRT for batched matmul (rank-5)", {
   out_pjrt <- eval_graph_pjrt(graph, A, B)
 
   expect_equal(dim(out_quick), c(b, t, h, m, p))
-  expect_equal(out_quick, out_pjrt, tolerance = 1e-4)
+  expect_equal(out_quick, out_pjrt, tolerance = 1e-12)
 })
 
 test_that("graph_to_quickr_function matches PJRT for sum reduction", {
@@ -86,7 +86,7 @@ test_that("graph_to_quickr_function matches PJRT for sum reduction", {
     function(x) {
       sum(x)
     },
-    list(x = nv_tensor(x, dtype = "f32", shape = c(length(x))))
+    list(x = nv_tensor(x, dtype = "f64", shape = c(length(x))))
   )
 
   f_quick <- graph_to_quickr_function(graph)
@@ -94,7 +94,7 @@ test_that("graph_to_quickr_function matches PJRT for sum reduction", {
   out_quick <- f_quick(x)
   out_pjrt <- eval_graph_pjrt(graph, x)
 
-  expect_equal(out_quick, out_pjrt, tolerance = 1e-6)
+  expect_equal(out_quick, out_pjrt)
 })
 
 test_that("graph_to_quickr_function supports list outputs", {
@@ -104,13 +104,13 @@ test_that("graph_to_quickr_function supports list outputs", {
     function(x) {
       list(a = x, b = x + x)
     },
-    list(x = nv_scalar(1.0, dtype = "f32"))
+    list(x = nv_scalar(1.0, dtype = "f64"))
   )
 
   f_quick <- graph_to_quickr_function(graph)
   out_quick <- f_quick(0.5)
   out_pjrt <- eval_graph_pjrt(graph, 0.5)
-  expect_equal(out_quick, out_pjrt, tolerance = 1e-6)
+  expect_equal(out_quick, out_pjrt)
 })
 
 test_that("graph_to_quickr_function rejects nested inputs", {
@@ -121,8 +121,8 @@ test_that("graph_to_quickr_function rejects nested inputs", {
       x$a + x$b
     },
     list(x = list(
-      a = nv_scalar(1.0, dtype = "f32"),
-      b = nv_scalar(2.0, dtype = "f32")
+      a = nv_scalar(1.0, dtype = "f64"),
+      b = nv_scalar(2.0, dtype = "f64")
     ))
   )
 

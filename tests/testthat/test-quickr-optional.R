@@ -1,7 +1,7 @@
 test_that("graph_to_quickr_function requires {quickr}", {
   graph <- trace_fn(
     function(x) x + x,
-    list(x = nv_scalar(1.0, dtype = "f32"))
+    list(x = nv_scalar(1.0, dtype = "f64"))
   )
 
   if (!requireNamespace("quickr", quietly = TRUE)) {

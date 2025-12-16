@@ -1,30 +1,6 @@
-eval_graph_pjrt <- function(graph, ...) {
+compile_graph_pjrt <- function(graph) {
   testthat::skip_if_not_installed("pjrt")
   testthat::skip_if_not_installed("stablehlo")
-
-  args <- anvil:::flatten(list(...))
-  if (length(args) != length(graph@inputs)) {
-    cli::cli_abort("Expected {length(graph@inputs)} inputs, got {length(args)}")
-  }
-
-  args_nv <- Map(function(x, gval) {
-    if (inherits(x, "AnvilTensor")) {
-      return(x)
-    }
-    expected_shape <- gval@aval@shape@dims
-    expected_dtype <- as.character(gval@aval@dtype)
-    if (expected_dtype == "i1") {
-      expected_dtype <- "pred"
-    }
-    if (!length(expected_shape)) {
-      if (length(x) != 1L) {
-        cli::cli_abort("Expected scalar input")
-      }
-      nv_scalar(x, dtype = expected_dtype)
-    } else {
-      nv_tensor(x, dtype = expected_dtype, shape = expected_shape)
-    }
-  }, args, graph@inputs)
 
   out <- stablehlo(graph)
   func <- out[[1L]]
@@ -40,9 +16,9 @@ eval_graph_pjrt <- function(graph, ...) {
   src <- stablehlo::repr(func)
   program <- pjrt::pjrt_program(src = src, format = "mlir")
   exec <- pjrt::pjrt_compile(program)
-  out_vals <- rlang::exec(pjrt::pjrt_execute, exec, !!!const_tensors, !!!args_nv, simplify = FALSE)
-  out_vals <- lapply(out_vals, nv_tensor)
-  out_nv <- unflatten(graph@out_tree, out_vals)
+
+  input_nodes <- graph@inputs
+  out_tree <- graph@out_tree
 
   as_r <- function(x) {
     if (inherits(x, "AnvilTensor")) {
@@ -54,5 +30,39 @@ eval_graph_pjrt <- function(graph, ...) {
     x
   }
 
-  as_r(out_nv)
+  function(...) {
+    args <- anvil:::flatten(list(...))
+    if (length(args) != length(input_nodes)) {
+      cli::cli_abort("Expected {length(input_nodes)} inputs, got {length(args)}")
+    }
+
+    args_nv <- Map(function(x, gval) {
+      if (inherits(x, "AnvilTensor")) {
+        return(x)
+      }
+      expected_shape <- gval@aval@shape@dims
+      expected_dtype <- as.character(gval@aval@dtype)
+      if (expected_dtype == "i1") {
+        expected_dtype <- "pred"
+      }
+      if (!length(expected_shape)) {
+        if (length(x) != 1L) {
+          cli::cli_abort("Expected scalar input")
+        }
+        nv_scalar(x, dtype = expected_dtype)
+      } else {
+        nv_tensor(x, dtype = expected_dtype, shape = expected_shape)
+      }
+    }, args, input_nodes)
+
+    out_vals <- rlang::exec(pjrt::pjrt_execute, exec, !!!const_tensors, !!!args_nv, simplify = FALSE)
+    out_vals <- lapply(out_vals, nv_tensor)
+    out_nv <- unflatten(out_tree, out_vals)
+    as_r(out_nv)
+  }
+}
+
+eval_graph_pjrt <- function(graph, ...) {
+  run <- compile_graph_pjrt(graph)
+  run(...)
 }

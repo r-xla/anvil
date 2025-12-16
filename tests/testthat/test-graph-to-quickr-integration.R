@@ -19,7 +19,7 @@ test_that("integration: MNIST-shaped classifier training from rank-5 image batch
   W <- matrix(rnorm(d * k, sd = 0.05), nrow = d, ncol = k)
   b <- rnorm(k, sd = 0.05)
 
-  scale <- nv_scalar(1.0 / (n * k), dtype = "f32")
+  scale <- nv_scalar(1.0 / (n * k), dtype = "f64")
 
   loss_fn <- function(X, Y, W, b) {
     X2 <- nv_reshape(X, shape = c(n, d))
@@ -39,26 +39,30 @@ test_that("integration: MNIST-shaped classifier training from rank-5 image batch
   graph <- trace_fn(
     loss_and_grad,
     list(
-      X = nv_tensor(X, dtype = "f32", shape = dim(X)),
-      Y = nv_tensor(Y, dtype = "f32", shape = dim(Y)),
-      W = nv_tensor(W, dtype = "f32", shape = dim(W)),
-      b = nv_tensor(b, dtype = "f32", shape = c(k))
+      X = nv_tensor(X, dtype = "f64", shape = dim(X)),
+      Y = nv_tensor(Y, dtype = "f64", shape = dim(Y)),
+      W = nv_tensor(W, dtype = "f64", shape = dim(W)),
+      b = nv_tensor(b, dtype = "f64", shape = c(k))
     )
   )
 
   f_quick <- graph_to_quickr_function(graph)
+  run_pjrt <- compile_graph_pjrt(graph)
 
   out_quick0 <- f_quick(X, Y, W, b)
-  out_pjrt0 <- eval_graph_pjrt(graph, X, Y, W, b)
-  expect_equal(out_quick0, out_pjrt0, tolerance = 1e-4)
+  out_pjrt0 <- run_pjrt(X, Y, W, b)
+  expect_equal(out_quick0, out_pjrt0, tolerance = 1e-10)
 
   lr <- 0.1
   losses <- numeric(5)
   for (iter in seq_along(losses)) {
-    out <- f_quick(X, Y, W, b)
-    losses[[iter]] <- as.numeric(out$loss)
-    W <- W - lr * out$grad$W
-    b <- b - lr * out$grad$b
+    out_quick <- f_quick(X, Y, W, b)
+    out_pjrt <- run_pjrt(X, Y, W, b)
+    expect_equal(out_quick, out_pjrt, tolerance = 1e-10)
+
+    losses[[iter]] <- as.numeric(out_quick$loss)
+    W <- W - lr * out_quick$grad$W
+    b <- b - lr * out_quick$grad$b
   }
   expect_lt(losses[[length(losses)]], losses[[1L]])
 })
@@ -72,10 +76,10 @@ test_that("integration: tfp/greta-like log_prob + grad workflow via quickr", {
   x <- as.numeric(scale(seq_len(n)))
   y <- 1.5 * x - 0.3 + rnorm(n, sd = 0.15)
 
-  x_nv <- nv_tensor(x, dtype = "f32", shape = c(n))
-  y_nv <- nv_tensor(y, dtype = "f32", shape = c(n))
+  x_nv <- nv_tensor(x, dtype = "f64", shape = c(n))
+  y_nv <- nv_tensor(y, dtype = "f64", shape = c(n))
 
-  half <- nv_scalar(0.5, dtype = "f32")
+  half <- nv_scalar(0.5, dtype = "f64")
 
   log_joint <- function(w, b) {
     mu <- w * x_nv + b
@@ -96,16 +100,17 @@ test_that("integration: tfp/greta-like log_prob + grad workflow via quickr", {
   graph <- trace_fn(
     logp_and_grad,
     list(
-      w = nv_scalar(0.0, dtype = "f32"),
-      b = nv_scalar(0.0, dtype = "f32")
+      w = nv_scalar(0.0, dtype = "f64"),
+      b = nv_scalar(0.0, dtype = "f64")
     )
   )
 
   f_quick <- graph_to_quickr_function(graph)
+  run_pjrt <- compile_graph_pjrt(graph)
 
   out_quick0 <- f_quick(0.1, -0.2)
-  out_pjrt0 <- eval_graph_pjrt(graph, 0.1, -0.2)
-  expect_equal(out_quick0, out_pjrt0, tolerance = 1e-4)
+  out_pjrt0 <- run_pjrt(0.1, -0.2)
+  expect_equal(out_quick0, out_pjrt0, tolerance = 1e-10)
 
   # A few steps of gradient ascent (MAP for this quadratic objective).
   w <- 0.0
@@ -114,9 +119,12 @@ test_that("integration: tfp/greta-like log_prob + grad workflow via quickr", {
 
   step <- 0.01
   for (iter in seq_len(10)) {
-    out <- f_quick(w, b)
-    w <- w + step * as.numeric(out$grad$w)
-    b <- b + step * as.numeric(out$grad$b)
+    out_quick <- f_quick(w, b)
+    out_pjrt <- run_pjrt(w, b)
+    expect_equal(out_quick, out_pjrt, tolerance = 1e-10)
+
+    w <- w + step * as.numeric(out_quick$grad$w)
+    b <- b + step * as.numeric(out_quick$grad$b)
   }
 
   lp1 <- as.numeric(f_quick(w, b)$log_prob)
