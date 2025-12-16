@@ -182,10 +182,10 @@ test_that("jit: tensor return value is not wrapped in list", {
 })
 
 test_that("error message when using wrong device", {
-  skip_if(!is_metal())
+  skip_if(!is_cuda())
   f <- jit(\(x) x, device = "cpu")
-  x <- nv_tensor(1, device = "metal")
-  expect_error(f(x), "but buffer has device metal")
+  x <- nv_tensor(1, device = "cuda")
+  expect_error(f(x), "but buffer has device cuda")
 })
 
 test_that("constants can be part of the program", {

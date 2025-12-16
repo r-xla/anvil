@@ -62,7 +62,6 @@ test_that("p_dot_general: matrix-vector with summed loss", {
 })
 
 test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
-  skip_if_metal()
   # Helpers to reduce repetition
   make_ones_like <- function(Y) {
     nv_tensor(
@@ -320,7 +319,6 @@ test_that("p_min", {
 })
 
 test_that("p_convert backward converts gradients to the input dtype", {
-  skip_if_metal()
   x_arr <- array(1:6, c(2, 3))
   x <- nv_tensor(x_arr, dtype = "f32")
   f <- jit(gradient(function(x) {
