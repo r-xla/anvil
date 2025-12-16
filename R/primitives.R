@@ -1,13 +1,6 @@
 #' @include utils.R
 #' @include type-converters.R
 
-# Type inference helper functions for graph building
-#' @importFrom stablehlo infer_types_generic_biv infer_types_generic_uni
-#' @importFrom stablehlo infer_types_integerish_biv infer_types_integerish_uni
-#' @importFrom stablehlo infer_types_compare infer_types_transpose infer_types_reshape
-#' @importFrom stablehlo infer_types_broadcast_in_dim infer_types_convert
-#' @importFrom stablehlo infer_types_dot_general infer_types_select
-
 infer_binary <- function(lhs, rhs) {
   stablehlo::infer_types_generic_biv(lhs, rhs)@items
 }
