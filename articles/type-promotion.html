@@ -614,10 +614,11 @@ follows:</p>
 known types during promotion. Therefore, the <code>common_dtype</code>
 function has two arguments indicating which of the data types are
 ambiguous. Below, the first type is a known <code>f64</code> and the
-second is an ambiguous <code>f32</code>. The result is the known
-<code>f64</code>, although we would promote to an <code>f64</code> if
-both were known. If both types are ambiguous, the result is generally
-the same as if both were known.</p>
+second is an ambiguous <code>f32</code>. Within anvil, we denote the
+latter as <code>i32?</code>. The result is an <code>f64</code>, although
+we would promote to an <code>f64</code> if both were known. If both
+types are ambiguous, the result is generally the same as if both were
+known.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/common_dtype.html">common_dtype</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="st">"f64"</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $dtype</span></span>
@@ -1129,7 +1130,7 @@ example:</p>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##  4</span></span>
 <span><span class="co">## [ CPUi16{} ]</span></span></code></pre>
-<p>The type of <code>z</code> is an ambiguous <code>i32</code>, because
+<p>The type of <code>z</code> is <code>i32?</code>, because
 <code>x</code> is promoted to an <code>i32</code>, the default type of
 the <code>1L</code> literal. If <code>z</code> was not ambiguous, the
 output would be an <code>i32</code>, because the <code>y</code> would be
