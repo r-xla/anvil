@@ -18,22 +18,12 @@ navbar:
       menu:
       - text: Get Started
         href: articles/anvil.html
-      - text: Primitives Reference
+      - text: Type Promotion
+        href: articles/type-promotion.html
+      - text: Primitives Overview
         href: articles/primitives.html
     technical:
       text: Technical
       menu:
       - text: Internals
         href: articles/internals.html
-
-articles:
-- title: Articles
-  navbar: ~
-  contents:
-  - anvil
-  - primitives
-- title: Technical
-  navbar: ~
-  contents:
-  - internals
-  - type-promotion
