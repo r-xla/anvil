@@ -5,8 +5,8 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Abstract Tensor Class — AbstractTensor"><meta name="description" content="Abstract representation of a tensor with a known dtype and shape, but no concrete data.
-Used during tracing to represent tensor metadata without actual values."><meta property="og:description" content="Abstract representation of a tensor with a known dtype and shape, but no concrete data.
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Abstract Tensor Class — AbstractTensor"><meta name="description" content="Abstract representation of a tensor with a (possibly ambiguous) dtype and shape, but no concrete data.
+Used during tracing to represent tensor metadata without actual values."><meta property="og:description" content="Abstract representation of a tensor with a (possibly ambiguous) dtype and shape, but no concrete data.
 Used during tracing to represent tensor metadata without actual values."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -54,7 +54,7 @@ Used during tracing to represent tensor metadata without actual values."></head>
     </div>
 
     <div class="ref-description section level2">
-    <p>Abstract representation of a tensor with a known dtype and shape, but no concrete data.
+    <p>Abstract representation of a tensor with a (possibly ambiguous) dtype and shape, but no concrete data.
 Used during tracing to represent tensor metadata without actual values.</p>
     </div>
 
@@ -80,8 +80,8 @@ The shape of the tensor. Can be provided as an integer vector.</p></dd>
 <dt id="arg-ambiguous">ambiguous<a class="anchor" aria-label="anchor" href="#arg-ambiguous"></a></dt>
 <dd><p>(<code>logical(1)</code>)<br>
 Whether the type is ambiguous. Ambiguous usually arise from R literals
-(e.g., <code>1L</code>, <code>1.0</code>, <code>TRUE</code>) and follow special promotion rules.
-Only <code>f32</code>, <code>i32</code>, and <code>i1</code> (bool) can be ambiguous during tracing.</p></dd>
+(e.g., <code>1L</code>, <code>1.0</code>) and follow special promotion rules.
+Only <code>f32</code>, <code>i32</code> are ambiguous during tracing.</p></dd>
 
 </dl></div>
     <div class="section level2">

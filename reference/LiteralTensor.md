@@ -1,8 +1,8 @@
 # Literal Tensor Class
 
 A [`AbstractTensor`](AbstractTensor.md) representing a tensor where the
-data is a R scalar literal (e.g., `1L`, `2.5`, `TRUE`). Usually, their
-type is ambiguous, unless created via [`nv_fill`](nv_fill.md).
+data is a R scalar literal (e.g., `1L`, `2.5`). Usually, their type is
+ambiguous, unless created via [`nv_fill`](nv_fill.md).
 
 ## Usage
 
@@ -33,8 +33,8 @@ LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
 
   (`logical(1)`)  
   Whether the type is ambiguous. Ambiguous usually arise from R literals
-  (e.g., `1L`, `1.0`, `TRUE`) and follow special promotion rules. Only
-  `f32`, `i32`, and `i1` (bool) can be ambiguous during tracing.
+  (e.g., `1L`, `1.0`) and follow special promotion rules. Only `f32` and
+  `i32` can be ambiguous during tracing.
 
 ## See also
 
