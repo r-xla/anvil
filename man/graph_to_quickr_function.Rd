@@ -18,6 +18,9 @@ Lowers a supported subset of \code{anvil::Graph} objects to a plain R function a
 compiles it with \code{quickr::quick()}.
 }
 \details{
+The returned function expects plain R scalars/vectors/arrays (not
+\code{\link{AnvilTensor}}) and returns plain R values/arrays.
+
 If the graph returns multiple outputs (e.g. a nested list), the compiled
 function returns the same structure by packing/unpacking values for {quickr}.
 

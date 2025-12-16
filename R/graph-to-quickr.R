@@ -6,6 +6,9 @@ NULL
 #' Lowers a supported subset of `anvil::Graph` objects to a plain R function and
 #' compiles it with `quickr::quick()`.
 #'
+#' The returned function expects plain R scalars/vectors/arrays (not
+#' [`AnvilTensor`]) and returns plain R values/arrays.
+#'
 #' If the graph returns multiple outputs (e.g. a nested list), the compiled
 #' function returns the same structure by packing/unpacking values for {quickr}.
 #'
