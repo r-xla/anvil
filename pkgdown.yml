@@ -4,5 +4,6 @@ pkgdown_sha: ~
 articles:
   anvil: anvil.html
   internals: internals.html
+  primitives: primitives.html
   type-promotion: type-promotion.html
-last_built: 2025-12-16T18:41Z
+last_built: 2025-12-16T19:04Z
