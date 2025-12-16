@@ -25,8 +25,7 @@
 - [`.current_descriptor()`](dot-current_descriptor.md) : Get the current
   graph
 
-- [`gradient()`](gradient.md) [`value_and_gradient()`](gradient.md) :
-  Gradient
+- [`gradient()`](gradient.md) : Gradient
 
 - [`jit()`](jit.md) : JIT compile a function
 
