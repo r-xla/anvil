@@ -14,7 +14,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/r-xla/anvil/blob/overview-table/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/r-xla/anvil/blob/feat-literals/DESCRIPTION)
 
 Fischer S, Falbel D, German N (2025). *anvil: Framework for R code
 transformations*. R package version 0.0.0.9000,

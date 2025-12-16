@@ -5,12 +5,12 @@ Value in a [`Graph`](Graph.md).
 ## Usage
 
 ``` r
-GraphValue(aval = ShapedTensor())
+GraphValue(aval = AbstractTensor())
 ```
 
 ## Arguments
 
 - aval:
 
-  (`ShapedTensor`)  
+  ([`AbstractTensor`](AbstractTensor.md))  
   The abstract value of the variable.

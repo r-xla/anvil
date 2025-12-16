@@ -41,14 +41,8 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/anvil.html">Get Started</a></li>
-    <li><a class="dropdown-item" href="../articles/primitives.html">Primitives Reference</a></li>
-  </ul>
-</li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-technical" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Technical</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-technical">
 <li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
+    <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
   </ul>
 </li>
       </ul>
@@ -81,7 +75,7 @@
       <h1>Get Started</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/overview-table/vignettes/anvil.Rmd" class="external-link"><code>vignettes/anvil.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-literals/vignettes/anvil.Rmd" class="external-link"><code>vignettes/anvil.Rmd</code></a></small>
       <div class="d-none name"><code>anvil.Rmd</code></div>
     </div>
 
@@ -94,8 +88,8 @@ experience with JAX in Python, you should feel right at home.</p>
 <h2 id="the-anviltensor">The <code>AnvilTensor</code><a class="anchor" aria-label="anchor" href="#the-anviltensor"></a>
 </h2>
 <p>We will start by introducing the main data structure, which is the
-<code>AnvilTensor</code>. It is essentially like an <code>R</code>
-array, with some differences:</p>
+<code>AnvilTensor</code>. It is essentially like an R array, with some
+differences:</p>
 <ol style="list-style-type: decimal">
 <li>It supports more data types, such as different precisions, as well
 as unsigned integers.</li>
@@ -103,10 +97,9 @@ as unsigned integers.</li>
 GPU.</li>
 <li>0-dimensional tensors can be used to represent scalars.</li>
 </ol>
-<p>We can create such an object from R data types using the
-<code>nv_tensor</code> and related functions. Below, we create a
-0-dimensional tensor (i.e., a scalar) of type <code>int16</code> on the
-CPU.</p>
+<p>We can create an <code>AnvilTensor</code> from R objects using
+<code>nv_tensor</code>. Below, we create a 0-dimensional tensor (i.e., a
+scalar) that holds a 16-bit integer on the CPU.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/" class="external-link">anvil</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
@@ -115,34 +108,30 @@ CPU.</p>
 <span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUi16{} ]</span></span></code></pre>
 <p>Note that for the creation of scalars, you can also use
-<code>nv_scalar</code> as a shorthand to skip specifying the shape.</p>
+<code>nv_scalar</code> as a shorthand to skip specifying the shape and
+omit specifying the device, as CPU is the default.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1L</span>, dtype <span class="op">=</span> <span class="st">"i16"</span>, device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1L</span>, dtype <span class="op">=</span> <span class="st">"i16"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUi16{} ]</span></span></code></pre>
-<p>We can also create higher-dimensional tensors, for example a 2x3 CPU
-tensor of type <code>f32</code>. Below, we omit specifying the platform
-and data type, as it will default to <code>"cpu"</code>. The default
-data type depends on the input data type. It is <code>"f32"</code> for R
-doubles and <code>"i32"</code> for integers.</p>
+<p>We can also create higher-dimensional tensors, for example a 2x3
+tensor with single-precision floating-point numbers. Without specifying
+the data type, it will default to <code>"f32"</code> for R doubles and
+<code>"i32"</code> for integers.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="va">y</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##  1 3 5</span></span>
 <span><span class="co">##  2 4 6</span></span>
 <span><span class="co">## [ CPUi32{2x3} ]</span></span></code></pre>
+<p>The <code><a href="https://r-xla.github.io/tengen/reference/as_array.html" class="external-link">as_array()</a></code> function allows to convert
+<code>AnvilTensor</code>s back to R objects. Note that for 0-dimensional
+tensors, the result is an R vector of length 1, as R arrays cannot have
+0 dimensions.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">x</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
-<span><span class="va">y</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilTensor </span></span>
-<span><span class="co">##  1.0000 3.0000 5.0000</span></span>
-<span><span class="co">##  2.0000 4.0000 6.0000</span></span>
-<span><span class="co">## [ CPUf32{2x3} ]</span></span></code></pre>
-<p>In order to convert an <code>AnvilTensor</code> back to a regular R
-array, you can use the <code><a href="https://r-xla.github.io/tengen/reference/as_array.html" class="external-link">as_array()</a></code> function.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://r-xla.github.io/tengen/reference/as_array.html" class="external-link">as_array</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3]</span></span>
 <span><span class="co">## [1,]    1    3    5</span></span>
@@ -150,12 +139,12 @@ array, you can use the <code><a href="https://r-xla.github.io/tengen/reference/a
 <p>At first, working with <code>AnvilTensor</code>s may feel a bit
 cumbersome, because you cannot directly apply functions to them like you
 would with regular R arrays.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">+</span> <span class="va">x</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3]</span></span>
 <span><span class="co">## [1,]    2    6   10</span></span>
 <span><span class="co">## [2,]    4    8   12</span></span></code></pre>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="op">+</span> <span class="va">y</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `.current_descriptor()`:</span></span></span>
 <span><span class="co">## <span style="color: #BBBB00;">!</span> No graph is currently being built. Did you forget to use `jit()`?</span></span></code></pre>
@@ -165,20 +154,21 @@ would with regular R arrays.</p>
 </h2>
 <p>In order to work with <code>AnvilTensor</code>s, you need to convert
 the function you want to apply to a jit-compiled version via
-<code><a href="../reference/jit.html">anvil::jit()</a></code>.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code><a href="../reference/jit.html">jit()</a></code>.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plus_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">`+`</span><span class="op">)</span></span>
 <span><span class="fu">plus_jit</span><span class="op">(</span><span class="va">y</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
-<span><span class="co">##   2.0000  6.0000 10.0000</span></span>
-<span><span class="co">##   4.0000  8.0000 12.0000</span></span>
-<span><span class="co">## [ CPUf32{2x3} ]</span></span></code></pre>
+<span><span class="co">##   2  6 10</span></span>
+<span><span class="co">##   4  8 12</span></span>
+<span><span class="co">## [ CPUi32{2x3} ]</span></span></code></pre>
 <p>The result of the operation is again an <code>AnvilTensor</code>.</p>
-<p>We can, of course, jit-compile more complex functions as well.</p>
-<p>Below, we define a function that takes in a data matrix
-<code>X</code>, a weight vector <code>beta</code>, and a scalar bias
-<code>alpha</code>, and computes the linear model output <span class="math inline">\(y = X \times \beta + \alpha\)</span>.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<p>We can also jit-compile more complex functions. Below, we define a
+function that takes in a data matrix <code>X</code>, a weight vector
+<code>beta</code>, and a scalar bias <code>alpha</code>, and computes
+the linear model output <span class="math inline">\(y = X \times \beta +
+\alpha\)</span>.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_model_r</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta</span> <span class="op">+</span> <span class="va">alpha</span></span>
 <span><span class="op">}</span></span>
@@ -194,18 +184,18 @@ the function you want to apply to a jit-compiled version via
 <span><span class="co">##   2.7911</span></span>
 <span><span class="co">##  -1.1904</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
-<p>One current restriction of {anvil} is that the function has to be
-re-compiled for every unique combination of input types, each consisting
-of a specific shape and data type. To demonstrate this, we create a
-slightly modified version of <code>linear_model</code>:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<p>One restriction of {anvil} is that a function has to be re-compiled
+for every unique combination of input types, each consisting of a
+specific shape and data type. To demonstrate this, we create a slightly
+modified version of our previous linear predictor function:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_model2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"compiling ...\n"</span><span class="op">)</span></span>
 <span>  <span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta</span> <span class="op">+</span> <span class="va">alpha</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<p>Next, we create a little helper function that creates example input
-data with different numbers of observations:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<p>Next, we create a little helper function that creates example inputs
+with different numbers of observations:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">simul_data</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span>, <span class="va">p</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    X <span class="op">=</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span> <span class="op">*</span> <span class="va">p</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">n</span>, <span class="va">p</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -214,48 +204,47 @@ data with different numbers of observations:</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Below, we call the function twice on data with the same shapes.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">linear_model2</span>, <span class="fu">simul_data</span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## compiling ...</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##   4.9640</span></span>
 <span><span class="co">##  -0.1413</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">linear_model2</span>, <span class="fu">simul_data</span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##   0.6140</span></span>
 <span><span class="co">##  -2.5214</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
 <p>We can notice that we only see the <code>"compiling ..."</code>
-message the first and third time. This is because the first time, the
-function is compiled into an <code>XLA</code> executable and cached for
-later reuse. The second time, we don’t execute the R function at all,
-but directly run the cached <code>XLA</code> executable. This executable
-does not contain “standard” R code, like the <code><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat()</a></code> call,
-but records only the operations applied to
-<code>AnvilTensor</code>s.</p>
-<p>If we now call the function on data with different shapes, we see
-that the function is re-compiled.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+message the first time, where the function is first compiled into an XLA
+executable, cached, and executed. The second time, the executable is
+retrieved from the cache (because the inputs have the same shapes and
+data types) and executed without recompilation. Because the executable
+contains only the operations applied to <code>AnvilTensor</code>s, it
+does not contain the <code><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat()</a></code> call, so we don’t see it the
+second time.</p>
+<p>If we call the function on data with different shapes (or data
+types), the function is re-compiled and the message re-appears.</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">linear_model2</span>, <span class="fu">simul_data</span><span class="op">(</span><span class="fl">4</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## compiling ...</span></span></code></pre>
 <p>Because the compilation step itself can take some time, {anvil}
 therefore gives the best results when the same function is called many
-times with the same input shapes, data types, and platforms, or the
+times with the same (or only a few different) input types, or the
 computation itself is sufficiently large to amortize the compilation
 overhead.</p>
 <div class="section level3">
 <h3 id="static-arguments">Static Arguments<a class="anchor" aria-label="anchor" href="#static-arguments"></a>
 </h3>
-<p>One feature of {anvil} is that not all arguments of
-<code>jit</code>-compiled functions need to be
-<code>AnvilTensor</code>s. For example, we might want a linear model
-with or without an intercept term. To do so, we add the logical argument
-<code>with_bias</code> to our function. We need to mark this argument as
-<code>static</code>, so {anvil} knows to treat it as a regular R value
-instead of an <code>AnvilTensor</code>.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<p>Besides <code>AnvilTensor</code>s, jit-compiled functions can also
+take in regular R values as arguments. For example, we might want a
+linear model with or without a bias term. To do so, we add the
+<code>logical(1)</code> argument <code>with_bias</code> to our function.
+We need to mark this argument as <code>static</code>, so {anvil} knows
+to treat it as a regular R value.</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_model3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">with_bias</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="va">with_bias</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Compiling with bias ...\n"</span><span class="op">)</span></span>
@@ -266,14 +255,14 @@ instead of an <code>AnvilTensor</code>.</p>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span>, static <span class="op">=</span> <span class="st">"with_bias"</span><span class="op">)</span></span></code></pre></div>
 <p>We can now call this function with or without a bias term:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">linear_model3</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, with_bias <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Compiling without bias ...</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##   2.8538</span></span>
 <span><span class="co">##  -1.1277</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">linear_model3</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, with_bias <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Compiling with bias ...</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
@@ -281,19 +270,16 @@ instead of an <code>AnvilTensor</code>.</p>
 <span><span class="co">##  -1.1904</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
 <p>Static arguments work differently than <code>AnvilTensors</code> as
-the function will not be re-compiled for each new observed value of the
-static argument.</p>
+the function will be re-compiled for each new observed value of the
+static argument, not only each unique input type combination.</p>
 </div>
 <div class="section level3">
 <h3 id="nested-inputs-and-outputs">Nested Inputs and Outputs<a class="anchor" aria-label="anchor" href="#nested-inputs-and-outputs"></a>
 </h3>
-<p>Static arguments work differently than <code>AnvilTensors</code>, as
-the function will not be re-compiled for each new observed value of the
-static argument.</p>
-<p>Note also that the inputs, as well as the outputs, can also contain
-nested data structures that contain <code>AnvilTensor</code>s, although
-we currently only support (named) lists.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<p>Inputs and outputs can also be nested data structures that contain
+<code>AnvilTensor</code>s, although we currently only support (named)
+lists.</p>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_model4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">inputs</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>y_hat <span class="op">=</span> <span class="va">inputs</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">inputs</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="va">inputs</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
@@ -303,8 +289,8 @@ we currently only support (named) lists.</p>
 <span><span class="co">##   2.7911</span></span>
 <span><span class="co">##  -1.1904</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
-<p>So far, we have only implemented the prediction step for a linear
-model. One of the core applications of anvil is to implement learning
+<p>So far, we have only implemented the prediction step for the linear
+model. One of the core applications of {anvil} is to implement learning
 algorithms, for which we often need gradients, as well as control flow.
 We will start with gradients.</p>
 </div>
@@ -312,34 +298,34 @@ We will start with gradients.</p>
 <div class="section level2">
 <h2 id="automatic-differentiation">Automatic Differentiation<a class="anchor" aria-label="anchor" href="#automatic-differentiation"></a>
 </h2>
-<p>In anvil, you can easily obtain the gradient function of a
-scalar-valued function using <code><a href="../reference/gradient.html">gradient()</a></code>. Currently,
-vector-valued functions cannot be differentiated. Below, we implement
-the loss function for our linear model.</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<p>In {anvil}, you can easily obtain the gradient function of a
+scalar-valued function via <code><a href="../reference/gradient.html">gradient()</a></code>. Currently, we don’t
+support jacobians or hessians, but this will hopefilly be added in the
+future. Below, we implement the loss function for our linear model.</p>
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mse</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">y_hat</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">y_hat</span> <span class="op">-</span> <span class="va">y</span><span class="op">)</span><span class="op">^</span><span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2.0</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">y_hat</span> <span class="op">-</span> <span class="va">y</span><span class="op">)</span><span class="op">^</span><span class="fl">2.0</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>We now need some target variables <code>y</code>, so we simulate some
 data from a linear model:</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">beta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta</span> <span class="op">+</span> <span class="va">alpha</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">100</span>, sd <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <p><img src="anvil_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <p>Next, we randomly initialize the model parameters:</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
 <span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></code></pre></div>
 <p>We can now define a function that does the prediction and calculates
 the loss. Note that we are calling into the original R function that
 does the prediction and not its jit-compiled version.</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_loss</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">y_hat</span> <span class="op">&lt;-</span> <span class="fu">linear_model_r</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span><span class="op">)</span></span>
 <span>  <span class="fu">mse</span><span class="op">(</span><span class="va">y_hat</span>, <span class="va">y</span><span class="op">)</span></span>
@@ -347,25 +333,24 @@ does the prediction and not its jit-compiled version.</p>
 <p>Using the <code><a href="../reference/gradient.html">gradient()</a></code> transformation, we can
 automatically obtain the gradient function of <code>model_loss</code>
 with respect to some of its arguments, which we specify.</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_loss_grad</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gradient.html">gradient</a></span><span class="op">(</span></span>
 <span>  <span class="va">model_loss</span>,</span>
 <span>  wrt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"beta"</span>, <span class="st">"alpha"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Finally, we define the update step for the weights using gradient
 descent.</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">update_weights_r</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span></span>
+<span>  <span class="va">lr</span> <span class="op">&lt;-</span> <span class="fl">0.1</span></span>
 <span>  <span class="va">grads</span> <span class="op">&lt;-</span> <span class="fu">model_loss_grad</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span></span>
 <span>  <span class="va">beta_new</span> <span class="op">&lt;-</span> <span class="va">beta</span> <span class="op">-</span> <span class="va">lr</span> <span class="op">*</span> <span class="va">grads</span><span class="op">$</span><span class="va">beta</span></span>
 <span>  <span class="va">alpha_new</span> <span class="op">&lt;-</span> <span class="va">alpha</span> <span class="op">-</span> <span class="va">lr</span> <span class="op">*</span> <span class="va">grads</span><span class="op">$</span><span class="va">alpha</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">beta_new</span>, alpha <span class="op">=</span> <span class="va">alpha_new</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">update_weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">update_weights_r</span><span class="op">)</span></span></code></pre></div>
-<p>This already allows us to train our linear model using gradient
-descent:</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<p>This already allows us to fit the linear model</p>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">beta_hat</span>, alpha <span class="op">=</span> <span class="va">alpha_hat</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">weights</span> <span class="op">&lt;-</span> <span class="fu">update_weights</span><span class="op">(</span><span class="va">X</span>, <span class="va">weights</span><span class="op">$</span><span class="va">beta</span>, <span class="va">weights</span><span class="op">$</span><span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span></span>
@@ -374,17 +359,16 @@ descent:</p>
 <p>While this might seem like a reasonable solution, it continuously
 switches between the R interpreter and the XLA runtime. Moreover, we
 allocate new tensors in each iteration for the weights. While the latter
-might not be a big problem for small models, it can lead to significant
+might not be a big problem for small models, it can cause significant
 overhead when working with bigger tensors.</p>
-<p>Next, we will address immutability in anvil before we briefly discuss
-control flow.</p>
+<p>Next, we will discuss control flow in {anvil} before we address
+immutability.</p>
 </div>
 <div class="section level2">
 <h2 id="control-flow">Control Flow<a class="anchor" aria-label="anchor" href="#control-flow"></a>
 </h2>
-<p>Earlier, we have already used R control flow to train our linear
-model. In principle, there are three ways to implement control-flow in
-anvil:</p>
+<p>In principle, there are three ways to implement control-flow in
+{anvil}:</p>
 <ol style="list-style-type: decimal">
 <li>Embed jit-compiled functions inside R control-flow constructs, which
 we have seen earlier.</li>
@@ -400,7 +384,7 @@ illustrate this with our linear model training example from earlier. The
 first implementation is what we have already seen earlier: we
 jit-compile the update step and then repeatedly call it in an R
 loop:</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">n_steps</span> <span class="op">&lt;-</span> <span class="fl">100L</span></span>
 <span><span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
 <span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
@@ -420,17 +404,18 @@ loop:</p>
 <span><span class="co">##  -0.4376</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <p>For simple update steps, this solution can be inefficient because
-every call into a jit-compiled function has some overhead. How important
-this overhead is depends on how expensive each call in the loop is – for
-expensive functions the overhead becomes negligible.</p>
+every call into a jit-compiled function has some overhead. How
+significant this overhead is depends on how expensive each call in the
+loop is – for expensive functions the overhead becomes negligible.</p>
 <p>The second approach is to use an R loop within the jit-compiled
-function. There, the loop will be unrolled during the compilation step.
-This will be extremely slow in the example at hand, because we will also
-re-compute the gradient in each iteration. The parameter
-<code>n_steps</code> is static, which means that for every unique value
-of <code>n_steps</code>, the function will be re-compiled into a
-different executable.</p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+function. There, the loop will be unrolled during the compilation step
+(for conditionals, only one branch is included in the executable as
+discussed earlier). This will be rather slow in the example at hand,
+because we will also re-compute the gradient function in each iteration.
+Moreover, the parameter <code>n_steps</code> is static, which means that
+for every unique value of <code>n_steps</code>, the function will be
+re-compiled into a different executable.</p>
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">train_unrolled</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span>, <span class="va">n_steps</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_steps</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -454,21 +439,20 @@ different executable.</p>
 <span><span class="co">##  -0.3703</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <p>Finally, the third approach is to use the <code>nv_while</code>
-function. It is not like the standard while loop, because
+function. It is not like a standard while loop, because
 <code>anvil</code> is purely functional.</p>
 <p>The function takes in:</p>
 <ol style="list-style-type: decimal">
 <li>An initial state, which is a (nested) list of
 <code>AnvilTensor</code>s.</li>
 <li>A <code>cond</code> function, which takes as input the current state
-and returns a boolean tensor indicating whether to continue the
-loop.</li>
+and returns a logical flag indicating whether to continue the loop.</li>
 <li>A <code>body</code> function, which takes as input the current state
 and returns a new state.</li>
 </ol>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">train_while</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span>, <span class="va">n_steps</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span></span>
+<span>  <span class="va">lr</span> <span class="op">&lt;-</span> <span class="fl">0.1</span></span>
 <span>  <span class="fu"><a href="../reference/nv_while.html">nv_while</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">beta</span>, alpha <span class="op">=</span> <span class="va">alpha</span>, i <span class="op">=</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    \<span class="op">(</span><span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">i</span><span class="op">)</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="va">n_steps</span>,</span>
@@ -477,7 +461,7 @@ and returns a new state.</li>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>        beta <span class="op">=</span> <span class="va">beta</span> <span class="op">-</span> <span class="va">lr</span> <span class="op">*</span> <span class="va">grads</span><span class="op">$</span><span class="va">beta</span>,</span>
 <span>        alpha <span class="op">=</span> <span class="va">alpha</span> <span class="op">-</span> <span class="va">lr</span> <span class="op">*</span> <span class="va">grads</span><span class="op">$</span><span class="va">alpha</span>,</span>
-<span>        i <span class="op">=</span> <span class="va">i</span> <span class="op">+</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1L</span><span class="op">)</span></span>
+<span>        i <span class="op">=</span> <span class="va">i</span> <span class="op">+</span> <span class="fl">1L</span></span>
 <span>      <span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
 <span>  <span class="op">)</span></span>
@@ -508,52 +492,53 @@ where the {anvil} primitive <code>nv_if</code> is available.</p>
 </h2>
 <p><code>AnvilTensor</code> objects are immutable, i.e., once created,
 their value cannot be changed. In other words, there are conceptually no
-in-place updates like <code>x[1] &lt;- x[1] + 1</code>. In other words,
-{anvil} follows <strong>value semantics</strong>, or functions are
-<strong>pure</strong>. This means every function in {anvil} is a pure
-function, i.e., it does not have any side effects and always returns new
-values. Naturally, this raises the question of how this impacts
-performance. We need to distinguish two scenarios:</p>
+in-place updates like <code>x[1] &lt;- x[1] + 1</code>. This means that
+{anvil} follows <strong>value semantics</strong>, i.e., functions are
+<strong>pure</strong>. Naturally, this raises the question of how this
+impacts performance. We need to distinguish two scenarios:</p>
 <ol style="list-style-type: decimal">
-<li>Updating an <code>AnvilTensor</code> living in <code>R</code>
-through a jit-compiled function.</li>
 <li>Updating an <code>AnvilTensor</code> that “lives within” a
+jit-compiled function.</li>
+<li>Updating an <code>AnvilTensor</code> “living in R” through a
 jit-compiled function.</li>
 </ol>
 <p>For the first scenario, there is nothing to worry about. The XLA
 compiler is able to optimize this, ensuring that no unnecessary copies
 are actually made. This is similar to copy-on-write semantics in R. If
-you do <code>x &lt;- 1:10; y &lt;- x</code>, you are conceptually
+you evaluate <code>x &lt;- 1:10; y &lt;- x</code>, you are conceptually
 creating a copy of <code>x</code> when assigning it to <code>y</code>,
 but internally, this is optimized away and the copy will only be created
-once modifying <code>y</code> or <code>x</code>. Because {anvil} uses
-compilation, it can make many more such optimizations, minimizing
-unnecessary copies where possible.</p>
+when modifying <code>y</code> or <code>x</code>. Because {anvil} uses
+compilation and shapes are known at compile time, it can make many more
+such optimizations, minimizing unnecessary copies as much as
+possible.</p>
 <p>However, there is also the case where one calls into an {anvil}
-function from <code>R</code> code like in the example below:</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+function from R code, as we have done in our initial linear model
+example.</p>
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">weights</span> <span class="op">&lt;-</span> <span class="fu">update_weights</span><span class="op">(</span><span class="va">X</span>, <span class="va">weights</span><span class="op">$</span><span class="va">beta</span>, <span class="va">weights</span><span class="op">$</span><span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
-<p>Because the assignment of the outputs of the {anvil} function to
-<code>R</code> variables does not happen within jit-compiled code, the
-XLA compiler cannot optimize this. If we know that some of the inputs to
-the {anvil} function are not used anymore after the function call, we
-can mark them as “donatable” when jit-compiling.</p>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<p>Because the assignment of the outputs of the {anvil} function to R
+variables does not happen within the executable, the XLA compiler cannot
+optimize this. If we know that some of the inputs to the {anvil}
+function are not needed anymore after the function call (as is the case
+for “update-calls” like above), we can mark them as “donatable” when
+jit-compiling.</p>
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">update_weights_donatable</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">update_weights_r</span>, donate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"beta"</span>, <span class="st">"alpha"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>This will tell the XLA compiler that we no longer need
-<code>alpha</code> and <code>beta</code> after the function call, so
-their underlying memory can be reused.</p>
-<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<p>This will tell the XLA compiler that we no longer need the inputs
+<code>alpha</code> and <code>beta</code> afterwards, so their underlying
+memory can be reused.</p>
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">weights_out</span> <span class="op">&lt;-</span> <span class="fu">update_weights_donatable</span><span class="op">(</span><span class="va">X</span>, <span class="va">weights</span><span class="op">$</span><span class="va">beta</span>, <span class="va">weights</span><span class="op">$</span><span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <p>If we now print the input weights, we get an error because the
 tensors have been deleted.</p>
-<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">weights</span></span></code></pre></div>
 <pre><code><span><span class="co">## $beta</span></span>
 <span><span class="co">## AnvilTensor</span></span></code></pre>
 <pre><code><span><span class="co">## Error: ToLiteral() called on deleted or donated buffer: INVALID_ARGUMENT: Buffer has been deleted or donated.</span></span></code></pre>
 <p>But the new weights are still there.</p>
-<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">weights_out</span></span></code></pre></div>
 <pre><code><span><span class="co">## $beta</span></span>
 <span><span class="co">## AnvilTensor </span></span>

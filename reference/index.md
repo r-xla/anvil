@@ -2,6 +2,10 @@
 
 ## All functions
 
+- [`AbstractTensor()`](AbstractTensor.md) : Abstract Tensor Class
+
+- [`ConcreteTensor()`](ConcreteTensor.md) : Concrete Tensor Class
+
 - [`Graph()`](Graph.md) : Graph of Primitive Calls
 
 - [`GraphDescriptor()`](GraphDescriptor.md) : Graph Descriptor
@@ -10,17 +14,13 @@
 
 - [`GraphValue()`](GraphValue.md) : Graph Value
 
+- [`LiteralTensor()`](LiteralTensor.md) : Literal Tensor Class
+
 - [`Primitive()`](Primitive.md) : Primitive
 
 - [`PrimitiveCall()`](PrimitiveCall.md) : Primitive Call
 
-- [`data_types`](data_types.md) [`dt_i1`](data_types.md)
-  [`dt_i8`](data_types.md) [`dt_i16`](data_types.md)
-  [`dt_i32`](data_types.md) [`dt_i64`](data_types.md)
-  [`dt_ui8`](data_types.md) [`dt_ui16`](data_types.md)
-  [`dt_ui32`](data_types.md) [`dt_ui64`](data_types.md)
-  [`dt_f32`](data_types.md) [`dt_f64`](data_types.md) : Tensor Data
-  Types
+- [`common_dtype()`](common_dtype.md) : Type Promotion Rules
 
 - [`.current_descriptor()`](dot-current_descriptor.md) : Get the current
   graph
@@ -51,6 +51,9 @@
 
 - [`nv_bitcast_convert()`](nv_bitcast_convert.md) : Bitcast Conversion
 
+- [`nv_broadcast_scalars()`](nv_broadcast_scalars.md) : Broadcast
+  Scalars to Common Shape
+
 - [`nv_broadcast_tensors()`](nv_broadcast_tensors.md) : Broadcast
   Tensors to a Common Shape
 
@@ -61,11 +64,14 @@
 - [`nv_convert()`](nv_convert.md) : Convert Tensor to Different Data
   Type
 
-- [`nv_full()`](nv_full.md) : Constant
+- [`nv_fill()`](nv_fill.md) : Constant
 
 - [`nv_if()`](nv_if.md) : If
 
 - [`nv_matmul()`](nv_matmul.md) : Matrix Multiplication
+
+- [`nv_promote_to_common()`](nv_promote_to_common.md) : Promote Tensors
+  to a Common Dtype
 
 - [`nv_reduce_sum()`](nv_reduce_ops.md)
   [`nv_reduce_mean()`](nv_reduce_ops.md)
@@ -110,5 +116,7 @@
 - [`platform()`](platform.md) : Platform
 
 - [`stablehlo()`](stablehlo.md) : Lower a function to StableHLO
+
+- [`to_abstract()`](to_abstract.md) : Convert to Abstract Tensor
 
 - [`trace_fn()`](trace_fn.md) : Trace an R function into a Graph
