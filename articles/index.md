@@ -1,11 +1,8 @@
 # Articles
 
-### Articles
+### All vignettes
 
 - [Get Started](anvil.md):
-- [Primitives Reference](primitives.md):
-
-### Technical
-
 - [Internals](internals.md):
+- [Primitives Reference](primitives.md):
 - [Type Promotion](type-promotion.md):
