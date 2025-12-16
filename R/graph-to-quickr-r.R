@@ -3,10 +3,6 @@ NULL
 
 # Helpers ----------------------------------------------------------------------
 
-quickr_call2 <- function(op, ...) {
-  as.call(c(list(as.name(op)), list(...)))
-}
-
 quickr_tree_leaf_paths <- function(node, path = list()) {
   if (inherits(node, "LeafNode")) {
     return(list(path))
@@ -122,7 +118,7 @@ quickr_zero_literal_for <- function(aval) {
 }
 
 quickr_emit_assign <- function(lhs_sym, rhs_expr) {
-  list(quickr_call2("<-", lhs_sym, rhs_expr))
+  list(rlang::call2("<-", lhs_sym, rhs_expr))
 }
 
 quickr_emit_full_like <- function(out_sym, value_expr, shape_out, out_aval) {
@@ -135,7 +131,7 @@ quickr_emit_full_like <- function(out_sym, value_expr, shape_out, out_aval) {
 
   quickr_emit_assign(
     out_sym,
-    quickr_call2("array", value_expr, dim = as.integer(shape_out))
+    rlang::call2("array", value_expr, dim = as.integer(shape_out))
   )
 }
 
@@ -232,7 +228,7 @@ quickr_emit_dot_general <- function(out_sym, lhs_expr, rhs_expr, lhs_shape, rhs_
     as.call(list(
       as.name("for"),
       var_sym,
-      quickr_call2("seq_len", as.integer(upper)),
+      rlang::call2("seq_len", as.integer(upper)),
       body
     ))
   }
@@ -279,11 +275,11 @@ quickr_emit_dot_general <- function(out_sym, lhs_expr, rhs_expr, lhs_shape, rhs_
 
   alloc_out <- function() {
     if (out_rank == 1L) {
-      quickr_call2("array", zero, dim = out_shape[[1L]])
+      rlang::call2("array", zero, dim = out_shape[[1L]])
     } else if (out_rank == 2L) {
-      quickr_call2("matrix", zero, nrow = out_shape[[1L]], ncol = out_shape[[2L]])
+      rlang::call2("matrix", zero, nrow = out_shape[[1L]], ncol = out_shape[[2L]])
     } else {
-      quickr_call2("array", zero, dim = out_shape)
+      rlang::call2("array", zero, dim = out_shape)
     }
   }
   wrap_out_loops <- function(inner) {
@@ -296,20 +292,20 @@ quickr_emit_dot_general <- function(out_sym, lhs_expr, rhs_expr, lhs_shape, rhs_
 
   if (!length(cd_lhs)) {
     if (out_rank == 0L) {
-      return(quickr_emit_assign(out_sym, quickr_call2("*", lhs_at, rhs_at)))
+      return(quickr_emit_assign(out_sym, rlang::call2("*", lhs_at, rhs_at)))
     }
 
     alloc <- alloc_out()
 
     out_at <- subscript(out_sym, out_idxs)
-    assign_elem <- quickr_call2("<-", out_at, quickr_call2("*", lhs_at, rhs_at))
+    assign_elem <- rlang::call2("<-", out_at, rlang::call2("*", lhs_at, rhs_at))
 
     body <- wrap_out_loops(assign_elem)
 
-    return(list(quickr_call2("<-", out_sym, alloc), body))
+    return(list(rlang::call2("<-", out_sym, alloc), body))
   }
 
-  update_acc <- quickr_call2("<-", acc, quickr_call2("+", acc, quickr_call2("*", lhs_at, rhs_at)))
+  update_acc <- rlang::call2("<-", acc, rlang::call2("+", acc, rlang::call2("*", lhs_at, rhs_at)))
   contract_body <- update_acc
   for (i in seq_along(k_idxs)) {
     contract_body <- for_loop(k_idxs[[i]], lhs_shape[[cd_lhs[[i]]]], contract_body)
@@ -317,9 +313,9 @@ quickr_emit_dot_general <- function(out_sym, lhs_expr, rhs_expr, lhs_shape, rhs_
 
   if (out_rank == 0L) {
     return(list(
-      quickr_call2("<-", acc, zero),
+      rlang::call2("<-", acc, zero),
       contract_body,
-      quickr_call2("<-", out_sym, acc)
+      rlang::call2("<-", out_sym, acc)
     ))
   }
 
@@ -327,14 +323,14 @@ quickr_emit_dot_general <- function(out_sym, lhs_expr, rhs_expr, lhs_shape, rhs_
 
   out_at <- subscript(out_sym, out_idxs)
   elem_body <- block(
-    quickr_call2("<-", acc, zero),
+    rlang::call2("<-", acc, zero),
     contract_body,
-    quickr_call2("<-", out_at, acc)
+    rlang::call2("<-", out_at, acc)
   )
 
   body <- wrap_out_loops(elem_body)
 
-  list(quickr_call2("<-", out_sym, alloc), body)
+  list(rlang::call2("<-", out_sym, alloc), body)
 }
 
 quickr_emit_transpose <- function(out_sym, operand_expr, permutation, out_shape, out_aval) {
@@ -354,16 +350,16 @@ quickr_emit_transpose <- function(out_sym, operand_expr, permutation, out_shape,
   ii <- as.name(paste0("i_", as.character(out_sym)))
   jj <- as.name(paste0("j_", as.character(out_sym)))
 
-  stmts <- quickr_emit_assign(out_sym, quickr_call2("matrix", zero, nrow = m, ncol = n))
-  inner <- quickr_call2("<-", quickr_call2("[", out_sym, ii, jj), quickr_call2("[", operand_expr, jj, ii))
+  stmts <- quickr_emit_assign(out_sym, rlang::call2("matrix", zero, nrow = m, ncol = n))
+  inner <- rlang::call2("<-", rlang::call2("[", out_sym, ii, jj), rlang::call2("[", operand_expr, jj, ii))
 
   c(
     stmts,
     list(as.call(list(
       as.name("for"),
       ii,
-      quickr_call2("seq_len", m),
-      as.call(list(as.name("for"), jj, quickr_call2("seq_len", n), inner))
+      rlang::call2("seq_len", m),
+      as.call(list(as.name("for"), jj, rlang::call2("seq_len", n), inner))
     )))
   )
 }
@@ -408,7 +404,7 @@ quickr_emit_broadcast_in_dim <- function(out_sym, operand_expr, shape_in, shape_
   }
 
   out_zero <- quickr_zero_literal_for(out_aval)
-  stmts <- quickr_emit_assign(out_sym, quickr_call2("array", out_zero, dim = as.integer(shape_out)))
+  stmts <- quickr_emit_assign(out_sym, rlang::call2("array", out_zero, dim = as.integer(shape_out)))
 
   out_idxs <- lapply(seq_len(rank_out), function(d) as.name(paste0("i_", as.character(out_sym), "_", d)))
 
@@ -420,7 +416,7 @@ quickr_emit_broadcast_in_dim <- function(out_sym, operand_expr, shape_in, shape_
 
   op_at <- as.call(c(list(as.name("[")), list(operand_expr), op_idxs))
   out_at <- as.call(c(list(as.name("[")), list(out_sym), out_idxs))
-  inner <- quickr_call2("<-", out_at, op_at)
+  inner <- rlang::call2("<-", out_at, op_at)
 
   body <- inner
   # Iterate in column-major order (dim 1 varies fastest) for locality.
@@ -428,7 +424,7 @@ quickr_emit_broadcast_in_dim <- function(out_sym, operand_expr, shape_in, shape_
     body <- as.call(list(
       as.name("for"),
       out_idxs[[d]],
-      quickr_call2("seq_len", as.integer(shape_out[[d]])),
+      rlang::call2("seq_len", as.integer(shape_out[[d]])),
       body
     ))
   }
@@ -449,19 +445,19 @@ quickr_emit_reduce_rank2_axis_loop <- function(out_sym, m, n, dims, drop, alloc_
 
   assign_out <- if (identical(dims, 2L)) {
     if (isTRUE(drop)) {
-      quickr_call2("<-", quickr_call2("[", out_sym, ii), acc)
+      rlang::call2("<-", rlang::call2("[", out_sym, ii), acc)
     } else {
-      quickr_call2("<-", quickr_call2("[", out_sym, ii, 1L), acc)
+      rlang::call2("<-", rlang::call2("[", out_sym, ii, 1L), acc)
     }
   } else {
     if (isTRUE(drop)) {
-      quickr_call2("<-", quickr_call2("[", out_sym, jj), acc)
+      rlang::call2("<-", rlang::call2("[", out_sym, jj), acc)
     } else {
-      quickr_call2("<-", quickr_call2("[", out_sym, 1L, jj), acc)
+      rlang::call2("<-", rlang::call2("[", out_sym, 1L, jj), acc)
     }
   }
 
-  body_parts <- list(quickr_call2("<-", acc, init_acc_expr))
+  body_parts <- list(rlang::call2("<-", acc, init_acc_expr))
   if (as.integer(inner_n) >= as.integer(inner_start)) {
     body_parts <- c(body_parts, list(as.call(list(
       as.name("for"),
@@ -478,7 +474,7 @@ quickr_emit_reduce_rank2_axis_loop <- function(out_sym, m, n, dims, drop, alloc_
     list(as.call(list(
       as.name("for"),
       outer_sym,
-      quickr_call2("seq_len", as.integer(outer_n)),
+      rlang::call2("seq_len", as.integer(outer_n)),
       outer_body
     )))
   )
@@ -504,9 +500,9 @@ quickr_emit_reduce_sum <- function(out_sym, operand_expr, shape_in, dims, drop, 
       cli_abort("sum: unsupported reduction dims for rank-1 tensor")
     }
     if (isTRUE(drop)) {
-      return(quickr_emit_assign(out_sym, quickr_call2("sum", operand_expr)))
+      return(quickr_emit_assign(out_sym, rlang::call2("sum", operand_expr)))
     }
-    return(quickr_emit_assign(out_sym, quickr_call2("array", quickr_call2("sum", operand_expr), dim = 1L)))
+    return(quickr_emit_assign(out_sym, rlang::call2("array", rlang::call2("sum", operand_expr), dim = 1L)))
   }
 
   if (rank == 2L) {
@@ -516,27 +512,27 @@ quickr_emit_reduce_sum <- function(out_sym, operand_expr, shape_in, dims, drop, 
 
     if (identical(dims, c(1L, 2L))) {
       if (isTRUE(drop)) {
-        return(quickr_emit_assign(out_sym, quickr_call2("sum", operand_expr)))
+        return(quickr_emit_assign(out_sym, rlang::call2("sum", operand_expr)))
       }
-      return(quickr_emit_assign(out_sym, quickr_call2("matrix", quickr_call2("sum", operand_expr), nrow = 1L, ncol = 1L)))
+      return(quickr_emit_assign(out_sym, rlang::call2("matrix", rlang::call2("sum", operand_expr), nrow = 1L, ncol = 1L)))
     }
 
-    update <- function(ii, jj, acc) quickr_call2("<-", acc, quickr_call2("+", acc, quickr_call2("[", operand_expr, ii, jj)))
+    update <- function(ii, jj, acc) rlang::call2("<-", acc, rlang::call2("+", acc, rlang::call2("[", operand_expr, ii, jj)))
 
     if (identical(dims, 2L)) {
       alloc <- if (isTRUE(drop)) {
-        quickr_emit_assign(out_sym, quickr_call2(ctor, m))
+        quickr_emit_assign(out_sym, rlang::call2(ctor, m))
       } else {
-        quickr_emit_assign(out_sym, quickr_call2("matrix", zero, nrow = m, ncol = 1L))
+        quickr_emit_assign(out_sym, rlang::call2("matrix", zero, nrow = m, ncol = 1L))
       }
       return(quickr_emit_reduce_rank2_axis_loop(out_sym, m, n, 2L, drop, alloc, zero, 1L, update))
     }
 
     if (identical(dims, 1L)) {
       alloc <- if (isTRUE(drop)) {
-        quickr_emit_assign(out_sym, quickr_call2(ctor, n))
+        quickr_emit_assign(out_sym, rlang::call2(ctor, n))
       } else {
-        quickr_emit_assign(out_sym, quickr_call2("matrix", zero, nrow = 1L, ncol = n))
+        quickr_emit_assign(out_sym, rlang::call2("matrix", zero, nrow = 1L, ncol = n))
       }
       return(quickr_emit_reduce_rank2_axis_loop(out_sym, m, n, 1L, drop, alloc, zero, 1L, update))
     }
@@ -552,12 +548,12 @@ quickr_emit_reduce_sum <- function(out_sym, operand_expr, shape_in, dims, drop, 
   }
 
   if (isTRUE(drop)) {
-    return(quickr_emit_assign(out_sym, quickr_call2("sum", operand_expr)))
+    return(quickr_emit_assign(out_sym, rlang::call2("sum", operand_expr)))
   }
 
   quickr_emit_assign(
     out_sym,
-    quickr_call2("array", quickr_call2("sum", operand_expr), dim = rep(1L, rank))
+    rlang::call2("array", rlang::call2("sum", operand_expr), dim = rep(1L, rank))
   )
 }
 
@@ -598,7 +594,7 @@ quickr_emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_
       body <- as.call(list(
         as.name("for"),
         idxs[[d]],
-        quickr_call2("seq_len", as.integer(shp[[d]])),
+        rlang::call2("seq_len", as.integer(shp[[d]])),
         body
       ))
     }
@@ -606,52 +602,52 @@ quickr_emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_
   }
 
   stmts <- list(
-    quickr_call2("<-", flat_sym, quickr_call2(ctor, as.integer(nflat))),
-    quickr_call2("<-", idx_sym, 0L)
+    rlang::call2("<-", flat_sym, rlang::call2(ctor, as.integer(nflat))),
+    rlang::call2("<-", idx_sym, 0L)
   )
 
   if (rank_in == 0L) {
     stmts <- c(stmts, list(
-      quickr_call2("<-", idx_sym, 1L),
-      quickr_call2("<-", quickr_call2("[", flat_sym, 1L), operand_expr)
+      rlang::call2("<-", idx_sym, 1L),
+      rlang::call2("<-", rlang::call2("[", flat_sym, 1L), operand_expr)
     ))
   } else {
     in_idxs <- lapply(seq_len(rank_in), function(d) as.name(paste0("i_", as.character(out_sym), "_", d)))
     elem_in <- subscript(operand_expr, in_idxs)
     inner_in <- as.call(c(
       list(as.name("{")),
-      list(quickr_call2("<-", idx_sym, quickr_call2("+", idx_sym, 1L))),
-      list(quickr_call2("<-", quickr_call2("[", flat_sym, idx_sym), elem_in))
+      list(rlang::call2("<-", idx_sym, rlang::call2("+", idx_sym, 1L))),
+      list(rlang::call2("<-", rlang::call2("[", flat_sym, idx_sym), elem_in))
     ))
     stmts <- c(stmts, list(row_major_loop(in_idxs, shape_in, inner_in)))
   }
 
-  stmts <- c(stmts, list(quickr_call2("<-", idx_sym, 0L)))
+  stmts <- c(stmts, list(rlang::call2("<-", idx_sym, 0L)))
 
   if (rank_out == 0L) {
-    return(c(stmts, quickr_emit_assign(out_sym, quickr_call2("[", flat_sym, 1L))))
+    return(c(stmts, quickr_emit_assign(out_sym, rlang::call2("[", flat_sym, 1L))))
   }
 
   out_zero <- quickr_zero_literal_for(out_aval)
   alloc_out <- if (rank_out == 1L) {
-    quickr_call2(ctor, as.integer(shape_out[[1L]]))
+    rlang::call2(ctor, as.integer(shape_out[[1L]]))
   } else if (rank_out == 2L) {
-    quickr_call2("matrix", out_zero, nrow = as.integer(shape_out[[1L]]), ncol = as.integer(shape_out[[2L]]))
+    rlang::call2("matrix", out_zero, nrow = as.integer(shape_out[[1L]]), ncol = as.integer(shape_out[[2L]]))
   } else {
-    quickr_call2("array", out_zero, dim = shape_out)
+    rlang::call2("array", out_zero, dim = shape_out)
   }
 
   stmts <- c(stmts, quickr_emit_assign(out_sym, alloc_out))
 
   out_idxs <- lapply(seq_len(rank_out), function(d) as.name(paste0("o_", as.character(out_sym), "_", d)))
   assign_out <- if (rank_out == 1L) {
-    quickr_call2("<-", quickr_call2("[", out_sym, out_idxs[[1L]]), quickr_call2("[", flat_sym, idx_sym))
+    rlang::call2("<-", rlang::call2("[", out_sym, out_idxs[[1L]]), rlang::call2("[", flat_sym, idx_sym))
   } else {
-    quickr_call2("<-", subscript(out_sym, out_idxs), quickr_call2("[", flat_sym, idx_sym))
+    rlang::call2("<-", subscript(out_sym, out_idxs), rlang::call2("[", flat_sym, idx_sym))
   }
   inner_out <- as.call(c(
     list(as.name("{")),
-    list(quickr_call2("<-", idx_sym, quickr_call2("+", idx_sym, 1L))),
+    list(rlang::call2("<-", idx_sym, rlang::call2("+", idx_sym, 1L))),
     list(assign_out)
   ))
   stmts <- c(stmts, list(row_major_loop(out_idxs, shape_out, inner_out)))
@@ -688,11 +684,11 @@ quickr_lower_registry <- local({
       divide = "/",
       cli_abort("Internal error: unknown binary primitive: {.val {prim_name}}")
     )
-    quickr_emit_assign(out_syms[[1L]], quickr_call2(op, inputs[[1L]], inputs[[2L]]))
+    quickr_emit_assign(out_syms[[1L]], rlang::call2(op, inputs[[1L]], inputs[[2L]]))
   })
 
   quickr_register_prim_lowerer(reg, "negate", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
-    quickr_emit_assign(out_syms[[1L]], quickr_call2("-", inputs[[1L]]))
+    quickr_emit_assign(out_syms[[1L]], rlang::call2("-", inputs[[1L]]))
   })
 
   quickr_register_prim_lowerer(reg, "broadcast_in_dim", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
@@ -861,28 +857,28 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
 
     out_sym <- as.name("out")
     idx_sym <- as.name("out_i")
-    stmts <- c(stmts, list(quickr_call2("<-", out_sym, quickr_call2("double", as.integer(total_len)))))
-    stmts <- c(stmts, list(quickr_call2("<-", idx_sym, 0L)))
+    stmts <- c(stmts, list(rlang::call2("<-", out_sym, rlang::call2("double", as.integer(total_len)))))
+    stmts <- c(stmts, list(rlang::call2("<-", idx_sym, 0L)))
 
     emit_pack_array <- function(src_expr, shp, tag) {
       rank <- length(shp)
       if (rank == 0L) {
         return(list(
-          quickr_call2("<-", idx_sym, quickr_call2("+", idx_sym, 1L)),
-          quickr_call2("<-", quickr_call2("[", out_sym, idx_sym), quickr_call2("as.double", src_expr))
+          rlang::call2("<-", idx_sym, rlang::call2("+", idx_sym, 1L)),
+          rlang::call2("<-", rlang::call2("[", out_sym, idx_sym), rlang::call2("as.double", src_expr))
         ))
       }
 
       idxs <- lapply(seq_len(rank), function(d) as.name(paste0("i_", tag, "_", d)))
       elem <- as.call(c(list(as.name("[")), list(src_expr), idxs))
       inner <- as.call(c(list(as.name("{")), c(
-        list(quickr_call2("<-", idx_sym, quickr_call2("+", idx_sym, 1L))),
-        list(quickr_call2("<-", quickr_call2("[", out_sym, idx_sym), quickr_call2("as.double", elem)))
+        list(rlang::call2("<-", idx_sym, rlang::call2("+", idx_sym, 1L))),
+        list(rlang::call2("<-", rlang::call2("[", out_sym, idx_sym), rlang::call2("as.double", elem)))
       )))
 
       body <- inner
       for (d in seq_len(rank)) {
-        body <- as.call(list(as.name("for"), idxs[[d]], quickr_call2("seq_len", as.integer(shp[[d]])), body))
+        body <- as.call(list(as.name("for"), idxs[[d]], rlang::call2("seq_len", as.integer(shp[[d]])), body))
       }
       list(body)
     }
@@ -897,7 +893,7 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
     if (!inherits(graph@out_tree, "LeafNode") || length(out_exprs) != 1L) {
       cli_abort("Internal error: {.arg pack_output} must be TRUE for graphs with multiple outputs")
     }
-    stmts <- c(stmts, list(quickr_call2("<-", as.name("out"), out_exprs[[1L]]), as.name("out")))
+    stmts <- c(stmts, list(rlang::call2("<-", as.name("out"), out_exprs[[1L]]), as.name("out")))
   }
 
   f <- function() {
