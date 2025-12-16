@@ -113,20 +113,34 @@ test_that("integration: tfp/greta-like log_prob + grad workflow via quickr", {
   expect_equal(out_quick0, out_pjrt0, tolerance = 1e-10)
 
   # A few steps of gradient ascent (MAP for this quadratic objective).
-  w <- 0.0
-  b <- 0.0
-  lp0 <- as.numeric(f_quick(w, b)$log_prob)
+  w_quick <- 0.0
+  b_quick <- 0.0
+  w_pjrt <- 0.0
+  b_pjrt <- 0.0
+
+  out0 <- f_quick(w_quick, b_quick)
+  lp0 <- as.numeric(out0$log_prob)
 
   step <- 0.01
   for (iter in seq_len(10)) {
-    out_quick <- f_quick(w, b)
-    out_pjrt <- run_pjrt(w, b)
-    expect_equal(out_quick, out_pjrt, tolerance = 1e-10)
+    out_quick <- f_quick(w_quick, b_quick)
+    out_pjrt <- run_pjrt(w_pjrt, b_pjrt)
 
-    w <- w + step * as.numeric(out_quick$grad$w)
-    b <- b + step * as.numeric(out_quick$grad$b)
+    expect_equal(out_quick$log_prob, out_pjrt$log_prob, tolerance = 1e-12)
+    expect_equal(out_quick$grad$w, out_pjrt$grad$w, tolerance = 1e-12)
+    expect_equal(out_quick$grad$b, out_pjrt$grad$b, tolerance = 1e-12)
+
+    w_quick <- w_quick + step * as.numeric(out_quick$grad$w)
+    b_quick <- b_quick + step * as.numeric(out_quick$grad$b)
+    w_pjrt <- w_pjrt + step * as.numeric(out_pjrt$grad$w)
+    b_pjrt <- b_pjrt + step * as.numeric(out_pjrt$grad$b)
+
+    expect_equal(w_quick, w_pjrt, tolerance = 1e-12)
+    expect_equal(b_quick, b_pjrt, tolerance = 1e-12)
   }
 
-  lp1 <- as.numeric(f_quick(w, b)$log_prob)
-  expect_gt(lp1, lp0)
+  lp1_quick <- as.numeric(f_quick(w_quick, b_quick)$log_prob)
+  lp1_pjrt <- as.numeric(run_pjrt(w_pjrt, b_pjrt)$log_prob)
+  expect_equal(lp1_quick, lp1_pjrt, tolerance = 1e-12)
+  expect_gt(lp1_quick, lp0)
 })
