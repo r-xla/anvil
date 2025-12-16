@@ -7,16 +7,17 @@ experience with JAX in Python, you should feel right at home.
 ## The `AnvilTensor`
 
 We will start by introducing the main data structure, which is the
-`AnvilTensor`. It is essentially like an R array, with some differences:
+`AnvilTensor`. It is essentially like an `R` array, with some
+differences:
 
 1.  It supports more data types, such as different precisions, as well
     as unsigned integers.
 2.  The tensor can live on different *device*s, such as CPU or GPU.
 3.  0-dimensional tensors can be used to represent scalars.
 
-We can create an `AnvilTensor` from R objects using `nv_tensor`. Below,
-we create a 0-dimensional tensor (i.e., a scalar) that holds a 16-bit
-integer on the CPU.
+We can create such an object from R data types using the `nv_tensor` and
+related functions. Below, we create a 0-dimensional tensor (i.e., a
+scalar) of type `int16` on the CPU.
 
 ``` r
 library(anvil)
@@ -29,26 +30,25 @@ nv_tensor(1L, dtype = "i16", device = "cpu", shape = integer())
     ## [ CPUi16{} ]
 
 Note that for the creation of scalars, you can also use `nv_scalar` as a
-shorthand to skip specifying the shape and omit specifying the device,
-as CPU is the default.
+shorthand to skip specifying the shape.
 
 ``` r
-nv_scalar(1L, dtype = "i16")
+nv_scalar(1L, dtype = "i16", device = "cpu")
 ```
 
     ## AnvilTensor 
     ##  1
     ## [ CPUi16{} ]
 
-We can also create higher-dimensional tensors, for example a 2x3 tensor
-with single-precision floating-point numbers. Without specifying the
-data type, it will default to `"f32"` for R doubles and `"i32"` for
+We can also create higher-dimensional tensors, for example a 2x3 CPU
+tensor of type `f32`. Below, we omit specifying the platform and data
+type, as it will default to `"cpu"`. The default data type depends on
+the input data type. It is `"f32"` for R doubles and `"i32"` for
 integers.
 
 ``` r
 x <- array(1:6, dim = c(2, 3))
-y <- nv_tensor(x)
-y
+nv_tensor(x)
 ```
 
     ## AnvilTensor 
@@ -56,11 +56,20 @@ y
     ##  2 4 6
     ## [ CPUi32{2x3} ]
 
-The
+``` r
+y <- nv_tensor(x, dtype = "f32")
+y
+```
+
+    ## AnvilTensor 
+    ##  1.0000 3.0000 5.0000
+    ##  2.0000 4.0000 6.0000
+    ## [ CPUf32{2x3} ]
+
+In order to convert an `AnvilTensor` back to a regular R array, you can
+use the
 [`as_array()`](https://r-xla.github.io/tengen/reference/as_array.html)
-function allows to convert `AnvilTensor`s back to R objects. Note that
-for 0-dimensional tensors, the result is an R vector of length 1, as R
-arrays cannot have 0 dimensions.
+function.
 
 ``` r
 as_array(y)
@@ -93,7 +102,7 @@ y + y
 
 In order to work with `AnvilTensor`s, you need to convert the function
 you want to apply to a jit-compiled version via
-[`jit()`](../reference/jit.md).
+[`anvil::jit()`](../reference/jit.md).
 
 ``` r
 plus_jit <- jit(`+`)
@@ -101,16 +110,17 @@ plus_jit(y, y)
 ```
 
     ## AnvilTensor 
-    ##   2  6 10
-    ##   4  8 12
-    ## [ CPUi32{2x3} ]
+    ##   2.0000  6.0000 10.0000
+    ##   4.0000  8.0000 12.0000
+    ## [ CPUf32{2x3} ]
 
 The result of the operation is again an `AnvilTensor`.
 
-We can also jit-compile more complex functions. Below, we define a
-function that takes in a data matrix `X`, a weight vector `beta`, and a
-scalar bias `alpha`, and computes the linear model output \\y = X \times
-\beta + \alpha\\.
+We can, of course, jit-compile more complex functions as well.
+
+Below, we define a function that takes in a data matrix `X`, a weight
+vector `beta`, and a scalar bias `alpha`, and computes the linear model
+output \\y = X \times \beta + \alpha\\.
 
 ``` r
 linear_model_r <- function(X, beta, alpha) {
@@ -131,10 +141,10 @@ linear_model(X, beta, alpha)
     ##  -1.1904
     ## [ CPUf32{2x1} ]
 
-One restriction of {anvil} is that a function has to be re-compiled for
-every unique combination of input types, each consisting of a specific
-shape and data type. To demonstrate this, we create a slightly modified
-version of our previous linear predictor function:
+One current restriction of {anvil} is that the function has to be
+re-compiled for every unique combination of input types, each consisting
+of a specific shape and data type. To demonstrate this, we create a
+slightly modified version of `linear_model`:
 
 ``` r
 linear_model2 <- jit(function(X, beta, alpha) {
@@ -143,7 +153,7 @@ linear_model2 <- jit(function(X, beta, alpha) {
 })
 ```
 
-Next, we create a little helper function that creates example inputs
+Next, we create a little helper function that creates example input data
 with different numbers of observations:
 
 ``` r
@@ -179,16 +189,15 @@ do.call(linear_model2, simul_data(2, 3))
     ## [ CPUf32{2x1} ]
 
 We can notice that we only see the `"compiling ..."` message the first
-time, where the function is first compiled into an XLA executable,
-cached, and executed. The second time, the executable is retrieved from
-the cache (because the inputs have the same shapes and data types) and
-executed without recompilation. Because the executable contains only the
-operations applied to `AnvilTensor`s, it does not contain the
-[`cat()`](https://rdrr.io/r/base/cat.html) call, so we don’t see it the
-second time.
+and third time. This is because the first time, the function is compiled
+into an `XLA` executable and cached for later reuse. The second time, we
+don’t execute the R function at all, but directly run the cached `XLA`
+executable. This executable does not contain “standard” R code, like the
+[`cat()`](https://rdrr.io/r/base/cat.html) call, but records only the
+operations applied to `AnvilTensor`s.
 
-If we call the function on data with different shapes (or data types),
-the function is re-compiled and the message re-appears.
+If we now call the function on data with different shapes, we see that
+the function is re-compiled.
 
 ``` r
 y_hat <- do.call(linear_model2, simul_data(4, 3))
@@ -198,17 +207,18 @@ y_hat <- do.call(linear_model2, simul_data(4, 3))
 
 Because the compilation step itself can take some time, {anvil}
 therefore gives the best results when the same function is called many
-times with the same (or only a few different) input types, or the
+times with the same input shapes, data types, and platforms, or the
 computation itself is sufficiently large to amortize the compilation
 overhead.
 
 ### Static Arguments
 
-Besides `AnvilTensor`s, jit-compiled functions can also take in regular
-R values as arguments. For example, we might want a linear model with or
-without a bias term. To do so, we add the `logical(1)` argument
-`with_bias` to our function. We need to mark this argument as `static`,
-so {anvil} knows to treat it as a regular R value.
+One feature of {anvil} is that not all arguments of `jit`-compiled
+functions need to be `AnvilTensor`s. For example, we might want a linear
+model with or without an intercept term. To do so, we add the logical
+argument `with_bias` to our function. We need to mark this argument as
+`static`, so {anvil} knows to treat it as a regular R value instead of
+an `AnvilTensor`.
 
 ``` r
 linear_model3 <- jit(function(X, beta, alpha = NULL, with_bias) {
@@ -247,13 +257,18 @@ linear_model3(X, beta, alpha, with_bias = TRUE)
     ## [ CPUf32{2x1} ]
 
 Static arguments work differently than `AnvilTensors` as the function
-will be re-compiled for each new observed value of the static argument,
-not only each unique input type combination.
+will not be re-compiled for each new observed value of the static
+argument.
 
 ### Nested Inputs and Outputs
 
-Inputs and outputs can also be nested data structures that contain
-`AnvilTensor`s, although we currently only support (named) lists.
+Static arguments work differently than `AnvilTensors`, as the function
+will not be re-compiled for each new observed value of the static
+argument.
+
+Note also that the inputs, as well as the outputs, can also contain
+nested data structures that contain `AnvilTensor`s, although we
+currently only support (named) lists.
 
 ``` r
 linear_model4 <- jit(function(inputs) {
@@ -268,22 +283,21 @@ linear_model4(list(X, beta, alpha))
     ##  -1.1904
     ## [ CPUf32{2x1} ]
 
-So far, we have only implemented the prediction step for the linear
-model. One of the core applications of {anvil} is to implement learning
+So far, we have only implemented the prediction step for a linear model.
+One of the core applications of anvil is to implement learning
 algorithms, for which we often need gradients, as well as control flow.
 We will start with gradients.
 
 ## Automatic Differentiation
 
-In {anvil}, you can easily obtain the gradient function of a
-scalar-valued function via [`gradient()`](../reference/gradient.md).
-Currently, we don’t support jacobians or hessians, but this will
-hopefilly be added in the future. Below, we implement the loss function
-for our linear model.
+In anvil, you can easily obtain the gradient function of a scalar-valued
+function using [`gradient()`](../reference/gradient.md). Currently,
+vector-valued functions cannot be differentiated. Below, we implement
+the loss function for our linear model.
 
 ``` r
 mse <- function(y_hat, y) {
-  mean((y_hat - y)^2.0)
+  mean((y_hat - y)^nv_scalar(2.0))
 }
 ```
 
@@ -339,7 +353,7 @@ descent.
 
 ``` r
 update_weights_r <- function(X, beta, alpha, y) {
-  lr <- 0.1
+  lr <- nv_scalar(0.1)
   grads <- model_loss_grad(X, beta, alpha, y)
   beta_new <- beta - lr * grads$beta
   alpha_new <- alpha - lr * grads$alpha
@@ -348,7 +362,7 @@ update_weights_r <- function(X, beta, alpha, y) {
 update_weights <- jit(update_weights_r)
 ```
 
-This already allows us to fit the linear model
+This already allows us to train our linear model using gradient descent:
 
 ``` r
 weights <- list(beta = beta_hat, alpha = alpha_hat)
@@ -362,15 +376,16 @@ for (i in 1:100) {
 While this might seem like a reasonable solution, it continuously
 switches between the R interpreter and the XLA runtime. Moreover, we
 allocate new tensors in each iteration for the weights. While the latter
-might not be a big problem for small models, it can cause significant
+might not be a big problem for small models, it can lead to significant
 overhead when working with bigger tensors.
 
-Next, we will discuss control flow in {anvil} before we address
-immutability.
+Next, we will address immutability in anvil before we briefly discuss
+control flow.
 
 ## Control Flow
 
-In principle, there are three ways to implement control-flow in {anvil}:
+Earlier, we have already used R control flow to train our linear model.
+In principle, there are three ways to implement control-flow in anvil:
 
 1.  Embed jit-compiled functions inside R control-flow constructs, which
     we have seen earlier.
@@ -410,18 +425,16 @@ weights
     ## [ CPUf32{} ]
 
 For simple update steps, this solution can be inefficient because every
-call into a jit-compiled function has some overhead. How significant
-this overhead is depends on how expensive each call in the loop is – for
+call into a jit-compiled function has some overhead. How important this
+overhead is depends on how expensive each call in the loop is – for
 expensive functions the overhead becomes negligible.
 
 The second approach is to use an R loop within the jit-compiled
-function. There, the loop will be unrolled during the compilation step
-(for conditionals, only one branch is included in the executable as
-discussed earlier). This will be rather slow in the example at hand,
-because we will also re-compute the gradient function in each iteration.
-Moreover, the parameter `n_steps` is static, which means that for every
-unique value of `n_steps`, the function will be re-compiled into a
-different executable.
+function. There, the loop will be unrolled during the compilation step.
+This will be extremely slow in the example at hand, because we will also
+re-compute the gradient in each iteration. The parameter `n_steps` is
+static, which means that for every unique value of `n_steps`, the
+function will be re-compiled into a different executable.
 
 ``` r
 train_unrolled <- jit(function(X, beta, alpha, y, n_steps) {
@@ -450,19 +463,19 @@ train_unrolled(X, beta_hat, alpha_hat, y, n_steps = 10L)
     ## [ CPUf32{} ]
 
 Finally, the third approach is to use the `nv_while` function. It is not
-like a standard while loop, because `anvil` is purely functional.
+like the standard while loop, because `anvil` is purely functional.
 
 The function takes in:
 
 1.  An initial state, which is a (nested) list of `AnvilTensor`s.
 2.  A `cond` function, which takes as input the current state and
-    returns a logical flag indicating whether to continue the loop.
+    returns a boolean tensor indicating whether to continue the loop.
 3.  A `body` function, which takes as input the current state and
     returns a new state.
 
 ``` r
 train_while <- jit(function(X, beta, alpha, y, n_steps) {
-  lr <- 0.1
+  lr <- nv_scalar(0.1)
   nv_while(
     list(beta = beta, alpha = alpha, i = nv_scalar(0L)),
     \(beta, alpha, i) i < n_steps,
@@ -471,7 +484,7 @@ train_while <- jit(function(X, beta, alpha, y, n_steps) {
       list(
         beta = beta - lr * grads$beta,
         alpha = alpha - lr * grads$alpha,
-        i = i + 1L
+        i = i + nv_scalar(1L)
       )
     }
   )
@@ -504,46 +517,46 @@ The same approach works analogously for `if`-statements, where the
 
 `AnvilTensor` objects are immutable, i.e., once created, their value
 cannot be changed. In other words, there are conceptually no in-place
-updates like `x[1] <- x[1] + 1`. This means that {anvil} follows **value
-semantics**, i.e., functions are **pure**. Naturally, this raises the
-question of how this impacts performance. We need to distinguish two
-scenarios:
+updates like `x[1] <- x[1] + 1`. In other words, {anvil} follows **value
+semantics**, or functions are **pure**. This means every function in
+{anvil} is a pure function, i.e., it does not have any side effects and
+always returns new values. Naturally, this raises the question of how
+this impacts performance. We need to distinguish two scenarios:
 
-1.  Updating an `AnvilTensor` that “lives within” a jit-compiled
+1.  Updating an `AnvilTensor` living in `R` through a jit-compiled
     function.
-2.  Updating an `AnvilTensor` “living in R” through a jit-compiled
+2.  Updating an `AnvilTensor` that “lives within” a jit-compiled
     function.
 
 For the first scenario, there is nothing to worry about. The XLA
 compiler is able to optimize this, ensuring that no unnecessary copies
 are actually made. This is similar to copy-on-write semantics in R. If
-you evaluate `x <- 1:10; y <- x`, you are conceptually creating a copy
-of `x` when assigning it to `y`, but internally, this is optimized away
-and the copy will only be created when modifying `y` or `x`. Because
-{anvil} uses compilation and shapes are known at compile time, it can
-make many more such optimizations, minimizing unnecessary copies as much
-as possible.
+you do `x <- 1:10; y <- x`, you are conceptually creating a copy of `x`
+when assigning it to `y`, but internally, this is optimized away and the
+copy will only be created once modifying `y` or `x`. Because {anvil}
+uses compilation, it can make many more such optimizations, minimizing
+unnecessary copies where possible.
 
 However, there is also the case where one calls into an {anvil} function
-from R code, as we have done in our initial linear model example.
+from `R` code like in the example below:
 
 ``` r
 weights <- update_weights(X, weights$beta, weights$alpha, y)
 ```
 
-Because the assignment of the outputs of the {anvil} function to R
-variables does not happen within the executable, the XLA compiler cannot
-optimize this. If we know that some of the inputs to the {anvil}
-function are not needed anymore after the function call (as is the case
-for “update-calls” like above), we can mark them as “donatable” when
-jit-compiling.
+Because the assignment of the outputs of the {anvil} function to `R`
+variables does not happen within jit-compiled code, the XLA compiler
+cannot optimize this. If we know that some of the inputs to the {anvil}
+function are not used anymore after the function call, we can mark them
+as “donatable” when jit-compiling.
 
 ``` r
 update_weights_donatable <- jit(update_weights_r, donate = c("beta", "alpha"))
 ```
 
-This will tell the XLA compiler that we no longer need the inputs
-`alpha` and `beta` afterwards, so their underlying memory can be reused.
+This will tell the XLA compiler that we no longer need `alpha` and
+`beta` after the function call, so their underlying memory can be
+reused.
 
 ``` r
 weights_out <- update_weights_donatable(X, weights$beta, weights$alpha, y)

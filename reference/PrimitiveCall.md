@@ -8,8 +8,8 @@ also be a call into another graph (`p_graph`).
 ``` r
 PrimitiveCall(
   primitive = Primitive(),
-  inputs = list(),
   params = list(),
+  inputs = list(),
   outputs = list()
 )
 ```
@@ -21,15 +21,15 @@ PrimitiveCall(
   (`Primitive`)  
   The function.
 
-- inputs:
-
-  (`list(GraphValue)`)  
-  The (tensor) inputs to the primitive.
-
 - params:
 
   (`list(<any>)`)  
   The (static) parameters of the function call.
+
+- inputs:
+
+  (`list(GraphValue)`)  
+  The (tensor) inputs to the primitive.
 
 - outputs:
 
