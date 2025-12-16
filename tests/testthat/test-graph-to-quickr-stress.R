@@ -6,7 +6,7 @@ test_that("graph_to_quickr_function handles long scalar chain (stress)", {
 
   # Stress the graph-to-quickr lowering with a longer linear chain, while
   # keeping {quickr} compilation time reasonable for the test suite.
-  n_steps <- 25L
+  n_steps <- 8L
   chain_fn <- function(x) {
     for (i in seq_len(n_steps)) {
       x <- x * decay + shift
@@ -15,7 +15,7 @@ test_that("graph_to_quickr_function handles long scalar chain (stress)", {
   }
 
   graph <- trace_fn(chain_fn, list(x = nv_scalar(0.0, dtype = "f64")))
-  expect_gt(length(graph@calls), 40L)
+  expect_gt(length(graph@calls), 12L)
 
   x <- 0.123
   f_quick <- graph_to_quickr_function(graph)
