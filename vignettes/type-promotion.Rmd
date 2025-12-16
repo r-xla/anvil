@@ -69,7 +69,8 @@ jit(\() list(1L, 1.0, TRUE))()
 However, because this is just a guess, they behave differently than known types during promotion.
 Therefore, the `common_dtype` function has two arguments indicating which of the data types are ambiguous.
 Below, the first type is a known `f64` and the second is an ambiguous `f32`.
-The result is the known `f64`, although we would promote to an `f64` if both were known.
+Within anvil, we denote the latter as `i32?`.
+The result is an `f64`, although we would promote to an `f64` if both were known.
 If both types are ambiguous, the result is generally the same as if both were known.
 
 ```{r}
@@ -113,6 +114,6 @@ f <- jit(function(x, y) {
 f(nv_scalar(TRUE), nv_scalar(2L, dtype = "i16"))
 ```
 
-The type of `z` is an ambiguous `i32`, because `x` is promoted to an `i32`, the default type of the `1L` literal.
+The type of `z` is `i32?`, because `x` is promoted to an `i32`, the default type of the `1L` literal.
 If `z` was not ambiguous, the output would be an `i32`, because the `y` would be promoted to an `i32` in the multiplication.
 Because we propagate the ambiguity, the `z` is actually down-promoted to an `i16`, because the `z` is ambiguous, while the `y` is known.
