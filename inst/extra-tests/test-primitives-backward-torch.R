@@ -410,7 +410,7 @@ test_that("p_reshape", {
 test_that("p_convert", {
   target_dtype <- "f64"
   verify_grad_uni_tensor(
-    nvl_convert,
+    \(operand, dtype) nvl_convert(operand, dtype = dtype, ambiguous = FALSE),
     function(x, dtype) x$to(dtype = dtype),
     dtypes = "f32",
     args_f = function(shp, dtype) {

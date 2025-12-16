@@ -1,6 +1,9 @@
 #' @include graph.R
 
 format_node_id <- function(node, node_ids) {
+  if (is_graph_literal(node)) {
+    return(format_literal(node))
+  }
   id <- node_ids[[node]]
   if (is.null(id)) {
     return("???")
@@ -8,8 +11,16 @@ format_node_id <- function(node, node_ids) {
   sprintf("%%%s", id)
 }
 
+format_literal <- function(node) {
+  val <- node@aval@data
+  dt <- repr(dtype(node@aval))
+  dt <- if (node@aval@ambiguous) paste0(dt, "?") else dt
+  shp <- shape(node@aval)
+  sprintf("%s:%s%s", val, dt, if (length(shp)) sprintf("[%s]", shape2string(shp)) else "")
+}
+
 format_aval_short <- function(aval) {
-  sprintf("%s[%s]", repr(dtype(aval)), paste(shape(aval), collapse = ", "))
+  sprintf("%s[%s]", paste0(repr(dtype(aval)), if (aval@ambiguous) "?" else ""), paste(shape(aval), collapse = ", "))
 }
 
 build_node_ids <- function(inputs, constants, calls) {
@@ -47,8 +58,15 @@ format_param <- function(param) {
     }
   } else if (is_graph(param)) {
     sprintf("graph[%s -> %s]", length(param@inputs), length(param@outputs))
+  } else if (is_dtype(param)) {
+    repr(param)
   } else {
-    "<any>"
+    x <- try(format(param), silent = TRUE)
+    if (length(x) == 1L) {
+      x
+    } else {
+      "<any>"
+    }
   }
 }
 
@@ -72,7 +90,6 @@ format_call <- function(call, node_ids, indent = "  ") {
   sprintf("%s%s = %s%s(%s)", indent, outputs_str, call@primitive@name, params_str, inputs_str)
 }
 
-# Main formatting function for graph-like structures
 format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph") {
   lines <- character()
 
@@ -123,7 +140,11 @@ format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph"
     output_strs <- vapply(
       outputs,
       function(node) {
-        sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node@aval))
+        if (is_graph_literal(node)) {
+          sprintf("    %s", format_literal(node))
+        } else {
+          sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node@aval))
+        }
       },
       character(1)
     )
@@ -136,7 +157,20 @@ format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph"
 }
 
 method(format, PrimitiveCall) <- function(x, ...) {
-  inputs <- paste(vapply(x@inputs, \(inp) format_aval_short(inp@aval), character(1)), collapse = ", ")
+  inputs <- paste(
+    vapply(
+      x@inputs,
+      function(inp) {
+        if (is_graph_literal(inp)) {
+          format_literal(inp)
+        } else {
+          format_aval_short(inp@aval)
+        }
+      },
+      character(1)
+    ),
+    collapse = ", "
+  )
   outputs <- paste(vapply(x@outputs, \(out) format_aval_short(out@aval), character(1)), collapse = ", ")
   params_str <- if (length(x@params) > 0L) sprintf(" {%d params}", length(x@params)) else ""
   sprintf("%s(%s)%s -> %s", x@primitive@name, inputs, params_str, outputs)

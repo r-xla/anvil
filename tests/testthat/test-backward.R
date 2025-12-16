@@ -166,6 +166,12 @@ test_that("gradients are present even if they don't influence the output", {
     g(nv_scalar(1), nv_scalar(1)),
     list(y = nv_scalar(0))
   )
+
+  g2 <- jit(gradient(function(x, y) {
+    z <- nv_mul(x, x)
+    return(y)
+  }))
+  expect_equal(g2(nv_scalar(1), nv_scalar(1)), list(x = nv_scalar(0), y = nv_scalar(1)))
 })
 
 test_that("wrt non-existent argument", {

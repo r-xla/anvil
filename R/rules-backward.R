@@ -51,7 +51,7 @@ p_pow[["backward"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
     if (.required[[1L]]) {
-      one <- nv_full(1, dtype = dtype(lhs), shape = shape(rhs))
+      one <- nvl_fill(1, dtype = dtype(lhs), shape = shape(rhs))
       nvl_mul(nvl_mul(grad, rhs), nvl_pow(lhs, nvl_sub(rhs, one)))
     },
     if (.required[[2L]]) {
@@ -254,7 +254,7 @@ p_select[["backward"]] <- function(inputs, outputs, grads, .required) {
   pred <- inputs[[1L]]
   true_value <- inputs[[2L]]
   grad <- grads[[1L]]
-  zero <- nv_full(0L, dtype = dtype(true_value), shape = shape(true_value))
+  zero <- nvl_fill(0L, dtype = dtype(true_value), shape = shape(true_value))
 
   list(
     if (.required[[1L]]) cli_abort("Predicate cannot be differentiated"),
@@ -269,11 +269,12 @@ p_if[["backward"]] <- function(inputs, outputs, grads, true, false, node_map, .r
 
 # convert backward -----------------
 
-p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, .required) {
+p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
+  # the ambiguity is determined by the input, not the `ambiguous` parameter
   list(
-    if (.required[[1L]]) nvl_convert(grad, dtype(operand))
+    if (.required[[1L]]) nvl_convert(grad, dtype(operand), inputs[[1L]]@aval@ambiguous)
   )
 }
 
@@ -288,7 +289,7 @@ zero_grads <- function(inputs, .required) {
   req_rhs <- .required[[2L]]
 
   zero_like <- function(x) {
-    nv_full(0L, dtype = dtype(x), shape = shape(x))
+    nvl_fill(0L, dtype = dtype(x), shape = shape(x))
   }
 
   list(

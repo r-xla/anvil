@@ -59,8 +59,8 @@ test_that("p_concatenate", {
   out <- g()
   expect_equal(dim(as_array(out)), c(2, 5))
 })
-test_that("p_full", {
-  f <- jit(function(x) nv_full(x, shape = c(2, 3), dtype = "f32"), static = "x")
+test_that("p_fill", {
+  f <- jit(function(x) nv_fill(x, shape = c(2, 3), dtype = "f32"), static = "x")
   expect_equal(f(1), nv_tensor(1, shape = c(2, 3), dtype = "f32"))
   expect_equal(f(2), nv_tensor(2, shape = c(2, 3), dtype = "f32"))
 })
@@ -181,8 +181,14 @@ test_that("p_transpose", {
     as_array(f(nv_tensor(x)))
   )
 })
-test_that("p_if: nested", {
-  # TODO:
+
+test_that("p_if: capture non-argument", {
+  f <- jit(function(pred, x) {
+    x1 <- nv_mul(x, x)
+    x2 <- nv_add(x, x)
+    nv_if(pred, x1, x2)
+  })
+  f(nv_scalar(TRUE), nv_scalar(2))
 })
 
 test_that("p_if", {
@@ -232,19 +238,8 @@ test_that("p_if: identically constants in both branches receive the same GraphVa
   expect_equal(g(nv_scalar(FALSE)), nv_scalar(6))
 })
 
-describe("p_while", {
-  it("simple case", {
-    f <- jit(function(n) {
-      nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
-        i <- i + nv_scalar(1L)
-        list(i = i)
-      })
-    })
-  })
-})
-
 # TODO: Continue here
-test_that("p_while: simle case", {
+test_that("p_while: simple case", {
   f <- jit(function(n) {
     nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
       i <- i + nv_scalar(1L)
@@ -256,6 +251,16 @@ test_that("p_while: simle case", {
     f(nv_scalar(10L)),
     list(i = nv_scalar(11L))
   )
+})
+
+test_that("p_while: use literals in the loop", {
+  f <- jit(function(n) {
+    nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
+      i <- i + 1L
+      list(i = i)
+    })
+  })
+  expect_equal(f(nv_scalar(10L)), list(i = nv_scalar(11L)))
 })
 
 test_that("p_while: two state variables", {

@@ -3,13 +3,13 @@
 #' @title Graph Value
 #' @description
 #' Value in a [`Graph`].
-#' @param aval (`ShapedTensor`)\cr
+#' @param aval ([`AbstractTensor`])\cr
 #'   The abstract value of the variable.
 #' @include mut.R
 GraphValue <- mut(new_class(
   "GraphValue",
   properties = list(
-    aval = ShapedTensor
+    aval = AbstractTensor
   )
 ))
 
@@ -18,15 +18,11 @@ GraphValue <- mut(new_class(
 #' Literal in a [`Graph`].
 #' @param aval (`any`)\cr
 #'   The value of the literal.
-#' @template param_dtype
 #' @export
 GraphLiteral <- mut(new_class(
   "GraphLiteral",
   properties = list(
-    aval = new_property(class_any, validator = function(value) {
-      checkmate::check_scalar(value)
-    }),
-    dtype = stablehlo::TensorDataType
+    aval = LiteralTensor
   )
 ))
 
@@ -39,7 +35,11 @@ method(format, GraphValue) <- function(x, ...) {
 }
 
 method(format, GraphLiteral) <- function(x, ...) {
-  sprintf("GraphLiteral(%s, %s)", format(x@aval), format(x@dtype))
+  sprintf("GraphLiteral(%s, %s)", x@aval@data, sprintf("%s%s", repr(x@aval@dtype), if (x@aval@ambiguous) "?" else ""))
+}
+
+method(print, GraphLiteral) <- function(x, ...) {
+  cat(format(x), "\n")
 }
 
 GraphNode <- S7::new_union(GraphValue, GraphLiteral)
@@ -61,8 +61,8 @@ PrimitiveCall <- new_class(
   "PrimitiveCall",
   properties = list(
     primitive = Primitive,
-    params = list_of(class_any),
     inputs = list_of(GraphNode),
+    params = list_of(class_any),
     outputs = list_of(GraphNode)
   )
 )
@@ -85,8 +85,7 @@ PrimitiveCall <- new_class(
 #'   The outputs of the graph.
 #' @param constants (`list(GraphValue)`)\cr
 #'   The constants of the graph.
-#'
-#' @export
+# @export
 Graph <- mut(new_class(
   "Graph",
   properties = list(
@@ -152,11 +151,11 @@ method(dtype, GraphValue) <- function(x, ...) {
 }
 
 method(shape, GraphLiteral) <- function(x, ...) {
-  integer()
+  shape(x@aval)
 }
 
 method(dtype, GraphLiteral) <- function(x, ...) {
-  x@dtype
+  x@aval@dtype
 }
 
 
@@ -182,18 +181,17 @@ descriptor_to_graph <- function(descriptor) {
 GraphBox <- new_class(
   "GraphBox",
   properties = list(
-    # TODO: rename to gnode
-    gval = GraphNode,
+    gnode = GraphNode,
     desc = GraphDescriptor
   )
 )
 
 method(shape, GraphBox) <- function(x, ...) {
-  shape(x@gval)
+  shape(x@gnode)
 }
 
 method(dtype, GraphBox) <- function(x, ...) {
-  dtype(x@gval)
+  dtype(x@gnode)
 }
 
 method(print, GraphBox) <- function(x, ...) {
@@ -201,19 +199,8 @@ method(print, GraphBox) <- function(x, ...) {
 }
 
 method(format, GraphBox) <- function(x, ...) {
-  sprintf("GraphBox(%s)", format(x@gval))
+  sprintf("GraphBox(%s)", format(x@gnode))
 }
-
-aval <- function(x) {
-  if (is_anvil_tensor(x)) {
-    return(ConcreteTensor(x))
-  }
-  if (is_graph_box(x)) {
-    return(x@gval@aval)
-  }
-  cli_abort("internal error")
-}
-
 
 maybe_box_variable <- function(x) {
   current_desc <- .current_descriptor()
@@ -221,30 +208,28 @@ maybe_box_variable <- function(x) {
     if (identical(x@desc, current_desc)) {
       return(x)
     }
-    gval <- x@gval
+    gval <- x@gnode
     get_box_or_register_const(current_desc, gval)
-  } else if (is_anvil_tensor(x)) {
+  } else if (is_anvil_tensor(x) || test_scalar(x)) {
     get_box_or_register_const(current_desc, x)
   } else if (is_graph_node(x)) {
     # FIXME: !!!
-    # We use this in gradient, but I am not sure this is such a great idea
-    #browser()
-    #cli_abort("Internal error: trying to lift a GraphNode")
-    get_box_or_register_const(current_desc, x)
-    #GraphBox(x, .current_descriptor())
+    # We use this in gradient, where we pass gvals to the backward rules
+    # but I think we should handle this differently
+    GraphBox(x, .current_descriptor())
   } else {
     x
   }
 }
 
+# this function is on the inputs of trace_fn()
 maybe_box_input <- function(x, desc) {
-  # this function is on the inputs of trace_fn()
   if (is_anvil_tensor(x)) {
     # cases:
     # 1. top-level trace_fn call
     # 2. a constant is passed to a nested trace_fn call
     #    this constant can be a closed-over constant or defined in the environment of the nested trace_fn call
-    # For the first scenario, it would be sufficient to create a ShapedTensor,
+    # For the first scenario, it would be sufficient to create a AbstractTensor,
     # because the input will be provided by the user
     # For the second scenario, we will inline the descriptor into the parent descriptor,
     # but it the input to the nested trace_fn call does not become an input to the parent graph,
@@ -258,7 +243,7 @@ maybe_box_input <- function(x, desc) {
     # Nested trace_fn call
     # Because we will inline the child graph into the parent graph, we re-use
     # the same GraphValue, because this will make the inlining straightforward.
-    register_input(desc, x@gval)
+    register_input(desc, x@gnode)
   } else {
     # parameter
     x
@@ -311,12 +296,22 @@ get_box_or_register_const <- function(desc, x) {
     desc@gval_to_box[[gval]] <- box
     return(box)
   }
+  if (test_scalar(x)) {
+    ambiguous <- !is.logical(x)
+    gval <- GraphLiteral(LiteralTensor(x, shape = integer(), ambiguous = ambiguous))
+    box <- desc@gval_to_box[[gval]] <- GraphBox(gval, desc)
+    return(box)
+  }
+  if (is_graph_literal(x)) {
+    box <- desc@gval_to_box[[x]] <- GraphBox(x, desc)
+    return(box)
+  }
   if (!is_graph_value(x)) {
     cli_abort("Internal error: trying to register an invalid constant")
   }
   # gval@aval can either be a
   # * ConcreteTensor: AnvilTensor that is captured from the parent environment
-  # * ShapedTensor: Output of a computation in a parent graph
+  # * AbstractTensor: Output of a computation in a parent graph
   # In either case, we first check whether the value is already registered in the current graph
   # and if so, return it:
   box <- desc@gval_to_box[[x]]
@@ -390,14 +385,14 @@ trace_fn <- function(f, args, desc = NULL) {
   outputs_flat <- lapply(output[[2L]], maybe_box_variable)
 
   desc@out_tree <- out_tree
-  desc@outputs <- lapply(outputs_flat, \(x) x@gval)
+  desc@outputs <- lapply(outputs_flat, \(x) x@gnode)
 
   if (any(vapply(outputs_flat, \(x) !is_graph_box(x), logical(1L)))) {
     cli_abort("Function .f must return only objects of type `GraphBox`.")
   }
 
   graph <- descriptor_to_graph(desc)
-  remove_dead_code(graph)
+  return(graph)
 }
 
 is_graph_node <- function(x) {
@@ -475,23 +470,15 @@ is_graph_box <- function(x) {
   inherits(x, "anvil::GraphBox")
 }
 
-graph_desc_add <- function(prim, args, params = list(), infer_fn) {
+graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = .current_descriptor()) {
   boxes_in <- lapply(args, maybe_box_variable)
-  gvals_in <- lapply(boxes_in, \(x) x@gval)
-  avals_in <- lapply(boxes_in, aval)
-
-  vts_in <- lapply(avals_in, \(aval) st2vt(aval))
-  outputs <- rlang::exec(infer_fn, !!!c(vts_in, params))
-  sts_out <- lapply(outputs, vt2st)
-
+  gnodes_in <- lapply(boxes_in, \(box) box@gnode)
+  avals_in <- lapply(boxes_in, \(box) box@gnode@aval)
+  sts_out <- rlang::exec(infer_fn, !!!c(avals_in, params))
   gvals_out <- lapply(sts_out, GraphValue)
-
-  call <- PrimitiveCall(prim, params, gvals_in, gvals_out)
-
-  desc <- .current_descriptor()
+  call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)
   desc@calls <- c(desc@calls, call)
   boxes_out <- lapply(gvals_out, register_gval, desc = desc)
-
   return(boxes_out)
 }
 
@@ -515,8 +502,4 @@ inline_graph_into_desc <- function(desc, graph) {
   gvals_out_flat <- graph@outputs
   boxes_out_flat <- lapply(gvals_out_flat, GraphBox, desc)
   unflatten(graph@out_tree, boxes_out_flat)
-}
-
-method(format, GraphLiteral) <- function(x, ...) {
-  sprintf("GraphLiteral(%s, %s)", format(x@aval), format(x@dtype))
 }

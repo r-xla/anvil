@@ -20,19 +20,6 @@ dtype_from_buffer <- function(x) {
   as_dtype(d)
 }
 
-raise_to_shaped <- function(aval) {
-  ShapedTensor(aval@dtype, aval@shape)
-}
-
-
-id <- S7::new_generic("id", "x", function(x) {
-  S7::S7_dispatch()
-})
-
-method(id, class_environment) <- function(x) {
-  rlang::addr_address(x)
-}
-
 hashkeys <- function(h) {
   val <- vector("list", numhash(h))
   idx <- 0
@@ -129,4 +116,7 @@ without <- function(x, indices) {
 
 zero_env <- function() {
   new.env(size = 0L, parent = emptyenv())
+}
+shape2string <- function(x) {
+  sprintf("(%s)", paste0(x, collapse = ","))
 }

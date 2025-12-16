@@ -320,10 +320,11 @@ test_that("p_min", {
 })
 
 test_that("p_convert backward converts gradients to the input dtype", {
+  skip_if_metal()
   x_arr <- array(1:6, c(2, 3))
   x <- nv_tensor(x_arr, dtype = "f32")
   f <- jit(gradient(function(x) {
-    y <- nvl_convert(x, dtype = "f64")
+    y <- nvl_convert(x, dtype = "f64", ambiguous = FALSE)
     nv_reduce_sum(y, dims = 1:2, drop = TRUE)
   }))
 
