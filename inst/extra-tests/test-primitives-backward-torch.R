@@ -297,6 +297,14 @@ test_that("p_neg", {
   verify_grad_uni(nvl_neg, torch::torch_neg)
 })
 
+test_that("p_exp", {
+  verify_grad_uni(nvl_exp, torch::torch_exp)
+})
+
+test_that("p_log", {
+  verify_grad_uni(nvl_log, torch::torch_log)
+})
+
 test_that("p_div", {
   # TODO:
   # Need to determine what to do with non-differentiable values:
@@ -402,7 +410,7 @@ test_that("p_reshape", {
 test_that("p_convert", {
   target_dtype <- "f64"
   verify_grad_uni_tensor(
-    nvl_convert,
+    \(operand, dtype) nvl_convert(operand, dtype = dtype, ambiguous = FALSE),
     function(x, dtype) x$to(dtype = dtype),
     dtypes = "f32",
     args_f = function(shp, dtype) {

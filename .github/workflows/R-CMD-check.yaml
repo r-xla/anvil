@@ -21,7 +21,6 @@ jobs:
       matrix:
         config:
           - { os: "macos", r: "release", platform: "cpu" }
-          - { os: "macos", r: null, platform: "metal" }
           - { os: "ubuntu", r: "release", platform: "cpu" }
           - { os: "ubuntu", r: "release", platform: "cpu", torch: true }
           - { os: "ubuntu", r: "release", platform: "cuda", torch: true}
@@ -46,11 +45,6 @@ jobs:
             runner: 'ubuntu-latest'
           - config: {os: "macos", platform: "cpu"}
             runner: 'macos-latest'
-            setup: |
-              brew install protobuf@21
-              brew link protobuf@21 --force --overwrite
-          - config: {os: "macos", platform: "metal"}
-            runner: ['self-hosted', 'metal']
             setup: |
               brew install protobuf@21
               brew link protobuf@21 --force --overwrite

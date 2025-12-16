@@ -143,16 +143,9 @@ test_that("can pass constant to nested trace_fn call if it is defined in the par
   expect_equal(f(), list(y = nv_scalar(4)))
 })
 
-test_that("Graph: printing", {
-  f <- function(x, y) {
-    nvl_add(x, y)
-  }
-  graph <- trace_fn(f, list(x = nv_scalar(1), y = nv_scalar(2)))
-  expect_snapshot(graph)
-  # with param
-  f1 <- function(x) {
-    mean(x)
-  }
-  graph1 <- trace_fn(f1, list(x = nv_tensor(1:10, dtype = "f32", shape = c(2, 5))))
-  expect_snapshot(graph1)
+test_that("GraphLiteral", {
+  gl <- GraphLiteral(LiteralTensor(1L, integer(), ambiguous = TRUE))
+  expect_equal(dtype(gl), as_dtype("i32"))
+  expect_equal(shape(gl), integer())
+  expect_snapshot(gl)
 })

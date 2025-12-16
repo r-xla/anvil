@@ -32,6 +32,11 @@ Suggests:
     rmarkdown,
     quickr,
     testthat (>= 3.0.0)
+Remotes:
+    r-xla/stablehlo,
+    r-xla/tengen,
+    r-xla/xlamisc,
+    r-xla/pjrt
 Additional_repositories:
     https://r-xla.r-universe.dev
 VignetteBuilder:
@@ -52,14 +57,14 @@ Collate:
     'api-utilities.R'
     'backward.R'
     'flatten.R'
-    'graph-passes.R'
     'mut.R'
     'tensor.R'
     'graph.R'
     'graph-print.R'
+    'promotion.R'
     'graph-to-quickr-r.R'
-    'graph-to-quickr.R'
     'quickr.R'
+    'graph-to-quickr.R'
     'reexports.R'
     'rules-backward.R'
     'rules-stablehlo.R'

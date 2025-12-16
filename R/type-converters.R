@@ -1,6 +1,6 @@
 # Converters between stablehlo and anvil types
 
-# ShapedTensor -> FuncValue
+# AbstractTensor -> FuncValue
 st2fv <- function(x, func) {
   value_type <- st2vt(x)
   value_id <- stablehlo::ValueId()
@@ -18,15 +18,15 @@ st2fv <- function(x, func) {
   )
 }
 
-# ShapedTensor -> ValueType
+# AbstractTensor -> ValueType
 st2vt <- function(x) {
-  stopifnot(inherits(x, ShapedTensor))
+  stopifnot(inherits(x, AbstractTensor))
   stablehlo::ValueType(stablehlo::TensorType(x@dtype, x@shape))
 }
 
-# ValueType -> Shaped Tensor
+# ValueType -> Abstract Tensor
 vt2st <- function(x) {
   stopifnot(inherits(x, stablehlo::ValueType))
   stopifnot(inherits(x@type, stablehlo::TensorType))
-  ShapedTensor(x@type@dtype, x@type@shape)
+  AbstractTensor(x@type@dtype, x@type@shape)
 }

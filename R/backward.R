@@ -12,7 +12,7 @@ transform_gradient <- function(graph, wrt) {
     cli_abort("gradient can only be computed for functions that return a scalar")
   }
   dt <- out@aval@dtype
-  if (!(dt == dt_f32 || dt == dt_f64)) {
+  if (!(dt == as_dtype("f32") || dt == as_dtype("f64"))) {
     cli_abort(c(
       x = "gradient can only be computed for functions that return float scalar",
       i = "Got dtype={.field {repr(dt)}}"
@@ -34,6 +34,10 @@ transform_gradient <- function(graph, wrt) {
     any_input_requires <- any(vapply(
       call@inputs,
       function(x) {
+        if (is_graph_literal(x)) {
+          # literals don't depend on anything (they are either inlined constants or literals)
+          return(FALSE)
+        }
         required_env[[x]]
       },
       logical(1L)
@@ -75,7 +79,15 @@ transform_gradient <- function(graph, wrt) {
       next
     }
 
-    output_grads <- lapply(call@outputs, \(output) grad_env[[output]])
+    output_grads <- lapply(call@outputs, \(output) {
+      grad <- grad_env[[output]]
+      if (is.null(grad)) {
+        # output grad might be NULL if there is dead code
+        nvl_fill(0L, dtype = dtype(output), shape = shape(output))
+      } else {
+        grad
+      }
+    })
 
     input_grads <- rlang::exec(
       call@primitive[["backward"]],
@@ -107,7 +119,7 @@ transform_gradient <- function(graph, wrt) {
       grad
     }
     # browser()
-    input_grads <- c(input_grads, list(x@gval))
+    input_grads <- c(input_grads, list(x@gnode))
   }
 
   desc@outputs <- input_grads
@@ -151,4 +163,34 @@ gradient <- function(f, wrt = NULL) {
   }
   formals(f_gradient) <- formals2(f)
   return(f_gradient)
+}
+
+#' @export
+#' @describeIn gradient Returns both the value and the gradient
+value_and_gradient <- function(f, wrt = NULL) {
+  if (!is.null(wrt) && !all(wrt %in% formalArgs(f))) {
+    cli_abort("wrt must be a subset of the formal arguments of f")
+  }
+  f_value_and_grad <- function() {
+    args <- as.list(match.call())[-1L]
+    args <- lapply(args, eval, envir = parent.frame())
+    parent_desc <- .current_descriptor()
+    fwd_graph <- trace_fn(f, args)
+    grad_graph <- transform_gradient(fwd_graph, wrt)
+
+    combined_graph <- grad_graph
+    combined_graph@outputs <- c(fwd_graph@outputs, grad_graph@outputs)
+
+    counter <- new_counter()
+    value_tree <- reindex_tree(fwd_graph@out_tree, counter)
+    grad_tree <- reindex_tree(grad_graph@out_tree, counter)
+    combined_graph@out_tree <- ListNode(
+      list(value_tree, grad_tree),
+      names = c("value", "grad")
+    )
+
+    inline_graph_into_desc(parent_desc, combined_graph)
+  }
+  formals(f_value_and_grad) <- formals2(f)
+  f_value_and_grad
 }
