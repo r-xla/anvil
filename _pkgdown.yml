@@ -36,3 +36,4 @@ articles:
   navbar: ~
   contents:
   - internals
+  - type-promotion

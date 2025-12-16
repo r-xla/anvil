@@ -13,16 +13,13 @@
 #' @param dtype (character(1))\cr
 #'   Data type.
 #' @export
-nv_full <- function(value, shape, dtype = NULL) {
-  dtype <- dtype %??%
-    if (is.double(value)) {
-      "f32"
-    } else if (is.integer(value)) {
-      "i32"
-    } else if (is.logical(value)) {
-      "pred"
-    }
-  nvl_full(value, shape, dtype)
+nv_fill <- function(value, shape, dtype = NULL) {
+  dtype <- if (is.null(dtype)) {
+    default_dtype(value)
+  } else {
+    as_dtype(dtype)
+  }
+  nvl_fill(value, shape, dtype)
 }
 
 
@@ -59,25 +56,62 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
   tail(seq_len(rank_out), rank_in)
 }
 
-nv_broadcast_scalar <- function(lhs, rhs) {
-  shape_lhs <- shape(lhs)
-  shape_rhs <- shape(rhs)
-  if (identical(shape_lhs, shape_rhs)) {
-    return(list(lhs, rhs))
+
+#' @title Broadcast Scalars to Common Shape
+#' @description
+#' Broadcast scalar tensors to match the shape of non-scalar tensors.
+#' All non-scalar tensors must have the same shape.
+#' @param ... ([`nv_tensor`])\cr
+#'   Tensors to broadcast. Scalars will be broadcast to the common non-scalar shape.
+#' @return (`list()` of [`nv_tensor`])
+#' @export
+nv_broadcast_scalars <- function(...) {
+  args <- list(...)
+  shapes <- lapply(args, \(x) shape(to_abstract(x)))
+  non_scalar_shapes <- Filter(\(s) length(s) > 0L, shapes)
+
+  if (length(non_scalar_shapes) == 0L) {
+    return(args)
   }
-  if (length(shape_lhs) && length(shape_rhs)) {
-    # fmt: skip
+
+  target_shape <- non_scalar_shapes[[1L]]
+  if (!all(vapply(non_scalar_shapes, identical, logical(1L), target_shape))) {
+    shapes <- paste0(sapply(shapes, shape2string), sep = ", ")
     cli_abort(
-      "By default, only scalar broadcasting is supported, use {.fn nv_broadcast_tensors} to broadcast higher-dimensional tensors." # nolint
+      "All non-scalar tensors must have the same shape, but got {shapes}. Use {.fn nv_broadcast_tensors} for general broadcasting." # nolint
     )
   }
-  if (!length(shape_lhs)) {
-    lhs <- nv_broadcast_to(lhs, shape_rhs)
-  }
-  if (!length(shape_rhs)) {
-    rhs <- nv_broadcast_to(rhs, shape_lhs)
-  }
-  list(lhs, rhs)
+
+  lapply(args, \(x) {
+    if (length(shape(to_abstract(x))) == 0L) {
+      nv_broadcast_to(x, target_shape)
+    } else {
+      x
+    }
+  })
+}
+
+#' @title Promote Tensors to a Common Dtype
+#' @description
+#' Promote tensors to a common data type, see [`common_dtype`] for more details.
+#' @param ... ([`nv_tensor`])\cr
+#'   Tensors to promote.
+#' @return (`list()` of [`nv_tensor`])
+#' @export
+nv_promote_to_common <- function(...) {
+  args <- list(...)
+  avals <- lapply(args, to_abstract)
+  tmp <- do.call(common_type_info, avals)
+  cdt <- tmp[[1L]]
+  ambiguous <- tmp[[2L]]
+  out <- lapply(seq_along(args), \(i) {
+    if (cdt == dtype(avals[[i]])) {
+      args[[i]]
+    } else {
+      nvl_convert(args[[i]], dtype = cdt, ambiguous = ambiguous)
+    }
+  })
+  return(out)
 }
 
 #' @title Broadcast Tensors to a Common Shape
@@ -98,7 +132,7 @@ nv_broadcast_scalar <- function(lhs, rhs) {
 #' @export
 nv_broadcast_tensors <- function(...) {
   args <- list(...)
-  shape <- Reduce(broadcast_shapes, lapply(args, shape))
+  shape <- Reduce(broadcast_shapes, lapply(args, \(x) shape(to_abstract(x))))
   lapply(args, nv_broadcast_to, shape = shape)
 }
 
@@ -111,8 +145,9 @@ nv_broadcast_tensors <- function(...) {
 #' @return ([`nv_tensor`])
 #' @export
 nv_broadcast_to <- function(operand, shape) {
-  if (!identical(shape(operand), shape)) {
-    broadcast_dimensions <- make_broadcast_dimensions(shape(operand), shape)
+  shape_op <- shape(to_abstract(operand))
+  if (!identical(shape_op, shape)) {
+    broadcast_dimensions <- make_broadcast_dimensions(shape_op, shape)
     nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
   } else {
     operand
@@ -127,9 +162,8 @@ nv_broadcast_to <- function(operand, shape) {
 #' @return [`nv_tensor`]
 #' @export
 nv_convert <- function(operand, dtype) {
-  nvl_convert(operand, as_dtype(dtype))
+  nvl_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
 }
-
 
 #' @rdname nv_transpose
 #' @export
@@ -204,154 +238,100 @@ nv_select <- nvl_select
 #' @return [`nv_tensor`]
 NULL
 
-#' @rdname nv_binary_ops
-#' @export
-nv_add <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_add(args[[1]], args[[2]])
+
+make_do_binary <- function(f) {
+  function(lhs, rhs) {
+    args <- nv_promote_to_common(lhs, rhs)
+    args <- nv_broadcast_scalars(args[[1L]], args[[2L]])
+    do.call(f, args)
+  }
 }
 
 #' @rdname nv_binary_ops
 #' @export
-nv_mul <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_mul(args[[1]], args[[2]])
-}
+nv_add <- make_do_binary(nvl_add)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_sub <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_sub(args[[1]], args[[2]])
-}
+nv_mul <- make_do_binary(nvl_mul)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_div <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_div(args[[1]], args[[2]])
-}
+nv_sub <- make_do_binary(nvl_sub)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_pow <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_pow(args[[1]], args[[2]])
-}
+nv_div <- make_do_binary(nvl_div)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_eq <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_eq(args[[1]], args[[2]])
-}
+nv_pow <- make_do_binary(nvl_pow)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_ne <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_ne(args[[1]], args[[2]])
-}
+nv_eq <- make_do_binary(nvl_eq)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_gt <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_gt(args[[1]], args[[2]])
-}
+nv_ne <- make_do_binary(nvl_ne)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_ge <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_ge(args[[1]], args[[2]])
-}
+nv_gt <- make_do_binary(nvl_gt)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_lt <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_lt(args[[1]], args[[2]])
-}
+nv_ge <- make_do_binary(nvl_ge)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_le <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_le(args[[1]], args[[2]])
-}
+nv_lt <- make_do_binary(nvl_lt)
+
+#' @rdname nv_binary_ops
+#' @export
+nv_le <- make_do_binary(nvl_le)
 
 ## Additional binary ops -------------------------------------------------------
 
 #' @rdname nv_binary_ops
 #' @export
-nv_max <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_max(args[[1]], args[[2]])
-}
+nv_max <- make_do_binary(nvl_max)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_min <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_min(args[[1]], args[[2]])
-}
+nv_min <- make_do_binary(nvl_min)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_remainder <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_remainder(args[[1]], args[[2]])
-}
+nv_remainder <- make_do_binary(nvl_remainder)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_and <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_and(args[[1]], args[[2]])
-}
+nv_and <- make_do_binary(nvl_and)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_or <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_or(args[[1]], args[[2]])
-}
+nv_or <- make_do_binary(nvl_or)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_xor <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_xor(args[[1]], args[[2]])
-}
+nv_xor <- make_do_binary(nvl_xor)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_shift_left <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_shift_left(args[[1]], args[[2]])
-}
+nv_shift_left <- make_do_binary(nvl_shift_left)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_shift_right_logical <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_shift_right_logical(args[[1]], args[[2]])
-}
+nv_shift_right_logical <- make_do_binary(nvl_shift_right_logical)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_shift_right_arithmetic <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_shift_right_arithmetic(args[[1]], args[[2]])
-}
+nv_shift_right_arithmetic <- make_do_binary(nvl_shift_right_arithmetic)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_atan2 <- function(lhs, rhs) {
-  args <- nv_broadcast_scalar(lhs, rhs)
-  nvl_atan2(args[[1]], args[[2]])
-}
+nv_atan2 <- make_do_binary(nvl_atan2)
 
 
 #' @title Bitcast Conversion
@@ -447,6 +427,9 @@ nv_round <- nvl_round
 #' @return [`nv_tensor`]
 #' @export
 nv_matmul <- function(lhs, rhs) {
+  args <- nv_promote_to_common(lhs, rhs)
+  lhs <- args[[1L]]
+  rhs <- args[[2L]]
   if (ndims(lhs) < 2L) {
     cli_abort("lhs of matmul must have at least 2 dimensions")
   }
@@ -660,77 +643,6 @@ nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
   # return state and Normals N
   list(Theta[[1]], N)
 }
-
-## Data Types ------------------------------------------------------------------
-
-#' @title Tensor Data Types
-#' @name data_types
-#' @description
-#' Data types for tensors:
-#' - `dt_i1`: boolean.
-#' - `dt_i{8, 16, 32, 64}`: signed integer.
-#' - `dt_ui{8, 16, 32, 64}`: unsigned integer.
-#' - `dt_f{32, 64}`: float.
-NULL
-
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-#' @export
-dt_i1 <- BooleanType()
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-#' @format NULL
-#' @usage NULL
-#' @export
-dt_i8 <- IntegerType(8)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_i16 <- IntegerType(16)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_i32 <- IntegerType(32)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_i64 <- IntegerType(64)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_ui8 <- UnsignedType(8)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_ui16 <- UnsignedType(16)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_ui32 <- UnsignedType(32)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_ui64 <- UnsignedType(64)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_f32 <- FloatType(32)
-#' @export
-#' @rdname data_types
-#' @format NULL
-#' @usage NULL
-dt_f64 <- FloatType(64)
-
 
 # Higher order primitives
 

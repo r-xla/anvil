@@ -51,7 +51,7 @@ p_pow[["backward"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
     if (.required[[1L]]) {
-      one <- nv_full(1, dtype = dtype(lhs), shape = shape(rhs))
+      one <- nvl_fill(1, dtype = dtype(lhs), shape = shape(rhs))
       nvl_mul(nvl_mul(grad, rhs), nvl_pow(lhs, nvl_sub(rhs, one)))
     },
     if (.required[[2L]]) {
@@ -60,6 +60,39 @@ p_pow[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
+p_log[["backward"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) nvl_div(grad, operand)
+  )
+}
+
+p_exp[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) nvl_mul(grad, y)
+  )
+}
+
+p_max[["backward"]] <- p_min[["backward"]] <- function(inputs, outputs, grads, .required) {
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
+  grad <- grads[[1L]]
+
+  if (.required[[1L]] || .required[[2L]]) {
+    y <- outputs[[1L]]
+    mask_lhs <- nvl_convert(nvl_eq(lhs, y), dtype = dtype(grad))
+    mask_rhs <- nvl_convert(nvl_eq(rhs, y), dtype = dtype(grad))
+    count <- nvl_add(mask_lhs, mask_rhs)
+  }
+
+  list(
+    if (.required[[1L]]) nvl_div(nvl_mul(grad, mask_lhs), count),
+    if (.required[[2L]]) nvl_div(nvl_mul(grad, mask_rhs), count)
+  )
+}
 
 p_dot_general[["backward"]] <- function(inputs, outputs, grads, contracting_dims, batching_dims, .required) {
   lhs <- inputs[[1L]]
@@ -157,6 +190,33 @@ p_reduce_sum[["backward"]] <- function(inputs, outputs, grads, dims, drop, .requ
   )
 }
 
+p_reduce_max[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+
+  list(
+    if (.required[[1L]]) {
+      bdims <- if (drop) {
+        without(seq_along(shape(operand)), dims)
+      } else {
+        seq_along(shape(grad))
+      }
+
+      y <- outputs[[1L]]
+      y_bc <- nvl_broadcast_in_dim(y, shape(operand), bdims)
+
+      grad_bc <- nvl_broadcast_in_dim(grad, shape(operand), bdims)
+      mask <- nvl_eq(operand, y_bc)
+      mask_f <- nvl_convert(mask, dtype = dtype(grad_bc))
+
+      count <- nvl_reduce_sum(mask_f, dims = dims, drop = drop)
+      count_bc <- nvl_broadcast_in_dim(count, shape(operand), bdims)
+
+      nvl_div(nvl_mul(grad_bc, mask_f), count_bc)
+    }
+  )
+}
+
 p_broadcast_in_dim[["backward"]] <- function(inputs, outputs, grads, shape_out, broadcast_dimensions, .required) {
   operand <- inputs[[1L]]
   y <- outputs[[1L]]
@@ -194,7 +254,7 @@ p_select[["backward"]] <- function(inputs, outputs, grads, .required) {
   pred <- inputs[[1L]]
   true_value <- inputs[[2L]]
   grad <- grads[[1L]]
-  zero <- nv_full(0L, dtype = dtype(true_value), shape = shape(true_value))
+  zero <- nvl_fill(0L, dtype = dtype(true_value), shape = shape(true_value))
 
   list(
     if (.required[[1L]]) cli_abort("Predicate cannot be differentiated"),
@@ -209,11 +269,12 @@ p_if[["backward"]] <- function(inputs, outputs, grads, true, false, node_map, .r
 
 # convert backward -----------------
 
-p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, .required) {
+p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
+  # the ambiguity is determined by the input, not the `ambiguous` parameter
   list(
-    if (.required[[1L]]) nvl_convert(grad, dtype(operand))
+    if (.required[[1L]]) nvl_convert(grad, dtype(operand), inputs[[1L]]@aval@ambiguous)
   )
 }
 
@@ -228,7 +289,7 @@ zero_grads <- function(inputs, .required) {
   req_rhs <- .required[[2L]]
 
   zero_like <- function(x) {
-    nv_full(0L, dtype = dtype(x), shape = shape(x))
+    nvl_fill(0L, dtype = dtype(x), shape = shape(x))
   }
 
   list(

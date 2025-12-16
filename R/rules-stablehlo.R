@@ -2,7 +2,7 @@
 
 # TODO: Here we don't have to re-do the type inference again, because it was already done.
 
-p_full[["stablehlo"]] <- function(value, shape, dtype) {
+p_fill[["stablehlo"]] <- function(value, shape, dtype) {
   list(stablehlo::hlo_tensor(value, shape = shape, dtype = dtype))
 }
 
@@ -261,7 +261,7 @@ p_round[["stablehlo"]] <- function(operand, method) {
   )
 }
 
-p_convert[["stablehlo"]] <- function(operand, dtype) {
+p_convert[["stablehlo"]] <- function(operand, dtype, ambiguous) {
   list(stablehlo::hlo_convert(operand, dtype))
 }
 

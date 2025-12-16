@@ -223,3 +223,7 @@ test_that("... works (#19)", {
     nv_scalar(56L)
   )
 })
+
+test_that("error message when passing invalid input", {
+  expect_error(jit(nv_tan)(1L), "Expected anvil tensor, but got")
+})

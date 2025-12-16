@@ -4,10 +4,10 @@
 \alias{GraphValue}
 \title{Graph Value}
 \usage{
-GraphValue(aval = ShapedTensor())
+GraphValue(aval = AbstractTensor())
 }
 \arguments{
-\item{aval}{(\code{ShapedTensor})\cr
+\item{aval}{(\code{\link{AbstractTensor}})\cr
 The abstract value of the variable.}
 }
 \description{
