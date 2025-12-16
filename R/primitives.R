@@ -3,7 +3,7 @@
 
 # Type inference helper functions for graph building
 #' @importFrom stablehlo infer_types_generic_biv infer_types_generic_uni
-#' @importFrom stablehlo infer_types_integerish_biv
+#' @importFrom stablehlo infer_types_integerish_biv infer_types_integerish_uni
 #' @importFrom stablehlo infer_types_compare infer_types_transpose infer_types_reshape
 #' @importFrom stablehlo infer_types_broadcast_in_dim infer_types_convert
 #' @importFrom stablehlo infer_types_dot_general infer_types_select
@@ -18,6 +18,23 @@ infer_unary <- function(operand) {
 
 infer_binary_integerish <- function(lhs, rhs) {
   stablehlo::infer_types_integerish_biv(lhs, rhs)@items
+}
+
+infer_unary_integerish <- function(operand) {
+  ns <- asNamespace("stablehlo")
+
+  infer <- get0("infer_types_integerish_uni", envir = ns, inherits = FALSE)
+  if (is.function(infer)) {
+    return(infer(operand)@items)
+  }
+
+  # Older versions of {stablehlo} used infer_types_boolean_uni() here.
+  infer <- get0("infer_types_boolean_uni", envir = ns, inherits = FALSE)
+  if (is.function(infer)) {
+    return(infer(operand)@items)
+  }
+
+  cli_abort("stablehlo does not provide infer_types_integerish_uni or infer_types_boolean_uni")
 }
 
 
