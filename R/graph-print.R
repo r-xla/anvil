@@ -14,8 +14,9 @@ format_node_id <- function(node, node_ids) {
 format_literal <- function(node) {
   val <- node@aval@data
   dt <- repr(dtype(node@aval))
+  dt <- if (node@aval@ambiguous) paste0(dt, "?") else dt
   shp <- shape(node@aval)
-  sprintf("%s:%s?%s", val, dt, if (length(shp)) sprintf("[%s]", shape2string(shp)) else "")
+  sprintf("%s:%s%s", val, dt, if (length(shp)) sprintf("[%s]", shape2string(shp)) else "")
 }
 
 format_aval_short <- function(aval) {

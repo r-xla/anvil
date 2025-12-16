@@ -338,7 +338,9 @@ nvl_reduce_all <- make_reduce_op(p_reduce_all, infer_reduce_boolean)
 
 infer_compare <- function(lhs, rhs, comparison_direction) {
   out <- stablehlo::infer_types_compare(st2vt(lhs), st2vt(rhs), comparison_direction, "FLOAT")@items[[1L]]
-  list(vt2st(out))
+  out <- vt2st(out)
+  out@ambiguous <- lhs@ambiguous && rhs@ambiguous
+  list(out)
 }
 
 make_compare_op <- function(prim, direction) {

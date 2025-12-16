@@ -82,7 +82,7 @@ $$
 $$
 
 The question is now, how we can actually **calculate** this computationally.
-For computational feasibility, we want to avoid calculating the fill intermediate matrices, as these can be very large.
+For computational feasibility, we want to avoid calculating the full intermediate matrices, as these can be very large.
 
 To ways to do this are:
 
@@ -165,7 +165,7 @@ $$
 \frac{\partial f}{\partial b_1}^\top \times r_1 = \frac{\partial z}{\partial b_1}^\top \times \frac{\partial f}{\partial z}^\top \times r_1
 $$
 
-In fill matrix notation, we get:
+In full matrix notation, we get:
 
 $$
 \begin{bmatrix}

@@ -35,7 +35,11 @@ method(format, GraphValue) <- function(x, ...) {
 }
 
 method(format, GraphLiteral) <- function(x, ...) {
-  sprintf("GraphLiteral(%s, %s)", x@aval@data, repr(x@aval@dtype))
+  sprintf("GraphLiteral(%s, %s)", x@aval@data, sprintf("%s%s", repr(x@aval@dtype), if (x@aval@ambiguous) "?" else ""))
+}
+
+method(print, GraphLiteral) <- function(x, ...) {
+  cat(format(x), "\n")
 }
 
 GraphNode <- S7::new_union(GraphValue, GraphLiteral)
@@ -81,8 +85,7 @@ PrimitiveCall <- new_class(
 #'   The outputs of the graph.
 #' @param constants (`list(GraphValue)`)\cr
 #'   The constants of the graph.
-#'
-#' @export
+# @export
 Graph <- mut(new_class(
   "Graph",
   properties = list(
@@ -211,7 +214,7 @@ maybe_box_variable <- function(x) {
     get_box_or_register_const(current_desc, x)
   } else if (is_graph_node(x)) {
     # FIXME: !!!
-    # We use this in gradient, where we pass gvals to tje backward rules
+    # We use this in gradient, where we pass gvals to the backward rules
     # but I think we should handle this differently
     GraphBox(x, .current_descriptor())
   } else {
@@ -219,13 +222,9 @@ maybe_box_variable <- function(x) {
   }
 }
 
+# this function is on the inputs of trace_fn()
 maybe_box_input <- function(x, desc) {
-  # this function is on the inputs of trace_fn()
-  if (is_shaped_tensor(x)) {
-    # Abstract value provided directly (via avals parameter)
-    gval <- GraphValue(aval = x)
-    register_input(desc, gval)
-  } else if (is_anvil_tensor(x)) {
+  if (is_anvil_tensor(x)) {
     # cases:
     # 1. top-level trace_fn call
     # 2. a constant is passed to a nested trace_fn call
@@ -298,7 +297,8 @@ get_box_or_register_const <- function(desc, x) {
     return(box)
   }
   if (test_scalar(x)) {
-    gval <- GraphLiteral(LiteralTensor(x, shape = integer(), ambiguous = TRUE))
+    ambiguous <- !is.logical(x)
+    gval <- GraphLiteral(LiteralTensor(x, shape = integer(), ambiguous = ambiguous))
     box <- desc@gval_to_box[[gval]] <- GraphBox(gval, desc)
     return(box)
   }

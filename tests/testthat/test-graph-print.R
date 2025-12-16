@@ -21,20 +21,6 @@ test_that("ambiguity is printed via ?", {
   expect_snapshot(graph)
 })
 
-test_that("Graph: printing", {
-  f <- function(x, y) {
-    nvl_add(x, y)
-  }
-  graph <- trace_fn(f, list(x = nv_scalar(1), y = nv_scalar(2)))
-  expect_snapshot(graph)
-  # with param
-  f1 <- function(x) {
-    mean(x)
-  }
-  graph1 <- trace_fn(f1, list(x = nv_tensor(1:10, dtype = "f32", shape = c(2, 5))))
-  expect_snapshot(graph1)
-})
-
 test_that("constants", {
   y <- nv_scalar(1)
   f <- function(x) {

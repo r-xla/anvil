@@ -137,7 +137,7 @@ test_that("promote_dt_ambiguous_to_known", {
   check("i32", "i32", "i32")
   check("i1", "i1", "i1")
   check("f32", "f32", "f32")
-  # ambiguous can only be i32, f32 or bool
+  # ambiguous can only be i32 or f32
 
   check("i32", "i8", "i8")
   check("i32", "i64", "i64")

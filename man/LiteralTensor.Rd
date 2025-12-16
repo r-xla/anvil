@@ -18,11 +18,11 @@ The data type. Defaults to \code{f32} for numeric, \code{i32} for integer, \code
 
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous. Ambiguous usually arise from R literals
-(e.g., \code{1L}, \code{1.0}, \code{TRUE}) and follow special promotion rules.
-Only \code{f32}, \code{i32}, and \code{i1} (bool) can be ambiguous during tracing.}
+(e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
+Only \code{f32} and \code{i32} can be ambiguous during tracing.}
 }
 \description{
-A \code{\link{AbstractTensor}} representing a tensor where the data is a R scalar literal (e.g., \code{1L}, \code{2.5}, \code{TRUE}).
+A \code{\link{AbstractTensor}} representing a tensor where the data is a R scalar literal (e.g., \code{1L}, \code{2.5}).
 Usually, their type is ambiguous, unless created via \code{\link{nv_fill}}.
 }
 \seealso{

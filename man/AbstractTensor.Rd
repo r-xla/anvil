@@ -15,11 +15,11 @@ The shape of the tensor. Can be provided as an integer vector.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous. Ambiguous usually arise from R literals
-(e.g., \code{1L}, \code{1.0}, \code{TRUE}) and follow special promotion rules.
-Only \code{f32}, \code{i32}, and \code{i1} (bool) can be ambiguous during tracing.}
+(e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
+Only \code{f32}, \code{i32} are ambiguous during tracing.}
 }
 \description{
-Abstract representation of a tensor with a known dtype and shape, but no concrete data.
+Abstract representation of a tensor with a (possibly ambiguous) dtype and shape, but no concrete data.
 Used during tracing to represent tensor metadata without actual values.
 }
 \details{

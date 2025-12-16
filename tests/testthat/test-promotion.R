@@ -54,3 +54,11 @@ test_that("p_while propagates ambiguity", {
     nv_scalar(33L, dtype = "i16")
   )
 })
+
+test_that("boolean is not ambiguous", {
+  f <- function(x) {
+    x * TRUE
+  }
+  graph <- trace_fn(f, list(x = nv_scalar(1L)))
+  expect_false(graph@calls[[1L]]@inputs[[1L]]@aval@ambiguous)
+})

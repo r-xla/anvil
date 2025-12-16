@@ -84,7 +84,6 @@ test_that("second order gradient (scalar)", {
     nvl_mul(x, x)
   }
   fg2 <- jit(gradient(\(x) gradient(f)(x)[[1L]]))
-  fg2(nv_scalar(1))
   expect_equal(fg2(nv_scalar(1)), list(x = nv_scalar(2)))
 })
 

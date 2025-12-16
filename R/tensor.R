@@ -71,7 +71,7 @@ dtype.AnvilTensor <- function(x, ...) {
 
 #' @title Abstract Tensor Class
 #' @description
-#' Abstract representation of a tensor with a known dtype and shape, but no concrete data.
+#' Abstract representation of a tensor with a (possibly ambiguous) dtype and shape, but no concrete data.
 #' Used during tracing to represent tensor metadata without actual values.
 #'
 #' @details
@@ -83,8 +83,8 @@ dtype.AnvilTensor <- function(x, ...) {
 #'   The shape of the tensor. Can be provided as an integer vector.
 #' @param ambiguous (`logical(1)`)\cr
 #'   Whether the type is ambiguous. Ambiguous usually arise from R literals
-#'   (e.g., `1L`, `1.0`, `TRUE`) and follow special promotion rules.
-#'   Only `f32`, `i32`, and `i1` (bool) can be ambiguous during tracing.
+#'   (e.g., `1L`, `1.0`) and follow special promotion rules.
+#'   Only `f32`, `i32` are ambiguous during tracing.
 #' @seealso [ConcreteTensor], [LiteralTensor], [to_abstract()]
 #' @export
 AbstractTensor <- S7::new_class(
@@ -103,9 +103,9 @@ AbstractTensor <- S7::new_class(
     shape <- as_shape(shape)
     dtype <- as_dtype(dtype)
     if (ambiguous) {
-      ok <- is_dtype(dtype) && (dtype == as_dtype("f32") || dtype == as_dtype("i32") || dtype == as_dtype("i1"))
+      ok <- is_dtype(dtype) && (repr(dtype) == "f32" || repr(dtype) == "i32")
       if (!ok) {
-        cli_abort("Ambiguous types must have dtype f32, i32 or bool")
+        cli_abort("Ambiguous types must have dtype f32 or i32")
       }
     }
     S7::new_object(
@@ -185,7 +185,7 @@ ConcreteTensor <- S7::new_class(
 
 #' @title Literal Tensor Class
 #' @description
-#' A [`AbstractTensor`] representing a tensor where the data is a R scalar literal (e.g., `1L`, `2.5`, `TRUE`).
+#' A [`AbstractTensor`] representing a tensor where the data is a R scalar literal (e.g., `1L`, `2.5`).
 #' Usually, their type is ambiguous, unless created via [`nv_fill`].
 #'
 #' @param data (`numeric(1)` | `integer(1)` | `logical(1)`)\cr
@@ -196,8 +196,8 @@ ConcreteTensor <- S7::new_class(
 #'   The data type. Defaults to `f32` for numeric, `i32` for integer, `i1` for logical.
 #' @param ambiguous (`logical(1)`)\cr
 #'   Whether the type is ambiguous. Ambiguous usually arise from R literals
-#'   (e.g., `1L`, `1.0`, `TRUE`) and follow special promotion rules.
-#'   Only `f32`, `i32`, and `i1` (bool) can be ambiguous during tracing.
+#'   (e.g., `1L`, `1.0`) and follow special promotion rules.
+#'   Only `f32` and `i32` can be ambiguous during tracing.
 #' @seealso [AbstractTensor], [ConcreteTensor]
 #' @export
 LiteralTensor <- new_class(
