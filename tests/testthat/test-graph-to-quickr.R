@@ -128,3 +128,38 @@ test_that("graph_to_quickr_function rejects nested inputs", {
 
   expect_error(graph_to_quickr_function(graph), "flat", fixed = FALSE)
 })
+
+test_that("graph_to_quickr_function avoids collisions with input named `out`", {
+  testthat::skip_if_not_installed("quickr")
+
+  graph <- trace_fn(
+    function(out) {
+      list(a = out, b = out + out)
+    },
+    list(out = nv_scalar(1.0, dtype = "f64"))
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+  out_quick <- f_quick(0.5)
+  out_pjrt <- eval_graph_pjrt(graph, 0.5)
+  expect_equal(out_quick, out_pjrt)
+})
+
+test_that("graph_to_quickr_function avoids collisions with input named `v1`", {
+  testthat::skip_if_not_installed("quickr")
+
+  graph <- trace_fn(
+    function(v1, x) {
+      (v1 + x) + v1
+    },
+    list(
+      v1 = nv_scalar(1.0, dtype = "f64"),
+      x = nv_scalar(2.0, dtype = "f64")
+    )
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+  out_quick <- f_quick(0.5, 1.25)
+  out_pjrt <- eval_graph_pjrt(graph, 0.5, 1.25)
+  expect_equal(out_quick, out_pjrt)
+})

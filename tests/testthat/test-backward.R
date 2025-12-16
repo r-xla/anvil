@@ -197,3 +197,12 @@ test_that("gradient: does not depend on input", {
   expect_equal(out[[1L]], nv_scalar(1.0))
   expect_equal(out[[2L]], nv_scalar(1.0))
 })
+
+test_that("select backward works for constant predicate", {
+  f <- function(x) {
+    nv_select(nv_scalar(TRUE, dtype = "pred"), x, -x)
+  }
+  g <- jit(gradient(f, wrt = "x"))
+  out <- g(nv_scalar(2.0, dtype = "f64"))
+  expect_equal(out$x, nv_scalar(1.0, dtype = "f64"))
+})
