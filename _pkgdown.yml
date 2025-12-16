@@ -10,13 +10,20 @@ toc:
 
 navbar:
   structure:
-    left:  [intro, reference, news, articles]
+    left:  [intro, reference, news, articles, technical]
     right: [search, github, lightswitch]
-
-
-articles:
-- title: Articles
-  navbar: ~
-  contents:
-  - internals
-  - type-promotion
+  components:
+    articles:
+      text: Articles
+      menu:
+      - text: Get Started
+        href: articles/anvil.html
+      - text: Type Promotion
+        href: articles/type-promotion.html
+      - text: Primitives Overview
+        href: articles/primitives.html
+    technical:
+      text: Technical
+      menu:
+      - text: Internals
+        href: articles/internals.html

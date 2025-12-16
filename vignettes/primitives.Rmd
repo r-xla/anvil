@@ -1,0 +1,46 @@
+---
+title: "Primitives Reference"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Primitives Reference}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The table below shows all primitives and their supported transformations.
+
+```{r, echo = FALSE}
+library(anvil)
+
+# Get all primitives from the package namespace
+pkg_env <- asNamespace("anvil")
+primitive_names <- ls(pkg_env, pattern = "^p_")
+
+# Extract primitive info
+primitives_list <- lapply(primitive_names, function(nm) {
+  p <- get(nm, envir = pkg_env)
+  if (!inherits(p, "anvil::Primitive")) return(NULL)
+
+  has_stablehlo <- !is.null(p@rules[["stablehlo"]])
+  has_backward <- !is.null(p@rules[["backward"]])
+
+  data.frame(
+    Name = p@name,
+    StableHLO = if (has_stablehlo) "\u2713" else "\u2717",
+    Backward = if (has_backward) "\u2713" else "\u2717"
+  )
+})
+
+primitives_df <- do.call(rbind, Filter(Negate(is.null), primitives_list))
+primitives_df <- primitives_df[order(primitives_df$Name), ]
+rownames(primitives_df) <- NULL
+
+knitr::kable(primitives_df, align = c("l", "l", "c", "c", "l"))
+```
