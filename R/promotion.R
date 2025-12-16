@@ -5,9 +5,9 @@
 #' to an ambiguous type.
 #' Promoting to an ambiguous type can happen in scenarios like `x + 1.2`, where `x` is a bool or an int.
 #'
-#' @param lhs ([`stablehlo::TensorDataType`])\cr
+#' @param lhs_dtype ([`stablehlo::TensorDataType`])\cr
 #'   The left-hand side type.
-#' @param rhs ([`stablehlo::TensorDataType`])\cr
+#' @param rhs_dtype ([`stablehlo::TensorDataType`])\cr
 #'   The right-hand side type.
 #' @param lhs_ambiguous (`logical(1)`)\cr
 #'   Whether the left-hand side type is ambiguous.
@@ -41,14 +41,14 @@ common_type_info <- function(...) {
   if (length(args) == 0L) {
     cli_abort("No arguments provided")
   } else if (length(args) == 1L) {
-    arg <- st(args[[1L]])
+    arg <- to_abstract(args[[1L]])
     return(list(dtype(arg), arg@ambiguous))
   }
-  init <- st(args[[1L]])
+  init <- to_abstract(args[[1L]])
   cdt <- dtype(init)
   cdt_ambiguous <- init@ambiguous
   for (arg in args[-1L]) {
-    arg <- st(arg)
+    arg <- to_abstract(arg)
     out <- common_dtype(cdt, dtype(arg), cdt_ambiguous, arg@ambiguous)
     cdt <- out[[1L]]
     cdt_ambiguous <- out[[2L]]

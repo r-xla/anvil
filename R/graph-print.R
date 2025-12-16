@@ -1,7 +1,6 @@
 #' @include graph.R
 
 format_node_id <- function(node, node_ids) {
-  # GraphLiterals are formatted inline with their value
   if (is_graph_literal(node)) {
     return(format_literal(node))
   }
@@ -15,11 +14,12 @@ format_node_id <- function(node, node_ids) {
 format_literal <- function(node) {
   val <- node@aval@data
   dt <- repr(dtype(node@aval))
-  sprintf("%s:%s", val, dt)
+  shp <- shape(node@aval)
+  sprintf("%s:%s?%s", val, dt, if (length(shp)) sprintf("[%s]", shape2string(shp)) else "")
 }
 
 format_aval_short <- function(aval) {
-  sprintf("%s[%s]", repr(dtype(aval)), paste(shape(aval), collapse = ", "))
+  sprintf("%s[%s]", paste0(repr(dtype(aval)), if (aval@ambiguous) "?" else ""), paste(shape(aval), collapse = ", "))
 }
 
 build_node_ids <- function(inputs, constants, calls) {
@@ -89,7 +89,6 @@ format_call <- function(call, node_ids, indent = "  ") {
   sprintf("%s%s = %s%s(%s)", indent, outputs_str, call@primitive@name, params_str, inputs_str)
 }
 
-# Main formatting function for graph-like structures
 format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph") {
   lines <- character()
 

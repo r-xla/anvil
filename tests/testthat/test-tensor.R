@@ -3,7 +3,7 @@ test_that("tensor", {
   expect_snapshot(x)
   expect_class(x, "AnvilTensor")
   expect_equal(shape(x), c(4, 1))
-  expect_equal(dtype(x), dtype("i32"))
+  expect_equal(dtype(x), as_dtype("i32"))
   expect_equal(as_array(x), array(1:4, c(4, 1)))
 })
 
@@ -14,18 +14,18 @@ test_that("nv_scalar", {
   expect_snapshot(x)
 })
 
-test_that("ShapedTensor", {
-  x <- ShapedTensor(
+test_that("AbstractTensor", {
+  x <- AbstractTensor(
     FloatType(32),
     Shape(c(2, 3))
   )
   expect_snapshot(x)
-  expect_true(inherits(x, ShapedTensor))
+  expect_true(inherits(x, AbstractTensor))
   expect_true(x == x)
 
   expect_false(
     x ==
-      ShapedTensor(
+      AbstractTensor(
         FloatType(32),
         Shape(c(2, 1))
       )
@@ -33,7 +33,7 @@ test_that("ShapedTensor", {
 
   expect_false(
     x ==
-      ShapedTensor(
+      AbstractTensor(
         FloatType(64),
         Shape(c(2, 3))
       )
@@ -69,6 +69,12 @@ test_that("format", {
 
 test_that("== ignores ambiguity", {
   expect_true(
-    ShapedTensor("f32", 1L, TRUE) == ShapedTensor("f32", 1L, FALSE)
+    AbstractTensor("f32", 1L, TRUE) == AbstractTensor("f32", 1L, FALSE)
   )
+})
+
+
+test_that("ambiguous Abstract Tensor check", {
+  expect_error(AbstractTensor("i64", integer(), TRUE))
+  expect_error(AbstractTensor("i64", integer(), FALSE), NA)
 })

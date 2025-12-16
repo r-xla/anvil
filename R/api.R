@@ -13,16 +13,13 @@
 #' @param dtype (character(1))\cr
 #'   Data type.
 #' @export
-nv_full <- function(value, shape, dtype = NULL) {
-  dtype <- dtype %??%
-    if (is.double(value)) {
-      "f32"
-    } else if (is.integer(value)) {
-      "i32"
-    } else if (is.logical(value)) {
-      "pred"
-    }
-  nvl_full(value, shape, dtype)
+nv_fill <- function(value, shape, dtype = NULL) {
+  dtype <- if (is.null(dtype)) {
+    default_dtype(value)
+  } else {
+    as_dtype(dtype)
+  }
+  nvl_fill(value, shape, dtype)
 }
 
 
@@ -70,7 +67,7 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
 #' @export
 nv_broadcast_scalars <- function(...) {
   args <- list(...)
-  shapes <- lapply(args, \(x) shape(st(x)))
+  shapes <- lapply(args, \(x) shape(to_abstract(x)))
   non_scalar_shapes <- Filter(\(s) length(s) > 0L, shapes)
 
   if (length(non_scalar_shapes) == 0L) {
@@ -86,7 +83,7 @@ nv_broadcast_scalars <- function(...) {
   }
 
   lapply(args, \(x) {
-    if (length(shape(st(x))) == 0L) {
+    if (length(shape(to_abstract(x))) == 0L) {
       nv_broadcast_to(x, target_shape)
     } else {
       x
@@ -96,14 +93,14 @@ nv_broadcast_scalars <- function(...) {
 
 #' @title Promote Tensors to a Common Dtype
 #' @description
-#' Promote tensors to a common type.
+#' Promote tensors to a common data type, see [`common_dtype`] for more details.
 #' @param ... ([`nv_tensor`])\cr
 #'   Tensors to promote.
 #' @return (`list()` of [`nv_tensor`])
 #' @export
 nv_promote_to_common <- function(...) {
   args <- list(...)
-  avals <- lapply(args, st)
+  avals <- lapply(args, to_abstract)
   tmp <- do.call(common_type_info, avals)
   cdt <- tmp[[1L]]
   ambiguous <- tmp[[2L]]
@@ -135,7 +132,7 @@ nv_promote_to_common <- function(...) {
 #' @export
 nv_broadcast_tensors <- function(...) {
   args <- list(...)
-  shape <- Reduce(broadcast_shapes, lapply(args, \(x) shape(st(x))))
+  shape <- Reduce(broadcast_shapes, lapply(args, \(x) shape(to_abstract(x))))
   lapply(args, nv_broadcast_to, shape = shape)
 }
 
@@ -148,7 +145,7 @@ nv_broadcast_tensors <- function(...) {
 #' @return ([`nv_tensor`])
 #' @export
 nv_broadcast_to <- function(operand, shape) {
-  shape_op <- shape(st(operand))
+  shape_op <- shape(to_abstract(operand))
   if (!identical(shape_op, shape)) {
     broadcast_dimensions <- make_broadcast_dimensions(shape_op, shape)
     nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
@@ -165,7 +162,7 @@ nv_broadcast_to <- function(operand, shape) {
 #' @return [`nv_tensor`]
 #' @export
 nv_convert <- function(operand, dtype) {
-  nvl_convert(operand, dtype = dtype, ambiguous = FALSE)
+  nvl_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
 }
 
 #' @rdname nv_transpose
@@ -242,139 +239,99 @@ nv_select <- nvl_select
 NULL
 
 
-do_binary <- function(f, lhs, rhs) {
-  args <- nv_promote_to_common(lhs, rhs)
-  args <- nv_broadcast_scalars(args[[1L]], args[[2L]])
-  do.call(f, args)
+make_do_binary <- function(f) {
+  function(lhs, rhs) {
+    args <- nv_promote_to_common(lhs, rhs)
+    args <- nv_broadcast_scalars(args[[1L]], args[[2L]])
+    do.call(f, args)
+  }
 }
 
 #' @rdname nv_binary_ops
 #' @export
-nv_add <- function(lhs, rhs) {
-  do_binary(nvl_add, lhs, rhs)
-}
+nv_add <- make_do_binary(nvl_add)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_mul <- function(lhs, rhs) {
-  do_binary(nvl_mul, lhs, rhs)
-}
+nv_mul <- make_do_binary(nvl_mul)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_sub <- function(lhs, rhs) {
-  do_binary(nvl_sub, lhs, rhs)
-}
+nv_sub <- make_do_binary(nvl_sub)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_div <- function(lhs, rhs) {
-  do_binary(nvl_div, lhs, rhs)
-}
+nv_div <- make_do_binary(nvl_div)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_pow <- function(lhs, rhs) {
-  do_binary(nvl_pow, lhs, rhs)
-}
+nv_pow <- make_do_binary(nvl_pow)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_eq <- function(lhs, rhs) {
-  do_binary(nvl_eq, lhs, rhs)
-}
+nv_eq <- make_do_binary(nvl_eq)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_ne <- function(lhs, rhs) {
-  do_binary(nvl_ne, lhs, rhs)
-}
+nv_ne <- make_do_binary(nvl_ne)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_gt <- function(lhs, rhs) {
-  do_binary(nvl_gt, lhs, rhs)
-}
+nv_gt <- make_do_binary(nvl_gt)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_ge <- function(lhs, rhs) {
-  do_binary(nvl_ge, lhs, rhs)
-}
+nv_ge <- make_do_binary(nvl_ge)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_lt <- function(lhs, rhs) {
-  do_binary(nvl_lt, lhs, rhs)
-}
+nv_lt <- make_do_binary(nvl_lt)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_le <- function(lhs, rhs) {
-  do_binary(nvl_le, lhs, rhs)
-}
+nv_le <- make_do_binary(nvl_le)
 
 ## Additional binary ops -------------------------------------------------------
 
 #' @rdname nv_binary_ops
 #' @export
-nv_max <- function(lhs, rhs) {
-  do_binary(nvl_max, lhs, rhs)
-}
+nv_max <- make_do_binary(nvl_max)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_min <- function(lhs, rhs) {
-  do_binary(nvl_min, lhs, rhs)
-}
+nv_min <- make_do_binary(nvl_min)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_remainder <- function(lhs, rhs) {
-  do_binary(nvl_remainder, lhs, rhs)
-}
+nv_remainder <- make_do_binary(nvl_remainder)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_and <- function(lhs, rhs) {
-  do_binary(nvl_and, lhs, rhs)
-}
+nv_and <- make_do_binary(nvl_and)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_or <- function(lhs, rhs) {
-  do_binary(nvl_or, lhs, rhs)
-}
+nv_or <- make_do_binary(nvl_or)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_xor <- function(lhs, rhs) {
-  do_binary(nvl_xor, lhs, rhs)
-}
+nv_xor <- make_do_binary(nvl_xor)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_shift_left <- function(lhs, rhs) {
-  do_binary(nvl_shift_left, lhs, rhs)
-}
+nv_shift_left <- make_do_binary(nvl_shift_left)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_shift_right_logical <- function(lhs, rhs) {
-  do_binary(nvl_shift_right_logical, lhs, rhs)
-}
+nv_shift_right_logical <- make_do_binary(nvl_shift_right_logical)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_shift_right_arithmetic <- function(lhs, rhs) {
-  do_binary(nvl_shift_right_arithmetic, lhs, rhs)
-}
+nv_shift_right_arithmetic <- make_do_binary(nvl_shift_right_arithmetic)
 
 #' @rdname nv_binary_ops
 #' @export
-nv_atan2 <- function(lhs, rhs) {
-  do_binary(nvl_atan2, lhs, rhs)
-}
+nv_atan2 <- make_do_binary(nvl_atan2)
 
 
 #' @title Bitcast Conversion

@@ -59,8 +59,8 @@ test_that("p_concatenate", {
   out <- g()
   expect_equal(dim(as_array(out)), c(2, 5))
 })
-test_that("p_full", {
-  f <- jit(function(x) nv_full(x, shape = c(2, 3), dtype = "f32"), static = "x")
+test_that("p_fill", {
+  f <- jit(function(x) nv_fill(x, shape = c(2, 3), dtype = "f32"), static = "x")
   expect_equal(f(1), nv_tensor(1, shape = c(2, 3), dtype = "f32"))
   expect_equal(f(2), nv_tensor(2, shape = c(2, 3), dtype = "f32"))
 })

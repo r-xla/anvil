@@ -1,19 +1,19 @@
 test_that("common_type_info: single argument", {
-  s1 <- ShapedTensor(dtype("i32"), Shape(c(1, 2)), FALSE)
+  s1 <- AbstractTensor(as_dtype("i32"), Shape(c(1, 2)), FALSE)
   result <- common_type_info(s1)
-  expect_equal(result[[1L]], dtype("i32"))
+  expect_equal(result[[1L]], as_dtype("i32"))
   expect_equal(result[[2L]], FALSE)
 
-  s2 <- ShapedTensor(dtype("f32"), Shape(c(2, 3)), TRUE)
+  s2 <- AbstractTensor(as_dtype("f32"), Shape(c(2, 3)), TRUE)
   result <- common_type_info(s2)
-  expect_equal(result[[1L]], dtype("f32"))
+  expect_equal(result[[1L]], as_dtype("f32"))
   expect_equal(result[[2L]], TRUE)
 })
 
 test_that("common_type_info: two arguments", {
   check <- function(dt1, dt2, a1, a2, expected_dt, expected_ambiguous) {
-    s1 <- ShapedTensor(dt1, Shape(c(1, 2)), a1)
-    s2 <- ShapedTensor(dt2, Shape(c(2, 1)), a2)
+    s1 <- AbstractTensor(dt1, Shape(c(1, 2)), a1)
+    s2 <- AbstractTensor(dt2, Shape(c(2, 1)), a2)
     result <- common_type_info(s1, s2)
     expect_equal(result[[1L]], expected_dt)
     expect_equal(result[[2L]], expected_ambiguous)
@@ -24,47 +24,47 @@ test_that("common_type_info: two arguments", {
 
   # both are ambiguous -> result is ambiguous
 
-  check(dtype("i32"), dtype("i32"), TRUE, TRUE, dtype("i32"), TRUE)
-  check(dtype("i32"), dtype("f32"), TRUE, TRUE, dtype("f32"), TRUE)
+  check(as_dtype("i32"), as_dtype("i32"), TRUE, TRUE, as_dtype("i32"), TRUE)
+  check(as_dtype("i32"), as_dtype("f32"), TRUE, TRUE, as_dtype("f32"), TRUE)
 
   # one is ambiguous
   # ambiguous float + known int -> ambiguous float (ambiguous wins because it's float)
-  check(dtype("f32"), dtype("i32"), TRUE, FALSE, dtype("f32"), TRUE)
+  check(as_dtype("f32"), as_dtype("i32"), TRUE, FALSE, as_dtype("f32"), TRUE)
   # ambiguous int + known float -> known float (known wins)
-  check(dtype("i32"), dtype("f32"), TRUE, FALSE, dtype("f32"), FALSE)
+  check(as_dtype("i32"), as_dtype("f32"), TRUE, FALSE, as_dtype("f32"), FALSE)
   # both types same -> known wins
 
-  check(dtype("i32"), dtype("i32"), TRUE, FALSE, dtype("i32"), FALSE)
+  check(as_dtype("i32"), as_dtype("i32"), TRUE, FALSE, as_dtype("i32"), FALSE)
 
   # neither is ambiguous -> result is not ambiguous
-  check(dtype("f32"), dtype("i32"), FALSE, FALSE, dtype("f32"), FALSE)
-  check(dtype("f32"), dtype("f64"), FALSE, FALSE, dtype("f64"), FALSE)
-  check(dtype("ui32"), dtype("i32"), FALSE, FALSE, dtype("i64"), FALSE)
+  check(as_dtype("f32"), as_dtype("i32"), FALSE, FALSE, as_dtype("f32"), FALSE)
+  check(as_dtype("f32"), as_dtype("f64"), FALSE, FALSE, as_dtype("f64"), FALSE)
+  check(as_dtype("ui32"), as_dtype("i32"), FALSE, FALSE, as_dtype("i64"), FALSE)
 })
 
 test_that("common_type_info: multiple arguments", {
-  i32 <- ShapedTensor(dtype("i32"), Shape(1), FALSE)
-  f32 <- ShapedTensor(dtype("f32"), Shape(2), FALSE)
-  f64 <- ShapedTensor(dtype("f64"), Shape(3), FALSE)
+  i32 <- AbstractTensor(as_dtype("i32"), Shape(1), FALSE)
+  f32 <- AbstractTensor(as_dtype("f32"), Shape(2), FALSE)
+  f64 <- AbstractTensor(as_dtype("f64"), Shape(3), FALSE)
 
   result <- common_type_info(i32, f32, f64)
-  expect_equal(result[[1L]], dtype("f64"))
+  expect_equal(result[[1L]], as_dtype("f64"))
   expect_equal(result[[2L]], FALSE)
 
   result <- common_type_info(f64, f32, i32)
-  expect_equal(result[[1L]], dtype("f64"))
+  expect_equal(result[[1L]], as_dtype("f64"))
   expect_equal(result[[2L]], FALSE)
 
   result <- common_type_info(i32, i32, i32)
-  expect_equal(result[[1L]], dtype("i32"))
+  expect_equal(result[[1L]], as_dtype("i32"))
   expect_equal(result[[2L]], FALSE)
 
   # With ambiguous types
-  i32_amb <- ShapedTensor(dtype("i32"), Shape(1), TRUE)
-  i64_known <- ShapedTensor(dtype("i64"), Shape(2), FALSE)
+  i32_amb <- AbstractTensor(as_dtype("i32"), Shape(1), TRUE)
+  i64_known <- AbstractTensor(as_dtype("i64"), Shape(2), FALSE)
 
   result <- common_type_info(i32_amb, i64_known)
-  expect_equal(result[[1L]], dtype("i64"))
+  expect_equal(result[[1L]], as_dtype("i64"))
   expect_equal(result[[2L]], FALSE)
 })
 

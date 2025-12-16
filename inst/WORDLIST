@@ -63,6 +63,6 @@ sha
 fn
 bool
 GPUs
-ShapedTensor
+AbstractTensor
 ConcreteTensor
 LiteralTensor

@@ -51,7 +51,10 @@ jit <- function(f, static = character(), device = NULL, cache_size = 100L, donat
           if (platform(x) != device_str) {
             cli_abort("Expected device {device_str}, but buffer has device {platform(x)}")
           }
-          raise_to_shaped(aval(x))
+          if (!is_anvil_tensor(x)) {
+            cli_abort("Internal error: Expected anvil tensor, but got {.cls {class(x)[1]}}")
+          }
+          AbstractTensor(dtype(x), shape(x), ambiguous = FALSE)
         }
       },
       args_flat,

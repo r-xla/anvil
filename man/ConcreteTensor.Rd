@@ -11,10 +11,10 @@ ConcreteTensor(data)
 The actual tensor data.}
 }
 \description{
-A \code{\link{ShapedTensor}} that also holds a reference to the actual tensor data.
+A \code{\link{AbstractTensor}} that also holds a reference to the actual tensor data.
 Used to represent constants captured during tracing.
-Because it comes from a concrete tensor, it's type is not ambiguous.
+Because it comes from a concrete tensor, it's type is never ambiguous.
 }
 \seealso{
-\link{ShapedTensor}, \link{LiteralTensor}
+\link{AbstractTensor}, \link{LiteralTensor}
 }

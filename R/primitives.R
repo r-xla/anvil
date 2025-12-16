@@ -64,7 +64,7 @@ infer_reduce <- function(operand, dims, drop) {
     new_shape <- old_shape
     new_shape[dims] <- 1L
   }
-  list(ShapedTensor(
+  list(AbstractTensor(
     dtype = dtype(operand),
     shape = Shape(new_shape),
     ambiguous = operand@ambiguous
@@ -79,7 +79,7 @@ infer_reduce_boolean <- function(operand, dims, drop) {
     new_shape <- old_shape
     new_shape[dims] <- 1L
   }
-  list(ShapedTensor(
+  list(AbstractTensor(
     dtype = "pred",
     shape = Shape(new_shape),
     ambiguous = operand@ambiguous
@@ -142,16 +142,16 @@ method(print, Primitive) <- function(x, ...) {
   cat(sprintf("<Primitive:%s>\n", x@name))
 }
 
-p_full <- Primitive("full")
-nvl_full <- function(value, shape, dtype) {
-  infer_full <- function(value, shape, dtype) {
-    list(ShapedTensor(dtype = as_dtype(dtype), shape = shape, ambiguous = FALSE))
+p_fill <- Primitive("fill")
+nvl_fill <- function(value, shape, dtype) {
+  infer_fill <- function(value, shape, dtype) {
+    list(LiteralTensor(data = value, dtype = as_dtype(dtype), shape = shape, ambiguous = FALSE))
   }
   graph_desc_add(
-    p_full,
+    p_fill,
     list(),
     params = list(value = value, dtype = dtype, shape = shape),
-    infer_fn = infer_full
+    infer_fn = infer_fill
   )[[1L]]
 }
 
@@ -482,7 +482,7 @@ p_convert <- Primitive("convert")
 nvl_convert <- function(operand, dtype, ambiguous = FALSE) {
   dtype <- as_dtype(dtype)
   infer_fn <- function(operand, dtype, ambiguous) {
-    list(ShapedTensor(
+    list(AbstractTensor(
       dtype = dtype,
       shape = Shape(shape(operand)),
       ambiguous = ambiguous

@@ -19,12 +19,12 @@
        1.0000
       [ CPUf32{} ] 
 
-# ShapedTensor
+# AbstractTensor
 
     Code
       x
     Output
-      ShapedTensor(dtype=f32, shape=2x3) 
+      AbstractTensor(dtype=f32, shape=2x3) 
 
 # ConcreteTensor
 

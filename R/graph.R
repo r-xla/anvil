@@ -3,13 +3,13 @@
 #' @title Graph Value
 #' @description
 #' Value in a [`Graph`].
-#' @param aval ([`ShapedTensor`])\cr
+#' @param aval ([`AbstractTensor`])\cr
 #'   The abstract value of the variable.
 #' @include mut.R
 GraphValue <- mut(new_class(
   "GraphValue",
   properties = list(
-    aval = ShapedTensor
+    aval = AbstractTensor
   )
 ))
 
@@ -148,7 +148,7 @@ method(dtype, GraphValue) <- function(x, ...) {
 }
 
 method(shape, GraphLiteral) <- function(x, ...) {
-  x@aval@shape
+  shape(x@aval)
 }
 
 method(dtype, GraphLiteral) <- function(x, ...) {
@@ -199,17 +199,6 @@ method(format, GraphBox) <- function(x, ...) {
   sprintf("GraphBox(%s)", format(x@gnode))
 }
 
-aval <- function(x) {
-  if (is_anvil_tensor(x)) {
-    return(ConcreteTensor(x))
-  }
-  if (is_graph_box(x)) {
-    return(x@gnode@aval)
-  }
-  cli_abort("internal error")
-}
-
-
 maybe_box_variable <- function(x) {
   current_desc <- .current_descriptor()
   if (is_graph_box(x)) {
@@ -222,11 +211,9 @@ maybe_box_variable <- function(x) {
     get_box_or_register_const(current_desc, x)
   } else if (is_graph_node(x)) {
     # FIXME: !!!
-    # We use this in gradient, but I am not sure this is such a great idea
-    #browser()
-    #cli_abort("Internal error: trying to lift a GraphNode")
-    get_box_or_register_const(current_desc, x)
-    #GraphBox(x, .current_descriptor())
+    # We use this in gradient, where we pass gvals to tje backward rules
+    # but I think we should handle this differently
+    GraphBox(x, .current_descriptor())
   } else {
     x
   }
@@ -243,7 +230,7 @@ maybe_box_input <- function(x, desc) {
     # 1. top-level trace_fn call
     # 2. a constant is passed to a nested trace_fn call
     #    this constant can be a closed-over constant or defined in the environment of the nested trace_fn call
-    # For the first scenario, it would be sufficient to create a ShapedTensor,
+    # For the first scenario, it would be sufficient to create a AbstractTensor,
     # because the input will be provided by the user
     # For the second scenario, we will inline the descriptor into the parent descriptor,
     # but it the input to the nested trace_fn call does not become an input to the parent graph,
@@ -311,13 +298,12 @@ get_box_or_register_const <- function(desc, x) {
     return(box)
   }
   if (test_scalar(x)) {
-    gval <- GraphLiteral(LiteralTensor(x, integer()))
+    gval <- GraphLiteral(LiteralTensor(x, shape = integer(), ambiguous = TRUE))
     box <- desc@gval_to_box[[gval]] <- GraphBox(gval, desc)
     return(box)
   }
   if (is_graph_literal(x)) {
-    gval <- GraphLiteral(LiteralTensor(x@aval@data, integer()))
-    box <- desc@gval_to_box[[gval]] <- GraphBox(gval, desc)
+    box <- desc@gval_to_box[[x]] <- GraphBox(x, desc)
     return(box)
   }
   if (!is_graph_value(x)) {
@@ -325,7 +311,7 @@ get_box_or_register_const <- function(desc, x) {
   }
   # gval@aval can either be a
   # * ConcreteTensor: AnvilTensor that is captured from the parent environment
-  # * ShapedTensor: Output of a computation in a parent graph
+  # * AbstractTensor: Output of a computation in a parent graph
   # In either case, we first check whether the value is already registered in the current graph
   # and if so, return it:
   box <- desc@gval_to_box[[x]]
@@ -487,7 +473,7 @@ is_graph_box <- function(x) {
 graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = .current_descriptor()) {
   boxes_in <- lapply(args, maybe_box_variable)
   gnodes_in <- lapply(boxes_in, \(box) box@gnode)
-  avals_in <- lapply(boxes_in, aval)
+  avals_in <- lapply(boxes_in, \(box) box@gnode@aval)
   sts_out <- rlang::exec(infer_fn, !!!c(avals_in, params))
   gvals_out <- lapply(sts_out, GraphValue)
   call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)

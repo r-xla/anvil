@@ -12,7 +12,7 @@ transform_gradient <- function(graph, wrt) {
     cli_abort("gradient can only be computed for functions that return a scalar")
   }
   dt <- out@aval@dtype
-  if (!(dt == dtype("f32") || dt == dtype("f64"))) {
+  if (!(dt == as_dtype("f32") || dt == as_dtype("f64"))) {
     cli_abort(c(
       x = "gradient can only be computed for functions that return float scalar",
       i = "Got dtype={.field {repr(dt)}}"
@@ -35,6 +35,7 @@ transform_gradient <- function(graph, wrt) {
       call@inputs,
       function(x) {
         if (is_graph_literal(x)) {
+          # literals don't depend on anything (they are either inlined constants or literals)
           return(FALSE)
         }
         required_env[[x]]
@@ -81,16 +82,12 @@ transform_gradient <- function(graph, wrt) {
     output_grads <- lapply(call@outputs, \(output) {
       grad <- grad_env[[output]]
       if (is.null(grad)) {
-        nvl_full(0L, dtype = dtype(output), shape = shape(output))
+        # output grad might be NULL if there is dead code
+        nvl_fill(0L, dtype = dtype(output), shape = shape(output))
       } else {
         grad
       }
     })
-
-    # Skip if all output gradients are NULL (dead code)
-    if (all(vapply(output_grads, is.null, logical(1L)))) {
-      next
-    }
 
     input_grads <- rlang::exec(
       call@primitive[["backward"]],

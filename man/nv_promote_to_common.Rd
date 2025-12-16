@@ -14,5 +14,5 @@ Tensors to promote.}
 (\code{list()} of \code{\link{nv_tensor}})
 }
 \description{
-Promote tensors to a common type.
+Promote tensors to a common data type, see \code{\link{common_dtype}} for more details.
 }

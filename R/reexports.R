@@ -14,6 +14,10 @@ tengen::as_array
 #' @export
 tengen::as_raw
 
+#' @importFrom tengen dtype
+#' @export
+tengen::dtype
+
 #' @importFrom tengen ndims
 #' @export
 tengen::ndims
@@ -21,6 +25,10 @@ tengen::ndims
 #' @importFrom stablehlo is_dtype
 #' @export
 stablehlo::is_dtype
+
+#' @importFrom stablehlo as_dtype
+#' @export
+stablehlo::as_dtype
 
 # FIXME(hack): https://github.com/sebffischer/S7-issue
 #' @title Platform

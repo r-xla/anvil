@@ -12,17 +12,17 @@ common_dtype(
 )
 }
 \arguments{
+\item{lhs_dtype}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+The left-hand side type.}
+
+\item{rhs_dtype}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+The right-hand side type.}
+
 \item{lhs_ambiguous}{(\code{logical(1)})\cr
 Whether the left-hand side type is ambiguous.}
 
 \item{rhs_ambiguous}{(\code{logical(1)})\cr
 Whether the right-hand side type is ambiguous.}
-
-\item{lhs}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
-The left-hand side type.}
-
-\item{rhs}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
-The right-hand side type.}
 }
 \value{
 (\verb{list(dtype = [}stablehlo::TensorDataType\verb{], ambiguous = }logical(1)`)\cr

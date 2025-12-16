@@ -69,7 +69,7 @@ dtype.AnvilTensor <- function(x, ...) {
   as_dtype(as.character(pjrt::elt_type(x)))
 }
 
-#' @title Shaped Tensor Class
+#' @title Abstract Tensor Class
 #' @description
 #' Abstract representation of a tensor with a known dtype and shape, but no concrete data.
 #' Used during tracing to represent tensor metadata without actual values.
@@ -84,11 +84,11 @@ dtype.AnvilTensor <- function(x, ...) {
 #' @param ambiguous (`logical(1)`)\cr
 #'   Whether the type is ambiguous. Ambiguous usually arise from R literals
 #'   (e.g., `1L`, `1.0`, `TRUE`) and follow special promotion rules.
-#'   Only `f32`, `i32`, and `i1` (bool) can be ambiguous.
-#' @seealso [ConcreteTensor], [LiteralTensor], [st()]
+#'   Only `f32`, `i32`, and `i1` (bool) can be ambiguous during tracing.
+#' @seealso [ConcreteTensor], [LiteralTensor], [to_abstract()]
 #' @export
-ShapedTensor <- S7::new_class(
-  "ShapedTensor",
+AbstractTensor <- S7::new_class(
+  "AbstractTensor",
   properties = list(
     dtype = stablehlo::TensorDataType,
     shape = stablehlo::Shape,
@@ -103,7 +103,7 @@ ShapedTensor <- S7::new_class(
     shape <- as_shape(shape)
     dtype <- as_dtype(dtype)
     if (ambiguous) {
-      ok <- is_dtype(dtype) && (dtype == dtype("f32") || dtype == dtype("i32") || dtype == dtype("i1"))
+      ok <- is_dtype(dtype) && (dtype == as_dtype("f32") || dtype == as_dtype("i32") || dtype == as_dtype("i1"))
       if (!ok) {
         cli_abort("Ambiguous types must have dtype f32, i32 or bool")
       }
@@ -129,42 +129,42 @@ shaped_tensor <- function(x) {
 
 
 is_shaped_tensor <- function(x) {
-  inherits(x, "anvil::ShapedTensor")
+  inherits(x, "anvil::AbstractTensor")
 }
 
 is_concrete_tensor <- function(x) {
   inherits(x, "anvil::ConcreteTensor")
 }
 
-method(platform, ShapedTensor) <- function(x, ...) {
+method(platform, AbstractTensor) <- function(x, ...) {
   cli_abort("platform is not accessible during tracing")
 }
 
-#' @method dtype anvil::ShapedTensor
+#' @method dtype anvil::AbstractTensor
 #' @export
-`dtype.anvil::ShapedTensor` <- function(x, ...) {
+`dtype.anvil::AbstractTensor` <- function(x, ...) {
   x@dtype
 }
 
-#' @method shape anvil::ShapedTensor
+#' @method shape anvil::AbstractTensor
 #' @export
-`shape.anvil::ShapedTensor` <- function(x, ...) {
+`shape.anvil::AbstractTensor` <- function(x, ...) {
   x@shape@dims
 }
 
 #' @title Concrete Tensor Class
 #' @description
-#' A [`ShapedTensor`] that also holds a reference to the actual tensor data.
+#' A [`AbstractTensor`] that also holds a reference to the actual tensor data.
 #' Used to represent constants captured during tracing.
-#' Because it comes from a concrete tensor, it's type is not ambiguous.
+#' Because it comes from a concrete tensor, it's type is never ambiguous.
 #'
 #' @param data ([`AnvilTensor`])\cr
 #'   The actual tensor data.
-#' @seealso [ShapedTensor], [LiteralTensor]
+#' @seealso [AbstractTensor], [LiteralTensor]
 #' @export
 ConcreteTensor <- S7::new_class(
   "ConcreteTensor",
-  parent = ShapedTensor,
+  parent = AbstractTensor,
   properties = list(
     data = AnvilTensor
   ),
@@ -185,9 +185,8 @@ ConcreteTensor <- S7::new_class(
 
 #' @title Literal Tensor Class
 #' @description
-#' A [`ShapedTensor`] representing a tensor where the data is a R scalar literal (e.g., `1L`, `2.5`, `TRUE`).
-#' Their type is ambiguous, and they adapt (if possible) to the types of
-#' non-literal tensors they interact with.
+#' A [`AbstractTensor`] representing a tensor where the data is a R scalar literal (e.g., `1L`, `2.5`, `TRUE`).
+#' Usually, their type is ambiguous, unless created via [`nv_fill`].
 #'
 #' @param data (`numeric(1)` | `integer(1)` | `logical(1)`)\cr
 #'   The scalar value.
@@ -195,11 +194,15 @@ ConcreteTensor <- S7::new_class(
 #'   The shape of the tensor.
 #' @param dtype ([`stablehlo::TensorDataType`])\cr
 #'   The data type. Defaults to `f32` for numeric, `i32` for integer, `i1` for logical.
-#' @seealso [ShapedTensor], [ConcreteTensor]
+#' @param ambiguous (`logical(1)`)\cr
+#'   Whether the type is ambiguous. Ambiguous usually arise from R literals
+#'   (e.g., `1L`, `1.0`, `TRUE`) and follow special promotion rules.
+#'   Only `f32`, `i32`, and `i1` (bool) can be ambiguous during tracing.
+#' @seealso [AbstractTensor], [ConcreteTensor]
 #' @export
 LiteralTensor <- new_class(
   "LiteralTensor",
-  parent = ShapedTensor,
+  parent = AbstractTensor,
   properties = list(
     data = new_property(class_any, validator = function(value) {
       if (!test_scalar(value)) {
@@ -209,7 +212,7 @@ LiteralTensor <- new_class(
     shape = stablehlo::Shape,
     dtype = stablehlo::TensorDataType
   ),
-  constructor = function(data, shape, dtype = default_dtype(data)) {
+  constructor = function(data, shape, dtype = default_dtype(data), ambiguous) {
     if (!test_scalar(data)) {
       cli_abort("LiteralTensors expect scalars")
     }
@@ -220,8 +223,8 @@ LiteralTensor <- new_class(
       S7::S7_object(),
       data = data,
       shape = shape,
-      dtype = default_dtype(data),
-      ambiguous = TRUE
+      dtype = as_dtype(dtype),
+      ambiguous = ambiguous
     )
   }
 )
@@ -234,23 +237,23 @@ method(platform, ConcreteTensor) <- function(x, ...) {
   pjrt::platform(x@data)
 }
 
-method(`==`, list(ShapedTensor, ShapedTensor)) <- function(e1, e2) {
+method(`==`, list(AbstractTensor, AbstractTensor)) <- function(e1, e2) {
   e1@dtype == e2@dtype && e1@shape == e2@shape
 }
 
-method(repr, ShapedTensor) <- function(x) {
+method(repr, AbstractTensor) <- function(x) {
   sprintf("%s[%s]", paste0(repr(x@dtype), if (x@ambiguous) "?"), repr(x@shape))
 }
 
-method(format, ShapedTensor) <- function(x, ...) {
+method(format, AbstractTensor) <- function(x, ...) {
   sprintf(
-    "ShapedTensor(dtype=%s, shape=%s)",
+    "AbstractTensor(dtype=%s, shape=%s)",
     if (x@ambiguous) paste0(repr(x@dtype), "?") else repr(x@dtype),
     repr(x@shape)
   ) # nolint
 }
 
-method(print, ShapedTensor) <- function(x, ...) {
+method(print, AbstractTensor) <- function(x, ...) {
   cat(format(x), "\n")
 }
 
@@ -269,35 +272,30 @@ format.AnvilTensor <- function(x, ...) {
   sprintf("AnvilTensor(dtype=%s, shape=%s)", repr(dtype(x)), paste(shape(x), collapse = "x"))
 }
 
-#' @title Convert to Shaped Tensor
+#' @title Convert to Abstract Tensor
 #' @description
-#' Convert an object to its abstract tensor representation ([`ShapedTensor`]).
+#' Convert an object to its abstract tensor representation ([`AbstractTensor`]).
 #' @param x (`any`)\cr
 #'   Object to convert.
-#' @return [`ShapedTensor`]
+#' @return [`AbstractTensor`]
 #' @export
-st <- function(x) {
+to_abstract <- function(x) {
   if (is_anvil_tensor(x)) {
     ConcreteTensor(x)
   } else if (is_shaped_tensor(x)) {
     x
   } else if (test_atomic(x) && (is.logical(x) || is.numeric(x))) {
-    LiteralTensor(x, integer())
+    LiteralTensor(x, integer(), ambiguous = TRUE)
   } else if (is_graph_box(x)) {
     gnode <- x@gnode
     if (is_graph_value(gnode)) {
       gnode@aval
     } else {
-      st(gnode)
+      to_abstract(gnode)
     }
   } else {
     cli_abort("internal error")
   }
-}
-
-#' @export
-dtype.character <- function(x, ...) {
-  as_dtype(x)
 }
 
 as_shape <- function(x) {

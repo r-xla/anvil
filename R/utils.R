@@ -20,11 +20,6 @@ dtype_from_buffer <- function(x) {
   as_dtype(d)
 }
 
-# TODO: unify this with st() etc. and all those related functions
-raise_to_shaped <- function(aval) {
-  ShapedTensor(aval@dtype, aval@shape)
-}
-
 hashkeys <- function(h) {
   val <- vector("list", numhash(h))
   idx <- 0

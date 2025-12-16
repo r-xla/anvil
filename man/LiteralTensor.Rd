@@ -4,7 +4,7 @@
 \alias{LiteralTensor}
 \title{Literal Tensor Class}
 \usage{
-LiteralTensor(data, shape, dtype = default_dtype(data))
+LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
 }
 \arguments{
 \item{data}{(\code{numeric(1)} | \code{integer(1)} | \code{logical(1)})\cr
@@ -15,12 +15,16 @@ The shape of the tensor.}
 
 \item{dtype}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 The data type. Defaults to \code{f32} for numeric, \code{i32} for integer, \code{i1} for logical.}
+
+\item{ambiguous}{(\code{logical(1)})\cr
+Whether the type is ambiguous. Ambiguous usually arise from R literals
+(e.g., \code{1L}, \code{1.0}, \code{TRUE}) and follow special promotion rules.
+Only \code{f32}, \code{i32}, and \code{i1} (bool) can be ambiguous during tracing.}
 }
 \description{
-A \code{\link{ShapedTensor}} representing a tensor where the data is a R scalar literal (e.g., \code{1L}, \code{2.5}, \code{TRUE}).
-Their type is ambiguous, and they adapt (if possible) to the types of
-non-literal tensors they interact with.
+A \code{\link{AbstractTensor}} representing a tensor where the data is a R scalar literal (e.g., \code{1L}, \code{2.5}, \code{TRUE}).
+Usually, their type is ambiguous, unless created via \code{\link{nv_fill}}.
 }
 \seealso{
-\link{ShapedTensor}, \link{ConcreteTensor}
+\link{AbstractTensor}, \link{ConcreteTensor}
 }
