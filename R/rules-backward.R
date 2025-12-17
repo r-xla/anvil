@@ -402,6 +402,4 @@ backward_zero_uni <- function(inputs, outputs, grads, .required) {
 p_floor[["backward"]] <- backward_zero_uni
 p_ceil[["backward"]] <- backward_zero_uni
 p_sign[["backward"]] <- backward_zero_uni
-p_round[["backward"]] <- function(inputs, outputs, grads, method, .required) {
-  backward_zero_uni(inputs, outputs, grads, .required)
-}
+p_round[["backward"]] <- backward_zero_uni
