@@ -14,7 +14,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/r-xla/anvil/blob/fix-rng-ci/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/r-xla/anvil/blob/feat-backward-rules/DESCRIPTION)
 
 Fischer S, Falbel D, German N (2025). *anvil: Framework for R code
 transformations*. R package version 0.0.0.9000,
