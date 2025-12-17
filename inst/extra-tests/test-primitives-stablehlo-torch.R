@@ -139,7 +139,6 @@ test_that("p_tanh", {
 })
 
 test_that("p_tan", {
-  skip_if_metal()
   expect_jit_torch_unary(nvl_tan, torch::torch_tan, c(2, 3))
 })
 
@@ -170,7 +169,6 @@ test_that("p_round", {
 })
 
 test_that("p_convert", {
-  skip_if_metal()
   nv_fun <- function(a) nvl_convert(a, "f64")
   th_fun <- function(a) a$to(dtype = torch::torch_float64())
   expect_jit_torch_unary(nv_fun, th_fun, c(2, 3))

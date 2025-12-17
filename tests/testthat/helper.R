@@ -42,19 +42,9 @@ expect_grad_binary <- function(nv_fun, d_rx, d_ry, x, y) {
 #nvj_mul <- jit(nv_mul)
 
 skip_if_not_cpu <- function(msg = "") {
-  if (is_metal() || is_cuda()) {
+  if (is_cuda()) {
     testthat::skip(sprintf("Skipping test on %s device: %s", platform, msg))
   }
-}
-
-skip_if_metal <- function(msg = "") {
-  if (is_metal()) {
-    testthat::skip(sprintf("Skipping test on Metal device: %s", msg))
-  }
-}
-
-is_metal <- function() {
-  Sys.getenv("PJRT_PLATFORM") == "metal"
 }
 
 is_cuda <- function() {
