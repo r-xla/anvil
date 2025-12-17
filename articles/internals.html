@@ -82,7 +82,7 @@
       <h1>Internals</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-ci-cuda/vignettes/internals.Rmd" class="external-link"><code>vignettes/internals.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/fix-rng-ci/vignettes/internals.Rmd" class="external-link"><code>vignettes/internals.Rmd</code></a></small>
       <div class="d-none name"><code>internals.Rmd</code></div>
     </div>
 
@@ -241,7 +241,7 @@ under the <code>"backward"</code> name.</p>
 <span><span class="co">##     grad &lt;- grads[[1L]]</span></span>
 <span><span class="co">##     list(if (.required[[1L]]) grad, if (.required[[2L]]) grad)</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x55cb84e25908&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55567e7e3408&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code>anvil:::transform_gradient</code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -281,7 +281,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_add(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x55cb84e250f0&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55567e7e2bf0&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>They are applied in the <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
