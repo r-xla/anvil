@@ -36,24 +36,28 @@ compile_graph_pjrt <- function(graph) {
       cli::cli_abort("Expected {length(input_nodes)} inputs, got {length(args)}")
     }
 
-    args_nv <- Map(function(x, gval) {
-      if (inherits(x, "AnvilTensor")) {
-        return(x)
-      }
-      expected_shape <- gval@aval@shape@dims
-      expected_dtype <- as.character(gval@aval@dtype)
-      if (expected_dtype == "i1") {
-        expected_dtype <- "pred"
-      }
-      if (!length(expected_shape)) {
-        if (length(x) != 1L) {
-          cli::cli_abort("Expected scalar input")
+    args_nv <- Map(
+      function(x, gval) {
+        if (inherits(x, "AnvilTensor")) {
+          return(x)
         }
-        nv_scalar(x, dtype = expected_dtype)
-      } else {
-        nv_tensor(x, dtype = expected_dtype, shape = expected_shape)
-      }
-    }, args, input_nodes)
+        expected_shape <- gval@aval@shape@dims
+        expected_dtype <- as.character(gval@aval@dtype)
+        if (expected_dtype == "i1") {
+          expected_dtype <- "pred"
+        }
+        if (!length(expected_shape)) {
+          if (length(x) != 1L) {
+            cli::cli_abort("Expected scalar input")
+          }
+          nv_scalar(x, dtype = expected_dtype)
+        } else {
+          nv_tensor(x, dtype = expected_dtype, shape = expected_shape)
+        }
+      },
+      args,
+      input_nodes
+    )
 
     out_vals <- rlang::exec(pjrt::pjrt_execute, exec, !!!const_tensors, !!!args_nv, simplify = FALSE)
     out_vals <- lapply(out_vals, nv_tensor)

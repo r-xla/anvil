@@ -120,10 +120,12 @@ test_that("graph_to_quickr_function rejects nested inputs", {
     function(x) {
       x$a + x$b
     },
-    list(x = list(
-      a = nv_scalar(1.0, dtype = "f64"),
-      b = nv_scalar(2.0, dtype = "f64")
-    ))
+    list(
+      x = list(
+        a = nv_scalar(1.0, dtype = "f64"),
+        b = nv_scalar(2.0, dtype = "f64")
+      )
+    )
   )
 
   expect_error(graph_to_quickr_function(graph), "flat", fixed = FALSE)

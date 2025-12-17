@@ -90,9 +90,13 @@ graph_to_quickr_function <- function(graph) {
       list(dtype = as.character(node@dtype), shape = integer())
     }
   })
-  out_lens <- vapply(out_infos, function(info) {
-    if (!length(info$shape)) 1L else Reduce(`*`, as.integer(info$shape), init = 1L)
-  }, integer(1L))
+  out_lens <- vapply(
+    out_infos,
+    function(info) {
+      if (!length(info$shape)) 1L else Reduce(`*`, as.integer(info$shape), init = 1L)
+    },
+    integer(1L)
+  )
 
   wrapper <- function() {
     stop("internal placeholder")

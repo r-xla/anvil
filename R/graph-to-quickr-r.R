@@ -69,7 +69,7 @@ quickr_dtype_to_r_ctor <- function(dt_chr) {
   cli_abort("Unsupported dtype for R code generation: {.val {dt_chr}}")
 }
 
-quickr_aval_to_declare_type_call <- function(aval) {
+quickr_aval_type_call <- function(aval) {
   dt_chr <- as.character(dtype(aval))
   ctor <- quickr_dtype_to_r_ctor(dt_chr)
   sh <- shape(aval)
@@ -83,7 +83,7 @@ quickr_aval_to_declare_type_call <- function(aval) {
 quickr_declare_stmt <- function(arg_names, arg_avals) {
   type_calls <- Map(
     function(nm, aval) {
-      arg <- list(quickr_aval_to_declare_type_call(aval))
+      arg <- list(quickr_aval_type_call(aval))
       names(arg) <- nm
       as.call(c(list(as.name("type")), arg))
     },
@@ -149,7 +149,17 @@ quickr_expr_of_node <- function(node, node_expr) {
 
 # Primitive emission ------------------------------------------------------------
 
-quickr_emit_dot_general <- function(out_sym, lhs_expr, rhs_expr, lhs_shape, rhs_shape, out_shape, out_aval, contracting_dims, batching_dims) {
+quickr_emit_dot_general <- function(
+  out_sym,
+  lhs_expr,
+  rhs_expr,
+  lhs_shape,
+  rhs_shape,
+  out_shape,
+  out_aval,
+  contracting_dims,
+  batching_dims
+) {
   lhs_shape <- as.integer(lhs_shape)
   rhs_shape <- as.integer(rhs_shape)
   out_shape <- as.integer(out_shape)
@@ -432,7 +442,17 @@ quickr_emit_broadcast_in_dim <- function(out_sym, operand_expr, shape_in, shape_
   c(stmts, list(body))
 }
 
-quickr_emit_reduce_rank2_axis_loop <- function(out_sym, m, n, dims, drop, alloc_stmts, init_acc_expr, inner_start, update_builder) {
+quickr_emit_reduce2_axis_loop <- function(
+  out_sym,
+  m,
+  n,
+  dims,
+  drop,
+  alloc_stmts,
+  init_acc_expr,
+  inner_start,
+  update_builder
+) {
   dims <- as.integer(dims)
   ii <- as.name(paste0("i_", as.character(out_sym)))
   jj <- as.name(paste0("j_", as.character(out_sym)))
@@ -459,12 +479,15 @@ quickr_emit_reduce_rank2_axis_loop <- function(out_sym, m, n, dims, drop, alloc_
 
   body_parts <- list(rlang::call2("<-", acc, init_acc_expr))
   if (as.integer(inner_n) >= as.integer(inner_start)) {
-    body_parts <- c(body_parts, list(as.call(list(
-      as.name("for"),
-      inner_sym,
-      as.call(list(as.name(":"), as.integer(inner_start), as.integer(inner_n))),
-      update_builder(ii, jj, acc)
-    ))))
+    body_parts <- c(
+      body_parts,
+      list(as.call(list(
+        as.name("for"),
+        inner_sym,
+        as.call(list(as.name(":"), as.integer(inner_start), as.integer(inner_n))),
+        update_builder(ii, jj, acc)
+      )))
+    )
   }
   body_parts <- c(body_parts, list(assign_out))
   outer_body <- as.call(c(list(as.name("{")), body_parts))
@@ -502,7 +525,10 @@ quickr_emit_reduce_sum <- function(out_sym, operand_expr, shape_in, dims, drop, 
     if (isTRUE(drop)) {
       return(quickr_emit_assign(out_sym, rlang::call2("sum", operand_expr)))
     }
-    return(quickr_emit_assign(out_sym, rlang::call2("array", rlang::call2("sum", operand_expr), dim = 1L)))
+    return(quickr_emit_assign(
+      out_sym,
+      rlang::call2("array", rlang::call2("sum", operand_expr), dim = 1L)
+    ))
   }
 
   if (rank == 2L) {
@@ -514,10 +540,15 @@ quickr_emit_reduce_sum <- function(out_sym, operand_expr, shape_in, dims, drop, 
       if (isTRUE(drop)) {
         return(quickr_emit_assign(out_sym, rlang::call2("sum", operand_expr)))
       }
-      return(quickr_emit_assign(out_sym, rlang::call2("matrix", rlang::call2("sum", operand_expr), nrow = 1L, ncol = 1L)))
+      return(quickr_emit_assign(
+        out_sym,
+        rlang::call2("matrix", rlang::call2("sum", operand_expr), nrow = 1L, ncol = 1L)
+      ))
     }
 
-    update <- function(ii, jj, acc) rlang::call2("<-", acc, rlang::call2("+", acc, rlang::call2("[", operand_expr, ii, jj)))
+    update <- function(ii, jj, acc) {
+      rlang::call2("<-", acc, rlang::call2("+", acc, rlang::call2("[", operand_expr, ii, jj)))
+    }
 
     if (identical(dims, 2L)) {
       alloc <- if (isTRUE(drop)) {
@@ -525,7 +556,7 @@ quickr_emit_reduce_sum <- function(out_sym, operand_expr, shape_in, dims, drop, 
       } else {
         quickr_emit_assign(out_sym, rlang::call2("matrix", zero, nrow = m, ncol = 1L))
       }
-      return(quickr_emit_reduce_rank2_axis_loop(out_sym, m, n, 2L, drop, alloc, zero, 1L, update))
+      return(quickr_emit_reduce2_axis_loop(out_sym, m, n, 2L, drop, alloc, zero, 1L, update))
     }
 
     if (identical(dims, 1L)) {
@@ -534,7 +565,7 @@ quickr_emit_reduce_sum <- function(out_sym, operand_expr, shape_in, dims, drop, 
       } else {
         quickr_emit_assign(out_sym, rlang::call2("matrix", zero, nrow = 1L, ncol = n))
       }
-      return(quickr_emit_reduce_rank2_axis_loop(out_sym, m, n, 1L, drop, alloc, zero, 1L, update))
+      return(quickr_emit_reduce2_axis_loop(out_sym, m, n, 1L, drop, alloc, zero, 1L, update))
     }
 
     cli_abort("sum: unsupported reduction dims for rank-2 tensor")
@@ -607,10 +638,13 @@ quickr_emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_
   )
 
   if (rank_in == 0L) {
-    stmts <- c(stmts, list(
-      rlang::call2("<-", idx_sym, 1L),
-      rlang::call2("<-", rlang::call2("[", flat_sym, 1L), operand_expr)
-    ))
+    stmts <- c(
+      stmts,
+      list(
+        rlang::call2("<-", idx_sym, 1L),
+        rlang::call2("<-", rlang::call2("[", flat_sym, 1L), operand_expr)
+      )
+    )
   } else {
     in_idxs <- lapply(seq_len(rank_in), function(d) as.name(paste0("i_", as.character(out_sym), "_", d)))
     elem_in <- subscript(operand_expr, in_idxs)
@@ -675,59 +709,71 @@ quickr_lower_registry <- local({
     quickr_emit_full_like(out_sym, value_expr, params$shape, out_aval)
   })
 
-  quickr_register_prim_lowerer(reg, c("add", "sub", "mul", "divide"), function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
-    op <- switch(
-      prim_name,
-      add = "+",
-      sub = "-",
-      mul = "*",
-      divide = "/",
-      cli_abort("Internal error: unknown binary primitive: {.val {prim_name}}")
-    )
-    quickr_emit_assign(out_syms[[1L]], rlang::call2(op, inputs[[1L]], inputs[[2L]]))
-  })
+  quickr_register_prim_lowerer(
+    reg,
+    c("add", "sub", "mul", "divide"),
+    function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      op <- switch(
+        prim_name,
+        add = "+",
+        sub = "-",
+        mul = "*",
+        divide = "/",
+        cli_abort("Internal error: unknown binary primitive: {.val {prim_name}}")
+      )
+      quickr_emit_assign(out_syms[[1L]], rlang::call2(op, inputs[[1L]], inputs[[2L]]))
+    }
+  )
 
   quickr_register_prim_lowerer(reg, "negate", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
     quickr_emit_assign(out_syms[[1L]], rlang::call2("-", inputs[[1L]]))
   })
 
-  quickr_register_prim_lowerer(reg, "broadcast_in_dim", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
-    out_sym <- out_syms[[1L]]
-    out_aval <- out_avals[[1L]]
-    operand_node <- input_nodes[[1L]]
-    if (!is_graph_value(operand_node)) {
-      cli_abort("broadcast_in_dim: only GraphValue inputs are supported")
+  quickr_register_prim_lowerer(
+    reg,
+    "broadcast_in_dim",
+    function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      operand_node <- input_nodes[[1L]]
+      if (!is_graph_value(operand_node)) {
+        cli_abort("broadcast_in_dim: only GraphValue inputs are supported")
+      }
+      quickr_emit_broadcast_in_dim(
+        out_sym,
+        inputs[[1L]],
+        shape(operand_node@aval),
+        params$shape_out,
+        params$broadcast_dimensions,
+        out_aval
+      )
     }
-    quickr_emit_broadcast_in_dim(
-      out_sym,
-      inputs[[1L]],
-      shape(operand_node@aval),
-      params$shape_out,
-      params$broadcast_dimensions,
-      out_aval
-    )
-  })
+  )
 
-  quickr_register_prim_lowerer(reg, "dot_general", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
-    out_sym <- out_syms[[1L]]
-    out_aval <- out_avals[[1L]]
-    lhs_node <- input_nodes[[1L]]
-    rhs_node <- input_nodes[[2L]]
-    if (!is_graph_value(lhs_node) || !is_graph_value(rhs_node)) {
-      cli_abort("dot_general: only GraphValue inputs are supported")
+  quickr_register_prim_lowerer(
+    reg,
+    "dot_general",
+    function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      lhs_node <- input_nodes[[1L]]
+      rhs_node <- input_nodes[[2L]]
+      if (!is_graph_value(lhs_node) || !is_graph_value(rhs_node)) {
+        cli_abort("dot_general: only GraphValue inputs are supported")
+      }
+      quickr_emit_dot_general(
+        out_sym,
+        inputs[[1L]],
+        inputs[[2L]],
+        shape(lhs_node@aval),
+        shape(rhs_node@aval),
+        shape(out_aval),
+        out_aval,
+        params$contracting_dims,
+        params$batching_dims
+      )
     }
-    quickr_emit_dot_general(
-      out_sym,
-      inputs[[1L]],
-      inputs[[2L]],
-      shape(lhs_node@aval),
-      shape(rhs_node@aval),
-      shape(out_aval),
-      out_aval,
-      params$contracting_dims,
-      params$batching_dims
-    )
-  })
+  )
 
   quickr_register_prim_lowerer(reg, "transpose", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
     out_sym <- out_syms[[1L]]
@@ -858,9 +904,13 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
         integer()
       }
     })
-    out_lens <- vapply(out_shapes, function(shp) {
-      if (!length(shp)) 1L else Reduce(`*`, as.integer(shp), init = 1L)
-    }, integer(1L))
+    out_lens <- vapply(
+      out_shapes,
+      function(shp) {
+        if (!length(shp)) 1L else Reduce(`*`, as.integer(shp), init = 1L)
+      },
+      integer(1L)
+    )
     total_len <- sum(out_lens)
 
     out_sym <- result_sym
@@ -879,10 +929,13 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
 
       idxs <- lapply(seq_len(rank), function(d) as.name(paste0("i_", tag, "_", d)))
       elem <- as.call(c(list(as.name("[")), list(src_expr), idxs))
-      inner <- as.call(c(list(as.name("{")), c(
-        list(rlang::call2("<-", idx_sym, rlang::call2("+", idx_sym, 1L))),
-        list(rlang::call2("<-", rlang::call2("[", out_sym, idx_sym), rlang::call2("as.double", elem)))
-      )))
+      inner <- as.call(c(
+        list(as.name("{")),
+        c(
+          list(rlang::call2("<-", idx_sym, rlang::call2("+", idx_sym, 1L))),
+          list(rlang::call2("<-", rlang::call2("[", out_sym, idx_sym), rlang::call2("as.double", elem)))
+        )
+      ))
 
       body <- inner
       for (d in seq_len(rank)) {
@@ -911,7 +964,7 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
   body(f) <- as.call(c(list(as.name("{")), stmts))
 
   if (isTRUE(include_declare) && !exists("declare", envir = baseenv(), inherits = FALSE)) {
-    declare <- function(...) invisible(NULL)
+    environment(f)$declare <- function(...) invisible(NULL)
   }
   f
 }
