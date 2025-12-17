@@ -5,7 +5,7 @@ transformations.
 
 | Name                   | StableHLO | Backward |
 |:-----------------------|:----------|:--------:|
-| abs                    | ✓         |    ✗     |
+| abs                    | ✓         |    ✓     |
 | add                    | ✓         |    ✓     |
 | all                    | ✓         |    ✗     |
 | and                    | ✓         |    ✗     |
@@ -13,16 +13,16 @@ transformations.
 | atan2                  | ✓         |    ✗     |
 | bitcast_convert        | ✓         |    ✗     |
 | broadcast_in_dim       | ✓         |    ✓     |
-| ceil                   | ✓         |    ✗     |
+| ceil                   | ✓         |    ✓     |
 | concatenate            | ✓         |    ✗     |
 | convert                | ✓         |    ✓     |
-| cosine                 | ✓         |    ✗     |
+| cosine                 | ✓         |    ✓     |
 | divide                 | ✓         |    ✓     |
 | dot_general            | ✓         |    ✓     |
 | equal                  | ✓         |    ✓     |
 | exp                    | ✓         |    ✓     |
 | fill                   | ✓         |    ✗     |
-| floor                  | ✓         |    ✗     |
+| floor                  | ✓         |    ✓     |
 | greater                | ✓         |    ✓     |
 | greater_equal          | ✓         |    ✓     |
 | if                     | ✓         |    ✓     |
@@ -31,7 +31,7 @@ transformations.
 | log                    | ✓         |    ✓     |
 | max                    | ✓         |    ✓     |
 | maximum                | ✓         |    ✓     |
-| min                    | ✓         |    ✗     |
+| min                    | ✓         |    ✓     |
 | minimum                | ✓         |    ✓     |
 | mul                    | ✓         |    ✓     |
 | negate                 | ✓         |    ✓     |
@@ -43,20 +43,20 @@ transformations.
 | remainder              | ✓         |    ✗     |
 | reshape                | ✓         |    ✓     |
 | rng_bit_generator      | ✓         |    ✗     |
-| round                  | ✓         |    ✗     |
-| rsqrt                  | ✓         |    ✗     |
+| round                  | ✓         |    ✓     |
+| rsqrt                  | ✓         |    ✓     |
 | select                 | ✓         |    ✓     |
 | shift_left             | ✓         |    ✗     |
 | shift_right_arithmetic | ✓         |    ✗     |
 | shift_right_logical    | ✓         |    ✗     |
-| sign                   | ✓         |    ✗     |
-| sine                   | ✓         |    ✗     |
+| sign                   | ✓         |    ✓     |
+| sine                   | ✓         |    ✓     |
 | slice                  | ✓         |    ✗     |
-| sqrt                   | ✓         |    ✗     |
+| sqrt                   | ✓         |    ✓     |
 | sub                    | ✓         |    ✓     |
 | sum                    | ✓         |    ✓     |
-| tan                    | ✓         |    ✗     |
-| tanh                   | ✓         |    ✗     |
+| tan                    | ✓         |    ✓     |
+| tanh                   | ✓         |    ✓     |
 | transpose              | ✓         |    ✓     |
 | while                  | ✓         |    ✗     |
 | xor                    | ✓         |    ✗     |
