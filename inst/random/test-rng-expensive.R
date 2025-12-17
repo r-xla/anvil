@@ -1,7 +1,5 @@
 # Expensive RNG tests for statistical verification
 # They are slow, so we don't run them in the normal CI suite
-# These tests are excluded from the main test suite for performance reasons.
-# Run manually with: source(system.file("random", "test-rng-expensive.R", package = "anvil"))
 
 library(anvil)
 
