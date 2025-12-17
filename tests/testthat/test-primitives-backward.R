@@ -374,5 +374,8 @@ test_that("p_eq, p_ne, p_gt, p_ge, p_lt, p_le", {
 })
 
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
+  source(
+    system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"),
+    local = TRUE
+  )
 }

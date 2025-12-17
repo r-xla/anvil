@@ -64,9 +64,7 @@ graph_to_quickr_function <- function(graph) {
   }
 
   if (!isTRUE(needs_pack)) {
-    wrapper <- function() {
-      stop("internal placeholder")
-    }
+    wrapper <- function() {}
     formals(wrapper) <- formals(r_fun)[seq_len(n_user)]
 
     wrapper_env <- new.env(parent = environment())
@@ -87,7 +85,7 @@ graph_to_quickr_function <- function(graph) {
     if (is_graph_value(node)) {
       list(dtype = as.character(node@aval@dtype), shape = node@aval@shape@dims)
     } else {
-      list(dtype = as.character(node@dtype), shape = integer())
+      list(dtype = as.character(dtype(node)), shape = integer())
     }
   })
   out_lens <- vapply(
@@ -98,9 +96,7 @@ graph_to_quickr_function <- function(graph) {
     integer(1L)
   )
 
-  wrapper <- function() {
-    stop("internal placeholder")
-  }
+  wrapper <- function() {}
   formals(wrapper) <- formals(r_fun)[seq_len(n_user)]
 
   wrapper_env <- new.env(parent = environment())

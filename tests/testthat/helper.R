@@ -86,5 +86,5 @@ generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
 }
 
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
+  source(system.file("extra-tests", "torch-helpers.R", package = "anvil"), local = TRUE)
 }

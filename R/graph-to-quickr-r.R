@@ -93,6 +93,10 @@ quickr_declare_stmt <- function(arg_names, arg_avals) {
   as.call(c(list(as.name("declare")), type_calls))
 }
 
+quickr_base_has_declare <- function() {
+  exists("declare", envir = baseenv(), inherits = FALSE)
+}
+
 quickr_scalar_cast <- function(value, dt_chr) {
   if (dt_chr %in% c("f32", "f64")) {
     return(as.double(value))
@@ -137,7 +141,7 @@ quickr_emit_full_like <- function(out_sym, value_expr, shape_out, out_aval) {
 
 quickr_expr_of_node <- function(node, node_expr) {
   if (is_graph_literal(node)) {
-    return(quickr_scalar_cast(node@aval, as.character(node@dtype)))
+    return(quickr_scalar_cast(node@aval@data, as.character(dtype(node))))
   }
   expr <- node_expr[[node]]
   if (is.null(expr)) {
@@ -611,16 +615,10 @@ quickr_emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_
   rank_out <- length(shape_out)
 
   subscript <- function(expr, idxs) {
-    if (!length(idxs)) {
-      return(expr)
-    }
     as.call(c(list(as.name("[")), list(expr), idxs))
   }
   row_major_loop <- function(idxs, shp, inner) {
     body <- inner
-    if (!length(idxs)) {
-      return(body)
-    }
     for (d in rev(seq_along(idxs))) {
       body <- as.call(list(
         as.name("for"),
@@ -637,30 +635,16 @@ quickr_emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_
     rlang::call2("<-", idx_sym, 0L)
   )
 
-  if (rank_in == 0L) {
-    stmts <- c(
-      stmts,
-      list(
-        rlang::call2("<-", idx_sym, 1L),
-        rlang::call2("<-", rlang::call2("[", flat_sym, 1L), operand_expr)
-      )
-    )
-  } else {
-    in_idxs <- lapply(seq_len(rank_in), function(d) as.name(paste0("i_", as.character(out_sym), "_", d)))
-    elem_in <- subscript(operand_expr, in_idxs)
-    inner_in <- as.call(c(
-      list(as.name("{")),
-      list(rlang::call2("<-", idx_sym, rlang::call2("+", idx_sym, 1L))),
-      list(rlang::call2("<-", rlang::call2("[", flat_sym, idx_sym), elem_in))
-    ))
-    stmts <- c(stmts, list(row_major_loop(in_idxs, shape_in, inner_in)))
-  }
+  in_idxs <- lapply(seq_len(rank_in), function(d) as.name(paste0("i_", as.character(out_sym), "_", d)))
+  elem_in <- subscript(operand_expr, in_idxs)
+  inner_in <- as.call(c(
+    list(as.name("{")),
+    list(rlang::call2("<-", idx_sym, rlang::call2("+", idx_sym, 1L))),
+    list(rlang::call2("<-", rlang::call2("[", flat_sym, idx_sym), elem_in))
+  ))
+  stmts <- c(stmts, list(row_major_loop(in_idxs, shape_in, inner_in)))
 
   stmts <- c(stmts, list(rlang::call2("<-", idx_sym, 0L)))
-
-  if (rank_out == 0L) {
-    return(c(stmts, quickr_emit_assign(out_sym, rlang::call2("[", flat_sym, 1L))))
-  }
 
   out_zero <- quickr_zero_literal_for(out_aval)
   alloc_out <- if (rank_out == 1L) {
@@ -865,7 +849,7 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
   for (i in seq_along(graph@constants)) {
     const_node <- graph@constants[[i]]
     if (!is_graph_value(const_node)) {
-      cli_abort("quickr lowering: graph constants must be GraphValue nodes")
+      cli_abort("quickr lowering: graph constants must be GraphValue nodes") # nocov
     }
     if (!is_concrete_tensor(const_node@aval)) {
       cli_abort("quickr lowering: graph constants must be concrete tensors")
@@ -957,13 +941,11 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
     stmts <- c(stmts, list(rlang::call2("<-", result_sym, out_exprs[[1L]]), result_sym))
   }
 
-  f <- function() {
-    NULL
-  }
+  f <- function() {}
   formals(f) <- make_formals(all_arg_names)
   body(f) <- as.call(c(list(as.name("{")), stmts))
 
-  if (isTRUE(include_declare) && !exists("declare", envir = baseenv(), inherits = FALSE)) {
+  if (isTRUE(include_declare) && !quickr_base_has_declare()) {
     environment(f)$declare <- function(...) invisible(NULL)
   }
   f

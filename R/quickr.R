@@ -5,7 +5,11 @@ quickr_is_installed <- function() {
 }
 
 assert_quickr_installed <- function(caller) {
-  if (quickr_is_installed()) {
+  assert_quickr_installed_with(caller, quickr_is_installed())
+}
+
+assert_quickr_installed_with <- function(caller, installed) {
+  if (isTRUE(installed)) {
     return(invisible(TRUE))
   }
   caller <- if (is.null(caller) || !nzchar(caller)) "this feature" else caller
