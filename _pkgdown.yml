@@ -18,6 +18,8 @@ navbar:
       menu:
       - text: Get Started
         href: articles/anvil.html
+      - text: Random Number Generation
+        href: articles/random-numbers.html
       - text: Type Promotion
         href: articles/type-promotion.html
       - text: Primitives Overview
