@@ -3,8 +3,8 @@
 
 infer_binary <- function(lhs, rhs) {
   both_ambiguous <- lhs@ambiguous && rhs@ambiguous
-  out <- stablehlo::infer_types_generic_biv(st2vt(lhs), st2vt(rhs))@items[[1L]]
-  out <- vt2st(out)
+  out <- stablehlo::infer_types_generic_biv(st2va(lhs), st2va(rhs))@items[[1L]]
+  out <- vt2sa(out)
   out@ambiguous <- both_ambiguous
   list(out)
 }
@@ -12,15 +12,15 @@ infer_binary <- function(lhs, rhs) {
 # boolean is i1 -> integerish
 infer_binary_integerish <- function(lhs, rhs) {
   both_ambiguous <- lhs@ambiguous && rhs@ambiguous
-  out <- stablehlo::infer_types_integerish_biv(st2vt(lhs), st2vt(rhs))@items[[1L]]
-  out <- vt2st(out)
+  out <- stablehlo::infer_types_integerish_biv(st2va(lhs), st2va(rhs))@items[[1L]]
+  out <- vt2sa(out)
   out@ambiguous <- both_ambiguous
   list(out)
 }
 
 infer_unary <- function(operand) {
-  out <- stablehlo::infer_types_generic_uni(st2vt(operand))@items[[1L]]
-  out <- vt2st(out)
+  out <- stablehlo::infer_types_generic_uni(st2va(operand))@items[[1L]]
+  out <- vt2sa(out)
   out@ambiguous <- operand@ambiguous
   list(out)
 }
@@ -38,8 +38,8 @@ make_binary_integerish_op <- function(prim) {
 }
 
 infer_unary_integerish <- function(operand) {
-  out <- stablehlo::infer_types_integerish_uni(st2vt(operand))@items[[1L]]
-  out <- vt2st(out)
+  out <- stablehlo::infer_types_integerish_uni(st2va(operand))@items[[1L]]
+  out <- vt2sa(out)
   out@ambiguous <- operand@ambiguous
   list(out)
 }
@@ -184,11 +184,11 @@ nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
       shape = length(broadcast_dimensions)
     )
     out <- stablehlo::infer_types_broadcast_in_dim(
-      st2vt(operand),
+      st2va(operand),
       broadcast_dimensions = bd_attr,
       shape_out = shape_out
     )@items[[1L]]
-    out <- vt2st(out)
+    out <- vt2sa(out)
     out@ambiguous <- operand@ambiguous
     list(out)
   }
@@ -210,8 +210,8 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
       contracting_dims = lapply(contracting_dims, \(x) x - 1L),
       batching_dims = lapply(batching_dims, \(x) x - 1L)
     )
-    out <- stablehlo::infer_types_dot_general(st2vt(lhs), st2vt(rhs), dot_dimension_numbers = ddn)@items[[1L]]
-    list(vt2st(out))
+    out <- stablehlo::infer_types_dot_general(st2va(lhs), st2va(rhs), dot_dimension_numbers = ddn)@items[[1L]]
+    list(vt2sa(out))
   }
   graph_desc_add(
     p_dot_general,
@@ -229,8 +229,8 @@ nvl_transpose <- function(operand, permutation) {
       dtype = "i64",
       shape = length(permutation)
     )
-    out <- stablehlo::infer_types_transpose(st2vt(operand), permutation = perm_attr)@items[[1L]]
-    out <- vt2st(out)
+    out <- stablehlo::infer_types_transpose(st2va(operand), permutation = perm_attr)@items[[1L]]
+    out <- vt2sa(out)
     out@ambiguous <- operand@ambiguous
     list(out)
   }
@@ -245,8 +245,8 @@ nvl_transpose <- function(operand, permutation) {
 p_reshape <- Primitive("reshape")
 nvl_reshape <- function(operand, shape) {
   infer_fn <- function(operand, shape) {
-    out <- stablehlo::infer_types_reshape(st2vt(operand), shape_out = shape)@items[[1L]]
-    out <- vt2st(out)
+    out <- stablehlo::infer_types_reshape(st2va(operand), shape_out = shape)@items[[1L]]
+    out <- vt2sa(out)
     out@ambiguous <- operand@ambiguous
     list(out)
   }
@@ -264,9 +264,9 @@ nvl_concatenate <- function(..., dimension) {
   infer_fn <- function(..., dimension) {
     operands <- list(...)
     all_ambiguous <- all(vapply(operands, \(x) x@ambiguous, logical(1L)))
-    vts <- lapply(operands, st2vt)
+    vts <- lapply(operands, st2va)
     out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dimension)@items[[1L]]
-    out <- vt2st(out)
+    out <- vt2sa(out)
     out@ambiguous <- all_ambiguous
     list(out)
   }
@@ -284,8 +284,8 @@ nvl_slice <- function(operand, start_indices, limit_indices, strides) {
     start_attr <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
     limit_attr <- r_to_constant(limit_indices, dtype = "i64", shape = length(limit_indices))
     strides_attr <- r_to_constant(strides, dtype = "i64", shape = length(strides))
-    out <- stablehlo::infer_types_slice(st2vt(operand), start_attr, limit_attr, strides_attr)@items[[1L]]
-    out <- vt2st(out)
+    out <- stablehlo::infer_types_slice(st2va(operand), start_attr, limit_attr, strides_attr)@items[[1L]]
+    out <- vt2sa(out)
     out@ambiguous <- operand@ambiguous
     list(out)
   }
@@ -337,8 +337,8 @@ nvl_reduce_all <- make_reduce_op(p_reduce_all, infer_reduce_boolean)
 # comparison primitives --------------------------------------------------------
 
 infer_compare <- function(lhs, rhs, comparison_direction) {
-  out <- stablehlo::infer_types_compare(st2vt(lhs), st2vt(rhs), comparison_direction, "FLOAT")@items[[1L]]
-  out <- vt2st(out)
+  out <- stablehlo::infer_types_compare(st2va(lhs), st2va(rhs), comparison_direction, "FLOAT")@items[[1L]]
+  out <- vt2sa(out)
   out@ambiguous <- lhs@ambiguous && rhs@ambiguous
   list(out)
 }
@@ -394,8 +394,8 @@ nvl_xor <- make_binary_integerish_op(p_xor)
 
 infer_shift <- function(lhs, rhs, shift_fn) {
   both_ambiguous <- lhs@ambiguous && rhs@ambiguous
-  out <- shift_fn(st2vt(lhs), st2vt(rhs))@items[[1L]]
-  out <- vt2st(out)
+  out <- shift_fn(st2va(lhs), st2va(rhs))@items[[1L]]
+  out <- vt2sa(out)
   out@ambiguous <- both_ambiguous
   list(out)
 }
@@ -424,7 +424,7 @@ nvl_atan2 <- make_binary_op(p_atan2)
 p_bitcast_convert <- Primitive("bitcast_convert")
 nvl_bitcast_convert <- function(operand, dtype) {
   infer_fn <- function(operand, dtype) {
-    lapply(stablehlo::infer_types_bitcast_convert(st2vt(operand), dtype)@items, vt2st)
+    lapply(stablehlo::infer_types_bitcast_convert(st2va(operand), dtype)@items, vt2sa)
   }
   graph_desc_add(p_bitcast_convert, list(operand), params = list(dtype = dtype), infer_fn = infer_fn)[[1L]]
 }
@@ -504,11 +504,11 @@ nvl_select <- function(pred, true_value, false_value) {
   infer_fn <- function(pred, true_value, false_value) {
     both_ambiguous <- true_value@ambiguous && false_value@ambiguous
     out <- stablehlo::infer_types_select(
-      st2vt(pred),
-      on_true = st2vt(true_value),
-      on_false = st2vt(false_value)
+      st2va(pred),
+      on_true = st2va(true_value),
+      on_false = st2va(false_value)
     )@items[[1L]]
-    out <- vt2st(out)
+    out <- vt2sa(out)
     out@ambiguous <- both_ambiguous
     list(out)
   }
@@ -645,7 +645,7 @@ nvl_while <- function(init, cond, body) {
 p_rng_bit_generator <- Primitive("rng_bit_generator")
 nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape_out) {
   infer_fn <- function(initial_state, rng_algorithm, dtype, shape_out) {
-    lapply(stablehlo::infer_types_rng_bit_generator(st2vt(initial_state), rng_algorithm, dtype, shape_out)@items, vt2st)
+    lapply(stablehlo::infer_types_rng_bit_generator(st2va(initial_state), rng_algorithm, dtype, shape_out)@items, vt2sa)
   }
   graph_desc_add(
     p_rng_bit_generator,
