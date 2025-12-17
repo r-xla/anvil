@@ -357,18 +357,6 @@ p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .r
 # they are actually not differentiable, but instead of throwing, we
 # return zeros for everything.
 
-zero_grads <- function(inputs, .required) {
-  lhs <- inputs[[1L]]
-  rhs <- inputs[[2L]]
-  req_lhs <- .required[[1L]]
-  req_rhs <- .required[[2L]]
-
-  list(
-    if (req_lhs) zeros_like(lhs),
-    if (req_rhs) zeros_like(rhs)
-  )
-}
-
 backward_zero_bin <- function(inputs, outputs, grads, .required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
@@ -381,9 +369,7 @@ backward_zero_bin <- function(inputs, outputs, grads, .required) {
 }
 
 p_eq[["backward"]] <- backward_zero_bin
-
 p_ne[["backward"]] <- backward_zero_bin
-
 p_gt[["backward"]] <- backward_zero_bin
 p_ge[["backward"]] <- backward_zero_bin
 p_lt[["backward"]] <- backward_zero_bin
