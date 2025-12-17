@@ -30,13 +30,14 @@ Suggests:
     knitr,
     quarto,
     rmarkdown,
-    quickr,
+    quickr (>= 0.2.1.9000),
     testthat (>= 3.0.0)
 Remotes:
     r-xla/stablehlo,
     r-xla/tengen,
     r-xla/xlamisc,
     r-xla/pjrt
+    t-kalinowski/quickr
 Additional_repositories:
     https://r-xla.r-universe.dev
 VignetteBuilder:
