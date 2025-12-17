@@ -120,3 +120,11 @@ zero_env <- function() {
 shape2string <- function(x) {
   sprintf("(%s)", paste0(x, collapse = ","))
 }
+
+zeros_like <- function(x) {
+  nvl_fill(0L, dtype = dtype(x), shape = shape(x))
+}
+
+ones_like <- function(x) {
+  nvl_fill(1L, dtype = dtype(x), shape = shape(x))
+}
