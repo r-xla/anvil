@@ -1,7 +1,7 @@
 test_that("integration: MNIST-shaped classifier training from rank-5 image batch via quickr loss + grad", {
   testthat::skip_if_not_installed("quickr")
 
-  set.seed(1)
+  withr::local_seed(1)
 
   n <- 16L
   h <- 28L
@@ -70,7 +70,7 @@ test_that("integration: MNIST-shaped classifier training from rank-5 image batch
 test_that("integration: tfp/greta-like log_prob + grad workflow via quickr", {
   testthat::skip_if_not_installed("quickr")
 
-  set.seed(2)
+  withr::local_seed(2)
 
   n <- 20L
   x <- as.numeric(scale(seq_len(n)))
