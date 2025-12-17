@@ -117,18 +117,7 @@ AbstractTensor <- S7::new_class(
   }
 )
 
-shaped_tensor <- function(x) {
-  if (is_anvil_tensor(x)) {
-    ConcreteTensor(x)
-  } else if (is_shaped_tensor(x)) {
-    x
-  } else {
-    cli_abort("internal error")
-  }
-}
-
-
-is_shaped_tensor <- function(x) {
+is_abstract_tensor <- function(x) {
   inherits(x, "anvil::AbstractTensor")
 }
 
@@ -282,7 +271,7 @@ format.AnvilTensor <- function(x, ...) {
 to_abstract <- function(x) {
   if (is_anvil_tensor(x)) {
     ConcreteTensor(x)
-  } else if (is_shaped_tensor(x)) {
+  } else if (is_abstract_tensor(x)) {
     x
   } else if (test_atomic(x) && (is.logical(x) || is.numeric(x))) {
     LiteralTensor(x, integer(), ambiguous = TRUE)
