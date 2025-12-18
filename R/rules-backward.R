@@ -51,7 +51,7 @@ p_pow[["backward"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
     if (.required[[1L]]) {
-      one <- nvl_fill(1, dtype = dtype(lhs), shape = shape(rhs))
+      one <- ones_like(lhs)
       nvl_mul(nvl_mul(grad, rhs), nvl_pow(lhs, nvl_sub(rhs, one)))
     },
     if (.required[[2L]]) {
@@ -73,6 +73,81 @@ p_exp[["backward"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
     if (.required[[1L]]) nvl_mul(grad, y)
+  )
+}
+
+p_sqrt[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx sqrt(x) = 1 / (2 * sqrt(x))
+    if (.required[[1L]]) {
+      half <- nvl_fill(0.5, dtype = dtype(y), shape = shape(y))
+      nvl_div(nvl_mul(grad, half), y)
+    }
+  )
+}
+
+p_rsqrt[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx 1/sqrt(x) = -0.5 * x^(-3/2) = -0.5 * rsqrt(x)^3
+    if (.required[[1L]]) {
+      neg_half <- nvl_fill(-0.5, dtype = dtype(y), shape = shape(y))
+      nvl_mul(nvl_mul(grad, neg_half), nvl_mul(y, nvl_mul(y, y)))
+    }
+  )
+}
+
+p_tanh[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx tanh(x) = 1 - tanh(x)^2
+    if (.required[[1L]]) {
+      one <- nvl_fill(1, dtype = dtype(y), shape = shape(y))
+      nvl_mul(grad, nvl_sub(one, nvl_mul(y, y)))
+    }
+  )
+}
+
+p_tan[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx tan(x) = 1 + tan(x)^2
+    if (.required[[1L]]) {
+      one <- nvl_fill(1, dtype = dtype(y), shape = shape(y))
+      nvl_mul(grad, nvl_add(one, nvl_mul(y, y)))
+    }
+  )
+}
+
+p_sine[["backward"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx sin(x) = cos(x)
+    if (.required[[1L]]) nvl_mul(grad, nvl_cosine(operand))
+  )
+}
+
+p_cosine[["backward"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx cos(x) = -sin(x)
+    if (.required[[1L]]) nvl_mul(grad, nvl_neg(nvl_sine(operand)))
+  )
+}
+
+p_abs[["backward"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx |x| = sign(x)
+    if (.required[[1L]]) nvl_mul(grad, nvl_sign(operand))
   )
 }
 
@@ -190,7 +265,7 @@ p_reduce_sum[["backward"]] <- function(inputs, outputs, grads, dims, drop, .requ
   )
 }
 
-p_reduce_max[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+p_reduce_max[["backward"]] <- p_reduce_min[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
 
@@ -254,7 +329,7 @@ p_select[["backward"]] <- function(inputs, outputs, grads, .required) {
   pred <- inputs[[1L]]
   true_value <- inputs[[2L]]
   grad <- grads[[1L]]
-  zero <- nvl_fill(0L, dtype = dtype(true_value), shape = shape(true_value))
+  zero <- zeros_like(true_value)
 
   list(
     if (.required[[1L]]) cli_abort("Predicate cannot be differentiated"),
@@ -282,42 +357,35 @@ p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .r
 # they are actually not differentiable, but instead of throwing, we
 # return zeros for everything.
 
-zero_grads <- function(inputs, .required) {
+backward_zero_bin <- function(inputs, outputs, grads, .required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
   req_lhs <- .required[[1L]]
   req_rhs <- .required[[2L]]
-
-  zero_like <- function(x) {
-    nvl_fill(0L, dtype = dtype(x), shape = shape(x))
-  }
-
   list(
-    if (req_lhs) zero_like(lhs),
-    if (req_rhs) zero_like(rhs)
+    if (req_lhs) zeros_like(lhs),
+    if (req_rhs) zeros_like(rhs)
   )
 }
 
-p_eq[["backward"]] <- function(inputs, outputs, grads, .required) {
-  zero_grads(inputs, .required)
+p_eq[["backward"]] <- backward_zero_bin
+p_ne[["backward"]] <- backward_zero_bin
+p_gt[["backward"]] <- backward_zero_bin
+p_ge[["backward"]] <- backward_zero_bin
+p_lt[["backward"]] <- backward_zero_bin
+p_le[["backward"]] <- backward_zero_bin
+
+# zero-grads (ignores the non-differentiable points)
+
+backward_zero_uni <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  list(
+    if (.required[[1L]]) zeros_like(operand)
+  )
 }
 
-p_ne[["backward"]] <- function(inputs, outputs, grads, .required) {
-  zero_grads(inputs, .required)
-}
 
-p_gt[["backward"]] <- function(inputs, outputs, grads, .required) {
-  zero_grads(inputs, .required)
-}
-
-p_ge[["backward"]] <- function(inputs, outputs, grads, .required) {
-  zero_grads(inputs, .required)
-}
-
-p_lt[["backward"]] <- function(inputs, outputs, grads, .required) {
-  zero_grads(inputs, .required)
-}
-
-p_le[["backward"]] <- function(inputs, outputs, grads, .required) {
-  zero_grads(inputs, .required)
-}
+p_floor[["backward"]] <- backward_zero_uni
+p_ceil[["backward"]] <- backward_zero_uni
+p_sign[["backward"]] <- backward_zero_uni
+p_round[["backward"]] <- backward_zero_uni

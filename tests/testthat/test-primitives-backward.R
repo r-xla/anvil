@@ -292,6 +292,33 @@ test_that("p_reduce_max backward", {
   )
 })
 
+test_that("p_reduce_min backward", {
+  f <- jit(gradient(function(x) {
+    rows_min <- nvl_reduce_min(x, dims = 2L, drop = TRUE)
+    nv_reduce_sum(rows_min, dims = 1L, drop = TRUE)
+  }))
+
+  x <- nv_tensor(
+    rbind(
+      c(2, 4, 5),
+      c(1, 1, 9)
+    ),
+    dtype = "f32",
+    shape = c(2, 3)
+  )
+
+  grads <- f(x)[[1L]]
+
+  expect_equal(
+    as_array(grads),
+    rbind(
+      c(1, 0, 0),
+      c(0.5, 0.5, 0)
+    ),
+    tolerance = 1e-6
+  )
+})
+
 test_that("p_max on ties", {
   x <- nv_tensor(c(1, 2, 2))
   grads <- jit(gradient(\(x) nv_reduce_max(x, dims = 1)))(x)

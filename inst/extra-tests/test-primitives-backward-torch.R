@@ -421,3 +421,66 @@ test_that("p_convert", {
     }
   )
 })
+
+test_that("p_sqrt", {
+  verify_grad_uni(nvl_sqrt, torch::torch_sqrt, non_negative = TRUE, tol = 1e-5)
+})
+
+test_that("p_rsqrt", {
+  # f64 to avoid log message
+  verify_grad_uni(nvl_rsqrt, torch::torch_rsqrt, non_negative = TRUE, tol = 1e-5, dtypes = "f64")
+})
+
+test_that("p_tanh", {
+  verify_grad_uni(nvl_tanh, torch::torch_tanh, tol = 1e-5)
+})
+
+test_that("p_tan", {
+  # values near pi/2 cause divergence -> avoid unlucky seed
+  withr::local_seed(12)
+  verify_grad_uni_tensor(
+    nvl_tan,
+    torch::torch_tan,
+    tol = 1e-4
+  )
+})
+
+test_that("p_sine", {
+  verify_grad_uni(nvl_sine, torch::torch_sin, tol = 1e-5)
+})
+
+test_that("p_cosine", {
+  verify_grad_uni(nvl_cosine, torch::torch_cos, tol = 1e-5)
+})
+
+test_that("p_abs", {
+  verify_grad_uni_tensor(
+    nvl_abs,
+    torch::torch_abs,
+    tol = 1e-5
+  )
+})
+
+test_that("p_max", {
+  verify_grad_biv(nvl_max, torch::torch_maximum, tol = 1e-5)
+})
+
+test_that("p_min", {
+  verify_grad_biv(nvl_min, torch::torch_minimum, tol = 1e-5)
+})
+
+test_that("p_floor", {
+  verify_grad_uni(nvl_floor, torch::torch_floor)
+})
+
+test_that("p_ceil", {
+  verify_grad_uni(nvl_ceil, torch::torch_ceil)
+})
+
+test_that("p_sign", {
+  verify_grad_uni(nvl_sign, torch::torch_sign)
+})
+
+test_that("p_round", {
+  verify_grad_uni(nvl_round, torch::torch_round)
+})
