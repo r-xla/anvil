@@ -31,8 +31,9 @@ test_that("p_rnorm", {
   }
   g <- jit(f)
   out <- g()
+  expect_equal(dtype(out[[1]]), as_dtype("ui64"))
+  expect_equal(shape(out[[1]]), 2L)
   expect_equal(shape(out[[2]]), c(2L, 3L))
-  expect_true(inherits(dtype.AnvilTensor(out[[2]]), FloatType))
   expect_equal(dtype(out[[2]]), as_dtype("f64"))
 })
 
@@ -50,10 +51,10 @@ test_that("p_runif", {
   g <- jit(f)
   out <- g()
 
-  expect_equal(c(as_array(out[[1]])), c(1L, 8L))
+  expect_equal(dtype(out[[1]]), as_dtype("ui64"))
+  expect_equal(shape(out[[1]]), 2L)
   expect_equal(shape(out[[2]]), c(3L, 4L))
-  expect_true(inherits(dtype.AnvilTensor(out[[2]]), FloatType))
-  expect_equal(dtype.AnvilTensor(out[[2]])@value, 32L)
+  expect_equal(dtype(out[[2]]), as_dtype("f32"))
 })
 
 
