@@ -4,7 +4,7 @@
 \alias{.current_descriptor}
 \title{Get the current graph}
 \usage{
-.current_descriptor()
+.current_descriptor(silent = FALSE)
 }
 \value{
 A \code{\link{Graph}} object.

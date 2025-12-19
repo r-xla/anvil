@@ -6,6 +6,7 @@
 \alias{nv_tensor}
 \alias{nv_scalar}
 \alias{nv_empty}
+\alias{nv_aten}
 \title{Tensor}
 \format{
 An object of class \code{S7_S3_class} of length 3.
@@ -18,6 +19,8 @@ nv_tensor(data, dtype = NULL, device = NULL, shape = NULL)
 nv_scalar(data, dtype = NULL, device = NULL)
 
 nv_empty(dtype, shape, device = NULL)
+
+nv_aten(dtype, shape)
 }
 \arguments{
 \item{data}{(any)\cr
@@ -43,6 +46,10 @@ To create a "scalar" with dimension \verb{()}, use \code{\link{nv_scalar}}.}
 }
 \description{
 Create a tensor.
+
+\code{nv_aten} creates an abstract tensor with only dtype and shape metadata,
+without concrete data. This is useful for tracing functions without providing
+actual tensor data.
 }
 \details{
 Internally calls \code{\link[pjrt:pjrt_buffer]{pjrt_buffer}}.

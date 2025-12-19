@@ -61,13 +61,14 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
 #' @description
 #' Broadcast scalar tensors to match the shape of non-scalar tensors.
 #' All non-scalar tensors must have the same shape.
-#' @param ... ([`nv_tensor`])\cr
+#' @param ... ([`tensorish`][tensorish])\cr
 #'   Tensors to broadcast. Scalars will be broadcast to the common non-scalar shape.
-#' @return (`list()` of [`nv_tensor`])
+#' @return (`list()` of [`tensorish`])\cr
+#'   List of broadcasted tensors.
 #' @export
 nv_broadcast_scalars <- function(...) {
   args <- list(...)
-  shapes <- lapply(args, \(x) shape(to_abstract(x)))
+  shapes <- lapply(args, shape_abstract)
   non_scalar_shapes <- Filter(\(s) length(s) > 0L, shapes)
 
   if (length(non_scalar_shapes) == 0L) {
@@ -83,7 +84,7 @@ nv_broadcast_scalars <- function(...) {
   }
 
   lapply(args, \(x) {
-    if (length(shape(to_abstract(x))) == 0L) {
+    if (length(shape_abstract(x)) == 0L) {
       nv_broadcast_to(x, target_shape)
     } else {
       x
@@ -94,9 +95,9 @@ nv_broadcast_scalars <- function(...) {
 #' @title Promote Tensors to a Common Dtype
 #' @description
 #' Promote tensors to a common data type, see [`common_dtype`] for more details.
-#' @param ... ([`nv_tensor`])\cr
+#' @param ... ([`tensorish`])\cr
 #'   Tensors to promote.
-#' @return (`list()` of [`nv_tensor`])
+#' @return (`list()` of [`tensorish`])
 #' @export
 nv_promote_to_common <- function(...) {
   args <- list(...)
@@ -126,13 +127,13 @@ nv_promote_to_common <- function(...) {
 #'    - one of the tensors has size 1, expand it to the corresponding size of the other tensor.
 #'    - the sizes are different and neither is 1, raise an error.
 #'
-#' @param ... ([`nv_tensor`])\cr
+#' @param ... ([`tensorish`])\cr
 #'   Tensors to broadcast.
-#' @return (`list()` of [`nv_tensor`])
+#' @return (`list()` of [`tensorish`])
 #' @export
 nv_broadcast_tensors <- function(...) {
   args <- list(...)
-  shape <- Reduce(broadcast_shapes, lapply(args, \(x) shape(to_abstract(x))))
+  shape <- Reduce(broadcast_shapes, lapply(args, shape_abstract))
   lapply(args, nv_broadcast_to, shape = shape)
 }
 
@@ -142,10 +143,10 @@ nv_broadcast_tensors <- function(...) {
 #' @template param_operand
 #' @param shape (`integer()`)\cr
 #'   Output shape.
-#' @return ([`nv_tensor`])
+#' @return ([`tensorish`])
 #' @export
 nv_broadcast_to <- function(operand, shape) {
-  shape_op <- shape(to_abstract(operand))
+  shape_op <- shape_abstract(operand)
   if (!identical(shape_op, shape)) {
     broadcast_dimensions <- make_broadcast_dimensions(shape_op, shape)
     nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
@@ -159,7 +160,7 @@ nv_broadcast_to <- function(operand, shape) {
 #' Convert a tensor to a different data type.
 #' @template param_operand
 #' @template param_dtype
-#' @return [`nv_tensor`]
+#' @return [`tensorish`]
 #' @export
 nv_convert <- function(operand, dtype) {
   nvl_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
@@ -168,7 +169,7 @@ nv_convert <- function(operand, dtype) {
 #' @rdname nv_transpose
 #' @export
 nv_transpose <- function(x, permutation = NULL) {
-  permutation <- permutation %??% rev(seq_len(ndims(x)))
+  permutation <- permutation %??% rev(seq_len(ndims_abstract(x)))
   nvl_transpose(x, permutation)
 }
 
@@ -180,7 +181,7 @@ nv_transpose <- function(x, permutation = NULL) {
 #' @template param_operand
 #' @param shape (`integer()`)\cr
 #'   The new shape.
-#' @return [`nv_tensor`]
+#' @return [`tensorish`]
 #' @export
 nv_reshape <- nvl_reshape
 
@@ -190,7 +191,7 @@ nv_reshape <- nvl_reshape
 #' @param ... tensors
 #' @param dimension (`integer()`)\cr
 #'   The dimension to concatenate along to. Other dimensions must be the same.
-#' @return [`nv_tensor`]
+#' @return [`tensorish`]
 #' @export
 nv_concatenate <- nvl_concatenate
 
@@ -201,7 +202,7 @@ nv_concatenate <- nvl_concatenate
 #' @param start_indices start of slice
 #' @param limit_indices end of slice
 #' @param strides stride size
-#' @return [`nv_tensor`]
+#' @return [`tensorish`]
 #' @export
 nv_slice <- nvl_slice
 
@@ -211,33 +212,11 @@ nv_slice <- nvl_slice
 #' @param pred condition
 #' @param true_value on true
 #' @param false_value on false
-#' @return [`nv_tensor`]
+#' @return [`tensorish`]
 #' @export
 nv_select <- nvl_select
 
 ## Binary ops ------------------------------------------------------------------
-
-#' @name nv_binary_ops
-#' @title Binary Operations
-#'
-#' @examples
-#' # Comparison operators such `nv_eq`, `nv_le`, `nv_gt`, etc
-#' # are nondifferentiable and contribute zero to gradients.
-#' relu <- function(x) {
-#'   nv_convert(x > nv_scalar(0), "f32")*x
-#' }
-#' # df/dx = 1 if x > 0 else 0
-#' g_relu <- jit(gradient(relu, "x"))
-#'
-#' g_relu(nv_scalar(1, dtype = "f32"))
-#' g_relu(nv_scalar(-1, dtype = "f32"))
-#' @description
-#' Binary operations on tensors.
-#' @param lhs ([`nv_tensor`])
-#' @param rhs ([`nv_tensor`])
-#' @return [`nv_tensor`]
-NULL
-
 
 make_do_binary <- function(f) {
   function(lhs, rhs) {
@@ -247,89 +226,151 @@ make_do_binary <- function(f) {
   }
 }
 
-#' @rdname nv_binary_ops
+#' @title Addition
+#' @description Element-wise addition of two tensors.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_add <- make_do_binary(nvl_add)
 
-#' @rdname nv_binary_ops
+#' @title Multiplication
+#' @description Element-wise multiplication of two tensors.
+#' @param lhs ([`tensorish`])
+#' @param rhs ([`tensorish`])
+#' @return [`tensorish`]
 #' @export
 nv_mul <- make_do_binary(nvl_mul)
 
-#' @rdname nv_binary_ops
+#' @title Subtraction
+#' @description Element-wise subtraction of two tensors.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_sub <- make_do_binary(nvl_sub)
 
-#' @rdname nv_binary_ops
+#' @title Division
+#' @description Element-wise division of two tensors.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_div <- make_do_binary(nvl_div)
 
-#' @rdname nv_binary_ops
+#' @title Power
+#' @description Element-wise exponentiation of two tensors.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_pow <- make_do_binary(nvl_pow)
 
-#' @rdname nv_binary_ops
+#' @title Equal
+#' @description Element-wise equality comparison.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_eq <- make_do_binary(nvl_eq)
 
-#' @rdname nv_binary_ops
+#' @title Not Equal
+#' @description Element-wise inequality comparison.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_ne <- make_do_binary(nvl_ne)
 
-#' @rdname nv_binary_ops
+#' @title Greater Than
+#' @description Element-wise greater than comparison.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_gt <- make_do_binary(nvl_gt)
 
-#' @rdname nv_binary_ops
+#' @title Greater Than or Equal
+#' @description Element-wise greater than or equal comparison.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_ge <- make_do_binary(nvl_ge)
 
-#' @rdname nv_binary_ops
+#' @title Less Than
+#' @description Element-wise less than comparison.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_lt <- make_do_binary(nvl_lt)
 
-#' @rdname nv_binary_ops
+#' @title Less Than or Equal
+#' @description Element-wise less than or equal comparison.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_le <- make_do_binary(nvl_le)
 
-## Additional binary ops -------------------------------------------------------
-
-#' @rdname nv_binary_ops
+#' @title Maximum
+#' @description Element-wise maximum of two tensors.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_max <- make_do_binary(nvl_max)
 
-#' @rdname nv_binary_ops
+#' @title Minimum
+#' @description Element-wise minimum of two tensors.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_min <- make_do_binary(nvl_min)
 
-#' @rdname nv_binary_ops
+#' @title Remainder
+#' @description Element-wise remainder of division.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_remainder <- make_do_binary(nvl_remainder)
 
-#' @rdname nv_binary_ops
+#' @title Logical And
+#' @description Element-wise logical AND operation.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_and <- make_do_binary(nvl_and)
 
-#' @rdname nv_binary_ops
+#' @title Logical Or
+#' @description Element-wise logical OR operation.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_or <- make_do_binary(nvl_or)
 
-#' @rdname nv_binary_ops
+#' @title Logical Xor
+#' @description Element-wise logical XOR operation.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_xor <- make_do_binary(nvl_xor)
 
-#' @rdname nv_binary_ops
+#' @title Shift Left
+#' @description Element-wise bitwise left shift.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_shift_left <- make_do_binary(nvl_shift_left)
 
-#' @rdname nv_binary_ops
+#' @title Logical Shift Right
+#' @description Element-wise bitwise logical right shift.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_shift_right_logical <- make_do_binary(nvl_shift_right_logical)
 
-#' @rdname nv_binary_ops
+#' @title Arithmetic Shift Right
+#' @description Element-wise bitwise arithmetic right shift.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_shift_right_arithmetic <- make_do_binary(nvl_shift_right_arithmetic)
 
-#' @rdname nv_binary_ops
+#' @title Arctangent 2
+#' @description Element-wise two-argument arctangent.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
 #' @export
 nv_atan2 <- make_do_binary(nvl_atan2)
 
@@ -338,77 +379,119 @@ nv_atan2 <- make_do_binary(nvl_atan2)
 #' @name nv_bitcast_convert
 #' @description
 #' Reinterpret Bits
-#' @param operand tensor
+#' @template param_operand
 #' @param dtype requested dtype
 #' @export
 nv_bitcast_convert <- nvl_bitcast_convert
 
 ## Unary ops ------------------------------------------------------------------
 
-#' @name nv_unary_ops
-#' @title Unary Operations
-#' @description
-#' Unary operations on tensors.
+#' @title Negation
+#' @description Element-wise negation.
 #' @template param_operand
-#' @return [`nv_tensor`]
-
-#' @rdname nv_unary_ops
+#' @return [`tensorish`]
 #' @export
 nv_neg <- nvl_neg
 
-#' @rdname nv_unary_ops
+#' @title Logical Not
+#' @description Element-wise logical NOT operation.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nv_not <- nvl_not
+
+#' @title Absolute Value
+#' @description Element-wise absolute value.
+#' @template param_operand
+#' @return [`tensorish`]
 #' @export
 nv_abs <- nvl_abs
 
-#' @rdname nv_unary_ops
+#' @title Square Root
+#' @description Element-wise square root.
+#' @template param_operand
+#' @return [`tensorish`]
 #' @export
 nv_sqrt <- nvl_sqrt
 
-#' @rdname nv_unary_ops
+#' @title Reciprocal Square Root
+#' @description Element-wise reciprocal square root.
+#' @template param_operand
+#' @return [`tensorish`]
 #' @export
 nv_rsqrt <- nvl_rsqrt
 
-#' @rdname nv_unary_ops
+#' @title Natural Logarithm
+#' @description Element-wise natural logarithm.
+#' @template param_operand
+#' @return [`tensorish`]
 #' @export
 nv_log <- nvl_log
 
-#' @rdname nv_unary_ops
+#' @title Hyperbolic Tangent
+#' @description Element-wise hyperbolic tangent.
+#' @template param_operand
+#' @return [`tensorish`]
 #' @export
 nv_tanh <- nvl_tanh
 
-#' @rdname nv_unary_ops
+#' @title Tangent
+#' @description Element-wise tangent.
+#' @template param_operand
+#' @return [`tensorish`]
 #' @export
 nv_tan <- nvl_tan
 
-#' @rdname nv_unary_ops
+#' @title Sine
+#' @description Element-wise sine.
+#' @template param_operand
+#' @return [`tensorish`]
 #' @export
 nv_sine <- nvl_sine
 
-#' @rdname nv_unary_ops
+#' @title Cosine
+#' @description Element-wise cosine.
+#' @template param_operand
+#' @return [`tensorish`]
 #' @export
 nv_cosine <- nvl_cosine
 
-#' @rdname nv_unary_ops
+#' @title Floor
+#' @description Element-wise floor (round toward negative infinity).
+#' @template param_operand
+#' @return [`tensorish`]
 #' @export
 nv_floor <- nvl_floor
 
-#' @rdname nv_unary_ops
+#' @title Ceiling
+#' @description Element-wise ceiling (round toward positive infinity).
+#' @template param_operand
+#' @return [`tensorish`]
 #' @export
 nv_ceil <- nvl_ceil
 
-#' @rdname nv_unary_ops
+#' @title Sign
+#' @description Element-wise sign function.
+#' @template param_operand
+#' @return [`tensorish`]
 #' @export
 nv_sign <- nvl_sign
 
-#' @rdname nv_unary_ops
+#' @title Exponential
+#' @description Element-wise exponential function.
+#' @template param_operand
+#' @return [`tensorish`]
 #' @export
 nv_exp <- nvl_exp
 
-#' @rdname nv_unary_ops
-#' @export
+#' @title Round
+#' @description Element-wise rounding.
+#' @template param_operand
 #' @param method (`character(1)`)\cr
 #'   Method to use for rounding.
 #'   Either `"nearest_even"` (default) or `"afz"` (away from zero).
+#' @return [`tensorish`]
+#' @export
 nv_round <- nvl_round
 
 ## Other operations -----------------------------------------------------------
@@ -422,36 +505,36 @@ nv_round <- nvl_round
 #' - output: `(b1, ..., bk, m, p)`
 #' @section Broadcasting:
 #' All dimensions but the last two are broadcasted.
-#' @param lhs ([`nv_tensor`])
-#' @param rhs ([`nv_tensor`])
-#' @return [`nv_tensor`]
+#' @param lhs ([`tensorish`])
+#' @param rhs ([`tensorish`])
+#' @return [`tensorish`]
 #' @export
 nv_matmul <- function(lhs, rhs) {
   args <- nv_promote_to_common(lhs, rhs)
   lhs <- args[[1L]]
   rhs <- args[[2L]]
-  if (ndims(lhs) < 2L) {
+  if (ndims_abstract(lhs) < 2L) {
     cli_abort("lhs of matmul must have at least 2 dimensions")
   }
-  if (ndims(rhs) < 2L) {
+  if (ndims_abstract(rhs) < 2L) {
     cli_abort("rhs of matmul must have at least 2 dimensions")
   }
-  shape_leading <- broadcast_shapes(head(shape(lhs), -2L), head(shape(rhs), -2L))
+  shape_leading <- broadcast_shapes(head(shape_abstract(lhs), -2L), head(shape_abstract(rhs), -2L))
 
-  shape_lhs <- c(shape_leading, tail(shape(lhs), 2L))
-  shape_rhs <- c(shape_leading, tail(shape(rhs), 2L))
+  shape_lhs <- c(shape_leading, tail(shape_abstract(lhs), 2L))
+  shape_rhs <- c(shape_leading, tail(shape_abstract(rhs), 2L))
 
-  if (!identical(shape_lhs, shape(lhs))) {
+  if (!identical(shape_lhs, shape_abstract(lhs))) {
     lhs <- nv_broadcast_to(lhs, shape_lhs)
   }
-  if (!identical(shape_rhs, shape(rhs))) {
+  if (!identical(shape_rhs, shape_abstract(rhs))) {
     rhs <- nv_broadcast_to(rhs, shape_rhs)
   }
 
   nvl_dot_general(
     lhs,
     rhs,
-    contracting_dims = list(ndims(lhs), ndims(rhs) - 1L),
+    contracting_dims = list(ndims_abstract(lhs), ndims_abstract(rhs) - 1L),
     batching_dims = list(seq_along(shape_leading), seq_along(shape_leading))
   )
 }
@@ -465,7 +548,7 @@ nv_matmul <- function(lhs, rhs) {
 #'   Dimensions to reduce.
 #' @param drop (`logical(1)`)\cr
 #'   Whether to drop the reduced dimensions.
-#' @return [`nv_tensor`]
+#' @return [`tensorish`]
 #' @export
 nv_reduce_sum <- nvl_reduce_sum
 
@@ -473,9 +556,9 @@ nv_reduce_sum <- nvl_reduce_sum
 #' @export
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
   # TODO: division by zero?
-  nelts <- prod(shape(operand)[dims])
+  nelts <- prod(shape_abstract(operand)[dims])
   # TODO: Should just be able to do use autocasting and divide by nelts scalar
-  nv_reduce_sum(operand, dims, drop) / nv_scalar(nelts, dtype(operand))
+  nv_reduce_sum(operand, dims, drop) / nelts
 }
 
 #' @rdname nv_reduce_ops
@@ -499,7 +582,6 @@ nv_reduce_any <- nvl_reduce_any
 nv_reduce_all <- nvl_reduce_all
 
 #' @title Random Numbers
-#' @name nv_rng_bit_generator
 #' @description
 #' generate random bits of desired shape and dtype
 #' @param initial_state state seed
@@ -510,29 +592,32 @@ nv_reduce_all <- nvl_reduce_all
 nv_rng_bit_generator <- nvl_rng_bit_generator
 
 #' @title Random Uniform Numbers
-#' @name nv_runif
 #' @description
 #' generate random uniform numbers in ]lower, upper[
-#' @param initial_state state seed
+#' @param initial_state ([`tensorish`])\cr
+#'   Tensor of type `ui64[2]`.
+#' @template param_dtype
 #' @param dtype output dtype either "f32" or "f64"
-#' @param shape_out output shape
-#' @param lower lower bound
-#' @param upper upper bound
+#' @param shape output shape
+#' @param lower,upper (`numeric(1)`)\cr
+#'   Lower and upper bound.
+#' @return (`list()` of [`tensorish`])\cr
+#'   List of two tensors: the new RNG state and the generated random numbers.
 #' @export
 nv_runif <- function(
   initial_state,
   dtype = "f64",
-  shape_out,
+  shape,
   lower = 0,
   upper = 1
 ) {
   checkmate::assertChoice(dtype, c("f32", "f64"))
   checkmate::assertNumeric(lower, len = 1, any.missing = FALSE, upper = upper)
   checkmate::assertNumeric(upper, len = 1, any.missing = FALSE, lower = lower)
-  checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
+  checkmate::assertIntegerish(shape, lower = 1, min.len = 1, any.missing = FALSE)
 
   if (upper == lower) {
-    return(nv_broadcast_to(nv_scalar(upper, dtype = dtype), shape = shape_out))
+    return(nv_broadcast_to(nv_scalar(upper, dtype = dtype), shape = shape))
   }
 
   .lower <- nv_scalar(lower, dtype = dtype)
@@ -540,7 +625,7 @@ nv_runif <- function(
   .range <- nv_sub(.upper, .lower)
 
   # generate samples in [0, 1)
-  Unif <- nv_unif_rand(initial_state = initial_state, shape_out = shape_out, dtype = dtype)
+  Unif <- nv_unif_rand(initial_state = initial_state, shape = shape, dtype = dtype)
   U <- Unif[[2]]
 
   # check if some values are <= 0
@@ -555,7 +640,7 @@ nv_runif <- function(
       ifelse(dtype == "f32", 2^-24, 2^-53),
       dtype = dtype
     ),
-    shape = shape_out
+    shape = shape
   )
 
   # Replace values <= 0 with smallest_step
@@ -570,24 +655,28 @@ nv_runif <- function(
 }
 
 #' @title Random Normal Numbers
-#' @name nv_rnorm
 #' @description
 #' generate random normal numbers
-#' @param initial_state state seed
-#' @param dtype output dtype either "f32" or "f64"
-#' @param shape_out output shape
-#' @param mu scalar: expected value
-#' @param sigma scalar: standard deviation
+#' @param initial_state ([`tensorish`])\cr
+#'   Tensor of type `ui64[2]`.
+#' @template param_dtype
+#' @template param_shape
+#' @param mu (`numeric(1)`)\cr
+#'   Expected value.
+#' @param sigma (`numeric(1)`)\cr
+#'   Standard deviation.
 #' #' @section Covariance:
-#' To implement a covariance structure use cholesky decomposition
+#' To implement a covariance structure use cholesky decomposition.
+#' @return (`list()` of [`tensorish`])\cr
+#'   List of two tensors: the new RNG state and the generated random numbers.
 #' @export
-nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
+nv_rnorm <- function(initial_state, dtype, shape, mu = 0, sigma = 1) {
   checkmate::assertChoice(dtype, c("f32", "f64"))
   checkmate::assertNumeric(mu, len = 1, any.missing = FALSE)
   checkmate::assertNumeric(sigma, len = 1, any.missing = FALSE, lower = 0)
-  checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
+  checkmate::assertIntegerish(shape, lower = 1, min.len = 1, any.missing = FALSE)
   # n: amount of rvs needed
-  n <- prod(shape_out)
+  n <- prod(shape)
 
   # Box-Muller Method:
   # from two random uniform variables u1 and u2 we can produce to normals z1, z2
@@ -600,7 +689,7 @@ nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
   U <- nv_unif_rand(
     initial_state = initial_state,
     dtype = dtype,
-    shape_out = as.integer(ceiling(n / 2))
+    shape = as.integer(ceiling(n / 2))
   )
 
   # compute the radius R = sqrt(-2 * log(u1))
@@ -608,7 +697,7 @@ nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
   sqrt_R <- nv_sqrt(R)
 
   # generate second batch of ceil(n/2) random uniform variables
-  Theta <- nv_unif_rand(initial_state = U[[1]], dtype = dtype, shape_out = c(ceiling(n / 2)))
+  Theta <- nv_unif_rand(initial_state = U[[1]], dtype = dtype, shape = as.integer(ceiling(n / 2)))
 
   # compute cos(2 * pi * u2) / sin(2 * pi * u2)
   Theta[[2]] <- nv_mul(Theta[[2]], nv_scalar(2 * pi, dtype = dtype))
@@ -638,7 +727,7 @@ nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
   }
 
   # reshape N to match requested shape
-  N <- nv_reshape(N, shape = shape_out)
+  N <- nv_reshape(N, shape = shape)
 
   # return state and Normals N
   list(Theta[[1]], N)
@@ -649,13 +738,13 @@ nv_rnorm <- function(initial_state, dtype, shape_out, mu = 0, sigma = 1) {
 #' @title If
 #' @description
 #' Functional if statement.
-#' @param pred ([`nv_tensor`])\cr
+#' @param pred ([`tensorish`])\cr
 #'   Flag.
 #' @param true (NSE)\cr
 #'   Expression to evaluate if the condition is true.
 #' @param false (NSE)\cr
 #'   Expression to evaluate if the condition is false.
-#' @return [`nv_tensor`]
+#' @return [`tensorish`]
 #' @export
 nv_if <- nvl_if
 
@@ -668,6 +757,6 @@ nv_if <- nvl_if
 #'   Condition function: `f: state -> bool`.
 #' @param body (`function`)\cr
 #'   Body function. `f: state -> state`.
-#' @return [`nv_tensor`]
+#' @return [`tensorish`]
 #' @export
 nv_while <- nvl_while

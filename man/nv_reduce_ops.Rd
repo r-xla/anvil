@@ -26,7 +26,7 @@ nv_reduce_any(operand, dims, drop = TRUE)
 nv_reduce_all(operand, dims, drop = TRUE)
 }
 \arguments{
-\item{operand}{(\code{\link{nv_tensor}})\cr
+\item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
 
 \item{dims}{(\code{integer()})\cr
@@ -36,7 +36,7 @@ Dimensions to reduce.}
 Whether to drop the reduced dimensions.}
 }
 \value{
-\code{\link{nv_tensor}}
+\code{\link{tensorish}}
 }
 \description{
 Reduce a tensor along specified dimensions.

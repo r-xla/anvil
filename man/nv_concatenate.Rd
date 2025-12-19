@@ -13,7 +13,7 @@ nv_concatenate(..., dimension)
 The dimension to concatenate along to. Other dimensions must be the same.}
 }
 \value{
-\code{\link{nv_tensor}}
+\code{\link{tensorish}}
 }
 \description{
 Concatenate a variadic number of tensors.

@@ -3,7 +3,7 @@ test_that("nv_rng_state", {
     nv_runif(
       initial_state = nv_rng_state(1),
       dtype = "f64",
-      shape_out = c(10, 5)
+      shape = c(10, 5)
     )
   }
   g <- jit(f)
@@ -13,7 +13,7 @@ test_that("nv_rng_state", {
     nv_runif(
       initial_state = nv_rng_state(1),
       dtype = "f64",
-      shape_out = c(10, 5)
+      shape = c(10, 5)
     )
   }
   g <- jit(f)

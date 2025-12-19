@@ -4,20 +4,29 @@
 \alias{nv_rnorm}
 \title{Random Normal Numbers}
 \usage{
-nv_rnorm(initial_state, dtype, shape_out, mu = 0, sigma = 1)
+nv_rnorm(initial_state, dtype, shape, mu = 0, sigma = 1)
 }
 \arguments{
-\item{initial_state}{state seed}
+\item{initial_state}{(\code{\link{tensorish}})\cr
+Tensor of type \code{ui64[2]}.}
 
-\item{dtype}{output dtype either "f32" or "f64"}
+\item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+Data type.}
 
-\item{shape_out}{output shape}
+\item{shape}{(\code{integer()})\cr
+Shape.}
 
-\item{mu}{scalar: expected value}
+\item{mu}{(\code{numeric(1)})\cr
+Expected value.}
 
-\item{sigma}{scalar: standard deviation
+\item{sigma}{(\code{numeric(1)})\cr
+Standard deviation.
 #' @section Covariance:
-To implement a covariance structure use cholesky decomposition}
+To implement a covariance structure use cholesky decomposition.}
+}
+\value{
+(\code{list()} of \code{\link{tensorish}})\cr
+List of two tensors: the new RNG state and the generated random numbers.
 }
 \description{
 generate random normal numbers

@@ -7,7 +7,8 @@
 nv_bitcast_convert(operand, dtype)
 }
 \arguments{
-\item{operand}{tensor}
+\item{operand}{(\code{\link{tensorish}})\cr
+Operand.}
 
 \item{dtype}{requested dtype}
 }

@@ -5,20 +5,25 @@
 \alias{nv_unif_rand}
 \title{Random Uniform Numbers}
 \usage{
-nv_runif(initial_state, dtype = "f64", shape_out, lower = 0, upper = 1)
+nv_runif(initial_state, dtype = "f64", shape, lower = 0, upper = 1)
 
-nv_unif_rand(initial_state, dtype = "f64", shape_out)
+nv_unif_rand(initial_state, dtype = "f64", shape)
 }
 \arguments{
 \item{initial_state}{state seed}
 
-\item{dtype}{output dtype either "f32" or "f64"}
+\item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+Output dtype either "f32" or "f64"}
 
-\item{shape_out}{output shape}
+\item{shape}{(\code{integer()})\cr
+Shape.}
 
-\item{lower}{lower bound}
-
-\item{upper}{upper bound}
+\item{lower, upper}{(\code{numeric(1)})\cr
+Lower and upper bound.}
+}
+\value{
+(\code{list()} of \code{\link{tensorish}})\cr
+List of two tensors: the new RNG state and the generated random numbers.
 }
 \description{
 generate random uniform numbers in ]lower, upper[

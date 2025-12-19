@@ -7,14 +7,14 @@
 nv_broadcast_to(operand, shape)
 }
 \arguments{
-\item{operand}{(\code{\link{nv_tensor}})\cr
+\item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
 
 \item{shape}{(\code{integer()})\cr
 Output shape.}
 }
 \value{
-(\code{\link{nv_tensor}})
+(\code{\link{tensorish}})
 }
 \description{
 Broadcast a tensor to a given shape using NumPy broadcasting rules.

@@ -7,11 +7,12 @@
 nv_broadcast_scalars(...)
 }
 \arguments{
-\item{...}{(\code{\link{nv_tensor}})\cr
+\item{...}{(\code{\link{tensorish}})\cr
 Tensors to broadcast. Scalars will be broadcast to the common non-scalar shape.}
 }
 \value{
-(\code{list()} of \code{\link{nv_tensor}})
+(\code{list()} of \code{\link{tensorish}})\cr
+List of broadcasted tensors.
 }
 \description{
 Broadcast scalar tensors to match the shape of non-scalar tensors.

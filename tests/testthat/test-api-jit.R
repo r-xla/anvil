@@ -1,7 +1,7 @@
 test_that("p_rnorm", {
   # statistical validity checks are in inst/random
   f <- function() {
-    nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape_out = c(2, 3))
+    nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape = c(2, 3))
   }
   g <- jit(f)
   out <- g()
@@ -12,7 +12,7 @@ test_that("p_rnorm", {
 
   # test with uneven total number of RVs
   f <- function() {
-    nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape_out = c(3, 3))
+    nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape = c(3, 3))
   }
   g <- jit(f)
   out <- g()
@@ -24,7 +24,7 @@ test_that("p_rnorm", {
     nv_rnorm(
       nv_tensor(c(3, 83), dtype = "ui64"),
       dtype = "f64",
-      shape_out = c(2L, 3L),
+      shape = c(2L, 3L),
       mu = 10,
       sigma = 9
     )
@@ -43,7 +43,7 @@ test_that("p_runif", {
     nv_runif(
       nv_tensor(c(1, 2), dtype = "ui64"),
       dtype = "f32",
-      shape_out = c(3, 4),
+      shape = c(3, 4),
       lower = -1,
       upper = 1
     )

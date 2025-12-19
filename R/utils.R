@@ -117,8 +117,16 @@ without <- function(x, indices) {
 zero_env <- function() {
   new.env(size = 0L, parent = emptyenv())
 }
-shape2string <- function(x) {
-  sprintf("(%s)", paste0(x, collapse = ","))
+
+shape2string <- function(x, parenthesize = TRUE) {
+  if (is_shape(x)) {
+    x <- x@dims
+  }
+  if (parenthesize) {
+    sprintf("(%s)", paste0(x, collapse = ","))
+  } else {
+    paste0(x, collapse = ",")
+  }
 }
 
 zeros_like <- function(x) {
@@ -127,4 +135,31 @@ zeros_like <- function(x) {
 
 ones_like <- function(x) {
   nvl_fill(1L, dtype = dtype(x), shape = shape(x))
+}
+
+
+#' @title Abstract Properties
+#' @name abstract_properties
+#' @description
+#' Calls the extractor after converting the input to an [`AbstractTensor`].
+#' @param x ([`tensorish`])\c
+#' @export
+shape_abstract <- function(x) {
+  shape(to_abstract(x))
+}
+
+#' @rdname abstract_properties
+#' @export
+ndims_abstract <- function(x) {
+  length(shape_abstract(x))
+}
+
+#' @rdname abstract_properties
+#' @export
+dtype_abstract <- function(x) {
+  dtype(to_abstract(x))
+}
+
+dtype2string <- function(dtype, ambiguous = FALSE) {
+  paste0(repr(dtype), if (ambiguous) "?")
 }

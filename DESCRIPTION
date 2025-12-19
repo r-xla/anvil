@@ -46,6 +46,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Collate:
     'aaa.R'
+    'primitive.R'
     'type-converters.R'
     'utils.R'
     'primitives.R'

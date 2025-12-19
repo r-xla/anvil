@@ -17,7 +17,7 @@ Condition function: \code{f: state -> bool}.}
 Body function. \code{f: state -> state}.}
 }
 \value{
-\code{\link{nv_tensor}}
+\code{\link{tensorish}}
 }
 \description{
 Functional while loop.
