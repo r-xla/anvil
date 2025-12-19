@@ -22,4 +22,4 @@ nv_concatenate(..., dimension)
 
 ## Value
 
-[`nv_tensor`](nv_tensor.md)
+[`tensorish`](tensorish.md)

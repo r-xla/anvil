@@ -12,7 +12,8 @@ nv_bitcast_convert(operand, dtype)
 
 - operand:
 
-  tensor
+  ([`tensorish`](tensorish.md))  
+  Operand.
 
 - dtype:
 

@@ -64,7 +64,7 @@ Let’s generate some uniform random numbers:
 
 ``` r
 f <- jit(function(state) {
-  nv_runif(state, dtype = "f32", shape_out = c(2, 3))
+  nv_runif(state, dtype = "f32", shape = c(2, 3))
 })
 
 result <- f(state)
@@ -84,7 +84,7 @@ For normally distributed random numbers:
 
 ``` r
 g <- jit(function(state) {
-  nv_rnorm(state, dtype = "f32", shape_out = c(2, 3), mu = 0, sigma = 1)
+  nv_rnorm(state, dtype = "f32", shape = c(2, 3), mu = 0, sigma = 1)
 })
 
 result <- g(state)
@@ -102,8 +102,8 @@ same random numbers.
 
 ``` r
 h <- jit(function(state) {
-  result1 <- nv_runif(state, dtype = "f32", shape_out = 3L)
-  result2 <- nv_runif(state, dtype = "f32", shape_out = 3L)
+  result1 <- nv_runif(state, dtype = "f32", shape = 3L)
+  result2 <- nv_runif(state, dtype = "f32", shape = 3L)
   list(first = result1[[2]], second = result2[[2]])
 })
 
@@ -124,9 +124,9 @@ the **new** state returned by the previous call:
 
 ``` r
 proper_rng <- jit(function(state) {
-  result1 <- nv_runif(state, dtype = "f32", shape_out = c(3))
+  result1 <- nv_runif(state, dtype = "f32", shape = c(3))
   new_state <- result1[[1]]
-  result2 <- nv_runif(new_state, dtype = "f32", shape_out = c(3))
+  result2 <- nv_runif(new_state, dtype = "f32", shape = c(3))
   list(first = result1[[2]], second = result2[[2]])
 })
 

@@ -27,4 +27,4 @@ nv_while(init, cond, body)
 
 ## Value
 
-[`nv_tensor`](nv_tensor.md)
+[`tensorish`](tensorish.md)

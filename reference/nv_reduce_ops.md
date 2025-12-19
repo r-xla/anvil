@@ -24,7 +24,7 @@ nv_reduce_all(operand, dims, drop = TRUE)
 
 - operand:
 
-  ([`nv_tensor`](nv_tensor.md))  
+  ([`tensorish`](tensorish.md))  
   Operand.
 
 - dims:
@@ -39,4 +39,4 @@ nv_reduce_all(operand, dims, drop = TRUE)
 
 ## Value
 
-[`nv_tensor`](nv_tensor.md)
+[`tensorish`](tensorish.md)

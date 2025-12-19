@@ -13,11 +13,12 @@ nv_broadcast_scalars(...)
 
 - ...:
 
-  ([`nv_tensor`](nv_tensor.md))  
+  ([`tensorish`](tensorish.md))  
   Tensors to broadcast. Scalars will be broadcast to the common
   non-scalar shape.
 
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`nv_tensor`](nv_tensor.md))
+[`tensorish`](tensorish.md))  
+List of broadcasted tensors.

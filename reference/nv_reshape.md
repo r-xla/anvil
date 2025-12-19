@@ -13,7 +13,7 @@ nv_reshape(operand, shape)
 
 - operand:
 
-  ([`nv_tensor`](nv_tensor.md))  
+  ([`tensorish`](tensorish.md))  
   Operand.
 
 - shape:
@@ -23,4 +23,4 @@ nv_reshape(operand, shape)
 
 ## Value
 
-[`nv_tensor`](nv_tensor.md)
+[`tensorish`](tensorish.md)

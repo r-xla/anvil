@@ -53,7 +53,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Convert to Abstract Tensor</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/R/tensor.R" class="external-link"><code>R/tensor.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/export-primitives/R/tensor.R" class="external-link"><code>R/tensor.R</code></a></small>
       <div class="d-none name"><code>to_abstract.Rd</code></div>
     </div>
 
@@ -63,7 +63,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">to_abstract</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">to_abstract</span><span class="op">(</span><span class="va">x</span>, pure <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -73,6 +73,11 @@
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>(<code>any</code>)<br>
 Object to convert.</p></dd>
+
+
+<dt id="arg-pure">pure<a class="anchor" aria-label="anchor" href="#arg-pure"></a></dt>
+<dd><p>(<code>logical(1)</code>)<br>
+Whether to convert to a pure abstract tensor, i.e., without any concrete data.</p></dd>
 
 </dl></div>
     <div class="section level2">

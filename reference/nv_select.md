@@ -24,4 +24,4 @@ nv_select(pred, true_value, false_value)
 
 ## Value
 
-[`nv_tensor`](nv_tensor.md)
+[`tensorish`](tensorish.md)

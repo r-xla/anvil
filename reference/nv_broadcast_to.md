@@ -12,7 +12,7 @@ nv_broadcast_to(operand, shape)
 
 - operand:
 
-  ([`nv_tensor`](nv_tensor.md))  
+  ([`tensorish`](tensorish.md))  
   Operand.
 
 - shape:
@@ -22,4 +22,4 @@ nv_broadcast_to(operand, shape)
 
 ## Value
 
-([`nv_tensor`](nv_tensor.md))
+([`tensorish`](tensorish.md))

@@ -12,13 +12,13 @@ nv_broadcast_tensors(...)
 
 - ...:
 
-  ([`nv_tensor`](nv_tensor.md))  
+  ([`tensorish`](tensorish.md))  
   Tensors to broadcast.
 
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`nv_tensor`](nv_tensor.md))
+[`tensorish`](tensorish.md))
 
 ## Broadcasting Rules
 

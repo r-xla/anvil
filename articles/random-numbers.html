@@ -83,7 +83,7 @@
       <h1>Random Number Generation</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/random-numbers.Rmd" class="external-link"><code>vignettes/random-numbers.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/export-primitives/vignettes/random-numbers.Rmd" class="external-link"><code>vignettes/random-numbers.Rmd</code></a></small>
       <div class="d-none name"><code>random-numbers.Rmd</code></div>
     </div>
 
@@ -148,7 +148,7 @@ number generation)</li>
 <p>Let’s generate some uniform random numbers:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">state</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/nv_runif.html">nv_runif</a></span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/nv_runif.html">nv_runif</a></span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">f</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
@@ -165,7 +165,7 @@ number generation)</li>
 <p>For normally distributed random numbers:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">state</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/nv_rnorm.html">nv_rnorm</a></span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, mu <span class="op">=</span> <span class="fl">0</span>, sigma <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/nv_rnorm.html">nv_rnorm</a></span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, mu <span class="op">=</span> <span class="fl">0</span>, sigma <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">g</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
@@ -182,8 +182,8 @@ number generation)</li>
 same random numbers.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">h</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">state</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">result1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_runif.html">nv_runif</a></span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape_out <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
-<span>  <span class="va">result2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_runif.html">nv_runif</a></span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape_out <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
+<span>  <span class="va">result1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_runif.html">nv_runif</a></span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
+<span>  <span class="va">result2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_runif.html">nv_runif</a></span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>first <span class="op">=</span> <span class="va">result1</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, second <span class="op">=</span> <span class="va">result2</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
@@ -202,9 +202,9 @@ we used the same state for both.</p>
 the <strong>new</strong> state returned by the previous call:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">proper_rng</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">state</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">result1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_runif.html">nv_runif</a></span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">result1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_runif.html">nv_runif</a></span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">new_state</span> <span class="op">&lt;-</span> <span class="va">result1</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span>  <span class="va">result2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_runif.html">nv_runif</a></span><span class="op">(</span><span class="va">new_state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">result2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_runif.html">nv_runif</a></span><span class="op">(</span><span class="va">new_state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>first <span class="op">=</span> <span class="va">result1</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, second <span class="op">=</span> <span class="va">result2</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>

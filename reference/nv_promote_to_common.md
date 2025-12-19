@@ -13,10 +13,10 @@ nv_promote_to_common(...)
 
 - ...:
 
-  ([`nv_tensor`](nv_tensor.md))  
+  ([`tensorish`](tensorish.md))  
   Tensors to promote.
 
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`nv_tensor`](nv_tensor.md))
+[`tensorish`](tensorish.md))

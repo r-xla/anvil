@@ -12,7 +12,7 @@ nv_convert(operand, dtype)
 
 - operand:
 
-  ([`nv_tensor`](nv_tensor.md))  
+  ([`tensorish`](tensorish.md))  
   Operand.
 
 - dtype:
@@ -23,4 +23,4 @@ nv_convert(operand, dtype)
 
 ## Value
 
-[`nv_tensor`](nv_tensor.md)
+[`tensorish`](tensorish.md)

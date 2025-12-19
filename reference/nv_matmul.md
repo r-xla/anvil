@@ -12,15 +12,15 @@ nv_matmul(lhs, rhs)
 
 - lhs:
 
-  ([`nv_tensor`](nv_tensor.md))
+  ([`tensorish`](tensorish.md))
 
 - rhs:
 
-  ([`nv_tensor`](nv_tensor.md))
+  ([`tensorish`](tensorish.md))
 
 ## Value
 
-[`nv_tensor`](nv_tensor.md)
+[`tensorish`](tensorish.md)
 
 ## Shapes
 
