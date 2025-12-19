@@ -4,7 +4,8 @@
 \alias{tensorish}
 \title{Tensor-like Objects}
 \description{
-A value that is either an \code{\link[=nv_tensor]{AnvilTensor}}, can be converted to it, or represents an abstract version of it.
+A value that is either an \code{\link[=nv_tensor]{AnvilTensor}}, can be converted to it, or represents an
+abstract version of it.
 This also includes atomic R vectors.
 }
 \examples{

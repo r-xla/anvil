@@ -45,11 +45,15 @@ register_primitive <- function(name, primitive, overwrite = FALSE) {
 #' @title Get a Primitive
 #' @description
 #' Get a primitive by name.
-#' @param name (`character()`)\cr
+#' @param name (`character()` | `NULL`)\cr
 #'   The name of the primitive.
+#'   If `NULL`, returns a list of all primitives.
 #' @return (`Primitive`)
 #' @export
-prim <- function(name) {
+prim <- function(name = NULL) {
+  if (is.null(name)) {
+    return(as.list(prim_dict))
+  }
   prim_dict[[name]]
 }
 
@@ -60,9 +64,6 @@ is_higher_order_primitive <- function(x) {
 
 #' @export
 `[[<-.anvil::Primitive` <- function(x, name, value) {
-  if (!is.function(value)) {
-    cli_abort("Rule must be a function")
-  }
   x@rules[[name]] <- value
   if (!(name %in% globals$interpretation_rules)) {
     cli_abort("Unknown interpretation rule: {.val {name}}")

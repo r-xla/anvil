@@ -19,15 +19,10 @@ The table below shows all primitives and their supported transformations.
 ```{r, echo = FALSE}
 library(anvil)
 
-# Get all primitives from the package namespace
-pkg_env <- asNamespace("anvil")
-primitive_names <- ls(pkg_env, pattern = "^p_")
+prims <- prim()
 
 # Extract primitive info
-primitives_list <- lapply(primitive_names, function(nm) {
-  p <- get(nm, envir = pkg_env)
-  if (!inherits(p, "anvil::Primitive")) return(NULL)
-
+primitives_list <- lapply(prims, function(p) {
   has_stablehlo <- !is.null(p@rules[["stablehlo"]])
   has_backward <- !is.null(p@rules[["backward"]])
 

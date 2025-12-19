@@ -5,7 +5,7 @@
   ns <- asNamespace(pkgname)
   for (name in ls(ns, pattern = "^p_")) {
     primitive <- get(name, envir = ns)
-    register_primitive(name, primitive)
+    register_primitive(sub("^p_", "", name), primitive)
   }
 
   # fmt: skip
