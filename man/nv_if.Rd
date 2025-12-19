@@ -7,7 +7,7 @@
 nv_if(pred, true, false)
 }
 \arguments{
-\item{pred}{(\code{\link{nv_tensor}})\cr
+\item{pred}{(\code{\link{tensorish}})\cr
 Flag.}
 
 \item{true}{(NSE)\cr
@@ -17,7 +17,7 @@ Expression to evaluate if the condition is true.}
 Expression to evaluate if the condition is false.}
 }
 \value{
-\code{\link{nv_tensor}}
+\code{\link{tensorish}}
 }
 \description{
 Functional if statement.

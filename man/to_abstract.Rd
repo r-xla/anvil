@@ -4,11 +4,14 @@
 \alias{to_abstract}
 \title{Convert to Abstract Tensor}
 \usage{
-to_abstract(x)
+to_abstract(x, pure = FALSE)
 }
 \arguments{
 \item{x}{(\code{any})\cr
 Object to convert.}
+
+\item{pure}{(\code{logical(1)})\cr
+Whether to convert to a pure abstract tensor, i.e., without any concrete data.}
 }
 \value{
 \code{\link{AbstractTensor}}

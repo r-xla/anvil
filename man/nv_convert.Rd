@@ -7,14 +7,14 @@
 nv_convert(operand, dtype)
 }
 \arguments{
-\item{operand}{(\code{\link{nv_tensor}})\cr
+\item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}
 }
 \value{
-\code{\link{nv_tensor}}
+\code{\link{tensorish}}
 }
 \description{
 Convert a tensor to a different data type.

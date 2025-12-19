@@ -8,7 +8,7 @@ test_rnorm_statistical <- function() {
 
   # Test normality with large sample
   f <- function() {
-    nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f64", shape_out = c(200L, 300L, 400L))
+    nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f64", shape = c(200L, 300L, 400L))
   }
   g <- jit(f)
   out <- g()
@@ -34,7 +34,7 @@ test_rnorm_mean_sd <- function() {
     nv_rnorm(
       nv_tensor(c(3, 83), dtype = "ui64"),
       dtype = "f64",
-      shape_out = c(10L, 10L, 10L, 10L, 10L),
+      shape = c(10L, 10L, 10L, 10L, 10L),
       mu = 10,
       sigma = 9
     )
@@ -62,7 +62,7 @@ test_runif_statistical <- function() {
     nv_runif(
       nv_tensor(c(1, 2), dtype = "ui64"),
       dtype = "f32",
-      shape_out = c(10, 20, 30, 40, 50),
+      shape = c(10, 20, 30, 40, 50),
       lower = -1,
       upper = 1
     )

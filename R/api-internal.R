@@ -3,15 +3,16 @@
 #' @description
 #' generate random uniform numbers in [0, 1)
 #' @param initial_state state seed
-#' @param dtype output dtype either "f32" or "f64"
-#' @param shape_out output shape
+#' @param dtype (`character(1)` | [`TensorDataType`])\cr
+#'   Output dtype either "f32" or "f64"
+#' @template param_shape
 nv_unif_rand <- function(
   initial_state,
   dtype = "f64",
-  shape_out
+  shape
 ) {
   checkmate::assertChoice(dtype, c("f32", "f64"))
-  checkmate::assertIntegerish(shape_out, lower = 1, min.len = 1, any.missing = FALSE)
+  checkmate::assertIntegerish(shape, lower = 1, min.len = 1, any.missing = FALSE)
 
   # 1. Generate random bits (64)
   # 2. We use these as mantissa bits for float, where we set the exponent to 1.0
@@ -23,7 +24,7 @@ nv_unif_rand <- function(
     initial_state = initial_state,
     "THREE_FRY",
     paste0("ui", sub("f(\\d+)", "\\1", dtype)),
-    shape_out = shape_out
+    shape_out = shape
   )
 
   # shift value: 9 for f32, 11 for f64

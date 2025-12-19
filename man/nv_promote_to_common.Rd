@@ -7,11 +7,11 @@
 nv_promote_to_common(...)
 }
 \arguments{
-\item{...}{(\code{\link{nv_tensor}})\cr
+\item{...}{(\code{\link{tensorish}})\cr
 Tensors to promote.}
 }
 \value{
-(\code{list()} of \code{\link{nv_tensor}})
+(\code{list()} of \code{\link{tensorish}})
 }
 \description{
 Promote tensors to a common data type, see \code{\link{common_dtype}} for more details.

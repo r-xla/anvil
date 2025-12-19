@@ -1,5 +1,5 @@
 f <- function() {
-  nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f64", shape_out = c(200L, 300L, 400L))
+  nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f64", shape = c(200L, 300L, 400L))
 }
 g <- jit(f)
 out <- g()

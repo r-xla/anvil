@@ -2,6 +2,12 @@
   # FIXME(hack): I don't understand why this is needed
   S7::methods_register()
 
+  ns <- asNamespace(pkgname)
+  for (name in ls(ns, pattern = "^p_")) {
+    primitive <- get(name, envir = ns)
+    register_primitive(sub("^p_", "", name), primitive)
+  }
+
   # fmt: skip
   globals$ranges_raw <- list(
     ui8  = minmax_raw(8, FALSE),

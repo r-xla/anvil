@@ -1,5 +1,6 @@
 #' @include utils.R
 #' @include type-converters.R
+#' @include primitive.R
 
 infer_binary <- function(lhs, rhs) {
   both_ambiguous <- lhs@ambiguous && rhs@ambiguous
@@ -86,63 +87,17 @@ infer_reduce_boolean <- function(operand, dims, drop) {
   ))
 }
 
-#' @title Primitive
-#' @description
-#' Primitive interpretation rule.
-#' @param name (`character()`)\cr
-#'   The name of the primitive.
-#' @return (`Primitive`)
-#' @export
-Primitive <- new_class(
-  "Primitive",
-  properties = list(
-    name = class_character,
-    rules = class_environment
-  ),
-  constructor = function(name) {
-    env <- zero_env()
-    new_object(S7_object(), rules = env, name = name)
-  }
-)
-
-HigherOrderPrimitive <- new_class(
-  "HigherOrderPrimitive",
-  parent = Primitive
-)
-
-is_higher_order_primitive <- function(x) {
-  inherits(x, "anvil::HigherOrderPrimitive")
-}
-
-
-#' @export
-`[[<-.anvil::Primitive` <- function(x, name, value) {
-  if (!is.function(value)) {
-    cli_abort("Rule must be a function")
-  }
-  x@rules[[name]] <- value
-  if (!(name %in% globals$interpretation_rules)) {
-    cli_abort("Unknown interpretation rule: {.val {name}}")
-  }
-  x
-}
-
-method(`[[`, Primitive) <- function(x, name) {
-  rule <- x@rules[[name]]
-  if (is.null(rule)) {
-    if (!(name %in% globals$interpretation_rules)) {
-      cli_abort("Unknown rule: {name}")
-    }
-    cli_abort("Rule {.field {name}} not defined for primitive {.field {x@name}}")
-  }
-  rule
-}
-
-method(print, Primitive) <- function(x, ...) {
-  cat(sprintf("<Primitive:%s>\n", x@name))
-}
 
 p_fill <- Primitive("fill")
+#' @title Primitive Fill
+#' @description
+#' Creates a tensor filled with a scalar value.
+#' @param value (`numeric(1)`)\cr
+#'   Scalar value.
+#' @template param_shape
+#' @template param_dtype
+#' @return [`tensorish`]
+#' @export
 nvl_fill <- function(value, shape, dtype) {
   infer_fill <- function(value, shape, dtype) {
     list(LiteralTensor(data = value, dtype = as_dtype(dtype), shape = shape, ambiguous = FALSE))
@@ -156,26 +111,71 @@ nvl_fill <- function(value, shape, dtype) {
 }
 
 p_add <- Primitive("add")
+#' @title Primitive Addition
+#' @description
+#' Adds two tensors element-wise.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_add <- make_binary_op(p_add)
 
 p_mul <- Primitive("mul")
+#' @title Primitive Multiplication
+#' @description
+#' Multiplies two tensors element-wise.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_mul <- make_binary_op(p_mul)
 
 p_sub <- Primitive("sub")
+#' @title Primitive Subtraction
+#' @description
+#' Subtracts two tensors element-wise.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_sub <- make_binary_op(p_sub)
 
 p_neg <- Primitive("negate")
+#' @title Primitive Negation
+#' @description
+#' Negates a tensor element-wise.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_neg <- make_unary_op(p_neg)
 
 p_div <- Primitive("divide")
+#' @title Primitive Division
+#' @description
+#' Divides two tensors element-wise.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_div <- make_binary_op(p_div)
 
 p_pow <- Primitive("power")
+#' @title Primitive Power
+#' @description
+#' Raises lhs to the power of rhs element-wise.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_pow <- make_binary_op(p_pow)
 
 p_broadcast_in_dim <- Primitive("broadcast_in_dim")
-
+#' @title Primitive Broadcast
+#' @description
+#' Broadcasts a tensor to a new shape.
+#' @template param_operand
+#' @param shape_out (`integer()`)\cr
+#'   Target shape.
+#' @param broadcast_dimensions (`integer()`)\cr
+#'   Dimension mapping.
+#' @return [`tensorish`]
 #' @importFrom stablehlo r_to_constant
+#' @export
 nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
   infer_fn <- function(operand, shape_out, broadcast_dimensions) {
     bd_attr <- r_to_constant(
@@ -204,6 +204,16 @@ nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
 }
 
 p_dot_general <- Primitive("dot_general")
+#' @title Primitive Dot General
+#' @description
+#' General dot product of two tensors.
+#' @template params_lhs_rhs
+#' @param contracting_dims (`list()`)\cr
+#'   Dimensions to contract.
+#' @param batching_dims (`list()`)\cr
+#'   Batch dimensions.
+#' @return [`tensorish`]
+#' @export
 nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
   infer_fn <- function(lhs, rhs, contracting_dims, batching_dims) {
     ddn <- stablehlo::DotDimensionNumbers(
@@ -222,6 +232,14 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
 }
 
 p_transpose <- Primitive("transpose")
+#' @title Primitive Transpose
+#' @description
+#' Transposes a tensor according to a permutation.
+#' @template param_operand
+#' @param permutation (`integer()`)\cr
+#'   Dimension permutation.
+#' @return [`tensorish`]
+#' @export
 nvl_transpose <- function(operand, permutation) {
   infer_fn <- function(operand, permutation) {
     perm_attr <- r_to_constant(
@@ -243,6 +261,13 @@ nvl_transpose <- function(operand, permutation) {
 }
 
 p_reshape <- Primitive("reshape")
+#' @title Primitive Reshape
+#' @description
+#' Reshapes a tensor to a new shape.
+#' @template param_operand
+#' @template param_shape
+#' @return [`tensorish`]
+#' @export
 nvl_reshape <- function(operand, shape) {
   infer_fn <- function(operand, shape) {
     out <- stablehlo::infer_types_reshape(st2va(operand), shape_out = shape)@items[[1L]]
@@ -259,6 +284,15 @@ nvl_reshape <- function(operand, shape) {
 }
 
 p_concatenate <- Primitive("concatenate")
+#' @title Primitive Concatenate
+#' @description
+#' Concatenates tensors along a dimension.
+#' @param ... ([`tensorish`])\cr
+#'   Tensors to concatenate.
+#' @param dimension (`integer(1)`)\cr
+#'   Dimension to concatenate along.
+#' @return [`tensorish`]
+#' @export
 nvl_concatenate <- function(..., dimension) {
   dots <- list(...)
   infer_fn <- function(..., dimension) {
@@ -279,6 +313,18 @@ nvl_concatenate <- function(..., dimension) {
 }
 
 p_slice <- Primitive("slice")
+#' @title Primitive Slice
+#' @description
+#' Extracts a slice from a tensor.
+#' @template param_operand
+#' @param start_indices (`integer()`)\cr
+#'   Start indices (1-based).
+#' @param limit_indices (`integer()`)\cr
+#'   End indices (exclusive).
+#' @param strides (`integer()`)\cr
+#'   Step sizes.
+#' @return [`tensorish`]
+#' @export
 nvl_slice <- function(operand, start_indices, limit_indices, strides) {
   infer_fn <- function(operand, start_indices, limit_indices, strides) {
     start_attr <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
@@ -317,21 +363,81 @@ make_reduce_op <- function(prim, infer_fn = infer_reduce) {
 }
 
 p_reduce_sum <- Primitive("sum")
+#' @title Primitive Sum Reduction
+#' @description
+#' Sums tensor elements along dimensions.
+#' @template param_operand
+#' @param dims (`integer()`)\cr
+#'   Dimensions to reduce.
+#' @param drop (`logical(1)`)\cr
+#'   Whether to drop reduced dimensions.
+#' @return [`tensorish`]
+#' @export
 nvl_reduce_sum <- make_reduce_op(p_reduce_sum)
 
 p_reduce_prod <- Primitive("prod")
+#' @title Primitive Product Reduction
+#' @description
+#' Multiplies tensor elements along dimensions.
+#' @template param_operand
+#' @param dims (`integer()`)\cr
+#'   Dimensions to reduce.
+#' @param drop (`logical(1)`)\cr
+#'   Whether to drop reduced dimensions.
+#' @return [`tensorish`]
+#' @export
 nvl_reduce_prod <- make_reduce_op(p_reduce_prod)
 
 p_reduce_max <- Primitive("max")
+#' @title Primitive Max Reduction
+#' @description
+#' Finds maximum along dimensions.
+#' @template param_operand
+#' @param dims (`integer()`)\cr
+#'   Dimensions to reduce.
+#' @param drop (`logical(1)`)\cr
+#'   Whether to drop reduced dimensions.
+#' @return [`tensorish`]
+#' @export
 nvl_reduce_max <- make_reduce_op(p_reduce_max)
 
 p_reduce_min <- Primitive("min")
+#' @title Primitive Min Reduction
+#' @description
+#' Finds minimum along dimensions.
+#' @template param_operand
+#' @param dims (`integer()`)\cr
+#'   Dimensions to reduce.
+#' @param drop (`logical(1)`)\cr
+#'   Whether to drop reduced dimensions.
+#' @return [`tensorish`]
+#' @export
 nvl_reduce_min <- make_reduce_op(p_reduce_min)
 
 p_reduce_any <- Primitive("any")
+#' @title Primitive Any Reduction
+#' @description
+#' Logical OR along dimensions.
+#' @template param_operand
+#' @param dims (`integer()`)\cr
+#'   Dimensions to reduce.
+#' @param drop (`logical(1)`)\cr
+#'   Whether to drop reduced dimensions.
+#' @return [`tensorish`]
+#' @export
 nvl_reduce_any <- make_reduce_op(p_reduce_any, infer_reduce_boolean)
 
 p_reduce_all <- Primitive("all")
+#' @title Primitive All Reduction
+#' @description
+#' Logical AND along dimensions.
+#' @template param_operand
+#' @param dims (`integer()`)\cr
+#'   Dimensions to reduce.
+#' @param drop (`logical(1)`)\cr
+#'   Whether to drop reduced dimensions.
+#' @return [`tensorish`]
+#' @export
 nvl_reduce_all <- make_reduce_op(p_reduce_all, infer_reduce_boolean)
 
 # comparison primitives --------------------------------------------------------
@@ -351,45 +457,122 @@ make_compare_op <- function(prim, direction) {
 }
 
 p_eq <- Primitive("equal")
+#' @title Primitive Equal
+#' @description
+#' Element-wise equality comparison.
+#' @template params_lhs_rhs
+#' @return [`tensorish`] (boolean)
+#' @export
 nvl_eq <- make_compare_op(p_eq, "EQ")
 
 p_ne <- Primitive("not_equal")
+#' @title Primitive Not Equal
+#' @description
+#' Element-wise inequality comparison.
+#' @template params_lhs_rhs
+#' @return [`tensorish`] (boolean)
+#' @export
 nvl_ne <- make_compare_op(p_ne, "NE")
 
 p_gt <- Primitive("greater")
+#' @title Primitive Greater Than
+#' @description
+#' Element-wise greater than comparison.
+#' @template params_lhs_rhs
+#' @return [`tensorish`] (boolean)
+#' @export
 nvl_gt <- make_compare_op(p_gt, "GT")
 
 p_ge <- Primitive("greater_equal")
+#' @title Primitive Greater Equal
+#' @description
+#' Element-wise greater than or equal comparison.
+#' @template params_lhs_rhs
+#' @return [`tensorish`] (boolean)
+#' @export
 nvl_ge <- make_compare_op(p_ge, "GE")
 
 p_lt <- Primitive("less")
+#' @title Primitive Less Than
+#' @description
+#' Element-wise less than comparison.
+#' @template params_lhs_rhs
+#' @return [`tensorish`] (boolean)
+#' @export
 nvl_lt <- make_compare_op(p_lt, "LT")
 
 p_le <- Primitive("less_equal")
+#' @title Primitive Less Equal
+#' @description
+#' Element-wise less than or equal comparison.
+#' @template params_lhs_rhs
+#' @return [`tensorish`] (boolean)
+#' @export
 nvl_le <- make_compare_op(p_le, "LE")
 
 # additional simple binary primitives -----------------------------------------
 
 p_max <- Primitive("maximum")
+#' @title Primitive Maximum
+#' @description
+#' Element-wise maximum of two tensors.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_max <- make_binary_op(p_max)
 
 p_min <- Primitive("minimum")
+#' @title Primitive Minimum
+#' @description
+#' Element-wise minimum of two tensors.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_min <- make_binary_op(p_min)
 
 p_remainder <- Primitive("remainder")
+#' @title Primitive Remainder
+#' @description
+#' Element-wise remainder of division.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_remainder <- make_binary_op(p_remainder)
 
 p_and <- Primitive("and")
-
+#' @title Primitive And
+#' @description
+#' Element-wise logical AND.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_and <- make_binary_integerish_op(p_and)
 
 p_not <- Primitive("not")
+#' @title Primitive Not
+#' @description
+#' Element-wise logical NOT.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_not <- make_unary_integerish_op(p_not)
 
 p_or <- Primitive("or")
+#' @title Primitive Or
+#' @description
+#' Element-wise logical OR.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_or <- make_binary_integerish_op(p_or)
 
 p_xor <- Primitive("xor")
+#' @title Primitive Xor
+#' @description
+#' Element-wise logical XOR.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_xor <- make_binary_integerish_op(p_xor)
 
 infer_shift <- function(lhs, rhs, shift_fn) {
@@ -401,27 +584,58 @@ infer_shift <- function(lhs, rhs, shift_fn) {
 }
 
 p_shift_left <- Primitive("shift_left")
+#' @title Primitive Shift Left
+#' @description
+#' Element-wise left bit shift.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_shift_left <- function(lhs, rhs) {
   infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_left)
   graph_desc_add(p_shift_left, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
 }
 
 p_shift_right_logical <- Primitive("shift_right_logical")
+#' @title Primitive Logical Shift Right
+#' @description
+#' Element-wise logical right bit shift.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_shift_right_logical <- function(lhs, rhs) {
   infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_logical)
   graph_desc_add(p_shift_right_logical, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
 }
 
 p_shift_right_arithmetic <- Primitive("shift_right_arithmetic")
+#' @title Primitive Arithmetic Shift Right
+#' @description
+#' Element-wise arithmetic right bit shift.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_shift_right_arithmetic <- function(lhs, rhs) {
   infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_arithmetic)
   graph_desc_add(p_shift_right_arithmetic, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
 }
 
 p_atan2 <- Primitive("atan2")
+#' @title Primitive Atan2
+#' @description
+#' Element-wise atan2 operation.
+#' @template params_lhs_rhs
+#' @return [`tensorish`]
+#' @export
 nvl_atan2 <- make_binary_op(p_atan2)
 
 p_bitcast_convert <- Primitive("bitcast_convert")
+#' @title Primitive Bitcast Convert
+#' @description
+#' Reinterprets tensor bits as a different dtype.
+#' @template param_operand
+#' @template param_dtype
+#' @return [`tensorish`]
+#' @export
 nvl_bitcast_convert <- function(operand, dtype) {
   infer_fn <- function(operand, dtype) {
     lapply(stablehlo::infer_types_bitcast_convert(st2va(operand), dtype)@items, vt2sa)
@@ -432,42 +646,123 @@ nvl_bitcast_convert <- function(operand, dtype) {
 # unary math primitives ---------------------------------------------------------
 
 p_abs <- Primitive("abs")
+#' @title Primitive Absolute Value
+#' @description
+#' Element-wise absolute value.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_abs <- make_unary_op(p_abs)
 
 p_sqrt <- Primitive("sqrt")
+#' @title Primitive Square Root
+#' @description
+#' Element-wise square root.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_sqrt <- make_unary_op(p_sqrt)
 
 p_rsqrt <- Primitive("rsqrt")
+
+#' @title Primitive Reciprocal Square Root
+#' @description
+#' Element-wise reciprocal square root.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_rsqrt <- make_unary_op(p_rsqrt)
 
 p_log <- Primitive("log")
+#' @title Primitive Logarithm
+#' @description
+#' Element-wise natural logarithm.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_log <- make_unary_op(p_log)
 
 p_tanh <- Primitive("tanh")
+#' @title Primitive Hyperbolic Tangent
+#' @description
+#' Element-wise hyperbolic tangent.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_tanh <- make_unary_op(p_tanh)
 
 p_tan <- Primitive("tan")
+#' @title Primitive Tangent
+#' @description
+#' Element-wise tangent.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_tan <- make_unary_op(p_tan)
 
 p_sine <- Primitive("sine")
+#' @title Primitive Sine
+#' @description
+#' Element-wise sine.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_sine <- make_unary_op(p_sine)
 
 p_cosine <- Primitive("cosine")
+#' @title Primitive Cosine
+#' @description
+#' Element-wise cosine.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_cosine <- make_unary_op(p_cosine)
 
 p_floor <- Primitive("floor")
+#' @title Primitive Floor
+#' @description
+#' Element-wise floor.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_floor <- make_unary_op(p_floor)
 
 p_ceil <- Primitive("ceil")
+#' @title Primitive Ceiling
+#' @description
+#' Element-wise ceiling.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_ceil <- make_unary_op(p_ceil)
 
 p_sign <- Primitive("sign")
+#' @title Primitive Sign
+#' @description
+#' Element-wise sign.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_sign <- make_unary_op(p_sign)
 
 p_exp <- Primitive("exp")
+#' @title Primitive Exponential
+#' @description
+#' Element-wise exponential.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
 nvl_exp <- make_unary_op(p_exp)
 
 p_round <- Primitive("round")
+#' @title Primitive Round
+#' @description
+#' Element-wise rounding.
+#' @template param_operand
+#' @param method (`character(1)`)\cr
+#'   Rounding method ("nearest_even" or "afz").
+#' @return [`tensorish`]
+#' @export
 nvl_round <- function(operand, method = "nearest_even") {
   if (!(method %in% c("nearest_even", "afz"))) {
     cli_abort("method must be one of: 'nearest_even', 'afz', but is {method}")
@@ -481,6 +776,15 @@ nvl_round <- function(operand, method = "nearest_even") {
 # dtype conversion ----------------------------------------------------------------
 
 p_convert <- Primitive("convert")
+#' @title Primitive Convert
+#' @description
+#' Converts tensor to a different dtype.
+#' @template param_operand
+#' @template param_dtype
+#' @param ambiguous (`logical(1)`)\cr
+#'   Whether the result type is ambiguous.
+#' @return [`tensorish`]
+#' @export
 nvl_convert <- function(operand, dtype, ambiguous = FALSE) {
   dtype <- as_dtype(dtype)
   infer_fn <- function(operand, dtype, ambiguous) {
@@ -500,6 +804,17 @@ nvl_convert <- function(operand, dtype, ambiguous = FALSE) {
 
 
 p_select <- Primitive("select")
+#' @title Primitive Select
+#' @description
+#' Selects elements based on a predicate.
+#' @param pred ([`tensorish`])\cr
+#'   Boolean predicate tensor.
+#' @param true_value ([`tensorish`])\cr
+#'   Value when pred is true.
+#' @param false_value ([`tensorish`])\cr
+#'   Value when pred is false.
+#' @return [`tensorish`]
+#' @export
 nvl_select <- function(pred, true_value, false_value) {
   infer_fn <- function(pred, true_value, false_value) {
     both_ambiguous <- true_value@ambiguous && false_value@ambiguous
@@ -518,6 +833,17 @@ nvl_select <- function(pred, true_value, false_value) {
 # Higher order primitives -------------------------------------------------------
 
 p_if <- HigherOrderPrimitive("if")
+#' @title Primitive If
+#' @description
+#' Conditional execution of branches.
+#' @param pred ([`tensorish`])\cr
+#'   Scalar boolean predicate.
+#' @param true (`expression`)\cr
+#'   Expression for true branch.
+#' @param false (`expression`)\cr
+#'   Expression for false branch.
+#' @return Result of the executed branch.
+#' @export
 nvl_if <- function(pred, true, false) {
   true_expr <- rlang::enquo(true)
   false_expr <- rlang::enquo(false)
@@ -526,7 +852,13 @@ nvl_if <- function(pred, true, false) {
   # We need to ensure that constants that are captured in both branches receive the same
   # GraphValue if they capture the same constant
 
-  current_desc <- .current_descriptor()
+  current_desc <- .current_descriptor(silent = TRUE)
+
+  #debug_mode <- is.null(current_desc)
+  #if (debug_mode) {
+  #  current_desc <- local_descriptor()
+  #}
+  # TODO(split pr)
 
   desc_true <- local_descriptor()
   true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true)
@@ -567,12 +899,25 @@ nvl_if <- function(pred, true, false) {
     list(pred),
     params = list(true_graph = true_graph, false_graph = false_graph),
     infer_fn = infer_fn,
-    desc = current_desc
+    desc = current_desc #,
+    #debug_mode = debug_mode
+    # TODO(split pr)
   )
   unflatten(true_graph@out_tree, out)
 }
 
 p_while <- HigherOrderPrimitive("while")
+#' @title Primitive While Loop
+#' @description
+#' Executes a while loop.
+#' @param init (`list()`)\cr
+#'   Named list of initial state values.
+#' @param cond (`function`)\cr
+#'   Condition function returning boolean.
+#' @param body (`function`)\cr
+#'   Body function returning updated state.
+#' @return Final state after loop terminates.
+#' @export
 nvl_while <- function(init, cond, body) {
   if (!is.function(body)) {
     cli_abort("body must be a function")
@@ -587,7 +932,11 @@ nvl_while <- function(init, cond, body) {
     cli_abort("init must have only named arguments")
   }
 
-  current_desc <- .current_descriptor()
+  current_desc <- .current_descriptor(silent = TRUE)
+  #debug_mode <- is.null(current_desc)
+  #if (debug_mode) {
+  #  current_desc <- local_descriptor()
+  #}
 
   desc_cond <- local_descriptor()
 
@@ -635,7 +984,8 @@ nvl_while <- function(init, cond, body) {
     args = flatten(init),
     params = list(cond_graph = cond_graph, body_graph = body_graph),
     infer_fn = infer_fn,
-    desc = current_desc
+    desc = current_desc #,
+    #debug_mode = debug_mode
   )
 
   unflatten(body_graph@out_tree, out)
@@ -643,6 +993,18 @@ nvl_while <- function(init, cond, body) {
 
 # RNG primitives
 p_rng_bit_generator <- Primitive("rng_bit_generator")
+#' @title Primitive RNG Bit Generator
+#' @description
+#' Generates random bits using the specified algorithm.
+#' @param initial_state ([`tensorish`])\cr
+#'   RNG state tensor.
+#' @param rng_algorithm (`character(1)`)\cr
+#'   Algorithm name (default "THREE_FRY").
+#' @template param_dtype
+#' @param shape_out (`integer()`)\cr
+#'   Output shape.
+#' @return List of new state and random tensor.
+#' @export
 nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape_out) {
   infer_fn <- function(initial_state, rng_algorithm, dtype, shape_out) {
     lapply(stablehlo::infer_types_rng_bit_generator(st2va(initial_state), rng_algorithm, dtype, shape_out)@items, vt2sa)

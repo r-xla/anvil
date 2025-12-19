@@ -14,7 +14,7 @@ nv_select(pred, true_value, false_value)
 \item{false_value}{on false}
 }
 \value{
-\code{\link{nv_tensor}}
+\code{\link{tensorish}}
 }
 \description{
 return values from true_value and false_value conditioned on pred
