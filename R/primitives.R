@@ -664,6 +664,12 @@ p_sqrt <- Primitive("sqrt")
 nvl_sqrt <- make_unary_op(p_sqrt)
 
 p_rsqrt <- Primitive("rsqrt")
+
+#' @title Primitive Reciprocal Square Root
+#' @description
+#' Element-wise reciprocal square root.
+#' @template param_operand
+#' @return [`tensorish`]
 #' @export
 nvl_rsqrt <- make_unary_op(p_rsqrt)
 
@@ -848,10 +854,11 @@ nvl_if <- function(pred, true, false) {
 
   current_desc <- .current_descriptor(silent = TRUE)
 
-  debug_mode <- is.null(current_desc)
-  if (debug_mode) {
-    current_desc <- local_descriptor()
-  }
+  #debug_mode <- is.null(current_desc)
+  #if (debug_mode) {
+  #  current_desc <- local_descriptor()
+  #}
+  # TODO(split pr)
 
   desc_true <- local_descriptor()
   true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true)
@@ -892,8 +899,9 @@ nvl_if <- function(pred, true, false) {
     list(pred),
     params = list(true_graph = true_graph, false_graph = false_graph),
     infer_fn = infer_fn,
-    desc = current_desc,
-    debug_mode = debug_mode
+    desc = current_desc #,
+    #debug_mode = debug_mode
+    # TODO(split pr)
   )
   unflatten(true_graph@out_tree, out)
 }
@@ -925,10 +933,10 @@ nvl_while <- function(init, cond, body) {
   }
 
   current_desc <- .current_descriptor(silent = TRUE)
-  debug_mode <- is.null(current_desc)
-  if (debug_mode) {
-    current_desc <- local_descriptor()
-  }
+  #debug_mode <- is.null(current_desc)
+  #if (debug_mode) {
+  #  current_desc <- local_descriptor()
+  #}
 
   desc_cond <- local_descriptor()
 
@@ -976,8 +984,8 @@ nvl_while <- function(init, cond, body) {
     args = flatten(init),
     params = list(cond_graph = cond_graph, body_graph = body_graph),
     infer_fn = infer_fn,
-    desc = current_desc,
-    debug_mode = debug_mode
+    desc = current_desc #,
+    #debug_mode = debug_mode
   )
 
   unflatten(body_graph@out_tree, out)

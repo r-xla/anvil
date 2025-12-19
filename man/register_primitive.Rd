@@ -12,6 +12,9 @@ The name of the primitive.}
 
 \item{primitive}{(\code{Primitive})\cr
 The primitive to register.}
+
+\item{overwrite}{(\code{logical(1)})\cr
+Whether to overwrite the primitive if it is already registered.}
 }
 \description{
 Register a primitive.

@@ -14,5 +14,5 @@ Left and right operand.}
 \code{\link{tensorish}}
 }
 \description{
-Element-wise arc tangent of y/x.
+Element-wise atan2 operation.
 }

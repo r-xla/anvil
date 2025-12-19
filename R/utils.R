@@ -142,7 +142,7 @@ ones_like <- function(x) {
 #' @name abstract_properties
 #' @description
 #' Calls the extractor after converting the input to an [`AbstractTensor`].
-#' @param x ([`tensorish`])\c
+#' @param x ([`tensorish`])\cr
 #' @export
 shape_abstract <- function(x) {
   shape(to_abstract(x))

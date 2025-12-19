@@ -421,7 +421,9 @@ maybe_restore_previous_desc <- function(desc = NULL) {
 #' @title Get the current graph
 #' @description
 #' Get the current graph being built (via [`local_descriptor`]).
-#' @return A [`Graph`] object.
+#' @param silent (`logical(1)`)\cr
+#'   Whether to return `NULL` if no graph is currently being built (as opposed to aborting).
+#' @return A [`GraphDescriptor`] object.
 #' @export
 .current_descriptor <- function(silent = FALSE) {
   maybe_desc <- globals[["CURRENT_DESCRIPTOR"]]

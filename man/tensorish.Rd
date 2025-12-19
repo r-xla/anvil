@@ -14,5 +14,5 @@ x
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\link{nv_tensor}, \link{ConcreteTensor}, \link{AbstractTensor}, \link{LiteralTensor}, \link{GraphBox}
+\link{nv_tensor}, \link{ConcreteTensor}, \link{AbstractTensor}, \link{LiteralTensor}, \code{GraphBox}
 }

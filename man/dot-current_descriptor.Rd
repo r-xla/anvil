@@ -6,8 +6,12 @@
 \usage{
 .current_descriptor(silent = FALSE)
 }
+\arguments{
+\item{silent}{(\code{logical(1)})\cr
+Whether to return \code{NULL} if no graph is currently being built (as opposed to aborting).}
+}
 \value{
-A \code{\link{Graph}} object.
+A \code{\link{GraphDescriptor}} object.
 }
 \description{
 Get the current graph being built (via \code{\link{local_descriptor}}).

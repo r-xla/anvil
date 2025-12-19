@@ -31,6 +31,8 @@ prim_dict <- new.env(parent = emptyenv())
 #'   The name of the primitive.
 #' @param primitive (`Primitive`)\cr
 #'   The primitive to register.
+#' @param overwrite (`logical(1)`)\cr
+#'   Whether to overwrite the primitive if it is already registered.
 #' @export
 register_primitive <- function(name, primitive, overwrite = FALSE) {
   p <- prim_dict[[name]]

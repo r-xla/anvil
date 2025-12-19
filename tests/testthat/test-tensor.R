@@ -86,8 +86,11 @@ test_that("to_abstract", {
   aval <- GraphValue(AbstractTensor("f32", c(2, 2), FALSE))
   x <- GraphBox(aval, local_descriptor())
   expect_equal(to_abstract(x), aval@aval)
-})
 
+  # pure
+  x <- nv_scalar(1)
+  expect_equal(to_abstract(x, pure = TRUE), AbstractTensor("f32", c(), FALSE))
+})
 
 
 test_that("as_shape for c() (i.e., NULL)", {

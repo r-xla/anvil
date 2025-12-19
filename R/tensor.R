@@ -279,8 +279,9 @@ to_abstract <- function(x, pure = FALSE) {
   } else if (is_graph_box(x)) {
     gnode <- x@gnode
     gnode@aval
-  } else if (is_debug_box(x)) {
-    x@aval
+    #} else if (is_debug_box(x)) {
+    #  x@aval
+    # TODO(split pr)
   } else {
     cli_abort("internal error: {.cls {class(x)}} is not a tensor-like object")
   }
@@ -308,13 +309,15 @@ is_shape <- function(x) {
 }
 
 
+# TODO(split pr)
 #' @title Tensor-like Objects
 #' @description
-#' A value that is either an [`AnvilTensor`][nv_tensor], can be converted to it, or represents an abstract version of it.
+#' A value that is either an [`AnvilTensor`][nv_tensor], can be converted to it, or represents an
+#' abstract version of it.
 #' This also includes atomic R vectors.
 #'
 #' @name tensorish
-#' @seealso [nv_tensor], [ConcreteTensor], [AbstractTensor], [LiteralTensor], [GraphBox]
+#' @seealso [nv_tensor], [ConcreteTensor], [AbstractTensor], [LiteralTensor], `GraphBox`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' x <- nv_tensor(1:4, dtype = "f32")
 #' x

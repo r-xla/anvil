@@ -3,12 +3,18 @@
 \name{abstract_properties}
 \alias{abstract_properties}
 \alias{shape_abstract}
+\alias{ndims_abstract}
+\alias{dtype_abstract}
 \title{Abstract Properties}
 \usage{
 shape_abstract(x)
+
+ndims_abstract(x)
+
+dtype_abstract(x)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\c}
+\item{x}{(\code{\link{tensorish}})\cr}
 }
 \description{
 Calls the extractor after converting the input to an \code{\link{AbstractTensor}}.

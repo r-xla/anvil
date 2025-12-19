@@ -298,6 +298,7 @@ test_that("p_neg", {
 })
 
 test_that("p_exp", {
+  withr::local_seed(12)
   verify_grad_uni(nvl_exp, torch::torch_exp)
 })
 
