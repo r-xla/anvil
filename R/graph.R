@@ -423,8 +423,12 @@ maybe_restore_previous_desc <- function(desc = NULL) {
 #' Get the current graph being built (via [`local_descriptor`]).
 #' @return A [`Graph`] object.
 #' @export
-.current_descriptor <- function() {
-  globals[["CURRENT_DESCRIPTOR"]] %??%
+.current_descriptor <- function(silent = FALSE) {
+  maybe_desc <- globals[["CURRENT_DESCRIPTOR"]]
+  if (silent) {
+    return(maybe_desc)
+  }
+  maybe_desc %??%
     cli_abort("No graph is currently being built. Did you forget to use `jit()`?")
 }
 
