@@ -559,7 +559,8 @@ weights
     ## $beta
     ## AnvilTensor
 
-    ## Error: ToLiteral() called on deleted or donated buffer: INVALID_ARGUMENT: Buffer has been deleted or donated.
+    ## Error:
+    ## ! ToLiteral() called on deleted or donated buffer: INVALID_ARGUMENT: Buffer has been deleted or donated.
 
 But the new weights are still there.
 

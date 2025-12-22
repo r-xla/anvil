@@ -14,7 +14,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/r-xla/anvil/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/r-xla/anvil/blob/fix-prim-names/DESCRIPTION)
 
 Fischer S, Falbel D, German N (2025). *anvil: Framework for R code
 transformations*. R package version 0.0.0.9000,
