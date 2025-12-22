@@ -75,7 +75,7 @@ test_that("p_fill", {
   )
   expect_equal(
     jit(\() nv_fill(1L, shape = 1L, dtype = "f32"))(),
-    nv_scalar(1, dtype = "f32")
+    nv_tensor(1, shape = 1L, dtype = "f32")
   )
 })
 

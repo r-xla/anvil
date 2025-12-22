@@ -299,7 +299,7 @@ nvl_concatenate <- function(..., dimension) {
     operands <- list(...)
     all_ambiguous <- all(vapply(operands, \(x) x@ambiguous, logical(1L)))
     vts <- lapply(operands, st2va)
-    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dimension)@items[[1L]]
+    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dimension - 1L)@items[[1L]]
     out <- vt2sa(out)
     out@ambiguous <- all_ambiguous
     list(out)
