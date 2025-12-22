@@ -350,7 +350,6 @@ test_that("p_while: errors", {
   # TODO:
 })
 
-
 test_that("error when multiplying lists in if-statement", {
   f <- jit(function(pred, x) {
     nvl_if(pred, x + x, x * x)
