@@ -12,7 +12,7 @@ test_that("p_cosine", {
 
 test_that("p_rng_bit_generator", {
   f <- function() {
-    nv_rng_bit_generator(nv_tensor(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
+    nvl_rng_bit_generator(nv_tensor(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
   }
   g <- jit(f)
   out <- g()
@@ -88,7 +88,7 @@ test_that("p_shift_right_arithmetic", {
 
 test_that("p_rng_bit_generator", {
   f <- function() {
-    nv_rng_bit_generator(nv_tensor(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
+    nvl_rng_bit_generator(nv_tensor(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
   }
   g <- jit(f)
   out <- g()

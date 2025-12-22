@@ -12,7 +12,7 @@ nv_unif_rand <- function(
   shape
 ) {
   checkmate::assertChoice(dtype, c("f32", "f64"))
-  checkmate::assertIntegerish(shape, lower = 1, min.len = 1, any.missing = FALSE)
+  shape <- assert_shapevec(shape)
 
   # 1. Generate random bits (64)
   # 2. We use these as mantissa bits for float, where we set the exponent to 1.0
@@ -20,7 +20,7 @@ nv_unif_rand <- function(
 
   # generate random bits
   # use THREE_FRY as rng algorithm: JAX default
-  rbits <- nv_rng_bit_generator(
+  rbits <- nvl_rng_bit_generator(
     initial_state = initial_state,
     "THREE_FRY",
     paste0("ui", sub("f(\\d+)", "\\1", dtype)),
