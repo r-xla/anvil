@@ -237,7 +237,7 @@ nv_sample_int <- function(n, shape, initial_state, dtype = "i32") {
   # 1. Cumulative probabilities are (1, 2, ..., n) / n
   cp <- nv_div(
     nv_iota(dim = 1L, shape = n, dtype = "f64", start = 1),
-    nv_scalar(as.double(n), "f64")
+    nv_fill(n, "f64", shape = c())
   )
 
   # 2. Search for the first bin j such that u <= cp[j]
