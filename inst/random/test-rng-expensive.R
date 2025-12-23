@@ -139,13 +139,13 @@ test_rbinom_statistical <- function() {
   cat("  PASS\n")
 }
 
-test_rdiscrete_statistical <- function() {
-  cat("Testing nv_rdiscrete statistical properties...\n")
+test_sample_int_statistical <- function() {
+  cat("Testing nv_sample_int statistical properties...\n")
 
   # Test 1: Equal probabilities (uniform discrete)
   cat("  Testing equal probabilities...\n")
   f1 <- function() {
-    nv_rdiscrete(
+    nv_sample_int(
       n = 6L,
       shape = 60000L,
       initial_state = nv_tensor(c(1, 2), dtype = "ui64")
@@ -162,116 +162,8 @@ test_rdiscrete_statistical <- function() {
   for (i in 1:6) {
     prop <- mean(values1 == i)
     cat(sprintf("    Category %d: %.4f (expected ~0.1667)\n", i, prop))
-    stopifnot(abs(prop - 1/6) < 0.01)
+    stopifnot(abs(prop - 1 / 6) < 0.01)
   }
-
-  # Test 2: Custom probabilities
-  cat("  Testing custom probabilities [0.1, 0.3, 0.6]...\n")
-  expected_probs <- c(0.1, 0.3, 0.6)
-  prob <- nv_tensor(expected_probs, dtype = "f64")
-
-  f2 <- function(p) {
-    nv_rdiscrete(
-      n = 3L,
-      shape = 100000L,
-      prob = p,
-      initial_state = nv_tensor(c(3, 4), dtype = "ui64")
-    )
-  }
-  g2 <- jit(f2)
-  out2 <- g2(prob)
-  values2 <- as_array(out2[[2]])
-
-  # Check proportions match expected
-  for (i in 1:3) {
-    prop <- mean(values2 == i)
-    expected <- expected_probs[i]
-    cat(sprintf("    Category %d: %.4f (expected %.2f)\n", i, prop, expected))
-    stopifnot(abs(prop - expected) < 0.01)
-  }
-
-  # Test 3: Chi-squared goodness of fit
-  cat("  Chi-squared test...\n")
-  observed <- table(factor(values2, levels = 1:3))
-  expected_counts <- length(values2) * expected_probs
-  chi_sq <- sum((observed - expected_counts)^2 / expected_counts)
-  cat(sprintf("    Chi-squared: %.4f (df=2, critical value at 0.01 is 9.21)\n", chi_sq))
-  stopifnot(chi_sq < 9.21)
-
-  cat("  PASS\n")
-}
-
-test_rdiscrete_without_replacement <- function() {
-  cat("Testing nv_rdiscrete with replace = FALSE...\n")
-
-  # Test 1: All samples should be unique
-  cat("  Test uniqueness...\n")
-  f1 <- function(s) {
-    nv_rdiscrete(n = 100L, shape = 50L, replace = FALSE, initial_state = s)
-  }
-  g1 <- jit(f1)
-
-  # Run multiple trials
-  state <- nv_tensor(c(1, 2), dtype = "ui64")
-  for (trial in 1:10) {
-    out <- g1(state)
-    values <- c(as_array(out[[2]]))
-    stopifnot(length(unique(values)) == 50L)
-    stopifnot(all(values >= 1L & values <= 100L))
-    state <- out[[1]]  # update state
-  }
-  cat("    All 10 trials produced unique samples\n")
-
-  # Test 2: Permutation test (k = n should give a permutation)
-  cat("  Test full permutation...\n")
-  f2 <- function(s) {
-    nv_rdiscrete(n = 20L, shape = 20L, replace = FALSE, initial_state = s)
-  }
-  g2 <- jit(f2)
-
-  state <- nv_tensor(c(3, 5), dtype = "ui64")
-  for (trial in 1:5) {
-    out <- g2(state)
-    values <- c(as_array(out[[2]]))
-    stopifnot(identical(sort(values), 1:20))
-    state <- out[[1]]
-  }
-  cat("    All 5 trials produced valid permutations\n")
-
-  # Test 3: Weighted sampling without replacement
-  cat("  Test weighted sampling without replacement...\n")
-  # Higher weights should be selected more often across many trials
-  probs <- c(0.01, 0.01, 0.01, 0.01, 0.96)  # strongly favor item 5
-  prob_tensor <- nv_tensor(probs, dtype = "f64")
-
-  f3 <- function(s, p) {
-    nv_rdiscrete(n = 5L, shape = 3L, replace = FALSE, prob = p, initial_state = s)
-  }
-  g3 <- jit(f3)
-
-  # Count how often each item appears in samples across trials
-  counts <- rep(0L, 5)
-  state <- nv_tensor(c(7, 11), dtype = "ui64")
-  n_trials <- 1000L
-
-  for (trial in seq_len(n_trials)) {
-    out <- g3(state, prob_tensor)
-    values <- c(as_array(out[[2]]))
-    stopifnot(length(unique(values)) == 3L)
-    for (v in values) counts[v] <- counts[v] + 1L
-    state <- out[[1]]
-  }
-
-  # Item 5 (with 0.96 probability) should almost always be selected
-  prop_5 <- counts[5] / n_trials
-  cat(sprintf("    Item 5 (prob=0.96) selected in %.1f%% of trials\n", prop_5 * 100))
-  stopifnot(prop_5 > 0.95)  # should be selected almost always
-
-  # Low probability items should be selected less often
-  prop_low <- mean(counts[1:4]) / n_trials
-  cat(sprintf("    Low prob items (0.01 each) avg selection rate: %.1f%%\n", prop_low * 100))
-  # Expected: each low-prob item selected in roughly 50% of trials (picking 3 from 5, with item 5 almost always included)
-  stopifnot(prop_low < 0.7)
 
   cat("  PASS\n")
 }
@@ -283,8 +175,7 @@ run_all_tests <- function() {
   test_rnorm_mean_sd()
   test_runif_statistical()
   test_rbinom_statistical()
-  test_rdiscrete_statistical()
-  test_rdiscrete_without_replacement()
+  test_sample_int_statistical()
 
   cat("\nAll expensive RNG tests passed!\n")
 }

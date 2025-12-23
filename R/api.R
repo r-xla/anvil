@@ -3,6 +3,22 @@
 
 # Special tensor creators
 
+#' @title Iota
+#' @description
+#' Create a tensor with increasing values along a dimension.
+#' @param dim (`integer(1)`)\cr
+#'   The dimension along which to generate increasing values.
+#' @template param_shape
+#' @template param_dtype
+#' @param start (`numeric(1)`)\cr
+#'   The value to start the sequence at (default 1).
+#' @export
+nv_iota <- function(dim, shape, dtype = "i32", start = 1) {
+  shape <- assert_shapevec(shape)
+  nvl_iota(dim = dim, shape = shape, dtype = dtype, start = start)
+}
+
+
 #' @title Constant
 #' @description
 #' Create a constant.
