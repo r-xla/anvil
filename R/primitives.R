@@ -327,7 +327,7 @@ nvl_concatenate <- function(..., dimension) {
     operands <- list(...)
     all_ambiguous <- all(vapply(operands, \(x) x@ambiguous, logical(1L)))
     vts <- lapply(operands, st2va)
-    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dimension)@items[[1L]]
+    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dimension - 1L)@items[[1L]]
     out <- vt2sa(out)
     out@ambiguous <- all_ambiguous
     list(out)
@@ -390,7 +390,7 @@ make_reduce_op <- function(prim, infer_fn = infer_reduce) {
   }
 }
 
-p_reduce_sum <- Primitive("sum")
+p_reduce_sum <- Primitive("reduce_sum")
 #' @title Primitive Sum Reduction
 #' @description
 #' Sums tensor elements along dimensions.
@@ -403,7 +403,7 @@ p_reduce_sum <- Primitive("sum")
 #' @export
 nvl_reduce_sum <- make_reduce_op(p_reduce_sum)
 
-p_reduce_prod <- Primitive("prod")
+p_reduce_prod <- Primitive("reduce_prod")
 #' @title Primitive Product Reduction
 #' @description
 #' Multiplies tensor elements along dimensions.
@@ -416,7 +416,7 @@ p_reduce_prod <- Primitive("prod")
 #' @export
 nvl_reduce_prod <- make_reduce_op(p_reduce_prod)
 
-p_reduce_max <- Primitive("max")
+p_reduce_max <- Primitive("reduce_max")
 #' @title Primitive Max Reduction
 #' @description
 #' Finds maximum along dimensions.
@@ -429,7 +429,7 @@ p_reduce_max <- Primitive("max")
 #' @export
 nvl_reduce_max <- make_reduce_op(p_reduce_max)
 
-p_reduce_min <- Primitive("min")
+p_reduce_min <- Primitive("reduce_min")
 #' @title Primitive Min Reduction
 #' @description
 #' Finds minimum along dimensions.
@@ -442,7 +442,7 @@ p_reduce_min <- Primitive("min")
 #' @export
 nvl_reduce_min <- make_reduce_op(p_reduce_min)
 
-p_reduce_any <- Primitive("any")
+p_reduce_any <- Primitive("reduce_any")
 #' @title Primitive Any Reduction
 #' @description
 #' Logical OR along dimensions.
@@ -455,7 +455,7 @@ p_reduce_any <- Primitive("any")
 #' @export
 nvl_reduce_any <- make_reduce_op(p_reduce_any, infer_reduce_boolean)
 
-p_reduce_all <- Primitive("all")
+p_reduce_all <- Primitive("reduce_all")
 #' @title Primitive All Reduction
 #' @description
 #' Logical AND along dimensions.

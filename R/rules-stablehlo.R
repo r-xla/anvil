@@ -57,10 +57,11 @@ p_reshape[["stablehlo"]] <- function(operand, shape) {
 }
 
 p_concatenate[["stablehlo"]] <- function(..., dimension) {
-  list(stablehlo::hlo_concatenate(..., dimension = dimension))
+  list(stablehlo::hlo_concatenate(..., dimension = dimension - 1L))
 }
 
 p_slice[["stablehlo"]] <- function(operand, start_indices, limit_indices, strides) {
+  # we use 1:n, which includes n, but this translates to 0:n in stablehlo
   list(stablehlo::hlo_slice(operand, start_indices - 1L, limit_indices, strides))
 }
 

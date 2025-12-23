@@ -519,8 +519,6 @@ nv_round <- nvl_round
 #' - `lhs`: `(b1, ..., bk, m, n)`
 #' - `rhs`: `(b1, ..., bk, n, p)`
 #' - output: `(b1, ..., bk, m, p)`
-#' @section Broadcasting:
-#' All dimensions but the last two are broadcasted.
 #' @param lhs ([`tensorish`])
 #' @param rhs ([`tensorish`])
 #' @return [`tensorish`]
@@ -535,23 +533,12 @@ nv_matmul <- function(lhs, rhs) {
   if (ndims_abstract(rhs) < 2L) {
     cli_abort("rhs of matmul must have at least 2 dimensions")
   }
-  shape_leading <- broadcast_shapes(head(shape_abstract(lhs), -2L), head(shape_abstract(rhs), -2L))
-
-  shape_lhs <- c(shape_leading, tail(shape_abstract(lhs), 2L))
-  shape_rhs <- c(shape_leading, tail(shape_abstract(rhs), 2L))
-
-  if (!identical(shape_lhs, shape_abstract(lhs))) {
-    lhs <- nv_broadcast_to(lhs, shape_lhs)
-  }
-  if (!identical(shape_rhs, shape_abstract(rhs))) {
-    rhs <- nv_broadcast_to(rhs, shape_rhs)
-  }
-
+  nbatch <- ndims_abstract(lhs) - 2L
   nvl_dot_general(
     lhs,
     rhs,
     contracting_dims = list(ndims_abstract(lhs), ndims_abstract(rhs) - 1L),
-    batching_dims = list(seq_along(shape_leading), seq_along(shape_leading))
+    batching_dims = list(seq_len(nbatch), seq_len(nbatch))
   )
 }
 
