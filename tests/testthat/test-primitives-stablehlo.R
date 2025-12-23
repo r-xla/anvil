@@ -329,11 +329,9 @@ test_that("p_while: nested state", {
     nv_while(
       list(i = list(nv_scalar(1L))),
       \(i) {
-        # nolint
         i[[1]] <= n
       },
       \(i) {
-        # nolint
         i <- i[[1L]]
         i <- i + nv_scalar(1L)
         list(i = list(i))
@@ -359,6 +357,15 @@ test_that("error when multiplying lists in if-statement", {
     "non-numeric argument to binary operator"
   )
 })
+
+test_that("p_iota", {
+  f <- jit(function() nvl_iota(dim = 1L, shape = 5L, dtype = "i32", start = 1))
+  expect_equal(c(as_array(f())), as.integer(1:5))
+
+  f2 <- jit(function() nvl_iota(dim = 2L, shape = c(2L, 3L), dtype = "f32", start = 0))
+  expect_equal(as_array(f2()), matrix(as.numeric(rep(0:2, each = 2)), nrow = 2, byrow = FALSE))
+})
+
 
 # we don't want to include torch in Suggests just for the tests, as it's a relatively
 # heavy dependency

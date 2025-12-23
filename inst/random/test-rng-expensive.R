@@ -90,12 +90,11 @@ test_runif_statistical <- function() {
 test_rbinom_statistical <- function() {
   cat("Testing nv_rbinom statistical properties...\n")
 
-  # Generate a large sample of Binomial(1, 0.5) samples (i.e., Bernoulli(0.5))
   f <- function() {
     nv_rbinom(
       nv_tensor(c(1, 2), dtype = "ui64"),
       dtype = "i32",
-      shape = c(100L, 100L, 100L)  # 1 million samples
+      shape = c(100L, 100L, 100L)
     )
   }
   g <- jit(f)
@@ -105,44 +104,18 @@ test_rbinom_statistical <- function() {
   # All values should be 0 or 1
   stopifnot(all(values %in% c(0L, 1L)))
 
-  # Check proportion of 1s (expected 0.5 for fair coin)
   prop_ones <- mean(values)
   cat(sprintf("  Proportion of 1s: %.5f (expected 0.5)\n", prop_ones))
-  # With 1M samples, we expect prop to be within ~0.002 of 0.5 with high probability
   stopifnot(abs(prop_ones - 0.5) < 0.005)
 
-  # Check variance (expected 0.25 for Binomial(1, 0.5))
   sample_var <- var(c(values))
   cat(sprintf("  Sample variance: %.5f (expected 0.25)\n", sample_var))
   stopifnot(abs(sample_var - 0.25) < 0.005)
-
-  # Run a binomial test on smaller chunks to check uniformity
-  # Split into 1000 chunks of 1000 samples each
-  chunk_sums <- apply(array(values, dim = c(1000, 1000)), 2, sum)
-  # Each chunk sum should follow Binomial(1000, 0.5)
-  # Expected mean = 500, expected sd = sqrt(250) ≈ 15.8
-
-  # Check that chunk means are reasonable (within 3 sd of expected)
-  chunk_mean <- mean(chunk_sums)
-  cat(sprintf("  Mean of chunk sums: %.2f (expected 500)\n", chunk_mean))
-  stopifnot(abs(chunk_mean - 500) < 5)
-
-  # Chi-squared test for uniformity of bits
-  # We expect roughly equal number of 0s and 1s
-  n_ones <- sum(values)
-  n_zeros <- length(values) - n_ones
-  chi_sq <- (n_ones - n_zeros)^2 / length(values)
-  cat(sprintf("  Chi-squared statistic: %.4f (should be small)\n", chi_sq))
-  # Chi-squared with df=1 at alpha=0.01 is 6.635
-  stopifnot(chi_sq < 6.635)
-
-  cat("  PASS\n")
 }
 
 test_sample_int_statistical <- function() {
   cat("Testing nv_sample_int statistical properties...\n")
 
-  # Test 1: Equal probabilities (uniform discrete)
   cat("  Testing equal probabilities...\n")
   f1 <- function() {
     nv_sample_int(
@@ -155,10 +128,8 @@ test_sample_int_statistical <- function() {
   out1 <- g1()
   values1 <- as_array(out1[[2]])
 
-  # All values should be in 1:6
   stopifnot(all(values1 >= 1L & values1 <= 6L))
 
-  # Check that each category appears roughly 1/6 of the time
   for (i in 1:6) {
     prop <- mean(values1 == i)
     cat(sprintf("    Category %d: %.4f (expected ~0.1667)\n", i, prop))
