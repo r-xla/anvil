@@ -254,7 +254,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x5612659338b8&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55799d7e0470&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -297,7 +297,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x561265936840&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55799d7df5c8&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
@@ -499,6 +499,30 @@ compiled.</p>
 <div class="section level2">
 <h2 id="more-internals">More Internals<a class="anchor" aria-label="anchor" href="#more-internals"></a>
 </h2>
+<div class="section level3">
+<h3 id="debug-mode">Debug Mode<a class="anchor" aria-label="anchor" href="#debug-mode"></a>
+</h3>
+<p>For how to use debug mode, see the <a href="debugging.html">debugging
+vignette</a>.</p>
+<p>Debug-mode is different from jit-mode, because we don’t have a
+context that can initialize a main <code>GraphDescriptor</code>. For
+this reason, every primitive initializes its own
+<code>GraphDescriptor</code> that is thrown away after the primitive
+returns <code>DebugBox</code> objects. These <code>DebugBox</code>
+objects are only for user-interaction and have a nice printer. Whenever
+a primitive is evaluated, this <code>DebugBox</code> is converted to a
+<code>GraphBox</code> object that is used for the actual evaluation via
+<code>maybe_box_variable</code>. This ensures that we don’t have to
+duplicate any evaluation logic as we the graph-building functions only
+have to work with <code>GraphBox</code> objects.</p>
+<p>What gets lost in debug mode is identity of values, because the
+<code>GraphDescriptor</code> is thrown away. This means that we cannot
+say anything about identity of values, only about their types.</p>
+<p>Unfortunately, our current mode for detecting debug mode is whether a
+<code>GraphDescriptor</code> is active. For this reason, we don’t allow
+calling <code><a href="../reference/local_descriptor.html">local_descriptor()</a></code> in the global environment. Maybe
+we can improve this in the future, but for now it seems to work.</p>
+</div>
 <div class="section level3">
 <h3 id="constant-handling">Constant Handling<a class="anchor" aria-label="anchor" href="#constant-handling"></a>
 </h3>

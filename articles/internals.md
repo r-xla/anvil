@@ -153,7 +153,7 @@ prim("mul")@rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x5612659338b8>
+    ## <bytecode: 0x55799d7e0470>
     ## <environment: namespace:anvil>
 
 The [`anvil::transform_gradient`](../reference/transform_gradient.md)
@@ -202,7 +202,7 @@ prim("mul")@rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x561265936840>
+    ## <bytecode: 0x55799d7df5c8>
     ## <environment: namespace:anvil>
 
 The [`anvil::stablehlo`](../reference/stablehlo.md) function will create
@@ -455,6 +455,30 @@ Afterwards, this graph is lowered to stableHLO and subsequently
 compiled.
 
 ## More Internals
+
+### Debug Mode
+
+For how to use debug mode, see the [debugging vignette](debugging.md).
+
+Debug-mode is different from jit-mode, because we don’t have a context
+that can initialize a main `GraphDescriptor`. For this reason, every
+primitive initializes its own `GraphDescriptor` that is thrown away
+after the primitive returns `DebugBox` objects. These `DebugBox` objects
+are only for user-interaction and have a nice printer. Whenever a
+primitive is evaluated, this `DebugBox` is converted to a `GraphBox`
+object that is used for the actual evaluation via `maybe_box_variable`.
+This ensures that we don’t have to duplicate any evaluation logic as we
+the graph-building functions only have to work with `GraphBox` objects.
+
+What gets lost in debug mode is identity of values, because the
+`GraphDescriptor` is thrown away. This means that we cannot say anything
+about identity of values, only about their types.
+
+Unfortunately, our current mode for detecting debug mode is whether a
+`GraphDescriptor` is active. For this reason, we don’t allow calling
+[`local_descriptor()`](../reference/local_descriptor.md) in the global
+environment. Maybe we can improve this in the future, but for now it
+seems to work.
 
 ### Constant Handling
 

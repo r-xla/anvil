@@ -58,14 +58,3 @@ GraphDescriptor(
 
   (`list(GraphValue)`)  
   The outputs of the graph.
-
-## Details
-
-The trickiest thing in our setup are how we ensure that the same values
-receive the same identifier (GraphValue) across nested graphs.
-
-## TODO: Finish this
-
-There are two cases:
-
-1.  When a

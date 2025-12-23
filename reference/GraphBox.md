@@ -1,6 +1,6 @@
 # Graph Box
 
-Box representing a value in a [`Graph`](Graph.md).
+Box that represents a node in a [`GraphDescriptor`](GraphDescriptor.md).
 
 ## Usage
 
@@ -12,10 +12,10 @@ GraphBox(gnode = `mut<GraphValue>`(), desc = `mut<GraphDescriptor>`())
 
 - gnode:
 
-  (`GraphNode`)  
-  The node representing the value in the graph.
+  ([`GraphNode`](GraphNode.md))  
+  The node.
 
 - desc:
 
-  (`GraphDescriptor`)  
+  ([`GraphDescriptor`](GraphDescriptor.md))  
   The descriptor of the graph.

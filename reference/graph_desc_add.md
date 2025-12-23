@@ -51,4 +51,6 @@ graph_desc_add(
 
 ## Value
 
-A list of `GraphBox` objects.
+(`list` of `Box`)  
+Either `GraphBox` objects or `DebugBox` objects, depending on
+`debug_mode`.
