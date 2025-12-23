@@ -39,6 +39,8 @@ jobs:
           extra-packages: any::pkgdown
           needs: website
           cache: false
+      - name: PJRT CPU Plugin
+        run: Rscript -e "pjrt::pjrt_plugin('cpu')"
 
       - name: Install package
         run: R CMD INSTALL .
