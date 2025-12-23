@@ -11,11 +11,14 @@
 #'   Names of the arguments whose buffers should be donated.
 #'   Donated buffers can be aliased with outputs of the same type,
 #'   allowing in-place operations and reducing memory usage.
+#' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
+#'   The device to use if no input tensors are provided to infer the platform.
 #' @return (`function`)
 #' @export
-jit <- function(f, static = character(), cache_size = 100L, donate = character()) {
+jit <- function(f, static = character(), cache_size = 100L, donate = character(), device = NULL) {
   cache <- xlamisc::LRUCache$new(cache_size)
   assert_subset(static, formalArgs2(f))
+  assert_string(device, null.ok = TRUE)
 
   call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat) {
     args_nonstatic <- args_flat[!is_static_flat]
@@ -60,14 +63,25 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
         "Inputs live on different platforms: {.val {unique(platforms)}}."
       )
     }
-    platform <- if (length(platforms) > 0) platforms[1] else Sys.getenv("PJRT_PLATFORM", "cpu")
+    # FIXME: platform does not always return "cuda" on CUDA gpus,
+    # so we might store the same entry twice (via "cuda" and via the specific GPU-dependent name)
+    platform <- if (length(platforms) > 0) {
+      platforms[1]
+    } else if (!is.null(device)) {
+      device
+    } else {
+      Sys.getenv("PJRT_PLATFORM", "cpu")
+    }
 
     cache_hit <- cache$get(list(avals_in, platform))
     if (!is.null(cache_hit)) {
       return(call_xla(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat))
     }
-    # TODO: Give trace_fn() argument in_tree, so we don't have to do this twice
-    graph <- trace_fn(f, args)
+    desc <- local_descriptor()
+    in_tree <- in_node
+    in_tree$marked <- NULL
+    class(in_tree) <- c("ListNode", "Node")
+    graph <- trace_fn(f, args, desc = desc)
 
     out <- stablehlo(graph, donate = donate)
     func <- out[[1L]]

@@ -99,18 +99,17 @@ for (i in 1:10) {
 For the second approach, we use `nv_while` to implement the loop.
 
 ```{r}
-x <- nv_scalar(0L, device = "cpu")
 jit(\() {
-  init <- 1L
+  init <- nv_scalar(1L)
   nv_while(
-    list(x = x),
+    list(x = init),
     \(x) x <= 10,
     \(x) {
       nv_print(x)
       list(x = x + 1L)
     }
   )
-})()
+}, device = "cpu")()
 ```
 
 We will provide more formatting options in the future!

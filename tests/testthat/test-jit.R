@@ -232,3 +232,8 @@ test_that("error message when passing invalid input", {
 test_that("good error message when passing AbstractTensors", {
   expect_error(jit(nv_neg)(nv_aten("f32", c(2, 2))), "Expected anvil tensor, but got")
 })
+
+test_that("jit: respects device argument", {
+  f <- jit(function() nv_scalar(1), device = "cpu")
+  expect_equal(f(), nv_scalar(1, device = "cpu"))
+})

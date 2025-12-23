@@ -4,7 +4,13 @@
 \alias{jit}
 \title{JIT compile a function}
 \usage{
-jit(f, static = character(), cache_size = 100L, donate = character())
+jit(
+  f,
+  static = character(),
+  cache_size = 100L,
+  donate = character(),
+  device = NULL
+)
 }
 \arguments{
 \item{f}{(\code{function})\cr
@@ -20,6 +26,9 @@ The size of the cache for the jit-compiled functions.}
 Names of the arguments whose buffers should be donated.
 Donated buffers can be aliased with outputs of the same type,
 allowing in-place operations and reducing memory usage.}
+
+\item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
+The device to use if no input tensors are provided to infer the platform.}
 }
 \value{
 (\code{function})
