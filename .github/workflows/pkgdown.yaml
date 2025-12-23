@@ -34,6 +34,11 @@ jobs:
           extra-repositories: https://r-xla.r-universe.dev
           use-public-rspm: true
 
+
+      - name: PJRT CPU Plugin
+        run: Rscript -e "pjrt::pjrt_plugin('cpu')"
+
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::pkgdown
