@@ -347,6 +347,16 @@ test_that("error when multiplying lists in if-statement", {
   )
 })
 
+test_that("p_print", {
+  skip_if(!is_cpu(), "print_tensor only works on CPU")
+
+  f <- jit(function(x) nvl_print(x))
+  x <- nv_tensor(c(1.0, 2.0, 3.0), dtype = "f32")
+  out <- f(x)
+  expect_equal(as_array(out), as_array(x))
+  expect_snapshot(f(x))
+})
+
 # we don't want to include torch in Suggests just for the tests, as it's a relatively
 # heavy dependency
 # We have a CI job that installs torch, so it's at least tested once

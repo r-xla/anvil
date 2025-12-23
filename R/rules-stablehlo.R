@@ -49,7 +49,7 @@ p_reshape[["stablehlo"]] <- function(operand, shape) {
 }
 
 p_concatenate[["stablehlo"]] <- function(..., dimension) {
-  list(stablehlo::hlo_concatenate(..., dimension = dimension))
+  list(stablehlo::hlo_concatenate(..., dimension = dimension - 1L))
 }
 
 p_slice[["stablehlo"]] <- function(operand, start_indices, limit_indices, strides) {
@@ -274,6 +274,22 @@ p_select[["stablehlo"]] <- function(pred, true_value, false_value) {
 
 p_rng_bit_generator[["stablehlo"]] <- function(initial_state, rng_algorithm, dtype, shape_out) {
   stablehlo::hlo_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out)
+}
+
+p_print[["stablehlo"]] <- function(operand) {
+  backend_config <- stablehlo::CustomOpBackendConfig(list(
+    stablehlo::StringAttr(name = "print_header", value = "AnvilTensor")
+  ))
+
+  # Side-effect only call (no output_types), returns original operand
+  stablehlo::hlo_custom_call(
+    operand,
+    call_target_name = "print_tensor",
+    api_version = 4L,
+    has_side_effect = TRUE,
+    backend_config = backend_config
+  )
+  list(operand)
 }
 
 # higher order primitives --------------------------------------------------------

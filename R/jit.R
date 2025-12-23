@@ -54,7 +54,7 @@ jit <- function(f, static = character(), device = NULL, cache_size = 100L, donat
           if (platform(x) != device_str) {
             cli_abort("Expected device {device_str}, but buffer has device {platform(x)}")
           }
-          AbstractTensor(dtype(x), shape(x), ambiguous = FALSE)
+          nv_aten(dtype(x), shape(x))
         }
       },
       args_flat,

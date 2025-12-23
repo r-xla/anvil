@@ -1,4 +1,5 @@
 #' @include tensor.R
+#' @include box.R
 
 #' @title Graph Value
 #' @description
@@ -42,7 +43,13 @@ method(print, GraphLiteral) <- function(x, ...) {
   cat(format(x), "\n")
 }
 
+#' @title Graph Node
+#' @description
+#' Node in a [`Graph`].
+#' Is either a [`GraphValue`] or a [`GraphLiteral`].
+#' @export
 GraphNode <- S7::new_union(GraphValue, GraphLiteral)
+# TODO(rename): It's actually more like an edge ...
 
 #' @title Primitive Call
 #' @description
@@ -121,10 +128,12 @@ Graph <- mut(new_class(
 #'   The inputs to the graph.
 #' @param outputs (`list(GraphValue)`)\cr
 #'   The outputs of the graph.
+#' @export
 #'
 #' @details
 #' The trickiest thing in our setup are how we ensure that the same values receive the same identifier
 #' (GraphValue) across nested graphs.
+#' # TODO: Finish this
 #' There are two cases:
 #' 1. When a
 GraphDescriptor <- mut(new_class(
@@ -178,8 +187,17 @@ descriptor_to_graph <- function(descriptor) {
 
 # Now the graph-building
 
+#' @title Graph Box
+#' @description
+#' Box representing a value in a [`Graph`].
+#' @param gnode (`GraphNode`)\cr
+#'   The node representing the value in the graph.
+#' @param desc (`GraphDescriptor`)\cr
+#'   The descriptor of the graph.
+#' @export
 GraphBox <- new_class(
   "GraphBox",
+  parent = Box,
   properties = list(
     gnode = GraphNode,
     desc = GraphDescriptor
@@ -216,7 +234,14 @@ maybe_box_variable <- function(x) {
     # FIXME: !!!
     # We use this in gradient, where we pass gvals to the backward rules
     # but I think we should handle this differently
-    GraphBox(x, .current_descriptor())
+    GraphBox(x, current_desc)
+  } else if (is_debug_box(x)) {
+    # We want debug mode to emulate standard tracing, so each primitive initializes it's own
+    # GraphDescriptor during debug mode and we evaluate with GraphBox objects
+    # before returning to the user, the GraphBox is converted to a DebugBox again
+    GraphBox(GraphValue(aval = x@aval), current_desc)
+  } else if (is_abstract_tensor(x)) {
+    cli_abort("Don't use AbtractTensors as inputs; For debugging, use `debug_box()`")
   } else {
     x
   }
@@ -239,11 +264,20 @@ maybe_box_input <- function(x, desc) {
     # see test: "can pass constant to nested trace_fn call if it ..." in test-graph.R
     gval <- GraphValue(aval = ConcreteTensor(x))
     register_input(desc, gval)
+  } else if (is_debug_box(x)) {
+    # User provided abstract input
+    # This is useful for debugging and in jit() we anyway verify that the inputs are AnvilTensors
+    gval <- GraphValue(aval = x@aval)
+    register_input(desc, gval)
   } else if (is_graph_box(x)) {
     # Nested trace_fn call
     # Because we will inline the child graph into the parent graph, we re-use
     # the same GraphValue, because this will make the inlining straightforward.
     register_input(desc, x@gnode)
+  } else if (is_abstract_tensor(x)) {
+    # Needed to be able to pass abstract tensors to trace_fn()
+    gval <- GraphValue(aval = x)
+    register_input(desc, gval)
   } else {
     # parameter
     x
@@ -360,7 +394,7 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
 #' Create a graph representation of an R function by tracing.
 #' @param f (`function`)\cr
 #'   The function to trace_fn.
-#' @param args (`list`)\cr
+#' @param args (`list` of ([`AnvilTensor`] | [`AbstractTensor`]))\cr
 #'   The arguments to the function.
 #' @param desc (`NULL` | `GraphDescriptor`)\cr
 #'   The descriptor to use for the graph.
@@ -450,6 +484,11 @@ maybe_restore_previous_desc <- function(desc = NULL) {
 #' @return A [`Graph`] object.
 #' @export
 local_descriptor <- function(..., envir = parent.frame()) {
+  if (identical(envir, globalenv())) {
+    # lingering global descriptors mess with our debug mode
+    cli_abort("Don't run local_descriptor in the global environment")
+  }
+
   desc <- GraphDescriptor(...)
   if (!is.null(globals[["CURRENT_DESCRIPTOR"]])) {
     globals[["DESCRIPTOR_STASH"]] <- c(
@@ -476,7 +515,33 @@ is_graph_box <- function(x) {
   inherits(x, "anvil::GraphBox")
 }
 
-graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = .current_descriptor()) {
+#' @title Add a Primitive Call to a Graph Descriptor
+#' @description
+#' Add a primitive call to a graph descriptor.
+#' @param prim ([`Primitive`])\cr
+#'   The primitive to add.
+#' @param args (`list` of [`GraphNode`])\cr
+#'   The arguments to the primitive.
+#' @param params (`list`)\cr
+#'   The parameters to the primitive.
+#' @param infer_fn (`function`)\cr
+#'   The inference function to use.
+#'   Must output a list of [`AbstractTensor`]s.
+#' @param desc ([`GraphDescriptor`] | `NULL`)\cr
+#'   The graph descriptor to add the primitive call to.
+#'   Uses the [current descriptor][.current_descriptor] if `NULL`.
+#' @param debug_mode (`logical(1)`)\cr
+#'   Whether to just perform abstract evaluation for debugging.
+#' @return A list of `GraphBox` objects.
+#' @export
+graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, debug_mode = NULL) {
+  desc <- desc %??% .current_descriptor(silent = TRUE)
+
+  debug_mode <- debug_mode %??% is.null(desc)
+  if (debug_mode && is.null(desc)) {
+    desc <- local_descriptor()
+  }
+
   boxes_in <- lapply(args, maybe_box_variable)
   gnodes_in <- lapply(boxes_in, \(box) box@gnode)
   avals_in <- lapply(boxes_in, \(box) box@gnode@aval)
@@ -485,6 +550,9 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = .curren
   call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)
   desc@calls <- c(desc@calls, call)
   boxes_out <- lapply(gvals_out, register_gval, desc = desc)
+  if (debug_mode) {
+    return(lapply(boxes_out, \(x) DebugBox(to_abstract(x))))
+  }
   return(boxes_out)
 }
 
