@@ -29,7 +29,3 @@ nv_matmul(lhs, rhs)
 - `rhs`: `(b1, ..., bk, n, p)`
 
 - output: `(b1, ..., bk, m, p)`
-
-## Broadcasting
-
-All dimensions but the last two are broadcasted.
