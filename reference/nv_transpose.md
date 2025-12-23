@@ -7,7 +7,7 @@ Transpose a tensor.
 ``` r
 nv_transpose(x, permutation = NULL)
 
-# S3 method for class '`anvil::GraphBox`'
+# S3 method for class '`anvil::Box`'
 t(x)
 ```
 

@@ -32,6 +32,7 @@ Usually, their type is ambiguous, unless created via nv_fill."></head><body>
     <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
     <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
     <li><a class="dropdown-item" href="../articles/primitives.html">Primitives Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/debugging.html">Debugging</a></li>
   </ul></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-technical" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Technical</button>
@@ -55,7 +56,7 @@ Usually, their type is ambiguous, unless created via nv_fill."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Literal Tensor Class</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-sampler/R/tensor.R" class="external-link"><code>R/tensor.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/debug-mode2/R/tensor.R" class="external-link"><code>R/tensor.R</code></a></small>
       <div class="d-none name"><code>LiteralTensor.Rd</code></div>
     </div>
 
@@ -90,9 +91,9 @@ The data type. Defaults to <code>f32</code> for numeric, <code>i32</code> for in
 
 <dt id="arg-ambiguous">ambiguous<a class="anchor" aria-label="anchor" href="#arg-ambiguous"></a></dt>
 <dd><p>(<code>logical(1)</code>)<br>
-Whether the type is ambiguous. Ambiguous usually arise from R literals
-(e.g., <code>1L</code>, <code>1.0</code>) and follow special promotion rules.
-Only <code>f32</code> and <code>i32</code> can be ambiguous during tracing.</p></dd>
+Whether the type is ambiguous.
+Ambiguous types usually arise from R literals (e.g., <code>1L</code>, <code>1.0</code>) and follow special promotion rules.
+See the vignette "Type Promotion" for more details.</p></dd>
 
 </dl></div>
     <div class="section level2">

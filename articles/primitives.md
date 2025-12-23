@@ -24,7 +24,6 @@ transformations.
 | greater                | ✓         |    ✓     |
 | greater_equal          | ✓         |    ✓     |
 | if                     | ✓         |    ✓     |
-| iota                   | ✓         |    ✗     |
 | less                   | ✓         |    ✓     |
 | less_equal             | ✓         |    ✓     |
 | log                    | ✓         |    ✓     |
@@ -36,6 +35,7 @@ transformations.
 | not_equal              | ✓         |    ✓     |
 | or                     | ✓         |    ✗     |
 | power                  | ✓         |    ✓     |
+| print                  | ✓         |    ✗     |
 | reduce_all             | ✓         |    ✗     |
 | reduce_any             | ✓         |    ✗     |
 | reduce_max             | ✓         |    ✓     |

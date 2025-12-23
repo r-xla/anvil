@@ -8,9 +8,9 @@ Convert a function to a JIT compiled function.
 jit(
   f,
   static = character(),
-  device = NULL,
   cache_size = 100L,
-  donate = character()
+  donate = character(),
+  device = NULL
 )
 ```
 
@@ -26,13 +26,6 @@ jit(
   ([`character()`](https://rdrr.io/r/base/character.html))  
   Which parameters of `f` are static.
 
-- device:
-
-  (`NULL` \| `character(1)` \|
-  [`PJRTDevice`](https://r-xla.github.io/pjrt/reference/pjrt_device.html))  
-  The device to use for the compiled function. The default (`NULL`) uses
-  the `PJRT_PLATFORM` environment variable or defaults to "cpu".
-
 - cache_size:
 
   (`integer(1)`)  
@@ -44,6 +37,13 @@ jit(
   Names of the arguments whose buffers should be donated. Donated
   buffers can be aliased with outputs of the same type, allowing
   in-place operations and reducing memory usage.
+
+- device:
+
+  (`NULL` \| `character(1)` \|
+  [`PJRTDevice`](https://r-xla.github.io/pjrt/reference/pjrt_device.html))  
+  The device to use if no input tensors are provided to infer the
+  platform.
 
 ## Value
 

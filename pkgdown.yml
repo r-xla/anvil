@@ -3,8 +3,9 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   anvil: anvil.html
+  debugging: debugging.html
   internals: internals.html
   primitives: primitives.html
   random-numbers: random-numbers.html
   type-promotion: type-promotion.html
-last_built: 2025-12-23T16:49Z
+last_built: 2025-12-23T16:51Z

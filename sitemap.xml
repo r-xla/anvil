@@ -4,6 +4,7 @@
 <url><loc>/LICENSE-text.html</loc></url>
 <url><loc>/LICENSE.html</loc></url>
 <url><loc>/articles/anvil.html</loc></url>
+<url><loc>/articles/debugging.html</loc></url>
 <url><loc>/articles/index.html</loc></url>
 <url><loc>/articles/internals.html</loc></url>
 <url><loc>/articles/primitives.html</loc></url>
@@ -14,18 +15,22 @@
 <url><loc>/news/index.html</loc></url>
 <url><loc>/reference/AbstractTensor.html</loc></url>
 <url><loc>/reference/ConcreteTensor.html</loc></url>
+<url><loc>/reference/DebugBox.html</loc></url>
 <url><loc>/reference/Graph.html</loc></url>
+<url><loc>/reference/GraphBox.html</loc></url>
 <url><loc>/reference/GraphDescriptor.html</loc></url>
 <url><loc>/reference/GraphLiteral.html</loc></url>
+<url><loc>/reference/GraphNode.html</loc></url>
 <url><loc>/reference/GraphValue.html</loc></url>
 <url><loc>/reference/LiteralTensor.html</loc></url>
 <url><loc>/reference/Primitive.html</loc></url>
 <url><loc>/reference/PrimitiveCall.html</loc></url>
 <url><loc>/reference/abstract_properties.html</loc></url>
-<url><loc>/reference/assert_shapevec.html</loc></url>
 <url><loc>/reference/common_dtype.html</loc></url>
+<url><loc>/reference/debug_box.html</loc></url>
 <url><loc>/reference/dot-current_descriptor.html</loc></url>
 <url><loc>/reference/gradient.html</loc></url>
+<url><loc>/reference/graph_desc_add.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/jit.html</loc></url>
 <url><loc>/reference/local_descriptor.html</loc></url>
@@ -50,7 +55,6 @@
 <url><loc>/reference/nv_ge.html</loc></url>
 <url><loc>/reference/nv_gt.html</loc></url>
 <url><loc>/reference/nv_if.html</loc></url>
-<url><loc>/reference/nv_iota.html</loc></url>
 <url><loc>/reference/nv_le.html</loc></url>
 <url><loc>/reference/nv_log.html</loc></url>
 <url><loc>/reference/nv_lt.html</loc></url>
@@ -63,17 +67,17 @@
 <url><loc>/reference/nv_not.html</loc></url>
 <url><loc>/reference/nv_or.html</loc></url>
 <url><loc>/reference/nv_pow.html</loc></url>
+<url><loc>/reference/nv_print.html</loc></url>
 <url><loc>/reference/nv_promote_to_common.html</loc></url>
-<url><loc>/reference/nv_rbinom.html</loc></url>
 <url><loc>/reference/nv_reduce_ops.html</loc></url>
 <url><loc>/reference/nv_remainder.html</loc></url>
 <url><loc>/reference/nv_reshape.html</loc></url>
+<url><loc>/reference/nv_rng_bit_generator.html</loc></url>
 <url><loc>/reference/nv_rng_state.html</loc></url>
 <url><loc>/reference/nv_rnorm.html</loc></url>
 <url><loc>/reference/nv_round.html</loc></url>
 <url><loc>/reference/nv_rsqrt.html</loc></url>
 <url><loc>/reference/nv_runif.html</loc></url>
-<url><loc>/reference/nv_sample_int.html</loc></url>
 <url><loc>/reference/nv_select.html</loc></url>
 <url><loc>/reference/nv_shift_left.html</loc></url>
 <url><loc>/reference/nv_shift_right_arithmetic.html</loc></url>
@@ -108,7 +112,6 @@
 <url><loc>/reference/nvl_ge.html</loc></url>
 <url><loc>/reference/nvl_gt.html</loc></url>
 <url><loc>/reference/nvl_if.html</loc></url>
-<url><loc>/reference/nvl_iota.html</loc></url>
 <url><loc>/reference/nvl_le.html</loc></url>
 <url><loc>/reference/nvl_log.html</loc></url>
 <url><loc>/reference/nvl_lt.html</loc></url>
@@ -120,6 +123,7 @@
 <url><loc>/reference/nvl_not.html</loc></url>
 <url><loc>/reference/nvl_or.html</loc></url>
 <url><loc>/reference/nvl_pow.html</loc></url>
+<url><loc>/reference/nvl_print.html</loc></url>
 <url><loc>/reference/nvl_reduce_all.html</loc></url>
 <url><loc>/reference/nvl_reduce_any.html</loc></url>
 <url><loc>/reference/nvl_reduce_max.html</loc></url>
@@ -153,5 +157,6 @@
 <url><loc>/reference/tensorish.html</loc></url>
 <url><loc>/reference/to_abstract.html</loc></url>
 <url><loc>/reference/trace_fn.html</loc></url>
+<url><loc>/reference/transform_gradient.html</loc></url>
 </urlset>
 

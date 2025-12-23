@@ -86,8 +86,7 @@ x + x
 y + y
 ```
 
-    ## Error in `.current_descriptor()`:
-    ## ! No graph is currently being built. Did you forget to use `jit()`?
+    ## i32{2,3}
 
 ## JIT Compilation
 

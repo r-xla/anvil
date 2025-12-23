@@ -8,7 +8,7 @@ includes atomic R vectors.
 
 [nv_tensor](nv_tensor.md), [ConcreteTensor](ConcreteTensor.md),
 [AbstractTensor](AbstractTensor.md), [LiteralTensor](LiteralTensor.md),
-`GraphBox`
+[GraphBox](GraphBox.md)
 
 ## Examples
 

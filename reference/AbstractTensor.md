@@ -7,6 +7,8 @@ metadata without actual values.
 ## Usage
 
 ``` r
+nv_aten(dtype, shape)
+
 AbstractTensor(dtype, shape, ambiguous = FALSE)
 ```
 
@@ -26,9 +28,9 @@ AbstractTensor(dtype, shape, ambiguous = FALSE)
 - ambiguous:
 
   (`logical(1)`)  
-  Whether the type is ambiguous. Ambiguous usually arise from R literals
-  (e.g., `1L`, `1.0`) and follow special promotion rules. Only `f32`,
-  `i32` are ambiguous during tracing.
+  Whether the type is ambiguous. Ambiguous types usually arise from R
+  literals (e.g., `1L`, `1.0`) and follow special promotion rules. See
+  the vignette "Type Promotion" for more details.
 
 ## Details
 

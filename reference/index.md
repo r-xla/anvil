@@ -2,15 +2,22 @@
 
 ## All functions
 
-- [`AbstractTensor()`](AbstractTensor.md) : Abstract Tensor Class
+- [`nv_aten()`](AbstractTensor.md)
+  [`AbstractTensor()`](AbstractTensor.md) : Abstract Tensor Class
 
 - [`ConcreteTensor()`](ConcreteTensor.md) : Concrete Tensor Class
 
+- [`DebugBox()`](DebugBox.md) : Debug Box Class
+
 - [`Graph()`](Graph.md) : Graph of Primitive Calls
+
+- [`GraphBox()`](GraphBox.md) : Graph Box
 
 - [`GraphDescriptor()`](GraphDescriptor.md) : Graph Descriptor
 
 - [`GraphLiteral()`](GraphLiteral.md) : Graph Literal
+
+- [`GraphNode`](GraphNode.md) : Graph Node
 
 - [`GraphValue()`](GraphValue.md) : Graph Value
 
@@ -26,11 +33,16 @@
 
 - [`common_dtype()`](common_dtype.md) : Type Promotion Rules
 
+- [`debug_box()`](debug_box.md) : Create a Debug Box
+
 - [`.current_descriptor()`](dot-current_descriptor.md) : Get the current
   graph
 
 - [`gradient()`](gradient.md) [`value_and_gradient()`](gradient.md) :
   Gradient
+
+- [`graph_desc_add()`](graph_desc_add.md) : Add a Primitive Call to a
+  Graph Descriptor
 
 - [`jit()`](jit.md) : JIT compile a function
 
@@ -83,8 +95,6 @@
 
 - [`nv_if()`](nv_if.md) : If
 
-- [`nv_iota()`](nv_iota.md) : Iota
-
 - [`nv_le()`](nv_le.md) : Less Than or Equal
 
 - [`nv_log()`](nv_log.md) : Natural Logarithm
@@ -109,10 +119,10 @@
 
 - [`nv_pow()`](nv_pow.md) : Power
 
+- [`nv_print()`](nv_print.md) : Print Tensor
+
 - [`nv_promote_to_common()`](nv_promote_to_common.md) : Promote Tensors
   to a Common Dtype
-
-- [`nv_rbinom()`](nv_rbinom.md) : Random Binomial Samples
 
 - [`nv_reduce_sum()`](nv_reduce_ops.md)
   [`nv_reduce_mean()`](nv_reduce_ops.md)
@@ -126,6 +136,8 @@
 
 - [`nv_reshape()`](nv_reshape.md) : Reshape
 
+- [`nv_rng_bit_generator()`](nv_rng_bit_generator.md) : Random Numbers
+
 - [`nv_rng_state()`](nv_rng_state.md) : Generate random state
 
 - [`nv_rnorm()`](nv_rnorm.md) : Random Normal Numbers
@@ -134,10 +146,8 @@
 
 - [`nv_rsqrt()`](nv_rsqrt.md) : Reciprocal Square Root
 
-- [`nv_unif_rand()`](nv_runif.md) [`nv_runif()`](nv_runif.md) :
-  Internal: Random Unit Uniform Numbers
-
-- [`nv_sample_int()`](nv_sample_int.md) : Random Discrete Sample
+- [`nv_runif()`](nv_runif.md) [`nv_unif_rand()`](nv_runif.md) : Random
+  Uniform Numbers
 
 - [`nv_select()`](nv_select.md) : Select
 
@@ -167,7 +177,7 @@
   [`nv_scalar()`](nv_tensor.md) [`nv_empty()`](nv_tensor.md) : Tensor
 
 - [`nv_transpose()`](nv_transpose.md)
-  [`t(`*`<anvil::GraphBox>`*`)`](nv_transpose.md) : Transpose
+  [`t(`*`<anvil::Box>`*`)`](nv_transpose.md) : Transpose
 
 - [`nv_while()`](nv_while.md) : While
 
@@ -213,8 +223,6 @@
 
 - [`nvl_if()`](nvl_if.md) : Primitive If
 
-- [`nvl_iota()`](nvl_iota.md) : Primitive Iota
-
 - [`nvl_le()`](nvl_le.md) : Primitive Less Equal
 
 - [`nvl_log()`](nvl_log.md) : Primitive Logarithm
@@ -236,6 +244,8 @@
 - [`nvl_or()`](nvl_or.md) : Primitive Or
 
 - [`nvl_pow()`](nvl_pow.md) : Primitive Power
+
+- [`nvl_print()`](nvl_print.md) : Primitive Print
 
 - [`nvl_reduce_all()`](nvl_reduce_all.md) : Primitive All Reduction
 
@@ -304,3 +314,6 @@
 - [`to_abstract()`](to_abstract.md) : Convert to Abstract Tensor
 
 - [`trace_fn()`](trace_fn.md) : Trace an R function into a Graph
+
+- [`transform_gradient()`](transform_gradient.md) : Transform a graph to
+  its gradient
