@@ -26,8 +26,3 @@ Matrix multiplication of two tensors.
 }
 }
 
-\section{Broadcasting}{
-
-All dimensions but the last two are broadcasted.
-}
-
