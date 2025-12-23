@@ -8,13 +8,17 @@ includes atomic R vectors.
 
 [nv_tensor](nv_tensor.md), [ConcreteTensor](ConcreteTensor.md),
 [AbstractTensor](AbstractTensor.md), [LiteralTensor](LiteralTensor.md),
-[GraphBox](GraphBox.md)
+`GraphBox`
 
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugin_is_downloaded()
 x <- nv_tensor(1:4, dtype = "f32")
 x
-}
+#> AnvilTensor 
+#>  1.0000
+#>  2.0000
+#>  3.0000
+#>  4.0000
+#> [ CPUf32{4} ] 
 ```

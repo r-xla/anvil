@@ -24,9 +24,7 @@ nvl_convert(operand, dtype, ambiguous = FALSE)
 - ambiguous:
 
   (`logical(1)`)  
-  Whether the type is ambiguous. Ambiguous types usually arise from R
-  literals (e.g., `1L`, `1.0`) and follow special promotion rules. See
-  the vignette "Type Promotion" for more details.
+  Whether the result type is ambiguous.
 
 ## Value
 

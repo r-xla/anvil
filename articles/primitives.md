@@ -35,7 +35,6 @@ transformations.
 | not_equal              | ✓         |    ✓     |
 | or                     | ✓         |    ✗     |
 | power                  | ✓         |    ✓     |
-| print                  | ✓         |    ✗     |
 | reduce_all             | ✓         |    ✗     |
 | reduce_any             | ✓         |    ✗     |
 | reduce_max             | ✓         |    ✓     |
