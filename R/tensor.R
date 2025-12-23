@@ -228,11 +228,6 @@ method(`==`, list(AbstractTensor, AbstractTensor)) <- function(e1, e2) {
   e1@dtype == e2@dtype && e1@shape == e2@shape
 }
 
-# Explicit type comparison that doesn't dispatch to Ops
-aval_type_eq <- function(e1, e2) {
-  e1@dtype == e2@dtype && e1@shape == e2@shape
-}
-
 method(repr, AbstractTensor) <- function(x) {
   sprintf("%s[%s]", paste0(repr(x@dtype), if (x@ambiguous) "?"), repr(x@shape))
 }

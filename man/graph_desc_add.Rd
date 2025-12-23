@@ -35,7 +35,8 @@ Uses the \link[=.current_descriptor]{current descriptor} if \code{NULL}.}
 Whether to just perform abstract evaluation for debugging.}
 }
 \value{
-A list of \code{GraphBox} objects.
+(\code{list} of \code{Box})\cr
+Either \code{GraphBox} objects or \code{DebugBox} objects, depending on \code{debug_mode}.
 }
 \description{
 Add a primitive call to a graph descriptor.

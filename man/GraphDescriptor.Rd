@@ -43,14 +43,3 @@ The outputs of the graph.}
 \description{
 Descriptor of a \code{\link{Graph}}.
 }
-\details{
-The trickiest thing in our setup are how we ensure that the same values receive the same identifier
-(GraphValue) across nested graphs.
-}
-\section{TODO: Finish this}{
-There are two cases:
-\enumerate{
-\item When a
-}
-}
-

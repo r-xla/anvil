@@ -108,8 +108,10 @@ test_that("group generics", {
 
 
 test_that("can't debug with abstract tensors", {
-  # We can't allow this, because it might be confusing, because `==` does not call into
-  # nvl_eq for AbstractTensors, but actually checks for type equality
+  # We can't allow this, because `==` (and other generics)
+  # do not call into nvl_eq for AbstractTensors, but actually checks for type equality
+  # For non-generics, abstract tensors would work, but it would be confusing if it suddenly
+  # does not work for generics
   expect_error(
     nv_add(nv_aten("f32", c(2, 2)), nv_aten("f32", c(2, 2))),
     "Don't use AbtractTensors as inputs"

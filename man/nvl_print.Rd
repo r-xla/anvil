@@ -14,6 +14,7 @@ Operand.}
 \code{\link{tensorish}}
 }
 \description{
-Prints a tensor during execution (side effect). Returns the input unchanged.
+Prints a tensor during execution.
+Returns the input unchanged.
 Note: Currently only works on CPU backend.
 }

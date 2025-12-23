@@ -49,10 +49,12 @@ p_reshape[["stablehlo"]] <- function(operand, shape) {
 }
 
 p_concatenate[["stablehlo"]] <- function(..., dimension) {
+  # we use 1:n, which includes n, but this translates to 0:n in stablehlo
   list(stablehlo::hlo_concatenate(..., dimension = dimension - 1L))
 }
 
 p_slice[["stablehlo"]] <- function(operand, start_indices, limit_indices, strides) {
+  # we use 1:n, which includes n, but this translates to 0:n in stablehlo
   list(stablehlo::hlo_slice(operand, start_indices - 1L, limit_indices, strides))
 }
 
@@ -281,7 +283,7 @@ p_print[["stablehlo"]] <- function(operand) {
     stablehlo::StringAttr(name = "print_header", value = "AnvilTensor")
   ))
 
-  # Side-effect only call
+  # has side-effect
   stablehlo::hlo_custom_call(
     operand,
     call_target_name = "print_tensor",
@@ -289,6 +291,7 @@ p_print[["stablehlo"]] <- function(operand) {
     has_side_effect = TRUE,
     backend_config = backend_config
   )
+  # we just return the input
   list(operand)
 }
 

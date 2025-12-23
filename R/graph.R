@@ -129,18 +129,10 @@ Graph <- mut(new_class(
 #' @param outputs (`list(GraphValue)`)\cr
 #'   The outputs of the graph.
 #' @export
-#'
-#' @details
-#' The trickiest thing in our setup are how we ensure that the same values receive the same identifier
-#' (GraphValue) across nested graphs.
-#' # TODO: Finish this
-#' There are two cases:
-#' 1. When a
 GraphDescriptor <- mut(new_class(
   "GraphDescriptor",
   properties = list(
     calls = list_of(PrimitiveCall),
-    # We either get boxes as GraphValue or Tensor
     tensor_to_gval = new_property(class_hashtab, default = quote(hashtab())),
     gval_to_box = new_property(class_hashtab, default = quote(hashtab())),
     constants = list_of(GraphValue),
@@ -189,10 +181,10 @@ descriptor_to_graph <- function(descriptor) {
 
 #' @title Graph Box
 #' @description
-#' Box representing a value in a [`Graph`].
-#' @param gnode (`GraphNode`)\cr
-#'   The node representing the value in the graph.
-#' @param desc (`GraphDescriptor`)\cr
+#' Box that represents a node in a [`GraphDescriptor`].
+#' @param gnode ([`GraphNode`])\cr
+#'   The node.
+#' @param desc ([`GraphDescriptor`])\cr
 #'   The descriptor of the graph.
 #' @export
 GraphBox <- new_class(
@@ -267,6 +259,7 @@ maybe_box_input <- function(x, desc) {
   } else if (is_debug_box(x)) {
     # User provided abstract input
     # This is useful for debugging and in jit() we anyway verify that the inputs are AnvilTensors
+    # so we don't accidentally box abstract tensors there
     gval <- GraphValue(aval = x@aval)
     register_input(desc, gval)
   } else if (is_graph_box(x)) {
@@ -532,7 +525,8 @@ is_graph_box <- function(x) {
 #'   Uses the [current descriptor][.current_descriptor] if `NULL`.
 #' @param debug_mode (`logical(1)`)\cr
 #'   Whether to just perform abstract evaluation for debugging.
-#' @return A list of `GraphBox` objects.
+#' @return (`list` of `Box`)\cr
+#'   Either `GraphBox` objects or `DebugBox` objects, depending on `debug_mode`.
 #' @export
 graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, debug_mode = NULL) {
   desc <- desc %??% .current_descriptor(silent = TRUE)

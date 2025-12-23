@@ -227,3 +227,7 @@ test_that("... works (#19)", {
 test_that("error message when passing invalid input", {
   expect_error(jit(nv_tan)(1L), "Expected anvil tensor, but got")
 })
+
+test_that("good error message when passing AbstractTensors", {
+  expect_error(jit(nv_neg)(nv_aten("f32", c(2, 2))), "Expected anvil tensor, but got")
+})

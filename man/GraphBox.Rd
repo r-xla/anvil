@@ -7,12 +7,12 @@
 GraphBox(gnode = `mut<GraphValue>`(), desc = `mut<GraphDescriptor>`())
 }
 \arguments{
-\item{gnode}{(\code{GraphNode})\cr
-The node representing the value in the graph.}
+\item{gnode}{(\code{\link{GraphNode}})\cr
+The node.}
 
-\item{desc}{(\code{GraphDescriptor})\cr
+\item{desc}{(\code{\link{GraphDescriptor}})\cr
 The descriptor of the graph.}
 }
 \description{
-Box representing a value in a \code{\link{Graph}}.
+Box that represents a node in a \code{\link{GraphDescriptor}}.
 }
