@@ -63,6 +63,20 @@ test_that("p_fill", {
   f <- jit(function(x) nv_fill(x, shape = c(2, 3), dtype = "f32"), static = "x")
   expect_equal(f(1), nv_tensor(1, shape = c(2, 3), dtype = "f32"))
   expect_equal(f(2), nv_tensor(2, shape = c(2, 3), dtype = "f32"))
+
+  # scalars
+  expect_equal(
+    jit(\() nv_fill(1L, shape = c(), dtype = "f32"))(),
+    nv_scalar(1, dtype = "f32")
+  )
+  expect_equal(
+    jit(\() nv_fill(1L, shape = integer(), dtype = "f32"))(),
+    nv_scalar(1, dtype = "f32")
+  )
+  expect_equal(
+    jit(\() nv_fill(1L, shape = 1L, dtype = "f32"))(),
+    nv_tensor(1, shape = 1L, dtype = "f32")
+  )
 })
 
 test_that("p_shift_left", {

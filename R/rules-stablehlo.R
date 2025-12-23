@@ -281,7 +281,7 @@ p_print[["stablehlo"]] <- function(operand) {
     stablehlo::StringAttr(name = "print_header", value = "AnvilTensor")
   ))
 
-  # Side-effect only call (no output_types), returns original operand
+  # Side-effect only call
   stablehlo::hlo_custom_call(
     operand,
     call_target_name = "print_tensor",
