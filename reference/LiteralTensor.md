@@ -32,9 +32,9 @@ LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
 - ambiguous:
 
   (`logical(1)`)  
-  Whether the type is ambiguous. Ambiguous usually arise from R literals
-  (e.g., `1L`, `1.0`) and follow special promotion rules. Only `f32` and
-  `i32` can be ambiguous during tracing.
+  Whether the type is ambiguous. Ambiguous types usually arise from R
+  literals (e.g., `1L`, `1.0`) and follow special promotion rules. See
+  the vignette "Type Promotion" for more details.
 
 ## See also
 

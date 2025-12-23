@@ -7,7 +7,9 @@ transformations.
 |:-----------------------|:----------|:--------:|
 | abs                    | ✓         |    ✓     |
 | add                    | ✓         |    ✓     |
+| all                    | ✓         |    ✗     |
 | and                    | ✓         |    ✗     |
+| any                    | ✓         |    ✗     |
 | atan2                  | ✓         |    ✗     |
 | bitcast_convert        | ✓         |    ✗     |
 | broadcast_in_dim       | ✓         |    ✓     |
@@ -27,7 +29,9 @@ transformations.
 | less                   | ✓         |    ✓     |
 | less_equal             | ✓         |    ✓     |
 | log                    | ✓         |    ✓     |
+| max                    | ✓         |    ✓     |
 | maximum                | ✓         |    ✓     |
+| min                    | ✓         |    ✓     |
 | minimum                | ✓         |    ✓     |
 | mul                    | ✓         |    ✓     |
 | negate                 | ✓         |    ✓     |
@@ -35,12 +39,8 @@ transformations.
 | not_equal              | ✓         |    ✓     |
 | or                     | ✓         |    ✗     |
 | power                  | ✓         |    ✓     |
-| reduce_all             | ✓         |    ✗     |
-| reduce_any             | ✓         |    ✗     |
-| reduce_max             | ✓         |    ✓     |
-| reduce_min             | ✓         |    ✓     |
-| reduce_prod            | ✓         |    ✗     |
-| reduce_sum             | ✓         |    ✓     |
+| print                  | ✓         |    ✗     |
+| prod                   | ✓         |    ✗     |
 | remainder              | ✓         |    ✗     |
 | reshape                | ✓         |    ✓     |
 | rng_bit_generator      | ✓         |    ✗     |
@@ -55,6 +55,7 @@ transformations.
 | slice                  | ✓         |    ✗     |
 | sqrt                   | ✓         |    ✓     |
 | sub                    | ✓         |    ✓     |
+| sum                    | ✓         |    ✓     |
 | tan                    | ✓         |    ✓     |
 | tanh                   | ✓         |    ✓     |
 | transpose              | ✓         |    ✓     |

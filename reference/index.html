@@ -30,6 +30,7 @@
     <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
     <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
     <li><a class="dropdown-item" href="../articles/primitives.html">Primitives Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/debugging.html">Debugging</a></li>
   </ul></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-technical" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Technical</button>
@@ -67,7 +68,7 @@
 
       <dl><dt>
 
-          <code><a href="AbstractTensor.html">AbstractTensor()</a></code>
+          <code><a href="AbstractTensor.html">nv_aten()</a></code> <code><a href="AbstractTensor.html">AbstractTensor()</a></code>
 
         </dt>
         <dd>Abstract Tensor Class</dd>
@@ -81,10 +82,24 @@
 
         <dt>
 
+          <code><a href="DebugBox.html">DebugBox()</a></code>
+
+        </dt>
+        <dd>Debug Box Class</dd>
+
+        <dt>
+
           <code><a href="Graph.html">Graph()</a></code>
 
         </dt>
         <dd>Graph of Primitive Calls</dd>
+
+        <dt>
+
+          <code><a href="GraphBox.html">GraphBox()</a></code>
+
+        </dt>
+        <dd>Graph Box</dd>
 
         <dt>
 
@@ -99,6 +114,13 @@
 
         </dt>
         <dd>Graph Literal</dd>
+
+        <dt>
+
+          <code><a href="GraphNode.html">GraphNode</a></code>
+
+        </dt>
+        <dd>Graph Node</dd>
 
         <dt>
 
@@ -144,6 +166,13 @@
 
         <dt>
 
+          <code><a href="debug_box.html">debug_box()</a></code>
+
+        </dt>
+        <dd>Create a Debug Box</dd>
+
+        <dt>
+
           <code><a href="dot-current_descriptor.html">.current_descriptor()</a></code>
 
         </dt>
@@ -155,6 +184,13 @@
 
         </dt>
         <dd>Gradient</dd>
+
+        <dt>
+
+          <code><a href="graph_desc_add.html">graph_desc_add()</a></code>
+
+        </dt>
+        <dd>Add a Primitive Call to a Graph Descriptor</dd>
 
         <dt>
 
@@ -403,6 +439,13 @@
 
         <dt>
 
+          <code><a href="nv_print.html">nv_print()</a></code>
+
+        </dt>
+        <dd>Print Tensor</dd>
+
+        <dt>
+
           <code><a href="nv_promote_to_common.html">nv_promote_to_common()</a></code>
 
         </dt>
@@ -557,7 +600,7 @@
 
         <dt>
 
-          <code><a href="nv_transpose.html">nv_transpose()</a></code> <code><a href="nv_transpose.html">t(<i>&lt;anvil::GraphBox&gt;</i>)</a></code>
+          <code><a href="nv_transpose.html">nv_transpose()</a></code> <code><a href="nv_transpose.html">t(<i>&lt;anvil::Box&gt;</i>)</a></code>
 
         </dt>
         <dd>Transpose</dd>
@@ -788,6 +831,13 @@
 
         <dt>
 
+          <code><a href="nvl_print.html">nvl_print()</a></code>
+
+        </dt>
+        <dd>Primitive Print</dd>
+
+        <dt>
+
           <code><a href="nvl_reduce_all.html">nvl_reduce_all()</a></code>
 
         </dt>
@@ -1009,6 +1059,13 @@
 
         </dt>
         <dd>Trace an R function into a Graph</dd>
+
+        <dt>
+
+          <code><a href="transform_gradient.html">transform_gradient()</a></code>
+
+        </dt>
+        <dd>Transform a graph to its gradient</dd>
       </dl></div>
   </main></div>
 

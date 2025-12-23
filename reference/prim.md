@@ -5,15 +5,16 @@ Get a primitive by name.
 ## Usage
 
 ``` r
-prim(name)
+prim(name = NULL)
 ```
 
 ## Arguments
 
 - name:
 
-  ([`character()`](https://rdrr.io/r/base/character.html))  
-  The name of the primitive.
+  ([`character()`](https://rdrr.io/r/base/character.html) \| `NULL`)  
+  The name of the primitive. If `NULL`, returns a list of all
+  primitives.
 
 ## Value
 

@@ -17,7 +17,8 @@ trace_fn(f, args, desc = NULL)
 
 - args:
 
-  (`list`)  
+  (`list` of ([`AnvilTensor`](nv_tensor.md) \|
+  [`AbstractTensor`](AbstractTensor.md)))  
   The arguments to the function.
 
 - desc:
