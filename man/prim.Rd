@@ -4,11 +4,12 @@
 \alias{prim}
 \title{Get a Primitive}
 \usage{
-prim(name)
+prim(name = NULL)
 }
 \arguments{
-\item{name}{(\code{character()})\cr
-The name of the primitive.}
+\item{name}{(\code{character()} | \code{NULL})\cr
+The name of the primitive.
+If \code{NULL}, returns a list of all primitives.}
 }
 \value{
 (\code{Primitive})
