@@ -10,7 +10,7 @@ trace_fn(f, args, desc = NULL)
 \item{f}{(\code{function})\cr
 The function to trace_fn.}
 
-\item{args}{(\code{list})\cr
+\item{args}{(\code{list} of (\code{\link{AnvilTensor}} | \code{\link{AbstractTensor}}))\cr
 The arguments to the function.}
 
 \item{desc}{(\code{NULL} | \code{GraphDescriptor})\cr

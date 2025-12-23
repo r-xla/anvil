@@ -206,6 +206,13 @@ nv_concatenate <- nvl_concatenate
 #' @export
 nv_slice <- nvl_slice
 
+#' @title Print Tensor
+#' @description
+#' Prints a tensor during JIT execution.
+#' @template param_operand
+#' @export
+nv_print <- nvl_print
+
 #' @title Select
 #' @description
 #' return values from true_value and false_value conditioned on pred

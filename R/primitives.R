@@ -362,7 +362,7 @@ make_reduce_op <- function(prim, infer_fn = infer_reduce) {
   }
 }
 
-p_reduce_sum <- Primitive("reduce_sum")
+p_reduce_sum <- Primitive("sum")
 #' @title Primitive Sum Reduction
 #' @description
 #' Sums tensor elements along dimensions.
@@ -375,7 +375,7 @@ p_reduce_sum <- Primitive("reduce_sum")
 #' @export
 nvl_reduce_sum <- make_reduce_op(p_reduce_sum)
 
-p_reduce_prod <- Primitive("reduce_prod")
+p_reduce_prod <- Primitive("prod")
 #' @title Primitive Product Reduction
 #' @description
 #' Multiplies tensor elements along dimensions.
@@ -388,7 +388,7 @@ p_reduce_prod <- Primitive("reduce_prod")
 #' @export
 nvl_reduce_prod <- make_reduce_op(p_reduce_prod)
 
-p_reduce_max <- Primitive("reduce_max")
+p_reduce_max <- Primitive("max")
 #' @title Primitive Max Reduction
 #' @description
 #' Finds maximum along dimensions.
@@ -401,7 +401,7 @@ p_reduce_max <- Primitive("reduce_max")
 #' @export
 nvl_reduce_max <- make_reduce_op(p_reduce_max)
 
-p_reduce_min <- Primitive("reduce_min")
+p_reduce_min <- Primitive("min")
 #' @title Primitive Min Reduction
 #' @description
 #' Finds minimum along dimensions.
@@ -414,7 +414,7 @@ p_reduce_min <- Primitive("reduce_min")
 #' @export
 nvl_reduce_min <- make_reduce_op(p_reduce_min)
 
-p_reduce_any <- Primitive("reduce_any")
+p_reduce_any <- Primitive("any")
 #' @title Primitive Any Reduction
 #' @description
 #' Logical OR along dimensions.
@@ -427,7 +427,7 @@ p_reduce_any <- Primitive("reduce_any")
 #' @export
 nvl_reduce_any <- make_reduce_op(p_reduce_any, infer_reduce_boolean)
 
-p_reduce_all <- Primitive("reduce_all")
+p_reduce_all <- Primitive("all")
 #' @title Primitive All Reduction
 #' @description
 #' Logical AND along dimensions.
@@ -781,8 +781,7 @@ p_convert <- Primitive("convert")
 #' Converts tensor to a different dtype.
 #' @template param_operand
 #' @template param_dtype
-#' @param ambiguous (`logical(1)`)\cr
-#'   Whether the result type is ambiguous.
+#' @template param_ambiguous
 #' @return [`tensorish`]
 #' @export
 nvl_convert <- function(operand, dtype, ambiguous = FALSE) {
@@ -854,10 +853,10 @@ nvl_if <- function(pred, true, false) {
 
   current_desc <- .current_descriptor(silent = TRUE)
 
-  #debug_mode <- is.null(current_desc)
-  #if (debug_mode) {
-  #  current_desc <- local_descriptor()
-  #}
+  debug_mode <- is.null(current_desc)
+  if (debug_mode) {
+    current_desc <- local_descriptor()
+  }
   # TODO(split pr)
 
   desc_true <- local_descriptor()
@@ -899,9 +898,8 @@ nvl_if <- function(pred, true, false) {
     list(pred),
     params = list(true_graph = true_graph, false_graph = false_graph),
     infer_fn = infer_fn,
-    desc = current_desc #,
-    #debug_mode = debug_mode
-    # TODO(split pr)
+    desc = current_desc,
+    debug_mode = debug_mode
   )
   unflatten(true_graph@out_tree, out)
 }
@@ -933,10 +931,10 @@ nvl_while <- function(init, cond, body) {
   }
 
   current_desc <- .current_descriptor(silent = TRUE)
-  #debug_mode <- is.null(current_desc)
-  #if (debug_mode) {
-  #  current_desc <- local_descriptor()
-  #}
+  debug_mode <- is.null(current_desc)
+  if (debug_mode) {
+    current_desc <- local_descriptor()
+  }
 
   desc_cond <- local_descriptor()
 
@@ -984,11 +982,24 @@ nvl_while <- function(init, cond, body) {
     args = flatten(init),
     params = list(cond_graph = cond_graph, body_graph = body_graph),
     infer_fn = infer_fn,
-    desc = current_desc #,
-    #debug_mode = debug_mode
+    desc = current_desc,
+    debug_mode = debug_mode
   )
 
   unflatten(body_graph@out_tree, out)
+}
+
+# Print primitive
+p_print <- Primitive("print")
+#' @title Primitive Print
+#' @description
+#' Prints a tensor during execution (side effect). Returns the input unchanged.
+#' Note: Currently only works on CPU backend.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nvl_print <- function(operand) {
+  graph_desc_add(p_print, list(operand), infer_fn = list)[[1L]]
 }
 
 # RNG primitives
