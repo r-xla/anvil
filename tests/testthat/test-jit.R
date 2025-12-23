@@ -181,11 +181,12 @@ test_that("jit: tensor return value is not wrapped in list", {
   expect_equal(as_array(out), 1.2 + (-0.7), tolerance = 1e-6)
 })
 
-test_that("error message when using wrong device", {
+test_that("error message when using different platforms", {
   skip_if(!is_cuda())
-  f <- jit(\(x) x, device = "cpu")
-  x <- nv_tensor(1, device = "cuda")
-  expect_error(f(x), "but buffer has device cuda")
+  f <- jit(\(x, y) x + y)
+  x <- nv_tensor(1, device = "cpu")
+  y <- nv_tensor(1, device = "cuda")
+  expect_error(f(x, y), "Inputs live on different platforms")
 })
 
 test_that("constants can be part of the program", {

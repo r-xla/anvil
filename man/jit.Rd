@@ -4,13 +4,7 @@
 \alias{jit}
 \title{JIT compile a function}
 \usage{
-jit(
-  f,
-  static = character(),
-  device = NULL,
-  cache_size = 100L,
-  donate = character()
-)
+jit(f, static = character(), cache_size = 100L, donate = character())
 }
 \arguments{
 \item{f}{(\code{function})\cr
@@ -18,10 +12,6 @@ Function to compile.}
 
 \item{static}{(\code{character()})\cr
 Which parameters of \code{f} are static.}
-
-\item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
-The device to use for the compiled function.
-The default (\code{NULL}) uses the \code{PJRT_PLATFORM} environment variable or defaults to "cpu".}
 
 \item{cache_size}{(\code{integer(1)})\cr
 The size of the cache for the jit-compiled functions.}
