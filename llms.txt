@@ -186,6 +186,8 @@ problem for fast running programs.
 
 - [`nv_if()`](nv_if.md) : If
 
+- [`nv_iota()`](nv_iota.md) : Iota
+
 - [`nv_le()`](nv_le.md) : Less Than or Equal
 
 - [`nv_log()`](nv_log.md) : Natural Logarithm
@@ -213,6 +215,8 @@ problem for fast running programs.
 - [`nv_promote_to_common()`](nv_promote_to_common.md) : Promote Tensors
   to a Common Dtype
 
+- [`nv_rbinom()`](nv_rbinom.md) : Random Binomial Samples
+
 - [`nv_reduce_sum()`](nv_reduce_ops.md)
   [`nv_reduce_mean()`](nv_reduce_ops.md)
   [`nv_reduce_prod()`](nv_reduce_ops.md)
@@ -225,8 +229,6 @@ problem for fast running programs.
 
 - [`nv_reshape()`](nv_reshape.md) : Reshape
 
-- [`nv_rng_bit_generator()`](nv_rng_bit_generator.md) : Random Numbers
-
 - [`nv_rng_state()`](nv_rng_state.md) : Generate random state
 
 - [`nv_rnorm()`](nv_rnorm.md) : Random Normal Numbers
@@ -235,8 +237,10 @@ problem for fast running programs.
 
 - [`nv_rsqrt()`](nv_rsqrt.md) : Reciprocal Square Root
 
-- [`nv_runif()`](nv_runif.md) [`nv_unif_rand()`](nv_runif.md) : Random
-  Uniform Numbers
+- [`nv_unif_rand()`](nv_runif.md) [`nv_runif()`](nv_runif.md) :
+  Internal: Random Unit Uniform Numbers
+
+- [`nv_sample_int()`](nv_sample_int.md) : Random Discrete Sample
 
 - [`nv_select()`](nv_select.md) : Select
 
@@ -311,6 +315,8 @@ problem for fast running programs.
 - [`nvl_gt()`](nvl_gt.md) : Primitive Greater Than
 
 - [`nvl_if()`](nvl_if.md) : Primitive If
+
+- [`nvl_iota()`](nvl_iota.md) : Primitive Iota
 
 - [`nvl_le()`](nvl_le.md) : Primitive Less Equal
 
