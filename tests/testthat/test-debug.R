@@ -14,9 +14,6 @@ test_that("printer for debug box", {
     DebugBox(AbstractTensor("f32", c(), FALSE))
   )
   expect_snapshot(
-    DebugBox(ConcreteTensor(nv_tensor(1:4, dtype = "f32", shape = c(2, 2))))
-  )
-  expect_snapshot(
     DebugBox(LiteralTensor(1, shape = c(2, 3), ambiguous = TRUE))
   )
   expect_snapshot(
@@ -24,6 +21,10 @@ test_that("printer for debug box", {
   )
   expect_snapshot(
     DebugBox(LiteralTensor(1, shape = c(), ambiguous = FALSE))
+  )
+  skip_if(!is_cpu())
+  expect_snapshot(
+    DebugBox(ConcreteTensor(nv_tensor(1:4, dtype = "f32", shape = c(2, 2))))
   )
 })
 

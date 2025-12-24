@@ -234,6 +234,6 @@ test_that("good error message when passing AbstractTensors", {
 })
 
 test_that("jit: respects device argument", {
-  f <- jit(function() nv_scalar(1), device = "cpu")
+  f <- jit(function() 1, device = "cpu")
   expect_equal(f(), nv_scalar(1, device = "cpu"))
 })
