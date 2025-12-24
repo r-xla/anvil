@@ -100,7 +100,7 @@ For the second approach, we use `nv_while` to implement the loop.
 
 ```{r}
 jit(\() {
-  init <- nv_scalar(1L)
+  init <- nv_fill(1L, shape = c())
   nv_while(
     list(x = init),
     \(x) x <= 10,
