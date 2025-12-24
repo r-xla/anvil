@@ -49,7 +49,6 @@ p_reshape[["stablehlo"]] <- function(operand, shape) {
 }
 
 p_concatenate[["stablehlo"]] <- function(..., dimension) {
-  # we use 1:n, which includes n, but this translates to 0:n in stablehlo
   list(stablehlo::hlo_concatenate(..., dimension = dimension - 1L))
 }
 
