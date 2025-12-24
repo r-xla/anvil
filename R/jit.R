@@ -89,3 +89,31 @@ jit <- function(f, static = character(), device = NULL, cache_size = 100L, donat
   formals(f_jit) <- formals2(f)
   f_jit
 }
+
+#' @title Jit an Evaluate an Expression
+#' @description
+#' Compiles and evaluates an expression.
+#' @param expr (`expression`)\cr
+#'   Expression to run.
+#' @return (`any`)\cr
+#'   Result of the expression.
+#' @export
+jit_eval <- function(expr) {
+  expr <- substitute(expr)
+  jit(\() eval(expr))()
+}
+
+
+jit_eval({
+  u <- nv_sample_int(nv_rng_state(1), n = 10, shape = 1000)
+  count <- nv_iota(1L, shape = c(10, 1000))
+  res <- nv_broadcast_tensors(count, u[[2L]])
+  count <- res[[1]]
+  u <- res[[2]]
+
+  eq <- count == u
+  print(dtype(eq))
+  print(shape(eq))
+
+  y <- nv_reduce_sum(nv_convert(eq, dtype = "i32"), dims = 2L)
+})

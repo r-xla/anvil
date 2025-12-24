@@ -156,14 +156,12 @@ nv_rnorm <- function(initial_state, dtype = "f32", shape, mu = 0, sigma = 1) {
 nv_rbinom <- function(initial_state, dtype = "i32", shape) {
   shape <- assert_shapevec(shape)
 
-  # Total number of samples needed
   n <- prod(shape)
 
   # We generate ui8 random values and extract 8 bits from each.
-  # Generating i1 is not possible unfortunately
   n_bytes <- as.integer(ceiling(n / 8))
 
-  # Generate random bytes
+  # Generating i1 is not possible unfortunately
   rbits <- nvl_rng_bit_generator(
     initial_state = initial_state,
     "THREE_FRY",
@@ -171,41 +169,26 @@ nv_rbinom <- function(initial_state, dtype = "i32", shape) {
     shape_out = n_bytes
   )
 
-  # Extract individual bits from each byte
-  # bits[i, j] = (rbits[i] >> j) & 1 for j in 0:7
-  # Reshape rbits to (n_bytes, 1) for broadcasting
+  # Shift the 8 bits by 0, 1, 2, and xor with 1 (u8) to extract individual bits
   bytes_col <- nv_reshape(rbits[[2]], shape = c(n_bytes, 1L))
-
-  # Create bit positions [0, 1, 2, 3, 4, 5, 6, 7] as ui8
   bit_positions <- nv_iota(dim = 2L, shape = c(1L, 8L), dtype = "ui8", start = 0)
-
-  # Broadcast both tensors to (n_bytes, 8) for element-wise shift
-  bc <- nv_broadcast_tensors(bytes_col, bit_positions)
+  bc <- nv_broadcast_tensors(bytes_col, bit_positions) # (n_bytes, 8)
   bytes_bc <- bc[[1L]]
   positions_bc <- bc[[2L]]
+  shifted <- nvl_shift_right_logical(bytes_bc, positions_bc) # (n_bytes, 8)
 
-  # Shift each byte right by bit positions (result is (n_bytes, 8))
-  shifted <- nvl_shift_right_logical(bytes_bc, positions_bc)
-
-  # AND with 1 to extract individual bits
   one <- nv_scalar(1L, dtype = "ui8")
   bits <- nv_and(shifted, one)
 
-  # Flatten to 1D: (n_bytes * 8,)
   bits <- nv_reshape(bits, shape = n_bytes * 8L)
 
-  # Slice to get exactly n bits (discard extra bits if n is not a multiple of 8)
+  # discard unneeded bits
   if (n < n_bytes * 8L) {
     bits <- nv_slice(bits, start_indices = 1L, limit_indices = n, strides = 1L)
   }
 
-  # Reshape to the desired output shape
   bits <- nv_reshape(bits, shape = shape)
-
-  # Convert to the desired output dtype
   bits <- nv_convert(bits, dtype = dtype)
-
-  # Return state and samples
   list(rbits[[1]], bits)
 }
 
@@ -223,31 +206,25 @@ nv_rbinom <- function(initial_state, dtype = "i32", shape) {
 #' @return (`list()` of [`tensorish`])\cr
 #'   List of two tensors: the new RNG state and the sampled integers (1 to n).
 #' @export
-nv_sample_int <- function(n, shape, initial_state, dtype = "i32") {
+nv_sample_int <- function(initial_state, n, shape, dtype = "i32") {
   checkmate::assert_int(n, lower = 1)
   shape <- assert_shapevec(shape)
-  k <- prod(shape)
+  n_sample <- prod(shape)
 
-  # Generate U in [0, 1) using raw bit generator logic
-  # Equivalent to unif_rand() in R's sample implementation
-  res <- nv_unif_rand(initial_state, shape = k, dtype = "f64")
+  # we sample uniformly and compute the maximial i, s.t. sum(bits[1:i]) <= F(x)
+
+  # use f64 for higher precision
+  res <- nv_unif_rand(initial_state, shape = n_sample, dtype = "f64")
   u <- res[[2]]
 
-  # R's ProbSampleReplace algorithm specialized for uniform probabilities:
-  # 1. Cumulative probabilities are (1, 2, ..., n) / n
   cp <- nv_div(
     nv_iota(dim = 1L, shape = n, dtype = "f64", start = 1),
     nv_fill(n, "f64", shape = c())
   )
 
-  # 2. Search for the first bin j such that u <= cp[j]
-  # We implement this by counting how many cp[j] are strictly less than u,
-  # which gives the number of bins to skip, then adding 1.
-  u_col <- nv_reshape(u, c(k, 1L))
+  u_col <- nv_reshape(u, c(n_sample, 1L))
   cp_row <- nv_reshape(cp, c(1L, n))
-  bc <- nv_broadcast_tensors(u_col, cp_row)
-
-  # count(cp < u)
+  bc <- nv_broadcast_tensors(u_col, cp_row) # (n_sample, n)
   lt_matrix <- nv_convert(nv_lt(bc[[2L]], bc[[1L]]), dtype = "i32")
   samples <- nv_add(nv_reduce_sum(lt_matrix, dims = 2L), 1L)
 
