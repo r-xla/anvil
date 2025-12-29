@@ -2,13 +2,13 @@
 % Please edit documentation in R/api-rng.R
 \name{nv_rnorm}
 \alias{nv_rnorm}
-\title{Random Normal Numbers}
+\title{Sample from a Normal Distribution}
 \usage{
 nv_rnorm(initial_state, dtype = "f32", shape, mu = 0, sigma = 1)
 }
 \arguments{
-\item{initial_state}{(\code{\link{tensorish}})\cr
-Tensor of type \code{ui64[2]}.}
+\item{initial_state}{([\code{ui64[2]}][tensorish])\cr
+RNG state.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}
@@ -20,14 +20,17 @@ Shape.}
 Expected value.}
 
 \item{sigma}{(\code{numeric(1)})\cr
-Standard deviation.
-#' @section Covariance:
-To implement a covariance structure use cholesky decomposition.}
+Standard deviation.}
 }
 \value{
 (\code{list()} of \code{\link{tensorish}})\cr
 List of two tensors: the new RNG state and the generated random numbers.
 }
 \description{
-generate random normal numbers
+Sample from a normal distribution with mean \eqn{\mu} and standard deviation \eqn{\sigma}.
 }
+\section{Covariance}{
+
+To implement a covariance structure use cholesky decomposition.
+}
+

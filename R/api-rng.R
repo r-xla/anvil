@@ -3,7 +3,7 @@
 
 #' @title Sample from a Uniform Distribution
 #' @description
-#' Sample from a uniform distribution in $(\text{lower}, \text{upper})$
+#' Sample from a uniform distribution in the open interval (lower, upper).
 #' @template param_initial_state
 #' @template param_dtype
 #' @template param_shape
@@ -64,7 +64,7 @@ nv_runif <- function(
 
 #' @title Sample from a Normal Distribution
 #' @description
-#' Sample from a normal distribution with mean $\mu$ and standard deviation $\sigma$.
+#' Sample from a normal distribution with mean \eqn{\mu} and standard deviation \eqn{\sigma}.
 #' @template param_initial_state
 #' @template param_dtype
 #' @template param_shape
@@ -72,7 +72,7 @@ nv_runif <- function(
 #'   Expected value.
 #' @param sigma (`numeric(1)`)\cr
 #'   Standard deviation.
-#' #' @section Covariance:
+#' @section Covariance:
 #' To implement a covariance structure use cholesky decomposition.
 #' @return (`list()` of [`tensorish`])\cr
 #'   List of two tensors: the new RNG state and the generated random numbers.

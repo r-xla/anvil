@@ -2,13 +2,19 @@
 % Please edit documentation in R/api-rng.R
 \name{nv_rbinom}
 \alias{nv_rbinom}
-\title{Random Binomial Samples}
+\title{Sample from a Binomial Distribution}
 \usage{
-nv_rbinom(initial_state, dtype = "i32", shape)
+nv_rbinom(initial_state, n = 1L, prob = 0.5, dtype = "i32", shape)
 }
 \arguments{
-\item{initial_state}{(\code{\link{tensorish}})\cr
-Tensor of type \code{ui64[2]}.}
+\item{initial_state}{([\code{ui64[2]}][tensorish])\cr
+RNG state.}
+
+\item{n}{(\code{integer(1)})\cr
+Number of trials. Default is 1 (Bernoulli).}
+
+\item{prob}{(\code{numeric(1)})\cr
+Probability of success on each trial. Default is 0.5.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}
@@ -18,9 +24,8 @@ Shape.}
 }
 \value{
 (\code{list()} of \code{\link{tensorish}})\cr
-List of two tensors: the new RNG state and the generated random samples (0 or 1).
+List of two tensors: the new RNG state and the generated random samples.
 }
 \description{
-Generate random Binomial(1, 0.5) samples (0 or 1) by extracting individual bits
-from the random number generator. This is equivalent to Bernoulli(0.5) samples.
+Sample from a binomial distribution with $n$ trials and success probability $p$.
 }

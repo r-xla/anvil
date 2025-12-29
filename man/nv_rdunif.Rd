@@ -2,26 +2,26 @@
 % Please edit documentation in R/api-rng.R
 \name{nv_rdunif}
 \alias{nv_rdunif}
-\title{Random Discrete Sample}
+\title{Sample from a Discrete Uniform Distribution}
 \usage{
-nv_rdunif(n, shape, initial_state, dtype = "i32")
+nv_rdunif(initial_state, n, shape, dtype = "i32")
 }
 \arguments{
+\item{initial_state}{([\code{ui64[2]}][tensorish])\cr
+RNG state.}
+
 \item{n}{(\code{integer(1)})\cr
 Number of categories to sample from (samples integers 1 to n).}
 
 \item{shape}{(\code{integer()})\cr
 Shape.}
 
-\item{initial_state}{(\code{\link{tensorish}})\cr
-Tensor of type \code{ui64[2]} for the RNG state.}
-
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
-Output dtype (default "i32").}
+Data type.}
 }
 \value{
 (\code{list()} of \code{\link{tensorish}})\cr
-List of two tensors: the new RNG state and the sampled integers (1 to n).
+List of two tensors: the new RNG state and the sampled integers.
 }
 \description{
 Sample from a discrete distribution, analogous to R's \code{sample()} function.

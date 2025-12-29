@@ -10,8 +10,8 @@ nv_unif_rand(initial_state, dtype = "f64", shape)
 nv_runif(initial_state, dtype = "f32", shape, lower = 0, upper = 1)
 }
 \arguments{
-\item{initial_state}{(\code{\link{tensorish}})\cr
-Tensor of type \code{ui64[2]}.}
+\item{initial_state}{([\code{ui64[2]}][tensorish])\cr
+RNG state.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}
@@ -29,5 +29,5 @@ List of two tensors: the new RNG state and the generated random numbers.
 \description{
 generate random uniform numbers in [0, 1)
 
-generate random uniform numbers in ]lower, upper[
+Sample from a uniform distribution in the open interval (lower, upper).
 }
