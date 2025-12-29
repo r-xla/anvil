@@ -46,6 +46,8 @@
 
 - [`jit()`](jit.md) : JIT compile a function
 
+- [`jit_eval()`](jit_eval.md) : Jit an Evaluate an Expression
+
 - [`local_descriptor()`](local_descriptor.md) : Create a graph
 
 - [`mut()`](mut.md) :
@@ -126,7 +128,10 @@
 - [`nv_promote_to_common()`](nv_promote_to_common.md) : Promote Tensors
   to a Common Dtype
 
-- [`nv_rbinom()`](nv_rbinom.md) : Random Binomial Samples
+- [`nv_rbinom()`](nv_rbinom.md) : Sample from a Binomial Distribution
+
+- [`nv_rdunif()`](nv_rdunif.md) : Sample from a Discrete Uniform
+  Distribution
 
 - [`nv_reduce_sum()`](nv_reduce_ops.md)
   [`nv_reduce_mean()`](nv_reduce_ops.md)
@@ -142,7 +147,7 @@
 
 - [`nv_rng_state()`](nv_rng_state.md) : Generate random state
 
-- [`nv_rnorm()`](nv_rnorm.md) : Random Normal Numbers
+- [`nv_rnorm()`](nv_rnorm.md) : Sample from a Normal Distribution
 
 - [`nv_round()`](nv_round.md) : Round
 
@@ -150,8 +155,6 @@
 
 - [`nv_unif_rand()`](nv_runif.md) [`nv_runif()`](nv_runif.md) :
   Internal: Random Unit Uniform Numbers
-
-- [`nv_rdunif()`](nv_sample_int.md) : Random Discrete Sample
 
 - [`nv_select()`](nv_select.md) : Select
 

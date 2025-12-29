@@ -53,7 +53,7 @@ state
 
 The main functions for generating random numbers are
 [`nv_runif()`](../reference/nv_runif.md),
-[`nv_rdunif()`](../reference/nv_sample_int.md),
+[`nv_rdunif()`](../reference/nv_rdunif.md),
 [`nv_rbinom()`](../reference/nv_rbinom.md), and
 [`nv_rnorm()`](../reference/nv_rnorm.md). Both functions return a list
 with two elements:

@@ -1,6 +1,7 @@
-# Random Normal Numbers
+# Sample from a Normal Distribution
 
-generate random normal numbers
+Sample from a normal distribution with mean \\\mu\\ and standard
+deviation \\\sigma\\.
 
 ## Usage
 
@@ -12,8 +13,8 @@ nv_rnorm(initial_state, dtype = "f32", shape, mu = 0, sigma = 1)
 
 - initial_state:
 
-  ([`tensorish`](tensorish.md))  
-  Tensor of type `ui64[2]`.
+  (\[`ui64[2]`\]\[tensorish\])  
+  RNG state.
 
 - dtype:
 
@@ -34,11 +35,14 @@ nv_rnorm(initial_state, dtype = "f32", shape, mu = 0, sigma = 1)
 - sigma:
 
   (`numeric(1)`)  
-  Standard deviation. \#' @section Covariance: To implement a covariance
-  structure use cholesky decomposition.
+  Standard deviation.
 
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
 [`tensorish`](tensorish.md))  
 List of two tensors: the new RNG state and the generated random numbers.
+
+## Covariance
+
+To implement a covariance structure use cholesky decomposition.

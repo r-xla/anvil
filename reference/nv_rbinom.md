@@ -1,21 +1,30 @@
-# Random Binomial Samples
+# Sample from a Binomial Distribution
 
-Generate random Binomial(1, 0.5) samples (0 or 1) by extracting
-individual bits from the random number generator. This is equivalent to
-Bernoulli(0.5) samples.
+Sample from a binomial distribution with \$n\$ trials and success
+probability \$p\$.
 
 ## Usage
 
 ``` r
-nv_rbinom(initial_state, dtype = "i32", shape)
+nv_rbinom(initial_state, n = 1L, prob = 0.5, dtype = "i32", shape)
 ```
 
 ## Arguments
 
 - initial_state:
 
-  ([`tensorish`](tensorish.md))  
-  Tensor of type `ui64[2]`.
+  (\[`ui64[2]`\]\[tensorish\])  
+  RNG state.
+
+- n:
+
+  (`integer(1)`)  
+  Number of trials. Default is 1 (Bernoulli).
+
+- prob:
+
+  (`numeric(1)`)  
+  Probability of success on each trial. Default is 0.5.
 
 - dtype:
 
@@ -32,5 +41,4 @@ nv_rbinom(initial_state, dtype = "i32", shape)
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
 [`tensorish`](tensorish.md))  
-List of two tensors: the new RNG state and the generated random samples
-(0 or 1).
+List of two tensors: the new RNG state and the generated random samples.

@@ -34,6 +34,7 @@
 <url><loc>/reference/graph_desc_add.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/jit.html</loc></url>
+<url><loc>/reference/jit_eval.html</loc></url>
 <url><loc>/reference/local_descriptor.html</loc></url>
 <url><loc>/reference/mut.html</loc></url>
 <url><loc>/reference/nv_abs.html</loc></url>
@@ -72,6 +73,7 @@
 <url><loc>/reference/nv_print.html</loc></url>
 <url><loc>/reference/nv_promote_to_common.html</loc></url>
 <url><loc>/reference/nv_rbinom.html</loc></url>
+<url><loc>/reference/nv_rdunif.html</loc></url>
 <url><loc>/reference/nv_reduce_ops.html</loc></url>
 <url><loc>/reference/nv_remainder.html</loc></url>
 <url><loc>/reference/nv_reshape.html</loc></url>
@@ -80,7 +82,6 @@
 <url><loc>/reference/nv_round.html</loc></url>
 <url><loc>/reference/nv_rsqrt.html</loc></url>
 <url><loc>/reference/nv_runif.html</loc></url>
-<url><loc>/reference/nv_sample_int.html</loc></url>
 <url><loc>/reference/nv_select.html</loc></url>
 <url><loc>/reference/nv_shift_left.html</loc></url>
 <url><loc>/reference/nv_shift_right_arithmetic.html</loc></url>

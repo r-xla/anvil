@@ -2,7 +2,7 @@
 
 generate random uniform numbers in \[0, 1)
 
-generate random uniform numbers in \]lower, upper\[
+Sample from a uniform distribution in the open interval (lower, upper).
 
 ## Usage
 
@@ -16,8 +16,8 @@ nv_runif(initial_state, dtype = "f32", shape, lower = 0, upper = 1)
 
 - initial_state:
 
-  ([`tensorish`](tensorish.md))  
-  Tensor of type `ui64[2]`.
+  (\[`ui64[2]`\]\[tensorish\])  
+  RNG state.
 
 - dtype:
 
