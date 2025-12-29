@@ -137,7 +137,7 @@ MarkedListNode <- function(nodes, names, marked) {
       names = names,
       marked = marked
     ),
-    class = c("MarkedListNode", "ListNode")
+    class = c("MarkedListNode", "ListNode", "Node")
   )
 }
 

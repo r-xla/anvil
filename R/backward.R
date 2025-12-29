@@ -1,3 +1,14 @@
+#' @title Transform a graph to its gradient
+#' @description
+#' Transform a graph to its gradient.
+#' This is a low-level function that should usually not be used directly.
+#' Use [`gradient()`] instead.
+#' @param graph (`Graph`)\cr
+#'   The graph to transform.
+#' @param wrt (`character`)\cr
+#'   The names of the variables to compute the gradient with respect to.
+#' @return A [`Graph`] object.
+#' @export
 transform_gradient <- function(graph, wrt) {
   grad_env <- hashtab()
   required_env <- hashtab()
@@ -154,12 +165,18 @@ gradient <- function(f, wrt = NULL) {
   f_gradient <- function() {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
-    parent_desc <- .current_descriptor()
+    parent_desc <- .current_descriptor(silent = TRUE)
+    debug_mode <- is.null(parent_desc)
+    if (debug_mode) {
+      parent_desc <- local_descriptor()
+    }
     fwd_graph <- trace_fn(f, args)
     grad_graph <- transform_gradient(fwd_graph, wrt)
     # parent_desc is modified in place
-    outputs <- inline_graph_into_desc(parent_desc, grad_graph)
-    return(outputs)
+    if (!debug_mode) {
+      return(inline_graph_into_desc(parent_desc, grad_graph))
+    }
+    unflatten(grad_graph@out_tree, lapply(grad_graph@outputs, \(x) DebugBox(x@aval)))
   }
   formals(f_gradient) <- formals2(f)
   return(f_gradient)
@@ -174,7 +191,11 @@ value_and_gradient <- function(f, wrt = NULL) {
   f_value_and_grad <- function() {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
-    parent_desc <- .current_descriptor()
+    parent_desc <- .current_descriptor(silent = TRUE)
+    debug_mode <- is.null(parent_desc)
+    if (debug_mode) {
+      parent_desc <- local_descriptor()
+    }
     fwd_graph <- trace_fn(f, args)
     grad_graph <- transform_gradient(fwd_graph, wrt)
 
@@ -188,8 +209,16 @@ value_and_gradient <- function(f, wrt = NULL) {
       list(value_tree, grad_tree),
       names = c("value", "grad")
     )
-
-    inline_graph_into_desc(parent_desc, combined_graph)
+    if (!debug_mode) {
+      return(inline_graph_into_desc(parent_desc, combined_graph))
+    }
+    unflatten(
+      combined_graph@out_tree,
+      c(
+        lapply(fwd_graph@outputs, \(x) DebugBox(x@aval)),
+        lapply(grad_graph@outputs, \(x) DebugBox(x@aval))
+      )
+    )
   }
   formals(f_value_and_grad) <- formals2(f)
   f_value_and_grad

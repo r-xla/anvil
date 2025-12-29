@@ -91,12 +91,12 @@ test_that("nv_rbinom", {
   expect_equal(shape(out3[[2]]), c(3L, 3L))
 })
 
-test_that("nv_sample_int", {
+test_that("nv_rdunif", {
   # statistical validity checks are in inst/random
 
   # Test with equal probabilities
   f1 <- function() {
-    nv_sample_int(n = 6L, shape = 10L, initial_state = nv_tensor(c(1, 2), dtype = "ui64"))
+    nv_rdunif(n = 6L, shape = 10L, initial_state = nv_tensor(c(1, 2), dtype = "ui64"))
   }
   g1 <- jit(f1)
   out1 <- g1()
@@ -111,7 +111,7 @@ test_that("nv_sample_int", {
 
   # Test 2D output shape
   f3 <- function() {
-    nv_sample_int(n = 4L, shape = c(2L, 3L), initial_state = nv_tensor(c(1, 2), dtype = "ui64"))
+    nv_rdunif(n = 4L, shape = c(2L, 3L), initial_state = nv_tensor(c(1, 2), dtype = "ui64"))
   }
   g3 <- jit(f3)
   out3 <- g3()

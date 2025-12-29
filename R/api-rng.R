@@ -1,11 +1,10 @@
 # Random Number Generation API
 # This file contains user-facing RNG sampling functions
 
-#' @title Random Uniform Numbers
+#' @title Sample from a Uniform Distribution
 #' @description
-#' generate random uniform numbers in ]lower, upper[
-#' @param initial_state ([`tensorish`])\cr
-#'   Tensor of type `ui64[2]`.
+#' Sample from a uniform distribution in $(\text{lower}, \text{upper})$
+#' @template param_initial_state
 #' @template param_dtype
 #' @template param_shape
 #' @param lower,upper (`numeric(1)`)\cr
@@ -63,11 +62,10 @@ nv_runif <- function(
   return(list(Unif[[1]], U))
 }
 
-#' @title Random Normal Numbers
+#' @title Sample from a Normal Distribution
 #' @description
-#' generate random normal numbers
-#' @param initial_state ([`tensorish`])\cr
-#'   Tensor of type `ui64[2]`.
+#' Sample from a normal distribution with mean $\mu$ and standard deviation $\sigma$.
+#' @template param_initial_state
 #' @template param_dtype
 #' @template param_shape
 #' @param mu (`numeric(1)`)\cr
@@ -142,71 +140,57 @@ nv_rnorm <- function(initial_state, dtype = "f32", shape, mu = 0, sigma = 1) {
   list(Theta[[1]], N)
 }
 
-#' @title Random Binomial Samples
+#' @title Sample from a Binomial Distribution
 #' @description
-#' Generate random Binomial(1, 0.5) samples (0 or 1) by extracting individual bits
-#' from the random number generator. This is equivalent to Bernoulli(0.5) samples.
-#' @param initial_state ([`tensorish`])\cr
-#'   Tensor of type `ui64[2]`.
+#' Sample from a binomial distribution with $n$ trials and success probability $p$.
+#' @template param_initial_state
+#' @param n (`integer(1)`)\cr
+#'   Number of trials. Default is 1 (Bernoulli).
+#' @param prob (`numeric(1)`)\cr
+#'   Probability of success on each trial. Default is 0.5.
 #' @template param_dtype
 #' @template param_shape
 #' @return (`list()` of [`tensorish`])\cr
-#'   List of two tensors: the new RNG state and the generated random samples (0 or 1).
+#'   List of two tensors: the new RNG state and the generated random samples.
 #' @export
-nv_rbinom <- function(initial_state, dtype = "i32", shape) {
+nv_rbinom <- function(initial_state, n = 1L, prob = 0.5, dtype = "i32", shape) {
+  checkmate::assert_int(n, lower = 1)
+  checkmate::assert_number(prob, lower = 0, upper = 1)
   shape <- assert_shapevec(shape)
 
-  n <- prod(shape)
+  n_samples <- prod(shape)
+  n_trials <- n_samples * n
 
-  # We generate ui8 random values and extract 8 bits from each.
-  n_bytes <- as.integer(ceiling(n / 8))
+  # Generate uniform samples in [0, 1) and compare to prob
+  res <- nv_unif_rand(initial_state, shape = n_trials, dtype = "f64")
+  U <- res[[2]]
 
-  # Generating i1 is not possible unfortunately
-  rbits <- nvl_rng_bit_generator(
-    initial_state = initial_state,
-    "THREE_FRY",
-    dtype = "ui8",
-    shape_out = n_bytes
-  )
+  # Success if U < prob
+  successes <- nv_convert(nv_lt(U, nv_scalar(prob, dtype = "f64")), dtype = dtype)
 
-  # Shift the 8 bits by 0, 1, 2, and xor with 1 (u8) to extract individual bits
-  bytes_col <- nv_reshape(rbits[[2]], shape = c(n_bytes, 1L))
-  bit_positions <- nv_iota(dim = 2L, shape = c(1L, 8L), dtype = "ui8", start = 0)
-  bc <- nv_broadcast_tensors(bytes_col, bit_positions) # (n_bytes, 8)
-  bytes_bc <- bc[[1L]]
-  positions_bc <- bc[[2L]]
-  shifted <- nvl_shift_right_logical(bytes_bc, positions_bc) # (n_bytes, 8)
-
-  one <- nv_scalar(1L, dtype = "ui8")
-  bits <- nv_and(shifted, one)
-
-  bits <- nv_reshape(bits, shape = n_bytes * 8L)
-
-  # discard unneeded bits
-  if (n < n_bytes * 8L) {
-    bits <- nv_slice(bits, start_indices = 1L, limit_indices = n, strides = 1L)
+  result <- if (n == 1L) {
+    nv_reshape(successes, shape = shape)
+  } else {
+    successes <- nv_reshape(successes, shape = c(n, shape))
+    nv_reduce_sum(successes, dims = 1L, drop = TRUE)
   }
 
-  bits <- nv_reshape(bits, shape = shape)
-  bits <- nv_convert(bits, dtype = dtype)
-  list(rbits[[1]], bits)
+  list(res[[1]], result)
 }
 
-#' @title Random Discrete Sample
+#' @title Sample from a Discrete Uniform Distribution
 #' @description
 #' Sample from a discrete distribution, analogous to R's `sample()` function.
 #' Samples integers from 1 to n with uniform probability and with replacement.
 #' @param n (`integer(1)`)\cr
 #'   Number of categories to sample from (samples integers 1 to n).
 #' @template param_shape
-#' @param initial_state ([`tensorish`])\cr
-#'   Tensor of type `ui64[2]` for the RNG state.
-#' @param dtype (`character(1)` | [`TensorDataType`])\cr
-#'   Output dtype (default "i32").
+#' @template param_initial_state
+#' @template param_dtype
 #' @return (`list()` of [`tensorish`])\cr
-#'   List of two tensors: the new RNG state and the sampled integers (1 to n).
+#'   List of two tensors: the new RNG state and the sampled integers.
 #' @export
-nv_sample_int <- function(initial_state, n, shape, dtype = "i32") {
+nv_rdunif <- function(initial_state, n, shape, dtype = "i32") {
   checkmate::assert_int(n, lower = 1)
   shape <- assert_shapevec(shape)
   n_sample <- prod(shape)

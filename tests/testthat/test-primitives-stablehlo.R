@@ -59,11 +59,11 @@ test_that("p_concatenate", {
   out <- g()
   expect_equal(dim(as_array(out)), c(2, 5))
 })
-
 test_that("p_fill", {
   f <- jit(function(x) nv_fill(x, shape = c(2, 3), dtype = "f32"), static = "x")
   expect_equal(f(1), nv_tensor(1, shape = c(2, 3), dtype = "f32"))
   expect_equal(f(2), nv_tensor(2, shape = c(2, 3), dtype = "f32"))
+
   # scalars
   expect_equal(
     jit(\() nv_fill(1L, shape = c(), dtype = "f32"))(),
@@ -348,6 +348,7 @@ test_that("p_while: errors", {
   # TODO:
 })
 
+
 test_that("error when multiplying lists in if-statement", {
   f <- jit(function(pred, x) {
     nvl_if(pred, x + x, x * x)
@@ -366,6 +367,15 @@ test_that("p_iota", {
   expect_equal(as_array(f2()), matrix(as.numeric(rep(0:2, each = 2)), nrow = 2, byrow = FALSE))
 })
 
+test_that("p_print", {
+  skip_if(!is_cpu(), "print_tensor only works on CPU")
+
+  f <- jit(function(x) nvl_print(x))
+  x <- nv_tensor(c(1.0, 2.0, 3.0), dtype = "f32")
+  out <- f(x)
+  expect_equal(as_array(out), as_array(x))
+  expect_snapshot(f(x))
+})
 
 # we don't want to include torch in Suggests just for the tests, as it's a relatively
 # heavy dependency

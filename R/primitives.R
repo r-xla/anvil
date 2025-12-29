@@ -809,8 +809,7 @@ p_convert <- Primitive("convert")
 #' Converts tensor to a different dtype.
 #' @template param_operand
 #' @template param_dtype
-#' @param ambiguous (`logical(1)`)\cr
-#'   Whether the result type is ambiguous.
+#' @template param_ambiguous
 #' @return [`tensorish`]
 #' @export
 nvl_convert <- function(operand, dtype, ambiguous = FALSE) {
@@ -882,10 +881,10 @@ nvl_if <- function(pred, true, false) {
 
   current_desc <- .current_descriptor(silent = TRUE)
 
-  #debug_mode <- is.null(current_desc)
-  #if (debug_mode) {
-  #  current_desc <- local_descriptor()
-  #}
+  debug_mode <- is.null(current_desc)
+  if (debug_mode) {
+    current_desc <- local_descriptor()
+  }
   # TODO(split pr)
 
   desc_true <- local_descriptor()
@@ -927,9 +926,8 @@ nvl_if <- function(pred, true, false) {
     list(pred),
     params = list(true_graph = true_graph, false_graph = false_graph),
     infer_fn = infer_fn,
-    desc = current_desc #,
-    #debug_mode = debug_mode
-    # TODO(split pr)
+    desc = current_desc,
+    debug_mode = debug_mode
   )
   unflatten(true_graph@out_tree, out)
 }
@@ -961,10 +959,10 @@ nvl_while <- function(init, cond, body) {
   }
 
   current_desc <- .current_descriptor(silent = TRUE)
-  #debug_mode <- is.null(current_desc)
-  #if (debug_mode) {
-  #  current_desc <- local_descriptor()
-  #}
+  debug_mode <- is.null(current_desc)
+  if (debug_mode) {
+    current_desc <- local_descriptor()
+  }
 
   desc_cond <- local_descriptor()
 
@@ -1012,11 +1010,25 @@ nvl_while <- function(init, cond, body) {
     args = flatten(init),
     params = list(cond_graph = cond_graph, body_graph = body_graph),
     infer_fn = infer_fn,
-    desc = current_desc #,
-    #debug_mode = debug_mode
+    desc = current_desc,
+    debug_mode = debug_mode
   )
 
   unflatten(body_graph@out_tree, out)
+}
+
+# Print primitive
+p_print <- Primitive("print")
+#' @title Primitive Print
+#' @description
+#' Prints a tensor during execution.
+#' Returns the input unchanged.
+#' Note: Currently only works on CPU backend.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nvl_print <- function(operand) {
+  graph_desc_add(p_print, list(operand), infer_fn = list)[[1L]]
 }
 
 # RNG primitives

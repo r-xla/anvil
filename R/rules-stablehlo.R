@@ -286,6 +286,23 @@ p_rng_bit_generator[["stablehlo"]] <- function(initial_state, rng_algorithm, dty
   stablehlo::hlo_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out)
 }
 
+p_print[["stablehlo"]] <- function(operand) {
+  backend_config <- stablehlo::CustomOpBackendConfig(list(
+    stablehlo::StringAttr(name = "print_header", value = "AnvilTensor")
+  ))
+
+  # has side-effect
+  stablehlo::hlo_custom_call(
+    operand,
+    call_target_name = "print_tensor",
+    api_version = 4L,
+    has_side_effect = TRUE,
+    backend_config = backend_config
+  )
+  # we just return the input
+  list(operand)
+}
+
 # higher order primitives --------------------------------------------------------
 
 p_if[["stablehlo"]] <- function(pred, true_graph, false_graph, .env) {
