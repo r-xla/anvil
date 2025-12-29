@@ -4,9 +4,12 @@
 \alias{nv_rbinom}
 \title{Sample from a Binomial Distribution}
 \usage{
-nv_rbinom(initial_state, n = 1L, prob = 0.5, dtype = "i32", shape)
+nv_rbinom(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32")
 }
 \arguments{
+\item{shape}{(\code{integer()})\cr
+Shape.}
+
 \item{initial_state}{([\code{ui64[2]}][tensorish])\cr
 RNG state.}
 
@@ -18,9 +21,6 @@ Probability of success on each trial. Default is 0.5.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}
-
-\item{shape}{(\code{integer()})\cr
-Shape.}
 }
 \value{
 (\code{list()} of \code{\link{tensorish}})\cr

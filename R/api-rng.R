@@ -1,3 +1,61 @@
+#' @title Internal: Random Unit Uniform Numbers
+#' @name nv_runif
+#' @description
+#' generate random uniform numbers in [0, 1)
+#' @param initial_state state seed
+#' @param dtype (`character(1)` | [`TensorDataType`])\cr
+#'   Output dtype either "f32" or "f64"
+#' @template param_shape
+nv_unif_rand <- function(
+  shape,
+  initial_state,
+  dtype = "f64"
+) {
+  checkmate::assertChoice(dtype, c("f32", "f64"))
+  shape <- assert_shapevec(shape)
+
+  # 1. Generate random bits (64)
+  # 2. We use these as mantissa bits for float, where we set the exponent to 1.0
+  # 3. Because we have an implicit leading 1, we get a number in [1, 2) -> need to shift to [0, 1)
+
+  # generate random bits
+  # use THREE_FRY as rng algorithm: JAX default
+  rbits <- nvl_rng_bit_generator(
+    initial_state = initial_state,
+    "THREE_FRY",
+    paste0("ui", sub("f(\\d+)", "\\1", dtype)),
+    shape_out = shape
+  )
+
+  # shift value: 9 for f32, 11 for f64
+  shift <- nv_scalar(
+    ifelse(dtype == "f32", 9L, 11L),
+    dtype = paste0("ui", sub("f(\\d+)", "\\1", dtype))
+  )
+
+  # shift to the right, s.t. exponent bits are all 0
+  mantissa <- nv_shift_right_logical(rbits[[2]], shift)
+
+  # interpretation of 1.0 (float) as unsigned
+  one_bits <- nv_bitcast_convert(
+    nv_scalar(1.0, dtype = dtype),
+    dtype = paste0("ui", sub("f(\\d+)", "\\1", dtype))
+  )
+
+  # bitwise or -> exponent from 1.0 (float), mantissa is random
+  U <- nv_or(mantissa, one_bits)
+
+  # convert back to requested dtype
+  # resulting RVs  are in [1, 2)
+  U <- nv_bitcast_convert(U, dtype = dtype)
+
+  # shift to [0, 1)
+  U <- nv_add(U, nv_scalar(-1, dtype = dtype))
+
+  # return state and RVs
+  list(rbits[[1]], U)
+}
+
 # Random Number Generation API
 # This file contains user-facing RNG sampling functions
 
@@ -13,9 +71,9 @@
 #'   List of two tensors: the new RNG state and the generated random numbers.
 #' @export
 nv_runif <- function(
+  shape,
   initial_state,
   dtype = "f32",
-  shape,
   lower = 0,
   upper = 1
 ) {
@@ -77,7 +135,7 @@ nv_runif <- function(
 #' @return (`list()` of [`tensorish`])\cr
 #'   List of two tensors: the new RNG state and the generated random numbers.
 #' @export
-nv_rnorm <- function(initial_state, dtype = "f32", shape, mu = 0, sigma = 1) {
+nv_rnorm <- function(shape, initial_state, dtype = "f32", mu = 0, sigma = 1) {
   checkmate::assertChoice(dtype, c("f32", "f64"))
   checkmate::assertNumeric(mu, len = 1, any.missing = FALSE)
   checkmate::assertNumeric(sigma, len = 1, any.missing = FALSE, lower = 0)
@@ -153,7 +211,7 @@ nv_rnorm <- function(initial_state, dtype = "f32", shape, mu = 0, sigma = 1) {
 #' @return (`list()` of [`tensorish`])\cr
 #'   List of two tensors: the new RNG state and the generated random samples.
 #' @export
-nv_rbinom <- function(initial_state, n = 1L, prob = 0.5, dtype = "i32", shape) {
+nv_rbinom <- function(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32") {
   checkmate::assert_int(n, lower = 1)
   checkmate::assert_number(prob, lower = 0, upper = 1)
   shape <- assert_shapevec(shape)
@@ -162,6 +220,8 @@ nv_rbinom <- function(initial_state, n = 1L, prob = 0.5, dtype = "i32", shape) {
   n_trials <- n_samples * n
 
   # Generate uniform samples in [0, 1) and compare to prob
+  # Note that using runif() generates in (0, 1), but by shifting the 0 to the smallest value
+  # so we don't benefit from using runif w.r.t. unbiasedness
   res <- nv_unif_rand(initial_state, shape = n_trials, dtype = "f64")
   U <- res[[2]]
 
@@ -190,7 +250,7 @@ nv_rbinom <- function(initial_state, n = 1L, prob = 0.5, dtype = "i32", shape) {
 #' @return (`list()` of [`tensorish`])\cr
 #'   List of two tensors: the new RNG state and the sampled integers.
 #' @export
-nv_rdunif <- function(initial_state, n, shape, dtype = "i32") {
+nv_rdunif <- function(shape, initial_state, n, dtype = "i32") {
   checkmate::assert_int(n, lower = 1)
   shape <- assert_shapevec(shape)
   n_sample <- prod(shape)
