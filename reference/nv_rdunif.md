@@ -7,10 +7,15 @@ integers from 1 to n with uniform probability and with replacement.
 ## Usage
 
 ``` r
-nv_rdunif(initial_state, n, shape, dtype = "i32")
+nv_rdunif(shape, initial_state, n, dtype = "i32")
 ```
 
 ## Arguments
+
+- shape:
+
+  ([`integer()`](https://rdrr.io/r/base/integer.html))  
+  Shape.
 
 - initial_state:
 
@@ -21,11 +26,6 @@ nv_rdunif(initial_state, n, shape, dtype = "i32")
 
   (`integer(1)`)  
   Number of categories to sample from (samples integers 1 to n).
-
-- shape:
-
-  ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Shape.
 
 - dtype:
 
