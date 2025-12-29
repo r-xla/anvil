@@ -56,7 +56,7 @@ Sample from a uniform distribution in the open interval (lower, upper)."></head>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Internal: Random Unit Uniform Numbers</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-sampler/R/api-internal.R" class="external-link"><code>R/api-internal.R</code></a>, <a href="https://github.com/r-xla/anvil/blob/feat-sampler/R/api-rng.R" class="external-link"><code>R/api-rng.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/R/api-rng.R" class="external-link"><code>R/api-rng.R</code></a></small>
       <div class="d-none name"><code>nv_runif.Rd</code></div>
     </div>
 
@@ -67,16 +67,21 @@ Sample from a uniform distribution in the open interval (lower, upper)."></head>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nv_unif_rand</span><span class="op">(</span><span class="va">initial_state</span>, dtype <span class="op">=</span> <span class="st">"f64"</span>, <span class="va">shape</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nv_unif_rand</span><span class="op">(</span><span class="va">shape</span>, <span class="va">initial_state</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">nv_runif</span><span class="op">(</span><span class="va">initial_state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, <span class="va">shape</span>, lower <span class="op">=</span> <span class="fl">0</span>, upper <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">nv_runif</span><span class="op">(</span><span class="va">shape</span>, <span class="va">initial_state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, lower <span class="op">=</span> <span class="fl">0</span>, upper <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-initial-state">initial_state<a class="anchor" aria-label="anchor" href="#arg-initial-state"></a></dt>
+<dl><dt id="arg-shape">shape<a class="anchor" aria-label="anchor" href="#arg-shape"></a></dt>
+<dd><p>(<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>)<br>
+Shape.</p></dd>
+
+
+<dt id="arg-initial-state">initial_state<a class="anchor" aria-label="anchor" href="#arg-initial-state"></a></dt>
 <dd><p>([<code>ui64[2]</code>][tensorish])<br>
 RNG state.</p></dd>
 
@@ -84,11 +89,6 @@ RNG state.</p></dd>
 <dt id="arg-dtype">dtype<a class="anchor" aria-label="anchor" href="#arg-dtype"></a></dt>
 <dd><p>(<code>character(1)</code> | <code><a href="https://r-xla.github.io/stablehlo/reference/TensorDataType.html" class="external-link">stablehlo::TensorDataType</a></code>)<br>
 Data type.</p></dd>
-
-
-<dt id="arg-shape">shape<a class="anchor" aria-label="anchor" href="#arg-shape"></a></dt>
-<dd><p>(<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>)<br>
-Shape.</p></dd>
 
 
 <dt id="arg-lower-upper">lower, upper<a class="anchor" aria-label="anchor" href="#arg-lower-upper"></a></dt>

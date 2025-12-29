@@ -7,12 +7,17 @@ Sample from a uniform distribution in the open interval (lower, upper).
 ## Usage
 
 ``` r
-nv_unif_rand(initial_state, dtype = "f64", shape)
+nv_unif_rand(shape, initial_state, dtype = "f64")
 
-nv_runif(initial_state, dtype = "f32", shape, lower = 0, upper = 1)
+nv_runif(shape, initial_state, dtype = "f32", lower = 0, upper = 1)
 ```
 
 ## Arguments
+
+- shape:
+
+  ([`integer()`](https://rdrr.io/r/base/integer.html))  
+  Shape.
 
 - initial_state:
 
@@ -24,11 +29,6 @@ nv_runif(initial_state, dtype = "f32", shape, lower = 0, upper = 1)
   (`character(1)` \|
   [`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
   Data type.
-
-- shape:
-
-  ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Shape.
 
 - lower, upper:
 

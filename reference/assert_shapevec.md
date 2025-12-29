@@ -6,7 +6,7 @@ positive values).
 ## Usage
 
 ``` r
-assert_shapevec(x, min.len = 1L, .var.name = rlang::caller_arg(x))
+assert_shapevec(x, min_len = 1L, var_name = rlang::caller_arg(x))
 ```
 
 ## Arguments
@@ -15,12 +15,12 @@ assert_shapevec(x, min.len = 1L, .var.name = rlang::caller_arg(x))
 
   Object to check.
 
-- min.len:
+- min_len:
 
   (`integer(1)`)  
   Minimum length of the shape vector. Default is 1.
 
-- .var.name:
+- var_name:
 
   (`character(1)`)  
   Name of the variable to use in error messages.

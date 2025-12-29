@@ -6,10 +6,15 @@ deviation \\\sigma\\.
 ## Usage
 
 ``` r
-nv_rnorm(initial_state, dtype = "f32", shape, mu = 0, sigma = 1)
+nv_rnorm(shape, initial_state, dtype = "f32", mu = 0, sigma = 1)
 ```
 
 ## Arguments
+
+- shape:
+
+  ([`integer()`](https://rdrr.io/r/base/integer.html))  
+  Shape.
 
 - initial_state:
 
@@ -21,11 +26,6 @@ nv_rnorm(initial_state, dtype = "f32", shape, mu = 0, sigma = 1)
   (`character(1)` \|
   [`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
   Data type.
-
-- shape:
-
-  ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Shape.
 
 - mu:
 
