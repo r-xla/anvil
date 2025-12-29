@@ -88,6 +88,34 @@ infer_reduce_boolean <- function(operand, dims, drop) {
 }
 
 
+p_iota <- Primitive("iota")
+#' @title Primitive Iota
+#' @description
+#' Creates a tensor with increasing values along a dimension.
+#' @param dim (`integer(1)`)\cr
+#'   The dimension along which to generate increasing values.
+#' @template param_shape
+#' @template param_dtype
+#' @param start (`numeric(1)`)\cr
+#'   The value to start the sequence at.
+#' @return [`tensorish`]
+#' @export
+nvl_iota <- function(dim, shape, dtype, start) {
+  infer_fn <- function(dim, shape, dtype, start) {
+    list(AbstractTensor(
+      dtype = as_dtype(dtype),
+      shape = Shape(shape),
+      ambiguous = FALSE
+    ))
+  }
+  graph_desc_add(
+    p_iota,
+    list(),
+    params = list(dim = dim, shape = shape, dtype = dtype, start = start),
+    infer_fn = infer_fn
+  )[[1L]]
+}
+
 p_fill <- Primitive("fill")
 #' @title Primitive Fill
 #' @description

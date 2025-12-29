@@ -104,3 +104,16 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
   formals(f_jit) <- formals2(f)
   f_jit
 }
+
+#' @title Jit an Evaluate an Expression
+#' @description
+#' Compiles and evaluates an expression.
+#' @param expr (`expression`)\cr
+#'   Expression to run.
+#' @return (`any`)\cr
+#'   Result of the expression.
+#' @export
+jit_eval <- function(expr) {
+  expr <- substitute(expr)
+  jit(\() eval(expr))()
+}
