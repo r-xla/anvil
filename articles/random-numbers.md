@@ -52,9 +52,11 @@ state
 ## Generating Random Numbers
 
 The main functions for generating random numbers are
-[`nv_runif()`](../reference/nv_runif.md) for uniform distributions and
-[`nv_rnorm()`](../reference/nv_rnorm.md) for normal distributions. Both
-functions return a list with two elements:
+[`nv_runif()`](../reference/nv_runif.md),
+[`nv_rdunif()`](../reference/nv_sample_int.md),
+[`nv_rbinom()`](../reference/nv_rbinom.md), and
+[`nv_rnorm()`](../reference/nv_rnorm.md). Both functions return a list
+with two elements:
 
 1.  The **new** RNG state (to be used for subsequent random number
     generation)
