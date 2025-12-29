@@ -4,17 +4,17 @@
 \alias{nv_rdunif}
 \title{Sample from a Discrete Uniform Distribution}
 \usage{
-nv_rdunif(initial_state, n, shape, dtype = "i32")
+nv_rdunif(shape, initial_state, n, dtype = "i32")
 }
 \arguments{
+\item{shape}{(\code{integer()})\cr
+Shape.}
+
 \item{initial_state}{([\code{ui64[2]}][tensorish])\cr
 RNG state.}
 
 \item{n}{(\code{integer(1)})\cr
 Number of categories to sample from (samples integers 1 to n).}
-
-\item{shape}{(\code{integer()})\cr
-Shape.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}
