@@ -24,6 +24,8 @@ navbar:
         href: articles/type-promotion.html
       - text: Primitives Overview
         href: articles/primitives.html
+      - text: Debugging
+        href: articles/debugging.html
     technical:
       text: Technical
       menu:

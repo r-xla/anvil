@@ -26,9 +26,9 @@ ops_impl <- function(e1, e2) {
   )
 }
 
-#' @method Ops anvil::GraphBox
+#' @method Ops anvil::Box
 #' @export
-`Ops.anvil::GraphBox` <- ops_impl
+`Ops.anvil::Box` <- ops_impl
 
 #' @method Ops AnvilTensor
 #' @export
@@ -41,9 +41,9 @@ matrix_ops_impl <- function(x, y) {
   )
 }
 
-#' @method matrixOps anvil::GraphBox
+#' @method matrixOps anvil::Box
 #' @export
-`matrixOps.anvil::GraphBox` <- matrix_ops_impl
+`matrixOps.anvil::Box` <- matrix_ops_impl
 
 #' @method matrixOps AnvilTensor
 #' @export
@@ -63,13 +63,14 @@ math_impl <- function(x, ...) {
     "floor" = nv_floor(x),
     "ceiling" = nv_ceil(x),
     "sign" = nv_sign(x),
-    cli_abort("invalid method: {.Generic}")
+    "round" = nv_round(x),
+    cli_abort("invalid method: {(.Generic)}")
   )
 }
 
-#' @method Math anvil::GraphBox
+#' @method Math anvil::Box
 #' @export
-`Math.anvil::GraphBox` <- math_impl
+`Math.anvil::Box` <- math_impl
 
 #' @method Math AnvilTensor
 #' @export
@@ -85,17 +86,18 @@ math2_impl <- function(x, digits, ...) {
       }
       nv_round(x, method = method)
     },
-    cli_abort("invalid method: {.Generic}")
+    cli_abort("invalid method: {(.Generic)}")
   )
 }
 
-#' @method Math2 anvil::GraphBox
+#' @method Math2 anvil::Box
 #' @export
-`Math2.anvil::GraphBox` <- math2_impl
+`Math2.anvil::Box` <- math2_impl
 
 #' @method Math2 AnvilTensor
 #' @export
 Math2.AnvilTensor <- math2_impl
+
 
 summary_impl <- function(..., na.rm) {
   if (...length() != 1L) {
@@ -112,26 +114,25 @@ summary_impl <- function(..., na.rm) {
     "sum" = nv_reduce_sum(x, dims = dims, drop = TRUE),
     "any" = nv_reduce_any(x, dims = dims, drop = TRUE),
     "all" = nv_reduce_all(x, dims = dims, drop = TRUE),
-    cli_abort("invalid method: {.Generic}")
+    cli_abort("invalid method: {(.Generic)}")
   )
 }
 
-#' @method Summary anvil::GraphBox
+#' @method Summary anvil::Box
 #' @export
-`Summary.anvil::GraphBox` <- summary_impl
+`Summary.anvil::Box` <- summary_impl
 
 #' @method Summary AnvilTensor
 #' @export
 Summary.AnvilTensor <- summary_impl
 
-
 mean_impl <- function(x, ...) {
   nv_reduce_mean(x, dims = seq_along(shape(x)), drop = TRUE)
 }
 
-#' @method mean anvil::GraphBox
+#' @method mean anvil::Box
 #' @export
-`mean.anvil::GraphBox` <- mean_impl
+`mean.anvil::Box` <- mean_impl
 
 #' @method mean AnvilTensor
 #' @export
@@ -148,8 +149,8 @@ mean.AnvilTensor <- mean_impl
 #'   Permutation of dimensions. If `NULL` (default), reverses the dimensions.
 #' @return [`nv_tensor`]
 #' @export
-#' @method t anvil::GraphBox
-`t.anvil::GraphBox` <- function(x) {
+#' @method t anvil::Box
+`t.anvil::Box` <- function(x) {
   nv_transpose(x)
 }
 

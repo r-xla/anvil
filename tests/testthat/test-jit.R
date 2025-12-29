@@ -181,11 +181,12 @@ test_that("jit: tensor return value is not wrapped in list", {
   expect_equal(as_array(out), 1.2 + (-0.7), tolerance = 1e-6)
 })
 
-test_that("error message when using wrong device", {
+test_that("error message when using different platforms", {
   skip_if(!is_cuda())
-  f <- jit(\(x) x, device = "cpu")
-  x <- nv_tensor(1, device = "cuda")
-  expect_error(f(x), "but buffer has device cuda")
+  f <- jit(\(x, y) x + y)
+  x <- nv_tensor(1, device = "cpu")
+  y <- nv_tensor(1, device = "cuda")
+  expect_error(f(x, y), "Inputs live on different platforms")
 })
 
 test_that("constants can be part of the program", {
@@ -226,4 +227,13 @@ test_that("... works (#19)", {
 
 test_that("error message when passing invalid input", {
   expect_error(jit(nv_tan)(1L), "Expected anvil tensor, but got")
+})
+
+test_that("good error message when passing AbstractTensors", {
+  expect_error(jit(nv_neg)(nv_aten("f32", c(2, 2))), "Expected anvil tensor, but got")
+})
+
+test_that("jit: respects device argument", {
+  f <- jit(function() 1, device = "cpu")
+  expect_equal(f(), nv_scalar(1, device = "cpu"))
 })
