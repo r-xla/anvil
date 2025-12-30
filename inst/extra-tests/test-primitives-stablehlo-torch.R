@@ -201,7 +201,7 @@ test_that("p_dot_general", {
   x <- nv_tensor(rnorm(4), dtype = "f32")
   y <- nv_tensor(rnorm(4), dtype = "f32")
   out <- jit(function(a, b) {
-    nvl_dot_general(a, b, contracting_dims = list(c(1L), c(1L)), batching_dims = list(integer(), integer()))
+    nvl_dot_general(a, b, contracting_dims = list(1L, 1L), batching_dims = list(integer(), integer()))
   })(x, y)
   tx <- torch::torch_tensor(as_array(x))
   ty <- torch::torch_tensor(as_array(y))
@@ -211,7 +211,7 @@ test_that("p_dot_general", {
   A <- nv_tensor(matrix(rnorm(6), 3, 2), dtype = "f32")
   v <- nv_tensor(rnorm(2), dtype = "f32")
   out2 <- jit(function(a, b) {
-    nvl_dot_general(a, b, contracting_dims = list(c(2L), c(1L)), batching_dims = list(integer(), integer()))
+    nvl_dot_general(a, b, contracting_dims = list(2L, 1L), batching_dims = list(integer(), integer()))
   })(A, v)
   tA <- torch::torch_tensor(as_array(A))
   tv <- torch::torch_tensor(as_array(v))
@@ -221,7 +221,7 @@ test_that("p_dot_general", {
   X <- nv_tensor(array(rnorm(2 * 3 * 4), c(2, 3, 4)), dtype = "f32")
   Y <- nv_tensor(array(rnorm(2 * 4 * 5), c(2, 4, 5)), dtype = "f32")
   out3 <- jit(function(a, b) {
-    nvl_dot_general(a, b, contracting_dims = list(c(3L), c(2L)), batching_dims = list(c(1L), c(1L)))
+    nvl_dot_general(a, b, contracting_dims = list(3L, 2L), batching_dims = list(1L, 1L))
   })(X, Y)
   tX <- torch::torch_tensor(as_array(X))
   tY <- torch::torch_tensor(as_array(Y))
@@ -254,21 +254,6 @@ test_that("p_log1p", {
 
 test_that("p_logistic", {
   expect_jit_torch_unary(nvl_logistic, torch::torch_sigmoid, c(2, 3))
-})
-
-test_that("p_is_finite", {
-  # Test with normal values
-  expect_jit_torch_unary(nvl_is_finite, torch::torch_isfinite, c(2, 3))
-
-  # Test with special values
-  special_vals <- c(1.0, Inf, -Inf, NaN, 0.0, -1.0)
-  x_nv <- nv_tensor(special_vals, dtype = "f32")
-  x_th <- torch::torch_tensor(special_vals, dtype = torch::torch_float32())
-
-  out_nv <- jit(nvl_is_finite)(x_nv)
-  out_th <- torch::torch_isfinite(x_th)
-
-  expect_equal(as_array(out_nv), as_array_torch(out_th))
 })
 
 test_that("p_clamp", {

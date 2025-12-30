@@ -881,7 +881,6 @@ p_reverse <- Primitive("reverse")
 #' @return [`tensorish`]
 #' @export
 nvl_reverse <- function(operand, dimensions) {
-  dimensions <- as.integer(dimensions)
   infer_fn <- function(operand, dimensions) {
     # stablehlo uses 0-based indexing
     dims_attr <- r_to_constant(dimensions - 1L, dtype = "i64", shape = length(dimensions))
@@ -897,26 +896,23 @@ p_iota <- Primitive("iota")
 #' @title Primitive Iota
 #' @description
 #' Creates a tensor with values increasing along the specified dimension.
-#' @param iota_dimension (`integer(1)`)\cr
+#' @param dim (`integer(1)`)\cr
 #'   Dimension along which values increase (1-indexed).
 #' @template param_dtype
 #' @param shape (`integer()`)\cr
 #'   Shape of the output tensor.
 #' @return [`tensorish`]
 #' @export
-nvl_iota <- function(iota_dimension, dtype, shape) {
-  iota_dimension <- as.integer(iota_dimension)
-  dtype <- as_dtype(dtype)
-  shape <- as.integer(shape)
-  infer_fn <- function(iota_dimension, dtype, shape) {
+nvl_iota <- function(dim, dtype, shape) {
+  infer_fn <- function(dim, dtype, shape) {
     # stablehlo uses 0-based indexing, anvil uses 1-based
-    out <- stablehlo::infer_types_iota(iota_dimension - 1L, dtype, shape)@items[[1L]]
+    out <- stablehlo::infer_types_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape)@items[[1L]]
     list(vt2sa(out))
   }
   graph_desc_add(
     p_iota,
     list(),
-    list(iota_dimension = iota_dimension, dtype = dtype, shape = shape),
+    list(dim = dim, dtype = dtype, shape = shape),
     infer_fn = infer_fn
   )[[1L]]
 }
@@ -937,13 +933,8 @@ p_pad <- Primitive("pad")
 #' @return [`tensorish`]
 #' @export
 nvl_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
-  edge_padding_low <- as.integer(edge_padding_low)
-  edge_padding_high <- as.integer(edge_padding_high)
-  interior_padding <- as.integer(interior_padding)
-
   infer_fn <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
-    both_ambiguous <- operand@ambiguous && padding_value@ambiguous
-    rank <- length(shape(operand))
+    rank <- ndims_abstract(operand)
     low_attr <- r_to_constant(edge_padding_low, dtype = "i64", shape = rank)
     high_attr <- r_to_constant(edge_padding_high, dtype = "i64", shape = rank)
     interior_attr <- r_to_constant(interior_padding, dtype = "i64", shape = rank)
@@ -955,7 +946,7 @@ nvl_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high,
       interior_padding = interior_attr
     )@items[[1L]]
     out <- vt2sa(out)
-    out@ambiguous <- both_ambiguous
+    out@ambiguous <- operand@ambiguous
     list(out)
   }
 

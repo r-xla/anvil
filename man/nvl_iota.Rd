@@ -4,12 +4,12 @@
 \alias{nvl_iota}
 \title{Primitive Iota}
 \usage{
-nvl_iota(iota_dimension, dtype, shape)
+nvl_iota(dim, dtype, shape)
 
-nvl_iota(iota_dimension, dtype, shape)
+nvl_iota(dim, dtype, shape)
 }
 \arguments{
-\item{iota_dimension}{(\code{integer(1)})\cr
+\item{dim}{(\code{integer(1)})\cr
 Dimension along which values increase (1-indexed).}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
@@ -17,9 +17,6 @@ Data type.}
 
 \item{shape}{(\code{integer()})\cr
 Shape of the output tensor.}
-
-\item{dim}{(\code{integer(1)})\cr
-The dimension along which to generate increasing values.}
 
 \item{start}{(\code{numeric(1)})\cr
 The value to start the sequence at.}

@@ -446,6 +446,13 @@ p_clamp[["backward"]] <- function(inputs, outputs, grads, .required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
 
+  if (ndims(min_val) == 0L) {
+    min_val <- nvl_broadcast_in_dim(min_val, shape(operand), integer())
+  }
+  if (ndims(max_val) == 0L) {
+    max_val <- nvl_broadcast_in_dim(max_val, shape(operand), integer())
+  }
+
   # Gradient flows through where operand equals output (not clamped)
   mask_operand <- nvl_convert(nvl_eq(operand, y), dtype = dtype(grad))
   mask_min <- nvl_convert(nvl_eq(min_val, y), dtype = dtype(grad))
@@ -483,11 +490,14 @@ p_pad[["backward"]] <- function(
       # For interior_padding > 0, we need to select every (interior_padding + 1)th element
       # using slice with strides
       strides <- interior_padding + 1L
-      # Start indices are edge_padding_low + 1 (anvil uses 1-based indexing)
+      # Start indices in 1-based (anvil convention)
       start_indices <- edge_padding_low + 1L
-      # nvl_slice converts start_indices to 0-based but keeps limit_indices as-is for HLO
-      # So limit = (start - 1) + shape * stride = start - 1 + shape * stride
-      limit_indices <- start_indices - 1L + operand_shape * strides
+      # nvl_slice converts start_indices to 0-based (start_attr = start_indices - 1)
+      # and keeps limit_indices as-is (limit_attr = limit_indices)
+      # The positions we want (0-based): edge_padding_low, edge_padding_low + stride, ..., edge_padding_low + (n-1)*stride
+      # The last position (0-based): edge_padding_low + (operand_shape - 1) * strides
+      # limit (exclusive, 0-based): last_position + 1
+      limit_indices <- edge_padding_low + (operand_shape - 1L) * strides + 1L
       nvl_slice(grad, start_indices, limit_indices, strides)
     },
     # padding_value gradient is not typically needed

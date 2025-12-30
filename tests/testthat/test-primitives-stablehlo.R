@@ -386,7 +386,7 @@ test_that("nvl_logistic", {
   expect_equal(f(nv_tensor(10, dtype = "f64")), nv_tensor(1 / (1 + exp(-10)), dtype = "f64"), tolerance = 1e-6)
 })
 
-test_that("nvl_is_finite", {
+test_that("p_is_finite", {
   f <- jit(function(x) nvl_is_finite(x))
   x <- nv_tensor(c(1.0, Inf, -Inf, NaN), dtype = "f32")
   expect_equal(f(x), nv_tensor(c(TRUE, FALSE, FALSE, FALSE), dtype = "pred"))

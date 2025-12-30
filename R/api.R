@@ -3,22 +3,6 @@
 
 # Special tensor creators
 
-#' @title Iota
-#' @description
-#' Create a tensor with increasing values along a dimension.
-#' @param dim (`integer(1)`)\cr
-#'   The dimension along which to generate increasing values.
-#' @template param_shape
-#' @template param_dtype
-#' @param start (`numeric(1)`)\cr
-#'   The value to start the sequence at (default 1).
-#' @export
-nv_iota <- function(dim, shape, dtype = "i32", start = 1) {
-  shape <- assert_shapevec(shape)
-  nvl_iota(dim = dim, shape = shape, dtype = dtype, start = start)
-}
-
-
 #' @title Constant
 #' @description
 #' Create a constant.
@@ -556,6 +540,8 @@ nv_popcnt <- nvl_popcnt
 #' @template param_operand
 #' @param max_val ([`tensorish`])\cr
 #'   Maximum value.
+#' @details
+#' The underlying stableHLO function already broadcasts scalars, so no need to broadcast manually.
 #' @return [`tensorish`]
 #' @export
 nv_clamp <- nvl_clamp
@@ -571,7 +557,7 @@ nv_reverse <- nvl_reverse
 
 #' @title Iota
 #' @description Creates a tensor with values increasing along the specified dimension.
-#' @param iota_dimension (`integer(1)`)\cr
+#' @param dim (`integer(1)`)\cr
 #'   Dimension along which values increase (1-indexed).
 #' @template param_dtype
 #' @template param_shape

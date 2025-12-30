@@ -445,13 +445,58 @@ test_that("p_reverse backward", {
 test_that("p_pad backward", {
   # Gradient for pad is a slice of the output gradient
   f <- jit(gradient(function(x) {
-    y <- nvl_pad(x, nv_scalar(0, "f64"), c(1L), c(1L), c(0L))
+    y <- nvl_pad(x, nv_scalar(0, "f64"), 1L, 1L, 0L)
     nv_reduce_sum(y, dims = 1L, drop = TRUE)
   }))
   x <- nv_tensor(1:3, dtype = "f64")
   g <- f(x)
   # Gradient should be all 1s for the original elements
   expect_equal(g[[1L]], nv_tensor(rep(1, 3), dtype = "f64"))
+})
+
+test_that("p_pad backward with interior padding", {
+  # Interior padding adds padding between elements
+  # For input [a, b, c] with interior_padding=1, output is [a, 0, b, 0, c]
+  # Gradient flows only to original positions [a, b, c]
+  f <- jit(gradient(function(x) {
+    x <- x * nv_tensor(c(1, 2, 3), dtype = "f64")
+    y <- nvl_pad(x, nv_scalar(0, "f64"), 0L, 0L, 1L)
+    nv_reduce_sum(y, dims = 1L, drop = TRUE)
+  }))
+  x <- nv_tensor(c(1, 2, 3), dtype = "f64")
+  g <- f(x)
+  expect_equal(g[[1L]], nv_tensor(1:3, dtype = "f64"))
+
+  # Test with both edge and interior padding
+  f2 <- jit(gradient(function(x) {
+    x <- x * nv_tensor(c(1, 2), dtype = "f64")
+    # edge_padding_low=1, edge_padding_high=1, interior_padding=1
+    # For input [a, b], output is [0, a, 0, b, 0]
+    y <- nvl_pad(x, nv_scalar(0, "f64"), 1L, 1L, 1L)
+    nv_reduce_sum(y, dims = 1L, drop = TRUE)
+  }))
+  x2 <- nv_tensor(c(5, 10), dtype = "f64")
+  g2 <- f2(x2)
+  expect_equal(g2[[1L]], nv_tensor(c(1, 2), dtype = "f64"))
+
+  # Test 2D with interior padding
+  f3 <- jit(gradient(function(x) {
+    x <- x * nv_tensor(c(1, 2, 3, 4), shape = c(2, 2), dtype = "f64")
+    y <- nvl_pad(x, nv_scalar(0, "f64"), c(0L, 0L), c(0L, 0L), c(1L, 1L))
+    nv_reduce_sum(y, dims = c(1L, 2L), drop = TRUE)
+  }))
+  x3 <- nv_tensor(matrix(1:4, 2, 2), dtype = "f64")
+  g3 <- f3(x3)
+  expect_equal(g3[[1L]], nv_tensor(matrix(1:4, 2, 2), dtype = "f64"))
+
+  # Test 2D with different edge padding on each dimension
+  f4 <- jit(gradient(function(x) {
+    y <- nvl_pad(x, nv_scalar(0, "f64"), c(1L, 2L), c(2L, 1L), c(0L, 0L))
+    nv_reduce_sum(y, dims = c(1L, 2L), drop = TRUE)
+  }))
+  x4 <- nv_tensor(matrix(1:6, 2, 3), dtype = "f64")
+  g4 <- f4(x4)
+  expect_equal(g4[[1L]], nv_tensor(matrix(rep(1, 6), 2, 3), dtype = "f64"))
 })
 
 if (nzchar(system.file(package = "torch"))) {

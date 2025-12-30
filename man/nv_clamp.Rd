@@ -22,3 +22,6 @@ Maximum value.}
 \description{
 Element-wise clamp: max(min_val, min(operand, max_val)).
 }
+\details{
+The underlying stableHLO function already broadcasts scalars, so no need to broadcast manually.
+}

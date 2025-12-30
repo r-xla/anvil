@@ -2,15 +2,6 @@
 
 # TODO: Here we don't have to re-do the type inference again, because it was already done.
 
-p_iota[["stablehlo"]] <- function(dim, shape, dtype, start) {
-  out <- stablehlo::hlo_iota(iota_dimension = dim - 1L, shape = shape, dtype = dtype)
-  if (start != 0) {
-    start_val <- stablehlo::hlo_tensor(start, shape = shape, dtype = dtype)
-    out <- stablehlo::hlo_add(out, start_val)
-  }
-  list(out)
-}
-
 p_fill[["stablehlo"]] <- function(value, shape, dtype) {
   list(stablehlo::hlo_tensor(value, shape = shape, dtype = dtype))
 }
@@ -294,8 +285,8 @@ p_reverse[["stablehlo"]] <- function(operand, dimensions) {
   list(stablehlo::hlo_reverse(operand, dimensions - 1L))
 }
 
-p_iota[["stablehlo"]] <- function(iota_dimension, dtype, shape) {
-  list(stablehlo::hlo_iota(iota_dimension - 1L, dtype, shape))
+p_iota[["stablehlo"]] <- function(dim, dtype, shape) {
+  list(stablehlo::hlo_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape))
 }
 
 p_pad[["stablehlo"]] <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
