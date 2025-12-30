@@ -262,6 +262,46 @@ p_exp[["stablehlo"]] <- function(operand) {
   list(stablehlo::hlo_exponential(operand))
 }
 
+p_expm1[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_exponential_minus_one(operand))
+}
+
+p_log1p[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_log_plus_one(operand))
+}
+
+p_cbrt[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_cbrt(operand))
+}
+
+p_logistic[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_logistic(operand))
+}
+
+p_is_finite[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_is_finite(operand))
+}
+
+p_popcnt[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_popcnt(operand))
+}
+
+p_clamp[["stablehlo"]] <- function(min_val, operand, max_val) {
+  list(stablehlo::hlo_clamp(min_val, operand, max_val))
+}
+
+p_reverse[["stablehlo"]] <- function(operand, dimensions) {
+  list(stablehlo::hlo_reverse(operand, dimensions - 1L))
+}
+
+p_iota[["stablehlo"]] <- function(iota_dimension, dtype, shape) {
+  list(stablehlo::hlo_iota(iota_dimension - 1L, dtype, shape))
+}
+
+p_pad[["stablehlo"]] <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
+  list(stablehlo::hlo_pad(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding))
+}
+
 p_round[["stablehlo"]] <- function(operand, method) {
   switch(
     method,

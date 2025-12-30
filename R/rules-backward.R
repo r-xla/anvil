@@ -391,3 +391,108 @@ p_sign[["backward"]] <- backward_zero_uni
 p_round[["backward"]] <- function(inputs, outputs, grads, method, .required) {
   backward_zero_uni(inputs, outputs, grads, .required)
 }
+
+# New primitives backward rules ------------------------------------------------
+
+p_cbrt[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx cbrt(x) = 1 / (3 * cbrt(x)^2)
+    if (.required[[1L]]) {
+      third <- nvl_fill(1 / 3, dtype = dtype(y), shape = shape(y))
+      nvl_div(nvl_mul(grad, third), nvl_mul(y, y))
+    }
+  )
+}
+
+p_expm1[["backward"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx (exp(x) - 1) = exp(x)
+    if (.required[[1L]]) nvl_mul(grad, nvl_exp(operand))
+  )
+}
+
+p_log1p[["backward"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx log(1 + x) = 1 / (1 + x)
+    if (.required[[1L]]) {
+      one <- nvl_fill(1, dtype = dtype(operand), shape = shape(operand))
+      nvl_div(grad, nvl_add(one, operand))
+    }
+  )
+}
+
+p_logistic[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx sigmoid(x) = sigmoid(x) * (1 - sigmoid(x))
+    if (.required[[1L]]) {
+      one <- nvl_fill(1, dtype = dtype(y), shape = shape(y))
+      nvl_mul(grad, nvl_mul(y, nvl_sub(one, y)))
+    }
+  )
+}
+
+p_clamp[["backward"]] <- function(inputs, outputs, grads, .required) {
+  min_val <- inputs[[1L]]
+  operand <- inputs[[2L]]
+  max_val <- inputs[[3L]]
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+
+  # Gradient flows through where operand equals output (not clamped)
+  mask_operand <- nvl_convert(nvl_eq(operand, y), dtype = dtype(grad))
+  mask_min <- nvl_convert(nvl_eq(min_val, y), dtype = dtype(grad))
+  mask_max <- nvl_convert(nvl_eq(max_val, y), dtype = dtype(grad))
+
+  list(
+    if (.required[[1L]]) nvl_mul(grad, mask_min),
+    if (.required[[2L]]) nvl_mul(grad, mask_operand),
+    if (.required[[3L]]) nvl_mul(grad, mask_max)
+  )
+}
+
+p_reverse[["backward"]] <- function(inputs, outputs, grads, dimensions, .required) {
+  grad <- grads[[1L]]
+  list(
+    # Reverse the gradient along the same dimensions
+    if (.required[[1L]]) nvl_reverse(grad, dimensions)
+  )
+}
+
+p_pad[["backward"]] <- function(
+  inputs,
+  outputs,
+  grads,
+  edge_padding_low,
+  edge_padding_high,
+  interior_padding,
+  .required
+) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) {
+      operand_shape <- shape(operand)
+      # For interior_padding > 0, we need to select every (interior_padding + 1)th element
+      # using slice with strides
+      strides <- interior_padding + 1L
+      # Start indices are edge_padding_low + 1 (anvil uses 1-based indexing)
+      start_indices <- edge_padding_low + 1L
+      # nvl_slice converts start_indices to 0-based but keeps limit_indices as-is for HLO
+      # So limit = (start - 1) + shape * stride = start - 1 + shape * stride
+      limit_indices <- start_indices - 1L + operand_shape * strides
+      nvl_slice(grad, start_indices, limit_indices, strides)
+    },
+    # padding_value gradient is not typically needed
+    if (.required[[2L]]) {
+      cli_abort("Gradient for padding_value not implemented")
+    }
+  )
+}

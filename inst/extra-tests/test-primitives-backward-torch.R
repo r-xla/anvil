@@ -486,3 +486,111 @@ test_that("p_sign", {
 test_that("p_round", {
   verify_grad_uni(nvl_round, torch::torch_round)
 })
+
+# New primitives ---------------------------------------------------------------
+
+test_that("p_cbrt", {
+  # cbrt(x) = x^(1/3), torch doesn't have cbrt so we use pow
+  verify_grad_uni(
+    nvl_cbrt,
+    \(x) torch::torch_pow(x, 1 / 3),
+    non_negative = TRUE,
+    tol = 1e-4
+  )
+})
+
+test_that("p_expm1", {
+  withr::local_seed(12)
+  verify_grad_uni(nvl_expm1, torch::torch_expm1, tol = 1e-5)
+})
+
+test_that("p_log1p", {
+  verify_grad_uni(nvl_log1p, torch::torch_log1p, non_negative = TRUE, tol = 1e-5)
+})
+
+test_that("p_logistic", {
+  verify_grad_uni(nvl_logistic, torch::torch_sigmoid, tol = 1e-5)
+})
+
+test_that("p_clamp", {
+  # Test clamp gradient - gradient flows through where not clamped
+  shp <- c(2L, 3L)
+  dtype <- "f32"
+
+  x_arr <- array(rnorm(prod(shp)), shp)
+  x_nv <- nv_tensor(x_arr, dtype = dtype)
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+
+  min_val <- -0.5
+  max_val <- 0.5
+
+  f_nv <- function(x) {
+    min_bc <- nv_broadcast_to(nv_scalar(min_val, dtype), shape(x))
+    max_bc <- nv_broadcast_to(nv_scalar(max_val, dtype), shape(x))
+    y <- nvl_clamp(min_bc, x, max_bc)
+    nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
+  }
+
+  grads_nv <- jit(gradient(f_nv))(x_nv)
+
+  out_th <- torch::torch_clamp(x_th, min = min_val, max = max_val)
+  torch::torch_sum(out_th)$backward()
+
+  expect_equal(
+    tengen::as_array(grads_nv[[1L]]),
+    as_array_torch(x_th$grad),
+    tolerance = 1e-5
+  )
+})
+
+test_that("p_reverse", {
+  shp <- c(2L, 3L, 4L)
+  dtype <- "f32"
+  dims_to_reverse <- c(1L, 3L)
+
+  x_arr <- array(rnorm(prod(shp)), shp)
+  x_nv <- nv_tensor(x_arr, dtype = dtype)
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+
+  f_nv <- function(x) {
+    y <- nvl_reverse(x, dims_to_reverse)
+    nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
+  }
+
+  grads_nv <- jit(gradient(f_nv))(x_nv)
+
+  out_th <- torch::torch_flip(x_th, dims_to_reverse)
+  torch::torch_sum(out_th)$backward()
+
+  expect_equal(
+    tengen::as_array(grads_nv[[1L]]),
+    as_array_torch(x_th$grad),
+    tolerance = 1e-5
+  )
+})
+
+test_that("p_pad", {
+  shp <- c(2L, 3L)
+  dtype <- "f32"
+
+  x_arr <- array(rnorm(prod(shp)), shp)
+  x_nv <- nv_tensor(x_arr, dtype = dtype)
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+
+  f_nv <- function(x) {
+    y <- nvl_pad(x, nv_scalar(0.0, dtype), c(1L, 2L), c(2L, 1L), c(0L, 0L))
+    nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
+  }
+
+  grads_nv <- jit(gradient(f_nv))(x_nv)
+
+  # torch.nn.functional.pad uses (left, right, top, bottom) order for 2D
+  out_th <- torch::nnf_pad(x_th, c(2L, 1L, 1L, 2L), value = 0.0)
+  torch::torch_sum(out_th)$backward()
+
+  expect_equal(
+    tengen::as_array(grads_nv[[1L]]),
+    as_array_torch(x_th$grad),
+    tolerance = 1e-5
+  )
+})

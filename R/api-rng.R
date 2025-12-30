@@ -262,7 +262,7 @@ nv_rdunif <- function(shape, initial_state, n, dtype = "i32") {
   u <- res[[2]]
 
   cp <- nv_div(
-    nv_iota(dim = 1L, shape = n, dtype = "f64", start = 1),
+    nv_add(nv_iota(1L, "f64", n), 1),
     nv_fill(n, "f64", shape = c())
   )
 

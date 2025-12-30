@@ -4,21 +4,31 @@
 \alias{nv_iota}
 \title{Iota}
 \usage{
-nv_iota(dim, shape, dtype = "i32", start = 1)
+nv_iota(iota_dimension, dtype, shape)
+
+nv_iota(iota_dimension, dtype, shape)
 }
 \arguments{
-\item{dim}{(\code{integer(1)})\cr
-The dimension along which to generate increasing values.}
-
-\item{shape}{(\code{integer()})\cr
-Shape.}
+\item{iota_dimension}{(\code{integer(1)})\cr
+Dimension along which values increase (1-indexed).}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}
 
+\item{shape}{(\code{integer()})\cr
+Shape.}
+
+\item{dim}{(\code{integer(1)})\cr
+The dimension along which to generate increasing values.}
+
 \item{start}{(\code{numeric(1)})\cr
 The value to start the sequence at (default 1).}
 }
+\value{
+\code{\link{tensorish}}
+}
 \description{
 Create a tensor with increasing values along a dimension.
+
+Creates a tensor with values increasing along the specified dimension.
 }

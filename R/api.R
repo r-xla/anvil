@@ -507,6 +507,99 @@ nv_sign <- nvl_sign
 #' @export
 nv_exp <- nvl_exp
 
+#' @title Exponential Minus One
+#' @description Element-wise exp(x) - 1, more accurate for small x.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nv_expm1 <- nvl_expm1
+
+#' @title Log Plus One
+#' @description Element-wise log(1 + x), more accurate for small x.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nv_log1p <- nvl_log1p
+
+#' @title Cube Root
+#' @description Element-wise cube root.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nv_cbrt <- nvl_cbrt
+
+#' @title Logistic (Sigmoid)
+#' @description Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nv_logistic <- nvl_logistic
+
+#' @title Is Finite
+#' @description Element-wise check if values are finite (not Inf, -Inf, or NaN).
+#' @template param_operand
+#' @return [`tensorish`] of boolean type
+#' @export
+nv_is_finite <- nvl_is_finite
+
+#' @title Population Count
+#' @description Element-wise population count (number of set bits in integer).
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nv_popcnt <- nvl_popcnt
+
+#' @title Clamp
+#' @description Element-wise clamp: max(min_val, min(operand, max_val)).
+#' @param min_val ([`tensorish`])\cr
+#'   Minimum value.
+#' @template param_operand
+#' @param max_val ([`tensorish`])\cr
+#'   Maximum value.
+#' @return [`tensorish`]
+#' @export
+nv_clamp <- nvl_clamp
+
+#' @title Reverse
+#' @description Reverses the order of elements along specified dimensions.
+#' @template param_operand
+#' @param dimensions (`integer()`)\cr
+#'   Dimensions to reverse (1-indexed).
+#' @return [`tensorish`]
+#' @export
+nv_reverse <- nvl_reverse
+
+#' @title Iota
+#' @description Creates a tensor with values increasing along the specified dimension.
+#' @param iota_dimension (`integer(1)`)\cr
+#'   Dimension along which values increase (1-indexed).
+#' @template param_dtype
+#' @template param_shape
+#' @return [`tensorish`]
+#' @export
+nv_iota <- nvl_iota
+
+#' @title Pad
+#' @description Pads a tensor with a given padding value.
+#' @template param_operand
+#' @param padding_value ([`tensorish`])\cr
+#'   Scalar value to use for padding.
+#' @param edge_padding_low (`integer()`)\cr
+#'   Amount of padding to add at the start of each dimension.
+#' @param edge_padding_high (`integer()`)\cr
+#'   Amount of padding to add at the end of each dimension.
+#' @param interior_padding (`integer()`)\cr
+#'   Amount of padding to add between elements in each dimension (default 0).
+#' @return [`tensorish`]
+#' @export
+nv_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding = NULL) {
+  rank <- ndims_abstract(operand)
+  if (is.null(interior_padding)) {
+    interior_padding <- rep(0L, rank)
+  }
+  nvl_pad(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding)
+}
+
 #' @title Round
 #' @description Element-wise rounding.
 #' @template param_operand

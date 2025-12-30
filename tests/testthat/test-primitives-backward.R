@@ -398,6 +398,62 @@ test_that("p_eq, p_ne, p_gt, p_ge, p_lt, p_le", {
   }
 })
 
+# New primitives backward tests ------------------------------------------------
+
+test_that("p_cbrt backward", {
+  # d/dx cbrt(x) = 1 / (3 * cbrt(x)^2)
+  # At x = 8: cbrt(8) = 2, so d/dx = 1 / (3 * 4) = 1/12
+  f <- jit(gradient(function(x) nvl_cbrt(x)))
+  g <- f(nv_scalar(8, dtype = "f64"))
+  expect_equal(as_array(g[[1L]]), 1 / 12, tolerance = 1e-6)
+})
+
+test_that("p_expm1 backward", {
+  # d/dx (exp(x) - 1) = exp(x)
+  f <- jit(gradient(function(x) nvl_expm1(x)))
+  g <- f(nv_scalar(1, dtype = "f64"))
+  expect_equal(as_array(g[[1L]]), exp(1), tolerance = 1e-6)
+})
+
+test_that("p_log1p backward", {
+  # d/dx log(1 + x) = 1 / (1 + x)
+  f <- jit(gradient(function(x) nvl_log1p(x)))
+  g <- f(nv_scalar(1, dtype = "f64"))
+  expect_equal(as_array(g[[1L]]), 0.5, tolerance = 1e-6)
+})
+
+test_that("p_logistic backward", {
+  # d/dx sigmoid(x) = sigmoid(x) * (1 - sigmoid(x))
+  # At x = 0: sigmoid(0) = 0.5, so d/dx = 0.5 * 0.5 = 0.25
+  f <- jit(gradient(function(x) nvl_logistic(x)))
+  g <- f(nv_scalar(0, dtype = "f64"))
+  expect_equal(as_array(g[[1L]]), 0.25, tolerance = 1e-6)
+})
+
+test_that("p_reverse backward", {
+  # Reverse is self-adjoint: reverse(reverse(grad)) = grad
+  f <- jit(gradient(function(x) {
+    y <- nvl_reverse(x, 1L)
+    nv_reduce_sum(y, dims = 1L, drop = TRUE)
+  }))
+  x <- nv_tensor(1:5, dtype = "f64")
+  g <- f(x)
+  # Gradient should be all 1s (reversed back)
+  expect_equal(g[[1L]], nv_tensor(rep(1, 5), dtype = "f64"))
+})
+
+test_that("p_pad backward", {
+  # Gradient for pad is a slice of the output gradient
+  f <- jit(gradient(function(x) {
+    y <- nvl_pad(x, nv_scalar(0, "f64"), c(1L), c(1L), c(0L))
+    nv_reduce_sum(y, dims = 1L, drop = TRUE)
+  }))
+  x <- nv_tensor(1:3, dtype = "f64")
+  g <- f(x)
+  # Gradient should be all 1s for the original elements
+  expect_equal(g[[1L]], nv_tensor(rep(1, 3), dtype = "f64"))
+})
+
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
 }

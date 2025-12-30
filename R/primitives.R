@@ -782,6 +782,195 @@ p_exp <- Primitive("exp")
 #' @export
 nvl_exp <- make_unary_op(p_exp)
 
+p_expm1 <- Primitive("expm1")
+#' @title Primitive Exponential Minus One
+#' @description
+#' Element-wise exp(x) - 1, more accurate for small x.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nvl_expm1 <- make_unary_op(p_expm1)
+
+p_log1p <- Primitive("log1p")
+#' @title Primitive Log Plus One
+#' @description
+#' Element-wise log(1 + x), more accurate for small x.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nvl_log1p <- make_unary_op(p_log1p)
+
+p_cbrt <- Primitive("cbrt")
+#' @title Primitive Cube Root
+#' @description
+#' Element-wise cube root.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nvl_cbrt <- make_unary_op(p_cbrt)
+
+p_logistic <- Primitive("logistic")
+#' @title Primitive Logistic (Sigmoid)
+#' @description
+#' Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nvl_logistic <- make_unary_op(p_logistic)
+
+p_is_finite <- Primitive("is_finite")
+#' @title Primitive Is Finite
+#' @description
+#' Element-wise check if values are finite (not Inf, -Inf, or NaN).
+#' @template param_operand
+#' @return [`tensorish`] of boolean type
+#' @export
+nvl_is_finite <- function(operand) {
+  infer_fn <- function(operand) {
+    out <- stablehlo::infer_types_is_finite(st2va(operand))@items[[1L]]
+    list(vt2sa(out))
+  }
+  graph_desc_add(p_is_finite, list(operand), list(), infer_fn = infer_fn)[[1L]]
+}
+
+p_popcnt <- Primitive("popcnt")
+#' @title Primitive Population Count
+#' @description
+#' Element-wise population count (number of set bits).
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nvl_popcnt <- function(operand) {
+  infer_fn <- function(operand) {
+    out <- stablehlo::infer_types_popcnt(st2va(operand))@items[[1L]]
+    out <- vt2sa(out)
+    out@ambiguous <- operand@ambiguous
+    list(out)
+  }
+  graph_desc_add(p_popcnt, list(operand), list(), infer_fn = infer_fn)[[1L]]
+}
+
+p_clamp <- Primitive("clamp")
+#' @title Primitive Clamp
+#' @description
+#' Element-wise clamp: max(min_val, min(operand, max_val)).
+#' @param min_val ([`tensorish`])\cr
+#'   Minimum value (scalar or same shape as operand).
+#' @template param_operand
+#' @param max_val ([`tensorish`])\cr
+#'   Maximum value (scalar or same shape as operand).
+#' @return [`tensorish`]
+#' @export
+nvl_clamp <- function(min_val, operand, max_val) {
+  infer_fn <- function(min_val, operand, max_val) {
+    out <- stablehlo::infer_types_clamp(st2va(min_val), st2va(operand), st2va(max_val))@items[[1L]]
+    out <- vt2sa(out)
+    out@ambiguous <- operand@ambiguous
+    list(out)
+  }
+  graph_desc_add(p_clamp, list(min_val, operand, max_val), list(), infer_fn = infer_fn)[[1L]]
+}
+
+p_reverse <- Primitive("reverse")
+#' @title Primitive Reverse
+#' @description
+#' Reverses the order of elements along specified dimensions.
+#' @template param_operand
+#' @param dimensions (`integer()`)\cr
+#'   Dimensions to reverse (1-indexed).
+#' @return [`tensorish`]
+#' @export
+nvl_reverse <- function(operand, dimensions) {
+  dimensions <- as.integer(dimensions)
+  infer_fn <- function(operand, dimensions) {
+    # stablehlo uses 0-based indexing
+    dims_attr <- r_to_constant(dimensions - 1L, dtype = "i64", shape = length(dimensions))
+    out <- stablehlo::infer_types_reverse(st2va(operand), dimensions = dims_attr)@items[[1L]]
+    out <- vt2sa(out)
+    out@ambiguous <- operand@ambiguous
+    list(out)
+  }
+  graph_desc_add(p_reverse, list(operand), list(dimensions = dimensions), infer_fn = infer_fn)[[1L]]
+}
+
+p_iota <- Primitive("iota")
+#' @title Primitive Iota
+#' @description
+#' Creates a tensor with values increasing along the specified dimension.
+#' @param iota_dimension (`integer(1)`)\cr
+#'   Dimension along which values increase (1-indexed).
+#' @template param_dtype
+#' @param shape (`integer()`)\cr
+#'   Shape of the output tensor.
+#' @return [`tensorish`]
+#' @export
+nvl_iota <- function(iota_dimension, dtype, shape) {
+  iota_dimension <- as.integer(iota_dimension)
+  dtype <- as_dtype(dtype)
+  shape <- as.integer(shape)
+  infer_fn <- function(iota_dimension, dtype, shape) {
+    # stablehlo uses 0-based indexing, anvil uses 1-based
+    out <- stablehlo::infer_types_iota(iota_dimension - 1L, dtype, shape)@items[[1L]]
+    list(vt2sa(out))
+  }
+  graph_desc_add(
+    p_iota,
+    list(),
+    list(iota_dimension = iota_dimension, dtype = dtype, shape = shape),
+    infer_fn = infer_fn
+  )[[1L]]
+}
+
+p_pad <- Primitive("pad")
+#' @title Primitive Pad
+#' @description
+#' Pads a tensor with a given padding value.
+#' @template param_operand
+#' @param padding_value ([`tensorish`])\cr
+#'   Scalar value to use for padding.
+#' @param edge_padding_low (`integer()`)\cr
+#'   Amount of padding to add at the start of each dimension.
+#' @param edge_padding_high (`integer()`)\cr
+#'   Amount of padding to add at the end of each dimension.
+#' @param interior_padding (`integer()`)\cr
+#'   Amount of padding to add between elements in each dimension.
+#' @return [`tensorish`]
+#' @export
+nvl_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
+  edge_padding_low <- as.integer(edge_padding_low)
+  edge_padding_high <- as.integer(edge_padding_high)
+  interior_padding <- as.integer(interior_padding)
+
+  infer_fn <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
+    both_ambiguous <- operand@ambiguous && padding_value@ambiguous
+    rank <- length(shape(operand))
+    low_attr <- r_to_constant(edge_padding_low, dtype = "i64", shape = rank)
+    high_attr <- r_to_constant(edge_padding_high, dtype = "i64", shape = rank)
+    interior_attr <- r_to_constant(interior_padding, dtype = "i64", shape = rank)
+    out <- stablehlo::infer_types_pad(
+      st2va(operand),
+      st2va(padding_value),
+      edge_padding_low = low_attr,
+      edge_padding_high = high_attr,
+      interior_padding = interior_attr
+    )@items[[1L]]
+    out <- vt2sa(out)
+    out@ambiguous <- both_ambiguous
+    list(out)
+  }
+
+  graph_desc_add(
+    p_pad,
+    list(operand, padding_value),
+    list(
+      edge_padding_low = edge_padding_low,
+      edge_padding_high = edge_padding_high,
+      interior_padding = interior_padding
+    ),
+    infer_fn = infer_fn
+  )[[1L]]
+}
+
 p_round <- Primitive("round")
 #' @title Primitive Round
 #' @description
