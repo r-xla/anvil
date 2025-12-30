@@ -7,14 +7,14 @@ Creates a tensor with values increasing along the specified dimension.
 ## Usage
 
 ``` r
-nvl_iota(iota_dimension, dtype, shape)
+nvl_iota(dim, dtype, shape)
 
-nvl_iota(iota_dimension, dtype, shape)
+nvl_iota(dim, dtype, shape)
 ```
 
 ## Arguments
 
-- iota_dimension:
+- dim:
 
   (`integer(1)`)  
   Dimension along which values increase (1-indexed).
@@ -29,11 +29,6 @@ nvl_iota(iota_dimension, dtype, shape)
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
   Shape of the output tensor.
-
-- dim:
-
-  (`integer(1)`)  
-  The dimension along which to generate increasing values.
 
 - start:
 

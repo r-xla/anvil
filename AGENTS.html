@@ -115,8 +115,12 @@
 </ol></div>
 <div class="section level2">
 <h2 id="adding-a-primitive">Adding a Primitive<a class="anchor" aria-label="anchor" href="#adding-a-primitive"></a></h2>
-<p>The functions prefixed with <code>nvl_</code> are the primitives and defined in primitives.R. When implementing a primitive, make sure that the inference function propagates the ambiguity of the inputs to the output. Also, check whether the stablehlo package has a corresponding inference function that can be wrapped. Pay attention that stablehlo uses 0-based indexing, but <code>anvil</code> uses 1-based indexing.</p>
+<p>The functions prefixed with <code>nvl_</code> are the primitives and defined in primitives.R. When implementing a primitive, make sure that the inference function propagates the ambiguity of the inputs to the output. Also, check whether the stablehlo package has a corresponding inference function that can be wrapped. Pay attention that stablehlo uses 0-based indexing, but <code>anvil</code> uses 1-based indexing. When accessing properties from <code>tensorish</code> values, use <code>shape_abstract</code>, <code>ndims_abstract</code>, and <code>dtype_abstract</code>. Other accessors are currently not available.</p>
 </div>
+<div class="section level2">
+<h2 id="style">Style<a class="anchor" aria-label="anchor" href="#style"></a></h2>
+<ul><li>For length-1 vectors, don’t use <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>. For example, use <code>1L</code> instead of <code>c(1L)</code>.</li>
+</ul></div>
 
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

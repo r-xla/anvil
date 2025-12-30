@@ -70,4 +70,12 @@ primitives.R. When implementing a primitive, make sure that the
 inference function propagates the ambiguity of the inputs to the output.
 Also, check whether the stablehlo package has a corresponding inference
 function that can be wrapped. Pay attention that stablehlo uses 0-based
-indexing, but `anvil` uses 1-based indexing.
+indexing, but `anvil` uses 1-based indexing. When accessing properties
+from `tensorish` values, use `shape_abstract`, `ndims_abstract`, and
+`dtype_abstract`. Other accessors are currently not available.
+
+## Style
+
+- For length-1 vectors, don’t use
+  [`c()`](https://rdrr.io/r/base/c.html). For example, use `1L` instead
+  of `c(1L)`.

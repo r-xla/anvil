@@ -1,20 +1,16 @@
 # Iota
 
-Create a tensor with increasing values along a dimension.
-
 Creates a tensor with values increasing along the specified dimension.
 
 ## Usage
 
 ``` r
-nv_iota(iota_dimension, dtype, shape)
-
-nv_iota(iota_dimension, dtype, shape)
+nv_iota(dim, dtype, shape)
 ```
 
 ## Arguments
 
-- iota_dimension:
+- dim:
 
   (`integer(1)`)  
   Dimension along which values increase (1-indexed).
@@ -29,16 +25,6 @@ nv_iota(iota_dimension, dtype, shape)
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
   Shape.
-
-- dim:
-
-  (`integer(1)`)  
-  The dimension along which to generate increasing values.
-
-- start:
-
-  (`numeric(1)`)  
-  The value to start the sequence at (default 1).
 
 ## Value
 

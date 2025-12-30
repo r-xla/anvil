@@ -28,3 +28,8 @@ nv_clamp(min_val, operand, max_val)
 ## Value
 
 [`tensorish`](tensorish.md)
+
+## Details
+
+The underlying stableHLO function already broadcasts scalars, so no need
+to broadcast manually.
