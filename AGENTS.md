@@ -62,8 +62,23 @@ The functions prefixed with `nvl_` are the primitives and defined in primitives.
 When implementing a primitive, make sure that the inference function propagates the ambiguity of the inputs to the output.
 Also, check whether the stablehlo package has a corresponding inference function that can be wrapped.
 Pay attention that stablehlo uses 0-based indexing, but `anvil` uses 1-based indexing.
-When accessing properties from `tensorish` values, use `shape_abstract`, `ndims_abstract`, and `dtype_abstract`. Other accessors are currently not available.
+
+## Adding an API function
+
+API functions are prefixed by `nv_` and are defined in files like api.R or api-rng.R.
+Often, they wrap primitives, but make them more convenient to use.
+When accessing properties from `tensorish` values, use `shape_abstract`, `ndims_abstract`, and `dtype_abstract`.
+Other accessors are currently not available.
 
 ## Style
 
 * For length-1 vectors, don't use `c()`. For example, use `1L` instead of `c(1L)`.
+
+## Testing
+
+Each rule of each primitive should be tested.
+Many tests can be implemented by comparing with the corresponding torch function (inst/extra-tests/test-primitives-stablehlo-torch.R and inst/extra-tests/test-primitives-backward-torch.R, ...).
+These are sourced in test-primitives-stablehlo.R and test-primitives-backward.R, etc..
+Implement the test by comparing with torch, if possible.
+If not, implement the test manually.
+Implement either the torch test OR the manual test, but not both.

@@ -446,6 +446,9 @@ p_clamp[["backward"]] <- function(inputs, outputs, grads, .required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
 
+  # because stablehlo.clamp broadcasts scalars, we need to handle this here before the eq call
+  # this is an inconsistency in stablehlo, as it broadcasts scalars in clamp, but not in eq
+  # (and most other functions)
   if (ndims(min_val) == 0L) {
     min_val <- nvl_broadcast_in_dim(min_val, shape(operand), integer())
   }

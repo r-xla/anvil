@@ -359,83 +359,10 @@ test_that("error when multiplying lists in if-statement", {
   )
 })
 
-test_that("nvl_cbrt", {
-  f <- jit(function(x) nvl_cbrt(x))
-  expect_equal(f(nv_tensor(8, dtype = "f32")), nv_tensor(2, dtype = "f32"), tolerance = 1e-5)
-  expect_equal(f(nv_tensor(27, dtype = "f64")), nv_tensor(3, dtype = "f64"), tolerance = 1e-5)
-})
-
-test_that("nvl_expm1", {
-  f <- jit(function(x) nvl_expm1(x))
-  expect_equal(f(nv_tensor(0, dtype = "f32")), nv_tensor(0, dtype = "f32"), tolerance = 1e-6)
-  # exp(1) - 1 = e - 1 ≈ 1.718
-  expect_equal(f(nv_tensor(1, dtype = "f64")), nv_tensor(exp(1) - 1, dtype = "f64"), tolerance = 1e-6)
-})
-
-test_that("nvl_log1p", {
-  f <- jit(function(x) nvl_log1p(x))
-  expect_equal(f(nv_tensor(0, dtype = "f32")), nv_tensor(0, dtype = "f32"), tolerance = 1e-6)
-  # log1p(e - 1) = log(e) = 1
-  expect_equal(f(nv_tensor(exp(1) - 1, dtype = "f64")), nv_tensor(1, dtype = "f64"), tolerance = 1e-6)
-})
-
-test_that("nvl_logistic", {
-  f <- jit(function(x) nvl_logistic(x))
-  expect_equal(f(nv_tensor(0, dtype = "f32")), nv_tensor(0.5, dtype = "f32"), tolerance = 1e-6)
-  # sigmoid(large) ≈ 1
-  expect_equal(f(nv_tensor(10, dtype = "f64")), nv_tensor(1 / (1 + exp(-10)), dtype = "f64"), tolerance = 1e-6)
-})
-
 test_that("p_is_finite", {
   f <- jit(function(x) nvl_is_finite(x))
   x <- nv_tensor(c(1.0, Inf, -Inf, NaN), dtype = "f32")
   expect_equal(f(x), nv_tensor(c(TRUE, FALSE, FALSE, FALSE), dtype = "pred"))
-})
-
-test_that("nvl_clamp", {
-  f <- jit(function(x) {
-    min_val <- nv_broadcast_to(nv_scalar(-1.0, "f32"), shape(x))
-    max_val <- nv_broadcast_to(nv_scalar(1.0, "f32"), shape(x))
-    nvl_clamp(min_val, x, max_val)
-  })
-  x <- nv_tensor(c(-2.0, -0.5, 0.5, 2.0), dtype = "f32")
-  expect_equal(f(x), nv_tensor(c(-1.0, -0.5, 0.5, 1.0), dtype = "f32"))
-})
-
-test_that("nvl_reverse", {
-  f <- jit(function(x) nvl_reverse(x, 1L))
-  x <- nv_tensor(1:5, dtype = "i32")
-  expect_equal(f(x), nv_tensor(5:1, dtype = "i32"))
-
-  # 2D reverse
-  f2 <- jit(function(x) nvl_reverse(x, 2L))
-  x2 <- nv_tensor(matrix(1:6, 2, 3), dtype = "i32")
-  expect_equal(f2(x2), nv_tensor(matrix(c(5L, 6L, 3L, 4L, 1L, 2L), 2, 3), dtype = "i32"))
-})
-
-test_that("nvl_iota", {
-  f <- jit(function() nvl_iota(1L, "i32", 5L))
-  expect_equal(f(), nv_tensor(0:4, dtype = "i32"))
-
-  # 2D along first dimension
-  f2 <- jit(function() nvl_iota(1L, "i32", c(3L, 2L)))
-  expected <- matrix(c(0L, 1L, 2L, 0L, 1L, 2L), 3, 2)
-  expect_equal(f2(), nv_tensor(expected, dtype = "i32"))
-})
-
-test_that("nvl_pad", {
-  f <- jit(function(x) {
-    nvl_pad(x, nv_scalar(0.0, "f32"), c(1L, 1L), c(1L, 1L), c(0L, 0L))
-  })
-  x <- nv_tensor(matrix(c(1, 2, 3, 4), 2, 2), dtype = "f32")
-  expected <- matrix(c(0, 0, 0, 0, 0, 1, 2, 0, 0, 3, 4, 0, 0, 0, 0, 0), 4, 4)
-  expect_equal(f(x), nv_tensor(expected, dtype = "f32"))
-})
-
-test_that("nvl_popcnt", {
-  f <- jit(function(x) nvl_popcnt(x))
-  x <- nv_tensor(c(0L, 1L, 2L, 3L, 7L, 255L), dtype = "i32")
-  expect_equal(f(x), nv_tensor(c(0L, 1L, 1L, 2L, 3L, 8L), dtype = "i32"))
 })
 
 test_that("p_print", {
