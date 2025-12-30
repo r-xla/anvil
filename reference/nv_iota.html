@@ -5,7 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Iota — nv_iota"><meta name="description" content="Create a tensor with increasing values along a dimension."><meta property="og:description" content="Create a tensor with increasing values along a dimension."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Iota — nv_iota"><meta name="description" content="Create a tensor with increasing values along a dimension.
+Creates a tensor with values increasing along the specified dimension."><meta property="og:description" content="Create a tensor with increasing values along a dimension.
+Creates a tensor with values increasing along the specified dimension."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -54,31 +56,29 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Iota</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/R/api.R" class="external-link"><code>R/api.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/more-primitiiives/R/api.R" class="external-link"><code>R/api.R</code></a></small>
       <div class="d-none name"><code>nv_iota.Rd</code></div>
     </div>
 
     <div class="ref-description section level2">
     <p>Create a tensor with increasing values along a dimension.</p>
+<p>Creates a tensor with values increasing along the specified dimension.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nv_iota</span><span class="op">(</span><span class="va">dim</span>, <span class="va">shape</span>, dtype <span class="op">=</span> <span class="st">"i32"</span>, start <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nv_iota</span><span class="op">(</span><span class="va">iota_dimension</span>, <span class="va">dtype</span>, <span class="va">shape</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">nv_iota</span><span class="op">(</span><span class="va">iota_dimension</span>, <span class="va">dtype</span>, <span class="va">shape</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-dim">dim<a class="anchor" aria-label="anchor" href="#arg-dim"></a></dt>
+<dl><dt id="arg-iota-dimension">iota_dimension<a class="anchor" aria-label="anchor" href="#arg-iota-dimension"></a></dt>
 <dd><p>(<code>integer(1)</code>)<br>
-The dimension along which to generate increasing values.</p></dd>
-
-
-<dt id="arg-shape">shape<a class="anchor" aria-label="anchor" href="#arg-shape"></a></dt>
-<dd><p>(<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>)<br>
-Shape.</p></dd>
+Dimension along which values increase (1-indexed).</p></dd>
 
 
 <dt id="arg-dtype">dtype<a class="anchor" aria-label="anchor" href="#arg-dtype"></a></dt>
@@ -86,11 +86,25 @@ Shape.</p></dd>
 Data type.</p></dd>
 
 
+<dt id="arg-shape">shape<a class="anchor" aria-label="anchor" href="#arg-shape"></a></dt>
+<dd><p>(<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>)<br>
+Shape.</p></dd>
+
+
+<dt id="arg-dim">dim<a class="anchor" aria-label="anchor" href="#arg-dim"></a></dt>
+<dd><p>(<code>integer(1)</code>)<br>
+The dimension along which to generate increasing values.</p></dd>
+
+
 <dt id="arg-start">start<a class="anchor" aria-label="anchor" href="#arg-start"></a></dt>
 <dd><p>(<code>numeric(1)</code>)<br>
 The value to start the sequence at (default 1).</p></dd>
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p><code><a href="tensorish.html">tensorish</a></code></p>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

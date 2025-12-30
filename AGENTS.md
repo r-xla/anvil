@@ -62,3 +62,12 @@ devtools::check()
     function should return the gradient of the terminal output with
     respect to the inputs. The tests are in the file
     `insts/extra-tests/test-primitives-pullback-torch.R`
+
+## Adding a Primitive
+
+The functions prefixed with `nvl_` are the primitives and defined in
+primitives.R. When implementing a primitive, make sure that the
+inference function propagates the ambiguity of the inputs to the output.
+Also, check whether the stablehlo package has a corresponding inference
+function that can be wrapped. Pay attention that stablehlo uses 0-based
+indexing, but `anvil` uses 1-based indexing.

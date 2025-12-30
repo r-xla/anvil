@@ -54,7 +54,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>NA</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/AGENTS.md" class="external-link"><code>AGENTS.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/more-primitiiives/AGENTS.md" class="external-link"><code>AGENTS.md</code></a></small>
     </div>
 
 
@@ -113,6 +113,10 @@
 <li>The <code>rules-pullback.R</code> file contains the differentiation rules for the primitive operations. There, <code>grad</code> is the gradient of the terminal output with respect to the function’s output and the function should return the gradient of the terminal output with respect to the inputs. The tests are in the file <code>insts/extra-tests/test-primitives-pullback-torch.R</code>
 </li>
 </ol></div>
+<div class="section level2">
+<h2 id="adding-a-primitive">Adding a Primitive<a class="anchor" aria-label="anchor" href="#adding-a-primitive"></a></h2>
+<p>The functions prefixed with <code>nvl_</code> are the primitives and defined in primitives.R. When implementing a primitive, make sure that the inference function propagates the ambiguity of the inputs to the output. Also, check whether the stablehlo package has a corresponding inference function that can be wrapped. Pay attention that stablehlo uses 0-based indexing, but <code>anvil</code> uses 1-based indexing.</p>
+</div>
 
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

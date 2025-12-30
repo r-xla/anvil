@@ -72,7 +72,11 @@
 
 - [`nv_broadcast_to()`](nv_broadcast_to.md) : Broadcast
 
+- [`nv_cbrt()`](nv_cbrt.md) : Cube Root
+
 - [`nv_ceil()`](nv_ceil.md) : Ceiling
+
+- [`nv_clamp()`](nv_clamp.md) : Clamp
 
 - [`nv_concatenate()`](nv_concatenate.md) : Concatenate
 
@@ -87,6 +91,8 @@
 
 - [`nv_exp()`](nv_exp.md) : Exponential
 
+- [`nv_expm1()`](nv_expm1.md) : Exponential Minus One
+
 - [`nv_fill()`](nv_fill.md) : Constant
 
 - [`nv_floor()`](nv_floor.md) : Floor
@@ -99,9 +105,15 @@
 
 - [`nv_iota()`](nv_iota.md) : Iota
 
+- [`nv_is_finite()`](nv_is_finite.md) : Is Finite
+
 - [`nv_le()`](nv_le.md) : Less Than or Equal
 
 - [`nv_log()`](nv_log.md) : Natural Logarithm
+
+- [`nv_log1p()`](nv_log1p.md) : Log Plus One
+
+- [`nv_logistic()`](nv_logistic.md) : Logistic (Sigmoid)
 
 - [`nv_lt()`](nv_lt.md) : Less Than
 
@@ -120,6 +132,10 @@
 - [`nv_not()`](nv_not.md) : Logical Not
 
 - [`nv_or()`](nv_or.md) : Logical Or
+
+- [`nv_pad()`](nv_pad.md) : Pad
+
+- [`nv_popcnt()`](nv_popcnt.md) : Population Count
 
 - [`nv_pow()`](nv_pow.md) : Power
 
@@ -144,6 +160,8 @@
 - [`nv_remainder()`](nv_remainder.md) : Remainder
 
 - [`nv_reshape()`](nv_reshape.md) : Reshape
+
+- [`nv_reverse()`](nv_reverse.md) : Reverse
 
 - [`nv_rng_state()`](nv_rng_state.md) : Generate random state
 
@@ -204,7 +222,11 @@
 - [`nvl_broadcast_in_dim()`](nvl_broadcast_in_dim.md) : Primitive
   Broadcast
 
+- [`nvl_cbrt()`](nvl_cbrt.md) : Primitive Cube Root
+
 - [`nvl_ceil()`](nvl_ceil.md) : Primitive Ceiling
+
+- [`nvl_clamp()`](nvl_clamp.md) : Primitive Clamp
 
 - [`nvl_concatenate()`](nvl_concatenate.md) : Primitive Concatenate
 
@@ -220,6 +242,8 @@
 
 - [`nvl_exp()`](nvl_exp.md) : Primitive Exponential
 
+- [`nvl_expm1()`](nvl_expm1.md) : Primitive Exponential Minus One
+
 - [`nvl_fill()`](nvl_fill.md) : Primitive Fill
 
 - [`nvl_floor()`](nvl_floor.md) : Primitive Floor
@@ -232,9 +256,15 @@
 
 - [`nvl_iota()`](nvl_iota.md) : Primitive Iota
 
+- [`nvl_is_finite()`](nvl_is_finite.md) : Primitive Is Finite
+
 - [`nvl_le()`](nvl_le.md) : Primitive Less Equal
 
 - [`nvl_log()`](nvl_log.md) : Primitive Logarithm
+
+- [`nvl_log1p()`](nvl_log1p.md) : Primitive Log Plus One
+
+- [`nvl_logistic()`](nvl_logistic.md) : Primitive Logistic (Sigmoid)
 
 - [`nvl_lt()`](nvl_lt.md) : Primitive Less Than
 
@@ -251,6 +281,10 @@
 - [`nvl_not()`](nvl_not.md) : Primitive Not
 
 - [`nvl_or()`](nvl_or.md) : Primitive Or
+
+- [`nvl_pad()`](nvl_pad.md) : Primitive Pad
+
+- [`nvl_popcnt()`](nvl_popcnt.md) : Primitive Population Count
 
 - [`nvl_pow()`](nvl_pow.md) : Primitive Power
 
@@ -272,6 +306,8 @@
 - [`nvl_remainder()`](nvl_remainder.md) : Primitive Remainder
 
 - [`nvl_reshape()`](nvl_reshape.md) : Primitive Reshape
+
+- [`nvl_reverse()`](nvl_reverse.md) : Primitive Reverse
 
 - [`nvl_rng_bit_generator()`](nvl_rng_bit_generator.md) : Primitive RNG
   Bit Generator

@@ -11,7 +11,9 @@ transformations.
 | atan2                  | ✓         |    ✗     |
 | bitcast_convert        | ✓         |    ✗     |
 | broadcast_in_dim       | ✓         |    ✓     |
+| cbrt                   | ✓         |    ✓     |
 | ceil                   | ✓         |    ✓     |
+| clamp                  | ✓         |    ✓     |
 | concatenate            | ✓         |    ✗     |
 | convert                | ✓         |    ✓     |
 | cosine                 | ✓         |    ✓     |
@@ -19,15 +21,19 @@ transformations.
 | dot_general            | ✓         |    ✓     |
 | equal                  | ✓         |    ✓     |
 | exp                    | ✓         |    ✓     |
+| expm1                  | ✓         |    ✓     |
 | fill                   | ✓         |    ✗     |
 | floor                  | ✓         |    ✓     |
 | greater                | ✓         |    ✓     |
 | greater_equal          | ✓         |    ✓     |
 | if                     | ✓         |    ✓     |
 | iota                   | ✓         |    ✗     |
+| is_finite              | ✓         |    ✗     |
 | less                   | ✓         |    ✓     |
 | less_equal             | ✓         |    ✓     |
 | log                    | ✓         |    ✓     |
+| log1p                  | ✓         |    ✓     |
+| logistic               | ✓         |    ✓     |
 | maximum                | ✓         |    ✓     |
 | minimum                | ✓         |    ✓     |
 | mul                    | ✓         |    ✓     |
@@ -35,6 +41,8 @@ transformations.
 | not                    | ✓         |    ✗     |
 | not_equal              | ✓         |    ✓     |
 | or                     | ✓         |    ✗     |
+| pad                    | ✓         |    ✓     |
+| popcnt                 | ✓         |    ✗     |
 | power                  | ✓         |    ✓     |
 | print                  | ✓         |    ✗     |
 | reduce_all             | ✓         |    ✗     |
@@ -45,6 +53,7 @@ transformations.
 | reduce_sum             | ✓         |    ✓     |
 | remainder              | ✓         |    ✗     |
 | reshape                | ✓         |    ✓     |
+| reverse                | ✓         |    ✓     |
 | rng_bit_generator      | ✓         |    ✗     |
 | round                  | ✓         |    ✓     |
 | rsqrt                  | ✓         |    ✓     |
