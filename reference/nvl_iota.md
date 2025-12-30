@@ -1,14 +1,10 @@
 # Primitive Iota
 
-Creates a tensor with increasing values along a dimension.
-
 Creates a tensor with values increasing along the specified dimension.
 
 ## Usage
 
 ``` r
-nvl_iota(dim, dtype, shape)
-
 nvl_iota(dim, dtype, shape)
 ```
 
@@ -30,13 +26,6 @@ nvl_iota(dim, dtype, shape)
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
   Shape of the output tensor.
 
-- start:
-
-  (`numeric(1)`)  
-  The value to start the sequence at.
-
 ## Value
-
-[`tensorish`](tensorish.md)
 
 [`tensorish`](tensorish.md)
