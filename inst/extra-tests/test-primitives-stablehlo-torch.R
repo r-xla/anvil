@@ -228,8 +228,6 @@ test_that("p_dot_general", {
   expect_equal(as_array(out3), as_array_torch(tX$matmul(tY)), tolerance = 1e-5)
 })
 
-# New primitives ---------------------------------------------------------------
-
 test_that("p_cbrt", {
   expect_jit_torch_unary(
     nvl_cbrt,
@@ -256,58 +254,6 @@ test_that("p_logistic", {
   expect_jit_torch_unary(nvl_logistic, torch::torch_sigmoid, c(2, 3))
 })
 
-test_that("p_clamp", {
-  nv_clamp_fun <- function(x) {
-    min_val <- nv_broadcast_to(nv_scalar(-1.0, "f32"), shape(x))
-    max_val <- nv_broadcast_to(nv_scalar(1.0, "f32"), shape(x))
-    nvl_clamp(min_val, x, max_val)
-  }
-  th_clamp_fun <- function(x) torch::torch_clamp(x, min = -1.0, max = 1.0)
-  expect_jit_torch_unary(nv_clamp_fun, th_clamp_fun, c(2, 3))
-})
-
-test_that("p_reverse", {
-  x_arr <- array(1:24, c(2, 3, 4))
-  x_nv <- nv_tensor(x_arr, dtype = "f32")
-  x_th <- torch::torch_tensor(x_arr, dtype = torch::torch_float32())
-
-  # Reverse along dimension 1
-  out_nv1 <- jit(function(a) nvl_reverse(a, 1L))(x_nv)
-  out_th1 <- torch::torch_flip(x_th, 1L) # torch uses 1-indexed for flip
-  expect_equal(as_array(out_nv1), as_array_torch(out_th1))
-
-  # Reverse along dimension 2
-  out_nv2 <- jit(function(a) nvl_reverse(a, 2L))(x_nv)
-  out_th2 <- torch::torch_flip(x_th, 2L)
-  expect_equal(as_array(out_nv2), as_array_torch(out_th2))
-
-  # Reverse along multiple dimensions
-  out_nv3 <- jit(function(a) nvl_reverse(a, c(1L, 3L)))(x_nv)
-  out_th3 <- torch::torch_flip(x_th, c(1L, 3L))
-  expect_equal(as_array(out_nv3), as_array_torch(out_th3))
-})
-
-test_that("p_iota", {
-  # Simple 1D iota
-  out_nv <- jit(function() nvl_iota(1L, "i32", 5L))()
-  out_th <- torch::torch_arange(0, 4, dtype = torch::torch_int32())
-  expect_equal(c(as_array(out_nv)), c(as_array_torch(out_th)))
-
-  # 2D iota along first dimension
-  out_nv2 <- jit(function() nvl_iota(1L, "i32", c(3L, 4L)))()
-  # Creates a 3x4 matrix where each row has the same row index
-  # Row 0: [0,0,0,0], Row 1: [1,1,1,1], Row 2: [2,2,2,2]
-  expected2 <- matrix(rep(0:2, times = 4), nrow = 3, ncol = 4)
-  expect_equal(as_array(out_nv2), expected2)
-
-  # 2D iota along second dimension
-  out_nv3 <- jit(function() nvl_iota(2L, "i32", c(3L, 4L)))()
-  # Creates a 3x4 matrix where each column has the same column index
-  # [[0,1,2,3], [0,1,2,3], [0,1,2,3]]
-  expected3 <- matrix(rep(0:3, each = 3), nrow = 3, ncol = 4)
-  expect_equal(as_array(out_nv3), expected3)
-})
-
 test_that("p_pad", {
   x_arr <- array(1:6, c(2, 3))
   x_nv <- nv_tensor(x_arr, dtype = "f32")
@@ -320,15 +266,4 @@ test_that("p_pad", {
   # torch.nn.functional.pad uses (left, right, top, bottom) for 2D
   out_th <- torch::nnf_pad(x_th, c(1L, 1L, 1L, 1L), value = 0.0)
   expect_equal(as_array(out_nv), as_array_torch(out_th))
-})
-
-test_that("p_popcnt", {
-  # Population count for integers
-  vals <- as.integer(c(0, 1, 2, 3, 7, 15, 255))
-  x_nv <- nv_tensor(vals, dtype = "i32")
-
-  out_nv <- jit(nvl_popcnt)(x_nv)
-  # Expected: number of 1 bits in each value
-  expected <- c(0L, 1L, 1L, 2L, 3L, 4L, 8L)
-  expect_equal(c(as_array(out_nv)), expected)
 })

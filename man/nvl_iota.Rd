@@ -5,8 +5,6 @@
 \title{Primitive Iota}
 \usage{
 nvl_iota(dim, dtype, shape)
-
-nvl_iota(dim, dtype, shape)
 }
 \arguments{
 \item{dim}{(\code{integer(1)})\cr
@@ -17,17 +15,10 @@ Data type.}
 
 \item{shape}{(\code{integer()})\cr
 Shape of the output tensor.}
-
-\item{start}{(\code{numeric(1)})\cr
-The value to start the sequence at.}
 }
 \value{
 \code{\link{tensorish}}
-
-\code{\link{tensorish}}
 }
 \description{
-Creates a tensor with increasing values along a dimension.
-
 Creates a tensor with values increasing along the specified dimension.
 }
