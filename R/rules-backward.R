@@ -392,16 +392,14 @@ p_round[["backward"]] <- function(inputs, outputs, grads, method, .required) {
   backward_zero_uni(inputs, outputs, grads, .required)
 }
 
-# New primitives backward rules ------------------------------------------------
-
 p_cbrt[["backward"]] <- function(inputs, outputs, grads, .required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
     # d/dx cbrt(x) = 1 / (3 * cbrt(x)^2)
     if (.required[[1L]]) {
-      third <- nvl_fill(1 / 3, dtype = dtype(y), shape = shape(y))
-      nvl_div(nvl_mul(grad, third), nvl_mul(y, y))
+      three <- nvl_fill(3, dtype = dtype(y), shape = shape(y))
+      nvl_div(grad, nv_mul(nvl_mul(y, y), three))
     }
   )
 }
@@ -456,23 +454,22 @@ p_clamp[["backward"]] <- function(inputs, outputs, grads, .required) {
     max_val <- nvl_broadcast_in_dim(max_val, shape(operand), integer())
   }
 
-  # Gradient flows through where operand equals output (not clamped)
+  # the points where operand is equal to min_val or max_val are non differentiable,
+  # so we just implement it like torch, which uses 1 for the gradient there.
   mask_operand <- nvl_convert(nvl_eq(operand, y), dtype = dtype(grad))
-  mask_min <- nvl_convert(nvl_eq(min_val, y), dtype = dtype(grad))
-  mask_max <- nvl_convert(nvl_eq(max_val, y), dtype = dtype(grad))
 
   list(
-    if (.required[[1L]]) nvl_mul(grad, mask_min),
+    if (.required[[1L]]) cli_abort("Gradient for min_val not implemented"),
     if (.required[[2L]]) nvl_mul(grad, mask_operand),
-    if (.required[[3L]]) nvl_mul(grad, mask_max)
+    if (.required[[3L]]) cli_abort("Gradient for max_val not implemented")
   )
 }
 
-p_reverse[["backward"]] <- function(inputs, outputs, grads, dimensions, .required) {
+p_reverse[["backward"]] <- function(inputs, outputs, grads, dims, .required) {
   grad <- grads[[1L]]
   list(
     # Reverse the gradient along the same dimensions
-    if (.required[[1L]]) nvl_reverse(grad, dimensions)
+    if (.required[[1L]]) nvl_reverse(grad, dims)
   )
 }
 
@@ -485,25 +482,16 @@ p_pad[["backward"]] <- function(
   interior_padding,
   .required
 ) {
-  operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
     if (.required[[1L]]) {
-      operand_shape <- shape(operand)
-      # For interior_padding > 0, we need to select every (interior_padding + 1)th element
-      # using slice with strides
+      # select the non-padded elements
+      out_shape <- shape(outputs[[1L]])
       strides <- interior_padding + 1L
-      # Start indices in 1-based (anvil convention)
       start_indices <- edge_padding_low + 1L
-      # nvl_slice converts start_indices to 0-based (start_attr = start_indices - 1)
-      # and keeps limit_indices as-is (limit_attr = limit_indices)
-      # The positions we want (0-based): edge_padding_low, edge_padding_low + stride, ..., edge_padding_low + (n-1)*stride
-      # The last position (0-based): edge_padding_low + (operand_shape - 1) * strides
-      # limit (exclusive, 0-based): last_position + 1
-      limit_indices <- edge_padding_low + (operand_shape - 1L) * strides + 1L
+      limit_indices <- out_shape - edge_padding_high
       nvl_slice(grad, start_indices, limit_indices, strides)
     },
-    # padding_value gradient is not typically needed
     if (.required[[2L]]) {
       cli_abort("Gradient for padding_value not implemented")
     }

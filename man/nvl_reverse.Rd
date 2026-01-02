@@ -4,7 +4,7 @@
 \alias{nvl_reverse}
 \title{Primitive Reverse}
 \usage{
-nvl_reverse(operand, dimensions)
+nvl_reverse(operand, dims)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr

@@ -398,20 +398,6 @@ test_that("p_eq, p_ne, p_gt, p_ge, p_lt, p_le", {
   }
 })
 
-# New primitives backward tests ------------------------------------------------
-
-test_that("p_pad backward", {
-  # Gradient for pad is a slice of the output gradient
-  f <- jit(gradient(function(x) {
-    y <- nvl_pad(x, nv_scalar(0, "f64"), 1L, 1L, 0L)
-    nv_reduce_sum(y, dims = 1L, drop = TRUE)
-  }))
-  x <- nv_tensor(1:3, dtype = "f64")
-  g <- f(x)
-  # Gradient should be all 1s for the original elements
-  expect_equal(g[[1L]], nv_tensor(rep(1, 3), dtype = "f64"))
-})
-
 test_that("p_pad backward with interior padding", {
   # Interior padding adds padding between elements
   # For input [a, b, c] with interior_padding=1, output is [a, 0, b, 0, c]

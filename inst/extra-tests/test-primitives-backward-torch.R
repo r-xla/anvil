@@ -267,9 +267,12 @@ verify_grad_uni <- function(
   dtypes = "f32",
   args_f = NULL,
   tol = 0,
-  non_negative = FALSE
+  non_negative = FALSE,
+  skip_scalar = FALSE
 ) {
-  verify_grad_uni_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol, non_negative = non_negative)
+  if (!skip_scalar) {
+    verify_grad_uni_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol, non_negative = non_negative)
+  }
   verify_grad_uni_tensor(
     f,
     g,
@@ -510,11 +513,10 @@ test_that("p_logistic", {
 })
 
 test_that("p_clamp", {
-  # Test clamp gradient - gradient flows through where not clamped
   shp <- c(2L, 3L)
   dtype <- "f32"
 
-  x_arr <- array(rnorm(prod(shp)), shp)
+  x_arr <- array(sample(c(-0.6, -0.5, -0.1, 0.0, 0.1, 0.5, 0.6), prod(shp), replace = TRUE), shp)
   x_nv <- nv_tensor(x_arr, dtype = dtype)
   x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
@@ -539,27 +541,18 @@ test_that("p_clamp", {
 })
 
 test_that("p_reverse", {
-  shp <- c(2L, 3L, 4L)
-  dtype <- "f32"
-  dims_to_reverse <- c(1L, 3L)
-
-  x_arr <- array(rnorm(prod(shp)), shp)
-  x_nv <- nv_tensor(x_arr, dtype = dtype)
-  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
-
-  f_nv <- function(x) {
-    y <- nvl_reverse(x, dims_to_reverse)
-    nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
-  }
-
-  grads_nv <- jit(gradient(f_nv))(x_nv)
-
-  out_th <- torch::torch_flip(x_th, dims_to_reverse)
-  torch::torch_sum(out_th)$backward()
-
-  expect_equal(
-    tengen::as_array(grads_nv[[1L]]),
-    as_array_torch(x_th$grad),
-    tolerance = 1e-5
+  verify_grad_uni(
+    nvl_reverse,
+    torch::torch_flip,
+    ndims = 3L,
+    args_f = \(shp, dtype) {
+      dims_to_reverse <- sample(seq_along(shp), size = sample.int(length(shp), 1L))
+      list(
+        list(dims = dims_to_reverse),
+        list(dims = dims_to_reverse)
+      )
+    },
+    tol = 1e-5,
+    skip_scalar = TRUE
   )
 })

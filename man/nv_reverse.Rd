@@ -4,7 +4,7 @@
 \alias{nv_reverse}
 \title{Reverse}
 \usage{
-nv_reverse(operand, dimensions)
+nv_reverse(operand, dims)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr

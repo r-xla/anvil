@@ -851,16 +851,16 @@ p_reverse <- Primitive("reverse")
 #'   Dimensions to reverse (1-indexed).
 #' @return [`tensorish`]
 #' @export
-nvl_reverse <- function(operand, dimensions) {
-  infer_fn <- function(operand, dimensions) {
+nvl_reverse <- function(operand, dims) {
+  infer_fn <- function(operand, dims) {
     # stablehlo uses 0-based indexing
-    dims_attr <- r_to_constant(dimensions - 1L, dtype = "i64", shape = length(dimensions))
+    dims_attr <- r_to_constant(dims - 1L, dtype = "i64", shape = length(dims))
     out <- stablehlo::infer_types_reverse(st2va(operand), dimensions = dims_attr)@items[[1L]]
     out <- vt2sa(out)
     out@ambiguous <- operand@ambiguous
     list(out)
   }
-  graph_desc_add(p_reverse, list(operand), list(dimensions = dimensions), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_reverse, list(operand), list(dims = dims), infer_fn = infer_fn)[[1L]]
 }
 
 p_iota <- Primitive("iota")
