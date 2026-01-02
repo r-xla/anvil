@@ -55,3 +55,7 @@ devtools::check()
 2. The `rules-pullback.R` file contains the differentiation rules for the primitive operations.
    There, `grad` is the gradient of the terminal output with respect to the function's output and the function should return the gradient of the terminal output with respect to the inputs.
    The tests are in the file `insts/extra-tests/test-primitives-pullback-torch.R`
+
+## Comments
+
+Only add comments if the code is not self-explanatory.
