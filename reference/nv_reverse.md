@@ -5,7 +5,7 @@ Reverses the order of elements along specified dimensions.
 ## Usage
 
 ``` r
-nv_reverse(operand, dimensions)
+nv_reverse(operand, dims)
 ```
 
 ## Arguments

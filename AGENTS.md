@@ -30,6 +30,18 @@ devtools::test()
 testthat::test_file("tests/testthat/test-constant.R")
 ```
 
+### Testing Guidelines
+
+Each rule of each primitive should be tested. Many tests can be
+implemented by comparing with the corresponding torch function
+(inst/extra-tests/test-primitives-stablehlo-torch.R and
+inst/extra-tests/test-primitives-backward-torch.R, …). These are sourced
+in test-primitives-stablehlo.R and test-primitives-backward.R, etc..
+Implement the test by comparing with torch, if possible and necessary.
+If the test is very simple, or the functionality not covered by torch,
+implement the test manually. Implement either the torch test OR the
+manual test, but not both.
+
 ### Documentation
 
 ``` r
@@ -63,6 +75,14 @@ devtools::check()
     respect to the inputs. The tests are in the file
     `insts/extra-tests/test-primitives-pullback-torch.R`
 
+## Style
+
+- For length-1 vectors, don’t use
+  [`c()`](https://rdrr.io/r/base/c.html). For example, use `1L` instead
+  of `c(1L)`.
+
+### Adding new Features
+
 ## Adding a Primitive
 
 The functions prefixed with `nvl_` are the primitives and defined in
@@ -79,20 +99,3 @@ or api-rng.R. Often, they wrap primitives, but make them more convenient
 to use. When accessing properties from `tensorish` values, use
 `shape_abstract`, `ndims_abstract`, and `dtype_abstract`. Other
 accessors are currently not available.
-
-## Style
-
-- For length-1 vectors, don’t use
-  [`c()`](https://rdrr.io/r/base/c.html). For example, use `1L` instead
-  of `c(1L)`.
-
-## Testing
-
-Each rule of each primitive should be tested. Many tests can be
-implemented by comparing with the corresponding torch function
-(inst/extra-tests/test-primitives-stablehlo-torch.R and
-inst/extra-tests/test-primitives-backward-torch.R, …). These are sourced
-in test-primitives-stablehlo.R and test-primitives-backward.R, etc..
-Implement the test by comparing with torch, if possible. If not,
-implement the test manually. Implement either the torch test OR the
-manual test, but not both.
