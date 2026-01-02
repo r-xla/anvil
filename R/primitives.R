@@ -847,7 +847,7 @@ p_reverse <- Primitive("reverse")
 #' @description
 #' Reverses the order of elements along specified dimensions.
 #' @template param_operand
-#' @param dimensions (`integer()`)\cr
+#' @param dims (`integer()`)\cr
 #'   Dimensions to reverse (1-indexed).
 #' @return [`tensorish`]
 #' @export

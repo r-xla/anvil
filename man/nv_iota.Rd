@@ -8,7 +8,7 @@ nv_iota(dim, dtype, shape)
 }
 \arguments{
 \item{dim}{(\code{integer(1)})\cr
-Dimension along which values increase (1-indexed).}
+Dimension along which values increase.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}

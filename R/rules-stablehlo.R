@@ -281,8 +281,8 @@ p_clamp[["stablehlo"]] <- function(min_val, operand, max_val) {
   list(stablehlo::hlo_clamp(min_val, operand, max_val))
 }
 
-p_reverse[["stablehlo"]] <- function(operand, dimensions) {
-  list(stablehlo::hlo_reverse(operand, dimensions - 1L))
+p_reverse[["stablehlo"]] <- function(operand, dims) {
+  list(stablehlo::hlo_reverse(operand, dims - 1L))
 }
 
 p_iota[["stablehlo"]] <- function(dim, dtype, shape) {

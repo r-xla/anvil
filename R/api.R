@@ -549,8 +549,8 @@ nv_clamp <- nvl_clamp
 #' @title Reverse
 #' @description Reverses the order of elements along specified dimensions.
 #' @template param_operand
-#' @param dimensions (`integer()`)\cr
-#'   Dimensions to reverse (1-indexed).
+#' @param dims (`integer()`)\cr
+#'   Dimensions to reverse.
 #' @return [`tensorish`]
 #' @export
 nv_reverse <- nvl_reverse
@@ -558,7 +558,7 @@ nv_reverse <- nvl_reverse
 #' @title Iota
 #' @description Creates a tensor with values increasing along the specified dimension.
 #' @param dim (`integer(1)`)\cr
-#'   Dimension along which values increase (1-indexed).
+#'   Dimension along which values increase.
 #' @template param_dtype
 #' @template param_shape
 #' @return [`tensorish`]
@@ -646,7 +646,6 @@ nv_reduce_sum <- nvl_reduce_sum
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
   # TODO: division by zero?
   nelts <- prod(shape_abstract(operand)[dims])
-  # TODO: Should just be able to do use autocasting and divide by nelts scalar
   nv_reduce_sum(operand, dims, drop) / nelts
 }
 

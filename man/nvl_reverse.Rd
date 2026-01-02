@@ -10,7 +10,7 @@ nvl_reverse(operand, dims)
 \item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
 
-\item{dimensions}{(\code{integer()})\cr
+\item{dims}{(\code{integer()})\cr
 Dimensions to reverse (1-indexed).}
 }
 \value{

@@ -10,8 +10,8 @@ nv_reverse(operand, dims)
 \item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
 
-\item{dimensions}{(\code{integer()})\cr
-Dimensions to reverse (1-indexed).}
+\item{dims}{(\code{integer()})\cr
+Dimensions to reverse.}
 }
 \value{
 \code{\link{tensorish}}
