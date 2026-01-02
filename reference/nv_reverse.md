@@ -15,10 +15,10 @@ nv_reverse(operand, dims)
   ([`tensorish`](tensorish.md))  
   Operand.
 
-- dimensions:
+- dims:
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Dimensions to reverse (1-indexed).
+  Dimensions to reverse.
 
 ## Value
 

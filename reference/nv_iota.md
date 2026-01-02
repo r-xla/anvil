@@ -13,7 +13,7 @@ nv_iota(dim, dtype, shape)
 - dim:
 
   (`integer(1)`)  
-  Dimension along which values increase (1-indexed).
+  Dimension along which values increase.
 
 - dtype:
 
