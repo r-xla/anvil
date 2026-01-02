@@ -359,12 +359,47 @@ test_that("error when multiplying lists in if-statement", {
   )
 })
 
-test_that("p_iota", {
-  f <- jit(function() nvl_iota(dim = 1L, shape = 5L, dtype = "i32", start = 1))
-  expect_equal(c(as_array(f())), as.integer(1:5))
+test_that("p_is_finite", {
+  f <- jit(function(x) nvl_is_finite(x))
+  x <- nv_tensor(c(1.0, Inf, -Inf, NaN), dtype = "f32")
+  expect_equal(f(x), nv_tensor(c(TRUE, FALSE, FALSE, FALSE), dtype = "pred"))
+})
 
-  f2 <- jit(function() nvl_iota(dim = 2L, shape = c(2L, 3L), dtype = "f32", start = 0))
-  expect_equal(as_array(f2()), matrix(as.numeric(rep(0:2, each = 2)), nrow = 2, byrow = FALSE))
+test_that("p_clamp", {
+  f <- jit(function(x) {
+    min_val <- nv_broadcast_to(nv_scalar(-1.0, "f32"), shape(x))
+    max_val <- nv_broadcast_to(nv_scalar(1.0, "f32"), shape(x))
+    nvl_clamp(min_val, x, max_val)
+  })
+  x <- nv_tensor(c(-2.0, -0.5, 0.5, 2.0), dtype = "f32")
+  expect_equal(f(x), nv_tensor(c(-1.0, -0.5, 0.5, 1.0), dtype = "f32"))
+})
+
+test_that("p_reverse", {
+  f <- jit(function(x) nvl_reverse(x, 1L))
+  x <- nv_tensor(1:5, dtype = "i32")
+  expect_equal(f(x), nv_tensor(5:1, dtype = "i32"))
+
+  # 2D reverse
+  f2 <- jit(function(x) nvl_reverse(x, 2L))
+  x2 <- nv_tensor(matrix(1:6, 2, 3), dtype = "i32")
+  expect_equal(f2(x2), nv_tensor(matrix(c(5L, 6L, 3L, 4L, 1L, 2L), 2, 3), dtype = "i32"))
+})
+
+test_that("p_iota", {
+  f <- jit(function() nvl_iota(1L, "i32", 5L))
+  expect_equal(f(), nv_tensor(0:4, dtype = "i32"))
+
+  # 2D along first dimension
+  f2 <- jit(function() nvl_iota(1L, "i32", c(3L, 2L)))
+  expected <- matrix(c(0L, 1L, 2L, 0L, 1L, 2L), 3, 2)
+  expect_equal(f2(), nv_tensor(expected, dtype = "i32"))
+})
+
+test_that("p_popcnt", {
+  f <- jit(function(x) nvl_popcnt(x))
+  x <- nv_tensor(c(0L, 1L, 2L, 3L, 7L, 255L), dtype = "i32")
+  expect_equal(f(x), nv_tensor(c(0L, 1L, 1L, 2L, 3L, 8L), dtype = "i32"))
 })
 
 test_that("p_print", {

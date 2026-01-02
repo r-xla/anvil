@@ -66,7 +66,7 @@ test_that("p_min", {
 test_that("p_remainder", {
   pos_int_nz <- function(shp, dtype) {
     nelts <- if (!length(shp)) 1L else prod(shp)
-    vals <- sample(1:10, size = nelts, replace = TRUE)
+    vals <- sample(10, size = nelts, replace = TRUE)
     if (!length(shp)) vals else array(vals, shp)
   }
   expect_jit_torch_binary(
@@ -201,7 +201,7 @@ test_that("p_dot_general", {
   x <- nv_tensor(rnorm(4), dtype = "f32")
   y <- nv_tensor(rnorm(4), dtype = "f32")
   out <- jit(function(a, b) {
-    nvl_dot_general(a, b, contracting_dims = list(c(1L), c(1L)), batching_dims = list(integer(), integer()))
+    nvl_dot_general(a, b, contracting_dims = list(1L, 1L), batching_dims = list(integer(), integer()))
   })(x, y)
   tx <- torch::torch_tensor(as_array(x))
   ty <- torch::torch_tensor(as_array(y))
@@ -211,7 +211,7 @@ test_that("p_dot_general", {
   A <- nv_tensor(matrix(rnorm(6), 3, 2), dtype = "f32")
   v <- nv_tensor(rnorm(2), dtype = "f32")
   out2 <- jit(function(a, b) {
-    nvl_dot_general(a, b, contracting_dims = list(c(2L), c(1L)), batching_dims = list(integer(), integer()))
+    nvl_dot_general(a, b, contracting_dims = list(2L, 1L), batching_dims = list(integer(), integer()))
   })(A, v)
   tA <- torch::torch_tensor(as_array(A))
   tv <- torch::torch_tensor(as_array(v))
@@ -221,9 +221,49 @@ test_that("p_dot_general", {
   X <- nv_tensor(array(rnorm(2 * 3 * 4), c(2, 3, 4)), dtype = "f32")
   Y <- nv_tensor(array(rnorm(2 * 4 * 5), c(2, 4, 5)), dtype = "f32")
   out3 <- jit(function(a, b) {
-    nvl_dot_general(a, b, contracting_dims = list(c(3L), c(2L)), batching_dims = list(c(1L), c(1L)))
+    nvl_dot_general(a, b, contracting_dims = list(3L, 2L), batching_dims = list(1L, 1L))
   })(X, Y)
   tX <- torch::torch_tensor(as_array(X))
   tY <- torch::torch_tensor(as_array(Y))
   expect_equal(as_array(out3), as_array_torch(tX$matmul(tY)), tolerance = 1e-5)
+})
+
+test_that("p_cbrt", {
+  expect_jit_torch_unary(
+    nvl_cbrt,
+    \(x) torch::torch_pow(x, 1 / 3),
+    c(2, 3),
+    non_negative = TRUE
+  )
+})
+
+test_that("p_expm1", {
+  expect_jit_torch_unary(nvl_expm1, torch::torch_expm1, c(2, 3))
+})
+
+test_that("p_log1p", {
+  expect_jit_torch_unary(
+    nvl_log1p,
+    torch::torch_log1p,
+    c(2, 3),
+    non_negative = TRUE
+  )
+})
+
+test_that("p_logistic", {
+  expect_jit_torch_unary(nvl_logistic, torch::torch_sigmoid, c(2, 3))
+})
+
+test_that("p_pad", {
+  x_arr <- array(1:6, c(2, 3))
+  x_nv <- nv_tensor(x_arr, dtype = "f32")
+  x_th <- torch::torch_tensor(x_arr, dtype = torch::torch_float32())
+
+  # Simple edge padding
+  out_nv <- jit(function(a) {
+    nvl_pad(a, nv_scalar(0.0, "f32"), c(1L, 1L), c(1L, 1L), c(0L, 0L))
+  })(x_nv)
+  # torch.nn.functional.pad uses (left, right, top, bottom) for 2D
+  out_th <- torch::nnf_pad(x_th, c(1L, 1L, 1L, 1L), value = 0.0)
+  expect_equal(as_array(out_nv), as_array_torch(out_th))
 })
