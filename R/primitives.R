@@ -96,7 +96,9 @@ stablehlo_iota_dimension <- local({
         cached <<- 1L
       } else {
         body_txt <- paste(deparse(body(infer)), collapse = "\n")
-        cached <<- if (grepl("iota_dimension\\s*\\+\\s*1L", body_txt) || grepl("iota_dimension\\s*\\+\\s*1", body_txt)) {
+        cached <<- if (
+          grepl("iota_dimension\\s*\\+\\s*1L", body_txt) || grepl("iota_dimension\\s*\\+\\s*1", body_txt)
+        ) {
           1L
         } else {
           0L

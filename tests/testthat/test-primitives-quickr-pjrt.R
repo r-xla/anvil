@@ -108,13 +108,23 @@ quickr_pjrt_cases <- list(
     shape_in <- c(2L, 3L)
     shape_out <- c(3L, 2L)
     x <- make_input(shape_in)
-    list(quickr_case(function(x) nvl_reshape(x, shape_out), list(x = make_template(shape_in)), list(x = x), info = "reshape"))
+    list(quickr_case(
+      function(x) nvl_reshape(x, shape_out),
+      list(x = make_template(shape_in)),
+      list(x = x),
+      info = "reshape"
+    ))
   },
   transpose = function() {
     set.seed(7)
     shape <- c(2L, 3L)
     x <- make_input(shape)
-    list(quickr_case(function(x) nvl_transpose(x, permutation = c(2L, 1L)), list(x = make_template(shape)), list(x = x), info = "transpose"))
+    list(quickr_case(
+      function(x) nvl_transpose(x, permutation = c(2L, 1L)),
+      list(x = make_template(shape)),
+      list(x = x),
+      info = "transpose"
+    ))
   },
   broadcast_in_dim = function() {
     set.seed(8)
@@ -158,7 +168,12 @@ quickr_pjrt_cases <- list(
     set.seed(11)
     shape <- c(2L, 3L)
     x <- make_input(shape)
-    list(quickr_case(function(x) nvl_reduce_sum(x, dims = 1L, drop = TRUE), list(x = make_template(shape)), list(x = x), info = "reduce_sum"))
+    list(quickr_case(
+      function(x) nvl_reduce_sum(x, dims = 1L, drop = TRUE),
+      list(x = make_template(shape)),
+      list(x = x),
+      info = "reduce_sum"
+    ))
   }
 )
 
