@@ -149,3 +149,36 @@ test_that("GraphLiteral", {
   expect_equal(shape(gl), integer())
   expect_snapshot(gl)
 })
+
+test_that("trace_fn works with nv_aten inputs", {
+  f <- function(x, y) {
+    nvl_add(x, y)
+  }
+  in_type <- nv_aten("f32", c(2, 2))
+  graph <- trace_fn(f, list(x = in_type, y = in_type))
+  expect_true(is_graph(graph))
+  expect_equal(graph@inputs[[1L]]@aval, in_type)
+  expect_equal(graph@inputs[[2L]]@aval, in_type)
+  expect_equal(length(graph@inputs), 2L)
+  expect_equal(length(graph@calls), 1L)
+  expect_equal(length(graph@outputs), 1L)
+  expect_equal(graph@calls[[1L]]@primitive, p_add)
+})
+
+test_that("local_descriptor errors when run in the global environment", {
+  expect_error(eval(quote(local_descriptor()), globalenv()), "Don't run local_descriptor in the global environment")
+})
+
+test_that("can pass abstract tensors to trace_fn", {
+  # Here, its fine because we call into maybe_box_input, which will convert the abstract tensor
+  # into a GraphValue/Box before any infix op can be called
+  f <- function(x, y) {
+    nvl_add(x, y)
+  }
+  in_type <- nv_aten("f32", c(2, 2))
+  graph <- trace_fn(f, list(x = in_type, y = in_type))
+  expect_true(is_graph(graph))
+  expect_equal(graph@inputs[[1L]]@aval, in_type)
+  expect_equal(graph@inputs[[2L]]@aval, in_type)
+  expect_equal(length(graph@inputs), 2L)
+})

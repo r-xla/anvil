@@ -27,7 +27,6 @@ test_that("can combine literals", {
 })
 
 test_that("literals can be upcast", {
-  skip_if_metal()
   f1 <- function(x) {
     nv_mul(2, x)
   }

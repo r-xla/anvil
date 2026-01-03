@@ -2,7 +2,7 @@
 
 # AbstractTensor -> FuncValue
 st2fv <- function(x, func) {
-  value_type <- st2vt(x)
+  value_type <- st2va(x)
   value_id <- stablehlo::ValueId()
   func@inputs <- stablehlo::FuncInputs(c(
     func@inputs@items,
@@ -19,13 +19,13 @@ st2fv <- function(x, func) {
 }
 
 # AbstractTensor -> ValueType
-st2vt <- function(x) {
+st2va <- function(x) {
   stopifnot(inherits(x, AbstractTensor))
   stablehlo::ValueType(stablehlo::TensorType(x@dtype, x@shape))
 }
 
 # ValueType -> Abstract Tensor
-vt2st <- function(x) {
+vt2sa <- function(x) {
   stopifnot(inherits(x, stablehlo::ValueType))
   stopifnot(inherits(x@type, stablehlo::TensorType))
   AbstractTensor(x@type@dtype, x@type@shape)

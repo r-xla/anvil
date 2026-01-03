@@ -1,2 +1,2 @@
-#' @param operand ([`nv_tensor`])\cr
+#' @param operand ([`tensorish`])\cr
 #'   Operand.

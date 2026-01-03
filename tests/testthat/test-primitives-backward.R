@@ -62,7 +62,6 @@ test_that("p_dot_general: matrix-vector with summed loss", {
 })
 
 test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
-  skip_if_metal()
   # Helpers to reduce repetition
   make_ones_like <- function(Y) {
     nv_tensor(
@@ -293,6 +292,33 @@ test_that("p_reduce_max backward", {
   )
 })
 
+test_that("p_reduce_min backward", {
+  f <- jit(gradient(function(x) {
+    rows_min <- nvl_reduce_min(x, dims = 2L, drop = TRUE)
+    nv_reduce_sum(rows_min, dims = 1L, drop = TRUE)
+  }))
+
+  x <- nv_tensor(
+    rbind(
+      c(2, 4, 5),
+      c(1, 1, 9)
+    ),
+    dtype = "f32",
+    shape = c(2, 3)
+  )
+
+  grads <- f(x)[[1L]]
+
+  expect_equal(
+    as_array(grads),
+    rbind(
+      c(1, 0, 0),
+      c(0.5, 0.5, 0)
+    ),
+    tolerance = 1e-6
+  )
+})
+
 test_that("p_max on ties", {
   x <- nv_tensor(c(1, 2, 2))
   grads <- jit(gradient(\(x) nv_reduce_max(x, dims = 1)))(x)
@@ -320,7 +346,6 @@ test_that("p_min", {
 })
 
 test_that("p_convert backward converts gradients to the input dtype", {
-  skip_if_metal()
   x_arr <- array(1:6, c(2, 3))
   x <- nv_tensor(x_arr, dtype = "f32")
   f <- jit(gradient(function(x) {
@@ -371,6 +396,51 @@ test_that("p_eq, p_ne, p_gt, p_ge, p_lt, p_le", {
     expect_equal(as_array(grads[[1L]]), 0)
     expect_equal(as_array(grads[[2L]]), 0)
   }
+})
+
+test_that("p_pad backward with interior padding", {
+  # Interior padding adds padding between elements
+  # For input [a, b, c] with interior_padding=1, output is [a, 0, b, 0, c]
+  # Gradient flows only to original positions [a, b, c]
+  f <- jit(gradient(function(x) {
+    x <- x * nv_tensor(c(1, 2, 3), dtype = "f64")
+    y <- nvl_pad(x, nv_scalar(0, "f64"), 0L, 0L, 1L)
+    nv_reduce_sum(y, dims = 1L, drop = TRUE)
+  }))
+  x <- nv_tensor(c(1, 2, 3), dtype = "f64")
+  g <- f(x)
+  expect_equal(g[[1L]], nv_tensor(1:3, dtype = "f64"))
+
+  # Test with both edge and interior padding
+  f2 <- jit(gradient(function(x) {
+    x <- x * nv_tensor(c(1, 2), dtype = "f64")
+    # edge_padding_low=1, edge_padding_high=1, interior_padding=1
+    # For input [a, b], output is [0, a, 0, b, 0]
+    y <- nvl_pad(x, nv_scalar(0, "f64"), 1L, 1L, 1L)
+    nv_reduce_sum(y, dims = 1L, drop = TRUE)
+  }))
+  x2 <- nv_tensor(c(5, 10), dtype = "f64")
+  g2 <- f2(x2)
+  expect_equal(g2[[1L]], nv_tensor(c(1, 2), dtype = "f64"))
+
+  # Test 2D with interior padding
+  f3 <- jit(gradient(function(x) {
+    x <- x * nv_tensor(c(1, 2, 3, 4), shape = c(2, 2), dtype = "f64")
+    y <- nvl_pad(x, nv_scalar(0, "f64"), c(0L, 0L), c(0L, 0L), c(1L, 1L))
+    nv_reduce_sum(y, dims = c(1L, 2L), drop = TRUE)
+  }))
+  x3 <- nv_tensor(matrix(1:4, 2, 2), dtype = "f64")
+  g3 <- f3(x3)
+  expect_equal(g3[[1L]], nv_tensor(matrix(1:4, 2, 2), dtype = "f64"))
+
+  # Test 2D with different edge padding on each dimension
+  f4 <- jit(gradient(function(x) {
+    y <- nvl_pad(x, nv_scalar(0, "f64"), c(1L, 2L), c(2L, 1L), c(0L, 0L))
+    nv_reduce_sum(y, dims = c(1L, 2L), drop = TRUE)
+  }))
+  x4 <- nv_tensor(matrix(1:6, 2, 3), dtype = "f64")
+  g4 <- f4(x4)
+  expect_equal(g4[[1L]], nv_tensor(matrix(rep(1, 6), 2, 3), dtype = "f64"))
 })
 
 if (nzchar(system.file(package = "torch"))) {

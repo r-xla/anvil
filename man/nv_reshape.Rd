@@ -7,14 +7,14 @@
 nv_reshape(operand, shape)
 }
 \arguments{
-\item{operand}{(\code{\link{nv_tensor}})\cr
+\item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
 
 \item{shape}{(\code{integer()})\cr
 The new shape.}
 }
 \value{
-\code{\link{nv_tensor}}
+\code{\link{tensorish}}
 }
 \description{
 Reshape a tensor.

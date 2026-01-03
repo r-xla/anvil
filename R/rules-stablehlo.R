@@ -49,10 +49,11 @@ p_reshape[["stablehlo"]] <- function(operand, shape) {
 }
 
 p_concatenate[["stablehlo"]] <- function(..., dimension) {
-  list(stablehlo::hlo_concatenate(..., dimension = dimension))
+  list(stablehlo::hlo_concatenate(..., dimension = dimension - 1L))
 }
 
 p_slice[["stablehlo"]] <- function(operand, start_indices, limit_indices, strides) {
+  # we use 1:n, which includes n, but this translates to 0:n in stablehlo
   list(stablehlo::hlo_slice(operand, start_indices - 1L, limit_indices, strides))
 }
 
@@ -252,6 +253,46 @@ p_exp[["stablehlo"]] <- function(operand) {
   list(stablehlo::hlo_exponential(operand))
 }
 
+p_expm1[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_exponential_minus_one(operand))
+}
+
+p_log1p[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_log_plus_one(operand))
+}
+
+p_cbrt[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_cbrt(operand))
+}
+
+p_logistic[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_logistic(operand))
+}
+
+p_is_finite[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_is_finite(operand))
+}
+
+p_popcnt[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_popcnt(operand))
+}
+
+p_clamp[["stablehlo"]] <- function(min_val, operand, max_val) {
+  list(stablehlo::hlo_clamp(min_val, operand, max_val))
+}
+
+p_reverse[["stablehlo"]] <- function(operand, dims) {
+  list(stablehlo::hlo_reverse(operand, dims - 1L))
+}
+
+p_iota[["stablehlo"]] <- function(dim, dtype, shape) {
+  list(stablehlo::hlo_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape))
+}
+
+p_pad[["stablehlo"]] <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
+  list(stablehlo::hlo_pad(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding))
+}
+
 p_round[["stablehlo"]] <- function(operand, method) {
   switch(
     method,
@@ -274,6 +315,23 @@ p_select[["stablehlo"]] <- function(pred, true_value, false_value) {
 
 p_rng_bit_generator[["stablehlo"]] <- function(initial_state, rng_algorithm, dtype, shape_out) {
   stablehlo::hlo_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out)
+}
+
+p_print[["stablehlo"]] <- function(operand) {
+  backend_config <- stablehlo::CustomOpBackendConfig(list(
+    stablehlo::StringAttr(name = "print_header", value = "AnvilTensor")
+  ))
+
+  # has side-effect
+  stablehlo::hlo_custom_call(
+    operand,
+    call_target_name = "print_tensor",
+    api_version = 4L,
+    has_side_effect = TRUE,
+    backend_config = backend_config
+  )
+  # we just return the input
+  list(operand)
 }
 
 # higher order primitives --------------------------------------------------------

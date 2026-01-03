@@ -12,7 +12,7 @@ test_that("p_cosine", {
 
 test_that("p_rng_bit_generator", {
   f <- function() {
-    nv_rng_bit_generator(nv_tensor(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
+    nvl_rng_bit_generator(nv_tensor(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
   }
   g <- jit(f)
   out <- g()
@@ -63,6 +63,20 @@ test_that("p_fill", {
   f <- jit(function(x) nv_fill(x, shape = c(2, 3), dtype = "f32"), static = "x")
   expect_equal(f(1), nv_tensor(1, shape = c(2, 3), dtype = "f32"))
   expect_equal(f(2), nv_tensor(2, shape = c(2, 3), dtype = "f32"))
+
+  # scalars
+  expect_equal(
+    jit(\() nv_fill(1L, shape = c(), dtype = "f32"))(),
+    nv_scalar(1, dtype = "f32")
+  )
+  expect_equal(
+    jit(\() nv_fill(1L, shape = integer(), dtype = "f32"))(),
+    nv_scalar(1, dtype = "f32")
+  )
+  expect_equal(
+    jit(\() nv_fill(1L, shape = 1L, dtype = "f32"))(),
+    nv_tensor(1, shape = 1L, dtype = "f32")
+  )
 })
 
 test_that("p_shift_left", {
@@ -88,7 +102,7 @@ test_that("p_shift_right_arithmetic", {
 
 test_that("p_rng_bit_generator", {
   f <- function() {
-    nv_rng_bit_generator(nv_tensor(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
+    nvl_rng_bit_generator(nv_tensor(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
   }
   g <- jit(f)
   out <- g()
@@ -315,11 +329,9 @@ test_that("p_while: nested state", {
     nv_while(
       list(i = list(nv_scalar(1L))),
       \(i) {
-        # nolint
         i[[1]] <= n
       },
       \(i) {
-        # nolint
         i <- i[[1L]]
         i <- i + nv_scalar(1L)
         list(i = list(i))
@@ -345,6 +357,59 @@ test_that("error when multiplying lists in if-statement", {
     f(nv_scalar(FALSE), list(nv_scalar(2))),
     "non-numeric argument to binary operator"
   )
+})
+
+test_that("p_is_finite", {
+  f <- jit(function(x) nvl_is_finite(x))
+  x <- nv_tensor(c(1.0, Inf, -Inf, NaN), dtype = "f32")
+  expect_equal(f(x), nv_tensor(c(TRUE, FALSE, FALSE, FALSE), dtype = "pred"))
+})
+
+test_that("p_clamp", {
+  f <- jit(function(x) {
+    min_val <- nv_broadcast_to(nv_scalar(-1.0, "f32"), shape(x))
+    max_val <- nv_broadcast_to(nv_scalar(1.0, "f32"), shape(x))
+    nvl_clamp(min_val, x, max_val)
+  })
+  x <- nv_tensor(c(-2.0, -0.5, 0.5, 2.0), dtype = "f32")
+  expect_equal(f(x), nv_tensor(c(-1.0, -0.5, 0.5, 1.0), dtype = "f32"))
+})
+
+test_that("p_reverse", {
+  f <- jit(function(x) nvl_reverse(x, 1L))
+  x <- nv_tensor(1:5, dtype = "i32")
+  expect_equal(f(x), nv_tensor(5:1, dtype = "i32"))
+
+  # 2D reverse
+  f2 <- jit(function(x) nvl_reverse(x, 2L))
+  x2 <- nv_tensor(matrix(1:6, 2, 3), dtype = "i32")
+  expect_equal(f2(x2), nv_tensor(matrix(c(5L, 6L, 3L, 4L, 1L, 2L), 2, 3), dtype = "i32"))
+})
+
+test_that("p_iota", {
+  f <- jit(function() nvl_iota(1L, "i32", 5L))
+  expect_equal(f(), nv_tensor(0:4, dtype = "i32"))
+
+  # 2D along first dimension
+  f2 <- jit(function() nvl_iota(1L, "i32", c(3L, 2L)))
+  expected <- matrix(c(0L, 1L, 2L, 0L, 1L, 2L), 3, 2)
+  expect_equal(f2(), nv_tensor(expected, dtype = "i32"))
+})
+
+test_that("p_popcnt", {
+  f <- jit(function(x) nvl_popcnt(x))
+  x <- nv_tensor(c(0L, 1L, 2L, 3L, 7L, 255L), dtype = "i32")
+  expect_equal(f(x), nv_tensor(c(0L, 1L, 1L, 2L, 3L, 8L), dtype = "i32"))
+})
+
+test_that("p_print", {
+  skip_if(!is_cpu(), "print_tensor only works on CPU")
+
+  f <- jit(function(x) nvl_print(x))
+  x <- nv_tensor(c(1.0, 2.0, 3.0), dtype = "f32")
+  out <- f(x)
+  expect_equal(as_array(out), as_array(x))
+  expect_snapshot(f(x))
 })
 
 # we don't want to include torch in Suggests just for the tests, as it's a relatively

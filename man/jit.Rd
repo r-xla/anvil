@@ -7,9 +7,9 @@
 jit(
   f,
   static = character(),
-  device = NULL,
   cache_size = 100L,
-  donate = character()
+  donate = character(),
+  device = NULL
 )
 }
 \arguments{
@@ -19,10 +19,6 @@ Function to compile.}
 \item{static}{(\code{character()})\cr
 Which parameters of \code{f} are static.}
 
-\item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
-The device to use for the compiled function.
-The default (\code{NULL}) uses the \code{PJRT_PLATFORM} environment variable or defaults to "cpu".}
-
 \item{cache_size}{(\code{integer(1)})\cr
 The size of the cache for the jit-compiled functions.}
 
@@ -30,6 +26,9 @@ The size of the cache for the jit-compiled functions.}
 Names of the arguments whose buffers should be donated.
 Donated buffers can be aliased with outputs of the same type,
 allowing in-place operations and reducing memory usage.}
+
+\item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
+The device to use if no input tensors are provided to infer the platform.}
 }
 \value{
 (\code{function})

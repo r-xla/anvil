@@ -64,6 +64,12 @@ nv_empty <- function(dtype, shape, device = NULL) {
   ensure_nv_tensor(x)
 }
 
+#' @rdname AbstractTensor
+#' @export
+nv_aten <- function(dtype, shape) {
+  AbstractTensor(dtype = dtype, shape = shape, ambiguous = FALSE)
+}
+
 #' @export
 dtype.AnvilTensor <- function(x, ...) {
   as_dtype(as.character(pjrt::elt_type(x)))
@@ -81,10 +87,7 @@ dtype.AnvilTensor <- function(x, ...) {
 #'   The data type of the tensor.
 #' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
 #'   The shape of the tensor. Can be provided as an integer vector.
-#' @param ambiguous (`logical(1)`)\cr
-#'   Whether the type is ambiguous. Ambiguous usually arise from R literals
-#'   (e.g., `1L`, `1.0`) and follow special promotion rules.
-#'   Only `f32`, `i32` are ambiguous during tracing.
+#' @template param_ambiguous
 #' @seealso [ConcreteTensor], [LiteralTensor], [to_abstract()]
 #' @export
 AbstractTensor <- S7::new_class(
@@ -117,18 +120,7 @@ AbstractTensor <- S7::new_class(
   }
 )
 
-shaped_tensor <- function(x) {
-  if (is_anvil_tensor(x)) {
-    ConcreteTensor(x)
-  } else if (is_shaped_tensor(x)) {
-    x
-  } else {
-    cli_abort("internal error")
-  }
-}
-
-
-is_shaped_tensor <- function(x) {
+is_abstract_tensor <- function(x) {
   inherits(x, "anvil::AbstractTensor")
 }
 
@@ -194,10 +186,7 @@ ConcreteTensor <- S7::new_class(
 #'   The shape of the tensor.
 #' @param dtype ([`stablehlo::TensorDataType`])\cr
 #'   The data type. Defaults to `f32` for numeric, `i32` for integer, `i1` for logical.
-#' @param ambiguous (`logical(1)`)\cr
-#'   Whether the type is ambiguous. Ambiguous usually arise from R literals
-#'   (e.g., `1L`, `1.0`) and follow special promotion rules.
-#'   Only `f32` and `i32` can be ambiguous during tracing.
+#' @template param_ambiguous
 #' @seealso [AbstractTensor], [ConcreteTensor]
 #' @export
 LiteralTensor <- new_class(
@@ -216,9 +205,7 @@ LiteralTensor <- new_class(
     if (!test_scalar(data)) {
       cli_abort("LiteralTensors expect scalars")
     }
-    if (is.numeric(shape)) {
-      shape <- Shape(as.integer(shape))
-    }
+    shape <- as_shape(shape)
     S7::new_object(
       S7::S7_object(),
       data = data,
@@ -277,24 +264,30 @@ format.AnvilTensor <- function(x, ...) {
 #' Convert an object to its abstract tensor representation ([`AbstractTensor`]).
 #' @param x (`any`)\cr
 #'   Object to convert.
+#' @param pure (`logical(1)`)\cr
+#'   Whether to convert to a pure abstract tensor, i.e., without any concrete data.
 #' @return [`AbstractTensor`]
 #' @export
-to_abstract <- function(x) {
-  if (is_anvil_tensor(x)) {
+to_abstract <- function(x, pure = FALSE) {
+  x <- if (is_anvil_tensor(x)) {
     ConcreteTensor(x)
-  } else if (is_shaped_tensor(x)) {
+  } else if (is_abstract_tensor(x)) {
     x
   } else if (test_atomic(x) && (is.logical(x) || is.numeric(x))) {
-    LiteralTensor(x, integer(), ambiguous = TRUE)
+    # logicals are not ambiguous
+    LiteralTensor(x, integer(), ambiguous = !is.logical(x))
   } else if (is_graph_box(x)) {
     gnode <- x@gnode
-    if (is_graph_value(gnode)) {
-      gnode@aval
-    } else {
-      to_abstract(gnode)
-    }
+    gnode@aval
+  } else if (is_debug_box(x)) {
+    x@aval
   } else {
-    cli_abort("internal error")
+    cli_abort("internal error: {.cls {class(x)}} is not a tensor-like object")
+  }
+  if (pure && class(x)[[1L]] != "anvil::AbstractTensor") {
+    AbstractTensor(dtype = x@dtype, shape = x@shape, ambiguous = x@ambiguous)
+  } else {
+    x
   }
 }
 
@@ -303,6 +296,8 @@ as_shape <- function(x) {
     Shape(as.integer(x))
   } else if (is_shape(x)) {
     x
+  } else if (is.null(x)) {
+    Shape(integer())
   } else {
     cli_abort("x must be an integer vector or a stablehlo::Shape")
   }
@@ -311,3 +306,17 @@ as_shape <- function(x) {
 is_shape <- function(x) {
   inherits(x, "stablehlo::Shape")
 }
+
+
+#' @title Tensor-like Objects
+#' @description
+#' A value that is either an [`AnvilTensor`][nv_tensor], can be converted to it, or
+#' represents an abstract version of it.
+#' This also includes atomic R vectors.
+#'
+#' @name tensorish
+#' @seealso [nv_tensor], [ConcreteTensor], [AbstractTensor], [LiteralTensor], [GraphBox]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' x <- nv_tensor(1:4, dtype = "f32")
+#' x
+NULL

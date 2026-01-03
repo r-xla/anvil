@@ -74,7 +74,61 @@ test_that("== ignores ambiguity", {
 })
 
 
+test_that("to_abstract", {
+  # literal
+  expect_equal(to_abstract(TRUE), LiteralTensor(TRUE, c(), "pred", FALSE))
+  expect_equal(to_abstract(1L), LiteralTensor(1L, c(), "i32", TRUE))
+  expect_equal(to_abstract(1.0), LiteralTensor(1.0, c(), "f32", TRUE))
+  # anvil tensor
+  x <- nv_tensor(1:4, dtype = "f32", shape = c(2, 2))
+  expect_equal(to_abstract(x), ConcreteTensor(x))
+  # graph box
+  aval <- GraphValue(AbstractTensor("f32", c(2, 2), FALSE))
+  x <- GraphBox(aval, local_descriptor())
+  expect_equal(to_abstract(x), aval@aval)
+
+  # pure
+  x <- nv_scalar(1)
+  expect_equal(to_abstract(x, pure = TRUE), AbstractTensor("f32", c(), FALSE))
+  expect_error(to_abstract(list(1, 2)), "is not a tensor-like object")
+})
+
+
+test_that("as_shape for c() (i.e., NULL)", {
+  expect_equal(as_shape(c()), Shape(integer()))
+})
+
 test_that("ambiguous Abstract Tensor check", {
   expect_error(AbstractTensor("i64", integer(), TRUE))
   expect_error(AbstractTensor("i64", integer(), FALSE), NA)
+})
+
+test_that("nv_aten creates AbstractTensor", {
+  expect_equal(
+    nv_aten("f32", c()),
+    AbstractTensor("f32", Shape(integer()), FALSE)
+  )
+  expect_equal(
+    nv_aten(as_dtype("i32"), 1:2),
+    AbstractTensor("i32", Shape(1:2), FALSE)
+  )
+})
+
+test_that("as_shape for c() (i.e., NULL)", {
+  expect_equal(as_shape(c()), Shape(integer()))
+})
+
+
+test_that("to_abstract", {
+  # literal
+  expect_equal(to_abstract(TRUE), LiteralTensor(TRUE, c(), "pred", FALSE))
+  expect_equal(to_abstract(1L), LiteralTensor(1L, c(), "i32", TRUE))
+  expect_equal(to_abstract(1.0), LiteralTensor(1.0, c(), "f32", TRUE))
+  # anvil tensor
+  x <- nv_tensor(1:4, dtype = "f32", shape = c(2, 2))
+  expect_equal(to_abstract(x), ConcreteTensor(x))
+  # graph box
+  aval <- GraphValue(AbstractTensor("f32", c(2, 2), FALSE))
+  x <- GraphBox(aval, local_descriptor())
+  expect_equal(to_abstract(x), aval@aval)
 })

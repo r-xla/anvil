@@ -267,9 +267,12 @@ verify_grad_uni <- function(
   dtypes = "f32",
   args_f = NULL,
   tol = 0,
-  non_negative = FALSE
+  non_negative = FALSE,
+  skip_scalar = FALSE
 ) {
-  verify_grad_uni_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol, non_negative = non_negative)
+  if (!skip_scalar) {
+    verify_grad_uni_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol, non_negative = non_negative)
+  }
   verify_grad_uni_tensor(
     f,
     g,
@@ -298,6 +301,7 @@ test_that("p_neg", {
 })
 
 test_that("p_exp", {
+  withr::local_seed(12)
   verify_grad_uni(nvl_exp, torch::torch_exp)
 })
 
@@ -419,5 +423,136 @@ test_that("p_convert", {
         list(dtype = torch::torch_float64())
       )
     }
+  )
+})
+
+test_that("p_sqrt", {
+  verify_grad_uni(nvl_sqrt, torch::torch_sqrt, non_negative = TRUE, tol = 1e-5)
+})
+
+test_that("p_rsqrt", {
+  # f64 to avoid log message
+  verify_grad_uni(nvl_rsqrt, torch::torch_rsqrt, non_negative = TRUE, tol = 1e-5, dtypes = "f64")
+})
+
+test_that("p_tanh", {
+  withr::local_seed(12)
+  verify_grad_uni(nvl_tanh, torch::torch_tanh, tol = 1e-4)
+})
+
+test_that("p_tan", {
+  # values near pi/2 cause divergence -> avoid unlucky seed
+  withr::local_seed(12)
+  verify_grad_uni_tensor(
+    nvl_tan,
+    torch::torch_tan,
+    tol = 1e-4
+  )
+})
+
+test_that("p_sine", {
+  verify_grad_uni(nvl_sine, torch::torch_sin, tol = 1e-5)
+})
+
+test_that("p_cosine", {
+  verify_grad_uni(nvl_cosine, torch::torch_cos, tol = 1e-5)
+})
+
+test_that("p_abs", {
+  verify_grad_uni_tensor(
+    nvl_abs,
+    torch::torch_abs,
+    tol = 1e-5
+  )
+})
+
+test_that("p_max", {
+  verify_grad_biv(nvl_max, torch::torch_maximum, tol = 1e-5)
+})
+
+test_that("p_min", {
+  verify_grad_biv(nvl_min, torch::torch_minimum, tol = 1e-5)
+})
+
+test_that("p_floor", {
+  verify_grad_uni(nvl_floor, torch::torch_floor)
+})
+
+test_that("p_ceil", {
+  verify_grad_uni(nvl_ceil, torch::torch_ceil)
+})
+
+test_that("p_sign", {
+  verify_grad_uni(nvl_sign, torch::torch_sign)
+})
+
+test_that("p_round", {
+  verify_grad_uni(nvl_round, torch::torch_round)
+})
+
+test_that("p_cbrt", {
+  verify_grad_uni(
+    nvl_cbrt,
+    \(x) torch::torch_pow(x, 1 / 3),
+    non_negative = TRUE,
+    tol = 1e-4
+  )
+})
+
+test_that("p_expm1", {
+  withr::local_seed(12)
+  verify_grad_uni(nvl_expm1, torch::torch_expm1, tol = 1e-5)
+})
+
+test_that("p_log1p", {
+  verify_grad_uni(nvl_log1p, torch::torch_log1p, non_negative = TRUE, tol = 1e-5)
+})
+
+test_that("p_logistic", {
+  verify_grad_uni(nvl_logistic, torch::torch_sigmoid, tol = 1e-5)
+})
+
+test_that("p_clamp", {
+  shp <- c(2L, 3L)
+  dtype <- "f32"
+
+  x_arr <- array(sample(c(-0.6, -0.5, -0.1, 0.0, 0.1, 0.5, 0.6), prod(shp), replace = TRUE), shp)
+  x_nv <- nv_tensor(x_arr, dtype = dtype)
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+
+  min_val <- -0.5
+  max_val <- 0.5
+
+  f_nv <- function(x) {
+    y <- nvl_clamp(min_val, x, max_val)
+    nv_reduce_sum(y, dims = seq_len(ndims(y)), drop = TRUE)
+  }
+
+  grads_nv <- jit(gradient(f_nv))(x_nv)
+
+  out_th <- torch::torch_clamp(x_th, min = min_val, max = max_val)
+  torch::torch_sum(out_th)$backward()
+
+  expect_equal(
+    tengen::as_array(grads_nv[[1L]]),
+    as_array_torch(x_th$grad),
+    tolerance = 1e-5
+  )
+})
+
+test_that("p_reverse", {
+  verify_grad_uni(
+    nvl_reverse,
+    torch::torch_flip,
+    ndims = 3L,
+    args_f = \(shp, dtype) {
+      dims_to_reverse <- sample(seq_along(shp), size = sample.int(length(shp), 1L))
+      list(
+        list(dims = dims_to_reverse),
+        list(dims = dims_to_reverse)
+      )
+    },
+    tol = 1e-5,
+    skip_scalar = TRUE
   )
 })

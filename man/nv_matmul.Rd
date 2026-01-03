@@ -7,12 +7,12 @@
 nv_matmul(lhs, rhs)
 }
 \arguments{
-\item{lhs}{(\code{\link{nv_tensor}})}
+\item{lhs}{(\code{\link{tensorish}})}
 
-\item{rhs}{(\code{\link{nv_tensor}})}
+\item{rhs}{(\code{\link{tensorish}})}
 }
 \value{
-\code{\link{nv_tensor}}
+\code{\link{tensorish}}
 }
 \description{
 Matrix multiplication of two tensors.
@@ -24,10 +24,5 @@ Matrix multiplication of two tensors.
 \item \code{rhs}: \verb{(b1, ..., bk, n, p)}
 \item output: \verb{(b1, ..., bk, m, p)}
 }
-}
-
-\section{Broadcasting}{
-
-All dimensions but the last two are broadcasted.
 }
 

@@ -18,10 +18,14 @@ navbar:
       menu:
       - text: Get Started
         href: articles/anvil.html
+      - text: Random Number Generation
+        href: articles/random-numbers.html
       - text: Type Promotion
         href: articles/type-promotion.html
       - text: Primitives Overview
         href: articles/primitives.html
+      - text: Debugging
+        href: articles/debugging.html
     technical:
       text: Technical
       menu:

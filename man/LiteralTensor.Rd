@@ -17,9 +17,9 @@ The shape of the tensor.}
 The data type. Defaults to \code{f32} for numeric, \code{i32} for integer, \code{i1} for logical.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
-Whether the type is ambiguous. Ambiguous usually arise from R literals
-(e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
-Only \code{f32} and \code{i32} can be ambiguous during tracing.}
+Whether the type is ambiguous.
+Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
+See the vignette "Type Promotion" for more details.}
 }
 \description{
 A \code{\link{AbstractTensor}} representing a tensor where the data is a R scalar literal (e.g., \code{1L}, \code{2.5}).

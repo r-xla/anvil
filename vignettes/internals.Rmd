@@ -8,67 +8,67 @@ vignette: >
 ---
 
 
-## Transformations under the Hood
+## Transforming Code
 
-Just like a real anvil, the {anvil} package is a tool that allows you to reshape objects.
-While the former is used to shape metal, our {anvil} package can be used to transform code into other code.
+While a real anvil is made for reshaping metal, this package is a tool for reshaping code.
+We refer to such a rewriting of code as a **transformation**, of which there are three types:
 
-In general, there are three types of transformations:
-
-1. `R` -> `Graph`:
-   Generic `R` functions are way too complicated to handle, so the first step in {anvil} is always to convert them into a computational `anvil::Graph` object via **tracing**.
+1. `R` $\rightarrow$ `Graph`:
+   Generic `R` functions are too complicated to handle, so the first step in {anvil} is always to convert them into a computational `anvil::Graph` object via **tracing**.
    Such a `Graph` is similar to `JAXExpr` objects in `JAX`.
-1. `Graph` -> `Graph`:
+   It operates only on `AnvilTensor` objects and applies `anvil::Primitive` operations to them.
+1. `Graph` $\rightarrow$ `Graph`:
    It is possible to transform `Graph`s into other `Graph`s.
-   Currently, there is only one such transformation, which is the `gradient()` transformation.
-1. `Graph` -> `Executable`:
+   Their purpose is to change the functionality of the code.
+   At the time of writing, there is essentially only one such transformation, namely backward-mode automatic differentiation via `gradient()`.
+1. `Graph` $\rightarrow$ `Executable`:
    In order to perform the actual computation, the `Graph` needs to be converted into an executable.
-   Currently, we only support the XLA backend (via `stablehlo` and `pjrt`), but it is in principle possible to support other backends as well.
+   Currently, we only support the XLA backend (via `stablehlo` and `pjrt`), but we are working on an experimental [quickr](https://github.com/t-kalinowski/quickr) backend.
 
-### Tracing R functions into Graphs
+### Tracing R Functions into Graphs
 
-All functionality in the {anvil} package is centered around the `Graph` class, and such `Graph`s are created by tracing R functions.
-In general, when we want to convert some code into another form, there are two approaches:
+All functionality in the {anvil} package is centered around the `anvil::Graph` class.
+While it is in principle possible to create `Graph`s by hand, these are usually created by tracing R functions.
+In general, when we want to convert some code into another form (in our case, R Code into a `Graph`), there are two approaches:
 
 1. Static analysis, which would require operating on the abstract syntax tree (AST) of the code.
-2. Dynamic analysis (aka "tracing"), which executes the code and records (selected) operations.
+2. Dynamic analysis (aka "tracing"), which executes the code and records selected operations.
 
-The former approach is followed by the {quickr} package, which allows you to transpile R code into Fortran.
-In {anvil}, we are following the dynamic approach, which we will now illustrate.
-Our goal will be to trace the following function, which either adds or subtracts two tensors.
-The first two arguments are expected to be `AnvilTensor`s, while the third is either `"add"` or `"sub"`.
+The former approach is followed by the {quickr} package, while we go with tracing.
+We start with a simple, yet illustrative example that either adds or multiplies two inputs `x` and `y` depending on the value of `op`.
 
 ```{r}
 library(anvil)
 f <- function(x, y, op) {
   if (op == "add") {
     nv_add(x, y)
-  } else if (op == "sub") {
-    nv_sub(x, y)
+  } else if (op == "mul") {
+    nv_mul(x, y)
   } else {
     stop("Unsupported operation")
   }
 }
 ```
 
-To do this, we use `anvil::trace_fn()`, which takes in an `R` function and a list of example arguments that specify the types of the inputs.
+To do this, we use `anvil::trace_fn()`, which takes in an `R` function and a list of `AbstractTensor` inputs that specify the types of the inputs.
 
 ```{r}
-x <- nv_scalar(1, "f32")
-y <- nv_scalar(5, "f32")
-graph <- trace_fn(f, list(x = x, y = y, op = "add"))
+aten <- nv_aten("f32", c())
+aten
+graph <- trace_fn(f, list(x = aten, y = aten, op = "mul"))
 graph
 ```
 
 The output of `trace_fn()` is now a `Graph` object that represents the computation.
 The fields of the `Graph` are:
 
-* `inputs`, which are `GraphValue`s that represent the inputs to the function.
-* `outputs`, which are `GraphValue`s that represent the outputs of the function.
-* `calls`, which are `PrimitiveCall`s that take in `GraphValue`s (and parameters) and produce output `GraphValue`s.
+* `inputs`, which are `GraphNode`s that represent the inputs to the function.
+* `outputs`, which are `GraphNode`s that represent the outputs of the function.
+* `calls`, which are `PrimitiveCall`s that take in `GraphNode`s (and parameters) and produce output `GraphNode`s.
 * `in_tree`, `out_tree`, which we will cover later (do we??)
 
-What happens internally in `trace_fn()` is that a new `GraphDescriptor` is created and the inputs `x` and `y` are converted into `anvil::GraphBox` objects.
+During `trace_fn`, the inputs
+What happens during `trace_fn()` is that a new `GraphDescriptor` is created and the inputs `x` and `y` are converted into `anvil::GraphBox` objects.
 Then, the function `f` is simply evaluated with the `GraphBox` objects as inputs.
 During this evaluation, we need to distinguish between two cases:
 
@@ -78,8 +78,9 @@ During this evaluation, we need to distinguish between two cases:
    Here, the operation that underlies the function is recorded in the `GraphDescriptor`.
 
 The evaluation of the `if` statement is an example for the first category.
-Because we set `op = "add"`, only the first branch is executed.
-Then, we are calling `nv_add`, which attaches a `PrimitiveCall` that represents the addition of the two tensors to the `@calls` of the `GraphDescriptor`.
+Because we set `op = "mul"`, only the first branch is executed.
+Then, we are calling `nv_mul`, which attaches a `PrimitiveCall` that represents the multiplication of the two tensors to the `@calls` of the `GraphDescriptor`.
+Note that the `nv_mul` is itself not primitive, but performs some type promotion and broadcasting if needed, before calling into the primitive `nvl_mul()`.
 
 A `PrimitiveCall` object consists of the following fields:
 
@@ -93,38 +94,41 @@ The only difference between the `Graph` and the `GraphDescriptor` is that the la
 
 ### Transforming Graphs into other Graphs
 
-Once we have staged out our `R` function into a simpler format, we can do all sorts of things with it, e.g., compute its gradient.
+Once the `R` function is staged out into a simpler format, it is ready to be transformed.
 The {anvil} package does not in any way dictate how such a `Graph` to `Graph` transformation can be implemented.
 For most interesting transformations, however, we need to store some information for each {anvil} primitive function.
 In the case of the gradient, we need to store the derivative rules.
 For this, `anvil::Primitive` objects have a `@rules` field that can be populated.
 The derivative rules are stored as functions under the `"backward"` name.
+We can access a primitive by it's name via the `prim()` function:
 
 ```{r}
-anvil:::p_add@rules[["backward"]]
+prim("mul")@rules[["backward"]]
 ```
 
-The `anvil:::transform_gradient` function uses these rules to compute the gradient of a function.
-For this specific transformation, we are walking the graph backwards and apply the derivative rules, which will add the "backward pass" to the graph.
+The `anvil::transform_gradient` function uses these rules to compute the gradient of a function.
+For this specific transformation, we are walking the graph backwards and apply the derivative rules, which will append the "backward pass" to the graph.
 Besides the forward graph, the transformation takes in the `wrt` argument, which specifies with respect to which arguments to compute the gradient.
 
 ```{r}
-bwd_graph <- anvil:::transform_gradient(graph, wrt = c("x", "y"))
+bwd_graph <- transform_gradient(graph, wrt = c("x", "y"))
 bwd_graph
 ```
 
 ### Lowering a Graph
 
 In order to execute a `Graph`, we need to convert it into a -- wait for it -- executable.
-Currently, there is only one way to do this, namely to convert the `Graph` into a `stablehlo::Func` object and to then compile it via `pjrt::pjrt_compile()`.
+Here, we should how to compile using the XLA backend.
+First, we will translate the `Graph` into the StableHLO representation via the {stablehlo} package.
+Then, we will compile this program using the XLA compiler that is accessible via the {pjrt} package.
 
 Like for the gradient transformation, the rules of how to do this transformation are stored in the `@rules` fields of the primitives.
 
 ```{r}
-anvil:::p_add@rules[["stablehlo"]]
+prim("mul")@rules[["stablehlo"]]
 ```
 
-They are applied in the `anvil::stablehlo` function.
+The `anvil::stablehlo` function will create a `stablehlo::Func` object and will sequentially translate the `PrimitiveCall`s into StableHLO operations.
 
 ```{r}
 func <- stablehlo(graph)[[1L]]
@@ -139,39 +143,48 @@ program <- pjrt::pjrt_program(src = hlo_str, format = "mlir")
 exec <- pjrt::pjrt_compile(program)
 ```
 
-To run the function, we simply pass the tensors to the executable.
+To run the function, we simply pass the tensors to the executable, which will output a `PJRTBuffer` that we can easily convert to an `AnvilTensor`.
 
 ```{r}
+x <- nv_scalar(3, "f32")
+y <- nv_scalar(4, "f32")
 out <- pjrt::pjrt_execute(exec, x, y)
 out
+nv_tensor(out)
 ```
 
-## The user interface
-
-
-### jit
+## The User Interface
 
 In the previous section, we have shown how the transformations are implemented under the hood.
-The actual user interface is a little more user-friendly and follows the `JAX` interface.
-We will start by explaining `jit()`, where we mark the `op` argument as `static`, i.e., it is not an `AnvilTensor`.
+The actual user interface is a little more convenient and follows the `JAX` interface.
+
+### `jit()`
+
+The `jit()` function allows to convert a regular `R` function into a Just-In-Time compiled function that can be executed on `AnvilTensor`s.
+We apply it to our simple example function, where we mark the non-tensor parameter `op` as "static".
+This means that the value of this parameter needs to be known at compile time.
 
 ```{r}
 f_jit <-  jit(f, static = "op")
 f_jit(x, y, "add")
 ```
 
-It might be intuitive to think that `jit()` first calls `trace_fn()`, then runs `stablehlo()`, followed by `pjrt_compile()`.
-This is, however, not what is happening, because for all of this, we need example inputs to the function.
-The function `f_jit` should instead be seen as a recipe to do all of this Just In Time (JIT).
-
-However, if we were to apply these steps every time the `f_jit` function is called, this would be very inefficient, because tracing and compiling takes some time.
-Therefore, the function `f_jit` also contains a cache (implemented as an `xlamisc::LRUCache`), which will check whether there is already an executable for the given inputs.
+One might think that `jit()` first calls `trace_fn()`, then runs `stablehlo()`, followed by `pjrt_compile()`.
+This is, however, not what is happening, as this requires the input types to be known.
+Instead, `f_jit` is a "lazy" function that will only perform these steps once the inputs are provided.
+However, if those steps were applied every time the `f_jit` function is called, this would be very inefficient, because tracing and compiling takes some time.
+Therefore, the function `f_jit` also contains a cache (implemented as an `xlamisc::LRUCache`), which will check whether there is already a compiled executable for the given inputs.
 For this, the types of all `AnvilTensor`s need to match exactly (data type and shape) and all static arguments need to be identical.
-For example, if we run the function with `AnvilTensor`s of the same type, but different values, the function won't be recompiled, which we can see by checking the size of the cache:
+For example, if we run the function with `AnvilTensor`s of the same type, but different values, the function won't be recompiled, which we can see by checking the size of the cache, which is already 1, because we have called it on `x` and `y` above.
 
 ```{r}
 cache_size <- function(f) environment(f)$cache$size
 cache_size(f_jit)
+```
+
+After calling it with tensors of the same types and identical static argument values, the size of the cache remains 1:
+
+```{r}
 f_jit(nv_scalar(-99, "f32"), nv_scalar(2, "f32"), "add")
 cache_size(f_jit)
 ```
@@ -186,12 +199,12 @@ cache_size(f_jit)
 Also, if we provide different values for static arguments, the function will be recompiled:
 
 ```{r}
-f_jit(nv_scalar(1, "f32"), nv_scalar(2, "f32"), "sub")
+f_jit(nv_scalar(1, "f32"), nv_scalar(2, "f32"), "mul")
 cache_size(f_jit)
 ```
 
 
-### gradient
+### `gradient()`
 
 Just like `jit()`, `gradient()` also returns a function that will lazily create the graph and transform it, once the inputs are provided.
 
@@ -199,22 +212,25 @@ Just like `jit()`, `gradient()` also returns a function that will lazily create 
 g <- gradient(f, wrt = c("x", "y"))
 ```
 
-However, the output `g()` cannot be called on `AnvilTensor`s, because it is just a graph building function.
+Calling `g()` on `AnvilTensor`s will not actually compute the gradient, but instead just output the output types, c.f. the [debugging vignette](debugging.html) for more.
 
-In order to execute it, we need to wrap it in a `jit()` call:
+```{r}
+g(x, y, "add")
+```
+
+If we want to actually compute the gradient, we need to wrap it in `jit()`.
 
 ```{r}
 g_jit <- jit(g, static = "op")
 g_jit(x, y, "add")
 ```
 
-Moreover, we can also use `g()` in another function:
-
+Moreover, we can also use `g` in another function:
 
 ```{r}
 h <- function(x, y) {
   z <- nv_add(x, y)
-  g(z, z, "add")
+  g(z, x, "mul")
 }
 h_jit <- jit(h)
 h_jit(x, y)
@@ -222,19 +238,38 @@ h_jit(x, y)
 
 So, what is happening here?
 Once the inputs `x` and `y` are provided to `h_jit`, a new `GraphDescriptor` is created and the inputs `x` and `y` are converted into `GraphBox` objects.
-Then, we record the addition of `x` and `y` in the `GraphDescriptor`.
-When we are then calling into `g`, a second `GraphDescriptor` is created, where we will first build up the `Graph` representing the `g` function.
-After we are done doing this, we transform this graph into its gradient graph.
-Once this is done, the sub-graph is inlined into the parent graph (that so far only holds the addition of `x` and `y`).
-We can look at this graph below:
+Then, the addition of `x` and `y` is recorded in the `GraphDescriptor`.
+The call into `g()` is a bit more involved.
+First, a new `GraphDescriptor` is created and the forward computation of `g` is recorded.
+Subsequently, the backward pass will be added to the descriptor, after which it will be converted into a `Graph`.
+This `Graph` will then be inlined into the parent `GraphDescriptor` (representing the whole function `h`), which is then converted into the main `Graph`.
+We can look at this graph below, where `trace_fn` internally converts the `AnvilTensor`s `x` and `y` into their abstract representation.
 
 ```{r}
 h_graph <- trace_fn(h, list(x = x, y = y))
+h_graph
 ```
 
-After that, this graph is lowered to stablehlo and subsequently compiled.
+Afterwards, this graph is lowered to stableHLO and subsequently compiled.
 
 ## More Internals
+
+### Debug Mode
+
+For how to use debug mode, see the [debugging vignette](debugging.html).
+
+Debug-mode is different from jit-mode, because we don't have a context that can initialize a main `GraphDescriptor`.
+For this reason, every primitive initializes its own `GraphDescriptor` that is thrown away after the primitive returns `DebugBox` objects.
+These `DebugBox` objects are only for user-interaction and have a nice printer.
+Whenever a primitive is evaluated, this `DebugBox` is converted to a `GraphBox` object that is used for the actual evaluation via `maybe_box_variable`.
+This ensures that we don't have to duplicate any evaluation logic as we the graph-building functions only have to work with `GraphBox` objects.
+
+What gets lost in debug mode is identity of values, because the `GraphDescriptor` is thrown away.
+This means that we cannot say anything about identity of values, only about their types.
+
+Unfortunately, our current mode for detecting debug mode is whether a `GraphDescriptor` is active.
+For this reason, we don't allow calling `local_descriptor()` in the global environment.
+Maybe we can improve this in the future, but for now it seems to work.
 
 ### Constant Handling
 
