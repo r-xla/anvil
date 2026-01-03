@@ -30,3 +30,12 @@ vt2sa <- function(x) {
   stopifnot(inherits(x@type, stablehlo::TensorType))
   AbstractTensor(x@type@dtype, x@type@shape)
 }
+
+# Backwards-compatible aliases for older callers/tests.
+st2vt <- function(x) {
+  st2va(x)
+}
+
+vt2st <- function(x) {
+  vt2sa(x)
+}

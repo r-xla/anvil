@@ -619,12 +619,24 @@ nv_matmul <- function(lhs, rhs) {
   if (ndims_abstract(rhs) < 2L) {
     cli_abort("rhs of matmul must have at least 2 dimensions")
   }
-  nbatch <- ndims_abstract(lhs) - 2L
+  nbatch_lhs <- ndims_abstract(lhs) - 2L
+  nbatch_rhs <- ndims_abstract(rhs) - 2L
+  nbatch <- min(nbatch_lhs, nbatch_rhs)
+  lhs_batch <- if (nbatch > 0L) {
+    (nbatch_lhs - nbatch + 1L):nbatch_lhs
+  } else {
+    integer()
+  }
+  rhs_batch <- if (nbatch > 0L) {
+    (nbatch_rhs - nbatch + 1L):nbatch_rhs
+  } else {
+    integer()
+  }
   nvl_dot_general(
     lhs,
     rhs,
     contracting_dims = list(ndims_abstract(lhs), ndims_abstract(rhs) - 1L),
-    batching_dims = list(seq_len(nbatch), seq_len(nbatch))
+    batching_dims = list(lhs_batch, rhs_batch)
   )
 }
 

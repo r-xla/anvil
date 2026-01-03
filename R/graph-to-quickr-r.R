@@ -785,6 +785,16 @@ quickr_lower_registry <- local({
     quickr_emit_reduce_sum(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval)
   })
 
+  quickr_register_prim_lowerer(reg, "reduce_sum", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+    out_sym <- out_syms[[1L]]
+    out_aval <- out_avals[[1L]]
+    operand_node <- input_nodes[[1L]]
+    if (!is_graph_value(operand_node)) {
+      cli_abort("reduce_sum: only GraphValue inputs are supported")
+    }
+    quickr_emit_reduce_sum(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval)
+  })
+
   reg
 })
 
