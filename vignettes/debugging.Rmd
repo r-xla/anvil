@@ -98,7 +98,7 @@ for (i in 1:10) {
 
 For the second approach, we use `nv_while` to implement the loop.
 
-```{r}
+```{r, eval = "CustomOpBackendConfig" %in% getNamespaceExports("stablehlo")}
 jit(\() {
   init <- nv_fill(1L, shape = c())
   nv_while(

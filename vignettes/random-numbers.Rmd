@@ -12,6 +12,20 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+
+stablehlo_concat_zero_based_ok <- function() {
+  if (!requireNamespace("stablehlo", quietly = TRUE)) {
+    return(FALSE)
+  }
+  tryCatch({
+    vt <- stablehlo::ValueType(stablehlo::TensorType(
+      dtype = stablehlo::FloatType(32L),
+      shape = stablehlo::Shape(1L)
+    ))
+    stablehlo::infer_types_concatenate(vt, vt, dimension = 0L)
+    TRUE
+  }, error = function(e) FALSE)
+}
 ```
 
 In this vignette, you will learn how to generate random numbers in {anvil}.
@@ -68,7 +82,7 @@ result[[2]]  # random numbers
 
 For normally distributed random numbers:
 
-```{r}
+```{r, eval = stablehlo_concat_zero_based_ok()}
 g <- jit(function(state) {
   nv_rnorm(state, dtype = "f32", shape = c(2, 3), mu = 0, sigma = 1)
 })
