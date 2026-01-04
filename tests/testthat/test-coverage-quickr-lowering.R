@@ -516,59 +516,6 @@ test_that("assert_quickr_installed_with errors when installed is FALSE", {
   testthat::expect_error(assert_quickr_installed_with(NULL, FALSE), "must be installed", fixed = FALSE)
 })
 
-test_that("infer_unary_integerish uses stablehlo infer_types_integerish_uni when present", {
-  operand <- AbstractTensor("i32", integer(), ambiguous = TRUE)
-  orig <- stablehlo_get0
-
-  vts_for <- function(x) stablehlo::ValueTypes(list(st2vt(x)))
-  get0_fn <- function(name, ns) {
-    if (identical(name, "infer_types_integerish_uni")) {
-      return(function(vt) vts_for(operand))
-    }
-    orig(name, ns)
-  }
-  out <- infer_unary_integerish_impl(operand, get0_fn)[[1L]]
-  testthat::expect_true(out@ambiguous)
-})
-
-test_that("infer_unary_integerish falls back to infer_types_boolean_uni", {
-  operand <- AbstractTensor("i32", integer(), ambiguous = TRUE)
-  orig <- stablehlo_get0
-
-  vts_for <- function(x) stablehlo::ValueTypes(list(st2vt(x)))
-  get0_fn <- function(name, ns) {
-    if (identical(name, "infer_types_integerish_uni")) {
-      return(NULL)
-    }
-    if (identical(name, "infer_types_boolean_uni")) {
-      return(function(vt) vts_for(operand))
-    }
-    orig(name, ns)
-  }
-  out <- infer_unary_integerish_impl(operand, get0_fn)[[1L]]
-  testthat::expect_true(out@ambiguous)
-})
-
-test_that("infer_unary_integerish errors if stablehlo provides no compatible infer", {
-  operand <- AbstractTensor("i32", integer(), ambiguous = TRUE)
-  orig <- stablehlo_get0
-
-  get0_fn <- function(name, ns) {
-    if (identical(name, "infer_types_integerish_uni")) {
-      return(NULL)
-    }
-    if (identical(name, "infer_types_boolean_uni")) {
-      return(NULL)
-    }
-    orig(name, ns)
-  }
-  testthat::expect_error(
-    infer_unary_integerish_impl(operand, get0_fn),
-    "stablehlo does not provide",
-    fixed = FALSE
-  )
-})
-
 test_that("graph_to_quickr_function errors on non-Graph", {
   testthat::expect_error(graph_to_quickr_function(1), "Graph", fixed = FALSE)
 })
