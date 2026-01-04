@@ -38,76 +38,12 @@ make_binary_integerish_op <- function(prim) {
   }
 }
 
-stablehlo_get0 <- function(name, ns) {
-  get0(name, envir = ns, inherits = FALSE)
-}
-
-infer_unary_integerish_impl <- function(operand, get0_fn) {
-  ns <- asNamespace("stablehlo")
-
-  infer <- get0_fn("infer_types_integerish_uni", ns)
-  if (is.function(infer)) {
-    out <- infer(st2va(operand))@items[[1L]]
-  } else {
-    # Older versions of {stablehlo} used infer_types_boolean_uni() here.
-    infer <- get0_fn("infer_types_boolean_uni", ns)
-    if (is.function(infer)) {
-      out <- infer(st2va(operand))@items[[1L]]
-    } else {
-      cli_abort("stablehlo does not provide infer_types_integerish_uni or infer_types_boolean_uni")
-    }
-  }
-
+infer_unary_integerish <- function(operand) {
+  out <- stablehlo::infer_types_integerish_uni(st2va(operand))@items[[1L]]
   out <- vt2sa(out)
   out@ambiguous <- operand@ambiguous
   list(out)
 }
-
-infer_unary_integerish <- function(operand) {
-  infer_unary_integerish_impl(operand, stablehlo_get0)
-}
-
-stablehlo_concat_dim <- local({
-  cached <- NULL
-  function(dimension) {
-    if (is.null(cached)) {
-      ns <- asNamespace("stablehlo")
-      infer <- get0("infer_types_concatenate", envir = ns, inherits = FALSE)
-      if (!is.function(infer)) {
-        cli_abort("stablehlo does not provide infer_types_concatenate")
-      }
-      body_txt <- paste(deparse(body(infer)), collapse = "\n")
-      cached <<- grepl("dimension\\s*\\+\\s*1L", body_txt) || grepl("dimension\\s*\\+\\s*1", body_txt)
-    }
-    if (isTRUE(cached)) {
-      return(dimension - 1L)
-    }
-    dimension
-  }
-})
-
-stablehlo_iota_dim <- local({
-  cached <- NULL
-  function(dimension) {
-    if (is.null(cached)) {
-      ns <- asNamespace("stablehlo")
-      infer <- get0("infer_types_iota", envir = ns, inherits = FALSE)
-      if (!is.function(infer)) {
-        cached <<- 1L
-      } else {
-        body_txt <- paste(deparse(body(infer)), collapse = "\n")
-        cached <<- if (
-          grepl("iota_dimension\\s*\\+\\s*1L", body_txt) || grepl("iota_dimension\\s*\\+\\s*1", body_txt)
-        ) {
-          1L
-        } else {
-          0L
-        }
-      }
-    }
-    dimension - cached
-  }
-})
 
 make_unary_op <- function(prim) {
   function(operand) {
@@ -362,8 +298,7 @@ nvl_concatenate <- function(..., dimension) {
     operands <- list(...)
     all_ambiguous <- all(vapply(operands, \(x) x@ambiguous, logical(1L)))
     vts <- lapply(operands, st2va)
-    dim_arg <- stablehlo_concat_dim(dimension)
-    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dim_arg)@items[[1L]]
+    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dimension - 1L)@items[[1L]]
     out <- vt2sa(out)
     out@ambiguous <- all_ambiguous
     list(out)
@@ -899,24 +834,7 @@ p_clamp <- Primitive("clamp")
 #' @export
 nvl_clamp <- function(min_val, operand, max_val) {
   infer_fn <- function(min_val, operand, max_val) {
-    operand_shape <- shape_abstract(operand)
-    min_val_adj <- min_val
-    max_val_adj <- max_val
-    if (!length(shape_abstract(min_val)) && length(operand_shape)) {
-      min_val_adj <- AbstractTensor(
-        dtype = dtype(min_val),
-        shape = Shape(operand_shape),
-        ambiguous = min_val@ambiguous
-      )
-    }
-    if (!length(shape_abstract(max_val)) && length(operand_shape)) {
-      max_val_adj <- AbstractTensor(
-        dtype = dtype(max_val),
-        shape = Shape(operand_shape),
-        ambiguous = max_val@ambiguous
-      )
-    }
-    out <- stablehlo::infer_types_clamp(st2va(min_val_adj), st2va(operand), st2va(max_val_adj))@items[[1L]]
+    out <- stablehlo::infer_types_clamp(st2va(min_val), st2va(operand), st2va(max_val))@items[[1L]]
     out <- vt2sa(out)
     out@ambiguous <- operand@ambiguous
     list(out)
@@ -958,14 +876,9 @@ p_iota <- Primitive("iota")
 #' @export
 nvl_iota <- function(dim, dtype, shape) {
   infer_fn <- function(dim, dtype, shape) {
-    ns <- asNamespace("stablehlo")
-    infer <- get0("infer_types_iota", envir = ns, inherits = FALSE)
-    if (is.function(infer)) {
-      dim_arg <- stablehlo_iota_dim(dim)
-      out <- infer(iota_dimension = dim_arg, dtype = dtype, shape = shape)@items[[1L]]
-      return(list(vt2sa(out)))
-    }
-    list(AbstractTensor(dtype = as_dtype(dtype), shape = Shape(as.integer(shape)), ambiguous = FALSE))
+    # stablehlo uses 0-based indexing, anvil uses 1-based
+    out <- stablehlo::infer_types_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape)@items[[1L]]
+    list(vt2sa(out))
   }
   graph_desc_add(
     p_iota,

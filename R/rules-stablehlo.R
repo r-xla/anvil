@@ -3,9 +3,6 @@
 # TODO: Here we don't have to re-do the type inference again, because it was already done.
 
 p_fill[["stablehlo"]] <- function(value, shape, dtype) {
-  if (is.null(shape)) {
-    shape <- integer()
-  }
   list(stablehlo::hlo_tensor(value, shape = shape, dtype = dtype))
 }
 
@@ -52,8 +49,7 @@ p_reshape[["stablehlo"]] <- function(operand, shape) {
 }
 
 p_concatenate[["stablehlo"]] <- function(..., dimension) {
-  dim_arg <- stablehlo_concat_dim(dimension)
-  list(stablehlo::hlo_concatenate(..., dimension = dim_arg))
+  list(stablehlo::hlo_concatenate(..., dimension = dimension - 1L))
 }
 
 p_slice[["stablehlo"]] <- function(operand, start_indices, limit_indices, strides) {
@@ -282,48 +278,15 @@ p_popcnt[["stablehlo"]] <- function(operand) {
 }
 
 p_clamp[["stablehlo"]] <- function(min_val, operand, max_val) {
-  shape_out <- shape(operand@value_type)
-  maybe_broadcast <- function(x) {
-    x_shape <- shape(x@value_type)
-    if (!length(x_shape) && length(shape_out)) {
-      return(stablehlo::hlo_broadcast_in_dim(x, integer(), shape_out))
-    }
-    x
-  }
-  min_val <- maybe_broadcast(min_val)
-  max_val <- maybe_broadcast(max_val)
   list(stablehlo::hlo_clamp(min_val, operand, max_val))
 }
 
 p_reverse[["stablehlo"]] <- function(operand, dims) {
-  dims <- as.integer(dims)
-  dims_attr <- local({
-    func <- stablehlo::local_func("")
-    stablehlo:::impl_hlo_constant(dims - 1L, dtype = "i64", func = func, shape = length(dims))
-  })
-  list(stablehlo:::hlo_reverse_impl(values = list(operand = operand), attrs = list(dimensions = dims_attr)))
+  list(stablehlo::hlo_reverse(operand, dims - 1L))
 }
 
 p_iota[["stablehlo"]] <- function(dim, dtype, shape) {
-  ns <- asNamespace("stablehlo")
-  hlo_iota <- get0("hlo_iota", envir = ns, inherits = FALSE)
-  if (is.function(hlo_iota)) {
-    dim_arg <- stablehlo_iota_dim(dim)
-    return(list(hlo_iota(iota_dimension = dim_arg, dtype = dtype, shape = shape)))
-  }
-  shape <- as.integer(shape)
-  if (length(shape) && (dim < 1L || dim > length(shape))) {
-    cli_abort("{.arg dim} must be between 1 and {length(shape)}")
-  }
-  if (!length(shape)) {
-    arr <- array(0, dim = integer())
-  } else if (prod(shape) == 0L) {
-    arr <- array(integer(), dim = shape)
-  } else {
-    idx <- arrayInd(seq_len(prod(shape)), .dim = shape)
-    arr <- array(idx[, dim] - 1L, dim = shape)
-  }
-  list(stablehlo::hlo_tensor(arr, shape = shape, dtype = dtype))
+  list(stablehlo::hlo_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape))
 }
 
 p_pad[["stablehlo"]] <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
@@ -354,17 +317,7 @@ p_rng_bit_generator[["stablehlo"]] <- function(initial_state, rng_algorithm, dty
   stablehlo::hlo_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out)
 }
 
-stablehlo_has_custom_call <- function() {
-  ns <- asNamespace("stablehlo")
-  exists("hlo_custom_call", envir = ns, inherits = FALSE) &&
-    exists("CustomOpBackendConfig", envir = ns, inherits = FALSE) &&
-    exists("StringAttr", envir = ns, inherits = FALSE)
-}
-
 p_print[["stablehlo"]] <- function(operand) {
-  if (!stablehlo_has_custom_call()) {
-    return(list(operand))
-  }
   backend_config <- stablehlo::CustomOpBackendConfig(list(
     stablehlo::StringAttr(name = "print_header", value = "AnvilTensor")
   ))

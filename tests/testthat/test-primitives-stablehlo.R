@@ -404,7 +404,6 @@ test_that("p_popcnt", {
 
 test_that("p_print", {
   skip_if(!is_cpu(), "print_tensor only works on CPU")
-  skip_if(!anvil:::stablehlo_has_custom_call(), "stablehlo custom call not available")
 
   f <- jit(function(x) nvl_print(x))
   x <- nv_tensor(c(1.0, 2.0, 3.0), dtype = "f32")
@@ -418,8 +417,5 @@ test_that("p_print", {
 # We have a CI job that installs torch, so it's at least tested once
 
 if (nzchar(system.file(package = "torch"))) {
-  source(
-    system.file("extra-tests", "test-primitives-stablehlo-torch.R", package = "anvil"),
-    local = TRUE
-  )
+  source(system.file("extra-tests", "test-primitives-stablehlo-torch.R", package = "anvil"))
 }
