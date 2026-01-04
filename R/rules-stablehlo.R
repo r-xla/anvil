@@ -52,7 +52,7 @@ p_reshape[["stablehlo"]] <- function(operand, shape) {
 }
 
 p_concatenate[["stablehlo"]] <- function(..., dimension) {
-  dim_arg <- stablehlo_concatenate_dimension(dimension)
+  dim_arg <- stablehlo_concat_dim(dimension)
   list(stablehlo::hlo_concatenate(..., dimension = dim_arg))
 }
 
@@ -308,7 +308,7 @@ p_iota[["stablehlo"]] <- function(dim, dtype, shape) {
   ns <- asNamespace("stablehlo")
   hlo_iota <- get0("hlo_iota", envir = ns, inherits = FALSE)
   if (is.function(hlo_iota)) {
-    dim_arg <- stablehlo_iota_dimension(dim)
+    dim_arg <- stablehlo_iota_dim(dim)
     return(list(hlo_iota(iota_dimension = dim_arg, dtype = dtype, shape = shape)))
   }
   shape <- as.integer(shape)

@@ -67,7 +67,7 @@ infer_unary_integerish <- function(operand) {
   infer_unary_integerish_impl(operand, stablehlo_get0)
 }
 
-stablehlo_concatenate_dimension <- local({
+stablehlo_concat_dim <- local({
   cached <- NULL
   function(dimension) {
     if (is.null(cached)) {
@@ -86,7 +86,7 @@ stablehlo_concatenate_dimension <- local({
   }
 })
 
-stablehlo_iota_dimension <- local({
+stablehlo_iota_dim <- local({
   cached <- NULL
   function(dimension) {
     if (is.null(cached)) {
@@ -362,7 +362,7 @@ nvl_concatenate <- function(..., dimension) {
     operands <- list(...)
     all_ambiguous <- all(vapply(operands, \(x) x@ambiguous, logical(1L)))
     vts <- lapply(operands, st2va)
-    dim_arg <- stablehlo_concatenate_dimension(dimension)
+    dim_arg <- stablehlo_concat_dim(dimension)
     out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dim_arg)@items[[1L]]
     out <- vt2sa(out)
     out@ambiguous <- all_ambiguous
@@ -961,7 +961,7 @@ nvl_iota <- function(dim, dtype, shape) {
     ns <- asNamespace("stablehlo")
     infer <- get0("infer_types_iota", envir = ns, inherits = FALSE)
     if (is.function(infer)) {
-      dim_arg <- stablehlo_iota_dimension(dim)
+      dim_arg <- stablehlo_iota_dim(dim)
       out <- infer(iota_dimension = dim_arg, dtype = dtype, shape = shape)@items[[1L]]
       return(list(vt2sa(out)))
     }

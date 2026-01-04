@@ -12,7 +12,7 @@ make_template <- function(shape, dtype = "f64") {
 }
 
 make_input <- function(shape, dtype = "f64", non_negative = FALSE) {
-  vals <- generate_test_data(shape, dtype = dtype, non_negative = non_negative)
+  vals <- generate_test_data(shape, dtype = dtype, non_negative = non_negative) # nolint
   if (!length(shape)) {
     return(vals[[1L]])
   }
@@ -22,7 +22,7 @@ make_input <- function(shape, dtype = "f64", non_negative = FALSE) {
 expect_quickr_matches_pjrt <- function(fn, templates, args, tolerance = 1e-12, info = NULL) {
   graph <- trace_fn(fn, templates)
   f_quick <- graph_to_quickr_function(graph)
-  run_pjrt <- compile_graph_pjrt(graph)
+  run_pjrt <- compile_graph_pjrt(graph) # nolint
 
   out_quick <- rlang::exec(f_quick, !!!args)
   out_pjrt <- rlang::exec(run_pjrt, !!!args)
