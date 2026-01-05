@@ -82,7 +82,8 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
     in_tree$marked <- NULL
     class(in_tree) <- c("ListNode", "Node")
     graph <- trace_fn(f, args, desc = desc)
-    graph <- inline_literals(graph)
+    inline_scalarish_constants(graph)
+    graph <- remove_unused_constants(graph)
 
     out <- stablehlo(graph, donate = donate)
     func <- out[[1L]]

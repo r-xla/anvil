@@ -63,6 +63,7 @@ Collate:
     'flatten.R'
     'mut.R'
     'graph.R'
+    'graph-passes.R'
     'graph-print.R'
     'promotion.R'
     'reexports.R'

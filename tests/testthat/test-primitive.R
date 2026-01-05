@@ -26,8 +26,9 @@ test_that("subgraphs extracts subgraphs from higher-order primitives", {
 
   subgraphs_list <- subgraphs(call)
   expect_length(subgraphs_list, 2L)
-  expect_identical(subgraphs_list[[1L]], true_graph)
-  expect_identical(subgraphs_list[[2L]], false_graph)
+  expect_named(subgraphs_list, c("true_graph", "false_graph"))
+  expect_identical(subgraphs_list[["true_graph"]], true_graph)
+  expect_identical(subgraphs_list[["false_graph"]], false_graph)
 })
 
 test_that("subgraphs returns empty list for non-higher-order primitives", {
@@ -57,6 +58,7 @@ test_that("subgraphs works with p_while", {
 
   subgraphs_list <- subgraphs(call)
   expect_length(subgraphs_list, 2L)
-  expect_identical(subgraphs_list[[1L]], cond_graph)
-  expect_identical(subgraphs_list[[2L]], body_graph)
+  expect_named(subgraphs_list, c("cond_graph", "body_graph"))
+  expect_identical(subgraphs_list[["cond_graph"]], cond_graph)
+  expect_identical(subgraphs_list[["body_graph"]], body_graph)
 })

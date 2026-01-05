@@ -1,5 +1,3 @@
-#' @include graph.R
-
 #' @title Primitive
 #' @description
 #' Primitive interpretation rule.

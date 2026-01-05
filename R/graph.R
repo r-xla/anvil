@@ -67,6 +67,10 @@ GraphNode <- S7::new_union(GraphValue, GraphLiteral)
 PrimitiveCall <- new_class(
   "PrimitiveCall",
   properties = list(
+    #inputs = class_any,
+    #primitive = class_any,
+    #params = class_any,
+    #outputs = class_any
     primitive = Primitive,
     inputs = list_of(GraphNode),
     params = list_of(class_any),
