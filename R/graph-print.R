@@ -181,18 +181,18 @@ format.PrimitiveCall <- function(x, ...) {
 }
 
 #' @export
-format.Graph <- function(x, ...) {
+format.AnvilGraph <- function(x, ...) {
   format_graph_body(
     inputs = x$inputs,
     constants = x$constants,
     calls = x$calls,
     outputs = x$outputs,
-    title = "Graph"
+    title = "AnvilGraph"
   )
 }
 
 #' @export
-print.Graph <- function(x, ...) {
+print.AnvilGraph <- function(x, ...) {
   cat(format(x), "\n")
   invisible(x)
 }

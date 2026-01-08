@@ -44,5 +44,5 @@ The outputs of the graph.}
 (\code{GraphDescriptor})
 }
 \description{
-Descriptor of a \code{\link{Graph}}. This is a mutable class.
+Descriptor of an \code{\link{AnvilGraph}}. This is a mutable class.
 }

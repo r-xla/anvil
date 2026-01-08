@@ -7,7 +7,7 @@
 PrimitiveCall(primitive, inputs, params, outputs)
 }
 \arguments{
-\item{primitive}{(\code{Primitive})\cr
+\item{primitive}{(\code{AnvilPrimitive})\cr
 The function.}
 
 \item{inputs}{(\code{list(GraphValue)})\cr
@@ -23,6 +23,6 @@ The (tensor) outputs of the primitive.}
 (\code{PrimitiveCall})
 }
 \description{
-Call of a primitive in a \code{\link{Graph}}
+Call of a primitive in an \code{\link{AnvilGraph}}
 Note that a primitive call also be a call into another graph (\code{p_graph}).
 }

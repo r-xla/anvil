@@ -7,6 +7,6 @@
 GraphNode()
 }
 \description{
-Node in a \code{\link{Graph}}.
+Node in an \code{\link{AnvilGraph}}.
 Is either a \code{\link{GraphValue}} or a \code{\link{GraphLiteral}}.
 }

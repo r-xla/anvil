@@ -7,7 +7,7 @@
 #'   The graph to transform.
 #' @param wrt (`character`)\cr
 #'   The names of the variables to compute the gradient with respect to.
-#' @return A [`Graph`] object.
+#' @return An [`AnvilGraph`] object.
 #' @export
 transform_gradient <- function(graph, wrt) {
   grad_env <- hashtab()
@@ -33,10 +33,10 @@ transform_gradient <- function(graph, wrt) {
   requires_grad <- flat_mask_from_names(graph$in_tree, wrt)
 
   for (i in seq_along(graph$inputs)) {
-    required_env[[gval_key(graph$inputs[[i]])]] <- requires_grad[[i]]
+    required_env[[graph$inputs[[i]]]] <- requires_grad[[i]]
   }
   for (i in seq_along(graph$constants)) {
-    required_env[[gval_key(graph$constants[[i]])]] <- FALSE
+    required_env[[graph$constants[[i]]]] <- FALSE
   }
 
   # Forward pass: propagate required status through the graph
@@ -49,13 +49,13 @@ transform_gradient <- function(graph, wrt) {
           # literals don't depend on anything (they are either inlined constants or literals)
           return(FALSE)
         }
-        required_env[[gval_key(x)]]
+        required_env[[x]]
       },
       logical(1L)
     ))
 
     for (out_node in call$outputs) {
-      required_env[[gval_key(out_node)]] <- any_input_requires
+      required_env[[out_node]] <- any_input_requires
     }
   }
 
@@ -73,7 +73,7 @@ transform_gradient <- function(graph, wrt) {
   # By copying the calls and in_tree from the forward graph, we ensure that the backward
   # operations are added to the correct context.
   init_desc_from_graph(desc, graph, outputs = FALSE)
-  grad_env[[gval_key(out)]] <- get_box_or_register_const(desc, nv_scalar(1L, dtype = out$aval$dtype))
+  grad_env[[out]] <- get_box_or_register_const(desc, nv_scalar(1L, dtype = out$aval$dtype))
 
   # Backward pass
   for (call in rev(graph$calls)) {
@@ -81,7 +81,7 @@ transform_gradient <- function(graph, wrt) {
     input_required <- vapply(
       call$inputs,
       function(x) {
-        required_env[[gval_key(x)]] %||% FALSE
+        required_env[[x]] %||% FALSE
       },
       logical(1L)
     )
@@ -91,7 +91,7 @@ transform_gradient <- function(graph, wrt) {
     }
 
     output_grads <- lapply(call$outputs, \(output) {
-      grad <- grad_env[[gval_key(output)]]
+      grad <- grad_env[[output]]
       if (is.null(grad)) {
         # output grad might be NULL if there is dead code
         nvl_fill(0L, dtype = dtype(output), shape = shape(output))
@@ -111,7 +111,7 @@ transform_gradient <- function(graph, wrt) {
     # input_grads[!input_required] is list of NULLs
     for (i in seq_along(call$inputs)) {
       input_gval <- call$inputs[[i]]
-      grad_env[[gval_key(input_gval)]] <- add_or_init(grad_env[[gval_key(input_gval)]], input_grads[[i]])
+      grad_env[[input_gval]] <- add_or_init(grad_env[[input_gval]], input_grads[[i]])
     }
   }
 
@@ -122,7 +122,7 @@ transform_gradient <- function(graph, wrt) {
       next
     }
     input <- graph$inputs[[i]]
-    grad <- grad_env[[gval_key(input)]]
+    grad <- grad_env[[input]]
     x <- if (is.null(grad)) {
       const <- get_box_or_register_const(desc, nv_scalar(0L, dtype = input$aval$dtype))
       nv_broadcast_to(const, shape(input$aval))

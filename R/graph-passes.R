@@ -30,12 +30,12 @@ remove_unused_constants <- function(graph) {
   # this means, the main graph contains all the constants that are used
   traverse_gnodes(new_graph, function(gval) {
     if (is_graph_value(gval) && is_concrete_tensor(gval$aval)) {
-      is_used[[gval_key(gval)]] <- TRUE
+      is_used[[gval]] <- TRUE
     }
   })
   new_graph$constants <- new_graph$constants[vapply(
     new_graph$constants,
-    function(const) isTRUE(is_used[[gval_key(const)]]),
+    function(const) isTRUE(is_used[[const]]),
     logical(1L)
   )]
   new_graph

@@ -3,7 +3,7 @@
 
 #' @title Graph Value
 #' @description
-#' Value in a [`Graph`]. This is a mutable class.
+#' Value in an [`AnvilGraph`]. This is a mutable class.
 #' @param aval ([`AbstractTensor`])\cr
 #'   The abstract value of the variable.
 #' @return (`GraphValue`)
@@ -15,33 +15,12 @@ GraphValue <- function(aval) {
   env <- new.env(parent = emptyenv())
   env$aval <- aval
 
-  structure(
-    list(.env = env),
-    class = "GraphValue"
-  )
-}
-
-#' @export
-`$.GraphValue` <- function(x, name) {
-  if (name == ".env") {
-    return(x[[".env"]])
-  }
-  x$.env[[name]]
-}
-
-#' @export
-`$<-.GraphValue` <- function(x, name, value) {
-  if (name == ".env") {
-    x[[".env"]] <- value
-  } else {
-    x$.env[[name]] <- value
-  }
-  x
+  structure(env, class = "GraphValue")
 }
 
 #' @title Graph Literal
 #' @description
-#' Literal in a [`Graph`]. This is a mutable class.
+#' Literal in an [`AnvilGraph`]. This is a mutable class.
 #' @param aval ([`LiteralTensor`])\cr
 #'   The value of the literal.
 #' @return (`GraphLiteral`)
@@ -53,42 +32,13 @@ GraphLiteral <- function(aval) {
   env <- new.env(parent = emptyenv())
   env$aval <- aval
 
-  structure(
-    list(.env = env),
-    class = "GraphLiteral"
-  )
-}
-
-#' @export
-`$.GraphLiteral` <- function(x, name) {
-  if (name == ".env") {
-    return(x[[".env"]])
-  }
-  x$.env[[name]]
-}
-
-#' @export
-`$<-.GraphLiteral` <- function(x, name, value) {
-  if (name == ".env") {
-    x[[".env"]] <- value
-  } else {
-    x$.env[[name]] <- value
-  }
-  x
+  structure(env, class = "GraphLiteral")
 }
 
 is_graph_literal <- function(x) {
   inherits(x, "GraphLiteral")
 }
 
-# Use the internal environment as hash key for mutable objects (GraphValue, GraphLiteral)
-gval_key <- function(x) {
-  if (is.environment(x[[".env"]])) {
-    x[[".env"]]
-  } else {
-    x
-  }
-}
 
 #' @export
 format.GraphValue <- function(x, ...) {
@@ -114,7 +64,7 @@ print.GraphLiteral <- function(x, ...) {
 
 #' @title Graph Node
 #' @description
-#' Node in a [`Graph`].
+#' Node in an [`AnvilGraph`].
 #' Is either a [`GraphValue`] or a [`GraphLiteral`].
 #' @export
 GraphNode <- function() {
@@ -123,9 +73,9 @@ GraphNode <- function() {
 
 #' @title Primitive Call
 #' @description
-#' Call of a primitive in a [`Graph`]
+#' Call of a primitive in an [`AnvilGraph`]
 #' Note that a primitive call also be a call into another graph (`p_graph`).
-#' @param primitive (`Primitive`)\cr
+#' @param primitive (`AnvilPrimitive`)\cr
 #'   The function.
 #' @param inputs (`list(GraphValue)`)\cr
 #'   The (tensor) inputs to the primitive.
@@ -171,9 +121,9 @@ PrimitiveCall <- function(primitive, inputs, params, outputs) {
 #'   The outputs of the graph.
 #' @param constants (`list(GraphValue)`)\cr
 #'   The constants of the graph.
-#' @return (`Graph`)
+#' @return (`AnvilGraph`)
 # @export
-Graph <- function(
+AnvilGraph <- function(
   calls = list(),
   in_tree = NULL,
   out_tree = NULL,
@@ -190,33 +140,16 @@ Graph <- function(
   env$outputs <- outputs
   env$constants <- constants
 
-  structure(
-    list(.env = env),
-    class = "Graph"
-  )
+  structure(env, class = "AnvilGraph")
 }
 
-#' @export
-`$.Graph` <- function(x, name) {
-  if (name == ".env") {
-    return(x[[".env"]])
-  }
-  x$.env[[name]]
-}
-
-#' @export
-`$<-.Graph` <- function(x, name, value) {
-  if (name == ".env") {
-    x[[".env"]] <- value
-  } else {
-    x$.env[[name]] <- value
-  }
-  x
-}
+#' @rdname AnvilGraph
+# @export
+Graph <- AnvilGraph
 
 #' @title Graph Descriptor
 #' @description
-#' Descriptor of a [`Graph`]. This is a mutable class.
+#' Descriptor of an [`AnvilGraph`]. This is a mutable class.
 #' @param calls (`list(PrimitiveCall)`)\cr
 #'   The primitive calls that make up the graph.
 #' @param tensor_to_gval (`hashtab`)\cr
@@ -256,28 +189,7 @@ GraphDescriptor <- function(
   env$inputs <- inputs
   env$outputs <- outputs
 
-  structure(
-    list(.env = env),
-    class = "GraphDescriptor"
-  )
-}
-
-#' @export
-`$.GraphDescriptor` <- function(x, name) {
-  if (name == ".env") {
-    return(x[[".env"]])
-  }
-  x$.env[[name]]
-}
-
-#' @export
-`$<-.GraphDescriptor` <- function(x, name, value) {
-  if (name == ".env") {
-    x[[".env"]] <- value
-  } else {
-    x$.env[[name]] <- value
-  }
-  x
+  structure(env, class = "GraphDescriptor")
 }
 
 #' @export
@@ -306,7 +218,7 @@ is_graph_descriptor <- function(x) {
 }
 
 descriptor_to_graph <- function(descriptor) {
-  graph <- Graph(
+  graph <- AnvilGraph(
     calls = descriptor$calls,
     inputs = descriptor$inputs,
     outputs = descriptor$outputs,
@@ -442,7 +354,7 @@ register_input <- function(desc, x) {
   }
   desc$inputs <- c(desc$inputs, list(x))
   box <- GraphBox(x, desc)
-  desc$gval_to_box[[gval_key(x)]] <- box
+  desc$gval_to_box[[x]] <- box
   box
 }
 
@@ -453,12 +365,12 @@ register_gval <- function(desc, x) {
   if (!is_graph_value(x)) {
     cli_abort("Internal error: trying to register an invalid gval")
   }
-  box <- desc$gval_to_box[[gval_key(x)]]
+  box <- desc$gval_to_box[[x]]
   if (!is.null(box)) {
     return(box)
   }
   box <- GraphBox(x, desc)
-  desc$gval_to_box[[gval_key(x)]] <- box
+  desc$gval_to_box[[x]] <- box
   box
 }
 
@@ -470,23 +382,23 @@ get_box_or_register_const <- function(desc, x) {
   if (is_anvil_tensor(x)) {
     gval <- desc$tensor_to_gval[[x]]
     if (!is.null(gval)) {
-      return(desc$gval_to_box[[gval_key(gval)]])
+      return(desc$gval_to_box[[gval]])
     }
     gval <- GraphValue(aval = ConcreteTensor(x))
     desc$tensor_to_gval[[x]] <- gval
     desc$constants <- c(desc$constants, list(gval))
     box <- GraphBox(gval, desc)
-    desc$gval_to_box[[gval_key(gval)]] <- box
+    desc$gval_to_box[[gval]] <- box
     return(box)
   }
   if (test_scalar(x)) {
     ambiguous <- !is.logical(x)
     gval <- GraphLiteral(LiteralTensor(x, shape = integer(), ambiguous = ambiguous))
-    box <- desc$gval_to_box[[gval_key(gval)]] <- GraphBox(gval, desc)
+    box <- desc$gval_to_box[[gval]] <- GraphBox(gval, desc)
     return(box)
   }
   if (is_graph_literal(x)) {
-    box <- desc$gval_to_box[[gval_key(x)]] <- GraphBox(x, desc)
+    box <- desc$gval_to_box[[x]] <- GraphBox(x, desc)
     return(box)
   }
   if (!is_graph_value(x)) {
@@ -497,7 +409,7 @@ get_box_or_register_const <- function(desc, x) {
   # * AbstractTensor: Output of a computation in a parent graph
   # In either case, we first check whether the value is already registered in the current graph
   # and if so, return it:
-  box <- desc$gval_to_box[[gval_key(x)]]
+  box <- desc$gval_to_box[[x]]
   if (!is.null(box)) {
     return(box)
   }
@@ -508,7 +420,7 @@ get_box_or_register_const <- function(desc, x) {
   if (is_concrete_tensor(x$aval)) {
     desc$tensor_to_gval[[x$aval$data]] <- x
   }
-  desc$gval_to_box[[gval_key(x)]] <- new_box
+  desc$gval_to_box[[x]] <- new_box
   desc$constants <- c(desc$constants, list(x))
   return(new_box)
 }
@@ -522,8 +434,8 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
   }
   for (call in graph$calls) {
     for (input in c(call$inputs, call$outputs)) {
-      if (is.null(desc$gval_to_box[[gval_key(input)]])) {
-        desc$gval_to_box[[gval_key(input)]] <- GraphBox(input, desc)
+      if (is.null(desc$gval_to_box[[input]])) {
+        desc$gval_to_box[[input]] <- GraphBox(input, desc)
       }
     }
   }
@@ -551,7 +463,7 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
 #'   Whether the function is being traced at the top level.
 #'   If this is `TRUE`, inputs that are `AnvilTensor`s are treated as unknown.
 #'   If this is `FALSE` (default), `AnvilTensor`s are treated as constants.
-#' @return ([`Graph`])
+#' @return ([`AnvilGraph`])
 #' @export
 trace_fn <- function(f, args, desc = NULL, toplevel = FALSE) {
   in_tree <- build_tree(args)
@@ -662,7 +574,7 @@ local_descriptor <- function(..., envir = parent.frame()) {
 }
 
 is_graph <- function(x) {
-  inherits(x, "Graph")
+  inherits(x, "AnvilGraph")
 }
 is_graph_box <- function(x) {
   inherits(x, "GraphBox")
@@ -671,7 +583,7 @@ is_graph_box <- function(x) {
 #' @title Add a Primitive Call to a Graph Descriptor
 #' @description
 #' Add a primitive call to a graph descriptor.
-#' @param prim ([`Primitive`])\cr
+#' @param prim ([`AnvilPrimitive`])\cr
 #'   The primitive to add.
 #' @param args (`list` of [`GraphNode`])\cr
 #'   The arguments to the primitive.
@@ -719,7 +631,7 @@ inline_graph_into_desc <- function(desc, graph) {
     get_box_or_register_const(desc, const)
   }
   for (input in graph$inputs) {
-    if (is.null(desc$gval_to_box[[gval_key(input)]])) {
+    if (is.null(desc$gval_to_box[[input]])) {
       #
     }
     get_box_or_register_const(desc, input)

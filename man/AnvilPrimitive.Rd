@@ -2,12 +2,9 @@
 % Please edit documentation in R/primitive.R
 \name{AnvilPrimitive}
 \alias{AnvilPrimitive}
-\alias{Primitive}
 \title{AnvilPrimitive}
 \usage{
 AnvilPrimitive(name)
-
-Primitive(name)
 }
 \arguments{
 \item{name}{(\code{character()})\cr

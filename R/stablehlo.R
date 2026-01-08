@@ -20,46 +20,16 @@ HloEnv <- function(parent = NULL, gval_to_fval = NULL) {
   env$parent <- parent
   env$gval_to_fval <- gval_to_fval %||% hashtab()
 
-  structure(
-    list(.env = env),
-    class = "HloEnv"
-  )
-}
-
-#' @export
-`$.HloEnv` <- function(x, name) {
-  if (name == ".env") {
-    return(x[[".env"]])
-  }
-  x$.env[[name]]
-}
-
-#' @export
-`$<-.HloEnv` <- function(x, name, value) {
-  if (name == ".env") {
-    x[[".env"]] <- value
-  } else {
-    x$.env[[name]] <- value
-  }
-  x
-}
-
-# Use the internal environment as key for mutable objects
-get_key <- function(gval) {
-  if (is.environment(gval[[".env"]])) {
-    gval[[".env"]]
-  } else {
-    gval
-  }
+  structure(env, class = "HloEnv")
 }
 
 env_add <- function(env, gval, fval) {
-  env$gval_to_fval[[get_key(gval)]] <- fval
+  env$gval_to_fval[[gval]] <- fval
   invisible(env)
 }
 
 env_get <- function(env, gval) {
-  fval <- env$gval_to_fval[[get_key(gval)]]
+  fval <- env$gval_to_fval[[gval]]
   if (!is.null(fval)) {
     return(fval)
   }

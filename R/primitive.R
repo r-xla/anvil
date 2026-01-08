@@ -15,10 +15,6 @@ AnvilPrimitive <- function(name) {
   )
 }
 
-#' @rdname AnvilPrimitive
-#' @export
-Primitive <- AnvilPrimitive
-
 #' @title HigherOrderPrimitive
 #' @description
 #' A primitive that contains subgraphs.
@@ -45,7 +41,7 @@ prim_dict <- new.env(parent = emptyenv())
 #' Register a primitive.
 #' @param name (`character()`)\cr
 #'   The name of the primitive.
-#' @param primitive (`Primitive`)\cr
+#' @param primitive (`AnvilPrimitive`)\cr
 #'   The primitive to register.
 #' @param overwrite (`logical(1)`)\cr
 #'   Whether to overwrite the primitive if it is already registered.
@@ -64,7 +60,7 @@ register_primitive <- function(name, primitive, overwrite = FALSE) {
 #' @param name (`character()` | `NULL`)\cr
 #'   The name of the primitive.
 #'   If `NULL`, returns a list of all primitives.
-#' @return (`Primitive`)
+#' @return (`AnvilPrimitive`)
 #' @export
 prim <- function(name = NULL) {
   if (is.null(name)) {
@@ -113,7 +109,7 @@ print.AnvilPrimitive <- function(x, ...) {
 #' Extracts subgraphs from the parameters of a higher-order primitive call.
 #' @param call (`PrimitiveCall`)\cr
 #'   The primitive call.
-#' @return (`list(Graph)`)\cr
+#' @return (`list(AnvilGraph)`)\cr
 #'   List of subgraphs found in the parameters.
 #' @export
 subgraphs <- function(call) {
