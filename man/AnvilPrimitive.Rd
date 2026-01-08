@@ -18,4 +18,6 @@ The name of the primitive.}
 }
 \description{
 Primitive interpretation rule.
+Note that \code{[[} and \verb{[[<-} access the interpretation rules.
+To access other fields, use \code{$} and \verb{$<-}.
 }

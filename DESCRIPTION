@@ -31,7 +31,7 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0)
 Remotes:
-    r-xla/stablehlo@s3,
+    r-xla/stablehlo,
     r-xla/tengen,
     r-xla/xlamisc,
     r-xla/pjrt

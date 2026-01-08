@@ -1,6 +1,8 @@
 #' @title AnvilPrimitive
 #' @description
 #' Primitive interpretation rule.
+#' Note that `[[` and `[[<-` access the interpretation rules.
+#' To access other fields, use `$` and `$<-`.
 #' @param name (`character()`)\cr
 #'   The name of the primitive.
 #' @return (`AnvilPrimitive`)
@@ -12,17 +14,6 @@ AnvilPrimitive <- function(name) {
   env$rules <- list()
 
   structure(env, class = "AnvilPrimitive")
-}
-
-#' @export
-`$.AnvilPrimitive` <- function(x, name) {
-  x[[name]]
-}
-
-#' @export
-`$<-.AnvilPrimitive` <- function(x, name, value) {
-  x[[name]] <- value
-  x
 }
 
 #' @title HigherOrderPrimitive
@@ -90,13 +81,9 @@ is_higher_order_primitive <- function(x) {
 #' @export
 `[[<-.AnvilPrimitive` <- function(x, name, value) {
   if (name %in% globals$interpretation_rules) {
-    # Store interpretation rule in the rules list
-    rules <- get("rules", envir = x, inherits = FALSE)
-    rules[[name]] <- value
-    assign("rules", rules, envir = x)
+    x$rules[[name]] <- value
   } else {
-    # Store other properties directly in environment
-    assign(name, value, envir = x)
+    cli_abort("Invalid field name {.field {name}} for primitive {.field {x$name}}")
   }
   x
 }
@@ -105,16 +92,9 @@ is_higher_order_primitive <- function(x) {
 #' @export
 `[[.AnvilPrimitive` <- function(x, name) {
   if (name %in% globals$interpretation_rules) {
-    # Access interpretation rule from rules list
-    rules <- get("rules", envir = x, inherits = FALSE)
-    rule <- rules[[name]]
-    if (is.null(rule)) {
-      cli_abort("Rule {.field {name}} not defined for primitive {.field {x$name}}")
-    }
-    return(rule)
+    return(x$rules[[name]])
   }
-  # Access other properties from environment
-  get(name, envir = x, inherits = FALSE)
+  cli_abort("Invalid field name {.field {name}} for primitive {.field {x$name}}")
 }
 
 #' @method print AnvilPrimitive
