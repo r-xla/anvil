@@ -1,5 +1,5 @@
 describe("inline_scalarish_constants", {
-  check_inline_scalarish_constants <- function(
+  check_inlining <- function(
     graph_fun,
     args,
     expected_constants_before = NULL,
@@ -50,7 +50,7 @@ describe("inline_scalarish_constants", {
       x + const_scalar
     }
 
-    check_inline_scalarish_constants(
+    check_inlining(
       graph_fun = f,
       args = list(list(x = nv_scalar(1))),
       expected_constants_before = 1L,
@@ -68,7 +68,7 @@ describe("inline_scalarish_constants", {
       x + const_scalar
     }
 
-    check_inline_scalarish_constants(
+    check_inlining(
       graph_fun = f,
       args = list(list(x = nv_scalar(1))),
     )
@@ -80,7 +80,7 @@ describe("inline_scalarish_constants", {
       x + const_scalar
     }
 
-    check_inline_scalarish_constants(
+    check_inlining(
       graph_fun = f,
       args = list(list(x = nv_scalar(1))),
       expected_constants_before = 1L,
@@ -93,7 +93,7 @@ describe("inline_scalarish_constants", {
       nv_scalar(1)
     }
 
-    result <- check_inline_scalarish_constants(
+    result <- check_inlining(
       graph_fun = f,
       args = list(list(x = nv_scalar(0))),
       expected_constants_before = 1L,
@@ -105,7 +105,7 @@ describe("inline_scalarish_constants", {
       x <- nv_scalar(TRUE)
       nv_if(x, nv_scalar(1), nv_scalar(2))
     }
-    result <- check_inline_scalarish_constants(
+    result <- check_inlining(
       graph_fun = f,
       args = list(list()),
       expected_constants_before = 3L,
@@ -122,7 +122,7 @@ describe("inline_scalarish_constants", {
     graph <- trace_fn(f, list(x = nv_scalar(1)))
     inline_scalarish_constants(graph)
 
-    check_inline_scalarish_constants(
+    check_inlining(
       graph_fun = f,
       args = list(list(x = nv_scalar(1))),
       check_literals = function(new_graph, original_graph) {
@@ -137,7 +137,7 @@ describe("inline_scalarish_constants", {
       x + y
     }
 
-    check_inline_scalarish_constants(
+    check_inlining(
       graph_fun = f,
       args = list(list(x = nv_scalar(1), y = nv_scalar(2))),
       expected_constants_before = 0L,
@@ -154,7 +154,7 @@ describe("inline_scalarish_constants", {
       x + const1 + const2 + const3
     }
 
-    check_inline_scalarish_constants(
+    check_inlining(
       graph_fun = f,
       args = list(list(x = nv_scalar(0))),
       expected_constants_before = 3L,
@@ -192,7 +192,7 @@ describe("inline_scalarish_constants", {
     g1 <- trace_fn(f, list(x = nv_scalar(TRUE), y = nv_scalar(TRUE)), toplevel = TRUE)
     g2 <- inline_scalarish_constants(g1)
 
-    check_inline_scalarish_constants(
+    check_inlining(
       graph_fun = f,
       args = list(list(x = nv_scalar(TRUE), y = nv_scalar(TRUE))),
       check_literals = function(new_graph, original_graph) {
@@ -206,7 +206,7 @@ describe("inline_scalarish_constants", {
     f <- function() {
       list(x, x)
     }
-    check_inline_scalarish_constants(
+    check_inlining(
       graph_fun = f,
       args = list(list()),
       expected_constants_before = 1L,
@@ -226,7 +226,7 @@ describe("inline_scalarish_constants", {
         list(i = i)
       })
     }
-    check_inline_scalarish_constants(
+    check_inlining(
       graph_fun = f,
       args = list(list()),
       expected_constants_before = 3L,
@@ -241,7 +241,7 @@ describe("inline_scalarish_constants", {
       nv_if(pred, x, y)
     }
     graph <- trace_fn(f, list(pred = nv_scalar(TRUE)))
-    check_inline_scalarish_constants(
+    check_inlining(
       graph_fun = f,
       args = list(list(pred = nv_scalar(TRUE))),
       expected_constants_before = 2L,
