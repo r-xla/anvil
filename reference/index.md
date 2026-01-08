@@ -7,8 +7,7 @@
 - [`AnvilBox`](AnvilBox.md) : AnvilBox
 - [`AnvilGraph()`](AnvilGraph.md) [`Graph()`](AnvilGraph.md) : Graph of
   Primitive Calls
-- [`AnvilPrimitive()`](AnvilPrimitive.md)
-  [`Primitive()`](AnvilPrimitive.md) : AnvilPrimitive
+- [`AnvilPrimitive()`](AnvilPrimitive.md) : AnvilPrimitive
 - [`AnvilTensor`](AnvilTensor.md) : AnvilTensor
 - [`ConcreteTensor()`](ConcreteTensor.md) : Concrete Tensor Class
 - [`DebugBox()`](DebugBox.md) : Debug Box Class

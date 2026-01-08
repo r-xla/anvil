@@ -7,8 +7,6 @@ interpretation rules. To access other fields, use `$` and `$<-`.
 
 ``` r
 AnvilPrimitive(name)
-
-Primitive(name)
 ```
 
 ## Arguments

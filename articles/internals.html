@@ -105,7 +105,7 @@ them into a computational <code><a href="../reference/AnvilGraph.html">anvil::Gr
 <strong>tracing</strong>. Such a <code>AnvilGraph</code> is similar to
 <code>JAXExpr</code> objects in <code>JAX</code>. It operates only on
 <code>AnvilTensor</code> objects and applies
-<code><a href="../reference/AnvilPrimitive.html">anvil::Primitive</a></code> operations to them.</li>
+<code>anvil::Primitive</code> operations to them.</li>
 <li>
 <code>AnvilGraph</code> <span class="math inline">\(\rightarrow\)</span> <code>AnvilGraph</code>: It
 is possible to transform <code>AnvilGraph</code>s into other
@@ -239,7 +239,7 @@ dictate how such a <code>AnvilGraph</code> to <code>AnvilGraph</code>
 transformation can be implemented. For most interesting transformations,
 however, we need to store some information for each {anvil} primitive
 function. In the case of the gradient, we need to store the derivative
-rules. For this, <code><a href="../reference/AnvilPrimitive.html">anvil::Primitive</a></code> objects have a
+rules. For this, <code>anvil::Primitive</code> objects have a
 <code>$rules</code> field that can be populated. The derivative rules
 are stored as functions under the <code>"backward"</code> name. We can
 access a primitive by it’s name via the <code><a href="../reference/prim.html">prim()</a></code>
@@ -254,7 +254,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x56193c268b18&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55ff654f8548&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -297,7 +297,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x56193c267ea0&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55ff654f78d0&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
