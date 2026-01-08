@@ -142,10 +142,6 @@ AnvilGraph <- function(
   structure(env, class = "AnvilGraph")
 }
 
-#' @rdname AnvilGraph
-# @export
-Graph <- AnvilGraph
-
 #' @title Graph Descriptor
 #' @description
 #' Descriptor of an [`AnvilGraph`]. This is a mutable class.
@@ -534,7 +530,7 @@ maybe_restore_previous_desc <- function(desc = NULL) {
 
 #' @title Create a graph
 #' @description
-#' Creates a new [`Graph`] which is afterwards accessible via [`.current_descriptor()`].
+#' Creates a new [`GraphDescriptor`] which is afterwards accessible via [`.current_descriptor()`].
 #' The graph is automatically removed when exiting the current scope.
 #' After the graph is either cleaned up automatically (by exiting the scope)
 #' or finalized, the previously built graph is restored,
@@ -542,10 +538,10 @@ maybe_restore_previous_desc <- function(desc = NULL) {
 #'
 #' @param envir (`environment`)\cr
 #'   Environment where exit handler will be registered for cleaning up the
-#'   [`Graph`] if it was not returned yet.
+#'   [`GraphDescriptor`] if it was not returned yet.
 #' @param ... (`any`)\cr
 #'   Additional arguments to pass to the [`GraphDescriptor`] constructor.
-#' @return A [`Graph`] object.
+#' @return A [`GraphDescriptor`] object.
 #' @export
 local_descriptor <- function(..., envir = parent.frame()) {
   if (identical(envir, globalenv())) {

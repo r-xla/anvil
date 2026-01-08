@@ -43,7 +43,7 @@ env_get <- function(env, gval) {
 #' @title Lower a function to StableHLO
 #' @description
 #' Immediately lower a flattened function to a StableHLO Func object.
-#' @param graph (`Graph`)\cr
+#' @param graph ([`AnvilGraph`])\cr
 #'   The graph to lower.
 #' @param constants_as_inputs (`logical(1)`)\cr
 #'   Whether to add constants as inputs.

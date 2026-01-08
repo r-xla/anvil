@@ -7,7 +7,7 @@
 transform_gradient(graph, wrt)
 }
 \arguments{
-\item{graph}{(\code{Graph})\cr
+\item{graph}{(\code{\link{AnvilGraph}})\cr
 The graph to transform.}
 
 \item{wrt}{(\code{character})\cr

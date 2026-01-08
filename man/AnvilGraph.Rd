@@ -2,19 +2,9 @@
 % Please edit documentation in R/graph.R
 \name{AnvilGraph}
 \alias{AnvilGraph}
-\alias{Graph}
 \title{Graph of Primitive Calls}
 \usage{
 AnvilGraph(
-  calls = list(),
-  in_tree = NULL,
-  out_tree = NULL,
-  inputs = list(),
-  outputs = list(),
-  constants = list()
-)
-
-Graph(
   calls = list(),
   in_tree = NULL,
   out_tree = NULL,

@@ -3,7 +3,7 @@
 #' Transform a graph to its gradient.
 #' This is a low-level function that should usually not be used directly.
 #' Use [`gradient()`] instead.
-#' @param graph (`Graph`)\cr
+#' @param graph ([`AnvilGraph`])\cr
 #'   The graph to transform.
 #' @param wrt (`character`)\cr
 #'   The names of the variables to compute the gradient with respect to.

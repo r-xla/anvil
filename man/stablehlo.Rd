@@ -7,7 +7,7 @@
 stablehlo(graph, constants_as_inputs = TRUE, env = NULL, donate = character())
 }
 \arguments{
-\item{graph}{(\code{Graph})\cr
+\item{graph}{(\code{\link{AnvilGraph}})\cr
 The graph to lower.}
 
 \item{constants_as_inputs}{(\code{logical(1)})\cr
