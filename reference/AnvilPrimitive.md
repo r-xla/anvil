@@ -1,10 +1,12 @@
-# Primitive
+# AnvilPrimitive
 
 Primitive interpretation rule.
 
 ## Usage
 
 ``` r
+AnvilPrimitive(name)
+
 Primitive(name)
 ```
 
@@ -17,4 +19,4 @@ Primitive(name)
 
 ## Value
 
-(`Primitive`)
+(`AnvilPrimitive`)

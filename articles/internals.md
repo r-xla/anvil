@@ -12,7 +12,8 @@ for reshaping code. We refer to such a rewriting of code as a
     [`anvil::Graph`](../reference/Graph.md) object via **tracing**. Such
     a `Graph` is similar to `JAXExpr` objects in `JAX`. It operates only
     on `AnvilTensor` objects and applies
-    [`anvil::Primitive`](../reference/Primitive.md) operations to them.
+    [`anvil::Primitive`](../reference/AnvilPrimitive.md) operations to
+    them.
 2.  `Graph` \\\rightarrow\\ `Graph`: It is possible to transform
     `Graph`s into other `Graph`s. Their purpose is to change the
     functionality of the code. At the time of writing, there is
@@ -109,7 +110,7 @@ The evaluation of the `if` statement is an example for the first
 category. Because we set `op = "mul"`, only the first branch is
 executed. Then, we are calling `nv_mul`, which attaches a
 `PrimitiveCall` that represents the multiplication of the two tensors to
-the `@calls` of the `GraphDescriptor`. Note that the `nv_mul` is itself
+the `$calls` of the `GraphDescriptor`. Note that the `nv_mul` is itself
 not primitive, but performs some type promotion and broadcasting if
 needed, before calling into the primitive
 [`nvl_mul()`](../reference/nvl_mul.md).
@@ -121,7 +122,7 @@ A `PrimitiveCall` object consists of the following fields:
 - `params`: The parameters (non-tensors) to the primitive function.
 - `outputs`: The outputs of the primitive function.
 
-When the evaluation of `f` is complete, the `@outputs` field of the
+When the evaluation of `f` is complete, the `$outputs` field of the
 `GraphDescriptor` is set and the `Graph` is subsequently created from
 the `GraphDescriptor`. The only difference between the `Graph` and the
 `GraphDescriptor` is that the latter has some utility fields that are
@@ -136,13 +137,13 @@ such a `Graph` to `Graph` transformation can be implemented. For most
 interesting transformations, however, we need to store some information
 for each {anvil} primitive function. In the case of the gradient, we
 need to store the derivative rules. For this,
-[`anvil::Primitive`](../reference/Primitive.md) objects have a `@rules`
-field that can be populated. The derivative rules are stored as
+[`anvil::Primitive`](../reference/AnvilPrimitive.md) objects have a
+`$rules` field that can be populated. The derivative rules are stored as
 functions under the `"backward"` name. We can access a primitive by it’s
 name via the [`prim()`](../reference/prim.md) function:
 
 ``` r
-prim("mul")@rules[["backward"]]
+prim("mul")$rules[["backward"]]
 ```
 
     ## function (inputs, outputs, grads, .required) 
@@ -153,7 +154,7 @@ prim("mul")@rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x5618adb2b560>
+    ## <bytecode: 0x55b7013aed50>
     ## <environment: namespace:anvil>
 
 The [`anvil::transform_gradient`](../reference/transform_gradient.md)
@@ -192,17 +193,17 @@ via the {stablehlo} package. Then, we will compile this program using
 the XLA compiler that is accessible via the {pjrt} package.
 
 Like for the gradient transformation, the rules of how to do this
-transformation are stored in the `@rules` fields of the primitives.
+transformation are stored in the `$rules` fields of the primitives.
 
 ``` r
-prim("mul")@rules[["stablehlo"]]
+prim("mul")$rules[["stablehlo"]]
 ```
 
     ## function (lhs, rhs) 
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x5618adb30408>
+    ## <bytecode: 0x55b7013ae0d8>
     ## <environment: namespace:anvil>
 
 The [`anvil::stablehlo`](../reference/stablehlo.md) function will create
@@ -507,22 +508,14 @@ graph
     ##     %5: f32[1000000]
 
 Here, `y` is a closed-over constant and it is included in the
-`@constants` field of the graph, just like the literal `1`.
+`$constants` field of the graph, just like the literal `1`.
 
 ``` r
-graph@constants
+graph$constants
 ```
 
     ## [[1]]
-    ## <anvil::mut<GraphValue>>
-    ##  @ aval  : <anvil::ConcreteTensor>
-    ##  .. @ dtype    : <stablehlo::FloatType>
-    ##  .. .. @ value: int 32
-    ##  .. @ shape    : <stablehlo::Shape>
-    ##  .. .. @ dims: int 1000000
-    ##  .. @ ambiguous: logi FALSE
-    ##  .. @ data     :Classes 'AnvilTensor', 'PJRTBuffer' <externalptr> 
-    ##  @ .state:<environment: 0x5618afb1c2c0>
+    ## GraphValue(ConcreteTensor(dtype=f32, shape=1000000))
 
 When compiling such a program to stableHLO, constants are treated
 differently depending on their shape (we follow JAX’s approach here).
@@ -558,15 +551,7 @@ out[[2L]]
 ```
 
     ## [[1]]
-    ## <anvil::mut<GraphValue>>
-    ##  @ aval  : <anvil::ConcreteTensor>
-    ##  .. @ dtype    : <stablehlo::FloatType>
-    ##  .. .. @ value: int 32
-    ##  .. @ shape    : <stablehlo::Shape>
-    ##  .. .. @ dims: int 1000000
-    ##  .. @ ambiguous: logi FALSE
-    ##  .. @ data     :Classes 'AnvilTensor', 'PJRTBuffer' <externalptr> 
-    ##  @ .state:<environment: 0x5618afb1c2c0>
+    ## GraphValue(ConcreteTensor(dtype=f32, shape=1000000))
 
 Also, before compiling, we remove unused constants. Captured constants
 can become unused when we apply code transformations like below, where

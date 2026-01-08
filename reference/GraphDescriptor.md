@@ -1,14 +1,14 @@
 # Graph Descriptor
 
-Descriptor of a [`Graph`](Graph.md).
+Descriptor of a [`Graph`](Graph.md). This is a mutable class.
 
 ## Usage
 
 ``` r
 GraphDescriptor(
   calls = list(),
-  tensor_to_gval = hashtab(),
-  gval_to_box = hashtab(),
+  tensor_to_gval = NULL,
+  gval_to_box = NULL,
   constants = list(),
   in_tree = NULL,
   out_tree = NULL,
@@ -58,3 +58,7 @@ GraphDescriptor(
 
   (`list(GraphValue)`)  
   The outputs of the graph.
+
+## Value
+
+(`GraphDescriptor`)

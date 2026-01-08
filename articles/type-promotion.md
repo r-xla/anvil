@@ -33,15 +33,13 @@ will cover later.
 common_dtype("f64", "f32")$dtype
 ```
 
-    ## <stablehlo::FloatType>
-    ##  @ value: int 64
+    ## <FloatType: 64>
 
 ``` r
 common_dtype("i64", "f32")$dtype
 ```
 
-    ## <stablehlo::FloatType>
-    ##  @ value: int 32
+    ## <FloatType: 32>
 
 A table with the promotion rules is below.
 
@@ -105,8 +103,7 @@ common_dtype("f32", "f64", FALSE, TRUE)
 ```
 
     ## $dtype
-    ## <stablehlo::FloatType>
-    ##  @ value: int 32
+    ## <FloatType: 32>
     ## 
     ## $ambiguous
     ## [1] FALSE
@@ -116,8 +113,7 @@ common_dtype("f32", "f64", TRUE, TRUE)
 ```
 
     ## $dtype
-    ## <stablehlo::FloatType>
-    ##  @ value: int 64
+    ## <FloatType: 64>
     ## 
     ## $ambiguous
     ## [1] TRUE
@@ -127,8 +123,7 @@ common_dtype("f32", "f64", FALSE, FALSE)
 ```
 
     ## $dtype
-    ## <stablehlo::FloatType>
-    ##  @ value: int 64
+    ## <FloatType: 64>
     ## 
     ## $ambiguous
     ## [1] FALSE

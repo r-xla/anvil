@@ -56,7 +56,7 @@ Note that a primitive call also be a call into another graph (p_graph)."></head>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Primitive Call</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/R/graph.R" class="external-link"><code>R/graph.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/s3/R/graph.R" class="external-link"><code>R/graph.R</code></a></small>
       <div class="d-none name"><code>PrimitiveCall.Rd</code></div>
     </div>
 
@@ -67,12 +67,7 @@ Note that a primitive call also be a call into another graph (<code>p_graph</cod
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">PrimitiveCall</span><span class="op">(</span></span>
-<span>  primitive <span class="op">=</span> <span class="fu"><a href="Primitive.html">Primitive</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  inputs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  outputs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">PrimitiveCall</span><span class="op">(</span><span class="va">primitive</span>, <span class="va">inputs</span>, <span class="va">params</span>, <span class="va">outputs</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -99,6 +94,10 @@ The (static) parameters of the function call.</p></dd>
 The (tensor) outputs of the primitive.</p></dd>
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p>(<code>PrimitiveCall</code>)</p>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

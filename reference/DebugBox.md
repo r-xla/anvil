@@ -5,7 +5,7 @@ Box representing a value in debug mode.
 ## Usage
 
 ``` r
-DebugBox(aval = AbstractTensor())
+DebugBox(aval)
 ```
 
 ## Arguments
@@ -14,3 +14,7 @@ DebugBox(aval = AbstractTensor())
 
   (`AbstractTensor`)  
   The abstract tensor representing the value.
+
+## Value
+
+(`DebugBox`)

@@ -1,6 +1,7 @@
 # Graph of Primitive Calls
 
-Computational graph consisting exclusively of primitive calls.
+Computational graph consisting exclusively of primitive calls. This is a
+mutable class.
 
 ## Usage
 
@@ -47,3 +48,7 @@ Graph(
 
   (`list(GraphValue)`)  
   The constants of the graph.
+
+## Value
+
+(`Graph`)

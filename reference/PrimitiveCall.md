@@ -6,12 +6,7 @@ also be a call into another graph (`p_graph`).
 ## Usage
 
 ``` r
-PrimitiveCall(
-  primitive = Primitive(),
-  inputs = list(),
-  params = list(),
-  outputs = list()
-)
+PrimitiveCall(primitive, inputs, params, outputs)
 ```
 
 ## Arguments
@@ -35,3 +30,7 @@ PrimitiveCall(
 
   (`list(GraphValue)`)  
   The (tensor) outputs of the primitive.
+
+## Value
+
+(`PrimitiveCall`)

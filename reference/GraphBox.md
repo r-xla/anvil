@@ -5,7 +5,7 @@ Box that represents a node in a [`GraphDescriptor`](GraphDescriptor.md).
 ## Usage
 
 ``` r
-GraphBox(gnode = `mut<GraphValue>`(), desc = `mut<GraphDescriptor>`())
+GraphBox(gnode, desc)
 ```
 
 ## Arguments
@@ -19,3 +19,7 @@ GraphBox(gnode = `mut<GraphValue>`(), desc = `mut<GraphDescriptor>`())
 
   ([`GraphDescriptor`](GraphDescriptor.md))  
   The descriptor of the graph.
+
+## Value
+
+(`GraphBox`)

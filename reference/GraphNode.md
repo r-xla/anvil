@@ -6,9 +6,5 @@ or a [`GraphLiteral`](GraphLiteral.md).
 ## Usage
 
 ``` r
-GraphNode
+GraphNode()
 ```
-
-## Format
-
-An object of class `S7_union` of length 1.

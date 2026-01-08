@@ -1,11 +1,11 @@
 # Graph Value
 
-Value in a [`Graph`](Graph.md).
+Value in a [`Graph`](Graph.md). This is a mutable class.
 
 ## Usage
 
 ``` r
-GraphValue(aval = AbstractTensor())
+GraphValue(aval)
 ```
 
 ## Arguments
@@ -14,3 +14,7 @@ GraphValue(aval = AbstractTensor())
 
   ([`AbstractTensor`](AbstractTensor.md))  
   The abstract value of the variable.
+
+## Value
+
+(`GraphValue`)
