@@ -354,6 +354,9 @@
 
 - [`stablehlo()`](stablehlo.md) : Lower a function to StableHLO
 
+- [`subgraphs()`](subgraphs.md) : Get Subgraphs from Higher-Order
+  Primitive
+
 - [`tensorish`](tensorish.md) : Tensor-like Objects
 
 - [`to_abstract()`](to_abstract.md) : Convert to Abstract Tensor

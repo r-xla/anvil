@@ -75,7 +75,9 @@ devtools::check()
     respect to the inputs. The tests are in the file
     `insts/extra-tests/test-primitives-pullback-torch.R`
 
-## Style
+## Comments
+
+Only add comments if the code is not self-explanatory.
 
 - For length-1 vectors, don’t use
   [`c()`](https://rdrr.io/r/base/c.html). For example, use `1L` instead

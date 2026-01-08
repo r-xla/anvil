@@ -5,7 +5,7 @@ Create a graph representation of an R function by tracing.
 ## Usage
 
 ``` r
-trace_fn(f, args, desc = NULL)
+trace_fn(f, args, desc = NULL, toplevel = FALSE)
 ```
 
 ## Arguments
@@ -25,6 +25,13 @@ trace_fn(f, args, desc = NULL)
 
   (`NULL` \| `GraphDescriptor`)  
   The descriptor to use for the graph.
+
+- toplevel:
+
+  (`logical(1)`)  
+  Whether the function is being traced at the top level. If this is
+  `TRUE`, inputs that are `AnvilTensor`s are treated as unknown. If this
+  is `FALSE` (default), `AnvilTensor`s are treated as constants.
 
 ## Value
 

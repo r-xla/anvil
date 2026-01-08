@@ -177,6 +177,7 @@
 <url><loc>/reference/reexports.html</loc></url>
 <url><loc>/reference/register_primitive.html</loc></url>
 <url><loc>/reference/stablehlo.html</loc></url>
+<url><loc>/reference/subgraphs.html</loc></url>
 <url><loc>/reference/tensorish.html</loc></url>
 <url><loc>/reference/to_abstract.html</loc></url>
 <url><loc>/reference/trace_fn.html</loc></url>

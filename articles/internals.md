@@ -153,7 +153,7 @@ prim("mul")@rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x5562969e84c0>
+    ## <bytecode: 0x558164ae5988>
     ## <environment: namespace:anvil>
 
 The [`anvil::transform_gradient`](../reference/transform_gradient.md)
@@ -202,7 +202,7 @@ prim("mul")@rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x5562969e7618>
+    ## <bytecode: 0x558164ae8910>
     ## <environment: namespace:anvil>
 
 The [`anvil::stablehlo`](../reference/stablehlo.md) function will create
@@ -481,5 +481,106 @@ environment. Maybe we can improve this in the future, but for now it
 seems to work.
 
 ### Constant Handling
+
+Constants are handled specially in {anvil}. Consider the program below:
+
+``` r
+y <- nv_tensor(rnorm(1000000L))
+graph <- trace_fn(function(x) {
+  x + y + 1
+}, list(x = nv_scalar(1L)))
+graph
+```
+
+    ## <Graph>
+    ##   Inputs:
+    ##     %x1: i32[]
+    ##   Constants:
+    ##     %c1: f32[1000000]
+    ##   Body:
+    ##     %1: f32[] = convert [dtype = f32, ambiguous = FALSE] (%x1)
+    ##     %2: f32[1000000] = broadcast_in_dim [shape_out = 1000000, broadcast_dimensions = <any>] (%1)
+    ##     %3: f32[1000000] = add(%2, %c1)
+    ##     %4: f32?[1000000] = broadcast_in_dim [shape_out = 1000000, broadcast_dimensions = <any>] (1:f32?)
+    ##     %5: f32[1000000] = add(%3, %4)
+    ##   Outputs:
+    ##     %5: f32[1000000]
+
+Here, `y` is a closed-over constant and it is included in the
+`@constants` field of the graph, just like the literal `1`.
+
+``` r
+graph@constants
+```
+
+    ## [[1]]
+    ## <anvil::mut<GraphValue>>
+    ##  @ aval  : <anvil::ConcreteTensor>
+    ##  .. @ dtype    : <stablehlo::FloatType>
+    ##  .. .. @ value: int 32
+    ##  .. @ shape    : <stablehlo::Shape>
+    ##  .. .. @ dims: int 1000000
+    ##  .. @ ambiguous: logi FALSE
+    ##  .. @ data     :Classes 'AnvilTensor', 'PJRTBuffer' <externalptr> 
+    ##  @ .state:<environment: 0x558166ae5ac0>
+
+When compiling such a program to stableHLO, constants are treated
+differently depending on their shape (we follow JAX’s approach here).
+That is, constants with 1 element are **inlined** into the program,
+whereas other constants are added as inputs to the stableHLO program.
+This is because inlining large constants into the executable is
+inefficient. However, if we didn’t inline small scalars, the compiler
+would be unable to do constant folding.
+
+``` r
+out <- stablehlo(graph)
+out[[1L]]
+```
+
+    ## func.func @main (%0: tensor<1000000xf32>, %1: tensor<i32>) -> tensor<1000000xf32> {
+    ## %2 = "stablehlo.convert" (%1): (tensor<i32>) -> (tensor<f32>)
+    ## %3 = "stablehlo.broadcast_in_dim" (%2) {
+    ## broadcast_dimensions = array<i64>
+    ## }: (tensor<f32>) -> (tensor<1000000xf32>)
+    ## %4 = "stablehlo.add" (%3, %0): (tensor<1000000xf32>, tensor<1000000xf32>) -> (tensor<1000000xf32>)
+    ## %5 = "stablehlo.constant" () {
+    ## value = dense<1.00000000e+00> : tensor<f32>
+    ## }: () -> (tensor<f32>)
+    ## %6 = "stablehlo.broadcast_in_dim" (%5) {
+    ## broadcast_dimensions = array<i64>
+    ## }: (tensor<f32>) -> (tensor<1000000xf32>)
+    ## %7 = "stablehlo.add" (%4, %6): (tensor<1000000xf32>, tensor<1000000xf32>) -> (tensor<1000000xf32>)
+    ## "func.return"(%7): (tensor<1000000xf32>) -> ()
+    ## }
+
+``` r
+out[[2L]]
+```
+
+    ## [[1]]
+    ## <anvil::mut<GraphValue>>
+    ##  @ aval  : <anvil::ConcreteTensor>
+    ##  .. @ dtype    : <stablehlo::FloatType>
+    ##  .. .. @ value: int 32
+    ##  .. @ shape    : <stablehlo::Shape>
+    ##  .. .. @ dims: int 1000000
+    ##  .. @ ambiguous: logi FALSE
+    ##  .. @ data     :Classes 'AnvilTensor', 'PJRTBuffer' <externalptr> 
+    ##  @ .state:<environment: 0x558166ae5ac0>
+
+Also, before compiling, we remove unused constants. Captured constants
+can become unused when we apply code transformations like below, where
+the gradient of the function w.r.t. `x` does not depend on the captured
+`y`:
+
+``` r
+f <- function(x) {
+x + y
+}
+transform_gradient(trace_fn(f, list(x = nv_scalar(1))))
+```
+
+In principle, the compiler is able to do this itself, but because we
+pass constants as inputs to the program, we need to handle it ourselves.
 
 ### Nested Inputs and Outputs
