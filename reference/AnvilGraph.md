@@ -6,6 +6,15 @@ mutable class.
 ## Usage
 
 ``` r
+AnvilGraph(
+  calls = list(),
+  in_tree = NULL,
+  out_tree = NULL,
+  inputs = list(),
+  outputs = list(),
+  constants = list()
+)
+
 Graph(
   calls = list(),
   in_tree = NULL,
@@ -51,4 +60,4 @@ Graph(
 
 ## Value
 
-(`Graph`)
+(`AnvilGraph`)

@@ -1,6 +1,6 @@
 # Graph Descriptor
 
-Descriptor of a [`Graph`](Graph.md). This is a mutable class.
+Descriptor of an [`AnvilGraph`](AnvilGraph.md). This is a mutable class.
 
 ## Usage
 

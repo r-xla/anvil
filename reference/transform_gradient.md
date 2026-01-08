@@ -24,4 +24,4 @@ transform_gradient(graph, wrt)
 
 ## Value
 
-A [`Graph`](Graph.md) object.
+An [`AnvilGraph`](AnvilGraph.md) object.

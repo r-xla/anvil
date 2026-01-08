@@ -99,36 +99,36 @@ tool for reshaping code. We refer to such a rewriting of code as a
 <ol style="list-style-type: decimal">
 <li>
 <code>R</code> <span class="math inline">\(\rightarrow\)</span>
-<code>Graph</code>: Generic <code>R</code> functions are too complicated
-to handle, so the first step in {anvil} is always to convert them into a
-computational <code><a href="../reference/Graph.html">anvil::Graph</a></code> object via
-<strong>tracing</strong>. Such a <code>Graph</code> is similar to
+<code>AnvilGraph</code>: Generic <code>R</code> functions are too
+complicated to handle, so the first step in {anvil} is always to convert
+them into a computational <code><a href="../reference/AnvilGraph.html">anvil::Graph</a></code> object via
+<strong>tracing</strong>. Such a <code>AnvilGraph</code> is similar to
 <code>JAXExpr</code> objects in <code>JAX</code>. It operates only on
 <code>AnvilTensor</code> objects and applies
-<code><a href="../reference/AnvilPrimitive.html">anvil::Primitive</a></code> operations to them.</li>
+<code>anvil::Primitive</code> operations to them.</li>
 <li>
-<code>Graph</code> <span class="math inline">\(\rightarrow\)</span>
-<code>Graph</code>: It is possible to transform <code>Graph</code>s into
-other <code>Graph</code>s. Their purpose is to change the functionality
+<code>AnvilGraph</code> <span class="math inline">\(\rightarrow\)</span> <code>AnvilGraph</code>: It
+is possible to transform <code>AnvilGraph</code>s into other
+<code>AnvilGraph</code>s. Their purpose is to change the functionality
 of the code. At the time of writing, there is essentially only one such
 transformation, namely backward-mode automatic differentiation via
 <code><a href="../reference/gradient.html">gradient()</a></code>.</li>
 <li>
-<code>Graph</code> <span class="math inline">\(\rightarrow\)</span>
-<code>Executable</code>: In order to perform the actual computation, the
-<code>Graph</code> needs to be converted into an executable. Currently,
-we only support the XLA backend (via <code>stablehlo</code> and
-<code>pjrt</code>), but we are working on an experimental <a href="https://github.com/t-kalinowski/quickr" class="external-link">quickr</a> backend.</li>
+<code>AnvilGraph</code> <span class="math inline">\(\rightarrow\)</span> <code>Executable</code>: In
+order to perform the actual computation, the <code>AnvilGraph</code>
+needs to be converted into an executable. Currently, we only support the
+XLA backend (via <code>stablehlo</code> and <code>pjrt</code>), but we
+are working on an experimental <a href="https://github.com/t-kalinowski/quickr" class="external-link">quickr</a> backend.</li>
 </ol>
 <div class="section level3">
 <h3 id="tracing-r-functions-into-graphs">Tracing R Functions into Graphs<a class="anchor" aria-label="anchor" href="#tracing-r-functions-into-graphs"></a>
 </h3>
 <p>All functionality in the {anvil} package is centered around the
-<code><a href="../reference/Graph.html">anvil::Graph</a></code> class. While it is in principle possible to
-create <code>Graph</code>s by hand, these are usually created by tracing
-R functions. In general, when we want to convert some code into another
-form (in our case, R Code into a <code>Graph</code>), there are two
-approaches:</p>
+<code><a href="../reference/AnvilGraph.html">anvil::Graph</a></code> class. While it is in principle possible to
+create <code>AnvilGraph</code>s by hand, these are usually created by
+tracing R functions. In general, when we want to convert some code into
+another form (in our case, R Code into a <code>AnvilGraph</code>), there
+are two approaches:</p>
 <ol style="list-style-type: decimal">
 <li>Static analysis, which would require operating on the abstract
 syntax tree (AST) of the code.</li>
@@ -160,7 +160,7 @@ that specify the types of the inputs.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">f</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">aten</span>, y <span class="op">=</span> <span class="va">aten</span>, op <span class="op">=</span> <span class="st">"mul"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">graph</span></span></code></pre></div>
-<pre><code><span><span class="co">## &lt;Graph&gt;</span></span>
+<pre><code><span><span class="co">## &lt;AnvilGraph&gt;</span></span>
 <span><span class="co">##   Inputs:</span></span>
 <span><span class="co">##     %x1: f32[]</span></span>
 <span><span class="co">##     %x2: f32[]</span></span>
@@ -168,9 +168,9 @@ that specify the types of the inputs.</p>
 <span><span class="co">##     %1: f32[] = mul(%x1, %x2)</span></span>
 <span><span class="co">##   Outputs:</span></span>
 <span><span class="co">##     %1: f32[]</span></span></code></pre>
-<p>The output of <code><a href="../reference/trace_fn.html">trace_fn()</a></code> is now a <code>Graph</code>
-object that represents the computation. The fields of the
-<code>Graph</code> are:</p>
+<p>The output of <code><a href="../reference/trace_fn.html">trace_fn()</a></code> is now a
+<code>AnvilGraph</code> object that represents the computation. The
+fields of the <code>AnvilGraph</code> are:</p>
 <ul>
 <li>
 <code>inputs</code>, which are <code>GraphNode</code>s that
@@ -223,9 +223,9 @@ function.</li>
 </ul>
 <p>When the evaluation of <code>f</code> is complete, the
 <code>$outputs</code> field of the <code>GraphDescriptor</code> is set
-and the <code>Graph</code> is subsequently created from the
+and the <code>AnvilGraph</code> is subsequently created from the
 <code>GraphDescriptor</code>. The only difference between the
-<code>Graph</code> and the <code>GraphDescriptor</code> is that the
+<code>AnvilGraph</code> and the <code>GraphDescriptor</code> is that the
 latter has some utility fields that are useful during graph creation,
 but for the purposes of this tutorial, you can think of them as being
 the same.</p>
@@ -235,11 +235,11 @@ the same.</p>
 </h3>
 <p>Once the <code>R</code> function is staged out into a simpler format,
 it is ready to be transformed. The {anvil} package does not in any way
-dictate how such a <code>Graph</code> to <code>Graph</code>
+dictate how such a <code>AnvilGraph</code> to <code>AnvilGraph</code>
 transformation can be implemented. For most interesting transformations,
 however, we need to store some information for each {anvil} primitive
 function. In the case of the gradient, we need to store the derivative
-rules. For this, <code><a href="../reference/AnvilPrimitive.html">anvil::Primitive</a></code> objects have a
+rules. For this, <code>anvil::Primitive</code> objects have a
 <code>$rules</code> field that can be populated. The derivative rules
 are stored as functions under the <code>"backward"</code> name. We can
 access a primitive by it’s name via the <code><a href="../reference/prim.html">prim()</a></code>
@@ -254,7 +254,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x55b7013aed50&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x5584051ec440&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -265,7 +265,7 @@ specifies with respect to which arguments to compute the gradient.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bwd_graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transform_gradient.html">transform_gradient</a></span><span class="op">(</span><span class="va">graph</span>, wrt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">bwd_graph</span></span></code></pre></div>
-<pre><code><span><span class="co">## &lt;Graph&gt;</span></span>
+<pre><code><span><span class="co">## &lt;AnvilGraph&gt;</span></span>
 <span><span class="co">##   Inputs:</span></span>
 <span><span class="co">##     %x1: f32[]</span></span>
 <span><span class="co">##     %x2: f32[]</span></span>
@@ -282,12 +282,12 @@ specifies with respect to which arguments to compute the gradient.</p>
 <div class="section level3">
 <h3 id="lowering-a-graph">Lowering a Graph<a class="anchor" aria-label="anchor" href="#lowering-a-graph"></a>
 </h3>
-<p>In order to execute a <code>Graph</code>, we need to convert it into
-a – wait for it – executable. Here, we should how to compile using the
-XLA backend. First, we will translate the <code>Graph</code> into the
-StableHLO representation via the {stablehlo} package. Then, we will
-compile this program using the XLA compiler that is accessible via the
-{pjrt} package.</p>
+<p>In order to execute a <code>AnvilGraph</code>, we need to convert it
+into a – wait for it – executable. Here, we should how to compile using
+the XLA backend. First, we will translate the <code>AnvilGraph</code>
+into the StableHLO representation via the {stablehlo} package. Then, we
+will compile this program using the XLA compiler that is accessible via
+the {pjrt} package.</p>
 <p>Like for the gradient transformation, the rules of how to do this
 transformation are stored in the <code>$rules</code> fields of the
 primitives.</p>
@@ -297,7 +297,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x55b7013ae0d8&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x558404db1080&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
@@ -468,17 +468,18 @@ the <code>GraphDescriptor</code>. The call into <code>g()</code> is a
 bit more involved. First, a new <code>GraphDescriptor</code> is created
 and the forward computation of <code>g</code> is recorded. Subsequently,
 the backward pass will be added to the descriptor, after which it will
-be converted into a <code>Graph</code>. This <code>Graph</code> will
-then be inlined into the parent <code>GraphDescriptor</code>
-(representing the whole function <code>h</code>), which is then
-converted into the main <code>Graph</code>. We can look at this graph
-below, where <code>trace_fn</code> internally converts the
-<code>AnvilTensor</code>s <code>x</code> and <code>y</code> into their
-abstract representation.</p>
+be converted into a <code>AnvilGraph</code>. This
+<code>AnvilGraph</code> will then be inlined into the parent
+<code>GraphDescriptor</code> (representing the whole function
+<code>h</code>), which is then converted into the main
+<code>AnvilGraph</code>. We can look at this graph below, where
+<code>trace_fn</code> internally converts the <code>AnvilTensor</code>s
+<code>x</code> and <code>y</code> into their abstract
+representation.</p>
 <div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">h_graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">h</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">h_graph</span></span></code></pre></div>
-<pre><code><span><span class="co">## &lt;Graph&gt;</span></span>
+<pre><code><span><span class="co">## &lt;AnvilGraph&gt;</span></span>
 <span><span class="co">##   Inputs:</span></span>
 <span><span class="co">##     %x1: f32[]</span></span>
 <span><span class="co">##     %x2: f32[]</span></span>
@@ -534,7 +535,7 @@ below:</p>
 <span>  <span class="va">x</span> <span class="op">+</span> <span class="va">y</span> <span class="op">+</span> <span class="fl">1</span></span>
 <span><span class="op">}</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1L</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">graph</span></span></code></pre></div>
-<pre><code><span><span class="co">## &lt;Graph&gt;</span></span>
+<pre><code><span><span class="co">## &lt;AnvilGraph&gt;</span></span>
 <span><span class="co">##   Inputs:</span></span>
 <span><span class="co">##     %x1: i32[]</span></span>
 <span><span class="co">##   Constants:</span></span>

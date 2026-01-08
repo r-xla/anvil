@@ -1,7 +1,7 @@
 # Primitive Call
 
-Call of a primitive in a [`Graph`](Graph.md) Note that a primitive call
-also be a call into another graph (`p_graph`).
+Call of a primitive in an [`AnvilGraph`](AnvilGraph.md) Note that a
+primitive call also be a call into another graph (`p_graph`).
 
 ## Usage
 
@@ -13,7 +13,7 @@ PrimitiveCall(primitive, inputs, params, outputs)
 
 - primitive:
 
-  (`Primitive`)  
+  (`AnvilPrimitive`)  
   The function.
 
 - inputs:

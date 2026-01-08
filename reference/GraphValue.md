@@ -1,6 +1,6 @@
 # Graph Value
 
-Value in a [`Graph`](Graph.md). This is a mutable class.
+Value in an [`AnvilGraph`](AnvilGraph.md). This is a mutable class.
 
 ## Usage
 

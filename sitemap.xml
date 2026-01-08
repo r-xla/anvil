@@ -14,11 +14,11 @@
 <url><loc>/index.html</loc></url>
 <url><loc>/news/index.html</loc></url>
 <url><loc>/reference/AbstractTensor.html</loc></url>
+<url><loc>/reference/AnvilGraph.html</loc></url>
 <url><loc>/reference/AnvilPrimitive.html</loc></url>
 <url><loc>/reference/Box.html</loc></url>
 <url><loc>/reference/ConcreteTensor.html</loc></url>
 <url><loc>/reference/DebugBox.html</loc></url>
-<url><loc>/reference/Graph.html</loc></url>
 <url><loc>/reference/GraphBox.html</loc></url>
 <url><loc>/reference/GraphDescriptor.html</loc></url>
 <url><loc>/reference/GraphLiteral.html</loc></url>

@@ -19,7 +19,7 @@ graph_desc_add(
 
 - prim:
 
-  ([`Primitive`](AnvilPrimitive.md))  
+  ([`AnvilPrimitive`](AnvilPrimitive.md))  
   The primitive to add.
 
 - args:

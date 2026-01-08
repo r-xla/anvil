@@ -17,7 +17,7 @@ register_primitive(name, primitive, overwrite = FALSE)
 
 - primitive:
 
-  (`Primitive`)  
+  (`AnvilPrimitive`)  
   The primitive to register.
 
 - overwrite:

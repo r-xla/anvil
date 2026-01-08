@@ -6,34 +6,33 @@ While a real anvil is made for reshaping metal, this package is a tool
 for reshaping code. We refer to such a rewriting of code as a
 **transformation**, of which there are three types:
 
-1.  `R` \\\rightarrow\\ `Graph`: Generic `R` functions are too
+1.  `R` \\\rightarrow\\ `AnvilGraph`: Generic `R` functions are too
     complicated to handle, so the first step in {anvil} is always to
     convert them into a computational
-    [`anvil::Graph`](../reference/Graph.md) object via **tracing**. Such
-    a `Graph` is similar to `JAXExpr` objects in `JAX`. It operates only
-    on `AnvilTensor` objects and applies
-    [`anvil::Primitive`](../reference/AnvilPrimitive.md) operations to
-    them.
-2.  `Graph` \\\rightarrow\\ `Graph`: It is possible to transform
-    `Graph`s into other `Graph`s. Their purpose is to change the
-    functionality of the code. At the time of writing, there is
-    essentially only one such transformation, namely backward-mode
-    automatic differentiation via
+    [`anvil::Graph`](../reference/AnvilGraph.md) object via **tracing**.
+    Such a `AnvilGraph` is similar to `JAXExpr` objects in `JAX`. It
+    operates only on `AnvilTensor` objects and applies
+    `anvil::Primitive` operations to them.
+2.  `AnvilGraph` \\\rightarrow\\ `AnvilGraph`: It is possible to
+    transform `AnvilGraph`s into other `AnvilGraph`s. Their purpose is
+    to change the functionality of the code. At the time of writing,
+    there is essentially only one such transformation, namely
+    backward-mode automatic differentiation via
     [`gradient()`](../reference/gradient.md).
-3.  `Graph` \\\rightarrow\\ `Executable`: In order to perform the actual
-    computation, the `Graph` needs to be converted into an executable.
-    Currently, we only support the XLA backend (via `stablehlo` and
-    `pjrt`), but we are working on an experimental
+3.  `AnvilGraph` \\\rightarrow\\ `Executable`: In order to perform the
+    actual computation, the `AnvilGraph` needs to be converted into an
+    executable. Currently, we only support the XLA backend (via
+    `stablehlo` and `pjrt`), but we are working on an experimental
     [quickr](https://github.com/t-kalinowski/quickr) backend.
 
 ### Tracing R Functions into Graphs
 
 All functionality in the {anvil} package is centered around the
-[`anvil::Graph`](../reference/Graph.md) class. While it is in principle
-possible to create `Graph`s by hand, these are usually created by
-tracing R functions. In general, when we want to convert some code into
-another form (in our case, R Code into a `Graph`), there are two
-approaches:
+[`anvil::Graph`](../reference/AnvilGraph.md) class. While it is in
+principle possible to create `AnvilGraph`s by hand, these are usually
+created by tracing R functions. In general, when we want to convert some
+code into another form (in our case, R Code into a `AnvilGraph`), there
+are two approaches:
 
 1.  Static analysis, which would require operating on the abstract
     syntax tree (AST) of the code.
@@ -74,7 +73,7 @@ graph <- trace_fn(f, list(x = aten, y = aten, op = "mul"))
 graph
 ```
 
-    ## <Graph>
+    ## <AnvilGraph>
     ##   Inputs:
     ##     %x1: f32[]
     ##     %x2: f32[]
@@ -83,8 +82,9 @@ graph
     ##   Outputs:
     ##     %1: f32[]
 
-The output of [`trace_fn()`](../reference/trace_fn.md) is now a `Graph`
-object that represents the computation. The fields of the `Graph` are:
+The output of [`trace_fn()`](../reference/trace_fn.md) is now a
+`AnvilGraph` object that represents the computation. The fields of the
+`AnvilGraph` are:
 
 - `inputs`, which are `GraphNode`s that represent the inputs to the
   function.
@@ -123,24 +123,24 @@ A `PrimitiveCall` object consists of the following fields:
 - `outputs`: The outputs of the primitive function.
 
 When the evaluation of `f` is complete, the `$outputs` field of the
-`GraphDescriptor` is set and the `Graph` is subsequently created from
-the `GraphDescriptor`. The only difference between the `Graph` and the
-`GraphDescriptor` is that the latter has some utility fields that are
-useful during graph creation, but for the purposes of this tutorial, you
-can think of them as being the same.
+`GraphDescriptor` is set and the `AnvilGraph` is subsequently created
+from the `GraphDescriptor`. The only difference between the `AnvilGraph`
+and the `GraphDescriptor` is that the latter has some utility fields
+that are useful during graph creation, but for the purposes of this
+tutorial, you can think of them as being the same.
 
 ### Transforming Graphs into other Graphs
 
 Once the `R` function is staged out into a simpler format, it is ready
 to be transformed. The {anvil} package does not in any way dictate how
-such a `Graph` to `Graph` transformation can be implemented. For most
-interesting transformations, however, we need to store some information
-for each {anvil} primitive function. In the case of the gradient, we
-need to store the derivative rules. For this,
-[`anvil::Primitive`](../reference/AnvilPrimitive.md) objects have a
-`$rules` field that can be populated. The derivative rules are stored as
-functions under the `"backward"` name. We can access a primitive by it’s
-name via the [`prim()`](../reference/prim.md) function:
+such a `AnvilGraph` to `AnvilGraph` transformation can be implemented.
+For most interesting transformations, however, we need to store some
+information for each {anvil} primitive function. In the case of the
+gradient, we need to store the derivative rules. For this,
+`anvil::Primitive` objects have a `$rules` field that can be populated.
+The derivative rules are stored as functions under the `"backward"`
+name. We can access a primitive by it’s name via the
+[`prim()`](../reference/prim.md) function:
 
 ``` r
 prim("mul")$rules[["backward"]]
@@ -154,7 +154,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x55b7013aed50>
+    ## <bytecode: 0x5584051ec440>
     ## <environment: namespace:anvil>
 
 The [`anvil::transform_gradient`](../reference/transform_gradient.md)
@@ -170,7 +170,7 @@ bwd_graph <- transform_gradient(graph, wrt = c("x", "y"))
 bwd_graph
 ```
 
-    ## <Graph>
+    ## <AnvilGraph>
     ##   Inputs:
     ##     %x1: f32[]
     ##     %x2: f32[]
@@ -186,11 +186,12 @@ bwd_graph
 
 ### Lowering a Graph
 
-In order to execute a `Graph`, we need to convert it into a – wait for
-it – executable. Here, we should how to compile using the XLA backend.
-First, we will translate the `Graph` into the StableHLO representation
-via the {stablehlo} package. Then, we will compile this program using
-the XLA compiler that is accessible via the {pjrt} package.
+In order to execute a `AnvilGraph`, we need to convert it into a – wait
+for it – executable. Here, we should how to compile using the XLA
+backend. First, we will translate the `AnvilGraph` into the StableHLO
+representation via the {stablehlo} package. Then, we will compile this
+program using the XLA compiler that is accessible via the {pjrt}
+package.
 
 Like for the gradient transformation, the rules of how to do this
 transformation are stored in the `$rules` fields of the primitives.
@@ -203,7 +204,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x55b7013ae0d8>
+    ## <bytecode: 0x558404db1080>
     ## <environment: namespace:anvil>
 
 The [`anvil::stablehlo`](../reference/stablehlo.md) function will create
@@ -426,18 +427,18 @@ is recorded in the `GraphDescriptor`. The call into `g()` is a bit more
 involved. First, a new `GraphDescriptor` is created and the forward
 computation of `g` is recorded. Subsequently, the backward pass will be
 added to the descriptor, after which it will be converted into a
-`Graph`. This `Graph` will then be inlined into the parent
+`AnvilGraph`. This `AnvilGraph` will then be inlined into the parent
 `GraphDescriptor` (representing the whole function `h`), which is then
-converted into the main `Graph`. We can look at this graph below, where
-`trace_fn` internally converts the `AnvilTensor`s `x` and `y` into their
-abstract representation.
+converted into the main `AnvilGraph`. We can look at this graph below,
+where `trace_fn` internally converts the `AnvilTensor`s `x` and `y` into
+their abstract representation.
 
 ``` r
 h_graph <- trace_fn(h, list(x = x, y = y))
 h_graph
 ```
 
-    ## <Graph>
+    ## <AnvilGraph>
     ##   Inputs:
     ##     %x1: f32[]
     ##     %x2: f32[]
@@ -493,7 +494,7 @@ graph <- trace_fn(function(x) {
 graph
 ```
 
-    ## <Graph>
+    ## <AnvilGraph>
     ##   Inputs:
     ##     %x1: i32[]
     ##   Constants:

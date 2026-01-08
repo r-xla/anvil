@@ -1,6 +1,6 @@
 # Graph Literal
 
-Literal in a [`Graph`](Graph.md). This is a mutable class.
+Literal in an [`AnvilGraph`](AnvilGraph.md). This is a mutable class.
 
 ## Usage
 

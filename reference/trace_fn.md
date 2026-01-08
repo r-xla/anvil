@@ -35,4 +35,4 @@ trace_fn(f, args, desc = NULL, toplevel = FALSE)
 
 ## Value
 
-([`Graph`](Graph.md))
+([`AnvilGraph`](AnvilGraph.md))

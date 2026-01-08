@@ -4,12 +4,12 @@
 
 - [`nv_aten()`](AbstractTensor.md)
   [`AbstractTensor()`](AbstractTensor.md) : Abstract Tensor Class
-- [`AnvilPrimitive()`](AnvilPrimitive.md)
-  [`Primitive()`](AnvilPrimitive.md) : AnvilPrimitive
+- [`AnvilGraph()`](AnvilGraph.md) [`Graph()`](AnvilGraph.md) : Graph of
+  Primitive Calls
+- [`AnvilPrimitive()`](AnvilPrimitive.md) : AnvilPrimitive
 - [`Box()`](Box.md) : Box
 - [`ConcreteTensor()`](ConcreteTensor.md) : Concrete Tensor Class
 - [`DebugBox()`](DebugBox.md) : Debug Box Class
-- [`Graph()`](Graph.md) : Graph of Primitive Calls
 - [`GraphBox()`](GraphBox.md) : Graph Box
 - [`GraphDescriptor()`](GraphDescriptor.md) : Graph Descriptor
 - [`GraphLiteral()`](GraphLiteral.md) : Graph Literal

@@ -153,7 +153,7 @@ confusing at first. We will start with the naive way of simply inserting
 <p>If we run this function, we see that not the actual value is printed,
 but some <code>GraphBox</code> object. This <code>GraphBox</code> object
 is passed around <strong>during tracing</strong> so that we can convert
-the function into a <code>Graph</code> that is subsequently
+the function into a <code>AnvilGraph</code> that is subsequently
 compiled.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
