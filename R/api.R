@@ -3,22 +3,6 @@
 
 # Special tensor creators
 
-#' @title Iota
-#' @description
-#' Create a tensor with increasing values along a dimension.
-#' @param dim (`integer(1)`)\cr
-#'   The dimension along which to generate increasing values.
-#' @template param_shape
-#' @template param_dtype
-#' @param start (`numeric(1)`)\cr
-#'   The value to start the sequence at (default 1).
-#' @export
-nv_iota <- function(dim, shape, dtype = "i32", start = 1) {
-  shape <- assert_shapevec(shape)
-  nvl_iota(dim = dim, shape = shape, dtype = dtype, start = start)
-}
-
-
 #' @title Constant
 #' @description
 #' Create a constant.
@@ -507,6 +491,101 @@ nv_sign <- nvl_sign
 #' @export
 nv_exp <- nvl_exp
 
+#' @title Exponential Minus One
+#' @description Element-wise exp(x) - 1, more accurate for small x.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nv_expm1 <- nvl_expm1
+
+#' @title Log Plus One
+#' @description Element-wise log(1 + x), more accurate for small x.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nv_log1p <- nvl_log1p
+
+#' @title Cube Root
+#' @description Element-wise cube root.
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nv_cbrt <- nvl_cbrt
+
+#' @title Logistic (Sigmoid)
+#' @description Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nv_logistic <- nvl_logistic
+
+#' @title Is Finite
+#' @description Element-wise check if values are finite (not Inf, -Inf, or NaN).
+#' @template param_operand
+#' @return [`tensorish`] of boolean type
+#' @export
+nv_is_finite <- nvl_is_finite
+
+#' @title Population Count
+#' @description Element-wise population count (number of set bits in integer).
+#' @template param_operand
+#' @return [`tensorish`]
+#' @export
+nv_popcnt <- nvl_popcnt
+
+#' @title Clamp
+#' @description Element-wise clamp: max(min_val, min(operand, max_val)).
+#' @param min_val ([`tensorish`])\cr
+#'   Minimum value.
+#' @template param_operand
+#' @param max_val ([`tensorish`])\cr
+#'   Maximum value.
+#' @details
+#' The underlying stableHLO function already broadcasts scalars, so no need to broadcast manually.
+#' @return [`tensorish`]
+#' @export
+nv_clamp <- nvl_clamp
+
+#' @title Reverse
+#' @description Reverses the order of elements along specified dimensions.
+#' @template param_operand
+#' @param dims (`integer()`)\cr
+#'   Dimensions to reverse.
+#' @return [`tensorish`]
+#' @export
+nv_reverse <- nvl_reverse
+
+#' @title Iota
+#' @description Creates a tensor with values increasing along the specified dimension.
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which values increase.
+#' @template param_dtype
+#' @template param_shape
+#' @return [`tensorish`]
+#' @export
+nv_iota <- nvl_iota
+
+#' @title Pad
+#' @description Pads a tensor with a given padding value.
+#' @template param_operand
+#' @param padding_value ([`tensorish`])\cr
+#'   Scalar value to use for padding.
+#' @param edge_padding_low (`integer()`)\cr
+#'   Amount of padding to add at the start of each dimension.
+#' @param edge_padding_high (`integer()`)\cr
+#'   Amount of padding to add at the end of each dimension.
+#' @param interior_padding (`integer()`)\cr
+#'   Amount of padding to add between elements in each dimension (default 0).
+#' @return [`tensorish`]
+#' @export
+nv_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding = NULL) {
+  rank <- ndims_abstract(operand)
+  if (is.null(interior_padding)) {
+    interior_padding <- rep(0L, rank)
+  }
+  nvl_pad(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding)
+}
+
 #' @title Round
 #' @description Element-wise rounding.
 #' @template param_operand
@@ -567,7 +646,6 @@ nv_reduce_sum <- nvl_reduce_sum
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
   # TODO: division by zero?
   nelts <- prod(shape_abstract(operand)[dims])
-  # TODO: Should just be able to do use autocasting and divide by nelts scalar
   nv_reduce_sum(operand, dims, drop) / nelts
 }
 

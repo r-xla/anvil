@@ -6,8 +6,7 @@ test_that("nv_rnorm", {
   g <- jit(f)
   out <- g()
   expect_equal(c(as_array(out[[1]])), c(1L, 6L))
-  expect_true(inherits(dtype.AnvilTensor(out[[2]]), FloatType))
-  expect_equal(dtype.AnvilTensor(out[[2]])@value, 32L)
+  expect_equal(dtype(out[[2]]), as_dtype("f32"))
   expect_equal(shape(out[[2]]), c(2L, 3L))
 
   # test with uneven total number of RVs
