@@ -13,16 +13,16 @@ transform_gradient <- function(graph, wrt) {
   grad_env <- hashtab()
   required_env <- hashtab()
 
-  out_gvals <- graph@outputs
+  out_gvals <- graph$outputs
 
   if (length(out_gvals) != 1L) {
     cli_abort("gradient can only be computed for functions that return a single output")
   }
   out <- out_gvals[[1L]]
-  if (!identical(shape(out@aval), integer())) {
+  if (!identical(shape(out$aval), integer())) {
     cli_abort("gradient can only be computed for functions that return a scalar")
   }
-  dt <- out@aval@dtype
+  dt <- out$aval$dtype
   if (!(dt == as_dtype("f32") || dt == as_dtype("f64"))) {
     cli_abort(c(
       x = "gradient can only be computed for functions that return float scalar",
@@ -30,32 +30,32 @@ transform_gradient <- function(graph, wrt) {
     ))
   }
 
-  requires_grad <- flat_mask_from_names(graph@in_tree, wrt)
+  requires_grad <- flat_mask_from_names(graph$in_tree, wrt)
 
-  for (i in seq_along(graph@inputs)) {
-    required_env[[graph@inputs[[i]]]] <- requires_grad[[i]]
+  for (i in seq_along(graph$inputs)) {
+    required_env[[gval_key(graph$inputs[[i]])]] <- requires_grad[[i]]
   }
-  for (i in seq_along(graph@constants)) {
-    required_env[[graph@constants[[i]]]] <- FALSE
+  for (i in seq_along(graph$constants)) {
+    required_env[[gval_key(graph$constants[[i]])]] <- FALSE
   }
 
   # Forward pass: propagate required status through the graph
   # A node requires grad if any of its inputs requires grad
-  for (call in graph@calls) {
+  for (call in graph$calls) {
     any_input_requires <- any(vapply(
-      call@inputs,
+      call$inputs,
       function(x) {
         if (is_graph_literal(x)) {
           # literals don't depend on anything (they are either inlined constants or literals)
           return(FALSE)
         }
-        required_env[[x]]
+        required_env[[gval_key(x)]]
       },
       logical(1L)
     ))
 
-    for (out_node in call@outputs) {
-      required_env[[out_node]] <- any_input_requires
+    for (out_node in call$outputs) {
+      required_env[[gval_key(out_node)]] <- any_input_requires
     }
   }
 
@@ -73,15 +73,15 @@ transform_gradient <- function(graph, wrt) {
   # By copying the calls and in_tree from the forward graph, we ensure that the backward
   # operations are added to the correct context.
   init_desc_from_graph(desc, graph, outputs = FALSE)
-  grad_env[[out]] <- get_box_or_register_const(desc, nv_scalar(1L, dtype = out@aval@dtype))
+  grad_env[[gval_key(out)]] <- get_box_or_register_const(desc, nv_scalar(1L, dtype = out$aval$dtype))
 
   # Backward pass
-  for (call in rev(graph@calls)) {
+  for (call in rev(graph$calls)) {
     # Check if any input requires grad - if not, skip this call
     input_required <- vapply(
-      call@inputs,
+      call$inputs,
       function(x) {
-        required_env[[x]] %||% FALSE
+        required_env[[gval_key(x)]] %||% FALSE
       },
       logical(1L)
     )
@@ -90,8 +90,8 @@ transform_gradient <- function(graph, wrt) {
       next
     }
 
-    output_grads <- lapply(call@outputs, \(output) {
-      grad <- grad_env[[output]]
+    output_grads <- lapply(call$outputs, \(output) {
+      grad <- grad_env[[gval_key(output)]]
       if (is.null(grad)) {
         # output grad might be NULL if there is dead code
         nvl_fill(0L, dtype = dtype(output), shape = shape(output))
@@ -101,44 +101,44 @@ transform_gradient <- function(graph, wrt) {
     })
 
     input_grads <- rlang::exec(
-      call@primitive[["backward"]],
-      call@inputs,
-      call@outputs,
+      call$primitive[["backward"]],
+      call$inputs,
+      call$outputs,
       output_grads,
-      !!!call@params,
+      !!!call$params,
       .required = input_required
     )
     # input_grads[!input_required] is list of NULLs
-    for (i in seq_along(call@inputs)) {
-      input_gval <- call@inputs[[i]]
-      grad_env[[input_gval]] <- add_or_init(grad_env[[input_gval]], input_grads[[i]])
+    for (i in seq_along(call$inputs)) {
+      input_gval <- call$inputs[[i]]
+      grad_env[[gval_key(input_gval)]] <- add_or_init(grad_env[[gval_key(input_gval)]], input_grads[[i]])
     }
   }
 
   # Collect gradients only for inputs that require them
   input_grads <- list()
-  for (i in seq_along(graph@inputs)) {
+  for (i in seq_along(graph$inputs)) {
     if (!requires_grad[[i]]) {
       next
     }
-    input <- graph@inputs[[i]]
-    grad <- grad_env[[input]]
+    input <- graph$inputs[[i]]
+    grad <- grad_env[[gval_key(input)]]
     x <- if (is.null(grad)) {
-      const <- get_box_or_register_const(desc, nv_scalar(0L, dtype = input@aval@dtype))
-      nv_broadcast_to(const, shape(input@aval))
+      const <- get_box_or_register_const(desc, nv_scalar(0L, dtype = input$aval$dtype))
+      nv_broadcast_to(const, shape(input$aval))
     } else {
       grad
     }
-    input_grads <- c(input_grads, list(x@gnode))
+    input_grads <- c(input_grads, list(x$gnode))
   }
 
-  desc@outputs <- input_grads
+  desc$outputs <- input_grads
 
   # Adjust out_tree based on wrt
-  desc@out_tree <- if (length(wrt)) {
-    filter_list_node(graph@in_tree, wrt)
+  desc$out_tree <- if (length(wrt)) {
+    filter_list_node(graph$in_tree, wrt)
   } else {
-    graph@in_tree
+    graph$in_tree
   }
 
   graph <- descriptor_to_graph(desc)
@@ -175,7 +175,7 @@ gradient <- function(f, wrt = NULL) {
     if (!debug_mode) {
       return(inline_graph_into_desc(parent_desc, grad_graph))
     }
-    unflatten(grad_graph@out_tree, lapply(grad_graph@outputs, \(x) DebugBox(x@aval)))
+    unflatten(grad_graph$out_tree, lapply(grad_graph$outputs, \(x) DebugBox(x$aval)))
   }
   formals(f_gradient) <- formals2(f)
   return(f_gradient)
@@ -199,12 +199,12 @@ value_and_gradient <- function(f, wrt = NULL) {
     grad_graph <- transform_gradient(fwd_graph, wrt)
 
     combined_graph <- grad_graph
-    combined_graph@outputs <- c(fwd_graph@outputs, grad_graph@outputs)
+    combined_graph$outputs <- c(fwd_graph$outputs, grad_graph$outputs)
 
     counter <- new_counter()
-    value_tree <- reindex_tree(fwd_graph@out_tree, counter)
-    grad_tree <- reindex_tree(grad_graph@out_tree, counter)
-    combined_graph@out_tree <- ListNode(
+    value_tree <- reindex_tree(fwd_graph$out_tree, counter)
+    grad_tree <- reindex_tree(grad_graph$out_tree, counter)
+    combined_graph$out_tree <- ListNode(
       list(value_tree, grad_tree),
       names = c("value", "grad")
     )
@@ -212,10 +212,10 @@ value_and_gradient <- function(f, wrt = NULL) {
       return(inline_graph_into_desc(parent_desc, combined_graph))
     }
     unflatten(
-      combined_graph@out_tree,
+      combined_graph$out_tree,
       c(
-        lapply(fwd_graph@outputs, \(x) DebugBox(x@aval)),
-        lapply(grad_graph@outputs, \(x) DebugBox(x@aval))
+        lapply(fwd_graph$outputs, \(x) DebugBox(x$aval)),
+        lapply(grad_graph$outputs, \(x) DebugBox(x$aval))
       )
     )
   }

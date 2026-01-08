@@ -60,5 +60,5 @@ test_that("boolean is not ambiguous", {
     x * TRUE
   }
   graph <- trace_fn(f, list(x = nv_scalar(1L)))
-  expect_false(graph@calls[[1L]]@inputs[[1L]]@aval@ambiguous)
+  expect_false(graph$calls[[1L]]$inputs[[1L]]$aval$ambiguous)
 })

@@ -1,6 +1,6 @@
 test_that("create debug box", {
   box <- debug_box("f32", c(2, 2))
-  expect_equal(box@aval, AbstractTensor("f32", c(2, 2), FALSE))
+  expect_equal(box$aval, AbstractTensor("f32", c(2, 2), FALSE))
 })
 
 test_that("printer for debug box", {
@@ -32,14 +32,14 @@ test_that("basic primitive", {
   # with debug box
   box <- debug_box("f32", c(2, 2))
   out <- nv_add(box, box)
-  expect_class(out, "anvil::DebugBox")
-  expect_equal(out@aval, box@aval)
+  expect_class(out, "DebugBox")
+  expect_equal(out$aval, box$aval)
 
   # with tensor
   x <- nv_tensor(1:4, dtype = "f32", shape = c(2, 2))
   out <- nv_add(x, x)
-  expect_class(out, "anvil::DebugBox")
-  expect_equal(out@aval, nv_aten("f32", c(2, 2)))
+  expect_class(out, "DebugBox")
+  expect_equal(out$aval, nv_aten("f32", c(2, 2)))
 })
 
 test_that("gradient", {
@@ -48,8 +48,8 @@ test_that("gradient", {
   }
   ain <- debug_box("f32", c(2, 2))
   out <- gradient(f)(ain)[[1L]]
-  expect_class(out, "anvil::DebugBox")
-  expect_equal(out@aval, ain@aval)
+  expect_class(out, "DebugBox")
+  expect_equal(out$aval, ain$aval)
 })
 
 test_that("can debug value_and_gradient", {
@@ -81,7 +81,7 @@ test_that("if", {
     nv_if(nv_scalar(TRUE), x, x)
   }
   ain <- debug_box("f32", 1)
-  expect_equal(f(ain)@aval, ain@aval)
+  expect_equal(f(ain)$aval, ain$aval)
 })
 
 test_that("group generics", {
@@ -89,22 +89,22 @@ test_that("group generics", {
   scalar_aval <- AbstractTensor("f32", integer(), FALSE)
 
   # Ops: arithmetic
-  expect_equal((ain + ain)@aval, ain@aval)
+  expect_equal((ain + ain)$aval, ain$aval)
   # Ops: comparison
-  expect_equal((ain > ain)@aval, AbstractTensor("pred", c(2, 2), FALSE))
+  expect_equal((ain > ain)$aval, AbstractTensor("pred", c(2, 2), FALSE))
   # matrixOps
-  expect_equal((ain %*% ain)@aval, ain@aval)
+  expect_equal((ain %*% ain)$aval, ain$aval)
   # Math
-  expect_equal(exp(ain)@aval, ain@aval)
+  expect_equal(exp(ain)$aval, ain$aval)
   # Math2
-  expect_equal(round(ain)@aval, ain@aval)
+  expect_equal(round(ain)$aval, ain$aval)
   # Summary
-  expect_equal(sum(ain)@aval, scalar_aval)
+  expect_equal(sum(ain)$aval, scalar_aval)
   # mean
-  expect_equal(mean(ain)@aval, scalar_aval)
+  expect_equal(mean(ain)$aval, scalar_aval)
   # transpose
   ain2 <- debug_box("f32", c(2, 3))
-  expect_equal(t(ain2)@aval, AbstractTensor("f32", c(3, 2), FALSE))
+  expect_equal(t(ain2)$aval, AbstractTensor("f32", c(3, 2), FALSE))
 })
 
 

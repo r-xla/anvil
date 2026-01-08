@@ -79,7 +79,7 @@ During this evaluation, we need to distinguish between two cases:
 
 The evaluation of the `if` statement is an example for the first category.
 Because we set `op = "mul"`, only the first branch is executed.
-Then, we are calling `nv_mul`, which attaches a `PrimitiveCall` that represents the multiplication of the two tensors to the `@calls` of the `GraphDescriptor`.
+Then, we are calling `nv_mul`, which attaches a `PrimitiveCall` that represents the multiplication of the two tensors to the `$calls` of the `GraphDescriptor`.
 Note that the `nv_mul` is itself not primitive, but performs some type promotion and broadcasting if needed, before calling into the primitive `nvl_mul()`.
 
 A `PrimitiveCall` object consists of the following fields:
@@ -89,7 +89,7 @@ A `PrimitiveCall` object consists of the following fields:
 * `params`: The parameters (non-tensors) to the primitive function.
 * `outputs`: The outputs of the primitive function.
 
-When the evaluation of `f` is complete, the `@outputs` field of the `GraphDescriptor` is set and the `Graph` is subsequently created from the `GraphDescriptor`.
+When the evaluation of `f` is complete, the `$outputs` field of the `GraphDescriptor` is set and the `Graph` is subsequently created from the `GraphDescriptor`.
 The only difference between the `Graph` and the `GraphDescriptor` is that the latter has some utility fields that are useful during graph creation, but for the purposes of this tutorial, you can think of them as being the same.
 
 ### Transforming Graphs into other Graphs
@@ -98,12 +98,12 @@ Once the `R` function is staged out into a simpler format, it is ready to be tra
 The {anvil} package does not in any way dictate how such a `Graph` to `Graph` transformation can be implemented.
 For most interesting transformations, however, we need to store some information for each {anvil} primitive function.
 In the case of the gradient, we need to store the derivative rules.
-For this, `anvil::Primitive` objects have a `@rules` field that can be populated.
+For this, `anvil::Primitive` objects have a `$rules` field that can be populated.
 The derivative rules are stored as functions under the `"backward"` name.
 We can access a primitive by it's name via the `prim()` function:
 
 ```{r}
-prim("mul")@rules[["backward"]]
+prim("mul")$rules[["backward"]]
 ```
 
 The `anvil::transform_gradient` function uses these rules to compute the gradient of a function.
@@ -122,10 +122,10 @@ Here, we should how to compile using the XLA backend.
 First, we will translate the `Graph` into the StableHLO representation via the {stablehlo} package.
 Then, we will compile this program using the XLA compiler that is accessible via the {pjrt} package.
 
-Like for the gradient transformation, the rules of how to do this transformation are stored in the `@rules` fields of the primitives.
+Like for the gradient transformation, the rules of how to do this transformation are stored in the `$rules` fields of the primitives.
 
 ```{r}
-prim("mul")@rules[["stablehlo"]]
+prim("mul")$rules[["stablehlo"]]
 ```
 
 The `anvil::stablehlo` function will create a `stablehlo::Func` object and will sequentially translate the `PrimitiveCall`s into StableHLO operations.
@@ -285,10 +285,10 @@ graph <- trace_fn(function(x) {
 graph
 ```
 
-Here, `y` is a closed-over constant and it is included in the `@constants` field of the graph, just like the literal `1`.
+Here, `y` is a closed-over constant and it is included in the `$constants` field of the graph, just like the literal `1`.
 
 ```{r}
-graph@constants
+graph$constants
 ```
 
 When compiling such a program to stableHLO, constants are treated differently depending on their shape (we follow JAX's approach here).

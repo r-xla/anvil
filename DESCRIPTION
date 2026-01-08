@@ -21,7 +21,6 @@ Imports:
     methods,
     pjrt,
     rlang,
-    S7,
     stablehlo,
     tengen,
     withr,
@@ -32,7 +31,7 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0)
 Remotes:
-    r-xla/stablehlo,
+    r-xla/stablehlo@s3,
     r-xla/tengen,
     r-xla/xlamisc,
     r-xla/pjrt
@@ -62,7 +61,6 @@ Collate:
     'debug.R'
     'flatten.R'
     'graph-passes.R'
-    'mut.R'
     'graph.R'
     'graph-print.R'
     'promotion.R'

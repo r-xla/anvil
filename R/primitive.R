@@ -1,38 +1,42 @@
-#' @title Primitive
+#' @title AnvilPrimitive
 #' @description
 #' Primitive interpretation rule.
 #' @param name (`character()`)\cr
 #'   The name of the primitive.
-#' @return (`Primitive`)
+#' @return (`AnvilPrimitive`)
 #' @export
-Primitive <- new_class(
-  "Primitive",
-  properties = list(
-    name = class_character,
-    rules = class_environment
-  ),
-  constructor = function(name) {
-    env <- zero_env()
-    new_object(S7_object(), rules = env, name = name)
-  }
-)
+AnvilPrimitive <- function(name) {
+  checkmate::assert_string(name)
+  env <- zero_env()
 
-HigherOrderPrimitive <- new_class(
-  "HigherOrderPrimitive",
-  parent = Primitive,
-  properties = list(
-    subgraphs = class_character
-  ),
-  constructor = function(name, subgraphs = character()) {
-    obj <- S7::new_object(
-      S7::S7_object(),
-      name = name,
-      rules = zero_env(),
-      subgraphs = subgraphs
-    )
-    obj
-  }
-)
+  structure(
+    list(name = name, rules = env),
+    class = "AnvilPrimitive"
+  )
+}
+
+#' @rdname AnvilPrimitive
+#' @export
+Primitive <- AnvilPrimitive
+
+#' @title HigherOrderPrimitive
+#' @description
+#' A primitive that contains subgraphs.
+#' @param name (`character()`)\cr
+#'   The name of the primitive.
+#' @param subgraphs (`character()`)\cr
+#'   Names of parameters that are subgraphs.
+#' @return (`HigherOrderPrimitive`)
+#' @export
+HigherOrderPrimitive <- function(name, subgraphs = character()) {
+  checkmate::assert_string(name)
+  checkmate::assert_character(subgraphs)
+
+  structure(
+    list(name = name, rules = zero_env(), subgraphs = subgraphs),
+    class = c("HigherOrderPrimitive", "AnvilPrimitive")
+  )
+}
 
 prim_dict <- new.env(parent = emptyenv())
 
@@ -70,32 +74,38 @@ prim <- function(name = NULL) {
 }
 
 is_higher_order_primitive <- function(x) {
-  inherits(x, "anvil::HigherOrderPrimitive")
+  inherits(x, "HigherOrderPrimitive")
 }
 
 
+#' @method [[<- AnvilPrimitive
 #' @export
-`[[<-.anvil::Primitive` <- function(x, name, value) {
-  x@rules[[name]] <- value
+`[[<-.AnvilPrimitive` <- function(x, name, value) {
+  x$rules[[name]] <- value
   if (!(name %in% globals$interpretation_rules)) {
     cli_abort("Unknown interpretation rule: {.val {name}}")
   }
   x
 }
 
-method(`[[`, Primitive) <- function(x, name) {
-  rule <- x@rules[[name]]
+#' @method [[ AnvilPrimitive
+#' @export
+`[[.AnvilPrimitive` <- function(x, name) {
+  rule <- x$rules[[name]]
   if (is.null(rule)) {
     if (!(name %in% globals$interpretation_rules)) {
       cli_abort("Unknown rule: {name}")
     }
-    cli_abort("Rule {.field {name}} not defined for primitive {.field {x@name}}")
+    cli_abort("Rule {.field {name}} not defined for primitive {.field {x$name}}")
   }
   rule
 }
 
-method(print, Primitive) <- function(x, ...) {
-  cat(sprintf("<Primitive:%s>\n", x@name))
+#' @method print AnvilPrimitive
+#' @export
+print.AnvilPrimitive <- function(x, ...) {
+  cat(sprintf("<AnvilPrimitive:%s>\n", x$name))
+  invisible(x)
 }
 
 #' @title Get Subgraphs from Higher-Order Primitive
@@ -107,14 +117,14 @@ method(print, Primitive) <- function(x, ...) {
 #'   List of subgraphs found in the parameters.
 #' @export
 subgraphs <- function(call) {
-  if (!is_higher_order_primitive(call@primitive)) {
+  if (!is_higher_order_primitive(call$primitive)) {
     return(list())
   }
 
   stats::setNames(
-    lapply(call@primitive@subgraphs, \(sg) {
-      call@params[[sg]]
+    lapply(call$primitive$subgraphs, \(sg) {
+      call$params[[sg]]
     }),
-    call@primitive@subgraphs
+    call$primitive$subgraphs
   )
 }

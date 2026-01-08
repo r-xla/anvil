@@ -1,7 +1,4 @@
 .onLoad <- function(libname, pkgname) {
-  # FIXME(hack): I don't understand why this is needed
-  S7::methods_register()
-
   ns <- asNamespace(pkgname)
   for (name in ls(ns, pattern = "^p_")) {
     primitive <- get(name, envir = ns)

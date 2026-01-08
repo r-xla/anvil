@@ -23,11 +23,11 @@ prims <- prim()
 
 # Extract primitive info
 primitives_list <- lapply(prims, function(p) {
-  has_stablehlo <- !is.null(p@rules[["stablehlo"]])
-  has_backward <- !is.null(p@rules[["backward"]])
+  has_stablehlo <- !is.null(p$rules[["stablehlo"]])
+  has_backward <- !is.null(p$rules[["backward"]])
 
   data.frame(
-    Name = p@name,
+    Name = p$name,
     StableHLO = if (has_stablehlo) "\u2713" else "\u2717",
     Backward = if (has_backward) "\u2713" else "\u2717"
   )

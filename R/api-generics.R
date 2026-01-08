@@ -26,9 +26,9 @@ ops_impl <- function(e1, e2) {
   )
 }
 
-#' @method Ops anvil::Box
+#' @method Ops Box
 #' @export
-`Ops.anvil::Box` <- ops_impl
+Ops.Box <- ops_impl
 
 #' @method Ops AnvilTensor
 #' @export
@@ -41,9 +41,9 @@ matrix_ops_impl <- function(x, y) {
   )
 }
 
-#' @method matrixOps anvil::Box
+#' @method matrixOps Box
 #' @export
-`matrixOps.anvil::Box` <- matrix_ops_impl
+matrixOps.Box <- matrix_ops_impl
 
 #' @method matrixOps AnvilTensor
 #' @export
@@ -68,9 +68,9 @@ math_impl <- function(x, ...) {
   )
 }
 
-#' @method Math anvil::Box
+#' @method Math Box
 #' @export
-`Math.anvil::Box` <- math_impl
+Math.Box <- math_impl
 
 #' @method Math AnvilTensor
 #' @export
@@ -90,9 +90,9 @@ math2_impl <- function(x, digits, ...) {
   )
 }
 
-#' @method Math2 anvil::Box
+#' @method Math2 Box
 #' @export
-`Math2.anvil::Box` <- math2_impl
+Math2.Box <- math2_impl
 
 #' @method Math2 AnvilTensor
 #' @export
@@ -118,9 +118,9 @@ summary_impl <- function(..., na.rm) {
   )
 }
 
-#' @method Summary anvil::Box
+#' @method Summary Box
 #' @export
-`Summary.anvil::Box` <- summary_impl
+Summary.Box <- summary_impl
 
 #' @method Summary AnvilTensor
 #' @export
@@ -130,9 +130,9 @@ mean_impl <- function(x, ...) {
   nv_reduce_mean(x, dims = seq_along(shape(x)), drop = TRUE)
 }
 
-#' @method mean anvil::Box
+#' @method mean Box
 #' @export
-`mean.anvil::Box` <- mean_impl
+mean.Box <- mean_impl
 
 #' @method mean AnvilTensor
 #' @export
@@ -149,8 +149,8 @@ mean.AnvilTensor <- mean_impl
 #'   Permutation of dimensions. If `NULL` (default), reverses the dimensions.
 #' @return [`nv_tensor`]
 #' @export
-#' @method t anvil::Box
-`t.anvil::Box` <- function(x) {
+#' @method t Box
+t.Box <- function(x) {
   nv_transpose(x)
 }
 

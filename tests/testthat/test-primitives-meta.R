@@ -24,7 +24,7 @@ test_that("backward rule is tested", {
 
   primitive_names <- Filter(
     function(nm) {
-      !is.null(getFromNamespace(nm, "anvil")@rules[["backward"]])
+      !is.null(getFromNamespace(nm, "anvil")$rules[["backward"]])
     },
     primitive_names
   )

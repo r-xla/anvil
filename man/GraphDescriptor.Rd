@@ -6,8 +6,8 @@
 \usage{
 GraphDescriptor(
   calls = list(),
-  tensor_to_gval = hashtab(),
-  gval_to_box = hashtab(),
+  tensor_to_gval = NULL,
+  gval_to_box = NULL,
   constants = list(),
   in_tree = NULL,
   out_tree = NULL,
@@ -40,6 +40,9 @@ The inputs to the graph.}
 \item{outputs}{(\code{list(GraphValue)})\cr
 The outputs of the graph.}
 }
+\value{
+(\code{GraphDescriptor})
+}
 \description{
-Descriptor of a \code{\link{Graph}}.
+Descriptor of a \code{\link{Graph}}. This is a mutable class.
 }

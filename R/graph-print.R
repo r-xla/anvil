@@ -12,18 +12,18 @@ format_node_id <- function(node, node_ids) {
 }
 
 format_literal <- function(node) {
-  val <- node@aval@data
+  val <- node$aval$data
   if (is_anvil_tensor(val)) {
     val <- as_array(val)
   }
-  dt <- repr(dtype(node@aval))
-  dt <- if (node@aval@ambiguous) paste0(dt, "?") else dt
-  shp <- shape(node@aval)
+  dt <- repr(dtype(node$aval))
+  dt <- if (node$aval$ambiguous) paste0(dt, "?") else dt
+  shp <- shape(node$aval)
   sprintf("%s:%s%s", val, dt, if (length(shp)) sprintf("[%s]", shape2string(shp)) else "")
 }
 
 format_aval_short <- function(aval) {
-  sprintf("%s[%s]", paste0(repr(dtype(aval)), if (aval@ambiguous) "?" else ""), paste(shape(aval), collapse = ", "))
+  sprintf("%s[%s]", paste0(repr(dtype(aval)), if (aval$ambiguous) "?" else ""), paste(shape(aval), collapse = ", "))
 }
 
 build_node_ids <- function(inputs, constants, calls) {
@@ -37,7 +37,7 @@ build_node_ids <- function(inputs, constants, calls) {
   }
   counter <- 1L
   for (call in calls) {
-    for (out in call@outputs) {
+    for (out in call$outputs) {
       node_ids[[out]] <- as.character(counter)
       counter <- counter + 1L
     }
@@ -53,16 +53,16 @@ format_param <- function(param) {
     as.character(param)
   } else if (is.atomic(param) && length(param) > 1L) {
     sprintf("c(%s)", paste(param, collapse = ", "))
+  } else if (is_graph(param)) {
+    sprintf("graph[%s -> %s]", length(param$inputs), length(param$outputs))
+  } else if (is_dtype(param)) {
+    repr(param)
   } else if (is.list(param)) {
     if (!is.null(names(param))) {
       sprintf("[%s]", paste(names(param), "=", sapply(param, format_param), collapse = ", "))
     } else {
       sprintf("[%s]", paste(sapply(param, format_param), collapse = ", "))
     }
-  } else if (is_graph(param)) {
-    sprintf("graph[%s -> %s]", length(param@inputs), length(param@outputs))
-  } else if (is_dtype(param)) {
-    repr(param)
   } else {
     x <- try(format(param), silent = TRUE)
     if (length(x) == 1L) {
@@ -74,23 +74,23 @@ format_param <- function(param) {
 }
 
 format_call <- function(call, node_ids, indent = "  ") {
-  input_ids <- vapply(call@inputs, format_node_id, character(1), node_ids = node_ids)
+  input_ids <- vapply(call$inputs, format_node_id, character(1), node_ids = node_ids)
   inputs_str <- paste(input_ids, collapse = ", ")
 
-  output_ids <- vapply(call@outputs, format_node_id, character(1), node_ids = node_ids)
-  output_types <- vapply(call@outputs, \(x) format_aval_short(x@aval), character(1))
+  output_ids <- vapply(call$outputs, format_node_id, character(1), node_ids = node_ids)
+  output_types <- vapply(call$outputs, \(x) format_aval_short(x$aval), character(1))
 
-  outputs_str <- if (length(call@outputs) == 1L) {
+  outputs_str <- if (length(call$outputs) == 1L) {
     sprintf("%s: %s", output_ids, output_types)
   } else {
     sprintf("(%s): (%s)", paste(output_ids, collapse = ", "), paste(output_types, collapse = ", "))
   }
 
-  params_str <- format_param(call@params)
+  params_str <- format_param(call$params)
   if (params_str != "") {
     params_str <- sprintf(" %s ", params_str)
   }
-  sprintf("%s%s = %s%s(%s)", indent, outputs_str, call@primitive@name, params_str, inputs_str)
+  sprintf("%s%s = %s%s(%s)", indent, outputs_str, call$primitive$name, params_str, inputs_str)
 }
 
 format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph") {
@@ -107,7 +107,7 @@ format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph"
     input_strs <- vapply(
       inputs,
       function(node) {
-        sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node@aval))
+        sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node$aval))
       },
       character(1)
     )
@@ -121,7 +121,7 @@ format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph"
     const_strs <- vapply(
       constants,
       function(node) {
-        sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node@aval))
+        sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node$aval))
       },
       character(1)
     )
@@ -146,7 +146,7 @@ format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph"
         if (is_graph_literal(node)) {
           sprintf("    %s", format_literal(node))
         } else {
-          sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node@aval))
+          sprintf("    %s: %s", format_node_id(node, node_ids), format_aval_short(node$aval))
         }
       },
       character(1)
@@ -159,52 +159,59 @@ format_graph_body <- function(inputs, constants, calls, outputs, title = "Graph"
   paste(lines, collapse = "\n")
 }
 
-method(format, PrimitiveCall) <- function(x, ...) {
+#' @export
+format.PrimitiveCall <- function(x, ...) {
   inputs <- paste(
     vapply(
-      x@inputs,
+      x$inputs,
       function(inp) {
         if (is_graph_literal(inp)) {
           format_literal(inp)
         } else {
-          format_aval_short(inp@aval)
+          format_aval_short(inp$aval)
         }
       },
       character(1)
     ),
     collapse = ", "
   )
-  outputs <- paste(vapply(x@outputs, \(out) format_aval_short(out@aval), character(1)), collapse = ", ")
-  params_str <- if (length(x@params) > 0L) sprintf(" {%d params}", length(x@params)) else ""
-  sprintf("%s(%s)%s -> %s", x@primitive@name, inputs, params_str, outputs)
+  outputs <- paste(vapply(x$outputs, \(out) format_aval_short(out$aval), character(1)), collapse = ", ")
+  params_str <- if (length(x$params) > 0L) sprintf(" {%d params}", length(x$params)) else ""
+  sprintf("%s(%s)%s -> %s", x$primitive$name, inputs, params_str, outputs)
 }
 
-method(format, Graph) <- function(x, ...) {
+#' @export
+format.Graph <- function(x, ...) {
   format_graph_body(
-    inputs = x@inputs,
-    constants = x@constants,
-    calls = x@calls,
-    outputs = x@outputs,
+    inputs = x$inputs,
+    constants = x$constants,
+    calls = x$calls,
+    outputs = x$outputs,
     title = "Graph"
   )
 }
 
-method(print, Graph) <- function(x, ...) {
+#' @export
+print.Graph <- function(x, ...) {
   cat(format(x), "\n")
+  invisible(x)
 }
 
-method(format, GraphDescriptor) <- function(x, ...) {
+#' @export
+format.GraphDescriptor <- function(x, ...) {
   # Convert hashtab constants to list
-  constants <- x@constants
+  constants <- x$constants
   format_graph_body(
-    inputs = x@inputs,
+    inputs = x$inputs,
     constants = constants,
-    calls = x@calls,
-    outputs = x@outputs,
+    calls = x$calls,
+    outputs = x$outputs,
     title = "GraphDescriptor"
   )
 }
 
-method(print, GraphDescriptor) <- function(x, ...) {
+#' @export
+print.GraphDescriptor <- function(x, ...) {
   cat(format(x), "\n")
+  invisible(x)
 }

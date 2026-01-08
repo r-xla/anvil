@@ -33,6 +33,10 @@ The outputs of the graph.}
 \item{constants}{(\code{list(GraphValue)})\cr
 The constants of the graph.}
 }
+\value{
+(\code{Graph})
+}
 \description{
 Computational graph consisting exclusively of primitive calls.
+This is a mutable class.
 }

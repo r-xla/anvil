@@ -4,12 +4,15 @@
 \alias{GraphValue}
 \title{Graph Value}
 \usage{
-GraphValue(aval = AbstractTensor())
+GraphValue(aval)
 }
 \arguments{
 \item{aval}{(\code{\link{AbstractTensor}})\cr
 The abstract value of the variable.}
 }
+\value{
+(\code{GraphValue})
+}
 \description{
-Value in a \code{\link{Graph}}.
+Value in a \code{\link{Graph}}. This is a mutable class.
 }

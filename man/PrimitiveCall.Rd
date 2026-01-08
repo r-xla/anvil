@@ -4,12 +4,7 @@
 \alias{PrimitiveCall}
 \title{Primitive Call}
 \usage{
-PrimitiveCall(
-  primitive = Primitive(),
-  inputs = list(),
-  params = list(),
-  outputs = list()
-)
+PrimitiveCall(primitive, inputs, params, outputs)
 }
 \arguments{
 \item{primitive}{(\code{Primitive})\cr
@@ -23,6 +18,9 @@ The (static) parameters of the function call.}
 
 \item{outputs}{(\code{list(GraphValue)})\cr
 The (tensor) outputs of the primitive.}
+}
+\value{
+(\code{PrimitiveCall})
 }
 \description{
 Call of a primitive in a \code{\link{Graph}}

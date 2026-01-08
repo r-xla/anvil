@@ -4,12 +4,15 @@
 \alias{GraphLiteral}
 \title{Graph Literal}
 \usage{
-GraphLiteral(aval = LiteralTensor())
+GraphLiteral(aval)
 }
 \arguments{
-\item{aval}{(\code{any})\cr
+\item{aval}{(\code{\link{LiteralTensor}})\cr
 The value of the literal.}
 }
+\value{
+(\code{GraphLiteral})
+}
 \description{
-Literal in a \code{\link{Graph}}.
+Literal in a \code{\link{Graph}}. This is a mutable class.
 }

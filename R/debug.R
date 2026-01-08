@@ -6,32 +6,38 @@
 #' Box representing a value in debug mode.
 #' @param aval (`AbstractTensor`)\cr
 #'   The abstract tensor representing the value.
+#' @return (`DebugBox`)
 #' @export
-DebugBox <- new_class(
-  "DebugBox",
-  parent = Box,
-  properties = list(
-    aval = AbstractTensor
+DebugBox <- function(aval) {
+  checkmate::assert_class(aval, "AbstractTensor")
+
+  structure(
+    list(aval = aval),
+    class = c("DebugBox", "Box")
   )
-)
-
-method(shape, DebugBox) <- function(x, ...) {
-  shape(x@aval)
 }
 
-method(dtype, DebugBox) <- function(x, ...) {
-  dtype(x@aval)
+#' @export
+shape.DebugBox <- function(x, ...) {
+  shape(x$aval)
 }
 
-method(print, DebugBox) <- function(x, ...) {
-  aval <- x@aval
+#' @export
+dtype.DebugBox <- function(x, ...) {
+  dtype(x$aval)
+}
+
+#' @export
+print.DebugBox <- function(x, ...) {
+  aval <- x$aval
   if (is_concrete_tensor(aval)) {
-    print(aval@data, ..., header = FALSE)
+    print(aval$data, ..., header = FALSE)
   } else if (is_literal_tensor(aval)) {
-    cat(sprintf("%s:%s{%s}\n", aval@data, dtype2string(aval@dtype, aval@ambiguous), shape2string(aval@shape, FALSE))) # nolint
+    cat(sprintf("%s:%s{%s}\n", aval$data, dtype2string(aval$dtype, aval$ambiguous), shape2string(aval$shape, FALSE))) # nolint
   } else {
-    cat(sprintf("%s{%s}\n", dtype2string(aval@dtype, aval@ambiguous), shape2string(aval@shape, FALSE))) # nolint
+    cat(sprintf("%s{%s}\n", dtype2string(aval$dtype, aval$ambiguous), shape2string(aval$shape, FALSE))) # nolint
   }
+  invisible(x)
 }
 
 #' @title Create a Debug Box
@@ -48,5 +54,5 @@ debug_box <- function(dtype, shape, ambiguous = FALSE) {
 }
 
 is_debug_box <- function(x) {
-  inherits(x, "anvil::DebugBox")
+  inherits(x, "DebugBox")
 }

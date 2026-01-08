@@ -4,10 +4,10 @@ test_that("trace_fn: simple test", {
   }
   graph <- trace_fn(f, list(x = nv_scalar(1), y = nv_scalar(2)))
   expect_true(is_graph(graph))
-  expect_list(graph@inputs, len = 2L, types = "anvil::mut<GraphValue>")
-  expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
-  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphValue>")
-  expect_true(identical(graph@outputs, graph@calls[[1]]@outputs))
+  expect_list(graph$inputs, len = 2L, types = "GraphValue")
+  expect_list(graph$calls, len = 1L, types = "PrimitiveCall")
+  expect_list(graph$outputs, len = 1L, types = "GraphValue")
+  expect_true(identical(graph$outputs, graph$calls[[1]]$outputs))
 })
 
 test_that("trace_fn: in- and outputs are reference identical to the outputs of the calls that produced them", {
@@ -15,8 +15,8 @@ test_that("trace_fn: in- and outputs are reference identical to the outputs of t
     nvl_add(x, y)
   }
   graph <- trace_fn(f, list(x = nv_scalar(1), y = nv_scalar(2)))
-  expect_true(identical(graph@outputs, graph@calls[[1]]@outputs))
-  expect_true(identical(graph@inputs, graph@calls[[1]]@inputs))
+  expect_true(identical(graph$outputs, graph$calls[[1]]$outputs))
+  expect_true(identical(graph$inputs, graph$calls[[1]]$inputs))
 })
 
 test_that("trace_fn: nested inputs and outputs", {
@@ -25,15 +25,15 @@ test_that("trace_fn: nested inputs and outputs", {
   }
 
   graph <- trace_fn(f, list(lst = list(nv_scalar(1), nv_scalar(2))))
-  expect_list(graph@inputs, len = 2L, types = "anvil::mut<GraphValue>")
-  expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
-  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphValue>")
+  expect_list(graph$inputs, len = 2L, types = "GraphValue")
+  expect_list(graph$calls, len = 1L, types = "PrimitiveCall")
+  expect_list(graph$outputs, len = 1L, types = "GraphValue")
   expect_equal(
-    unflatten(graph@in_tree, list(1, 2)),
+    unflatten(graph$in_tree, list(1, 2)),
     list(lst = list(1, 2))
   )
   expect_equal(
-    unflatten(graph@out_tree, 1),
+    unflatten(graph$out_tree, 1),
     list(1)
   )
 })
@@ -44,17 +44,17 @@ test_that("trace_fn: closed-over constants", {
     nvl_add(x, y)
   }
   graph <- trace_fn(f, list(y = nv_scalar(2)))
-  expect_list(graph@inputs, len = 1L, types = "anvil::mut<GraphValue>")
-  expect_list(graph@calls, len = 1L, types = "anvil::PrimitiveCall")
-  expect_list(graph@outputs, len = 1L, types = "anvil::mut<GraphValue>")
+  expect_list(graph$inputs, len = 1L, types = "GraphValue")
+  expect_list(graph$calls, len = 1L, types = "PrimitiveCall")
+  expect_list(graph$outputs, len = 1L, types = "GraphValue")
 
   # What do we expect here?
   # We want the resulting graph to have a constant and two inputs
 
-  expect_true(is_graph_value(graph@calls[[1]]@inputs[[1]]))
-  expect_true(is_graph_value(graph@calls[[1]]@inputs[[2]]))
-  expect_true(identical(x, graph@constants[[1]]@aval@data))
-  expect_equal(length(graph@constants), 1L)
+  expect_true(is_graph_value(graph$calls[[1]]$inputs[[1]]))
+  expect_true(is_graph_value(graph$calls[[1]]$inputs[[2]]))
+  expect_true(identical(x, graph$constants[[1]]$aval$data))
+  expect_equal(length(graph$constants), 1L)
 })
 
 test_that("trace_fn can deduplicate constants", {
@@ -63,8 +63,8 @@ test_that("trace_fn can deduplicate constants", {
     nvl_add(x, x)
   }
   graph <- trace_fn(f, list(y = nv_scalar(2)))
-  expect_equal(length(graph@constants), 1L)
-  expect_identical(graph@constants[[1]]@aval@data, x)
+  expect_equal(length(graph$constants), 1L)
+  expect_identical(graph$constants[[1]]$aval$data, x)
 })
 
 test_that("trace_fn works without arguments", {
@@ -74,11 +74,11 @@ test_that("trace_fn works without arguments", {
     x
   }
   graph <- trace_fn(f, list())
-  expect_equal(length(graph@inputs), 0L)
-  expect_equal(length(graph@outputs), 1L)
-  expect_identical(graph@outputs[[1]]@aval@data, x)
-  expect_equal(length(graph@outputs), 1L)
-  expect_equal(length(graph@calls), 0L)
+  expect_equal(length(graph$inputs), 0L)
+  expect_equal(length(graph$outputs), 1L)
+  expect_identical(graph$outputs[[1]]$aval$data, x)
+  expect_equal(length(graph$outputs), 1L)
+  expect_equal(length(graph$calls), 0L)
 })
 
 
@@ -157,12 +157,12 @@ test_that("trace_fn works with nv_aten inputs", {
   in_type <- nv_aten("f32", c(2, 2))
   graph <- trace_fn(f, list(x = in_type, y = in_type))
   expect_true(is_graph(graph))
-  expect_equal(graph@inputs[[1L]]@aval, in_type)
-  expect_equal(graph@inputs[[2L]]@aval, in_type)
-  expect_equal(length(graph@inputs), 2L)
-  expect_equal(length(graph@calls), 1L)
-  expect_equal(length(graph@outputs), 1L)
-  expect_equal(graph@calls[[1L]]@primitive, p_add)
+  expect_equal(graph$inputs[[1L]]$aval, in_type)
+  expect_equal(graph$inputs[[2L]]$aval, in_type)
+  expect_equal(length(graph$inputs), 2L)
+  expect_equal(length(graph$calls), 1L)
+  expect_equal(length(graph$outputs), 1L)
+  expect_equal(graph$calls[[1L]]$primitive, p_add)
 })
 
 test_that("local_descriptor errors when run in the global environment", {
@@ -178,7 +178,7 @@ test_that("can pass abstract tensors to trace_fn", {
   in_type <- nv_aten("f32", c(2, 2))
   graph <- trace_fn(f, list(x = in_type, y = in_type))
   expect_true(is_graph(graph))
-  expect_equal(graph@inputs[[1L]]@aval, in_type)
-  expect_equal(graph@inputs[[2L]]@aval, in_type)
-  expect_equal(length(graph@inputs), 2L)
+  expect_equal(graph$inputs[[1L]]$aval, in_type)
+  expect_equal(graph$inputs[[2L]]$aval, in_type)
+  expect_equal(length(graph$inputs), 2L)
 })
