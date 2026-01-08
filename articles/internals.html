@@ -84,7 +84,7 @@
       <h1>Internals</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-inline-consts/vignettes/internals.Rmd" class="external-link"><code>vignettes/internals.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/internals.Rmd" class="external-link"><code>vignettes/internals.Rmd</code></a></small>
       <div class="d-none name"><code>internals.Rmd</code></div>
     </div>
 
@@ -254,7 +254,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x564471e6eaf8&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x5618adb2b560&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -297,7 +297,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x564471e6dc50&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x5618adb30408&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
@@ -561,7 +561,7 @@ the <code>@constants</code> field of the graph, just like the literal
 <span><span class="co">##  .. .. @ dims: int 1000000</span></span>
 <span><span class="co">##  .. @ ambiguous: logi FALSE</span></span>
 <span><span class="co">##  .. @ data     :Classes 'AnvilTensor', 'PJRTBuffer' &lt;externalptr&gt; </span></span>
-<span><span class="co">##  @ .state:&lt;environment: 0x564473dad6f8&gt;</span></span></code></pre>
+<span><span class="co">##  @ .state:&lt;environment: 0x5618afb1c2c0&gt;</span></span></code></pre>
 <p>When compiling such a program to stableHLO, constants are treated
 differently depending on their shape (we follow JAX’s approach here).
 That is, constants with 1 element are <strong>inlined</strong> into the
@@ -598,7 +598,7 @@ would be unable to do constant folding.</p>
 <span><span class="co">##  .. .. @ dims: int 1000000</span></span>
 <span><span class="co">##  .. @ ambiguous: logi FALSE</span></span>
 <span><span class="co">##  .. @ data     :Classes 'AnvilTensor', 'PJRTBuffer' &lt;externalptr&gt; </span></span>
-<span><span class="co">##  @ .state:&lt;environment: 0x564473dad6f8&gt;</span></span></code></pre>
+<span><span class="co">##  @ .state:&lt;environment: 0x5618afb1c2c0&gt;</span></span></code></pre>
 <p>Also, before compiling, we remove unused constants. Captured
 constants can become unused when we apply code transformations like
 below, where the gradient of the function w.r.t. <code>x</code> does not
