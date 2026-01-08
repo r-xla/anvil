@@ -4,16 +4,18 @@
 
 - [`nv_aten()`](AbstractTensor.md)
   [`AbstractTensor()`](AbstractTensor.md) : Abstract Tensor Class
+- [`AnvilBox`](AnvilBox.md) : AnvilBox
 - [`AnvilGraph()`](AnvilGraph.md) [`Graph()`](AnvilGraph.md) : Graph of
   Primitive Calls
-- [`AnvilPrimitive()`](AnvilPrimitive.md) : AnvilPrimitive
-- [`Box()`](Box.md) : Box
+- [`AnvilPrimitive()`](AnvilPrimitive.md)
+  [`Primitive()`](AnvilPrimitive.md) : AnvilPrimitive
+- [`AnvilTensor`](AnvilTensor.md) : AnvilTensor
 - [`ConcreteTensor()`](ConcreteTensor.md) : Concrete Tensor Class
 - [`DebugBox()`](DebugBox.md) : Debug Box Class
 - [`GraphBox()`](GraphBox.md) : Graph Box
 - [`GraphDescriptor()`](GraphDescriptor.md) : Graph Descriptor
 - [`GraphLiteral()`](GraphLiteral.md) : Graph Literal
-- [`GraphNode()`](GraphNode.md) : Graph Node
+- [`GraphNode`](GraphNode.md) : Graph Node
 - [`GraphValue()`](GraphValue.md) : Graph Value
 - [`HigherOrderPrimitive()`](HigherOrderPrimitive.md) :
   HigherOrderPrimitive
@@ -115,10 +117,10 @@
 - [`nv_sub()`](nv_sub.md) : Subtraction
 - [`nv_tan()`](nv_tan.md) : Tangent
 - [`nv_tanh()`](nv_tanh.md) : Hyperbolic Tangent
-- [`AnvilTensor()`](nv_tensor.md) [`nv_tensor()`](nv_tensor.md)
-  [`nv_scalar()`](nv_tensor.md) [`nv_empty()`](nv_tensor.md) : Tensor
+- [`nv_tensor()`](nv_tensor.md) [`nv_scalar()`](nv_tensor.md)
+  [`nv_empty()`](nv_tensor.md) : Tensor
 - [`nv_transpose()`](nv_transpose.md)
-  [`t(`*`<Box>`*`)`](nv_transpose.md) : Transpose
+  [`t(`*`<AnvilBox>`*`)`](nv_transpose.md) : Transpose
 - [`nv_while()`](nv_while.md) : While
 - [`nv_xor()`](nv_xor.md) : Logical Xor
 - [`nvl_abs()`](nvl_abs.md) : Primitive Absolute Value

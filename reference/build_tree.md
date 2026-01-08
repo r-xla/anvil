@@ -21,4 +21,4 @@ build_tree(x, counter = NULL)
 
 ## Value
 
-A tree node (LeafNode or ListNode).
+`Node`

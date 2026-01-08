@@ -6,6 +6,8 @@ Primitive interpretation rule.
 
 ``` r
 AnvilPrimitive(name)
+
+Primitive(name)
 ```
 
 ## Arguments

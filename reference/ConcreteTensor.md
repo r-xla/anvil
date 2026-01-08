@@ -15,7 +15,7 @@ ConcreteTensor(data)
 
 - data:
 
-  ([`AnvilTensor`](nv_tensor.md))  
+  ([`AnvilTensor`](AnvilTensor.md))  
   The actual tensor data.
 
 ## See also

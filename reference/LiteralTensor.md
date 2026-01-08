@@ -2,8 +2,8 @@
 
 A [`AbstractTensor`](AbstractTensor.md) representing a tensor where the
 data is a R scalar literal (e.g., `1L`, `2.5`) or an
-[`AnvilTensor`](nv_tensor.md). Usually, their type is ambiguous, unless
-created via [`nv_fill`](nv_fill.md).
+[`AnvilTensor`](AnvilTensor.md). Usually, their type is ambiguous,
+unless created via [`nv_fill`](nv_fill.md).
 
 ## Usage
 
@@ -16,7 +16,7 @@ LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
 - data:
 
   (`numeric(1)` \| `integer(1)` \| `logical(1)` \|
-  [`AnvilTensor`](nv_tensor.md))  
+  [`AnvilTensor`](AnvilTensor.md))  
   The scalar value or scalarish AnvilTensor (contains 1 element).
 
 - shape:

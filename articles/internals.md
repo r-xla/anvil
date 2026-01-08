@@ -12,7 +12,8 @@ for reshaping code. We refer to such a rewriting of code as a
     [`anvil::Graph`](../reference/AnvilGraph.md) object via **tracing**.
     Such a `AnvilGraph` is similar to `JAXExpr` objects in `JAX`. It
     operates only on `AnvilTensor` objects and applies
-    `anvil::Primitive` operations to them.
+    [`anvil::Primitive`](../reference/AnvilPrimitive.md) operations to
+    them.
 2.  `AnvilGraph` \\\rightarrow\\ `AnvilGraph`: It is possible to
     transform `AnvilGraph`s into other `AnvilGraph`s. Their purpose is
     to change the functionality of the code. At the time of writing,
@@ -137,10 +138,10 @@ such a `AnvilGraph` to `AnvilGraph` transformation can be implemented.
 For most interesting transformations, however, we need to store some
 information for each {anvil} primitive function. In the case of the
 gradient, we need to store the derivative rules. For this,
-`anvil::Primitive` objects have a `$rules` field that can be populated.
-The derivative rules are stored as functions under the `"backward"`
-name. We can access a primitive by it’s name via the
-[`prim()`](../reference/prim.md) function:
+[`anvil::Primitive`](../reference/AnvilPrimitive.md) objects have a
+`$rules` field that can be populated. The derivative rules are stored as
+functions under the `"backward"` name. We can access a primitive by it’s
+name via the [`prim()`](../reference/prim.md) function:
 
 ``` r
 prim("mul")$rules[["backward"]]
@@ -154,7 +155,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x5584051ec440>
+    ## <bytecode: 0x55d4a2c566b0>
     ## <environment: namespace:anvil>
 
 The [`anvil::transform_gradient`](../reference/transform_gradient.md)
@@ -204,7 +205,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x558404db1080>
+    ## <bytecode: 0x55d4a2c59868>
     ## <environment: namespace:anvil>
 
 The [`anvil::stablehlo`](../reference/stablehlo.md) function will create
