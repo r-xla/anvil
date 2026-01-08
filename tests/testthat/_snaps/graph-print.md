@@ -3,7 +3,7 @@
     Code
       graph
     Output
-      <Graph>
+      <AnvilGraph>
         Inputs:
           %x1: f32[]
         Body:
@@ -17,7 +17,7 @@
     Code
       graph
     Output
-      <Graph>
+      <AnvilGraph>
         Inputs: (none)
         Body:
           %1: f32[2, 1] = fill [value = 1, dtype = f32, shape = c(2, 1)] ()
@@ -29,7 +29,7 @@
     Code
       graph
     Output
-      <Graph>
+      <AnvilGraph>
         Inputs:
           %x1: i1[]
         Body:
@@ -43,7 +43,7 @@
     Code
       graph
     Output
-      <Graph>
+      <AnvilGraph>
         Inputs:
           %x1: f32[]
         Constants:
@@ -58,7 +58,7 @@
     Code
       graph
     Output
-      <Graph>
+      <AnvilGraph>
         Inputs:
           %x1: i1[]
         Constants:
@@ -74,7 +74,7 @@
     Code
       graph
     Output
-      <Graph>
+      <AnvilGraph>
         Inputs:
           %x1: f32[]
         Constants:
@@ -90,7 +90,7 @@
     Code
       graph
     Output
-      <Graph>
+      <AnvilGraph>
         Inputs:
           %x1: i32[10]
         Body:

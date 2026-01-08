@@ -22,7 +22,7 @@ If this is \code{TRUE}, inputs that are \code{AnvilTensor}s are treated as unkno
 If this is \code{FALSE} (default), \code{AnvilTensor}s are treated as constants.}
 }
 \value{
-(\code{\link{Graph}})
+(\code{\link{AnvilGraph}})
 }
 \description{
 Create a graph representation of an R function by tracing.

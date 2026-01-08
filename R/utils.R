@@ -1,7 +1,3 @@
-hash <- S7::new_generic("hash", "x", function(x) {
-  S7::S7_dispatch()
-})
-
 # set utils
 set <- function() {
   hashtab()
@@ -120,7 +116,7 @@ zero_env <- function() {
 
 shape2string <- function(x, parenthesize = TRUE) {
   if (is_shape(x)) {
-    x <- x@dims
+    x <- x$dims
   }
   if (parenthesize) {
     sprintf("(%s)", paste0(x, collapse = ","))

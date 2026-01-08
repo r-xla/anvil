@@ -1,5 +1,10 @@
-#' @rdname nv_tensor
-AnvilTensor <- S7::new_S3_class("AnvilTensor")
+#' @title AnvilTensor
+#' @description
+#' Virtual base class for tensor objects in anvil.
+#' This class is used to mark objects that can be used as tensors in anvil.
+#' Cannot be instantiated directly - use [`nv_tensor()`], [`nv_scalar()`], or [`nv_empty()`] instead.
+#' @name AnvilTensor
+NULL
 
 #' @importFrom pjrt platform
 
@@ -90,58 +95,55 @@ dtype.AnvilTensor <- function(x, ...) {
 #' @template param_ambiguous
 #' @seealso [ConcreteTensor], [LiteralTensor], [to_abstract()]
 #' @export
-AbstractTensor <- S7::new_class(
-  "AbstractTensor",
-  properties = list(
-    dtype = stablehlo::TensorDataType,
-    shape = stablehlo::Shape,
-    # ambiguous types are literals or values that were cast to an ambiguous type
-    ambiguous = new_property(class_logical, validator = function(value) {
-      if (!test_flag(value)) {
-        return("ambiguous must be a flag")
-      }
-    })
-  ),
-  constructor = function(dtype, shape, ambiguous = FALSE) {
-    shape <- as_shape(shape)
-    dtype <- as_dtype(dtype)
-    if (ambiguous) {
-      ok <- is_dtype(dtype) && (repr(dtype) == "f32" || repr(dtype) == "i32")
-      if (!ok) {
-        cli_abort("Ambiguous types must have dtype f32 or i32")
-      }
-    }
-    S7::new_object(
-      S7::S7_object(),
-      dtype = dtype,
-      shape = shape,
-      ambiguous = ambiguous
-    )
+AbstractTensor <- function(dtype, shape, ambiguous = FALSE) {
+  shape <- as_shape(shape)
+  dtype <- as_dtype(dtype)
+  if (!test_flag(ambiguous)) {
+    cli_abort("ambiguous must be a flag")
   }
-)
+  if (ambiguous) {
+    ok <- is_dtype(dtype) && (repr(dtype) == "f32" || repr(dtype) == "i32")
+    if (!ok) {
+      cli_abort("Ambiguous types must have dtype f32 or i32")
+    }
+  }
+
+  structure(
+    list(dtype = dtype, shape = shape, ambiguous = ambiguous),
+    class = "AbstractTensor"
+  )
+}
 
 is_abstract_tensor <- function(x) {
-  inherits(x, "anvil::AbstractTensor")
+  inherits(x, "AbstractTensor")
 }
 
 is_concrete_tensor <- function(x) {
-  inherits(x, "anvil::ConcreteTensor")
+  inherits(x, "ConcreteTensor")
 }
 
-method(platform, AbstractTensor) <- function(x, ...) {
+#' @title Platform for AbstractTensor
+#' @description
+#' Get the platform of an AbstractTensor. Always errors since platform
+#' is not accessible during tracing.
+#' @param x An AbstractTensor.
+#' @param ... Additional arguments (unused).
+#' @return Never returns; always errors.
+#' @export
+platform.AbstractTensor <- function(x, ...) {
   cli_abort("platform is not accessible during tracing")
 }
 
-#' @method dtype anvil::AbstractTensor
+#' @method dtype AbstractTensor
 #' @export
-`dtype.anvil::AbstractTensor` <- function(x, ...) {
-  x@dtype
+dtype.AbstractTensor <- function(x, ...) {
+  x$dtype
 }
 
-#' @method shape anvil::AbstractTensor
+#' @method shape AbstractTensor
 #' @export
-`shape.anvil::AbstractTensor` <- function(x, ...) {
-  x@shape@dims
+shape.AbstractTensor <- function(x, ...) {
+  x$shape$dims
 }
 
 #' @title Concrete Tensor Class
@@ -154,26 +156,21 @@ method(platform, AbstractTensor) <- function(x, ...) {
 #'   The actual tensor data.
 #' @seealso [AbstractTensor], [LiteralTensor]
 #' @export
-ConcreteTensor <- S7::new_class(
-  "ConcreteTensor",
-  parent = AbstractTensor,
-  properties = list(
-    data = AnvilTensor
-  ),
-  constructor = function(data) {
-    if (!inherits(data, "AnvilTensor")) {
-      cli_abort("data must be an AnvilTensor")
-    }
+ConcreteTensor <- function(data) {
+  if (!inherits(data, "AnvilTensor")) {
+    cli_abort("data must be an AnvilTensor")
+  }
 
-    S7::new_object(
-      S7::S7_object(),
+  structure(
+    list(
       dtype = dtype_from_buffer(data),
       shape = Shape(shape(data)),
       data = data,
       ambiguous = FALSE
-    )
-  }
-)
+    ),
+    class = c("ConcreteTensor", "AbstractTensor")
+  )
+}
 
 #' @title Literal Tensor Class
 #' @description
@@ -190,73 +187,87 @@ ConcreteTensor <- S7::new_class(
 #' @template param_ambiguous
 #' @seealso [AbstractTensor], [ConcreteTensor]
 #' @export
-LiteralTensor <- new_class(
-  "LiteralTensor",
-  parent = AbstractTensor,
-  properties = list(
-    data = new_property(class_any, validator = function(value) {
-      if (!test_scalar(value) && !inherits(value, "AnvilTensor")) {
-        return("LiteralTensors expect scalars or AnvilTensor")
-      }
-      if (inherits(value, "AnvilTensor")) {
-        if (prod(shape(value)) != 1L) {
-          return("AnvilTensor must contain exactly one element.")
-        }
-      }
-    }),
-    shape = stablehlo::Shape,
-    dtype = stablehlo::TensorDataType
-  ),
-  constructor = function(data, shape, dtype = default_dtype(data), ambiguous) {
-    if (!test_scalar(data) && !inherits(data, "AnvilTensor")) {
-      cli_abort("LiteralTensors expect scalars or AnvilTensor")
-    }
-    shape <- as_shape(shape)
-    S7::new_object(
-      S7::S7_object(),
-      data = data,
-      shape = shape,
-      dtype = as_dtype(dtype),
-      ambiguous = ambiguous
-    )
+LiteralTensor <- function(data, shape, dtype = default_dtype(data), ambiguous) {
+  if (!test_scalar(data) && !inherits(data, "AnvilTensor")) {
+    cli_abort("LiteralTensors expect scalars or AnvilTensor")
   }
-)
+  if (inherits(data, "AnvilTensor")) {
+    if (prod(shape(data)) != 1L) {
+      cli_abort("AnvilTensor must contain exactly one element.")
+    }
+  }
+  shape <- as_shape(shape)
+  dtype <- as_dtype(dtype)
+
+  structure(
+    list(
+      data = data,
+      dtype = dtype,
+      shape = shape,
+      ambiguous = ambiguous
+    ),
+    class = c("LiteralTensor", "AbstractTensor")
+  )
+}
 
 is_literal_tensor <- function(x) {
-  inherits(x, "anvil::LiteralTensor")
+  inherits(x, "LiteralTensor")
 }
 
-method(platform, ConcreteTensor) <- function(x, ...) {
-  pjrt::platform(x@data)
+#' @title Platform for ConcreteTensor
+#' @description
+#' Get the platform of a ConcreteTensor.
+#' @param x A ConcreteTensor.
+#' @param ... Additional arguments (unused).
+#' @return The platform string.
+#' @export
+platform.ConcreteTensor <- function(x, ...) {
+  pjrt::platform(x$data)
 }
 
-method(`==`, list(AbstractTensor, AbstractTensor)) <- function(e1, e2) {
-  e1@dtype == e2@dtype && e1@shape == e2@shape
+#' @export
+`==.AbstractTensor` <- function(e1, e2) {
+  if (!inherits(e2, "AbstractTensor")) {
+    return(FALSE)
+  }
+  e1$dtype == e2$dtype && e1$shape == e2$shape
 }
 
-method(repr, AbstractTensor) <- function(x) {
-  sprintf("%s[%s]", paste0(repr(x@dtype), if (x@ambiguous) "?"), repr(x@shape))
+#' @export
+`!=.AbstractTensor` <- function(e1, e2) {
+  !(e1 == e2)
 }
 
-method(format, AbstractTensor) <- function(x, ...) {
+#' @export
+repr.AbstractTensor <- function(x, ...) {
+  sprintf("%s[%s]", paste0(repr(x$dtype), if (x$ambiguous) "?"), repr(x$shape))
+}
+
+#' @export
+format.AbstractTensor <- function(x, ...) {
   sprintf(
     "AbstractTensor(dtype=%s, shape=%s)",
-    if (x@ambiguous) paste0(repr(x@dtype), "?") else repr(x@dtype),
-    repr(x@shape)
-  ) # nolint
+    if (x$ambiguous) paste0(repr(x$dtype), "?") else repr(x$dtype),
+    repr(x$shape)
+  )
 }
 
-method(print, AbstractTensor) <- function(x, ...) {
+#' @export
+print.AbstractTensor <- function(x, ...) {
   cat(format(x), "\n")
+  invisible(x)
 }
 
-method(print, ConcreteTensor) <- function(x, ...) {
+#' @export
+print.ConcreteTensor <- function(x, ...) {
   cat(format(x), "\n")
-  print(x@data, header = FALSE)
+  print(x$data, header = FALSE)
+  invisible(x)
 }
 
-method(format, ConcreteTensor) <- function(x, ...) {
-  sprintf("ConcreteTensor(dtype=%s, shape=%s)", repr(x@dtype), repr(x@shape))
+#' @export
+format.ConcreteTensor <- function(x, ...) {
+  sprintf("ConcreteTensor(dtype=%s, shape=%s)", repr(x$dtype), repr(x$shape))
 }
 
 
@@ -283,15 +294,15 @@ to_abstract <- function(x, pure = FALSE) {
     # logicals are not ambiguous
     LiteralTensor(x, integer(), ambiguous = !is.logical(x))
   } else if (is_graph_box(x)) {
-    gnode <- x@gnode
-    gnode@aval
+    gnode <- x$gnode
+    gnode$aval
   } else if (is_debug_box(x)) {
-    x@aval
+    x$aval
   } else {
     cli_abort("internal error: {.cls {class(x)}} is not a tensor-like object")
   }
-  if (pure && class(x)[[1L]] != "anvil::AbstractTensor") {
-    AbstractTensor(dtype = x@dtype, shape = x@shape, ambiguous = x@ambiguous)
+  if (pure && class(x)[[1L]] != "AbstractTensor") {
+    AbstractTensor(dtype = x$dtype, shape = x$shape, ambiguous = x$ambiguous)
   } else {
     x
   }
@@ -310,7 +321,7 @@ as_shape <- function(x) {
 }
 
 is_shape <- function(x) {
-  inherits(x, "stablehlo::Shape")
+  inherits(x, "Shape")
 }
 
 

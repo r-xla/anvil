@@ -9,20 +9,20 @@ describe("inline_scalarish_constants", {
     graph <- do.call(trace_fn, c(list(f = graph_fun), args, list(toplevel = TRUE)))
 
     if (!is.null(expected_constants_before)) {
-      expect_length(graph@constants, expected_constants_before)
+      expect_length(graph$constants, expected_constants_before)
     }
 
     new_graph <- inline_scalarish_constants(graph)
 
     if (!is.null(expected_constants_after)) {
-      expect_length(new_graph@constants, expected_constants_after)
+      expect_length(new_graph$constants, expected_constants_after)
     }
 
-    expect_gte(length(new_graph@calls), length(graph@calls))
-    expect_equal(length(new_graph@inputs), length(graph@inputs))
-    expect_equal(length(new_graph@outputs), length(graph@outputs))
-    expect_identical(new_graph@in_tree, graph@in_tree)
-    expect_identical(new_graph@out_tree, graph@out_tree)
+    expect_gte(length(new_graph$calls), length(graph$calls))
+    expect_equal(length(new_graph$inputs), length(graph$inputs))
+    expect_equal(length(new_graph$outputs), length(graph$outputs))
+    expect_identical(new_graph$in_tree, graph$in_tree)
+    expect_identical(new_graph$out_tree, graph$out_tree)
 
     if (!is.null(check_literals)) {
       check_literals(new_graph, graph)
@@ -32,7 +32,7 @@ describe("inline_scalarish_constants", {
       out <- stablehlo(graph)
       func <- out[[1L]]
       consts <- out[[2L]]
-      const_tensors <- lapply(consts, function(c) c@aval@data)
+      const_tensors <- lapply(consts, function(c) c$aval$data)
       program <- pjrt::pjrt_program(src = stablehlo::repr(func), format = "mlir")
       exec <- pjrt::pjrt_compile(program)
       inputs_flat <- flatten(args)
@@ -56,8 +56,8 @@ describe("inline_scalarish_constants", {
       expected_constants_before = 1L,
       expected_constants_after = 0L,
       check_literals = function(new_graph, original_graph) {
-        expect_true(is_graph_literal(new_graph@calls[[1L]]@inputs[[2L]]))
-        expect_equal(new_graph@calls[[1L]]@inputs[[2L]]@aval@data, const_scalar)
+        expect_true(is_graph_literal(new_graph$calls[[1L]]$inputs[[2L]]))
+        expect_equal(new_graph$calls[[1L]]$inputs[[2L]]$aval$data, const_scalar)
       }
     )
   })
@@ -127,7 +127,7 @@ describe("inline_scalarish_constants", {
       args = list(list(x = nv_scalar(1))),
       check_literals = function(new_graph, original_graph) {
         # one fill call is added
-        expect_true(length(new_graph@calls) == length(original_graph@calls) + 1L)
+        expect_true(length(new_graph$calls) == length(original_graph$calls) + 1L)
       }
     )
   })
@@ -160,8 +160,8 @@ describe("inline_scalarish_constants", {
       expected_constants_before = 3L,
       expected_constants_after = 0L,
       check_literals = function(new_graph, original_graph) {
-        expect_true(is_graph_literal(new_graph@calls[[1L]]@inputs[[2L]]))
-        expect_equal(new_graph@calls[[1L]]@inputs[[2L]]@aval@data, const1)
+        expect_true(is_graph_literal(new_graph$calls[[1L]]$inputs[[2L]]))
+        expect_equal(new_graph$calls[[1L]]$inputs[[2L]]$aval$data, const1)
       }
     )
   })
@@ -196,7 +196,7 @@ describe("inline_scalarish_constants", {
       graph_fun = f,
       args = list(list(x = nv_scalar(TRUE), y = nv_scalar(TRUE))),
       check_literals = function(new_graph, original_graph) {
-        expect_equal(length(new_graph@calls), length(original_graph@calls) + 4L)
+        expect_equal(length(new_graph$calls), length(original_graph$calls) + 4L)
       }
     )
   })
@@ -212,8 +212,8 @@ describe("inline_scalarish_constants", {
       expected_constants_before = 1L,
       expected_constants_after = 0L,
       check_literals = function(new_graph, original_graph) {
-        expect_equal(length(new_graph@calls), length(original_graph@calls) + 1L)
-        expect_identical(new_graph@outputs[[1L]], new_graph@outputs[[2L]])
+        expect_equal(length(new_graph$calls), length(original_graph$calls) + 1L)
+        expect_identical(new_graph$outputs[[1L]], new_graph$outputs[[2L]])
       }
     )
   })
@@ -254,7 +254,7 @@ describe("inline_scalarish_constants", {
     f <- function() y
     graph <- trace_fn(f, list())
     new_graph <- inline_scalarish_constants(graph)
-    expect_length(new_graph@constants, 1L)
+    expect_length(new_graph$constants, 1L)
   })
 })
 
@@ -276,8 +276,8 @@ describe("remove_unused_constants", {
       x + y
     }
     graph <- trace_fn(f, list(x = nv_scalar(1)))
-    expect_length(graph@constants, 1L)
+    expect_length(graph$constants, 1L)
     new_graph <- remove_unused_constants(graph)
-    expect_length(new_graph@constants, 1L)
+    expect_length(new_graph$constants, 1L)
   })
 })

@@ -61,7 +61,7 @@ f_jit <- jit(\(x) {
 ```
 
 If we run this function, we see that not the actual value is printed, but some `GraphBox` object.
-This `GraphBox` object is passed around **during tracing** so that we can convert the function into a `Graph` that is subsequently compiled.
+This `GraphBox` object is passed around **during tracing** so that we can convert the function into a `AnvilGraph` that is subsequently compiled.
 
 ```{r}
 f_jit(nv_tensor(1:4, shape = c(2, 2)))

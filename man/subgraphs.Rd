@@ -11,7 +11,7 @@ subgraphs(call)
 The primitive call.}
 }
 \value{
-(\code{list(Graph)})\cr
+(\code{list(AnvilGraph)})\cr
 List of subgraphs found in the parameters.
 }
 \description{

@@ -53,7 +53,7 @@ devtools::check()
 
 ## Development Practices
 
-1. Use S7 (object-oriented system) for defining types and classes.
+1. Use S3 (object-oriented system) for defining types and classes.
 2. Follow the established pattern for adding new operations and types
 3. Add tests in `tests/testthat/`
 4. Document functions with roxygen2 comments

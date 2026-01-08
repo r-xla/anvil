@@ -3,26 +3,26 @@
 #' @include primitive.R
 
 infer_binary <- function(lhs, rhs) {
-  both_ambiguous <- lhs@ambiguous && rhs@ambiguous
-  out <- stablehlo::infer_types_generic_biv(st2va(lhs), st2va(rhs))@items[[1L]]
-  out <- vt2sa(out)
-  out@ambiguous <- both_ambiguous
+  both_ambiguous <- lhs$ambiguous && rhs$ambiguous
+  out <- stablehlo::infer_types_generic_biv(at2vt(lhs), at2vt(rhs))[[1L]]
+  out <- vt2at(out)
+  out$ambiguous <- both_ambiguous
   list(out)
 }
 
 # boolean is i1 -> integerish
 infer_binary_integerish <- function(lhs, rhs) {
-  both_ambiguous <- lhs@ambiguous && rhs@ambiguous
-  out <- stablehlo::infer_types_integerish_biv(st2va(lhs), st2va(rhs))@items[[1L]]
-  out <- vt2sa(out)
-  out@ambiguous <- both_ambiguous
+  both_ambiguous <- lhs$ambiguous && rhs$ambiguous
+  out <- stablehlo::infer_types_integerish_biv(at2vt(lhs), at2vt(rhs))[[1L]]
+  out <- vt2at(out)
+  out$ambiguous <- both_ambiguous
   list(out)
 }
 
 infer_unary <- function(operand) {
-  out <- stablehlo::infer_types_generic_uni(st2va(operand))@items[[1L]]
-  out <- vt2sa(out)
-  out@ambiguous <- operand@ambiguous
+  out <- stablehlo::infer_types_generic_uni(at2vt(operand))[[1L]]
+  out <- vt2at(out)
+  out$ambiguous <- operand$ambiguous
   list(out)
 }
 
@@ -39,9 +39,9 @@ make_binary_integerish_op <- function(prim) {
 }
 
 infer_unary_integerish <- function(operand) {
-  out <- stablehlo::infer_types_integerish_uni(st2va(operand))@items[[1L]]
-  out <- vt2sa(out)
-  out@ambiguous <- operand@ambiguous
+  out <- stablehlo::infer_types_integerish_uni(at2vt(operand))[[1L]]
+  out <- vt2at(out)
+  out$ambiguous <- operand$ambiguous
   list(out)
 }
 
@@ -68,7 +68,7 @@ infer_reduce <- function(operand, dims, drop) {
   list(AbstractTensor(
     dtype = dtype(operand),
     shape = Shape(new_shape),
-    ambiguous = operand@ambiguous
+    ambiguous = operand$ambiguous
   ))
 }
 
@@ -83,11 +83,11 @@ infer_reduce_boolean <- function(operand, dims, drop) {
   list(AbstractTensor(
     dtype = "pred",
     shape = Shape(new_shape),
-    ambiguous = operand@ambiguous
+    ambiguous = operand$ambiguous
   ))
 }
 
-p_fill <- Primitive("fill")
+p_fill <- AnvilPrimitive("fill")
 #' @title Primitive Fill
 #' @description
 #' Creates a tensor filled with a scalar value.
@@ -99,7 +99,7 @@ p_fill <- Primitive("fill")
 #' @export
 nvl_fill <- function(value, shape, dtype) {
   infer_fill <- function(value, shape, dtype) {
-    list(LiteralTensor(data = value, dtype = as_dtype(dtype), shape = shape, ambiguous = FALSE))
+    list(AbstractTensor(dtype = as_dtype(dtype), shape = shape, ambiguous = FALSE))
   }
   graph_desc_add(
     p_fill,
@@ -109,7 +109,7 @@ nvl_fill <- function(value, shape, dtype) {
   )[[1L]]
 }
 
-p_add <- Primitive("add")
+p_add <- AnvilPrimitive("add")
 #' @title Primitive Addition
 #' @description
 #' Adds two tensors element-wise.
@@ -118,7 +118,7 @@ p_add <- Primitive("add")
 #' @export
 nvl_add <- make_binary_op(p_add)
 
-p_mul <- Primitive("mul")
+p_mul <- AnvilPrimitive("mul")
 #' @title Primitive Multiplication
 #' @description
 #' Multiplies two tensors element-wise.
@@ -127,7 +127,7 @@ p_mul <- Primitive("mul")
 #' @export
 nvl_mul <- make_binary_op(p_mul)
 
-p_sub <- Primitive("sub")
+p_sub <- AnvilPrimitive("sub")
 #' @title Primitive Subtraction
 #' @description
 #' Subtracts two tensors element-wise.
@@ -136,7 +136,7 @@ p_sub <- Primitive("sub")
 #' @export
 nvl_sub <- make_binary_op(p_sub)
 
-p_neg <- Primitive("negate")
+p_neg <- AnvilPrimitive("negate")
 #' @title Primitive Negation
 #' @description
 #' Negates a tensor element-wise.
@@ -145,7 +145,7 @@ p_neg <- Primitive("negate")
 #' @export
 nvl_neg <- make_unary_op(p_neg)
 
-p_div <- Primitive("divide")
+p_div <- AnvilPrimitive("divide")
 #' @title Primitive Division
 #' @description
 #' Divides two tensors element-wise.
@@ -154,7 +154,7 @@ p_div <- Primitive("divide")
 #' @export
 nvl_div <- make_binary_op(p_div)
 
-p_pow <- Primitive("power")
+p_pow <- AnvilPrimitive("power")
 #' @title Primitive Power
 #' @description
 #' Raises lhs to the power of rhs element-wise.
@@ -163,7 +163,7 @@ p_pow <- Primitive("power")
 #' @export
 nvl_pow <- make_binary_op(p_pow)
 
-p_broadcast_in_dim <- Primitive("broadcast_in_dim")
+p_broadcast_in_dim <- AnvilPrimitive("broadcast_in_dim")
 #' @title Primitive Broadcast
 #' @description
 #' Broadcasts a tensor to a new shape.
@@ -183,12 +183,12 @@ nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
       shape = length(broadcast_dimensions)
     )
     out <- stablehlo::infer_types_broadcast_in_dim(
-      st2va(operand),
+      at2vt(operand),
       broadcast_dimensions = bd_attr,
       shape_out = shape_out
-    )@items[[1L]]
-    out <- vt2sa(out)
-    out@ambiguous <- operand@ambiguous
+    )[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
     list(out)
   }
   graph_desc_add(
@@ -202,7 +202,7 @@ nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
   )[[1L]]
 }
 
-p_dot_general <- Primitive("dot_general")
+p_dot_general <- AnvilPrimitive("dot_general")
 #' @title Primitive Dot General
 #' @description
 #' General dot product of two tensors.
@@ -219,8 +219,8 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
       contracting_dims = lapply(contracting_dims, \(x) x - 1L),
       batching_dims = lapply(batching_dims, \(x) x - 1L)
     )
-    out <- stablehlo::infer_types_dot_general(st2va(lhs), st2va(rhs), dot_dimension_numbers = ddn)@items[[1L]]
-    list(vt2sa(out))
+    out <- stablehlo::infer_types_dot_general(at2vt(lhs), at2vt(rhs), dot_dimension_numbers = ddn)[[1L]]
+    list(vt2at(out))
   }
   graph_desc_add(
     p_dot_general,
@@ -230,7 +230,7 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
   )[[1L]]
 }
 
-p_transpose <- Primitive("transpose")
+p_transpose <- AnvilPrimitive("transpose")
 #' @title Primitive Transpose
 #' @description
 #' Transposes a tensor according to a permutation.
@@ -246,9 +246,9 @@ nvl_transpose <- function(operand, permutation) {
       dtype = "i64",
       shape = length(permutation)
     )
-    out <- stablehlo::infer_types_transpose(st2va(operand), permutation = perm_attr)@items[[1L]]
-    out <- vt2sa(out)
-    out@ambiguous <- operand@ambiguous
+    out <- stablehlo::infer_types_transpose(at2vt(operand), permutation = perm_attr)[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
     list(out)
   }
   graph_desc_add(
@@ -259,7 +259,7 @@ nvl_transpose <- function(operand, permutation) {
   )[[1L]]
 }
 
-p_reshape <- Primitive("reshape")
+p_reshape <- AnvilPrimitive("reshape")
 #' @title Primitive Reshape
 #' @description
 #' Reshapes a tensor to a new shape.
@@ -269,9 +269,9 @@ p_reshape <- Primitive("reshape")
 #' @export
 nvl_reshape <- function(operand, shape) {
   infer_fn <- function(operand, shape) {
-    out <- stablehlo::infer_types_reshape(st2va(operand), shape_out = shape)@items[[1L]]
-    out <- vt2sa(out)
-    out@ambiguous <- operand@ambiguous
+    out <- stablehlo::infer_types_reshape(at2vt(operand), shape_out = shape)[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
     list(out)
   }
   graph_desc_add(
@@ -282,7 +282,7 @@ nvl_reshape <- function(operand, shape) {
   )[[1L]]
 }
 
-p_concatenate <- Primitive("concatenate")
+p_concatenate <- AnvilPrimitive("concatenate")
 #' @title Primitive Concatenate
 #' @description
 #' Concatenates tensors along a dimension.
@@ -296,11 +296,11 @@ nvl_concatenate <- function(..., dimension) {
   dots <- list(...)
   infer_fn <- function(..., dimension) {
     operands <- list(...)
-    all_ambiguous <- all(vapply(operands, \(x) x@ambiguous, logical(1L)))
-    vts <- lapply(operands, st2va)
-    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dimension - 1L)@items[[1L]]
-    out <- vt2sa(out)
-    out@ambiguous <- all_ambiguous
+    all_ambiguous <- all(vapply(operands, \(x) x$ambiguous, logical(1L)))
+    vts <- lapply(operands, at2vt)
+    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dimension - 1L)[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- all_ambiguous
     list(out)
   }
   graph_desc_add(
@@ -311,7 +311,7 @@ nvl_concatenate <- function(..., dimension) {
   )[[1L]]
 }
 
-p_slice <- Primitive("slice")
+p_slice <- AnvilPrimitive("slice")
 #' @title Primitive Slice
 #' @description
 #' Extracts a slice from a tensor.
@@ -329,9 +329,9 @@ nvl_slice <- function(operand, start_indices, limit_indices, strides) {
     start_attr <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
     limit_attr <- r_to_constant(limit_indices, dtype = "i64", shape = length(limit_indices))
     strides_attr <- r_to_constant(strides, dtype = "i64", shape = length(strides))
-    out <- stablehlo::infer_types_slice(st2va(operand), start_attr, limit_attr, strides_attr)@items[[1L]]
-    out <- vt2sa(out)
-    out@ambiguous <- operand@ambiguous
+    out <- stablehlo::infer_types_slice(at2vt(operand), start_attr, limit_attr, strides_attr)[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
     list(out)
   }
   graph_desc_add(
@@ -361,7 +361,7 @@ make_reduce_op <- function(prim, infer_fn = infer_reduce) {
   }
 }
 
-p_reduce_sum <- Primitive("reduce_sum")
+p_reduce_sum <- AnvilPrimitive("reduce_sum")
 #' @title Primitive Sum Reduction
 #' @description
 #' Sums tensor elements along dimensions.
@@ -374,7 +374,7 @@ p_reduce_sum <- Primitive("reduce_sum")
 #' @export
 nvl_reduce_sum <- make_reduce_op(p_reduce_sum)
 
-p_reduce_prod <- Primitive("reduce_prod")
+p_reduce_prod <- AnvilPrimitive("reduce_prod")
 #' @title Primitive Product Reduction
 #' @description
 #' Multiplies tensor elements along dimensions.
@@ -387,7 +387,7 @@ p_reduce_prod <- Primitive("reduce_prod")
 #' @export
 nvl_reduce_prod <- make_reduce_op(p_reduce_prod)
 
-p_reduce_max <- Primitive("reduce_max")
+p_reduce_max <- AnvilPrimitive("reduce_max")
 #' @title Primitive Max Reduction
 #' @description
 #' Finds maximum along dimensions.
@@ -400,7 +400,7 @@ p_reduce_max <- Primitive("reduce_max")
 #' @export
 nvl_reduce_max <- make_reduce_op(p_reduce_max)
 
-p_reduce_min <- Primitive("reduce_min")
+p_reduce_min <- AnvilPrimitive("reduce_min")
 #' @title Primitive Min Reduction
 #' @description
 #' Finds minimum along dimensions.
@@ -413,7 +413,7 @@ p_reduce_min <- Primitive("reduce_min")
 #' @export
 nvl_reduce_min <- make_reduce_op(p_reduce_min)
 
-p_reduce_any <- Primitive("reduce_any")
+p_reduce_any <- AnvilPrimitive("reduce_any")
 #' @title Primitive Any Reduction
 #' @description
 #' Logical OR along dimensions.
@@ -426,7 +426,7 @@ p_reduce_any <- Primitive("reduce_any")
 #' @export
 nvl_reduce_any <- make_reduce_op(p_reduce_any, infer_reduce_boolean)
 
-p_reduce_all <- Primitive("reduce_all")
+p_reduce_all <- AnvilPrimitive("reduce_all")
 #' @title Primitive All Reduction
 #' @description
 #' Logical AND along dimensions.
@@ -442,9 +442,9 @@ nvl_reduce_all <- make_reduce_op(p_reduce_all, infer_reduce_boolean)
 # comparison primitives --------------------------------------------------------
 
 infer_compare <- function(lhs, rhs, comparison_direction) {
-  out <- stablehlo::infer_types_compare(st2va(lhs), st2va(rhs), comparison_direction, "FLOAT")@items[[1L]]
-  out <- vt2sa(out)
-  out@ambiguous <- lhs@ambiguous && rhs@ambiguous
+  out <- stablehlo::infer_types_compare(at2vt(lhs), at2vt(rhs), comparison_direction, "FLOAT")[[1L]]
+  out <- vt2at(out)
+  out$ambiguous <- lhs$ambiguous && rhs$ambiguous
   list(out)
 }
 
@@ -455,7 +455,7 @@ make_compare_op <- function(prim, direction) {
   }
 }
 
-p_eq <- Primitive("equal")
+p_eq <- AnvilPrimitive("equal")
 #' @title Primitive Equal
 #' @description
 #' Element-wise equality comparison.
@@ -464,7 +464,7 @@ p_eq <- Primitive("equal")
 #' @export
 nvl_eq <- make_compare_op(p_eq, "EQ")
 
-p_ne <- Primitive("not_equal")
+p_ne <- AnvilPrimitive("not_equal")
 #' @title Primitive Not Equal
 #' @description
 #' Element-wise inequality comparison.
@@ -473,7 +473,7 @@ p_ne <- Primitive("not_equal")
 #' @export
 nvl_ne <- make_compare_op(p_ne, "NE")
 
-p_gt <- Primitive("greater")
+p_gt <- AnvilPrimitive("greater")
 #' @title Primitive Greater Than
 #' @description
 #' Element-wise greater than comparison.
@@ -482,7 +482,7 @@ p_gt <- Primitive("greater")
 #' @export
 nvl_gt <- make_compare_op(p_gt, "GT")
 
-p_ge <- Primitive("greater_equal")
+p_ge <- AnvilPrimitive("greater_equal")
 #' @title Primitive Greater Equal
 #' @description
 #' Element-wise greater than or equal comparison.
@@ -491,7 +491,7 @@ p_ge <- Primitive("greater_equal")
 #' @export
 nvl_ge <- make_compare_op(p_ge, "GE")
 
-p_lt <- Primitive("less")
+p_lt <- AnvilPrimitive("less")
 #' @title Primitive Less Than
 #' @description
 #' Element-wise less than comparison.
@@ -500,7 +500,7 @@ p_lt <- Primitive("less")
 #' @export
 nvl_lt <- make_compare_op(p_lt, "LT")
 
-p_le <- Primitive("less_equal")
+p_le <- AnvilPrimitive("less_equal")
 #' @title Primitive Less Equal
 #' @description
 #' Element-wise less than or equal comparison.
@@ -511,7 +511,7 @@ nvl_le <- make_compare_op(p_le, "LE")
 
 # additional simple binary primitives -----------------------------------------
 
-p_max <- Primitive("maximum")
+p_max <- AnvilPrimitive("maximum")
 #' @title Primitive Maximum
 #' @description
 #' Element-wise maximum of two tensors.
@@ -520,7 +520,7 @@ p_max <- Primitive("maximum")
 #' @export
 nvl_max <- make_binary_op(p_max)
 
-p_min <- Primitive("minimum")
+p_min <- AnvilPrimitive("minimum")
 #' @title Primitive Minimum
 #' @description
 #' Element-wise minimum of two tensors.
@@ -529,7 +529,7 @@ p_min <- Primitive("minimum")
 #' @export
 nvl_min <- make_binary_op(p_min)
 
-p_remainder <- Primitive("remainder")
+p_remainder <- AnvilPrimitive("remainder")
 #' @title Primitive Remainder
 #' @description
 #' Element-wise remainder of division.
@@ -538,7 +538,7 @@ p_remainder <- Primitive("remainder")
 #' @export
 nvl_remainder <- make_binary_op(p_remainder)
 
-p_and <- Primitive("and")
+p_and <- AnvilPrimitive("and")
 #' @title Primitive And
 #' @description
 #' Element-wise logical AND.
@@ -547,7 +547,7 @@ p_and <- Primitive("and")
 #' @export
 nvl_and <- make_binary_integerish_op(p_and)
 
-p_not <- Primitive("not")
+p_not <- AnvilPrimitive("not")
 #' @title Primitive Not
 #' @description
 #' Element-wise logical NOT.
@@ -556,7 +556,7 @@ p_not <- Primitive("not")
 #' @export
 nvl_not <- make_unary_integerish_op(p_not)
 
-p_or <- Primitive("or")
+p_or <- AnvilPrimitive("or")
 #' @title Primitive Or
 #' @description
 #' Element-wise logical OR.
@@ -565,7 +565,7 @@ p_or <- Primitive("or")
 #' @export
 nvl_or <- make_binary_integerish_op(p_or)
 
-p_xor <- Primitive("xor")
+p_xor <- AnvilPrimitive("xor")
 #' @title Primitive Xor
 #' @description
 #' Element-wise logical XOR.
@@ -575,14 +575,14 @@ p_xor <- Primitive("xor")
 nvl_xor <- make_binary_integerish_op(p_xor)
 
 infer_shift <- function(lhs, rhs, shift_fn) {
-  both_ambiguous <- lhs@ambiguous && rhs@ambiguous
-  out <- shift_fn(st2va(lhs), st2va(rhs))@items[[1L]]
-  out <- vt2sa(out)
-  out@ambiguous <- both_ambiguous
+  both_ambiguous <- lhs$ambiguous && rhs$ambiguous
+  out <- shift_fn(at2vt(lhs), at2vt(rhs))[[1L]]
+  out <- vt2at(out)
+  out$ambiguous <- both_ambiguous
   list(out)
 }
 
-p_shift_left <- Primitive("shift_left")
+p_shift_left <- AnvilPrimitive("shift_left")
 #' @title Primitive Shift Left
 #' @description
 #' Element-wise left bit shift.
@@ -594,7 +594,7 @@ nvl_shift_left <- function(lhs, rhs) {
   graph_desc_add(p_shift_left, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
 }
 
-p_shift_right_logical <- Primitive("shift_right_logical")
+p_shift_right_logical <- AnvilPrimitive("shift_right_logical")
 #' @title Primitive Logical Shift Right
 #' @description
 #' Element-wise logical right bit shift.
@@ -606,7 +606,7 @@ nvl_shift_right_logical <- function(lhs, rhs) {
   graph_desc_add(p_shift_right_logical, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
 }
 
-p_shift_right_arithmetic <- Primitive("shift_right_arithmetic")
+p_shift_right_arithmetic <- AnvilPrimitive("shift_right_arithmetic")
 #' @title Primitive Arithmetic Shift Right
 #' @description
 #' Element-wise arithmetic right bit shift.
@@ -618,7 +618,7 @@ nvl_shift_right_arithmetic <- function(lhs, rhs) {
   graph_desc_add(p_shift_right_arithmetic, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
 }
 
-p_atan2 <- Primitive("atan2")
+p_atan2 <- AnvilPrimitive("atan2")
 #' @title Primitive Atan2
 #' @description
 #' Element-wise atan2 operation.
@@ -627,7 +627,7 @@ p_atan2 <- Primitive("atan2")
 #' @export
 nvl_atan2 <- make_binary_op(p_atan2)
 
-p_bitcast_convert <- Primitive("bitcast_convert")
+p_bitcast_convert <- AnvilPrimitive("bitcast_convert")
 #' @title Primitive Bitcast Convert
 #' @description
 #' Reinterprets tensor bits as a different dtype.
@@ -637,14 +637,14 @@ p_bitcast_convert <- Primitive("bitcast_convert")
 #' @export
 nvl_bitcast_convert <- function(operand, dtype) {
   infer_fn <- function(operand, dtype) {
-    lapply(stablehlo::infer_types_bitcast_convert(st2va(operand), dtype)@items, vt2sa)
+    lapply(stablehlo::infer_types_bitcast_convert(at2vt(operand), dtype), vt2at)
   }
   graph_desc_add(p_bitcast_convert, list(operand), params = list(dtype = dtype), infer_fn = infer_fn)[[1L]]
 }
 
 # unary math primitives ---------------------------------------------------------
 
-p_abs <- Primitive("abs")
+p_abs <- AnvilPrimitive("abs")
 #' @title Primitive Absolute Value
 #' @description
 #' Element-wise absolute value.
@@ -653,7 +653,7 @@ p_abs <- Primitive("abs")
 #' @export
 nvl_abs <- make_unary_op(p_abs)
 
-p_sqrt <- Primitive("sqrt")
+p_sqrt <- AnvilPrimitive("sqrt")
 #' @title Primitive Square Root
 #' @description
 #' Element-wise square root.
@@ -662,7 +662,7 @@ p_sqrt <- Primitive("sqrt")
 #' @export
 nvl_sqrt <- make_unary_op(p_sqrt)
 
-p_rsqrt <- Primitive("rsqrt")
+p_rsqrt <- AnvilPrimitive("rsqrt")
 
 #' @title Primitive Reciprocal Square Root
 #' @description
@@ -672,7 +672,7 @@ p_rsqrt <- Primitive("rsqrt")
 #' @export
 nvl_rsqrt <- make_unary_op(p_rsqrt)
 
-p_log <- Primitive("log")
+p_log <- AnvilPrimitive("log")
 #' @title Primitive Logarithm
 #' @description
 #' Element-wise natural logarithm.
@@ -681,7 +681,7 @@ p_log <- Primitive("log")
 #' @export
 nvl_log <- make_unary_op(p_log)
 
-p_tanh <- Primitive("tanh")
+p_tanh <- AnvilPrimitive("tanh")
 #' @title Primitive Hyperbolic Tangent
 #' @description
 #' Element-wise hyperbolic tangent.
@@ -690,7 +690,7 @@ p_tanh <- Primitive("tanh")
 #' @export
 nvl_tanh <- make_unary_op(p_tanh)
 
-p_tan <- Primitive("tan")
+p_tan <- AnvilPrimitive("tan")
 #' @title Primitive Tangent
 #' @description
 #' Element-wise tangent.
@@ -699,7 +699,7 @@ p_tan <- Primitive("tan")
 #' @export
 nvl_tan <- make_unary_op(p_tan)
 
-p_sine <- Primitive("sine")
+p_sine <- AnvilPrimitive("sine")
 #' @title Primitive Sine
 #' @description
 #' Element-wise sine.
@@ -708,7 +708,7 @@ p_sine <- Primitive("sine")
 #' @export
 nvl_sine <- make_unary_op(p_sine)
 
-p_cosine <- Primitive("cosine")
+p_cosine <- AnvilPrimitive("cosine")
 #' @title Primitive Cosine
 #' @description
 #' Element-wise cosine.
@@ -717,7 +717,7 @@ p_cosine <- Primitive("cosine")
 #' @export
 nvl_cosine <- make_unary_op(p_cosine)
 
-p_floor <- Primitive("floor")
+p_floor <- AnvilPrimitive("floor")
 #' @title Primitive Floor
 #' @description
 #' Element-wise floor.
@@ -726,7 +726,7 @@ p_floor <- Primitive("floor")
 #' @export
 nvl_floor <- make_unary_op(p_floor)
 
-p_ceil <- Primitive("ceil")
+p_ceil <- AnvilPrimitive("ceil")
 #' @title Primitive Ceiling
 #' @description
 #' Element-wise ceiling.
@@ -735,7 +735,7 @@ p_ceil <- Primitive("ceil")
 #' @export
 nvl_ceil <- make_unary_op(p_ceil)
 
-p_sign <- Primitive("sign")
+p_sign <- AnvilPrimitive("sign")
 #' @title Primitive Sign
 #' @description
 #' Element-wise sign.
@@ -744,7 +744,7 @@ p_sign <- Primitive("sign")
 #' @export
 nvl_sign <- make_unary_op(p_sign)
 
-p_exp <- Primitive("exp")
+p_exp <- AnvilPrimitive("exp")
 #' @title Primitive Exponential
 #' @description
 #' Element-wise exponential.
@@ -753,7 +753,7 @@ p_exp <- Primitive("exp")
 #' @export
 nvl_exp <- make_unary_op(p_exp)
 
-p_expm1 <- Primitive("expm1")
+p_expm1 <- AnvilPrimitive("expm1")
 #' @title Primitive Exponential Minus One
 #' @description
 #' Element-wise exp(x) - 1, more accurate for small x.
@@ -762,7 +762,7 @@ p_expm1 <- Primitive("expm1")
 #' @export
 nvl_expm1 <- make_unary_op(p_expm1)
 
-p_log1p <- Primitive("log1p")
+p_log1p <- AnvilPrimitive("log1p")
 #' @title Primitive Log Plus One
 #' @description
 #' Element-wise log(1 + x), more accurate for small x.
@@ -771,7 +771,7 @@ p_log1p <- Primitive("log1p")
 #' @export
 nvl_log1p <- make_unary_op(p_log1p)
 
-p_cbrt <- Primitive("cbrt")
+p_cbrt <- AnvilPrimitive("cbrt")
 #' @title Primitive Cube Root
 #' @description
 #' Element-wise cube root.
@@ -780,7 +780,7 @@ p_cbrt <- Primitive("cbrt")
 #' @export
 nvl_cbrt <- make_unary_op(p_cbrt)
 
-p_logistic <- Primitive("logistic")
+p_logistic <- AnvilPrimitive("logistic")
 #' @title Primitive Logistic (Sigmoid)
 #' @description
 #' Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
@@ -789,7 +789,7 @@ p_logistic <- Primitive("logistic")
 #' @export
 nvl_logistic <- make_unary_op(p_logistic)
 
-p_is_finite <- Primitive("is_finite")
+p_is_finite <- AnvilPrimitive("is_finite")
 #' @title Primitive Is Finite
 #' @description
 #' Element-wise check if values are finite (not Inf, -Inf, or NaN).
@@ -798,13 +798,13 @@ p_is_finite <- Primitive("is_finite")
 #' @export
 nvl_is_finite <- function(operand) {
   infer_fn <- function(operand) {
-    out <- stablehlo::infer_types_is_finite(st2va(operand))@items[[1L]]
-    list(vt2sa(out))
+    out <- stablehlo::infer_types_is_finite(at2vt(operand))[[1L]]
+    list(vt2at(out))
   }
   graph_desc_add(p_is_finite, list(operand), list(), infer_fn = infer_fn)[[1L]]
 }
 
-p_popcnt <- Primitive("popcnt")
+p_popcnt <- AnvilPrimitive("popcnt")
 #' @title Primitive Population Count
 #' @description
 #' Element-wise population count (number of set bits).
@@ -813,15 +813,15 @@ p_popcnt <- Primitive("popcnt")
 #' @export
 nvl_popcnt <- function(operand) {
   infer_fn <- function(operand) {
-    out <- stablehlo::infer_types_popcnt(st2va(operand))@items[[1L]]
-    out <- vt2sa(out)
-    out@ambiguous <- operand@ambiguous
+    out <- stablehlo::infer_types_popcnt(at2vt(operand))[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
     list(out)
   }
   graph_desc_add(p_popcnt, list(operand), list(), infer_fn = infer_fn)[[1L]]
 }
 
-p_clamp <- Primitive("clamp")
+p_clamp <- AnvilPrimitive("clamp")
 #' @title Primitive Clamp
 #' @description
 #' Element-wise clamp: max(min_val, min(operand, max_val)).
@@ -834,15 +834,15 @@ p_clamp <- Primitive("clamp")
 #' @export
 nvl_clamp <- function(min_val, operand, max_val) {
   infer_fn <- function(min_val, operand, max_val) {
-    out <- stablehlo::infer_types_clamp(st2va(min_val), st2va(operand), st2va(max_val))@items[[1L]]
-    out <- vt2sa(out)
-    out@ambiguous <- operand@ambiguous
+    out <- stablehlo::infer_types_clamp(at2vt(min_val), at2vt(operand), at2vt(max_val))[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
     list(out)
   }
   graph_desc_add(p_clamp, list(min_val, operand, max_val), list(), infer_fn = infer_fn)[[1L]]
 }
 
-p_reverse <- Primitive("reverse")
+p_reverse <- AnvilPrimitive("reverse")
 #' @title Primitive Reverse
 #' @description
 #' Reverses the order of elements along specified dimensions.
@@ -855,15 +855,15 @@ nvl_reverse <- function(operand, dims) {
   infer_fn <- function(operand, dims) {
     # stablehlo uses 0-based indexing
     dims_attr <- r_to_constant(dims - 1L, dtype = "i64", shape = length(dims))
-    out <- stablehlo::infer_types_reverse(st2va(operand), dimensions = dims_attr)@items[[1L]]
-    out <- vt2sa(out)
-    out@ambiguous <- operand@ambiguous
+    out <- stablehlo::infer_types_reverse(at2vt(operand), dimensions = dims_attr)[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
     list(out)
   }
   graph_desc_add(p_reverse, list(operand), list(dims = dims), infer_fn = infer_fn)[[1L]]
 }
 
-p_iota <- Primitive("iota")
+p_iota <- AnvilPrimitive("iota")
 #' @title Primitive Iota
 #' @description
 #' Creates a tensor with values increasing along the specified dimension.
@@ -877,8 +877,8 @@ p_iota <- Primitive("iota")
 nvl_iota <- function(dim, dtype, shape) {
   infer_fn <- function(dim, dtype, shape) {
     # stablehlo uses 0-based indexing, anvil uses 1-based
-    out <- stablehlo::infer_types_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape)@items[[1L]]
-    list(vt2sa(out))
+    out <- stablehlo::infer_types_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape)[[1L]]
+    list(vt2at(out))
   }
   graph_desc_add(
     p_iota,
@@ -888,7 +888,7 @@ nvl_iota <- function(dim, dtype, shape) {
   )[[1L]]
 }
 
-p_pad <- Primitive("pad")
+p_pad <- AnvilPrimitive("pad")
 #' @title Primitive Pad
 #' @description
 #' Pads a tensor with a given padding value.
@@ -910,14 +910,14 @@ nvl_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high,
     high_attr <- r_to_constant(edge_padding_high, dtype = "i64", shape = rank)
     interior_attr <- r_to_constant(interior_padding, dtype = "i64", shape = rank)
     out <- stablehlo::infer_types_pad(
-      st2va(operand),
-      st2va(padding_value),
+      at2vt(operand),
+      at2vt(padding_value),
       edge_padding_low = low_attr,
       edge_padding_high = high_attr,
       interior_padding = interior_attr
-    )@items[[1L]]
-    out <- vt2sa(out)
-    out@ambiguous <- operand@ambiguous
+    )[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
     list(out)
   }
 
@@ -933,7 +933,7 @@ nvl_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high,
   )[[1L]]
 }
 
-p_round <- Primitive("round")
+p_round <- AnvilPrimitive("round")
 #' @title Primitive Round
 #' @description
 #' Element-wise rounding.
@@ -954,7 +954,7 @@ nvl_round <- function(operand, method = "nearest_even") {
 
 # dtype conversion ----------------------------------------------------------------
 
-p_convert <- Primitive("convert")
+p_convert <- AnvilPrimitive("convert")
 #' @title Primitive Convert
 #' @description
 #' Converts tensor to a different dtype.
@@ -981,7 +981,7 @@ nvl_convert <- function(operand, dtype, ambiguous = FALSE) {
 }
 
 
-p_select <- Primitive("select")
+p_select <- AnvilPrimitive("select")
 #' @title Primitive Select
 #' @description
 #' Selects elements based on a predicate.
@@ -995,14 +995,14 @@ p_select <- Primitive("select")
 #' @export
 nvl_select <- function(pred, true_value, false_value) {
   infer_fn <- function(pred, true_value, false_value) {
-    both_ambiguous <- true_value@ambiguous && false_value@ambiguous
+    both_ambiguous <- true_value$ambiguous && false_value$ambiguous
     out <- stablehlo::infer_types_select(
-      st2va(pred),
-      on_true = st2va(true_value),
-      on_false = st2va(false_value)
-    )@items[[1L]]
-    out <- vt2sa(out)
-    out@ambiguous <- both_ambiguous
+      at2vt(pred),
+      on_true = at2vt(true_value),
+      on_false = at2vt(false_value)
+    )[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- both_ambiguous
     list(out)
   }
   graph_desc_add(p_select, list(pred, true_value, false_value), infer_fn = infer_fn)[[1L]]
@@ -1044,30 +1044,30 @@ nvl_if <- function(pred, true, false) {
 
   # TODO: Apply promotion rules to the outputs of the branches
 
-  for (const in desc_true@constants) {
+  for (const in desc_true$constants) {
     get_box_or_register_const(desc_false, const)
   }
   false_graph <- trace_fn(function() rlang::eval_tidy(false_expr), list(), desc = desc_false)
 
-  for (const in desc_false@constants) {
+  for (const in desc_false$constants) {
     get_box_or_register_const(current_desc, const)
   }
 
-  if (!identical(true_graph@out_tree, false_graph@out_tree)) {
+  if (!identical(true_graph$out_tree, false_graph$out_tree)) {
     cli_abort("true and false branches must have the same output structure")
   }
 
   infer_fn <- function(pred, true_graph, false_graph) {
     # the returned values might have different ambiguity, so we need to handle it
     # an output is ambiguous if it's type is ambiguous in both branches
-    lapply(seq_along(true_graph@outputs), function(i) {
-      aval_true <- true_graph@outputs[[i]]@aval
-      aval_false <- true_graph@outputs[[i]]@aval
-      if (aval_true@ambiguous && aval_false@ambiguous) {
+    lapply(seq_along(true_graph$outputs), function(i) {
+      aval_true <- true_graph$outputs[[i]]$aval
+      aval_false <- true_graph$outputs[[i]]$aval
+      if (aval_true$ambiguous && aval_false$ambiguous) {
         return(aval_true)
       }
 
-      aval_true@ambiguous <- FALSE
+      aval_true$ambiguous <- FALSE
       return(aval_true)
     })
   }
@@ -1080,7 +1080,7 @@ nvl_if <- function(pred, true, false) {
     desc = current_desc,
     debug_mode = debug_mode
   )
-  unflatten(true_graph@out_tree, out)
+  unflatten(true_graph$out_tree, out)
 }
 
 p_while <- HigherOrderPrimitive("while", subgraphs = c("cond_graph", "body_graph"))
@@ -1123,28 +1123,28 @@ nvl_while <- function(init, cond, body) {
 
   # ensure that constant ids are the same between cond and body
   # inputs don't matter, because we don't inline the sub-graphs into the parent graph
-  for (const in desc_cond@constants) {
+  for (const in desc_cond$constants) {
     get_box_or_register_const(desc_body, const)
   }
   body_graph <- trace_fn(body, init, desc_body)
 
-  if (!identical(cond_graph@in_tree, body_graph@in_tree)) {
+  if (!identical(cond_graph$in_tree, body_graph$in_tree)) {
     cli_abort("cond and body must have the same input structure")
   }
 
-  if (!identical(body_graph@in_tree, body_graph@out_tree)) {
+  if (!identical(body_graph$in_tree, body_graph$out_tree)) {
     cli_abort("body must have the same input and output structure")
   }
 
   # now we register the constants of both sub-graphs (body includes cond's constants) into the graph
-  for (const in body_graph@constants) {
+  for (const in body_graph$constants) {
     get_box_or_register_const(current_desc, const)
   }
 
   infer_fn <- function(..., cond_graph, body_graph) {
     outs <- list(...)
-    outs_body <- lapply(body_graph@outputs, \(out) out@aval)
-    inputs_body <- lapply(body_graph@inputs, \(inp) inp@aval)
+    outs_body <- lapply(body_graph$outputs, \(out) out$aval)
+    inputs_body <- lapply(body_graph$inputs, \(inp) inp$aval)
     # == ignores ambiguity
     if (!all(sapply(seq_along(outs), \(i) outs[[i]] == outs_body[[i]]))) {
       cli_abort("outs must be have same type as outs_body")
@@ -1165,11 +1165,11 @@ nvl_while <- function(init, cond, body) {
     debug_mode = debug_mode
   )
 
-  unflatten(body_graph@out_tree, out)
+  unflatten(body_graph$out_tree, out)
 }
 
 # Print primitive
-p_print <- Primitive("print")
+p_print <- AnvilPrimitive("print")
 #' @title Primitive Print
 #' @description
 #' Prints a tensor during execution.
@@ -1183,7 +1183,7 @@ nvl_print <- function(operand) {
 }
 
 # RNG primitives
-p_rng_bit_generator <- Primitive("rng_bit_generator")
+p_rng_bit_generator <- AnvilPrimitive("rng_bit_generator")
 #' @title Primitive RNG Bit Generator
 #' @description
 #' Generates random bits using the specified algorithm.
@@ -1198,7 +1198,7 @@ p_rng_bit_generator <- Primitive("rng_bit_generator")
 #' @export
 nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape_out) {
   infer_fn <- function(initial_state, rng_algorithm, dtype, shape_out) {
-    lapply(stablehlo::infer_types_rng_bit_generator(st2va(initial_state), rng_algorithm, dtype, shape_out)@items, vt2sa)
+    lapply(stablehlo::infer_types_rng_bit_generator(at2vt(initial_state), rng_algorithm, dtype, shape_out), vt2at)
   }
   graph_desc_add(
     p_rng_bit_generator,

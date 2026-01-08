@@ -20,7 +20,7 @@ test_that("AbstractTensor", {
     Shape(c(2, 3))
   )
   expect_snapshot(x)
-  expect_true(inherits(x, AbstractTensor))
+  expect_true(inherits(x, "AbstractTensor"))
   expect_true(x == x)
 
   expect_false(
@@ -44,7 +44,7 @@ test_that("ConcreteTensor", {
   x <- ConcreteTensor(
     nv_tensor(1:6, dtype = "f32", shape = c(2, 3), device = "cpu")
   )
-  expect_true(inherits(x, ConcreteTensor))
+  expect_true(inherits(x, "ConcreteTensor"))
   expect_snapshot(x)
 })
 
@@ -85,7 +85,7 @@ test_that("to_abstract", {
   # graph box
   aval <- GraphValue(AbstractTensor("f32", c(2, 2), FALSE))
   x <- GraphBox(aval, local_descriptor())
-  expect_equal(to_abstract(x), aval@aval)
+  expect_equal(to_abstract(x), aval$aval)
 
   # pure
   x <- nv_scalar(1)
@@ -130,5 +130,5 @@ test_that("to_abstract", {
   # graph box
   aval <- GraphValue(AbstractTensor("f32", c(2, 2), FALSE))
   x <- GraphBox(aval, local_descriptor())
-  expect_equal(to_abstract(x), aval@aval)
+  expect_equal(to_abstract(x), aval$aval)
 })

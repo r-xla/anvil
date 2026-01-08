@@ -10,7 +10,7 @@ register_primitive(name, primitive, overwrite = FALSE)
 \item{name}{(\code{character()})\cr
 The name of the primitive.}
 
-\item{primitive}{(\code{Primitive})\cr
+\item{primitive}{(\code{AnvilPrimitive})\cr
 The primitive to register.}
 
 \item{overwrite}{(\code{logical(1)})\cr

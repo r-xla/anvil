@@ -14,7 +14,7 @@ The graph to transform.}
 The names of the variables to compute the gradient with respect to.}
 }
 \value{
-A \code{\link{Graph}} object.
+An \code{\link{AnvilGraph}} object.
 }
 \description{
 Transform a graph to its gradient.

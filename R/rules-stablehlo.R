@@ -59,32 +59,32 @@ p_slice[["stablehlo"]] <- function(operand, start_indices, limit_indices, stride
 
 .stablehlo_apply_reduce <- function(reductor, operand, init, dims, drop) {
   local_func("")
-  dt <- as.character(operand@value_type@type@dtype)
+  dt <- as.character(operand$value_type$type$dtype)
   f <- hlo_return(reductor(
     hlo_input("x", dt),
     hlo_input("y", dt)
   ))
-  out <- stablehlo::hlo_reduce(list(operand), init(operand), dims - 1L, f)
+  out <- stablehlo::hlo_reduce(list(operand), list(init(operand)), dims - 1L, f)
 
   if (drop) {
     return(list(out))
   }
 
-  shape_out <- shape(operand@value_type)
+  shape_out <- shape(operand$value_type)
   shape_out[dims] <- 1L
   list(stablehlo::hlo_reshape(out, shape_out))
 }
 
 p_reduce_sum[["stablehlo"]] <- function(operand, dims, drop) {
   init <- function(operand) {
-    hlo_scalar(0, dtype = dtype(operand), func = operand@func)
+    hlo_scalar(0, dtype = dtype(operand), func = operand$func)
   }
   .stablehlo_apply_reduce(stablehlo::hlo_add, operand, init, dims, drop)
 }
 
 p_reduce_prod[["stablehlo"]] <- function(operand, dims, drop) {
   init <- function(operand) {
-    hlo_scalar(1, dtype = dtype(operand), func = operand@func)
+    hlo_scalar(1, dtype = dtype(operand), func = operand$func)
   }
   .stablehlo_apply_reduce(stablehlo::hlo_multiply, operand, init, dims, drop)
 }
@@ -123,14 +123,14 @@ p_reduce_all[["stablehlo"]] <- function(operand, dims, drop) {
 # comparison jit rules ----------------------------------------------------------
 
 .compare_type_for <- function(vt) {
-  dt <- vt@value_type@type@dtype
-  if (inherits(dt, stablehlo::FloatType)) {
+  dt <- vt$value_type$type$dtype
+  if (inherits(dt, "FloatType")) {
     "FLOAT"
-  } else if (inherits(dt, stablehlo::IntegerType)) {
+  } else if (inherits(dt, "IntegerType")) {
     "SIGNED"
-  } else if (inherits(dt, stablehlo::UnsignedType)) {
+  } else if (inherits(dt, "UnsignedType")) {
     "UNSIGNED"
-  } else if (inherits(dt, stablehlo::BooleanType)) {
+  } else if (inherits(dt, "BooleanType")) {
     # StableHLO uses SIGNED for i1 compares
     "SIGNED"
   } else {

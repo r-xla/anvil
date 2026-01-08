@@ -21,7 +21,6 @@ Imports:
     methods,
     pjrt,
     rlang,
-    S7,
     stablehlo,
     tengen,
     withr,
@@ -62,7 +61,6 @@ Collate:
     'debug.R'
     'flatten.R'
     'graph-passes.R'
-    'mut.R'
     'graph.R'
     'graph-print.R'
     'promotion.R'
