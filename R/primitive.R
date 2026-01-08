@@ -111,15 +111,10 @@ subgraphs <- function(call) {
     return(list())
   }
 
-  # Check if primitive has a subgraphs field indicating which params are subgraphs
-  subgraph_names <- call@primitive@subgraphs
-  params <- call@params
-
-  result <- list()
-  for (name in subgraph_names) {
-    if (name %in% names(params)) {
-      result <- c(result, list(params[[name]]))
-    }
-  }
-  return(result)
+  stats::setNames(
+    lapply(call@primitive@subgraphs, \(sg) {
+      call@params[[sg]]
+    }),
+    call@primitive@subgraphs
+  )
 }

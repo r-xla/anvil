@@ -13,6 +13,9 @@ format_node_id <- function(node, node_ids) {
 
 format_literal <- function(node) {
   val <- node@aval@data
+  if (is_anvil_tensor(val)) {
+    val <- as_array(val)
+  }
   dt <- repr(dtype(node@aval))
   dt <- if (node@aval@ambiguous) paste0(dt, "?") else dt
   shp <- shape(node@aval)

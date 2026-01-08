@@ -164,7 +164,6 @@ dtype2string <- function(dtype, ambiguous = FALSE) {
   paste0(repr(dtype), if (ambiguous) "?")
 }
 
-
 #dt_map <- list(
 #  "f32" = FloatType(32),
 #  "f64" = FloatType(64),

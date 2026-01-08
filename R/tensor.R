@@ -177,11 +177,12 @@ ConcreteTensor <- S7::new_class(
 
 #' @title Literal Tensor Class
 #' @description
-#' A [`AbstractTensor`] representing a tensor where the data is a R scalar literal (e.g., `1L`, `2.5`).
+#' A [`AbstractTensor`] representing a tensor where the data is a R scalar literal (e.g., `1L`, `2.5`)
+#' or an [`AnvilTensor`].
 #' Usually, their type is ambiguous, unless created via [`nv_fill`].
 #'
-#' @param data (`numeric(1)` | `integer(1)` | `logical(1)`)\cr
-#'   The scalar value.
+#' @param data (`numeric(1)` | `integer(1)` | `logical(1)` | [`AnvilTensor`])\cr
+#'   The scalar value or scalarish AnvilTensor (contains 1 element).
 #' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
 #'   The shape of the tensor.
 #' @param dtype ([`stablehlo::TensorDataType`])\cr
@@ -194,16 +195,21 @@ LiteralTensor <- new_class(
   parent = AbstractTensor,
   properties = list(
     data = new_property(class_any, validator = function(value) {
-      if (!test_scalar(value)) {
-        return("LiteralTensors expect scalars")
+      if (!test_scalar(value) && !inherits(value, "AnvilTensor")) {
+        return("LiteralTensors expect scalars or AnvilTensor")
+      }
+      if (inherits(value, "AnvilTensor")) {
+        if (prod(shape(value)) != 1L) {
+          return("AnvilTensor must contain exactly one element.")
+        }
       }
     }),
     shape = stablehlo::Shape,
     dtype = stablehlo::TensorDataType
   ),
   constructor = function(data, shape, dtype = default_dtype(data), ambiguous) {
-    if (!test_scalar(data)) {
-      cli_abort("LiteralTensors expect scalars")
+    if (!test_scalar(data) && !inherits(data, "AnvilTensor")) {
+      cli_abort("LiteralTensors expect scalars or AnvilTensor")
     }
     shape <- as_shape(shape)
     S7::new_object(

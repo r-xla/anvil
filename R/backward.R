@@ -129,7 +129,6 @@ transform_gradient <- function(graph, wrt) {
     } else {
       grad
     }
-    # browser()
     input_grads <- c(input_grads, list(x@gnode))
   }
 
