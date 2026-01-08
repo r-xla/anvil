@@ -124,7 +124,3 @@ subgraphs <- function(call) {
     call$primitive$subgraphs
   )
 }
-
-#' @rdname AnvilPrimitive
-#' @export
-Primitive <- AnvilPrimitive
