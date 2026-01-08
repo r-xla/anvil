@@ -19,7 +19,19 @@ Primitive <- new_class(
 
 HigherOrderPrimitive <- new_class(
   "HigherOrderPrimitive",
-  parent = Primitive
+  parent = Primitive,
+  properties = list(
+    subgraphs = class_character
+  ),
+  constructor = function(name, subgraphs = character()) {
+    obj <- S7::new_object(
+      S7::S7_object(),
+      name = name,
+      rules = zero_env(),
+      subgraphs = subgraphs
+    )
+    obj
+  }
 )
 
 prim_dict <- new.env(parent = emptyenv())
@@ -84,4 +96,25 @@ method(`[[`, Primitive) <- function(x, name) {
 
 method(print, Primitive) <- function(x, ...) {
   cat(sprintf("<Primitive:%s>\n", x@name))
+}
+
+#' @title Get Subgraphs from Higher-Order Primitive
+#' @description
+#' Extracts subgraphs from the parameters of a higher-order primitive call.
+#' @param call (`PrimitiveCall`)\cr
+#'   The primitive call.
+#' @return (`list(Graph)`)\cr
+#'   List of subgraphs found in the parameters.
+#' @export
+subgraphs <- function(call) {
+  if (!is_higher_order_primitive(call@primitive)) {
+    return(list())
+  }
+
+  stats::setNames(
+    lapply(call@primitive@subgraphs, \(sg) {
+      call@params[[sg]]
+    }),
+    call@primitive@subgraphs
+  )
 }

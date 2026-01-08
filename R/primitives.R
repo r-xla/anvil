@@ -1010,7 +1010,7 @@ nvl_select <- function(pred, true_value, false_value) {
 
 # Higher order primitives -------------------------------------------------------
 
-p_if <- HigherOrderPrimitive("if")
+p_if <- HigherOrderPrimitive("if", subgraphs = c("true_graph", "false_graph"))
 #' @title Primitive If
 #' @description
 #' Conditional execution of branches.
@@ -1083,7 +1083,7 @@ nvl_if <- function(pred, true, false) {
   unflatten(true_graph@out_tree, out)
 }
 
-p_while <- HigherOrderPrimitive("while")
+p_while <- HigherOrderPrimitive("while", subgraphs = c("cond_graph", "body_graph"))
 #' @title Primitive While Loop
 #' @description
 #' Executes a while loop.

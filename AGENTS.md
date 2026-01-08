@@ -65,7 +65,9 @@ devtools::check()
    There, `grad` is the gradient of the terminal output with respect to the function's output and the function should return the gradient of the terminal output with respect to the inputs.
    The tests are in the file `insts/extra-tests/test-primitives-pullback-torch.R`
 
-## Style
+## Comments
+
+Only add comments if the code is not self-explanatory.
 
 * For length-1 vectors, don't use `c()`. For example, use `1L` instead of `c(1L)`.
 

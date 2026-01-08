@@ -61,6 +61,7 @@ Collate:
     'tensor.R'
     'debug.R'
     'flatten.R'
+    'graph-passes.R'
     'mut.R'
     'graph.R'
     'graph-print.R'

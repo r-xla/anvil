@@ -4,7 +4,7 @@
 \alias{trace_fn}
 \title{Trace an R function into a Graph}
 \usage{
-trace_fn(f, args, desc = NULL)
+trace_fn(f, args, desc = NULL, toplevel = FALSE)
 }
 \arguments{
 \item{f}{(\code{function})\cr
@@ -15,6 +15,11 @@ The arguments to the function.}
 
 \item{desc}{(\code{NULL} | \code{GraphDescriptor})\cr
 The descriptor to use for the graph.}
+
+\item{toplevel}{(\code{logical(1)})\cr
+Whether the function is being traced at the top level.
+If this is \code{TRUE}, inputs that are \code{AnvilTensor}s are treated as unknown.
+If this is \code{FALSE} (default), \code{AnvilTensor}s are treated as constants.}
 }
 \value{
 (\code{\link{Graph}})

@@ -240,7 +240,7 @@ maybe_box_variable <- function(x) {
 }
 
 # this function is on the inputs of trace_fn()
-maybe_box_input <- function(x, desc) {
+maybe_box_input <- function(x, desc, toplevel) {
   if (is_anvil_tensor(x)) {
     # cases:
     # 1. top-level trace_fn call
@@ -254,7 +254,13 @@ maybe_box_input <- function(x, desc) {
     # however, if the value does not exist in the parent graph, we need to add it as a constant
     # for that, we need to keep the value of the actual tensor, so we can later register it
     # see test: "can pass constant to nested trace_fn call if it ..." in test-graph.R
-    gval <- GraphValue(aval = ConcreteTensor(x))
+    gval <- if (toplevel) {
+      # user-provided inputs are simply unknown
+      GraphValue(aval = to_abstract(x, pure = TRUE))
+    } else {
+      # nested trace_fn call might receive known constants from the parent graph as input
+      GraphValue(aval = ConcreteTensor(x))
+    }
     register_input(desc, gval)
   } else if (is_debug_box(x)) {
     # User provided abstract input
@@ -391,9 +397,13 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
 #'   The arguments to the function.
 #' @param desc (`NULL` | `GraphDescriptor`)\cr
 #'   The descriptor to use for the graph.
+#' @param toplevel (`logical(1)`)\cr
+#'   Whether the function is being traced at the top level.
+#'   If this is `TRUE`, inputs that are `AnvilTensor`s are treated as unknown.
+#'   If this is `FALSE` (default), `AnvilTensor`s are treated as constants.
 #' @return ([`Graph`])
 #' @export
-trace_fn <- function(f, args, desc = NULL) {
+trace_fn <- function(f, args, desc = NULL, toplevel = FALSE) {
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
   f_flat <- flatten_fun(f, in_node = in_tree)
@@ -404,7 +414,7 @@ trace_fn <- function(f, args, desc = NULL) {
   }
 
   # box tensors and add them as inputs to the current graph
-  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc)
+  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc, toplevel = toplevel)
   output <- do.call(f_flat, inputs_flat)
 
   out_tree <- output[[1L]]
