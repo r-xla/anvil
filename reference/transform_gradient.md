@@ -14,7 +14,7 @@ transform_gradient(graph, wrt)
 
 - graph:
 
-  (`Graph`)  
+  ([`AnvilGraph`](AnvilGraph.md))  
   The graph to transform.
 
 - wrt:

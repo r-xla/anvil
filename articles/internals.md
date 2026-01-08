@@ -8,10 +8,9 @@ for reshaping code. We refer to such a rewriting of code as a
 
 1.  `R` \\\rightarrow\\ `AnvilGraph`: Generic `R` functions are too
     complicated to handle, so the first step in {anvil} is always to
-    convert them into a computational
-    [`anvil::Graph`](../reference/AnvilGraph.md) object via **tracing**.
-    Such a `AnvilGraph` is similar to `JAXExpr` objects in `JAX`. It
-    operates only on `AnvilTensor` objects and applies
+    convert them into a computational `anvil::Graph` object via
+    **tracing**. Such a `AnvilGraph` is similar to `JAXExpr` objects in
+    `JAX`. It operates only on `AnvilTensor` objects and applies
     `anvil::Primitive` operations to them.
 2.  `AnvilGraph` \\\rightarrow\\ `AnvilGraph`: It is possible to
     transform `AnvilGraph`s into other `AnvilGraph`s. Their purpose is
@@ -28,11 +27,10 @@ for reshaping code. We refer to such a rewriting of code as a
 ### Tracing R Functions into Graphs
 
 All functionality in the {anvil} package is centered around the
-[`anvil::Graph`](../reference/AnvilGraph.md) class. While it is in
-principle possible to create `AnvilGraph`s by hand, these are usually
-created by tracing R functions. In general, when we want to convert some
-code into another form (in our case, R Code into a `AnvilGraph`), there
-are two approaches:
+`anvil::Graph` class. While it is in principle possible to create
+`AnvilGraph`s by hand, these are usually created by tracing R functions.
+In general, when we want to convert some code into another form (in our
+case, R Code into a `AnvilGraph`), there are two approaches:
 
 1.  Static analysis, which would require operating on the abstract
     syntax tree (AST) of the code.
@@ -154,7 +152,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x56355e81e9a8>
+    ## <bytecode: 0x5616cd6fc940>
     ## <environment: namespace:anvil>
 
 The [`anvil::transform_gradient`](../reference/transform_gradient.md)
@@ -204,7 +202,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x56355e81dd30>
+    ## <bytecode: 0x5616cd6ecba8>
     ## <environment: namespace:anvil>
 
 The [`anvil::stablehlo`](../reference/stablehlo.md) function will create

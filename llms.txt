@@ -108,8 +108,7 @@ problem for fast running programs.
 - [`nv_aten()`](AbstractTensor.md)
   [`AbstractTensor()`](AbstractTensor.md) : Abstract Tensor Class
 - [`AnvilBox`](AnvilBox.md) : AnvilBox
-- [`AnvilGraph()`](AnvilGraph.md) [`Graph()`](AnvilGraph.md) : Graph of
-  Primitive Calls
+- [`AnvilGraph()`](AnvilGraph.md) : Graph of Primitive Calls
 - [`AnvilPrimitive()`](AnvilPrimitive.md) : AnvilPrimitive
 - [`AnvilTensor`](AnvilTensor.md) : AnvilTensor
 - [`ConcreteTensor()`](ConcreteTensor.md) : Concrete Tensor Class

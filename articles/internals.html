@@ -101,7 +101,7 @@ tool for reshaping code. We refer to such a rewriting of code as a
 <code>R</code> <span class="math inline">\(\rightarrow\)</span>
 <code>AnvilGraph</code>: Generic <code>R</code> functions are too
 complicated to handle, so the first step in {anvil} is always to convert
-them into a computational <code><a href="../reference/AnvilGraph.html">anvil::Graph</a></code> object via
+them into a computational <code>anvil::Graph</code> object via
 <strong>tracing</strong>. Such a <code>AnvilGraph</code> is similar to
 <code>JAXExpr</code> objects in <code>JAX</code>. It operates only on
 <code>AnvilTensor</code> objects and applies
@@ -124,7 +124,7 @@ are working on an experimental <a href="https://github.com/t-kalinowski/quickr" 
 <h3 id="tracing-r-functions-into-graphs">Tracing R Functions into Graphs<a class="anchor" aria-label="anchor" href="#tracing-r-functions-into-graphs"></a>
 </h3>
 <p>All functionality in the {anvil} package is centered around the
-<code><a href="../reference/AnvilGraph.html">anvil::Graph</a></code> class. While it is in principle possible to
+<code>anvil::Graph</code> class. While it is in principle possible to
 create <code>AnvilGraph</code>s by hand, these are usually created by
 tracing R functions. In general, when we want to convert some code into
 another form (in our case, R Code into a <code>AnvilGraph</code>), there
@@ -254,7 +254,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x56355e81e9a8&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x5616cd6fc940&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -297,7 +297,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x56355e81dd30&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x5616cd6ecba8&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
