@@ -254,7 +254,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x558164ae5988&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x559f169ffa98&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -297,7 +297,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x558164ae8910&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x559f16a04940&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
@@ -561,7 +561,7 @@ the <code>@constants</code> field of the graph, just like the literal
 <span><span class="co">##  .. .. @ dims: int 1000000</span></span>
 <span><span class="co">##  .. @ ambiguous: logi FALSE</span></span>
 <span><span class="co">##  .. @ data     :Classes 'AnvilTensor', 'PJRTBuffer' &lt;externalptr&gt; </span></span>
-<span><span class="co">##  @ .state:&lt;environment: 0x558166ae5ac0&gt;</span></span></code></pre>
+<span><span class="co">##  @ .state:&lt;environment: 0x559f189ffff8&gt;</span></span></code></pre>
 <p>When compiling such a program to stableHLO, constants are treated
 differently depending on their shape (we follow JAX’s approach here).
 That is, constants with 1 element are <strong>inlined</strong> into the
@@ -598,7 +598,7 @@ would be unable to do constant folding.</p>
 <span><span class="co">##  .. .. @ dims: int 1000000</span></span>
 <span><span class="co">##  .. @ ambiguous: logi FALSE</span></span>
 <span><span class="co">##  .. @ data     :Classes 'AnvilTensor', 'PJRTBuffer' &lt;externalptr&gt; </span></span>
-<span><span class="co">##  @ .state:&lt;environment: 0x558166ae5ac0&gt;</span></span></code></pre>
+<span><span class="co">##  @ .state:&lt;environment: 0x559f189ffff8&gt;</span></span></code></pre>
 <p>Also, before compiling, we remove unused constants. Captured
 constants can become unused when we apply code transformations like
 below, where the gradient of the function w.r.t. <code>x</code> does not
@@ -611,10 +611,19 @@ depend on the captured <code>y</code>:</p>
 <p>In principle, the compiler is able to do this itself, but because we
 pass constants as inputs to the program, we need to handle it
 ourselves.</p>
+<p>Further note that:</p>
+<ol style="list-style-type: decimal">
+<li>R Literals are immediately embedded as literals into the
+program.</li>
+<li>Currently, constants with the same value (that refer to different
+<code>AnvilTensor</code>s) are not deduplicated, which we might change
+in the future.</li>
+</ol>
 </div>
 <div class="section level3">
 <h3 id="nested-inputs-and-outputs">Nested Inputs and Outputs<a class="anchor" aria-label="anchor" href="#nested-inputs-and-outputs"></a>
 </h3>
+<p>TODO</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

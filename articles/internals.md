@@ -153,7 +153,7 @@ prim("mul")@rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x558164ae5988>
+    ## <bytecode: 0x559f169ffa98>
     ## <environment: namespace:anvil>
 
 The [`anvil::transform_gradient`](../reference/transform_gradient.md)
@@ -202,7 +202,7 @@ prim("mul")@rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x558164ae8910>
+    ## <bytecode: 0x559f16a04940>
     ## <environment: namespace:anvil>
 
 The [`anvil::stablehlo`](../reference/stablehlo.md) function will create
@@ -522,7 +522,7 @@ graph@constants
     ##  .. .. @ dims: int 1000000
     ##  .. @ ambiguous: logi FALSE
     ##  .. @ data     :Classes 'AnvilTensor', 'PJRTBuffer' <externalptr> 
-    ##  @ .state:<environment: 0x558166ae5ac0>
+    ##  @ .state:<environment: 0x559f189ffff8>
 
 When compiling such a program to stableHLO, constants are treated
 differently depending on their shape (we follow JAX’s approach here).
@@ -566,7 +566,7 @@ out[[2L]]
     ##  .. .. @ dims: int 1000000
     ##  .. @ ambiguous: logi FALSE
     ##  .. @ data     :Classes 'AnvilTensor', 'PJRTBuffer' <externalptr> 
-    ##  @ .state:<environment: 0x558166ae5ac0>
+    ##  @ .state:<environment: 0x559f189ffff8>
 
 Also, before compiling, we remove unused constants. Captured constants
 can become unused when we apply code transformations like below, where
@@ -583,4 +583,13 @@ transform_gradient(trace_fn(f, list(x = nv_scalar(1))))
 In principle, the compiler is able to do this itself, but because we
 pass constants as inputs to the program, we need to handle it ourselves.
 
+Further note that:
+
+1.  R Literals are immediately embedded as literals into the program.
+2.  Currently, constants with the same value (that refer to different
+    `AnvilTensor`s) are not deduplicated, which we might change in the
+    future.
+
 ### Nested Inputs and Outputs
+
+TODO
