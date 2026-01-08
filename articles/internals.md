@@ -155,7 +155,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x55d4a2c566b0>
+    ## <bytecode: 0x56193c268b18>
     ## <environment: namespace:anvil>
 
 The [`anvil::transform_gradient`](../reference/transform_gradient.md)
@@ -205,7 +205,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x55d4a2c59868>
+    ## <bytecode: 0x56193c267ea0>
     ## <environment: namespace:anvil>
 
 The [`anvil::stablehlo`](../reference/stablehlo.md) function will create

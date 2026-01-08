@@ -1,6 +1,7 @@
 # AnvilPrimitive
 
-Primitive interpretation rule.
+Primitive interpretation rule. Note that `[[` and `[[<-` access the
+interpretation rules. To access other fields, use `$` and `$<-`.
 
 ## Usage
 
