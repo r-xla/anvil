@@ -314,4 +314,11 @@ transform_gradient(trace_fn(f, list(x = nv_scalar(1))))
 
 In principle, the compiler is able to do this itself, but because we pass constants as inputs to the program, we need to handle it ourselves.
 
+Further note that:
+
+1. R Literals are immediately embedded as literals into the program.
+2. Currently, constants with the same value (that refer to different `AnvilTensor`s) are not deduplicated, which we might change in the future.
+
 ### Nested Inputs and Outputs
+
+TODO

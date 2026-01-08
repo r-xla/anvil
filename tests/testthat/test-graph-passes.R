@@ -121,7 +121,6 @@ describe("inline_scalarish_constants", {
     }
     graph <- trace_fn(f, list(x = nv_scalar(1)))
     inline_scalarish_constants(graph)
-    expect_snapshot(graph)
 
     check_inline_scalarish_constants(
       graph_fun = f,

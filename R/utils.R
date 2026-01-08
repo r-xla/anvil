@@ -163,22 +163,3 @@ dtype_abstract <- function(x) {
 dtype2string <- function(dtype, ambiguous = FALSE) {
   paste0(repr(dtype), if (ambiguous) "?")
 }
-
-#dt_map <- list(
-#  "f32" = FloatType(32),
-#  "f64" = FloatType(64),
-#  "i8" = IntegerType(8),
-#  "i16" = IntegerType(16),
-#  "i32" = IntegerType(32),
-#  "i64" = IntegerType(64),
-#  "ui8" = UnsignedType(8),
-#  "ui16" = UnsignedType(16),
-#  "ui32" = UnsignedType(32),
-#  "ui64" = UnsignedType(64),
-#  "pred" = BooleanType(),
-#  "i1" = BooleanType()
-#)
-#method(as_dtype, class_character) <- function(x) {
-#  dt_map[[x]]
-#}
-#
