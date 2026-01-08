@@ -3,10 +3,8 @@
 \name{GraphNode}
 \alias{GraphNode}
 \title{Graph Node}
-\usage{
-GraphNode()
-}
 \description{
-Node in an \code{\link{AnvilGraph}}.
+Virtual base class for nodes in an \code{\link{AnvilGraph}}.
 Is either a \code{\link{GraphValue}} or a \code{\link{GraphLiteral}}.
+Cannot be instantiated directly - use \code{\link[=GraphValue]{GraphValue()}} or \code{\link[=GraphLiteral]{GraphLiteral()}} instead.
 }

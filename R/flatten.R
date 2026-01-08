@@ -54,10 +54,9 @@ flatten.default <- function(x) {
 #' Build a tree structure from a nested object for tracking structure during flattening/unflattening.
 #' @param x Object to build tree from.
 #' @param counter Internal counter for leaf indices.
-#' @return A tree node (LeafNode or ListNode).
+#' @return `Node`
 #' @export
 build_tree <- function(x, counter = NULL) {
-  counter <- counter %??% new_counter()
   UseMethod("build_tree")
 }
 
@@ -80,7 +79,6 @@ build_tree.default <- function(x, counter = NULL) {
   counter[["i"]] <- i
   LeafNode(i)
 }
-
 
 mark_some <- function(x, marked) {
   stopifnot(is.list(x))

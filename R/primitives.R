@@ -4,8 +4,8 @@
 
 infer_binary <- function(lhs, rhs) {
   both_ambiguous <- lhs$ambiguous && rhs$ambiguous
-  out <- stablehlo::infer_types_generic_biv(st2va(lhs), st2va(rhs))$items[[1L]]
-  out <- vt2sa(out)
+  out <- stablehlo::infer_types_generic_biv(at2vt(lhs), at2vt(rhs))[[1L]]
+  out <- vt2at(out)
   out$ambiguous <- both_ambiguous
   list(out)
 }
@@ -13,15 +13,15 @@ infer_binary <- function(lhs, rhs) {
 # boolean is i1 -> integerish
 infer_binary_integerish <- function(lhs, rhs) {
   both_ambiguous <- lhs$ambiguous && rhs$ambiguous
-  out <- stablehlo::infer_types_integerish_biv(st2va(lhs), st2va(rhs))$items[[1L]]
-  out <- vt2sa(out)
+  out <- stablehlo::infer_types_integerish_biv(at2vt(lhs), at2vt(rhs))[[1L]]
+  out <- vt2at(out)
   out$ambiguous <- both_ambiguous
   list(out)
 }
 
 infer_unary <- function(operand) {
-  out <- stablehlo::infer_types_generic_uni(st2va(operand))$items[[1L]]
-  out <- vt2sa(out)
+  out <- stablehlo::infer_types_generic_uni(at2vt(operand))[[1L]]
+  out <- vt2at(out)
   out$ambiguous <- operand$ambiguous
   list(out)
 }
@@ -39,8 +39,8 @@ make_binary_integerish_op <- function(prim) {
 }
 
 infer_unary_integerish <- function(operand) {
-  out <- stablehlo::infer_types_integerish_uni(st2va(operand))$items[[1L]]
-  out <- vt2sa(out)
+  out <- stablehlo::infer_types_integerish_uni(at2vt(operand))[[1L]]
+  out <- vt2at(out)
   out$ambiguous <- operand$ambiguous
   list(out)
 }
@@ -99,7 +99,7 @@ p_fill <- AnvilPrimitive("fill")
 #' @export
 nvl_fill <- function(value, shape, dtype) {
   infer_fill <- function(value, shape, dtype) {
-    list(LiteralTensor(data = value, dtype = as_dtype(dtype), shape = shape, ambiguous = FALSE))
+    list(AbstractTensor(dtype = as_dtype(dtype), shape = shape, ambiguous = FALSE))
   }
   graph_desc_add(
     p_fill,
@@ -183,11 +183,11 @@ nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
       shape = length(broadcast_dimensions)
     )
     out <- stablehlo::infer_types_broadcast_in_dim(
-      st2va(operand),
+      at2vt(operand),
       broadcast_dimensions = bd_attr,
       shape_out = shape_out
-    )$items[[1L]]
-    out <- vt2sa(out)
+    )[[1L]]
+    out <- vt2at(out)
     out$ambiguous <- operand$ambiguous
     list(out)
   }
@@ -219,8 +219,8 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
       contracting_dims = lapply(contracting_dims, \(x) x - 1L),
       batching_dims = lapply(batching_dims, \(x) x - 1L)
     )
-    out <- stablehlo::infer_types_dot_general(st2va(lhs), st2va(rhs), dot_dimension_numbers = ddn)$items[[1L]]
-    list(vt2sa(out))
+    out <- stablehlo::infer_types_dot_general(at2vt(lhs), at2vt(rhs), dot_dimension_numbers = ddn)[[1L]]
+    list(vt2at(out))
   }
   graph_desc_add(
     p_dot_general,
@@ -246,8 +246,8 @@ nvl_transpose <- function(operand, permutation) {
       dtype = "i64",
       shape = length(permutation)
     )
-    out <- stablehlo::infer_types_transpose(st2va(operand), permutation = perm_attr)$items[[1L]]
-    out <- vt2sa(out)
+    out <- stablehlo::infer_types_transpose(at2vt(operand), permutation = perm_attr)[[1L]]
+    out <- vt2at(out)
     out$ambiguous <- operand$ambiguous
     list(out)
   }
@@ -269,8 +269,8 @@ p_reshape <- AnvilPrimitive("reshape")
 #' @export
 nvl_reshape <- function(operand, shape) {
   infer_fn <- function(operand, shape) {
-    out <- stablehlo::infer_types_reshape(st2va(operand), shape_out = shape)$items[[1L]]
-    out <- vt2sa(out)
+    out <- stablehlo::infer_types_reshape(at2vt(operand), shape_out = shape)[[1L]]
+    out <- vt2at(out)
     out$ambiguous <- operand$ambiguous
     list(out)
   }
@@ -297,9 +297,9 @@ nvl_concatenate <- function(..., dimension) {
   infer_fn <- function(..., dimension) {
     operands <- list(...)
     all_ambiguous <- all(vapply(operands, \(x) x$ambiguous, logical(1L)))
-    vts <- lapply(operands, st2va)
-    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dimension - 1L)$items[[1L]]
-    out <- vt2sa(out)
+    vts <- lapply(operands, at2vt)
+    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dimension - 1L)[[1L]]
+    out <- vt2at(out)
     out$ambiguous <- all_ambiguous
     list(out)
   }
@@ -329,8 +329,8 @@ nvl_slice <- function(operand, start_indices, limit_indices, strides) {
     start_attr <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
     limit_attr <- r_to_constant(limit_indices, dtype = "i64", shape = length(limit_indices))
     strides_attr <- r_to_constant(strides, dtype = "i64", shape = length(strides))
-    out <- stablehlo::infer_types_slice(st2va(operand), start_attr, limit_attr, strides_attr)$items[[1L]]
-    out <- vt2sa(out)
+    out <- stablehlo::infer_types_slice(at2vt(operand), start_attr, limit_attr, strides_attr)[[1L]]
+    out <- vt2at(out)
     out$ambiguous <- operand$ambiguous
     list(out)
   }
@@ -442,8 +442,8 @@ nvl_reduce_all <- make_reduce_op(p_reduce_all, infer_reduce_boolean)
 # comparison primitives --------------------------------------------------------
 
 infer_compare <- function(lhs, rhs, comparison_direction) {
-  out <- stablehlo::infer_types_compare(st2va(lhs), st2va(rhs), comparison_direction, "FLOAT")$items[[1L]]
-  out <- vt2sa(out)
+  out <- stablehlo::infer_types_compare(at2vt(lhs), at2vt(rhs), comparison_direction, "FLOAT")[[1L]]
+  out <- vt2at(out)
   out$ambiguous <- lhs$ambiguous && rhs$ambiguous
   list(out)
 }
@@ -576,8 +576,8 @@ nvl_xor <- make_binary_integerish_op(p_xor)
 
 infer_shift <- function(lhs, rhs, shift_fn) {
   both_ambiguous <- lhs$ambiguous && rhs$ambiguous
-  out <- shift_fn(st2va(lhs), st2va(rhs))$items[[1L]]
-  out <- vt2sa(out)
+  out <- shift_fn(at2vt(lhs), at2vt(rhs))[[1L]]
+  out <- vt2at(out)
   out$ambiguous <- both_ambiguous
   list(out)
 }
@@ -637,7 +637,7 @@ p_bitcast_convert <- AnvilPrimitive("bitcast_convert")
 #' @export
 nvl_bitcast_convert <- function(operand, dtype) {
   infer_fn <- function(operand, dtype) {
-    lapply(stablehlo::infer_types_bitcast_convert(st2va(operand), dtype)$items, vt2sa)
+    lapply(stablehlo::infer_types_bitcast_convert(at2vt(operand), dtype), vt2at)
   }
   graph_desc_add(p_bitcast_convert, list(operand), params = list(dtype = dtype), infer_fn = infer_fn)[[1L]]
 }
@@ -798,8 +798,8 @@ p_is_finite <- AnvilPrimitive("is_finite")
 #' @export
 nvl_is_finite <- function(operand) {
   infer_fn <- function(operand) {
-    out <- stablehlo::infer_types_is_finite(st2va(operand))$items[[1L]]
-    list(vt2sa(out))
+    out <- stablehlo::infer_types_is_finite(at2vt(operand))[[1L]]
+    list(vt2at(out))
   }
   graph_desc_add(p_is_finite, list(operand), list(), infer_fn = infer_fn)[[1L]]
 }
@@ -813,8 +813,8 @@ p_popcnt <- AnvilPrimitive("popcnt")
 #' @export
 nvl_popcnt <- function(operand) {
   infer_fn <- function(operand) {
-    out <- stablehlo::infer_types_popcnt(st2va(operand))$items[[1L]]
-    out <- vt2sa(out)
+    out <- stablehlo::infer_types_popcnt(at2vt(operand))[[1L]]
+    out <- vt2at(out)
     out$ambiguous <- operand$ambiguous
     list(out)
   }
@@ -834,8 +834,8 @@ p_clamp <- AnvilPrimitive("clamp")
 #' @export
 nvl_clamp <- function(min_val, operand, max_val) {
   infer_fn <- function(min_val, operand, max_val) {
-    out <- stablehlo::infer_types_clamp(st2va(min_val), st2va(operand), st2va(max_val))$items[[1L]]
-    out <- vt2sa(out)
+    out <- stablehlo::infer_types_clamp(at2vt(min_val), at2vt(operand), at2vt(max_val))[[1L]]
+    out <- vt2at(out)
     out$ambiguous <- operand$ambiguous
     list(out)
   }
@@ -855,8 +855,8 @@ nvl_reverse <- function(operand, dims) {
   infer_fn <- function(operand, dims) {
     # stablehlo uses 0-based indexing
     dims_attr <- r_to_constant(dims - 1L, dtype = "i64", shape = length(dims))
-    out <- stablehlo::infer_types_reverse(st2va(operand), dimensions = dims_attr)$items[[1L]]
-    out <- vt2sa(out)
+    out <- stablehlo::infer_types_reverse(at2vt(operand), dimensions = dims_attr)[[1L]]
+    out <- vt2at(out)
     out$ambiguous <- operand$ambiguous
     list(out)
   }
@@ -877,8 +877,8 @@ p_iota <- AnvilPrimitive("iota")
 nvl_iota <- function(dim, dtype, shape) {
   infer_fn <- function(dim, dtype, shape) {
     # stablehlo uses 0-based indexing, anvil uses 1-based
-    out <- stablehlo::infer_types_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape)$items[[1L]]
-    list(vt2sa(out))
+    out <- stablehlo::infer_types_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape)[[1L]]
+    list(vt2at(out))
   }
   graph_desc_add(
     p_iota,
@@ -910,13 +910,13 @@ nvl_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high,
     high_attr <- r_to_constant(edge_padding_high, dtype = "i64", shape = rank)
     interior_attr <- r_to_constant(interior_padding, dtype = "i64", shape = rank)
     out <- stablehlo::infer_types_pad(
-      st2va(operand),
-      st2va(padding_value),
+      at2vt(operand),
+      at2vt(padding_value),
       edge_padding_low = low_attr,
       edge_padding_high = high_attr,
       interior_padding = interior_attr
-    )$items[[1L]]
-    out <- vt2sa(out)
+    )[[1L]]
+    out <- vt2at(out)
     out$ambiguous <- operand$ambiguous
     list(out)
   }
@@ -997,11 +997,11 @@ nvl_select <- function(pred, true_value, false_value) {
   infer_fn <- function(pred, true_value, false_value) {
     both_ambiguous <- true_value$ambiguous && false_value$ambiguous
     out <- stablehlo::infer_types_select(
-      st2va(pred),
-      on_true = st2va(true_value),
-      on_false = st2va(false_value)
-    )$items[[1L]]
-    out <- vt2sa(out)
+      at2vt(pred),
+      on_true = at2vt(true_value),
+      on_false = at2vt(false_value)
+    )[[1L]]
+    out <- vt2at(out)
     out$ambiguous <- both_ambiguous
     list(out)
   }
@@ -1198,7 +1198,7 @@ p_rng_bit_generator <- AnvilPrimitive("rng_bit_generator")
 #' @export
 nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape_out) {
   infer_fn <- function(initial_state, rng_algorithm, dtype, shape_out) {
-    lapply(stablehlo::infer_types_rng_bit_generator(st2va(initial_state), rng_algorithm, dtype, shape_out)$items, vt2sa)
+    lapply(stablehlo::infer_types_rng_bit_generator(at2vt(initial_state), rng_algorithm, dtype, shape_out), vt2at)
   }
   graph_desc_add(
     p_rng_bit_generator,

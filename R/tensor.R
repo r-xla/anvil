@@ -1,8 +1,10 @@
-#' @rdname nv_tensor
-#' @export
-AnvilTensor <- function() {
-  cli_abort("AnvilTensor is a virtual class and cannot be instantiated directly")
-}
+#' @title AnvilTensor
+#' @description
+#' Virtual base class for tensor objects in anvil.
+#' This class is used to mark objects that can be used as tensors in anvil.
+#' Cannot be instantiated directly - use [`nv_tensor()`], [`nv_scalar()`], or [`nv_empty()`] instead.
+#' @name AnvilTensor
+NULL
 
 #' @importFrom pjrt platform
 

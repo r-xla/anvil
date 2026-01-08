@@ -13,7 +13,7 @@ DebugBox <- function(aval) {
 
   structure(
     list(aval = aval),
-    class = c("DebugBox", "Box")
+    class = c("DebugBox", "AnvilBox")
   )
 }
 

@@ -64,12 +64,11 @@ print.GraphLiteral <- function(x, ...) {
 
 #' @title Graph Node
 #' @description
-#' Node in an [`AnvilGraph`].
+#' Virtual base class for nodes in an [`AnvilGraph`].
 #' Is either a [`GraphValue`] or a [`GraphLiteral`].
-#' @export
-GraphNode <- function() {
-  cli_abort("GraphNode is a union type and cannot be instantiated directly. Use GraphValue or GraphLiteral.")
-}
+#' Cannot be instantiated directly - use [`GraphValue()`] or [`GraphLiteral()`] instead.
+#' @name GraphNode
+NULL
 
 #' @title Primitive Call
 #' @description
@@ -87,9 +86,9 @@ GraphNode <- function() {
 #' @export
 PrimitiveCall <- function(primitive, inputs, params, outputs) {
   checkmate::assert_class(primitive, "AnvilPrimitive")
-  checkmate::assert_list(inputs)
+  checkmate::assert_list(inputs, types = c("GraphValue", "GraphLiteral"))
   checkmate::assert_list(params)
-  checkmate::assert_list(outputs)
+  checkmate::assert_list(outputs, c("GraphValue", "GraphLiteral"))
 
   structure(
     list(
@@ -249,7 +248,7 @@ GraphBox <- function(gnode, desc) {
 
   structure(
     list(gnode = gnode, desc = desc),
-    class = c("GraphBox", "Box")
+    class = c("GraphBox", "AnvilBox")
   )
 }
 

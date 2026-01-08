@@ -84,7 +84,7 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
 
   # Get output types for aliasing
   out_types <- lapply(graph$outputs, function(out) {
-    st2va(out$aval)
+    at2vt(out$aval)
   })
 
   # Track which outputs have been aliased (0-based indices)
@@ -92,7 +92,7 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
 
   for (i in seq_along(inps)) {
     node <- inps[[i]]
-    vt <- st2va(node$aval)
+    vt <- at2vt(node$aval)
     id <- stablehlo::ValueId()
 
     # Check if this input is donated and find a matching output
@@ -113,7 +113,7 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
     }
 
     fi <- stablehlo::FuncInput(id, vt, alias = alias)
-    func$inputs$items <- c(func$inputs$items, list(fi))
+    func$inputs <- stablehlo::FuncInputs(c(func$inputs, list(fi)))
     fval <- stablehlo::FuncValue(id, vt, func)
     env_add(env, node, fval)
   }

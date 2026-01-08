@@ -7,12 +7,22 @@
 #' @export
 AnvilPrimitive <- function(name) {
   checkmate::assert_string(name)
-  env <- zero_env()
+  env <- new.env(parent = emptyenv())
+  env$name <- name
+  env$rules <- list()
 
-  structure(
-    list(name = name, rules = env),
-    class = "AnvilPrimitive"
-  )
+  structure(env, class = "AnvilPrimitive")
+}
+
+#' @export
+`$.AnvilPrimitive` <- function(x, name) {
+  x[[name]]
+}
+
+#' @export
+`$<-.AnvilPrimitive` <- function(x, name, value) {
+  x[[name]] <- value
+  x
 }
 
 #' @title HigherOrderPrimitive
@@ -28,10 +38,12 @@ HigherOrderPrimitive <- function(name, subgraphs = character()) {
   checkmate::assert_string(name)
   checkmate::assert_character(subgraphs)
 
-  structure(
-    list(name = name, rules = zero_env(), subgraphs = subgraphs),
-    class = c("HigherOrderPrimitive", "AnvilPrimitive")
-  )
+  env <- new.env(parent = emptyenv())
+  env$name <- name
+  env$rules <- list()
+  env$subgraphs <- subgraphs
+
+  structure(env, class = c("HigherOrderPrimitive", "AnvilPrimitive"))
 }
 
 prim_dict <- new.env(parent = emptyenv())
@@ -77,9 +89,14 @@ is_higher_order_primitive <- function(x) {
 #' @method [[<- AnvilPrimitive
 #' @export
 `[[<-.AnvilPrimitive` <- function(x, name, value) {
-  x$rules[[name]] <- value
-  if (!(name %in% globals$interpretation_rules)) {
-    cli_abort("Unknown interpretation rule: {.val {name}}")
+  if (name %in% globals$interpretation_rules) {
+    # Store interpretation rule in the rules list
+    rules <- get("rules", envir = x, inherits = FALSE)
+    rules[[name]] <- value
+    assign("rules", rules, envir = x)
+  } else {
+    # Store other properties directly in environment
+    assign(name, value, envir = x)
   }
   x
 }
@@ -87,14 +104,17 @@ is_higher_order_primitive <- function(x) {
 #' @method [[ AnvilPrimitive
 #' @export
 `[[.AnvilPrimitive` <- function(x, name) {
-  rule <- x$rules[[name]]
-  if (is.null(rule)) {
-    if (!(name %in% globals$interpretation_rules)) {
-      cli_abort("Unknown rule: {name}")
+  if (name %in% globals$interpretation_rules) {
+    # Access interpretation rule from rules list
+    rules <- get("rules", envir = x, inherits = FALSE)
+    rule <- rules[[name]]
+    if (is.null(rule)) {
+      cli_abort("Rule {.field {name}} not defined for primitive {.field {x$name}}")
     }
-    cli_abort("Rule {.field {name}} not defined for primitive {.field {x$name}}")
+    return(rule)
   }
-  rule
+  # Access other properties from environment
+  get(name, envir = x, inherits = FALSE)
 }
 
 #' @method print AnvilPrimitive
@@ -124,3 +144,7 @@ subgraphs <- function(call) {
     call$primitive$subgraphs
   )
 }
+
+#' @rdname AnvilPrimitive
+#' @export
+Primitive <- AnvilPrimitive

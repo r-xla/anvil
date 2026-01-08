@@ -2,12 +2,12 @@
 % Please edit documentation in R/api.R, R/api-generics.R
 \name{nv_transpose}
 \alias{nv_transpose}
-\alias{t.Box}
+\alias{t.AnvilBox}
 \title{Transpose}
 \usage{
 nv_transpose(x, permutation = NULL)
 
-\method{t}{Box}(x)
+\method{t}{AnvilBox}(x)
 }
 \arguments{
 \item{x}{(\code{\link{nv_tensor}})}

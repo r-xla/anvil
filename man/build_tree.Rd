@@ -12,7 +12,7 @@ build_tree(x, counter = NULL)
 \item{counter}{Internal counter for leaf indices.}
 }
 \value{
-A tree node (LeafNode or ListNode).
+\code{Node}
 }
 \description{
 Build a tree structure from a nested object for tracking structure during flattening/unflattening.

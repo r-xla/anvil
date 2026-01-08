@@ -21,7 +21,7 @@ test_that("stablehlo: a constant", {
 test_that("donate: simple example", {
   graph <- trace_fn(identity, list(x = nv_tensor(3:4, dtype = "i32")))
   out <- stablehlo(graph, donate = "x")
-  expect_equal(out[[1]]$inputs$items[[1]]$alias, 0L)
+  expect_equal(out[[1]]$inputs[[1]]$alias, 0L)
 })
 
 test_that("donate: multiple inputs, only some donated", {
@@ -35,7 +35,7 @@ test_that("donate: multiple inputs, only some donated", {
   )
   out <- stablehlo(graph, donate = "x")
   expect_true(
-    out[[1]]$inputs$items[[1]]$alias == 0L || out[[1]]$inputs$items[[2]]$alias == 0L
+    out[[1]]$inputs[[1]]$alias == 0L || out[[1]]$inputs[[2]]$alias == 0L
   )
 })
 
@@ -44,7 +44,7 @@ test_that("donate: nested list inputs", {
   graph <- trace_fn(f, list(x = list(nv_tensor(1), nv_tensor(2))))
   out <- stablehlo(graph, donate = "x")
   expect_permutation(
-    sapply(1:2, \(i) out[[1]]$inputs$items[[i]]$alias),
+    sapply(1:2, \(i) out[[1]]$inputs[[i]]$alias),
     c(0L, 1L)
   )
 })
