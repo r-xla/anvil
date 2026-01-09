@@ -29,6 +29,7 @@ Suggests:
     knitr,
     quarto,
     rmarkdown,
+    safetensors,
     testthat (>= 3.0.0)
 Remotes:
     r-xla/stablehlo,
@@ -67,5 +68,6 @@ Collate:
     'reexports.R'
     'rules-backward.R'
     'rules-stablehlo.R'
+    'serialize.R'
     'stablehlo.R'
     'zzz.R'
