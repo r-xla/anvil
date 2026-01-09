@@ -36,5 +36,5 @@ nv_rdunif(shape, initial_state, n, dtype = "i32")
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+[`tensorish`](tensorish.md))  
 List of two tensors: the new RNG state and the sampled integers.

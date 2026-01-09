@@ -13,9 +13,9 @@ cover different ways to print values during execution.
 ## Debug Mode
 
 When {anvil} functions are executed without being wrapped in
-[`jit()`](https://r-xla.github.io/anvil/reference/jit.md), they will run
-in debug mode and output a `DebugBox` object, which essentially
-represents the type of the output tensor.
+[`jit()`](../reference/jit.md), they will run in debug mode and output a
+`DebugBox` object, which essentially represents the type of the output
+tensor.
 
 ``` r
 library(anvil)
@@ -113,10 +113,9 @@ there are two options:
     function so it can be printed **after** execution. This comes
     naturally when the `jit`-compiled function is called within an R
     loop.
-2.  Using the special
-    [`nv_print()`](https://r-xla.github.io/anvil/reference/nv_print.md)
-    function to print **during** execution. This is useful when the
-    value to print is not naturally returned by the function.
+2.  Using the special [`nv_print()`](../reference/nv_print.md) function
+    to print **during** execution. This is useful when the value to
+    print is not naturally returned by the function.
 
 For illustrative purposes, we will count to 10 and print all
 intermediate results.

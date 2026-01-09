@@ -42,10 +42,10 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/anvil.html">Get Started</a></li>
-    <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
     <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
-    <li><a class="dropdown-item" href="../articles/debugging.html">Debugging</a></li>
+    <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
     <li><a class="dropdown-item" href="../articles/primitives.html">Primitives Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/debugging.html">Debugging</a></li>
   </ul>
 </li>
 <li class="nav-item dropdown">
@@ -84,7 +84,7 @@
       <h1>Debugging</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/structure-pkgdown/vignettes/debugging.Rmd" class="external-link"><code>vignettes/debugging.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-serialize/vignettes/debugging.Rmd" class="external-link"><code>vignettes/debugging.Rmd</code></a></small>
       <div class="d-none name"><code>debugging.Rmd</code></div>
     </div>
 
@@ -107,7 +107,7 @@ execution.</p>
 <code>DebugBox</code> object, which essentially represents the type of
 the output tensor.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/" class="external-link">anvil</a></span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">y</span></span></code></pre></div>
 <pre><code><span><span class="co">## f32{2,2}</span></span></code></pre>

@@ -12,13 +12,13 @@ nv_broadcast_tensors(...)
 
 - ...:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`tensorish`](tensorish.md))  
   Tensors to broadcast.
 
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))
+[`tensorish`](tensorish.md))
 
 ## Broadcasting Rules
 

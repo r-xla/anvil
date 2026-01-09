@@ -37,7 +37,7 @@ manage the state yourself.
 To generate random numbers, you first need to create an initial RNG
 state, which is simply a `ui64[2]`. For convenience, you can convert an
 R seed into a state using
-[`nv_rng_state()`](https://r-xla.github.io/anvil/reference/nv_rng_state.md):
+[`nv_rng_state()`](../reference/nv_rng_state.md):
 
 ``` r
 library(anvil)
@@ -52,11 +52,11 @@ state
 ## Generating Random Numbers
 
 The main functions for generating random numbers are
-[`nv_runif()`](https://r-xla.github.io/anvil/reference/nv_runif.md),
-[`nv_rdunif()`](https://r-xla.github.io/anvil/reference/nv_rdunif.md),
-[`nv_rbinom()`](https://r-xla.github.io/anvil/reference/nv_rbinom.md),
-and [`nv_rnorm()`](https://r-xla.github.io/anvil/reference/nv_rnorm.md).
-Both functions return a list with two elements:
+[`nv_runif()`](../reference/nv_runif.md),
+[`nv_rdunif()`](../reference/nv_rdunif.md),
+[`nv_rbinom()`](../reference/nv_rbinom.md), and
+[`nv_rnorm()`](../reference/nv_rnorm.md). Both functions return a list
+with two elements:
 
 1.  The **new** RNG state (to be used for subsequent random number
     generation)

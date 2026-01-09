@@ -19,13 +19,12 @@ graph_desc_add(
 
 - prim:
 
-  ([`AnvilPrimitive`](https://r-xla.github.io/anvil/reference/AnvilPrimitive.md))  
+  ([`AnvilPrimitive`](AnvilPrimitive.md))  
   The primitive to add.
 
 - args:
 
-  (`list` of
-  [`GraphNode`](https://r-xla.github.io/anvil/reference/GraphNode.md))  
+  (`list` of [`GraphNode`](GraphNode.md))  
   The arguments to the primitive.
 
 - params:
@@ -37,15 +36,13 @@ graph_desc_add(
 
   (`function`)  
   The inference function to use. Must output a list of
-  [`AbstractTensor`](https://r-xla.github.io/anvil/reference/AbstractTensor.md)s.
+  [`AbstractTensor`](AbstractTensor.md)s.
 
 - desc:
 
-  ([`GraphDescriptor`](https://r-xla.github.io/anvil/reference/GraphDescriptor.md)
-  \| `NULL`)  
+  ([`GraphDescriptor`](GraphDescriptor.md) \| `NULL`)  
   The graph descriptor to add the primitive call to. Uses the [current
-  descriptor](https://r-xla.github.io/anvil/reference/dot-current_descriptor.md)
-  if `NULL`.
+  descriptor](dot-current_descriptor.md) if `NULL`.
 
 - debug_mode:
 

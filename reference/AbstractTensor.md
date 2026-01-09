@@ -39,6 +39,5 @@ shape, ignoring ambiguity.
 
 ## See also
 
-[ConcreteTensor](https://r-xla.github.io/anvil/reference/ConcreteTensor.md),
-[LiteralTensor](https://r-xla.github.io/anvil/reference/LiteralTensor.md),
-[`to_abstract()`](https://r-xla.github.io/anvil/reference/to_abstract.md)
+[ConcreteTensor](ConcreteTensor.md), [LiteralTensor](LiteralTensor.md),
+[`to_abstract()`](to_abstract.md)

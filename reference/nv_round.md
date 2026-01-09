@@ -12,7 +12,7 @@ nv_round(operand, method = "nearest_even")
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`tensorish`](tensorish.md))  
   Operand.
 
 - method:
@@ -23,4 +23,4 @@ nv_round(operand, method = "nearest_even")
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](tensorish.md)

@@ -12,7 +12,7 @@ nvl_if(pred, true, false)
 
 - pred:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`tensorish`](tensorish.md))  
   Scalar boolean predicate.
 
 - true:

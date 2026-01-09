@@ -17,7 +17,7 @@ nvl_rng_bit_generator(
 
 - initial_state:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`tensorish`](tensorish.md))  
   RNG state tensor.
 
 - rng_algorithm:

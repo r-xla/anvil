@@ -18,12 +18,12 @@ nvl_pad(
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`tensorish`](tensorish.md))  
   Operand.
 
 - padding_value:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`tensorish`](tensorish.md))  
   Scalar value to use for padding.
 
 - edge_padding_low:
@@ -43,4 +43,4 @@ nvl_pad(
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](tensorish.md)

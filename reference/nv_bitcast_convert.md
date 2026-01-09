@@ -12,7 +12,7 @@ nv_bitcast_convert(operand, dtype)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`tensorish`](tensorish.md))  
   Operand.
 
 - dtype:

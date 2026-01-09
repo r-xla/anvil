@@ -24,10 +24,10 @@ execution on accelerators like GPUs, where one often wants speed instead
 of precision.
 
 The rules are defined by the
-[`common_dtype()`](https://r-xla.github.io/anvil/reference/common_dtype.md)
-function. It returns a [`list()`](https://rdrr.io/r/base/list.html) with
-two values: the common dtype and a flag indicating whether the result is
-ambiguous, which we will cover later.
+[`common_dtype()`](../reference/common_dtype.md) function. It returns a
+[`list()`](https://rdrr.io/r/base/list.html) with two values: the common
+dtype and a flag indicating whether the result is ambiguous, which we
+will cover later.
 
 ``` r
 common_dtype("f64", "f32")$dtype

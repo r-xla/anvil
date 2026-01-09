@@ -12,7 +12,7 @@ nvl_convert(operand, dtype, ambiguous = FALSE)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`tensorish`](tensorish.md))  
   Operand.
 
 - dtype:
@@ -30,4 +30,4 @@ nvl_convert(operand, dtype, ambiguous = FALSE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](tensorish.md)

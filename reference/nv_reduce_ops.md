@@ -24,7 +24,7 @@ nv_reduce_all(operand, dims, drop = TRUE)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`tensorish`](tensorish.md))  
   Operand.
 
 - dims:
@@ -39,4 +39,4 @@ nv_reduce_all(operand, dims, drop = TRUE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](tensorish.md)

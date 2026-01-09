@@ -12,7 +12,7 @@ nv_broadcast_to(operand, shape)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`tensorish`](tensorish.md))  
   Operand.
 
 - shape:
@@ -22,4 +22,4 @@ nv_broadcast_to(operand, shape)
 
 ## Value
 
-([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))
+([`tensorish`](tensorish.md))

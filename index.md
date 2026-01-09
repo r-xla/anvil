@@ -29,10 +29,10 @@ options(repos = c(
 ## Quick Start
 
 Below, we create a standard R function. We cannot directly call this
-function, but first need to wrap it in a
-[`jit()`](https://r-xla.github.io/anvil/reference/jit.md) call. If the
-resulting function is then called on `AnvilTensor`s – the primary data
-type in {anvil} – it will be JIT compiled and subsequently executed.
+function, but first need to wrap it in a [`jit()`](reference/jit.md)
+call. If the resulting function is then called on `AnvilTensor`s – the
+primary data type in {anvil} – it will be JIT compiled and subsequently
+executed.
 
 ``` r
 library(anvil)

@@ -28,4 +28,4 @@ nvl_fill(value, shape, dtype)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](tensorish.md)

@@ -92,7 +92,7 @@ y + y
 
 In order to work with `AnvilTensor`s, you need to convert the function
 you want to apply to a jit-compiled version via
-[`jit()`](https://r-xla.github.io/anvil/reference/jit.md).
+[`jit()`](../reference/jit.md).
 
 ``` r
 plus_jit <- jit(`+`)
@@ -275,8 +275,7 @@ We will start with gradients.
 ## Automatic Differentiation
 
 In {anvil}, you can easily obtain the gradient function of a
-scalar-valued function via
-[`gradient()`](https://r-xla.github.io/anvil/reference/gradient.md).
+scalar-valued function via [`gradient()`](../reference/gradient.md).
 Currently, we don’t support jacobians or hessians, but this will
 hopefilly be added in the future. Below, we implement the loss function
 for our linear model.
@@ -323,10 +322,9 @@ model_loss <- function(X, beta, alpha, y) {
 }
 ```
 
-Using the
-[`gradient()`](https://r-xla.github.io/anvil/reference/gradient.md)
-transformation, we can automatically obtain the gradient function of
-`model_loss` with respect to some of its arguments, which we specify.
+Using the [`gradient()`](../reference/gradient.md) transformation, we
+can automatically obtain the gradient function of `model_loss` with
+respect to some of its arguments, which we specify.
 
 ``` r
 model_loss_grad <- gradient(
@@ -379,8 +377,8 @@ In principle, there are three ways to implement control-flow in {anvil}:
     seen this earlier when our linear model allowed to optionally
     include a bias term).
 3.  Use special control-flow primitives provided by anvil, such as
-    [`nv_while()`](https://r-xla.github.io/anvil/reference/nv_while.md)
-    and [`nv_if()`](https://r-xla.github.io/anvil/reference/nv_if.md).
+    [`nv_while()`](../reference/nv_while.md) and
+    [`nv_if()`](../reference/nv_if.md).
 
 Which solution is best depends on the specific scenario, so we will
 cover all three cases, at the risk of being a bit repetitive. We will

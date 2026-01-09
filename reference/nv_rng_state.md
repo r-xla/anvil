@@ -17,5 +17,4 @@ nv_rng_state(seed)
 
 ## Value
 
-[`nv_tensor`](https://r-xla.github.io/anvil/reference/nv_tensor.md) of
-dtype `ui64` and shape (2)
+[`nv_tensor`](nv_tensor.md) of dtype `ui64` and shape (2)

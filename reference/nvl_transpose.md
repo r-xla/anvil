@@ -12,7 +12,7 @@ nvl_transpose(operand, permutation)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`tensorish`](tensorish.md))  
   Operand.
 
 - permutation:
@@ -22,4 +22,4 @@ nvl_transpose(operand, permutation)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](tensorish.md)

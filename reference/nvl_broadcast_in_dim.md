@@ -12,7 +12,7 @@ nvl_broadcast_in_dim(operand, shape_out, broadcast_dimensions)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`tensorish`](tensorish.md))  
   Operand.
 
 - shape_out:
@@ -27,4 +27,4 @@ nvl_broadcast_in_dim(operand, shape_out, broadcast_dimensions)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](tensorish.md)

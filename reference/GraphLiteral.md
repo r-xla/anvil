@@ -1,8 +1,6 @@
 # Graph Literal
 
-Literal in an
-[`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md).
-This is a mutable class.
+Literal in an [`AnvilGraph`](AnvilGraph.md). This is a mutable class.
 
 ## Usage
 
@@ -14,7 +12,7 @@ GraphLiteral(aval)
 
 - aval:
 
-  ([`LiteralTensor`](https://r-xla.github.io/anvil/reference/LiteralTensor.md))  
+  ([`LiteralTensor`](LiteralTensor.md))  
   The value of the literal.
 
 ## Value

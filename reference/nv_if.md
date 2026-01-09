@@ -12,7 +12,7 @@ nv_if(pred, true, false)
 
 - pred:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`tensorish`](tensorish.md))  
   Flag.
 
 - true:
@@ -27,4 +27,4 @@ nv_if(pred, true, false)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](tensorish.md)

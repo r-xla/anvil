@@ -30,4 +30,4 @@ debug_box(dtype, shape, ambiguous = FALSE)
 
 ## Value
 
-([`DebugBox`](https://r-xla.github.io/anvil/reference/DebugBox.md))
+([`DebugBox`](DebugBox.md))

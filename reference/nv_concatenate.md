@@ -22,4 +22,4 @@ nv_concatenate(..., dimension)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](tensorish.md)
