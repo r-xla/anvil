@@ -50,7 +50,8 @@ These functions wrap the safetensors format functionality provided by the
 \dontshow{if (pjrt::plugin_is_downloaded("cpu")) withAutoprint(\{ # examplesIf}
 x <- nv_tensor(array(1:6, dim = c(2, 3)))
 raw_data <- nv_serialize(list(x = x))
+raw_data
 reloaded <- nv_unserialize(raw_data)
-expect_equal(x, reloaded$x)
+reloaded
 \dontshow{\}) # examplesIf}
 }
