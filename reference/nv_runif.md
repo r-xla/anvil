@@ -1,8 +1,8 @@
-# Internal: Random Unit Uniform Numbers
-
-generate random uniform numbers in \[0, 1)
+# Sample from a Uniform Distribution
 
 Sample from a uniform distribution in the open interval (lower, upper).
+Note that `nv_rand_unif()` generates values in \[0, 1), while
+`nv_runif()` generates values in (lower, upper).
 
 ## Usage
 
@@ -21,8 +21,8 @@ nv_runif(shape, initial_state, dtype = "f32", lower = 0, upper = 1)
 
 - initial_state:
 
-  (\[`ui64[2]`\]\[tensorish\])  
-  RNG state.
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  RNG state (`ui64[2]`).
 
 - dtype:
 

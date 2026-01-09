@@ -42,6 +42,16 @@ Functions for querying tensor attributes and converting them
 - [`platform()`](https://r-xla.github.io/anvil/reference/platform.md) :
   Platform
 
+## Tensor Serialization
+
+Functions for serializing and deserializing tensors
+
+- [`nv_write()`](https://r-xla.github.io/anvil/reference/nv_serialization.md)
+  [`nv_read()`](https://r-xla.github.io/anvil/reference/nv_serialization.md)
+  [`nv_serialize()`](https://r-xla.github.io/anvil/reference/nv_serialization.md)
+  [`nv_unserialize()`](https://r-xla.github.io/anvil/reference/nv_serialization.md)
+  : Tensor serialization and I/O
+
 ## Type conversion and promotion
 
 Functions for type conversion and promotion
@@ -224,7 +234,7 @@ Functions for generating random numbers
 
 - [`nv_unif_rand()`](https://r-xla.github.io/anvil/reference/nv_runif.md)
   [`nv_runif()`](https://r-xla.github.io/anvil/reference/nv_runif.md) :
-  Internal: Random Unit Uniform Numbers
+  Sample from a Uniform Distribution
 - [`nv_rnorm()`](https://r-xla.github.io/anvil/reference/nv_rnorm.md) :
   Sample from a Normal Distribution
 - [`nv_rbinom()`](https://r-xla.github.io/anvil/reference/nv_rbinom.md)

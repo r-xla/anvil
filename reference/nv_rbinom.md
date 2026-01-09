@@ -18,8 +18,8 @@ nv_rbinom(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32")
 
 - initial_state:
 
-  (\[`ui64[2]`\]\[tensorish\])  
-  RNG state.
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  RNG state (`ui64[2]`).
 
 - n:
 

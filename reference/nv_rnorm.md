@@ -18,8 +18,8 @@ nv_rnorm(shape, initial_state, dtype = "f32", mu = 0, sigma = 1)
 
 - initial_state:
 
-  (\[`ui64[2]`\]\[tensorish\])  
-  RNG state.
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  RNG state (`ui64[2]`).
 
 - dtype:
 
