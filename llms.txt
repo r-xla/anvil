@@ -206,10 +206,6 @@ problem for fast running programs.
 - [`nv_unif_rand()`](nv_runif.md) [`nv_runif()`](nv_runif.md) :
   Internal: Random Unit Uniform Numbers
 - [`nv_select()`](nv_select.md) : Select
-- [`nv_write()`](nv_serialization.md) [`nv_read()`](nv_serialization.md)
-  [`nv_serialize()`](nv_serialization.md)
-  [`nv_unserialize()`](nv_serialization.md) : Tensor serialization and
-  I/O
 - [`nv_shift_left()`](nv_shift_left.md) : Shift Left
 - [`nv_shift_right_arithmetic()`](nv_shift_right_arithmetic.md) :
   Arithmetic Shift Right
