@@ -20,3 +20,4 @@ Mapping from graph values to func values.}
 Environment for storing graph value to func value mappings.
 This is a mutable class.
 }
+\keyword{internal}

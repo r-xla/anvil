@@ -1,4 +1,5 @@
-url: ~
+url: https://r-xla.github.io/anvil/
+destination: docs
 
 template:
   bootstrap: 5
@@ -18,16 +19,219 @@ navbar:
       menu:
       - text: Get Started
         href: articles/anvil.html
-      - text: Random Number Generation
-        href: articles/random-numbers.html
       - text: Type Promotion
         href: articles/type-promotion.html
-      - text: Primitives Overview
-        href: articles/primitives.html
+      - text: Random Number Generation
+        href: articles/random-numbers.html
       - text: Debugging
         href: articles/debugging.html
+      - text: Primitives Overview
+        href: articles/primitives.html
     technical:
       text: Technical
       menu:
       - text: Internals
         href: articles/internals.html
+
+reference:
+  - title: Tensor Creation
+    desc: Functions for creating and initializing tensors
+    contents:
+      - AnvilTensor
+      - tensorish
+      - nv_tensor
+      - nv_scalar
+      - nv_empty
+      - nv_fill
+      - nv_iota
+      - nv_aten
+
+  - title: Tensor attributes and converters
+    desc: Functions for querying tensor attributes and converting them
+    contents:
+      - dtype
+      - shape
+      - ndims
+      - device
+      - starts_with("platform")
+      - as_array
+      - as_raw
+      - as_dtype
+      - is_dtype
+
+  - title: Type conversion and promotion
+    desc: Functions for type conversion and promotion
+    contents:
+      - nv_convert
+      - nv_bitcast_convert
+      - nv_promote_to_common
+      - nv_broadcast_scalars
+      - nv_broadcast_tensors
+      - nv_broadcast_to
+      - common_dtype
+
+  - title: Tensor manipulation
+    desc: Functions for reshaping and rearranging tensors
+    contents:
+      - nv_reshape
+      - nv_transpose
+      - nv_concatenate
+      - nv_slice
+      - nv_pad
+      - nv_reverse
+
+  - title: Arithmetic operations
+    desc: Basic arithmetic operations on tensors
+    contents:
+      - nv_add
+      - nv_sub
+      - nv_mul
+      - nv_div
+      - nv_pow
+      - nv_neg
+      - nv_remainder
+
+  - title: Comparison operations
+    desc: Element-wise comparison operations
+    contents:
+      - nv_eq
+      - nv_ne
+      - nv_gt
+      - nv_ge
+      - nv_lt
+      - nv_le
+
+  - title: Mathematical functions
+    desc: Mathematical and trigonometric functions
+    contents:
+      - nv_abs
+      - nv_sqrt
+      - nv_rsqrt
+      - nv_cbrt
+      - nv_exp
+      - nv_expm1
+      - nv_log
+      - nv_log1p
+      - nv_sine
+      - nv_cosine
+      - nv_tan
+      - nv_tanh
+      - nv_atan2
+      - nv_sign
+      - nv_floor
+      - nv_ceil
+      - nv_round
+      - nv_logistic
+      - nv_is_finite
+
+  - title: Reduction operations
+    desc: Operations that reduce tensor dimensions
+    contents:
+      - nv_reduce_sum
+      - nv_reduce_mean
+      - nv_reduce_prod
+      - nv_reduce_max
+      - nv_reduce_min
+      - nv_reduce_any
+      - nv_reduce_all
+
+  - title: Linear algebra
+    desc: Linear algebra operations
+    contents:
+      - nv_matmul
+
+  - title: Logical and bitwise operations
+    desc: Logical and bitwise operations on tensors
+    contents:
+      - nv_and
+      - nv_or
+      - nv_xor
+      - nv_not
+      - nv_shift_left
+      - nv_shift_right_logical
+      - nv_shift_right_arithmetic
+      - nv_popcnt
+
+  - title: Element-wise operations
+    desc: Other element-wise tensor operations
+    contents:
+      - nv_min
+      - nv_max
+      - nv_clamp
+
+  - title: Control flow
+    desc: Control flow operations
+    contents:
+      - nv_if
+      - nv_while
+      - nv_select
+
+  - title: Random number generation
+    desc: Functions for generating random numbers
+    contents:
+      - nv_runif
+      - nv_rnorm
+      - nv_rbinom
+      - nv_rdunif
+      - nv_rng_state
+
+  - title: Transformations
+    desc: Code transformations
+    contents:
+      - trace_fn
+      - gradient
+      - value_and_gradient
+      - transform_gradient
+      - jit
+      - jit_eval
+      - stablehlo
+
+  - title: Debugging
+    desc: Debugging utilities and tools
+    contents:
+      - debug_box
+      - nv_print
+      - DebugBox
+
+  - title: Internal Data Structures and Functions
+    desc: Internal data structures and functions
+    contents:
+      - dtype_abstract
+      - shape_abstract
+      - ndims_abstract
+      - to_abstract
+      - GraphDescriptor
+      - GraphValue
+      - AnvilBox
+      - AnvilGraph
+      - GraphNode
+      - GraphBox
+      - GraphLiteral
+      - graph_desc_add
+      - local_descriptor
+      - .current_descriptor
+      - subgraphs
+      - prim
+      - AnvilPrimitive
+      - PrimitiveCall
+      - register_primitive
+      - AbstractTensor
+      - ConcreteTensor
+      - LiteralTensor
+
+  - title: Tree utilities
+    desc: Utilities for working with nested structures
+    contents:
+      - flatten
+      - unflatten
+      - build_tree
+      - reindex_tree
+      - tree_size
+
+  - title: Tensor classes
+    desc: Core tensor classes and constructors
+
+  - title: Primitives
+    desc: Low-level primitive operations (nvl_* functions)
+    contents:
+      - starts_with("nvl_")

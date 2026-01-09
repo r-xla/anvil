@@ -10,6 +10,7 @@
 #' @param gval_to_fval (`hashtab`)\cr
 #'   Mapping from graph values to func values.
 #' @return (`HloEnv`)
+#' @keywords internal
 HloEnv <- function(parent = NULL, gval_to_fval = NULL) {
   if (!is.null(parent) && !inherits(parent, "HloEnv")) {
     cli_abort("parent must be an HloEnv or NULL")
