@@ -41,8 +41,6 @@
 <url><loc>https://r-xla.github.io/anvil/reference/jit.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/jit_eval.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/local_descriptor.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/reference/maybe_box_input.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/reference/maybe_box_tensorish.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_abs.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_add.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_and.html</loc></url>

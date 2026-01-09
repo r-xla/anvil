@@ -1,13 +1,9 @@
 # Random Number Generation
 
 In this vignette, you will learn how to generate random numbers in
-{anvil}. If you’re familiar with R’s built-in random number generation,
-you’ll notice that {anvil} handles things a bit differently.
-
-## The RNG State
-
-In base R, random number generation uses a global state (`.Random.seed`)
-that is automatically updated after each call:
+{anvil}, which is different from base R, where random number generation
+uses a global state (`.Random.seed`) that is automatically updated after
+each call:
 
 ``` r
 set.seed(42)
@@ -23,16 +19,13 @@ rnorm(3)
 #> [1]          12 -1577024373  1699409082
 ```
 
-In {anvil}, we take a different approach: the random number generator
-state must be explicitly passed around. This is because {anvil} follows
-a functional programming paradigm where functions are pure and don’t
-have side effects.
+In {anvil}, the random state must be explicitly passed around. This is
+because we are following a functional programming paradigm where
+functions are pure and don’t have side effects.
 
 **Note:** This explicit state-passing behavior might change in the
 future to provide a more R-like experience, but for now you need to
 manage the state yourself.
-
-## Creating an Initial State
 
 To generate random numbers, you first need to create an initial RNG
 state, which is simply a `ui64[2]`. For convenience, you can convert an
@@ -49,18 +42,16 @@ state
 #> [ CPUui64{2} ]
 ```
 
-## Generating Random Numbers
-
 The main functions for generating random numbers are
 [`nv_runif()`](https://r-xla.github.io/anvil/reference/nv_runif.md),
 [`nv_rdunif()`](https://r-xla.github.io/anvil/reference/nv_rdunif.md),
 [`nv_rbinom()`](https://r-xla.github.io/anvil/reference/nv_rbinom.md),
 and [`nv_rnorm()`](https://r-xla.github.io/anvil/reference/nv_rnorm.md).
-Both functions return a list with two elements:
+All those functions return a list with two elements:
 
 1.  The **new** RNG state (to be used for subsequent random number
-    generation)
-2.  The generated random numbers
+    generation).
+2.  The generated random numbers.
 
 Let’s generate some uniform random numbers:
 
@@ -97,10 +88,8 @@ result[[2]]
 #> [ CPUf32{2x3} ]
 ```
 
-## What Happens When You Reuse the State?
-
-Here’s the key insight: if you use the same state twice, you get the
-same random numbers.
+One thing to avoid is to reuse the same state for multiple calls as done
+in the example below:
 
 ``` r
 h <- jit(function(state) {
@@ -117,12 +106,9 @@ as_array(output$second)
 ```
 
 As you can see, both calls produced identical random numbers because we
-used the same state for both.
-
-## Properly Chaining Random Number Generation
-
-To get different random numbers in subsequent calls, you need to pass
-the **new** state returned by the previous call:
+used the same state for both. To get different random numbers in
+subsequent calls, you need to pass the **new** state returned by the
+previous call:
 
 ``` r
 proper_rng <- jit(function(state) {

@@ -84,7 +84,7 @@
       <h1>Type Promotion</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/higher-order-prim/vignettes/type-promotion.Rmd" class="external-link"><code>vignettes/type-promotion.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/type-promotion.Rmd" class="external-link"><code>vignettes/type-promotion.Rmd</code></a></small>
       <div class="d-none name"><code>type-promotion.Rmd</code></div>
     </div>
 
@@ -593,13 +593,13 @@ is when you use R literals. The default types for literals are as
 follows:</p>
 <ul>
 <li>
-<code><a href="https://rdrr.io/r/base/double.html" class="external-link">double()</a></code> -&gt; <code>dtype("f32")</code>
+<code><a href="https://rdrr.io/r/base/double.html" class="external-link">double()</a></code> -&gt; <code>f32</code>
 </li>
 <li>
-<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code> -&gt; <code>dtype("i32")</code>
+<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code> -&gt; <code>i32</code>
 </li>
 <li>
-<code><a href="https://rdrr.io/r/base/logical.html" class="external-link">logical()</a></code> -&gt; <code>dtype("i1")</code> (bool)</li>
+<code><a href="https://rdrr.io/r/base/logical.html" class="external-link">logical()</a></code> -&gt; <code>i1</code> (bool)</li>
 </ul>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1.0</span>, <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>

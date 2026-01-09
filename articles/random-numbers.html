@@ -84,21 +84,16 @@
       <h1>Random Number Generation</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/higher-order-prim/vignettes/random-numbers.Rmd" class="external-link"><code>vignettes/random-numbers.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/random-numbers.Rmd" class="external-link"><code>vignettes/random-numbers.Rmd</code></a></small>
       <div class="d-none name"><code>random-numbers.Rmd</code></div>
     </div>
 
     
     
 <p>In this vignette, you will learn how to generate random numbers in
-{anvil}. If you’re familiar with R’s built-in random number generation,
-you’ll notice that {anvil} handles things a bit differently.</p>
-<div class="section level2">
-<h2 id="the-rng-state">The RNG State<a class="anchor" aria-label="anchor" href="#the-rng-state"></a>
-</h2>
-<p>In base R, random number generation uses a global state
-(<code>.Random.seed</code>) that is automatically updated after each
-call:</p>
+{anvil}, which is different from base R, where random number generation
+uses a global state (<code>.Random.seed</code>) that is automatically
+updated after each call:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">.Random.seed</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
@@ -111,17 +106,12 @@ call:</p>
 <span><span class="co">#&gt; [1]  0.6328626  0.4042683 -0.1061245</span></span>
 <span><span class="va">.Random.seed</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1]          12 -1577024373  1699409082</span></span></code></pre></div>
-<p>In {anvil}, we take a different approach: the random number generator
-state must be explicitly passed around. This is because {anvil} follows
-a functional programming paradigm where functions are pure and don’t
-have side effects.</p>
+<p>In {anvil}, the random state must be explicitly passed around. This
+is because we are following a functional programming paradigm where
+functions are pure and don’t have side effects.</p>
 <p><strong>Note:</strong> This explicit state-passing behavior might
 change in the future to provide a more R-like experience, but for now
 you need to manage the state yourself.</p>
-</div>
-<div class="section level2">
-<h2 id="creating-an-initial-state">Creating an Initial State<a class="anchor" aria-label="anchor" href="#creating-an-initial-state"></a>
-</h2>
 <p>To generate random numbers, you first need to create an initial RNG
 state, which is simply a <code>ui64[2]</code>. For convenience, you can
 convert an R seed into a state using <code><a href="../reference/nv_rng_state.html">nv_rng_state()</a></code>:</p>
@@ -133,18 +123,14 @@ convert an R seed into a state using <code><a href="../reference/nv_rng_state.ht
 <span><span class="co">#&gt;  42</span></span>
 <span><span class="co">#&gt;   0</span></span>
 <span><span class="co">#&gt; [ CPUui64{2} ]</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="generating-random-numbers">Generating Random Numbers<a class="anchor" aria-label="anchor" href="#generating-random-numbers"></a>
-</h2>
 <p>The main functions for generating random numbers are
 <code><a href="../reference/nv_runif.html">nv_runif()</a></code>, <code><a href="../reference/nv_rdunif.html">nv_rdunif()</a></code>,
-<code><a href="../reference/nv_rbinom.html">nv_rbinom()</a></code>, and <code><a href="../reference/nv_rnorm.html">nv_rnorm()</a></code>. Both functions
-return a list with two elements:</p>
+<code><a href="../reference/nv_rbinom.html">nv_rbinom()</a></code>, and <code><a href="../reference/nv_rnorm.html">nv_rnorm()</a></code>. All those
+functions return a list with two elements:</p>
 <ol style="list-style-type: decimal">
 <li>The <strong>new</strong> RNG state (to be used for subsequent random
-number generation)</li>
-<li>The generated random numbers</li>
+number generation).</li>
+<li>The generated random numbers.</li>
 </ol>
 <p>Let’s generate some uniform random numbers:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -175,12 +161,8 @@ number generation)</li>
 <span><span class="co">#&gt;  -0.0675  0.9489  1.9457</span></span>
 <span><span class="co">#&gt;  -0.5255  1.2002  0.0008</span></span>
 <span><span class="co">#&gt; [ CPUf32{2x3} ]</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="what-happens-when-you-reuse-the-state">What Happens When You Reuse the State?<a class="anchor" aria-label="anchor" href="#what-happens-when-you-reuse-the-state"></a>
-</h2>
-<p>Here’s the key insight: if you use the same state twice, you get the
-same random numbers.</p>
+<p>One thing to avoid is to reuse the same state for multiple calls as
+done in the example below:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">h</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">state</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">result1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_runif.html">nv_runif</a></span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
@@ -194,13 +176,9 @@ same random numbers.</p>
 <span><span class="fu"><a href="https://r-xla.github.io/tengen/reference/as_array.html" class="external-link">as_array</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">second</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.8690484 0.3102535 0.1506324</span></span></code></pre></div>
 <p>As you can see, both calls produced identical random numbers because
-we used the same state for both.</p>
-</div>
-<div class="section level2">
-<h2 id="properly-chaining-random-number-generation">Properly Chaining Random Number Generation<a class="anchor" aria-label="anchor" href="#properly-chaining-random-number-generation"></a>
-</h2>
-<p>To get different random numbers in subsequent calls, you need to pass
-the <strong>new</strong> state returned by the previous call:</p>
+we used the same state for both. To get different random numbers in
+subsequent calls, you need to pass the <strong>new</strong> state
+returned by the previous call:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">proper_rng</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">state</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">result1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_runif.html">nv_runif</a></span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
@@ -216,9 +194,7 @@ the <strong>new</strong> state returned by the previous call:</p>
 <span><span class="co">#&gt; [1] 0.5203207 0.1064724 0.2499373</span></span></code></pre></div>
 <p>Now we get different random numbers because we properly propagated
 the state.</p>
-</div>
-  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
-    </nav></aside>
+  </main>
 </div>
 
 

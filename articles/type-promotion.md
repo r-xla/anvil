@@ -66,10 +66,9 @@ inferred from the input types. The only case where this is not possible
 is when you use R literals. The default types for literals are as
 follows:
 
-- [`double()`](https://rdrr.io/r/base/double.html) -\> `dtype("f32")`
-- [`integer()`](https://rdrr.io/r/base/integer.html) -\> `dtype("i32")`
-- [`logical()`](https://rdrr.io/r/base/logical.html) -\> `dtype("i1")`
-  (bool)
+- [`double()`](https://rdrr.io/r/base/double.html) -\> `f32`
+- [`integer()`](https://rdrr.io/r/base/integer.html) -\> `i32`
+- [`logical()`](https://rdrr.io/r/base/logical.html) -\> `i1` (bool)
 
 ``` r
 jit(\() list(1L, 1.0, TRUE))()
