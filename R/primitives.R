@@ -1115,9 +1115,22 @@ nvl_while <- function(init, cond, body) {
     current_desc <- local_descriptor()
   }
 
+  in_tree <- build_tree(init)
+  # Convert scalars to LiteralTensor so they become proper graph inputs
+  flat_inputs <- lapply(flatten(init), function(x) {
+    if (test_scalar(x)) {
+      if (!(is.numeric(x) || is.logical(x))) {
+        cli_abort("Expected a numeric or logical scalar, but got {.cls {class(x)[1]}}")
+      }
+      LiteralTensor(x, shape = integer(), ambiguous = !is.logical(x))
+    } else {
+      to_abstract(x, pure = TRUE)
+    }
+  })
+
   desc_cond <- local_descriptor()
 
-  cond_graph <- trace_fn(cond, init, desc = desc_cond)
+  cond_graph <- trace_fn(cond, desc = desc_cond, flat_inputs = flat_inputs, in_tree = in_tree)
 
   desc_body <- local_descriptor()
 
@@ -1126,7 +1139,7 @@ nvl_while <- function(init, cond, body) {
   for (const in desc_cond$constants) {
     get_box_or_register_const(desc_body, const)
   }
-  body_graph <- trace_fn(body, init, desc_body)
+  body_graph <- trace_fn(body, desc = desc_body, flat_inputs = flat_inputs, in_tree = in_tree)
 
   if (!identical(cond_graph$in_tree, body_graph$in_tree)) {
     cli_abort("cond and body must have the same input structure")
@@ -1158,7 +1171,7 @@ nvl_while <- function(init, cond, body) {
 
   out <- graph_desc_add(
     p_while,
-    args = lapply(flatten(init), maybe_box_variable),
+    args = lapply(flatten(init), maybe_box_tensorish),
     params = list(cond_graph = cond_graph, body_graph = body_graph),
     infer_fn = infer_fn,
     desc = current_desc,

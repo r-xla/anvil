@@ -4,14 +4,21 @@
 \alias{trace_fn}
 \title{Trace an R function into a Graph}
 \usage{
-trace_fn(f, args, desc = NULL, toplevel = FALSE)
+trace_fn(
+  f,
+  args = NULL,
+  desc = NULL,
+  toplevel = FALSE,
+  flat_inputs = NULL,
+  in_tree = NULL
+)
 }
 \arguments{
 \item{f}{(\code{function})\cr
 The function to trace_fn.}
 
 \item{args}{(\code{list} of (\code{\link{AnvilTensor}} | \code{\link{AbstractTensor}}))\cr
-The arguments to the function.}
+The arguments to the function. Can be \code{NULL} if \code{flat_inputs} is provided.}
 
 \item{desc}{(\code{NULL} | \code{GraphDescriptor})\cr
 The descriptor to use for the graph.}
@@ -20,6 +27,12 @@ The descriptor to use for the graph.}
 Whether the function is being traced at the top level.
 If this is \code{TRUE}, inputs that are \code{AnvilTensor}s are treated as unknown.
 If this is \code{FALSE} (default), \code{AnvilTensor}s are treated as constants.}
+
+\item{flat_inputs}{(\code{NULL} | \code{list})\cr
+Pre-flattened inputs. If provided, \code{args} is ignored and \code{in_tree} must be provided.}
+
+\item{in_tree}{(\code{NULL} | \code{Node})\cr
+The input tree structure. Required if \code{flat_inputs} is provided.}
 }
 \value{
 (\code{\link{AnvilGraph}})

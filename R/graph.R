@@ -269,7 +269,12 @@ format.GraphBox <- function(x, ...) {
   sprintf("GraphBox(%s)", format(x$gnode))
 }
 
-maybe_box_variable <- function(x) {
+#' @title Maybe Box Tensorish
+#' @description
+#' This function boxes tensorish values passed to a primitive.
+#' Note that length-1 vectors are converted to scalar AnvilTensor objects.
+#' @keywords internal
+maybe_box_tensorish <- function(x) {
   current_desc <- .current_descriptor()
   if (is_graph_box(x)) {
     if (identical(x$desc, current_desc)) {
@@ -277,8 +282,13 @@ maybe_box_variable <- function(x) {
     }
     gval <- x$gnode
     get_box_or_register_const(current_desc, gval)
-  } else if (is_anvil_tensor(x) || test_scalar(x)) {
+  } else if (is_anvil_tensor(x)) {
     get_box_or_register_const(current_desc, x)
+  } else if (test_scalar(x)) {
+    if (!(is.numeric(x) || is.logical(x))) {
+      cli_abort("Expected a numeric or logical scalar, but got {.cls {class(x)[1]}}")
+    }
+    GraphBox(GraphLiteral(LiteralTensor(x, integer(), ambiguous = !is.logical(x))), current_desc)
   } else if (is_graph_node(x)) {
     # FIXME: !!!
     # We use this in gradient, where we pass gvals to the backward rules
@@ -292,10 +302,23 @@ maybe_box_variable <- function(x) {
   } else if (is_abstract_tensor(x)) {
     cli_abort("Don't use AbtractTensors as inputs; For debugging, use `debug_box()`")
   } else {
-    x
+    cli_abort("Internal error: trying to box an invalid value of class {.cls {class(x)[1]}}")
   }
 }
 
+#' @title Maybe Box Input
+#' @description
+#' This function is called onto the inputs of a function that is being traced via [`trace_fn()`].
+#' The function boxes the provided value and registers it as an input to the graph.
+#' @param x (any)\cr
+#'   The input to box.
+#' @param desc ([`GraphDescriptor`])\cr
+#'   The descriptor of the graph.
+#' @param toplevel (`logical(1)`)\cr
+#'   Whether the function is being traced at the top level.
+#'   If this is `TRUE`, inputs that are `AnvilTensor`s are treated as unknown, i.e. as
+#'   `GraphValue` instead of `GraphLiteral` objects.
+#' @keywords internal
 # this function is on the inputs of trace_fn()
 maybe_box_input <- function(x, desc, toplevel) {
   if (is_anvil_tensor(x)) {
@@ -321,8 +344,6 @@ maybe_box_input <- function(x, desc, toplevel) {
     register_input(desc, gval)
   } else if (is_debug_box(x)) {
     # User provided abstract input
-    # This is useful for debugging and in jit() we anyway verify that the inputs are AnvilTensors
-    # so we don't accidentally box abstract tensors there
     gval <- GraphValue(aval = x$aval)
     register_input(desc, gval)
   } else if (is_graph_box(x)) {
@@ -451,18 +472,29 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
 #' @param f (`function`)\cr
 #'   The function to trace_fn.
 #' @param args (`list` of ([`AnvilTensor`] | [`AbstractTensor`]))\cr
-#'   The arguments to the function.
+#'   The arguments to the function. Can be `NULL` if `flat_inputs` is provided.
 #' @param desc (`NULL` | `GraphDescriptor`)\cr
 #'   The descriptor to use for the graph.
 #' @param toplevel (`logical(1)`)\cr
 #'   Whether the function is being traced at the top level.
 #'   If this is `TRUE`, inputs that are `AnvilTensor`s are treated as unknown.
 #'   If this is `FALSE` (default), `AnvilTensor`s are treated as constants.
+#' @param flat_inputs (`NULL` | `list`)\cr
+#'   Pre-flattened inputs. If provided, `args` is ignored and `in_tree` must be provided.
+#' @param in_tree (`NULL` | `Node`)\cr
+#'   The input tree structure. Required if `flat_inputs` is provided.
 #' @return ([`AnvilGraph`])
 #' @export
-trace_fn <- function(f, args, desc = NULL, toplevel = FALSE) {
-  in_tree <- build_tree(args)
-  args_flat <- flatten(args)
+trace_fn <- function(f, args = NULL, desc = NULL, toplevel = FALSE, flat_inputs = NULL, in_tree = NULL) {
+  if (!is.null(flat_inputs)) {
+    if (is.null(in_tree)) {
+      cli_abort("in_tree must be provided when flat_inputs is provided")
+    }
+    args_flat <- flat_inputs
+  } else {
+    in_tree <- build_tree(args)
+    args_flat <- flatten(args)
+  }
   f_flat <- flatten_fun(f, in_node = in_tree)
   if (is.null(desc)) {
     desc <- local_descriptor(in_tree = in_tree)
@@ -476,7 +508,7 @@ trace_fn <- function(f, args, desc = NULL, toplevel = FALSE) {
 
   out_tree <- output[[1L]]
   # function() x; -> output can be an closed-over constant
-  outputs_flat <- lapply(output[[2L]], maybe_box_variable)
+  outputs_flat <- lapply(output[[2L]], maybe_box_tensorish)
 
   desc$out_tree <- out_tree
   desc$outputs <- lapply(outputs_flat, \(x) x$gnode)
@@ -603,7 +635,7 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, d
     desc <- local_descriptor()
   }
 
-  boxes_in <- lapply(args, maybe_box_variable)
+  boxes_in <- lapply(args, maybe_box_tensorish)
   gnodes_in <- lapply(boxes_in, \(box) box$gnode)
   avals_in <- lapply(boxes_in, \(box) box$gnode$aval)
   sts_out <- rlang::exec(infer_fn, !!!c(avals_in, params))

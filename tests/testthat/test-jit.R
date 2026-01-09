@@ -226,7 +226,7 @@ test_that("... works (#19)", {
 })
 
 test_that("error message when passing invalid input", {
-  expect_error(jit(nv_tan)(1L), "Expected anvil tensor, but got")
+  expect_error(jit(nv_tan)("string"), "Expected anvil tensor, but got")
 })
 
 test_that("good error message when passing AbstractTensors", {
@@ -236,4 +236,15 @@ test_that("good error message when passing AbstractTensors", {
 test_that("jit: respects device argument", {
   f <- jit(function() 1, device = "cpu")
   expect_equal(f(), nv_scalar(1, device = "cpu"))
+})
+
+test_that("jit only boxes non-static scalars", {
+  f <- jit(
+    \(x, y) {
+      nv_if(y, x, x + 1L)
+    },
+    static = "y"
+  )
+  expect_equal(f(1L, TRUE), nv_scalar(1L))
+  expect_equal(f(nv_scalar(1L), FALSE), nv_scalar(2L))
 })

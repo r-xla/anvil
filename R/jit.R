@@ -20,8 +20,14 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
   assert_subset(static, formalArgs2(f))
   assert_string(device, null.ok = TRUE)
 
-  call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat) {
+  call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat, platform) {
     args_nonstatic <- args_flat[!is_static_flat]
+    args_nonstatic <- lapply(args_nonstatic, function(arg) {
+      if (test_scalar(arg)) {
+        return(nv_scalar(arg, device = platform))
+      }
+      arg
+    })
     out_vals <- rlang::exec(
       pjrt::pjrt_execute,
       exec,
@@ -45,14 +51,16 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
     avals_in <- Map(
       function(x, is_static) {
         if (is_static) {
-          x
-        } else {
-          if (!is_anvil_tensor(x)) {
-            cli_abort("Expected anvil tensor, but got {.cls {class(x)[1]}}")
-          }
-          platforms <<- c(platforms, platform(x))
-          nv_aten(dtype(x), shape(x))
+          return(x)
         }
+        if (test_scalar(x) && (is.numeric(x) || is.logical(x))) {
+          return(nv_aten(default_dtype(x), integer()))
+        }
+        if (!is_anvil_tensor(x)) {
+          cli_abort("Expected anvil tensor, but got {.cls {class(x)[1]}}")
+        }
+        platforms <<- c(platforms, platform(x))
+        nv_aten(dtype(x), shape(x))
       },
       args_flat,
       is_static_flat
@@ -75,13 +83,13 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
 
     cache_hit <- cache$get(list(avals_in, platform))
     if (!is.null(cache_hit)) {
-      return(call_xla(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat))
+      return(call_xla(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat, platform))
     }
     desc <- local_descriptor()
     in_tree <- in_node
     in_tree$marked <- NULL
     class(in_tree) <- c("ListNode", "Node")
-    graph <- trace_fn(f, args, desc = desc, toplevel = TRUE)
+    graph <- trace_fn(f, desc = desc, toplevel = TRUE, flat_inputs = avals_in, in_tree = in_tree)
     graph <- inline_scalarish_constants(graph)
     graph <- remove_unused_constants(graph)
 
@@ -101,7 +109,7 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
     program <- pjrt_program(src = src, format = "mlir")
     exec <- pjrt_compile(program, client = pjrt::pjrt_client(platform))
     cache$set(list(avals_in, platform), list(exec, out_tree, const_tensors))
-    call_xla(exec, out_tree, const_tensors, args_flat, is_static_flat)
+    call_xla(exec, out_tree, const_tensors, args_flat, is_static_flat, platform)
   }
   formals(f_jit) <- formals2(f)
   f_jit
