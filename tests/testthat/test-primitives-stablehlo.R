@@ -196,156 +196,182 @@ test_that("p_transpose", {
   )
 })
 
-test_that("p_if: capture non-argument", {
-  f <- jit(function(pred, x) {
-    x1 <- nv_mul(x, x)
-    x2 <- nv_add(x, x)
-    nv_if(pred, x1, x2)
+describe("p_if", {
+  it("can capture non-arguments", {
+    f <- jit(function(pred, x) {
+      x1 <- nv_mul(x, x)
+      x2 <- nv_add(x, x)
+      nv_if(pred, x1, x2)
+    })
+    expect_equal(
+      f(nv_scalar(TRUE), nv_scalar(2)),
+      nv_scalar(4)
+    )
+    expect_equal(
+      f(nv_scalar(FALSE), nv_scalar(2)),
+      nv_scalar(4)
+    )
   })
-  f(nv_scalar(TRUE), nv_scalar(2))
+
+  it("works in simple example", {
+    # simple
+    f <- function(pred, x) nvl_if(pred, x, x * x)
+    fj <- jit(f)
+    expect_equal(fj(nv_scalar(TRUE), nv_scalar(2)), nv_scalar(2))
+    expect_equal(fj(nv_scalar(FALSE), nv_scalar(2)), nv_scalar(4))
+    graph <- trace_fn(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
+
+    graph <- trace_fn(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
+
+    f <- jit(function(pred, x) {
+      nvl_if(pred, list(list(x)), list(list(x * x)))
+    })
+    expect_equal(
+      f(nv_scalar(TRUE), nv_scalar(2)),
+      list(list(nv_scalar(2)))
+    )
+    expect_equal(
+      f(nv_scalar(FALSE), nv_scalar(2)),
+      list(list(nv_scalar(4)))
+    )
+
+    g <- jit(function(pred, x) {
+      nvl_if(pred, list(x[[1]]), list(x[[1]] * x[[1]]))
+    })
+    expect_equal(
+      g(nv_scalar(FALSE), list(nv_scalar(2))),
+      list(nv_scalar(4))
+    )
+  })
+
+  it("identical constants in both branches receive the same GraphValue", {
+    x <- nv_scalar(1)
+    f <- function(y) nvl_if(y, x, x)
+    graph <- trace_fn(f, list(y = nv_scalar(TRUE)))
+    fj <- jit(f)
+    expect_equal(fj(nv_scalar(TRUE)), nv_scalar(1))
+    expect_equal(fj(nv_scalar(FALSE)), nv_scalar(1))
+
+    g <- jit(function(pred) {
+      y <- nv_scalar(2)
+      nvl_if(pred, y, y * nv_scalar(3))
+    })
+    expect_equal(g(nv_scalar(TRUE)), nv_scalar(2))
+    expect_equal(g(nv_scalar(FALSE)), nv_scalar(6))
+  })
+
+  it("works with literals as predicate", {
+    expect_equal(jit_eval(nv_if(TRUE, 1, 2)), nv_scalar(1))
+  })
 })
 
-test_that("p_if", {
-  # simple
-  f <- function(pred, x) nvl_if(pred, x, x * x)
-  fj <- jit(f)
-  expect_equal(fj(nv_scalar(TRUE), nv_scalar(2)), nv_scalar(2))
-  expect_equal(fj(nv_scalar(FALSE), nv_scalar(2)), nv_scalar(4))
-  graph <- trace_fn(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
-
-  graph <- trace_fn(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
-
-  f <- jit(function(pred, x) {
-    nvl_if(pred, list(list(x)), list(list(x * x)))
-  })
-  expect_equal(
-    f(nv_scalar(TRUE), nv_scalar(2)),
-    list(list(nv_scalar(2)))
-  )
-  expect_equal(
-    f(nv_scalar(FALSE), nv_scalar(2)),
-    list(list(nv_scalar(4)))
-  )
-
-  g <- jit(function(pred, x) {
-    nvl_if(pred, list(x[[1]]), list(x[[1]] * x[[1]]))
-  })
-  expect_equal(
-    g(nv_scalar(FALSE), list(nv_scalar(2))),
-    list(nv_scalar(4))
-  )
-})
-
-test_that("p_if: identically constants in both branches receive the same GraphValue", {
-  x <- nv_scalar(1)
-  f <- function(y) nvl_if(y, x, x)
-  graph <- trace_fn(f, list(y = nv_scalar(TRUE)))
-  fj <- jit(f)
-  expect_equal(fj(nv_scalar(TRUE)), nv_scalar(1))
-  expect_equal(fj(nv_scalar(FALSE)), nv_scalar(1))
-
-  g <- jit(function(pred) {
-    y <- nv_scalar(2)
-    nvl_if(pred, y, y * nv_scalar(3))
-  })
-  expect_equal(g(nv_scalar(TRUE)), nv_scalar(2))
-  expect_equal(g(nv_scalar(FALSE)), nv_scalar(6))
-})
 
 # TODO: Continue here
-test_that("p_while: simple case", {
-  f <- jit(function(n) {
-    nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
-      i <- i + nv_scalar(1L)
-      list(i = i)
-    })
-  })
-
-  expect_equal(
-    f(nv_scalar(10L)),
-    list(i = nv_scalar(11L))
-  )
-})
-
-test_that("p_while: use literals in the loop", {
-  f <- jit(function(n) {
-    nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
-      i <- i + 1L
-      list(i = i)
-    })
-  })
-  expect_equal(f(nv_scalar(10L)), list(i = nv_scalar(11L)))
-})
-
-test_that("p_while: two state variables", {
-  f <- jit(function(n) {
-    nv_while(
-      list(i = nv_scalar(1L), s = nv_scalar(0L)),
-      \(i, s) i <= n,
-      \(i, s) {
+describe("p_while", {
+  it("works in simple case", {
+    f <- jit(function(n) {
+      nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
         i <- i + nv_scalar(1L)
-        s <- s + i
-        list(i = i, s = s)
-      }
+        list(i = i)
+      })
+    })
+
+    expect_equal(
+      f(nv_scalar(10L)),
+      list(i = nv_scalar(11L))
     )
   })
 
-  res <- f(nv_scalar(10L))
-  expect_equal(
-    res$i,
-    nv_scalar(11L)
-  )
-  # s counts sum of i at each increment; i advances from 2 to 11
-  # s = sum(2:11) = 2+3+...+11 = 65
-  expect_equal(
-    res$s,
-    nv_scalar(sum(2:11))
-  )
-})
-
-test_that("p_while: two states", {
-  f <- jit(function(n) {
-    nv_while(
-      list(i = nv_scalar(1L), j = nv_scalar(2L)),
-      \(i, j) {
-        # nolint
-        i <= n
-      },
-      \(i, j) {
-        i <- i + nv_scalar(1L)
-        list(i = i, j = j)
-      }
-    ) # nolint
+  it("can use literals in the loop", {
+    f <- jit(function(n) {
+      nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
+        i <- i + 1L
+        list(i = i)
+      })
+    })
+    expect_equal(f(nv_scalar(10L)), list(i = nv_scalar(11L)))
   })
 
-  expect_equal(
-    f(nv_scalar(10L)),
-    list(i = nv_scalar(11L), j = nv_scalar(2L))
-  )
-})
+  it("works with two state variables", {
+    f <- jit(function(n) {
+      nv_while(
+        list(i = nv_scalar(1L), s = nv_scalar(0L)),
+        \(i, s) i <= n,
+        \(i, s) {
+          i <- i + nv_scalar(1L)
+          s <- s + i
+          list(i = i, s = s)
+        }
+      )
+    })
 
-test_that("p_while: nested state", {
-  f <- jit(function(n) {
-    nv_while(
-      list(i = list(nv_scalar(1L))),
-      \(i) {
-        i[[1]] <= n
-      },
-      \(i) {
-        i <- i[[1L]]
-        i <- i + nv_scalar(1L)
-        list(i = list(i))
-      }
+    res <- f(nv_scalar(10L))
+    expect_equal(
+      res$i,
+      nv_scalar(11L)
+    )
+    expect_equal(
+      res$s,
+      nv_scalar(sum(2:11))
     )
   })
-  expect_equal(
-    f(nv_scalar(10L)),
-    list(i = list(nv_scalar(11L)))
-  )
-})
 
-test_that("p_while: errors", {
-  # TODO:
+  it("works with two states where one is unused", {
+    f <- jit(function(n) {
+      nv_while(
+        list(i = nv_scalar(1L), j = nv_scalar(2L)),
+        \(i, j) {
+          # nolint
+          i <= n
+        },
+        \(i, j) {
+          i <- i + nv_scalar(1L)
+          list(i = i, j = j)
+        }
+      ) # nolint
+    })
+
+    expect_equal(
+      f(nv_scalar(10L)),
+      list(i = nv_scalar(11L), j = nv_scalar(2L))
+    )
+  })
+
+  it("works with nested state", {
+    f <- jit(function(n) {
+      nv_while(
+        list(i = list(nv_scalar(1L))),
+        \(i) {
+          i[[1]] <= n
+        },
+        \(i) {
+          i <- i[[1L]]
+          i <- i + nv_scalar(1L)
+          list(i = list(i))
+        }
+      )
+    })
+    expect_equal(
+      f(nv_scalar(10L)),
+      list(i = list(nv_scalar(11L)))
+    )
+  })
+
+  it("works with literal initial state", {
+    f <- jit(function(n, x) {
+      i <- 1L
+      out <- nv_while(list(i = i), \(i) i <= n, \(i) {
+        i <- i + 1L
+        list(i = i)
+      })
+      x + out$i
+    })
+    expect_equal(f(nv_scalar(10L), nv_scalar(5L)), nv_scalar(16L))
+  })
+
+  it("errors", {
+    # TODO:
+  })
 })
 
 
