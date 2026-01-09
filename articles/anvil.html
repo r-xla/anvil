@@ -153,9 +153,14 @@ would with regular R arrays.</p>
 <pre><code><span><span class="co">##      [,1] [,2] [,3]</span></span>
 <span><span class="co">## [1,]    2    6   10</span></span>
 <span><span class="co">## [2,]    4    8   12</span></span></code></pre>
+<p>If we add the two anvil tensors, the output will be the type of the
+output instead of the actual result. Read more about this in the <a href="debugging.html">debugging vignette</a>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="op">+</span> <span class="va">y</span></span></code></pre></div>
 <pre><code><span><span class="co">## i32{2,3}</span></span></code></pre>
+<p>In order to actually perform the addition, we need to
+<code>jit</code>-compile the function, which we will cover in the next
+section.</p>
 </div>
 <div class="section level2">
 <h2 id="jit-compilation">JIT Compilation<a class="anchor" aria-label="anchor" href="#jit-compilation"></a>
@@ -322,7 +327,7 @@ data from a linear model:</p>
 <span><span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta</span> <span class="op">+</span> <span class="va">alpha</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">100</span>, sd <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
-<p><img src="anvil_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="anvil_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="" width="700"></p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></code></pre></div>
@@ -363,7 +368,7 @@ descent.</p>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">weights</span> <span class="op">&lt;-</span> <span class="fu">update_weights</span><span class="op">(</span><span class="va">X</span>, <span class="va">weights</span><span class="op">$</span><span class="va">beta</span>, <span class="va">weights</span><span class="op">$</span><span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p><img src="anvil_files/figure-html/unnamed-chunk-22-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="anvil_files/figure-html/unnamed-chunk-23-1.png" class="r-plt" alt="" width="700"></p>
 <p>While this might seem like a reasonable solution, it continuously
 switches between the R interpreter and the XLA runtime. Moreover, we
 allocate new tensors in each iteration for the weights. While the latter

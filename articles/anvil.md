@@ -82,11 +82,19 @@ x + x
     ## [1,]    2    6   10
     ## [2,]    4    8   12
 
+If we add the two anvil tensors, the output will be the type of the
+output instead of the actual result. Read more about this in the
+[debugging
+vignette](https://r-xla.github.io/anvil/articles/debugging.md).
+
 ``` r
 y + y
 ```
 
     ## i32{2,3}
+
+In order to actually perform the addition, we need to `jit`-compile the
+function, which we will cover in the next section.
 
 ## JIT Compilation
 
@@ -298,7 +306,7 @@ y <- X %*% beta + alpha + rnorm(100, sd = 0.5)
 plot(X, y)
 ```
 
-![](anvil_files/figure-html/unnamed-chunk-16-1.png)
+![](anvil_files/figure-html/unnamed-chunk-17-1.png)
 
 ``` r
 X <- nv_tensor(X)
@@ -358,7 +366,7 @@ for (i in 1:100) {
 }
 ```
 
-![](anvil_files/figure-html/unnamed-chunk-22-1.png)
+![](anvil_files/figure-html/unnamed-chunk-23-1.png)
 
 While this might seem like a reasonable solution, it continuously
 switches between the R interpreter and the XLA runtime. Moreover, we
