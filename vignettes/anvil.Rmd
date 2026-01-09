@@ -54,8 +54,16 @@ At first, working with `AnvilTensor`s may feel a bit cumbersome, because you can
 
 ```{r, error = TRUE}
 x + x
+```
+
+If we add the two anvil tensors, the output will be the type of the output instead of the actual result.
+Read more about this in the [debugging vignette](debugging.html).
+
+```{r}
 y + y
 ```
+
+In order to actually perform the addition, we need to `jit`-compile the function, which we will cover in the next section.
 
 ## JIT Compilation
 
