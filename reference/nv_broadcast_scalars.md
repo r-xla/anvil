@@ -13,12 +13,12 @@ nv_broadcast_scalars(...)
 
 - ...:
 
-  ([`tensorish`](tensorish.md))  
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
   Tensors to broadcast. Scalars will be broadcast to the common
   non-scalar shape.
 
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`tensorish`](tensorish.md))  
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
 List of broadcasted tensors.

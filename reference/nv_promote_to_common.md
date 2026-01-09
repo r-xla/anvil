@@ -1,7 +1,8 @@
 # Promote Tensors to a Common Dtype
 
 Promote tensors to a common data type, see
-[`common_dtype`](common_dtype.md) for more details.
+[`common_dtype`](https://r-xla.github.io/anvil/reference/common_dtype.md)
+for more details.
 
 ## Usage
 
@@ -13,10 +14,10 @@ nv_promote_to_common(...)
 
 - ...:
 
-  ([`tensorish`](tensorish.md))  
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
   Tensors to promote.
 
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`tensorish`](tensorish.md))
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))

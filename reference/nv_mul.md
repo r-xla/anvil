@@ -12,12 +12,12 @@ nv_mul(lhs, rhs)
 
 - lhs:
 
-  ([`tensorish`](tensorish.md))
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))
 
 - rhs:
 
-  ([`tensorish`](tensorish.md))
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))
 
 ## Value
 
-[`tensorish`](tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)

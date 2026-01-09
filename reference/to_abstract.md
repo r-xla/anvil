@@ -1,7 +1,7 @@
 # Convert to Abstract Tensor
 
 Convert an object to its abstract tensor representation
-([`AbstractTensor`](AbstractTensor.md)).
+([`AbstractTensor`](https://r-xla.github.io/anvil/reference/AbstractTensor.md)).
 
 ## Usage
 
@@ -24,4 +24,4 @@ to_abstract(x, pure = FALSE)
 
 ## Value
 
-[`AbstractTensor`](AbstractTensor.md)
+[`AbstractTensor`](https://r-xla.github.io/anvil/reference/AbstractTensor.md)

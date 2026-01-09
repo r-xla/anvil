@@ -12,7 +12,7 @@ stablehlo(graph, constants_as_inputs = TRUE, env = NULL, donate = character())
 
 - graph:
 
-  ([`AnvilGraph`](AnvilGraph.md))  
+  ([`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md))  
   The graph to lower.
 
 - constants_as_inputs:

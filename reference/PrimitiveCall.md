@@ -1,7 +1,9 @@
 # Primitive Call
 
-Call of a primitive in an [`AnvilGraph`](AnvilGraph.md) Note that a
-primitive call also be a call into another graph (`p_graph`).
+Call of a primitive in an
+[`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md)
+Note that a primitive call also be a call into another graph
+(`p_graph`).
 
 ## Usage
 

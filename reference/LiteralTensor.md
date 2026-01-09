@@ -1,9 +1,12 @@
 # Literal Tensor Class
 
-A [`AbstractTensor`](AbstractTensor.md) representing a tensor where the
-data is a R scalar literal (e.g., `1L`, `2.5`) or an
-[`AnvilTensor`](AnvilTensor.md). Usually, their type is ambiguous,
-unless created via [`nv_fill`](nv_fill.md).
+A
+[`AbstractTensor`](https://r-xla.github.io/anvil/reference/AbstractTensor.md)
+representing a tensor where the data is a R scalar literal (e.g., `1L`,
+`2.5`) or an
+[`AnvilTensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md).
+Usually, their type is ambiguous, unless created via
+[`nv_fill`](https://r-xla.github.io/anvil/reference/nv_fill.md).
 
 ## Usage
 
@@ -16,7 +19,7 @@ LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
 - data:
 
   (`numeric(1)` \| `integer(1)` \| `logical(1)` \|
-  [`AnvilTensor`](AnvilTensor.md))  
+  [`AnvilTensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md))  
   The scalar value or scalarish AnvilTensor (contains 1 element).
 
 - shape:
@@ -40,4 +43,5 @@ LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
 
 ## See also
 
-[AbstractTensor](AbstractTensor.md), [ConcreteTensor](ConcreteTensor.md)
+[AbstractTensor](https://r-xla.github.io/anvil/reference/AbstractTensor.md),
+[ConcreteTensor](https://r-xla.github.io/anvil/reference/ConcreteTensor.md)

@@ -12,7 +12,7 @@ nvl_reverse(operand, dims)
 
 - operand:
 
-  ([`tensorish`](tensorish.md))  
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
   Operand.
 
 - dims:
@@ -22,4 +22,4 @@ nvl_reverse(operand, dims)
 
 ## Value
 
-[`tensorish`](tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)

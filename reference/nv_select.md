@@ -24,4 +24,4 @@ nv_select(pred, true_value, false_value)
 
 ## Value
 
-[`tensorish`](tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
