@@ -58,9 +58,9 @@ Usually, the types in an {anvil} program can be deterministically inferred from 
 The only case where this is not possible is when you use R literals.
 The default types for literals are as follows:
 
-* `double()` -> `dtype("f32")`
-* `integer()` -> `dtype("i32")`
-* `logical()` -> `dtype("i1")` (bool)
+* `double()` -> `f32`
+* `integer()` -> `i32`
+* `logical()` -> `i1` (bool)
 
 ```{r}
 jit(\() list(1L, 1.0, TRUE))()
