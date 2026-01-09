@@ -1158,7 +1158,7 @@ nvl_while <- function(init, cond, body) {
 
   out <- graph_desc_add(
     p_while,
-    args = flatten(init),
+    args = lapply(flatten(init), maybe_box_variable),
     params = list(cond_graph = cond_graph, body_graph = body_graph),
     infer_fn = infer_fn,
     desc = current_desc,
