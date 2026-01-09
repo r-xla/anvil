@@ -12,9 +12,10 @@ nv_is_finite(operand)
 
 - operand:
 
-  ([`tensorish`](tensorish.md))  
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
   Operand.
 
 ## Value
 
-[`tensorish`](tensorish.md) of boolean type
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md) of
+boolean type

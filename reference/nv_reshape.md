@@ -13,7 +13,7 @@ nv_reshape(operand, shape)
 
 - operand:
 
-  ([`tensorish`](tensorish.md))  
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
   Operand.
 
 - shape:
@@ -23,4 +23,4 @@ nv_reshape(operand, shape)
 
 ## Value
 
-[`tensorish`](tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)

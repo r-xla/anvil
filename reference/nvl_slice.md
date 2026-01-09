@@ -12,7 +12,7 @@ nvl_slice(operand, start_indices, limit_indices, strides)
 
 - operand:
 
-  ([`tensorish`](tensorish.md))  
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
   Operand.
 
 - start_indices:
@@ -32,4 +32,4 @@ nvl_slice(operand, start_indices, limit_indices, strides)
 
 ## Value
 
-[`tensorish`](tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)

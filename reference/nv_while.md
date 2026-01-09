@@ -27,4 +27,4 @@ nv_while(init, cond, body)
 
 ## Value
 
-[`tensorish`](tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)

@@ -17,8 +17,10 @@ trace_fn(f, args, desc = NULL, toplevel = FALSE)
 
 - args:
 
-  (`list` of ([`AnvilTensor`](AnvilTensor.md) \|
-  [`AbstractTensor`](AbstractTensor.md)))  
+  (`list` of
+  ([`AnvilTensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
+  \|
+  [`AbstractTensor`](https://r-xla.github.io/anvil/reference/AbstractTensor.md)))  
   The arguments to the function.
 
 - desc:
@@ -35,4 +37,4 @@ trace_fn(f, args, desc = NULL, toplevel = FALSE)
 
 ## Value
 
-([`AnvilGraph`](AnvilGraph.md))
+([`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md))

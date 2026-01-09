@@ -1,7 +1,8 @@
 # Transform a graph to its gradient
 
 Transform a graph to its gradient. This is a low-level function that
-should usually not be used directly. Use [`gradient()`](gradient.md)
+should usually not be used directly. Use
+[`gradient()`](https://r-xla.github.io/anvil/reference/gradient.md)
 instead.
 
 ## Usage
@@ -14,7 +15,7 @@ transform_gradient(graph, wrt)
 
 - graph:
 
-  ([`AnvilGraph`](AnvilGraph.md))  
+  ([`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md))  
   The graph to transform.
 
 - wrt:
@@ -24,4 +25,5 @@ transform_gradient(graph, wrt)
 
 ## Value
 
-An [`AnvilGraph`](AnvilGraph.md) object.
+An [`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md)
+object.

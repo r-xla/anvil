@@ -17,7 +17,7 @@ for reshaping code. We refer to such a rewriting of code as a
     to change the functionality of the code. At the time of writing,
     there is essentially only one such transformation, namely
     backward-mode automatic differentiation via
-    [`gradient()`](../reference/gradient.md).
+    [`gradient()`](https://r-xla.github.io/anvil/reference/gradient.md).
 3.  `AnvilGraph` \\\rightarrow\\ `Executable`: In order to perform the
     actual computation, the `AnvilGraph` needs to be converted into an
     executable. Currently, we only support the XLA backend (via
@@ -55,7 +55,8 @@ f <- function(x, y, op) {
 }
 ```
 
-To do this, we use [`anvil::trace_fn()`](../reference/trace_fn.md),
+To do this, we use
+[`anvil::trace_fn()`](https://r-xla.github.io/anvil/reference/trace_fn.md),
 which takes in an `R` function and a list of `AbstractTensor` inputs
 that specify the types of the inputs.
 
@@ -80,9 +81,10 @@ graph
     ##   Outputs:
     ##     %1: f32[]
 
-The output of [`trace_fn()`](../reference/trace_fn.md) is now a
-`AnvilGraph` object that represents the computation. The fields of the
-`AnvilGraph` are:
+The output of
+[`trace_fn()`](https://r-xla.github.io/anvil/reference/trace_fn.md) is
+now a `AnvilGraph` object that represents the computation. The fields of
+the `AnvilGraph` are:
 
 - `inputs`, which are `GraphNode`s that represent the inputs to the
   function.
@@ -93,11 +95,13 @@ The output of [`trace_fn()`](../reference/trace_fn.md) is now a
 - `in_tree`, `out_tree`, which we will cover later (do we??)
 
 During `trace_fn`, the inputs What happens during
-[`trace_fn()`](../reference/trace_fn.md) is that a new `GraphDescriptor`
-is created and the inputs `x` and `y` are converted into
-[`anvil::GraphBox`](../reference/GraphBox.md) objects. Then, the
-function `f` is simply evaluated with the `GraphBox` objects as inputs.
-During this evaluation, we need to distinguish between two cases:
+[`trace_fn()`](https://r-xla.github.io/anvil/reference/trace_fn.md) is
+that a new `GraphDescriptor` is created and the inputs `x` and `y` are
+converted into
+[`anvil::GraphBox`](https://r-xla.github.io/anvil/reference/GraphBox.md)
+objects. Then, the function `f` is simply evaluated with the `GraphBox`
+objects as inputs. During this evaluation, we need to distinguish
+between two cases:
 
 1.  A “standard” `R` function is called: Here, nothing special happens
     and the function is simply evaluated.
@@ -111,7 +115,7 @@ executed. Then, we are calling `nv_mul`, which attaches a
 the `$calls` of the `GraphDescriptor`. Note that the `nv_mul` is itself
 not primitive, but performs some type promotion and broadcasting if
 needed, before calling into the primitive
-[`nvl_mul()`](../reference/nvl_mul.md).
+[`nvl_mul()`](https://r-xla.github.io/anvil/reference/nvl_mul.md).
 
 A `PrimitiveCall` object consists of the following fields:
 
@@ -138,7 +142,7 @@ gradient, we need to store the derivative rules. For this,
 `anvil::Primitive` objects have a `$rules` field that can be populated.
 The derivative rules are stored as functions under the `"backward"`
 name. We can access a primitive by it’s name via the
-[`prim()`](../reference/prim.md) function:
+[`prim()`](https://r-xla.github.io/anvil/reference/prim.md) function:
 
 ``` r
 prim("mul")$rules[["backward"]]
@@ -152,10 +156,11 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x559e1770ed68>
+    ## <bytecode: 0x5556b26da0a0>
     ## <environment: namespace:anvil>
 
-The [`anvil::transform_gradient`](../reference/transform_gradient.md)
+The
+[`anvil::transform_gradient`](https://r-xla.github.io/anvil/reference/transform_gradient.md)
 function uses these rules to compute the gradient of a function. For
 this specific transformation, we are walking the graph backwards and
 apply the derivative rules, which will append the “backward pass” to the
@@ -202,11 +207,12 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x559e17711f20>
+    ## <bytecode: 0x5556b26deca8>
     ## <environment: namespace:anvil>
 
-The [`anvil::stablehlo`](../reference/stablehlo.md) function will create
-a
+The
+[`anvil::stablehlo`](https://r-xla.github.io/anvil/reference/stablehlo.md)
+function will create a
 [`stablehlo::Func`](https://r-xla.github.io/stablehlo/reference/Func.html)
 object and will sequentially translate the `PrimitiveCall`s into
 StableHLO operations.
@@ -260,11 +266,12 @@ convenient and follows the `JAX` interface.
 
 ### `jit()`
 
-The [`jit()`](../reference/jit.md) function allows to convert a regular
-`R` function into a Just-In-Time compiled function that can be executed
-on `AnvilTensor`s. We apply it to our simple example function, where we
-mark the non-tensor parameter `op` as “static”. This means that the
-value of this parameter needs to be known at compile time.
+The [`jit()`](https://r-xla.github.io/anvil/reference/jit.md) function
+allows to convert a regular `R` function into a Just-In-Time compiled
+function that can be executed on `AnvilTensor`s. We apply it to our
+simple example function, where we mark the non-tensor parameter `op` as
+“static”. This means that the value of this parameter needs to be known
+at compile time.
 
 ``` r
 f_jit <-  jit(f, static = "op")
@@ -275,12 +282,14 @@ f_jit(x, y, "add")
     ##  7.0000
     ## [ CPUf32{} ]
 
-One might think that [`jit()`](../reference/jit.md) first calls
-[`trace_fn()`](../reference/trace_fn.md), then runs
-[`stablehlo()`](../reference/stablehlo.md), followed by
-`pjrt_compile()`. This is, however, not what is happening, as this
-requires the input types to be known. Instead, `f_jit` is a “lazy”
-function that will only perform these steps once the inputs are
+One might think that
+[`jit()`](https://r-xla.github.io/anvil/reference/jit.md) first calls
+[`trace_fn()`](https://r-xla.github.io/anvil/reference/trace_fn.md),
+then runs
+[`stablehlo()`](https://r-xla.github.io/anvil/reference/stablehlo.md),
+followed by `pjrt_compile()`. This is, however, not what is happening,
+as this requires the input types to be known. Instead, `f_jit` is a
+“lazy” function that will only perform these steps once the inputs are
 provided. However, if those steps were applied every time the `f_jit`
 function is called, this would be very inefficient, because tracing and
 compiling takes some time. Therefore, the function `f_jit` also contains
@@ -354,10 +363,10 @@ cache_size(f_jit)
 
 ### `gradient()`
 
-Just like [`jit()`](../reference/jit.md),
-[`gradient()`](../reference/gradient.md) also returns a function that
-will lazily create the graph and transform it, once the inputs are
-provided.
+Just like [`jit()`](https://r-xla.github.io/anvil/reference/jit.md),
+[`gradient()`](https://r-xla.github.io/anvil/reference/gradient.md) also
+returns a function that will lazily create the graph and transform it,
+once the inputs are provided.
 
 ``` r
 g <- gradient(f, wrt = c("x", "y"))
@@ -365,7 +374,7 @@ g <- gradient(f, wrt = c("x", "y"))
 
 Calling `g()` on `AnvilTensor`s will not actually compute the gradient,
 but instead just output the output types, c.f. the [debugging
-vignette](debugging.md) for more.
+vignette](https://r-xla.github.io/anvil/articles/debugging.md) for more.
 
 ``` r
 g(x, y, "add")
@@ -380,7 +389,7 @@ g(x, y, "add")
     ## [ CPUf32{} ]
 
 If we want to actually compute the gradient, we need to wrap it in
-[`jit()`](../reference/jit.md).
+[`jit()`](https://r-xla.github.io/anvil/reference/jit.md).
 
 ``` r
 g_jit <- jit(g, static = "op")
@@ -458,7 +467,8 @@ compiled.
 
 ### Debug Mode
 
-For how to use debug mode, see the [debugging vignette](debugging.md).
+For how to use debug mode, see the [debugging
+vignette](https://r-xla.github.io/anvil/articles/debugging.md).
 
 Debug-mode is different from jit-mode, because we don’t have a context
 that can initialize a main `GraphDescriptor`. For this reason, every
@@ -476,9 +486,9 @@ about identity of values, only about their types.
 
 Unfortunately, our current mode for detecting debug mode is whether a
 `GraphDescriptor` is active. For this reason, we don’t allow calling
-[`local_descriptor()`](../reference/local_descriptor.md) in the global
-environment. Maybe we can improve this in the future, but for now it
-seems to work.
+[`local_descriptor()`](https://r-xla.github.io/anvil/reference/local_descriptor.md)
+in the global environment. Maybe we can improve this in the future, but
+for now it seems to work.
 
 ### Constant Handling
 

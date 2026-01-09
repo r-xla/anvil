@@ -12,7 +12,7 @@ nvl_dot_general(lhs, rhs, contracting_dims, batching_dims)
 
 - lhs, rhs:
 
-  ([`tensorish`](tensorish.md))  
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
   Left and right operand.
 
 - contracting_dims:
@@ -27,4 +27,4 @@ nvl_dot_general(lhs, rhs, contracting_dims, batching_dims)
 
 ## Value
 
-[`tensorish`](tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)

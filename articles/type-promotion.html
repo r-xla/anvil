@@ -42,10 +42,10 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/anvil.html">Get Started</a></li>
-    <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
     <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
-    <li><a class="dropdown-item" href="../articles/primitives.html">Primitives Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
     <li><a class="dropdown-item" href="../articles/debugging.html">Debugging</a></li>
+    <li><a class="dropdown-item" href="../articles/primitives.html">Primitives Overview</a></li>
   </ul>
 </li>
 <li class="nav-item dropdown">
@@ -84,7 +84,7 @@
       <h1>Type Promotion</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-serialize/vignettes/type-promotion.Rmd" class="external-link"><code>vignettes/type-promotion.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/type-promotion.Rmd" class="external-link"><code>vignettes/type-promotion.Rmd</code></a></small>
       <div class="d-none name"><code>type-promotion.Rmd</code></div>
     </div>
 
@@ -99,7 +99,7 @@ common type. For example, below we are adding an <code>f32</code> to an
 <code>f64</code>, where the former is promoted to the latter’s type,
 because it’s more expressive.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/" class="external-link">anvil</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">nv_add</span><span class="op">)</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>

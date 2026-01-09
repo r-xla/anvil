@@ -1,6 +1,7 @@
 # Graph Box
 
-Box that represents a node in a [`GraphDescriptor`](GraphDescriptor.md).
+Box that represents a node in a
+[`GraphDescriptor`](https://r-xla.github.io/anvil/reference/GraphDescriptor.md).
 
 ## Usage
 
@@ -12,12 +13,12 @@ GraphBox(gnode, desc)
 
 - gnode:
 
-  ([`GraphNode`](GraphNode.md))  
+  ([`GraphNode`](https://r-xla.github.io/anvil/reference/GraphNode.md))  
   The node.
 
 - desc:
 
-  ([`GraphDescriptor`](GraphDescriptor.md))  
+  ([`GraphDescriptor`](https://r-xla.github.io/anvil/reference/GraphDescriptor.md))  
   The descriptor of the graph.
 
 ## Value

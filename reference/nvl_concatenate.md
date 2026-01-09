@@ -12,7 +12,7 @@ nvl_concatenate(..., dimension)
 
 - ...:
 
-  ([`tensorish`](tensorish.md))  
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
   Tensors to concatenate.
 
 - dimension:
@@ -22,4 +22,4 @@ nvl_concatenate(..., dimension)
 
 ## Value
 
-[`tensorish`](tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)

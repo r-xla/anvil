@@ -28,4 +28,4 @@ nvl_iota(dim, dtype, shape)
 
 ## Value
 
-[`tensorish`](tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)

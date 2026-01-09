@@ -1,7 +1,7 @@
 # Abstract Properties
 
 Calls the extractor after converting the input to an
-[`AbstractTensor`](AbstractTensor.md).
+[`AbstractTensor`](https://r-xla.github.io/anvil/reference/AbstractTensor.md).
 
 ## Usage
 
@@ -17,4 +17,4 @@ dtype_abstract(x)
 
 - x:
 
-  ([`tensorish`](tensorish.md))  
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  

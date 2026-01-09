@@ -40,5 +40,5 @@ nv_rbinom(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32")
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`tensorish`](tensorish.md))  
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
 List of two tensors: the new RNG state and the generated random samples.

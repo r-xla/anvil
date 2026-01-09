@@ -27,10 +27,10 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/anvil.html">Get Started</a></li>
-    <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
     <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
-    <li><a class="dropdown-item" href="../articles/primitives.html">Primitives Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
     <li><a class="dropdown-item" href="../articles/debugging.html">Debugging</a></li>
+    <li><a class="dropdown-item" href="../articles/primitives.html">Primitives Overview</a></li>
   </ul></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-technical" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Technical</button>
@@ -57,9 +57,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="tensor-creation">Tensor Creation<a class="anchor" aria-label="anchor" href="#tensor-creation"></a></h2>
 
-
+      <div class="section-desc"><p>Functions for creating and initializing tensors</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -68,34 +68,6 @@
 
       <dl><dt>
 
-          <code><a href="AbstractTensor.html">nv_aten()</a></code> <code><a href="AbstractTensor.html">AbstractTensor()</a></code>
-
-        </dt>
-        <dd>Abstract Tensor Class</dd>
-
-        <dt>
-
-          <code><a href="AnvilBox.html">AnvilBox</a></code>
-
-        </dt>
-        <dd>AnvilBox</dd>
-
-        <dt>
-
-          <code><a href="AnvilGraph.html">AnvilGraph()</a></code>
-
-        </dt>
-        <dd>Graph of Primitive Calls</dd>
-
-        <dt>
-
-          <code><a href="AnvilPrimitive.html">AnvilPrimitive()</a></code>
-
-        </dt>
-        <dd>AnvilPrimitive</dd>
-
-        <dt>
-
           <code><a href="AnvilTensor.html">AnvilTensor</a></code>
 
         </dt>
@@ -103,185 +75,91 @@
 
         <dt>
 
-          <code><a href="ConcreteTensor.html">ConcreteTensor()</a></code>
+          <code><a href="tensorish.html">tensorish</a></code>
 
         </dt>
-        <dd>Concrete Tensor Class</dd>
+        <dd>Tensor-like Objects</dd>
 
         <dt>
 
-          <code><a href="DebugBox.html">DebugBox()</a></code>
+          <code><a href="nv_tensor.html">nv_tensor()</a></code> <code><a href="nv_tensor.html">nv_scalar()</a></code> <code><a href="nv_tensor.html">nv_empty()</a></code>
 
         </dt>
-        <dd>Debug Box Class</dd>
+        <dd>Tensor</dd>
 
         <dt>
 
-          <code><a href="GraphBox.html">GraphBox()</a></code>
+          <code><a href="nv_fill.html">nv_fill()</a></code>
 
         </dt>
-        <dd>Graph Box</dd>
+        <dd>Constant</dd>
 
         <dt>
 
-          <code><a href="GraphDescriptor.html">GraphDescriptor()</a></code>
+          <code><a href="nv_iota.html">nv_iota()</a></code>
 
         </dt>
-        <dd>Graph Descriptor</dd>
+        <dd>Iota</dd>
 
         <dt>
 
-          <code><a href="GraphLiteral.html">GraphLiteral()</a></code>
+          <code><a href="AbstractTensor.html">nv_aten()</a></code> <code><a href="AbstractTensor.html">AbstractTensor()</a></code>
 
         </dt>
-        <dd>Graph Literal</dd>
+        <dd>Abstract Tensor Class</dd>
+      </dl></div><div class="section level2">
+      <h2 id="tensor-attributes-and-converters">Tensor attributes and converters<a class="anchor" aria-label="anchor" href="#tensor-attributes-and-converters"></a></h2>
+
+      <div class="section-desc"><p>Functions for querying tensor attributes and converting them</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="reexports.html">reexports</a></code> <code><a href="reexports.html">shape</a></code> <code><a href="reexports.html">device</a></code> <code><a href="reexports.html">as_array</a></code> <code><a href="reexports.html">as_raw</a></code> <code><a href="reexports.html">dtype</a></code> <code><a href="reexports.html">ndims</a></code> <code><a href="reexports.html">is_dtype</a></code> <code><a href="reexports.html">as_dtype</a></code> <code><a href="reexports.html">Shape</a></code>
+
+        </dt>
+        <dd>Objects exported from other packages</dd>
 
         <dt>
 
-          <code><a href="GraphNode.html">GraphNode</a></code>
+          <code><a href="platform.AbstractTensor.html">platform.AbstractTensor()</a></code>
 
         </dt>
-        <dd>Graph Node</dd>
+        <dd>Platform for AbstractTensor</dd>
 
         <dt>
 
-          <code><a href="GraphValue.html">GraphValue()</a></code>
+          <code><a href="platform.ConcreteTensor.html">platform.ConcreteTensor()</a></code>
 
         </dt>
-        <dd>Graph Value</dd>
+        <dd>Platform for ConcreteTensor</dd>
 
         <dt>
 
-          <code><a href="HigherOrderPrimitive.html">HigherOrderPrimitive()</a></code>
+          <code><a href="platform.html">platform()</a></code>
 
         </dt>
-        <dd>HigherOrderPrimitive</dd>
+        <dd>Platform</dd>
+      </dl></div><div class="section level2">
+      <h2 id="type-conversion-and-promotion">Type conversion and promotion<a class="anchor" aria-label="anchor" href="#type-conversion-and-promotion"></a></h2>
 
-        <dt>
+      <div class="section-desc"><p>Functions for type conversion and promotion</p></div>
 
-          <code><a href="HloEnv.html">HloEnv()</a></code>
+      <dl></dl></div><div class="section level2">
 
-        </dt>
-        <dd>HloEnv</dd>
 
-        <dt>
 
-          <code><a href="LiteralTensor.html">LiteralTensor()</a></code>
 
-        </dt>
-        <dd>Literal Tensor Class</dd>
+      <dl><dt>
 
-        <dt>
-
-          <code><a href="PrimitiveCall.html">PrimitiveCall()</a></code>
+          <code><a href="nv_convert.html">nv_convert()</a></code>
 
         </dt>
-        <dd>Primitive Call</dd>
-
-        <dt>
-
-          <code><a href="abstract_properties.html">shape_abstract()</a></code> <code><a href="abstract_properties.html">ndims_abstract()</a></code> <code><a href="abstract_properties.html">dtype_abstract()</a></code>
-
-        </dt>
-        <dd>Abstract Properties</dd>
-
-        <dt>
-
-          <code><a href="build_tree.html">build_tree()</a></code>
-
-        </dt>
-        <dd>Build Tree</dd>
-
-        <dt>
-
-          <code><a href="common_dtype.html">common_dtype()</a></code>
-
-        </dt>
-        <dd>Type Promotion Rules</dd>
-
-        <dt>
-
-          <code><a href="debug_box.html">debug_box()</a></code>
-
-        </dt>
-        <dd>Create a Debug Box</dd>
-
-        <dt>
-
-          <code><a href="dot-current_descriptor.html">.current_descriptor()</a></code>
-
-        </dt>
-        <dd>Get the current graph</dd>
-
-        <dt>
-
-          <code><a href="flatten.html">flatten()</a></code>
-
-        </dt>
-        <dd>Flatten</dd>
-
-        <dt>
-
-          <code><a href="gradient.html">gradient()</a></code> <code><a href="gradient.html">value_and_gradient()</a></code>
-
-        </dt>
-        <dd>Gradient</dd>
-
-        <dt>
-
-          <code><a href="graph_desc_add.html">graph_desc_add()</a></code>
-
-        </dt>
-        <dd>Add a Primitive Call to a Graph Descriptor</dd>
-
-        <dt>
-
-          <code><a href="jit.html">jit()</a></code>
-
-        </dt>
-        <dd>JIT compile a function</dd>
-
-        <dt>
-
-          <code><a href="jit_eval.html">jit_eval()</a></code>
-
-        </dt>
-        <dd>Jit an Evaluate an Expression</dd>
-
-        <dt>
-
-          <code><a href="local_descriptor.html">local_descriptor()</a></code>
-
-        </dt>
-        <dd>Create a graph</dd>
-
-        <dt>
-
-          <code><a href="nv_abs.html">nv_abs()</a></code>
-
-        </dt>
-        <dd>Absolute Value</dd>
-
-        <dt>
-
-          <code><a href="nv_add.html">nv_add()</a></code>
-
-        </dt>
-        <dd>Addition</dd>
-
-        <dt>
-
-          <code><a href="nv_and.html">nv_and()</a></code>
-
-        </dt>
-        <dd>Logical And</dd>
-
-        <dt>
-
-          <code><a href="nv_atan2.html">nv_atan2()</a></code>
-
-        </dt>
-        <dd>Arctangent 2</dd>
+        <dd>Convert Tensor to Different Data Type</dd>
 
         <dt>
 
@@ -289,6 +167,13 @@
 
         </dt>
         <dd>Bitcast Conversion</dd>
+
+        <dt>
+
+          <code><a href="nv_promote_to_common.html">nv_promote_to_common()</a></code>
+
+        </dt>
+        <dd>Promote Tensors to a Common Dtype</dd>
 
         <dt>
 
@@ -313,24 +198,33 @@
 
         <dt>
 
-          <code><a href="nv_cbrt.html">nv_cbrt()</a></code>
+          <code><a href="common_dtype.html">common_dtype()</a></code>
 
         </dt>
-        <dd>Cube Root</dd>
+        <dd>Type Promotion Rules</dd>
+      </dl></div><div class="section level2">
+      <h2 id="tensor-manipulation">Tensor manipulation<a class="anchor" aria-label="anchor" href="#tensor-manipulation"></a></h2>
+
+      <div class="section-desc"><p>Functions for reshaping and rearranging tensors</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nv_reshape.html">nv_reshape()</a></code>
+
+        </dt>
+        <dd>Reshape</dd>
 
         <dt>
 
-          <code><a href="nv_ceil.html">nv_ceil()</a></code>
+          <code><a href="nv_transpose.html">nv_transpose()</a></code> <code><a href="nv_transpose.html">t(<i>&lt;AnvilBox&gt;</i>)</a></code>
 
         </dt>
-        <dd>Ceiling</dd>
-
-        <dt>
-
-          <code><a href="nv_clamp.html">nv_clamp()</a></code>
-
-        </dt>
-        <dd>Clamp</dd>
+        <dd>Transpose</dd>
 
         <dt>
 
@@ -341,17 +235,54 @@
 
         <dt>
 
-          <code><a href="nv_convert.html">nv_convert()</a></code>
+          <code><a href="nv_slice.html">nv_slice()</a></code>
 
         </dt>
-        <dd>Convert Tensor to Different Data Type</dd>
+        <dd>Slice</dd>
 
         <dt>
 
-          <code><a href="nv_cosine.html">nv_cosine()</a></code>
+          <code><a href="nv_pad.html">nv_pad()</a></code>
 
         </dt>
-        <dd>Cosine</dd>
+        <dd>Pad</dd>
+
+        <dt>
+
+          <code><a href="nv_reverse.html">nv_reverse()</a></code>
+
+        </dt>
+        <dd>Reverse</dd>
+      </dl></div><div class="section level2">
+      <h2 id="arithmetic-operations">Arithmetic operations<a class="anchor" aria-label="anchor" href="#arithmetic-operations"></a></h2>
+
+      <div class="section-desc"><p>Basic arithmetic operations on tensors</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nv_add.html">nv_add()</a></code>
+
+        </dt>
+        <dd>Addition</dd>
+
+        <dt>
+
+          <code><a href="nv_sub.html">nv_sub()</a></code>
+
+        </dt>
+        <dd>Subtraction</dd>
+
+        <dt>
+
+          <code><a href="nv_mul.html">nv_mul()</a></code>
+
+        </dt>
+        <dd>Multiplication</dd>
 
         <dt>
 
@@ -362,10 +293,112 @@
 
         <dt>
 
+          <code><a href="nv_pow.html">nv_pow()</a></code>
+
+        </dt>
+        <dd>Power</dd>
+
+        <dt>
+
+          <code><a href="nv_neg.html">nv_neg()</a></code>
+
+        </dt>
+        <dd>Negation</dd>
+
+        <dt>
+
+          <code><a href="nv_remainder.html">nv_remainder()</a></code>
+
+        </dt>
+        <dd>Remainder</dd>
+      </dl></div><div class="section level2">
+      <h2 id="comparison-operations">Comparison operations<a class="anchor" aria-label="anchor" href="#comparison-operations"></a></h2>
+
+      <div class="section-desc"><p>Element-wise comparison operations</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
           <code><a href="nv_eq.html">nv_eq()</a></code>
 
         </dt>
         <dd>Equal</dd>
+
+        <dt>
+
+          <code><a href="nv_ne.html">nv_ne()</a></code>
+
+        </dt>
+        <dd>Not Equal</dd>
+
+        <dt>
+
+          <code><a href="nv_gt.html">nv_gt()</a></code>
+
+        </dt>
+        <dd>Greater Than</dd>
+
+        <dt>
+
+          <code><a href="nv_ge.html">nv_ge()</a></code>
+
+        </dt>
+        <dd>Greater Than or Equal</dd>
+
+        <dt>
+
+          <code><a href="nv_lt.html">nv_lt()</a></code>
+
+        </dt>
+        <dd>Less Than</dd>
+
+        <dt>
+
+          <code><a href="nv_le.html">nv_le()</a></code>
+
+        </dt>
+        <dd>Less Than or Equal</dd>
+      </dl></div><div class="section level2">
+      <h2 id="mathematical-functions">Mathematical functions<a class="anchor" aria-label="anchor" href="#mathematical-functions"></a></h2>
+
+      <div class="section-desc"><p>Mathematical and trigonometric functions</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nv_abs.html">nv_abs()</a></code>
+
+        </dt>
+        <dd>Absolute Value</dd>
+
+        <dt>
+
+          <code><a href="nv_sqrt.html">nv_sqrt()</a></code>
+
+        </dt>
+        <dd>Square Root</dd>
+
+        <dt>
+
+          <code><a href="nv_rsqrt.html">nv_rsqrt()</a></code>
+
+        </dt>
+        <dd>Reciprocal Square Root</dd>
+
+        <dt>
+
+          <code><a href="nv_cbrt.html">nv_cbrt()</a></code>
+
+        </dt>
+        <dd>Cube Root</dd>
 
         <dt>
 
@@ -383,62 +416,6 @@
 
         <dt>
 
-          <code><a href="nv_fill.html">nv_fill()</a></code>
-
-        </dt>
-        <dd>Constant</dd>
-
-        <dt>
-
-          <code><a href="nv_floor.html">nv_floor()</a></code>
-
-        </dt>
-        <dd>Floor</dd>
-
-        <dt>
-
-          <code><a href="nv_ge.html">nv_ge()</a></code>
-
-        </dt>
-        <dd>Greater Than or Equal</dd>
-
-        <dt>
-
-          <code><a href="nv_gt.html">nv_gt()</a></code>
-
-        </dt>
-        <dd>Greater Than</dd>
-
-        <dt>
-
-          <code><a href="nv_if.html">nv_if()</a></code>
-
-        </dt>
-        <dd>If</dd>
-
-        <dt>
-
-          <code><a href="nv_iota.html">nv_iota()</a></code>
-
-        </dt>
-        <dd>Iota</dd>
-
-        <dt>
-
-          <code><a href="nv_is_finite.html">nv_is_finite()</a></code>
-
-        </dt>
-        <dd>Is Finite</dd>
-
-        <dt>
-
-          <code><a href="nv_le.html">nv_le()</a></code>
-
-        </dt>
-        <dd>Less Than or Equal</dd>
-
-        <dt>
-
           <code><a href="nv_log.html">nv_log()</a></code>
 
         </dt>
@@ -453,230 +430,6 @@
 
         <dt>
 
-          <code><a href="nv_logistic.html">nv_logistic()</a></code>
-
-        </dt>
-        <dd>Logistic (Sigmoid)</dd>
-
-        <dt>
-
-          <code><a href="nv_lt.html">nv_lt()</a></code>
-
-        </dt>
-        <dd>Less Than</dd>
-
-        <dt>
-
-          <code><a href="nv_matmul.html">nv_matmul()</a></code>
-
-        </dt>
-        <dd>Matrix Multiplication</dd>
-
-        <dt>
-
-          <code><a href="nv_max.html">nv_max()</a></code>
-
-        </dt>
-        <dd>Maximum</dd>
-
-        <dt>
-
-          <code><a href="nv_min.html">nv_min()</a></code>
-
-        </dt>
-        <dd>Minimum</dd>
-
-        <dt>
-
-          <code><a href="nv_mul.html">nv_mul()</a></code>
-
-        </dt>
-        <dd>Multiplication</dd>
-
-        <dt>
-
-          <code><a href="nv_ne.html">nv_ne()</a></code>
-
-        </dt>
-        <dd>Not Equal</dd>
-
-        <dt>
-
-          <code><a href="nv_neg.html">nv_neg()</a></code>
-
-        </dt>
-        <dd>Negation</dd>
-
-        <dt>
-
-          <code><a href="nv_not.html">nv_not()</a></code>
-
-        </dt>
-        <dd>Logical Not</dd>
-
-        <dt>
-
-          <code><a href="nv_or.html">nv_or()</a></code>
-
-        </dt>
-        <dd>Logical Or</dd>
-
-        <dt>
-
-          <code><a href="nv_pad.html">nv_pad()</a></code>
-
-        </dt>
-        <dd>Pad</dd>
-
-        <dt>
-
-          <code><a href="nv_popcnt.html">nv_popcnt()</a></code>
-
-        </dt>
-        <dd>Population Count</dd>
-
-        <dt>
-
-          <code><a href="nv_pow.html">nv_pow()</a></code>
-
-        </dt>
-        <dd>Power</dd>
-
-        <dt>
-
-          <code><a href="nv_print.html">nv_print()</a></code>
-
-        </dt>
-        <dd>Print Tensor</dd>
-
-        <dt>
-
-          <code><a href="nv_promote_to_common.html">nv_promote_to_common()</a></code>
-
-        </dt>
-        <dd>Promote Tensors to a Common Dtype</dd>
-
-        <dt>
-
-          <code><a href="nv_rbinom.html">nv_rbinom()</a></code>
-
-        </dt>
-        <dd>Sample from a Binomial Distribution</dd>
-
-        <dt>
-
-          <code><a href="nv_rdunif.html">nv_rdunif()</a></code>
-
-        </dt>
-        <dd>Sample from a Discrete Uniform Distribution</dd>
-
-        <dt>
-
-          <code><a href="nv_reduce_ops.html">nv_reduce_sum()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_mean()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_prod()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_max()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_min()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_any()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_all()</a></code>
-
-        </dt>
-        <dd>Reduction Operators</dd>
-
-        <dt>
-
-          <code><a href="nv_remainder.html">nv_remainder()</a></code>
-
-        </dt>
-        <dd>Remainder</dd>
-
-        <dt>
-
-          <code><a href="nv_reshape.html">nv_reshape()</a></code>
-
-        </dt>
-        <dd>Reshape</dd>
-
-        <dt>
-
-          <code><a href="nv_reverse.html">nv_reverse()</a></code>
-
-        </dt>
-        <dd>Reverse</dd>
-
-        <dt>
-
-          <code><a href="nv_rng_state.html">nv_rng_state()</a></code>
-
-        </dt>
-        <dd>Generate random state</dd>
-
-        <dt>
-
-          <code><a href="nv_rnorm.html">nv_rnorm()</a></code>
-
-        </dt>
-        <dd>Sample from a Normal Distribution</dd>
-
-        <dt>
-
-          <code><a href="nv_round.html">nv_round()</a></code>
-
-        </dt>
-        <dd>Round</dd>
-
-        <dt>
-
-          <code><a href="nv_rsqrt.html">nv_rsqrt()</a></code>
-
-        </dt>
-        <dd>Reciprocal Square Root</dd>
-
-        <dt>
-
-          <code><a href="nv_runif.html">nv_unif_rand()</a></code> <code><a href="nv_runif.html">nv_runif()</a></code>
-
-        </dt>
-        <dd>Internal: Random Unit Uniform Numbers</dd>
-
-        <dt>
-
-          <code><a href="nv_select.html">nv_select()</a></code>
-
-        </dt>
-        <dd>Select</dd>
-
-        <dt>
-
-          <code><a href="nv_serialization.html">nv_write()</a></code> <code><a href="nv_serialization.html">nv_read()</a></code> <code><a href="nv_serialization.html">nv_serialize()</a></code> <code><a href="nv_serialization.html">nv_unserialize()</a></code>
-
-        </dt>
-        <dd>Tensor serialization and I/O</dd>
-
-        <dt>
-
-          <code><a href="nv_shift_left.html">nv_shift_left()</a></code>
-
-        </dt>
-        <dd>Shift Left</dd>
-
-        <dt>
-
-          <code><a href="nv_shift_right_arithmetic.html">nv_shift_right_arithmetic()</a></code>
-
-        </dt>
-        <dd>Arithmetic Shift Right</dd>
-
-        <dt>
-
-          <code><a href="nv_shift_right_logical.html">nv_shift_right_logical()</a></code>
-
-        </dt>
-        <dd>Logical Shift Right</dd>
-
-        <dt>
-
-          <code><a href="nv_sign.html">nv_sign()</a></code>
-
-        </dt>
-        <dd>Sign</dd>
-
-        <dt>
-
           <code><a href="nv_sine.html">nv_sine()</a></code>
 
         </dt>
@@ -684,24 +437,10 @@
 
         <dt>
 
-          <code><a href="nv_slice.html">nv_slice()</a></code>
+          <code><a href="nv_cosine.html">nv_cosine()</a></code>
 
         </dt>
-        <dd>Slice</dd>
-
-        <dt>
-
-          <code><a href="nv_sqrt.html">nv_sqrt()</a></code>
-
-        </dt>
-        <dd>Square Root</dd>
-
-        <dt>
-
-          <code><a href="nv_sub.html">nv_sub()</a></code>
-
-        </dt>
-        <dd>Subtraction</dd>
+        <dd>Cosine</dd>
 
         <dt>
 
@@ -719,17 +458,195 @@
 
         <dt>
 
-          <code><a href="nv_tensor.html">nv_tensor()</a></code> <code><a href="nv_tensor.html">nv_scalar()</a></code> <code><a href="nv_tensor.html">nv_empty()</a></code>
+          <code><a href="nv_atan2.html">nv_atan2()</a></code>
 
         </dt>
-        <dd>Tensor</dd>
+        <dd>Arctangent 2</dd>
 
         <dt>
 
-          <code><a href="nv_transpose.html">nv_transpose()</a></code> <code><a href="nv_transpose.html">t(<i>&lt;AnvilBox&gt;</i>)</a></code>
+          <code><a href="nv_sign.html">nv_sign()</a></code>
 
         </dt>
-        <dd>Transpose</dd>
+        <dd>Sign</dd>
+
+        <dt>
+
+          <code><a href="nv_floor.html">nv_floor()</a></code>
+
+        </dt>
+        <dd>Floor</dd>
+
+        <dt>
+
+          <code><a href="nv_ceil.html">nv_ceil()</a></code>
+
+        </dt>
+        <dd>Ceiling</dd>
+
+        <dt>
+
+          <code><a href="nv_round.html">nv_round()</a></code>
+
+        </dt>
+        <dd>Round</dd>
+
+        <dt>
+
+          <code><a href="nv_logistic.html">nv_logistic()</a></code>
+
+        </dt>
+        <dd>Logistic (Sigmoid)</dd>
+
+        <dt>
+
+          <code><a href="nv_is_finite.html">nv_is_finite()</a></code>
+
+        </dt>
+        <dd>Is Finite</dd>
+      </dl></div><div class="section level2">
+      <h2 id="reduction-operations">Reduction operations<a class="anchor" aria-label="anchor" href="#reduction-operations"></a></h2>
+
+      <div class="section-desc"><p>Operations that reduce tensor dimensions</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nv_reduce_ops.html">nv_reduce_sum()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_mean()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_prod()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_max()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_min()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_any()</a></code> <code><a href="nv_reduce_ops.html">nv_reduce_all()</a></code>
+
+        </dt>
+        <dd>Reduction Operators</dd>
+      </dl></div><div class="section level2">
+      <h2 id="linear-algebra">Linear algebra<a class="anchor" aria-label="anchor" href="#linear-algebra"></a></h2>
+
+      <div class="section-desc"><p>Linear algebra operations</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nv_matmul.html">nv_matmul()</a></code>
+
+        </dt>
+        <dd>Matrix Multiplication</dd>
+      </dl></div><div class="section level2">
+      <h2 id="logical-and-bitwise-operations">Logical and bitwise operations<a class="anchor" aria-label="anchor" href="#logical-and-bitwise-operations"></a></h2>
+
+      <div class="section-desc"><p>Logical and bitwise operations on tensors</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nv_and.html">nv_and()</a></code>
+
+        </dt>
+        <dd>Logical And</dd>
+
+        <dt>
+
+          <code><a href="nv_or.html">nv_or()</a></code>
+
+        </dt>
+        <dd>Logical Or</dd>
+
+        <dt>
+
+          <code><a href="nv_xor.html">nv_xor()</a></code>
+
+        </dt>
+        <dd>Logical Xor</dd>
+
+        <dt>
+
+          <code><a href="nv_not.html">nv_not()</a></code>
+
+        </dt>
+        <dd>Logical Not</dd>
+
+        <dt>
+
+          <code><a href="nv_shift_left.html">nv_shift_left()</a></code>
+
+        </dt>
+        <dd>Shift Left</dd>
+
+        <dt>
+
+          <code><a href="nv_shift_right_logical.html">nv_shift_right_logical()</a></code>
+
+        </dt>
+        <dd>Logical Shift Right</dd>
+
+        <dt>
+
+          <code><a href="nv_shift_right_arithmetic.html">nv_shift_right_arithmetic()</a></code>
+
+        </dt>
+        <dd>Arithmetic Shift Right</dd>
+
+        <dt>
+
+          <code><a href="nv_popcnt.html">nv_popcnt()</a></code>
+
+        </dt>
+        <dd>Population Count</dd>
+      </dl></div><div class="section level2">
+      <h2 id="element-wise-operations">Element-wise operations<a class="anchor" aria-label="anchor" href="#element-wise-operations"></a></h2>
+
+      <div class="section-desc"><p>Other element-wise tensor operations</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nv_min.html">nv_min()</a></code>
+
+        </dt>
+        <dd>Minimum</dd>
+
+        <dt>
+
+          <code><a href="nv_max.html">nv_max()</a></code>
+
+        </dt>
+        <dd>Maximum</dd>
+
+        <dt>
+
+          <code><a href="nv_clamp.html">nv_clamp()</a></code>
+
+        </dt>
+        <dd>Clamp</dd>
+      </dl></div><div class="section level2">
+      <h2 id="control-flow">Control flow<a class="anchor" aria-label="anchor" href="#control-flow"></a></h2>
+
+      <div class="section-desc"><p>Control flow operations</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nv_if.html">nv_if()</a></code>
+
+        </dt>
+        <dd>If</dd>
 
         <dt>
 
@@ -740,12 +657,344 @@
 
         <dt>
 
-          <code><a href="nv_xor.html">nv_xor()</a></code>
+          <code><a href="nv_select.html">nv_select()</a></code>
 
         </dt>
-        <dd>Logical Xor</dd>
+        <dd>Select</dd>
+      </dl></div><div class="section level2">
+      <h2 id="random-number-generation">Random number generation<a class="anchor" aria-label="anchor" href="#random-number-generation"></a></h2>
+
+      <div class="section-desc"><p>Functions for generating random numbers</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nv_runif.html">nv_unif_rand()</a></code> <code><a href="nv_runif.html">nv_runif()</a></code>
+
+        </dt>
+        <dd>Internal: Random Unit Uniform Numbers</dd>
 
         <dt>
+
+          <code><a href="nv_rnorm.html">nv_rnorm()</a></code>
+
+        </dt>
+        <dd>Sample from a Normal Distribution</dd>
+
+        <dt>
+
+          <code><a href="nv_rbinom.html">nv_rbinom()</a></code>
+
+        </dt>
+        <dd>Sample from a Binomial Distribution</dd>
+
+        <dt>
+
+          <code><a href="nv_rdunif.html">nv_rdunif()</a></code>
+
+        </dt>
+        <dd>Sample from a Discrete Uniform Distribution</dd>
+
+        <dt>
+
+          <code><a href="nv_rng_state.html">nv_rng_state()</a></code>
+
+        </dt>
+        <dd>Generate random state</dd>
+      </dl></div><div class="section level2">
+      <h2 id="transformations">Transformations<a class="anchor" aria-label="anchor" href="#transformations"></a></h2>
+
+      <div class="section-desc"><p>Code transformations</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="trace_fn.html">trace_fn()</a></code>
+
+        </dt>
+        <dd>Trace an R function into a Graph</dd>
+
+        <dt>
+
+          <code><a href="gradient.html">gradient()</a></code> <code><a href="gradient.html">value_and_gradient()</a></code>
+
+        </dt>
+        <dd>Gradient</dd>
+
+        <dt>
+
+          <code><a href="transform_gradient.html">transform_gradient()</a></code>
+
+        </dt>
+        <dd>Transform a graph to its gradient</dd>
+
+        <dt>
+
+          <code><a href="jit.html">jit()</a></code>
+
+        </dt>
+        <dd>JIT compile a function</dd>
+
+        <dt>
+
+          <code><a href="jit_eval.html">jit_eval()</a></code>
+
+        </dt>
+        <dd>Jit an Evaluate an Expression</dd>
+
+        <dt>
+
+          <code><a href="stablehlo.html">stablehlo()</a></code>
+
+        </dt>
+        <dd>Lower a function to StableHLO</dd>
+      </dl></div><div class="section level2">
+      <h2 id="debugging">Debugging<a class="anchor" aria-label="anchor" href="#debugging"></a></h2>
+
+      <div class="section-desc"><p>Debugging utilities and tools</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="debug_box.html">debug_box()</a></code>
+
+        </dt>
+        <dd>Create a Debug Box</dd>
+
+        <dt>
+
+          <code><a href="nv_print.html">nv_print()</a></code>
+
+        </dt>
+        <dd>Print Tensor</dd>
+
+        <dt>
+
+          <code><a href="DebugBox.html">DebugBox()</a></code>
+
+        </dt>
+        <dd>Debug Box Class</dd>
+      </dl></div><div class="section level2">
+      <h2 id="internal-data-structures-and-functions">Internal Data Structures and Functions<a class="anchor" aria-label="anchor" href="#internal-data-structures-and-functions"></a></h2>
+
+      <div class="section-desc"><p>Internal data structures and functions</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="abstract_properties.html">shape_abstract()</a></code> <code><a href="abstract_properties.html">ndims_abstract()</a></code> <code><a href="abstract_properties.html">dtype_abstract()</a></code>
+
+        </dt>
+        <dd>Abstract Properties</dd>
+
+        <dt>
+
+          <code><a href="to_abstract.html">to_abstract()</a></code>
+
+        </dt>
+        <dd>Convert to Abstract Tensor</dd>
+
+        <dt>
+
+          <code><a href="GraphDescriptor.html">GraphDescriptor()</a></code>
+
+        </dt>
+        <dd>Graph Descriptor</dd>
+
+        <dt>
+
+          <code><a href="GraphValue.html">GraphValue()</a></code>
+
+        </dt>
+        <dd>Graph Value</dd>
+
+        <dt>
+
+          <code><a href="AnvilBox.html">AnvilBox</a></code>
+
+        </dt>
+        <dd>AnvilBox</dd>
+
+        <dt>
+
+          <code><a href="AnvilGraph.html">AnvilGraph()</a></code>
+
+        </dt>
+        <dd>Graph of Primitive Calls</dd>
+
+        <dt>
+
+          <code><a href="GraphNode.html">GraphNode</a></code>
+
+        </dt>
+        <dd>Graph Node</dd>
+
+        <dt>
+
+          <code><a href="GraphBox.html">GraphBox()</a></code>
+
+        </dt>
+        <dd>Graph Box</dd>
+
+        <dt>
+
+          <code><a href="GraphLiteral.html">GraphLiteral()</a></code>
+
+        </dt>
+        <dd>Graph Literal</dd>
+
+        <dt>
+
+          <code><a href="graph_desc_add.html">graph_desc_add()</a></code>
+
+        </dt>
+        <dd>Add a Primitive Call to a Graph Descriptor</dd>
+
+        <dt>
+
+          <code><a href="local_descriptor.html">local_descriptor()</a></code>
+
+        </dt>
+        <dd>Create a graph</dd>
+
+        <dt>
+
+          <code><a href="dot-current_descriptor.html">.current_descriptor()</a></code>
+
+        </dt>
+        <dd>Get the current graph</dd>
+
+        <dt>
+
+          <code><a href="subgraphs.html">subgraphs()</a></code>
+
+        </dt>
+        <dd>Get Subgraphs from Higher-Order Primitive</dd>
+
+        <dt>
+
+          <code><a href="prim.html">prim()</a></code>
+
+        </dt>
+        <dd>Get a Primitive</dd>
+
+        <dt>
+
+          <code><a href="AnvilPrimitive.html">AnvilPrimitive()</a></code>
+
+        </dt>
+        <dd>AnvilPrimitive</dd>
+
+        <dt>
+
+          <code><a href="PrimitiveCall.html">PrimitiveCall()</a></code>
+
+        </dt>
+        <dd>Primitive Call</dd>
+
+        <dt>
+
+          <code><a href="register_primitive.html">register_primitive()</a></code>
+
+        </dt>
+        <dd>Register a Primitive</dd>
+
+        <dt>
+
+          <code><a href="AbstractTensor.html">nv_aten()</a></code> <code><a href="AbstractTensor.html">AbstractTensor()</a></code>
+
+        </dt>
+        <dd>Abstract Tensor Class</dd>
+
+        <dt>
+
+          <code><a href="ConcreteTensor.html">ConcreteTensor()</a></code>
+
+        </dt>
+        <dd>Concrete Tensor Class</dd>
+
+        <dt>
+
+          <code><a href="LiteralTensor.html">LiteralTensor()</a></code>
+
+        </dt>
+        <dd>Literal Tensor Class</dd>
+      </dl></div><div class="section level2">
+      <h2 id="tree-utilities">Tree utilities<a class="anchor" aria-label="anchor" href="#tree-utilities"></a></h2>
+
+      <div class="section-desc"><p>Utilities for working with nested structures</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="flatten.html">flatten()</a></code>
+
+        </dt>
+        <dd>Flatten</dd>
+
+        <dt>
+
+          <code><a href="unflatten.html">unflatten()</a></code>
+
+        </dt>
+        <dd>Unflatten</dd>
+
+        <dt>
+
+          <code><a href="build_tree.html">build_tree()</a></code>
+
+        </dt>
+        <dd>Build Tree</dd>
+
+        <dt>
+
+          <code><a href="reindex_tree.html">reindex_tree()</a></code>
+
+        </dt>
+        <dd>Reindex Tree</dd>
+
+        <dt>
+
+          <code><a href="tree_size.html">tree_size()</a></code>
+
+        </dt>
+        <dd>Tree Size</dd>
+      </dl></div><div class="section level2">
+      <h2 id="tensor-classes">Tensor classes<a class="anchor" aria-label="anchor" href="#tensor-classes"></a></h2>
+
+      <div class="section-desc"><p>Core tensor classes and constructors</p></div>
+
+      <dl></dl></div><div class="section level2">
+      <h2 id="primitives">Primitives<a class="anchor" aria-label="anchor" href="#primitives"></a></h2>
+
+      <div class="section-desc"><p>Low-level primitive operations (nvl_* functions)</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="nvl_abs.html">nvl_abs()</a></code>
 
@@ -1206,106 +1455,9 @@
 
         </dt>
         <dd>Primitive Xor</dd>
-
-        <dt>
-
-          <code><a href="platform.AbstractTensor.html">platform.AbstractTensor()</a></code>
-
-        </dt>
-        <dd>Platform for AbstractTensor</dd>
-
-        <dt>
-
-          <code><a href="platform.ConcreteTensor.html">platform.ConcreteTensor()</a></code>
-
-        </dt>
-        <dd>Platform for ConcreteTensor</dd>
-
-        <dt>
-
-          <code><a href="platform.html">platform()</a></code>
-
-        </dt>
-        <dd>Platform</dd>
-
-        <dt>
-
-          <code><a href="prim.html">prim()</a></code>
-
-        </dt>
-        <dd>Get a Primitive</dd>
-
-        <dt>
-
-          <code><a href="register_primitive.html">register_primitive()</a></code>
-
-        </dt>
-        <dd>Register a Primitive</dd>
-
-        <dt>
-
-          <code><a href="reindex_tree.html">reindex_tree()</a></code>
-
-        </dt>
-        <dd>Reindex Tree</dd>
-
-        <dt>
-
-          <code><a href="stablehlo.html">stablehlo()</a></code>
-
-        </dt>
-        <dd>Lower a function to StableHLO</dd>
-
-        <dt>
-
-          <code><a href="subgraphs.html">subgraphs()</a></code>
-
-        </dt>
-        <dd>Get Subgraphs from Higher-Order Primitive</dd>
-
-        <dt>
-
-          <code><a href="tensorish.html">tensorish</a></code>
-
-        </dt>
-        <dd>Tensor-like Objects</dd>
-
-        <dt>
-
-          <code><a href="to_abstract.html">to_abstract()</a></code>
-
-        </dt>
-        <dd>Convert to Abstract Tensor</dd>
-
-        <dt>
-
-          <code><a href="trace_fn.html">trace_fn()</a></code>
-
-        </dt>
-        <dd>Trace an R function into a Graph</dd>
-
-        <dt>
-
-          <code><a href="transform_gradient.html">transform_gradient()</a></code>
-
-        </dt>
-        <dd>Transform a graph to its gradient</dd>
-
-        <dt>
-
-          <code><a href="tree_size.html">tree_size()</a></code>
-
-        </dt>
-        <dd>Tree Size</dd>
-
-        <dt>
-
-          <code><a href="unflatten.html">unflatten()</a></code>
-
-        </dt>
-        <dd>Unflatten</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
