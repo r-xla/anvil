@@ -1,7 +1,8 @@
 # Primitives Reference
 
-The table below shows all primitives and their supported
-transformations.
+The table below shows all 66 primitives and which rules they implement.
+Note that a rule might be missing because it was just not added yet, or
+because it does not apply for a specific primitive.
 
 | Name                   | StableHLO | Backward |
 |:-----------------------|:----------|:--------:|
