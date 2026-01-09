@@ -54,7 +54,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Trace an R function into a Graph</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/R/graph.R" class="external-link"><code>R/graph.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/higher-order-prim/R/graph.R" class="external-link"><code>R/graph.R</code></a></small>
       <div class="d-none name"><code>trace_fn.Rd</code></div>
     </div>
 
@@ -64,7 +64,14 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">trace_fn</span><span class="op">(</span><span class="va">f</span>, <span class="va">args</span>, desc <span class="op">=</span> <span class="cn">NULL</span>, toplevel <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">trace_fn</span><span class="op">(</span></span>
+<span>  <span class="va">f</span>,</span>
+<span>  args <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  desc <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  toplevel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  flat_inputs <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  in_tree <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -78,7 +85,7 @@ The function to trace_fn.</p></dd>
 
 <dt id="arg-args">args<a class="anchor" aria-label="anchor" href="#arg-args"></a></dt>
 <dd><p>(<code>list</code> of (<code><a href="AnvilTensor.html">AnvilTensor</a></code> | <code><a href="AbstractTensor.html">AbstractTensor</a></code>))<br>
-The arguments to the function.</p></dd>
+The arguments to the function. Can be <code>NULL</code> if <code>flat_inputs</code> is provided.</p></dd>
 
 
 <dt id="arg-desc">desc<a class="anchor" aria-label="anchor" href="#arg-desc"></a></dt>
@@ -91,6 +98,16 @@ The descriptor to use for the graph.</p></dd>
 Whether the function is being traced at the top level.
 If this is <code>TRUE</code>, inputs that are <code>AnvilTensor</code>s are treated as unknown.
 If this is <code>FALSE</code> (default), <code>AnvilTensor</code>s are treated as constants.</p></dd>
+
+
+<dt id="arg-flat-inputs">flat_inputs<a class="anchor" aria-label="anchor" href="#arg-flat-inputs"></a></dt>
+<dd><p>(<code>NULL</code> | <code>list</code>)<br>
+Pre-flattened inputs. If provided, <code>args</code> is ignored and <code>in_tree</code> must be provided.</p></dd>
+
+
+<dt id="arg-in-tree">in_tree<a class="anchor" aria-label="anchor" href="#arg-in-tree"></a></dt>
+<dd><p>(<code>NULL</code> | <code>Node</code>)<br>
+The input tree structure. Required if <code>flat_inputs</code> is provided.</p></dd>
 
 </dl></div>
     <div class="section level2">

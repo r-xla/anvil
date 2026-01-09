@@ -156,7 +156,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x556fe2857628>
+    ## <bytecode: 0x558e48b64590>
     ## <environment: namespace:anvil>
 
 The
@@ -207,7 +207,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x556fe285a7e0>
+    ## <bytecode: 0x558e48b67748>
     ## <environment: namespace:anvil>
 
 The
@@ -476,7 +476,7 @@ primitive initializes its own `GraphDescriptor` that is thrown away
 after the primitive returns `DebugBox` objects. These `DebugBox` objects
 are only for user-interaction and have a nice printer. Whenever a
 primitive is evaluated, this `DebugBox` is converted to a `GraphBox`
-object that is used for the actual evaluation via `maybe_box_variable`.
+object that is used for the actual evaluation via `maybe_box_tensorish`.
 This ensures that we don’t have to duplicate any evaluation logic as we
 the graph-building functions only have to work with `GraphBox` objects.
 
