@@ -10,8 +10,8 @@ nv_rdunif(shape, initial_state, n, dtype = "i32")
 \item{shape}{(\code{integer()})\cr
 Shape.}
 
-\item{initial_state}{([\code{ui64[2]}][tensorish])\cr
-RNG state.}
+\item{initial_state}{(\code{\link{tensorish}})\cr
+RNG state (\code{ui64[2]}).}
 
 \item{n}{(\code{integer(1)})\cr
 Number of categories to sample from (samples integers 1 to n).}

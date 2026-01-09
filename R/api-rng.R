@@ -1,11 +1,4 @@
-#' @title Internal: Random Unit Uniform Numbers
-#' @name nv_runif
-#' @description
-#' generate random uniform numbers in [0, 1)
-#' @param initial_state state seed
-#' @param dtype (`character(1)` | [`TensorDataType`])\cr
-#'   Output dtype either "f32" or "f64"
-#' @template param_shape
+#' @rdname nv_runif
 nv_unif_rand <- function(
   shape,
   initial_state,
@@ -62,6 +55,7 @@ nv_unif_rand <- function(
 #' @title Sample from a Uniform Distribution
 #' @description
 #' Sample from a uniform distribution in the open interval (lower, upper).
+#' Note that `nv_rand_unif()` generates values in [0, 1), while `nv_runif()` generates values in (lower, upper).
 #' @template param_initial_state
 #' @template param_dtype
 #' @template param_shape
