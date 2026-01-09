@@ -11,7 +11,7 @@
 #' @param con (connection)\cr
 #'   A connection object to read serialized tensors from.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
-#'   The platform name for the tensor (`"cpu"`, `"cuda"`, ...).
+#'   The device for the tensor (`"cpu"`, `"cuda"`, ...).
 #'   Default is to use the CPU.
 #'
 #' @return
@@ -22,16 +22,15 @@
 #'
 #' @details
 #' These functions wrap the safetensors format functionality provided by the
-#' [`safetensors`](https://github.com/mlverse/safetensors) package.
+#' \CRANpkg{safetensors} package.
 #'
+#' @export
 #' @examplesIf pjrt::plugin_is_downloaded("cpu")
 #' x <- nv_tensor(array(1:6, dim = c(2, 3)))
 #' raw_data <- nv_serialize(list(x = x))
 #' raw_data
 #' reloaded <- nv_unserialize(raw_data)
 #' reloaded
-#'
-#' @export
 nv_write <- function(tensors, path) {
   checkmate::assert_list(tensors, names = "unique", types = "AnvilTensor")
   checkmate::assert_string(path)

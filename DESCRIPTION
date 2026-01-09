@@ -21,6 +21,7 @@ Imports:
     methods,
     pjrt,
     rlang,
+    safetensors (>= 0.2.0),
     stablehlo,
     tengen,
     withr,
@@ -29,7 +30,6 @@ Suggests:
     knitr,
     quarto,
     rmarkdown,
-    safetensors,
     testthat (>= 3.0.0)
 Remotes:
     r-xla/stablehlo,

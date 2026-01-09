@@ -24,7 +24,7 @@ Named list of tensors.}
 Path to the safetensors file.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
-The platform name for the tensor (\code{"cpu"}, \code{"cuda"}, ...).
+The device for the tensor (\code{"cpu"}, \code{"cuda"}, ...).
 Default is to use the CPU.}
 
 \item{con}{(connection)\cr
@@ -44,7 +44,7 @@ to/from raw vectors in memory.
 }
 \details{
 These functions wrap the safetensors format functionality provided by the
-\href{https://github.com/mlverse/safetensors}{\code{safetensors}} package.
+\CRANpkg{safetensors} package.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded("cpu")) withAutoprint(\{ # examplesIf}
