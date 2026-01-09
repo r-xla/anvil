@@ -4,11 +4,17 @@
 \alias{AnvilPrimitive}
 \title{AnvilPrimitive}
 \usage{
-AnvilPrimitive(name)
+AnvilPrimitive(name, higher_order = FALSE, subgraphs = character())
 }
 \arguments{
 \item{name}{(\code{character()})\cr
 The name of the primitive.}
+
+\item{higher_order}{(\code{logical(1)})\cr
+Whether the primitive is higher-order (contains subgraphs). Default is \code{FALSE}.}
+
+\item{subgraphs}{(\code{character()})\cr
+Names of parameters that are subgraphs. Only used if \code{higher_order = TRUE}.}
 }
 \value{
 (\code{AnvilPrimitive})

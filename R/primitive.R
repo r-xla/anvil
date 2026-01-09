@@ -5,37 +5,28 @@
 #' To access other fields, use `$` and `$<-`.
 #' @param name (`character()`)\cr
 #'   The name of the primitive.
+#' @param higher_order (`logical(1)`)\cr
+#'   Whether the primitive is higher-order (contains subgraphs). Default is `FALSE`.
+#' @param subgraphs (`character()`)\cr
+#'   Names of parameters that are subgraphs. Only used if `higher_order = TRUE`.
 #' @return (`AnvilPrimitive`)
 #' @export
-AnvilPrimitive <- function(name) {
+AnvilPrimitive <- function(name, higher_order = FALSE, subgraphs = character()) {
   checkmate::assert_string(name)
-  env <- new.env(parent = emptyenv())
-  env$name <- name
-  env$rules <- list()
-
-  structure(env, class = "AnvilPrimitive")
-}
-
-#' @title HigherOrderPrimitive
-#' @description
-#' A primitive that contains subgraphs.
-#' @param name (`character()`)\cr
-#'   The name of the primitive.
-#' @param subgraphs (`character()`)\cr
-#'   Names of parameters that are subgraphs.
-#' @return (`HigherOrderPrimitive`)
-#' @export
-HigherOrderPrimitive <- function(name, subgraphs = character()) {
-  checkmate::assert_string(name)
+  checkmate::assert_flag(higher_order)
   checkmate::assert_character(subgraphs)
 
   env <- new.env(parent = emptyenv())
   env$name <- name
   env$rules <- list()
-  env$subgraphs <- subgraphs
+  env$higher_order <- higher_order
+  if (higher_order) {
+    env$subgraphs <- subgraphs
+  }
 
-  structure(env, class = c("HigherOrderPrimitive", "AnvilPrimitive"))
+  structure(env, class = "AnvilPrimitive")
 }
+
 
 prim_dict <- new.env(parent = emptyenv())
 
@@ -73,7 +64,7 @@ prim <- function(name = NULL) {
 }
 
 is_higher_order_primitive <- function(x) {
-  inherits(x, "HigherOrderPrimitive")
+  isTRUE(x$higher_order)
 }
 
 
