@@ -444,5 +444,8 @@ test_that("p_pad backward with interior padding", {
 })
 
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
+  source(
+    system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"),
+    local = TRUE
+  )
 }
