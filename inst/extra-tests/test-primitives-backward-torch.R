@@ -52,10 +52,24 @@ wrap_biv_torch <- function(.g, args_torch, shp) {
   }
 }
 
-verify_grad_uni_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = NULL, tol = 0, non_negative = FALSE) {
+verify_grad_uni_scalar <- function(
+  .f,
+  .g,
+  ndims = 0L,
+  dtypes = "f32",
+  args_f = NULL,
+  tol = 0,
+  non_negative = FALSE,
+  gen = NULL
+) {
   dtype <- sample(dtypes, 1L)
   shp <- integer()
-  operand <- generate_test_data(integer(), dtype, non_negative = non_negative)
+
+  if (is.null(gen)) {
+    operand <- generate_test_data(integer(), dtype, non_negative = non_negative)
+  } else {
+    operand <- gen(shp, dtype)
+  }
 
   operand_anvil <- nv_scalar(operand, dtype = dtype)
 
@@ -93,14 +107,20 @@ verify_grad_uni_tensor <- function(
   args_f = NULL,
   shape = NULL,
   tol = 0,
-  non_negative = FALSE
+  non_negative = FALSE,
+  gen = NULL
 ) {
   shp <- if (is.null(shape)) sample(1:3, ndims, replace = TRUE) else shape
   dtype <- sample(dtypes, 1L)
-  operand <- array(
-    generate_test_data(shp, dtype = dtype, non_negative = non_negative),
-    shp
-  )
+
+  if (is.null(gen)) {
+    operand <- array(
+      generate_test_data(shp, dtype = dtype, non_negative = non_negative),
+      shp
+    )
+  } else {
+    operand <- gen(shp, dtype)
+  }
 
   operand_anvil <- nv_tensor(operand, dtype = dtype)
 
@@ -134,7 +154,9 @@ verify_grad_biv_scalar <- function(
   dtypes = "f32",
   args_f = NULL,
   tol = 1e-5,
-  non_negative = list(FALSE, FALSE)
+  non_negative = list(FALSE, FALSE),
+  gen_lhs = NULL,
+  gen_rhs = NULL
 ) {
   dtype <- sample(dtypes, 1L)
   shp <- integer()
@@ -143,8 +165,16 @@ verify_grad_biv_scalar <- function(
     non_negative <- rep(non_negative, 2)
   }
 
-  lhs <- generate_test_data(integer(), dtype, non_negative = non_negative[[1]])
-  rhs <- generate_test_data(integer(), dtype, non_negative = non_negative[[2]])
+  if (is.null(gen_lhs)) {
+    lhs <- generate_test_data(integer(), dtype, non_negative = non_negative[[1]])
+  } else {
+    lhs <- gen_lhs(shp, dtype)
+  }
+  if (is.null(gen_rhs)) {
+    rhs <- generate_test_data(integer(), dtype, non_negative = non_negative[[2]])
+  } else {
+    rhs <- gen_rhs(shp, dtype)
+  }
 
   lhs_anvil <- nv_scalar(lhs, dtype = dtype)
   rhs_anvil <- nv_scalar(rhs, dtype = dtype)
@@ -191,7 +221,9 @@ verify_grad_biv_tensor <- function(
   args_f = NULL,
   shape = NULL,
   tol = 0,
-  non_negative = list(FALSE, FALSE)
+  non_negative = list(FALSE, FALSE),
+  gen_lhs = NULL,
+  gen_rhs = NULL
 ) {
   # Prefer shapes without size-0 or size-1 axes to avoid backend broadcast edge-cases
   shp <- if (is.null(shape)) sample(1:3, ndims, replace = TRUE) else shape
@@ -201,14 +233,22 @@ verify_grad_biv_tensor <- function(
     non_negative <- rep(non_negative, 2)
   }
 
-  lhs <- array(
-    generate_test_data(shp, dtype = dtype, non_negative = non_negative[[1]]), # nolint
-    shp
-  )
-  rhs <- array(
-    generate_test_data(shp, dtype = dtype, non_negative = non_negative[[2]]), # nolint
-    shp
-  )
+  if (is.null(gen_lhs)) {
+    lhs <- array(
+      generate_test_data(shp, dtype = dtype, non_negative = non_negative[[1]]), # nolint
+      shp
+    )
+  } else {
+    lhs <- gen_lhs(shp, dtype)
+  }
+  if (is.null(gen_rhs)) {
+    rhs <- array(
+      generate_test_data(shp, dtype = dtype, non_negative = non_negative[[2]]), # nolint
+      shp
+    )
+  } else {
+    rhs <- gen_rhs(shp, dtype)
+  }
 
   lhs_anvil <- nv_tensor(lhs)
   rhs_anvil <- nv_tensor(rhs)
@@ -246,9 +286,20 @@ verify_grad_biv <- function(
   dtypes = "f32",
   args_f = NULL,
   tol = 0,
-  non_negative = list(FALSE, FALSE)
+  non_negative = list(FALSE, FALSE),
+  gen_lhs = NULL,
+  gen_rhs = NULL
 ) {
-  verify_grad_biv_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol, non_negative = non_negative)
+  verify_grad_biv_scalar(
+    f, g,
+    ndims = 0L,
+    dtypes = dtypes,
+    args_f = args_f,
+    tol = tol,
+    non_negative = non_negative,
+    gen_lhs = gen_lhs,
+    gen_rhs = gen_rhs
+  )
   verify_grad_biv_tensor(
     f,
     g,
@@ -256,7 +307,9 @@ verify_grad_biv <- function(
     dtypes = dtypes,
     args_f = args_f,
     tol = tol,
-    non_negative = non_negative
+    non_negative = non_negative,
+    gen_lhs = gen_lhs,
+    gen_rhs = gen_rhs
   )
 }
 
@@ -268,10 +321,19 @@ verify_grad_uni <- function(
   args_f = NULL,
   tol = 0,
   non_negative = FALSE,
-  skip_scalar = FALSE
+  skip_scalar = FALSE,
+  gen = NULL
 ) {
   if (!skip_scalar) {
-    verify_grad_uni_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol, non_negative = non_negative)
+    verify_grad_uni_scalar(
+      f, g,
+      ndims = 0L,
+      dtypes = dtypes,
+      args_f = args_f,
+      tol = tol,
+      non_negative = non_negative,
+      gen = gen
+    )
   }
   verify_grad_uni_tensor(
     f,
@@ -280,7 +342,8 @@ verify_grad_uni <- function(
     dtypes = dtypes,
     args_f = args_f,
     tol = tol,
-    non_negative = non_negative
+    non_negative = non_negative,
+    gen = gen
   )
 }
 
@@ -555,4 +618,425 @@ test_that("p_reverse", {
     tol = 1e-5,
     skip_scalar = TRUE
   )
+})
+
+test_that("p_atan2", {
+  # Generator that avoids (0, 0) which is undefined
+  gen_nonzero <- function(shp, dtype) {
+    vals <- generate_test_data(shp, dtype = dtype)
+    # Ensure we don't have both values near zero
+    if (length(shp) == 0L) {
+      if (abs(vals) < 0.1) vals <- vals + sign(vals + 0.1) * 0.5
+    } else {
+      vals[abs(vals) < 0.1] <- vals[abs(vals) < 0.1] + 0.5
+    }
+    if (length(shp) == 0L) vals else array(vals, shp)
+  }
+
+  verify_grad_biv(
+    nvl_atan2,
+    torch::torch_atan2,
+    tol = 1e-5,
+    gen_lhs = gen_nonzero,
+    gen_rhs = gen_nonzero
+  )
+})
+
+test_that("p_concatenate", {
+  # Test concatenate gradient with torch_cat
+  shp1 <- c(2L, 3L)
+  shp2 <- c(2L, 4L)
+  dtype <- "f32"
+
+  x_arr <- array(generate_test_data(shp1, dtype = dtype), shp1)
+  y_arr <- array(generate_test_data(shp2, dtype = dtype), shp2)
+
+  x_nv <- nv_tensor(x_arr, dtype = dtype)
+  y_nv <- nv_tensor(y_arr, dtype = dtype)
+
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+  y_th <- torch::torch_tensor(y_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+
+  f_nv <- function(x, y) {
+    out <- nvl_concatenate(x, y, dimension = 2L)
+    nv_reduce_sum(out, dims = seq_len(ndims(out)), drop = TRUE)
+  }
+
+  grads_nv <- jit(gradient(f_nv))(x_nv, y_nv)
+
+  out_th <- torch::torch_cat(list(x_th, y_th), dim = 2)
+  torch::torch_sum(out_th)$backward()
+
+  expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-5)
+  expect_equal(tengen::as_array(grads_nv[[2L]]), as_array_torch(y_th$grad), tolerance = 1e-5)
+})
+
+test_that("p_concatenate with 3 inputs", {
+  shp1 <- c(2L, 2L)
+  shp2 <- c(2L, 3L)
+  shp3 <- c(2L, 1L)
+  dtype <- "f32"
+
+  x_arr <- array(generate_test_data(shp1, dtype = dtype), shp1)
+  y_arr <- array(generate_test_data(shp2, dtype = dtype), shp2)
+  z_arr <- array(generate_test_data(shp3, dtype = dtype), shp3)
+
+  x_nv <- nv_tensor(x_arr, dtype = dtype)
+  y_nv <- nv_tensor(y_arr, dtype = dtype)
+  z_nv <- nv_tensor(z_arr, dtype = dtype)
+
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE)
+  y_th <- torch::torch_tensor(y_arr, requires_grad = TRUE)
+  z_th <- torch::torch_tensor(z_arr, requires_grad = TRUE)
+
+  f_nv <- function(x, y, z) {
+    out <- nvl_concatenate(x, y, z, dimension = 2L)
+    nv_reduce_sum(out, dims = seq_len(ndims(out)), drop = TRUE)
+  }
+
+  grads_nv <- jit(gradient(f_nv))(x_nv, y_nv, z_nv)
+
+  out_th <- torch::torch_cat(list(x_th, y_th, z_th), dim = 2)
+  torch::torch_sum(out_th)$backward()
+
+  expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-5)
+  expect_equal(tengen::as_array(grads_nv[[2L]]), as_array_torch(y_th$grad), tolerance = 1e-5)
+  expect_equal(tengen::as_array(grads_nv[[3L]]), as_array_torch(z_th$grad), tolerance = 1e-5)
+})
+
+test_that("p_reduce_prod", {
+  # Test with non-zero values to avoid division by zero in gradient
+  gen_nonzero <- function(shp, dtype) {
+    vals <- generate_test_data(shp, dtype = dtype)
+    # Shift values away from zero
+    if (length(shp) == 0L) {
+      if (abs(vals) < 0.5) vals <- vals + sign(vals + 0.1) * 1
+    } else {
+      vals[abs(vals) < 0.5] <- vals[abs(vals) < 0.5] + sign(vals[abs(vals) < 0.5] + 0.1) * 1
+    }
+    if (length(shp) == 0L) vals else array(vals, shp)
+  }
+
+  shp <- c(2L, 3L)
+  dtype <- "f32"
+
+  x_arr <- gen_nonzero(shp, dtype)
+  x_nv <- nv_tensor(x_arr, dtype = dtype)
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+
+  # Test reduce along one dimension
+  f_nv <- function(x) {
+    y <- nvl_reduce_prod(x, dims = 2L, drop = TRUE)
+    nv_reduce_sum(y, dims = 1L, drop = TRUE)
+  }
+
+  grads_nv <- jit(gradient(f_nv))(x_nv)
+
+  out_th <- torch::torch_prod(x_th, dim = 2, keepdim = FALSE)
+  torch::torch_sum(out_th)$backward()
+
+  expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
+})
+
+test_that("p_remainder", {
+  # Test remainder gradient
+  # Using fmod in torch which is equivalent to stablehlo remainder
+  # Only test lhs gradient since rhs gradient involves floor which has discontinuities
+  shp <- c(2L, 3L)
+  dtype <- "f32"
+
+  # Generator for lhs - any values
+  gen_lhs <- function(shp, dtype) {
+    vals <- runif(prod(shp), min = -5, max = 5)
+    if (length(shp) == 0L) vals else array(vals, shp)
+  }
+  # Generator for rhs - non-zero values with same sign to avoid discontinuities
+  gen_rhs <- function(shp, dtype) {
+    vals <- runif(prod(shp), min = 1, max = 3)
+    if (length(shp) == 0L) vals else array(vals, shp)
+  }
+
+  x_arr <- gen_lhs(shp, dtype)
+  y_arr <- gen_rhs(shp, dtype)
+
+  x_nv <- nv_tensor(x_arr, dtype = dtype)
+  y_nv <- nv_tensor(y_arr, dtype = dtype)
+
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+  y_th <- torch::torch_tensor(y_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+
+  f_nv <- function(x, y) {
+    out <- nvl_remainder(x, y)
+    nv_reduce_sum(out, dims = seq_len(ndims(out)), drop = TRUE)
+  }
+
+  grads_nv <- jit(gradient(f_nv))(x_nv, y_nv)
+
+  # torch::fmod is equivalent to stablehlo remainder
+  out_th <- torch::torch_fmod(x_th, y_th)
+  torch::torch_sum(out_th)$backward()
+
+  expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-5)
+  expect_equal(tengen::as_array(grads_nv[[2L]]), as_array_torch(y_th$grad), tolerance = 1e-5)
+})
+
+test_that("p_slice", {
+  # Test slice gradient using torch narrow/slice
+  shp <- c(4L, 5L)
+  dtype <- "f32"
+
+  x_arr <- array(generate_test_data(shp, dtype = dtype), shp)
+  x_nv <- nv_tensor(x_arr, dtype = dtype)
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+
+  # Slice from [2, 2] to [4, 4] with stride 1
+  # anvil: start_indices is 1-based, limit_indices is the exclusive end (in the same coordinate system as stablehlo)
+  # For a slice of length 2 starting at index 2 (1-based):
+  # - 0-based start = 1, 0-based limit = 3 (exclusive) -> elements at 0-based indices 1, 2
+  # In anvil: start_indices = 2 (1-based), limit_indices = 4 (which is 0-based limit 4, not 0-based limit 3)
+  # Wait, let me recalculate. The stablehlo limit is passed through directly.
+  # anvil start=2 -> 0-based start=1, anvil limit=4 -> 0-based limit=4
+  # So we get elements 1,2,3 (3 elements)
+  # To get 2 elements starting at index 2 (1-based), we need limit = start + length = 2 + 2 = 4
+  # But 0-based that would be start=1, limit=3. So anvil limit should be 3... hmm
+
+  # Let me check: nv_slice(x, start=1, limit=2, stride=1) on c(2,3) gives shape c(2,2)
+  # So limit=2 gives 0-based indices [0, 1] for that dim, which is start=0, limit=2
+  # This means anvil's limit_indices IS the 0-based exclusive end!
+
+  # So to slice rows 2,3 (1-based) = 0-based indices 1,2 = 0-based [1:3):
+  # anvil start=2 (converted to 0-based start=1), anvil limit=4 (0-based limit=4)
+  # But we want 0-based limit=3 not 4. So anvil limit should be 3.
+
+  # Actually wait - let me reread the primitive. limit_attr = r_to_constant(limit_indices, ...)
+  # So limit_indices IS passed through as-is to stablehlo, which expects 0-based.
+  # So if we want 0-based exclusive limit=4, we pass limit_indices=4.
+
+  # For this test: we want rows 2,3 and cols 2,3 (1-based) = 2x2 output
+  # 0-based: rows 1,2 and cols 1,2 -> 0-based range [1:3) x [1:3)
+  # anvil: start_indices=c(2,2), limit_indices=c(4,4) -> 0-based start=[1,1], 0-based limit=[4,4]
+  # That gives [1:4) x [1:4) = 3x3 output, not 2x2!
+
+  # The issue is anvil's start-to-0-based conversion subtracts 1, but limit is passed through.
+  # So for consistent 1-based slicing with exclusive end:
+  # To get 1-based range [2:4) (exclusive) = elements 2,3, which is 2 elements:
+  # We need 0-based [1:3) which is elements 1,2 (0-based).
+  # anvil start=2 -> 0-based start=1. anvil limit=4 -> 0-based limit=4. That's wrong.
+  # Actually anvil limit should be 4 for the 1-based exclusive end 4, but with start conversion the math doesn't work.
+
+  # Let me just test what actually works based on the existing test:
+  # nv_slice(x, c(1,1), c(2,2), c(1,1)) on c(2,3) gives c(2,2) output
+  # 0-based: start=[0,0], limit=[2,2] -> [0:2) x [0:2) = 2x2. Correct!
+  # So limit_indices in anvil is the 0-based exclusive end, start_indices is 1-based start.
+  # This is inconsistent but it's how it is.
+
+  # For rows 2:3 (1-based, inclusive) = 0-based 1:2 (inclusive) = 0-based [1:3) exclusive
+  # anvil start=2, anvil limit=3 (since limit is already 0-based exclusive, we want 3)
+  # Actually no - the slice test shows limit=c(2,2) gives 0-based limit c(2,2).
+
+  # OK I think the confusion is: limit_indices IS the value that goes to stablehlo.
+  # So to slice rows with 0-based indices 1,2 (2 elements), we need 0-based limit=3.
+  # anvil limit_indices=3 -> 0-based limit=3. Start anvil=2 -> 0-based start=1.
+  # Slice [1:3) gives indices 1,2, that's 2 elements. Correct!
+
+  # So for 2 rows starting at row 2 (1-based): start=2, limit=2+2=4 NO WAIT
+  # 0-based: we want indices 1,2 -> [1:3). So 0-based limit=3.
+  # anvil limit=3 (this is the 0-based limit directly).
+  # anvil start=2 -> 0-based start=1.
+  # YES! So limit_indices = start_indices + length - 1 + 1 = start + length = 4? No...
+  # Let me just compute: 0-based limit = 0-based start + length = 1 + 2 = 3.
+  # Since anvil limit = 0-based limit, we have anvil limit = 3.
+  # And anvil start = 1-based start = 2.
+
+  # So for 2 elements starting at 1-based index 2:
+  # anvil start = 2, anvil limit = 0-based-start + length = (2-1) + 2 = 3
+
+  start_indices <- c(2L, 2L)
+  limit_indices <- c(4L, 4L)  # 0-based limit = 0-based start + length = 1 + 3 = 4, so 3 elements
+  strides <- c(1L, 1L)
+
+  f_nv <- function(x) {
+    out <- nvl_slice(x, start_indices, limit_indices, strides)
+    nv_reduce_sum(out, dims = seq_len(ndims(out)), drop = TRUE)
+  }
+
+  grads_nv <- jit(gradient(f_nv))(x_nv)
+
+  # torch narrow(dim, start, length) - start is 1-based
+  # We want 3 elements starting at index 2 (1-based), so narrow(1, 2, 3)
+  out_th <- x_th$narrow(1, 2, 3)$narrow(2, 2, 3)
+  torch::torch_sum(out_th)$backward()
+
+  expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-5)
+})
+
+test_that("p_slice with strides", {
+  # Test slice gradient with non-unit strides
+  shp <- c(6L, 8L)
+  dtype <- "f32"
+
+  x_arr <- array(generate_test_data(shp, dtype = dtype), shp)
+  x_nv <- nv_tensor(x_arr, dtype = dtype)
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+
+  # Slice from start_indices with strides
+  # anvil: start_indices is 1-based, limit_indices is 0-based exclusive
+  # For start=1 (1-based) -> 0-based start=0
+  # For limit=6 -> 0-based limit=6
+  # With stride=2: 0-based indices 0, 2, 4 (3 elements)
+  start_indices <- c(1L, 1L)
+  limit_indices <- c(6L, 8L)  # 0-based limits
+  strides <- c(2L, 2L)
+
+  f_nv <- function(x) {
+    out <- nvl_slice(x, start_indices, limit_indices, strides)
+    nv_reduce_sum(out, dims = seq_len(ndims(out)), drop = TRUE)
+  }
+
+  grads_nv <- jit(gradient(f_nv))(x_nv)
+
+  # In torch, slice with strides using index_select
+  # 0-based indices with stride 2 starting at 0: [0, 2, 4] for dim 1 (6 elements, limit 6)
+  # 0-based indices with stride 2 starting at 0: [0, 2, 4, 6] for dim 2 (8 elements, limit 8)
+  idx1 <- torch::torch_tensor(c(1L, 3L, 5L), dtype = torch::torch_int64())  # 1-based for torch
+  idx2 <- torch::torch_tensor(c(1L, 3L, 5L, 7L), dtype = torch::torch_int64())
+  out_th <- x_th$index_select(1, idx1)$index_select(2, idx2)
+  torch::torch_sum(out_th)$backward()
+
+  expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-5)
+})
+
+# Tests for non-differentiable operations that return zero gradients
+# These are bitwise/logical operations where gradients are mathematically zero
+# All need to reduce to scalar output for gradient computation
+
+# Note: For boolean operations (p_and, p_or, p_xor, p_reduce_all, p_reduce_any),
+# the backward rules return zeros but cannot be directly tested since:
+# 1. Boolean inputs don't support gradients (gradients must be float)
+# 2. zeros_like on boolean creates boolean tensors, which can't be used as gradients
+# The backward rules exist for completeness but these ops are essentially non-differentiable.
+
+test_that("p_and backward rule exists", {
+  # Verify the backward rule is defined (returns zeros for boolean ops)
+  expect_true(!is.null(p_and[["backward"]]))
+})
+
+test_that("p_or backward rule exists", {
+  expect_true(!is.null(p_or[["backward"]]))
+})
+
+test_that("p_xor backward rule exists", {
+  expect_true(!is.null(p_xor[["backward"]]))
+})
+
+test_that("p_reduce_all backward rule exists", {
+  expect_true(!is.null(p_reduce_all[["backward"]]))
+})
+
+test_that("p_reduce_any backward rule exists", {
+  expect_true(!is.null(p_reduce_any[["backward"]]))
+})
+
+test_that("p_is_finite", {
+  # is_finite returns zero gradients
+  # Test with a mix of finite and non-finite values
+  x <- nv_tensor(c(1.0, Inf, -Inf, NaN, 0.5, -0.5), dtype = "f32")
+
+  f <- function(x) {
+    out <- nvl_is_finite(x)
+    out <- nv_convert(out, "f32")
+    nv_reduce_sum(out, dims = 1L, drop = TRUE)
+  }
+
+  g <- jit(gradient(f))
+  grads <- g(x)
+
+  expect_equal(tengen::as_array(grads[[1L]]), array(rep(0, 6), dim = 6L))
+})
+
+test_that("p_popcnt", {
+  # popcnt (population count) returns zero gradients
+  x <- nv_tensor(c(0L, 1L, 3L, 7L, 15L), dtype = "i32")
+
+  f <- function(x) {
+    out <- nvl_popcnt(x)
+    out <- nv_convert(out, "f32")
+    nv_reduce_sum(out, dims = 1L, drop = TRUE)
+  }
+
+  g <- jit(gradient(f))
+  grads <- g(x)
+
+  expect_equal(tengen::as_array(grads[[1L]]), array(rep(0, 5), dim = 5L))
+})
+
+test_that("p_shift_left", {
+  # Bit shift operations return zero gradients
+  x <- nv_tensor(c(1L, 2L, 4L, 8L), dtype = "i32")
+  y <- nv_tensor(c(1L, 1L, 1L, 1L), dtype = "i32")
+
+  f <- function(x, y) {
+    out <- nvl_shift_left(x, y)
+    out <- nv_convert(out, "f32")
+    nv_reduce_sum(out, dims = 1L, drop = TRUE)
+  }
+
+  g <- jit(gradient(f))
+  grads <- g(x, y)
+
+  expect_equal(tengen::as_array(grads[[1L]]), array(rep(0, 4), dim = 4L))
+  expect_equal(tengen::as_array(grads[[2L]]), array(rep(0, 4), dim = 4L))
+})
+
+test_that("p_shift_right_arithmetic", {
+  # Arithmetic right shift returns zero gradients
+  x <- nv_tensor(c(8L, 16L, 32L, -8L), dtype = "i32")
+  y <- nv_tensor(c(1L, 2L, 1L, 1L), dtype = "i32")
+
+  f <- function(x, y) {
+    out <- nvl_shift_right_arithmetic(x, y)
+    out <- nv_convert(out, "f32")
+    nv_reduce_sum(out, dims = 1L, drop = TRUE)
+  }
+
+  g <- jit(gradient(f))
+  grads <- g(x, y)
+
+  expect_equal(tengen::as_array(grads[[1L]]), array(rep(0, 4), dim = 4L))
+  expect_equal(tengen::as_array(grads[[2L]]), array(rep(0, 4), dim = 4L))
+})
+
+test_that("p_shift_right_logical", {
+  # Logical right shift returns zero gradients
+  x <- nv_tensor(c(8L, 16L, 32L, 64L), dtype = "i32")
+  y <- nv_tensor(c(1L, 2L, 1L, 2L), dtype = "i32")
+
+  f <- function(x, y) {
+    out <- nvl_shift_right_logical(x, y)
+    out <- nv_convert(out, "f32")
+    nv_reduce_sum(out, dims = 1L, drop = TRUE)
+  }
+
+  g <- jit(gradient(f))
+  grads <- g(x, y)
+
+  expect_equal(tengen::as_array(grads[[1L]]), array(rep(0, 4), dim = 4L))
+  expect_equal(tengen::as_array(grads[[2L]]), array(rep(0, 4), dim = 4L))
+})
+
+test_that("p_bitcast_convert", {
+  # bitcast_convert reinterprets bits, returns zero gradients
+  x <- nv_tensor(c(1.0, 2.0, 3.0, 4.0), dtype = "f32")
+
+  f <- function(x) {
+    # bitcast from f32 to i32 and back
+    out <- nvl_bitcast_convert(x, dtype = "i32")
+    out <- nv_convert(out, "f32")
+    nv_reduce_sum(out, dims = 1L, drop = TRUE)
+  }
+
+  g <- jit(gradient(f))
+  grads <- g(x)
+
+  expect_equal(tengen::as_array(grads[[1L]]), array(rep(0, 4), dim = 4L))
 })
