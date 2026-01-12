@@ -20,6 +20,15 @@ integer on the CPU.
 
 ``` r
 library(anvil)
+```
+
+    ## Registered S3 methods overwritten by 'xlamisc':
+    ##   method         from     
+    ##   !=.list_of     stablehlo
+    ##   ==.list_of     stablehlo
+    ##   length.list_of stablehlo
+
+``` r
 set.seed(42)
 nv_tensor(1L, dtype = "i16", device = "cpu", shape = integer())
 ```

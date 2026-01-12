@@ -1,5 +1,11 @@
 # Primitives Reference
 
+    #> Registered S3 methods overwritten by 'xlamisc':
+    #>   method         from     
+    #>   !=.list_of     stablehlo
+    #>   ==.list_of     stablehlo
+    #>   length.list_of stablehlo
+
 The table below shows all 66 primitives and which rules they implement.
 Note that a rule might be missing because it was just not added yet, or
 because it does not apply for a specific primitive.

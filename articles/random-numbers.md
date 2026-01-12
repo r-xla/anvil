@@ -34,6 +34,11 @@ R seed into a state using
 
 ``` r
 library(anvil)
+#> Registered S3 methods overwritten by 'xlamisc':
+#>   method         from     
+#>   !=.list_of     stablehlo
+#>   ==.list_of     stablehlo
+#>   length.list_of stablehlo
 state <- nv_rng_state(seed = 42L)
 state
 #> AnvilTensor 

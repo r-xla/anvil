@@ -84,7 +84,7 @@
       <h1>Get Started</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/anvil.Rmd" class="external-link"><code>vignettes/anvil.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-higher-order/vignettes/anvil.Rmd" class="external-link"><code>vignettes/anvil.Rmd</code></a></small>
       <div class="d-none name"><code>anvil.Rmd</code></div>
     </div>
 
@@ -110,8 +110,14 @@ GPU.</li>
 <code>nv_tensor</code>. Below, we create a 0-dimensional tensor (i.e., a
 scalar) that holds a 16-bit integer on the CPU.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Registered S3 methods overwritten by 'xlamisc':</span></span>
+<span><span class="co">##   method         from     </span></span>
+<span><span class="co">##   !=.list_of     stablehlo</span></span>
+<span><span class="co">##   ==.list_of     stablehlo</span></span>
+<span><span class="co">##   length.list_of stablehlo</span></span></code></pre>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">1L</span>, dtype <span class="op">=</span> <span class="st">"i16"</span>, device <span class="op">=</span> <span class="st">"cpu"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##  1</span></span>
@@ -119,7 +125,7 @@ scalar) that holds a 16-bit integer on the CPU.</p>
 <p>Note that for the creation of scalars, you can also use
 <code>nv_scalar</code> as a shorthand to skip specifying the shape and
 omit specifying the device, as CPU is the default.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1L</span>, dtype <span class="op">=</span> <span class="st">"i16"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##  1</span></span>
@@ -128,7 +134,7 @@ omit specifying the device, as CPU is the default.</p>
 tensor with single-precision floating-point numbers. Without specifying
 the data type, it will default to <code>"f32"</code> for R doubles and
 <code>"i32"</code> for integers.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span><span class="va">y</span></span></code></pre></div>
@@ -140,7 +146,7 @@ the data type, it will default to <code>"f32"</code> for R doubles and
 <code>AnvilTensor</code>s back to R objects. Note that for 0-dimensional
 tensors, the result is an R vector of length 1, as R arrays cannot have
 0 dimensions.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://r-xla.github.io/tengen/reference/as_array.html" class="external-link">as_array</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3]</span></span>
 <span><span class="co">## [1,]    1    3    5</span></span>
@@ -148,14 +154,14 @@ tensors, the result is an R vector of length 1, as R arrays cannot have
 <p>At first, working with <code>AnvilTensor</code>s may feel a bit
 cumbersome, because you cannot directly apply functions to them like you
 would with regular R arrays.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">+</span> <span class="va">x</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3]</span></span>
 <span><span class="co">## [1,]    2    6   10</span></span>
 <span><span class="co">## [2,]    4    8   12</span></span></code></pre>
 <p>If we add the two anvil tensors, the output will be the type of the
 output instead of the actual result. Read more about this in the <a href="debugging.html">debugging vignette</a>.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="op">+</span> <span class="va">y</span></span></code></pre></div>
 <pre><code><span><span class="co">## i32{2,3}</span></span></code></pre>
 <p>In order to actually perform the addition, we need to
@@ -168,7 +174,7 @@ section.</p>
 <p>In order to work with <code>AnvilTensor</code>s, you need to convert
 the function you want to apply to a jit-compiled version via
 <code><a href="../reference/jit.html">jit()</a></code>.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plus_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">`+`</span><span class="op">)</span></span>
 <span><span class="fu">plus_jit</span><span class="op">(</span><span class="va">y</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
@@ -181,7 +187,7 @@ function that takes in a data matrix <code>X</code>, a weight vector
 <code>beta</code>, and a scalar bias <code>alpha</code>, and computes
 the linear model output <span class="math inline">\(y = X \times \beta +
 \alpha\)</span>.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_model_r</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta</span> <span class="op">+</span> <span class="va">alpha</span></span>
 <span><span class="op">}</span></span>
@@ -201,14 +207,14 @@ the linear model output <span class="math inline">\(y = X \times \beta +
 for every unique combination of input types, each consisting of a
 specific shape and data type. To demonstrate this, we create a slightly
 modified version of our previous linear predictor function:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_model2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"compiling ...\n"</span><span class="op">)</span></span>
 <span>  <span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta</span> <span class="op">+</span> <span class="va">alpha</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>Next, we create a little helper function that creates example inputs
 with different numbers of observations:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">simul_data</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span>, <span class="va">p</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    X <span class="op">=</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span> <span class="op">*</span> <span class="va">p</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">n</span>, <span class="va">p</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -217,14 +223,14 @@ with different numbers of observations:</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Below, we call the function twice on data with the same shapes.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">linear_model2</span>, <span class="fu">simul_data</span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## compiling ...</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##   4.9640</span></span>
 <span><span class="co">##  -0.1413</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">linear_model2</span>, <span class="fu">simul_data</span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##   0.6140</span></span>
@@ -240,7 +246,7 @@ does not contain the <code><a href="https://rdrr.io/r/base/cat.html" class="exte
 second time.</p>
 <p>If we call the function on data with different shapes (or data
 types), the function is re-compiled and the message re-appears.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">linear_model2</span>, <span class="fu">simul_data</span><span class="op">(</span><span class="fl">4</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## compiling ...</span></span></code></pre>
 <p>Because the compilation step itself can take some time, {anvil}
@@ -257,7 +263,7 @@ linear model with or without a bias term. To do so, we add the
 <code>logical(1)</code> argument <code>with_bias</code> to our function.
 We need to mark this argument as <code>static</code>, so {anvil} knows
 to treat it as a regular R value.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_model3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">with_bias</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="va">with_bias</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Compiling with bias ...\n"</span><span class="op">)</span></span>
@@ -268,14 +274,14 @@ to treat it as a regular R value.</p>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span>, static <span class="op">=</span> <span class="st">"with_bias"</span><span class="op">)</span></span></code></pre></div>
 <p>We can now call this function with or without a bias term:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">linear_model3</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, with_bias <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Compiling without bias ...</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##   2.8538</span></span>
 <span><span class="co">##  -1.1277</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">linear_model3</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, with_bias <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Compiling with bias ...</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
@@ -292,7 +298,7 @@ static argument, not only each unique input type combination.</p>
 <p>Inputs and outputs can also be nested data structures that contain
 <code>AnvilTensor</code>s, although we currently only support (named)
 lists.</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_model4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">inputs</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>y_hat <span class="op">=</span> <span class="va">inputs</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">inputs</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="va">inputs</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
@@ -315,30 +321,30 @@ We will start with gradients.</p>
 scalar-valued function via <code><a href="../reference/gradient.html">gradient()</a></code>. Currently, we don’t
 support jacobians or hessians, but this will hopefilly be added in the
 future. Below, we implement the loss function for our linear model.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mse</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">y_hat</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">y_hat</span> <span class="op">-</span> <span class="va">y</span><span class="op">)</span><span class="op">^</span><span class="fl">2.0</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>We now need some target variables <code>y</code>, so we simulate some
 data from a linear model:</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">beta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta</span> <span class="op">+</span> <span class="va">alpha</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">100</span>, sd <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <p><img src="anvil_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="" width="700"></p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <p>Next, we randomly initialize the model parameters:</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
 <span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></code></pre></div>
 <p>We can now define a function that does the prediction and calculates
 the loss. Note that we are calling into the original R function that
 does the prediction and not its jit-compiled version.</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_loss</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">y_hat</span> <span class="op">&lt;-</span> <span class="fu">linear_model_r</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span><span class="op">)</span></span>
 <span>  <span class="fu">mse</span><span class="op">(</span><span class="va">y_hat</span>, <span class="va">y</span><span class="op">)</span></span>
@@ -346,14 +352,14 @@ does the prediction and not its jit-compiled version.</p>
 <p>Using the <code><a href="../reference/gradient.html">gradient()</a></code> transformation, we can
 automatically obtain the gradient function of <code>model_loss</code>
 with respect to some of its arguments, which we specify.</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_loss_grad</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gradient.html">gradient</a></span><span class="op">(</span></span>
 <span>  <span class="va">model_loss</span>,</span>
 <span>  wrt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"beta"</span>, <span class="st">"alpha"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Finally, we define the update step for the weights using gradient
 descent.</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">update_weights_r</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">lr</span> <span class="op">&lt;-</span> <span class="fl">0.1</span></span>
 <span>  <span class="va">grads</span> <span class="op">&lt;-</span> <span class="fu">model_loss_grad</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span></span>
@@ -363,7 +369,7 @@ descent.</p>
 <span><span class="op">}</span></span>
 <span><span class="va">update_weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">update_weights_r</span><span class="op">)</span></span></code></pre></div>
 <p>This already allows us to fit the linear model</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">beta_hat</span>, alpha <span class="op">=</span> <span class="va">alpha_hat</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">weights</span> <span class="op">&lt;-</span> <span class="fu">update_weights</span><span class="op">(</span><span class="va">X</span>, <span class="va">weights</span><span class="op">$</span><span class="va">beta</span>, <span class="va">weights</span><span class="op">$</span><span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span></span>
@@ -397,7 +403,7 @@ illustrate this with our linear model training example from earlier. The
 first implementation is what we have already seen earlier: we
 jit-compile the update step and then repeatedly call it in an R
 loop:</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">n_steps</span> <span class="op">&lt;-</span> <span class="fl">100L</span></span>
 <span><span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
 <span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
@@ -428,7 +434,7 @@ because we will also re-compute the gradient function in each iteration.
 Moreover, the parameter <code>n_steps</code> is static, which means that
 for every unique value of <code>n_steps</code>, the function will be
 re-compiled into a different executable.</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">train_unrolled</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span>, <span class="va">n_steps</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_steps</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -463,7 +469,7 @@ and returns a logical flag indicating whether to continue the loop.</li>
 <li>A <code>body</code> function, which takes as input the current state
 and returns a new state.</li>
 </ol>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">train_while</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span>, <span class="va">n_steps</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">lr</span> <span class="op">&lt;-</span> <span class="fl">0.1</span></span>
 <span>  <span class="fu"><a href="../reference/nv_while.html">nv_while</a></span><span class="op">(</span></span>
@@ -528,7 +534,7 @@ possible.</p>
 <p>However, there is also the case where one calls into an {anvil}
 function from R code, as we have done in our initial linear model
 example.</p>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">weights</span> <span class="op">&lt;-</span> <span class="fu">update_weights</span><span class="op">(</span><span class="va">X</span>, <span class="va">weights</span><span class="op">$</span><span class="va">beta</span>, <span class="va">weights</span><span class="op">$</span><span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <p>Because the assignment of the outputs of the {anvil} function to R
 variables does not happen within the executable, the XLA compiler cannot
@@ -536,23 +542,23 @@ optimize this. If we know that some of the inputs to the {anvil}
 function are not needed anymore after the function call (as is the case
 for “update-calls” like above), we can mark them as “donatable” when
 jit-compiling.</p>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">update_weights_donatable</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">update_weights_r</span>, donate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"beta"</span>, <span class="st">"alpha"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>This will tell the XLA compiler that we no longer need the inputs
 <code>alpha</code> and <code>beta</code> afterwards, so their underlying
 memory can be reused.</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">weights_out</span> <span class="op">&lt;-</span> <span class="fu">update_weights_donatable</span><span class="op">(</span><span class="va">X</span>, <span class="va">weights</span><span class="op">$</span><span class="va">beta</span>, <span class="va">weights</span><span class="op">$</span><span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <p>If we now print the input weights, we get an error because the
 tensors have been deleted.</p>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">weights</span></span></code></pre></div>
 <pre><code><span><span class="co">## $beta</span></span>
 <span><span class="co">## AnvilTensor</span></span></code></pre>
 <pre><code><span><span class="co">## <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
 <span><span class="co">## <span style="color: #BBBB00;">!</span> ToLiteral() called on deleted or donated buffer: INVALID_ARGUMENT: Buffer has been deleted or donated.</span></span></code></pre>
 <p>But the new weights are still there.</p>
-<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">weights_out</span></span></code></pre></div>
 <pre><code><span><span class="co">## $beta</span></span>
 <span><span class="co">## AnvilTensor </span></span>

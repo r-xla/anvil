@@ -5,7 +5,7 @@ Create a graph representation of an R function by tracing.
 ## Usage
 
 ``` r
-trace_fn(f, args, desc = NULL, toplevel = FALSE)
+trace_fn(f, args, desc = NULL, toplevel = FALSE, tensorish_args = FALSE)
 ```
 
 ## Arguments
@@ -34,6 +34,12 @@ trace_fn(f, args, desc = NULL, toplevel = FALSE)
   Whether the function is being traced at the top level. If this is
   `TRUE`, inputs that are `AnvilTensor`s are treated as unknown. If this
   is `FALSE` (default), `AnvilTensor`s are treated as constants.
+
+- tensorish_args:
+
+  (`logical(1)`)  
+  Whether the arguments are all tensorish. If this is `TRUE`, we convert
+  R literals to scalar tensors.
 
 ## Value
 

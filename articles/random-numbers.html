@@ -84,7 +84,7 @@
       <h1>Random Number Generation</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/random-numbers.Rmd" class="external-link"><code>vignettes/random-numbers.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-higher-order/vignettes/random-numbers.Rmd" class="external-link"><code>vignettes/random-numbers.Rmd</code></a></small>
       <div class="d-none name"><code>random-numbers.Rmd</code></div>
     </div>
 
@@ -117,6 +117,11 @@ state, which is simply a <code>ui64[2]</code>. For convenience, you can
 convert an R seed into a state using <code><a href="../reference/nv_rng_state.html">nv_rng_state()</a></code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Registered S3 methods overwritten by 'xlamisc':</span></span>
+<span><span class="co">#&gt;   method         from     </span></span>
+<span><span class="co">#&gt;   !=.list_of     stablehlo</span></span>
+<span><span class="co">#&gt;   ==.list_of     stablehlo</span></span>
+<span><span class="co">#&gt;   length.list_of stablehlo</span></span>
 <span><span class="va">state</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_rng_state.html">nv_rng_state</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="fl">42L</span><span class="op">)</span></span>
 <span><span class="va">state</span></span>
 <span><span class="co">#&gt; AnvilTensor </span></span>

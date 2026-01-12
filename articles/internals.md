@@ -44,6 +44,15 @@ of `op`.
 
 ``` r
 library(anvil)
+```
+
+    ## Registered S3 methods overwritten by 'xlamisc':
+    ##   method         from     
+    ##   !=.list_of     stablehlo
+    ##   ==.list_of     stablehlo
+    ##   length.list_of stablehlo
+
+``` r
 f <- function(x, y, op) {
   if (op == "add") {
     nv_add(x, y)
@@ -156,7 +165,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x55bf89ca0328>
+    ## <bytecode: 0x56025eb94a58>
     ## <environment: namespace:anvil>
 
 The
@@ -207,7 +216,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x55bf89ca34e0>
+    ## <bytecode: 0x56025eb93da8>
     ## <environment: namespace:anvil>
 
 The
@@ -476,7 +485,7 @@ primitive initializes its own `GraphDescriptor` that is thrown away
 after the primitive returns `DebugBox` objects. These `DebugBox` objects
 are only for user-interaction and have a nice printer. Whenever a
 primitive is evaluated, this `DebugBox` is converted to a `GraphBox`
-object that is used for the actual evaluation via `maybe_box_variable`.
+object that is used for the actual evaluation via `maybe_box_tensorish`.
 This ensures that we don’t have to duplicate any evaluation logic as we
 the graph-building functions only have to work with `GraphBox` objects.
 
@@ -587,3 +596,75 @@ Further note that:
 ### Nested Inputs and Outputs
 
 TODO
+
+### Distinguishing between tensors and R values
+
+We need the ability to distinguish between tensorish values and R
+values. For this reason, scalar tensors cannot be passed as top-level
+arguments. To understand why, consider the function below:
+
+``` r
+f <- function(x, y, op) {
+  if (op == 1) {
+    x * y
+  } else {
+    x + y
+  }
+}
+```
+
+If we were to auto-convert R literals to scalar tensors, the following
+would work:
+
+``` r
+grad <- gradient(f, wrt = c("x", "y"))
+jit(grad)(3, 2, 1)
+```
+
+    ## Error:
+    ## ! Expected anvil tensor, but got <numeric>
+
+But, we only know which arguments are static, when the function is
+wrapped in [`jit()`](https://r-xla.github.io/anvil/reference/jit.md). If
+we would evaluate `grad` in debug-mode, then we can’t distinguish
+between the R literals to be converted to scalar tensors and those to
+keep as length-1 R vectors.
+
+``` r
+gradient(f, wrt = c("x", "y"))(3, 2, 1)
+```
+
+Because we want to keep debug-mode identical to jit-mode, we therefore
+never convert R literals to scalar tensors in top-level calls.
+
+However, we do support passing R literals to primitives:
+
+``` r
+nv_while(list(i = 1), function(i) i <= 1, function(i) {
+  list(i = i + 1)
+})
+```
+
+    ## $i
+    ## f32?{}
+
+This is because all inputs are tensorish values, so we don’t need to be
+able to distinguish between R literals and scalar tensors.
+
+At this point, one might ask: Why do we have to annotate static
+arguments in `jit` at all? Consider this call:
+
+``` r
+jit(nv_neg)(1)
+```
+
+    ## Error:
+    ## ! Expected anvil tensor, but got <numeric>
+
+In our implementation, we can throw an error here, because `1` is a
+non-static argument and not an `AnvilTensor`. If we would not annotate
+the staticness of the argument, then it would be treated as a static
+input and not wrapped in a `GraphBox` object. But if we then evaluate
+`nv_neg(1)` in the jitted function, the `1` will be treated as a literal
+(and the function would be recompiled for each new scalar input).
+Therefore, we need to annotate the staticness of the arguments.
