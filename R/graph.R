@@ -269,7 +269,7 @@ format.GraphBox <- function(x, ...) {
   sprintf("GraphBox(%s)", format(x$gnode))
 }
 
-maybe_box_variable <- function(x) {
+maybe_box_tensorish <- function(x) {
   current_desc <- .current_descriptor()
   if (is_graph_box(x)) {
     if (identical(x$desc, current_desc)) {
@@ -297,7 +297,18 @@ maybe_box_variable <- function(x) {
 }
 
 # this function is on the inputs of trace_fn()
-maybe_box_input <- function(x, desc, toplevel) {
+maybe_box_input <- function(x, desc, toplevel, tensorish_args) {
+  if (tensorish_args && test_scalar(x)) {
+    ambiguous <- !is.logical(x)
+    gval <- GraphValue(
+      aval = AbstractTensor(
+        dtype = default_dtype(x),
+        shape = integer(),
+        ambiguous = ambiguous
+      )
+    )
+    return(register_input(desc, gval))
+  }
   if (is_anvil_tensor(x)) {
     # cases:
     # 1. top-level trace_fn call
@@ -458,9 +469,12 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
 #'   Whether the function is being traced at the top level.
 #'   If this is `TRUE`, inputs that are `AnvilTensor`s are treated as unknown.
 #'   If this is `FALSE` (default), `AnvilTensor`s are treated as constants.
+#' @param tensorish_args (`logical(1)`)\cr
+#'   Whether the arguments are all tensorish.
+#'   If this is `TRUE`, we convert R literals to scalar tensors.
 #' @return ([`AnvilGraph`])
 #' @export
-trace_fn <- function(f, args, desc = NULL, toplevel = FALSE) {
+trace_fn <- function(f, args, desc = NULL, toplevel = FALSE, tensorish_args = FALSE) {
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
   f_flat <- flatten_fun(f, in_node = in_tree)
@@ -471,12 +485,12 @@ trace_fn <- function(f, args, desc = NULL, toplevel = FALSE) {
   }
 
   # box tensors and add them as inputs to the current graph
-  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc, toplevel = toplevel)
+  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc, toplevel = toplevel, tensorish_args = tensorish_args)
   output <- do.call(f_flat, inputs_flat)
 
   out_tree <- output[[1L]]
   # function() x; -> output can be an closed-over constant
-  outputs_flat <- lapply(output[[2L]], maybe_box_variable)
+  outputs_flat <- lapply(output[[2L]], maybe_box_tensorish)
 
   desc$out_tree <- out_tree
   desc$outputs <- lapply(outputs_flat, \(x) x$gnode)
@@ -603,7 +617,7 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, d
     desc <- local_descriptor()
   }
 
-  boxes_in <- lapply(args, maybe_box_variable)
+  boxes_in <- lapply(args, maybe_box_tensorish)
   gnodes_in <- lapply(boxes_in, \(box) box$gnode)
   avals_in <- lapply(boxes_in, \(box) box$gnode$aval)
   sts_out <- rlang::exec(infer_fn, !!!c(avals_in, params))

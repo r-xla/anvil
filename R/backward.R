@@ -30,6 +30,18 @@ transform_gradient <- function(graph, wrt) {
     ))
   }
 
+  if (length(wrt) > 0L) {
+    available_names <- graph$in_tree$names
+    missing_names <- setdiff(wrt, available_names)
+    if (length(missing_names) > 0L) {
+      cli_abort(c(
+        x = "wrt contains names not present in function arguments",
+        i = "Missing: {.field {missing_names}}",
+        i = "Available: {.field {available_names}}"
+      ))
+    }
+  }
+
   requires_grad <- flat_mask_from_names(graph$in_tree, wrt)
 
   for (i in seq_along(graph$inputs)) {

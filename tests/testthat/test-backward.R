@@ -203,3 +203,11 @@ test_that("gradient: does not depend on input", {
   expect_equal(out[[1L]], nv_scalar(1.0))
   expect_equal(out[[2L]], nv_scalar(1.0))
 })
+
+test_that("wrt for non-tensor input", {
+  g <- gradient(nv_round, wrt = "method")
+  # TODO: Better error message ...
+  expect_error(
+    g(nv_scalar(1), "nearest_even")
+  )
+})

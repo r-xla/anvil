@@ -4,7 +4,7 @@
 \alias{trace_fn}
 \title{Trace an R function into a Graph}
 \usage{
-trace_fn(f, args, desc = NULL, toplevel = FALSE)
+trace_fn(f, args, desc = NULL, toplevel = FALSE, tensorish_args = FALSE)
 }
 \arguments{
 \item{f}{(\code{function})\cr
@@ -20,6 +20,10 @@ The descriptor to use for the graph.}
 Whether the function is being traced at the top level.
 If this is \code{TRUE}, inputs that are \code{AnvilTensor}s are treated as unknown.
 If this is \code{FALSE} (default), \code{AnvilTensor}s are treated as constants.}
+
+\item{tensorish_args}{(\code{logical(1)})\cr
+Whether the arguments are all tensorish.
+If this is \code{TRUE}, we convert R literals to scalar tensors.}
 }
 \value{
 (\code{\link{AnvilGraph}})

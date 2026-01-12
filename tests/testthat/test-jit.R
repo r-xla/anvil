@@ -169,6 +169,7 @@ test_that("can mark arguments as static ", {
       }
     },
     static = "add_one"
+    # TODO: Better error message ...
   )
   expect_equal(f(nv_tensor(1), TRUE), nv_tensor(2))
   expect_equal(f(nv_tensor(1), FALSE), nv_tensor(1))

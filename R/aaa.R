@@ -10,7 +10,7 @@ NULL
 #' @import tengen
 #' @importFrom pjrt pjrt_buffer pjrt_scalar pjrt_execute pjrt_compile pjrt_program elt_type
 #' @importFrom utils gethash hashtab maphash numhash
-#' @importFrom xlamisc list_of seq_len0 seq_along0
+#' @importFrom xlamisc seq_len0 seq_along0
 #' @importFrom utils head tail
 #' @importFrom cli cli_abort
 #' @importFrom methods Math2 formalArgs
