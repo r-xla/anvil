@@ -5,7 +5,15 @@ Create a graph representation of an R function by tracing.
 ## Usage
 
 ``` r
-trace_fn(f, args, desc = NULL, toplevel = FALSE, tensorish_args = FALSE)
+trace_fn(
+  f,
+  args = NULL,
+  desc = NULL,
+  toplevel = FALSE,
+  tensorish_args = FALSE,
+  args_flat = NULL,
+  in_tree = NULL
+)
 ```
 
 ## Arguments
@@ -21,7 +29,7 @@ trace_fn(f, args, desc = NULL, toplevel = FALSE, tensorish_args = FALSE)
   ([`AnvilTensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
   \|
   [`AbstractTensor`](https://r-xla.github.io/anvil/reference/AbstractTensor.md)))  
-  The arguments to the function.
+  The (unflattened) arguments to the function.
 
 - desc:
 
@@ -40,6 +48,16 @@ trace_fn(f, args, desc = NULL, toplevel = FALSE, tensorish_args = FALSE)
   (`logical(1)`)  
   Whether the arguments are all tensorish. If this is `TRUE`, we convert
   R literals to scalar tensors.
+
+- args_flat:
+
+  (`list`)  
+  The flattened arguments. Also requires passing `in_tree`.
+
+- in_tree:
+
+  (`Node`)  
+  The tree structure of the arguments.
 
 ## Value
 

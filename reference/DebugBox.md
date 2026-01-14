@@ -1,4 +1,4 @@
-# Debug Box Class
+# Abstract Value Box Class
 
 Box representing a value in debug mode.
 

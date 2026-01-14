@@ -64,7 +64,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">gradient</span><span class="op">(</span><span class="va">f</span>, wrt <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">gradient</span><span class="op">(</span><span class="va">f</span>, wrt <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">static_args</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">value_and_gradient</span><span class="op">(</span><span class="va">f</span>, wrt <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -81,6 +81,11 @@ Function to compute the gradient of.</p></dd>
 <dt id="arg-wrt">wrt<a class="anchor" aria-label="anchor" href="#arg-wrt"></a></dt>
 <dd><p>(<code>character</code>)<br>
 Names of the arguments to compute the gradient with respect to.</p></dd>
+
+
+<dt id="arg-static-args">static_args<a class="anchor" aria-label="anchor" href="#arg-static-args"></a></dt>
+<dd><p>(<code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code>)<br>
+Values for the static (non-tensor) arguments.</p></dd>
 
 </dl></div>
     <div class="section level2">

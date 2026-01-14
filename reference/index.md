@@ -102,8 +102,8 @@ Basic arithmetic operations on tensors
   Division
 - [`nv_pow()`](https://r-xla.github.io/anvil/reference/nv_pow.md) :
   Power
-- [`nv_neg()`](https://r-xla.github.io/anvil/reference/nv_neg.md) :
-  Negation
+- [`nv_negate()`](https://r-xla.github.io/anvil/reference/nv_negate.md)
+  : Negation
 - [`nv_remainder()`](https://r-xla.github.io/anvil/reference/nv_remainder.md)
   : Remainder
 
@@ -271,7 +271,7 @@ Debugging utilities and tools
 - [`nv_print()`](https://r-xla.github.io/anvil/reference/nv_print.md) :
   Print Tensor
 - [`DebugBox()`](https://r-xla.github.io/anvil/reference/DebugBox.md) :
-  Debug Box Class
+  Abstract Value Box Class
 
 ## Internal Data Structures and Functions
 
@@ -410,8 +410,8 @@ Low-level primitive operations (nvl\_\* functions)
   Primitive Multiplication
 - [`nvl_ne()`](https://r-xla.github.io/anvil/reference/nvl_ne.md) :
   Primitive Not Equal
-- [`nvl_neg()`](https://r-xla.github.io/anvil/reference/nvl_neg.md) :
-  Primitive Negation
+- [`nvl_negate()`](https://r-xla.github.io/anvil/reference/nvl_negate.md)
+  : Primitive Negation
 - [`nvl_not()`](https://r-xla.github.io/anvil/reference/nvl_not.md) :
   Primitive Not
 - [`nvl_or()`](https://r-xla.github.io/anvil/reference/nvl_or.md) :

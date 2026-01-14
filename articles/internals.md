@@ -103,7 +103,7 @@ the `AnvilGraph` are:
   parameters) and produce output `GraphNode`s.
 - `in_tree`, `out_tree`, which we will cover later (do we??)
 
-During `trace_fn`, the inputs What happens during
+What happens during
 [`trace_fn()`](https://r-xla.github.io/anvil/reference/trace_fn.md) is
 that a new `GraphDescriptor` is created and the inputs `x` and `y` are
 converted into
@@ -118,7 +118,7 @@ between two cases:
     the function is recorded in the `GraphDescriptor`.
 
 The evaluation of the `if` statement is an example for the first
-category. Because we set `op = "mul"`, only the first branch is
+category. Because we set `op = "mul"`, only the second branch is
 executed. Then, we are calling `nv_mul`, which attaches a
 `PrimitiveCall` that represents the multiplication of the two tensors to
 the `$calls` of the `GraphDescriptor`. Note that the `nv_mul` is itself
@@ -165,7 +165,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x56025eb94a58>
+    ## <bytecode: 0x560a9dae0b78>
     ## <environment: namespace:anvil>
 
 The
@@ -199,8 +199,8 @@ bwd_graph
 ### Lowering a Graph
 
 In order to execute a `AnvilGraph`, we need to convert it into a – wait
-for it – executable. Here, we should how to compile using the XLA
-backend. First, we will translate the `AnvilGraph` into the StableHLO
+for it – executable. Here, we show how to compile using the XLA backend.
+First, we will translate the `AnvilGraph` into the StableHLO
 representation via the {stablehlo} package. Then, we will compile this
 program using the XLA compiler that is accessible via the {pjrt}
 package.
@@ -216,7 +216,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x56025eb93da8>
+    ## <bytecode: 0x560a9dadff00>
     ## <environment: namespace:anvil>
 
 The
@@ -486,8 +486,8 @@ after the primitive returns `DebugBox` objects. These `DebugBox` objects
 are only for user-interaction and have a nice printer. Whenever a
 primitive is evaluated, this `DebugBox` is converted to a `GraphBox`
 object that is used for the actual evaluation via `maybe_box_tensorish`.
-This ensures that we don’t have to duplicate any evaluation logic as we
-the graph-building functions only have to work with `GraphBox` objects.
+This ensures that we don’t have to duplicate any evaluation logic as the
+graph-building functions only have to work with `GraphBox` objects.
 
 What gets lost in debug mode is identity of values, because the
 `GraphDescriptor` is thrown away. This means that we cannot say anything
@@ -597,74 +597,38 @@ Further note that:
 
 TODO
 
-### Distinguishing between tensors and R values
+## Design Decisions
 
-We need the ability to distinguish between tensorish values and R
-values. For this reason, scalar tensors cannot be passed as top-level
-arguments. To understand why, consider the function below:
+### Literal handling
+
+It is appealing to support the conversion of R literals (`1L`, `1.0`
+`TRUE`, etc.) to `AnvilTensor`s when calling into `jit`-ted functions,
+i.e. allow the following:
 
 ``` r
-f <- function(x, y, op) {
-  if (op == 1) {
-    x * y
-  } else {
-    x + y
-  }
-}
+jit(nv_add, static = character())(1, 2)
 ```
 
-If we were to auto-convert R literals to scalar tensors, the following
-would work:
+In `jit`(), we could in principle do this, because we know which
+arguments are static and which are expected to be `AnvilTensor`s.
+However, in
+[`gradient()`](https://r-xla.github.io/anvil/reference/gradient.md), we
+don’t know which arguments are static and which are not. For example, we
+can’t make the following work:
 
 ``` r
-grad <- gradient(f, wrt = c("x", "y"))
-jit(grad)(3, 2, 1)
-```
-
-    ## Error:
-    ## ! Expected anvil tensor, but got <numeric>
-
-But, we only know which arguments are static, when the function is
-wrapped in [`jit()`](https://r-xla.github.io/anvil/reference/jit.md). If
-we would evaluate `grad` in debug-mode, then we can’t distinguish
-between the R literals to be converted to scalar tensors and those to
-keep as length-1 R vectors.
-
-``` r
-gradient(f, wrt = c("x", "y"))(3, 2, 1)
-```
-
-Because we want to keep debug-mode identical to jit-mode, we therefore
-never convert R literals to scalar tensors in top-level calls.
-
-However, we do support passing R literals to primitives:
-
-``` r
-nv_while(list(i = 1), function(i) i <= 1, function(i) {
-  list(i = i + 1)
+jit(\() {
+  gradient(nv_add)(1, 2)
 })
 ```
 
-    ## $i
-    ## f32?{}
-
-This is because all inputs are tensorish values, so we don’t need to be
-able to distinguish between R literals and scalar tensors.
-
-At this point, one might ask: Why do we have to annotate static
-arguments in `jit` at all? Consider this call:
-
-``` r
-jit(nv_neg)(1)
-```
-
-    ## Error:
-    ## ! Expected anvil tensor, but got <numeric>
-
-In our implementation, we can throw an error here, because `1` is a
-non-static argument and not an `AnvilTensor`. If we would not annotate
-the staticness of the argument, then it would be treated as a static
-input and not wrapped in a `GraphBox` object. But if we then evaluate
-`nv_neg(1)` in the jitted function, the `1` will be treated as a literal
-(and the function would be recompiled for each new scalar input).
-Therefore, we need to annotate the staticness of the arguments.
+This would be somewhat inconsistent and hard to to reason about.
+Furthermore, auto-converting literals passed as non-static arguments to
+`jit`-ted functions would also entail various suble differences between
+debug-mode and jit-mode, as the former has no top-level hook for this
+conversion. Finally, requiring the user to think about the input data
+types should also be advantageous; we want to prioritize clarity over
+minor convenience. Note that for primitive calls like `nv_tensor(1)^2`
+we do auto-convert literals, because we know which arguments are
+expected to be `AnvilTensor`s and otherwise code just becomes much
+harder to read.

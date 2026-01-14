@@ -192,13 +192,12 @@ in <code>GraphNode</code>s (and parameters) and produce output
 <code>in_tree</code>, <code>out_tree</code>, which we will cover
 later (do we??)</li>
 </ul>
-<p>During <code>trace_fn</code>, the inputs What happens during
-<code><a href="../reference/trace_fn.html">trace_fn()</a></code> is that a new <code>GraphDescriptor</code> is
-created and the inputs <code>x</code> and <code>y</code> are converted
-into <code><a href="../reference/GraphBox.html">anvil::GraphBox</a></code> objects. Then, the function
-<code>f</code> is simply evaluated with the <code>GraphBox</code>
-objects as inputs. During this evaluation, we need to distinguish
-between two cases:</p>
+<p>What happens during <code><a href="../reference/trace_fn.html">trace_fn()</a></code> is that a new
+<code>GraphDescriptor</code> is created and the inputs <code>x</code>
+and <code>y</code> are converted into <code><a href="../reference/GraphBox.html">anvil::GraphBox</a></code>
+objects. Then, the function <code>f</code> is simply evaluated with the
+<code>GraphBox</code> objects as inputs. During this evaluation, we need
+to distinguish between two cases:</p>
 <ol style="list-style-type: decimal">
 <li>A “standard” <code>R</code> function is called: Here, nothing
 special happens and the function is simply evaluated.</li>
@@ -207,7 +206,7 @@ underlies the function is recorded in the
 <code>GraphDescriptor</code>.</li>
 </ol>
 <p>The evaluation of the <code>if</code> statement is an example for the
-first category. Because we set <code>op = "mul"</code>, only the first
+first category. Because we set <code>op = "mul"</code>, only the second
 branch is executed. Then, we are calling <code>nv_mul</code>, which
 attaches a <code>PrimitiveCall</code> that represents the multiplication
 of the two tensors to the <code>$calls</code> of the
@@ -260,7 +259,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x56025eb94a58&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x560a9dae0b78&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -289,7 +288,7 @@ specifies with respect to which arguments to compute the gradient.</p>
 <h3 id="lowering-a-graph">Lowering a Graph<a class="anchor" aria-label="anchor" href="#lowering-a-graph"></a>
 </h3>
 <p>In order to execute a <code>AnvilGraph</code>, we need to convert it
-into a – wait for it – executable. Here, we should how to compile using
+into a – wait for it – executable. Here, we show how to compile using
 the XLA backend. First, we will translate the <code>AnvilGraph</code>
 into the StableHLO representation via the {stablehlo} package. Then, we
 will compile this program using the XLA compiler that is accessible via
@@ -303,7 +302,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x56025eb93da8&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x560a9dadff00&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
@@ -520,8 +519,8 @@ objects are only for user-interaction and have a nice printer. Whenever
 a primitive is evaluated, this <code>DebugBox</code> is converted to a
 <code>GraphBox</code> object that is used for the actual evaluation via
 <code>maybe_box_tensorish</code>. This ensures that we don’t have to
-duplicate any evaluation logic as we the graph-building functions only
-have to work with <code>GraphBox</code> objects.</p>
+duplicate any evaluation logic as the graph-building functions only have
+to work with <code>GraphBox</code> objects.</p>
 <p>What gets lost in debug mode is identity of values, because the
 <code>GraphDescriptor</code> is thrown away. This means that we cannot
 say anything about identity of values, only about their types.</p>
@@ -616,60 +615,38 @@ in the future.</li>
 </h3>
 <p>TODO</p>
 </div>
+</div>
+<div class="section level2">
+<h2 id="design-decisions">Design Decisions<a class="anchor" aria-label="anchor" href="#design-decisions"></a>
+</h2>
 <div class="section level3">
-<h3 id="distinguishing-between-tensors-and-r-values">Distinguishing between tensors and R values<a class="anchor" aria-label="anchor" href="#distinguishing-between-tensors-and-r-values"></a>
+<h3 id="literal-handling">Literal handling<a class="anchor" aria-label="anchor" href="#literal-handling"></a>
 </h3>
-<p>We need the ability to distinguish between tensorish values and R
-values. For this reason, scalar tensors cannot be passed as top-level
-arguments. To understand why, consider the function below:</p>
+<p>It is appealing to support the conversion of R literals
+(<code>1L</code>, <code>1.0</code> <code>TRUE</code>, etc.) to
+<code>AnvilTensor</code>s when calling into <code>jit</code>-ted
+functions, i.e. allow the following:</p>
 <div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">op</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">op</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="va">x</span> <span class="op">*</span> <span class="va">y</span></span>
-<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>    <span class="va">x</span> <span class="op">+</span> <span class="va">y</span></span>
-<span>  <span class="op">}</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<p>If we were to auto-convert R literals to scalar tensors, the
-following would work:</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">nv_add</span>, static <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<p>In <code>jit</code>(), we could in principle do this, because we know
+which arguments are static and which are expected to be
+<code>AnvilTensor</code>s. However, in <code><a href="../reference/gradient.html">gradient()</a></code>, we don’t
+know which arguments are static and which are not. For example, we can’t
+make the following work:</p>
 <div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">grad</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gradient.html">gradient</a></span><span class="op">(</span><span class="va">f</span>, wrt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">grad</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
-<span><span class="co">## <span style="color: #BBBB00;">!</span> Expected anvil tensor, but got <span style="color: #0000BB;">&lt;numeric&gt;</span></span></span></code></pre>
-<p>But, we only know which arguments are static, when the function is
-wrapped in <code><a href="../reference/jit.html">jit()</a></code>. If we would evaluate <code>grad</code> in
-debug-mode, then we can’t distinguish between the R literals to be
-converted to scalar tensors and those to keep as length-1 R vectors.</p>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/gradient.html">gradient</a></span><span class="op">(</span><span class="va">f</span>, wrt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<p>Because we want to keep debug-mode identical to jit-mode, we
-therefore never convert R literals to scalar tensors in top-level
-calls.</p>
-<p>However, we do support passing R literals to primitives:</p>
-<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/nv_while.html">nv_while</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>i <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="va">i</span> <span class="op">&lt;=</span> <span class="fl">1</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>i <span class="op">=</span> <span class="va">i</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/gradient.html">gradient</a></span><span class="op">(</span><span class="va">nv_add</span><span class="op">)</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## $i</span></span>
-<span><span class="co">## f32?{}</span></span></code></pre>
-<p>This is because all inputs are tensorish values, so we don’t need to
-be able to distinguish between R literals and scalar tensors.</p>
-<p>At this point, one might ask: Why do we have to annotate static
-arguments in <code>jit</code> at all? Consider this call:</p>
-<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">nv_neg</span><span class="op">)</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
-<span><span class="co">## <span style="color: #BBBB00;">!</span> Expected anvil tensor, but got <span style="color: #0000BB;">&lt;numeric&gt;</span></span></span></code></pre>
-<p>In our implementation, we can throw an error here, because
-<code>1</code> is a non-static argument and not an
-<code>AnvilTensor</code>. If we would not annotate the staticness of the
-argument, then it would be treated as a static input and not wrapped in
-a <code>GraphBox</code> object. But if we then evaluate
-<code>nv_neg(1)</code> in the jitted function, the <code>1</code> will
-be treated as a literal (and the function would be recompiled for each
-new scalar input). Therefore, we need to annotate the staticness of the
-arguments.</p>
+<p>This would be somewhat inconsistent and hard to to reason about.
+Furthermore, auto-converting literals passed as non-static arguments to
+<code>jit</code>-ted functions would also entail various suble
+differences between debug-mode and jit-mode, as the former has no
+top-level hook for this conversion. Finally, requiring the user to think
+about the input data types should also be advantageous; we want to
+prioritize clarity over minor convenience. Note that for primitive calls
+like <code>nv_tensor(1)^2</code> we do auto-convert literals, because we
+know which arguments are expected to be <code>AnvilTensor</code>s and
+otherwise code just becomes much harder to read.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

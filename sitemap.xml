@@ -76,7 +76,7 @@
 <url><loc>https://r-xla.github.io/anvil/reference/nv_min.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_mul.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_ne.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/reference/nv_neg.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nv_negate.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_not.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_or.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_pad.html</loc></url>
@@ -144,7 +144,7 @@
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_min.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_mul.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_ne.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/reference/nvl_neg.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nvl_negate.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_not.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_or.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_pad.html</loc></url>

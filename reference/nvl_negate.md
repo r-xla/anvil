@@ -1,11 +1,11 @@
-# Negation
+# Primitive Negation
 
-Element-wise negation.
+Negates a tensor element-wise.
 
 ## Usage
 
 ``` r
-nv_neg(operand)
+nvl_negate(operand)
 ```
 
 ## Arguments

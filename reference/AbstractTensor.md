@@ -7,7 +7,7 @@ metadata without actual values.
 ## Usage
 
 ``` r
-nv_aten(dtype, shape)
+nv_aten(dtype, shape, ambiguous = FALSE)
 
 AbstractTensor(dtype, shape, ambiguous = FALSE)
 ```

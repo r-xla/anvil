@@ -74,6 +74,55 @@ expected, e.g. because of logical bugs or invalid hyperparameters. For
 this, it’s important to monitor (intermediate) values, which we will
 cover in the next section.
 
+However, there are some subtleties to be aware of when using debug mode,
+which we will cover in the next section. \## What does debug mode
+actually do?
+
+In most cases, debug mode will work exactly as expected. However, there
+is one subtlety to be aware of. Consider the function below:
+
+``` r
+f <- function(x) {
+  nv_negate(x)
+}
+```
+
+If we run this in debug mode, even with an R literal, we get the
+expected type:
+
+``` r
+f(1)
+```
+
+    ## f32?{}
+
+However, if we wrap it in
+[`jit()`](https://r-xla.github.io/anvil/reference/jit.md), this throws
+an error, because 1 is not an `AnvilTensor`.
+
+``` r
+jit(f)(1)
+```
+
+    ## Error:
+    ## ! Expected tensorish value, but got <numeric>
+
+This is, because debug mode emulates what would happen if the function
+call was within the `jit`-compiled function:
+
+``` r
+jit(\() f(1))()
+```
+
+    ## AnvilTensor 
+    ##  -1.0000
+    ## [ CPUf32{} ]
+
+Note that in {anvil}, we only allow the conversion of R literals to
+`AnvilTensor`s when being passed to primitive functions, but not for
+input arguments to `jit`-compiled functions, as this would blur the
+distinction between literals and 0-dimensional `AnvilTensor`s.
+
 ## Printing Values
 
 There are different ways to print values in {anvil} that might be

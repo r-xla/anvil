@@ -64,7 +64,15 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">trace_fn</span><span class="op">(</span><span class="va">f</span>, <span class="va">args</span>, desc <span class="op">=</span> <span class="cn">NULL</span>, toplevel <span class="op">=</span> <span class="cn">FALSE</span>, tensorish_args <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">trace_fn</span><span class="op">(</span></span>
+<span>  <span class="va">f</span>,</span>
+<span>  args <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  desc <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  toplevel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  tensorish_args <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  args_flat <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  in_tree <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -78,7 +86,7 @@ The function to trace_fn.</p></dd>
 
 <dt id="arg-args">args<a class="anchor" aria-label="anchor" href="#arg-args"></a></dt>
 <dd><p>(<code>list</code> of (<code><a href="AnvilTensor.html">AnvilTensor</a></code> | <code><a href="AbstractTensor.html">AbstractTensor</a></code>))<br>
-The arguments to the function.</p></dd>
+The (unflattened) arguments to the function.</p></dd>
 
 
 <dt id="arg-desc">desc<a class="anchor" aria-label="anchor" href="#arg-desc"></a></dt>
@@ -97,6 +105,16 @@ If this is <code>FALSE</code> (default), <code>AnvilTensor</code>s are treated a
 <dd><p>(<code>logical(1)</code>)<br>
 Whether the arguments are all tensorish.
 If this is <code>TRUE</code>, we convert R literals to scalar tensors.</p></dd>
+
+
+<dt id="arg-args-flat">args_flat<a class="anchor" aria-label="anchor" href="#arg-args-flat"></a></dt>
+<dd><p>(<code>list</code>)<br>
+The flattened arguments. Also requires passing <code>in_tree</code>.</p></dd>
+
+
+<dt id="arg-in-tree">in_tree<a class="anchor" aria-label="anchor" href="#arg-in-tree"></a></dt>
+<dd><p>(<code>Node</code>)<br>
+The tree structure of the arguments.</p></dd>
 
 </dl></div>
     <div class="section level2">

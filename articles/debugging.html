@@ -142,6 +142,38 @@ even if a program is valid and can be compiled, it might not work as
 expected, e.g. because of logical bugs or invalid hyperparameters. For
 this, it’s important to monitor (intermediate) values, which we will
 cover in the next section.</p>
+<p>However, there are some subtleties to be aware of when using debug
+mode, which we will cover in the next section. ## What does debug mode
+actually do?</p>
+<p>In most cases, debug mode will work exactly as expected. However,
+there is one subtlety to be aware of. Consider the function below:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/nv_negate.html">nv_negate</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>If we run this in debug mode, even with an R literal, we get the
+expected type:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">f</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## f32?{}</span></span></code></pre>
+<p>However, if we wrap it in <code><a href="../reference/jit.html">jit()</a></code>, this throws an error,
+because 1 is not an <code>AnvilTensor</code>.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">## <span style="color: #BBBB00;">!</span> Expected tensorish value, but got <span style="color: #0000BB;">&lt;numeric&gt;</span></span></span></code></pre>
+<p>This is, because debug mode emulates what would happen if the
+function call was within the <code>jit</code>-compiled function:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="op">)</span> <span class="fu">f</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## AnvilTensor </span></span>
+<span><span class="co">##  -1.0000</span></span>
+<span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
+<p>Note that in {anvil}, we only allow the conversion of R literals to
+<code>AnvilTensor</code>s when being passed to primitive functions, but
+not for input arguments to <code>jit</code>-compiled functions, as this
+would blur the distinction between literals and 0-dimensional
+<code>AnvilTensor</code>s.</p>
 </div>
 <div class="section level2">
 <h2 id="printing-values">Printing Values<a class="anchor" aria-label="anchor" href="#printing-values"></a>
@@ -150,7 +182,7 @@ cover in the next section.</p>
 confusing at first. We will start with the naive way of simply inserting
 <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> statements into the code of a
 <code>jit</code>-compiled function.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span>
@@ -161,7 +193,7 @@ but some <code>GraphBox</code> object. This <code>GraphBox</code> object
 is passed around <strong>during tracing</strong> so that we can convert
 the function into a <code>AnvilGraph</code> that is subsequently
 compiled.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## GraphBox(GraphValue(AbstractTensor(dtype=f32?, shape=2x2)))</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
@@ -169,7 +201,7 @@ compiled.</p>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <p>Furthermore, if we call the function with identical input types, it
 won’t be printed because the executable is retrieved from the cache.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">3</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##  7.0000</span></span>
@@ -189,9 +221,9 @@ print is not naturally returned by the function.</li>
 intermediate results.</p>
 <p>In the first approach, we only <code>jit</code>-compile the update
 function and iteratively call it in an R loop.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">add_one</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="fl">1L</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">add_one</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
@@ -229,7 +261,7 @@ function and iteratively call it in an R loop.</p>
 <span><span class="co">## [ CPUi32{} ]</span></span></code></pre>
 <p>For the second approach, we use <code>nv_while</code> to implement
 the loop.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">init</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_fill.html">nv_fill</a></span><span class="op">(</span><span class="fl">1L</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="../reference/nv_while.html">nv_while</a></span><span class="op">(</span></span>
