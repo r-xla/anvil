@@ -11,8 +11,7 @@ graph_desc_add(
   params = list(),
   infer_fn,
   desc = NULL,
-  debug_mode = NULL,
-  show_inputs = TRUE
+  debug_mode = NULL
 )
 ```
 
