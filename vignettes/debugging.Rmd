@@ -44,8 +44,6 @@ gradient(mean)(debug_box("f32", c(2, 2)))
 ```
 
 Because this all happens in the R interpreter, you can also add breakpoints to the code and step through it to identify bugs.
-However, even if a program is valid and can be compiled, it might not work as expected, e.g. because of logical bugs or invalid hyperparameters.
-For this, it's important to monitor (intermediate) values, which we will cover in the next section.
 
 However, there are some subtleties to be aware of when using debug mode, which we will cover in the next section.
 ## What does debug mode actually do?
@@ -80,6 +78,8 @@ jit(\() f(1))()
 
 Note that in {anvil}, we only allow the conversion of R literals to `AnvilTensor`s when being passed to primitive functions, but not for input arguments to `jit`-compiled functions, as this would blur the distinction between literals and 0-dimensional `AnvilTensor`s.
 
+However, even if a program is valid and can be compiled, it might not work as expected, e.g. because of logical bugs or invalid hyperparameters.
+For this, it's important to monitor (intermediate) values, which we will cover in the next section.
 
 ## Printing Values
 

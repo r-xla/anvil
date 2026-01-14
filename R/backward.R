@@ -156,10 +156,8 @@ transform_gradient <- function(graph, wrt) {
 #'   Function to compute the gradient of.
 #' @param wrt (`character`)\cr
 #'   Names of the arguments to compute the gradient with respect to.
-#' @param static_args (`list()`)\cr
-#'   Values for the static (non-tensor) arguments.
 #' @export
-gradient <- function(f, wrt = NULL, static_args) {
+gradient <- function(f, wrt = NULL) {
   if (!is.null(wrt) && !all(wrt %in% formalArgs(f))) {
     cli_abort("wrt must be a subset of the formal arguments of f")
   }

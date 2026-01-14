@@ -9,7 +9,7 @@ trace_fn(
   args = NULL,
   desc = NULL,
   toplevel = FALSE,
-  tensorish_args = FALSE,
+  lit_to_tensor = FALSE,
   args_flat = NULL,
   in_tree = NULL
 )
@@ -29,9 +29,9 @@ Whether the function is being traced at the top level.
 If this is \code{TRUE}, inputs that are \code{AnvilTensor}s are treated as unknown.
 If this is \code{FALSE} (default), \code{AnvilTensor}s are treated as constants.}
 
-\item{tensorish_args}{(\code{logical(1)})\cr
-Whether the arguments are all tensorish.
-If this is \code{TRUE}, we convert R literals to scalar tensors.}
+\item{lit_to_tensor}{(\code{logical(1)})\cr
+Whether to convert literals to \code{AnvilTensor}s.
+Should only be used for higher-order primitives like if and while, where no static inputs are possible.}
 
 \item{args_flat}{(\code{list})\cr
 The flattened arguments. Also requires passing \code{in_tree}.}

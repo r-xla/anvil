@@ -297,8 +297,9 @@ maybe_box_tensorish <- function(x) {
 }
 
 # this function is on the inputs of trace_fn()
-maybe_box_input <- function(x, desc, toplevel, tensorish_args) {
-  if (tensorish_args && test_scalar(x)) {
+maybe_box_input <- function(x, desc, toplevel, lit_to_tensor) {
+  if (lit_to_tensor && test_scalar(x)) {
+    # so we can accept literals as inputs to higher-order primitives like if and while
     ambiguous <- !is.logical(x)
     gval <- GraphValue(
       aval = AbstractTensor(
@@ -469,9 +470,9 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
 #'   Whether the function is being traced at the top level.
 #'   If this is `TRUE`, inputs that are `AnvilTensor`s are treated as unknown.
 #'   If this is `FALSE` (default), `AnvilTensor`s are treated as constants.
-#' @param tensorish_args (`logical(1)`)\cr
-#'   Whether the arguments are all tensorish.
-#'   If this is `TRUE`, we convert R literals to scalar tensors.
+#' @param lit_to_tensor (`logical(1)`)\cr
+#'   Whether to convert literals to `AnvilTensor`s.
+#'   Should only be used for higher-order primitives like if and while, where no static inputs are possible.
 #' @param args_flat (`list`)\cr
 #'   The flattened arguments. Also requires passing `in_tree`.
 #' @param in_tree (`Node`)\cr
@@ -483,7 +484,7 @@ trace_fn <- function(
   args = NULL,
   desc = NULL,
   toplevel = FALSE,
-  tensorish_args = FALSE,
+  lit_to_tensor = FALSE,
   args_flat = NULL,
   in_tree = NULL
 ) {
@@ -506,7 +507,7 @@ trace_fn <- function(
   }
 
   # box tensors and add them as inputs to the current graph
-  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc, toplevel = toplevel, tensorish_args = tensorish_args)
+  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc, toplevel = toplevel, lit_to_tensor = lit_to_tensor)
   output <- do.call(f_flat, inputs_flat)
 
   out_tree <- output[[1L]]

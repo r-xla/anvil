@@ -51,7 +51,7 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
             platforms <<- c(platforms, platform(x))
             return(nv_aten(dtype(x), shape(x)))
           }
-          cli_abort("Expected tensorish value, but got {.cls {class(x)[1]}}")
+          cli_abort("Expected AnvilTensor, but got {.cls {class(x)[1]}}")
         }
       },
       args_flat,

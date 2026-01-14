@@ -1039,7 +1039,7 @@ nvl_if <- function(pred, true, false) {
   # TODO(split pr)
 
   desc_true <- local_descriptor()
-  true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true, tensorish_args = TRUE)
+  true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true, lit_to_tensor = TRUE)
   desc_false <- local_descriptor()
 
   # TODO: Apply promotion rules to the outputs of the branches
@@ -1047,7 +1047,7 @@ nvl_if <- function(pred, true, false) {
   for (const in desc_true$constants) {
     get_box_or_register_const(desc_false, const)
   }
-  false_graph <- trace_fn(function() rlang::eval_tidy(false_expr), list(), desc = desc_false, tensorish_args = TRUE)
+  false_graph <- trace_fn(function() rlang::eval_tidy(false_expr), list(), desc = desc_false, lit_to_tensor = TRUE)
 
   for (const in desc_false$constants) {
     get_box_or_register_const(current_desc, const)
@@ -1117,7 +1117,7 @@ nvl_while <- function(init, cond, body) {
 
   desc_cond <- local_descriptor()
 
-  cond_graph <- trace_fn(cond, init, desc = desc_cond, tensorish_args = TRUE)
+  cond_graph <- trace_fn(cond, init, desc = desc_cond, lit_to_tensor = TRUE)
 
   desc_body <- local_descriptor()
 
@@ -1126,7 +1126,7 @@ nvl_while <- function(init, cond, body) {
   for (const in desc_cond$constants) {
     get_box_or_register_const(desc_body, const)
   }
-  body_graph <- trace_fn(body, init, desc_body, tensorish_args = TRUE)
+  body_graph <- trace_fn(body, init, desc_body, lit_to_tensor = TRUE)
 
   if (!identical(cond_graph$in_tree, body_graph$in_tree)) {
     cli_abort("cond and body must have the same input structure")
