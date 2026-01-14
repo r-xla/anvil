@@ -109,14 +109,14 @@ p_sub <- AnvilPrimitive("sub")
 #' @export
 nvl_sub <- make_binary_op(p_sub, stablehlo::infer_types_subtract)
 
-p_neg <- AnvilPrimitive("negate")
+p_negate <- AnvilPrimitive("negate")
 #' @title Primitive Negation
 #' @description
 #' Negates a tensor element-wise.
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_neg <- make_unary_op(p_neg, stablehlo::infer_types_negate)
+nvl_negate <- make_unary_op(p_negate, stablehlo::infer_types_negate)
 
 p_div <- AnvilPrimitive("divide")
 #' @title Primitive Division
@@ -826,7 +826,9 @@ nvl_clamp <- function(min_val, operand, max_val) {
     out$ambiguous <- operand$ambiguous
     list(out)
   }
-  graph_desc_add(p_clamp, list(min_val = min_val, operand = operand, max_val = max_val), list(), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_clamp, list(min_val = min_val, operand = operand, max_val = max_val), list(), infer_fn = infer_fn)[[
+    1L
+  ]]
 }
 
 p_reverse <- AnvilPrimitive("reverse")
@@ -1003,7 +1005,9 @@ nvl_select <- function(pred, true_value, false_value) {
     out$ambiguous <- both_ambiguous
     list(out)
   }
-  graph_desc_add(p_select, list(pred = pred, true_value = true_value, false_value = false_value), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_select, list(pred = pred, true_value = true_value, false_value = false_value), infer_fn = infer_fn)[[
+    1L
+  ]]
 }
 
 # Higher order primitives -------------------------------------------------------
@@ -1037,7 +1041,7 @@ nvl_if <- function(pred, true, false) {
   # TODO(split pr)
 
   desc_true <- local_descriptor()
-  true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true)
+  true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true, lit_to_tensor = TRUE)
   desc_false <- local_descriptor()
 
   # TODO: Apply promotion rules to the outputs of the branches
@@ -1045,7 +1049,7 @@ nvl_if <- function(pred, true, false) {
   for (const in desc_true$constants) {
     get_box_or_register_const(desc_false, const)
   }
-  false_graph <- trace_fn(function() rlang::eval_tidy(false_expr), list(), desc = desc_false)
+  false_graph <- trace_fn(function() rlang::eval_tidy(false_expr), list(), desc = desc_false, lit_to_tensor = TRUE)
 
   for (const in desc_false$constants) {
     get_box_or_register_const(current_desc, const)
@@ -1115,7 +1119,7 @@ nvl_while <- function(init, cond, body) {
 
   desc_cond <- local_descriptor()
 
-  cond_graph <- trace_fn(cond, init, desc = desc_cond)
+  cond_graph <- trace_fn(cond, init, desc = desc_cond, lit_to_tensor = TRUE)
 
   desc_body <- local_descriptor()
 
@@ -1124,7 +1128,7 @@ nvl_while <- function(init, cond, body) {
   for (const in desc_cond$constants) {
     get_box_or_register_const(desc_body, const)
   }
-  body_graph <- trace_fn(body, init, desc_body)
+  body_graph <- trace_fn(body, init, desc_body, lit_to_tensor = TRUE)
 
   if (!identical(cond_graph$in_tree, body_graph$in_tree)) {
     cli_abort("cond and body must have the same input structure")
@@ -1156,7 +1160,7 @@ nvl_while <- function(init, cond, body) {
 
   out <- graph_desc_add(
     p_while,
-    args = lapply(flatten(init), maybe_box_variable),
+    args = lapply(flatten(init), maybe_box_tensorish),
     params = list(cond_graph = cond_graph, body_graph = body_graph),
     infer_fn = infer_fn,
     desc = current_desc,

@@ -185,13 +185,12 @@ test_that("can pass abstract tensors to trace_fn", {
 
 describe("error handling", {
   it("adds the primitive call", {
-    expect_snapshot(error = TRUE,
-      nvl_add(nv_tensor(1), nv_tensor(1:4))
-    )
+    expect_snapshot(error = TRUE, jit(nvl_ceil)(nv_tensor(1:4)))
   })
   it("increments index in error message", {
-    expect_snapshot(error = TRUE,
-      nvl_transpose(nv_tensor(1:4, shape = c(2, 2)), permutation = c(2, 2))
+    expect_snapshot(
+      error = TRUE,
+      jit(nvl_transpose, static = "permutation")(nv_tensor(1:4, shape = c(2, 2)), permutation = c(2, 2))
     )
   })
 })

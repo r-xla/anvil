@@ -398,7 +398,7 @@ nv_bitcast_convert <- nvl_bitcast_convert
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nv_neg <- nvl_neg
+nv_negate <- nvl_negate
 
 #' @title Logical Not
 #' @description Element-wise logical NOT operation.

@@ -269,7 +269,7 @@ format.GraphBox <- function(x, ...) {
   sprintf("GraphBox(%s)", format(x$gnode))
 }
 
-maybe_box_variable <- function(x) {
+maybe_box_tensorish <- function(x) {
   current_desc <- .current_descriptor()
   if (is_graph_box(x)) {
     if (identical(x$desc, current_desc)) {
@@ -297,7 +297,19 @@ maybe_box_variable <- function(x) {
 }
 
 # this function is on the inputs of trace_fn()
-maybe_box_input <- function(x, desc, toplevel) {
+maybe_box_input <- function(x, desc, toplevel, lit_to_tensor) {
+  if (lit_to_tensor && test_scalar(x)) {
+    # so we can accept literals as inputs to higher-order primitives like if and while
+    ambiguous <- !is.logical(x)
+    gval <- GraphValue(
+      aval = AbstractTensor(
+        dtype = default_dtype(x),
+        shape = integer(),
+        ambiguous = ambiguous
+      )
+    )
+    return(register_input(desc, gval))
+  }
   if (is_anvil_tensor(x)) {
     # cases:
     # 1. top-level trace_fn call
@@ -335,6 +347,9 @@ maybe_box_input <- function(x, desc, toplevel) {
     gval <- GraphValue(aval = x)
     register_input(desc, gval)
   } else {
+    if (lit_to_tensor) {
+      cli_abort("Expected only tensorish values, but got {.cls {class(x)[1]}}")
+    }
     # parameter
     x
   }
@@ -451,18 +466,42 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
 #' @param f (`function`)\cr
 #'   The function to trace_fn.
 #' @param args (`list` of ([`AnvilTensor`] | [`AbstractTensor`]))\cr
-#'   The arguments to the function.
+#'   The (unflattened) arguments to the function.
 #' @param desc (`NULL` | `GraphDescriptor`)\cr
 #'   The descriptor to use for the graph.
 #' @param toplevel (`logical(1)`)\cr
 #'   Whether the function is being traced at the top level.
 #'   If this is `TRUE`, inputs that are `AnvilTensor`s are treated as unknown.
 #'   If this is `FALSE` (default), `AnvilTensor`s are treated as constants.
+#' @param lit_to_tensor (`logical(1)`)\cr
+#'   Whether to convert literals to `AnvilTensor`s.
+#'   Should only be used for higher-order primitives like if and while, where no static inputs are possible.
+#' @param args_flat (`list`)\cr
+#'   The flattened arguments. Also requires passing `in_tree`.
+#' @param in_tree (`Node`)\cr
+#'   The tree structure of the arguments.
 #' @return ([`AnvilGraph`])
 #' @export
-trace_fn <- function(f, args, desc = NULL, toplevel = FALSE) {
-  in_tree <- build_tree(args)
-  args_flat <- flatten(args)
+trace_fn <- function(
+  f,
+  args = NULL,
+  desc = NULL,
+  toplevel = FALSE,
+  lit_to_tensor = FALSE,
+  args_flat = NULL,
+  in_tree = NULL
+) {
+  if (is.null(args)) {
+    if (is.null(args_flat) || is.null(in_tree)) {
+      cli_abort("args or args_flat and in_tree must be provided")
+    }
+  } else {
+    if (!is.null(args_flat) || !is.null(in_tree)) {
+      cli_abort("args and args_flat and in_tree must not be provided together")
+    }
+    in_tree <- build_tree(args)
+    args_flat <- flatten(args)
+  }
   f_flat <- flatten_fun(f, in_node = in_tree)
   if (is.null(desc)) {
     desc <- local_descriptor(in_tree = in_tree)
@@ -471,12 +510,12 @@ trace_fn <- function(f, args, desc = NULL, toplevel = FALSE) {
   }
 
   # box tensors and add them as inputs to the current graph
-  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc, toplevel = toplevel)
+  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc, toplevel = toplevel, lit_to_tensor = lit_to_tensor)
   output <- do.call(f_flat, inputs_flat)
 
   out_tree <- output[[1L]]
   # function() x; -> output can be an closed-over constant
-  outputs_flat <- lapply(output[[2L]], maybe_box_variable)
+  outputs_flat <- lapply(output[[2L]], maybe_box_tensorish)
 
   desc$out_tree <- out_tree
   desc$outputs <- lapply(outputs_flat, \(x) x$gnode)
@@ -604,18 +643,20 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, d
   }
 
   arg_names <- names(args)
-  boxes_in <- lapply(args, maybe_box_variable)
+  boxes_in <- lapply(args, maybe_box_tensorish)
   gnodes_in <- unname(lapply(boxes_in, \(box) box$gnode))
   avals_in <- lapply(boxes_in, \(box) box$gnode$aval)
   names(avals_in) <- arg_names
-  ats_out <- tryCatch({
-    rlang::exec(infer_fn, !!!c(avals_in, params))
-  }, error = function(e) {
-    e$call <- print_call_repr(prim)
-    e <- stablehlo::to_one_based(e)
-    e$body <- format_error_body(avals_in, params, show_inputs = show_inputs)
-    rlang::cnd_signal(e)
-  })
+  ats_out <- tryCatch(
+    {
+      rlang::exec(infer_fn, !!!c(avals_in, params))
+    },
+    error = function(e) {
+      e$call <- print_call_repr(prim)
+      e <- stablehlo::to_one_based(e)
+      rlang::cnd_signal(e)
+    }
+  )
   gvals_out <- lapply(ats_out, GraphValue)
   call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)
   desc$calls <- c(desc$calls, list(call))
@@ -628,36 +669,6 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, d
 
 print_call_repr <- function(prim) {
   rlang::exec(call, paste0("nvl_", prim$name))
-}
-
-format_error_body <- function(avals_in, params, show_inputs = TRUE) {
-  function(cnd, ...) {
-    lines <- character()
-    if (show_inputs && length(avals_in) > 0L) {
-      input_names <- names(avals_in)
-      inputs_str <- vapply(seq_along(avals_in), function(i) {
-        aval_str <- format_aval_short(avals_in[[i]])
-        if (!is.null(input_names) && input_names[[i]] != "") {
-          paste0(input_names[[i]], " = ", aval_str)
-        } else {
-          aval_str
-        }
-      }, character(1))
-      lines <- c(cli::col_silver("Inputs:"), paste0("  ", inputs_str))
-      names(lines) <- c("i", rep(" ", length(inputs_str)))
-    }
-    params_str <- format_param(params)
-    if (params_str != "") {
-      params_lines <- c(cli::col_silver("Params:"), paste0("  ", params_str))
-      names(params_lines) <- c("i", " ")
-      lines <- c(lines, params_lines)
-    }
-    if (length(lines) > 0L) {
-      cli::format_bullets_raw(lines)
-    } else {
-      character()
-    }
-  }
 }
 
 

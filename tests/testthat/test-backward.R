@@ -88,7 +88,7 @@ test_that("second order gradient (scalar)", {
 })
 
 test_that("neg works", {
-  g <- jit(gradient(nvl_neg))
+  g <- jit(gradient(nvl_negate))
   expect_equal(g(nv_scalar(1))[[1L]], nv_scalar(-1))
 })
 
@@ -202,4 +202,12 @@ test_that("gradient: does not depend on input", {
   out <- g(nv_scalar(1.0), nv_scalar(2.0))
   expect_equal(out[[1L]], nv_scalar(1.0))
   expect_equal(out[[2L]], nv_scalar(1.0))
+})
+
+test_that("wrt for non-tensor input", {
+  g <- gradient(nv_round, wrt = "method")
+  # TODO: Better error message ...
+  expect_error(
+    g(nv_scalar(1), "nearest_even")
+  )
 })
