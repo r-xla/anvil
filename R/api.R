@@ -209,6 +209,7 @@ nv_slice <- nvl_slice
 #' @title Dynamic Slice
 #' @description
 #' Extracts a dynamically positioned slice from a tensor.
+#' @template details_dynamic_slice_oob
 #' @template param_operand
 #' @param ... ([`tensorish`])\cr
 #'   Start indices as scalar tensors (1-based).
@@ -221,6 +222,7 @@ nv_dynamic_slice <- nvl_dynamic_slice
 #' @title Dynamic Update Slice
 #' @description
 #' Updates a dynamically positioned slice in a tensor.
+#' @template details_dynamic_update_slice_oob
 #' @template param_operand
 #' @param update ([`tensorish`])\cr
 #'   Update tensor with the new values.
@@ -229,6 +231,91 @@ nv_dynamic_slice <- nvl_dynamic_slice
 #' @return [`tensorish`]
 #' @export
 nv_dynamic_update_slice <- nvl_dynamic_update_slice
+
+#' @title Get Element at Indices
+#' @description
+#' Extract a single element from a tensor at specific indices.
+#' All indices must be 0-dimensional (scalar) tensors.
+#' @template param_operand
+#' @param ... ([`tensorish`])\cr
+#'   Scalar tensors specifying the index for each dimension (1-based).
+#' @return Scalar [`tensorish`]
+#' @export
+nv_get_elt <- function(operand, ...) {
+  indices <- list(...)
+  rank <- ndims_abstract(operand)
+
+  if (length(indices) != rank) {
+    cli_abort(c(
+      "Number of indices must match tensor rank.",
+      x = "Got {length(indices)} indices for rank {rank} tensor."
+    ))
+  }
+
+  # Check that all indices are scalars
+  for (i in seq_along(indices)) {
+    if (length(shape_abstract(indices[[i]])) != 0L) {
+      cli_abort(c(
+        "All indices must be 0-dimensional (scalar) tensors.",
+        x = "Index {i} has shape {shape2string(shape_abstract(indices[[i]]))}."
+      ))
+    }
+  }
+
+  # Use dynamic_slice with size 1 in each dimension to get a single element
+  slice_sizes <- rep(1L, rank)
+  result <- rlang::exec(nvl_dynamic_slice, operand, !!!indices, slice_sizes = slice_sizes)
+
+  # Reshape to scalar
+  nv_reshape(result, integer(0L))
+}
+
+#' @title Set Element at Indices
+#' @description
+#' Update a single element in a tensor at specific indices.
+#' All indices must be 0-dimensional (scalar) tensors.
+#' @template param_operand
+#' @param ... ([`tensorish`])\cr
+#'   Scalar tensors specifying the index for each dimension (1-based).
+#' @param value ([`tensorish`])\cr
+#'   Scalar tensor with the new value.
+#' @return [`tensorish`]
+#' @export
+nv_set_elt <- function(operand, ..., value) {
+  indices <- list(...)
+  rank <- ndims_abstract(operand)
+
+  if (length(indices) != rank) {
+    cli_abort(c(
+      "Number of indices must match tensor rank.",
+      x = "Got {length(indices)} indices for rank {rank} tensor."
+    ))
+  }
+
+  # Check that all indices are scalars
+  for (i in seq_along(indices)) {
+    if (length(shape_abstract(indices[[i]])) != 0L) {
+      cli_abort(c(
+        "All indices must be 0-dimensional (scalar) tensors.",
+        x = "Index {i} has shape {shape2string(shape_abstract(indices[[i]]))}."
+      ))
+    }
+  }
+
+  # Check that value is a scalar
+  if (length(shape_abstract(value)) != 0L) {
+    cli_abort(c(
+      "Value must be a 0-dimensional (scalar) tensor.",
+      x = "Got shape {shape2string(shape_abstract(value))}."
+    ))
+  }
+
+  # Reshape value to shape with all dimensions = 1 to match dynamic_update_slice requirements
+  update <- nv_reshape(value, rep(1L, rank))
+
+  # Use dynamic_update_slice
+  rlang::exec(nvl_dynamic_update_slice, operand, update, !!!indices)
+}
 
 #' @title Print Tensor
 #' @description

@@ -47,6 +47,37 @@ test_that("p_slice", {
   expect_equal(as_array(out), matrix(c(1:4), nrow = 2))
 })
 
+describe("p_dynamic_slice", {
+  it("extracts a slice at dynamic position", {
+    f <- function() {
+      operand <- nv_tensor(1:12, dtype = "i32", shape = c(3, 4))
+      start_idx1 <- nv_scalar(2L, dtype = "i32")
+      start_idx2 <- nv_scalar(2L, dtype = "i32")
+      nvl_dynamic_slice(operand, start_idx1, start_idx2, slice_sizes = c(2L, 2L))
+    }
+    g <- jit(f)
+    out <- g()
+    expected <- matrix(c(5L, 6L, 8L, 9L), nrow = 2, ncol = 2)
+    expect_equal(as_array(out), expected)
+  })
+})
+
+describe("p_dynamic_update_slice", {
+  it("updates a slice at dynamic position", {
+    f <- function() {
+      operand <- nv_tensor(rep(0L, 12), dtype = "i32", shape = c(3, 4))
+      update <- nv_tensor(c(99L, 88L, 77L, 66L), dtype = "i32", shape = c(2, 2))
+      start_idx1 <- nv_scalar(2L, dtype = "i32")
+      start_idx2 <- nv_scalar(2L, dtype = "i32")
+      nvl_dynamic_update_slice(operand, update, start_idx1, start_idx2)
+    }
+    g <- jit(f)
+    out <- g()
+    expected <- matrix(c(0L, 0L, 0L, 0L, 99L, 88L, 0L, 77L, 66L, 0L, 0L, 0L), nrow = 3, ncol = 4)
+    expect_equal(as_array(out), expected)
+  })
+})
+
 test_that("p_concatenate", {
   f <- function() {
     nv_concatenate(

@@ -1,6 +1,8 @@
 #' @include api.R
 
-ops_impl <- function(e1, e2) {
+#' @method Ops AnvilBox
+#' @export
+Ops.AnvilBox <- function(e1, e2) {
   switch(
     .Generic, # nolint
     "+" = nv_add(e1, e2),
@@ -26,30 +28,26 @@ ops_impl <- function(e1, e2) {
   )
 }
 
-#' @method Ops AnvilBox
-#' @export
-Ops.AnvilBox <- ops_impl
-
 #' @method Ops AnvilTensor
 #' @export
-Ops.AnvilTensor <- ops_impl
+Ops.AnvilTensor <- Ops.AnvilBox
 
-matrix_ops_impl <- function(x, y) {
+#' @method matrixOps AnvilBox
+#' @export
+matrixOps.AnvilBox <- function(x, y) {
   switch(
     .Generic, # nolint
     "%*%" = nv_matmul(x, y)
   )
 }
 
-#' @method matrixOps AnvilBox
-#' @export
-matrixOps.AnvilBox <- matrix_ops_impl
-
 #' @method matrixOps AnvilTensor
 #' @export
-matrixOps.AnvilTensor <- matrix_ops_impl
+matrixOps.AnvilTensor <- matrixOps.AnvilBox
 
-math_impl <- function(x, ...) {
+#' @method Math AnvilBox
+#' @export
+Math.AnvilBox <- function(x, ...) {
   switch(
     .Generic, # nolint
     "abs" = nv_abs(x),
@@ -68,15 +66,13 @@ math_impl <- function(x, ...) {
   )
 }
 
-#' @method Math AnvilBox
-#' @export
-Math.AnvilBox <- math_impl
-
 #' @method Math AnvilTensor
 #' @export
-Math.AnvilTensor <- math_impl
+Math.AnvilTensor <- Math.AnvilBox
 
-math2_impl <- function(x, digits, ...) {
+#' @method Math2 AnvilBox
+#' @export
+Math2.AnvilBox <- function(x, digits, ...) {
   method <- list(...)$method
   switch(
     .Generic, # nolint
@@ -90,16 +86,14 @@ math2_impl <- function(x, digits, ...) {
   )
 }
 
-#' @method Math2 AnvilBox
-#' @export
-Math2.AnvilBox <- math2_impl
-
 #' @method Math2 AnvilTensor
 #' @export
-Math2.AnvilTensor <- math2_impl
+Math2.AnvilTensor <- Math2.AnvilBox
 
 
-summary_impl <- function(..., na.rm) {
+#' @method Summary AnvilBox
+#' @export
+Summary.AnvilBox <- function(..., na.rm) {
   if (...length() != 1L) {
     cli_abort("Currently only one argument is supported for Summary group generic")
   }
@@ -118,25 +112,19 @@ summary_impl <- function(..., na.rm) {
   )
 }
 
-#' @method Summary AnvilBox
-#' @export
-Summary.AnvilBox <- summary_impl
-
 #' @method Summary AnvilTensor
 #' @export
-Summary.AnvilTensor <- summary_impl
-
-mean_impl <- function(x, ...) {
-  nv_reduce_mean(x, dims = seq_along(shape(x)), drop = TRUE)
-}
+Summary.AnvilTensor <- Summary.AnvilBox
 
 #' @method mean AnvilBox
 #' @export
-mean.AnvilBox <- mean_impl
+mean.AnvilBox <- function(x, ...) {
+  nv_reduce_mean(x, dims = seq_along(shape(x)), drop = TRUE)
+}
 
 #' @method mean AnvilTensor
 #' @export
-mean.AnvilTensor <- mean_impl
+mean.AnvilTensor <- mean.AnvilBox
 
 # if we don't give it the name nv_transpose, pkgdown thinks t.anvil is a package
 
@@ -156,6 +144,44 @@ t.AnvilBox <- function(x) {
 
 #' @method t AnvilTensor
 #' @export
-t.AnvilTensor <- function(x) {
-  nv_transpose(x)
+t.AnvilTensor <- t.AnvilBox
+
+#' @title Get Element at Indices
+#' @description
+#' Extract a single element from a tensor at specific indices.
+#' All indices must be 0-dimensional (scalar) tensors.
+#' @param x ([`tensorish`])\cr
+#'   Tensor to extract from.
+#' @param ... ([`tensorish`])\cr
+#'   Scalar tensors specifying the index for each dimension (1-based).
+#' @return Scalar [`tensorish`]
+#' @export
+#' @method [ AnvilBox
+`[.AnvilBox` <- function(x, ...) {
+  nv_get_elt(x, ...)
 }
+
+#' @method [ AnvilTensor
+#' @export
+`[.AnvilTensor` <- `[.AnvilBox`
+
+#' @title Set Element at Indices
+#' @description
+#' Update a single element in a tensor at specific indices.
+#' All indices must be 0-dimensional (scalar) tensors.
+#' @param x ([`tensorish`])\cr
+#'   Tensor to update.
+#' @param ... ([`tensorish`])\cr
+#'   Scalar tensors specifying the index for each dimension (1-based).
+#' @param value ([`tensorish`])\cr
+#'   Scalar tensor with the new value.
+#' @return [`tensorish`]
+#' @export
+#' @method [<- AnvilBox
+`[<-.AnvilBox` <- function(x, ..., value) {
+  nv_set_elt(x, ..., value = value)
+}
+
+#' @method [<- AnvilTensor
+#' @export
+`[<-.AnvilTensor` <- `[<-.AnvilBox`
