@@ -6,7 +6,7 @@ ops_impl <- function(e1, e2) {
     "+" = nv_add(e1, e2),
     "-" = {
       if (missing(e2)) {
-        nv_neg(e1)
+        nv_negate(e1)
       } else {
         nv_sub(e1, e2)
       }

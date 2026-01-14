@@ -2,7 +2,7 @@
 % Please edit documentation in R/debug.R
 \name{DebugBox}
 \alias{DebugBox}
-\title{Debug Box Class}
+\title{Abstract Value Box Class}
 \usage{
 DebugBox(aval)
 }

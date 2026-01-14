@@ -226,15 +226,16 @@ test_that("... works (#19)", {
   )
 })
 
-test_that("error message when passing invalid input", {
-  expect_error(jit(nv_tan)(1L), "Expected anvil tensor, but got")
-})
-
 test_that("good error message when passing AbstractTensors", {
-  expect_error(jit(nv_neg)(nv_aten("f32", c(2, 2))), "Expected anvil tensor, but got")
+  expect_error(jit(nv_negate)(nv_aten("f32", c(2, 2))), "Expected tensorish value")
 })
 
 test_that("jit: respects device argument", {
   f <- jit(function() 1, device = "cpu")
   expect_equal(f(), nv_scalar(1, device = "cpu"))
+})
+
+test_that("literals are not converted to scalar tensors", {
+  f <- jit(nv_sine)
+  expect_error(f(1), "Expected tensorish value")
 })

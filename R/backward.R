@@ -30,18 +30,6 @@ transform_gradient <- function(graph, wrt) {
     ))
   }
 
-  if (length(wrt) > 0L) {
-    available_names <- graph$in_tree$names
-    missing_names <- setdiff(wrt, available_names)
-    if (length(missing_names) > 0L) {
-      cli_abort(c(
-        x = "wrt contains names not present in function arguments",
-        i = "Missing: {.field {missing_names}}",
-        i = "Available: {.field {available_names}}"
-      ))
-    }
-  }
-
   requires_grad <- flat_mask_from_names(graph$in_tree, wrt)
 
   for (i in seq_along(graph$inputs)) {
@@ -168,8 +156,10 @@ transform_gradient <- function(graph, wrt) {
 #'   Function to compute the gradient of.
 #' @param wrt (`character`)\cr
 #'   Names of the arguments to compute the gradient with respect to.
+#' @param static_args (`list()`)\cr
+#'   Values for the static (non-tensor) arguments.
 #' @export
-gradient <- function(f, wrt = NULL) {
+gradient <- function(f, wrt = NULL, static_args) {
   if (!is.null(wrt) && !all(wrt %in% formalArgs(f))) {
     cli_abort("wrt must be a subset of the formal arguments of f")
   }

@@ -4,14 +4,22 @@
 \alias{trace_fn}
 \title{Trace an R function into a Graph}
 \usage{
-trace_fn(f, args, desc = NULL, toplevel = FALSE, tensorish_args = FALSE)
+trace_fn(
+  f,
+  args = NULL,
+  desc = NULL,
+  toplevel = FALSE,
+  tensorish_args = FALSE,
+  args_flat = NULL,
+  in_tree = NULL
+)
 }
 \arguments{
 \item{f}{(\code{function})\cr
 The function to trace_fn.}
 
 \item{args}{(\code{list} of (\code{\link{AnvilTensor}} | \code{\link{AbstractTensor}}))\cr
-The arguments to the function.}
+The (unflattened) arguments to the function.}
 
 \item{desc}{(\code{NULL} | \code{GraphDescriptor})\cr
 The descriptor to use for the graph.}
@@ -24,6 +32,12 @@ If this is \code{FALSE} (default), \code{AnvilTensor}s are treated as constants.
 \item{tensorish_args}{(\code{logical(1)})\cr
 Whether the arguments are all tensorish.
 If this is \code{TRUE}, we convert R literals to scalar tensors.}
+
+\item{args_flat}{(\code{list})\cr
+The flattened arguments. Also requires passing \code{in_tree}.}
+
+\item{in_tree}{(\code{Node})\cr
+The tree structure of the arguments.}
 }
 \value{
 (\code{\link{AnvilGraph}})

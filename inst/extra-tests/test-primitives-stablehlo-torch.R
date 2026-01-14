@@ -10,8 +10,8 @@ test_that("p_mul", {
   expect_jit_torch_binary(nvl_mul, torch::torch_mul, c(2, 3), c(2, 3))
 })
 
-test_that("p_neg", {
-  expect_jit_torch_unary(nvl_neg, torch::torch_neg, c(2, 3))
+test_that("p_negate", {
+  expect_jit_torch_unary(nvl_negate, torch::torch_neg, c(2, 3))
 })
 
 test_that("p_div", {

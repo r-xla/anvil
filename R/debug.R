@@ -1,7 +1,7 @@
 #' @include tensor.R
 #' @include box.R
 
-#' @title Debug Box Class
+#' @title Abstract Value Box Class
 #' @description
 #' Box representing a value in debug mode.
 #' @param aval (`AbstractTensor`)\cr

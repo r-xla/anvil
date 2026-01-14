@@ -88,7 +88,7 @@ test_that("second order gradient (scalar)", {
 })
 
 test_that("neg works", {
-  g <- jit(gradient(nvl_neg))
+  g <- jit(gradient(nvl_negate))
   expect_equal(g(nv_scalar(1))[[1L]], nv_scalar(-1))
 })
 

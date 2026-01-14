@@ -97,7 +97,7 @@ reference:
       - nv_mul
       - nv_div
       - nv_pow
-      - nv_neg
+      - nv_negate
       - nv_remainder
 
   - title: Comparison operations

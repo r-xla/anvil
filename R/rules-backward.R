@@ -23,14 +23,14 @@ p_sub[["backward"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
     if (.required[[1L]]) grad,
-    if (.required[[2L]]) nvl_neg(grad)
+    if (.required[[2L]]) nvl_negate(grad)
   )
 }
 
-p_neg[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_negate[["backward"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
-    if (.required[[1L]]) nvl_neg(grad)
+    if (.required[[1L]]) nvl_negate(grad)
   )
 }
 
@@ -40,7 +40,7 @@ p_div[["backward"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
     if (.required[[1L]]) nvl_div(grad, rhs),
-    if (.required[[2L]]) nvl_div(nvl_mul(grad, nvl_neg(y)), rhs)
+    if (.required[[2L]]) nvl_div(nvl_mul(grad, nvl_negate(y)), rhs)
   )
 }
 
@@ -138,7 +138,7 @@ p_cosine[["backward"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
     # d/dx cos(x) = -sin(x)
-    if (.required[[1L]]) nvl_mul(grad, nvl_neg(nvl_sine(operand)))
+    if (.required[[1L]]) nvl_mul(grad, nvl_negate(nvl_sine(operand)))
   )
 }
 

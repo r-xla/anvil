@@ -136,14 +136,14 @@ p_sub <- AnvilPrimitive("sub")
 #' @export
 nvl_sub <- make_binary_op(p_sub)
 
-p_neg <- AnvilPrimitive("negate")
+p_negate <- AnvilPrimitive("negate")
 #' @title Primitive Negation
 #' @description
 #' Negates a tensor element-wise.
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_neg <- make_unary_op(p_neg)
+nvl_negate <- make_unary_op(p_negate)
 
 p_div <- AnvilPrimitive("divide")
 #' @title Primitive Division

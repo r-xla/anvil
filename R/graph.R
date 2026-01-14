@@ -462,7 +462,7 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
 #' @param f (`function`)\cr
 #'   The function to trace_fn.
 #' @param args (`list` of ([`AnvilTensor`] | [`AbstractTensor`]))\cr
-#'   The arguments to the function.
+#'   The (unflattened) arguments to the function.
 #' @param desc (`NULL` | `GraphDescriptor`)\cr
 #'   The descriptor to use for the graph.
 #' @param toplevel (`logical(1)`)\cr
@@ -472,11 +472,32 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
 #' @param tensorish_args (`logical(1)`)\cr
 #'   Whether the arguments are all tensorish.
 #'   If this is `TRUE`, we convert R literals to scalar tensors.
+#' @param args_flat (`list`)\cr
+#'   The flattened arguments. Also requires passing `in_tree`.
+#' @param in_tree (`Node`)\cr
+#'   The tree structure of the arguments.
 #' @return ([`AnvilGraph`])
 #' @export
-trace_fn <- function(f, args, desc = NULL, toplevel = FALSE, tensorish_args = FALSE) {
-  in_tree <- build_tree(args)
-  args_flat <- flatten(args)
+trace_fn <- function(
+  f,
+  args = NULL,
+  desc = NULL,
+  toplevel = FALSE,
+  tensorish_args = FALSE,
+  args_flat = NULL,
+  in_tree = NULL
+) {
+  if (is.null(args)) {
+    if (is.null(args_flat) || is.null(in_tree)) {
+      cli_abort("args or args_flat and in_tree must be provided")
+    }
+  } else {
+    if (!is.null(args_flat) || !is.null(in_tree)) {
+      cli_abort("args and args_flat and in_tree must not be provided together")
+    }
+    in_tree <- build_tree(args)
+    args_flat <- flatten(args)
+  }
   f_flat <- flatten_fun(f, in_node = in_tree)
   if (is.null(desc)) {
     desc <- local_descriptor(in_tree = in_tree)

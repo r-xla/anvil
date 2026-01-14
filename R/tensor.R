@@ -71,8 +71,8 @@ nv_empty <- function(dtype, shape, device = NULL) {
 
 #' @rdname AbstractTensor
 #' @export
-nv_aten <- function(dtype, shape) {
-  AbstractTensor(dtype = dtype, shape = shape, ambiguous = FALSE)
+nv_aten <- function(dtype, shape, ambiguous = FALSE) {
+  AbstractTensor(dtype = dtype, shape = shape, ambiguous = ambiguous)
 }
 
 #' @export

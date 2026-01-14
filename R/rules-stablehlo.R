@@ -18,7 +18,7 @@ p_sub[["stablehlo"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_subtract(lhs, rhs))
 }
 
-p_neg[["stablehlo"]] <- function(operand) {
+p_negate[["stablehlo"]] <- function(operand) {
   list(stablehlo::hlo_negate(operand))
 }
 

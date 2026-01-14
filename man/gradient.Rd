@@ -5,7 +5,7 @@
 \alias{value_and_gradient}
 \title{Gradient}
 \usage{
-gradient(f, wrt = NULL)
+gradient(f, wrt = NULL, static_args)
 
 value_and_gradient(f, wrt = NULL)
 }
@@ -15,6 +15,9 @@ Function to compute the gradient of.}
 
 \item{wrt}{(\code{character})\cr
 Names of the arguments to compute the gradient with respect to.}
+
+\item{static_args}{(\code{list()})\cr
+Values for the static (non-tensor) arguments.}
 }
 \description{
 Transform a function to its gradient.

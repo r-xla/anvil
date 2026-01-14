@@ -47,11 +47,11 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
         if (is_static) {
           x
         } else {
-          if (!is_anvil_tensor(x)) {
-            cli_abort("Expected anvil tensor, but got {.cls {class(x)[1]}}")
+          if (is_anvil_tensor(x)) {
+            platforms <<- c(platforms, platform(x))
+            return(nv_aten(dtype(x), shape(x)))
           }
-          platforms <<- c(platforms, platform(x))
-          nv_aten(dtype(x), shape(x))
+          cli_abort("Expected tensorish value, but got {.cls {class(x)[1]}}")
         }
       },
       args_flat,
@@ -81,7 +81,7 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
     in_tree <- in_node
     in_tree$marked <- NULL
     class(in_tree) <- c("ListNode", "Node")
-    graph <- trace_fn(f, args, desc = desc, toplevel = TRUE)
+    graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = avals_in, in_tree = in_tree)
     graph <- inline_scalarish_constants(graph)
     graph <- remove_unused_constants(graph)
 
