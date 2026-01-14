@@ -118,3 +118,9 @@ test_that("can't debug with abstract tensors", {
     "Don't use AbtractTensors as inputs"
   )
 })
+
+test_that("no literals passed to gradient", {
+  g <- gradient(nv_mul, wrt = c("lhs", "rhs"))
+  # TODO: Better error message ...
+  expect_error(g(1, 2))
+})

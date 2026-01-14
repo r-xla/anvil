@@ -296,8 +296,8 @@ test_that("p_mul", {
   verify_grad_biv(nvl_mul, torch::torch_mul)
 })
 
-test_that("p_neg", {
-  verify_grad_uni(nvl_neg, torch::torch_neg)
+test_that("p_negate", {
+  verify_grad_uni(nvl_negate, torch::torch_neg)
 })
 
 test_that("p_exp", {

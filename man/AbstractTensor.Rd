@@ -5,7 +5,7 @@
 \alias{AbstractTensor}
 \title{Abstract Tensor Class}
 \usage{
-nv_aten(dtype, shape)
+nv_aten(dtype, shape, ambiguous = FALSE)
 
 AbstractTensor(dtype, shape, ambiguous = FALSE)
 }
