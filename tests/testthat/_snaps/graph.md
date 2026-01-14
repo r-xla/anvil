@@ -22,5 +22,5 @@
     Condition
       Error in `nvl_transpose()`:
       ! `permutation` must be a permutation of c(1, 2).
-      i Got c(2, 2).
+      x Got c(2, 2).
 

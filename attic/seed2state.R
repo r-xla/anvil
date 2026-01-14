@@ -57,7 +57,7 @@ nv_seed2state <- function(
   )
 
   # upcast raw8 to requested dtype, last dimension vanished
-  nv_bitcast_convert(raw8, dtype = dtype)  # nolint
+  nv_bitcast_convert(raw8, dtype = dtype) # nolint
 }
 
 
