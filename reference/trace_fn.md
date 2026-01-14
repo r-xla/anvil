@@ -10,7 +10,7 @@ trace_fn(
   args = NULL,
   desc = NULL,
   toplevel = FALSE,
-  tensorish_args = FALSE,
+  lit_to_tensor = FALSE,
   args_flat = NULL,
   in_tree = NULL
 )
@@ -43,11 +43,12 @@ trace_fn(
   `TRUE`, inputs that are `AnvilTensor`s are treated as unknown. If this
   is `FALSE` (default), `AnvilTensor`s are treated as constants.
 
-- tensorish_args:
+- lit_to_tensor:
 
   (`logical(1)`)  
-  Whether the arguments are all tensorish. If this is `TRUE`, we convert
-  R literals to scalar tensors.
+  Whether to convert literals to `AnvilTensor`s. Should only be used for
+  higher-order primitives like if and while, where no static inputs are
+  possible.
 
 - args_flat:
 

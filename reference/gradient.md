@@ -5,7 +5,7 @@ Transform a function to its gradient.
 ## Usage
 
 ``` r
-gradient(f, wrt = NULL, static_args)
+gradient(f, wrt = NULL)
 
 value_and_gradient(f, wrt = NULL)
 ```
@@ -21,11 +21,6 @@ value_and_gradient(f, wrt = NULL)
 
   (`character`)  
   Names of the arguments to compute the gradient with respect to.
-
-- static_args:
-
-  ([`list()`](https://rdrr.io/r/base/list.html))  
-  Values for the static (non-tensor) arguments.
 
 ## Functions
 

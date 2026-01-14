@@ -137,11 +137,7 @@ mode:</p>
 <pre><code><span><span class="co">## $x</span></span>
 <span><span class="co">## f32{2,2}</span></span></code></pre>
 <p>Because this all happens in the R interpreter, you can also add
-breakpoints to the code and step through it to identify bugs. However,
-even if a program is valid and can be compiled, it might not work as
-expected, e.g. because of logical bugs or invalid hyperparameters. For
-this, it’s important to monitor (intermediate) values, which we will
-cover in the next section.</p>
+breakpoints to the code and step through it to identify bugs.</p>
 <p>However, there are some subtleties to be aware of when using debug
 mode, which we will cover in the next section. ## What does debug mode
 actually do?</p>
@@ -161,7 +157,7 @@ because 1 is not an <code>AnvilTensor</code>.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
-<span><span class="co">## <span style="color: #BBBB00;">!</span> Expected tensorish value, but got <span style="color: #0000BB;">&lt;numeric&gt;</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BBBB00;">!</span> Expected AnvilTensor, but got <span style="color: #0000BB;">&lt;numeric&gt;</span></span></span></code></pre>
 <p>This is, because debug mode emulates what would happen if the
 function call was within the <code>jit</code>-compiled function:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
@@ -174,6 +170,10 @@ function call was within the <code>jit</code>-compiled function:</p>
 not for input arguments to <code>jit</code>-compiled functions, as this
 would blur the distinction between literals and 0-dimensional
 <code>AnvilTensor</code>s.</p>
+<p>However, even if a program is valid and can be compiled, it might not
+work as expected, e.g. because of logical bugs or invalid
+hyperparameters. For this, it’s important to monitor (intermediate)
+values, which we will cover in the next section.</p>
 </div>
 <div class="section level2">
 <h2 id="printing-values">Printing Values<a class="anchor" aria-label="anchor" href="#printing-values"></a>

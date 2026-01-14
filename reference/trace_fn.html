@@ -69,7 +69,7 @@
 <span>  args <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  desc <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  toplevel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  tensorish_args <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  lit_to_tensor <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  args_flat <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  in_tree <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -101,10 +101,10 @@ If this is <code>TRUE</code>, inputs that are <code>AnvilTensor</code>s are trea
 If this is <code>FALSE</code> (default), <code>AnvilTensor</code>s are treated as constants.</p></dd>
 
 
-<dt id="arg-tensorish-args">tensorish_args<a class="anchor" aria-label="anchor" href="#arg-tensorish-args"></a></dt>
+<dt id="arg-lit-to-tensor">lit_to_tensor<a class="anchor" aria-label="anchor" href="#arg-lit-to-tensor"></a></dt>
 <dd><p>(<code>logical(1)</code>)<br>
-Whether the arguments are all tensorish.
-If this is <code>TRUE</code>, we convert R literals to scalar tensors.</p></dd>
+Whether to convert literals to <code>AnvilTensor</code>s.
+Should only be used for higher-order primitives like if and while, where no static inputs are possible.</p></dd>
 
 
 <dt id="arg-args-flat">args_flat<a class="anchor" aria-label="anchor" href="#arg-args-flat"></a></dt>

@@ -374,7 +374,7 @@ Debugging utilities and tools
 - [`nv_print()`](https://r-xla.github.io/anvil/reference/nv_print.md) :
   Print Tensor
 - [`DebugBox()`](https://r-xla.github.io/anvil/reference/DebugBox.md) :
-  Abstract Value Box Class
+  Debug Box Class
 
 ## Internal Data Structures and Functions
 
