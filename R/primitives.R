@@ -1164,8 +1164,7 @@ nvl_while <- function(init, cond, body) {
     params = list(cond_graph = cond_graph, body_graph = body_graph),
     infer_fn = infer_fn,
     desc = current_desc,
-    debug_mode = debug_mode,
-    show_inputs = FALSE
+    debug_mode = debug_mode
   )
 
   unflatten(body_graph$out_tree, out)

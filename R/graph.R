@@ -634,7 +634,7 @@ is_graph_box <- function(x) {
 #' @return (`list` of `Box`)\cr
 #'   Either `GraphBox` objects or `DebugBox` objects, depending on `debug_mode`.
 #' @export
-graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, debug_mode = NULL, show_inputs = TRUE) {
+graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, debug_mode = NULL) {
   desc <- desc %??% .current_descriptor(silent = TRUE)
 
   debug_mode <- debug_mode %??% is.null(desc)
@@ -642,11 +642,9 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, d
     desc <- local_descriptor()
   }
 
-  arg_names <- names(args)
   boxes_in <- lapply(args, maybe_box_tensorish)
   gnodes_in <- unname(lapply(boxes_in, \(box) box$gnode))
   avals_in <- lapply(boxes_in, \(box) box$gnode$aval)
-  names(avals_in) <- arg_names
   ats_out <- tryCatch(
     {
       rlang::exec(infer_fn, !!!c(avals_in, params))
