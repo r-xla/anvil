@@ -182,3 +182,16 @@ test_that("can pass abstract tensors to trace_fn", {
   expect_equal(graph$inputs[[2L]]$aval, in_type)
   expect_equal(length(graph$inputs), 2L)
 })
+
+describe("error handling", {
+  it("adds the primitive call", {
+    expect_snapshot(error = TRUE,
+      nvl_add(nv_tensor(1), nv_tensor(1:4))
+    )
+  })
+  it("increments index in error message", {
+    expect_snapshot(error = TRUE,
+      nvl_transpose(nv_tensor(1:4, shape = c(2, 2)), permutation = c(2, 2))
+    )
+  })
+})

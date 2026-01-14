@@ -595,7 +595,7 @@ is_graph_box <- function(x) {
 #' @return (`list` of `Box`)\cr
 #'   Either `GraphBox` objects or `DebugBox` objects, depending on `debug_mode`.
 #' @export
-graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, debug_mode = NULL) {
+graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, debug_mode = NULL, show_inputs = TRUE) {
   desc <- desc %??% .current_descriptor(silent = TRUE)
 
   debug_mode <- debug_mode %??% is.null(desc)
@@ -603,11 +603,20 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, d
     desc <- local_descriptor()
   }
 
+  arg_names <- names(args)
   boxes_in <- lapply(args, maybe_box_variable)
-  gnodes_in <- lapply(boxes_in, \(box) box$gnode)
+  gnodes_in <- unname(lapply(boxes_in, \(box) box$gnode))
   avals_in <- lapply(boxes_in, \(box) box$gnode$aval)
-  sts_out <- rlang::exec(infer_fn, !!!c(avals_in, params))
-  gvals_out <- lapply(sts_out, GraphValue)
+  names(avals_in) <- arg_names
+  ats_out <- tryCatch({
+    rlang::exec(infer_fn, !!!c(avals_in, params))
+  }, error = function(e) {
+    e$call <- print_call_repr(prim)
+    e <- stablehlo::to_one_based(e)
+    e$body <- format_error_body(avals_in, params, show_inputs = show_inputs)
+    rlang::cnd_signal(e)
+  })
+  gvals_out <- lapply(ats_out, GraphValue)
   call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)
   desc$calls <- c(desc$calls, list(call))
   boxes_out <- lapply(gvals_out, register_gval, desc = desc)
@@ -615,6 +624,40 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, d
     return(lapply(boxes_out, \(x) DebugBox(to_abstract(x))))
   }
   return(boxes_out)
+}
+
+print_call_repr <- function(prim) {
+  rlang::exec(call, paste0("nvl_", prim$name))
+}
+
+format_error_body <- function(avals_in, params, show_inputs = TRUE) {
+  function(cnd, ...) {
+    lines <- character()
+    if (show_inputs && length(avals_in) > 0L) {
+      input_names <- names(avals_in)
+      inputs_str <- vapply(seq_along(avals_in), function(i) {
+        aval_str <- format_aval_short(avals_in[[i]])
+        if (!is.null(input_names) && input_names[[i]] != "") {
+          paste0(input_names[[i]], " = ", aval_str)
+        } else {
+          aval_str
+        }
+      }, character(1))
+      lines <- c(cli::col_silver("Inputs:"), paste0("  ", inputs_str))
+      names(lines) <- c("i", rep(" ", length(inputs_str)))
+    }
+    params_str <- format_param(params)
+    if (params_str != "") {
+      params_lines <- c(cli::col_silver("Params:"), paste0("  ", params_str))
+      names(params_lines) <- c("i", " ")
+      lines <- c(lines, params_lines)
+    }
+    if (length(lines) > 0L) {
+      cli::format_bullets_raw(lines)
+    } else {
+      character()
+    }
+  }
 }
 
 

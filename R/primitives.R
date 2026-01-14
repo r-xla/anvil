@@ -2,60 +2,33 @@
 #' @include type-converters.R
 #' @include primitive.R
 
-infer_binary <- function(lhs, rhs) {
-  both_ambiguous <- lhs$ambiguous && rhs$ambiguous
-  out <- stablehlo::infer_types_generic_biv(at2vt(lhs), at2vt(rhs))[[1L]]
-  out <- vt2at(out)
-  out$ambiguous <- both_ambiguous
-  list(out)
-}
-
-# boolean is i1 -> integerish
-infer_binary_integerish <- function(lhs, rhs) {
-  both_ambiguous <- lhs$ambiguous && rhs$ambiguous
-  out <- stablehlo::infer_types_integerish_biv(at2vt(lhs), at2vt(rhs))[[1L]]
-  out <- vt2at(out)
-  out$ambiguous <- both_ambiguous
-  list(out)
-}
-
-infer_unary <- function(operand) {
-  out <- stablehlo::infer_types_generic_uni(at2vt(operand))[[1L]]
-  out <- vt2at(out)
-  out$ambiguous <- operand$ambiguous
-  list(out)
-}
-
-make_binary_op <- function(prim) {
+make_binary_op <- function(prim, stablehlo_infer) {
+  force(stablehlo_infer)
+  infer_fn <- function(lhs, rhs) {
+    both_ambiguous <- lhs$ambiguous && rhs$ambiguous
+    out <- stablehlo_infer(at2vt(lhs), at2vt(rhs))[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- both_ambiguous
+    list(out)
+  }
   function(lhs, rhs) {
-    graph_desc_add(prim, list(lhs, rhs), infer_fn = infer_binary)[[1L]]
+    graph_desc_add(prim, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
   }
 }
 
-make_binary_integerish_op <- function(prim) {
-  function(lhs, rhs) {
-    graph_desc_add(prim, list(lhs, rhs), infer_fn = infer_binary_integerish)[[1L]]
+make_unary_op <- function(prim, stablehlo_infer) {
+  force(stablehlo_infer)
+  infer_fn <- function(operand) {
+    out <- stablehlo_infer(at2vt(operand))[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
+    list(out)
   }
-}
-
-infer_unary_integerish <- function(operand) {
-  out <- stablehlo::infer_types_integerish_uni(at2vt(operand))[[1L]]
-  out <- vt2at(out)
-  out$ambiguous <- operand$ambiguous
-  list(out)
-}
-
-make_unary_op <- function(prim) {
   function(operand) {
-    graph_desc_add(prim, list(operand), infer_fn = infer_unary)[[1L]]
+    graph_desc_add(prim, list(operand = operand), infer_fn = infer_fn)[[1L]]
   }
 }
 
-make_unary_integerish_op <- function(prim) {
-  function(operand) {
-    graph_desc_add(prim, list(operand), infer_fn = infer_unary_integerish)[[1L]]
-  }
-}
 
 infer_reduce <- function(operand, dims, drop) {
   old_shape <- shape(operand)
@@ -116,7 +89,7 @@ p_add <- AnvilPrimitive("add")
 #' @template params_lhs_rhs
 #' @return [`tensorish`]
 #' @export
-nvl_add <- make_binary_op(p_add)
+nvl_add <- make_binary_op(p_add, stablehlo::infer_types_add)
 
 p_mul <- AnvilPrimitive("mul")
 #' @title Primitive Multiplication
@@ -125,7 +98,7 @@ p_mul <- AnvilPrimitive("mul")
 #' @template params_lhs_rhs
 #' @return [`tensorish`]
 #' @export
-nvl_mul <- make_binary_op(p_mul)
+nvl_mul <- make_binary_op(p_mul, stablehlo::infer_types_multiply)
 
 p_sub <- AnvilPrimitive("sub")
 #' @title Primitive Subtraction
@@ -134,7 +107,7 @@ p_sub <- AnvilPrimitive("sub")
 #' @template params_lhs_rhs
 #' @return [`tensorish`]
 #' @export
-nvl_sub <- make_binary_op(p_sub)
+nvl_sub <- make_binary_op(p_sub, stablehlo::infer_types_subtract)
 
 p_neg <- AnvilPrimitive("negate")
 #' @title Primitive Negation
@@ -143,7 +116,7 @@ p_neg <- AnvilPrimitive("negate")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_neg <- make_unary_op(p_neg)
+nvl_neg <- make_unary_op(p_neg, stablehlo::infer_types_negate)
 
 p_div <- AnvilPrimitive("divide")
 #' @title Primitive Division
@@ -152,7 +125,7 @@ p_div <- AnvilPrimitive("divide")
 #' @template params_lhs_rhs
 #' @return [`tensorish`]
 #' @export
-nvl_div <- make_binary_op(p_div)
+nvl_div <- make_binary_op(p_div, stablehlo::infer_types_divide)
 
 p_pow <- AnvilPrimitive("power")
 #' @title Primitive Power
@@ -161,22 +134,22 @@ p_pow <- AnvilPrimitive("power")
 #' @template params_lhs_rhs
 #' @return [`tensorish`]
 #' @export
-nvl_pow <- make_binary_op(p_pow)
+nvl_pow <- make_binary_op(p_pow, stablehlo::infer_types_power)
 
 p_broadcast_in_dim <- AnvilPrimitive("broadcast_in_dim")
 #' @title Primitive Broadcast
 #' @description
 #' Broadcasts a tensor to a new shape.
 #' @template param_operand
-#' @param shape_out (`integer()`)\cr
+#' @param shape (`integer()`)\cr
 #'   Target shape.
 #' @param broadcast_dimensions (`integer()`)\cr
 #'   Dimension mapping.
 #' @return [`tensorish`]
 #' @importFrom stablehlo r_to_constant
 #' @export
-nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
-  infer_fn <- function(operand, shape_out, broadcast_dimensions) {
+nvl_broadcast_in_dim <- function(operand, shape, broadcast_dimensions) {
+  infer_fn <- function(operand, shape, broadcast_dimensions) {
     bd_attr <- r_to_constant(
       as.integer(broadcast_dimensions - 1L),
       dtype = "i64",
@@ -185,7 +158,7 @@ nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
     out <- stablehlo::infer_types_broadcast_in_dim(
       at2vt(operand),
       broadcast_dimensions = bd_attr,
-      shape_out = shape_out
+      shape = shape
     )[[1L]]
     out <- vt2at(out)
     out$ambiguous <- operand$ambiguous
@@ -193,9 +166,9 @@ nvl_broadcast_in_dim <- function(operand, shape_out, broadcast_dimensions) {
   }
   graph_desc_add(
     p_broadcast_in_dim,
-    list(operand),
+    list(operand = operand),
     params = list(
-      shape_out = shape_out,
+      shape = shape,
       broadcast_dimensions = broadcast_dimensions
     ),
     infer_fn = infer_fn
@@ -224,7 +197,7 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
   }
   graph_desc_add(
     p_dot_general,
-    list(lhs, rhs),
+    list(lhs = lhs, rhs = rhs),
     list(contracting_dims = contracting_dims, batching_dims = batching_dims),
     infer_fn = infer_fn
   )[[1L]]
@@ -253,7 +226,7 @@ nvl_transpose <- function(operand, permutation) {
   }
   graph_desc_add(
     p_transpose,
-    list(operand),
+    list(operand = operand),
     list(permutation = permutation),
     infer_fn = infer_fn
   )[[1L]]
@@ -269,14 +242,14 @@ p_reshape <- AnvilPrimitive("reshape")
 #' @export
 nvl_reshape <- function(operand, shape) {
   infer_fn <- function(operand, shape) {
-    out <- stablehlo::infer_types_reshape(at2vt(operand), shape_out = shape)[[1L]]
+    out <- stablehlo::infer_types_reshape(at2vt(operand), shape = shape)[[1L]]
     out <- vt2at(out)
     out$ambiguous <- operand$ambiguous
     list(out)
   }
   graph_desc_add(
     p_reshape,
-    list(operand),
+    list(operand = operand),
     params = list(shape = shape),
     infer_fn = infer_fn
   )[[1L]]
@@ -298,7 +271,13 @@ nvl_concatenate <- function(..., dimension) {
     operands <- list(...)
     all_ambiguous <- all(vapply(operands, \(x) x$ambiguous, logical(1L)))
     vts <- lapply(operands, at2vt)
-    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dimension - 1L)[[1L]]
+    # Convert dimension to Constant as required by stablehlo
+    dim_const <- stablehlo::r_to_constant(
+      as.integer(dimension - 1L),
+      dtype = "i64",
+      shape = integer(0)
+    )
+    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dim_const)[[1L]]
     out <- vt2at(out)
     out$ambiguous <- all_ambiguous
     list(out)
@@ -354,7 +333,7 @@ make_reduce_op <- function(prim, infer_fn = infer_reduce) {
   function(operand, dims, drop = TRUE) {
     graph_desc_add(
       prim,
-      list(operand),
+      list(operand = operand),
       params = list(dims = dims, drop = drop),
       infer_fn = infer_fn
     )[[1L]]
@@ -442,7 +421,15 @@ nvl_reduce_all <- make_reduce_op(p_reduce_all, infer_reduce_boolean)
 # comparison primitives --------------------------------------------------------
 
 infer_compare <- function(lhs, rhs, comparison_direction) {
-  out <- stablehlo::infer_types_compare(at2vt(lhs), at2vt(rhs), comparison_direction, "FLOAT")[[1L]]
+  check_dtype <- as.character(dtype(lhs))
+  compare_type <- if ((check_dtype == "i1") || grepl("^ui", check_dtype)) {
+    "UNSIGNED"
+  } else if (grepl("^i", check_dtype)) {
+    "SIGNED"
+  } else {
+    "FLOAT"
+  }
+  out <- stablehlo::infer_types_compare(at2vt(lhs), at2vt(rhs), comparison_direction, compare_type)[[1L]]
   out <- vt2at(out)
   out$ambiguous <- lhs$ambiguous && rhs$ambiguous
   list(out)
@@ -451,7 +438,7 @@ infer_compare <- function(lhs, rhs, comparison_direction) {
 make_compare_op <- function(prim, direction) {
   infer_fn <- function(lhs, rhs) infer_compare(lhs, rhs, direction)
   function(lhs, rhs) {
-    graph_desc_add(prim, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
+    graph_desc_add(prim, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
   }
 }
 
@@ -518,7 +505,7 @@ p_max <- AnvilPrimitive("maximum")
 #' @template params_lhs_rhs
 #' @return [`tensorish`]
 #' @export
-nvl_max <- make_binary_op(p_max)
+nvl_max <- make_binary_op(p_max, stablehlo::infer_types_maximum)
 
 p_min <- AnvilPrimitive("minimum")
 #' @title Primitive Minimum
@@ -527,7 +514,7 @@ p_min <- AnvilPrimitive("minimum")
 #' @template params_lhs_rhs
 #' @return [`tensorish`]
 #' @export
-nvl_min <- make_binary_op(p_min)
+nvl_min <- make_binary_op(p_min, stablehlo::infer_types_minimum)
 
 p_remainder <- AnvilPrimitive("remainder")
 #' @title Primitive Remainder
@@ -536,7 +523,7 @@ p_remainder <- AnvilPrimitive("remainder")
 #' @template params_lhs_rhs
 #' @return [`tensorish`]
 #' @export
-nvl_remainder <- make_binary_op(p_remainder)
+nvl_remainder <- make_binary_op(p_remainder, stablehlo::infer_types_remainder)
 
 p_and <- AnvilPrimitive("and")
 #' @title Primitive And
@@ -545,7 +532,7 @@ p_and <- AnvilPrimitive("and")
 #' @template params_lhs_rhs
 #' @return [`tensorish`]
 #' @export
-nvl_and <- make_binary_integerish_op(p_and)
+nvl_and <- make_binary_op(p_and, stablehlo::infer_types_and)
 
 p_not <- AnvilPrimitive("not")
 #' @title Primitive Not
@@ -554,7 +541,7 @@ p_not <- AnvilPrimitive("not")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_not <- make_unary_integerish_op(p_not)
+nvl_not <- make_unary_op(p_not, stablehlo::infer_types_not)
 
 p_or <- AnvilPrimitive("or")
 #' @title Primitive Or
@@ -563,7 +550,7 @@ p_or <- AnvilPrimitive("or")
 #' @template params_lhs_rhs
 #' @return [`tensorish`]
 #' @export
-nvl_or <- make_binary_integerish_op(p_or)
+nvl_or <- make_binary_op(p_or, stablehlo::infer_types_or)
 
 p_xor <- AnvilPrimitive("xor")
 #' @title Primitive Xor
@@ -572,7 +559,7 @@ p_xor <- AnvilPrimitive("xor")
 #' @template params_lhs_rhs
 #' @return [`tensorish`]
 #' @export
-nvl_xor <- make_binary_integerish_op(p_xor)
+nvl_xor <- make_binary_op(p_xor, stablehlo::infer_types_xor)
 
 infer_shift <- function(lhs, rhs, shift_fn) {
   both_ambiguous <- lhs$ambiguous && rhs$ambiguous
@@ -591,7 +578,7 @@ p_shift_left <- AnvilPrimitive("shift_left")
 #' @export
 nvl_shift_left <- function(lhs, rhs) {
   infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_left)
-  graph_desc_add(p_shift_left, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_shift_left, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
 }
 
 p_shift_right_logical <- AnvilPrimitive("shift_right_logical")
@@ -603,7 +590,7 @@ p_shift_right_logical <- AnvilPrimitive("shift_right_logical")
 #' @export
 nvl_shift_right_logical <- function(lhs, rhs) {
   infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_logical)
-  graph_desc_add(p_shift_right_logical, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_shift_right_logical, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
 }
 
 p_shift_right_arithmetic <- AnvilPrimitive("shift_right_arithmetic")
@@ -615,7 +602,7 @@ p_shift_right_arithmetic <- AnvilPrimitive("shift_right_arithmetic")
 #' @export
 nvl_shift_right_arithmetic <- function(lhs, rhs) {
   infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_arithmetic)
-  graph_desc_add(p_shift_right_arithmetic, list(lhs, rhs), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_shift_right_arithmetic, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
 }
 
 p_atan2 <- AnvilPrimitive("atan2")
@@ -625,7 +612,7 @@ p_atan2 <- AnvilPrimitive("atan2")
 #' @template params_lhs_rhs
 #' @return [`tensorish`]
 #' @export
-nvl_atan2 <- make_binary_op(p_atan2)
+nvl_atan2 <- make_binary_op(p_atan2, stablehlo::infer_types_atan2)
 
 p_bitcast_convert <- AnvilPrimitive("bitcast_convert")
 #' @title Primitive Bitcast Convert
@@ -639,7 +626,7 @@ nvl_bitcast_convert <- function(operand, dtype) {
   infer_fn <- function(operand, dtype) {
     lapply(stablehlo::infer_types_bitcast_convert(at2vt(operand), dtype), vt2at)
   }
-  graph_desc_add(p_bitcast_convert, list(operand), params = list(dtype = dtype), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_bitcast_convert, list(operand = operand), params = list(dtype = dtype), infer_fn = infer_fn)[[1L]]
 }
 
 # unary math primitives ---------------------------------------------------------
@@ -651,7 +638,7 @@ p_abs <- AnvilPrimitive("abs")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_abs <- make_unary_op(p_abs)
+nvl_abs <- make_unary_op(p_abs, stablehlo::infer_types_abs)
 
 p_sqrt <- AnvilPrimitive("sqrt")
 #' @title Primitive Square Root
@@ -660,7 +647,7 @@ p_sqrt <- AnvilPrimitive("sqrt")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_sqrt <- make_unary_op(p_sqrt)
+nvl_sqrt <- make_unary_op(p_sqrt, stablehlo::infer_types_sqrt)
 
 p_rsqrt <- AnvilPrimitive("rsqrt")
 
@@ -670,7 +657,7 @@ p_rsqrt <- AnvilPrimitive("rsqrt")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_rsqrt <- make_unary_op(p_rsqrt)
+nvl_rsqrt <- make_unary_op(p_rsqrt, stablehlo::infer_types_rsqrt)
 
 p_log <- AnvilPrimitive("log")
 #' @title Primitive Logarithm
@@ -679,7 +666,7 @@ p_log <- AnvilPrimitive("log")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_log <- make_unary_op(p_log)
+nvl_log <- make_unary_op(p_log, stablehlo::infer_types_log)
 
 p_tanh <- AnvilPrimitive("tanh")
 #' @title Primitive Hyperbolic Tangent
@@ -688,7 +675,7 @@ p_tanh <- AnvilPrimitive("tanh")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_tanh <- make_unary_op(p_tanh)
+nvl_tanh <- make_unary_op(p_tanh, stablehlo::infer_types_tanh)
 
 p_tan <- AnvilPrimitive("tan")
 #' @title Primitive Tangent
@@ -697,7 +684,7 @@ p_tan <- AnvilPrimitive("tan")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_tan <- make_unary_op(p_tan)
+nvl_tan <- make_unary_op(p_tan, stablehlo::infer_types_tan)
 
 p_sine <- AnvilPrimitive("sine")
 #' @title Primitive Sine
@@ -706,7 +693,7 @@ p_sine <- AnvilPrimitive("sine")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_sine <- make_unary_op(p_sine)
+nvl_sine <- make_unary_op(p_sine, stablehlo::infer_types_sine)
 
 p_cosine <- AnvilPrimitive("cosine")
 #' @title Primitive Cosine
@@ -715,7 +702,7 @@ p_cosine <- AnvilPrimitive("cosine")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_cosine <- make_unary_op(p_cosine)
+nvl_cosine <- make_unary_op(p_cosine, stablehlo::infer_types_cosine)
 
 p_floor <- AnvilPrimitive("floor")
 #' @title Primitive Floor
@@ -724,7 +711,7 @@ p_floor <- AnvilPrimitive("floor")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_floor <- make_unary_op(p_floor)
+nvl_floor <- make_unary_op(p_floor, stablehlo::infer_types_floor)
 
 p_ceil <- AnvilPrimitive("ceil")
 #' @title Primitive Ceiling
@@ -733,7 +720,7 @@ p_ceil <- AnvilPrimitive("ceil")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_ceil <- make_unary_op(p_ceil)
+nvl_ceil <- make_unary_op(p_ceil, stablehlo::infer_types_ceil)
 
 p_sign <- AnvilPrimitive("sign")
 #' @title Primitive Sign
@@ -742,7 +729,7 @@ p_sign <- AnvilPrimitive("sign")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_sign <- make_unary_op(p_sign)
+nvl_sign <- make_unary_op(p_sign, stablehlo::infer_types_sign)
 
 p_exp <- AnvilPrimitive("exp")
 #' @title Primitive Exponential
@@ -751,7 +738,7 @@ p_exp <- AnvilPrimitive("exp")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_exp <- make_unary_op(p_exp)
+nvl_exp <- make_unary_op(p_exp, stablehlo::infer_types_exponential)
 
 p_expm1 <- AnvilPrimitive("expm1")
 #' @title Primitive Exponential Minus One
@@ -760,7 +747,7 @@ p_expm1 <- AnvilPrimitive("expm1")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_expm1 <- make_unary_op(p_expm1)
+nvl_expm1 <- make_unary_op(p_expm1, stablehlo::infer_types_exponential_minus_one)
 
 p_log1p <- AnvilPrimitive("log1p")
 #' @title Primitive Log Plus One
@@ -769,7 +756,7 @@ p_log1p <- AnvilPrimitive("log1p")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_log1p <- make_unary_op(p_log1p)
+nvl_log1p <- make_unary_op(p_log1p, stablehlo::infer_types_log_plus_one)
 
 p_cbrt <- AnvilPrimitive("cbrt")
 #' @title Primitive Cube Root
@@ -778,7 +765,7 @@ p_cbrt <- AnvilPrimitive("cbrt")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_cbrt <- make_unary_op(p_cbrt)
+nvl_cbrt <- make_unary_op(p_cbrt, stablehlo::infer_types_cbrt)
 
 p_logistic <- AnvilPrimitive("logistic")
 #' @title Primitive Logistic (Sigmoid)
@@ -787,7 +774,7 @@ p_logistic <- AnvilPrimitive("logistic")
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nvl_logistic <- make_unary_op(p_logistic)
+nvl_logistic <- make_unary_op(p_logistic, stablehlo::infer_types_logistic)
 
 p_is_finite <- AnvilPrimitive("is_finite")
 #' @title Primitive Is Finite
@@ -801,7 +788,7 @@ nvl_is_finite <- function(operand) {
     out <- stablehlo::infer_types_is_finite(at2vt(operand))[[1L]]
     list(vt2at(out))
   }
-  graph_desc_add(p_is_finite, list(operand), list(), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_is_finite, list(operand = operand), list(), infer_fn = infer_fn)[[1L]]
 }
 
 p_popcnt <- AnvilPrimitive("popcnt")
@@ -818,7 +805,7 @@ nvl_popcnt <- function(operand) {
     out$ambiguous <- operand$ambiguous
     list(out)
   }
-  graph_desc_add(p_popcnt, list(operand), list(), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_popcnt, list(operand = operand), list(), infer_fn = infer_fn)[[1L]]
 }
 
 p_clamp <- AnvilPrimitive("clamp")
@@ -839,7 +826,7 @@ nvl_clamp <- function(min_val, operand, max_val) {
     out$ambiguous <- operand$ambiguous
     list(out)
   }
-  graph_desc_add(p_clamp, list(min_val, operand, max_val), list(), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_clamp, list(min_val = min_val, operand = operand, max_val = max_val), list(), infer_fn = infer_fn)[[1L]]
 }
 
 p_reverse <- AnvilPrimitive("reverse")
@@ -860,7 +847,7 @@ nvl_reverse <- function(operand, dims) {
     out$ambiguous <- operand$ambiguous
     list(out)
   }
-  graph_desc_add(p_reverse, list(operand), list(dims = dims), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_reverse, list(operand = operand), list(dims = dims), infer_fn = infer_fn)[[1L]]
 }
 
 p_iota <- AnvilPrimitive("iota")
@@ -877,7 +864,13 @@ p_iota <- AnvilPrimitive("iota")
 nvl_iota <- function(dim, dtype, shape) {
   infer_fn <- function(dim, dtype, shape) {
     # stablehlo uses 0-based indexing, anvil uses 1-based
-    out <- stablehlo::infer_types_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape)[[1L]]
+    # Convert dim to Constant as required by stablehlo
+    iota_dim_const <- stablehlo::r_to_constant(
+      as.integer(dim - 1L),
+      dtype = "i64",
+      shape = integer(0)
+    )
+    out <- stablehlo::infer_types_iota(iota_dimension = iota_dim_const, dtype = dtype, shape = shape)[[1L]]
     list(vt2at(out))
   }
   graph_desc_add(
@@ -923,7 +916,7 @@ nvl_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high,
 
   graph_desc_add(
     p_pad,
-    list(operand, padding_value),
+    list(operand = operand, padding_value = padding_value),
     list(
       edge_padding_low = edge_padding_low,
       edge_padding_high = edge_padding_high,
@@ -947,9 +940,14 @@ nvl_round <- function(operand, method = "nearest_even") {
     cli_abort("method must be one of: 'nearest_even', 'afz', but is {method}")
   }
   infer_fn <- function(operand, method) {
-    infer_unary(operand)
+    # both rounding functions have the same inference, so just pick one:
+    stablehlo_infer <- stablehlo::infer_types_round_nearest_even
+    out <- stablehlo_infer(at2vt(operand))[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
+    list(out)
   }
-  graph_desc_add(p_round, list(operand), list(method = method), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_round, list(operand = operand), list(method = method), infer_fn = infer_fn)[[1L]]
 }
 
 # dtype conversion ----------------------------------------------------------------
@@ -974,7 +972,7 @@ nvl_convert <- function(operand, dtype, ambiguous = FALSE) {
   }
   graph_desc_add(
     p_convert,
-    list(operand),
+    list(operand = operand),
     params = list(dtype = dtype, ambiguous = ambiguous),
     infer_fn = infer_fn
   )[[1L]]
@@ -1005,7 +1003,7 @@ nvl_select <- function(pred, true_value, false_value) {
     out$ambiguous <- both_ambiguous
     list(out)
   }
-  graph_desc_add(p_select, list(pred, true_value, false_value), infer_fn = infer_fn)[[1L]]
+  graph_desc_add(p_select, list(pred = pred, true_value = true_value, false_value = false_value), infer_fn = infer_fn)[[1L]]
 }
 
 # Higher order primitives -------------------------------------------------------
@@ -1074,7 +1072,7 @@ nvl_if <- function(pred, true, false) {
 
   out <- graph_desc_add(
     p_if,
-    list(pred),
+    list(pred = pred),
     params = list(true_graph = true_graph, false_graph = false_graph),
     infer_fn = infer_fn,
     desc = current_desc,
@@ -1162,7 +1160,8 @@ nvl_while <- function(init, cond, body) {
     params = list(cond_graph = cond_graph, body_graph = body_graph),
     infer_fn = infer_fn,
     desc = current_desc,
-    debug_mode = debug_mode
+    debug_mode = debug_mode,
+    show_inputs = FALSE
   )
 
   unflatten(body_graph$out_tree, out)
@@ -1179,7 +1178,7 @@ p_print <- AnvilPrimitive("print")
 #' @return [`tensorish`]
 #' @export
 nvl_print <- function(operand) {
-  graph_desc_add(p_print, list(operand), infer_fn = list)[[1L]]
+  graph_desc_add(p_print, list(operand = operand), infer_fn = list)[[1L]]
 }
 
 # RNG primitives
@@ -1192,18 +1191,18 @@ p_rng_bit_generator <- AnvilPrimitive("rng_bit_generator")
 #' @param rng_algorithm (`character(1)`)\cr
 #'   Algorithm name (default "THREE_FRY").
 #' @template param_dtype
-#' @param shape_out (`integer()`)\cr
+#' @param shape (`integer()`)\cr
 #'   Output shape.
 #' @return List of new state and random tensor.
 #' @export
-nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape_out) {
-  infer_fn <- function(initial_state, rng_algorithm, dtype, shape_out) {
-    lapply(stablehlo::infer_types_rng_bit_generator(at2vt(initial_state), rng_algorithm, dtype, shape_out), vt2at)
+nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape) {
+  infer_fn <- function(initial_state, rng_algorithm, dtype, shape) {
+    lapply(stablehlo::infer_types_rng_bit_generator(at2vt(initial_state), rng_algorithm, dtype, shape), vt2at)
   }
   graph_desc_add(
     p_rng_bit_generator,
-    list(initial_state),
-    params = list(rng_algorithm = rng_algorithm, dtype = dtype, shape_out = shape_out),
+    list(initial_state = initial_state),
+    params = list(rng_algorithm = rng_algorithm, dtype = dtype, shape = shape),
     infer_fn = infer_fn
   )
 }

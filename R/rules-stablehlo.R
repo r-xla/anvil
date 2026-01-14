@@ -30,8 +30,8 @@ p_pow[["stablehlo"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_power(lhs, rhs))
 }
 
-p_broadcast_in_dim[["stablehlo"]] <- function(operand, shape_out, broadcast_dimensions) {
-  list(stablehlo::hlo_broadcast_in_dim(operand, broadcast_dimensions - 1L, shape_out))
+p_broadcast_in_dim[["stablehlo"]] <- function(operand, shape, broadcast_dimensions) {
+  list(stablehlo::hlo_broadcast_in_dim(operand, broadcast_dimensions - 1L, shape))
 }
 
 p_dot_general[["stablehlo"]] <- function(lhs, rhs, contracting_dims, batching_dims) {
@@ -128,11 +128,8 @@ p_reduce_all[["stablehlo"]] <- function(operand, dims, drop) {
     "FLOAT"
   } else if (inherits(dt, "IntegerType")) {
     "SIGNED"
-  } else if (inherits(dt, "UnsignedType")) {
+  } else if (inherits(dt, "UnsignedType") || inherits(dt, "BooleanType")) {
     "UNSIGNED"
-  } else if (inherits(dt, "BooleanType")) {
-    # StableHLO uses SIGNED for i1 compares
-    "SIGNED"
   } else {
     cli_abort("Unsupported dtype for compare")
   }
@@ -313,8 +310,8 @@ p_select[["stablehlo"]] <- function(pred, true_value, false_value) {
 
 # RNG jit rules --------------------------------------------------------
 
-p_rng_bit_generator[["stablehlo"]] <- function(initial_state, rng_algorithm, dtype, shape_out) {
-  stablehlo::hlo_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out)
+p_rng_bit_generator[["stablehlo"]] <- function(initial_state, rng_algorithm, dtype, shape) {
+  stablehlo::hlo_rng_bit_generator(initial_state, rng_algorithm, dtype, shape)
 }
 
 p_print[["stablehlo"]] <- function(operand) {

@@ -3,18 +3,18 @@
 #' @description
 #' converts a random seed into a initial state tensor
 #' @param dtype output dtype either "ui32" or "ui64"
-#' @param shape_out output shape
+#' @param shape output shape
 #' @param random_seed explicitly provide the random seed of a R session. auto-detects if not provided.
 #' @param hash_algo hash algorithm to hash the random state with. Default is 'sha512'.
 #' @export
 nv_seed2state <- function(
   dtype = "ui64",
-  shape_out = 2,
+  shape = 2,
   random_seed = NULL,
   hash_algo = "sha512"
 ) {
   checkmate::assertChoice(dtype, c("ui32", "ui64"))
-  n_states <- prod(shape_out)
+  n_states <- prod(shape)
 
   # auto detect random_seed
   if (is.null(random_seed)) {
@@ -49,16 +49,15 @@ nv_seed2state <- function(
     )
   }
 
-  # tensor of type i8 of shape (shape_out, 4/8)
+  # tensor of type i8 of shape (shape, 4/8)
   raw8 <- nv_tensor(
     as.integer(hash_bytes[seq_len(bytes_needed)]),
-    shape = c(shape_out, bytes_per_value),
+    shape = c(shape, bytes_per_value),
     dtype = "i8"
   )
 
   # upcast raw8 to requested dtype, last dimension vanished
-  # returns tensor of shape = shape_out
-  nv_bitcast_convert(raw8, dtype = dtype)
+  nv_bitcast_convert(raw8, dtype = dtype)  # nolint
 }
 
 
@@ -66,7 +65,7 @@ test_that("seed2state", {
   # auto-detect state
   set.seed(42)
   f <- function() {
-    nv_seed2state(shape_out = c(3, 2))
+    nv_seed2state(shape = c(3, 2))
   }
   g <- jit(f)
   out1 <- g()
@@ -74,7 +73,7 @@ test_that("seed2state", {
   # explicitly provide state
   set.seed(42)
   f <- function() {
-    nv_seed2state(shape_out = c(3, 2), random_seed = .Random.seed)
+    nv_seed2state(shape = c(3, 2), random_seed = .Random.seed)
   }
   g <- jit(f)
   out2 <- g()
@@ -87,7 +86,7 @@ test_that("seed2state", {
   # test ui32
   set.seed(1)
   f <- function() {
-    nv_seed2state(shape_out = 2, dtype = "ui32")
+    nv_seed2state(shape = 2, dtype = "ui32")
   }
   g <- jit(f)
   out3 <- g()
