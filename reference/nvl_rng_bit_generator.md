@@ -5,12 +5,7 @@ Generates random bits using the specified algorithm.
 ## Usage
 
 ``` r
-nvl_rng_bit_generator(
-  initial_state,
-  rng_algorithm = "THREE_FRY",
-  dtype,
-  shape_out
-)
+nvl_rng_bit_generator(initial_state, rng_algorithm = "THREE_FRY", dtype, shape)
 ```
 
 ## Arguments
@@ -31,7 +26,7 @@ nvl_rng_bit_generator(
   [`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
   Data type.
 
-- shape_out:
+- shape:
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
   Output shape.

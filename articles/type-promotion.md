@@ -9,15 +9,6 @@ latter’s type, because it’s more expressive.
 
 ``` r
 library(anvil)
-```
-
-    ## Registered S3 methods overwritten by 'xlamisc':
-    ##   method         from     
-    ##   !=.list_of     stablehlo
-    ##   ==.list_of     stablehlo
-    ##   length.list_of stablehlo
-
-``` r
 jit(nv_add)(
   nv_scalar(1.0, dtype = "f32"),
   nv_scalar(1.0, dtype = "f64")

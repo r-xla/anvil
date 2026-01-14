@@ -44,15 +44,6 @@ of `op`.
 
 ``` r
 library(anvil)
-```
-
-    ## Registered S3 methods overwritten by 'xlamisc':
-    ##   method         from     
-    ##   !=.list_of     stablehlo
-    ##   ==.list_of     stablehlo
-    ##   length.list_of stablehlo
-
-``` r
 f <- function(x, y, op) {
   if (op == "add") {
     nv_add(x, y)
@@ -165,7 +156,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x55936ea00988>
+    ## <bytecode: 0x556d0e7e4038>
     ## <environment: namespace:anvil>
 
 The
@@ -216,7 +207,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x55936e9ffd10>
+    ## <bytecode: 0x556d0e7e33c0>
     ## <environment: namespace:anvil>
 
 The
@@ -518,9 +509,9 @@ graph
     ##     %c1: f32[1000000]
     ##   Body:
     ##     %1: f32[] = convert [dtype = f32, ambiguous = FALSE] (%x1)
-    ##     %2: f32[1000000] = broadcast_in_dim [shape_out = 1000000, broadcast_dimensions = <any>] (%1)
+    ##     %2: f32[1000000] = broadcast_in_dim [shape = 1000000, broadcast_dimensions = <any>] (%1)
     ##     %3: f32[1000000] = add(%2, %c1)
-    ##     %4: f32?[1000000] = broadcast_in_dim [shape_out = 1000000, broadcast_dimensions = <any>] (1:f32?)
+    ##     %4: f32?[1000000] = broadcast_in_dim [shape = 1000000, broadcast_dimensions = <any>] (1:f32?)
     ##     %5: f32[1000000] = add(%3, %4)
     ##   Outputs:
     ##     %5: f32[1000000]

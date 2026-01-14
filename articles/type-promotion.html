@@ -84,7 +84,7 @@
       <h1>Type Promotion</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/type-promotion.Rmd" class="external-link"><code>vignettes/type-promotion.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-errors/vignettes/type-promotion.Rmd" class="external-link"><code>vignettes/type-promotion.Rmd</code></a></small>
       <div class="d-none name"><code>type-promotion.Rmd</code></div>
     </div>
 
@@ -99,14 +99,8 @@ common type. For example, below we are adding an <code>f32</code> to an
 <code>f64</code>, where the former is promoted to the latter’s type,
 because it’s more expressive.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Registered S3 methods overwritten by 'xlamisc':</span></span>
-<span><span class="co">##   method         from     </span></span>
-<span><span class="co">##   !=.list_of     stablehlo</span></span>
-<span><span class="co">##   ==.list_of     stablehlo</span></span>
-<span><span class="co">##   length.list_of stablehlo</span></span></code></pre>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">nv_add</span><span class="op">)</span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">nv_add</span><span class="op">)</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -120,10 +114,10 @@ instead of precision.</p>
 returns a <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> with two values: the common dtype and a
 flag indicating whether the result is ambiguous, which we will cover
 later.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/common_dtype.html">common_dtype</a></span><span class="op">(</span><span class="st">"f64"</span>, <span class="st">"f32"</span><span class="op">)</span><span class="op">$</span><span class="va">dtype</span></span></code></pre></div>
 <pre><code><span><span class="co">## &lt;FloatType: 64&gt;</span></span></code></pre>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/common_dtype.html">common_dtype</a></span><span class="op">(</span><span class="st">"i64"</span>, <span class="st">"f32"</span><span class="op">)</span><span class="op">$</span><span class="va">dtype</span></span></code></pre></div>
 <pre><code><span><span class="co">## &lt;FloatType: 32&gt;</span></span></code></pre>
 <p>A table with the promotion rules is below.</p>
@@ -607,7 +601,7 @@ follows:</p>
 <li>
 <code><a href="https://rdrr.io/r/base/logical.html" class="external-link">logical()</a></code> -&gt; <code>i1</code> (bool)</li>
 </ul>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1.0</span>, <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [[1]]</span></span>
 <span><span class="co">## AnvilTensor </span></span>
@@ -632,21 +626,21 @@ latter as <code>i32?</code>. The result is an <code>f64</code>, although
 we would promote to an <code>f64</code> if both were known. If both
 types are ambiguous, the result is generally the same as if both were
 known.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/common_dtype.html">common_dtype</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="st">"f64"</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $dtype</span></span>
 <span><span class="co">## &lt;FloatType: 32&gt;</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $ambiguous</span></span>
 <span><span class="co">## [1] FALSE</span></span></code></pre>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/common_dtype.html">common_dtype</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="st">"f64"</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $dtype</span></span>
 <span><span class="co">## &lt;FloatType: 64&gt;</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $ambiguous</span></span>
 <span><span class="co">## [1] TRUE</span></span></code></pre>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/common_dtype.html">common_dtype</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="st">"f64"</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $dtype</span></span>
 <span><span class="co">## &lt;FloatType: 64&gt;</span></span>
@@ -1131,7 +1125,7 @@ f64
 </h2>
 <p>Ambiguity is propagated through operations. Consider the following
 example:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">z</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">+</span> <span class="fl">1L</span></span>
 <span>  <span class="va">z</span> <span class="op">*</span> <span class="va">y</span></span>

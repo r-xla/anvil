@@ -19,15 +19,6 @@ represents the type of the output tensor.
 
 ``` r
 library(anvil)
-```
-
-    ## Registered S3 methods overwritten by 'xlamisc':
-    ##   method         from     
-    ##   !=.list_of     stablehlo
-    ##   ==.list_of     stablehlo
-    ##   length.list_of stablehlo
-
-``` r
 y <- nv_scalar(1) + nv_tensor(1:4, shape = c(2, 2))
 y
 ```
