@@ -348,6 +348,77 @@ nvl_slice <- function(operand, start_indices, limit_indices, strides) {
   )[[1L]]
 }
 
+p_dynamic_slice <- AnvilPrimitive("dynamic_slice")
+#' @title Primitive Dynamic Slice
+#' @description
+#' Extracts a dynamically positioned slice from a tensor.
+#' @template param_operand
+#' @param ... ([`tensorish`])\cr
+#'   Start indices as scalar tensors (1-based).
+#' @param slice_sizes (`integer()`)\cr
+#'   Size of the slice in each dimension.
+#' @return [`tensorish`]
+#' @export
+nvl_dynamic_slice <- function(operand, ..., slice_sizes) {
+  start_indices <- list(...)
+  infer_fn <- function(operand, ..., slice_sizes) {
+    start_indices <- list(...)
+    slice_sizes_attr <- r_to_constant(slice_sizes, dtype = "i64", shape = length(slice_sizes))
+    # For inference, we pass the indices as-is; stablehlo expects 0-based indices
+    # The conversion from 1-based to 0-based will happen in the stablehlo rule
+    out <- rlang::exec(
+      stablehlo::infer_types_dynamic_slice,
+      at2vt(operand),
+      !!!lapply(start_indices, at2vt),
+      slice_sizes = slice_sizes_attr
+    )[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
+    list(out)
+  }
+  graph_desc_add(
+    p_dynamic_slice,
+    args = c(list(operand), start_indices),
+    params = list(slice_sizes = slice_sizes),
+    infer_fn = infer_fn
+  )[[1L]]
+}
+
+p_dynamic_update_slice <- AnvilPrimitive("dynamic_update_slice")
+#' @title Primitive Dynamic Update Slice
+#' @description
+#' Updates a dynamically positioned slice in a tensor.
+#' @template param_operand
+#' @param update ([`tensorish`])\cr
+#'   Update tensor with the new values.
+#' @param ... ([`tensorish`])\cr
+#'   Start indices as scalar tensors (1-based).
+#' @return [`tensorish`]
+#' @export
+nvl_dynamic_update_slice <- function(operand, update, ...) {
+  start_indices <- list(...)
+  infer_fn <- function(operand, update, ...) {
+    start_indices <- list(...)
+    # For inference, we pass the indices as-is; stablehlo expects 0-based indices
+    # The conversion from 1-based to 0-based will happen in the stablehlo rule
+    out <- rlang::exec(
+      stablehlo::infer_types_dynamic_update_slice,
+      at2vt(operand),
+      at2vt(update),
+      !!!lapply(start_indices, at2vt)
+    )[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
+    list(out)
+  }
+  graph_desc_add(
+    p_dynamic_update_slice,
+    args = c(list(operand, update), start_indices),
+    params = list(),
+    infer_fn = infer_fn
+  )[[1L]]
+}
+
 # reduction operators
 
 make_reduce_op <- function(prim, infer_fn = infer_reduce) {

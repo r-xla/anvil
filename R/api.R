@@ -206,6 +206,30 @@ nv_concatenate <- nvl_concatenate
 #' @export
 nv_slice <- nvl_slice
 
+#' @title Dynamic Slice
+#' @description
+#' Extracts a dynamically positioned slice from a tensor.
+#' @template param_operand
+#' @param ... ([`tensorish`])\cr
+#'   Start indices as scalar tensors (1-based).
+#' @param slice_sizes (`integer()`)\cr
+#'   Size of the slice in each dimension.
+#' @return [`tensorish`]
+#' @export
+nv_dynamic_slice <- nvl_dynamic_slice
+
+#' @title Dynamic Update Slice
+#' @description
+#' Updates a dynamically positioned slice in a tensor.
+#' @template param_operand
+#' @param update ([`tensorish`])\cr
+#'   Update tensor with the new values.
+#' @param ... ([`tensorish`])\cr
+#'   Start indices as scalar tensors (1-based).
+#' @return [`tensorish`]
+#' @export
+nv_dynamic_update_slice <- nvl_dynamic_update_slice
+
 #' @title Print Tensor
 #' @description
 #' Prints a tensor during JIT execution.
