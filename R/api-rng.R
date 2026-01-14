@@ -17,7 +17,7 @@ nv_unif_rand <- function(
     initial_state = initial_state,
     "THREE_FRY",
     paste0("ui", sub("f(\\d+)", "\\1", dtype)),
-    shape_out = shape
+    shape = shape
   )
 
   # shift value: 9 for f32, 11 for f64
