@@ -347,6 +347,9 @@ maybe_box_input <- function(x, desc, toplevel, lit_to_tensor) {
     gval <- GraphValue(aval = x)
     register_input(desc, gval)
   } else {
+    if (lit_to_tensor) {
+      cli_abort("Expected only tensorish values, but got {.cls {class(x)[1]}}")
+    }
     # parameter
     x
   }
