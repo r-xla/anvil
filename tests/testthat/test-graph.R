@@ -113,7 +113,7 @@ test_that("constants: same tensor is constant and input at the same time", {
     y <- nv_scalar(2)
     gradient(h)(y)
   })
-  f(nv_scalar(1))
+  expect_equal(f(nv_scalar(1)), list(x = nv_scalar(2)))
 })
 
 test_that("closed-over constant is passed as argument to transformation", {
@@ -122,7 +122,7 @@ test_that("closed-over constant is passed as argument to transformation", {
     h <- function(y) y * y
     gradient(h)(x)
   })
-  f()
+  expect_equal(f(), list(y = nv_scalar(2)))
 })
 
 test_that("can pass constant to nested trace_fn call if it does not exist in the parent graph", {
@@ -181,4 +181,12 @@ test_that("can pass abstract tensors to trace_fn", {
   expect_equal(graph$inputs[[1L]]$aval, in_type)
   expect_equal(graph$inputs[[2L]]$aval, in_type)
   expect_equal(length(graph$inputs), 2L)
+})
+
+test_that("error handling", {
+  expect_snapshot(error = TRUE, jit(nvl_ceil)(nv_tensor(1:4)))
+  expect_snapshot(
+    error = TRUE,
+    jit(nvl_transpose, static = "permutation")(nv_tensor(1:4, shape = c(2, 2)), permutation = c(2, 2))
+  )
 })

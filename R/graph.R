@@ -643,10 +643,19 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, d
   }
 
   boxes_in <- lapply(args, maybe_box_tensorish)
-  gnodes_in <- lapply(boxes_in, \(box) box$gnode)
+  gnodes_in <- unname(lapply(boxes_in, \(box) box$gnode))
   avals_in <- lapply(boxes_in, \(box) box$gnode$aval)
-  sts_out <- rlang::exec(infer_fn, !!!c(avals_in, params))
-  gvals_out <- lapply(sts_out, GraphValue)
+  ats_out <- tryCatch(
+    {
+      rlang::exec(infer_fn, !!!c(avals_in, params))
+    },
+    error = function(e) {
+      e$call <- print_call_repr(prim)
+      e <- stablehlo::to_one_based(e)
+      rlang::cnd_signal(e)
+    }
+  )
+  gvals_out <- lapply(ats_out, GraphValue)
   call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)
   desc$calls <- c(desc$calls, list(call))
   boxes_out <- lapply(gvals_out, register_gval, desc = desc)
@@ -654,6 +663,10 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, d
     return(lapply(boxes_out, \(x) DebugBox(to_abstract(x))))
   }
   return(boxes_out)
+}
+
+print_call_repr <- function(prim) {
+  rlang::exec(call, paste0("nvl_", prim$name))
 }
 
 

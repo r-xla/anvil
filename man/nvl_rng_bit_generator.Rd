@@ -4,12 +4,7 @@
 \alias{nvl_rng_bit_generator}
 \title{Primitive RNG Bit Generator}
 \usage{
-nvl_rng_bit_generator(
-  initial_state,
-  rng_algorithm = "THREE_FRY",
-  dtype,
-  shape_out
-)
+nvl_rng_bit_generator(initial_state, rng_algorithm = "THREE_FRY", dtype, shape)
 }
 \arguments{
 \item{initial_state}{(\code{\link{tensorish}})\cr
@@ -21,7 +16,7 @@ Algorithm name (default "THREE_FRY").}
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}
 
-\item{shape_out}{(\code{integer()})\cr
+\item{shape}{(\code{integer()})\cr
 Output shape.}
 }
 \value{

@@ -170,7 +170,7 @@ test_that("p_reduce_all", {
 
 test_that("p_broadcast_in_dim", {
   x <- 1L
-  f <- jit(nvl_broadcast_in_dim, static = c("shape_out", "broadcast_dimensions"))
+  f <- jit(nvl_broadcast_in_dim, static = c("shape", "broadcast_dimensions"))
   expect_equal(
     f(nv_scalar(1L), c(1, 2), integer()),
     nv_tensor(1L, shape = c(1, 2)),
