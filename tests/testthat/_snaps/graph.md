@@ -5,7 +5,7 @@
     Output
       GraphLiteral(1, i32?) 
 
-# error handling: adds the primitive call
+# error handling
 
     Code
       jit(nvl_ceil)(nv_tensor(1:4))
@@ -14,7 +14,7 @@
       ! `operand` must have dtype FloatType.
       x Got <i32>.
 
-# error handling: increments index in error message
+---
 
     Code
       jit(nvl_transpose, static = "permutation")(nv_tensor(1:4, shape = c(2, 2)),
