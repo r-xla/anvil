@@ -1,16 +1,8 @@
-#' @title AnvilTensor
+#' @title AnvilTensor: Tensor Objects
 #' @description
-#' Virtual base class for tensor objects in anvil.
-#' This class is used to mark objects that can be used as tensors in anvil.
-#' Cannot be instantiated directly - use [`nv_tensor()`], [`nv_scalar()`], or [`nv_empty()`] instead.
-#' @name AnvilTensor
-NULL
-
-#' @importFrom pjrt platform
-
-#' @title Tensor
-#' @description
-#' Create a tensor.
+#' Tensor objects in anvil that hold array data with automatic differentiation support.
+#' Create tensors using [`nv_tensor()`], [`nv_scalar()`], or [`nv_empty()`].
+#'
 #' @param data (any)\cr
 #'   Object convertible to a [`PJRTBuffer`][pjrt::pjrt_buffer].
 #' @param dtype (`NULL` | `character(1)` | [`TensorDataType`])\cr
@@ -25,48 +17,156 @@ NULL
 #'   The default (`NULL`) is to infer it from the data if possible.
 #'   Note that [`nv_tensor`] interprets length 1 vectors as having shape `(1)`.
 #'   To create a "scalar" with dimension `()`, use [`nv_scalar`].
-#' @details
-#' Internally calls [`pjrt_buffer`][pjrt::pjrt_buffer].
-#' @return (`AnvilTensor`)
-#' @export
-nv_tensor <- function(data, dtype = NULL, device = NULL, shape = NULL) {
+#' @param ambiguous (`logical(1)`)\cr
+#'   Whether the dtype should be marked as ambiguous.
+#'   For [nv_tensor()], defaults to `FALSE` (non-ambiguous).
+#'   For [nv_scalar()], defaults to `TRUE` when `dtype` is `NULL` and data is numeric, `FALSE` otherwise.
+#'
+#' @section Creating Tensors:
+#'
+#' - [nv_tensor()]: Create a tensor from data. Always creates non-ambiguous tensors.
+#' - [nv_scalar()]: Create a scalar (0-dimensional) tensor. Creates ambiguous tensors when `dtype` is not specified.
+#' - [nv_empty()]: Create an uninitialized tensor.
+#'
+#' @section Type Ambiguity:
+#' Ambiguity indicates whether the dtype was implicitly determined (ambiguous) or explicitly specified (non-ambiguous).
+#' Ambiguous types participate in automatic type promotion:
+#'
+#' - `nv_scalar(1)` creates an ambiguous `f32` tensor
+#' - `nv_scalar(1, dtype = "f32")` creates a non-ambiguous `f32` tensor
+#' - `nv_tensor`
+#'
+#' ## Performance: Large Constants in JIT Programs
+#'
+#' When using [nv_tensor()] to create large arrays inside [jit()]-compiled functions,
+#' the entire array data is captured as a constant and embedded in the compiled program.
+#' This can significantly increase compilation time and program size.
+#'
+#' **For large arrays with uniform values, use [nv_fill()] instead:**
+#'
+#' ```r
+#' # Bad: Large constant embedded in program
+#' f <- jit(function(x) {
+#'   x + nv_tensor(rep(1, 10000), dtype = "f32")
+#' })
+#'
+#' # Good: Efficient constant generation
+#' f <- jit(function(x) {
+#'   x + nv_fill(1, shape = 10000)
+#' })
+#' ```
+#'
+#' [nv_fill()] generates the constant value at runtime rather than embedding it in the graph,
+#' resulting in faster compilation and smaller program sizes.
+#'
+#' @section Extractors:
+#'
+#' The following methods can be used to extract information from an AnvilTensor:
+#'
+#' - [dtype()][tengen::dtype]: Get the data type as a [`TensorDataType`][stablehlo::TensorDataType]
+#' - [shape()][tengen::shape]: Get the shape as an integer vector
+#' - [ndims()][tengen::ndims]: Get the number of dimensions
+#' - [platform()][pjrt::platform]: Get the platform name (e.g., "cpu", "cuda")
+#' - [ambiguous()]: Get whether the dtype is ambiguous (`TRUE`/`FALSE`)
+#' @section Conversion:
+#'
+#' The following methods can be used to convert an AnvilTensor to an R array or raw vector:
+#'
+#' - [as_array()][tengen::as_array]: Convert to an R array
+#' - [as_raw()][tengen::as_raw]: Convert to a raw vector
+#'
+#' @return ([`AnvilTensor`]) A tensor object.
+#'
+#' @name AnvilTensor
+#' @export nv_tensor
+#' @export nv_scalar
+#' @export nv_empty
+#' @importFrom pjrt platform
+#'
+#' @examples
+#' if (pjrt::plugin_is_downloaded()) {
+#'   # Create tensors
+#'   x <- nv_tensor(1:6, shape = c(2, 3))
+#'   y <- nv_scalar(5.0)  # ambiguous f32
+#'   z <- nv_scalar(5.0, dtype = "f32")  # non-ambiguous f32
+#'
+#'   # Extract information
+#'   dtype(x)
+#'   shape(x)
+#'   ndims(x)
+#'   platform(x)
+#'   ambiguous(y)  # TRUE
+#'   ambiguous(z)  # FALSE
+#'
+#'   # Convert to R array
+#'   as_array(x)
+#' }
+NULL
+
+#' @rdname AnvilTensor
+nv_tensor <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = FALSE) {
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
   }
   x <- pjrt_buffer(data, dtype, device = device, shape = shape)
-  ensure_nv_tensor(x)
+  ensure_nv_tensor(x, ambiguous = ambiguous)
 }
 
 is_anvil_tensor <- function(x) {
   inherits(x, "AnvilTensor")
 }
 
-ensure_nv_tensor <- function(x) {
-  if (inherits(x, "AnvilTensor")) {
-    return(x)
+#' Get the underlying PJRT buffer from an AnvilTensor or pass through other values
+#' @param x An AnvilTensor or any other value
+#' @return The underlying PJRT buffer if x is an AnvilTensor, otherwise x unchanged
+#' @keywords internal
+unwrap_if_tensor <- function(x) {
+  if (is_anvil_tensor(x)) {
+    x$tensor
+  } else {
+    x
   }
-  class(x) <- c("AnvilTensor", class(x))
-  x
 }
 
-#' @rdname nv_tensor
-#' @export
-nv_scalar <- function(data, dtype = NULL, device = NULL) {
+#' Create an AnvilTensor struct
+#' @param x The underlying PJRT buffer (or an existing AnvilTensor)
+#' @param ambiguous Whether the dtype is ambiguous
+#' @return AnvilTensor struct
+#' @keywords internal
+ensure_nv_tensor <- function(x, ambiguous = FALSE) {
+  if (inherits(x, "AnvilTensor")) {
+    # Already an AnvilTensor - update ambiguous if requested
+    if (!missing(ambiguous) && ambiguous != x$ambiguous) {
+      x$ambiguous <- ambiguous
+    }
+    return(x)
+  }
+  structure(
+    list(tensor = x, ambiguous = ambiguous),
+    class = "AnvilTensor"
+  )
+}
+
+#' @rdname AnvilTensor
+nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL) {
+  # Ambiguous if dtype is not explicitly specified (and not logical)
+  if (is.null(ambiguous)) {
+    ambiguous <- is.null(dtype) && !is.logical(data)
+  }
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
   }
   x <- pjrt_scalar(data, dtype, device = device)
-  ensure_nv_tensor(x)
+  ensure_nv_tensor(x, ambiguous = ambiguous)
 }
 
-#' @rdname nv_tensor
-#' @export
-nv_empty <- function(dtype, shape, device = NULL) {
+#' @rdname AnvilTensor
+nv_empty <- function(dtype, shape, device = NULL, ambiguous = FALSE) {
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
   }
   x <- pjrt::pjrt_empty(dtype, shape, device = device)
-  ensure_nv_tensor(x)
+  ensure_nv_tensor(x, ambiguous = ambiguous)
 }
 
 #' @rdname AbstractTensor
@@ -77,7 +177,54 @@ nv_aten <- function(dtype, shape, ambiguous = FALSE) {
 
 #' @export
 dtype.AnvilTensor <- function(x, ...) {
-  as_dtype(as.character(pjrt::elt_type(x)))
+  as_dtype(as.character(pjrt::elt_type(x$tensor)))
+}
+
+#' @title Get Ambiguity of a Tensor
+#' @description
+#' Returns whether the tensor's dtype is ambiguous.
+#' @param x A tensor object
+#' @param ... Additional arguments (unused)
+#' @return `logical(1)` - `TRUE` if the dtype is ambiguous, `FALSE` otherwise
+#' @export
+ambiguous <- function(x, ...) {
+  UseMethod("ambiguous")
+}
+
+#' @export
+ambiguous.AnvilTensor <- function(x, ...) {
+  x$ambiguous
+}
+
+#' @export
+ambiguous.AbstractTensor <- function(x, ...) {
+  x$ambiguous
+}
+
+#' @export
+shape.AnvilTensor <- function(x, ...) {
+  tengen::shape(x$tensor)
+}
+
+#' @export
+as_array.AnvilTensor <- function(x, ...) {
+  tengen::as_array(x$tensor)
+}
+
+#' @export
+as_raw.AnvilTensor <- function(x, ...) {
+  tengen::as_raw(x$tensor)
+}
+
+#' @method ndims AnvilTensor
+#' @export
+ndims.AnvilTensor <- function(x, ...) {
+  tengen::ndims(x$tensor)
+}
+
+#' @export
+platform.AnvilTensor <- function(x, ...) {
+  pjrt::platform(x$tensor)
 }
 
 #' @title Abstract Tensor Class
@@ -100,12 +247,6 @@ AbstractTensor <- function(dtype, shape, ambiguous = FALSE) {
   dtype <- as_dtype(dtype)
   if (!test_flag(ambiguous)) {
     cli_abort("ambiguous must be a flag")
-  }
-  if (ambiguous) {
-    ok <- is_dtype(dtype) && (repr(dtype) == "f32" || repr(dtype) == "i32")
-    if (!ok) {
-      cli_abort("Ambiguous types must have dtype f32 or i32")
-    }
   }
 
   structure(
@@ -150,7 +291,7 @@ shape.AbstractTensor <- function(x, ...) {
 #' @description
 #' A [`AbstractTensor`] that also holds a reference to the actual tensor data.
 #' Used to represent constants captured during tracing.
-#' Because it comes from a concrete tensor, it's type is never ambiguous.
+#' Preserves the ambiguity from the underlying [`AnvilTensor`].
 #'
 #' @param data ([`AnvilTensor`])\cr
 #'   The actual tensor data.
@@ -166,7 +307,7 @@ ConcreteTensor <- function(data) {
       dtype = dtype_from_buffer(data),
       shape = Shape(shape(data)),
       data = data,
-      ambiguous = FALSE
+      ambiguous = ambiguous(data)
     ),
     class = c("ConcreteTensor", "AbstractTensor")
   )
@@ -222,7 +363,7 @@ is_literal_tensor <- function(x) {
 #' @return The platform string.
 #' @export
 platform.ConcreteTensor <- function(x, ...) {
-  pjrt::platform(x$data)
+  platform(x$data)
 }
 
 #' @export
@@ -235,7 +376,7 @@ platform.ConcreteTensor <- function(x, ...) {
 
 #' @export
 `!=.AbstractTensor` <- function(e1, e2) {
-  !(e1 == e2)
+  e1$dtype != e2$dtype || e1$shape != e2$shape
 }
 
 #' @export
@@ -273,7 +414,49 @@ format.ConcreteTensor <- function(x, ...) {
 
 #' @export
 format.AnvilTensor <- function(x, ...) {
-  sprintf("AnvilTensor(dtype=%s, shape=%s)", repr(dtype(x)), paste(shape(x), collapse = "x"))
+  dtype_str <- if (x$ambiguous) paste0(repr(dtype(x)), "?") else repr(dtype(x))
+  sprintf("AnvilTensor(dtype=%s, shape=%s)", dtype_str, paste(shape(x), collapse = "x"))
+}
+
+#' @export
+print.AnvilTensor <- function(x, ...) {
+  cat(format(x), "\n")
+  print(x$tensor, header = FALSE)
+  invisible(x)
+}
+
+#' @title Waldo Comparison Proxy for AnvilTensor
+#' @description
+#' Provides a proxy object for waldo comparisons of AnvilTensors.
+#' This allows `testthat::expect_equal` to compare AnvilTensors.
+#'
+#' By default, ambiguity is excluded from comparisons for backward compatibility.
+#' To include ambiguity in comparisons, set: `options(anvil.compare_ambiguity = TRUE)`.
+#'
+#' @param x An AnvilTensor
+#' @param path The comparison path (used by waldo)
+#' @return A list containing object and path for comparison
+#' @export
+# fmt: skip
+compare_proxy.AnvilTensor <- function(x, path) { # nolint
+  # Check if ambiguity should be included (default: FALSE for backward compatibility)
+  include_ambiguity <- getOption("anvil.compare_ambiguity", FALSE)
+
+  if (include_ambiguity) {
+    list(
+      object = list(
+        data = as_array(x),
+        dtype = as.character(dtype(x)),
+        ambiguous = ambiguous(x)
+      ),
+      path = path
+    )
+  } else {
+    list(
+      object = as_array(x),
+      path = path
+    )
+  }
 }
 
 #' @title Convert to Abstract Tensor

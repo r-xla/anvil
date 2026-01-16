@@ -53,7 +53,7 @@ test_that("constants can be lifted to the appropriate level", {
   }
   expect_equal(
     jit(gradient(f, wrt = "x"))(nv_scalar(2))[[1L]],
-    nv_scalar(1)
+    nv_scalar(1, dtype = "f32") # explicit dtype for non-ambiguous comparison
   )
 })
 

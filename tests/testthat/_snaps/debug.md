@@ -45,6 +45,7 @@
     Code
       DebugBox(ConcreteTensor(nv_tensor(1:4, dtype = "f32", shape = c(2, 2))))
     Output
+      AnvilTensor(dtype=f32, shape=2x2) 
        1.0000 3.0000
        2.0000 4.0000
       [ CPUf32{2x2} ] 
