@@ -156,6 +156,16 @@ dtype_abstract <- function(x) {
   dtype(to_abstract(x))
 }
 
+#' @export
+#' @rdname abstract_properties
+ambiguous_abstract <- function(x) {
+  to_abstract(x)$ambiguous
+}
+
 dtype2string <- function(dtype, ambiguous = FALSE) {
   paste0(repr(dtype), if (ambiguous) "?")
+}
+
+is_lit <- function(x) {
+  test_scalar(x) && (is.numeric(x) || is.logical(x))
 }

@@ -5,3 +5,7 @@
 #' Cannot be instantiated directly - use [`GraphBox()`] or [`DebugBox()`] instead.
 #' @name AnvilBox
 NULL
+
+is_box <- function(x) {
+  inherits(x, "AnvilBox")
+}

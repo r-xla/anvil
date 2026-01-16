@@ -1,3 +1,16 @@
+expect_jit_equal <- function(.expr, .expected, ...) {
+  expr <- substitute(.expr)
+  env <- parent.frame()
+  observed <- jit(\() eval(expr, envir = env))()
+  testthat::expect_equal(observed, .expected, ...)
+}
+
+expect_jit_error <- function(.expr, .error, ...) {
+  expr <- substitute(.expr)
+  env <- parent.frame()
+  testthat::expect_error(jit(\() eval(expr, envir = env)), .error, ...)
+}
+
 expect_jit_unary <- function(nv_fun, rfun, x, scalar = !is.array(x)) {
   f <- jit(function(a) {
     nv_fun(a)

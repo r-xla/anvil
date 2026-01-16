@@ -195,16 +195,8 @@ nv_reshape <- nvl_reshape
 #' @export
 nv_concatenate <- nvl_concatenate
 
-#' @title Slice
-#' @description
-#' return slice of operand.
-#' @template param_operand
-#' @param start_indices start of slice
-#' @param limit_indices end of slice
-#' @param strides stride size
-#' @return [`tensorish`]
-#' @export
-nv_slice <- nvl_slice
+
+
 
 #' @title Print Tensor
 #' @description

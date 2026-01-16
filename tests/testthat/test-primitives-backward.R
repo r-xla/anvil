@@ -443,6 +443,76 @@ test_that("p_pad backward with interior padding", {
   expect_equal(g4[[1L]], nv_tensor(matrix(rep(1, 6), 2, 3), dtype = "f64"))
 })
 
+describe("p_dynamic_slice", {
+  it("computes gradient wrt operand", {
+    f <- function(operand) {
+      start_idx1 <- nv_scalar(2L, dtype = "i32")
+      start_idx2 <- nv_scalar(2L, dtype = "i32")
+      sliced <- nvl_dynamic_slice(operand, start_idx1, start_idx2, slice_sizes = c(2L, 2L))
+      nv_reduce_sum(sliced, dims = c(1L, 2L), drop = TRUE)
+    }
+
+    g <- jit(gradient(f))
+    operand <- nv_tensor(1:12, dtype = "f32", shape = c(3, 4))
+    grads <- g(operand)
+
+    expected <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0), nrow = 3, ncol = 4)
+    expect_equal(as_array(grads[[1L]]), expected)
+  })
+
+  it("computes gradient for scalar output", {
+    f <- function(operand) {
+      start_idx1 <- nv_scalar(2L, dtype = "i32")
+      start_idx2 <- nv_scalar(3L, dtype = "i32")
+      sliced <- nvl_dynamic_slice(operand, start_idx1, start_idx2, slice_sizes = c(1L, 1L))
+      nv_reduce_sum(sliced, dims = c(1L, 2L), drop = TRUE)
+    }
+
+    g <- jit(gradient(f))
+    operand <- nv_tensor(1:12, dtype = "f32", shape = c(3, 4))
+    grads <- g(operand)
+
+    expected <- matrix(c(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0), nrow = 3, ncol = 4)
+    expect_equal(as_array(grads[[1L]]), expected)
+  })
+})
+
+describe("p_dynamic_update_slice", {
+  it("computes gradient wrt operand", {
+    f <- function(operand) {
+      update <- nv_tensor(c(99, 88, 77, 66), dtype = "f32", shape = c(2, 2))
+      start_idx1 <- nv_scalar(2L, dtype = "i32")
+      start_idx2 <- nv_scalar(2L, dtype = "i32")
+      updated <- nvl_dynamic_update_slice(operand, update, start_idx1, start_idx2)
+      nv_reduce_sum(updated, dims = c(1L, 2L), drop = TRUE)
+    }
+
+    g <- jit(gradient(f))
+    operand <- nv_tensor(1:12, dtype = "f32", shape = c(3, 4))
+    grads <- g(operand)
+
+    expected <- matrix(c(1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1), nrow = 3, ncol = 4)
+    expect_equal(as_array(grads[[1L]]), expected)
+  })
+
+  it("computes gradient wrt update", {
+    f <- function(update) {
+      operand <- nv_tensor(1:12, dtype = "f32", shape = c(3, 4))
+      start_idx1 <- nv_scalar(2L, dtype = "i32")
+      start_idx2 <- nv_scalar(2L, dtype = "i32")
+      updated <- nvl_dynamic_update_slice(operand, update, start_idx1, start_idx2)
+      nv_reduce_sum(updated, dims = c(1L, 2L), drop = TRUE)
+    }
+
+    g <- jit(gradient(f))
+    update <- nv_tensor(c(99, 88, 77, 66), dtype = "f32", shape = c(2, 2))
+    grads <- g(update)
+
+    expected <- matrix(c(1, 1, 1, 1), nrow = 2, ncol = 2)
+    expect_equal(as_array(grads[[1L]]), expected)
+  })
+})
+
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
 }

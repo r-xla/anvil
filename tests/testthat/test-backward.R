@@ -144,10 +144,6 @@ test_that("partial gradient simple", {
 #  expect_null(out[[3L]])
 #})
 #
-#test_that("wrt nested inputs", {
-#  # TODO:
-#})
-#
 
 #test_that("pullback", {
 #  fbwd <- jit(pullback(nv_add, lhs = nv_scalar(1.0), rhs = nv_scalar(2.0), wrt = "lhs"))
