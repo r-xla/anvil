@@ -2,7 +2,7 @@
 % Please edit documentation in R/api-generics.R
 \name{[<-.AnvilBox}
 \alias{[<-.AnvilBox}
-\title{Set Element at Indices}
+\title{Update Tensor Slice}
 \usage{
 \method{[}{AnvilBox}(x, ...) <- value
 }
@@ -10,16 +10,14 @@
 \item{x}{(\code{\link{tensorish}})\cr
 Tensor to update.}
 
-\item{...}{(\code{\link{tensorish}})\cr
-Scalar tensors specifying the index for each dimension (1-based).}
+\item{...}{Slice specifications.}
 
 \item{value}{(\code{\link{tensorish}})\cr
-Scalar tensor with the new value.}
+Values to assign.}
 }
 \value{
 \code{\link{tensorish}}
 }
 \description{
-Update a single element in a tensor at specific indices.
-All indices must be 0-dimensional (scalar) tensors.
+Update elements of a tensor using \verb{[<-} indexing.
 }

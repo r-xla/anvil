@@ -100,10 +100,14 @@ transform_gradient <- function(graph, wrt) {
       }
     })
 
+    # Convert gvals to boxes for the backward pass
+    input_boxes <- lapply(call$inputs, \(x) desc$gval_to_box[[x]])
+    output_boxes <- lapply(call$outputs, \(x) desc$gval_to_box[[x]])
+
     input_grads <- rlang::exec(
       call$primitive[["backward"]],
-      call$inputs,
-      call$outputs,
+      input_boxes,
+      output_boxes,
       output_grads,
       !!!call$params,
       .required = input_required

@@ -35,7 +35,7 @@ test_that("p_bitcast_convert", {
 
 test_that("p_slice", {
   f <- function() {
-    nv_slice(
+    nvl_static_slice(
       nv_tensor(1:6, dtype = "ui64", shape = c(2, 3)),
       start_indices = c(1, 1),
       limit_indices = c(2, 2),
@@ -75,6 +75,68 @@ describe("p_dynamic_update_slice", {
     out <- g()
     expected <- matrix(c(0L, 0L, 0L, 0L, 99L, 88L, 0L, 77L, 66L, 0L, 0L, 0L), nrow = 3, ncol = 4)
     expect_equal(as_array(out), expected)
+  })
+})
+
+describe("p_gather", {
+  it("gathers a slice from a 1D tensor", {
+    f <- function() {
+      operand <- nv_tensor(1:10, dtype = "i32")
+      # Gather elements starting at index 3 (1-based), slice size 4
+      start_indices <- nv_tensor(matrix(2L, nrow = 1L), dtype = "i32")  # 0-based start
+      gather_dim_numbers <- GatherDimensionNumbers(
+        offset_dims = 2L,  # output dim 2 is the slice (1-based)
+        collapsed_slice_dims = integer(),
+        start_index_map = 1L,  # index maps to operand dim 1
+        index_vector_dim = 2L  # index vector in dim 2 (1-based)
+      )
+      nvl_gather(operand, start_indices, gather_dim_numbers, slice_sizes = 4L)
+    }
+    g <- jit(f)
+    out <- g()
+    expected <- array(c(3L, 4L, 5L, 6L), dim = c(1L, 4L))
+    expect_equal(as_array(out), expected)
+  })
+
+  it("gathers a slice from a 2D tensor", {
+    f <- function() {
+      operand <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4), dtype = "i32")
+      # Gather a 2x2 slice starting at [1, 1] (0-based)
+      start_indices <- nv_tensor(matrix(c(1L, 1L), nrow = 1L), dtype = "i32")
+      gather_dim_numbers <- GatherDimensionNumbers(
+        offset_dims = c(2L, 3L),  # output dims 2,3 are the slice
+        collapsed_slice_dims = integer(),
+        start_index_map = c(1L, 2L),  # map to operand dims 1, 2
+        index_vector_dim = 2L
+      )
+      nvl_gather(operand, start_indices, gather_dim_numbers, slice_sizes = c(2L, 2L))
+    }
+    g <- jit(f)
+    out <- g()
+    expected <- array(c(5L, 6L, 8L, 9L), dim = c(1L, 2L, 2L))
+    expect_equal(as_array(out), expected)
+  })
+})
+
+describe("p_scatter", {
+  it("scatters values into a 1D tensor", {
+    f <- function() {
+      input <- nv_tensor(rep(0L, 5), dtype = "i32")
+      scatter_indices <- nv_tensor(matrix(c(1L, 3L), ncol = 1L), dtype = "i32")  # 0-based
+      updates <- nv_tensor(c(10L, 30L), dtype = "i32")
+      scatter_dim_numbers <- ScatterDimensionNumbers(
+        update_window_dims = integer(),
+        inserted_window_dims = 1L,
+        scatter_dims_to_operand_dims = 1L,
+        index_vector_dim = 2L
+      )
+      nvl_scatter(input, scatter_indices, updates, scatter_dim_numbers,
+                  update_computation = function(old, new) new)
+    }
+    g <- jit(f)
+    out <- g()
+    expected <- array(c(0L, 10L, 0L, 30L, 0L), dim = 5L)
+    expect_equal(as_array(out[[1L]]), expected)
   })
 })
 

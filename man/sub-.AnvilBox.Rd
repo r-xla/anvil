@@ -2,21 +2,25 @@
 % Please edit documentation in R/api-generics.R
 \name{[.AnvilBox}
 \alias{[.AnvilBox}
-\title{Get Element at Indices}
+\alias{[.AnvilTensor}
+\title{Subset Tensor}
 \usage{
-\method{[}{AnvilBox}(x, ...)
+\method{[}{AnvilBox}(x, ..., drop = FALSE)
+
+\method{[}{AnvilTensor}(x, ..., drop = FALSE)
 }
 \arguments{
 \item{x}{(\code{\link{tensorish}})\cr
-Tensor to extract from.}
+Tensor to subset.}
 
-\item{...}{(\code{\link{tensorish}})\cr
-Scalar tensors specifying the index for each dimension (1-based).}
+\item{...}{Slice specifications.}
+
+\item{drop}{(\code{logical(1)})\cr
+Whether to drop dimensions of size 1.}
 }
 \value{
-Scalar \code{\link{tensorish}}
+\code{\link{tensorish}}
 }
 \description{
-Extract a single element from a tensor at specific indices.
-All indices must be 0-dimensional (scalar) tensors.
+Extract elements from a tensor using \code{[} indexing.
 }

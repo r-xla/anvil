@@ -1,5 +1,4 @@
-#' @details
-#' ## Out-of-Bounds Behavior
+#' @section Out-of-Bounds Behavior
 #'
 #' If `start_indices` would cause the update to extend beyond the operand's bounds,
 #' the indices are automatically adjusted (clamped) to keep the update within bounds.

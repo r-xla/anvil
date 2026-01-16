@@ -303,7 +303,7 @@ p_slice <- AnvilPrimitive("slice")
 #'   Step sizes.
 #' @return [`tensorish`]
 #' @export
-nvl_slice <- function(operand, start_indices, limit_indices, strides) {
+nvl_static_slice <- function(operand, start_indices, limit_indices, strides) {
   infer_fn <- function(operand, start_indices, limit_indices, strides) {
     start_attr <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
     limit_attr <- r_to_constant(limit_indices, dtype = "i64", shape = length(limit_indices))
@@ -396,6 +396,61 @@ nvl_dynamic_update_slice <- function(operand, update, ...) {
     p_dynamic_update_slice,
     args = c(list(operand = operand, update = update), start_indices),
     params = list(),
+    infer_fn = infer_fn
+  )[[1L]]
+}
+
+p_gather <- AnvilPrimitive("gather")
+#' @title Primitive Gather
+#' @description
+#' Gathers slices from the operand at positions specified by start_indices.
+#' @template param_operand
+#' @param start_indices ([`tensorish`])\cr
+#'   Tensor of integer type containing the starting indices for the gather operation.
+#' @param gather_dimension_numbers ([`GatherDimensionNumbers`])\cr
+#'   Dimension configuration for the gather operation.
+#' @param slice_sizes (`integer()`)\cr
+#'   The sizes of the slices to gather in each dimension.
+#' @param indices_are_sorted (`logical(1)`)\cr
+#'   Whether indices are guaranteed to be sorted.
+#' @return [`tensorish`]
+#' @export
+nvl_gather <- function(operand, start_indices, gather_dimension_numbers, slice_sizes,
+                       indices_are_sorted = FALSE) {
+  infer_fn <- function(operand, start_indices, gather_dimension_numbers, slice_sizes,
+                       indices_are_sorted) {
+    slice_sizes_attr <- r_to_constant(slice_sizes, dtype = "i64", shape = length(slice_sizes))
+    indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "i1", shape = integer())
+
+    # Convert 1-based to 0-based for stablehlo
+    gdn_0based <- stablehlo::GatherDimensionNumbers(
+      offset_dims = gather_dimension_numbers$offset_dims - 1L,
+      collapsed_slice_dims = gather_dimension_numbers$collapsed_slice_dims - 1L,
+      operand_batching_dims = gather_dimension_numbers$operand_batching_dims - 1L,
+      start_indices_batching_dims = gather_dimension_numbers$start_indices_batching_dims - 1L,
+      start_index_map = gather_dimension_numbers$start_index_map - 1L,
+      index_vector_dim = gather_dimension_numbers$index_vector_dim - 1L
+    )
+
+    out <- stablehlo::infer_types_gather(
+      at2vt(operand),
+      at2vt(start_indices),
+      gather_dimension_numbers = gdn_0based,
+      slice_sizes = slice_sizes_attr,
+      indices_are_sorted = indices_sorted_attr
+    )[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
+    list(out)
+  }
+  graph_desc_add(
+    p_gather,
+    args = list(operand = operand, start_indices = start_indices),
+    params = list(
+      gather_dimension_numbers = gather_dimension_numbers,
+      slice_sizes = slice_sizes,
+      indices_are_sorted = indices_are_sorted
+    ),
     infer_fn = infer_fn
   )[[1L]]
 }
@@ -1281,4 +1336,104 @@ nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dt
     params = list(rng_algorithm = rng_algorithm, dtype = dtype, shape = shape),
     infer_fn = infer_fn
   )
+}
+
+p_scatter <- AnvilPrimitive("scatter", higher_order = TRUE, subgraphs = "update_computation_graph")
+#' @title Primitive Scatter
+#' @description
+#' Produces a result tensor equal to the input tensor except that
+#' slices specified by scatter_indices are updated with values from the update tensor.
+#' @param input ([`tensorish`])\cr
+#'   Input tensor to scatter into.
+#' @param scatter_indices ([`tensorish`])\cr
+#'   Tensor of integer type containing indices.
+#' @param update ([`tensorish`])\cr
+#'   Update values tensor.
+#' @param scatter_dimension_numbers ([`ScatterDimensionNumbers`])\cr
+#'   Dimension configuration for scatter operation.
+#' @param indices_are_sorted (`logical(1)`)\cr
+#'   Whether indices are sorted.
+#' @param unique_indices (`logical(1)`)\cr
+#'   Whether indices are unique.
+#' @param update_computation (`function`)\cr
+#'   Binary function to combine existing and update values.
+#' @return [`tensorish`]
+#' @export
+nvl_scatter <- function(input, scatter_indices, update, scatter_dimension_numbers,
+                        indices_are_sorted = FALSE, unique_indices = FALSE,
+                        update_computation) {
+  if (!is.function(update_computation)) {
+    cli_abort("update_computation must be a function")
+  }
+
+  current_desc <- .current_descriptor(silent = TRUE)
+  debug_mode <- is.null(current_desc)
+  if (debug_mode) {
+    current_desc <- local_descriptor()
+  }
+
+  # Trace the update computation function
+  # For scatter, the update computation takes 2 scalar arguments (current, update)
+  desc_update <- local_descriptor()
+
+  # Create dummy arguments for tracing - use the input's dtype
+  input_dtype <- dtype_abstract(input)
+  update_dtype <- dtype_abstract(update)
+  if (input_dtype != update_dtype) {
+    cli_abort("input and update must have the same dtype")
+  }
+
+  dummy_args <- list(
+    AbstractTensor(dtype = input_dtype, shape = Shape(integer()), ambiguous = ambiguous_abstract(input)),
+    AbstractTensor(dtype = input_dtype, shape = Shape(integer()), ambiguous = ambiguous_abstract(update))
+  )
+
+  update_computation_graph <- trace_fn(update_computation, dummy_args, desc = desc_update)
+
+  # Register constants from the update computation graph
+  for (const in update_computation_graph$constants) {
+    get_box_or_register_const(current_desc, const)
+  }
+
+  infer_fn <- function(input, scatter_indices, update, scatter_dimension_numbers,
+                       indices_are_sorted, unique_indices, update_computation_graph) {
+    # Verify update_computation_graph has correct structure
+    if (length(update_computation_graph$inputs) != 2L) {
+      cli_abort("update_computation must have exactly 2 inputs (got {length(update_computation_graph$inputs)})")
+    }
+    if (length(update_computation_graph$outputs) != 1L) {
+      cli_abort("update_computation must return 1 output")
+    }
+
+    # Verify output is a scalar
+    out_shape <- update_computation_graph$outputs[[1L]]$aval$shape
+    if (length(out_shape$dims) != 0L) {
+      cli_abort("update_computation output must be a scalar")
+    }
+
+    # The output type is determined by the update_computation output,
+    # with the shape matching the input shape
+    out_dtype <- update_computation_graph$outputs[[1L]]$aval$dtype
+    list(AbstractTensor(
+      dtype = out_dtype,
+      shape = input$shape,
+      ambiguous = input$ambiguous || update_computation_graph$outputs[[1L]]$aval$ambiguous
+    ))
+  }
+
+  out <- graph_desc_add(
+    p_scatter,
+    args = list(input = input, scatter_indices = scatter_indices, update = update),
+    params = list(
+      scatter_dimension_numbers = scatter_dimension_numbers,
+      indices_are_sorted = indices_are_sorted,
+      unique_indices = unique_indices,
+      update_computation_graph = update_computation_graph
+    ),
+    infer_fn = infer_fn,
+    desc = current_desc,
+    debug_mode = debug_mode
+  )
+
+  out
 }

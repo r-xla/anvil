@@ -1,4 +1,4 @@
-#' @details
+#' @section Out-of-Bounds Behavior
 #' ## Out-of-Bounds Behavior
 #'
 #' If `start_indices` would cause the slice to extend beyond the operand's bounds,

@@ -337,3 +337,7 @@ is_shape <- function(x) {
 #' x <- nv_tensor(1:4, dtype = "f32")
 #' x
 NULL
+
+is_tensorish <- function(x) {
+  inherits(x, "AnvilTensor") || inherits(x, "AbstractTensor") || inherits(x, "LiteralTensor") || inherits(x, "GraphBox") || inherits(x, "DebugBox")
+}

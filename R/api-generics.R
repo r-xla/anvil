@@ -146,42 +146,41 @@ t.AnvilBox <- function(x) {
 #' @export
 t.AnvilTensor <- t.AnvilBox
 
-#' @title Get Element at Indices
+#' @title Subset Tensor
 #' @description
-#' Extract a single element from a tensor at specific indices.
-#' All indices must be 0-dimensional (scalar) tensors.
+#' Extract elements from a tensor using `[` indexing.
 #' @param x ([`tensorish`])\cr
-#'   Tensor to extract from.
-#' @param ... ([`tensorish`])\cr
-#'   Scalar tensors specifying the index for each dimension (1-based).
-#' @return Scalar [`tensorish`]
+#'   Tensor to subset.
+#' @param ... Slice specifications.
+#' @param drop (`logical(1)`)\cr
+#'   Whether to drop dimensions of size 1.
+#' @return [`tensorish`]
 #' @export
 #' @method [ AnvilBox
-`[.AnvilBox` <- function(x, ...) {
-  nv_get_elt(x, ...)
-}
+#' @include api-subset.R
+`[.AnvilBox` <- nv_subset
 
+#' @rdname sub-.AnvilBox
 #' @method [ AnvilTensor
 #' @export
-`[.AnvilTensor` <- `[.AnvilBox`
+`[.AnvilTensor` <- nv_subset
 
-#' @title Set Element at Indices
+#' @title Update Tensor Slice
 #' @description
-#' Update a single element in a tensor at specific indices.
-#' All indices must be 0-dimensional (scalar) tensors.
+#' Update elements of a tensor using `[<-` indexing.
 #' @param x ([`tensorish`])\cr
 #'   Tensor to update.
-#' @param ... ([`tensorish`])\cr
-#'   Scalar tensors specifying the index for each dimension (1-based).
+#' @param ... Slice specifications.
 #' @param value ([`tensorish`])\cr
-#'   Scalar tensor with the new value.
+#'   Values to assign.
 #' @return [`tensorish`]
 #' @export
 #' @method [<- AnvilBox
 `[<-.AnvilBox` <- function(x, ..., value) {
-  nv_set_elt(x, ..., value = value)
+  nv_update_subset(x, ..., value = value)
 }
 
+#' @rdname sub-.set.AnvilBox
 #' @method [<- AnvilTensor
 #' @export
 `[<-.AnvilTensor` <- `[<-.AnvilBox`

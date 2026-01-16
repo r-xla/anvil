@@ -1,4 +1,4 @@
-# All the backward rules are only operating on GraphValues
+# All the backward rules are only operating on GraphBoxes
 
 # length(grads) == length(outputs)
 p_add[["backward"]] <- function(inputs, outputs, grads, .required) {
@@ -490,7 +490,7 @@ p_pad[["backward"]] <- function(
       strides <- interior_padding + 1L
       start_indices <- edge_padding_low + 1L
       limit_indices <- out_shape - edge_padding_high
-      nvl_slice(grad, start_indices, limit_indices, strides)
+      nvl_static_slice(grad, start_indices, limit_indices, strides)
     },
     if (.required[[2L]]) {
       cli_abort("Gradient for padding_value not implemented")

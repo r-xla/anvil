@@ -277,13 +277,8 @@ maybe_box_tensorish <- function(x) {
     }
     gval <- x$gnode
     get_box_or_register_const(current_desc, gval)
-  } else if (is_anvil_tensor(x) || test_scalar(x)) {
+  } else if (is_anvil_tensor(x) || is_lit(x)) {
     get_box_or_register_const(current_desc, x)
-  } else if (is_graph_node(x)) {
-    # FIXME: !!!
-    # We use this in gradient, where we pass gvals to the backward rules
-    # but I think we should handle this differently
-    GraphBox(x, current_desc)
   } else if (is_debug_box(x)) {
     # We want debug mode to emulate standard tracing, so each primitive initializes it's own
     # GraphDescriptor during debug mode and we evaluate with GraphBox objects
@@ -292,8 +287,13 @@ maybe_box_tensorish <- function(x) {
   } else if (is_abstract_tensor(x)) {
     cli_abort("Don't use AbtractTensors as inputs; For debugging, use `debug_box()`")
   } else {
-    x
+    cli_abort("Expected tensorish value, but got {.cls {class(x)[1]}}")
   }
+}
+
+is_tensorish <- function(x) {
+  # FIXME: GraphNod
+  is_box(x) || is_anvil_tensor(x) || is_lit(x)
 }
 
 # this function is on the inputs of trace_fn()

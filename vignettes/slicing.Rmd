@@ -1,0 +1,12 @@
+---
+title: "Slicing"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Slicing}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+In this vignette, you will learn how to slice `AnvilTensor`s and how to update them.
+Because of the static nature of {anvil}, only certain types of slices are supported
+
