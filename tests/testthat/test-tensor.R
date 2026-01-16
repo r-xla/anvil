@@ -89,7 +89,7 @@ test_that("to_abstract", {
 
   # pure
   x <- nv_scalar(1)
-  expect_equal(to_abstract(x, pure = TRUE), AbstractTensor("f32", c(), FALSE))
+  expect_equal(to_abstract(x, pure = TRUE), AbstractTensor("f32", c(), TRUE))
   expect_error(to_abstract(list(1, 2)), "is not a tensor-like object")
 })
 
@@ -98,9 +98,12 @@ test_that("as_shape for c() (i.e., NULL)", {
   expect_equal(as_shape(c()), Shape(integer()))
 })
 
-test_that("ambiguous Abstract Tensor check", {
-  expect_error(AbstractTensor("i64", integer(), TRUE))
-  expect_error(AbstractTensor("i64", integer(), FALSE), NA)
+test_that("AbstractTensor can be created with any ambiguous dtype", {
+  # Any dtype can now be ambiguous
+  expect_error(AbstractTensor("i64", integer(), TRUE), NA)
+  expect_error(AbstractTensor("f32", integer(), TRUE), NA)
+  expect_error(AbstractTensor("i32", integer(), TRUE), NA)
+  expect_error(AbstractTensor("pred", integer(), TRUE), NA)
 })
 
 test_that("nv_aten creates AbstractTensor", {

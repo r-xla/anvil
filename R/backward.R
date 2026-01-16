@@ -73,7 +73,10 @@ transform_gradient <- function(graph, wrt) {
   # By copying the calls and in_tree from the forward graph, we ensure that the backward
   # operations are added to the correct context.
   init_desc_from_graph(desc, graph, outputs = FALSE)
-  grad_env[[out]] <- get_box_or_register_const(desc, nv_scalar(1L, dtype = out$aval$dtype))
+  grad_env[[out]] <- get_box_or_register_const(
+    desc,
+    nv_tensor(1L, dtype = out$aval$dtype, ambiguous = out$aval$ambiguous, shape = integer())
+  )
 
   # Backward pass
   for (call in rev(graph$calls)) {
@@ -124,7 +127,10 @@ transform_gradient <- function(graph, wrt) {
     input <- graph$inputs[[i]]
     grad <- grad_env[[input]]
     x <- if (is.null(grad)) {
-      const <- get_box_or_register_const(desc, nv_scalar(0L, dtype = input$aval$dtype))
+      const <- get_box_or_register_const(
+        desc,
+        nv_tensor(0L, dtype = input$aval$dtype, ambiguous = input$aval$ambiguous, shape = shape(input$aval))
+      )
       nv_broadcast_to(const, shape(input$aval))
     } else {
       grad

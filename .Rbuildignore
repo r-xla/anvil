@@ -24,3 +24,4 @@ SPEC.md
 ^TODO.md$
 anvil.Rproj
 ^benchmarks/
+^\.claude$

@@ -13,7 +13,7 @@ The actual tensor data.}
 \description{
 A \code{\link{AbstractTensor}} that also holds a reference to the actual tensor data.
 Used to represent constants captured during tracing.
-Because it comes from a concrete tensor, it's type is never ambiguous.
+Preserves the ambiguity from the underlying \code{\link{AnvilTensor}}.
 }
 \seealso{
 \link{AbstractTensor}, \link{LiteralTensor}

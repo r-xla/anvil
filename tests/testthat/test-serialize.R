@@ -17,3 +17,33 @@ test_that("nv_write and nv_read works for a single tensor", {
   reloaded <- nv_read(tmp)
   expect_equal(lst, reloaded)
 })
+
+test_that("serialization preserves ambiguity", {
+  # Create tensors with different ambiguity
+  ambiguous_tensor <- nv_scalar(1.0) # ambiguous
+  non_ambiguous_tensor <- nv_tensor(1.0, dtype = "f32") # non-ambiguous
+
+  lst <- list(
+    ambiguous = ambiguous_tensor,
+    non_ambiguous = non_ambiguous_tensor
+  )
+
+  # Test with nv_serialize/nv_unserialize
+  raw_data <- nv_serialize(lst)
+  reloaded <- nv_unserialize(raw_data)
+
+  expect_true(ambiguous(reloaded$ambiguous))
+  expect_false(ambiguous(reloaded$non_ambiguous))
+  expect_equal(as_array(lst$ambiguous), as_array(reloaded$ambiguous))
+  expect_equal(as_array(lst$non_ambiguous), as_array(reloaded$non_ambiguous))
+
+  # Test with nv_write/nv_read
+  tmp <- tempfile(fileext = ".safetensors")
+  nv_write(lst, tmp)
+  reloaded2 <- nv_read(tmp)
+
+  expect_true(ambiguous(reloaded2$ambiguous))
+  expect_false(ambiguous(reloaded2$non_ambiguous))
+  expect_equal(as_array(lst$ambiguous), as_array(reloaded2$ambiguous))
+  expect_equal(as_array(lst$non_ambiguous), as_array(reloaded2$non_ambiguous))
+})

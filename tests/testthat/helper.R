@@ -61,9 +61,9 @@ generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
   } else if (dtype %in% c("ui8", "ui16", "ui32", "ui64")) {
     sample(0:20, size = prod(dimension), replace = TRUE)
   } else if (dtype %in% c("i8", "i16", "i32", "i64")) {
-    test_data <- as.integer(rgeom(prod(dimension), .5))
+    test_data <- as.integer(rgeom(prod(dimension), 0.5))
     if (!non_negative) {
-      test_data <- as.integer((-1)^rbinom(prod(dimension), 1, .5) * test_data)
+      test_data <- as.integer((-1)^rbinom(prod(dimension), 1, 0.5) * test_data)
     }
     test_data
   } else {

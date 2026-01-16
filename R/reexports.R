@@ -41,6 +41,11 @@ stablehlo::as_dtype
 #' @return (`character(1)`)
 #' @export
 platform <- function(x, ...) {
+  UseMethod("platform")
+}
+
+#' @export
+platform.default <- function(x, ...) {
   pjrt::platform(x)
 }
 

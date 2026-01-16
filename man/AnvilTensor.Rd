@@ -2,9 +2,129 @@
 % Please edit documentation in R/tensor.R
 \name{AnvilTensor}
 \alias{AnvilTensor}
-\title{AnvilTensor}
+\alias{nv_tensor}
+\alias{nv_scalar}
+\alias{nv_empty}
+\title{AnvilTensor: Tensor Objects}
+\usage{
+nv_tensor(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = FALSE)
+
+nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL)
+
+nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
+}
+\arguments{
+\item{data}{(any)\cr
+Object convertible to a \code{\link[pjrt:pjrt_buffer]{PJRTBuffer}}.}
+
+\item{dtype}{(\code{NULL} | \code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+One of pred, i8, i16, i32, i64, ui8, ui16, ui32, ui64, f32, f64 or a \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}}.
+The default (\code{NULL}) uses \code{f32} for numeric data, \code{i32} for integer data, and \code{pred} for logical data.}
+
+\item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
+The platform name for the tensor (\code{"cpu"}, \code{"cuda"}, \code{"metal"}).
+Default is to use the CPU, unless the data is already a \code{\link[pjrt:pjrt_buffer]{PJRTBuffer}}.
+You can change the default by setting the \code{PJRT_PLATFORM} environment variable.}
+
+\item{shape}{(\code{NULL} | \code{integer()})\cr
+Shape.
+The default (\code{NULL}) is to infer it from the data if possible.
+Note that \code{\link{nv_tensor}} interprets length 1 vectors as having shape \code{(1)}.
+To create a "scalar" with dimension \verb{()}, use \code{\link{nv_scalar}}.}
+
+\item{ambiguous}{(\code{logical(1)})\cr
+Whether the dtype should be marked as ambiguous.
+For \code{\link[=nv_tensor]{nv_tensor()}}, defaults to \code{FALSE} (non-ambiguous).
+For \code{\link[=nv_scalar]{nv_scalar()}}, defaults to \code{TRUE} when \code{dtype} is \code{NULL} and data is numeric, \code{FALSE} otherwise.}
+}
+\value{
+(\code{\link{AnvilTensor}}) A tensor object.
+}
 \description{
-Virtual base class for tensor objects in anvil.
-This class is used to mark objects that can be used as tensors in anvil.
-Cannot be instantiated directly - use \code{\link[=nv_tensor]{nv_tensor()}}, \code{\link[=nv_scalar]{nv_scalar()}}, or \code{\link[=nv_empty]{nv_empty()}} instead.
+Tensor objects in anvil that hold array data with automatic differentiation support.
+Create tensors using \code{\link[=nv_tensor]{nv_tensor()}}, \code{\link[=nv_scalar]{nv_scalar()}}, or \code{\link[=nv_empty]{nv_empty()}}.
+}
+\section{Creating Tensors}{
+
+\itemize{
+\item \code{\link[=nv_tensor]{nv_tensor()}}: Create a tensor from data. Always creates non-ambiguous tensors.
+\item \code{\link[=nv_scalar]{nv_scalar()}}: Create a scalar (0-dimensional) tensor. Creates ambiguous tensors when \code{dtype} is not specified.
+\item \code{\link[=nv_empty]{nv_empty()}}: Create an uninitialized tensor.
+}
+}
+
+\section{Type Ambiguity}{
+
+Ambiguity indicates whether the dtype was implicitly determined (ambiguous) or explicitly specified (non-ambiguous).
+Ambiguous types participate in automatic type promotion:
+\itemize{
+\item \code{nv_scalar(1)} creates an ambiguous \code{f32} tensor
+\item \code{nv_scalar(1, dtype = "f32")} creates a non-ambiguous \code{f32} tensor
+\item \code{nv_tensor}
+}
+\subsection{Performance: Large Constants in JIT Programs}{
+
+When using \code{\link[=nv_tensor]{nv_tensor()}} to create large arrays inside \code{\link[=jit]{jit()}}-compiled functions,
+the entire array data is captured as a constant and embedded in the compiled program.
+This can significantly increase compilation time and program size.
+
+\strong{For large arrays with uniform values, use \code{\link[=nv_fill]{nv_fill()}} instead:}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{# Bad: Large constant embedded in program
+f <- jit(function(x) \{
+  x + nv_tensor(rep(1, 10000), dtype = "f32")
+\})
+
+# Good: Efficient constant generation
+f <- jit(function(x) \{
+  x + nv_fill(1, shape = 10000)
+\})
+}\if{html}{\out{</div>}}
+
+\code{\link[=nv_fill]{nv_fill()}} generates the constant value at runtime rather than embedding it in the graph,
+resulting in faster compilation and smaller program sizes.
+}
+}
+
+\section{Extractors}{
+
+
+The following methods can be used to extract information from an AnvilTensor:
+\itemize{
+\item \link[tengen:dtype]{dtype()}: Get the data type as a \code{\link[stablehlo:TensorDataType]{TensorDataType}}
+\item \link[tengen:shape]{shape()}: Get the shape as an integer vector
+\item \link[tengen:ndims]{ndims()}: Get the number of dimensions
+\item \link[pjrt:platform]{platform()}: Get the platform name (e.g., "cpu", "cuda")
+\item \code{\link[=ambiguous]{ambiguous()}}: Get whether the dtype is ambiguous (\code{TRUE}/\code{FALSE})
+}
+}
+
+\section{Conversion}{
+
+
+The following methods can be used to convert an AnvilTensor to an R array or raw vector:
+\itemize{
+\item \link[tengen:as_array]{as_array()}: Convert to an R array
+\item \link[tengen:as_raw]{as_raw()}: Convert to a raw vector
+}
+}
+
+\examples{
+if (pjrt::plugin_is_downloaded()) {
+  # Create tensors
+  x <- nv_tensor(1:6, shape = c(2, 3))
+  y <- nv_scalar(5.0)  # ambiguous f32
+  z <- nv_scalar(5.0, dtype = "f32")  # non-ambiguous f32
+
+  # Extract information
+  dtype(x)
+  shape(x)
+  ndims(x)
+  platform(x)
+  ambiguous(y)  # TRUE
+  ambiguous(z)  # FALSE
+
+  # Convert to R array
+  as_array(x)
+}
 }

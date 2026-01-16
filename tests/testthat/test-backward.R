@@ -4,8 +4,8 @@ test_that("basic pullback test", {
   }
   f_grad <- jit(gradient(f))
   out <- f_grad(nv_scalar(1.0), nv_scalar(2.0))
-  expect_equal(out[[1L]], nv_scalar(1.0))
-  expect_equal(out[[2L]], nv_scalar(1.0))
+  expect_equal(out[[1L]], 1.0)
+  expect_equal(out[[2L]], 1.0)
 })
 
 test_that("simple function works (scalar)", {
@@ -16,8 +16,8 @@ test_that("simple function works (scalar)", {
     nv_scalar(2.0)
   )
 
-  expect_equal(out[[1L]], nv_scalar(2.0))
-  expect_equal(out[[2L]], nv_scalar(1.0))
+  expect_equal(out[[1L]], 2.0)
+  expect_equal(out[[2L]], 1.0)
 })
 
 test_that("chain rule works (scalar)", {
@@ -32,8 +32,8 @@ test_that("chain rule works (scalar)", {
     nv_scalar(2.0)
   )
 
-  expect_equal(out[[1L]], nv_scalar(3.0))
-  expect_equal(out[[2L]], nv_scalar(1.0))
+  expect_equal(out[[1L]], 3.0)
+  expect_equal(out[[2L]], 1.0)
 })
 
 test_that("gradient does not have to depend on input", {
@@ -50,15 +50,16 @@ test_that("gradient does not have to depend on input", {
     nv_scalar(2.0)
   )
 
-  expect_equal(out[[1L]], nv_scalar(1.0))
-  expect_equal(out[[2L]], nv_scalar(1.0))
+  expect_equal(out[[1L]], 1.0)
+  expect_equal(out[[2L]], 1.0)
 })
 
 test_that("nested inputs", {
   f <- jit(gradient(function(x) {
     nvl_mul(x[[1]][[1]], x[[1]][[1]])
   }))
-  expect_equal(f(list(list(nv_scalar(1))))[[1L]], list(list(nv_scalar(2))))
+  result <- f(list(list(nv_scalar(1))))[[1L]]
+  expect_equal(result[[1]][[1]], 2.0)
 })
 
 test_that("no nested outpus", {
@@ -70,7 +71,7 @@ test_that("constants work (scalar)", {
   f <- jit(gradient(function(x) {
     nvl_mul(x, nv_scalar(2))
   }))
-  expect_equal(f(nv_scalar(1))[[1L]], nv_scalar(2))
+  expect_equal(f(nv_scalar(1))[[1L]], 2.0)
 })
 
 test_that("broadcasting works", {
@@ -84,24 +85,21 @@ test_that("second order gradient (scalar)", {
     nvl_mul(x, x)
   }
   fg2 <- jit(gradient(\(x) gradient(f)(x)[[1L]]))
-  expect_equal(fg2(nv_scalar(1)), list(x = nv_scalar(2)))
+  result <- fg2(nv_scalar(1))
+  expect_equal(result$x, 2.0)
 })
 
 test_that("neg works", {
   g <- jit(gradient(nvl_negate))
-  expect_equal(g(nv_scalar(1))[[1L]], nv_scalar(-1))
+  expect_equal(g(nv_scalar(1))[[1L]], -1.0)
 })
 
 test_that("names for grad: primitive", {
   g <- jit(gradient(`*`))
   expect_equal(formalArgs2(g), c("e1", "e2"))
-  expect_equal(
-    list(
-      e1 = nv_scalar(1),
-      e2 = nv_scalar(2)
-    ),
-    g(nv_scalar(2), nv_scalar(1))
-  )
+  result <- g(nv_scalar(2), nv_scalar(1))
+  expect_equal(result$e1, 1.0)
+  expect_equal(result$e2, 2.0)
 })
 
 test_that("names for grad: function", {
@@ -110,13 +108,9 @@ test_that("names for grad: function", {
   }
   g <- jit(gradient(f))
   expect_equal(formals(g), formals(f))
-  expect_equal(
-    list(
-      e1 = nv_scalar(1),
-      e2 = nv_scalar(2)
-    ),
-    g(nv_scalar(2), nv_scalar(1))
-  )
+  result <- g(nv_scalar(2), nv_scalar(1))
+  expect_equal(result$e1, 1.0)
+  expect_equal(result$e2, 2.0)
 })
 
 # New tests for selective gradients (wrt)
@@ -127,7 +121,7 @@ test_that("partial gradient simple", {
   }
   g <- jit(gradient(f, wrt = "lhs"))
   out <- g(nv_scalar(1.0), nv_scalar(2.0))[[1L]]
-  expect_equal(out, nv_scalar(1.0))
+  expect_equal(out, 1.0)
 })
 
 #test_that("partial gradient: y = a * (x * b) wrt x", {
@@ -162,16 +156,16 @@ test_that("partial gradient simple", {
 
 test_that("gradients are present even if they don't influence the output", {
   g <- jit(gradient(function(x, y) x, wrt = "y"))
-  expect_equal(
-    g(nv_scalar(1), nv_scalar(1)),
-    list(y = nv_scalar(0))
-  )
+  result1 <- g(nv_scalar(1), nv_scalar(1))
+  expect_equal(result1$y, 0.0)
 
   g2 <- jit(gradient(function(x, y) {
     z <- nv_mul(x, x)
     return(y)
   }))
-  expect_equal(g2(nv_scalar(1), nv_scalar(1)), list(x = nv_scalar(0), y = nv_scalar(1)))
+  result2 <- g2(nv_scalar(1), nv_scalar(1))
+  expect_equal(result2$x, 0.0)
+  expect_equal(result2$y, 1.0)
 })
 
 test_that("wrt non-existent argument", {
@@ -190,8 +184,8 @@ test_that("gradient: simple example", {
   }
   g <- jit(gradient(f))
   out <- g(nv_scalar(1.0), nv_scalar(2.0))
-  expect_equal(out[[1L]], nv_scalar(2.0))
-  expect_equal(out[[2L]], nv_scalar(1.0))
+  expect_equal(out[[1L]], 2.0)
+  expect_equal(out[[2L]], 1.0)
 })
 
 test_that("gradient: does not depend on input", {
@@ -200,8 +194,8 @@ test_that("gradient: does not depend on input", {
   }
   g <- jit(gradient(f))
   out <- g(nv_scalar(1.0), nv_scalar(2.0))
-  expect_equal(out[[1L]], nv_scalar(1.0))
-  expect_equal(out[[2L]], nv_scalar(1.0))
+  expect_equal(out[[1L]], 1.0)
+  expect_equal(out[[2L]], 1.0)
 })
 
 test_that("wrt for non-tensor input", {

@@ -33,7 +33,8 @@ print.DebugBox <- function(x, ...) {
   if (is_concrete_tensor(aval)) {
     print(aval$data, ..., header = FALSE)
   } else if (is_literal_tensor(aval)) {
-    cat(sprintf("%s:%s{%s}\n", aval$data, dtype2string(aval$dtype, aval$ambiguous), shape2string(aval$shape, FALSE))) # nolint
+    data_str <- if (is_anvil_tensor(aval$data)) as_array(aval$data) else aval$data
+    cat(sprintf("%s:%s{%s}\n", data_str, dtype2string(aval$dtype, aval$ambiguous), shape2string(aval$shape, FALSE))) # nolint
   } else {
     cat(sprintf("%s{%s}\n", dtype2string(aval$dtype, aval$ambiguous), shape2string(aval$shape, FALSE))) # nolint
   }

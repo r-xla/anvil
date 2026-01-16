@@ -4,7 +4,7 @@
 \alias{platform.AbstractTensor}
 \title{Platform for AbstractTensor}
 \usage{
-platform.AbstractTensor(x, ...)
+\method{platform}{AbstractTensor}(x, ...)
 }
 \arguments{
 \item{x}{An AbstractTensor.}
