@@ -52,7 +52,3 @@ stablehlo::Shape
 #' @importFrom stablehlo ScatterDimensionNumbers
 #' @export
 stablehlo::ScatterDimensionNumbers
-
-#' @importFrom stablehlo GatherDimensionNumbers
-#' @export
-stablehlo::GatherDimensionNumbers

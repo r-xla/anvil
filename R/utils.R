@@ -125,6 +125,10 @@ shape2string <- function(x, parenthesize = TRUE) {
   }
 }
 
+shapes2string <- function(shapes) {
+  paste0(sapply(shapes, shape2string), sep = ", ")
+}
+
 zeros_like <- function(x) {
   nvl_fill(0L, dtype = dtype(x), shape = shape(x))
 }

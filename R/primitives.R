@@ -1349,8 +1349,18 @@ p_scatter <- AnvilPrimitive("scatter", higher_order = TRUE, subgraphs = "update_
 #'   Tensor of integer type containing indices.
 #' @param update ([`tensorish`])\cr
 #'   Update values tensor.
-#' @param scatter_dimension_numbers ([`ScatterDimensionNumbers`])\cr
-#'   Dimension configuration for scatter operation.
+#' @param update_window_dims (`integer()`)\cr
+#'   1-based dimensions of the update tensor that correspond to window dimensions.
+#' @param inserted_window_dims (`integer()`)\cr
+#'   1-based dimensions inserted into the update tensor.
+#' @param input_batching_dims (`integer()`)\cr
+#'   1-based batch dimensions in the input tensor.
+#' @param scatter_indices_batching_dims (`integer()`)\cr
+#'   1-based batch dimensions in the scatter indices.
+#' @param scatter_dims_to_operand_dims (`integer()`)\cr
+#'   1-based mapping from scatter indices to operand dimensions.
+#' @param index_vector_dim (`integer(1)`)\cr
+#'   1-based dimension in scatter_indices containing the index vectors.
 #' @param indices_are_sorted (`logical(1)`)\cr
 #'   Whether indices are sorted.
 #' @param unique_indices (`logical(1)`)\cr
@@ -1359,12 +1369,29 @@ p_scatter <- AnvilPrimitive("scatter", higher_order = TRUE, subgraphs = "update_
 #'   Binary function to combine existing and update values.
 #' @return [`tensorish`]
 #' @export
-nvl_scatter <- function(input, scatter_indices, update, scatter_dimension_numbers,
-                        indices_are_sorted = FALSE, unique_indices = FALSE,
+nvl_scatter <- function(input, scatter_indices, update,
+                        update_window_dims = integer(),
+                        inserted_window_dims = integer(),
+                        input_batching_dims = integer(),
+                        scatter_indices_batching_dims = integer(),
+                        scatter_dims_to_operand_dims,
+                        index_vector_dim,
+                        indices_are_sorted = FALSE,
+                        unique_indices = FALSE,
                         update_computation) {
   if (!is.function(update_computation)) {
     cli_abort("update_computation must be a function")
   }
+
+  # Convert 1-based dimensions to 0-based and create ScatterDimensionNumbers
+  scatter_dimension_numbers <- ScatterDimensionNumbers(
+    update_window_dims = update_window_dims - 1L,
+    inserted_window_dims = inserted_window_dims - 1L,
+    input_batching_dims = input_batching_dims - 1L,
+    scatter_indices_batching_dims = scatter_indices_batching_dims - 1L,
+    scatter_dims_to_operand_dims = scatter_dims_to_operand_dims - 1L,
+    index_vector_dim = index_vector_dim - 1L
+  )
 
   current_desc <- .current_descriptor(silent = TRUE)
   debug_mode <- is.null(current_desc)
@@ -1423,7 +1450,7 @@ nvl_scatter <- function(input, scatter_indices, update, scatter_dimension_number
 
   out <- graph_desc_add(
     p_scatter,
-    args = list(input = input, scatter_indices = scatter_indices, update = update),
+    args = list(input = input, scatter_indices = scatter_indices - 1L, update = update),
     params = list(
       scatter_dimension_numbers = scatter_dimension_numbers,
       indices_are_sorted = indices_are_sorted,
@@ -1435,5 +1462,5 @@ nvl_scatter <- function(input, scatter_indices, update, scatter_dimension_number
     debug_mode = debug_mode
   )
 
-  out
+  out[[1L]]
 }

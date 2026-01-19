@@ -29,3 +29,21 @@ describe("[<-", {
     expect_equal(as_array(result), expected)
   })
 })
+
+describe("c", {
+  it("concatenates scalars", {
+    expect_equal(jit_eval(c(nv_scalar(1L), nv_scalar(2L))), nv_tensor(1:2))
+  })
+  it("can concatenate scalars and vectors", {
+    expect_equal(jit_eval(c(nv_scalar(1L), 2L)), nv_tensor(1:3))
+  })
+  it("can concatenate literals", {
+    expect_equal(nv_tensor(1:2), jit_eval(c(nv_scalar(1L), 2L)))
+    expect_equal(nv_tensor(1:2), jit_eval(c(1L, nv_scalar(2L))))
+  })
+  it("fails with > 1D tensors", {
+    expect_snapshot(
+      jit_eval(c(nv_tensor(1:2), nv_tensor(3:4)))
+    )
+  })
+})

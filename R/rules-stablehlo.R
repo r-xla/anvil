@@ -402,21 +402,12 @@ p_scatter[["stablehlo"]] <- function(input, scatter_indices, update, scatter_dim
   # Convert the graph to a stablehlo Func
   update_func <- stablehlo(update_computation_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
   
-  # Convert 1-based indices to 0-based for stablehlo
-  sdn_0based <- stablehlo::ScatterDimensionNumbers(
-    update_window_dims = scatter_dimension_numbers$update_window_dims - 1L,
-    inserted_window_dims = scatter_dimension_numbers$inserted_window_dims - 1L,
-    input_batching_dims = scatter_dimension_numbers$input_batching_dims - 1L,
-    scatter_indices_batching_dims = scatter_dimension_numbers$scatter_indices_batching_dims - 1L,
-    scatter_dims_to_operand_dims = scatter_dimension_numbers$scatter_dims_to_operand_dims - 1L,
-    index_vector_dim = scatter_dimension_numbers$index_vector_dim - 1L
-  )
-  
+  # scatter_dimension_numbers is already 0-based (converted in nvl_scatter)
   result <- stablehlo::hlo_scatter(
     inputs = list(input),
     scatter_indices = scatter_indices,
     updates = list(update),
-    scatter_dimension_numbers = sdn_0based,
+    scatter_dimension_numbers = scatter_dimension_numbers,
     indices_are_sorted = indices_are_sorted,
     unique_indices = unique_indices,
     update_computation = update_func

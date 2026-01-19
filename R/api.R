@@ -191,9 +191,42 @@ nv_reshape <- nvl_reshape
 #' @param ... tensors
 #' @param dimension (`integer()`)\cr
 #'   The dimension to concatenate along to. Other dimensions must be the same.
+#'   If this is `NULL` (default), it assues all ranks are at most 1 and the concatenation dimension is 1.
 #' @return [`tensorish`]
 #' @export
-nv_concatenate <- nvl_concatenate
+nv_concatenate <- function(..., dimension = NULL) {
+  args <- list(...)
+  args <- do.call(nv_promote_to_common, args)
+  shapes <- lapply(args, shape_abstract)
+  ranks <- lengths(shapes)
+  non_scalar_shapes <- shapes[ranks > 0L]
+  assert_int(dimension, lower = 1L, upper = max(max(ranks), 1L), null.ok = max(ranks) <= 1L)
+  dimension <- dimension %??% 1L
+
+  non_scalar_shapes <- lapply(non_scalar_shapes, \(shape) {
+    shape[-dimension]
+  })
+  if (length(non_scalar_shapes) && length(unique(non_scalar_shapes)) != 1L) {
+    cli_abort(c(
+      "All non-scalar tensors must have the same shape (except for the concatenation dimension)",
+      x = "Got shapes {shapes2string(shapes)}"
+    ))
+  }
+  out_shape <- if (length(non_scalar_shapes)) {
+    non_scalar_shapes[[1L]]
+  } else {
+    length(args)
+  }
+  out_rank <- length(out_shape)
+  args <- lapply(args, \(arg) {
+    if (ndims_abstract(arg) == 0L) {
+      nv_broadcast_to(arg, out_rank)
+    } else {
+      arg
+    }
+  })
+  rlang::exec(nvl_concatenate, !!!args, dimension = dimension)
+}
 
 
 

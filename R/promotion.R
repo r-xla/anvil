@@ -131,3 +131,14 @@ default_dtype <- function(x) {
     cli_abort("No default type for: {.class class(x)[1L]}")
   }
 }
+
+promotable_to <- function(from, to) {
+  if (identical(from, to)) {
+    return(TRUE)
+  }
+  dt <- common_dtype(from, to)
+  if (dt$dtype != to) {
+    return(FALSE)
+  }
+  TRUE
+}

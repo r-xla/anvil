@@ -123,3 +123,193 @@ describe("nv_subset", {
     )
   })
 })
+
+describe("nv_subset_assign stablehlo", {
+  it("can replace element selected with scalar tensor", {
+    expect_jit_equal({
+      x <- nv_tensor(1:3)
+      x[nv_scalar(1L, dtype = "i64")] <- nv_tensor(-1L)
+      x
+      },
+      nv_tensor(c(-1L, 2L, 3L))
+    )
+  })
+  it("works with i32 indices", {
+    expect_jit_equal({
+      x <- nv_tensor(1:3)
+      x[nv_scalar(1L, dtype = "i32")] <- nv_tensor(-1L)
+      x
+      },
+      nv_tensor(c(-1L, 2L, 3L))
+    )
+  })
+  it("works with literal on rhs", {
+    expect_jit_equal({
+      x <- nv_tensor(1:2)
+      x[1] <- 0L
+      x
+      },
+      nv_tensor(c(0L, 2L))
+    )
+  })
+  it("can assign to contiguous slice in 1D tensor", {
+    expect_jit_equal({
+      x <- nv_tensor(1:3)
+      x[1:2] <- nv_tensor(c(-1L, -2L))
+      x
+      },
+      nv_tensor(c(-1L, -2L, 3L))
+    )
+
+  })
+  it("can assign to scatter in 1D tensor", {
+    expect_jit_equal({
+      x <- nv_tensor(1:3)
+      x[nv_tensor(c(1L, 3L))] <- nv_tensor(c(-1L, -3L))
+      x
+      },
+      nv_tensor(c(-1L, 2L, -3L))
+    )
+  })
+  it("can scatter with R integer vector", {
+    expect_jit_equal({
+      x <- nv_tensor(1:3)
+      x[c(1, 3)] <- nv_tensor(c(-1L, -3L))
+      x
+      },
+      nv_tensor(c(-1L, 2L, -3L))
+    )
+
+  })
+  it("checks that update dim is as expected", {
+    # maybe we want to allow this, but for now be conservative
+    expect_snapshot(error = TRUE,
+      jit_eval({
+        x <- nv_tensor(matrix(1:6, nrow = 3, byrow = TRUE))
+        x[nv_tensor(c(1L, 3L)), 1] <- nv_tensor(c(-1L, -3L), shape = 2L)
+        x
+      })
+    )
+  })
+
+  it("can combine scatter with index", {
+    # [[1, 2],
+    #  [3, 4],
+    #  [5, 6]]
+    expect_jit_equal({
+      x <- nv_tensor(matrix(1:6, nrow = 3, byrow = TRUE))
+      x[nv_tensor(c(1L, 3L)), 1] <- nv_tensor(c(-1L, -3L))
+      x
+      },
+      nv_tensor(c(-1L, 3L, -3L, 2L, 4L, 6L))
+    )
+  })
+  it("can combine scatter with range", {
+    # [[1, 2],
+    #  [3, 4],
+    #  [5, 6]]
+    expect_jit_equal({
+      x <- nv_tensor(matrix(1:6, nrow = 3, byrow = TRUE))
+      x[c(1, 3), 1:2] <- nv_tensor(c(-1L, -5L, -2L, -6L), shape = c(2, 2))
+      x
+      },
+      nv_tensor(c(-1, 3, -5, -2, 4, -6), dtype = "i32", shape = c(3, 2))
+    )
+  })
+
+  it("errs with incorrect subsets", {
+    expect_snapshot(error = TRUE,
+      jit_eval({
+        x <- nv_tensor(matrix(1:6, nrow = 3, byrow = TRUE))
+        x[nv_scalar(7L)] <- -99
+      })
+    )
+
+  })
+
+  it("works correctly with out-of-bound indices", {
+    # we just ignore it
+    expect_jit_equal({
+        x <- nv_tensor(1:6)
+        x[nv_scalar(7L)] <- -99L
+        x
+      },
+      nv_tensor(1:6)
+    )
+  })
+
+  it("broadcasts scalar rhs", {
+    expect_jit_equal({
+      x <- nv_tensor(1:3)
+      x[c(1, 3)] <- -1L
+      x
+      },
+      nv_tensor(c(-1L, 2L, -1L))
+    )
+  })
+  it("Currently supports at most one scattered subset", {
+    expect_snapshot(error = TRUE,
+      jit_eval({
+        x <- nv_tensor(matrix(1:9, nrow = 3, byrow = TRUE))
+        x[c(1, 3), c(1, 3)] <- nv_tensor(matrix(c(-1L, -3L, -7L, -9L), nrow = 2, byrow = TRUE))
+      })
+    )
+  })
+
+  it("promotes correctly", {
+    # We don't want to convert the lhs, so we only promote rhs to lhs (if possible)
+    expect_snapshot(error = TRUE,
+      jit_eval({
+        x <- nv_tensor(1:3)
+        x[1] <- nv_tensor(1)
+        x
+      })
+    )
+    expect_jit_equal({
+      x <- nv_tensor(1:3)
+      x[1] <- nv_tensor(2L, dtype = "i8")
+      x
+      },
+      nv_tensor(c(2L, 2L, 3L))
+    )
+  })
+
+
+  it("can replace single element", {
+    expect_jit_equal({
+      x <- nv_tensor(1:10)
+      x[1] <- nv_tensor(-9L)
+      x
+      },
+      nv_tensor(c(-9L, 2:10))
+    )
+  })
+  it("works with literal on rhs", {
+    expect_jit_equal({
+      x <- nv_tensor(1:2)
+      x[1] <- 0L
+      x
+      },
+      nv_tensor(c(0L, 2))
+    )
+
+  })
+  it("can combine scatter, range and single element in 3D tensor", {
+    vals <- array(1:24, dim = c(2, 3, 4))
+    vals_exp <- vals
+    vals_exp[2, c(1, 3), 3:4] <- -(1:4)
+
+    expect_jit_equal({
+      x <- nv_tensor(vals)
+      x[2, c(1, 3), 3:4] <- nv_tensor(-(1:4), shape = c(1, 2, 2))
+      x
+      },
+      nv_tensor(vals_exp)
+    )
+  })
+
+})
+
+describe("nv_subset can be combined with nv_subset_assign", {
+
+})
