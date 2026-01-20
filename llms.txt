@@ -138,9 +138,9 @@ Functions for querying tensor attributes and converting them
   [`as_dtype`](https://r-xla.github.io/anvil/reference/reexports.md)
   [`Shape`](https://r-xla.github.io/anvil/reference/reexports.md) :
   Objects exported from other packages
-- [`platform.AbstractTensor()`](https://r-xla.github.io/anvil/reference/platform.AbstractTensor.md)
+- [`platform(`*`<AbstractTensor>`*`)`](https://r-xla.github.io/anvil/reference/platform.AbstractTensor.md)
   : Platform for AbstractTensor
-- [`platform.ConcreteTensor()`](https://r-xla.github.io/anvil/reference/platform.ConcreteTensor.md)
+- [`platform(`*`<ConcreteTensor>`*`)`](https://r-xla.github.io/anvil/reference/platform.ConcreteTensor.md)
   : Platform for ConcreteTensor
 - [`platform()`](https://r-xla.github.io/anvil/reference/platform.md) :
   Platform

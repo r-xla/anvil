@@ -5,7 +5,8 @@ Get the platform of a ConcreteTensor.
 ## Usage
 
 ``` r
-platform.ConcreteTensor(x, ...)
+# S3 method for class 'ConcreteTensor'
+platform(x, ...)
 ```
 
 ## Arguments

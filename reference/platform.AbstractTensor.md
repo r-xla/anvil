@@ -6,7 +6,8 @@ not accessible during tracing.
 ## Usage
 
 ``` r
-platform.AbstractTensor(x, ...)
+# S3 method for class 'AbstractTensor'
+platform(x, ...)
 ```
 
 ## Arguments
