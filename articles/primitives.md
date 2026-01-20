@@ -1,6 +1,6 @@
 # Primitives Reference
 
-The table below shows all 68 primitives and which rules they implement.
+The table below shows all 66 primitives and which rules they implement.
 Note that a rule might be missing because it was just not added yet, or
 because it does not apply for a specific primitive.
 
@@ -20,8 +20,6 @@ because it does not apply for a specific primitive.
 | cosine                 | ✓         |    ✓     |
 | divide                 | ✓         |    ✓     |
 | dot_general            | ✓         |    ✓     |
-| dynamic_slice          | ✓         |    ✗     |
-| dynamic_update_slice   | ✓         |    ✗     |
 | equal                  | ✓         |    ✓     |
 | exp                    | ✓         |    ✓     |
 | expm1                  | ✓         |    ✓     |
@@ -66,8 +64,8 @@ because it does not apply for a specific primitive.
 | shift_right_logical    | ✓         |    ✗     |
 | sign                   | ✓         |    ✓     |
 | sine                   | ✓         |    ✓     |
+| slice                  | ✓         |    ✗     |
 | sqrt                   | ✓         |    ✓     |
-| static_slice           | ✓         |    ✗     |
 | sub                    | ✓         |    ✓     |
 | tan                    | ✓         |    ✓     |
 | tanh                   | ✓         |    ✓     |

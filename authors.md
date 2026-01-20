@@ -14,7 +14,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/r-xla/anvil/blob/feat-dynamic-slice/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/r-xla/anvil/blob/fix-cuda-ci2/DESCRIPTION)
 
 Fischer S, Falbel D, German N (2026). *anvil: Framework for R code
 transformations*. R package version 0.0.0.9000,
