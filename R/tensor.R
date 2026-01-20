@@ -129,6 +129,7 @@ is_concrete_tensor <- function(x) {
 #' @param x An AbstractTensor.
 #' @param ... Additional arguments (unused).
 #' @return Never returns; always errors.
+#' @method platform AbstractTensor
 #' @export
 platform.AbstractTensor <- function(x, ...) {
   cli_abort("platform is not accessible during tracing")
@@ -220,6 +221,7 @@ is_literal_tensor <- function(x) {
 #' @param x A ConcreteTensor.
 #' @param ... Additional arguments (unused).
 #' @return The platform string.
+#' @method platform ConcreteTensor
 #' @export
 platform.ConcreteTensor <- function(x, ...) {
   pjrt::platform(x$data)
