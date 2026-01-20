@@ -239,3 +239,11 @@ test_that("literals are not converted to scalar tensors", {
   f <- jit(nv_sine)
   expect_error(f(1), "Expected AnvilTensor")
 })
+
+test_that("jit_eval does not modify calling environment", {
+  x <- nv_tensor(1:2)
+  jit_eval({
+    x <- nv_tensor(3:4)
+  })
+  expect_equal(x, nv_tensor(1:2))
+})
