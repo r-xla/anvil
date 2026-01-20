@@ -498,50 +498,6 @@ p_pad[["backward"]] <- function(
   )
 }
 
-p_dynamic_slice[["backward"]] <- function(inputs, outputs, grads, slice_sizes, .required) {
-  operand <- inputs[[1L]]
-  start_indices <- inputs[-1L]
-  grad <- grads[[1L]]
-
-  result <- vector("list", length(inputs))
-
-  if (.required[[1L]]) {
-    # Gradient for operand: create zeros and update the slice region with the gradient
-    zero <- zeros_like(operand)
-    result[[1L]] <- rlang::exec(nvl_dynamic_update_slice, zero, grad, !!!start_indices)
-  }
-
-  # start_indices are not differentiable - keep as NULL (already initialized)
-  # Note: result[i] <- list(NULL) is used to set to NULL without removing the element
-
-  result
-}
-
-p_dynamic_update_slice[["backward"]] <- function(inputs, outputs, grads, .required) {
-  operand <- inputs[[1L]]
-  update <- inputs[[2L]]
-  start_indices <- inputs[-(1:2)]
-  grad <- grads[[1L]]
-
-  result <- vector("list", length(inputs))
-
-  if (.required[[1L]]) {
-    # Gradient for operand: set the slice region to zero
-    zero_update <- zeros_like(update)
-    result[[1L]] <- rlang::exec(nvl_dynamic_update_slice, grad, zero_update, !!!start_indices)
-  }
-
-  if (.required[[2L]]) {
-    # Gradient for update: extract the slice from the gradient
-    slice_sizes <- shape(update)
-    result[[2L]] <- rlang::exec(nvl_dynamic_slice, grad, !!!start_indices, slice_sizes = slice_sizes)
-  }
-
-  # start_indices are not differentiable - keep as NULL (already initialized)
-
-  result
-}
-
 p_gather[["backward"]] <- function(inputs, outputs, grads, slice_sizes, offset_dims, collapsed_slice_dims, operand_batching_dims, start_indices_batching_dims, start_index_map, index_vector_dim, indices_are_sorted, unique_indices, .required) {
   operand <- inputs[[1L]]
   start_indices <- inputs[[2L]]

@@ -14,7 +14,8 @@ nvl_gather(
   start_indices_batching_dims,
   start_index_map,
   index_vector_dim,
-  indices_are_sorted = FALSE
+  indices_are_sorted = FALSE,
+  unique_indices = FALSE
 )
 }
 \arguments{
@@ -29,6 +30,9 @@ The sizes of the slices to gather in each dimension.}
 
 \item{indices_are_sorted}{(\code{logical(1)})\cr
 Whether indices are guaranteed to be sorted.}
+
+\item{unique_indices}{(\code{logical(1)})\cr
+Whether indices are guaranteed to be unique (no duplicates).}
 
 \item{gather_dimension_numbers}{(\code{\link[stablehlo:GatherDimensionNumbers]{stablehlo::GatherDimensionNumbers}})\cr
 Dimension configuration for the gather operation.}

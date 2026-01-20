@@ -57,36 +57,6 @@ p_slice[["stablehlo"]] <- function(operand, start_indices, limit_indices, stride
   list(stablehlo::hlo_slice(operand, start_indices - 1L, limit_indices, strides))
 }
 
-p_dynamic_slice[["stablehlo"]] <- function(operand, ..., slice_sizes) {
-  start_indices <- list(...)
-  # Convert start indices from 1-based to 0-based by subtracting 1
-  start_indices_0based <- lapply(start_indices, function(idx) {
-    one <- stablehlo::hlo_scalar(1L, dtype = dtype(idx), func = idx$func)
-    stablehlo::hlo_subtract(idx, one)
-  })
-  list(rlang::exec(
-    stablehlo::hlo_dynamic_slice,
-    operand,
-    !!!start_indices_0based,
-    slice_sizes = slice_sizes
-  ))
-}
-
-p_dynamic_update_slice[["stablehlo"]] <- function(operand, update, ...) {
-  start_indices <- list(...)
-  # Convert start indices from 1-based to 0-based by subtracting 1
-  start_indices_0based <- lapply(start_indices, function(idx) {
-    one <- stablehlo::hlo_scalar(1L, dtype = dtype(idx), func = idx$func)
-    stablehlo::hlo_subtract(idx, one)
-  })
-  list(rlang::exec(
-    stablehlo::hlo_dynamic_update_slice,
-    operand,
-    update,
-    !!!start_indices_0based
-  ))
-}
-
 p_gather[["stablehlo"]] <- function(
   operand,
   start_indices,

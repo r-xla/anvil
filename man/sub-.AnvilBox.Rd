@@ -5,9 +5,9 @@
 \alias{[.AnvilTensor}
 \title{Subset Tensor}
 \usage{
-\method{[}{AnvilBox}(x, ..., drop = FALSE)
+\method{[}{AnvilBox}(x, ...)
 
-\method{[}{AnvilTensor}(x, ..., drop = FALSE)
+\method{[}{AnvilTensor}(x, ...)
 }
 \arguments{
 \item{x}{(\code{\link{tensorish}})\cr

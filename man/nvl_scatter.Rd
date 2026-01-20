@@ -16,7 +16,7 @@ nvl_scatter(
   index_vector_dim,
   indices_are_sorted = FALSE,
   unique_indices = FALSE,
-  update_computation
+  update_computation = NULL
 )
 }
 \arguments{
