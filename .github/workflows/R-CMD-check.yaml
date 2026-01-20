@@ -40,7 +40,7 @@ jobs:
               sudo dpkg -i nvshmem-local-repo-ubuntu2404-3.2.5_3.2.5-1_amd64.deb
               sudo cp /var/nvshmem-local-repo-ubuntu2404-3.2.5/nvshmem-*-keyring.gpg /usr/share/keyrings/
               sudo apt-get update
-              sudo apt-get -y --allow-change-held-packages install nvshmem-cuda-12 libnccl2 libnccl-dev
+              sudo apt-get -y --allow-change-held-packages install nvshmem-cuda-12=3.4.5-1 libnccl2 libnccl-dev libnvshmem3-cuda-12=3.4.5-1 libnvshmem3-static-cuda-12=3.4.5-1 libnvshmem3-dev-cuda-12=3.4.5-1
           - config: {os: "ubuntu", platform: "cpu"}
             runner: 'ubuntu-latest'
           - config: {os: "macos", platform: "cpu"}
