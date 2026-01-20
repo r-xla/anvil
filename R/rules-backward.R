@@ -511,7 +511,6 @@ p_shift_right_logical[["backward"]] <- backward_zero_bin
 p_is_finite[["backward"]] <- backward_zero_uni
 p_popcnt[["backward"]] <- backward_zero_uni
 
-# reduce_all and reduce_any are boolean operations, not differentiable
 p_reduce_all[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
   operand <- inputs[[1L]]
   list(
@@ -526,7 +525,6 @@ p_reduce_any[["backward"]] <- function(inputs, outputs, grads, dims, drop, .requ
   )
 }
 
-# bitcast_convert reinterprets bits as a different type, not meaningful to differentiate
 p_bitcast_convert[["backward"]] <- function(inputs, outputs, grads, dtype, .required) {
   operand <- inputs[[1L]]
   list(
@@ -534,19 +532,16 @@ p_bitcast_convert[["backward"]] <- function(inputs, outputs, grads, dtype, .requ
   )
 }
 
-# atan2 backward
 p_atan2[["backward"]] <- function(inputs, outputs, grads, .required) {
-  y <- inputs[[1L]] # numerator (y in atan2(y, x))
-  x <- inputs[[2L]] # denominator (x in atan2(y, x))
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
   grad <- grads[[1L]]
-  # d/dy atan2(y, x) = x / (x^2 + y^2)
-  # d/dx atan2(y, x) = -y / (x^2 + y^2)
   if (.required[[1L]] || .required[[2L]]) {
-    denom <- nvl_add(nvl_mul(x, x), nvl_mul(y, y))
+    denom <- nvl_add(nvl_mul(lhs, lhs), nvl_mul(rhs, rhs))
   }
   list(
-    if (.required[[1L]]) nvl_div(nvl_mul(grad, x), denom),
-    if (.required[[2L]]) nvl_div(nvl_mul(grad, nvl_negate(y)), denom)
+    if (.required[[1L]]) nvl_div(nvl_mul(grad, rhs), denom),
+    if (.required[[2L]]) nvl_div(nvl_mul(grad, nvl_negate(lhs)), denom)
   )
 }
 
@@ -555,35 +550,25 @@ p_concatenate[["backward"]] <- function(inputs, outputs, grads, dimension, .requ
   grad <- grads[[1L]]
   n_inputs <- length(inputs)
   input_grads <- vector("list", n_inputs)
-  grad_shape <- shape(grad)
 
-  # offset tracks the 0-based start position along the concat dimension
-  offset_0based <- 0L
+  offset <- 1L
+  limit_indices <- shape(grad)
+  start_indices <- rep(1L, length(shape(inputs[[1]])))
   for (i in seq_len(n_inputs)) {
     input_shape <- shape(inputs[[i]])
     dim_size <- input_shape[dimension]
     if (.required[[i]]) {
-      # anvil slice: start_indices is 1-based, limit_indices is 0-based exclusive
-      # For non-concat dimensions, we want the full range: start=1, limit=size+1 (0-based exclusive = size)
-      # Actually limit is passed through directly, so limit = grad_shape (which is already the size, = 0-based exclusive limit)
-      start_indices <- rep(1L, length(input_shape))
-      limit_indices <- grad_shape # 0-based exclusive limits for each dim = the shape
       strides <- rep(1L, length(input_shape))
-
-      # For the concat dimension:
-      # - anvil start = 0-based start + 1 = offset_0based + 1
-      # - anvil limit = 0-based exclusive end = offset_0based + dim_size
-      start_indices[dimension] <- offset_0based + 1L
-      limit_indices[dimension] <- offset_0based + dim_size
-
+      start_indices[dimension] <- offset
+      limit_indices[dimension] <- offset + dim_size - 1L
       input_grads[[i]] <- nvl_static_slice(grad, start_indices, limit_indices, strides)
     }
-    offset_0based <- offset_0based + dim_size
+    offset <- offset + dim_size
   }
   input_grads
 }
 
-# reduce_prod backward
+
 p_reduce_prod[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
   operand <- inputs[[1L]]
   y <- outputs[[1L]]
@@ -596,32 +581,12 @@ p_reduce_prod[["backward"]] <- function(inputs, outputs, grads, dims, drop, .req
       } else {
         seq_along(shape(grad))
       }
-      # d/dx_i prod(x) = prod(x) / x_i = prod(x_j for j != i)
-      # grad_i = grad * prod / x_i
       y_bc <- nvl_broadcast_in_dim(y, shape(operand), bdims)
       grad_bc <- nvl_broadcast_in_dim(grad, shape(operand), bdims)
       nvl_div(nvl_mul(grad_bc, y_bc), operand)
     }
   )
 }
-
-# remainder backward: d/dx remainder(x, y) = 1, d/dy remainder(x, y) = -trunc(x / y)
-# torch uses trunc (rounding towards zero), not floor
-p_remainder[["backward"]] <- function(inputs, outputs, grads, .required) {
-  lhs <- inputs[[1L]]
-  rhs <- inputs[[2L]]
-  grad <- grads[[1L]]
-  list(
-    if (.required[[1L]]) grad,
-    if (.required[[2L]]) {
-      # trunc(x/y) = sign(x/y) * floor(abs(x/y))
-      quot <- nvl_div(lhs, rhs)
-      trunc_quot <- nvl_mul(nvl_sign(quot), nvl_floor(nvl_abs(quot)))
-      nvl_mul(grad, nvl_negate(trunc_quot))
-    }
-  )
-}
-
 # slice backward: pad with zeros
 p_static_slice[["backward"]] <- function(inputs, outputs, grads, start_indices, limit_indices, strides, .required) {
   operand <- inputs[[1L]]
@@ -630,22 +595,8 @@ p_static_slice[["backward"]] <- function(inputs, outputs, grads, start_indices, 
     if (.required[[1L]]) {
       input_shape <- shape(operand)
       grad_shape <- shape(grad)
-      # start_indices is 1-based in anvil (converted to 0-based for stablehlo by subtracting 1)
-      # limit_indices is passed directly to stablehlo as 0-based exclusive
-      # So: 0-based start = start_indices - 1
-      #     0-based limit = limit_indices (passed through)
-      #
-      # With strides, the output elements are at 0-based positions:
-      # start, start+stride, start+2*stride, ..., start+(n-1)*stride
-      # where n = grad_shape (number of output elements per dim)
-      #
-      # The last element is at: 0-based start + (n-1) * stride
-      # High padding = input_shape - last_element_position - 1
-      #              = input_shape - (start_indices - 1) - (grad_shape - 1) * strides - 1
-      #              = input_shape - start_indices + 1 - (grad_shape - 1) * strides - 1
-      #              = input_shape - start_indices - (grad_shape - 1) * strides
       edge_padding_low <- start_indices - 1L
-      edge_padding_high <- input_shape - start_indices + 1L - (grad_shape - 1L) * strides - 1L
+      edge_padding_high <- input_shape - start_indices - (grad_shape - 1L) * strides
       interior_padding <- strides - 1L
       nvl_pad(
         grad,

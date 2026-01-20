@@ -40,7 +40,7 @@ test_that("backward rule is tested", {
   )
 
   content <- do.call(c, lapply(candidate_files, readLines))
-  content <- content[grepl("(test_that|describe)\\(", content)]
+  content <- content[grepl("(test_that|describe|it)\\(", content)]
   missing <- Filter(function(nm) !any(grepl(nm, content, fixed = TRUE)), primitive_names)
 
   expect_true(length(missing) == 0L, info = paste(missing, collapse = ", "), label = "Backward rule is tested")

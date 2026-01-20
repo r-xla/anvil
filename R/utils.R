@@ -126,7 +126,13 @@ shape2string <- function(x, parenthesize = TRUE) {
 }
 
 zeros_like <- function(x) {
-  nvl_fill(0L, dtype = dtype(x), shape = shape(x))
+  dt <- dtype(x)
+  dt_str <- as.character(dt)
+  # Gradients for pred/integer types should be float zeros
+  if (dt_str %in% c("i1", "pred", "i8", "i16", "i32", "i64", "ui8", "ui16", "ui32", "ui64")) {
+    dt <- "f32"
+  }
+  nvl_fill(0L, dtype = dt, shape = shape(x))
 }
 
 ones_like <- function(x) {

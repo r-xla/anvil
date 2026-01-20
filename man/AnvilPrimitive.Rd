@@ -4,14 +4,11 @@
 \alias{AnvilPrimitive}
 \title{AnvilPrimitive}
 \usage{
-AnvilPrimitive(name, higher_order = FALSE, subgraphs = character())
+AnvilPrimitive(name, subgraphs = character())
 }
 \arguments{
 \item{name}{(\code{character()})\cr
 The name of the primitive.}
-
-\item{higher_order}{(\code{logical(1)})\cr
-Whether the primitive is higher-order (contains subgraphs). Default is \code{FALSE}.}
 
 \item{subgraphs}{(\code{character()})\cr
 Names of parameters that are subgraphs. Only used if \code{higher_order = TRUE}.}
@@ -23,4 +20,6 @@ Names of parameters that are subgraphs. Only used if \code{higher_order = TRUE}.
 Primitive interpretation rule.
 Note that \code{[[} and \verb{[[<-} access the interpretation rules.
 To access other fields, use \code{$} and \verb{$<-}.
+
+A primitive is considered higher-order if it contains subgraphs.
 }
