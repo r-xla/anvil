@@ -186,31 +186,3 @@ t.AnvilTensor <- t.AnvilBox
 #' @method [<- AnvilTensor
 #' @export
 `[<-.AnvilTensor` <- `[<-.AnvilBox`
-
-
-#' @method c AnvilBox
-#' @export
-`c.AnvilBox` <- function(...) {
-  args <- list(...)
-  ranks <- vapply(args, ndims_abstract, integer(1L))
-  if (max(ranks) > 1L) {
-    shapes <- lapply(args, shape_abstract)
-    shapes_str <- paste0(sapply(shapes, shape2string), sep = ", ")
-    cli_abort(c(
-      "All arguments to concatenate must have at most one dimension",
-      x = "Got shapes {shapes_str}"
-    ))
-  }
-  args <- lapply(args, \(arg) {
-    if (ndims_abstract(arg) == 0L) {
-      nv_broadcast_to(arg, 1L)
-    } else {
-      arg
-    }
-  })
-  rlang::exec(nv_concatenate, !!!args, dimension = 1L)
-}
-
-#' @method c AnvilTensor
-#' @export
-`c.AnvilTensor` <- `c.AnvilBox`
