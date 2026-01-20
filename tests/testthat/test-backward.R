@@ -204,10 +204,36 @@ test_that("gradient: does not depend on input", {
   expect_equal(out[[2L]], nv_scalar(1.0))
 })
 
-test_that("wrt for non-tensor input", {
-  g <- gradient(nv_round, wrt = "method")
-  # TODO: Better error message ...
-  expect_error(
-    g(nv_scalar(1), "nearest_even")
-  )
+test_that("wrt for non-tensor input: gradient", {
+  expect_snapshot(error = TRUE, {
+    g <- gradient(nv_round, wrt = "method")
+    g(nv_scalar(1), method = "nearest_even")
+  })
+})
+
+test_that("wrt for non-tensor input: value_and_gradient", {
+  expect_snapshot(error = TRUE, {
+    g <- value_and_gradient(nv_round, wrt = "method")
+    g(nv_scalar(1), method = "nearest_even")
+  })
+})
+
+test_that("wrt for nested non-tensor input: gradient", {
+  f <- function(x) {
+    nvl_mul(x[[1]], x[[2]])
+  }
+  expect_snapshot(error = TRUE, {
+    g <- gradient(f, wrt = "x")
+    g(x = list(nv_scalar(1), 2L))
+  })
+})
+
+test_that("wrt for nested non-tensor input: value_and_gradient", {
+  f <- function(x) {
+    nvl_mul(x[[1]], x[[2]])
+  }
+  expect_snapshot(error = TRUE, {
+    g <- value_and_gradient(f, wrt = "x")
+    g(x = list(nv_scalar(1), 2L))
+  })
 })
