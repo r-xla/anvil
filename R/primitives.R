@@ -1101,6 +1101,8 @@ p_if <- AnvilPrimitive("if", higher_order = TRUE, subgraphs = c("true_graph", "f
 #' @return Result of the executed branch.
 #' @export
 nvl_if <- function(pred, true, false) {
+  # delayed promise evaluation can cause the value to be added to the wrong graph descriptor
+  force(pred)
   true_expr <- rlang::enquo(true)
   false_expr <- rlang::enquo(false)
 
@@ -1174,6 +1176,8 @@ p_while <- AnvilPrimitive("while", higher_order = TRUE, subgraphs = c("cond_grap
 #' @return Final state after loop terminates.
 #' @export
 nvl_while <- function(init, cond, body) {
+  # delayed promise evaluation can cause the value to be added to the wrong graph descriptor
+  force(init)
   if (!is.function(body)) {
     cli_abort("body must be a function")
   }

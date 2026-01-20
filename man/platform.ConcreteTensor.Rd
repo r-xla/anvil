@@ -4,7 +4,7 @@
 \alias{platform.ConcreteTensor}
 \title{Platform for ConcreteTensor}
 \usage{
-platform.ConcreteTensor(x, ...)
+\method{platform}{ConcreteTensor}(x, ...)
 }
 \arguments{
 \item{x}{A ConcreteTensor.}
