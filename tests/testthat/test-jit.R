@@ -247,3 +247,15 @@ test_that("jit_eval does not modify calling environment", {
   })
   expect_equal(x, nv_tensor(1:2))
 })
+
+test_that("hash for cache depends on in_tree (#122)", {
+  f <- jit(\(...) {
+    args <- list(...)
+    args[[1]][[1L]][[1L]]
+  })
+  expect_equal(cache_size(f), 0L)
+  expect_equal(f(list(list(nv_scalar(1L)), nv_scalar(2L))), nv_scalar(1L))
+  expect_equal(cache_size(f), 1L)
+  expect_equal(f(list(list(nv_scalar(1L), nv_scalar(2L)))), nv_scalar(1L))
+  expect_equal(cache_size(f), 1L)
+})

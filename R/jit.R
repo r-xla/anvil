@@ -37,9 +37,9 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
 
-    in_node <- build_tree(mark_some(args, static))
+    in_tree <- build_tree(mark_some(args, static))
     args_flat <- flatten(args)
-    is_static_flat <- in_node$marked
+    is_static_flat <- in_tree$marked
 
     platforms <- character()
     avals_in <- Map(
@@ -73,12 +73,11 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
       Sys.getenv("PJRT_PLATFORM", "cpu")
     }
 
-    cache_hit <- cache$get(list(avals_in, platform))
+    cache_hit <- cache$get(list(in_tree, avals_in, platform))
     if (!is.null(cache_hit)) {
       return(call_xla(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat))
     }
     desc <- local_descriptor()
-    in_tree <- in_node
     in_tree$marked <- NULL
     class(in_tree) <- c("ListNode", "Node")
     graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = avals_in, in_tree = in_tree)
