@@ -133,6 +133,10 @@
 <h2 id="adding-an-api-function">Adding an API function<a class="anchor" aria-label="anchor" href="#adding-an-api-function"></a></h2>
 <p>API functions are prefixed by <code>nv_</code> and are defined in files like api.R or api-rng.R. Often, they wrap primitives, but make them more convenient to use. When accessing properties from <code>tensorish</code> values, use <code>shape_abstract</code>, <code>ndims_abstract</code>, and <code>dtype_abstract</code>. Other accessors are currently not available.</p>
 </div>
+<div class="section level2">
+<h2 id="nse-and-tracing">NSE and Tracing<a class="anchor" aria-label="anchor" href="#nse-and-tracing"></a></h2>
+<p>Whenever we are combining non-standard evaluation (NSE) with tracing of sub-graphs, we need to <code><a href="https://rdrr.io/r/base/force.html" class="external-link">force()</a></code> the tensorish inputs, so they are not accidentally embedded into the sub-graphdescriptor. This can happen in R, because the evaluation of promises in function calls is delayed until they are actually needed, which causes hard-to-debug errors.</p>
+</div>
 
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

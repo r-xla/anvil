@@ -101,3 +101,12 @@ or api-rng.R. Often, they wrap primitives, but make them more convenient
 to use. When accessing properties from `tensorish` values, use
 `shape_abstract`, `ndims_abstract`, and `dtype_abstract`. Other
 accessors are currently not available.
+
+## NSE and Tracing
+
+Whenever we are combining non-standard evaluation (NSE) with tracing of
+sub-graphs, we need to [`force()`](https://rdrr.io/r/base/force.html)
+the tensorish inputs, so they are not accidentally embedded into the
+sub-graphdescriptor. This can happen in R, because the evaluation of
+promises in function calls is delayed until they are actually needed,
+which causes hard-to-debug errors.
