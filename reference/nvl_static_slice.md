@@ -1,11 +1,13 @@
-# Primitive Slice
+# Primitive Static Slice
 
-Extracts a slice from a tensor.
+Extracts a slice from a tensor using static (compile-time) indices. For
+dynamic indices, use
+[`nvl_dynamic_slice()`](https://r-xla.github.io/anvil/reference/nvl_dynamic_slice.md).
 
 ## Usage
 
 ``` r
-nvl_slice(operand, start_indices, limit_indices, strides)
+nvl_static_slice(operand, start_indices, limit_indices, strides)
 ```
 
 ## Arguments
