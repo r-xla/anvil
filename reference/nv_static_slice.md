@@ -5,7 +5,7 @@ return slice of operand.
 ## Usage
 
 ``` r
-nv_slice(operand, start_indices, limit_indices, strides)
+nv_static_slice(operand, start_indices, limit_indices, strides)
 ```
 
 ## Arguments

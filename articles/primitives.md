@@ -1,6 +1,6 @@
 # Primitives Reference
 
-The table below shows all 66 primitives and which rules they implement.
+The table below shows all 68 primitives and which rules they implement.
 Note that a rule might be missing because it was just not added yet, or
 because it does not apply for a specific primitive.
 
@@ -8,18 +8,20 @@ because it does not apply for a specific primitive.
 |:-----------------------|:----------|:--------:|
 | abs                    | ✓         |    ✓     |
 | add                    | ✓         |    ✓     |
-| and                    | ✓         |    ✓     |
-| atan2                  | ✓         |    ✓     |
-| bitcast_convert        | ✓         |    ✓     |
+| and                    | ✓         |    ✗     |
+| atan2                  | ✓         |    ✗     |
+| bitcast_convert        | ✓         |    ✗     |
 | broadcast_in_dim       | ✓         |    ✓     |
 | cbrt                   | ✓         |    ✓     |
 | ceil                   | ✓         |    ✓     |
 | clamp                  | ✓         |    ✓     |
-| concatenate            | ✓         |    ✓     |
+| concatenate            | ✓         |    ✗     |
 | convert                | ✓         |    ✓     |
 | cosine                 | ✓         |    ✓     |
 | divide                 | ✓         |    ✓     |
 | dot_general            | ✓         |    ✓     |
+| dynamic_slice          | ✓         |    ✗     |
+| dynamic_update_slice   | ✓         |    ✗     |
 | equal                  | ✓         |    ✓     |
 | exp                    | ✓         |    ✓     |
 | expm1                  | ✓         |    ✓     |
@@ -29,7 +31,7 @@ because it does not apply for a specific primitive.
 | greater_equal          | ✓         |    ✓     |
 | if                     | ✓         |    ✓     |
 | iota                   | ✓         |    ✗     |
-| is_finite              | ✓         |    ✓     |
+| is_finite              | ✓         |    ✗     |
 | less                   | ✓         |    ✓     |
 | less_equal             | ✓         |    ✓     |
 | log                    | ✓         |    ✓     |
@@ -41,34 +43,34 @@ because it does not apply for a specific primitive.
 | negate                 | ✓         |    ✓     |
 | not                    | ✓         |    ✗     |
 | not_equal              | ✓         |    ✓     |
-| or                     | ✓         |    ✓     |
+| or                     | ✓         |    ✗     |
 | pad                    | ✓         |    ✓     |
-| popcnt                 | ✓         |    ✓     |
+| popcnt                 | ✓         |    ✗     |
 | power                  | ✓         |    ✓     |
 | print                  | ✓         |    ✗     |
-| reduce_all             | ✓         |    ✓     |
-| reduce_any             | ✓         |    ✓     |
+| reduce_all             | ✓         |    ✗     |
+| reduce_any             | ✓         |    ✗     |
 | reduce_max             | ✓         |    ✓     |
 | reduce_min             | ✓         |    ✓     |
-| reduce_prod            | ✓         |    ✓     |
+| reduce_prod            | ✓         |    ✗     |
 | reduce_sum             | ✓         |    ✓     |
-| remainder              | ✓         |    ✓     |
+| remainder              | ✓         |    ✗     |
 | reshape                | ✓         |    ✓     |
 | reverse                | ✓         |    ✓     |
 | rng_bit_generator      | ✓         |    ✗     |
 | round                  | ✓         |    ✓     |
 | rsqrt                  | ✓         |    ✓     |
 | select                 | ✓         |    ✓     |
-| shift_left             | ✓         |    ✓     |
-| shift_right_arithmetic | ✓         |    ✓     |
-| shift_right_logical    | ✓         |    ✓     |
+| shift_left             | ✓         |    ✗     |
+| shift_right_arithmetic | ✓         |    ✗     |
+| shift_right_logical    | ✓         |    ✗     |
 | sign                   | ✓         |    ✓     |
 | sine                   | ✓         |    ✓     |
-| slice                  | ✓         |    ✓     |
 | sqrt                   | ✓         |    ✓     |
+| static_slice           | ✓         |    ✗     |
 | sub                    | ✓         |    ✓     |
 | tan                    | ✓         |    ✓     |
 | tanh                   | ✓         |    ✓     |
 | transpose              | ✓         |    ✓     |
 | while                  | ✓         |    ✗     |
-| xor                    | ✓         |    ✓     |
+| xor                    | ✓         |    ✗     |

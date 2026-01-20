@@ -84,13 +84,13 @@
       <h1>Primitives Reference</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/more-backward/vignettes/primitives.Rmd" class="external-link"><code>vignettes/primitives.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/feat-dynamic-slice/vignettes/primitives.Rmd" class="external-link"><code>vignettes/primitives.Rmd</code></a></small>
       <div class="d-none name"><code>primitives.Rmd</code></div>
     </div>
 
     
     
-<p>The table below shows all 66 primitives and which rules they
+<p>The table below shows all 68 primitives and which rules they
 implement. Note that a rule might be missing because it was just not
 added yet, or because it does not apply for a specific primitive.</p>
 <table class="table">
@@ -113,17 +113,17 @@ added yet, or because it does not apply for a specific primitive.</p>
 <tr class="odd">
 <td align="left">and</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="even">
 <td align="left">atan2</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="odd">
 <td align="left">bitcast_convert</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="even">
 <td align="left">broadcast_in_dim</td>
@@ -148,7 +148,7 @@ added yet, or because it does not apply for a specific primitive.</p>
 <tr class="even">
 <td align="left">concatenate</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="odd">
 <td align="left">convert</td>
@@ -169,6 +169,16 @@ added yet, or because it does not apply for a specific primitive.</p>
 <td align="left">dot_general</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
+</tr>
+<tr class="odd">
+<td align="left">dynamic_slice</td>
+<td align="left">✓</td>
+<td align="center">✗</td>
+</tr>
+<tr class="even">
+<td align="left">dynamic_update_slice</td>
+<td align="left">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="odd">
 <td align="left">equal</td>
@@ -218,7 +228,7 @@ added yet, or because it does not apply for a specific primitive.</p>
 <tr class="even">
 <td align="left">is_finite</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="odd">
 <td align="left">less</td>
@@ -278,7 +288,7 @@ added yet, or because it does not apply for a specific primitive.</p>
 <tr class="even">
 <td align="left">or</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="odd">
 <td align="left">pad</td>
@@ -288,7 +298,7 @@ added yet, or because it does not apply for a specific primitive.</p>
 <tr class="even">
 <td align="left">popcnt</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="odd">
 <td align="left">power</td>
@@ -303,12 +313,12 @@ added yet, or because it does not apply for a specific primitive.</p>
 <tr class="odd">
 <td align="left">reduce_all</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="even">
 <td align="left">reduce_any</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="odd">
 <td align="left">reduce_max</td>
@@ -323,7 +333,7 @@ added yet, or because it does not apply for a specific primitive.</p>
 <tr class="odd">
 <td align="left">reduce_prod</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="even">
 <td align="left">reduce_sum</td>
@@ -333,7 +343,7 @@ added yet, or because it does not apply for a specific primitive.</p>
 <tr class="odd">
 <td align="left">remainder</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="even">
 <td align="left">reshape</td>
@@ -368,17 +378,17 @@ added yet, or because it does not apply for a specific primitive.</p>
 <tr class="even">
 <td align="left">shift_left</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="odd">
 <td align="left">shift_right_arithmetic</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="even">
 <td align="left">shift_right_logical</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="odd">
 <td align="left">sign</td>
@@ -391,14 +401,14 @@ added yet, or because it does not apply for a specific primitive.</p>
 <td align="center">✓</td>
 </tr>
 <tr class="odd">
-<td align="left">slice</td>
+<td align="left">sqrt</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
 <tr class="even">
-<td align="left">sqrt</td>
+<td align="left">static_slice</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 <tr class="odd">
 <td align="left">sub</td>
@@ -428,7 +438,7 @@ added yet, or because it does not apply for a specific primitive.</p>
 <tr class="even">
 <td align="left">xor</td>
 <td align="left">✓</td>
-<td align="center">✓</td>
+<td align="center">✗</td>
 </tr>
 </tbody>
 </table></main>

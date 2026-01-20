@@ -102,8 +102,8 @@
 <url><loc>https://r-xla.github.io/anvil/reference/nv_shift_right_logical.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_sign.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_sine.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/reference/nv_slice.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_sqrt.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nv_static_slice.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_sub.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_tan.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_tanh.html</loc></url>
@@ -125,6 +125,8 @@
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_cosine.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_div.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_dot_general.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nvl_dynamic_slice.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nvl_dynamic_update_slice.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_eq.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_exp.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_expm1.html</loc></url>
@@ -169,8 +171,8 @@
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_shift_right_logical.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_sign.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_sine.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/reference/nvl_slice.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_sqrt.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nvl_static_slice.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_sub.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_tan.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_tanh.html</loc></url>
