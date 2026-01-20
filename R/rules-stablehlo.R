@@ -87,25 +87,41 @@ p_dynamic_update_slice[["stablehlo"]] <- function(operand, update, ...) {
   ))
 }
 
-p_gather[["stablehlo"]] <- function(operand, start_indices, gather_dimension_numbers,
-                                     slice_sizes, indices_are_sorted) {
-  # Convert 1-based indices to 0-based for stablehlo
+p_gather[["stablehlo"]] <- function(
+  operand,
+  start_indices,
+  slice_sizes,
+  offset_dims,
+  collapsed_slice_dims,
+  operand_batching_dims,
+  start_indices_batching_dims,
+  start_index_map,
+  index_vector_dim,
+  indices_are_sorted,
+  unique_indices
+) {
+  # Convert 1-based dimension numbers to 0-based for stablehlo
   gdn_0based <- stablehlo::GatherDimensionNumbers(
-    offset_dims = gather_dimension_numbers$offset_dims - 1L,
-    collapsed_slice_dims = gather_dimension_numbers$collapsed_slice_dims - 1L,
-    operand_batching_dims = gather_dimension_numbers$operand_batching_dims - 1L,
-    start_indices_batching_dims = gather_dimension_numbers$start_indices_batching_dims - 1L,
-    start_index_map = gather_dimension_numbers$start_index_map - 1L,
-    index_vector_dim = gather_dimension_numbers$index_vector_dim - 1L
+    offset_dims = offset_dims - 1L,
+    collapsed_slice_dims = collapsed_slice_dims - 1L,
+    operand_batching_dims = operand_batching_dims - 1L,
+    start_indices_batching_dims = start_indices_batching_dims - 1L,
+    start_index_map = start_index_map - 1L,
+    index_vector_dim = index_vector_dim - 1L
   )
 
-  list(stablehlo::hlo_gather(
+  one <- stablehlo::hlo_tensor(1L, dtype = dtype(start_indices), shape = shape(start_indices))
+  start_indices_0based <- stablehlo::hlo_subtract(start_indices, one)
+
+  result <- stablehlo::hlo_gather(
     operand,
-    start_indices,
+    start_indices_0based,
     gather_dimension_numbers = gdn_0based,
     slice_sizes = slice_sizes,
     indices_are_sorted = indices_are_sorted
-  ))
+  )
+
+  list(result)
 }
 
 .stablehlo_apply_reduce <- function(reductor, operand, init, dims, drop) {
@@ -396,23 +412,50 @@ p_while[["stablehlo"]] <- function(..., cond_graph, body_graph, .env) {
   stablehlo::hlo_while(..., cond = cond_func, body = body_func, simplify = FALSE)
 }
 
-p_scatter[["stablehlo"]] <- function(input, scatter_indices, update, scatter_dimension_numbers,
-                                      indices_are_sorted, unique_indices,
-                                      update_computation_graph, .env) {
+p_scatter[["stablehlo"]] <- function(
+  input,
+  scatter_indices,
+  update,
+  update_window_dims,
+  inserted_window_dims,
+  input_batching_dims,
+  scatter_indices_batching_dims,
+  scatter_dims_to_operand_dims,
+  index_vector_dim,
+  indices_are_sorted,
+  unique_indices,
+  update_computation_graph,
+  .env
+) {
   # Convert the graph to a stablehlo Func
+  # The update_computation_graph is self-contained but may reference constants from the parent graph.
+  # Use constants_as_inputs = FALSE and pass the parent env so constants can be looked up.
   update_func <- stablehlo(update_computation_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
-  
-  # scatter_dimension_numbers is already 0-based (converted in nvl_scatter)
+
+  # Convert 1-based dimension numbers to 0-based and create ScatterDimensionNumbers
+  scatter_dimension_numbers <- stablehlo::ScatterDimensionNumbers(
+    update_window_dims = update_window_dims - 1L,
+    inserted_window_dims = inserted_window_dims - 1L,
+    input_batching_dims = input_batching_dims - 1L,
+    scatter_indices_batching_dims = scatter_indices_batching_dims - 1L,
+    scatter_dims_to_operand_dims = scatter_dims_to_operand_dims - 1L,
+    index_vector_dim = index_vector_dim - 1L
+  )
+
+  # Convert 1-based indices to 0-based
+  one <- stablehlo::hlo_tensor(1L, shape = shape(scatter_indices), dtype = dtype(scatter_indices))
+  scatter_indices_0based <- stablehlo::hlo_subtract(scatter_indices, one)
+
   result <- stablehlo::hlo_scatter(
     inputs = list(input),
-    scatter_indices = scatter_indices,
+    scatter_indices = scatter_indices_0based,
     updates = list(update),
     scatter_dimension_numbers = scatter_dimension_numbers,
     indices_are_sorted = indices_are_sorted,
     unique_indices = unique_indices,
     update_computation = update_func
   )
-  
+
   # hlo_scatter returns a single FuncValue when there's 1 input
   list(result)
 }

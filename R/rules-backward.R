@@ -349,7 +349,7 @@ p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .r
   grad <- grads[[1L]]
   # the ambiguity is determined by the input, not the `ambiguous` parameter
   list(
-    if (.required[[1L]]) nvl_convert(grad, dtype(operand), inputs[[1L]]$aval$ambiguous)
+    if (.required[[1L]]) nvl_convert(grad, dtype(operand), ambiguous_abstract(operand))
   )
 }
 
@@ -541,3 +541,217 @@ p_dynamic_update_slice[["backward"]] <- function(inputs, outputs, grads, .requir
 
   result
 }
+
+p_gather[["backward"]] <- function(inputs, outputs, grads, slice_sizes, offset_dims, collapsed_slice_dims, operand_batching_dims, start_indices_batching_dims, start_index_map, index_vector_dim, indices_are_sorted, unique_indices, .required) {
+  operand <- inputs[[1L]]
+  start_indices <- inputs[[2L]]
+  grad <- grads[[1L]]
+
+  # Gather's backward is scatter_add: we scatter the output gradient back to the
+
+  # positions in the operand where values were gathered from.
+  # Using addition handles the case where multiple gather positions read from the same
+  # source location - the gradients accumulate correctly.
+  #
+  # CLAMPING BEHAVIOR:
+  # StableHLO's gather clamps out-of-bounds indices to valid range.
+  # In the backward pass, we need to clamp indices the same way, so gradients
+  # flow back to the same (clamped) positions that provided values in forward.
+  #
+  # The scatter parameters are derived from the gather parameters:
+  # - update_window_dims = offset_dims (dimensions that came from slicing)
+  # - inserted_window_dims = collapsed_slice_dims (dimensions that were collapsed)
+  # - scatter_dims_to_operand_dims = start_index_map (how indices map to operand dims)
+  # - update_computation = add (to accumulate gradients for overlapping reads)
+
+  list(
+    if (.required[[1L]]) {
+      # Clamp indices to valid range (same as forward pass clamping behavior)
+      scatter_indices <- .gather_clamp_indices(
+        start_indices = start_indices,
+        operand_shape = shape(operand),
+        slice_sizes = slice_sizes,
+        start_index_map = start_index_map,
+        index_vector_dim = index_vector_dim
+      )
+
+      nvl_scatter(
+        input = zeros_like(operand),
+        scatter_indices = scatter_indices,
+        update = grad,
+        update_window_dims = offset_dims,
+        inserted_window_dims = collapsed_slice_dims,
+        input_batching_dims = operand_batching_dims,
+        scatter_indices_batching_dims = start_indices_batching_dims,
+        scatter_dims_to_operand_dims = start_index_map,
+        index_vector_dim = index_vector_dim,
+        indices_are_sorted = indices_are_sorted,
+        unique_indices = unique_indices,
+        # Use addition to accumulate gradients when multiple gather positions
+        # read from the same source location
+        update_computation = function(old, new) nvl_add(old, new)
+      )
+    },
+    if (.required[[2L]]) zeros_like(start_indices)
+  )
+}
+
+# Helper: Clamp indices to valid range
+.gather_clamp_indices <- function(
+  start_indices,
+  operand_shape,
+  slice_sizes,
+  start_index_map,
+  index_vector_dim
+) {
+  indices_shape <- shape(start_indices)
+  n_index_coords <- length(start_index_map)
+
+  if (n_index_coords == 0L) {
+    return(start_indices)
+  }
+
+  # Build min and max bounds for each coordinate
+  min_bounds <- rep(1L, n_index_coords)
+  max_bounds <- integer(n_index_coords)
+  for (coord_idx in seq_len(n_index_coords)) {
+    operand_dim <- start_index_map[coord_idx]
+    operand_size <- operand_shape[operand_dim]
+    slice_size_for_dim <- slice_sizes[operand_dim]
+    max_bounds[coord_idx] <- max(1L, operand_size - slice_size_for_dim + 1L)
+  }
+
+  if (index_vector_dim <= length(indices_shape)) {
+    # Explicit index vector dimension - build bounds tensors
+    bounds_shape <- rep(1L, length(indices_shape))
+    bounds_shape[index_vector_dim] <- n_index_coords
+
+    min_tensor <- nvl_broadcast_in_dim(
+      nvl_fill(1L, dtype = dtype(start_indices), shape = integer()),
+      indices_shape,
+      integer()
+    )
+
+    max_tensor_vals <- nvl_reshape(
+      nv_convert(nv_tensor(max_bounds, dtype = "i64"), dtype = dtype(start_indices)),
+      bounds_shape
+    )
+    max_tensor <- nvl_broadcast_in_dim(max_tensor_vals, indices_shape, seq_along(indices_shape))
+
+    nvl_clamp(min_tensor, start_indices, max_tensor)
+  } else {
+    # Implicit index vector (single coordinate)
+    min_tensor <- nvl_fill(1L, dtype = dtype(start_indices), shape = indices_shape)
+    max_tensor <- nvl_fill(max_bounds[1L], dtype = dtype(start_indices), shape = indices_shape)
+    nvl_clamp(min_tensor, start_indices, max_tensor)
+  }
+}
+
+p_scatter[["backward"]] <- function(
+  inputs,
+  outputs,
+  grads,
+  update_window_dims,
+  inserted_window_dims,
+  input_batching_dims,
+  scatter_indices_batching_dims,
+  scatter_dims_to_operand_dims,
+  index_vector_dim,
+  indices_are_sorted,
+  unique_indices,
+  update_computation_graph,
+  .required
+) {
+  input <- inputs[[1L]]
+  scatter_indices <- inputs[[2L]]
+  update <- inputs[[3L]]
+  grad <- grads[[1L]]
+
+  # Scatter backward:
+  # For simple assignment (update_computation = function(old, new) new):
+  # - d(output)/d(input) at positions NOT in indices = identity
+  # - d(output)/d(input) at positions IN indices = 0 (overwritten values don't contribute)
+  # - d(output)/d(scatter_indices) = 0 (indices are not differentiable)
+  # - d(output)/d(update) = gradient at positions where updates were written
+  #
+  # NOTE: This implementation currently only supports unique_indices = TRUE.
+  # For non-unique indices (overlapping writes), the backward pass is more complex
+# because XLA doesn't guarantee which update "wins" at each position.
+
+  if (!unique_indices) {
+    cli_abort(
+      c(
+        "Scatter backward is only implemented for unique_indices = TRUE.",
+        "i" = "With overlapping indices, the forward pass behavior is non-deterministic,",
+        "i" = "making gradient computation ill-defined.",
+        "i" = "Consider restructuring your code to avoid duplicate scatter indices."
+      )
+    )
+  }
+
+  # Compute slice_sizes for the gather operation (inverse of scatter)
+  # This determines the shape of slices gathered from the gradient tensor
+  update_shape <- shape(update)
+  input_shape <- shape(input)
+
+  # Build slice_sizes: for dimensions in update_window_dims, use update shape;
+  # for dimensions in inserted_window_dims, use 1
+  slice_sizes <- integer(length(input_shape))
+  update_window_pos <- 1L
+  for (i in seq_along(input_shape)) {
+    if (i %in% inserted_window_dims) {
+      slice_sizes[i] <- 1L
+    } else if (i %in% input_batching_dims) {
+      slice_sizes[i] <- 1L
+    } else {
+      slice_sizes[i] <- update_shape[update_window_dims[update_window_pos]]
+      update_window_pos <- update_window_pos + 1L
+    }
+  }
+
+  list(
+    # Gradient for input: zero out positions that were overwritten
+    if (.required[[1L]]) {
+      zeros_update <- zeros_like(update)
+      nvl_scatter(
+        input = grad,
+        scatter_indices = scatter_indices,
+        update = zeros_update,
+        update_window_dims = update_window_dims,
+        inserted_window_dims = inserted_window_dims,
+        input_batching_dims = input_batching_dims,
+        scatter_indices_batching_dims = scatter_indices_batching_dims,
+        scatter_dims_to_operand_dims = scatter_dims_to_operand_dims,
+        index_vector_dim = index_vector_dim,
+        indices_are_sorted = indices_are_sorted,
+        unique_indices = TRUE,
+        update_computation = function(old, new) new
+      )
+    },
+    # Gradient for scatter_indices: not differentiable
+    if (.required[[2L]]) zeros_like(scatter_indices),
+    # Gradient for update: gather from gradient at update positions
+    if (.required[[3L]]) {
+      # The gather dimension numbers are derived from scatter dimension numbers:
+      # - offset_dims = update_window_dims
+      # - collapsed_slice_dims = inserted_window_dims
+      # - start_index_map = scatter_dims_to_operand_dims
+      # - operand_batching_dims = input_batching_dims
+      # - start_indices_batching_dims = scatter_indices_batching_dims
+      nvl_gather(
+        operand = grad,
+        start_indices = scatter_indices,
+        slice_sizes = slice_sizes,
+        offset_dims = update_window_dims,
+        collapsed_slice_dims = inserted_window_dims,
+        operand_batching_dims = input_batching_dims,
+        start_indices_batching_dims = scatter_indices_batching_dims,
+        start_index_map = scatter_dims_to_operand_dims,
+        index_vector_dim = index_vector_dim,
+        indices_are_sorted = indices_are_sorted,
+        unique_indices = TRUE
+      )
+    }
+  )
+}
+

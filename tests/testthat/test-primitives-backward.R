@@ -457,7 +457,7 @@ describe("p_dynamic_slice", {
     grads <- g(operand)
 
     expected <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0), nrow = 3, ncol = 4)
-    expect_equal(as_array(grads[[1L]]), expected)
+    expect_equal(grads[[1L]], nv_tensor(expected, dtype = "f32"))
   })
 
   it("computes gradient for scalar output", {
@@ -473,7 +473,7 @@ describe("p_dynamic_slice", {
     grads <- g(operand)
 
     expected <- matrix(c(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0), nrow = 3, ncol = 4)
-    expect_equal(as_array(grads[[1L]]), expected)
+    expect_equal(grads[[1L]], nv_tensor(expected, dtype = "f32"))
   })
 })
 
@@ -492,7 +492,7 @@ describe("p_dynamic_update_slice", {
     grads <- g(operand)
 
     expected <- matrix(c(1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1), nrow = 3, ncol = 4)
-    expect_equal(as_array(grads[[1L]]), expected)
+    expect_equal(grads[[1L]], nv_tensor(expected, dtype = "f32"))
   })
 
   it("computes gradient wrt update", {
@@ -509,7 +509,7 @@ describe("p_dynamic_update_slice", {
     grads <- g(update)
 
     expected <- matrix(c(1, 1, 1, 1), nrow = 2, ncol = 2)
-    expect_equal(as_array(grads[[1L]]), expected)
+    expect_equal(grads[[1L]], nv_tensor(expected, dtype = "f32"))
   })
 })
 
@@ -530,7 +530,7 @@ describe("p_gather", {
     x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
     grads <- f(x)
     # d/dx = [0, 3, 0, 0] because only x[2] contributes
-    expect_equal(as_array(grads[[1L]]), array(c(0, 3, 0, 0), dim = 4L))
+    expect_equal(grads[[1L]], nv_tensor(c(0, 3, 0, 0), dtype = "f32"))
   })
 
   it("computes gradient for range gather (slice)", {
@@ -542,7 +542,7 @@ describe("p_gather", {
     x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
     grads <- f(x)
     # d/dx = [0, 1, 1, 0] because x[2] and x[3] contribute
-    expect_equal(as_array(grads[[1L]]), array(c(0, 1, 1, 0), dim = 4L))
+    expect_equal(grads[[1L]], nv_tensor(c(0, 1, 1, 0), dtype = "f32"))
   })
 
   it("computes gradient for list gather (multiple indices)", {
@@ -554,7 +554,7 @@ describe("p_gather", {
     x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
     grads <- f(x)
     # d/dx = [1, 0, 1, 0] because x[1] and x[3] contribute
-    expect_equal(as_array(grads[[1L]]), array(c(1, 0, 1, 0), dim = 4L))
+    expect_equal(grads[[1L]], nv_tensor(c(1, 0, 1, 0), dtype = "f32"))
   })
 
   it("accumulates gradients for overlapping gather indices", {
@@ -566,7 +566,7 @@ describe("p_gather", {
     x <- nv_tensor(c(1, 2, 3), dtype = "f32")
     grads <- f(x)
     # d/dx = [0, 2, 0] because x[2] is gathered twice and contributes twice
-    expect_equal(as_array(grads[[1L]]), array(c(0, 2, 0), dim = 3L))
+    expect_equal(grads[[1L]], nv_tensor(c(0, 2, 0), dtype = "f32"))
   })
 
   it("computes gradient for 2D gather (row selection)", {
@@ -578,7 +578,7 @@ describe("p_gather", {
     x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4), dtype = "f32")
     grads <- f(x)
     expected <- matrix(c(1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1), nrow = 3, ncol = 4)
-    expect_equal(as_array(grads[[1L]]), expected)
+    expect_equal(grads[[1L]], nv_tensor(expected, dtype = "f32"))
   })
 })
 
@@ -591,7 +591,7 @@ describe("p_scatter", {
     }))
     x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
     grads <- f(x)
-    expect_equal(as_array(grads[[1L]]), array(c(1, 0, 1, 1), dim = 4L))
+    expect_equal(grads[[1L]], nv_tensor(c(1, 0, 1, 1), dtype = "f32"))
   })
 
   it("computes gradient for single element scatter - update gradient", {
@@ -603,7 +603,7 @@ describe("p_scatter", {
     }))
     update <- nv_scalar(99, dtype = "f32")
     grads <- f(update)
-    expect_equal(as_array(grads[[1L]]), 1)
+    expect_equal(grads[[1L]], nv_scalar(1))
   })
 
   it("computes gradient for range scatter - input gradient", {
@@ -614,7 +614,7 @@ describe("p_scatter", {
     }))
     x <- nv_tensor(c(1, 2, 3, 4, 5), dtype = "f32")
     grads <- f(x)
-    expect_equal(as_array(grads[[1L]]), array(c(1, 0, 0, 1, 1), dim = 5L))
+    expect_equal(grads[[1L]], nv_tensor(c(1, 0, 0, 1, 1), dtype = "f32"))
   })
 
   it("computes gradient for range scatter - update gradient", {
@@ -626,7 +626,7 @@ describe("p_scatter", {
     }))
     update <- nv_tensor(c(88, 99), dtype = "f32")
     grads <- f(update)
-    expect_equal(as_array(grads[[1L]]), array(c(1, 1), dim = 2L))
+    expect_equal(grads[[1L]], nv_tensor(c(1, 1), dtype = "f32"))
   })
 
   it("fails gracefully for non-unique indices", {

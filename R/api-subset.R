@@ -1,6 +1,8 @@
 #' @include api.R
 #' @include primitives.R
 
+# TODO: If the input is a known constant wrapepd in ConcreteTensor, we can also infer things like unique_indices etc. (?)
+
 # Helper functions for subset operations ======================================
 
 #' Parse subset specifications and fill unspecified dimensions
@@ -155,13 +157,18 @@ parse_subset_spec <- function(e, d, allow_vectors = FALSE, parent_frame = parent
         # Scalar tensor indices drop dimension (like R literals)
         return(list(type = "single", start = e, size = 1L, indices = e, drop = TRUE))
       }
-      return(list(
-        type = if (allow_vectors) "scattered" else "single",
-        start = if (allow_vectors) NULL else e,
-        size = shape(e),
-        indices = e,
-        drop = FALSE
-      ))
+      # 1D tensor indices
+      tensor_size <- shape_abstract(e)[1L]
+      if (tensor_size == 1L) {
+        # Single-element 1D tensor - treat as single index (don't drop dimension)
+        return(list(type = "single", start = e, size = 1L, indices = e, drop = FALSE))
+      }
+      # Multi-element 1D tensor - treat as gather
+      if (allow_vectors) {
+        return(list(type = "scattered", start = NULL, size = tensor_size, indices = e, drop = FALSE))
+      } else {
+        return(list(type = "gather", start = NULL, size = tensor_size, indices = e, drop = FALSE))
+      }
     }
     # For gather, single tensor indices
     return(list(type = "single", start = e, size = 1L, indices = e, drop = FALSE))
