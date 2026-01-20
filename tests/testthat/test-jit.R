@@ -214,7 +214,7 @@ test_that("donate: no aliasing with type mismatch", {
 test_that("... works (#19)", {
   expect_equal(
     jit(sum)(nv_tensor(1:10)),
-    nv_scalar(55L)
+    nv_scalar(55L, dtype = "i32") # explicit dtype to match non-ambiguous input
   )
 
   f <- function(..., a) {
@@ -222,7 +222,7 @@ test_that("... works (#19)", {
   }
   expect_equal(
     jit(f)(a = nv_scalar(1L), nv_tensor(1:10)),
-    nv_scalar(56L)
+    nv_scalar(56L, dtype = "i32") # explicit dtype to match non-ambiguous result
   )
 })
 
@@ -238,4 +238,46 @@ test_that("jit: respects device argument", {
 test_that("literals are not converted to scalar tensors", {
   f <- jit(nv_sine)
   expect_error(f(1), "Expected AnvilTensor")
+})
+
+test_that("jit_eval modifies parent frame variables", {
+  x <- nv_scalar(1)
+  jit_eval(x <- x + nv_scalar(1))
+  expect_equal(x, nv_scalar(2))
+})
+
+test_that("ambiguous and non-ambiguous inputs generate different executables", {
+  # Use an environment to track trace count without using <<-
+  counter <- new.env()
+  counter$trace <- 0
+
+  f <- jit(function(x) {
+    counter$trace <- counter$trace + 1
+    x + nv_scalar(counter$trace)
+  })
+
+  # First call with ambiguous input (f32)
+  result1 <- f(nv_scalar(10.0))
+  expect_equal(result1, nv_scalar(11.0))
+  expect_equal(counter$trace, 1)
+
+  # Second call with same ambiguous input (cache hit)
+  result2 <- f(nv_scalar(20.0))
+  expect_equal(result2, nv_scalar(21.0))
+  expect_equal(counter$trace, 1) # No recompilation
+
+  # Third call with non-ambiguous input of same dtype (cache miss due to different ambiguity)
+  result3 <- f(nv_tensor(10.0, dtype = "f32"))
+  expect_equal(result3, nv_tensor(12.0, dtype = "f32")) # counter$trace is now 2
+  expect_equal(counter$trace, 2)
+
+  # Fourth call with same non-ambiguous input (cache hit)
+  result4 <- f(nv_tensor(20.0, dtype = "f32"))
+  expect_equal(result4, nv_tensor(22.0, dtype = "f32"))
+  expect_equal(counter$trace, 2) # No recompilation
+
+  # Fifth call with ambiguous i32 input (cache miss - different dtype)
+  result5 <- f(nv_scalar(10L))
+  expect_equal(result5, nv_scalar(13, dtype = "f32", ambiguous = TRUE))
+  expect_equal(counter$trace, 3)
 })
