@@ -30,7 +30,7 @@ If this is \code{TRUE}, inputs that are \code{AnvilTensor}s are treated as unkno
 If this is \code{FALSE} (default), \code{AnvilTensor}s are treated as constants.}
 
 \item{lit_to_tensor}{(\code{logical(1)})\cr
-Whether to convert literal inputs to \code{AnvilTensor}s.
+Whether to convert literals to \code{AnvilTensor}s.
 Should only be used for higher-order primitives like if and while, where no static inputs are possible.}
 
 \item{args_flat}{(\code{list})\cr
