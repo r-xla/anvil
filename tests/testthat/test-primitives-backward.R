@@ -513,6 +513,137 @@ describe("p_dynamic_update_slice", {
   })
 })
 
+describe("p_gather", {
+  it("works in simple example", {
+    expect_jit_equal({
+      gradient(\(x, y) x[2] * y)(nv_tensor(c(1, 2, 3)), nv_scalar(4))},
+      list(x = nv_tensor(c(0, 4, 0)), y = nv_scalar(2))
+    )
+  })
+
+  it("computes gradient for single element gather", {
+    # Gather single element at index 2
+    f <- jit(gradient(function(x) {
+      y <- x[2]
+      y * nv_scalar(3)
+    }))
+    x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
+    grads <- f(x)
+    # d/dx = [0, 3, 0, 0] because only x[2] contributes
+    expect_equal(as_array(grads[[1L]]), array(c(0, 3, 0, 0), dim = 4L))
+  })
+
+  it("computes gradient for range gather (slice)", {
+    # Gather range [2:3]
+    f <- jit(gradient(function(x) {
+      y <- x[2:3]
+      nv_reduce_sum(y, dims = 1L, drop = TRUE)
+    }))
+    x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
+    grads <- f(x)
+    # d/dx = [0, 1, 1, 0] because x[2] and x[3] contribute
+    expect_equal(as_array(grads[[1L]]), array(c(0, 1, 1, 0), dim = 4L))
+  })
+
+  it("computes gradient for list gather (multiple indices)", {
+    # Gather multiple non-contiguous elements
+    f <- jit(gradient(function(x) {
+      y <- x[list(1, 3)]
+      nv_reduce_sum(y, dims = 1L, drop = TRUE)
+    }))
+    x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
+    grads <- f(x)
+    # d/dx = [1, 0, 1, 0] because x[1] and x[3] contribute
+    expect_equal(as_array(grads[[1L]]), array(c(1, 0, 1, 0), dim = 4L))
+  })
+
+  it("accumulates gradients for overlapping gather indices", {
+    # If we gather the same element multiple times, gradients accumulate
+    f <- jit(gradient(function(x) {
+      y <- x[list(2, 2)]  # gather x[2] twice
+      nv_reduce_sum(y, dims = 1L, drop = TRUE)
+    }))
+    x <- nv_tensor(c(1, 2, 3), dtype = "f32")
+    grads <- f(x)
+    # d/dx = [0, 2, 0] because x[2] is gathered twice and contributes twice
+    expect_equal(as_array(grads[[1L]]), array(c(0, 2, 0), dim = 3L))
+  })
+
+  it("computes gradient for 2D gather (row selection)", {
+    # Gather rows from 2D matrix
+    f <- jit(gradient(function(x) {
+      y <- x[list(1, 3), ]  # select rows 1 and 3
+      nv_reduce_sum(y, dims = c(1L, 2L), drop = TRUE)
+    }))
+    x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4), dtype = "f32")
+    grads <- f(x)
+    expected <- matrix(c(1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1), nrow = 3, ncol = 4)
+    expect_equal(as_array(grads[[1L]]), expected)
+  })
+})
+
+describe("p_scatter", {
+  it("computes gradient for single element scatter - input gradient", {
+    # Input grad: position 2 is overwritten, so its gradient is 0
+    f <- jit(gradient(function(x) {
+      x[2] <- nv_scalar(99, dtype = "f32")
+      nv_reduce_sum(x, dims = 1L, drop = TRUE)
+    }))
+    x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
+    grads <- f(x)
+    expect_equal(as_array(grads[[1L]]), array(c(1, 0, 1, 1), dim = 4L))
+  })
+
+  it("computes gradient for single element scatter - update gradient", {
+    # Update grad: update goes to position 2, which contributes 1 to sum
+    f <- jit(gradient(function(update) {
+      x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
+      x[2] <- update
+      nv_reduce_sum(x, dims = 1L, drop = TRUE)
+    }))
+    update <- nv_scalar(99, dtype = "f32")
+    grads <- f(update)
+    expect_equal(as_array(grads[[1L]]), 1)
+  })
+
+  it("computes gradient for range scatter - input gradient", {
+    # Input grad: positions 2,3 are overwritten
+    f <- jit(gradient(function(x) {
+      x[2:3] <- nv_tensor(c(88, 99), dtype = "f32")
+      nv_reduce_sum(x, dims = 1L, drop = TRUE)
+    }))
+    x <- nv_tensor(c(1, 2, 3, 4, 5), dtype = "f32")
+    grads <- f(x)
+    expect_equal(as_array(grads[[1L]]), array(c(1, 0, 0, 1, 1), dim = 5L))
+  })
+
+  it("computes gradient for range scatter - update gradient", {
+    # Update grad: both update elements contribute
+    f <- jit(gradient(function(update) {
+      x <- nv_tensor(c(1, 2, 3, 4, 5), dtype = "f32")
+      x[2:3] <- update
+      nv_reduce_sum(x, dims = 1L, drop = TRUE)
+    }))
+    update <- nv_tensor(c(88, 99), dtype = "f32")
+    grads <- f(update)
+    expect_equal(as_array(grads[[1L]]), array(c(1, 1), dim = 2L))
+  })
+
+  it("fails gracefully for non-unique indices", {
+    # Scatter with duplicate indices should fail during backward
+    f <- function(x) {
+      x[c(1, 1)] <- nv_tensor(c(88, 99), dtype = "f32")  # duplicate index
+      nv_reduce_sum(x, dims = 1L, drop = TRUE)
+    }
+    g <- gradient(f)
+    x <- nv_tensor(c(1, 2, 3), dtype = "f32")
+
+    # Currently, nv_subset_assign sets unique_indices = FALSE for scattered indices
+    # The backward should throw an error
+    expect_error(jit(g)(x), "unique_indices")
+  })
+})
+
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
 }

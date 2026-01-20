@@ -1,120 +1,276 @@
 #' @include api.R
 #' @include primitives.R
 
-#' @title Subset a Tensor
-#' @description
-#' Extracts a subset from a tensor using gather semantics.
-#' Supports both static and dynamic indexing.
-#' @param x ([`tensorish`])\cr
-#'   Input tensor to subset.
-#' @param ... Subset specifications. Can be:
-#'   - Ranges (e.g., `2:5`) for contiguous slices. Must be static.
-#'   - Single integers (e.g., `3`) for single elements
-#'   - Scalar tensors for dynamic indexing
-#'   - Missing (empty or `:`) to select all elements in that dimension
-#' @param drop (`logical(1)`)\cr
-#'   Whether to drop dimensions with size 1 that result from single-index selections.
-#' @return [`tensorish`]
-#' @export
-nv_subset <- function(x, ..., drop = FALSE) {
-  assert_flag(drop)
-  is_integerish <- function(x) {
-    test_integerish(x, len = 1L, any.missing = FALSE)
-  }
-  get_slice <- function(e, d) {
-    # Check for missing argument (empty name from alist)
-    if (is.symbol(e) && (identical(as.character(e), "")) || identical(e, quote(`:`))) {
-      return(list(static = TRUE, start = 1L, size = d, slice = TRUE, indexed = FALSE))
-    }
-    if (is_integerish(e)) {
-      e <- as.integer(e)
-      return(list(static = TRUE, start = e, size = 1L, slice = FALSE, indexed = TRUE))
-    }
-    if (is.call(e) && identical(e[[1]], quote(`:`))) {
-      start <- eval(e[[2]], envir = parent.frame(2L))
-      end <- eval(e[[3]], envir = parent.frame(2L))
-      # TODO: We could also support Literal Tensors here
-      if (is_integerish(start) && is_integerish(end)) {
-        start <- as.integer(start)
-        end <- as.integer(end)
-        return(list(static = TRUE, start = start, size = end - start + 1L, slice = TRUE, indexed = TRUE))
-      }
-      cli_abort("Ranges must be static")
-    }
-    # If it's an expression (symbol or call), evaluate it
-    if (is.symbol(e) || is.call(e)) {
-      e <- eval(e, envir = parent.frame(2L))
-    }
-    # Check for AnvilRange (result of x:y where x or y is AnvilBox/AnvilTensor)
-    if (inherits(e, "AnvilRange")) {
-      cli_abort("Ranges must be static")
-    }
-    if (is_tensorish(e) && (!is.atomic(e))) {
-      # only ints are allowed as atomics and they are covered by first case
-      return(list(static = FALSE, start = e, size = 1L, slice = FALSE, indexed = TRUE))
-    }
-    cli_abort("Invalid slice expression")
-  }
-  if (!is_tensorish(x)) {
-    cli_abort("Expected tensorish, but got {.cls {class(x)[1]}}")
-  }
-  operand_shape <- shape_abstract(x)
+# Helper functions for subset operations ======================================
+
+#' Parse subset specifications and fill unspecified dimensions
+#' @param exprs List of subset expressions (from alist)
+#' @param operand_shape Shape of the operand tensor
+#' @param allow_vectors Whether to allow vector indices (for scatter)
+#' @param require_all Whether all dimensions must be specified (for scatter)
+#' @param parent_frame The parent frame for evaluation
+#' @return List of parsed subset specifications
+#' @noRd
+parse_subset_specs <- function(
+  exprs,
+  operand_shape,
+  allow_vectors = FALSE,
+  require_all = FALSE,
+  parent_frame = parent.frame()
+) {
   rank <- length(operand_shape)
-  # Use substitute() instead of enexprs() to support forwarding from [ operator
-  exprs <- eval(substitute(alist(...)))
 
   if (length(exprs) > rank) {
     cli_abort("Too many indices: got {length(exprs)}, expected at most {rank}")
   }
 
-  slices <- lapply(seq_along(exprs), function(i) get_slice(exprs[[i]], operand_shape[i]))
+  if (require_all && length(exprs) != rank) {
+    cli_abort("Expected {rank} indices, but got {length(exprs)}")
+  }
+
+  # Parse provided subset specifications
+  # We need to pass the parent frame through properly
+  slices <- lapply(seq_along(exprs), function(i) {
+    # parent_frame is already the correct frame - it was passed to parse_subset_specs
+    # We need to add 1 to account for the lapply wrapper
+    parse_subset_spec(exprs[[i]], operand_shape[i], allow_vectors = allow_vectors, parent_frame = parent_frame)
+  })
+
   # Fill remaining dimensions with full selections
   if (length(slices) < rank) {
     for (i in (length(slices) + 1L):rank) {
-      slices[[i]] <- list(static = TRUE, start = 1L, size = operand_shape[i], slice = TRUE, indexed = FALSE)
+      slices[[i]] <- list(type = "full", start = 1L, size = operand_shape[i], indices = NULL, drop = FALSE)
     }
   }
 
-  static <- all(vapply(slices, \(x) x$static, logical(1L)))
+  slices
+}
+
+#' Parse a single subset specification for gather/scatter operations
+#' @param e Expression to parse
+#' @param d Dimension size
+#' @param allow_vectors Whether to allow vector indices (for scatter)
+#' @param parent_frame The parent frame for evaluation
+#' @return List with type, start, size, indices, drop
+#' @noRd
+parse_subset_spec <- function(e, d, allow_vectors = FALSE, parent_frame = parent.frame()) {
+  is_integerish <- function(x) {
+    test_integerish(x, len = 1L, any.missing = FALSE)
+  }
+  is_integerish_vector <- function(x) {
+    test_integerish(x, min.len = 1L, any.missing = FALSE)
+  }
+
+  # Check for missing argument (empty name from alist) - select all
+  if (is.symbol(e) && (identical(as.character(e), "") || identical(e, quote(`:`)))) {
+    return(list(type = "full", start = 1L, size = d, indices = NULL, drop = FALSE))
+  }
+
+  # Single integer literal - drops dimension
+  if (is_integerish(e)) {
+    e <- as.integer(e)
+    return(list(type = "single", start = e, size = 1L, indices = e, drop = TRUE))
+  }
+
+  # Range (a:b)
+  if (is.call(e) && identical(e[[1]], quote(`:`))) {
+    start <- eval(e[[2]], envir = parent_frame)
+    end <- eval(e[[3]], envir = parent_frame)
+    if (is_integerish(start) && is_integerish(end)) {
+      start <- as.integer(start)
+      end <- as.integer(end)
+      if (start > end) {
+        cli_abort("Range start ({start}) must be less than or equal to end ({end})")
+      }
+      return(list(type = "range", start = start, size = end - start + 1L, indices = start:end, drop = FALSE))
+    }
+    cli_abort("Ranges must be static")
+  }
+
+  # Handle list() calls specially - these preserve dimensions
+  if (is.call(e) && identical(e[[1]], quote(list))) {
+    # Evaluate the list elements
+    list_elements <- lapply(as.list(e)[-1L], function(el) eval(el, envir = parent_frame))
+
+    if (length(list_elements) == 0L) {
+      cli_abort("Empty list() indices are not allowed")
+    }
+
+    # Check all elements are integerish scalars
+    if (!all(vapply(list_elements, is_integerish, logical(1L)))) {
+      cli_abort("All list() elements must be scalar integers")
+    }
+
+    indices <- as.integer(unlist(list_elements))
+
+    if (length(indices) == 1L) {
+      # Single element in list - don't drop dimension
+      return(list(type = "single", start = indices, size = 1L, indices = indices, drop = FALSE))
+    }
+
+    # Multiple elements in list - gather operation
+    e_tensor <- nv_tensor(indices, dtype = "i64")
+    return(list(type = "gather", start = NULL, size = length(indices), indices = e_tensor, drop = FALSE))
+  }
+
+  # Evaluate expressions (symbols or calls)
+  if (is.symbol(e) || is.call(e)) {
+    e <- eval(e, envir = parent_frame)
+  }
+
+  # Check for AnvilRange (result of x:y where x or y is AnvilBox/AnvilTensor)
+  if (inherits(e, "AnvilRange")) {
+    cli_abort("Ranges must be static")
+  }
+
+  # R vectors of length > 1 are not allowed for subset (use list() instead)
+  if (is_integerish_vector(e) && length(e) > 1L && !allow_vectors) {
+    cli_abort(
+      "Vectors of length > 1 are not allowed as subset indices. Use list() to select multiple elements, e.g. x[list(1, 3), ] instead of x[c(1, 3), ]"
+    )
+  }
+
+  # Integer vector (for scatter only)
+  if (allow_vectors && is_integerish_vector(e)) {
+    e_int <- as.integer(e)
+    e_tensor <- nv_tensor(e_int, dtype = "i64")
+    return(list(type = "scattered", start = NULL, size = shape_abstract(e_tensor), indices = e_tensor, drop = FALSE))
+  }
+
+  # Tensor indices - don't drop dimension (dynamic)
+  if (is_tensorish(e) && (!is.atomic(e))) {
+    if (is_anvil_tensor(e)) {
+      dt <- dtype_abstract(e)
+      if (!(inherits(dt, "IntegerType") || inherits(dt, "UnsignedType"))) {
+        cli_abort("Dynamic indices must be integers, but got {.cls {class(e)[1]}}")
+      }
+      nd <- ndims_abstract(e)
+      if (nd > 1L) {
+        cli_abort("Dynamic indices must be at most 1D, but got {nd}D tensor")
+      }
+      if (dt != as_dtype("i64")) {
+        e <- nv_convert(e, dtype = "i64")
+      }
+      if (nd == 0L) {
+        # Scalar tensor indices drop dimension (like R literals)
+        return(list(type = "single", start = e, size = 1L, indices = e, drop = TRUE))
+      }
+      return(list(
+        type = if (allow_vectors) "scattered" else "single",
+        start = if (allow_vectors) NULL else e,
+        size = shape(e),
+        indices = e,
+        drop = FALSE
+      ))
+    }
+    # For gather, single tensor indices
+    return(list(type = "single", start = e, size = 1L, indices = e, drop = FALSE))
+  }
+
+  cli_abort("Invalid subset expression")
+}
+
+#' @title Subset a Tensor
+#' @description
+#' Extracts a subset from a tensor using gather semantics.
+#' Supports both static and dynamic indexing.
+#'
+#' Dimension dropping behavior:
+#' - R literal indices (e.g., `x[1, ]`) automatically drop that dimension
+#' - Scalar tensor indices (0D tensors) also drop the dimension
+#' - To preserve a dimension when selecting a single element, use `list()`: `x[list(1), ]`
+#' - To select multiple non-contiguous elements, use `list()`: `x[list(1, 3, 5), ]`
+#' - Ranges (e.g., `x[1:3, ]`) never drop dimensions
+#' - 1D tensor indices never drop dimensions
+#'
+#' @param x ([`tensorish`])\cr
+#'   Input tensor to subset.
+#' @param ... Subset specifications. Can be:
+#'   - Ranges (e.g., `2:5`) for contiguous slices. Must be static.
+#'   - Single integers (e.g., `3`) for single elements (drops dimension)
+#'   - `list(i)` for single element without dropping dimension
+#'   - `list(i, j, ...)` for multiple non-contiguous elements
+#'   - Scalar tensors for dynamic indexing (does not drop dimension)
+#'   - Missing (empty or `:`) to select all elements in that dimension
+#' @return [`tensorish`]
+#' @export
+nv_subset <- function(x, ...) {
+  if (!is_tensorish(x)) {
+    cli_abort("Expected tensorish, but got {.cls {class(x)[1]}}")
+  }
+  operand_shape <- shape_abstract(x)
+  # Use substitute() instead of enexprs() to support forwarding from [ operator
+  exprs <- eval(substitute(alist(...)))
+
+  # Parse subset specifications and fill unspecified dimensions
+  # parent.frame() here refers to the caller of nv_subset (e.g., `[.AnvilTensor`)
+  # We pass it to parse_subset_specs which will forward it to parse_subset_spec
+  slices <- parse_subset_specs(
+    exprs,
+    operand_shape,
+    allow_vectors = FALSE,
+    require_all = FALSE,
+    parent_frame = parent.frame()
+  )
+
+  rank <- length(operand_shape)
+
+  # Check for gather type (at most one allowed)
+  is_gather <- vapply(slices, \(s) s$type == "gather", logical(1L))
+  if (sum(is_gather) > 1L) {
+    cli_abort("At most one dimension can use list() with multiple elements")
+  }
+
+  has_gather <- any(is_gather)
+
+  if (has_gather) {
+    # Handle gather case (list with multiple elements in one dimension)
+    nv_subset_gather(x, slices, operand_shape, rank, which(is_gather))
+  } else {
+    # Handle simple slice case (no multi-element gather)
+    nv_subset_slice(x, slices, operand_shape, rank)
+  }
+}
+
+#' Simple slice subset (no multi-element gather)
+#' @noRd
+nv_subset_slice <- function(x, slices, operand_shape, rank) {
+  # Determine if all indices are static (type "single" or "range" with numeric start)
+  static <- all(vapply(
+    slices,
+    function(s) {
+      s$type %in% c("full", "range") || (s$type == "single" && is.numeric(s$start))
+    },
+    logical(1L)
+  ))
 
   # slice_sizes: for each operand dimension
   slice_sizes <- vapply(slices, \(x) x$size, integer(1L))
 
-  # Dimensions to collapse (single index, not range, when drop=TRUE)
-  # These are dims where slice=FALSE (single element selected)
-  collapsed_slice_dims <- if (drop) {
-    which(!vapply(slices, \(x) x$slice, logical(1L)))
-  } else {
-    integer()
-  }
-
-  # For simple contiguous slicing, we use a single gather "batch" entry
-  # start_indices shape will be [1, rank] - one row with start position for each dimension
-  # index_vector_dim = 2 (1-based) means the index vector is in the second dimension
+  # Dimensions to collapse based on drop field from parsed specs
+  collapsed_slice_dims <- which(vapply(slices, \(x) isTRUE(x$drop), logical(1L)))
 
   # start_index_map: maps each position in the index vector to operand dimensions
-  # We map all positions to their corresponding operand dimensions
   start_index_map <- seq_len(rank)
 
   # offset_dims: which output dimensions correspond to the slice (after the batch dim)
-  # The output will have shape [1, slice_dims...] (batch dim first, then slice dims)
-  # After removing collapsed dims, offset_dims are positions 2, 3, ... in output (1-based)
   n_remaining <- rank - length(collapsed_slice_dims)
-  offset_dims <- seq_len(n_remaining) + 1L  # 1-based, starting at position 2
+  offset_dims <- seq_len(n_remaining) + 1L # 1-based, starting at position 2
 
   if (static) {
     # All indices are static - create a constant start_indices tensor
-    start_indices_vec <- vapply(slices, \(x) x$start - 1L, integer(1L))  # 0-based
+    # Keep indices as 1-based - nvl_gather handles conversion to 0-based
+    start_indices_vec <- vapply(slices, \(x) x$start, integer(1L))
     start_indices <- nv_tensor(matrix(start_indices_vec, nrow = 1L), dtype = "i32")
-    index_vector_dim <- 2L  # 1-based
+    index_vector_dim <- 2L # 1-based
   } else {
     # Dynamic indices - build start_indices from tensor values
+    # Keep indices as 1-based - nvl_gather handles conversion to 0-based
     start_parts <- lapply(slices, function(s) {
       if (is.numeric(s$start)) {
-        nv_scalar(as.integer(s$start - 1L), dtype = "i32")  # 0-based
+        nv_scalar(as.integer(s$start), dtype = "i32")
       } else {
-        # Dynamic tensor - subtract 1 to convert to 0-based
-        nv_convert(s$start - nv_scalar(1L, dtype = dtype(s$start)), dtype = "i32")
+        nv_convert(s$start, dtype = "i32")
       }
     })
     # Stack into [1, rank] tensor
@@ -125,24 +281,23 @@ nv_subset <- function(x, ..., drop = FALSE) {
       reshaped <- lapply(start_parts, \(x) nv_reshape(x, shape = c(1L, 1L)))
       start_indices <- do.call(nv_concatenate, c(reshaped, list(dimension = 2L)))
     }
-    index_vector_dim <- 2L  # 1-based
+    index_vector_dim <- 2L # 1-based
   }
 
-  gather_dim_numbers <- GatherDimensionNumbers(
+  # For simple slicing, the indices are trivially sorted (single starting position)
+  # and unique (we only have one slice starting position)
+  out <- nvl_gather(
+    operand = x,
+    start_indices = start_indices,
+    slice_sizes = slice_sizes,
     offset_dims = offset_dims,
     collapsed_slice_dims = collapsed_slice_dims,
     operand_batching_dims = integer(),
     start_indices_batching_dims = integer(),
     start_index_map = start_index_map,
-    index_vector_dim = index_vector_dim
-  )
-
-  out <- nvl_gather(
-    operand = x,
-    start_indices = start_indices,
-    gather_dimension_numbers = gather_dim_numbers,
-    slice_sizes = slice_sizes,
-    indices_are_sorted = TRUE
+    index_vector_dim = index_vector_dim,
+    indices_are_sorted = static,
+    unique_indices = static
   )
 
   # Remove the batch dimension (size 1, at position 1) from gather result
@@ -150,6 +305,92 @@ nv_subset <- function(x, ..., drop = FALSE) {
   if (length(result_shape) > 0L && result_shape[1L] == 1L) {
     out <- nv_reshape(out, shape = result_shape[-1L])
   }
+
+  out
+}
+
+#' Gather subset (list with multiple elements in one dimension)
+#' @noRd
+nv_subset_gather <- function(x, slices, operand_shape, rank, gather_dim) {
+  gather_spec <- slices[[gather_dim]]
+  n_gather <- gather_spec$size  # number of elements to gather
+
+  # For gather, slice_sizes is 1 for the gather dim, and normal for others
+  slice_sizes <- vapply(seq_len(rank), function(i) {
+    if (i == gather_dim) 1L else slices[[i]]$size
+  }, integer(1L))
+
+  # Collapsed dims: the gather dim is always collapsed (we're selecting single elements)
+  # Plus any other dims with drop = TRUE
+  collapsed_slice_dims <- c(
+    gather_dim,
+    which(vapply(seq_len(rank), function(i) i != gather_dim && isTRUE(slices[[i]]$drop), logical(1L)))
+  )
+  collapsed_slice_dims <- sort(unique(collapsed_slice_dims))
+
+  # offset_dims: non-collapsed, non-gather dims go after the batch dim
+  n_remaining <- rank - length(collapsed_slice_dims)
+  offset_dims <- seq_len(n_remaining) + 1L
+
+  # Build start_indices: [n_gather, rank] matrix
+  # Keep indices as 1-based - nvl_gather handles conversion to 0-based
+
+  # Each row is a starting position for one gathered element
+  start_indices_list <- lapply(seq_len(rank), function(i) {
+    if (i == gather_dim) {
+      # The gather indices - already a tensor (1-based)
+      nv_reshape(gather_spec$indices, shape = c(n_gather, 1L))
+    } else {
+      # Broadcast the start position across all gathered elements
+      s <- slices[[i]]
+      if (is.numeric(s$start)) {
+        start_val <- nv_tensor(as.integer(s$start), dtype = "i64")
+      } else {
+        start_val <- nv_convert(s$start, dtype = "i64")
+      }
+      nv_broadcast_to(start_val, c(n_gather, 1L))
+    }
+  })
+
+  start_indices <- do.call(nv_concatenate, c(start_indices_list, list(dimension = 2L)))
+  start_indices <- nv_convert(start_indices, dtype = "i32")
+
+  # Determine if all indices are static (for setting optimization flags)
+  # For gather, the gather_spec$indices comes from list() which is always static
+  # We also check if other dimensions have static starts
+  all_static <- all(vapply(
+    slices,
+    function(s) {
+      s$type %in% c("full", "range") || (s$type %in% c("single", "gather") && is.numeric(s$start))
+    },
+    logical(1L)
+  ))
+
+  # For the gather dimension, check if the indices from list() are sorted and unique
+  # gather_spec$indices was created from list() elements, so we can extract them
+  # The indices are stored in a tensor, but they came from static list() elements
+  # We need to check the original values - they are available in gather_spec
+  # Since list() is always static, we can rely on the fact that the tensor was created
+
+  # from static values. We check sorted/unique based on the tensor construction.
+  # For simplicity, assume list() indices are NOT sorted and may have duplicates
+  # unless we can prove otherwise (conservative approach).
+  indices_are_sorted <- FALSE
+  unique_indices <- FALSE
+
+  out <- nvl_gather(
+    operand = x,
+    start_indices = start_indices,
+    slice_sizes = slice_sizes,
+    offset_dims = offset_dims,
+    collapsed_slice_dims = collapsed_slice_dims,
+    operand_batching_dims = integer(),
+    start_indices_batching_dims = integer(),
+    start_index_map = seq_len(rank),
+    index_vector_dim = 2L,
+    indices_are_sorted = indices_are_sorted,
+    unique_indices = unique_indices
+  )
 
   out
 }
@@ -181,62 +422,6 @@ nv_subset <- function(x, ..., drop = FALSE) {
 #' x <- nv_subset_assign(x, c(1, 3, 6), value = nv_tensor(c(10, 30, 60)))
 #' }
 nv_subset_assign <- function(x, ..., value) {
-  is_integerish <- function(x) {
-    test_integerish(x, len = 1L, any.missing = FALSE)
-  }
-  is_integerish_vector <- function(x) {
-    test_integerish(x, min.len = 1L, any.missing = FALSE)
-  }
-
-  # TODO:
-
-  get_subset <- function(e, d) {
-    # Check for missing argument (empty name from alist) - select all
-    if (is.symbol(e) && (identical(as.character(e), "")) || identical(e, quote(`:`))) {
-      return(list(type = "full", start = 1L, size = d, indices = NULL))
-    }
-    # Single integer
-    if (is_integerish(e)) {
-      e <- as.integer(e)
-      return(list(type = "single", start = e, size = 1L, indices = e))
-    }
-    # Range (a:b)
-    if (is.call(e) && identical(e[[1]], quote(`:`))) {
-      start <- eval(e[[2]], envir = parent.frame(2L))
-      end <- eval(e[[3]], envir = parent.frame(2L))
-      if (is_integerish(start) && is_integerish(end)) {
-        start <- as.integer(start)
-        end <- as.integer(end)
-        return(list(type = "range", start = start, size = end - start + 1L, indices = start:end))
-      }
-      cli_abort("Ranges must be static")
-    }
-    e <- eval(e, envir = parent.frame(2L))
-    if (is_integerish_vector(e)) {
-      e <- as.integer(e)
-      e <- nv_tensor(e, dtype = "i64")
-      return(list(type = "scattered", start = NULL, size = shape_abstract(e), indices = e))
-    }
-    if (is_anvil_tensor(e)) {
-      dt <- dtype_abstract(e)
-      if (!(inherits(dt, "IntegerType") || inherits(dt, "UnsignedType"))) {
-        cli_abort("Dynamic indices must be integers, but got {.cls {class(e)[1]}}")
-      }
-      nd <- ndims_abstract(e)
-      if (nd > 1L) {
-        cli_abort("Dynamic indices must be at most 1D, but got {.cls {class(e)[1]}}")
-      }
-      if (dt != as_dtype("i64")) {
-        e <- nv_convert(e, dtype = "i64")
-      }
-      if (nd == 0L) {
-        return(list(type = "single", start = e, size = 1L, indices = e))
-      }
-      return(list(type = "scattered", start = NULL, size = shape(e), indices = e))
-    }
-    cli_abort("Invalid subset expression")
-  }
-
   if (!is_tensorish(x)) {
     cli_abort("Expected tensorish, but got {.cls {class(x)[1]}}")
   }
@@ -247,12 +432,14 @@ nv_subset_assign <- function(x, ..., value) {
   lhs_shape <- shape_abstract(x)
   exprs <- eval(substitute(alist(...)))
 
-  if (length(exprs) != length(lhs_shape)) {
-    cli_abort("Expected {length(lhs_shape)} indices, but got {length(exprs)}")
-  }
-
-  # Parse subset specifications
-  subsets <- lapply(seq_along(exprs), function(i) get_subset(exprs[[i]], lhs_shape[i]))
+  # Parse subset specifications (require all dimensions to be specified)
+  subsets <- parse_subset_specs(
+    exprs,
+    lhs_shape,
+    allow_vectors = TRUE,
+    require_all = TRUE,
+    parent_frame = parent.frame()
+  )
 
   # Check if any dimension has scattered indices
   has_scattered <- any(vapply(subsets, \(x) x$type == "scattered", logical(1L)))
@@ -260,36 +447,45 @@ nv_subset_assign <- function(x, ..., value) {
   value_shape <- shape_abstract(value)
 
   subset_shape <- vapply(subsets, \(s) s$size, integer(1L))
-  if (is_lit(value)) {
+  if (!ndims_abstract(value)) {
     value <- nv_broadcast_to(value, subset_shape)
   } else if (!identical(subset_shape, value_shape)) {
     # fmt: skip
     cli_abort("Subset shape {shape2string(subset_shape)} does not match value shape {shape2string(value_shape)}") # nolint
   }
 
-  # TODO: Convert rhs
-  # TODO: Support scalar on rhs and broadcast it to subset shape
   is_scattered <- vapply(subsets, \(s) s$type == "scattered", logical(1L))
   if (sum(is_scattered) >= 2L) {
     cli_abort("There can be at most one scattered subset")
   }
 
-  # TODO:
-  # Set unique_indices and indices_are_sorted correctly
-
   if (dtype(x) != dtype(value)) {
     if (!promotable_to(dtype(value), dtype(x))) {
-      cli_abort("Value type {dtype2string(dtype(value))} is not promotable to left-hand side type {dtype2string(dtype(x))}")
+      cli_abort(
+        "Value type {dtype2string(dtype(value))} is not promotable to left-hand side type {dtype2string(dtype(x))}"
+      )
     }
     value <- nv_convert(value, dtype = dtype(x))
   }
 
-  # TODO: Ensure that for static subsets the update does not go out of bounds
-
   if (!has_scattered) {
     # In this case, our scatter contains a single vector that indicates the starting position in each dimension
-    start_position <- rlang::exec(nv_concatenate, !!!lapply(subsets, \(s) s$start), dimension = 1L)
+    # Convert start positions to tensors and concatenate into a 1D vector
+    start_tensors <- lapply(subsets, function(s) {
+      if (is.numeric(s$start)) {
+        nv_scalar(s$start, dtype = "i64")
+      } else {
+        nv_convert(s$start, dtype = "i64")
+      }
+    })
 
+    # Always concatenate into a 1D tensor, even for single dimension
+    start_position <- do.call(nv_concatenate, c(start_tensors, list(dimension = 1L)))
+
+    # Determine if indices are static (all starts are numeric, not tensors)
+    all_static <- all(vapply(subsets, function(s) is.numeric(s$start), logical(1L)))
+
+    # For a single contiguous slice write, the indices are trivially sorted and unique
     nvl_scatter(
       input = x,
       scatter_indices = start_position,
@@ -299,9 +495,9 @@ nv_subset_assign <- function(x, ..., value) {
       input_batching_dims = integer(),
       scatter_indices_batching_dims = integer(),
       scatter_dims_to_operand_dims = seq_along(lhs_shape),
-      index_vector_dim = ndims_abstract(value),
-      indices_are_sorted = FALSE,
-      unique_indices = FALSE,
+      index_vector_dim = 1L,
+      indices_are_sorted = all_static,
+      unique_indices = all_static,
       update_computation = function(old, new) new
     )
   } else {
@@ -309,7 +505,7 @@ nv_subset_assign <- function(x, ..., value) {
     scatter_vals <- subsets[[which(is_scattered)]]$indices
     n <- shape(scatter_vals)
     # scatter_indices either has shape [n, subsets], where the i-th column contains the
-    # scatter values (where is is the index of the scattered subset)
+    # scatter values (where i is the index of the scattered subset)
     # and the other columns contain the start indices for the slices/indexes
 
     scatter_indices_list <- lapply(seq_along(subsets), function(i) {
@@ -319,8 +515,12 @@ nv_subset_assign <- function(x, ..., value) {
         nv_broadcast_to(subsets[[i]]$start, c(n, 1L))
       }
     })
-    scatter_indices <- rlang::exec(nv_concatenate, !!!scatter_indices_list, dimension = 2L)
+    scatter_indices <- do.call(nv_concatenate, c(scatter_indices_list, list(dimension = 2L)))
 
+    # For scattered indices, we conservatively assume indices may not be sorted or unique
+    # since the scatter indices could come from a dynamic tensor.
+    # A future optimization could check if indices are static R vectors and determine
+    # sorted/unique properties at trace time.
     nvl_scatter(
       input = x,
       scatter_indices = scatter_indices,
