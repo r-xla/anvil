@@ -684,7 +684,7 @@ p_scatter[["backward"]] <- function(
         "Scatter backward is only implemented for unique_indices = TRUE.",
         "i" = "With overlapping indices, the forward pass behavior is non-deterministic,",
         "i" = "making gradient computation ill-defined.",
-        "i" = "Consider restructuring your code to avoid duplicate scatter indices."
+        "i" = "Create an issue on GitHub if you need this functionality."
       )
     )
   }

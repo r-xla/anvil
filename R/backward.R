@@ -69,9 +69,8 @@ transform_gradient <- function(graph, wrt) {
   }
 
   # We need to initialize the descriptor with the forward graph's structure,
-  # otherwise the nvl_<op> functions in the backward rules will extend the wrong descriptor.
-  # By copying the calls and in_tree from the forward graph, we ensure that the backward
-  # operations are added to the correct context.
+  # including the forward calls, so that intermediate values are available
+  # for the backward rules.
   init_desc_from_graph(desc, graph, outputs = FALSE)
   grad_env[[out]] <- get_box_or_register_const(desc, nv_scalar(1L, dtype = out$aval$dtype))
 

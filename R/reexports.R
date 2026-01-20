@@ -48,7 +48,3 @@ platform <- function(x, ...) {
 #' @importFrom stablehlo Shape
 #' @export
 stablehlo::Shape
-
-#' @importFrom stablehlo ScatterDimensionNumbers
-#' @export
-stablehlo::ScatterDimensionNumbers

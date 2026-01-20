@@ -5,21 +5,18 @@
 #' To access other fields, use `$` and `$<-`.
 #' @param name (`character()`)\cr
 #'   The name of the primitive.
-#' @param higher_order (`logical(1)`)\cr
-#'   Whether the primitive is higher-order (contains subgraphs). Default is `FALSE`.
 #' @param subgraphs (`character()`)\cr
 #'   Names of parameters that are subgraphs. Only used if `higher_order = TRUE`.
 #' @return (`AnvilPrimitive`)
 #' @export
-AnvilPrimitive <- function(name, higher_order = FALSE, subgraphs = character()) {
+AnvilPrimitive <- function(name, subgraphs = character()) {
   checkmate::assert_string(name)
-  checkmate::assert_flag(higher_order)
   checkmate::assert_character(subgraphs)
 
   env <- new.env(parent = emptyenv())
   env$name <- name
   env$rules <- list()
-  env$higher_order <- higher_order
+  env$higher_order <- length(subgraphs) > 0L
   if (higher_order) {
     env$subgraphs <- subgraphs
   }

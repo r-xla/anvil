@@ -4,13 +4,14 @@
 \alias{nv_concatenate}
 \title{Concatenate}
 \usage{
-nv_concatenate(..., dimension)
+nv_concatenate(..., dimension = NULL)
 }
 \arguments{
 \item{...}{tensors}
 
 \item{dimension}{(\code{integer()})\cr
-The dimension to concatenate along to. Other dimensions must be the same.}
+The dimension to concatenate along to. Other dimensions must be the same.
+If this is \code{NULL} (default), it assues all ranks are at most 1 and the concatenation dimension is 1.}
 }
 \value{
 \code{\link{tensorish}}

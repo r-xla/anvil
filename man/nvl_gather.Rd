@@ -7,8 +7,13 @@
 nvl_gather(
   operand,
   start_indices,
-  gather_dimension_numbers,
   slice_sizes,
+  offset_dims,
+  collapsed_slice_dims,
+  operand_batching_dims,
+  start_indices_batching_dims,
+  start_index_map,
+  index_vector_dim,
   indices_are_sorted = FALSE
 )
 }
@@ -19,14 +24,14 @@ Operand.}
 \item{start_indices}{(\code{\link{tensorish}})\cr
 Tensor of integer type containing the starting indices for the gather operation.}
 
-\item{gather_dimension_numbers}{(\code{\link{GatherDimensionNumbers}})\cr
-Dimension configuration for the gather operation.}
-
 \item{slice_sizes}{(\code{integer()})\cr
 The sizes of the slices to gather in each dimension.}
 
 \item{indices_are_sorted}{(\code{logical(1)})\cr
 Whether indices are guaranteed to be sorted.}
+
+\item{gather_dimension_numbers}{(\code{\link[stablehlo:GatherDimensionNumbers]{stablehlo::GatherDimensionNumbers}})\cr
+Dimension configuration for the gather operation.}
 }
 \value{
 \code{\link{tensorish}}

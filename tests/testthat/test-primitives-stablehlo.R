@@ -58,7 +58,7 @@ describe("p_dynamic_slice", {
     g <- jit(f)
     out <- g()
     expected <- matrix(c(5L, 6L, 8L, 9L), nrow = 2, ncol = 2)
-    expect_equal(as_array(out), expected)
+    expect_equal(out, nv_tensor(expected))
   })
 })
 
@@ -74,7 +74,7 @@ describe("p_dynamic_update_slice", {
     g <- jit(f)
     out <- g()
     expected <- matrix(c(0L, 0L, 0L, 0L, 99L, 88L, 0L, 77L, 66L, 0L, 0L, 0L), nrow = 3, ncol = 4)
-    expect_equal(as_array(out), expected)
+    expect_equal(out, nv_tensor(expected))
   })
 })
 
@@ -100,7 +100,7 @@ test_that("p_gather", {
   out <- g()
   # start_indices=2 (1-based) with slice_sizes=4 gives positions 2,3,4,5
   expected <- array(c(2L, 3L, 4L, 5L), dim = c(1L, 4L))
-  expect_equal(as_array(out), expected)
+  expect_equal(out, nv_tensor(expected))
 })
 
 test_that("p_scatter", {

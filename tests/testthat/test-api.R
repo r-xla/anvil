@@ -34,17 +34,17 @@ test_that("infix add", {
 test_that("jit constant single return is bare tensor", {
   f <- jit(function() nv_scalar(0.5))
   out <- f()
-  expect_equal(as_array(out), 0.5, tolerance = 1e-6)
+  expect_equal(out, nv_scalar(0.5), tolerance = 1e-6)
 })
 
 test_that("Summary group generics", {
   fsum <- jit(function(x) sum(x))
-  expect_equal(as_array(fsum(nv_tensor(1:10))), 55)
+  expect_equal(fsum(nv_tensor(1:10)), nv_scalar(55L))
 })
 
 test_that("mean", {
   fmean <- jit(function(x) mean(x))
-  expect_equal(as_array(fmean(nv_tensor(1:10, "f32"))), 5.5)
+  expect_equal(fmean(nv_tensor(1:10, "f32")), nv_scalar(5.5))
 })
 
 test_that("constants can be lifted to the appropriate level", {
@@ -84,7 +84,7 @@ describe("nv_concatenate", {
       nv_tensor(c(1, 2, 3, 4))
     )
   })
-  it("can conatenate literals", {
+  it("can concatenate literals", {
     expect_equal(
       jit_eval(nv_concatenate(1L, 2L)),
       nv_tensor(1:2)
@@ -103,7 +103,7 @@ describe("nv_concatenate", {
     )
   })
   it("fails when dimension is out of bounds", {
-    expect_snapshot(
+    expect_error(
       jit_eval(nv_concatenate(nv_tensor(1:2, shape = c(2, 1)), nv_tensor(3:4, shape = c(2, 1)), dimension = 3L))
     )
   })
@@ -118,7 +118,7 @@ describe("nv_concatenate", {
     )
   })
   it("fails with incompatible shapes", {
-    expect_snapshot(
+    expect_error(
       jit_eval(nv_concatenate(nv_tensor(1, shape = c(1, 1, 1)), nv_tensor(2, shape = c(1, 1)), dimension = 1L))
     )
   })

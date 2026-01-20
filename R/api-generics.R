@@ -177,7 +177,9 @@ t.AnvilTensor <- t.AnvilBox
 #' @export
 #' @method [<- AnvilBox
 `[<-.AnvilBox` <- function(x, ..., value) {
-  nv_subset_assign(x, ..., value = value)
+  call <- sys.call()
+  call[[1]] <- quote(nv_subset_assign)
+  eval(call, envir = parent.frame())
 }
 
 #' @rdname sub-.set.AnvilBox
