@@ -339,3 +339,14 @@ is_shape <- function(x) {
 #' x <- nv_tensor(1:4, dtype = "f32")
 #' x
 NULL
+
+is_tensorish <- function(x, literal) {
+  ok <- inherits(x, "AnvilTensor") ||
+    inherits(x, "AbstractTensor") ||
+    is_box(x)
+
+  if (!ok && literal) {
+    ok <- test_scalar(x) && (is.numeric(x) || is.logical(x))
+  }
+  return(ok)
+}
