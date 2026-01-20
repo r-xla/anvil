@@ -46,9 +46,9 @@ trace_fn(
 - lit_to_tensor:
 
   (`logical(1)`)  
-  Whether to convert literals to `AnvilTensor`s. Should only be used for
-  higher-order primitives like if and while, where no static inputs are
-  possible.
+  Whether to convert literal inputs to `AnvilTensor`s. Should only be
+  used for higher-order primitives like if and while, where no static
+  inputs are possible.
 
 - args_flat:
 

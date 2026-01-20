@@ -180,6 +180,8 @@ do.call(linear_model2, simul_data(2, 3))
 do.call(linear_model2, simul_data(2, 3))
 ```
 
+    ## compiling ...
+
     ## AnvilTensor 
     ##   0.6140
     ##  -2.5214

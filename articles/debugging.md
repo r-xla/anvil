@@ -152,6 +152,8 @@ won’t be printed because the executable is retrieved from the cache.
 f_jit(nv_tensor(0:3, shape = c(2, 2)))
 ```
 
+    ## GraphBox(GraphValue(AbstractTensor(dtype=f32?, shape=2x2)))
+
     ## AnvilTensor 
     ##  7.0000
     ## [ CPUf32{} ]
