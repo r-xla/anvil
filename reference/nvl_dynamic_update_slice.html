@@ -97,10 +97,13 @@ Scalar tensor start indices (1-based), one per dimension.</p></dd>
     <h2 id="out-of-bounds-behavior">Out Of Bounds Behavior<a class="anchor" aria-label="anchor" href="#out-of-bounds-behavior"></a></h2>
 
 
-<p>If the update slice would extend beyond the bounds of the operand tensor,
-the start indices are clamped so that the update fits within the tensor.
+<p>If the slice would extend beyond the bounds of the operand tensor,
+the start indices are clamped so that the slice fits within the tensor.
 This means that out-of-bounds indices will not cause an error, but
 the effective start position may differ from the requested one.</p>
+<p>For example, slicing a tensor of shape <code>c(10)</code> with <code>start_indices = 8</code>
+and <code>slice_sizes = 5</code> will effectively use <code>start_indices = 6</code> to keep
+the slice within bounds.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -32,7 +32,11 @@ nvl_dynamic_update_slice(operand, update, ...)
 
 ## Out Of Bounds Behavior
 
-If the update slice would extend beyond the bounds of the operand
-tensor, the start indices are clamped so that the update fits within the
-tensor. This means that out-of-bounds indices will not cause an error,
-but the effective start position may differ from the requested one.
+If the slice would extend beyond the bounds of the operand tensor, the
+start indices are clamped so that the slice fits within the tensor. This
+means that out-of-bounds indices will not cause an error, but the
+effective start position may differ from the requested one.
+
+For example, slicing a tensor of shape `c(10)` with `start_indices = 8`
+and `slice_sizes = 5` will effectively use `start_indices = 6` to keep
+the slice within bounds.

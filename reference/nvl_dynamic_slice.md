@@ -36,6 +36,6 @@ start indices are clamped so that the slice fits within the tensor. This
 means that out-of-bounds indices will not cause an error, but the
 effective start position may differ from the requested one.
 
-For example, slicing a tensor of shape `(10,)` with `start_indices = 8`
-and `slice_sizes = 5` will effectively use `start_indices = 5` to keep
+For example, slicing a tensor of shape `c(10)` with `start_indices = 8`
+and `slice_sizes = 5` will effectively use `start_indices = 6` to keep
 the slice within bounds.
