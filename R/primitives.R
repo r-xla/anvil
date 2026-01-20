@@ -290,10 +290,11 @@ nvl_concatenate <- function(..., dimension) {
   )[[1L]]
 }
 
-p_slice <- AnvilPrimitive("slice")
-#' @title Primitive Slice
+p_static_slice <- AnvilPrimitive("static_slice")
+#' @title Primitive Static Slice
 #' @description
-#' Extracts a slice from a tensor.
+#' Extracts a slice from a tensor using static (compile-time) indices.
+#' For dynamic indices, use [nvl_dynamic_slice()].
 #' @template param_operand
 #' @param start_indices (`integer()`)\cr
 #'   Start indices (1-based).
@@ -303,7 +304,7 @@ p_slice <- AnvilPrimitive("slice")
 #'   Step sizes.
 #' @return [`tensorish`]
 #' @export
-nvl_slice <- function(operand, start_indices, limit_indices, strides) {
+nvl_static_slice <- function(operand, start_indices, limit_indices, strides) {
   infer_fn <- function(operand, start_indices, limit_indices, strides) {
     start_attr <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
     limit_attr <- r_to_constant(limit_indices, dtype = "i64", shape = length(limit_indices))
@@ -314,7 +315,7 @@ nvl_slice <- function(operand, start_indices, limit_indices, strides) {
     list(out)
   }
   graph_desc_add(
-    p_slice,
+    p_static_slice,
     args = list(
       operand = operand
     ),
@@ -323,6 +324,85 @@ nvl_slice <- function(operand, start_indices, limit_indices, strides) {
       limit_indices = limit_indices,
       strides = strides
     ),
+    infer_fn = infer_fn
+  )[[1L]]
+}
+
+p_dynamic_slice <- AnvilPrimitive("dynamic_slice")
+#' @title Primitive Dynamic Slice
+#' @description
+#' Extracts a dynamically positioned slice from a tensor.
+#' The start position is specified at runtime via tensor indices.
+#' @template param_operand
+#' @param ... Scalar tensor start indices (1-based), one per dimension.
+#' @param slice_sizes (`integer()`)\cr
+#'   Size of the slice in each dimension.
+#' @section Out Of Bounds Behavior:
+#' If the slice would extend beyond the bounds of the operand tensor,
+#' the start indices are clamped so that the slice fits within the tensor.
+#' This means that out-of-bounds indices will not cause an error, but
+#' the effective start position may differ from the requested one.
+#'
+#' For example, slicing a tensor of shape `(10,)` with `start_indices = 8`
+#' and `slice_sizes = 5` will effectively use `start_indices = 5` to keep
+#' the slice within bounds.
+#' @return [`tensorish`]
+#' @export
+nvl_dynamic_slice <- function(operand, ..., slice_sizes) {
+  start_indices <- list(...)
+  infer_fn <- function(operand, ..., slice_sizes) {
+    start_indices_avals <- list(...)
+    for (i in seq_along(start_indices_avals)) {
+      aval <- start_indices_avals[[i]]
+      if (length(shape(aval)) != 0L) {
+        cli_abort("Start index {i} must be a scalar, but has shape {shape(aval)}")
+      }
+    }
+    out <- AbstractTensor(dtype = operand$dtype, shape = slice_sizes, ambiguous = operand$ambiguous)
+    list(out)
+  }
+  graph_desc_add(
+    p_dynamic_slice,
+    args = c(list(operand = operand), start_indices),
+    params = list(slice_sizes = slice_sizes),
+    infer_fn = infer_fn
+  )[[1L]]
+}
+
+p_dynamic_update_slice <- AnvilPrimitive("dynamic_update_slice")
+#' @title Primitive Dynamic Update Slice
+#' @description
+#' Updates a dynamically positioned slice in a tensor.
+#' The start position is specified at runtime via tensor indices.
+#' @template param_operand
+#' @param update ([`tensorish`])\cr
+#'   The values to write at the specified position.
+#' @param ... ([`tensorish`])\cr
+#'   Scalar tensor start indices (1-based), one per dimension.
+#' @section Out Of Bounds Behavior:
+#' If the update slice would extend beyond the bounds of the operand tensor,
+#' the start indices are clamped so that the update fits within the tensor.
+#' This means that out-of-bounds indices will not cause an error, but
+#' the effective start position may differ from the requested one.
+#' @return [`tensorish`]
+#' @export
+nvl_dynamic_update_slice <- function(operand, update, ...) {
+  start_indices <- list(...)
+  infer_fn <- function(operand, update, ...) {
+    start_indices_avals <- list(...)
+    for (i in seq_along(start_indices_avals)) {
+      aval <- start_indices_avals[[i]]
+      if (length(shape(aval)) != 0L) {
+        cli_abort("Start index {i} must be a scalar, but has shape {shape(aval)}")
+      }
+    }
+    out <- AbstractTensor(dtype = operand$dtype, shape = shape(operand), ambiguous = operand$ambiguous)
+    list(out)
+  }
+  graph_desc_add(
+    p_dynamic_update_slice,
+    args = c(list(operand = operand, update = update), start_indices),
+    params = list(),
     infer_fn = infer_fn
   )[[1L]]
 }

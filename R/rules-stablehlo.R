@@ -52,9 +52,39 @@ p_concatenate[["stablehlo"]] <- function(..., dimension) {
   list(stablehlo::hlo_concatenate(..., dimension = dimension - 1L))
 }
 
-p_slice[["stablehlo"]] <- function(operand, start_indices, limit_indices, strides) {
+p_static_slice[["stablehlo"]] <- function(operand, start_indices, limit_indices, strides) {
   # we use 1:n, which includes n, but this translates to 0:n in stablehlo
   list(stablehlo::hlo_slice(operand, start_indices - 1L, limit_indices, strides))
+}
+
+p_dynamic_slice[["stablehlo"]] <- function(operand, ..., slice_sizes) {
+  start_indices <- list(...)
+  # Convert start indices from 1-based to 0-based by subtracting 1
+  start_indices_0based <- lapply(start_indices, function(idx) {
+    one <- stablehlo::hlo_scalar(1L, dtype = dtype(idx), func = idx$func)
+    stablehlo::hlo_subtract(idx, one)
+  })
+  list(rlang::exec(
+    stablehlo::hlo_dynamic_slice,
+    operand,
+    !!!start_indices_0based,
+    slice_sizes = slice_sizes
+  ))
+}
+
+p_dynamic_update_slice[["stablehlo"]] <- function(operand, update, ...) {
+  start_indices <- list(...)
+  # Convert start indices from 1-based to 0-based by subtracting 1
+  start_indices_0based <- lapply(start_indices, function(idx) {
+    one <- stablehlo::hlo_scalar(1L, dtype = dtype(idx), func = idx$func)
+    stablehlo::hlo_subtract(idx, one)
+  })
+  list(rlang::exec(
+    stablehlo::hlo_dynamic_update_slice,
+    operand,
+    update,
+    !!!start_indices_0based
+  ))
 }
 
 .stablehlo_apply_reduce <- function(reductor, operand, init, dims, drop) {
