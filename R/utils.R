@@ -159,3 +159,7 @@ dtype_abstract <- function(x) {
 dtype2string <- function(dtype, ambiguous = FALSE) {
   paste0(repr(dtype), if (ambiguous) "?")
 }
+
+is_lit <- function(x) {
+  test_scalar(x) && (is.numeric(x) || is.logical(x))
+}
