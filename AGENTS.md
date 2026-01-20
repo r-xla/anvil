@@ -86,3 +86,8 @@ API functions are prefixed by `nv_` and are defined in files like api.R or api-r
 Often, they wrap primitives, but make them more convenient to use.
 When accessing properties from `tensorish` values, use `shape_abstract`, `ndims_abstract`, and `dtype_abstract`.
 Other accessors are currently not available.
+
+## NSE and Tracing
+
+Whenever we are combining non-standard evaluation (NSE) with tracing of sub-graphs, we need to `force()` the tensorish inputs, so they are not accidentally embedded into the sub-graphdescriptor.
+This can happen in R, because the evaluation of promises in function calls is delayed until they are actually needed, which causes hard-to-debug errors.
