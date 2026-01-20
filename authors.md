@@ -14,7 +14,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/r-xla/anvil/blob/fix-jit-in-tree-cache/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/r-xla/anvil/blob/more-backward2/DESCRIPTION)
 
 Fischer S, Falbel D, German N (2026). *anvil: Framework for R code
 transformations*. R package version 0.0.0.9000,

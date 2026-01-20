@@ -84,7 +84,7 @@
       <h1>Debugging</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/fix-jit-in-tree-cache/vignettes/debugging.Rmd" class="external-link"><code>vignettes/debugging.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/more-backward2/vignettes/debugging.Rmd" class="external-link"><code>vignettes/debugging.Rmd</code></a></small>
       <div class="d-none name"><code>debugging.Rmd</code></div>
     </div>
 
@@ -197,7 +197,6 @@ compiled.</p>
 won’t be printed because the executable is retrieved from the cache.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">3</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## GraphBox(GraphValue(AbstractTensor(dtype=f32?, shape=2x2)))</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor </span></span>
 <span><span class="co">##  7.0000</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
@@ -216,9 +215,9 @@ print is not naturally returned by the function.</li>
 intermediate results.</p>
 <p>In the first approach, we only <code>jit</code>-compile the update
 function and iteratively call it in an R loop.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">add_one</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="fl">1L</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">add_one</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
@@ -256,7 +255,7 @@ function and iteratively call it in an R loop.</p>
 <span><span class="co">## [ CPUi32{} ]</span></span></code></pre>
 <p>For the second approach, we use <code>nv_while</code> to implement
 the loop.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">init</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_fill.html">nv_fill</a></span><span class="op">(</span><span class="fl">1L</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="../reference/nv_while.html">nv_while</a></span><span class="op">(</span></span>
