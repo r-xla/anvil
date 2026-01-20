@@ -82,8 +82,8 @@ Functions for reshaping and rearranging tensors
   : Transpose
 - [`nv_concatenate()`](https://r-xla.github.io/anvil/reference/nv_concatenate.md)
   : Concatenate
-- [`nv_static_slice()`](https://r-xla.github.io/anvil/reference/nv_static_slice.md)
-  : Slice
+- [`nv_slice()`](https://r-xla.github.io/anvil/reference/nv_slice.md) :
+  Slice
 - [`nv_pad()`](https://r-xla.github.io/anvil/reference/nv_pad.md) : Pad
 - [`nv_reverse()`](https://r-xla.github.io/anvil/reference/nv_reverse.md)
   : Reverse
@@ -372,10 +372,6 @@ Low-level primitive operations (nvl\_\* functions)
   Primitive Division
 - [`nvl_dot_general()`](https://r-xla.github.io/anvil/reference/nvl_dot_general.md)
   : Primitive Dot General
-- [`nvl_dynamic_slice()`](https://r-xla.github.io/anvil/reference/nvl_dynamic_slice.md)
-  : Primitive Dynamic Slice
-- [`nvl_dynamic_update_slice()`](https://r-xla.github.io/anvil/reference/nvl_dynamic_update_slice.md)
-  : Primitive Dynamic Update Slice
 - [`nvl_eq()`](https://r-xla.github.io/anvil/reference/nvl_eq.md) :
   Primitive Equal
 - [`nvl_exp()`](https://r-xla.github.io/anvil/reference/nvl_exp.md) :
@@ -464,10 +460,10 @@ Low-level primitive operations (nvl\_\* functions)
   Primitive Sign
 - [`nvl_sine()`](https://r-xla.github.io/anvil/reference/nvl_sine.md) :
   Primitive Sine
+- [`nvl_slice()`](https://r-xla.github.io/anvil/reference/nvl_slice.md)
+  : Primitive Slice
 - [`nvl_sqrt()`](https://r-xla.github.io/anvil/reference/nvl_sqrt.md) :
   Primitive Square Root
-- [`nvl_static_slice()`](https://r-xla.github.io/anvil/reference/nvl_static_slice.md)
-  : Primitive Static Slice
 - [`nvl_sub()`](https://r-xla.github.io/anvil/reference/nvl_sub.md) :
   Primitive Subtraction
 - [`nvl_tan()`](https://r-xla.github.io/anvil/reference/nvl_tan.md) :
