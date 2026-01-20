@@ -25,9 +25,13 @@ The start position is specified at runtime via tensor indices.
 }
 \section{Out Of Bounds Behavior}{
 
-If the update slice would extend beyond the bounds of the operand tensor,
-the start indices are clamped so that the update fits within the tensor.
+If the slice would extend beyond the bounds of the operand tensor,
+the start indices are clamped so that the slice fits within the tensor.
 This means that out-of-bounds indices will not cause an error, but
 the effective start position may differ from the requested one.
+
+For example, slicing a tensor of shape \code{c(10)} with \code{start_indices = 8}
+and \code{slice_sizes = 5} will effectively use \code{start_indices = 6} to keep
+the slice within bounds.
 }
 

@@ -29,8 +29,8 @@ the start indices are clamped so that the slice fits within the tensor.
 This means that out-of-bounds indices will not cause an error, but
 the effective start position may differ from the requested one.
 
-For example, slicing a tensor of shape \verb{(10,)} with \code{start_indices = 8}
-and \code{slice_sizes = 5} will effectively use \code{start_indices = 5} to keep
+For example, slicing a tensor of shape \code{c(10)} with \code{start_indices = 8}
+and \code{slice_sizes = 5} will effectively use \code{start_indices = 6} to keep
 the slice within bounds.
 }
 
