@@ -391,3 +391,121 @@ describe("combining subsets with subset-assign", {
     nv_tensor(c(2L, 1L, 3L, 4L))
   )
 })
+
+describe("nv_meshgrid_start_indices", {
+  it("works with two scatters", {
+    # list(c(1, 3), c(2, 4)) -> combinations: (1,2), (1,4), (3,2), (3,4)
+    expect_jit_equal(
+      nv_meshgrid_start_indices(list(
+        nv_tensor(c(1L, 3L), dtype = "i64"),
+        nv_tensor(c(2L, 4L), dtype = "i64")
+      )),
+      nv_tensor(matrix(c(1L, 2L, 1L, 4L, 3L, 2L, 3L, 4L), nrow = 4, byrow = TRUE), dtype = "i64")
+    )
+  })
+
+  it("works with scatter and single elements", {
+    # list(c(1, 3), 5, 6) -> combinations: (1,5,6), (3,5,6)
+    expect_jit_equal(
+      nv_meshgrid_start_indices(list(
+        nv_tensor(c(1L, 3L), dtype = "i64"),
+        nv_scalar(5L, dtype = "i64"),
+        nv_scalar(6L, dtype = "i64")
+      )),
+      nv_tensor(matrix(c(1L, 5L, 6L, 3L, 5L, 6L), nrow = 2, byrow = TRUE), dtype = "i64")
+    )
+  })
+
+  it("works with multiple scatters and singles", {
+    # list(c(1, 3), c(2, 4), 7, 2) -> 4 combinations
+    expect_jit_equal(
+      nv_meshgrid_start_indices(list(
+        nv_tensor(c(1L, 3L), dtype = "i64"),
+        nv_tensor(c(2L, 4L), dtype = "i64"),
+        nv_scalar(7L, dtype = "i64"),
+        nv_scalar(2L, dtype = "i64")
+      )),
+      nv_tensor(matrix(c(
+        1L, 2L, 7L, 2L,
+        1L, 4L, 7L, 2L,
+        3L, 2L, 7L, 2L,
+        3L, 4L, 7L, 2L
+      ), nrow = 4, byrow = TRUE), dtype = "i64")
+    )
+  })
+
+  it("works with all single elements", {
+    # list(5, 6, 7) -> single combination: (5,6,7)
+    expect_jit_equal(
+      nv_meshgrid_start_indices(list(
+        nv_scalar(5L, dtype = "i64"),
+        nv_scalar(6L, dtype = "i64"),
+        nv_scalar(7L, dtype = "i64")
+      )),
+      nv_tensor(matrix(c(5L, 6L, 7L), nrow = 1), dtype = "i64")
+    )
+  })
+
+  it("works with three scatters", {
+    # 2 x 2 x 2 = 8 combinations
+    out <- jit(\() nv_meshgrid_start_indices(list(
+      nv_tensor(c(1L, 2L), dtype = "i64"),
+      nv_tensor(c(3L, 4L), dtype = "i64"),
+      nv_tensor(c(5L, 6L), dtype = "i64")
+    )))()
+    expect_equal(dim(as_array(out)), c(8, 3))
+    arr <- as_array(out)
+    # First varies slowest, last varies fastest
+    expect_equal(arr[1, ], c(1, 3, 5))
+    expect_equal(arr[2, ], c(1, 3, 6))
+    expect_equal(arr[3, ], c(1, 4, 5))
+    expect_equal(arr[4, ], c(1, 4, 6))
+    expect_equal(arr[5, ], c(2, 3, 5))
+    expect_equal(arr[6, ], c(2, 3, 6))
+    expect_equal(arr[7, ], c(2, 4, 5))
+    expect_equal(arr[8, ], c(2, 4, 6))
+  })
+})
+
+describe("nv_subset with multiple gather dimensions", {
+  it("x[list(1, 3), list(2, 4)] gathers all combinations as 2x2 matrix", {
+    # 4x4 matrix (column-major in R):
+    # [,1] [,2] [,3] [,4]
+    # [1,]  1    5    9   13
+    # [2,]  2    6   10   14
+    # [3,]  3    7   11   15
+    # [4,]  4    8   12   16
+    x <- nv_tensor(matrix(1:16, nrow = 4))
+    # Selecting rows 1,3 and columns 2,4 should give a 2x2 matrix:
+    # [,1] [,2]
+    # [1,]  5   13   (row 1, cols 2 and 4)
+    # [2,]  7   15   (row 3, cols 2 and 4)
+    out <- jit(\(x) x[list(1, 3), list(2, 4)])(x)
+    expect_equal(dim(as_array(out)), c(2, 2))
+    expect_equal(as_array(out), matrix(c(5L, 7L, 13L, 15L), nrow = 2))
+  })
+
+  it("x[list(1, 2), list(1, 2)] on 2x2 matrix returns 2x2", {
+    # [,1] [,2]
+    # [1,]  1    3
+    # [2,]  2    4
+    x <- nv_tensor(matrix(1:4, nrow = 2))
+    out <- jit(\(x) x[list(1, 2), list(1, 2)])(x)
+    expect_equal(dim(as_array(out)), c(2, 2))
+    # Should be the same as the original matrix
+    expect_equal(as_array(out), matrix(1:4, nrow = 2))
+  })
+
+  it("x[list(1, 3), list(2, 4), 1] with 3D tensor returns 2x2", {
+    x <- nv_tensor(array(1:24, dim = c(3, 4, 2)))
+    # Selecting [1,3] x [2,4] x [1] = 2x2 matrix (third dim dropped by literal)
+    out <- jit(\(x) x[list(1, 3), list(2, 4), 1])(x)
+    expect_equal(dim(as_array(out)), c(2, 2))
+  })
+
+  it("x[list(1, 2, 3), list(1, 2)] returns 3x2 matrix", {
+    x <- nv_tensor(matrix(1:12, nrow = 4))
+    out <- jit(\(x) x[list(1, 2, 3), list(1, 2)])(x)
+    expect_equal(dim(as_array(out)), c(3, 2))
+  })
+})

@@ -3,6 +3,90 @@
 
 # TODO: If the input is a known constant wrapepd in ConcreteTensor, we can also infer things like unique_indices etc. (?)
 
+#' @title Compute All Combinations of Start Indices
+#' @description
+#' Given a list of start indices per dimension, computes all combinations
+#' (cartesian product) of these indices. This is used for scatter/gather
+#' operations where multiple dimensions have scattered indices.
+#'
+#' @param start_indices_per_dim A list where each element is a 1-D tensor
+#'   containing the start indices for that dimension.
+#'
+#' @return A 2-D tensor of shape `(n_combinations, n_dims)` where each row
+#'   is one combination of start indices.
+#'
+#' @details
+#' For example, if `start_indices_per_dim = list(tensor(c(1, 3)), tensor(c(2, 4)), tensor(7), tensor(2))`:
+#' - Dimension 1 has indices: 1, 3 (2 values)
+#' - Dimension 2 has indices: 2, 4 (2 values)
+#' - Dimension 3 has index: 7 (1 value)
+#' - Dimension 4 has index: 2 (1 value)
+#'
+#' The result is a tensor with shape (4, 4):
+#' ```
+#' [[1, 2, 7, 2],
+#'  [1, 4, 7, 2],
+#'  [3, 2, 7, 2],
+#'  [3, 4, 7, 2]]
+#' ```
+#'
+#' @export
+nv_meshgrid_start_indices <- function(start_indices_per_dim) {
+  n_dims <- length(start_indices_per_dim)
+  if (n_dims == 0L) {
+    cli_abort("start_indices_per_dim must have at least one element")
+  }
+
+  # Get the number of indices per dimension
+  lengths <- vapply(start_indices_per_dim, function(x) {
+    sh <- shape_abstract(x)
+    if (length(sh) == 0L) {
+      1L
+    } else if (length(sh) == 1L) {
+      sh[1L]
+    } else {
+      cli_abort("Each element must be a scalar or 1-D tensor")
+    }
+  }, integer(1L))
+
+  # Total number of combinations
+  n_combinations <- prod(lengths)
+
+  # Output shape for the meshgrid (before flattening)
+  meshgrid_shape <- lengths
+
+  # For each dimension, broadcast its indices to the full meshgrid shape
+  # Then reshape and concatenate
+  index_columns <- lapply(seq_len(n_dims), function(i) {
+    idx_tensor <- start_indices_per_dim[[i]]
+    n_idx <- lengths[i]
+
+    # Ensure it's 1-D
+    if (length(shape_abstract(idx_tensor)) == 0L) {
+      idx_tensor <- nv_reshape(idx_tensor, c(1L))
+    }
+
+    # Create broadcast shape: 1s everywhere except dimension i
+    bcast_shape <- rep(1L, n_dims)
+    bcast_shape[i] <- n_idx
+
+    # Reshape and broadcast to full meshgrid shape
+    idx_reshaped <- nv_reshape(idx_tensor, bcast_shape)
+    idx_broadcast <- nv_broadcast_to(idx_reshaped, meshgrid_shape)
+
+    # Flatten to 1-D column
+    nv_reshape(idx_broadcast, c(n_combinations))
+  })
+
+  # Stack columns into (n_combinations, n_dims) tensor
+  # Use concatenate with reshape to stack
+  stacked <- lapply(index_columns, function(col) {
+    nv_reshape(col, c(n_combinations, 1L))
+  })
+
+  do.call(function(...) nv_concatenate(..., dimension = 2L), stacked)
+}
+
 # Helper functions for subset operations ======================================
 
 #' Parse subset specifications and fill unspecified dimensions
@@ -222,17 +306,13 @@ nv_subset <- function(x, ...) {
 
   rank <- length(operand_shape)
 
-  # Check for gather type (at most one allowed)
+  # Check for gather type (multiple allowed now via meshgrid)
   is_gather <- vapply(slices, \(s) s$type == "gather", logical(1L))
-  if (sum(is_gather) > 1L) {
-    cli_abort("At most one dimension can use list() with multiple elements")
-  }
+  gather_dims <- which(is_gather)
 
-  has_gather <- any(is_gather)
-
-  if (has_gather) {
-    # Handle gather case (list with multiple elements in one dimension)
-    nv_subset_gather(x, slices, operand_shape, rank, which(is_gather))
+  if (length(gather_dims) > 0L) {
+    # Handle gather case (list with multiple elements in one or more dimensions)
+    nv_subset_gather(x, slices, operand_shape, rank, gather_dims)
   } else {
     # Handle simple slice case (no multi-element gather)
     nv_subset_slice(x, slices, operand_shape, rank)
@@ -316,72 +396,59 @@ nv_subset_slice <- function(x, slices, operand_shape, rank) {
   out
 }
 
-#' Gather subset (list with multiple elements in one dimension)
+#' Gather subset (list with multiple elements in one or more dimensions)
 #' @noRd
-nv_subset_gather <- function(x, slices, operand_shape, rank, gather_dim) {
-  gather_spec <- slices[[gather_dim]]
-  n_gather <- gather_spec$size  # number of elements to gather
+nv_subset_gather <- function(x, slices, operand_shape, rank, gather_dims) {
+  # Build list of start indices per dimension
 
-  # For gather, slice_sizes is 1 for the gather dim, and normal for others
-  slice_sizes <- vapply(seq_len(rank), function(i) {
-    if (i == gather_dim) 1L else slices[[i]]$size
-  }, integer(1L))
-
-  # Collapsed dims: the gather dim is always collapsed (we're selecting single elements)
-  # Plus any other dims with drop = TRUE
-  collapsed_slice_dims <- c(
-    gather_dim,
-    which(vapply(seq_len(rank), function(i) i != gather_dim && isTRUE(slices[[i]]$drop), logical(1L)))
-  )
-  collapsed_slice_dims <- sort(unique(collapsed_slice_dims))
-
-  # offset_dims: non-collapsed, non-gather dims go after the batch dim
-  n_remaining <- rank - length(collapsed_slice_dims)
-  offset_dims <- seq_len(n_remaining) + 1L
-
-  # Build start_indices: [n_gather, rank] matrix
-  # Keep indices as 1-based - nvl_gather handles conversion to 0-based
-
-  # Each row is a starting position for one gathered element
-  start_indices_list <- lapply(seq_len(rank), function(i) {
-    if (i == gather_dim) {
-      # The gather indices - already a tensor (1-based)
-      nv_reshape(gather_spec$indices, shape = c(n_gather, 1L))
+  # For gather dims: use the indices tensor
+  # For non-gather dims: use a single start index (as scalar tensor)
+  start_indices_per_dim <- lapply(seq_len(rank), function(i) {
+    s <- slices[[i]]
+    if (i %in% gather_dims) {
+      # Gather dimension - use the indices tensor (already 1-based)
+      s$indices
     } else {
-      # Broadcast the start position across all gathered elements
-      s <- slices[[i]]
+      # Non-gather dimension - use start index as scalar
       if (is.numeric(s$start)) {
-        start_val <- nv_tensor(as.integer(s$start), dtype = "i64")
+        nv_scalar(as.integer(s$start), dtype = "i64")
       } else {
-        start_val <- nv_convert(s$start, dtype = "i64")
+        nv_convert(s$start, dtype = "i64")
       }
-      nv_broadcast_to(start_val, c(n_gather, 1L))
     }
   })
 
-  start_indices <- do.call(nv_concatenate, c(start_indices_list, list(dimension = 2L)))
+  # Compute the shape of the gather dimensions (for reshaping output)
+  # This is the meshgrid shape before flattening
+  gather_shape <- vapply(gather_dims, function(i) slices[[i]]$size, integer(1L))
+
+  # Use meshgrid to get all combinations of start indices
+  # Result shape: [n_combinations, rank]
+  start_indices <- nv_meshgrid_start_indices(start_indices_per_dim)
   start_indices <- nv_convert(start_indices, dtype = "i32")
 
-  # Determine if all indices are static (for setting optimization flags)
-  # For gather, the gather_spec$indices comes from list() which is always static
-  # We also check if other dimensions have static starts
-  all_static <- all(vapply(
-    slices,
-    function(s) {
-      s$type %in% c("full", "range") || (s$type %in% c("single", "gather") && is.numeric(s$start))
-    },
-    logical(1L)
-  ))
+  n_combinations <- shape_abstract(start_indices)[1L]
 
-  # For the gather dimension, check if the indices from list() are sorted and unique
-  # gather_spec$indices was created from list() elements, so we can extract them
-  # The indices are stored in a tensor, but they came from static list() elements
-  # We need to check the original values - they are available in gather_spec
-  # Since list() is always static, we can rely on the fact that the tensor was created
+  # For gather, slice_sizes is 1 for gather dims, and normal for others
+  slice_sizes <- vapply(seq_len(rank), function(i) {
+    if (i %in% gather_dims) 1L else slices[[i]]$size
+  }, integer(1L))
 
-  # from static values. We check sorted/unique based on the tensor construction.
-  # For simplicity, assume list() indices are NOT sorted and may have duplicates
-  # unless we can prove otherwise (conservative approach).
+  # Collapsed dims: gather dims are always collapsed (we're selecting single elements)
+  # Plus any other dims with drop = TRUE
+  collapsed_slice_dims <- c(
+    gather_dims,
+    which(vapply(seq_len(rank), function(i) {
+      !(i %in% gather_dims) && isTRUE(slices[[i]]$drop)
+    }, logical(1L)))
+  )
+  collapsed_slice_dims <- sort(unique(collapsed_slice_dims))
+
+  # offset_dims: non-collapsed dims go after the batch dim
+  n_remaining <- rank - length(collapsed_slice_dims)
+  offset_dims <- seq_len(n_remaining) + 1L
+
+  # Conservatively assume indices may not be sorted or unique
   indices_are_sorted <- FALSE
   unique_indices <- FALSE
 
@@ -398,6 +465,21 @@ nv_subset_gather <- function(x, slices, operand_shape, rank, gather_dim) {
     indices_are_sorted = indices_are_sorted,
     unique_indices = unique_indices
   )
+
+  # The gather output has shape [n_combinations, ...remaining_dims...]
+  # We need to reshape the first dimension (n_combinations) back to the
+  # meshgrid shape (gather_shape) to get proper multi-dimensional output
+  #
+  # For x[list(1,3), list(2,4)] on a matrix:
+  # - gather produces shape [4] (flattened combinations)
+  # - we reshape to [2, 2] (the gather dimension sizes)
+
+  current_shape <- shape_abstract(out)
+  if (length(gather_dims) > 1L && length(current_shape) > 0L) {
+    # Replace the first dimension (n_combinations) with the gather_shape
+    new_shape <- c(gather_shape, current_shape[-1L])
+    out <- nv_reshape(out, new_shape)
+  }
 
   out
 }

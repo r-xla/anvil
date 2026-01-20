@@ -474,7 +474,7 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
 #'   If this is `TRUE`, inputs that are `AnvilTensor`s are treated as unknown.
 #'   If this is `FALSE` (default), `AnvilTensor`s are treated as constants.
 #' @param lit_to_tensor (`logical(1)`)\cr
-#'   Whether to convert literals to `AnvilTensor`s.
+#'   Whether to convert literal inputs to `AnvilTensor`s.
 #'   Should only be used for higher-order primitives like if and while, where no static inputs are possible.
 #' @param args_flat (`list`)\cr
 #'   The flattened arguments. Also requires passing `in_tree`.
