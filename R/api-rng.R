@@ -182,7 +182,7 @@ nv_rnorm <- function(shape, initial_state, dtype = "f32", mu = 0, sigma = 1) {
 
   # if n is uneven, only keep N(1,...,n), i.e. discard last entry of N
   if (n %% 2 == 1) {
-    N <- nv_slice(N, start_indices = 1L, limit_indices = n, strides = 1L)
+    N <- nv_static_slice(N, start_indices = 1L, limit_indices = n, strides = 1L)
   }
 
   # reshape N to match requested shape

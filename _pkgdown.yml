@@ -85,7 +85,7 @@ reference:
       - nv_reshape
       - nv_transpose
       - nv_concatenate
-      - nv_slice
+      - nv_static_slice
       - nv_pad
       - nv_reverse
 

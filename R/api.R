@@ -204,7 +204,7 @@ nv_concatenate <- nvl_concatenate
 #' @param strides stride size
 #' @return [`tensorish`]
 #' @export
-nv_slice <- nvl_slice
+nv_static_slice <- nvl_static_slice
 
 #' @title Print Tensor
 #' @description
