@@ -3,12 +3,10 @@
 Primitive interpretation rule. Note that `[[` and `[[<-` access the
 interpretation rules. To access other fields, use `$` and `$<-`.
 
-A primitive is considered higher-order if it contains subgraphs.
-
 ## Usage
 
 ``` r
-AnvilPrimitive(name, subgraphs = character())
+AnvilPrimitive(name, higher_order = FALSE, subgraphs = character())
 ```
 
 ## Arguments
@@ -17,6 +15,12 @@ AnvilPrimitive(name, subgraphs = character())
 
   ([`character()`](https://rdrr.io/r/base/character.html))  
   The name of the primitive.
+
+- higher_order:
+
+  (`logical(1)`)  
+  Whether the primitive is higher-order (contains subgraphs). Default is
+  `FALSE`.
 
 - subgraphs:
 
