@@ -349,7 +349,7 @@ p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .r
   grad <- grads[[1L]]
   # the ambiguity is determined by the input, not the `ambiguous` parameter
   list(
-    if (.required[[1L]]) nvl_convert(grad, dtype(operand), inputs[[1L]]$aval$ambiguous)
+    if (.required[[1L]]) nvl_convert(grad, dtype(operand), inputs[[1L]]$gnode$aval$ambiguous)
   )
 }
 
