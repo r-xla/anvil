@@ -163,3 +163,7 @@ dtype2string <- function(dtype, ambiguous = FALSE) {
 is_lit <- function(x) {
   test_scalar(x) && (is.numeric(x) || is.logical(x))
 }
+
+cache_size <- function(f) {
+  environment(f)$cache$size
+}
