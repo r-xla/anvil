@@ -1102,7 +1102,7 @@ p_if <- AnvilPrimitive("if", higher_order = TRUE, subgraphs = c("true_graph", "f
 #' @export
 nvl_if <- function(pred, true, false) {
   # delayed promise evaluation can cause the value to be added to the wrong graph descriptor
-  force(init)
+  force(pred)
   true_expr <- rlang::enquo(true)
   false_expr <- rlang::enquo(false)
 
