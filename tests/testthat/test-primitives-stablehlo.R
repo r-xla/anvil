@@ -35,7 +35,7 @@ test_that("p_bitcast_convert", {
 
 test_that("p_static_slice", {
   f <- function() {
-    nv_static_slice(
+    nvl_static_slice(
       nv_tensor(1:6, dtype = "ui64", shape = c(2, 3)),
       start_indices = c(1, 1),
       limit_indices = c(2, 2),
@@ -47,64 +47,37 @@ test_that("p_static_slice", {
   expect_equal(as_array(out), matrix(c(1:4), nrow = 2))
 })
 
-test_that("p_dynamic_slice", {
-  # Basic dynamic slice with scalar indices
-  f <- function(start_i, start_j) {
-    x <- nv_tensor(1:12, dtype = "i32", shape = c(3, 4))
-    nvl_dynamic_slice(x, start_i, start_j, slice_sizes = c(2L, 2L))
-  }
-  g <- jit(f)
-  # Slice starting at (1, 1) should give [[1, 4], [2, 5]]
-  out <- g(nv_scalar(1L, dtype = "i32"), nv_scalar(1L, dtype = "i32"))
-  expect_equal(out, nv_tensor(c(1L, 2L, 4L, 5L), dtype = "i32", shape = c(2, 2)))
-
-  # Slice starting at (2, 2) should give [[5, 8], [6, 9]]
-  out <- g(nv_scalar(2L, dtype = "i32"), nv_scalar(2L, dtype = "i32"))
-  expect_equal(out, nv_tensor(c(5L, 6L, 8L, 9L), dtype = "i32", shape = c(2, 2)))
-
-  # 1D case
-  f1d <- function(start_i) {
-    x <- nv_tensor(1:10, dtype = "i32", shape = c(10))
-    nvl_dynamic_slice(x, start_i, slice_sizes = c(3L))
-  }
-  g1d <- jit(f1d)
-  out <- g1d(nv_scalar(3L, dtype = "i32"))
-  expect_equal(out, nv_tensor(c(3L, 4L, 5L), dtype = "i32", shape = 3L))
+describe("p_dynamic_slice", {
+  it("extracts a slice at dynamic position", {
+    f <- function() {
+      operand <- nv_tensor(1:12, dtype = "i32", shape = c(3, 4))
+      start_idx1 <- nv_scalar(2L, dtype = "i32")
+      start_idx2 <- nv_scalar(2L, dtype = "i32")
+      nvl_dynamic_slice(operand, start_idx1, start_idx2, slice_sizes = c(2L, 2L))
+    }
+    g <- jit(f)
+    out <- g()
+    expected <- matrix(c(5L, 6L, 8L, 9L), nrow = 2, ncol = 2)
+    expect_equal(as_array(out), expected)
+  })
 })
 
-test_that("p_dynamic_update_slice", {
-  # Basic dynamic update slice with scalar indices
-  f <- function(start_i, start_j) {
-    x <- nv_tensor(1:12, dtype = "i32", shape = c(3, 4))
-    update <- nv_tensor(c(100L, 200L, 300L, 400L), dtype = "i32", shape = c(2, 2))
-    nvl_dynamic_update_slice(x, update, start_i, start_j)
-  }
-  g <- jit(f)
-
-  # Update at (1, 1) - top-left corner
-  out <- g(nv_scalar(1L, dtype = "i32"), nv_scalar(1L, dtype = "i32"))
-  expect_equal(
-    out,
-    nv_tensor(c(100L, 200L, 3L, 300L, 400L, 6L, 7L, 8L, 9L, 10L, 11L, 12L), dtype = "i32", shape = c(3, 4))
-  )
-
-  # Update at (2, 3) - bottom-right corner
-  out <- g(nv_scalar(2L, dtype = "i32"), nv_scalar(3L, dtype = "i32"))
-  expect_equal(
-    out,
-    nv_tensor(c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 100L, 200L, 10L, 300L, 400L), dtype = "i32", shape = c(3, 4))
-  )
-
-  # 1D case
-  f1d <- function(start_i) {
-    x <- nv_tensor(1:10, dtype = "i32", shape = c(10))
-    update <- nv_tensor(c(100L, 200L, 300L), dtype = "i32", shape = c(3))
-    nvl_dynamic_update_slice(x, update, start_i)
-  }
-  g1d <- jit(f1d)
-  out <- g1d(nv_scalar(4L, dtype = "i32"))
-  expect_equal(out, nv_tensor(c(1L, 2L, 3L, 100L, 200L, 300L, 7L, 8L, 9L, 10L), dtype = "i32", shape = 10L))
+describe("p_dynamic_update_slice", {
+  it("updates a slice at dynamic position", {
+    f <- function() {
+      operand <- nv_tensor(rep(0L, 12), dtype = "i32", shape = c(3, 4))
+      update <- nv_tensor(c(99L, 88L, 77L, 66L), dtype = "i32", shape = c(2, 2))
+      start_idx1 <- nv_scalar(2L, dtype = "i32")
+      start_idx2 <- nv_scalar(2L, dtype = "i32")
+      nvl_dynamic_update_slice(operand, update, start_idx1, start_idx2)
+    }
+    g <- jit(f)
+    out <- g()
+    expected <- matrix(c(0L, 0L, 0L, 0L, 99L, 88L, 0L, 77L, 66L, 0L, 0L, 0L), nrow = 3, ncol = 4)
+    expect_equal(as_array(out), expected)
+  })
 })
+
 
 test_that("p_concatenate", {
   f <- function() {

@@ -14,6 +14,7 @@ NULL
 #' @importFrom utils head tail
 #' @importFrom cli cli_abort
 #' @importFrom methods Math2 formalArgs
+#' @importFrom utils capture.output
 ## usethis namespace: end
 NULL
 

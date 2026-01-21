@@ -784,9 +784,11 @@ describe("boolean ops", {
   expected_zeros <- nv_tensor(rep(0, 4), dtype = "f32")
 
   verify_bool_binary <- function(nvl_fn) {
-    x <- nv_tensor(c(TRUE, FALSE, FALSE, TRUE))
-    y <- nv_tensor(c(TRUE, TRUE, FALSE, FALSE))
+    x <- nv_tensor(c(1, 0, 0, 1))
+    y <- nv_tensor(c(1, 1, 0, 0))
     f <- function(x, y) {
+      x <- nv_convert(x, "i1")
+      y <- nv_convert(y, "i1")
       out <- nvl_fn(x, y)
       nv_convert(out, "f32")
     }
@@ -796,7 +798,7 @@ describe("boolean ops", {
   verify_bool_reduce <- function(nvl_fn) {
     x <- nv_tensor(c(1.0, 1.0, 0.0, 0.0), dtype = "f32")
     f <- function(x) {
-      x_pred <- nv_convert(x, "pred")
+      x_pred <- nv_convert(x, "i1")
       out <- nvl_fn(x_pred, dims = 1L, drop = TRUE)
       nv_convert(out, "f32")
     }

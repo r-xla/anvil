@@ -53,7 +53,14 @@ print.GraphValue <- function(x, ...) {
 
 #' @export
 format.GraphLiteral <- function(x, ...) {
-  sprintf("GraphLiteral(%s, %s)", x$aval$data, sprintf("%s%s", repr(x$aval$dtype), if (x$aval$ambiguous) "?" else ""))
+  # otherwise there might be conversion issues, so we directly use the pjrt printer
+  # instead of converting via as_array(), which loses precision
+  val <- if (is_anvil_tensor(x$aval$data)) {
+    trimws(capture.output(print(x$aval$data))[2L])
+  } else {
+    as.character(x$aval$data)
+  }
+  sprintf("GraphLiteral(%s, %s, %s)", val, dtype2string(x$aval$dtype, x$aval$ambiguous), shape2string(x$aval$shape))
 }
 
 #' @export

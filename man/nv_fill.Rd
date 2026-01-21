@@ -4,7 +4,7 @@
 \alias{nv_fill}
 \title{Constant}
 \usage{
-nv_fill(value, shape, dtype = NULL)
+nv_fill(value, shape, dtype = NULL, ambiguous = FALSE)
 }
 \arguments{
 \item{value}{(any)\cr
@@ -15,6 +15,14 @@ Shape.}
 
 \item{dtype}{(character(1))\cr
 Data type.}
+
+\item{ambiguous}{(\code{logical(1)})\cr
+Whether the type is ambiguous.
+Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
+See the vignette "Type Promotion" for more details.}
+}
+\value{
+\code{\link{tensorish}}
 }
 \description{
 Create a constant.

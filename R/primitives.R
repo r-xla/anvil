@@ -68,16 +68,17 @@ p_fill <- AnvilPrimitive("fill")
 #'   Scalar value.
 #' @template param_shape
 #' @template param_dtype
+#' @template param_ambiguous
 #' @return [`tensorish`]
 #' @export
-nvl_fill <- function(value, shape, dtype) {
-  infer_fill <- function(value, shape, dtype) {
-    list(AbstractTensor(dtype = as_dtype(dtype), shape = shape, ambiguous = FALSE))
+nvl_fill <- function(value, shape, dtype, ambiguous = FALSE) {
+  infer_fill <- function(value, shape, dtype, ambiguous) {
+    list(AbstractTensor(dtype = as_dtype(dtype), shape = shape, ambiguous = ambiguous))
   }
   graph_desc_add(
     p_fill,
     list(),
-    params = list(value = value, dtype = dtype, shape = shape),
+    params = list(value = value, dtype = dtype, shape = shape, ambiguous = ambiguous),
     infer_fn = infer_fill
   )[[1L]]
 }

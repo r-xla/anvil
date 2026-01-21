@@ -25,8 +25,8 @@
       g(x = list(nv_scalar(1), 2L))
     Condition
       Error in `check_wrt_tensorish()`:
-      x Cannot compute gradient with respect to non-tensor argument.
-      i Got <integer> instead of a tensor.
+      x Can only compute gradient with respect to float tensors.
+      i Got i32 instead of a float tensor.
 
 # wrt for nested non-tensor input: value_and_gradient
 
@@ -35,6 +35,15 @@
       g(x = list(nv_scalar(1), 2L))
     Condition
       Error in `check_wrt_tensorish()`:
-      x Cannot compute gradient with respect to non-tensor argument.
-      i Got <integer> instead of a tensor.
+      x Can only compute gradient with respect to float tensors.
+      i Got i32 instead of a float tensor.
+
+# can only compute gradient w.r.t. float tensors
+
+    Code
+      gradient(nv_floor, wrt = "operand")(nv_scalar(1L))
+    Condition
+      Error in `nvl_floor()`:
+      ! `operand` must have dtype FloatType.
+      x Got <i32>.
 

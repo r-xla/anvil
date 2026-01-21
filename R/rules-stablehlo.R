@@ -2,7 +2,9 @@
 
 # TODO: Here we don't have to re-do the type inference again, because it was already done.
 
-p_fill[["stablehlo"]] <- function(value, shape, dtype) {
+p_fill[["stablehlo"]] <- function(value, shape, dtype, ambiguous) {
+  # ambiguity only relevant for type promotion, but when we lower
+  # there is no type promotion, so it has no effect
   list(stablehlo::hlo_tensor(value, shape = shape, dtype = dtype))
 }
 
