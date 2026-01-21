@@ -232,7 +232,7 @@ test_that("p_broadcast_in_dim", {
   f <- jit(nvl_broadcast_in_dim, static = c("shape", "broadcast_dimensions"))
   expect_equal(
     f(nv_scalar(1L), c(1, 2), integer()),
-    nv_tensor(1L, shape = c(1, 2)),
+    nv_tensor(1L, shape = c(1, 2), ambiguous = TRUE),
     tolerance = 1e-5
   )
 })
@@ -492,9 +492,10 @@ test_that("p_print", {
 
   f <- jit(function(x) nvl_print(x))
   x <- nv_tensor(c(1.0, 2.0, 3.0), dtype = "f32")
-  out <- f(x)
-  expect_equal(as_array(out), as_array(x))
-  expect_snapshot(f(x))
+  expect_snapshot({
+    out <<- f(x)
+  })
+  expect_equal(x, out)
 })
 
 # we don't want to include torch in Suggests just for the tests, as it's a relatively

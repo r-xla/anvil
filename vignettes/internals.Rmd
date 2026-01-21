@@ -142,12 +142,12 @@ program <- pjrt::pjrt_program(src = hlo_str, format = "mlir")
 exec <- pjrt::pjrt_compile(program)
 ```
 
-To run the function, we simply pass the tensors to the executable, which will output a `PJRTBuffer` that we can easily convert to an `AnvilTensor`.
+To run the function, we need to extract the underlying buffers from the tensors before passing them to the executable, which will output a `PJRTBuffer` that we can easily convert to an `AnvilTensor`.
 
 ```{r}
 x <- nv_scalar(3, "f32")
 y <- nv_scalar(4, "f32")
-out <- pjrt::pjrt_execute(exec, x, y)
+out <- pjrt::pjrt_execute(exec, x$tensor, y$tensor)
 out
 nv_tensor(out)
 ```
@@ -321,6 +321,7 @@ Further note that:
 ### Nested Inputs and Outputs
 
 TODO
+
 
 ## Design Decisions
 

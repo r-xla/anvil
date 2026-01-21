@@ -144,7 +144,6 @@ ones_like <- function(x, ambiguous) {
   ones(dtype(x), shape(x), ambiguous)
 }
 
-
 #' @title Abstract Properties
 #' @name abstract_properties
 #' @description
@@ -159,6 +158,12 @@ shape_abstract <- function(x) {
 #' @export
 ndims_abstract <- function(x) {
   length(shape_abstract(x))
+}
+
+#' @rdname abstract_properties
+#' @export
+ambiguous_abstract <- function(x) {
+  to_abstract(x)$ambiguous
 }
 
 #' @rdname abstract_properties

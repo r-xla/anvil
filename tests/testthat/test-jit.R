@@ -216,7 +216,7 @@ test_that("donate: no aliasing with type mismatch", {
 test_that("... works (#19)", {
   expect_equal(
     jit(sum)(nv_tensor(1:10)),
-    nv_scalar(55L)
+    nv_scalar(55L, dtype = "i32")
   )
 
   f <- function(..., a) {
@@ -224,7 +224,7 @@ test_that("... works (#19)", {
   }
   expect_equal(
     jit(f)(a = nv_scalar(1L), nv_tensor(1:10)),
-    nv_scalar(56L)
+    nv_scalar(56L, dtype = "i32")
   )
 })
 

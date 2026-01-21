@@ -1,6 +1,18 @@
 # We interprete jitting directly as a transformation and not as a higher order primitive
 # because this seems simpler for now.
 
+# S3 methods for stablehlo functions to handle AnvilTensor
+
+#' @export
+hlo_scalar.AnvilTensor <- function(value, ..., func = NULL) {
+  stablehlo::hlo_scalar(value$tensor, ..., func = func)
+}
+
+#' @export
+hlo_tensor.AnvilTensor <- function(value, ..., func = NULL) {
+  stablehlo::hlo_tensor(value$tensor, ..., func = func)
+}
+
 #' @title HloEnv
 #' @description
 #' Environment for storing graph value to func value mappings.
@@ -133,7 +145,12 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
     inputs <- lapply(call$inputs, \(x) {
       if (is_graph_literal(x)) {
         # need to add a literal to the program
-        fval <- hlo_tensor(value = x$aval$data, dtype = x$aval$dtype, shape = x$aval$shape$dims, func = func)
+        fval <- hlo_tensor(
+          value = unwrap_if_tensor(x$aval$data),
+          dtype = x$aval$dtype,
+          shape = x$aval$shape$dims,
+          func = func
+        )
         env_add(env, x, fval)
         fval
       } else {

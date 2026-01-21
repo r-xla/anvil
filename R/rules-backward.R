@@ -377,9 +377,14 @@ p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .r
 # Instead, we just return ambiguous zeros, that will be promoted to any dtype required
 
 backward_zero_bin <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad_in <- if (.required[[1]] || .required[[2L]]) {
+    grad_in <- nv_fill(0L, dtype = dtype(operand), shape = shape(operand))
+  }
+
   list(
-    if (.required[[1L]]) zeros("f32", shape(inputs[[1L]]), TRUE),
-    if (.required[[2L]]) zeros("f32", shape(inputs[[2L]]), TRUE)
+    if (.required[[1L]]) grad_in,
+    if (.required[[2L]]) grad_in
   )
 }
 
@@ -395,7 +400,7 @@ p_le[["backward"]] <- backward_zero_bin
 backward_zero_uni <- function(inputs, outputs, grads, .required) {
   operand <- inputs[[1L]]
   list(
-    if (.required[[1L]]) nvl_fill(0L, dtype = "f32", shape = shape(operand), ambiguous = TRUE)
+    if (.required[[1L]]) nvl_fill(0L, dtype = dtype(operand), shape = shape(operand))
   )
 }
 
@@ -532,7 +537,7 @@ p_popcnt[["backward"]] <- backward_zero_uni
 p_reduce_all[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
   operand <- inputs[[1L]]
   list(
-    if (.required[[1L]]) nvl_fill(FALSE, dtype = dtype(operand), shape = shape(operand), ambiguous = FALSE)
+    if (.required[[1L]]) nvl_fill(FALSE, dtype = dtype(operand), shape = shape(operand))
   )
 }
 

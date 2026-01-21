@@ -67,12 +67,17 @@ test_that("format", {
   expect_equal(format(nv_tensor(1:4, shape = c(4, 1))), "AnvilTensor(dtype=i32, shape=4x1)")
 })
 
-test_that("== ignores ambiguity", {
+test_that("!= does not ignore ambiguity", {
   expect_true(
-    AbstractTensor("f32", 1L, TRUE) == AbstractTensor("f32", 1L, FALSE)
+    AbstractTensor("f32", 1L, TRUE) != AbstractTensor("f32", 1L, FALSE)
+  )
+  expect_true(
+    AbstractTensor("f32", 1L, FALSE) != AbstractTensor("f32", 1L, TRUE)
+  )
+  expect_true(
+    AbstractTensor("f32", 1L, TRUE) == AbstractTensor("f32", 1L, TRUE)
   )
 })
-
 
 test_that("to_abstract", {
   # literal
@@ -89,7 +94,7 @@ test_that("to_abstract", {
 
   # pure
   x <- nv_scalar(1)
-  expect_equal(to_abstract(x, pure = TRUE), AbstractTensor("f32", c(), FALSE))
+  expect_equal(to_abstract(x, pure = TRUE), AbstractTensor("f32", c(), TRUE))
   expect_error(to_abstract(list(1, 2)), "is not a tensor-like object")
 })
 
@@ -98,9 +103,8 @@ test_that("as_shape for c() (i.e., NULL)", {
   expect_equal(as_shape(c()), Shape(integer()))
 })
 
-test_that("ambiguous Abstract Tensor check", {
-  expect_error(AbstractTensor("i64", integer(), TRUE))
-  expect_error(AbstractTensor("i64", integer(), FALSE), NA)
+test_that("AbstractTensor can be created with any ambiguous dtype", {
+  expect_true(ambiguous(AbstractTensor("i16", integer(), TRUE)))
 })
 
 test_that("nv_aten creates AbstractTensor", {

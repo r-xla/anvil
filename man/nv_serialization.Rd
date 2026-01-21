@@ -12,7 +12,7 @@ nv_write(tensors, path)
 
 nv_read(path, device = NULL)
 
-nv_serialize(tensors)
+nv_serialize(tensors, con = NULL)
 
 nv_unserialize(con, device = NULL)
 }
@@ -28,7 +28,7 @@ The device for the tensor (\code{"cpu"}, \code{"cuda"}, ...).
 Default is to use the CPU.}
 
 \item{con}{(connection)\cr
-A connection object to read serialized tensors from.}
+A connection object to read/write from.}
 }
 \value{
 \itemize{

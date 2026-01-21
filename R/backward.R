@@ -106,7 +106,10 @@ transform_gradient <- function(graph, wrt) {
   # including the forward calls, so that intermediate values are available
   # for the backward rules.
   init_desc_from_graph(desc, graph, outputs = FALSE)
-  grad_env[[out]] <- get_box_or_register_const(desc, nv_scalar(1L, dtype = out$aval$dtype))
+  grad_env[[out]] <- get_box_or_register_const(
+    desc,
+    nv_scalar(1L, dtype = out$aval$dtype, ambiguous = out$aval$ambiguous)
+  )
 
   # Backward pass
   for (call in rev(graph$calls)) {
@@ -161,11 +164,16 @@ transform_gradient <- function(graph, wrt) {
     input <- graph$inputs[[i]]
     grad <- grad_env[[input]]
     x <- if (is.null(grad)) {
-      const <- get_box_or_register_const(desc, nv_scalar(0L, dtype = input$aval$dtype))
+      const <- get_box_or_register_const(
+        desc,
+        nv_scalar(0L, dtype = input$aval$dtype, ambiguous = input$aval$ambiguous)
+      )
       nv_broadcast_to(const, shape(input$aval))
     } else {
       grad
     }
+    # ensure ambiguity of gradient is the same as the input
+    x$gnode$aval$ambiguous <- input$aval$ambiguous
     input_grads <- c(input_grads, list(x$gnode))
   }
 
@@ -194,6 +202,15 @@ transform_gradient <- function(graph, wrt) {
 #' @param wrt (`character` or `NULL`)\cr
 #'   Names of the arguments to compute the gradient with respect to.
 #'   If `NULL` (the default), the gradient is computed with respect to all arguments.
+#'
+#' @section Ambiguity:
+#' When performing the backward pass, the ambiguity does not really play a role anymore.
+#' This is because we don't call into `nv_`-functions anymore that promote non-matching tensors,
+#' but only primitive `nvl_`-functions.
+#' The promotion has already be done in the forward pass.
+#' We still want to ensure, however, that the gradient values have the same ambiguity as the input values.
+#' This is simply achieved by setting the ambiguity at the end of the backward pass.
+#' The ambiguity of a single backward rule therefore does not really matter.
 #' @export
 gradient <- function(f, wrt = NULL) {
   if (!is.null(wrt) && !all(wrt %in% formalArgs(f))) {

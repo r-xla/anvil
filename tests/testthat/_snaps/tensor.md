@@ -3,7 +3,7 @@
     Code
       x
     Output
-      AnvilTensor 
+      AnvilTensor
        1
        2
        3
@@ -15,7 +15,7 @@
     Code
       x
     Output
-      AnvilTensor 
+      AnvilTensor
        1.0000
       [ CPUf32{} ] 
 
@@ -31,7 +31,7 @@
     Code
       x
     Output
-      ConcreteTensor(dtype=f32, shape=2x3) 
+      ConcreteTensor
        1.0000 3.0000 5.0000
        2.0000 4.0000 6.0000
       [ CPUf32{2x3} ] 
