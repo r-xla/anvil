@@ -122,6 +122,7 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
 #' @title Jit an Evaluate an Expression
 #' @description
 #' Compiles and evaluates an expression.
+#' Evaluates in a copy of the calling environment to avoid side effects.
 #' @param expr (`expression`)\cr
 #'   Expression to run.
 #' @return (`any`)\cr
@@ -130,6 +131,5 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
 jit_eval <- function(expr) {
   expr <- substitute(expr)
   eval_env <- new.env(parent = parent.frame())
-
   jit(\() eval(expr, envir = eval_env))()
 }

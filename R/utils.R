@@ -125,6 +125,10 @@ shape2string <- function(x, parenthesize = TRUE) {
   }
 }
 
+shapes2string <- function(shapes) {
+  paste0(sapply(shapes, shape2string), sep = ", ")
+}
+
 zeros <- function(dtype, shape, ambiguous) {
   nvl_fill(0L, dtype = dtype, shape = shape, ambiguous = ambiguous)
 }
@@ -170,6 +174,12 @@ ambiguous_abstract <- function(x) {
 #' @export
 dtype_abstract <- function(x) {
   dtype(to_abstract(x))
+}
+
+#' @export
+#' @rdname abstract_properties
+ambiguous_abstract <- function(x) {
+  to_abstract(x)$ambiguous
 }
 
 dtype2string <- function(dtype, ambiguous = FALSE) {

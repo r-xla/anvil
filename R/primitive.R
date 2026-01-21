@@ -19,9 +19,7 @@ AnvilPrimitive <- function(name, subgraphs = character()) {
   env$name <- name
   env$rules <- list()
   env$higher_order <- length(subgraphs) > 0L
-  if (env$higher_order) {
-    env$subgraphs <- subgraphs
-  }
+  env$subgraphs <- subgraphs
 
   structure(env, class = "AnvilPrimitive")
 }

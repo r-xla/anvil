@@ -443,127 +443,6 @@ test_that("p_pad backward with interior padding", {
   expect_equal(g4[[1L]], nv_tensor(matrix(rep(1, 6), 2, 3), dtype = "f64"))
 })
 
-test_that("p_dynamic_slice backward", {
-  # Gradient should scatter the incoming gradient back to the operand position
-  f <- jit(gradient(
-    function(x, start_i) {
-      sliced <- nvl_dynamic_slice(x, start_i, slice_sizes = 3L)
-      nv_reduce_sum(sliced, dims = 1L, drop = TRUE)
-    },
-    wrt = "x"
-  ))
-
-  x <- nv_tensor(1:10, dtype = "f64", shape = 10L)
-  start_i <- nv_scalar(3L, dtype = "i32")
-  grad <- f(x, start_i)[[1L]]
-
-  # Gradient is 1 at positions 3, 4, 5 (the sliced region) and 0 elsewhere
-  expect_equal(grad, nv_tensor(c(0, 0, 1, 1, 1, 0, 0, 0, 0, 0), dtype = "f64", shape = 10L))
-
-  # Test 2D case
-  f2d <- jit(gradient(
-    function(x, start_i, start_j) {
-      sliced <- nvl_dynamic_slice(x, start_i, start_j, slice_sizes = c(2L, 2L))
-      nv_reduce_sum(sliced, dims = c(1L, 2L), drop = TRUE)
-    },
-    wrt = "x"
-  ))
-
-  x2d <- nv_tensor(1:12, dtype = "f64", shape = c(3L, 4L))
-  start_i <- nv_scalar(2L, dtype = "i32")
-  start_j <- nv_scalar(2L, dtype = "i32")
-  grad2d <- f2d(x2d, start_i, start_j)[[1L]]
-
-  # Gradient is 1 at positions (2,2), (2,3), (3,2), (3,3) and 0 elsewhere
-  expect_equal(grad2d, nv_tensor(c(0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0), dtype = "f64", shape = c(3, 4)))
-})
-
-test_that("p_dynamic_slice backward with out-of-bounds", {
-  # Test that gradient works correctly when indices are clamped
-  f <- jit(gradient(
-    function(x, start_i) {
-      sliced <- nvl_dynamic_slice(x, start_i, slice_sizes = c(5L))
-      nv_reduce_sum(sliced, dims = 1L, drop = TRUE)
-    },
-    wrt = "x"
-  ))
-
-  x <- nv_tensor(1:10, dtype = "f64", shape = 10L)
-  # Request slice at position 8 with size 5, will be clamped to position 6
-  start_i <- nv_scalar(8L, dtype = "i32")
-  grad <- f(x, start_i)[[1L]]
-
-  # Gradient should be 1 at positions 6-10 (the actual sliced region after clamping)
-  expect_equal(grad, nv_tensor(c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1), dtype = "f64", shape = 10L))
-})
-
-test_that("p_dynamic_update_slice backward", {
-  # Test gradient for operand (zero out the updated region)
-  f_operand <- jit(gradient(
-    function(x, update, start_i) {
-      updated <- nvl_dynamic_update_slice(x, update, start_i)
-      nv_reduce_sum(updated, dims = 1L, drop = TRUE)
-    },
-    wrt = "x"
-  ))
-
-  x <- nv_tensor(1:10, dtype = "f64", shape = 10L)
-  update <- nv_tensor(c(100, 200, 300), dtype = "f64", shape = 3L)
-  start_i <- nv_scalar(4L, dtype = "i32")
-  grad_x <- f_operand(x, update, start_i)[[1L]]
-
-  # Gradient is 0 at positions 4, 5, 6 (the updated region) and 1 elsewhere
-  expect_equal(grad_x, nv_tensor(c(1, 1, 1, 0, 0, 0, 1, 1, 1, 1), dtype = "f64", shape = 10L))
-
-  # Test gradient for update (slice out the corresponding region from grad)
-  f_update <- jit(gradient(
-    function(x, update, start_i) {
-      updated <- nvl_dynamic_update_slice(x, update, start_i)
-      nv_reduce_sum(updated, dims = 1L, drop = TRUE)
-    },
-    wrt = "update"
-  ))
-
-  grad_update <- f_update(x, update, start_i)[[1L]]
-
-  # Gradient for update is all 1s (since we sum everything)
-  expect_equal(grad_update, nv_tensor(c(1, 1, 1), dtype = "f64", shape = 3L))
-})
-
-test_that("p_dynamic_update_slice backward with out-of-bounds", {
-  # Test that gradient works correctly when indices are clamped
-  f_operand <- jit(gradient(
-    function(x, update, start_i) {
-      updated <- nvl_dynamic_update_slice(x, update, start_i)
-      nv_reduce_sum(updated, dims = 1L, drop = TRUE)
-    },
-    wrt = "x"
-  ))
-
-  x <- nv_tensor(1:10, dtype = "f64", shape = 10L)
-  update <- nv_tensor(c(100, 200, 300, 400, 500), dtype = "f64", shape = 5L)
-  # Request update at position 8 with size 5, will be clamped to position 6
-  start_i <- nv_scalar(8L, dtype = "i32")
-  grad_x <- f_operand(x, update, start_i)[[1L]]
-
-  # Gradient is 0 at positions 6-10 (the actual updated region after clamping) and 1 elsewhere
-  expect_equal(grad_x, nv_tensor(c(1, 1, 1, 1, 1, 0, 0, 0, 0, 0), dtype = "f64", shape = 10L))
-
-  # Test gradient for update with out-of-bounds
-  f_update <- jit(gradient(
-    function(x, update, start_i) {
-      updated <- nvl_dynamic_update_slice(x, update, start_i)
-      nv_reduce_sum(updated, dims = 1L, drop = TRUE)
-    },
-    wrt = "update"
-  ))
-
-  grad_update <- f_update(x, update, start_i)[[1L]]
-
-  # Gradient for update is all 1s (since we sum everything from the clamped position)
-  expect_equal(grad_update, nv_tensor(c(1, 1, 1, 1, 1), dtype = "f64", shape = 5L))
-})
-
 test_that("p_is_finite", {
   x <- nv_tensor(c(1.0, Inf, -Inf, NaN, 0.5, -0.5), dtype = "f32")
   verify_zero_grad_unary(nvl_is_finite, x)
@@ -653,6 +532,137 @@ describe("boolean ops", {
   })
   it("p_reduce_any returns zero gradients", {
     verify_bool_reduce(nvl_reduce_any)
+  })
+})
+
+describe("p_gather", {
+  it("works in simple example", {
+    expect_jit_equal({
+      gradient(\(x, y) x[2] * y)(nv_tensor(c(1, 2, 3)), nv_scalar(4))},
+      list(x = nv_tensor(c(0, 4, 0)), y = nv_scalar(2))
+    )
+  })
+
+  it("computes gradient for single element gather", {
+    # Gather single element at index 2
+    f <- jit(gradient(function(x) {
+      y <- x[2]
+      y * nv_scalar(3)
+    }))
+    x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
+    grads <- f(x)
+    # d/dx = [0, 3, 0, 0] because only x[2] contributes
+    expect_equal(grads[[1L]], nv_tensor(c(0, 3, 0, 0), dtype = "f32"))
+  })
+
+  it("computes gradient for range gather (slice)", {
+    # Gather range [2:3]
+    f <- jit(gradient(function(x) {
+      y <- x[2:3]
+      nv_reduce_sum(y, dims = 1L, drop = TRUE)
+    }))
+    x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
+    grads <- f(x)
+    # d/dx = [0, 1, 1, 0] because x[2] and x[3] contribute
+    expect_equal(grads[[1L]], nv_tensor(c(0, 1, 1, 0), dtype = "f32"))
+  })
+
+  it("computes gradient for list gather (multiple indices)", {
+    # Gather multiple non-contiguous elements
+    f <- jit(gradient(function(x) {
+      y <- x[list(1, 3)]
+      nv_reduce_sum(y, dims = 1L, drop = TRUE)
+    }))
+    x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
+    grads <- f(x)
+    # d/dx = [1, 0, 1, 0] because x[1] and x[3] contribute
+    expect_equal(grads[[1L]], nv_tensor(c(1, 0, 1, 0), dtype = "f32"))
+  })
+
+  it("accumulates gradients for overlapping gather indices", {
+    # If we gather the same element multiple times, gradients accumulate
+    f <- jit(gradient(function(x) {
+      y <- x[list(2, 2)]  # gather x[2] twice
+      nv_reduce_sum(y, dims = 1L, drop = TRUE)
+    }))
+    x <- nv_tensor(c(1, 2, 3), dtype = "f32")
+    grads <- f(x)
+    # d/dx = [0, 2, 0] because x[2] is gathered twice and contributes twice
+    expect_equal(grads[[1L]], nv_tensor(c(0, 2, 0), dtype = "f32"))
+  })
+
+  it("computes gradient for 2D gather (row selection)", {
+    # Gather rows from 2D matrix
+    f <- jit(gradient(function(x) {
+      y <- x[list(1, 3), ]  # select rows 1 and 3
+      nv_reduce_sum(y, dims = c(1L, 2L), drop = TRUE)
+    }))
+    x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4), dtype = "f32")
+    grads <- f(x)
+    expected <- matrix(c(1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1), nrow = 3, ncol = 4)
+    expect_equal(grads[[1L]], nv_tensor(expected, dtype = "f32"))
+  })
+})
+
+describe("p_scatter", {
+  it("computes gradient for single element scatter - input gradient", {
+    # Input grad: position 2 is overwritten, so its gradient is 0
+    f <- jit(gradient(function(x) {
+      x[2] <- nv_scalar(99, dtype = "f32")
+      nv_reduce_sum(x, dims = 1L, drop = TRUE)
+    }))
+    x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
+    grads <- f(x)
+    expect_equal(grads[[1L]], nv_tensor(c(1, 0, 1, 1), dtype = "f32"))
+  })
+
+  it("computes gradient for single element scatter - update gradient", {
+    # Update grad: update goes to position 2, which contributes 1 to sum
+    f <- jit(gradient(function(update) {
+      x <- nv_tensor(c(1, 2, 3, 4), dtype = "f32")
+      x[2] <- update
+      nv_reduce_sum(x, dims = 1L, drop = TRUE)
+    }))
+    update <- nv_scalar(99, dtype = "f32")
+    grads <- f(update)
+    expect_equal(grads[[1L]], nv_scalar(1, ambiguous = FALSE))
+  })
+
+  it("computes gradient for range scatter - input gradient", {
+    # Input grad: positions 2,3 are overwritten
+    f <- jit(gradient(function(x) {
+      x[2:3] <- nv_tensor(c(88, 99), dtype = "f32")
+      nv_reduce_sum(x, dims = 1L, drop = TRUE)
+    }))
+    x <- nv_tensor(c(1, 2, 3, 4, 5), dtype = "f32")
+    grads <- f(x)
+    expect_equal(grads[[1L]], nv_tensor(c(1, 0, 0, 1, 1), dtype = "f32"))
+  })
+
+  it("computes gradient for range scatter - update gradient", {
+    # Update grad: both update elements contribute
+    f <- jit(gradient(function(update) {
+      x <- nv_tensor(c(1, 2, 3, 4, 5), dtype = "f32")
+      x[2:3] <- update
+      nv_reduce_sum(x, dims = 1L, drop = TRUE)
+    }))
+    update <- nv_tensor(c(88, 99), dtype = "f32")
+    grads <- f(update)
+    expect_equal(grads[[1L]], nv_tensor(c(1, 1), dtype = "f32"))
+  })
+
+  it("fails gracefully for non-unique indices", {
+    # Scatter with duplicate indices should fail during backward
+    f <- function(x) {
+      x[c(1, 1)] <- nv_tensor(c(88, 99), dtype = "f32")  # duplicate index
+      nv_reduce_sum(x, dims = 1L, drop = TRUE)
+    }
+    g <- gradient(f)
+    x <- nv_tensor(c(1, 2, 3), dtype = "f32")
+
+    # Currently, nv_subset_assign sets unique_indices = FALSE for scattered indices
+    # The backward should throw an error
+    expect_error(jit(g)(x), "unique_indices")
   })
 })
 

@@ -1,0 +1,84 @@
+---
+title: "Subsetting"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Subsetting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+In this vignette, you will learn how to subset tensors in {anvil} and how to update subsets.
+Because tensor shapes in {anvil} programs are static (for now), only certain subsetting operations are supported and they come with some surprises.
+
+First, it is only possible to subset via `indices` and not, for example, using boolean masks.
+This is, because the output shape of a tensor subsetted by a boolean mask is unknown as it depends on how many elements in the boolean mask are `TRUE`.
+
+```{r, error = TRUE}
+library(anvil)
+set.seed(42)
+jit_eval({
+  x <- nv_tensor(1:3)
+  x[nv_tensor(c(TRUE, TRUE, FALSE))]
+})
+```
+
+Second, no error can be thrown when subsetting with invalid indices, as the XLA backend we use for compilation does not support this.
+Instead, the out-of-bound indices are clamped to the valid range:
+
+```{r}
+jit_eval({
+  x <- nv_tensor(1:3)
+  x[nv_tensor(3:5)]
+})
+```
+
+With these restrictions in mind, we will now cover the different ways how to subset a tensor.
+A complete subset on a tensor is defined by specifying an individual subset for each dimension of a tensor.
+Such a subset can be a:
+
+1. Known single element, which is a length-1 R vector
+3. Known range, such as `2:5`
+4. Known scatter, like `list(1, 3, 6)`.
+2. Unknown single element, which is a 0-dimensional tensor
+5. Unknown scatter, which are expressed as 1-dimensional tensors.
+
+All of these can be combined arbitrarily (can they, what about multiple scatters?)
+
+We start with a simple example:
+
+```{r}
+x <- nv_scalar(1:10)
+```
+
+If we want to get the first element of the vector, we have to decide whether to drop the dimension or not.
+If we subset with `AnvilTensor`s, we drop the dimension only iff the tensor is a scalar.
+If it's a 1-dimensional tensor of shape `(1)`, we keep the dimension:
+
+```{r}
+jit_eval({
+  x[nv_scalar(1L)]
+  x[nv_tensor(1L, shape = c(1))]
+})
+```
+
+Similarly, if we subset using R vectors, we can drop the dimension by using a length-1 vector and we can keep it by using a list of length 1.
+
+```{r}
+jit_eval({
+  x[1]
+  x[list(1)]
+})
+```
+
+We can also subset multiple elements, either by passing a 1-dimensional tensor or an R list of length > 1:
+
+```{r}
+jit_eval({
+  x[list(1, 3, 5)]
+  x[nv_tensor(c(1L, 3L, 5L))]
+})
+```
+
+Note that we don't support R vectors of length > 1, because we then can't properly distinguish beteeen scalar literals and length 1 vectors.
+
+

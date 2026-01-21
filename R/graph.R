@@ -298,6 +298,15 @@ maybe_box_tensorish <- function(x) {
   }
 }
 
+is_tensorish <- function(x, literal = FALSE) {
+  # FIXME: GraphNod
+  ok <- is_box(x) || is_anvil_tensor(x)
+  if (!ok && literal) {
+    ok <- is_lit(x)
+  }
+  ok
+}
+
 # this function is on the inputs of trace_fn()
 maybe_box_input <- function(x, desc, toplevel, lit_to_tensor) {
   if (lit_to_tensor && test_scalar(x)) {

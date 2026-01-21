@@ -1,3 +1,16 @@
+expect_jit_equal <- function(.expr, .expected, ...) {
+  expr <- substitute(.expr)
+  eval_env <- new.env(parent = parent.frame())
+  observed <- jit(\() eval(expr, envir = eval_env))()
+  testthat::expect_equal(observed, .expected, ...)
+}
+
+expect_jit_error <- function(.expr, .error, ...) {
+  expr <- substitute(.expr)
+  eval_env <- new.env(parent = parent.frame())
+  testthat::expect_error(jit(\() eval(expr, envir = eval_env))(), .error, ...)
+}
+
 expect_jit_unary <- function(nv_fun, rfun, x, scalar = !is.array(x)) {
   f <- jit(function(a) {
     nv_fun(a)
@@ -95,7 +108,7 @@ verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
   grads <- jit(gradient(f))(x)
   shp <- shape(x)
   expected <- nv_tensor(0, shape = shp, dtype = dtype(x), ambiguous = ambiguous(x))
-  expect_equal(grads[[1L]], expected)
+  testthat::expect_equal(grads[[1L]], expected)
 }
 
 verify_zero_grad_binary <- function(nvl_fn, x, y) {
@@ -108,6 +121,6 @@ verify_zero_grad_binary <- function(nvl_fn, x, y) {
   shp <- shape(x)
   expected1 <- nv_tensor(0, shape = shp, dtype = dtype(x), ambiguous = ambiguous(x))
   expected2 <- nv_tensor(0, shape = shp, dtype = dtype(y), ambiguous = ambiguous(y))
-  expect_equal(grads[[1L]], expected1)
-  expect_equal(grads[[2L]], expected2)
+  testthat::expect_equal(grads[[1L]], expected1)
+  testthat::expect_equal(grads[[2L]], expected2)
 }

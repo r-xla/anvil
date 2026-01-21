@@ -369,8 +369,8 @@ print.AnvilTensor <- function(x, header = TRUE, ...) {
 #' @param path The comparison path (used by waldo)
 #' @return A list containing object and path for comparison
 #' @export
-# fmt: skip
-compare_proxy.AnvilTensor <- function(x, path) { # nolint
+#' @keywords internal
+compare_proxy.AnvilTensor <- function(x, path) {
   list(
     object = list(
       data = as_array(x),
@@ -443,7 +443,7 @@ is_shape <- function(x) {
 #' x
 NULL
 
-is_tensorish <- function(x, literal) {
+is_tensorish <- function(x, literal = TRUE) {
   ok <- inherits(x, "AnvilTensor") ||
     inherits(x, "AbstractTensor") ||
     is_box(x)
