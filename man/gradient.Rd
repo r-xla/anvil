@@ -13,8 +13,9 @@ value_and_gradient(f, wrt = NULL)
 \item{f}{(\code{function})\cr
 Function to compute the gradient of.}
 
-\item{wrt}{(\code{character})\cr
-Names of the arguments to compute the gradient with respect to.}
+\item{wrt}{(\code{character} or \code{NULL})\cr
+Names of the arguments to compute the gradient with respect to.
+If \code{NULL} (the default), the gradient is computed with respect to all arguments.}
 }
 \description{
 Transform a function to its gradient.

@@ -12,14 +12,16 @@
 #'   Shape.
 #' @param dtype (character(1))\cr
 #'   Data type.
+#' @template param_ambiguous
+#' @return [`tensorish`]
 #' @export
-nv_fill <- function(value, shape, dtype = NULL) {
+nv_fill <- function(value, shape, dtype = NULL, ambiguous = FALSE) {
   dtype <- if (is.null(dtype)) {
     default_dtype(value)
   } else {
     as_dtype(dtype)
   }
-  nvl_fill(value, shape, dtype)
+  nvl_fill(value, shape, dtype, ambiguous)
 }
 
 

@@ -125,12 +125,23 @@ shape2string <- function(x, parenthesize = TRUE) {
   }
 }
 
-zeros_like <- function(x) {
-  nvl_fill(0L, dtype = dtype(x), shape = shape(x))
+zeros <- function(dtype, shape, ambiguous) {
+  nvl_fill(0L, dtype = dtype, shape = shape, ambiguous = ambiguous)
 }
 
-ones_like <- function(x) {
-  nvl_fill(1L, dtype = dtype(x), shape = shape(x))
+ones <- function(dtype, shape, ambiguous) {
+  nvl_fill(1L, dtype = dtype, shape = shape, ambiguous = ambiguous)
+}
+
+
+# TODO: Better handle ambiguity
+zeros_like <- function(x, ambiguous) {
+  zeros(dtype(x), shape(x), ambiguous)
+}
+
+# TODO: Handle ambiguity
+ones_like <- function(x, ambiguous) {
+  ones(dtype(x), shape(x), ambiguous)
 }
 
 

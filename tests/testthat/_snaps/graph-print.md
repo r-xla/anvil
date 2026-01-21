@@ -20,7 +20,7 @@
       <AnvilGraph>
         Inputs: (none)
         Body:
-          %1: f32[2, 1] = fill [value = 1, dtype = f32, shape = c(2, 1)] ()
+          %1: f32[2, 1] = fill [value = 1, dtype = f32, shape = c(2, 1), ambiguous = FALSE] ()
         Outputs:
           %1: f32[2, 1] 
 

@@ -51,7 +51,7 @@ p_pow[["backward"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
     if (.required[[1L]]) {
-      one <- ones_like(lhs)
+      one <- ones_like(lhs, FALSE)
       nvl_mul(nvl_mul(grad, rhs), nvl_pow(lhs, nvl_sub(rhs, one)))
     },
     if (.required[[2L]]) {
@@ -329,7 +329,9 @@ p_select[["backward"]] <- function(inputs, outputs, grads, .required) {
   pred <- inputs[[1L]]
   true_value <- inputs[[2L]]
   grad <- grads[[1L]]
-  zero <- zeros_like(true_value)
+  zero <- if (.required[[2L]] || .required[[3L]]) {
+    zeros_like(true_value, ambiguous = TRUE)
+  }
 
   list(
     if (.required[[1L]]) cli_abort("Predicate cannot be differentiated"),
@@ -354,17 +356,17 @@ p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .r
 }
 
 # for comparison primitives --------------------------
-# they are actually not differentiable, but instead of throwing, we
-# return zeros for everything.
+# There are cases, where one wants to propagate through them, because a float was converted
+# to an int/bool that eventually influenced the output
+# But, we never read the final gradients of such inputs (because we can only differentiate
+# with respect to floats)
+# so it's okay if the dtype of the gradient does not match the operand type
+# Instead, we just return ambiguous zeros, that will be promoted to any dtype required
 
 backward_zero_bin <- function(inputs, outputs, grads, .required) {
-  lhs <- inputs[[1L]]
-  rhs <- inputs[[2L]]
-  req_lhs <- .required[[1L]]
-  req_rhs <- .required[[2L]]
   list(
-    if (req_lhs) zeros_like(lhs),
-    if (req_rhs) zeros_like(rhs)
+    if (.required[[1L]]) zeros("f32", shape(inputs[[1L]]), TRUE),
+    if (.required[[2L]]) zeros("f32", shape(inputs[[2L]]), TRUE)
   )
 }
 
@@ -380,7 +382,7 @@ p_le[["backward"]] <- backward_zero_bin
 backward_zero_uni <- function(inputs, outputs, grads, .required) {
   operand <- inputs[[1L]]
   list(
-    if (.required[[1L]]) zeros_like(operand)
+    if (.required[[1L]]) nvl_fill(0L, dtype = "f32", shape = shape(operand), ambiguous = TRUE)
   )
 }
 
@@ -498,6 +500,114 @@ p_pad[["backward"]] <- function(
   )
 }
 
+# Non-differentiable operations (logical/bitwise) return zero gradients
+# (Floats might be converted to integers that are then fed into these operations, but we then
+# propagate back to the floats, which requires the existence of these rules)
+
+p_and[["backward"]] <- backward_zero_bin
+p_or[["backward"]] <- backward_zero_bin
+p_xor[["backward"]] <- backward_zero_bin
+
+p_shift_left[["backward"]] <- backward_zero_bin
+p_shift_right_arithmetic[["backward"]] <- backward_zero_bin
+p_shift_right_logical[["backward"]] <- backward_zero_bin
+
+p_is_finite[["backward"]] <- backward_zero_uni
+p_popcnt[["backward"]] <- backward_zero_uni
+
+p_reduce_all[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+  operand <- inputs[[1L]]
+  list(
+    if (.required[[1L]]) nvl_fill(FALSE, dtype = dtype(operand), shape = shape(operand), ambiguous = FALSE)
+  )
+}
+
+p_reduce_any[["backward"]] <- p_reduce_all[["backward"]]
+
+p_bitcast_convert[["backward"]] <- function(inputs, outputs, grads, dtype, .required) {
+  operand <- inputs[[1L]]
+  list(
+    if (.required[[1L]]) nvl_fill(0L, dtype = dtype(operand), shape = shape(operand))
+  )
+}
+
+p_atan2[["backward"]] <- function(inputs, outputs, grads, .required) {
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
+  grad <- grads[[1L]]
+  if (.required[[1L]] || .required[[2L]]) {
+    denom <- nvl_add(nvl_mul(lhs, lhs), nvl_mul(rhs, rhs))
+  }
+  list(
+    if (.required[[1L]]) nvl_div(nvl_mul(grad, rhs), denom),
+    if (.required[[2L]]) nvl_div(nvl_mul(grad, nvl_negate(lhs)), denom)
+  )
+}
+
+# concatenate backward: split the gradient back along the concatenation dimension
+p_concatenate[["backward"]] <- function(inputs, outputs, grads, dimension, .required) {
+  grad <- grads[[1L]]
+  n_inputs <- length(inputs)
+  input_grads <- vector("list", n_inputs)
+
+  offset <- 1L
+  limit_indices <- shape(grad)
+  start_indices <- rep(1L, length(shape(inputs[[1]])))
+  for (i in seq_len(n_inputs)) {
+    input_shape <- shape(inputs[[i]])
+    dim_size <- input_shape[dimension]
+    if (.required[[i]]) {
+      strides <- rep(1L, length(input_shape))
+      start_indices[dimension] <- offset
+      limit_indices[dimension] <- offset + dim_size - 1L
+      input_grads[[i]] <- nvl_static_slice(grad, start_indices, limit_indices, strides)
+    }
+    offset <- offset + dim_size
+  }
+  input_grads
+}
+
+
+p_reduce_prod[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+  operand <- inputs[[1L]]
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+
+  list(
+    if (.required[[1L]]) {
+      bdims <- if (drop) {
+        without(seq_along(shape(operand)), dims)
+      } else {
+        seq_along(shape(grad))
+      }
+      y_bc <- nvl_broadcast_in_dim(y, shape(operand), bdims)
+      grad_bc <- nvl_broadcast_in_dim(grad, shape(operand), bdims)
+      nvl_div(nvl_mul(grad_bc, y_bc), operand)
+    }
+  )
+}
+# slice backward: pad with zeros
+p_static_slice[["backward"]] <- function(inputs, outputs, grads, start_indices, limit_indices, strides, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) {
+      input_shape <- shape(operand)
+      grad_shape <- shape(grad)
+      edge_padding_low <- start_indices - 1L
+      edge_padding_high <- input_shape - start_indices - (grad_shape - 1L) * strides
+      interior_padding <- strides - 1L
+      nvl_pad(
+        grad,
+        zeros(dtype(grad), integer(), FALSE),
+        edge_padding_low,
+        edge_padding_high,
+        interior_padding
+      )
+    }
+  )
+}
+
 p_dynamic_slice[["backward"]] <- function(inputs, outputs, grads, slice_sizes, .required) {
   operand <- inputs[[1L]]
   start_indices <- inputs[-1L]
@@ -508,12 +618,9 @@ p_dynamic_slice[["backward"]] <- function(inputs, outputs, grads, slice_sizes, .
   # dynamic_update_slice does the same clamping as dynamic_slice, so it naturally handles
   # out of bound indices (in the same weird way)
   if (.required[[1L]]) {
-    zeros <- zeros_like(operand)
+    zeros <- zeros_like(operand, FALSE)
     result[[1L]] <- rlang::exec(nvl_dynamic_update_slice, zeros, grad, !!!start_indices)
   }
-
-  # Gradients for start indices are not differentiable (discrete)
-  # Note: result[i] <- list(NULL) is used to set to NULL without removing the element
 
   result
 }
@@ -528,7 +635,7 @@ p_dynamic_update_slice[["backward"]] <- function(inputs, outputs, grads, .requir
   # dynamic_update_slice does the same clamping as dynamic_slice, so it naturally handles
   # out of bound indices (in the same weird way)
   if (.required[[1L]]) {
-    zeros <- zeros_like(update)
+    zeros <- zeros_like(update, FALSE)
     result[[1L]] <- rlang::exec(nvl_dynamic_update_slice, grad, zeros, !!!start_indices)
   }
 

@@ -4,7 +4,7 @@
 \alias{nvl_fill}
 \title{Primitive Fill}
 \usage{
-nvl_fill(value, shape, dtype)
+nvl_fill(value, shape, dtype, ambiguous = FALSE)
 }
 \arguments{
 \item{value}{(\code{numeric(1)})\cr
@@ -15,6 +15,11 @@ Shape.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}
+
+\item{ambiguous}{(\code{logical(1)})\cr
+Whether the type is ambiguous.
+Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
+See the vignette "Type Promotion" for more details.}
 }
 \value{
 \code{\link{tensorish}}

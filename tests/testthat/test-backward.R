@@ -237,3 +237,23 @@ test_that("wrt for nested non-tensor input: value_and_gradient", {
     g(x = list(nv_scalar(1), 2L))
   })
 })
+
+test_that("can only compute gradient w.r.t. float tensors", {
+  expect_snapshot(error = TRUE, {
+    gradient(nv_floor, wrt = "operand")(nv_scalar(1L))
+  })
+})
+
+test_that("can differentiate through integer/bool functions", {
+  f <- function(x) {
+    x1 <- nv_convert(x, "i32")
+    x2 <- nvl_popcnt(x1)
+    x3 <- nv_convert(x2, "f32")
+    mean(x3)
+  }
+  g <- jit(gradient(f))
+  expect_equal(
+    g(nv_tensor(c(1, 2))),
+    list(x = nv_tensor(c(0, 0)))
+  )
+})

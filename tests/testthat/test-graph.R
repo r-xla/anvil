@@ -190,3 +190,7 @@ test_that("error handling", {
     jit(nvl_transpose, static = "permutation")(nv_tensor(1:4, shape = c(2, 2)), permutation = c(2, 2))
   )
 })
+
+test_that("can print GraphLiteral if it holds scalar tensor", {
+  expect_snapshot(GraphLiteral(LiteralTensor(nv_scalar(1L), dtype = "i32", shape = integer(), ambiguous = TRUE)))
+})

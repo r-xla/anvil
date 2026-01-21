@@ -178,7 +178,7 @@ test_that("p_broadcast_in_dim", {
   input_shape <- c(2L, 3L)
   target_shape <- c(4L, 2L, 3L)
   bdims <- c(2L, 3L)
-  x <- array(generate_test_data(input_shape, dtype = "f32"), input_shape)
+  x <- generate_test_data(input_shape, dtype = "f32")
   f <- jit(function(a) nvl_broadcast_in_dim(a, target_shape, bdims))
   out_nv <- f(nv_tensor(x))
   out_th <- torch::torch_tensor(x)$unsqueeze(1)$expand(target_shape)
