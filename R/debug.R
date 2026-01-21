@@ -35,7 +35,7 @@ print.DebugBox <- function(x, ...) {
     print(aval$data, ..., header = FALSE)
   } else if (is_literal_tensor(aval)) {
     data_str <- if (is_anvil_tensor(aval$data)) {
-      trimwds(capture.output(print(aval$data, ..., header = FALSE))[1L])
+      trimws(capture.output(print(aval$data, ..., header = FALSE))[1L])
     } else {
       aval$data
     }

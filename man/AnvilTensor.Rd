@@ -5,7 +5,7 @@
 \alias{nv_tensor}
 \alias{nv_scalar}
 \alias{nv_empty}
-\title{AnvilTensor: Tensor Objects}
+\title{AnvilTensor}
 \usage{
 nv_tensor(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = FALSE)
 
@@ -43,23 +43,4 @@ For \code{\link[=nv_scalar]{nv_scalar()}}, defaults to \code{TRUE} when \code{dt
 \description{
 Tensor objects in anvil that hold array data with automatic differentiation support.
 Create tensors using \code{\link[=nv_tensor]{nv_tensor()}}, \code{\link[=nv_scalar]{nv_scalar()}}, or \code{\link[=nv_empty]{nv_empty()}}.
-}
-\examples{
-if (pjrt::plugin_is_downloaded()) {
-  # Create tensors
-  x <- nv_tensor(1:6, shape = c(2, 3))
-  y <- nv_scalar(5.0)  # ambiguous f32
-  z <- nv_scalar(5.0, dtype = "f32")  # non-ambiguous f32
-
-  # Extract information
-  dtype(x)
-  shape(x)
-  ndims(x)
-  platform(x)
-  ambiguous(y)  # TRUE
-  ambiguous(z)  # FALSE
-
-  # Convert to R array
-  as_array(x)
-}
 }

@@ -176,7 +176,7 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
   outputs <- lapply(graph$outputs, \(x) {
     if (is_graph_literal(x)) {
       # this only happens when a literal is directly returned
-      hlo_tensor(value = unwrap_if_tensor(x$aval$data), dtype = x$aval$dtype, shape = x$aval$shape$dims, func = func)
+      hlo_tensor(value = x$aval$data, dtype = x$aval$dtype, shape = x$aval$shape$dims, func = func)
     } else {
       gnode_to_fval(x)
     }

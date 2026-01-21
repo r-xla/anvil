@@ -1,4 +1,4 @@
-#' @title AnvilTensor: Tensor Objects
+#' @title AnvilTensor
 #' @description
 #' Tensor objects in anvil that hold array data with automatic differentiation support.
 #' Create tensors using [`nv_tensor()`], [`nv_scalar()`], or [`nv_empty()`].
@@ -25,25 +25,6 @@
 #' @return ([`AnvilTensor`]) A tensor object.
 #'
 #' @name AnvilTensor
-#'
-#' @examples
-#' if (pjrt::plugin_is_downloaded()) {
-#'   # Create tensors
-#'   x <- nv_tensor(1:6, shape = c(2, 3))
-#'   y <- nv_scalar(5.0)  # ambiguous f32
-#'   z <- nv_scalar(5.0, dtype = "f32")  # non-ambiguous f32
-#'
-#'   # Extract information
-#'   dtype(x)
-#'   shape(x)
-#'   ndims(x)
-#'   platform(x)
-#'   ambiguous(y)  # TRUE
-#'   ambiguous(z)  # FALSE
-#'
-#'   # Convert to R array
-#'   as_array(x)
-#' }
 NULL
 
 #' @rdname AnvilTensor
@@ -72,19 +53,14 @@ unwrap_if_tensor <- function(x) {
   }
 }
 
-#' Create an AnvilTensor struct
-#' @param x The underlying PJRT buffer (or an existing AnvilTensor)
-#' @param ambiguous Whether the dtype is ambiguous
-#' @return AnvilTensor struct
-#' @keywords internal
 ensure_nv_tensor <- function(x, ambiguous = FALSE) {
   if (inherits(x, "AnvilTensor")) {
-    # Already an AnvilTensor - update ambiguous if requested
-    if (!missing(ambiguous) && ambiguous != x$ambiguous) {
+    if (ambiguous != x$ambiguous) {
       x$ambiguous <- ambiguous
     }
     return(x)
   }
+  assert_class(x, "PJRTBuffer")
   structure(
     list(tensor = x, ambiguous = ambiguous),
     class = "AnvilTensor"
