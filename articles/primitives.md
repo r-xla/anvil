@@ -41,7 +41,7 @@ because it does not apply for a specific primitive.
 | minimum                | ✓         |    ✓     |
 | mul                    | ✓         |    ✓     |
 | negate                 | ✓         |    ✓     |
-| not                    | ✓         |    ✗     |
+| not                    | ✓         |    ✓     |
 | not_equal              | ✓         |    ✓     |
 | or                     | ✓         |    ✓     |
 | pad                    | ✓         |    ✓     |
@@ -54,7 +54,7 @@ because it does not apply for a specific primitive.
 | reduce_min             | ✓         |    ✓     |
 | reduce_prod            | ✓         |    ✓     |
 | reduce_sum             | ✓         |    ✓     |
-| remainder              | ✓         |    ✗     |
+| remainder              | ✓         |    ✓     |
 | reshape                | ✓         |    ✓     |
 | reverse                | ✓         |    ✓     |
 | rng_bit_generator      | ✓         |    ✗     |
