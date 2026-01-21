@@ -44,6 +44,19 @@ p_div[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
+p_remainder[["backward"]] <- function(inputs, outputs, grads, .required) {
+  # we follow pytorch here and ignore non-differentiable parts
+  # the function is locally linear, i.e., y = lhs - k * rhs, where k = floor(lhs / rhs)
+  # so the gradient is 1 for lhs and -k for rhs
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) grad,
+    if (.required[[2L]]) nvl_mul(grad, nvl_negate(nvl_floor(nvl_div(lhs, rhs))))
+  )
+}
+
 p_pow[["backward"]] <- function(inputs, outputs, grads, .required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
@@ -507,6 +520,7 @@ p_pad[["backward"]] <- function(
 p_and[["backward"]] <- backward_zero_bin
 p_or[["backward"]] <- backward_zero_bin
 p_xor[["backward"]] <- backward_zero_bin
+p_not[["backward"]] <- backward_zero_uni
 
 p_shift_left[["backward"]] <- backward_zero_bin
 p_shift_right_arithmetic[["backward"]] <- backward_zero_bin

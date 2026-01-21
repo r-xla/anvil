@@ -751,3 +751,24 @@ describe("p_static_slice", {
     )
   })
 })
+
+test_that("p_remainder", {
+  # Generator that avoids zero divisors and values near discontinuities
+  gen_nonzero <- function(shp, dtype) {
+    vals <- generate_test_data(shp, dtype = dtype)
+    # Shift values away from zero to avoid division by zero
+    if (length(shp) == 0L) {
+      if (abs(vals) < 0.5) vals <- vals + sign(vals + 0.1) * 1
+    } else {
+      vals[abs(vals) < 0.5] <- vals[abs(vals) < 0.5] + sign(vals[abs(vals) < 0.5] + 0.1) * 1
+    }
+    if (length(shp) == 0L) vals else array(vals, shp)
+  }
+
+  verify_grad_biv(
+    nvl_remainder,
+    torch::torch_remainder,
+    tol = 1e-5,
+    gen_rhs = gen_nonzero # Avoid zero divisors
+  )
+})
