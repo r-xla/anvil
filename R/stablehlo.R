@@ -133,7 +133,6 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
     inputs <- lapply(call$inputs, \(x) {
       if (is_graph_literal(x)) {
         # need to add a literal to the program
-        if (is.function(x$aval$dtype)) {}
         fval <- hlo_tensor(value = x$aval$data, dtype = x$aval$dtype, shape = x$aval$shape$dims, func = func)
         env_add(env, x, fval)
         fval

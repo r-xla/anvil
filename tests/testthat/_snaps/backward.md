@@ -5,8 +5,8 @@
       g(nv_scalar(1), method = "nearest_even")
     Condition
       Error in `check_wrt_tensorish()`:
-      x Cannot compute gradient with respect to non-tensor argument.
-      i Got <character> instead of a tensor.
+      ! Cannot compute gradient with respect to non-tensor argument.
+      x Got <character>
 
 # wrt for non-tensor input: value_and_gradient
 
@@ -15,8 +15,8 @@
       g(nv_scalar(1), method = "nearest_even")
     Condition
       Error in `check_wrt_tensorish()`:
-      x Cannot compute gradient with respect to non-tensor argument.
-      i Got <character> instead of a tensor.
+      ! Cannot compute gradient with respect to non-tensor argument.
+      x Got <character>
 
 # wrt for nested non-tensor input: gradient
 
@@ -25,8 +25,8 @@
       g(x = list(nv_scalar(1), 2L))
     Condition
       Error in `check_wrt_tensorish()`:
-      x Can only compute gradient with respect to float tensors.
-      i Got i32 instead of a float tensor.
+      ! Can only compute gradient with respect to float tensors.
+      x Got i32
 
 # wrt for nested non-tensor input: value_and_gradient
 
@@ -35,8 +35,8 @@
       g(x = list(nv_scalar(1), 2L))
     Condition
       Error in `check_wrt_tensorish()`:
-      x Can only compute gradient with respect to float tensors.
-      i Got i32 instead of a float tensor.
+      ! Can only compute gradient with respect to float tensors.
+      x Got i32
 
 # can only compute gradient w.r.t. float tensors
 

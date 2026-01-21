@@ -564,6 +564,89 @@ test_that("p_dynamic_update_slice backward with out-of-bounds", {
   expect_equal(grad_update, nv_tensor(c(1, 1, 1, 1, 1), dtype = "f64", shape = 5L))
 })
 
+test_that("p_is_finite", {
+  x <- nv_tensor(c(1.0, Inf, -Inf, NaN, 0.5, -0.5), dtype = "f32")
+  verify_zero_grad_unary(nvl_is_finite, x)
+})
+
+test_that("p_popcnt", {
+  x <- nv_tensor(c(0L, 1L, 3L, 7L, 15L), dtype = "i32")
+  verify_zero_grad_unary(nvl_popcnt, x)
+})
+
+describe("shift ops", {
+  it("p_shift_left returns zero gradients", {
+    x <- nv_tensor(c(1L, 2L, 4L, 8L), dtype = "i32")
+    y <- nv_tensor(c(1L, 1L, 1L, 1L), dtype = "i32")
+    verify_zero_grad_binary(nvl_shift_left, x, y)
+  })
+
+  it("p_shift_right_arithmetic returns zero gradients", {
+    x <- nv_tensor(c(8L, 16L, 32L, -8L), dtype = "i32")
+    y <- nv_tensor(c(1L, 2L, 1L, 1L), dtype = "i32")
+    verify_zero_grad_binary(nvl_shift_right_arithmetic, x, y)
+  })
+
+  it("p_shift_right_logical returns zero gradients", {
+    x <- nv_tensor(c(8L, 16L, 32L, 64L), dtype = "i32")
+    y <- nv_tensor(c(1L, 2L, 1L, 2L), dtype = "i32")
+    verify_zero_grad_binary(nvl_shift_right_logical, x, y)
+  })
+})
+
+test_that("p_bitcast_convert", {
+  x <- nv_tensor(c(1.0, 2.0, 3.0, 4.0), dtype = "f32")
+  verify_zero_grad_unary(nvl_bitcast_convert, x, f_wrapper = function(x) {
+    out <- nvl_bitcast_convert(x, dtype = "i32")
+    out <- nv_convert(out, "f32")
+    nv_reduce_sum(out, dims = 1L, drop = TRUE)
+  })
+})
+
+describe("boolean ops", {
+  expected_zeros <- nv_tensor(rep(0, 4), dtype = "f32")
+
+  verify_bool_binary <- function(nvl_fn) {
+    x <- nv_tensor(c(1, 0, 0, 1))
+    y <- nv_tensor(c(1, 1, 0, 0))
+    f <- function(x, y) {
+      x <- nv_convert(x, "i1")
+      y <- nv_convert(y, "i1")
+      out <- nvl_fn(x, y)
+      nv_convert(out, "f32")
+    }
+    verify_zero_grad_binary(f, x, y)
+  }
+
+  verify_bool_reduce <- function(nvl_fn) {
+    x <- nv_tensor(c(1.0, 1.0, 0.0, 0.0), dtype = "f32")
+    f <- function(x) {
+      x_pred <- nv_convert(x, "i1")
+      out <- nvl_fn(x_pred, dims = 1L, drop = TRUE)
+      nv_convert(out, "f32")
+    }
+    grads <- jit(gradient(f))(x)
+    testthat::expect_equal(grads[[1L]], expected_zeros)
+  }
+
+  it("p_and returns zero gradients", {
+    verify_bool_binary(nvl_and)
+  })
+  it("p_or returns zero gradients", {
+    verify_bool_binary(nvl_or)
+  })
+  it("p_xor returns zero gradients", {
+    verify_bool_binary(nvl_xor)
+  })
+  it("p_reduce_all returns zero gradients", {
+    verify_bool_reduce(nvl_reduce_all)
+  })
+  it("p_reduce_any returns zero gradients", {
+    verify_bool_reduce(nvl_reduce_any)
+  })
+})
+
+
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
 }

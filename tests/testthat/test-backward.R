@@ -244,7 +244,7 @@ test_that("can only compute gradient w.r.t. float tensors", {
   })
 })
 
-test_that("can differentiate through integr/bool functions", {
+test_that("can differentiate through integer/bool functions", {
   f <- function(x) {
     x1 <- nv_convert(x, "i32")
     x2 <- nvl_popcnt(x1)

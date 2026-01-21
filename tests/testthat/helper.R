@@ -80,3 +80,31 @@ generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
 }
+
+
+verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
+  if (is.null(f_wrapper)) {
+    f <- function(x) {
+      out <- nvl_fn(x)
+      out <- nv_convert(out, "f32")
+      nv_reduce_sum(out, dims = 1L, drop = TRUE)
+    }
+  } else {
+    f <- f_wrapper
+  }
+  grads <- jit(gradient(f))(x)
+  shp <- shape(x)
+  testthat::expect_equal(grads[[1L]], nv_tensor(0L, shape = shp, dtype = "f32"))
+}
+
+verify_zero_grad_binary <- function(nvl_fn, x, y) {
+  f <- function(x, y) {
+    out <- nvl_fn(x, y)
+    out <- nv_convert(out, "f32")
+    nv_reduce_sum(out, dims = 1L, drop = TRUE)
+  }
+  grads <- jit(gradient(f))(x, y)
+  shp <- shape(x)
+  testthat::expect_equal(grads[[1L]], nv_tensor(0L, shape = shp, dtype = "f32"))
+  testthat::expect_equal(grads[[2L]], nv_tensor(0L, shape = shp, dtype = "f32"))
+}

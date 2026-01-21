@@ -3,14 +3,14 @@ check_wrt_tensorish <- function(args_flat, is_wrt_flat) {
     if (is_wrt_flat[[i]] && !is_tensorish(args_flat[[i]], literal = FALSE)) {
       if (!is_tensorish(args_flat[[i]], literal = TRUE)) {
         cli_abort(c(
-          x = "Cannot compute gradient with respect to non-tensor argument.",
-          i = "Got {.cls {class(args_flat[[i]])}} instead of a tensor."
+          "Cannot compute gradient with respect to non-tensor argument.",
+          x = "Got {.cls {class(args_flat[[i]])}}"
         ))
       }
       if (!inherits(dtype_abstract(args_flat[[i]]), "FloatType")) {
         cli_abort(c(
-          x = "Can only compute gradient with respect to float tensors.",
-          i = "Got {repr(dtype_abstract(args_flat[[i]]))} instead of a float tensor."
+          "Can only compute gradient with respect to float tensors.",
+          x = "Got {repr(dtype_abstract(args_flat[[i]]))}"
         ))
       }
     }

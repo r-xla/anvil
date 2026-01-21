@@ -349,33 +349,6 @@ verify_grad_uni <- function(
   )
 }
 
-verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
-  if (is.null(f_wrapper)) {
-    f <- function(x) {
-      out <- nvl_fn(x)
-      out <- nv_convert(out, "f32")
-      nv_reduce_sum(out, dims = 1L, drop = TRUE)
-    }
-  } else {
-    f <- f_wrapper
-  }
-  grads <- jit(gradient(f))(x)
-  shp <- shape(x)
-  testthat::expect_equal(tengen::as_array(grads[[1L]]), array(rep(0, prod(shp)), dim = shp))
-}
-
-verify_zero_grad_binary <- function(nvl_fn, x, y) {
-  f <- function(x, y) {
-    out <- nvl_fn(x, y)
-    out <- nv_convert(out, "f32")
-    nv_reduce_sum(out, dims = 1L, drop = TRUE)
-  }
-  grads <- jit(gradient(f))(x, y)
-  shp <- shape(x)
-  testthat::expect_equal(tengen::as_array(grads[[1L]]), array(rep(0, prod(shp)), dim = shp))
-  testthat::expect_equal(tengen::as_array(grads[[2L]]), array(rep(0, prod(shp)), dim = shp))
-}
-
 
 test_that("p_add", {
   verify_grad_biv(nvl_add, torch::torch_add)
@@ -700,6 +673,7 @@ test_that("p_concatenate", {
   }
   verify_grad_concatenate(list(c(2L, 3L), c(2L, 4L)))
   verify_grad_concatenate(list(c(2L, 2L), c(2L, 3L), c(2L, 1L)))
+  verify_grad_concatenate(list(c(1, 3), c(2, 3)), 1L)
 })
 
 test_that("p_reduce_prod", {
@@ -761,7 +735,7 @@ describe("p_static_slice", {
       c(2L, 2L),
       c(4L, 4L),
       c(1L, 1L),
-      \(x) x$narrow(1, 2, 3)$narrow(2, 2, 3)
+      \(x) x[2:4, 2:4]
     )
   })
 
@@ -772,92 +746,8 @@ describe("p_static_slice", {
       c(6L, 8L),
       c(2L, 2L),
       \(x) {
-        idx1 <- torch::torch_tensor(c(1L, 3L, 5L), dtype = torch::torch_int64())
-        idx2 <- torch::torch_tensor(c(1L, 3L, 5L, 7L), dtype = torch::torch_int64())
-        x$index_select(1, idx1)$index_select(2, idx2)
+        x[c(1, 3, 5), c(1, 3, 5, 7)]
       }
     )
-  })
-})
-
-describe("boolean ops", {
-  expected_zeros <- nv_tensor(rep(0, 4), dtype = "f32")
-
-  verify_bool_binary <- function(nvl_fn) {
-    x <- nv_tensor(c(1, 0, 0, 1))
-    y <- nv_tensor(c(1, 1, 0, 0))
-    f <- function(x, y) {
-      x <- nv_convert(x, "i1")
-      y <- nv_convert(y, "i1")
-      out <- nvl_fn(x, y)
-      nv_convert(out, "f32")
-    }
-    verify_zero_grad_binary(f, x, y)
-  }
-
-  verify_bool_reduce <- function(nvl_fn) {
-    x <- nv_tensor(c(1.0, 1.0, 0.0, 0.0), dtype = "f32")
-    f <- function(x) {
-      x_pred <- nv_convert(x, "i1")
-      out <- nvl_fn(x_pred, dims = 1L, drop = TRUE)
-      nv_convert(out, "f32")
-    }
-    grads <- jit(gradient(f))(x)
-    testthat::expect_equal(grads[[1L]], expected_zeros)
-  }
-
-  it("p_and returns zero gradients", {
-    verify_bool_binary(nvl_and)
-  })
-  it("p_or returns zero gradients", {
-    verify_bool_binary(nvl_or)
-  })
-  it("p_xor returns zero gradients", {
-    verify_bool_binary(nvl_xor)
-  })
-  it("p_reduce_all returns zero gradients", {
-    verify_bool_reduce(nvl_reduce_all)
-  })
-  it("p_reduce_any returns zero gradients", {
-    verify_bool_reduce(nvl_reduce_any)
-  })
-})
-
-test_that("p_is_finite", {
-  x <- nv_tensor(c(1.0, Inf, -Inf, NaN, 0.5, -0.5), dtype = "f32")
-  verify_zero_grad_unary(nvl_is_finite, x)
-})
-
-test_that("p_popcnt", {
-  x <- nv_tensor(c(0L, 1L, 3L, 7L, 15L), dtype = "i32")
-  verify_zero_grad_unary(nvl_popcnt, x)
-})
-
-describe("shift ops", {
-  it("p_shift_left returns zero gradients", {
-    x <- nv_tensor(c(1L, 2L, 4L, 8L), dtype = "i32")
-    y <- nv_tensor(c(1L, 1L, 1L, 1L), dtype = "i32")
-    verify_zero_grad_binary(nvl_shift_left, x, y)
-  })
-
-  it("p_shift_right_arithmetic returns zero gradients", {
-    x <- nv_tensor(c(8L, 16L, 32L, -8L), dtype = "i32")
-    y <- nv_tensor(c(1L, 2L, 1L, 1L), dtype = "i32")
-    verify_zero_grad_binary(nvl_shift_right_arithmetic, x, y)
-  })
-
-  it("p_shift_right_logical returns zero gradients", {
-    x <- nv_tensor(c(8L, 16L, 32L, 64L), dtype = "i32")
-    y <- nv_tensor(c(1L, 2L, 1L, 2L), dtype = "i32")
-    verify_zero_grad_binary(nvl_shift_right_logical, x, y)
-  })
-})
-
-test_that("p_bitcast_convert", {
-  x <- nv_tensor(c(1.0, 2.0, 3.0, 4.0), dtype = "f32")
-  verify_zero_grad_unary(nvl_bitcast_convert, x, f_wrapper = function(x) {
-    out <- nvl_bitcast_convert(x, dtype = "i32")
-    out <- nv_convert(out, "f32")
-    nv_reduce_sum(out, dims = 1L, drop = TRUE)
   })
 })
