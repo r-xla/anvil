@@ -638,6 +638,16 @@ describe("boolean ops", {
   it("p_xor returns zero gradients", {
     verify_bool_binary(nvl_xor)
   })
+  it("p_not returns zero gradients", {
+    x <- nv_tensor(c(1.0, 0.0, 1.0, 0.0), dtype = "f32")
+    f <- function(x) {
+      x_pred <- nv_convert(x, "i1")
+      out <- nvl_not(x_pred)
+      out <- nv_convert(out, "f32")
+      nv_reduce_sum(out, dims = 1L, drop = TRUE)
+    }
+    verify_zero_grad_unary(nvl_not, x, f_wrapper = f)
+  })
   it("p_reduce_all returns zero gradients", {
     verify_bool_reduce(nvl_reduce_all)
   })
@@ -645,7 +655,6 @@ describe("boolean ops", {
     verify_bool_reduce(nvl_reduce_any)
   })
 })
-
 
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
