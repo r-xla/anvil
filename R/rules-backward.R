@@ -758,20 +758,12 @@ p_scatter[["backward"]] <- function(
   # - d(output)/d(scatter_indices) = 0 (indices are not differentiable)
   # - d(output)/d(update) = gradient at positions where updates were written
   #
-  # NOTE: This implementation currently only supports unique_indices = TRUE.
-  # For non-unique indices (overlapping writes), the backward pass is more complex
-  # because XLA doesn't guarantee which update "wins" at each position.
-
-  if (!unique_indices) {
-    cli_abort(
-      c(
-        "Scatter backward is only implemented for unique_indices = TRUE.",
-        "i" = "With overlapping indices, the forward pass behavior is non-deterministic,",
-        "i" = "making gradient computation ill-defined.",
-        "i" = "Create an issue on GitHub if you need this functionality."
-      )
-    )
-  }
+  # For non-unique indices (unique_indices = FALSE), XLA doesn't guarantee which
+  # update "wins" at each position. We use the ID trick from JAX's scatter JVP:
+  # 1. Assign unique IDs to each update "slice" (the batch dimension positions)
+  # 2. Scatter these IDs to see which update wins at each position
+  # 3. Gather the scattered IDs back to update positions
+  # 4. Use masks to determine which updates actually contributed to the output
 
   # Compute slice_sizes for the gather operation (inverse of scatter)
   # This determines the shape of slices gathered from the gradient tensor
@@ -793,48 +785,127 @@ p_scatter[["backward"]] <- function(
     }
   }
 
-  list(
-    # Gradient for input: zero out positions that were overwritten
-    if (.required[[1L]]) {
-      zeros_update <- zeros_like(update, FALSE)
-      nvl_scatter(
-        input = grad,
-        scatter_indices = scatter_indices,
-        update = zeros_update,
-        update_window_dims = update_window_dims,
-        inserted_window_dims = inserted_window_dims,
-        input_batching_dims = input_batching_dims,
-        scatter_indices_batching_dims = scatter_indices_batching_dims,
-        scatter_dims_to_operand_dims = scatter_dims_to_operand_dims,
-        index_vector_dim = index_vector_dim,
-        indices_are_sorted = indices_are_sorted,
-        unique_indices = TRUE,
-        update_computation = function(old, new) new
-      )
-    },
-    # Gradient for scatter_indices: not differentiable
-    if (.required[[2L]]) zeros_like(scatter_indices, FALSE),
-    # Gradient for update: gather from gradient at update positions
-    if (.required[[3L]]) {
-      # The gather dimension numbers are derived from scatter dimension numbers:
-      # - offset_dims = update_window_dims
-      # - collapsed_slice_dims = inserted_window_dims
-      # - start_index_map = scatter_dims_to_operand_dims
-      # - operand_batching_dims = input_batching_dims
-      # - start_indices_batching_dims = scatter_indices_batching_dims
-      nvl_gather(
-        operand = grad,
-        start_indices = scatter_indices,
-        slice_sizes = slice_sizes,
-        offset_dims = update_window_dims,
-        collapsed_slice_dims = inserted_window_dims,
-        operand_batching_dims = input_batching_dims,
-        start_indices_batching_dims = scatter_indices_batching_dims,
-        start_index_map = scatter_dims_to_operand_dims,
-        index_vector_dim = index_vector_dim,
-        indices_are_sorted = indices_are_sorted,
-        unique_indices = TRUE
-      )
-    }
-  )
+  if (unique_indices) {
+    # Simple case: each update position is unique, so we know exactly what happens
+    list(
+      # Gradient for input: zero out positions that were overwritten
+      if (.required[[1L]]) {
+        zeros_update <- zeros_like(update, FALSE)
+        nvl_scatter(
+          input = grad,
+          scatter_indices = scatter_indices,
+          update = zeros_update,
+          update_window_dims = update_window_dims,
+          inserted_window_dims = inserted_window_dims,
+          input_batching_dims = input_batching_dims,
+          scatter_indices_batching_dims = scatter_indices_batching_dims,
+          scatter_dims_to_operand_dims = scatter_dims_to_operand_dims,
+          index_vector_dim = index_vector_dim,
+          indices_are_sorted = indices_are_sorted,
+          unique_indices = TRUE,
+          update_computation = function(old, new) new
+        )
+      },
+      # Gradient for scatter_indices: not differentiable
+      if (.required[[2L]]) zeros_like(scatter_indices, FALSE),
+      # Gradient for update: gather from gradient at update positions
+      if (.required[[3L]]) {
+        nvl_gather(
+          operand = grad,
+          start_indices = scatter_indices,
+          slice_sizes = slice_sizes,
+          offset_dims = update_window_dims,
+          collapsed_slice_dims = inserted_window_dims,
+          operand_batching_dims = input_batching_dims,
+          start_indices_batching_dims = scatter_indices_batching_dims,
+          start_index_map = scatter_dims_to_operand_dims,
+          index_vector_dim = index_vector_dim,
+          indices_are_sorted = indices_are_sorted,
+          unique_indices = TRUE
+        )
+      }
+    )
+  } else {
+    # Non-unique indices: use the ID trick to determine which updates won
+    #
+    # a) Create unique positive IDs for each update "batch" position
+    #    IDs have shape where update_window_dims are set to 1, then broadcast
+    ids_shape <- update_shape
+    ids_shape[update_window_dims] <- 1L
+    num_ids <- prod(ids_shape)
+
+    id_dtype <- "i64"
+    # Create IDs: 1, 2, 3, ..., num_ids (0 is reserved for "no update")
+    # iota produces [0, 1, 2, ...], so we add 1 to get [1, 2, 3, ...]
+    iota_vals <- nvl_reshape(nvl_iota(1L, id_dtype, num_ids), ids_shape)
+    one_scalar <- nvl_fill(1L, dtype = id_dtype, shape = integer())
+    one_broadcast <- nvl_broadcast_in_dim(one_scalar, ids_shape, integer())
+    update_ids <- nvl_add(iota_vals, one_broadcast)
+    update_ids <- nvl_broadcast_in_dim(update_ids, update_shape, seq_along(update_shape))
+
+    # b) Scatter the IDs to see which update "wins" at each position
+    zero_ids <- nvl_fill(0L, dtype = id_dtype, shape = input_shape)
+    scattered_ids <- nvl_scatter(
+      input = zero_ids,
+      scatter_indices = scatter_indices,
+      update = update_ids,
+      update_window_dims = update_window_dims,
+      inserted_window_dims = inserted_window_dims,
+      input_batching_dims = input_batching_dims,
+      scatter_indices_batching_dims = scatter_indices_batching_dims,
+      scatter_dims_to_operand_dims = scatter_dims_to_operand_dims,
+      index_vector_dim = index_vector_dim,
+      indices_are_sorted = indices_are_sorted,
+      unique_indices = FALSE,
+      update_computation = function(old, new) new
+    )
+
+    # c) Gather the scattered IDs back to update positions
+    gathered_update_ids <- nvl_gather(
+      operand = scattered_ids,
+      start_indices = scatter_indices,
+      slice_sizes = slice_sizes,
+      offset_dims = update_window_dims,
+      collapsed_slice_dims = inserted_window_dims,
+      operand_batching_dims = input_batching_dims,
+      start_indices_batching_dims = scatter_indices_batching_dims,
+      start_index_map = scatter_dims_to_operand_dims,
+      index_vector_dim = index_vector_dim,
+      indices_are_sorted = indices_are_sorted,
+      unique_indices = FALSE
+    )
+
+    # d) Create masks
+    # For input: positions where scattered_ids == 0 were NOT overwritten
+    mask_input <- nvl_eq(scattered_ids, zero_ids)
+    # For update: positions where my ID == gathered ID means my update won
+    mask_update <- nvl_eq(update_ids, gathered_update_ids)
+
+    list(
+      # Gradient for input: keep gradient where not overwritten, zero elsewhere
+      if (.required[[1L]]) {
+        nvl_select(mask_input, grad, zeros_like(grad, FALSE))
+      },
+      # Gradient for scatter_indices: not differentiable
+      if (.required[[2L]]) zeros_like(scatter_indices, FALSE),
+      # Gradient for update: gather gradient and mask by winning updates
+      if (.required[[3L]]) {
+        grad_at_positions <- nvl_gather(
+          operand = grad,
+          start_indices = scatter_indices,
+          slice_sizes = slice_sizes,
+          offset_dims = update_window_dims,
+          collapsed_slice_dims = inserted_window_dims,
+          operand_batching_dims = input_batching_dims,
+          start_indices_batching_dims = scatter_indices_batching_dims,
+          start_index_map = scatter_dims_to_operand_dims,
+          index_vector_dim = index_vector_dim,
+          indices_are_sorted = indices_are_sorted,
+          unique_indices = FALSE
+        )
+        # Mask: only where this update won
+        nvl_select(mask_update, grad_at_positions, zeros_like(grad_at_positions, FALSE))
+      }
+    )
+  }
 }

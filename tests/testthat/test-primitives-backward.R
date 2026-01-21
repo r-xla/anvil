@@ -651,18 +651,73 @@ describe("p_scatter", {
     expect_equal(grads[[1L]], nv_tensor(c(1, 1), dtype = "f32"))
   })
 
-  it("fails gracefully for non-unique indices", {
-    # Scatter with duplicate indices should fail during backward
-    f <- function(x) {
-      x[c(1, 1)] <- nv_tensor(c(88, 99), dtype = "f32")  # duplicate index
+  it("computes gradient for non-unique indices - input gradient", {
+    # When we write to the same position many times, the input at that position
+    # doesn't contribute to the output (it's overwritten)
+    n_writes <- 100L
+    f <- jit(gradient(function(x) {
+      # Write 100 values all to position 1
+      x[rep(1L, n_writes)] <- nv_tensor(seq_len(n_writes), dtype = "f32")
       nv_reduce_sum(x, dims = 1L, drop = TRUE)
-    }
-    g <- gradient(f)
+    }))
     x <- nv_tensor(c(1, 2, 3), dtype = "f32")
 
-    # Currently, nv_subset_assign sets unique_indices = FALSE for scattered indices
-    # The backward should throw an error
-    expect_error(jit(g)(x), "unique_indices")
+    grads <- f(x)
+    # Position 1 was overwritten (100 times), so its gradient is 0
+    # Positions 2 and 3 were not touched, so their gradients are 1
+    expect_equal(grads[[1L]], nv_tensor(c(0, 1, 1), dtype = "f32"))
+  })
+
+  it("computes gradient for non-unique indices - update gradient", {
+    # When writing many different values to the same position, only one "wins"
+    # The gradient should flow to the CORRECT update (the one that won)
+    n_writes <- 100L
+    indices <- rep(1L, n_writes)
+
+    # Use value_and_gradient to get both forward result and gradients in one pass
+    f <- jit(value_and_gradient(function(update) {
+      x <- nv_tensor(c(0, 0, 0), dtype = "f32")
+      x[indices] <- update
+      nv_reduce_sum(x, dims = 1L, drop = TRUE)
+    }))
+    update <- nv_tensor(seq_len(n_writes), dtype = "f32")
+    result <- f(update)
+
+    # The forward value tells us which update won (it's the value at position 1)
+    # Since we sum all positions and positions 2,3 are 0, the sum equals the winning value
+    winning_value <- as.numeric(as_array(result$value))
+    winning_idx <- which(seq_len(n_writes) == winning_value)
+
+    grad_vals <- as.numeric(as_array(result$grad[[1L]]))
+
+    # The winning update (and ONLY that one) should get gradient 1
+    expect_equal(grad_vals[winning_idx], 1)
+    expect_equal(sum(grad_vals[-winning_idx]), 0)
+  })
+
+  it("computes gradient for non-unique indices with weighted loss", {
+    # Test that the correct gradient value flows to the winning update
+    n_writes <- 100L
+    indices <- rep(1L, n_writes)
+
+    # Use value_and_gradient to get both forward result and gradients in one pass
+    f <- jit(value_and_gradient(function(update) {
+      x <- nv_tensor(c(0, 0, 0), dtype = "f32")
+      x[indices] <- update
+      nv_reduce_sum(x * nv_tensor(c(5, 1, 1), dtype = "f32"), dims = 1L)
+    }))
+    update <- nv_tensor(seq_len(n_writes), dtype = "f32")
+    result <- f(update)
+
+    # The forward value is 5 * winning_value (weight at position 1)
+    winning_value <- as.numeric(as_array(result$value)) / 5
+    winning_idx <- which(seq_len(n_writes) == winning_value)
+
+    grad_vals <- as.numeric(as_array(result$grad[[1L]]))
+
+    # The winning update should get gradient 5, all others should get 0
+    expect_equal(grad_vals[winning_idx], 5)
+    expect_equal(sum(grad_vals[-winning_idx]), 0)
   })
 })
 
