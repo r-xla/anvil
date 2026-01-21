@@ -24,11 +24,13 @@ test_that("jit: a constant", {
     nv_scalar(3)
   )
   x <- nv_scalar(2)
-  # the constant is now saved in f_jit, so new x is not foundj
+  # the constant is now saved in f_jit, so new x is not found
+  cache_size(f_jit)
   expect_equal(
     f_jit(nv_scalar(2)),
     nv_scalar(3)
   )
+  cache_size(f_jit)
 })
 
 test_that("jit basic test", {
@@ -246,4 +248,16 @@ test_that("jit_eval does not modify calling environment", {
     x <- nv_tensor(3:4)
   })
   expect_equal(x, nv_tensor(1:2))
+})
+
+test_that("hash for cache depends on in_tree (#122)", {
+  f <- jit(\(...) {
+    args <- list(...)
+    args[[1]][[1L]][[1L]]
+  })
+  expect_equal(cache_size(f), 0L)
+  expect_equal(f(list(list(nv_scalar(1L)), nv_scalar(2L))), nv_scalar(1L))
+  expect_equal(cache_size(f), 1L)
+  expect_equal(f(list(list(nv_scalar(1L), nv_scalar(2L)))), nv_scalar(1L))
+  expect_equal(cache_size(f), 2L)
 })

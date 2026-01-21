@@ -1,3 +1,29 @@
+check_wrt_tensorish <- function(args_flat, is_wrt_flat) {
+  for (i in seq_along(args_flat)) {
+    if (is_wrt_flat[[i]] && !is_tensorish(args_flat[[i]], literal = FALSE)) {
+      cli_abort(c(
+        x = "Cannot compute gradient with respect to non-tensor argument.",
+        i = "Got {.cls {class(args_flat[[i]])}} instead of a tensor."
+      ))
+    }
+  }
+}
+
+prepare_gradient_args <- function(args, wrt) {
+  args_flat <- flatten(args)
+  if (!is.null(wrt)) {
+    in_tree <- build_tree(mark_some(args, wrt))
+    is_wrt_flat <- in_tree$marked
+    in_tree$marked <- NULL
+    class(in_tree) <- c("ListNode", "Node")
+  } else {
+    in_tree <- build_tree(args)
+    is_wrt_flat <- rep(TRUE, length(args_flat))
+  }
+  check_wrt_tensorish(args_flat, is_wrt_flat)
+  list(args_flat = args_flat, in_tree = in_tree)
+}
+
 #' @title Transform a graph to its gradient
 #' @description
 #' Transform a graph to its gradient.
@@ -157,8 +183,9 @@ transform_gradient <- function(graph, wrt) {
 #' Transform a function to its gradient.
 #' @param f (`function`)\cr
 #'   Function to compute the gradient of.
-#' @param wrt (`character`)\cr
+#' @param wrt (`character` or `NULL`)\cr
 #'   Names of the arguments to compute the gradient with respect to.
+#'   If `NULL` (the default), the gradient is computed with respect to all arguments.
 #' @export
 gradient <- function(f, wrt = NULL) {
   if (!is.null(wrt) && !all(wrt %in% formalArgs(f))) {
@@ -167,12 +194,14 @@ gradient <- function(f, wrt = NULL) {
   f_gradient <- function() {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
+    prep <- prepare_gradient_args(args, wrt)
+
     parent_desc <- .current_descriptor(silent = TRUE)
     debug_mode <- is.null(parent_desc)
     if (debug_mode) {
       parent_desc <- local_descriptor()
     }
-    fwd_graph <- trace_fn(f, args)
+    fwd_graph <- trace_fn(f, args_flat = prep$args_flat, in_tree = prep$in_tree)
     grad_graph <- transform_gradient(fwd_graph, wrt)
     # parent_desc is modified in place
     if (!debug_mode) {
@@ -193,12 +222,14 @@ value_and_gradient <- function(f, wrt = NULL) {
   f_value_and_grad <- function() {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
+    prep <- prepare_gradient_args(args, wrt)
+
     parent_desc <- .current_descriptor(silent = TRUE)
     debug_mode <- is.null(parent_desc)
     if (debug_mode) {
       parent_desc <- local_descriptor()
     }
-    fwd_graph <- trace_fn(f, args)
+    fwd_graph <- trace_fn(f, args_flat = prep$args_flat, in_tree = prep$in_tree)
     grad_graph <- transform_gradient(fwd_graph, wrt)
 
     combined_graph <- grad_graph
