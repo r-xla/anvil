@@ -376,31 +376,6 @@ verify_zero_grad_binary <- function(nvl_fn, x, y) {
   testthat::expect_equal(tengen::as_array(grads[[2L]]), array(rep(0, prod(shp)), dim = shp))
 }
 
-verify_grad_concatenate <- function(shapes, dimension = 2L, dtype = "f32", tol = 1e-5) {
-  n <- length(shapes)
-  arrs <- lapply(shapes, function(shp) generate_test_data(shp, dtype = dtype))
-  nvs <- lapply(arrs, function(arr) nv_tensor(arr, dtype = dtype))
-  ths <- lapply(arrs, function(arr) torch::torch_tensor(arr, requires_grad = TRUE))
-
-  f_nv <- function(...) {
-    args <- list(...)
-    out <- do.call(nvl_concatenate, c(args, list(dimension = dimension)))
-    nv_reduce_sum(out, dims = seq_len(ndims(out)), drop = TRUE)
-  }
-
-  grads_nv <- do.call(jit(gradient(f_nv)), nvs)
-
-  out_th <- torch::torch_cat(ths, dim = dimension)
-  torch::torch_sum(out_th)$backward()
-
-  for (i in seq_len(n)) {
-    testthat::expect_equal(
-      tengen::as_array(grads_nv[[i]]),
-      as_array_torch(ths[[i]]$grad),
-      tolerance = tol
-    )
-  }
-}
 
 test_that("p_add", {
   verify_grad_biv(nvl_add, torch::torch_add)
@@ -698,6 +673,31 @@ test_that("p_atan2", {
 })
 
 test_that("p_concatenate", {
+  verify_grad_concatenate <- function(shapes, dimension = 2L, dtype = "f32", tol = 1e-5) {
+    n <- length(shapes)
+    arrs <- lapply(shapes, function(shp) generate_test_data(shp, dtype = dtype))
+    nvs <- lapply(arrs, function(arr) nv_tensor(arr, dtype = dtype))
+    ths <- lapply(arrs, function(arr) torch::torch_tensor(arr, requires_grad = TRUE))
+
+    f_nv <- function(...) {
+      args <- list(...)
+      out <- do.call(nvl_concatenate, c(args, list(dimension = dimension)))
+      nv_reduce_sum(out, dims = seq_len(ndims(out)), drop = TRUE)
+    }
+
+    grads_nv <- do.call(jit(gradient(f_nv)), nvs)
+
+    out_th <- torch::torch_cat(ths, dim = dimension)
+    torch::torch_sum(out_th)$backward()
+
+    for (i in seq_len(n)) {
+      testthat::expect_equal(
+        tengen::as_array(grads_nv[[i]]),
+        as_array_torch(ths[[i]]$grad),
+        tolerance = tol
+      )
+    }
+  }
   verify_grad_concatenate(list(c(2L, 3L), c(2L, 4L)))
   verify_grad_concatenate(list(c(2L, 2L), c(2L, 3L), c(2L, 1L)))
 })
@@ -784,18 +784,13 @@ describe("boolean ops", {
   expected_zeros <- nv_tensor(rep(0, 4), dtype = "f32")
 
   verify_bool_binary <- function(nvl_fn) {
-    x <- nv_tensor(c(1.0, 0.0, 1.0, 0.0), dtype = "f32")
-    y <- nv_tensor(c(1.0, 1.0, 0.0, 0.0), dtype = "f32")
+    x <- nv_tensor(c(TRUE, FALSE, FALSE, TRUE))
+    y <- nv_tensor(c(TRUE, TRUE, FALSE, FALSE))
     f <- function(x, y) {
-      x_pred <- nv_convert(x, "pred")
-      y_pred <- nv_convert(y, "pred")
-      out <- nvl_fn(x_pred, y_pred)
-      out <- nv_convert(out, "f32")
-      nv_reduce_sum(out, dims = 1L, drop = TRUE)
+      out <- nvl_fn(x, y)
+      nv_convert(out, "f32")
     }
-    grads <- jit(gradient(f))(x, y)
-    testthat::expect_equal(grads[[1L]], expected_zeros)
-    testthat::expect_equal(grads[[2L]], expected_zeros)
+    verify_zero_grad_binary(f, x, y)
   }
 
   verify_bool_reduce <- function(nvl_fn) {
