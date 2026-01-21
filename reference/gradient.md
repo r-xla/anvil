@@ -19,8 +19,10 @@ value_and_gradient(f, wrt = NULL)
 
 - wrt:
 
-  (`character`)  
-  Names of the arguments to compute the gradient with respect to.
+  (`character` or `NULL`)  
+  Names of the arguments to compute the gradient with respect to. If
+  `NULL` (the default), the gradient is computed with respect to all
+  arguments.
 
 ## Functions
 
