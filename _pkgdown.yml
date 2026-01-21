@@ -208,6 +208,7 @@ reference:
       - dtype_abstract
       - shape_abstract
       - ndims_abstract
+      - ambiguous_abstract
       - to_abstract
       - GraphDescriptor
       - GraphValue

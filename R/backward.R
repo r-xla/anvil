@@ -106,7 +106,10 @@ transform_gradient <- function(graph, wrt) {
   # including the forward calls, so that intermediate values are available
   # for the backward rules.
   init_desc_from_graph(desc, graph, outputs = FALSE)
-  grad_env[[out]] <- get_box_or_register_const(desc, nv_scalar(1L, dtype = out$aval$dtype))
+  grad_env[[out]] <- get_box_or_register_const(
+    desc,
+    nv_scalar(1L, dtype = out$aval$dtype, ambiguous = out$aval$ambiguous)
+  )
 
   # Backward pass
   for (call in rev(graph$calls)) {
@@ -161,11 +164,19 @@ transform_gradient <- function(graph, wrt) {
     input <- graph$inputs[[i]]
     grad <- grad_env[[input]]
     x <- if (is.null(grad)) {
-      const <- get_box_or_register_const(desc, nv_scalar(0L, dtype = input$aval$dtype))
+      const <- get_box_or_register_const(
+        desc,
+        nv_scalar(0L, dtype = input$aval$dtype, ambiguous = input$aval$ambiguous)
+      )
       nv_broadcast_to(const, shape(input$aval))
     } else {
       grad
     }
+    # ensure ambiguity of gradient is the same as the input
+    #if (dtype(x) != dtype(input)) {
+    #  x <- nvl_convert(x, dtype(input), ambiguous = input$aval$ambiguous)
+    #}
+    x$gnode$aval$ambiguous <- input$aval$ambiguous
     input_grads <- c(input_grads, list(x$gnode))
   }
 

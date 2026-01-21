@@ -53,9 +53,9 @@ f <- function(a, b, x) {
 }
 f_jit <- jit(f)
 
-a <- nv_scalar(1.0)
-b <- nv_scalar(-2.0)
-x <- nv_scalar(3.0)
+a <- nv_scalar(1.0, "f32")
+b <- nv_scalar(-2.0, "f32")
+x <- nv_scalar(3.0, "f32")
 
 f_jit(a, b, x)
 #> AnvilTensor 

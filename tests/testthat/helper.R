@@ -94,7 +94,9 @@ verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
   }
   grads <- jit(gradient(f))(x)
   shp <- shape(x)
-  testthat::expect_equal(grads[[1L]], nv_tensor(0L, shape = shp, dtype = "f32"))
+  # these gradients are never ambiguous, because there is no promotion anymore
+  expected <- nv_tensor(0, shape = shp, dtype = dtype(x), ambiguous = ambiguous(x))
+  expect_equal(grads[[1L]], expected)
 }
 
 verify_zero_grad_binary <- function(nvl_fn, x, y) {
@@ -105,6 +107,9 @@ verify_zero_grad_binary <- function(nvl_fn, x, y) {
   }
   grads <- jit(gradient(f))(x, y)
   shp <- shape(x)
-  testthat::expect_equal(grads[[1L]], nv_tensor(0L, shape = shp, dtype = "f32"))
-  testthat::expect_equal(grads[[2L]], nv_tensor(0L, shape = shp, dtype = "f32"))
+  # these gradients are never ambiguous, because there is no promotion anymore
+  expected1 <- nv_tensor(0, shape = shp, dtype = dtype(x), ambiguous = ambiguous(x))
+  expected2 <- nv_tensor(0, shape = shp, dtype = dtype(y), ambiguous = ambiguous(y))
+  expect_equal(grads[[1L]], expected1)
+  expect_equal(grads[[2L]], expected2)
 }

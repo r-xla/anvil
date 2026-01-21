@@ -1,0 +1,123 @@
+test_that("nv_scalar returns ambiguous tensor when dtype is NULL (default)", {
+  # Numeric scalars without explicit dtype should be ambiguous
+  x_f32 <- nv_scalar(1.0)
+  expect_true(ambiguous(x_f32))
+  expect_equal(dtype(x_f32), as_dtype("f32"))
+
+  # Integer scalars without explicit dtype should be ambiguous
+  x_i32 <- nv_scalar(1L)
+  expect_true(ambiguous(x_i32))
+  expect_equal(dtype(x_i32), as_dtype("i32"))
+
+  # Logical scalars are never ambiguous (pred type)
+  x_pred <- nv_scalar(TRUE)
+  expect_false(ambiguous(x_pred))
+  expect_equal(dtype(x_pred), as_dtype("pred"))
+})
+
+test_that("nv_scalar returns non-ambiguous tensor when dtype is specified", {
+  x_f32 <- nv_scalar(1.0, dtype = "f32")
+  expect_false(ambiguous(x_f32))
+  expect_equal(dtype(x_f32), as_dtype("f32"))
+
+  x_i32 <- nv_scalar(1L, dtype = "i32")
+  expect_false(ambiguous(x_i32))
+  expect_equal(dtype(x_i32), as_dtype("i32"))
+
+  x_f64 <- nv_scalar(1.0, dtype = "f64")
+  expect_false(ambiguous(x_f64))
+  expect_equal(dtype(x_f64), as_dtype("f64"))
+})
+
+test_that("nv_tensor returns non-ambiguous tensor", {
+  # nv_tensor always creates non-ambiguous tensors
+  x <- nv_tensor(1:4)
+  expect_false(ambiguous(x))
+
+  y <- nv_tensor(c(1.0, 2.0, 3.0))
+  expect_false(ambiguous(y))
+})
+
+test_that("JIT propagates ambiguity from inputs to outputs", {
+  f <- jit(function(x, y) x + y)
+
+  # Both inputs ambiguous -> output should be ambiguous
+  x_amb <- nv_scalar(1.0) # ambiguous
+
+  y_amb <- nv_scalar(2.0) # ambiguous
+  result_amb <- f(x_amb, y_amb)
+  expect_true(ambiguous(result_amb))
+  expect_equal(result_amb, nv_scalar(3.0))
+
+  # One input non-ambiguous -> output should be non-ambiguous
+  x_nonamb <- nv_scalar(1.0, dtype = "f32") # non-ambiguous
+  y_amb2 <- nv_scalar(2.0) # ambiguous
+  result_mixed <- f(x_nonamb, y_amb2)
+  expect_false(ambiguous(result_mixed))
+  expect_equal(result_mixed, nv_scalar(3.0, dtype = "f32"))
+
+  # Both inputs non-ambiguous -> output should be non-ambiguous
+  x_nonamb2 <- nv_scalar(1.0, dtype = "f32") # non-ambiguous
+  y_nonamb <- nv_scalar(2.0, dtype = "f32") # non-ambiguous
+  result_nonamb <- f(x_nonamb2, y_nonamb)
+  expect_false(ambiguous(result_nonamb))
+  expect_equal(result_nonamb, nv_scalar(3.0, dtype = "f32"))
+})
+
+test_that("JIT preserves ambiguity through unary operations", {
+  f <- jit(function(x) -x)
+
+  # Ambiguous input -> ambiguous output
+  x_amb <- nv_scalar(1.0)
+  result_amb <- f(x_amb)
+  expect_true(ambiguous(result_amb))
+  expect_equal(result_amb, nv_scalar(-1.0))
+
+  # Non-ambiguous input -> non-ambiguous output
+  x_nonamb <- nv_scalar(1.0, dtype = "f32")
+  result_nonamb <- f(x_nonamb)
+  expect_false(ambiguous(result_nonamb))
+  expect_equal(result_nonamb, nv_scalar(-1.0, dtype = "f32"))
+})
+
+test_that("JIT handles constants with ambiguity", {
+  # Constant created with ambiguous nv_scalar
+  f <- jit(function(x) x + nv_scalar(10))
+
+  x_amb <- nv_scalar(1.0)
+  result <- f(x_amb)
+  # Both input and constant are ambiguous, so output is ambiguous
+  expect_true(ambiguous(result))
+  expect_equal(result, nv_scalar(11.0))
+
+  # Non-ambiguous input with ambiguous constant
+  x_nonamb <- nv_scalar(1.0, dtype = "f32")
+  result2 <- f(x_nonamb)
+  # Mixed: one non-ambiguous, one ambiguous -> non-ambiguous
+  expect_false(ambiguous(result2))
+  expect_equal(result2, nv_scalar(11.0, dtype = "f32"))
+})
+
+test_that("format.AnvilTensor shows ambiguity with ?", {
+  x_amb <- nv_scalar(1.0)
+  expect_match(format(x_amb), "f32\\?")
+
+  x_nonamb <- nv_scalar(1.0, dtype = "f32")
+  expect_match(format(x_nonamb), "f32[^?]|f32$")
+})
+
+test_that("ambiguous() generic works for AnvilTensor and AbstractTensor", {
+  # AnvilTensor
+  x_anvil_amb <- nv_scalar(1.0)
+  expect_true(ambiguous(x_anvil_amb))
+
+  x_anvil_nonamb <- nv_tensor(1.0)
+  expect_false(ambiguous(x_anvil_nonamb))
+
+  # AbstractTensor
+  aval_amb <- nv_aten("f32", c(2, 3), ambiguous = TRUE)
+  expect_true(ambiguous(aval_amb))
+
+  aval_nonamb <- nv_aten("f32", c(2, 3), ambiguous = FALSE)
+  expect_false(ambiguous(aval_nonamb))
+})

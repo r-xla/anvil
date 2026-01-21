@@ -20,16 +20,21 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
   assert_subset(static, formalArgs2(f))
   assert_string(device, null.ok = TRUE)
 
-  call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat) {
+  call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat, avals_out = NULL) {
     args_nonstatic <- args_flat[!is_static_flat]
+    args_unwrapped <- lapply(args_nonstatic, \(a) a$tensor)
     out_vals <- rlang::exec(
       pjrt::pjrt_execute,
       exec,
       !!!consts_flat,
-      !!!args_nonstatic,
+      !!!args_unwrapped,
       simplify = FALSE
     )
-    out_vals <- lapply(out_vals, nv_tensor)
+    if (!is.null(avals_out)) {
+      out_vals <- Map(function(val, aval) nv_tensor(val, ambiguous = aval$ambiguous), out_vals, avals_out)
+    } else {
+      out_vals <- lapply(out_vals, nv_tensor)
+    }
     unflatten(out_node, out_vals)
   }
 
@@ -49,7 +54,7 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
         } else {
           if (is_anvil_tensor(x)) {
             platforms <<- c(platforms, platform(x))
-            return(nv_aten(dtype(x), shape(x)))
+            return(nv_aten(dtype(x), shape(x), ambiguous = ambiguous(x)))
           }
           cli_abort("Expected AnvilTensor, but got {.cls {class(x)[1]}}")
         }
@@ -77,7 +82,7 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
     class(in_tree) <- c("ListNode", "Node")
     cache_hit <- cache$get(list(in_tree, avals_in, platform))
     if (!is.null(cache_hit)) {
-      return(call_xla(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat))
+      return(call_xla(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat, cache_hit[[4]]))
     }
     desc <- local_descriptor()
     graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = avals_in, in_tree = in_tree)
@@ -92,15 +97,23 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
       if (!is_concrete_tensor(const$aval)) {
         cli_abort("Internal error: Not all constants are concrete tensors")
       }
-      const$aval$data
+      unwrap_if_tensor(const$aval$data)
     })
 
     out_tree <- graph$out_tree
+
+    # Extract output avals and check if any are ambiguous
+    avals_out <- lapply(graph$outputs, \(x) x$aval)
+    has_ambiguous <- any(vapply(avals_out, \(aval) aval$ambiguous, logical(1)))
+    if (!has_ambiguous) {
+      avals_out <- NULL
+    }
+
     src <- stablehlo::repr(func)
     program <- pjrt_program(src = src, format = "mlir")
     exec <- pjrt_compile(program, client = pjrt::pjrt_client(platform))
-    cache$set(list(in_tree, avals_in, platform), list(exec, out_tree, const_tensors))
-    call_xla(exec, out_tree, const_tensors, args_flat, is_static_flat)
+    cache$set(list(in_tree, avals_in, platform), list(exec, out_tree, const_tensors, avals_out))
+    call_xla(exec, out_tree, const_tensors, args_flat, is_static_flat, avals_out)
   }
   formals(f_jit) <- formals2(f)
   f_jit

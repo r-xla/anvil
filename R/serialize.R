@@ -34,7 +34,19 @@
 nv_write <- function(tensors, path) {
   checkmate::assert_list(tensors, names = "unique", types = "AnvilTensor")
   checkmate::assert_string(path)
-  safetensors::safe_save_file(tensors, path)
+
+  # Extract ambiguity information to store in metadata as nested dict
+  ambiguity_info <- lapply(tensors, function(t) if (ambiguous(t)) TRUE else FALSE)
+  names(ambiguity_info) <- names(tensors)
+
+  # Serialize using base R serialize() as raw bytes, encoded as hex string
+  raw_bytes <- serialize(ambiguity_info, connection = NULL)
+  hex_string <- paste(sprintf("%02x", as.integer(raw_bytes)), collapse = "")
+  metadata <- list(`__ambiguity_info__` = hex_string)
+
+  # Unwrap AnvilTensors to get underlying PJRTBuffers for safetensors
+  tensors_unwrapped <- lapply(tensors, unwrap_if_tensor)
+  safetensors::safe_save_file(tensors_unwrapped, path, metadata = metadata)
   invisible(NULL)
 }
 
@@ -52,12 +64,53 @@ nv_read <- function(path, device = NULL) {
 #' @export
 nv_serialize <- function(tensors) {
   checkmate::assert_list(tensors, names = "unique", types = "AnvilTensor")
-  safetensors::safe_serialize(tensors)
+
+  # Extract ambiguity information to store in metadata as nested dict
+  ambiguity_info <- lapply(tensors, function(t) if (ambiguous(t)) TRUE else FALSE)
+  names(ambiguity_info) <- names(tensors)
+
+  # Serialize using base R serialize() as raw bytes, encoded as hex string
+  raw_bytes <- serialize(ambiguity_info, connection = NULL)
+  hex_string <- paste(sprintf("%02x", as.integer(raw_bytes)), collapse = "")
+  metadata <- list(`__ambiguity_info__` = hex_string)
+
+  # Unwrap AnvilTensors to get underlying PJRTBuffers for safetensors
+  tensors_unwrapped <- lapply(tensors, unwrap_if_tensor)
+  safetensors::safe_serialize(tensors_unwrapped, metadata = metadata)
 }
 
 #' @rdname nv_serialization
 #' @export
 nv_unserialize <- function(con, device = NULL) {
-  x <- safetensors::safe_load_file(con, framework = "pjrt", device = device)
-  lapply(x, ensure_nv_tensor)
+  result <- safetensors::safe_load_file(con, framework = "pjrt", device = device)
+
+  # Extract metadata to restore ambiguity information
+  # Metadata is nested under __metadata__ key
+  metadata_attr <- attr(result, "metadata", exact = TRUE)
+  metadata <- if (!is.null(metadata_attr)) metadata_attr$`__metadata__` else NULL
+
+  # Parse ambiguity info using base R (unserialize from hex string)
+  ambiguity_info <- if (!is.null(metadata) && !is.null(metadata$`__ambiguity_info__`)) {
+    hex_string <- metadata$`__ambiguity_info__`
+    # Convert hex string back to raw bytes
+    hex_pairs <- strsplit(hex_string, "(?<=..)", perl = TRUE)[[1]]
+    raw_bytes <- as.raw(strtoi(hex_pairs, base = 16L))
+    unserialize(raw_bytes)
+  } else {
+    NULL
+  }
+
+  # Wrap each tensor with correct ambiguity
+  result_wrapped <- lapply(names(result), function(name) {
+    tensor <- result[[name]]
+    # Check if there's ambiguity metadata for this tensor
+    is_ambiguous <- if (!is.null(ambiguity_info) && !is.null(ambiguity_info[[name]])) {
+      isTRUE(ambiguity_info[[name]])
+    } else {
+      FALSE
+    }
+    ensure_nv_tensor(tensor, ambiguous = is_ambiguous)
+  })
+  names(result_wrapped) <- names(result)
+  result_wrapped
 }

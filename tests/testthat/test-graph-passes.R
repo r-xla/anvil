@@ -32,10 +32,10 @@ describe("inline_scalarish_constants", {
       out <- stablehlo(graph)
       func <- out[[1L]]
       consts <- out[[2L]]
-      const_tensors <- lapply(consts, function(c) c$aval$data)
+      const_tensors <- lapply(consts, \(c) c$aval$data$tensor)
       program <- pjrt::pjrt_program(src = stablehlo::repr(func), format = "mlir")
       exec <- pjrt::pjrt_compile(program)
-      inputs_flat <- flatten(args)
+      inputs_flat <- lapply(flatten(args), \(a) a$tensor)
       do.call(pjrt::pjrt_execute, c(list(exec), const_tensors, inputs_flat, list(simplify = FALSE)))
     }
 

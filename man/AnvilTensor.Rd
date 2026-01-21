@@ -2,9 +2,64 @@
 % Please edit documentation in R/tensor.R
 \name{AnvilTensor}
 \alias{AnvilTensor}
-\title{AnvilTensor}
+\alias{nv_tensor}
+\alias{nv_scalar}
+\alias{nv_empty}
+\title{AnvilTensor: Tensor Objects}
+\usage{
+nv_tensor(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = FALSE)
+
+nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL)
+
+nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
+}
+\arguments{
+\item{data}{(any)\cr
+Object convertible to a \code{\link[pjrt:pjrt_buffer]{PJRTBuffer}}.}
+
+\item{dtype}{(\code{NULL} | \code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+One of pred, i8, i16, i32, i64, ui8, ui16, ui32, ui64, f32, f64 or a \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}}.
+The default (\code{NULL}) uses \code{f32} for numeric data, \code{i32} for integer data, and \code{pred} for logical data.}
+
+\item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
+The platform name for the tensor (\code{"cpu"}, \code{"cuda"}, \code{"metal"}).
+Default is to use the CPU, unless the data is already a \code{\link[pjrt:pjrt_buffer]{PJRTBuffer}}.
+You can change the default by setting the \code{PJRT_PLATFORM} environment variable.}
+
+\item{shape}{(\code{NULL} | \code{integer()})\cr
+Shape.
+The default (\code{NULL}) is to infer it from the data if possible.
+Note that \code{\link{nv_tensor}} interprets length 1 vectors as having shape \code{(1)}.
+To create a "scalar" with dimension \verb{()}, use \code{\link{nv_scalar}}.}
+
+\item{ambiguous}{(\code{logical(1)})\cr
+Whether the dtype should be marked as ambiguous.
+For \code{\link[=nv_tensor]{nv_tensor()}}, defaults to \code{FALSE} (non-ambiguous).
+For \code{\link[=nv_scalar]{nv_scalar()}}, defaults to \code{TRUE} when \code{dtype} is \code{NULL} and data is numeric, \code{FALSE} otherwise.}
+}
+\value{
+(\code{\link{AnvilTensor}}) A tensor object.
+}
 \description{
-Virtual base class for tensor objects in anvil.
-This class is used to mark objects that can be used as tensors in anvil.
-Cannot be instantiated directly - use \code{\link[=nv_tensor]{nv_tensor()}}, \code{\link[=nv_scalar]{nv_scalar()}}, or \code{\link[=nv_empty]{nv_empty()}} instead.
+Tensor objects in anvil that hold array data with automatic differentiation support.
+Create tensors using \code{\link[=nv_tensor]{nv_tensor()}}, \code{\link[=nv_scalar]{nv_scalar()}}, or \code{\link[=nv_empty]{nv_empty()}}.
+}
+\examples{
+if (pjrt::plugin_is_downloaded()) {
+  # Create tensors
+  x <- nv_tensor(1:6, shape = c(2, 3))
+  y <- nv_scalar(5.0)  # ambiguous f32
+  z <- nv_scalar(5.0, dtype = "f32")  # non-ambiguous f32
+
+  # Extract information
+  dtype(x)
+  shape(x)
+  ndims(x)
+  platform(x)
+  ambiguous(y)  # TRUE
+  ambiguous(z)  # FALSE
+
+  # Convert to R array
+  as_array(x)
+}
 }

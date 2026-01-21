@@ -30,20 +30,10 @@ stablehlo::is_dtype
 #' @export
 stablehlo::as_dtype
 
-# FIXME(hack): https://github.com/sebffischer/S7-issue
-#' @title Platform
-#' @description
-#' Get the platform of a tensor-like object.
-#' @param x (any)\cr
-#'   The tensor.
-#' @param ... (`any`)\cr
-#'   Additional argument (unused).
-#' @return (`character(1)`)
-#' @export
-platform <- function(x, ...) {
-  pjrt::platform(x)
-}
 
+#' @importFrom pjrt platform
+#' @export
+pjrt::platform
 
 #' @importFrom stablehlo Shape
 #' @export

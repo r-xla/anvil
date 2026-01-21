@@ -84,8 +84,6 @@ Pay attention that stablehlo uses 0-based indexing, but `anvil` uses 1-based ind
 
 API functions are prefixed by `nv_` and are defined in files like api.R or api-rng.R.
 Often, they wrap primitives, but make them more convenient to use.
-When accessing properties from `tensorish` values, use `shape_abstract`, `ndims_abstract`, and `dtype_abstract`.
-Other accessors are currently not available.
 
 ## NSE and Tracing
 

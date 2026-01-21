@@ -101,6 +101,34 @@ colnames(tbl) <- dtypes
 knitr::kable(tbl, format = "html", caption = "Promotion rules: ambiguous (row) × known (column)")
 ```
 
+## Creating Tensors with Different Ambiguity
+
+The `nv_scalar()` and `nv_tensor()` functions have different default behaviors regarding ambiguity:
+
+* `nv_scalar()` creates **ambiguous** tensors by default (when not specifying dtype explicitly)
+* `nv_tensor()` creates **non-ambiguous** tensors by default
+
+```{r}
+s1 <- nv_scalar(1.0)
+ambiguous(s1)
+
+t1 <- nv_tensor(c(1.0, 2.0, 3.0))
+ambiguous(t1)
+
+s2 <- nv_scalar(1.0, dtype = "f32")
+ambiguous(s2)
+```
+
+You can explicitly control ambiguity using the `ambiguous` parameter:
+
+```{r}
+s3 <- nv_scalar(1.0, ambiguous = FALSE)
+ambiguous(s3)
+
+t2 <- nv_tensor(c(1.0, 2.0, 3.0), ambiguous = TRUE)
+ambiguous(t2)
+```
+
 ## Propagating Ambiguity
 
 Ambiguity is propagated through operations.

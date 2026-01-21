@@ -92,6 +92,8 @@ verify_grad_uni_scalar <- function(
   out <- .g_torch(operand_torch)
   out$backward(retrain_graph = TRUE)
 
+  expect_equal(to_abstract(grads_anvil[[1L]], TRUE), to_abstract(operand_anvil, TRUE))
+
   testthat::expect_equal(
     tengen::as_array(grads_anvil[[1L]]),
     as_array_torch(operand_torch$grad),
@@ -139,6 +141,8 @@ verify_grad_uni_tensor <- function(
 
   grads_anvil <- jit(gradient(.f_anvil))(operand_anvil)
   .g_torch(operand_torch)$backward()
+
+  expect_equal(to_abstract(grads_anvil[[1L]], TRUE), to_abstract(operand_anvil, TRUE))
 
   testthat::expect_equal(
     tengen::as_array(grads_anvil[[1L]]),
@@ -199,6 +203,9 @@ verify_grad_biv_scalar <- function(
   grads_anvil <- jit(gradient(.f_anvil))(lhs_anvil, rhs_anvil)
   out <- .g_torch(lhs_torch, rhs_torch)
   out$backward(retrain_graph = TRUE)
+
+  expect_equal(to_abstract(grads_anvil[[1L]], TRUE), to_abstract(lhs_anvil, TRUE))
+  expect_equal(to_abstract(grads_anvil[[2L]], TRUE), to_abstract(rhs_anvil, TRUE))
 
   testthat::expect_equal(
     tengen::as_array(grads_anvil[[1L]]),
@@ -265,6 +272,9 @@ verify_grad_biv_tensor <- function(
 
   grads_anvil <- jit(gradient(.f_anvil))(lhs_anvil, rhs_anvil)
   .g_torch(lhs_torch, rhs_torch)$backward()
+
+  expect_equal(to_abstract(grads_anvil[[1L]], TRUE), to_abstract(lhs_anvil, TRUE))
+  expect_equal(to_abstract(grads_anvil[[2L]], TRUE), to_abstract(rhs_anvil, TRUE))
 
   testthat::expect_equal(
     tengen::as_array(grads_anvil[[1L]]),
