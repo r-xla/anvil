@@ -8,7 +8,7 @@
        2.0000
        3.0000
       [ F32{3} ]
-      AnvilTensor(dtype=f32, shape=3) 
+      AnvilTensor
        1.0000
        2.0000
        3.0000

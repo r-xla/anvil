@@ -3,7 +3,7 @@
     Code
       x
     Output
-      AnvilTensor(dtype=i32, shape=4x1) 
+      AnvilTensor
        1
        2
        3
@@ -15,7 +15,7 @@
     Code
       x
     Output
-      AnvilTensor(dtype=f32, shape=) 
+      AnvilTensor
        1.0000
       [ CPUf32{} ] 
 

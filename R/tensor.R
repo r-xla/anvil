@@ -178,9 +178,6 @@ platform.AnvilTensor <- function(x, ...) {
 #' Abstract representation of a tensor with a (possibly ambiguous) dtype and shape, but no concrete data.
 #' Used during tracing to represent tensor metadata without actual values.
 #'
-#' @details
-#' Two tensors are considered equal (`==`) if they have the same dtype and shape, ignoring ambiguity.
-#'
 #' @param dtype ([`stablehlo::TensorDataType`])\cr
 #'   The data type of the tensor.
 #' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
@@ -378,7 +375,7 @@ format.AnvilTensor <- function(x, ...) {
 #' @export
 print.AnvilTensor <- function(x, header = TRUE, ...) {
   if (header) {
-    cat(format(x), "\n")
+    cat("AnvilTensor\n")
   }
   print(x$tensor, header = FALSE)
   invisible(x)

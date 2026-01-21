@@ -173,9 +173,6 @@ transform_gradient <- function(graph, wrt) {
       grad
     }
     # ensure ambiguity of gradient is the same as the input
-    #if (dtype(x) != dtype(input)) {
-    #  x <- nvl_convert(x, dtype(input), ambiguous = input$aval$ambiguous)
-    #}
     x$gnode$aval$ambiguous <- input$aval$ambiguous
     input_grads <- c(input_grads, list(x$gnode))
   }

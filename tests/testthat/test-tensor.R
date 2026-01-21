@@ -104,11 +104,7 @@ test_that("as_shape for c() (i.e., NULL)", {
 })
 
 test_that("AbstractTensor can be created with any ambiguous dtype", {
-  # Any dtype can now be ambiguous
-  expect_error(AbstractTensor("i64", integer(), TRUE), NA)
-  expect_error(AbstractTensor("f32", integer(), TRUE), NA)
-  expect_error(AbstractTensor("i32", integer(), TRUE), NA)
-  expect_error(AbstractTensor("pred", integer(), TRUE), NA)
+  expect_true(ambiguous(AbstractTensor("i16", integer(), TRUE)))
 })
 
 test_that("nv_aten creates AbstractTensor", {
