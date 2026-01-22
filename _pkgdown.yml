@@ -52,6 +52,7 @@ reference:
       - dtype
       - shape
       - ndims
+      - ambiguous
       - device
       - starts_with("platform")
       - as_array
