@@ -378,20 +378,10 @@ print.AnvilTensor <- function(x, header = TRUE, ...) {
   invisible(x)
 }
 
-#' @title Waldo Comparison Proxy for AnvilTensor
-#' @description
-#' Provides a proxy object for waldo comparisons of AnvilTensors.
-#' This allows `testthat::expect_equal` to compare AnvilTensors.
-#'
-#' By default, ambiguity is excluded from comparisons for backward compatibility.
-#' To include ambiguity in comparisons, set: `options(anvil.compare_ambiguity = TRUE)`.
-#'
-#' @param x An AnvilTensor
-#' @param path The comparison path (used by waldo)
-#' @return A list containing object and path for comparison
+#' @keywords internal
 #' @export
-# fmt: skip
-compare_proxy.AnvilTensor <- function(x, path) { # nolint
+compare_proxy.AnvilTensor <- function(x, path) {
+  # nolint
   list(
     object = list(
       data = as_array(x),
