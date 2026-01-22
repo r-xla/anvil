@@ -31,17 +31,15 @@ NULL
 #' @rdname AnvilTensor
 #' @export
 nv_tensor <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL) {
-  # Handle AnvilTensor input - validate that no conflicting parameters are provided
   if (is_anvil_tensor(data)) {
-    if (!is.null(device) && platform(data) != device) {
+    if (!is.null(device) && device(data) != pjrt::as_pjrt_device(device)) {
       cli_abort("Cannot change device of existing AnvilTensor from {.val {platform(data)}} to {.val {device}}")
     }
     if (!is.null(shape) && !identical(shape(data), as.integer(shape))) {
       cli_abort("Cannot change shape of existing AnvilTensor")
     }
     if (!is.null(dtype)) {
-      expected_dtype <- if (is_dtype(dtype)) as.character(dtype) else dtype
-      if (as.character(dtype(data)) != expected_dtype) {
+      if (dtype(data) != as_dtype(dtype)) {
         cli_abort("Cannot change dtype of existing AnvilTensor from {.val {dtype(data)}} to {.val {dtype}}")
       }
     }
