@@ -1,4 +1,4 @@
-# All the backward rules are only operating on GraphBoxes
+# All the backward rules are only operating on GraphValues
 
 # length(grads) == length(outputs)
 p_add[["backward"]] <- function(inputs, outputs, grads, .required) {
@@ -364,7 +364,7 @@ p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .r
   grad <- grads[[1L]]
   # the ambiguity is determined by the input, not the `ambiguous` parameter
   list(
-    if (.required[[1L]]) nvl_convert(grad, dtype(operand), ambiguous_abstract(operand))
+    if (.required[[1L]]) nvl_convert(grad, dtype(operand), inputs[[1L]]$gnode$aval$ambiguous)
   )
 }
 
@@ -625,6 +625,44 @@ p_static_slice[["backward"]] <- function(inputs, outputs, grads, start_indices, 
       )
     }
   )
+}
+
+p_dynamic_slice[["backward"]] <- function(inputs, outputs, grads, slice_sizes, .required) {
+  operand <- inputs[[1L]]
+  start_indices <- inputs[-1L]
+  grad <- grads[[1L]]
+
+  result <- vector("list", length(inputs))
+
+  # dynamic_update_slice does the same clamping as dynamic_slice, so it naturally handles
+  # out of bound indices (in the same weird way)
+  if (.required[[1L]]) {
+    zeros <- zeros_like(operand, FALSE)
+    result[[1L]] <- rlang::exec(nvl_dynamic_update_slice, zeros, grad, !!!start_indices)
+  }
+
+  result
+}
+
+p_dynamic_update_slice[["backward"]] <- function(inputs, outputs, grads, .required) {
+  update <- inputs[[2L]]
+  start_indices <- inputs[-(1:2)]
+  grad <- grads[[1L]]
+
+  result <- vector("list", length(inputs))
+
+  # dynamic_update_slice does the same clamping as dynamic_slice, so it naturally handles
+  # out of bound indices (in the same weird way)
+  if (.required[[1L]]) {
+    zeros <- zeros_like(update, FALSE)
+    result[[1L]] <- rlang::exec(nvl_dynamic_update_slice, grad, zeros, !!!start_indices)
+  }
+
+  if (.required[[2L]]) {
+    result[[2L]] <- rlang::exec(nvl_dynamic_slice, grad, !!!start_indices, slice_sizes = shape(update))
+  }
+
+  result
 }
 
 p_gather[["backward"]] <- function(inputs, outputs, grads, slice_sizes, offset_dims, collapsed_slice_dims, operand_batching_dims, start_indices_batching_dims, start_index_map, index_vector_dim, indices_are_sorted, unique_indices, .required) {

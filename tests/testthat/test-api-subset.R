@@ -178,6 +178,14 @@ describe("nv_subset", {
       "Vectors of length > 1 are not allowed"
     )
   })
+
+  it("uses i32 dtype when tensor index is i32", {
+    x <- nv_tensor(matrix(1:12, nrow = 3))
+    # When we have an i32 tensor index, the R index should also become i32
+    idx <- nv_scalar(1L, dtype = "i32")
+    # This should work without dtype conversion issues
+    expect_jit_equal(x[idx, 2], nv_scalar(4L, ambiguous = FALSE))
+  })
 })
 
 describe("nv_subset_assign stablehlo", {
@@ -221,67 +229,24 @@ describe("nv_subset_assign stablehlo", {
       nv_tensor(c(-1L, -2L, 3L))
     )
   })
-  it("can assign to scatter in 1D tensor", {
-    expect_jit_equal(
-      {
+  it("errors on 1D tensor indices", {
+    expect_error(
+      jit_eval({
         x <- nv_tensor(1:3)
         x[nv_tensor(c(1L, 3L))] <- nv_tensor(c(-1L, -3L))
         x
-      },
-      nv_tensor(c(-1L, 2L, -3L))
+      }),
+      "Gather indices"
     )
   })
-  it("can scatter with R integer vector", {
-    expect_jit_equal(
-      {
+  it("errors on R integer vector of length > 1", {
+    expect_error(
+      jit_eval({
         x <- nv_tensor(1:3)
         x[c(1, 3)] <- nv_tensor(c(-1L, -3L))
         x
-      },
-      nv_tensor(c(-1L, 2L, -3L))
-    )
-  })
-  it("checks that update dim is as expected", {
-    # maybe we want to allow this, but for now be conservative
-    expect_error(
-      jit_eval({
-        x <- nv_tensor(matrix(1:6, nrow = 3, byrow = TRUE))
-        x[nv_tensor(c(1L, 3L)), 1] <- nv_tensor(c(-1L, -3L), shape = 2L)
-        x
-      })
-    )
-  })
-
-  it("can combine scatter with index", {
-    # [[1, 2],
-    #  [3, 4],
-    #  [5, 6]]
-    jit_eval({
-      x <- nv_tensor(matrix(1:6, nrow = 3, byrow = TRUE))
-      x[nv_tensor(c(1L, 3L)), 1] <- nv_tensor(c(-1L, -3L), shape = c(2, 1))
-      x
-    })
-
-    expect_jit_equal(
-      {
-        x <- nv_tensor(matrix(1:6, nrow = 3, byrow = TRUE))
-        x[nv_tensor(c(1L, 3L)), 1] <- nv_tensor(c(-1L, -3L), shape = c(2, 1))
-        x
-      },
-      nv_tensor(c(-1L, 3L, -3L, 2L, 4L, 6L), shape = c(3, 2))
-    )
-  })
-  it("can combine scatter with range", {
-    # [[1, 2],
-    #  [3, 4],
-    #  [5, 6]]
-    expect_jit_equal(
-      {
-        x <- nv_tensor(matrix(1:6, nrow = 3, byrow = TRUE))
-        x[c(1, 3), 1:2] <- nv_tensor(c(-1L, -5L, -2L, -6L), shape = c(2, 2))
-        x
-      },
-      nv_tensor(c(-1, 3, -5, -2, 4, -6), dtype = "i32", shape = c(3, 2))
+      }),
+      "Vectors of length > 1 are not allowed"
     )
   })
 
@@ -310,18 +275,10 @@ describe("nv_subset_assign stablehlo", {
     expect_jit_equal(
       {
         x <- nv_tensor(1:3)
-        x[c(1, 3)] <- -1L
+        x[1:3] <- -1L
         x
       },
-      nv_tensor(c(-1L, 2L, -1L))
-    )
-  })
-  it("Currently supports at most one scattered subset", {
-    expect_error(
-      jit_eval({
-        x <- nv_tensor(matrix(1:9, nrow = 3, byrow = TRUE))
-        x[c(1, 3), c(1, 3)] <- nv_tensor(matrix(c(-1L, -3L, -7L, -9L), nrow = 2, byrow = TRUE))
-      })
+      nv_tensor(c(-1L, -1L, -1L))
     )
   })
 
@@ -365,107 +322,8 @@ describe("nv_subset_assign stablehlo", {
       nv_tensor(c(0L, 2L))
     )
   })
-  it("can combine scatter, range and single element in 3D tensor", {
-    vals <- array(1:24, dim = c(2, 3, 4))
-    vals_exp <- vals
-    vals_exp[2, c(1, 3), 3:4] <- -(1:4)
-
-    expect_jit_equal(
-      {
-        x <- nv_tensor(vals)
-        x[2, c(1, 3), 3:4] <- nv_tensor(-(1:4), shape = c(1, 2, 2))
-        x
-      },
-      nv_tensor(vals_exp)
-    )
-  })
 })
 
-describe("combining subsets with subset-assign", {
-  expect_jit_equal(
-    {
-      x <- nv_tensor(1:4)
-      x[1:2][c(2, 1)] <- nv_tensor(c(1L, 2L))
-      x
-    },
-    nv_tensor(c(2L, 1L, 3L, 4L))
-  )
-})
-
-describe("nv_meshgrid_start_indices", {
-  it("works with two scatters", {
-    # list(c(1, 3), c(2, 4)) -> combinations: (1,2), (1,4), (3,2), (3,4)
-    expect_jit_equal(
-      nv_meshgrid_start_indices(list(
-        nv_tensor(c(1L, 3L), dtype = "i64"),
-        nv_tensor(c(2L, 4L), dtype = "i64")
-      )),
-      nv_tensor(matrix(c(1L, 2L, 1L, 4L, 3L, 2L, 3L, 4L), nrow = 4, byrow = TRUE), dtype = "i64")
-    )
-  })
-
-  it("works with scatter and single elements", {
-    # list(c(1, 3), 5, 6) -> combinations: (1,5,6), (3,5,6)
-    expect_jit_equal(
-      nv_meshgrid_start_indices(list(
-        nv_tensor(c(1L, 3L), dtype = "i64"),
-        nv_scalar(5L, dtype = "i64"),
-        nv_scalar(6L, dtype = "i64")
-      )),
-      nv_tensor(matrix(c(1L, 5L, 6L, 3L, 5L, 6L), nrow = 2, byrow = TRUE), dtype = "i64")
-    )
-  })
-
-  it("works with multiple scatters and singles", {
-    # list(c(1, 3), c(2, 4), 7, 2) -> 4 combinations
-    expect_jit_equal(
-      nv_meshgrid_start_indices(list(
-        nv_tensor(c(1L, 3L), dtype = "i64"),
-        nv_tensor(c(2L, 4L), dtype = "i64"),
-        nv_scalar(7L, dtype = "i64"),
-        nv_scalar(2L, dtype = "i64")
-      )),
-      nv_tensor(matrix(c(
-        1L, 2L, 7L, 2L,
-        1L, 4L, 7L, 2L,
-        3L, 2L, 7L, 2L,
-        3L, 4L, 7L, 2L
-      ), nrow = 4, byrow = TRUE), dtype = "i64")
-    )
-  })
-
-  it("works with all single elements", {
-    # list(5, 6, 7) -> single combination: (5,6,7)
-    expect_jit_equal(
-      nv_meshgrid_start_indices(list(
-        nv_scalar(5L, dtype = "i64"),
-        nv_scalar(6L, dtype = "i64"),
-        nv_scalar(7L, dtype = "i64")
-      )),
-      nv_tensor(matrix(c(5L, 6L, 7L), nrow = 1), dtype = "i64")
-    )
-  })
-
-  it("works with three scatters", {
-    # 2 x 2 x 2 = 8 combinations
-    out <- jit(\() nv_meshgrid_start_indices(list(
-      nv_tensor(c(1L, 2L), dtype = "i64"),
-      nv_tensor(c(3L, 4L), dtype = "i64"),
-      nv_tensor(c(5L, 6L), dtype = "i64")
-    )))()
-    expect_equal(dim(as_array(out)), c(8, 3))
-    arr <- as_array(out)
-    # First varies slowest, last varies fastest
-    expect_equal(arr[1, ], c(1, 3, 5))
-    expect_equal(arr[2, ], c(1, 3, 6))
-    expect_equal(arr[3, ], c(1, 4, 5))
-    expect_equal(arr[4, ], c(1, 4, 6))
-    expect_equal(arr[5, ], c(2, 3, 5))
-    expect_equal(arr[6, ], c(2, 3, 6))
-    expect_equal(arr[7, ], c(2, 4, 5))
-    expect_equal(arr[8, ], c(2, 4, 6))
-  })
-})
 
 describe("nv_subset with multiple gather dimensions", {
   it("x[list(1, 3), list(2, 4)] gathers all combinations as 2x2 matrix", {

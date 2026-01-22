@@ -1,6 +1,5 @@
 #' @include api.R
 
-#' @method Ops AnvilBox
 #' @export
 Ops.AnvilBox <- function(e1, e2) {
   switch(
@@ -28,11 +27,9 @@ Ops.AnvilBox <- function(e1, e2) {
   )
 }
 
-#' @method Ops AnvilTensor
 #' @export
 Ops.AnvilTensor <- Ops.AnvilBox
 
-#' @method matrixOps AnvilBox
 #' @export
 matrixOps.AnvilBox <- function(x, y) {
   switch(
@@ -41,11 +38,9 @@ matrixOps.AnvilBox <- function(x, y) {
   )
 }
 
-#' @method matrixOps AnvilTensor
 #' @export
 matrixOps.AnvilTensor <- matrixOps.AnvilBox
 
-#' @method Math AnvilBox
 #' @export
 Math.AnvilBox <- function(x, ...) {
   switch(
@@ -66,11 +61,9 @@ Math.AnvilBox <- function(x, ...) {
   )
 }
 
-#' @method Math AnvilTensor
 #' @export
 Math.AnvilTensor <- Math.AnvilBox
 
-#' @method Math2 AnvilBox
 #' @export
 Math2.AnvilBox <- function(x, digits, ...) {
   method <- list(...)$method
@@ -86,12 +79,10 @@ Math2.AnvilBox <- function(x, digits, ...) {
   )
 }
 
-#' @method Math2 AnvilTensor
 #' @export
 Math2.AnvilTensor <- Math2.AnvilBox
 
 
-#' @method Summary AnvilBox
 #' @export
 Summary.AnvilBox <- function(..., na.rm) {
   if (...length() != 1L) {
@@ -112,17 +103,14 @@ Summary.AnvilBox <- function(..., na.rm) {
   )
 }
 
-#' @method Summary AnvilTensor
 #' @export
 Summary.AnvilTensor <- Summary.AnvilBox
 
-#' @method mean AnvilBox
 #' @export
 mean.AnvilBox <- function(x, ...) {
   nv_reduce_mean(x, dims = seq_along(shape(x)), drop = TRUE)
 }
 
-#' @method mean AnvilTensor
 #' @export
 mean.AnvilTensor <- mean.AnvilBox
 
@@ -137,52 +125,28 @@ mean.AnvilTensor <- mean.AnvilBox
 #'   Permutation of dimensions. If `NULL` (default), reverses the dimensions.
 #' @return [`nv_tensor`]
 #' @export
-#' @method t AnvilBox
 t.AnvilBox <- function(x) {
   nv_transpose(x)
 }
 
-#' @method t AnvilTensor
 #' @export
 t.AnvilTensor <- t.AnvilBox
 
-#' @title Subset Tensor
-#' @description
-#' Extract elements from a tensor using `[` indexing.
-#' @param x ([`tensorish`])\cr
-#'   Tensor to subset.
-#' @param ... Slice specifications.
-#' @param drop (`logical(1)`)\cr
-#'   Whether to drop dimensions of size 1.
-#' @return [`tensorish`]
 #' @export
-#' @method [ AnvilBox
-#' @include api-subset.R
-`[.AnvilBox` <- nv_subset
+`[.AnvilBox` <- function(x, ...) {
+  quos <- rlang::enquos(...)
+  rlang::inject(nv_subset(x, !!!quos))
+}
 
-#' @rdname sub-.AnvilBox
-#' @method [ AnvilTensor
 #' @export
-`[.AnvilTensor` <- nv_subset
+`[.AnvilTensor` <- `[.AnvilBox`
 
-#' @title Update Tensor Slice
-#' @description
-#' Update elements of a tensor using `[<-` indexing.
-#' @param x ([`tensorish`])\cr
-#'   Tensor to update.
-#' @param ... Slice specifications.
-#' @param value ([`tensorish`])\cr
-#'   Values to assign.
-#' @return [`tensorish`]
 #' @export
-#' @method [<- AnvilBox
 `[<-.AnvilBox` <- function(x, ..., value) {
-  call <- sys.call()
-  call[[1]] <- quote(nv_subset_assign)
-  eval(call, envir = parent.frame())
+  quos <- rlang::enquos(...)
+  rlang::inject(nv_subset_assign(x, !!!quos, value = value))
 }
 
 #' @rdname sub-.set.AnvilBox
-#' @method [<- AnvilTensor
 #' @export
 `[<-.AnvilTensor` <- `[<-.AnvilBox`

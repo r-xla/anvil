@@ -21,3 +21,4 @@ This allows \code{testthat::expect_equal} to compare AnvilTensors.
 By default, ambiguity is excluded from comparisons for backward compatibility.
 To include ambiguity in comparisons, set: \code{options(anvil.compare_ambiguity = TRUE)}.
 }
+\keyword{internal}

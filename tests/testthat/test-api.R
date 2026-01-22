@@ -77,6 +77,81 @@ test_that("promote to common", {
   )
 })
 
+describe("nv_expand_grid", {
+  it("works with two inputs", {
+    # c(1, 3), c(2, 4) -> combinations: (1,2), (1,4), (3,2), (3,4)
+    expect_jit_equal(
+      nv_expand_grid(
+        nv_tensor(c(1L, 3L), dtype = "i64"),
+        nv_tensor(c(2L, 4L), dtype = "i64")
+      ),
+      nv_tensor(matrix(c(1L, 2L, 1L, 4L, 3L, 2L, 3L, 4L), nrow = 4, byrow = TRUE), dtype = "i64")
+    )
+  })
+
+  it("works with vectors and scalars", {
+    # c(1, 3), 5, 6 -> combinations: (1,5,6), (3,5,6)
+    expect_jit_equal(
+      nv_expand_grid(
+        nv_tensor(c(1L, 3L), dtype = "i64"),
+        nv_scalar(5L, dtype = "i64"),
+        nv_scalar(6L, dtype = "i64")
+      ),
+      nv_tensor(matrix(c(1L, 5L, 6L, 3L, 5L, 6L), nrow = 2, byrow = TRUE), dtype = "i64")
+    )
+  })
+
+  it("works with multiple vectors and scalars", {
+    # c(1, 3), c(2, 4), 7, 2 -> 4 combinations
+    expect_jit_equal(
+      nv_expand_grid(
+        nv_tensor(c(1L, 3L), dtype = "i64"),
+        nv_tensor(c(2L, 4L), dtype = "i64"),
+        nv_scalar(7L, dtype = "i64"),
+        nv_scalar(2L, dtype = "i64")
+      ),
+      nv_tensor(matrix(c(
+        1L, 2L, 7L, 2L,
+        1L, 4L, 7L, 2L,
+        3L, 2L, 7L, 2L,
+        3L, 4L, 7L, 2L
+      ), nrow = 4, byrow = TRUE), dtype = "i64")
+    )
+  })
+
+  it("works with all scalars", {
+    # 5, 6, 7 -> single combination: (5,6,7)
+    expect_jit_equal(
+      nv_expand_grid(
+        nv_scalar(5L, dtype = "i64"),
+        nv_scalar(6L, dtype = "i64"),
+        nv_scalar(7L, dtype = "i64")
+      ),
+      nv_tensor(matrix(c(5L, 6L, 7L), nrow = 1), dtype = "i64")
+    )
+  })
+
+  it("works with three vectors", {
+    # 2 x 2 x 2 = 8 combinations
+    out <- jit(\() nv_expand_grid(
+      nv_tensor(c(1L, 2L), dtype = "i64"),
+      nv_tensor(c(3L, 4L), dtype = "i64"),
+      nv_tensor(c(5L, 6L), dtype = "i64")
+    ))()
+    expect_equal(dim(as_array(out)), c(8, 3))
+    arr <- as_array(out)
+    # First varies slowest, last varies fastest (unlike R's expand.grid)
+    expect_equal(arr[1, ], c(1, 3, 5))
+    expect_equal(arr[2, ], c(1, 3, 6))
+    expect_equal(arr[3, ], c(1, 4, 5))
+    expect_equal(arr[4, ], c(1, 4, 6))
+    expect_equal(arr[5, ], c(2, 3, 5))
+    expect_equal(arr[6, ], c(2, 3, 6))
+    expect_equal(arr[7, ], c(2, 4, 5))
+    expect_equal(arr[8, ], c(2, 4, 6))
+  })
+})
+
 describe("nv_concatenate", {
   it("auto-promotes to common", {
     expect_equal(

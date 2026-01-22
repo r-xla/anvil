@@ -735,3 +735,101 @@ nv_if <- nvl_if
 #' @return [`tensorish`]
 #' @export
 nv_while <- nvl_while
+
+#' @title Expand Grid (Cartesian Product)
+#' @description
+#' Given a list of 1-D tensors (or scalars), computes all combinations
+#' (Cartesian product) of their elements. This is similar to R's [expand.grid()]
+#' but with different ordering.
+#'
+#' @param ... 1-D tensors or scalars whose elements should be combined.
+#'
+#' @return A 2-D tensor of shape `(n_combinations, n_inputs)` where each row
+#'   is one combination of elements.
+#'
+#' @details
+#' **Ordering difference from R's `expand.grid()`:**
+#'
+#' This function uses row-major (C-style) ordering where the **last** input
+#' varies fastest. R's `expand.grid()` uses column-major (Fortran-style)
+#' ordering where the **first** input varies fastest.
+#'
+#' For example, with inputs `c(1, 3)` and `c(2, 4)`:
+#' - `nv_expand_grid()` returns: `(1,2), (1,4), (3,2), (3,4)` (last varies fastest)
+#' - `expand.grid()` returns: `(1,2), (3,2), (1,4), (3,4)` (first varies fastest)
+#'
+#' Both produce the same **set** of combinations, just in different order.
+#'
+#' @examples
+#' \dontrun{
+#' # Two inputs with 2 elements each -> 4 combinations
+#' nv_expand_grid(nv_tensor(c(1L, 3L)), nv_tensor(c(2L, 4L)))
+#' # Returns tensor with shape [4, 2]:
+#' # [[1, 2],
+#' #  [1, 4],
+#' #  [3, 2],
+#' #  [3, 4]]
+#'
+#' # Mix of vectors and scalars
+#' nv_expand_grid(nv_tensor(c(1L, 3L)), nv_scalar(5L), nv_scalar(6L))
+#' # Returns tensor with shape [2, 3]:
+#' # [[1, 5, 6],
+#' #  [3, 5, 6]]
+#' }
+#'
+#' @export
+nv_expand_grid <- function(...) {
+
+  args <- list(...)
+  n_dims <- length(args)
+  if (n_dims == 0L) {
+    cli_abort("At least one input is required")
+  }
+
+  # Get the number of elements per input
+ lengths <- vapply(args, function(x) {
+    sh <- shape_abstract(x)
+    if (length(sh) == 0L) {
+      1L
+    } else if (length(sh) == 1L) {
+      sh[1L]
+    } else {
+      cli_abort("Each input must be a scalar or 1-D tensor")
+    }
+  }, integer(1L))
+
+  # Total number of combinations
+  n_combinations <- prod(lengths)
+
+  # Output shape for the grid (before flattening)
+  grid_shape <- lengths
+
+  # For each input, broadcast to the full grid shape then flatten
+  columns <- lapply(seq_len(n_dims), function(i) {
+    tensor <- args[[i]]
+    n_elts <- lengths[i]
+
+    # Ensure it's 1-D
+    if (length(shape_abstract(tensor)) == 0L) {
+      tensor <- nv_reshape(tensor, c(1L))
+    }
+
+    # Create broadcast shape: 1s everywhere except position i
+    bcast_shape <- rep(1L, n_dims)
+    bcast_shape[i] <- n_elts
+
+    # Reshape and broadcast to full grid shape
+    reshaped <- nv_reshape(tensor, bcast_shape)
+    broadcast <- nv_broadcast_to(reshaped, grid_shape)
+
+    # Flatten to 1-D column
+    nv_reshape(broadcast, c(n_combinations))
+  })
+
+  # Stack columns into (n_combinations, n_dims) tensor
+  stacked <- lapply(columns, function(col) {
+    nv_reshape(col, c(n_combinations, 1L))
+  })
+
+  do.call(function(...) nv_concatenate(..., dimension = 2L), stacked)
+}

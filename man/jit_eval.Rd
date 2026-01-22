@@ -16,5 +16,4 @@ Result of the expression.
 }
 \description{
 Compiles and evaluates an expression.
-Evaluates in a copy of the calling environment to avoid side effects.
 }
