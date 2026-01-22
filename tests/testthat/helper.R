@@ -78,7 +78,6 @@ if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
 }
 
-
 verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
   if (is.null(f_wrapper)) {
     f <- function(x) {
