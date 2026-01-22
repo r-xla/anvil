@@ -45,6 +45,8 @@ options(repos = c(
 ))
 ```
 
+You can also use one of the prebuilt [Docker images](https://github.com/r-xla/docker).
+
 ## Quick Start
 
 Below, we create a standard R function. We cannot directly call this function, but first need to wrap it in a `jit()` call.

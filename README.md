@@ -39,6 +39,9 @@ options(repos = c(
 ))
 ```
 
+You can also use one of the prebuilt [Docker
+images](https://github.com/r-xla/docker).
+
 ## Quick Start
 
 Below, we create a standard R function. We cannot directly call this
@@ -58,7 +61,7 @@ b <- nv_scalar(-2.0, "f32")
 x <- nv_scalar(3.0, "f32")
 
 f_jit(a, b, x)
-#> AnvilTensor 
+#> AnvilTensor
 #>  1.0000
 #> [ CPUf32{} ]
 ```
@@ -70,12 +73,12 @@ the above function.
 g_jit <- jit(gradient(f, wrt = c("a", "b")))
 g_jit(a, b, x)
 #> $a
-#> AnvilTensor 
+#> AnvilTensor
 #>  3.0000
 #> [ CPUf32{} ] 
 #> 
 #> $b
-#> AnvilTensor 
+#> AnvilTensor
 #>  1.0000
 #> [ CPUf32{} ]
 ```
