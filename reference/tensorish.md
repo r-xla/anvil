@@ -1,13 +1,13 @@
 # Tensor-like Objects
 
 A value that is either an
-[`AnvilTensor`](https://r-xla.github.io/anvil/reference/nv_tensor.md),
+[`AnvilTensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md),
 can be converted to it, or represents an abstract version of it. This
 also includes atomic R vectors.
 
 ## See also
 
-[nv_tensor](https://r-xla.github.io/anvil/reference/nv_tensor.md),
+[nv_tensor](https://r-xla.github.io/anvil/reference/AnvilTensor.md),
 [ConcreteTensor](https://r-xla.github.io/anvil/reference/ConcreteTensor.md),
 [AbstractTensor](https://r-xla.github.io/anvil/reference/AbstractTensor.md),
 [LiteralTensor](https://r-xla.github.io/anvil/reference/LiteralTensor.md),
@@ -18,7 +18,7 @@ also includes atomic R vectors.
 ``` r
 x <- nv_tensor(1:4, dtype = "f32")
 x
-#> AnvilTensor 
+#> AnvilTensor
 #>  1.0000
 #>  2.0000
 #>  3.0000

@@ -15,7 +15,7 @@ jit(nv_add)(
 )
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  2.0000
     ## [ CPUf64{} ]
 
@@ -75,17 +75,17 @@ jit(\() list(1L, 1.0, TRUE))()
 ```
 
     ## [[1]]
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  1
     ## [ CPUi32{} ] 
     ## 
     ## [[2]]
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  1.0000
     ## [ CPUf32{} ] 
     ## 
     ## [[3]]
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  1
     ## [ CPUpred{} ]
 
@@ -154,6 +154,58 @@ rows are ambiguous and the columns are known.
 
 Promotion rules: ambiguous (row) × known (column)
 
+## Creating Tensors with Different Ambiguity
+
+The
+[`nv_scalar()`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
+and
+[`nv_tensor()`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
+functions have different default behaviors regarding ambiguity:
+
+- [`nv_scalar()`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
+  creates **ambiguous** tensors by default (when not specifying dtype
+  explicitly), unless the data is `logical`.
+
+- [`nv_tensor()`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
+  creates **non-ambiguous** tensors by default
+
+``` r
+s1 <- nv_scalar(1.0)
+ambiguous(s1)
+```
+
+    ## [1] TRUE
+
+``` r
+t1 <- nv_tensor(c(1.0, 2.0, 3.0))
+ambiguous(t1)
+```
+
+    ## [1] FALSE
+
+``` r
+s2 <- nv_scalar(1.0, dtype = "f32")
+ambiguous(s2)
+```
+
+    ## [1] FALSE
+
+You can explicitly control ambiguity using the `ambiguous` parameter:
+
+``` r
+s3 <- nv_scalar(1.0, ambiguous = FALSE)
+ambiguous(s3)
+```
+
+    ## [1] FALSE
+
+``` r
+t2 <- nv_tensor(c(1.0, 2.0, 3.0), ambiguous = TRUE)
+ambiguous(t2)
+```
+
+    ## [1] TRUE
+
 ## Propagating Ambiguity
 
 Ambiguity is propagated through operations. Consider the following
@@ -167,7 +219,7 @@ f <- jit(function(x, y) {
 f(nv_scalar(TRUE), nv_scalar(2L, dtype = "i16"))
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  4
     ## [ CPUi16{} ]
 

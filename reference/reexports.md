@@ -3,6 +3,10 @@
 These objects are imported from other packages. Follow the links below
 to see their documentation.
 
+- pjrt:
+
+  [`platform`](https://r-xla.github.io/pjrt/reference/platform.html)
+
 - stablehlo:
 
   [`as_dtype`](https://r-xla.github.io/stablehlo/reference/as_dtype.html),

@@ -24,7 +24,7 @@ set.seed(42)
 nv_tensor(1L, dtype = "i16", device = "cpu", shape = integer())
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  1
     ## [ CPUi16{} ]
 
@@ -36,7 +36,7 @@ as CPU is the default.
 nv_scalar(1L, dtype = "i16")
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  1
     ## [ CPUi16{} ]
 
@@ -51,7 +51,7 @@ y <- nv_tensor(x)
 y
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  1 3 5
     ##  2 4 6
     ## [ CPUi32{2x3} ]
@@ -107,7 +107,7 @@ plus_jit <- jit(`+`)
 plus_jit(y, y)
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##   2  6 10
     ##   4  8 12
     ## [ CPUi32{2x3} ]
@@ -133,7 +133,7 @@ alpha <- nv_scalar(rnorm(1), dtype = "f32")
 linear_model(X, beta, alpha)
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##   2.7911
     ##  -1.1904
     ## [ CPUf32{2x1} ]
@@ -171,7 +171,7 @@ do.call(linear_model2, simul_data(2, 3))
 
     ## compiling ...
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##   4.9640
     ##  -0.1413
     ## [ CPUf32{2x1} ]
@@ -180,7 +180,7 @@ do.call(linear_model2, simul_data(2, 3))
 do.call(linear_model2, simul_data(2, 3))
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##   0.6140
     ##  -2.5214
     ## [ CPUf32{2x1} ]
@@ -237,7 +237,7 @@ linear_model3(X, beta, with_bias = FALSE)
 
     ## Compiling without bias ...
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##   2.8538
     ##  -1.1277
     ## [ CPUf32{2x1} ]
@@ -248,7 +248,7 @@ linear_model3(X, beta, alpha, with_bias = TRUE)
 
     ## Compiling with bias ...
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##   2.7911
     ##  -1.1904
     ## [ CPUf32{2x1} ]
@@ -270,7 +270,7 @@ linear_model4(list(X, beta, alpha))
 ```
 
     ## $y_hat
-    ## AnvilTensor 
+    ## AnvilTensor
     ##   2.7911
     ##  -1.1904
     ## [ CPUf32{2x1} ]
@@ -409,12 +409,12 @@ weights
 ```
 
     ## $beta
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  -0.9184
     ## [ CPUf32{1x1} ] 
     ## 
     ## $alpha
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  -0.4376
     ## [ CPUf32{} ]
 
@@ -449,12 +449,12 @@ train_unrolled(X, beta_hat, alpha_hat, y, n_steps = 10L)
 ```
 
     ## $beta
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  -0.9600
     ## [ CPUf32{1x1} ] 
     ## 
     ## $alpha
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  -0.3703
     ## [ CPUf32{} ]
 
@@ -492,17 +492,17 @@ train_while(X, beta_hat, alpha_hat, y, nv_scalar(100L))
 ```
 
     ## $beta
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  -0.9184
     ## [ CPUf32{1x1} ] 
     ## 
     ## $alpha
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  -0.4376
     ## [ CPUf32{} ] 
     ## 
     ## $i
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  100
     ## [ CPUi32{} ]
 
@@ -578,11 +578,11 @@ weights_out
 ```
 
     ## $beta
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  -0.9184
     ## [ CPUf32{1x1} ] 
     ## 
     ## $alpha
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  -0.4376
     ## [ CPUf32{} ]

@@ -112,16 +112,16 @@ scalar) that holds a 16-bit integer on the CPU.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">1L</span>, dtype <span class="op">=</span> <span class="st">"i16"</span>, device <span class="op">=</span> <span class="st">"cpu"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilTensor </span></span>
+<span><span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">1L</span>, dtype <span class="op">=</span> <span class="st">"i16"</span>, device <span class="op">=</span> <span class="st">"cpu"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUi16{} ]</span></span></code></pre>
 <p>Note that for the creation of scalars, you can also use
 <code>nv_scalar</code> as a shorthand to skip specifying the shape and
 omit specifying the device, as CPU is the default.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1L</span>, dtype <span class="op">=</span> <span class="st">"i16"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilTensor </span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1L</span>, dtype <span class="op">=</span> <span class="st">"i16"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUi16{} ]</span></span></code></pre>
 <p>We can also create higher-dimensional tensors, for example a 2x3
@@ -130,9 +130,9 @@ the data type, it will default to <code>"f32"</code> for R doubles and
 <code>"i32"</code> for integers.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span><span class="va">y</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilTensor </span></span>
+<pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  1 3 5</span></span>
 <span><span class="co">##  2 4 6</span></span>
 <span><span class="co">## [ CPUi32{2x3} ]</span></span></code></pre>
@@ -171,7 +171,7 @@ the function you want to apply to a jit-compiled version via
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plus_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">`+`</span><span class="op">)</span></span>
 <span><span class="fu">plus_jit</span><span class="op">(</span><span class="va">y</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilTensor </span></span>
+<pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   2  6 10</span></span>
 <span><span class="co">##   4  8 12</span></span>
 <span><span class="co">## [ CPUi32{2x3} ]</span></span></code></pre>
@@ -188,12 +188,12 @@ the linear model output <span class="math inline">\(y = X \times \beta +
 <span></span>
 <span><span class="va">linear_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">linear_model_r</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">beta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
+<span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">beta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">linear_model</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilTensor </span></span>
+<pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   2.7911</span></span>
 <span><span class="co">##  -1.1904</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
@@ -211,22 +211,22 @@ with different numbers of observations:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">simul_data</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span>, <span class="va">p</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    X <span class="op">=</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span> <span class="op">*</span> <span class="va">p</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">n</span>, <span class="va">p</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    beta <span class="op">=</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">p</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    alpha <span class="op">=</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
+<span>    X <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span> <span class="op">*</span> <span class="va">p</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">n</span>, <span class="va">p</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    beta <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">p</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    alpha <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Below, we call the function twice on data with the same shapes.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">linear_model2</span>, <span class="fu">simul_data</span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## compiling ...</span></span></code></pre>
-<pre><code><span><span class="co">## AnvilTensor </span></span>
+<pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   4.9640</span></span>
 <span><span class="co">##  -0.1413</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">linear_model2</span>, <span class="fu">simul_data</span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilTensor </span></span>
+<pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   0.6140</span></span>
 <span><span class="co">##  -2.5214</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
@@ -271,14 +271,14 @@ to treat it as a regular R value.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">linear_model3</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, with_bias <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Compiling without bias ...</span></span></code></pre>
-<pre><code><span><span class="co">## AnvilTensor </span></span>
+<pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   2.8538</span></span>
 <span><span class="co">##  -1.1277</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">linear_model3</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, with_bias <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Compiling with bias ...</span></span></code></pre>
-<pre><code><span><span class="co">## AnvilTensor </span></span>
+<pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   2.7911</span></span>
 <span><span class="co">##  -1.1904</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
@@ -298,7 +298,7 @@ lists.</p>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu">linear_model4</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $y_hat</span></span>
-<span><span class="co">## AnvilTensor </span></span>
+<span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   2.7911</span></span>
 <span><span class="co">##  -1.1904</span></span>
 <span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
@@ -329,12 +329,12 @@ data from a linear model:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <p><img src="anvil_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="" width="700"></p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <p>Next, we randomly initialize the model parameters:</p>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
-<span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
+<span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></code></pre></div>
 <p>We can now define a function that does the prediction and calculates
 the loss. Note that we are calling into the original R function that
 does the prediction and not its jit-compiled version.</p>
@@ -399,8 +399,8 @@ jit-compile the update step and then repeatedly call it in an R
 loop:</p>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">n_steps</span> <span class="op">&lt;-</span> <span class="fl">100L</span></span>
-<span><span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
-<span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
+<span><span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
+<span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">beta_hat</span>, alpha <span class="op">=</span> <span class="va">alpha_hat</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_steps</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -408,12 +408,12 @@ loop:</p>
 <span><span class="op">}</span></span>
 <span><span class="va">weights</span></span></code></pre></div>
 <pre><code><span><span class="co">## $beta</span></span>
-<span><span class="co">## AnvilTensor </span></span>
+<span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  -0.9184</span></span>
 <span><span class="co">## [ CPUf32{1x1} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $alpha</span></span>
-<span><span class="co">## AnvilTensor </span></span>
+<span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  -0.4376</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <p>For simple update steps, this solution can be inefficient because
@@ -430,7 +430,7 @@ for every unique value of <code>n_steps</code>, the function will be
 re-compiled into a different executable.</p>
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">train_unrolled</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span>, <span class="va">n_steps</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span></span>
+<span>  <span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_steps</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">grads</span> <span class="op">&lt;-</span> <span class="fu">model_loss_grad</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span></span>
 <span>    <span class="va">beta</span> <span class="op">&lt;-</span> <span class="va">beta</span> <span class="op">-</span> <span class="va">lr</span> <span class="op">*</span> <span class="va">grads</span><span class="op">$</span><span class="va">beta</span></span>
@@ -439,16 +439,16 @@ re-compiled into a different executable.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">beta</span>, alpha <span class="op">=</span> <span class="va">alpha</span><span class="op">)</span></span>
 <span><span class="op">}</span>, static <span class="op">=</span> <span class="st">"n_steps"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
-<span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
+<span><span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
+<span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
 <span><span class="fu">train_unrolled</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta_hat</span>, <span class="va">alpha_hat</span>, <span class="va">y</span>, n_steps <span class="op">=</span> <span class="fl">10L</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $beta</span></span>
-<span><span class="co">## AnvilTensor </span></span>
+<span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  -0.9600</span></span>
 <span><span class="co">## [ CPUf32{1x1} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $alpha</span></span>
-<span><span class="co">## AnvilTensor </span></span>
+<span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  -0.3703</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <p>Finally, the third approach is to use the <code>nv_while</code>
@@ -467,7 +467,7 @@ and returns a new state.</li>
 <code class="sourceCode R"><span><span class="va">train_while</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span>, <span class="va">n_steps</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">lr</span> <span class="op">&lt;-</span> <span class="fl">0.1</span></span>
 <span>  <span class="fu"><a href="../reference/nv_while.html">nv_while</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">beta</span>, alpha <span class="op">=</span> <span class="va">alpha</span>, i <span class="op">=</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">beta</span>, alpha <span class="op">=</span> <span class="va">alpha</span>, i <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    \<span class="op">(</span><span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">i</span><span class="op">)</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="va">n_steps</span>,</span>
 <span>    \<span class="op">(</span><span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="va">grads</span> <span class="op">&lt;-</span> <span class="fu">model_loss_grad</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, <span class="va">y</span><span class="op">)</span></span>
@@ -480,21 +480,21 @@ and returns a new state.</li>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
-<span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
-<span><span class="fu">train_while</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta_hat</span>, <span class="va">alpha_hat</span>, <span class="va">y</span>, <span class="fu"><a href="../reference/nv_tensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">100L</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
+<span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
+<span><span class="fu">train_while</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta_hat</span>, <span class="va">alpha_hat</span>, <span class="va">y</span>, <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">100L</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $beta</span></span>
-<span><span class="co">## AnvilTensor </span></span>
+<span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  -0.9184</span></span>
 <span><span class="co">## [ CPUf32{1x1} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $alpha</span></span>
-<span><span class="co">## AnvilTensor </span></span>
+<span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  -0.4376</span></span>
 <span><span class="co">## [ CPUf32{} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $i</span></span>
-<span><span class="co">## AnvilTensor </span></span>
+<span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  100</span></span>
 <span><span class="co">## [ CPUi32{} ]</span></span></code></pre>
 <p>The same approach works analogously for <code>if</code>-statements,
@@ -555,12 +555,12 @@ tensors have been deleted.</p>
 <div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">weights_out</span></span></code></pre></div>
 <pre><code><span><span class="co">## $beta</span></span>
-<span><span class="co">## AnvilTensor </span></span>
+<span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  -0.9184</span></span>
 <span><span class="co">## [ CPUf32{1x1} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $alpha</span></span>
-<span><span class="co">## AnvilTensor </span></span>
+<span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  -0.4376</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 </div>

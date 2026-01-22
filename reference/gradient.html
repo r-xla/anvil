@@ -89,6 +89,18 @@ If <code>NULL</code> (the default), the gradient is computed with respect to all
 
 <ul><li><p><code>value_and_gradient()</code>: Returns both the value and the gradient</p></li>
 </ul></div>
+    <div class="section level2">
+    <h2 id="ambiguity">Ambiguity<a class="anchor" aria-label="anchor" href="#ambiguity"></a></h2>
+
+
+<p>When performing the backward pass, the ambiguity does not really play a role anymore.
+This is because we don't call into <code>nv_</code>-functions anymore that promote non-matching tensors,
+but only primitive <code>nvl_</code>-functions.
+The promotion has already be done in the forward pass.
+We still want to ensure, however, that the gradient values have the same ambiguity as the input values.
+This is simply achieved by setting the ambiguity at the end of the backward pass.
+The ambiguity of a single backward rule therefore does not really matter.</p>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

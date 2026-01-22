@@ -119,7 +119,7 @@ convert an R seed into a state using <code><a href="../reference/nv_rng_state.ht
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
 <span><span class="va">state</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_rng_state.html">nv_rng_state</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="fl">42L</span><span class="op">)</span></span>
 <span><span class="va">state</span></span>
-<span><span class="co">#&gt; AnvilTensor </span></span>
+<span><span class="co">#&gt; AnvilTensor</span></span>
 <span><span class="co">#&gt;  42</span></span>
 <span><span class="co">#&gt;   0</span></span>
 <span><span class="co">#&gt; [ CPUui64{2} ]</span></span></code></pre></div>
@@ -140,12 +140,12 @@ number generation).</li>
 <span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">f</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
 <span><span class="va">result</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>  <span class="co"># new state</span></span>
-<span><span class="co">#&gt; AnvilTensor </span></span>
+<span><span class="co">#&gt; AnvilTensor</span></span>
 <span><span class="co">#&gt;  42</span></span>
 <span><span class="co">#&gt;   3</span></span>
 <span><span class="co">#&gt; [ CPUui64{2} ]</span></span>
 <span><span class="va">result</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>  <span class="co"># random numbers</span></span>
-<span><span class="co">#&gt; AnvilTensor </span></span>
+<span><span class="co">#&gt; AnvilTensor</span></span>
 <span><span class="co">#&gt;  0.8690 0.1506 0.5203</span></span>
 <span><span class="co">#&gt;  0.3103 0.9928 0.1065</span></span>
 <span><span class="co">#&gt; [ CPUf32{2x3} ]</span></span></code></pre></div>
@@ -157,7 +157,7 @@ number generation).</li>
 <span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">g</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
 <span><span class="va">result</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; AnvilTensor </span></span>
+<span><span class="co">#&gt; AnvilTensor</span></span>
 <span><span class="co">#&gt;  -0.0675  0.9489  1.9457</span></span>
 <span><span class="co">#&gt;  -0.5255  1.2002  0.0008</span></span>
 <span><span class="co">#&gt; [ CPUf32{2x3} ]</span></span></code></pre></div>

@@ -156,7 +156,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x557dfba5f360>
+    ## <bytecode: 0x55c5e9a9a530>
     ## <environment: namespace:anvil>
 
 The
@@ -207,7 +207,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x557dfba45028>
+    ## <bytecode: 0x55c5e9a998b8>
     ## <environment: namespace:anvil>
 
 The
@@ -235,14 +235,14 @@ program <- pjrt::pjrt_program(src = hlo_str, format = "mlir")
 exec <- pjrt::pjrt_compile(program)
 ```
 
-To run the function, we simply pass the tensors to the executable, which
-will output a `PJRTBuffer` that we can easily convert to an
-`AnvilTensor`.
+To run the function, we need to extract the underlying buffers from the
+tensors before passing them to the executable, which will output a
+`PJRTBuffer` that we can easily convert to an `AnvilTensor`.
 
 ``` r
 x <- nv_scalar(3, "f32")
 y <- nv_scalar(4, "f32")
-out <- pjrt::pjrt_execute(exec, x, y)
+out <- pjrt::pjrt_execute(exec, x$tensor, y$tensor)
 out
 ```
 
@@ -254,7 +254,7 @@ out
 nv_tensor(out)
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  12.0000
     ## [ CPUf32{} ]
 
@@ -278,7 +278,7 @@ f_jit <-  jit(f, static = "op")
 f_jit(x, y, "add")
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  7.0000
     ## [ CPUf32{} ]
 
@@ -317,7 +317,7 @@ argument values, the size of the cache remains 1:
 f_jit(nv_scalar(-99, "f32"), nv_scalar(2, "f32"), "add")
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  -97.0000
     ## [ CPUf32{} ]
 
@@ -334,7 +334,7 @@ When we execute the function with tensors of different `dtype` or
 f_jit(nv_scalar(1, "i32"), nv_scalar(2, "i32"), "add")
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  3
     ## [ CPUi32{} ]
 
@@ -351,7 +351,7 @@ will be recompiled:
 f_jit(nv_scalar(1, "f32"), nv_scalar(2, "f32"), "mul")
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  2.0000
     ## [ CPUf32{} ]
 
@@ -381,10 +381,12 @@ g(x, y, "add")
 ```
 
     ## $x
+    ## DebugBox(ConcreteTensor)
     ##  1.0000
     ## [ CPUf32{} ] 
     ## 
     ## $y
+    ## DebugBox(ConcreteTensor)
     ##  1.0000
     ## [ CPUf32{} ]
 
@@ -397,12 +399,12 @@ g_jit(x, y, "add")
 ```
 
     ## $x
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  1.0000
     ## [ CPUf32{} ] 
     ## 
     ## $y
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  1.0000
     ## [ CPUf32{} ]
 
@@ -418,12 +420,12 @@ h_jit(x, y)
 ```
 
     ## $x
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  3.0000
     ## [ CPUf32{} ] 
     ## 
     ## $y
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  7.0000
     ## [ CPUf32{} ]
 
@@ -504,7 +506,7 @@ graph
 
     ## <AnvilGraph>
     ##   Inputs:
-    ##     %x1: i32[]
+    ##     %x1: i32?[]
     ##   Constants:
     ##     %c1: f32[1000000]
     ##   Body:
@@ -524,7 +526,7 @@ graph$constants
 ```
 
     ## [[1]]
-    ## GraphValue(ConcreteTensor(dtype=f32, shape=1000000))
+    ## GraphValue(ConcreteTensor(f32, (1000000)))
 
 When compiling such a program to stableHLO, constants are treated
 differently depending on their shape (we follow JAX’s approach here).
@@ -560,7 +562,7 @@ out[[2L]]
 ```
 
     ## [[1]]
-    ## GraphValue(ConcreteTensor(dtype=f32, shape=1000000))
+    ## GraphValue(ConcreteTensor(f32, (1000000)))
 
 Also, before compiling, we remove unused constants. Captured constants
 can become unused when we apply code transformations like below, where

@@ -15,7 +15,7 @@ t(x)
 
 - x:
 
-  ([`nv_tensor`](https://r-xla.github.io/anvil/reference/nv_tensor.md))
+  ([`nv_tensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md))
 
 - permutation:
 
@@ -25,4 +25,4 @@ t(x)
 
 ## Value
 
-[`nv_tensor`](https://r-xla.github.io/anvil/reference/nv_tensor.md)
+[`nv_tensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)

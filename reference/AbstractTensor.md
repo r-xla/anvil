@@ -32,11 +32,6 @@ AbstractTensor(dtype, shape, ambiguous = FALSE)
   literals (e.g., `1L`, `1.0`) and follow special promotion rules. See
   the vignette "Type Promotion" for more details.
 
-## Details
-
-Two tensors are considered equal (`==`) if they have the same dtype and
-shape, ignoring ambiguity.
-
 ## See also
 
 [ConcreteTensor](https://r-xla.github.io/anvil/reference/ConcreteTensor.md),

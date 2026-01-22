@@ -5,11 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="AnvilTensor — AnvilTensor"><meta name="description" content="Virtual base class for tensor objects in anvil.
-This class is used to mark objects that can be used as tensors in anvil.
-Cannot be instantiated directly - use nv_tensor(), nv_scalar(), or nv_empty() instead."><meta property="og:description" content="Virtual base class for tensor objects in anvil.
-This class is used to mark objects that can be used as tensors in anvil.
-Cannot be instantiated directly - use nv_tensor(), nv_scalar(), or nv_empty() instead."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="AnvilTensor — AnvilTensor"><meta name="description" content="Tensor objects in anvil that hold array data with automatic differentiation support.
+Create tensors using nv_tensor(), nv_scalar(), or nv_empty()."><meta property="og:description" content="Tensor objects in anvil that hold array data with automatic differentiation support.
+Create tensors using nv_tensor(), nv_scalar(), or nv_empty()."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -63,14 +61,64 @@ Cannot be instantiated directly - use nv_tensor(), nv_scalar(), or nv_empty() in
     </div>
 
     <div class="ref-description section level2">
-    <p>Virtual base class for tensor objects in anvil.
-This class is used to mark objects that can be used as tensors in anvil.
-Cannot be instantiated directly - use <code><a href="nv_tensor.html">nv_tensor()</a></code>, <code><a href="nv_tensor.html">nv_scalar()</a></code>, or <code><a href="nv_tensor.html">nv_empty()</a></code> instead.</p>
+    <p>Tensor objects in anvil that hold array data with automatic differentiation support.
+Create tensors using <code>nv_tensor()</code>, <code>nv_scalar()</code>, or <code>nv_empty()</code>.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nv_tensor</span><span class="op">(</span><span class="va">data</span>, dtype <span class="op">=</span> <span class="cn">NULL</span>, device <span class="op">=</span> <span class="cn">NULL</span>, shape <span class="op">=</span> <span class="cn">NULL</span>, ambiguous <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">nv_scalar</span><span class="op">(</span><span class="va">data</span>, dtype <span class="op">=</span> <span class="cn">NULL</span>, device <span class="op">=</span> <span class="cn">NULL</span>, ambiguous <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">nv_empty</span><span class="op">(</span><span class="va">dtype</span>, <span class="va">shape</span>, device <span class="op">=</span> <span class="cn">NULL</span>, ambiguous <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    </div>
+
+    <div class="section level2">
+    <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-  </main></div>
+<dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
+<dd><p>(any)<br>
+Object convertible to a <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_buffer.html" class="external-link">PJRTBuffer</a></code>.</p></dd>
+
+
+<dt id="arg-dtype">dtype<a class="anchor" aria-label="anchor" href="#arg-dtype"></a></dt>
+<dd><p>(<code>NULL</code> | <code>character(1)</code> | <code><a href="https://r-xla.github.io/stablehlo/reference/TensorDataType.html" class="external-link">stablehlo::TensorDataType</a></code>)<br>
+One of pred, i8, i16, i32, i64, ui8, ui16, ui32, ui64, f32, f64 or a <code><a href="https://r-xla.github.io/stablehlo/reference/TensorDataType.html" class="external-link">stablehlo::TensorDataType</a></code>.
+The default (<code>NULL</code>) uses <code>f32</code> for numeric data, <code>i32</code> for integer data, and <code>pred</code> for logical data.</p></dd>
+
+
+<dt id="arg-device">device<a class="anchor" aria-label="anchor" href="#arg-device"></a></dt>
+<dd><p>(<code>NULL</code> | <code>character(1)</code> | <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_device.html" class="external-link">PJRTDevice</a></code>)<br>
+The platform name for the tensor (<code>"cpu"</code>, <code>"cuda"</code>, <code>"metal"</code>).
+Default is to use the CPU, unless the data is already a <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_buffer.html" class="external-link">PJRTBuffer</a></code>.
+You can change the default by setting the <code>PJRT_PLATFORM</code> environment variable.</p></dd>
+
+
+<dt id="arg-shape">shape<a class="anchor" aria-label="anchor" href="#arg-shape"></a></dt>
+<dd><p>(<code>NULL</code> | <code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>)<br>
+Shape.
+The default (<code>NULL</code>) is to infer it from the data if possible.
+Note that <code>nv_tensor</code> interprets length 1 vectors as having shape <code>(1)</code>.
+To create a "scalar" with dimension <code>()</code>, use <code>nv_scalar</code>.</p></dd>
+
+
+<dt id="arg-ambiguous">ambiguous<a class="anchor" aria-label="anchor" href="#arg-ambiguous"></a></dt>
+<dd><p>(<code>NULL</code> | <code>logical(1)</code>)<br>
+Whether the dtype should be marked as ambiguous.
+For <code>nv_tensor()</code>, defaults to <code>FALSE</code> (non-ambiguous) for new tensors,
+or preserves the existing value when <code>data</code> is already an <code>AnvilTensor</code>.
+For <code>nv_scalar()</code>, defaults to <code>TRUE</code> when <code>dtype</code> is <code>NULL</code> and data is numeric, <code>FALSE</code> otherwise.</p></dd>
+
+</dl></div>
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p>(<code>AnvilTensor</code>) A tensor object.</p>
+    </div>
+
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

@@ -29,6 +29,7 @@
 <url><loc>https://r-xla.github.io/anvil/reference/LiteralTensor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/PrimitiveCall.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/abstract_properties.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/ambiguous.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/assert_shapevec.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/build_tree.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/common_dtype.html</loc></url>
@@ -107,7 +108,6 @@
 <url><loc>https://r-xla.github.io/anvil/reference/nv_sub.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_tan.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_tanh.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/reference/nv_tensor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_transpose.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_while.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_xor.html</loc></url>
@@ -181,7 +181,6 @@
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_xor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/platform.AbstractTensor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/platform.ConcreteTensor.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/reference/platform.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/prim.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/reexports.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/register_primitive.html</loc></url>
@@ -194,5 +193,6 @@
 <url><loc>https://r-xla.github.io/anvil/reference/transform_gradient.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/tree_size.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/unflatten.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/unwrap_if_tensor.html</loc></url>
 </urlset>
 

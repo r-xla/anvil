@@ -4,14 +4,12 @@
 
 Functions for creating and initializing tensors
 
-- [`AnvilTensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
+- [`nv_tensor()`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
+  [`nv_scalar()`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
+  [`nv_empty()`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
   : AnvilTensor
 - [`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md) :
   Tensor-like Objects
-- [`nv_tensor()`](https://r-xla.github.io/anvil/reference/nv_tensor.md)
-  [`nv_scalar()`](https://r-xla.github.io/anvil/reference/nv_tensor.md)
-  [`nv_empty()`](https://r-xla.github.io/anvil/reference/nv_tensor.md) :
-  Tensor
 - [`nv_fill()`](https://r-xla.github.io/anvil/reference/nv_fill.md) :
   Constant
 - [`nv_iota()`](https://r-xla.github.io/anvil/reference/nv_iota.md) :
@@ -33,14 +31,15 @@ Functions for querying tensor attributes and converting them
   [`ndims`](https://r-xla.github.io/anvil/reference/reexports.md)
   [`is_dtype`](https://r-xla.github.io/anvil/reference/reexports.md)
   [`as_dtype`](https://r-xla.github.io/anvil/reference/reexports.md)
+  [`platform`](https://r-xla.github.io/anvil/reference/reexports.md)
   [`Shape`](https://r-xla.github.io/anvil/reference/reexports.md) :
   Objects exported from other packages
+- [`ambiguous()`](https://r-xla.github.io/anvil/reference/ambiguous.md)
+  : Get Ambiguity of a Tensor
 - [`platform(`*`<AbstractTensor>`*`)`](https://r-xla.github.io/anvil/reference/platform.AbstractTensor.md)
   : Platform for AbstractTensor
 - [`platform(`*`<ConcreteTensor>`*`)`](https://r-xla.github.io/anvil/reference/platform.ConcreteTensor.md)
   : Platform for ConcreteTensor
-- [`platform()`](https://r-xla.github.io/anvil/reference/platform.md) :
-  Platform
 
 ## Tensor Serialization
 
@@ -279,6 +278,7 @@ Internal data structures and functions
 
 - [`shape_abstract()`](https://r-xla.github.io/anvil/reference/abstract_properties.md)
   [`ndims_abstract()`](https://r-xla.github.io/anvil/reference/abstract_properties.md)
+  [`ambiguous_abstract()`](https://r-xla.github.io/anvil/reference/abstract_properties.md)
   [`dtype_abstract()`](https://r-xla.github.io/anvil/reference/abstract_properties.md)
   : Abstract Properties
 - [`to_abstract()`](https://r-xla.github.io/anvil/reference/to_abstract.md)

@@ -23,13 +23,13 @@ y <- nv_scalar(1) + nv_tensor(1:4, shape = c(2, 2))
 y
 ```
 
-    ## f32{2,2}
+    ## f32?{2,2}
 
 ``` r
 mean(y)
 ```
 
-    ## f32{}
+    ## f32?{}
 
 To use debug mode, you can pass `AnvilTensor` and literals (`1L`,
 `1.0`).
@@ -38,7 +38,7 @@ To use debug mode, you can pass `AnvilTensor` and literals (`1L`,
 1 + nv_scalar(1)
 ```
 
-    ## f32{}
+    ## f32?{}
 
 If you only want to specify the abstract types, you can also directly
 pass `DebugBox` objects:
@@ -101,7 +101,7 @@ call was within the `jit`-compiled function:
 jit(\() f(1))()
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  -1.0000
     ## [ CPUf32{} ]
 
@@ -141,7 +141,7 @@ f_jit(nv_tensor(1:4, shape = c(2, 2)))
 
     ## GraphBox(GraphValue(AbstractTensor(dtype=f32?, shape=2x2)))
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  15.0000
     ## [ CPUf32{} ]
 
@@ -152,7 +152,7 @@ won’t be printed because the executable is retrieved from the cache.
 f_jit(nv_tensor(0:3, shape = c(2, 2)))
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  7.0000
     ## [ CPUf32{} ]
 
@@ -186,34 +186,34 @@ for (i in 1:10) {
 }
 ```
 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  1
     ## [ CPUi32{} ] 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  2
     ## [ CPUi32{} ] 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  3
     ## [ CPUi32{} ] 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  4
     ## [ CPUi32{} ] 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  5
     ## [ CPUi32{} ] 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  6
     ## [ CPUi32{} ] 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  7
     ## [ CPUi32{} ] 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  8
     ## [ CPUi32{} ] 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  9
     ## [ CPUi32{} ] 
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  10
     ## [ CPUi32{} ]
 
@@ -265,7 +265,7 @@ jit(\() {
     ## [ S32{} ]
 
     ## $x
-    ## AnvilTensor 
+    ## AnvilTensor
     ##  11
     ## [ CPUi32{} ]
 
