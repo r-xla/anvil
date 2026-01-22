@@ -378,10 +378,8 @@ print.AnvilTensor <- function(x, header = TRUE, ...) {
   invisible(x)
 }
 
-#' @keywords internal
-#' @export
-compare_proxy.AnvilTensor <- function(x, path) {
-  # nolint
+# fmt: skip
+compare_proxy.AnvilTensor <- function(x, path) { # nolint
   list(
     object = list(
       data = as_array(x),
