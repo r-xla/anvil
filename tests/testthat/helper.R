@@ -2,6 +2,7 @@ expect_jit_unary <- function(nv_fun, rfun, x, scalar = !is.array(x)) {
   f <- jit(function(a) {
     nv_fun(a)
   })
+
   out <- if (scalar) {
     f(nv_scalar(x))
   } else {
