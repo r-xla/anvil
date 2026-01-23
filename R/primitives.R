@@ -411,10 +411,20 @@ p_gather <- AnvilPrimitive("gather")
 #' @template param_operand
 #' @param start_indices ([`tensorish`])\cr
 #'   Tensor of integer type containing the starting indices for the gather operation.
-#' @param gather_dimension_numbers ([`GatherDimensionNumbers`])\cr
-#'   Dimension configuration for the gather operation.
 #' @param slice_sizes (`integer()`)\cr
 #'   The sizes of the slices to gather in each dimension.
+#' @param offset_dims (`integer()`)\cr
+#'   Dimensions of the operand to gather from.
+#' @param collapsed_slice_dims (`integer()`)\cr
+#'   Dimensions of the slice to gather.
+#' @param operand_batching_dims (`integer()`)\cr
+#'   Dimensions of the operand to gather from.
+#' @param start_indices_batching_dims (`integer()`)\cr
+#'   Dimensions of the start_indices to gather from.
+#' @param start_index_map (`integer()`)\cr
+#'   Mapping from the start_indices to the operand dimensions.
+#' @param index_vector_dim (`integer(1)`)\cr
+#'   Dimension of the index vector.
 #' @param indices_are_sorted (`logical(1)`)\cr
 #'   Whether indices are guaranteed to be sorted.
 #' @param unique_indices (`logical(1)`)\cr

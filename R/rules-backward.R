@@ -784,6 +784,16 @@ p_scatter[["backward"]] <- function(
   update_computation_graph,
   .required
 ) {
+  # Verify update_computation is simple replacement: function(old, new) new
+  # The gradient calculation only works for this case
+  is_simple_replacement <- identical(
+    update_computation_graph$outputs[[1L]],
+    update_computation_graph$inputs[[2L]]
+  )
+  if (!is_simple_replacement) {
+    cli_abort("Scatter backward only supports simple replacement (update_computation = function(old, new) new)")
+  }
+
   input <- inputs[[1L]]
   scatter_indices <- inputs[[2L]]
   update <- inputs[[3L]]

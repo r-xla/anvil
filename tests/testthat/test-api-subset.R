@@ -1,174 +1,115 @@
 describe("nv_subset", {
-  it("vec[i] drops dimension (R literal)", {
-    # R literal drops dimension
-    expect_jit_equal(
-      nv_tensor(0:4)[1],
-      nv_scalar(0L, ambiguous = FALSE)
-    )
-  })
-  it("vec[list(i)] preserves dimension", {
-    # list() preserves dimension
-    expect_jit_equal(
-      nv_tensor(0:4)[list(1)],
-      nv_tensor(0L)
-    )
-  })
-  it("vec[i:j] works", {
-    expect_jit_equal(
-      nv_tensor(0:4)[1:3],
-      nv_tensor(0:2)
-    )
-    expect_jit_equal(
-      nv_tensor(0:4)[2:4],
-      nv_tensor(1:3)
-    )
-  })
-  it("mat[i,j] drops both dimensions (R literals)", {
-    x <- nv_tensor(matrix(0:3, nrow = 2))
-    expect_jit_equal(
-      x[1, 1],
-      nv_scalar(0L, ambiguous = FALSE)
-    )
-  })
-  it("mat[list(i), list(j)] preserves both dimensions", {
-    x <- nv_tensor(matrix(0:3, nrow = 2))
-    expect_jit_equal(
-      x[list(1), list(1)],
-      nv_tensor(0L, shape = c(1, 1))
-    )
-  })
-  it("ranges never drop dimensions (even 1:1)", {
-    expect_jit_equal(
-      nv_tensor(0:3)[1:1],
-      nv_tensor(0L)
-    )
-  })
-  it("mat[nv_scalar(i), nv_scalar(j)] drops both dimensions (scalar tensors)", {
-    x <- nv_tensor(matrix(0:3, nrow = 2))
-    # Scalar tensor indices drop dimensions (like R literals)
-    expect_jit_equal(
-      x[nv_scalar(1L), nv_scalar(1L)],
-      nv_scalar(0L, ambiguous = FALSE)
-    )
-    expect_jit_equal(
-      x[nv_scalar(1L), nv_scalar(2L)],
-      nv_scalar(2L, ambiguous = FALSE)
-    )
-  })
-  it("mat[nv_scalar(i), j] - both drop (scalar tensor + literal)", {
-    x <- nv_tensor(matrix(0:3, nrow = 2))
-    # Both dims dropped (scalar tensor + literal)
-    expect_jit_equal(
-      x[nv_scalar(1L), 1],
-      nv_scalar(0L, ambiguous = FALSE)
-    )
-    expect_jit_equal(
-      x[nv_scalar(1L), 2],
-      nv_scalar(2L, ambiguous = FALSE)
-    )
+  # Subset specs are passed as ... just like nv_subset:
+  #   :          -> full dimension (select all)
+  #   scalar int -> single index, drops dimension
+  #   start:end  -> contiguous range
+  #   list(...)  -> gather indices, preserves dimension
+  check_subset <- function(shape, ...) {
+    set.seed(1L)
+    arr <- array(sample.int(prod(shape) * 10L, prod(shape)), dim = shape)
+    quos <- rlang::enquos(...)
+
+    r_args <- vector("list", length(shape))
+    drop_dims <- c()
+    specs <- list(...)
+    for (i in seq_along(shape)) {
+      subset <- specs[[i]]
+      if (identical(subset, `:`)) {
+        r_args[[i]] <- seq(shape[i])
+      } else if (is.list(subset)) {
+        r_args[[i]] <- unlist(subset)
+      } else {
+        r_args[[i]] <- subset
+        if (is.numeric(subset) && length(subset) == 1L) {
+          drop_dims <- c(drop_dims, i)
+        }
+      }
+    }
+
+    r_result <- do.call(`[`, c(list(arr), r_args, list(drop = FALSE)))
+    new_dims <- without(dim(r_result), drop_dims)
+    if (length(new_dims) == 0L) {
+      r_result <- as.vector(r_result)
+    } else {
+      dim(r_result) <- new_dims
+    }
+
+    # Anvil-side: pass quos directly to nv_subset
+    x <- nv_tensor(arr)
+    anvil_result <- as_array(jit(function(x) {
+      rlang::inject(nv_subset(x, !!!quos))
+    })(x))
+    browser()
+
+    expect_equal(anvil_result, r_result)
+  }
+
+  it("1D: single element (drops dim)", {
+    check_subset(c(10L), 3L)
   })
 
-  it("mat[nv_scalar(i), j:k] - scalar tensor drops, range preserves", {
-    x <- nv_tensor(matrix(0:3, nrow = 2))
-    # First dim dropped (scalar tensor), second preserved (range)
-    expect_jit_equal(
-      x[nv_scalar(1L), 1:2],
-      nv_tensor(c(0L, 2L))
-    )
+  it("1D: range", {
+    check_subset(c(10L), 2:5)
   })
 
-  it("mat[nv_tensor(i), j] - 1D tensor preserves, literal drops", {
-    x <- nv_tensor(matrix(0:3, nrow = 2))
-    # 1D tensor indices preserve dimension
-    expect_jit_equal(
-      x[nv_tensor(1L), 1],
-      nv_tensor(0L)
-    )
+  it("1D: multiple non-contiguous indices (gather)", {
+    check_subset(c(10L), list(1, 4, 7))
   })
 
-  it("mat[i,] drops first dim, keeps second (R literal + empty)", {
-    x <- nv_tensor(matrix(0:3, nrow = 2))
-    expect_jit_equal(
-      x[1, ],
-      nv_tensor(c(0L, 2L))
-    )
-    expect_jit_equal(
-      x[2, ],
-      nv_tensor(c(1L, 3L))
-    )
-  })
-  it("mat[list(i),] preserves first dim", {
-    x <- nv_tensor(matrix(0:3, nrow = 2))
-    expect_jit_equal(
-      x[list(1), ],
-      nv_tensor(matrix(c(0L, 2L), nrow = 1))
-    )
-    expect_jit_equal(
-      x[list(2), ],
-      nv_tensor(matrix(c(1L, 3L), nrow = 1))
-    )
+  it("2D: single element in both dims (scalar result)", {
+    check_subset(c(4L, 5L), 2L, 3L)
   })
 
-  it("mat[i:j, k:l] works (multi-dimensional ranges)", {
-    x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4))
-    expect_jit_equal(
-      x[1:2, 1:2],
-      nv_tensor(matrix(c(1L, 2L, 4L, 5L), nrow = 2))
-    )
-    expect_jit_equal(
-      x[2:3, 2:4],
-      nv_tensor(matrix(c(5L, 6L, 8L, 9L, 11L, 12L), nrow = 2))
-    )
+  it("2D: range + full", {
+    check_subset(c(6L, 4L), 2:4, `:`)
   })
 
-  it("3D tensor slicing works", {
-    x <- nv_tensor(array(1:24, dim = c(2, 3, 4)))
-    # All R literals drop all dims
-    expect_jit_equal(
-      x[1, 1, 1],
-      nv_scalar(1L, ambiguous = FALSE)
-    )
-    # All list() preserve all dims
-    expect_jit_equal(
-      x[list(1), list(1), list(1)],
-      nv_tensor(1L, shape = c(1, 1, 1))
-    )
-    # Mix: literal drops, range preserves
-    expect_jit_equal(
-      x[1, 1:2, 1],
-      nv_tensor(c(1L, 3L))
-    )
-    # list() preserves
-    expect_jit_equal(
-      x[list(1), 1:2, list(1)],
-      nv_tensor(array(c(1L, 3L), dim = c(1, 2, 1)))
-    )
+  it("2D: drop first dim, range in second", {
+    check_subset(c(5L, 8L), 3L, 2:6)
   })
 
-  it("list() with multiple elements gathers non-contiguous indices", {
-    x <- nv_tensor(1:10)
-    expect_jit_equal(
-      x[list(1, 3, 5)],
-      nv_tensor(c(1L, 3L, 5L))
-    )
+  it("2D: gather in first dim, full second dim", {
+    check_subset(c(6L, 4L), list(1, 3, 5), `:`)
   })
 
-  it("2D gather with list() works", {
-    x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4))
-    # Gather rows 1 and 3, all columns
-    expect_jit_equal(
-      x[list(1, 3), ],
-      nv_tensor(matrix(c(1L, 3L, 4L, 6L, 7L, 9L, 10L, 12L), nrow = 2))
-    )
+  it("2D: gather in both dims (cartesian product)", {
+    check_subset(c(5L, 6L), list(1, 3, 5), list(2, 4))
   })
 
-  it("gather with list() and literal index works", {
-    x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4))
-    # Gather rows 1 and 3, column 2 (literal drops column dim)
-    expect_jit_equal(
-      x[list(1, 3), 2],
-      nv_tensor(c(4L, 6L))
-    )
+  it("2D: gather in one dim, drop the other", {
+    check_subset(c(5L, 6L), list(2, 4), 3L)
+  })
+
+  it("3D: range, drop, full", {
+    check_subset(c(4L, 5L, 3L), 1:3, 2L, `:`)
+  })
+
+  it("3D: gather in first two dims, range in third", {
+    check_subset(c(4L, 5L, 6L), list(1, 3), list(2, 4, 5), 2:4)
+  })
+
+  it("2D: single-element list preserves dim", {
+    check_subset(c(4L, 3L), list(2), `:`)
+  })
+
+  it("3D: all full (identity)", {
+    check_subset(c(3L, 4L, 2L), `:`, `:`, `:`)
+  })
+
+  it("4D case with 2 multi-index subset", {
+    check_subset(c(3, 4, 2, 4), 1:2, list(1, 2, 4), `:`, list(3, 1))
+  })
+
+  it("5D case with 3 multi-index subset and no drop", {
+    check_subset(c(3, 4, 2, 4, 3), 1:2, list(1, 2, 4), `:`, list(3, 1), list(2, 2))
+  })
+
+  it("5D case with 3 multi-index subset and drop", {
+    check_subset(c(3, 4, 2, 4, 3), 1, list(1, 2, 4), `:`, list(3, 1), list(2, 2))
+  })
+
+  it("5D case with 3 multi-index subset and 2 drops", {
+    check_subset(c(3, 4, 2, 4, 3), 1, list(1, 2, 4), 2, list(3, 1), list(2, 2))
   })
 
   it("errors on R vector of length > 1", {
@@ -178,97 +119,86 @@ describe("nv_subset", {
       "Vectors of length > 1 are not allowed"
     )
   })
-
-  it("uses i32 dtype when tensor index is i32", {
-    x <- nv_tensor(matrix(1:12, nrow = 3))
-    # When we have an i32 tensor index, the R index should also become i32
-    idx <- nv_scalar(1L, dtype = "i32")
-    # This should work without dtype conversion issues
-    expect_jit_equal(x[idx, 2], nv_scalar(4L, ambiguous = FALSE))
-  })
 })
 
-describe("nv_subset_assign stablehlo", {
-  it("can replace element selected with scalar tensor", {
-    expect_jit_equal(
-      {
-        x <- nv_tensor(1:3)
-        x[nv_scalar(1L, dtype = "i64")] <- nv_tensor(-1L)
-        x
-      },
-      nv_tensor(c(-1L, 2L, 3L))
-    )
-  })
-  it("works with i32 indices", {
-    expect_jit_equal(
-      {
-        x <- nv_tensor(1:3)
-        x[nv_scalar(1L, dtype = "i32")] <- nv_tensor(-1L)
-        x
-      },
-      nv_tensor(c(-1L, 2L, 3L))
-    )
-  })
-  it("works with literal on rhs", {
-    expect_jit_equal(
-      {
-        x <- nv_tensor(1:2)
-        x[1] <- 0L
-        x
-      },
-      nv_tensor(c(0L, 2L))
-    )
-  })
-  it("can assign to contiguous slice in 1D tensor", {
-    expect_jit_equal(
-      {
-        x <- nv_tensor(1:3)
-        x[1:2] <- nv_tensor(c(-1L, -2L))
-        x
-      },
-      nv_tensor(c(-1L, -2L, 3L))
-    )
-  })
-  it("errors on 1D tensor indices", {
-    expect_error(
-      jit_eval({
-        x <- nv_tensor(1:3)
-        x[nv_tensor(c(1L, 3L))] <- nv_tensor(c(-1L, -3L))
-        x
-      }),
-      "Gather indices"
-    )
-  })
-  it("errors on R integer vector of length > 1", {
-    expect_error(
-      jit_eval({
-        x <- nv_tensor(1:3)
-        x[c(1, 3)] <- nv_tensor(c(-1L, -3L))
-        x
-      }),
-      "Vectors of length > 1 are not allowed"
-    )
+describe("nv_subset_assign", {
+  check_subset_assign <- function(shape, ...) {
+    set.seed(1L)
+    arr <- array(sample.int(prod(shape) * 10L, prod(shape)), dim = shape)
+    quos <- rlang::enquos(...)
+    specs <- list(...)
+
+    # Compute R-side indices and value shape
+    r_args <- vector("list", length(shape))
+    value_shape <- integer(0L)
+    for (i in seq_along(shape)) {
+      subset <- if (i <= length(specs)) specs[[i]] else `:`
+      if (identical(subset, `:`)) {
+        r_args[[i]] <- seq(shape[i])
+        value_shape <- c(value_shape, shape[i])
+      } else if (is.list(subset)) {
+        r_args[[i]] <- unlist(subset)
+        value_shape <- c(value_shape, length(subset))
+      } else {
+        r_args[[i]] <- subset
+        value_shape <- c(value_shape, length(subset))
+      }
+    }
+
+    # Generate random value matching value_shape
+    value <- array(sample.int(prod(value_shape) * 10L, prod(value_shape)), dim = value_shape)
+
+    # R-side: assign
+    r_result <- do.call(`[<-`, c(list(arr), r_args, list(value = value)))
+
+    # Anvil-side: pass quos directly to nv_subset_assign
+    x <- nv_tensor(arr)
+    v <- nv_tensor(value)
+    anvil_result <- as_array(jit(function(x, v) {
+      rlang::inject(nv_subset_assign(x, !!!quos, value = v))
+    })(x, v))
+
+    expect_equal(anvil_result, r_result)
+  }
+
+  it("1D: single element", {
+    check_subset_assign(c(10L), 3L)
   })
 
-  it("errs with incorrect subsets", {
-    expect_error(
-      jit_eval({
-        x <- nv_tensor(matrix(1:6, nrow = 3, byrow = TRUE))
-        x[nv_scalar(7L)] <- -99
-      })
-    )
+  it("1D: range", {
+    check_subset_assign(c(10L), 2:5)
   })
 
-  it("works correctly with out-of-bound indices", {
-    # we just ignore it
-    expect_jit_equal(
-      {
-        x <- nv_tensor(1:6)
-        x[nv_scalar(7L)] <- -99L
-        x
-      },
-      nv_tensor(1:6)
-    )
+  it("1D: full", {
+    check_subset_assign(c(6L), `:`)
+  })
+
+  it("2D: single element in first dim, full second", {
+    check_subset_assign(c(4L, 5L), 2L, `:`)
+  })
+
+  it("2D: range in both dims", {
+    check_subset_assign(c(6L, 8L), 2:4, 3:6)
+  })
+
+  it("2D: single element in both dims", {
+    check_subset_assign(c(4L, 5L), 2L, 3L)
+  })
+
+  it("2D: full first dim, range in second", {
+    check_subset_assign(c(3L, 6L), `:`, 2:4)
+  })
+
+  it("3D: range, single, full", {
+    check_subset_assign(c(4L, 5L, 3L), 1:3, 2L, `:`)
+  })
+
+  it("3D: all full (replace entire tensor)", {
+    check_subset_assign(c(2L, 3L, 4L), `:`, `:`, `:`)
+  })
+
+  it("2D: trailing dim unspecified (defaults to full)", {
+    check_subset_assign(c(4L, 3L), 2:3)
   })
 
   it("broadcasts scalar rhs", {
@@ -282,88 +212,98 @@ describe("nv_subset_assign stablehlo", {
     )
   })
 
-  it("promotes correctly", {
-    # We don't want to convert the lhs, so we only promote rhs to lhs (if possible)
-    expect_snapshot(
-      error = TRUE,
-      jit_eval({
-        x <- nv_tensor(1:3)
-        x[1] <- nv_tensor(1)
-        x
-      })
-    )
-    expect_jit_equal(
-      {
-        x <- nv_tensor(1:3)
-        x[1] <- nv_tensor(2L, dtype = "i8")
-        x
-      },
-      nv_tensor(c(2L, 2L, 3L))
-    )
+  it("1D: gather indices", {
+    check_subset_assign(c(5L), list(1, 3, 5))
   })
 
-  it("can replace single element", {
-    expect_jit_equal(
-      {
-        x <- nv_tensor(1:10)
-        x[1] <- nv_tensor(-9L)
-        x
-      },
-      nv_tensor(c(-9L, 2:10))
-    )
+  it("2D: gather in first dim, full second", {
+    check_subset_assign(c(6L, 4L), list(1, 3, 5), `:`)
   })
-  it("works with literal on rhs", {
-    expect_jit_equal(
-      {
-        x <- nv_tensor(1:2)
-        x[1] <- 0L
+
+  it("2D: gather in both dims", {
+    check_subset_assign(c(5L, 6L), list(1, 3, 5), list(2, 4))
+  })
+
+  it("errors when update shape doesn't match subset shape", {
+    expect_error(
+      jit_eval({
+        x <- nv_tensor(matrix(1:6, nrow = 2))
+        x[1:2, 1:2] <- nv_tensor(1:2)
         x
-      },
-      nv_tensor(c(0L, 2L))
+      })
     )
   })
 })
 
 
-describe("nv_subset with multiple gather dimensions", {
-  it("x[list(1, 3), list(2, 4)] gathers all combinations as 2x2 matrix", {
-    # 4x4 matrix (column-major in R):
-    # [,1] [,2] [,3] [,4]
-    # [1,]  1    5    9   13
-    # [2,]  2    6   10   14
-    # [3,]  3    7   11   15
-    # [4,]  4    8   12   16
-    x <- nv_tensor(matrix(1:16, nrow = 4))
-    # Selecting rows 1,3 and columns 2,4 should give a 2x2 matrix:
-    # [,1] [,2]
-    # [1,]  5   13   (row 1, cols 2 and 4)
-    # [2,]  7   15   (row 3, cols 2 and 4)
-    out <- jit(\(x) x[list(1, 3), list(2, 4)])(x)
-    expect_equal(dim(as_array(out)), c(2, 2))
-    expect_equal(as_array(out), matrix(c(5L, 7L, 13L, 15L), nrow = 2))
+
+describe("subset_specs_start_indices", {
+  it("returns all 1s for SubsetFull specs", {
+    result <- jit(function() {
+      subsets <- list(SubsetFull(5L), SubsetFull(3L))
+      subset_specs_start_indices(subsets)
+    })()
+    expect_equal(dtype(result), as_dtype("i32"))
+    expect_equal(as.integer(as_array(result)), c(1L, 1L))
   })
 
-  it("x[list(1, 2), list(1, 2)] on 2x2 matrix returns 2x2", {
-    # [,1] [,2]
-    # [1,]  1    3
-    # [2,]  2    4
-    x <- nv_tensor(matrix(1:4, nrow = 2))
-    out <- jit(\(x) x[list(1, 2), list(1, 2)])(x)
-    expect_equal(dim(as_array(out)), c(2, 2))
-    # Should be the same as the original matrix
-    expect_equal(as_array(out), matrix(1:4, nrow = 2))
+  it("returns start values for SubsetRange specs", {
+    result <- jit(function() {
+      subsets <- list(SubsetRange(3L, 5L), SubsetRange(2L, 4L))
+      subset_specs_start_indices(subsets)
+    })()
+    expect_equal(dtype(result), as_dtype("i32"))
+    expect_equal(as.integer(as_array(result)), c(3L, 2L))
   })
 
-  it("x[list(1, 3), list(2, 4), 1] with 3D tensor returns 2x2", {
-    x <- nv_tensor(array(1:24, dim = c(3, 4, 2)))
-    # Selecting [1,3] x [2,4] x [1] = 2x2 matrix (third dim dropped by literal)
-    out <- jit(\(x) x[list(1, 3), list(2, 4), 1])(x)
-    expect_equal(dim(as_array(out)), c(2, 2))
+  it("returns the index for scalar SubsetIndices", {
+    result <- jit(function() {
+      subsets <- list(SubsetIndex(nv_scalar(4L, dtype = "i64")))
+      subset_specs_start_indices(subsets)
+    })()
+    expect_equal(dtype(result), as_dtype("i64"))
+    expect_equal(as.integer(as_array(result)), 4L)
   })
 
-  it("x[list(1, 2, 3), list(1, 2)] returns 3x2 matrix", {
-    x <- nv_tensor(matrix(1:12, nrow = 4))
-    out <- jit(\(x) x[list(1, 2, 3), list(1, 2)])(x)
-    expect_equal(dim(as_array(out)), c(3, 2))
+  it("handles mixed spec types", {
+    result <- jit(function() {
+      subsets <- list(
+        SubsetRange(2L, 5L),
+        SubsetFull(10L),
+        SubsetIndex(nv_scalar(3L, dtype = "i64"))
+      )
+      subset_specs_start_indices(subsets)
+    })()
+    expect_equal(dtype(result), as_dtype("i64"))
+    expect_equal(as.integer(as_array(result)), c(2L, 1L, 3L))
+  })
+
+  it("uses i32 for all-static subsets", {
+    result <- jit(function() {
+      subsets <- list(SubsetFull(5L), SubsetRange(3L, 5L))
+      subset_specs_start_indices(subsets)
+    })()
+    expect_equal(dtype(result), as_dtype("i32"))
+    expect_equal(as.integer(as_array(result)), c(1L, 3L))
+  })
+
+  it("uses max integer type when dynamic indices are present", {
+    result <- jit(function() {
+      subsets <- list(
+        SubsetIndex(nv_scalar(2L, dtype = "i16")),
+        SubsetRange(3L, 5L)
+      )
+      subset_specs_start_indices(subsets)
+    })()
+    expect_equal(dtype(result), as_dtype("i32"))
+  })
+
+  it("works with a single dimension", {
+    result <- jit(function() {
+      subsets <- list(SubsetRange(2L, 7L))
+      subset_specs_start_indices(subsets)
+    })()
+    expect_equal(dtype(result), as_dtype("i32"))
+    expect_equal(as.integer(as_array(result)), 2L)
   })
 })

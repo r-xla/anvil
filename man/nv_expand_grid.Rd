@@ -4,10 +4,13 @@
 \alias{nv_expand_grid}
 \title{Expand Grid (Cartesian Product)}
 \usage{
-nv_expand_grid(...)
+nv_expand_grid(..., vary_first = FALSE)
 }
 \arguments{
 \item{...}{1-D tensors or scalars whose elements should be combined.}
+
+\item{vary_first}{If \code{TRUE}, the first input varies fastest (like R's \code{expand.grid()}).
+If \code{FALSE} (default), the last input varies fastest (row-major order).}
 }
 \value{
 A 2-D tensor of shape \verb{(n_combinations, n_inputs)} where each row
@@ -21,14 +24,14 @@ but with different ordering.
 \details{
 \strong{Ordering difference from R's \code{expand.grid()}:}
 
-This function uses row-major (C-style) ordering where the \strong{last} input
-varies fastest. R's \code{expand.grid()} uses column-major (Fortran-style)
-ordering where the \strong{first} input varies fastest.
+By default, this function uses row-major (C-style) ordering where the \strong{last} input
+varies fastest. Set \code{vary_first = TRUE} to use column-major (Fortran-style)
+ordering where the \strong{first} input varies fastest, matching R's \code{expand.grid()}.
 
 For example, with inputs \code{c(1, 3)} and \code{c(2, 4)}:
 \itemize{
-\item \code{nv_expand_grid()} returns: \verb{(1,2), (1,4), (3,2), (3,4)} (last varies fastest)
-\item \code{expand.grid()} returns: \verb{(1,2), (3,2), (1,4), (3,4)} (first varies fastest)
+\item \code{nv_expand_grid(..., vary_first = FALSE)} returns: \verb{(1,2), (1,4), (3,2), (3,4)} (last varies fastest)
+\item \code{nv_expand_grid(..., vary_first = TRUE)} returns: \verb{(1,2), (3,2), (1,4), (3,4)} (first varies fastest)
 }
 
 Both produce the same \strong{set} of combinations, just in different order.
@@ -41,6 +44,14 @@ nv_expand_grid(nv_tensor(c(1L, 3L)), nv_tensor(c(2L, 4L)))
 # [[1, 2],
 #  [1, 4],
 #  [3, 2],
+#  [3, 4]]
+
+# With vary_first = TRUE (like R's expand.grid)
+nv_expand_grid(nv_tensor(c(1L, 3L)), nv_tensor(c(2L, 4L)), vary_first = TRUE)
+# Returns tensor with shape [4, 2]:
+# [[1, 2],
+#  [3, 2],
+#  [1, 4],
 #  [3, 4]]
 
 # Mix of vectors and scalars

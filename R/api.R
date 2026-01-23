@@ -165,7 +165,11 @@ nv_broadcast_to <- function(operand, shape) {
 #' @return [`tensorish`]
 #' @export
 nv_convert <- function(operand, dtype) {
-  nvl_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
+  if (dtype_abstract(operand) != as_dtype(dtype)) {
+    nvl_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
+  } else {
+    operand
+  }
 }
 
 #' @rdname nv_transpose
@@ -185,7 +189,13 @@ nv_transpose <- function(x, permutation = NULL) {
 #'   The new shape.
 #' @return [`tensorish`]
 #' @export
-nv_reshape <- nvl_reshape
+nv_reshape <- function(operand, shape) {
+  if (!identical(shape_abstract(operand), shape)) {
+    nvl_reshape(operand, shape)
+  } else {
+    operand
+  }
+}
 
 #' @title Concatenate
 #' @description
@@ -750,15 +760,18 @@ nv_while <- nvl_while
 #' @details
 #' **Ordering difference from R's `expand.grid()`:**
 #'
-#' This function uses row-major (C-style) ordering where the **last** input
-#' varies fastest. R's `expand.grid()` uses column-major (Fortran-style)
-#' ordering where the **first** input varies fastest.
+#' By default, this function uses row-major (C-style) ordering where the **last** input
+#' varies fastest. Set `vary_first = TRUE` to use column-major (Fortran-style)
+#' ordering where the **first** input varies fastest, matching R's `expand.grid()`.
 #'
 #' For example, with inputs `c(1, 3)` and `c(2, 4)`:
-#' - `nv_expand_grid()` returns: `(1,2), (1,4), (3,2), (3,4)` (last varies fastest)
-#' - `expand.grid()` returns: `(1,2), (3,2), (1,4), (3,4)` (first varies fastest)
+#' - `nv_expand_grid(..., vary_first = FALSE)` returns: `(1,2), (1,4), (3,2), (3,4)` (last varies fastest)
+#' - `nv_expand_grid(..., vary_first = TRUE)` returns: `(1,2), (3,2), (1,4), (3,4)` (first varies fastest)
 #'
 #' Both produce the same **set** of combinations, just in different order.
+#'
+#' @param vary_first If `TRUE`, the first input varies fastest (like R's `expand.grid()`).
+#'   If `FALSE` (default), the last input varies fastest (row-major order).
 #'
 #' @examples
 #' \dontrun{
@@ -770,6 +783,14 @@ nv_while <- nvl_while
 #' #  [3, 2],
 #' #  [3, 4]]
 #'
+#' # With vary_first = TRUE (like R's expand.grid)
+#' nv_expand_grid(nv_tensor(c(1L, 3L)), nv_tensor(c(2L, 4L)), vary_first = TRUE)
+#' # Returns tensor with shape [4, 2]:
+#' # [[1, 2],
+#' #  [3, 2],
+#' #  [1, 4],
+#' #  [3, 4]]
+#'
 #' # Mix of vectors and scalars
 #' nv_expand_grid(nv_tensor(c(1L, 3L)), nv_scalar(5L), nv_scalar(6L))
 #' # Returns tensor with shape [2, 3]:
@@ -778,7 +799,7 @@ nv_while <- nvl_while
 #' }
 #'
 #' @export
-nv_expand_grid <- function(...) {
+nv_expand_grid <- function(..., vary_first = FALSE) {
 
   args <- list(...)
   n_dims <- length(args)
@@ -802,7 +823,8 @@ nv_expand_grid <- function(...) {
   n_combinations <- prod(lengths)
 
   # Output shape for the grid (before flattening)
-  grid_shape <- lengths
+  # When vary_first = TRUE, reverse the shape so first dim varies fastest after flatten
+  grid_shape <- if (vary_first) rev(lengths) else lengths
 
   # For each input, broadcast to the full grid shape then flatten
   columns <- lapply(seq_len(n_dims), function(i) {
@@ -815,8 +837,10 @@ nv_expand_grid <- function(...) {
     }
 
     # Create broadcast shape: 1s everywhere except position i
+    # When vary_first = TRUE, position i maps to reversed position
     bcast_shape <- rep(1L, n_dims)
-    bcast_shape[i] <- n_elts
+    pos <- if (vary_first) n_dims - i + 1L else i
+    bcast_shape[pos] <- n_elts
 
     # Reshape and broadcast to full grid shape
     reshaped <- nv_reshape(tensor, bcast_shape)

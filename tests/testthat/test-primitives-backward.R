@@ -772,6 +772,31 @@ describe("p_scatter", {
     expect_equal(grads[[1L]], nv_tensor(c(1, 1), dtype = "f32"))
   })
 
+  it("errors for non-simple replacement update_computation", {
+    # Scatter backward only supports update_computation = function(old, new) new
+    # Using add should error
+    expect_error(
+      jit(gradient(function(x) {
+        out <- nvl_scatter(
+          input = x,
+          scatter_indices = nv_tensor(2L, dtype = "i64"),
+          update = nv_scalar(10, dtype = "f32"),
+          update_window_dims = integer(),
+          inserted_window_dims = 1L,
+          input_batching_dims = integer(),
+          scatter_indices_batching_dims = integer(),
+          scatter_dims_to_operand_dims = 1L,
+          index_vector_dim = 1L,
+          indices_are_sorted = TRUE,
+          unique_indices = TRUE,
+          update_computation = function(old, new) nvl_add(old, new)
+        )
+        nv_reduce_sum(out, dims = 1L, drop = TRUE)
+      }))(nv_tensor(1:5, dtype = "f32")),
+      "simple replacement"
+    )
+  })
+
 })
 
 if (nzchar(system.file(package = "torch"))) {

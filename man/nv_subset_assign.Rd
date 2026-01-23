@@ -14,7 +14,6 @@ Input tensor to update.}
 \itemize{
 \item Ranges (e.g., \code{2:5}) for contiguous slices. Must be static.
 \item Single integers (e.g., \code{3}) for single elements
-\item Integer vectors (e.g., \code{c(1, 3, 6)}) for scattered indices
 \item Missing (selects all) for full dimension
 }}
 
@@ -26,7 +25,6 @@ Values to write. Shape must match the subset shape.}
 }
 \description{
 Updates elements of a tensor.
-Supports both contiguous slices (e.g., \code{2:5}) and scattered indices (e.g., \code{c(1, 3, 6)}).
 This has copy-on-write semantics just like for standard R arrays.
 }
 \examples{
@@ -34,9 +32,5 @@ This has copy-on-write semantics just like for standard R arrays.
 # Update contiguous slice
 x <- nv_tensor(1:10)
 x <- nv_subset_assign(x, 2:4, value = nv_tensor(c(20, 30, 40)))
-
-# Update scattered indices
-x <- nv_tensor(1:10)
-x <- nv_subset_assign(x, c(1, 3, 6), value = nv_tensor(c(10, 30, 60)))
 }
 }

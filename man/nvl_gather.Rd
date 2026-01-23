@@ -28,14 +28,29 @@ Tensor of integer type containing the starting indices for the gather operation.
 \item{slice_sizes}{(\code{integer()})\cr
 The sizes of the slices to gather in each dimension.}
 
+\item{offset_dims}{(\code{integer()})\cr
+Dimensions of the operand to gather from.}
+
+\item{collapsed_slice_dims}{(\code{integer()})\cr
+Dimensions of the slice to gather.}
+
+\item{operand_batching_dims}{(\code{integer()})\cr
+Dimensions of the operand to gather from.}
+
+\item{start_indices_batching_dims}{(\code{integer()})\cr
+Dimensions of the start_indices to gather from.}
+
+\item{start_index_map}{(\code{integer()})\cr
+Mapping from the start_indices to the operand dimensions.}
+
+\item{index_vector_dim}{(\code{integer(1)})\cr
+Dimension of the index vector.}
+
 \item{indices_are_sorted}{(\code{logical(1)})\cr
 Whether indices are guaranteed to be sorted.}
 
 \item{unique_indices}{(\code{logical(1)})\cr
 Whether indices are guaranteed to be unique (no duplicates).}
-
-\item{gather_dimension_numbers}{(\code{\link[stablehlo:GatherDimensionNumbers]{stablehlo::GatherDimensionNumbers}})\cr
-Dimension configuration for the gather operation.}
 }
 \value{
 \code{\link{tensorish}}
