@@ -1262,7 +1262,15 @@ p_print <- AnvilPrimitive("print")
 #' @return [`tensorish`]
 #' @export
 nvl_print <- function(operand) {
-  graph_desc_add(p_print, list(operand = operand), infer_fn = list)[[1L]]
+  # HACK: ambiguity is not available in stablehlo, so we need to pre-compute this
+  # and pass it as a "param", although it is not really one
+  # TODO: We should also include the platform/device, but it is currently not avilable in GraphDescriptor
+  dtype_str <- paste0(as.character(dtype(operand)), if (ambiguous_abstract(operand)) "?")
+  footer <- sprintf("[ %s{%s} ]", dtype_str, paste0(shape(operand), collapse = ","))
+  # slig
+  graph_desc_add(p_print, list(operand = operand), list(footer = footer), infer_fn = function(operand, ...) {
+    list(operand)
+  })[[1L]]
 }
 
 # RNG primitives
