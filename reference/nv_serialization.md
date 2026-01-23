@@ -84,6 +84,6 @@ reloaded
 #> AnvilTensor
 #>  1 3 5
 #>  2 4 6
-#> [ CPUi32{2x3} ] 
+#> [ CPUi32{2,3} ] 
 #> 
 ```

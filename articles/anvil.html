@@ -135,7 +135,7 @@ the data type, it will default to <code>"f32"</code> for R doubles and
 <pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  1 3 5</span></span>
 <span><span class="co">##  2 4 6</span></span>
-<span><span class="co">## [ CPUi32{2x3} ]</span></span></code></pre>
+<span><span class="co">## [ CPUi32{2,3} ]</span></span></code></pre>
 <p>The <code><a href="https://r-xla.github.io/tengen/reference/as_array.html" class="external-link">as_array()</a></code> function allows to convert
 <code>AnvilTensor</code>s back to R objects. Note that for 0-dimensional
 tensors, the result is an R vector of length 1, as R arrays cannot have
@@ -174,7 +174,7 @@ the function you want to apply to a jit-compiled version via
 <pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   2  6 10</span></span>
 <span><span class="co">##   4  8 12</span></span>
-<span><span class="co">## [ CPUi32{2x3} ]</span></span></code></pre>
+<span><span class="co">## [ CPUi32{2,3} ]</span></span></code></pre>
 <p>The result of the operation is again an <code>AnvilTensor</code>.</p>
 <p>We can also jit-compile more complex functions. Below, we define a
 function that takes in a data matrix <code>X</code>, a weight vector
@@ -196,7 +196,7 @@ the linear model output <span class="math inline">\(y = X \times \beta +
 <pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   2.7911</span></span>
 <span><span class="co">##  -1.1904</span></span>
-<span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
+<span><span class="co">## [ CPUf32{2,1} ]</span></span></code></pre>
 <p>One restriction of {anvil} is that a function has to be re-compiled
 for every unique combination of input types, each consisting of a
 specific shape and data type. To demonstrate this, we create a slightly
@@ -223,13 +223,13 @@ with different numbers of observations:</p>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   4.9640</span></span>
 <span><span class="co">##  -0.1413</span></span>
-<span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
+<span><span class="co">## [ CPUf32{2,1} ]</span></span></code></pre>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">linear_model2</span>, <span class="fu">simul_data</span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   0.6140</span></span>
 <span><span class="co">##  -2.5214</span></span>
-<span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
+<span><span class="co">## [ CPUf32{2,1} ]</span></span></code></pre>
 <p>We can notice that we only see the <code>"compiling ..."</code>
 message the first time, where the function is first compiled into an XLA
 executable, cached, and executed. The second time, the executable is
@@ -274,14 +274,14 @@ to treat it as a regular R value.</p>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   2.8538</span></span>
 <span><span class="co">##  -1.1277</span></span>
-<span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
+<span><span class="co">## [ CPUf32{2,1} ]</span></span></code></pre>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">linear_model3</span><span class="op">(</span><span class="va">X</span>, <span class="va">beta</span>, <span class="va">alpha</span>, with_bias <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Compiling with bias ...</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   2.7911</span></span>
 <span><span class="co">##  -1.1904</span></span>
-<span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
+<span><span class="co">## [ CPUf32{2,1} ]</span></span></code></pre>
 <p>Static arguments work differently than <code>AnvilTensors</code> as
 the function will be re-compiled for each new observed value of the
 static argument, not only each unique input type combination.</p>
@@ -301,7 +301,7 @@ lists.</p>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##   2.7911</span></span>
 <span><span class="co">##  -1.1904</span></span>
-<span><span class="co">## [ CPUf32{2x1} ]</span></span></code></pre>
+<span><span class="co">## [ CPUf32{2,1} ]</span></span></code></pre>
 <p>So far, we have only implemented the prediction step for the linear
 model. One of the core applications of {anvil} is to implement learning
 algorithms, for which we often need gradients, as well as control flow.
@@ -410,7 +410,7 @@ loop:</p>
 <pre><code><span><span class="co">## $beta</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  -0.9184</span></span>
-<span><span class="co">## [ CPUf32{1x1} ] </span></span>
+<span><span class="co">## [ CPUf32{1,1} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $alpha</span></span>
 <span><span class="co">## AnvilTensor</span></span>
@@ -445,7 +445,7 @@ re-compiled into a different executable.</p>
 <pre><code><span><span class="co">## $beta</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  -0.9600</span></span>
-<span><span class="co">## [ CPUf32{1x1} ] </span></span>
+<span><span class="co">## [ CPUf32{1,1} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $alpha</span></span>
 <span><span class="co">## AnvilTensor</span></span>
@@ -486,7 +486,7 @@ and returns a new state.</li>
 <pre><code><span><span class="co">## $beta</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  -0.9184</span></span>
-<span><span class="co">## [ CPUf32{1x1} ] </span></span>
+<span><span class="co">## [ CPUf32{1,1} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $alpha</span></span>
 <span><span class="co">## AnvilTensor</span></span>
@@ -496,7 +496,7 @@ and returns a new state.</li>
 <span><span class="co">## $i</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  100</span></span>
-<span><span class="co">## [ CPUi32{} ]</span></span></code></pre>
+<span><span class="co">## [ CPUi32?{} ]</span></span></code></pre>
 <p>The same approach works analogously for <code>if</code>-statements,
 where the {anvil} primitive <code>nv_if</code> is available.</p>
 </div>
@@ -557,7 +557,7 @@ tensors have been deleted.</p>
 <pre><code><span><span class="co">## $beta</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  -0.9184</span></span>
-<span><span class="co">## [ CPUf32{1x1} ] </span></span>
+<span><span class="co">## [ CPUf32{1,1} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $alpha</span></span>
 <span><span class="co">## AnvilTensor</span></span>

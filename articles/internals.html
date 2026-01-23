@@ -253,7 +253,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x55c5e9a9a530&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55e0d09924f8&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -296,7 +296,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x55c5e9a998b8&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55e0d0991880&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
@@ -323,12 +323,12 @@ the tensors before passing them to the executable, which will output a
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">pjrt</span><span class="fu">::</span><span class="fu"><a href="https://r-xla.github.io/pjrt/reference/pjrt_execute.html" class="external-link">pjrt_execute</a></span><span class="op">(</span><span class="va">exec</span>, <span class="va">x</span><span class="op">$</span><span class="va">tensor</span>, <span class="va">y</span><span class="op">$</span><span class="va">tensor</span><span class="op">)</span></span>
 <span><span class="va">out</span></span></code></pre></div>
 <pre><code><span><span class="co">## PJRTBuffer </span></span>
-<span><span class="co">##  12.0000</span></span>
+<span><span class="co">##  12</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
-<span><span class="co">##  12.0000</span></span>
+<span><span class="co">##  12</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 </div>
 </div>
@@ -352,7 +352,7 @@ known at compile time.</p>
 <code class="sourceCode R"><span><span class="va">f_jit</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">f</span>, static <span class="op">=</span> <span class="st">"op"</span><span class="op">)</span></span>
 <span><span class="fu">f_jit</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="st">"add"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
-<span><span class="co">##  7.0000</span></span>
+<span><span class="co">##  7</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <p>One might think that <code><a href="../reference/jit.html">jit()</a></code> first calls
 <code><a href="../reference/trace_fn.html">trace_fn()</a></code>, then runs <code><a href="../reference/stablehlo.html">stablehlo()</a></code>, followed by
@@ -380,7 +380,7 @@ argument values, the size of the cache remains 1:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="op">-</span><span class="fl">99</span>, <span class="st">"f32"</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span>, <span class="st">"f32"</span><span class="op">)</span>, <span class="st">"add"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
-<span><span class="co">##  -97.0000</span></span>
+<span><span class="co">##  -97</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">cache_size</span><span class="op">(</span><span class="va">f_jit</span><span class="op">)</span></span></code></pre></div>
@@ -401,7 +401,7 @@ function will be recompiled:</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, <span class="st">"f32"</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span>, <span class="st">"f32"</span><span class="op">)</span>, <span class="st">"mul"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
-<span><span class="co">##  2.0000</span></span>
+<span><span class="co">##  2</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">cache_size</span><span class="op">(</span><span class="va">f_jit</span><span class="op">)</span></span></code></pre></div>
@@ -423,12 +423,12 @@ c.f. the <a href="debugging.html">debugging vignette</a> for more.</p>
 <code class="sourceCode R"><span><span class="fu">g</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="st">"add"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $x</span></span>
 <span><span class="co">## DebugBox(ConcreteTensor)</span></span>
-<span><span class="co">##  1.0000</span></span>
+<span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUf32{} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $y</span></span>
 <span><span class="co">## DebugBox(ConcreteTensor)</span></span>
-<span><span class="co">##  1.0000</span></span>
+<span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <p>If we want to actually compute the gradient, we need to wrap it in
 <code><a href="../reference/jit.html">jit()</a></code>.</p>
@@ -437,12 +437,12 @@ c.f. the <a href="debugging.html">debugging vignette</a> for more.</p>
 <span><span class="fu">g_jit</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="st">"add"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $x</span></span>
 <span><span class="co">## AnvilTensor</span></span>
-<span><span class="co">##  1.0000</span></span>
+<span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUf32{} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $y</span></span>
 <span><span class="co">## AnvilTensor</span></span>
-<span><span class="co">##  1.0000</span></span>
+<span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <p>Moreover, we can also use <code>g</code> in another function:</p>
 <div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
@@ -454,12 +454,12 @@ c.f. the <a href="debugging.html">debugging vignette</a> for more.</p>
 <span><span class="fu">h_jit</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $x</span></span>
 <span><span class="co">## AnvilTensor</span></span>
-<span><span class="co">##  3.0000</span></span>
+<span><span class="co">##  3</span></span>
 <span><span class="co">## [ CPUf32{} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $y</span></span>
 <span><span class="co">## AnvilTensor</span></span>
-<span><span class="co">##  7.0000</span></span>
+<span><span class="co">##  7</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <p>So, what is happening here? Once the inputs <code>x</code> and
 <code>y</code> are provided to <code>h_jit</code>, a new

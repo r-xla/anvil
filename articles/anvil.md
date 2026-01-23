@@ -54,7 +54,7 @@ y
     ## AnvilTensor
     ##  1 3 5
     ##  2 4 6
-    ## [ CPUi32{2x3} ]
+    ## [ CPUi32{2,3} ]
 
 The
 [`as_array()`](https://r-xla.github.io/tengen/reference/as_array.html)
@@ -110,7 +110,7 @@ plus_jit(y, y)
     ## AnvilTensor
     ##   2  6 10
     ##   4  8 12
-    ## [ CPUi32{2x3} ]
+    ## [ CPUi32{2,3} ]
 
 The result of the operation is again an `AnvilTensor`.
 
@@ -136,7 +136,7 @@ linear_model(X, beta, alpha)
     ## AnvilTensor
     ##   2.7911
     ##  -1.1904
-    ## [ CPUf32{2x1} ]
+    ## [ CPUf32{2,1} ]
 
 One restriction of {anvil} is that a function has to be re-compiled for
 every unique combination of input types, each consisting of a specific
@@ -174,7 +174,7 @@ do.call(linear_model2, simul_data(2, 3))
     ## AnvilTensor
     ##   4.9640
     ##  -0.1413
-    ## [ CPUf32{2x1} ]
+    ## [ CPUf32{2,1} ]
 
 ``` r
 do.call(linear_model2, simul_data(2, 3))
@@ -183,7 +183,7 @@ do.call(linear_model2, simul_data(2, 3))
     ## AnvilTensor
     ##   0.6140
     ##  -2.5214
-    ## [ CPUf32{2x1} ]
+    ## [ CPUf32{2,1} ]
 
 We can notice that we only see the `"compiling ..."` message the first
 time, where the function is first compiled into an XLA executable,
@@ -240,7 +240,7 @@ linear_model3(X, beta, with_bias = FALSE)
     ## AnvilTensor
     ##   2.8538
     ##  -1.1277
-    ## [ CPUf32{2x1} ]
+    ## [ CPUf32{2,1} ]
 
 ``` r
 linear_model3(X, beta, alpha, with_bias = TRUE)
@@ -251,7 +251,7 @@ linear_model3(X, beta, alpha, with_bias = TRUE)
     ## AnvilTensor
     ##   2.7911
     ##  -1.1904
-    ## [ CPUf32{2x1} ]
+    ## [ CPUf32{2,1} ]
 
 Static arguments work differently than `AnvilTensors` as the function
 will be re-compiled for each new observed value of the static argument,
@@ -273,7 +273,7 @@ linear_model4(list(X, beta, alpha))
     ## AnvilTensor
     ##   2.7911
     ##  -1.1904
-    ## [ CPUf32{2x1} ]
+    ## [ CPUf32{2,1} ]
 
 So far, we have only implemented the prediction step for the linear
 model. One of the core applications of {anvil} is to implement learning
@@ -411,7 +411,7 @@ weights
     ## $beta
     ## AnvilTensor
     ##  -0.9184
-    ## [ CPUf32{1x1} ] 
+    ## [ CPUf32{1,1} ] 
     ## 
     ## $alpha
     ## AnvilTensor
@@ -451,7 +451,7 @@ train_unrolled(X, beta_hat, alpha_hat, y, n_steps = 10L)
     ## $beta
     ## AnvilTensor
     ##  -0.9600
-    ## [ CPUf32{1x1} ] 
+    ## [ CPUf32{1,1} ] 
     ## 
     ## $alpha
     ## AnvilTensor
@@ -494,7 +494,7 @@ train_while(X, beta_hat, alpha_hat, y, nv_scalar(100L))
     ## $beta
     ## AnvilTensor
     ##  -0.9184
-    ## [ CPUf32{1x1} ] 
+    ## [ CPUf32{1,1} ] 
     ## 
     ## $alpha
     ## AnvilTensor
@@ -504,7 +504,7 @@ train_while(X, beta_hat, alpha_hat, y, nv_scalar(100L))
     ## $i
     ## AnvilTensor
     ##  100
-    ## [ CPUi32{} ]
+    ## [ CPUi32?{} ]
 
 The same approach works analogously for `if`-statements, where the
 {anvil} primitive `nv_if` is available.
@@ -580,7 +580,7 @@ weights_out
     ## $beta
     ## AnvilTensor
     ##  -0.9184
-    ## [ CPUf32{1x1} ] 
+    ## [ CPUf32{1,1} ] 
     ## 
     ## $alpha
     ## AnvilTensor

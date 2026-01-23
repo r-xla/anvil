@@ -70,7 +70,7 @@ result[[2]]  # random numbers
 #> AnvilTensor
 #>  0.8690 0.1506 0.5203
 #>  0.3103 0.9928 0.1065
-#> [ CPUf32{2x3} ]
+#> [ CPUf32{2,3} ]
 ```
 
 For normally distributed random numbers:
@@ -85,7 +85,7 @@ result[[2]]
 #> AnvilTensor
 #>  -0.0675  0.9489  1.9457
 #>  -0.5255  1.2002  0.0008
-#> [ CPUf32{2x3} ]
+#> [ CPUf32{2,3} ]
 ```
 
 One thing to avoid is to reuse the same state for multiple calls as done

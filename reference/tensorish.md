@@ -19,9 +19,9 @@ also includes atomic R vectors.
 x <- nv_tensor(1:4, dtype = "f32")
 x
 #> AnvilTensor
-#>  1.0000
-#>  2.0000
-#>  3.0000
-#>  4.0000
+#>  1
+#>  2
+#>  3
+#>  4
 #> [ CPUf32{4} ] 
 ```

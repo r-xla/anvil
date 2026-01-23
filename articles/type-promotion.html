@@ -105,7 +105,7 @@ because it’s more expressive.</p>
 <span>  <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
-<span><span class="co">##  2.0000</span></span>
+<span><span class="co">##  2</span></span>
 <span><span class="co">## [ CPUf64{} ]</span></span></code></pre>
 <p>The type-promotion rules are inspired by JAX, and they are designed
 for execution on accelerators like GPUs, where one often wants speed
@@ -606,17 +606,17 @@ follows:</p>
 <pre><code><span><span class="co">## [[1]]</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  1</span></span>
-<span><span class="co">## [ CPUi32{} ] </span></span>
+<span><span class="co">## [ CPUi32?{} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## [[2]]</span></span>
 <span><span class="co">## AnvilTensor</span></span>
-<span><span class="co">##  1.0000</span></span>
-<span><span class="co">## [ CPUf32{} ] </span></span>
+<span><span class="co">##  1</span></span>
+<span><span class="co">## [ CPUf32?{} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## [[3]]</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  1</span></span>
-<span><span class="co">## [ CPUpred{} ]</span></span></code></pre>
+<span><span class="co">## [ CPUi1{} ]</span></span></code></pre>
 <p>However, because this is just a guess, they behave differently than
 known types during promotion. Therefore, the <code>common_dtype</code>
 function has two arguments indicating which of the data types are

@@ -16,7 +16,7 @@ jit(nv_add)(
 ```
 
     ## AnvilTensor
-    ##  2.0000
+    ##  2
     ## [ CPUf64{} ]
 
 The type-promotion rules are inspired by JAX, and they are designed for
@@ -77,17 +77,17 @@ jit(\() list(1L, 1.0, TRUE))()
     ## [[1]]
     ## AnvilTensor
     ##  1
-    ## [ CPUi32{} ] 
+    ## [ CPUi32?{} ] 
     ## 
     ## [[2]]
     ## AnvilTensor
-    ##  1.0000
-    ## [ CPUf32{} ] 
+    ##  1
+    ## [ CPUf32?{} ] 
     ## 
     ## [[3]]
     ## AnvilTensor
     ##  1
-    ## [ CPUpred{} ]
+    ## [ CPUi1{} ]
 
 However, because this is just a guess, they behave differently than
 known types during promotion. Therefore, the `common_dtype` function has

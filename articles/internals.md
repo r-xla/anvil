@@ -156,7 +156,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x55c5e9a9a530>
+    ## <bytecode: 0x55e0d09924f8>
     ## <environment: namespace:anvil>
 
 The
@@ -207,7 +207,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x55c5e9a998b8>
+    ## <bytecode: 0x55e0d0991880>
     ## <environment: namespace:anvil>
 
 The
@@ -247,7 +247,7 @@ out
 ```
 
     ## PJRTBuffer 
-    ##  12.0000
+    ##  12
     ## [ CPUf32{} ]
 
 ``` r
@@ -255,7 +255,7 @@ nv_tensor(out)
 ```
 
     ## AnvilTensor
-    ##  12.0000
+    ##  12
     ## [ CPUf32{} ]
 
 ## The User Interface
@@ -279,7 +279,7 @@ f_jit(x, y, "add")
 ```
 
     ## AnvilTensor
-    ##  7.0000
+    ##  7
     ## [ CPUf32{} ]
 
 One might think that
@@ -318,7 +318,7 @@ f_jit(nv_scalar(-99, "f32"), nv_scalar(2, "f32"), "add")
 ```
 
     ## AnvilTensor
-    ##  -97.0000
+    ##  -97
     ## [ CPUf32{} ]
 
 ``` r
@@ -352,7 +352,7 @@ f_jit(nv_scalar(1, "f32"), nv_scalar(2, "f32"), "mul")
 ```
 
     ## AnvilTensor
-    ##  2.0000
+    ##  2
     ## [ CPUf32{} ]
 
 ``` r
@@ -382,12 +382,12 @@ g(x, y, "add")
 
     ## $x
     ## DebugBox(ConcreteTensor)
-    ##  1.0000
+    ##  1
     ## [ CPUf32{} ] 
     ## 
     ## $y
     ## DebugBox(ConcreteTensor)
-    ##  1.0000
+    ##  1
     ## [ CPUf32{} ]
 
 If we want to actually compute the gradient, we need to wrap it in
@@ -400,12 +400,12 @@ g_jit(x, y, "add")
 
     ## $x
     ## AnvilTensor
-    ##  1.0000
+    ##  1
     ## [ CPUf32{} ] 
     ## 
     ## $y
     ## AnvilTensor
-    ##  1.0000
+    ##  1
     ## [ CPUf32{} ]
 
 Moreover, we can also use `g` in another function:
@@ -421,12 +421,12 @@ h_jit(x, y)
 
     ## $x
     ## AnvilTensor
-    ##  3.0000
+    ##  3
     ## [ CPUf32{} ] 
     ## 
     ## $y
     ## AnvilTensor
-    ##  7.0000
+    ##  7
     ## [ CPUf32{} ]
 
 So, what is happening here? Once the inputs `x` and `y` are provided to

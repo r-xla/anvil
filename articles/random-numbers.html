@@ -148,7 +148,7 @@ number generation).</li>
 <span><span class="co">#&gt; AnvilTensor</span></span>
 <span><span class="co">#&gt;  0.8690 0.1506 0.5203</span></span>
 <span><span class="co">#&gt;  0.3103 0.9928 0.1065</span></span>
-<span><span class="co">#&gt; [ CPUf32{2x3} ]</span></span></code></pre></div>
+<span><span class="co">#&gt; [ CPUf32{2,3} ]</span></span></code></pre></div>
 <p>For normally distributed random numbers:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">state</span><span class="op">)</span> <span class="op">{</span></span>
@@ -160,7 +160,7 @@ number generation).</li>
 <span><span class="co">#&gt; AnvilTensor</span></span>
 <span><span class="co">#&gt;  -0.0675  0.9489  1.9457</span></span>
 <span><span class="co">#&gt;  -0.5255  1.2002  0.0008</span></span>
-<span><span class="co">#&gt; [ CPUf32{2x3} ]</span></span></code></pre></div>
+<span><span class="co">#&gt; [ CPUf32{2,3} ]</span></span></code></pre></div>
 <p>One thing to avoid is to reuse the same state for multiple calls as
 done in the example below:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">

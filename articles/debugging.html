@@ -157,8 +157,8 @@ function call was within the <code>jit</code>-compiled function:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="op">)</span> <span class="fu">f</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
-<span><span class="co">##  -1.0000</span></span>
-<span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
+<span><span class="co">##  -1</span></span>
+<span><span class="co">## [ CPUf32?{} ]</span></span></code></pre>
 <p>Note that in {anvil}, we only allow the conversion of R literals to
 <code>AnvilTensor</code>s when being passed to primitive functions, but
 not for input arguments to <code>jit</code>-compiled functions, as this
@@ -191,15 +191,15 @@ compiled.</p>
 <code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## GraphBox(GraphValue(AbstractTensor(dtype=f32?, shape=2x2)))</span></span></code></pre>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
-<span><span class="co">##  15.0000</span></span>
-<span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
+<span><span class="co">##  15</span></span>
+<span><span class="co">## [ CPUf32?{} ]</span></span></code></pre>
 <p>Furthermore, if we call the function with identical input types, it
 won’t be printed because the executable is retrieved from the cache.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">3</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
-<span><span class="co">##  7.0000</span></span>
-<span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
+<span><span class="co">##  7</span></span>
+<span><span class="co">## [ CPUf32?{} ]</span></span></code></pre>
 <p>If you want to get the actual content of the values during execution,
 there are two options:</p>
 <ol style="list-style-type: decimal">
@@ -225,34 +225,34 @@ function and iteratively call it in an R loop.</p>
 <span><span class="op">}</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  1</span></span>
-<span><span class="co">## [ CPUi32{} ] </span></span>
+<span><span class="co">## [ CPUi32?{} ] </span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  2</span></span>
-<span><span class="co">## [ CPUi32{} ] </span></span>
+<span><span class="co">## [ CPUi32?{} ] </span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  3</span></span>
-<span><span class="co">## [ CPUi32{} ] </span></span>
+<span><span class="co">## [ CPUi32?{} ] </span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  4</span></span>
-<span><span class="co">## [ CPUi32{} ] </span></span>
+<span><span class="co">## [ CPUi32?{} ] </span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  5</span></span>
-<span><span class="co">## [ CPUi32{} ] </span></span>
+<span><span class="co">## [ CPUi32?{} ] </span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  6</span></span>
-<span><span class="co">## [ CPUi32{} ] </span></span>
+<span><span class="co">## [ CPUi32?{} ] </span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  7</span></span>
-<span><span class="co">## [ CPUi32{} ] </span></span>
+<span><span class="co">## [ CPUi32?{} ] </span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  8</span></span>
-<span><span class="co">## [ CPUi32{} ] </span></span>
+<span><span class="co">## [ CPUi32?{} ] </span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  9</span></span>
-<span><span class="co">## [ CPUi32{} ] </span></span>
+<span><span class="co">## [ CPUi32?{} ] </span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  10</span></span>
-<span><span class="co">## [ CPUi32{} ]</span></span></code></pre>
+<span><span class="co">## [ CPUi32?{} ]</span></span></code></pre>
 <p>For the second approach, we use <code>nv_while</code> to implement
 the loop.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
@@ -269,34 +269,34 @@ the loop.</p>
 <span><span class="op">}</span>, device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  1</span></span>
-<span><span class="co">## [ S32{} ]</span></span>
+<span><span class="co">## [ i32{} ]</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  2</span></span>
-<span><span class="co">## [ S32{} ]</span></span>
+<span><span class="co">## [ i32{} ]</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  3</span></span>
-<span><span class="co">## [ S32{} ]</span></span>
+<span><span class="co">## [ i32{} ]</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  4</span></span>
-<span><span class="co">## [ S32{} ]</span></span>
+<span><span class="co">## [ i32{} ]</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  5</span></span>
-<span><span class="co">## [ S32{} ]</span></span>
+<span><span class="co">## [ i32{} ]</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  6</span></span>
-<span><span class="co">## [ S32{} ]</span></span>
+<span><span class="co">## [ i32{} ]</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  7</span></span>
-<span><span class="co">## [ S32{} ]</span></span>
+<span><span class="co">## [ i32{} ]</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  8</span></span>
-<span><span class="co">## [ S32{} ]</span></span>
+<span><span class="co">## [ i32{} ]</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  9</span></span>
-<span><span class="co">## [ S32{} ]</span></span>
+<span><span class="co">## [ i32{} ]</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  10</span></span>
-<span><span class="co">## [ S32{} ]</span></span></code></pre>
+<span><span class="co">## [ i32{} ]</span></span></code></pre>
 <pre><code><span><span class="co">## $x</span></span>
 <span><span class="co">## AnvilTensor</span></span>
 <span><span class="co">##  11</span></span>

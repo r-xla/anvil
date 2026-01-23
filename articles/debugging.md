@@ -102,8 +102,8 @@ jit(\() f(1))()
 ```
 
     ## AnvilTensor
-    ##  -1.0000
-    ## [ CPUf32{} ]
+    ##  -1
+    ## [ CPUf32?{} ]
 
 Note that in {anvil}, we only allow the conversion of R literals to
 `AnvilTensor`s when being passed to primitive functions, but not for
@@ -142,8 +142,8 @@ f_jit(nv_tensor(1:4, shape = c(2, 2)))
     ## GraphBox(GraphValue(AbstractTensor(dtype=f32?, shape=2x2)))
 
     ## AnvilTensor
-    ##  15.0000
-    ## [ CPUf32{} ]
+    ##  15
+    ## [ CPUf32?{} ]
 
 Furthermore, if we call the function with identical input types, it
 won’t be printed because the executable is retrieved from the cache.
@@ -153,8 +153,8 @@ f_jit(nv_tensor(0:3, shape = c(2, 2)))
 ```
 
     ## AnvilTensor
-    ##  7.0000
-    ## [ CPUf32{} ]
+    ##  7
+    ## [ CPUf32?{} ]
 
 If you want to get the actual content of the values during execution,
 there are two options:
@@ -188,34 +188,34 @@ for (i in 1:10) {
 
     ## AnvilTensor
     ##  1
-    ## [ CPUi32{} ] 
+    ## [ CPUi32?{} ] 
     ## AnvilTensor
     ##  2
-    ## [ CPUi32{} ] 
+    ## [ CPUi32?{} ] 
     ## AnvilTensor
     ##  3
-    ## [ CPUi32{} ] 
+    ## [ CPUi32?{} ] 
     ## AnvilTensor
     ##  4
-    ## [ CPUi32{} ] 
+    ## [ CPUi32?{} ] 
     ## AnvilTensor
     ##  5
-    ## [ CPUi32{} ] 
+    ## [ CPUi32?{} ] 
     ## AnvilTensor
     ##  6
-    ## [ CPUi32{} ] 
+    ## [ CPUi32?{} ] 
     ## AnvilTensor
     ##  7
-    ## [ CPUi32{} ] 
+    ## [ CPUi32?{} ] 
     ## AnvilTensor
     ##  8
-    ## [ CPUi32{} ] 
+    ## [ CPUi32?{} ] 
     ## AnvilTensor
     ##  9
-    ## [ CPUi32{} ] 
+    ## [ CPUi32?{} ] 
     ## AnvilTensor
     ##  10
-    ## [ CPUi32{} ]
+    ## [ CPUi32?{} ]
 
 For the second approach, we use `nv_while` to implement the loop.
 
@@ -235,34 +235,34 @@ jit(\() {
 
     ## AnvilTensor
     ##  1
-    ## [ S32{} ]
+    ## [ i32{} ]
     ## AnvilTensor
     ##  2
-    ## [ S32{} ]
+    ## [ i32{} ]
     ## AnvilTensor
     ##  3
-    ## [ S32{} ]
+    ## [ i32{} ]
     ## AnvilTensor
     ##  4
-    ## [ S32{} ]
+    ## [ i32{} ]
     ## AnvilTensor
     ##  5
-    ## [ S32{} ]
+    ## [ i32{} ]
     ## AnvilTensor
     ##  6
-    ## [ S32{} ]
+    ## [ i32{} ]
     ## AnvilTensor
     ##  7
-    ## [ S32{} ]
+    ## [ i32{} ]
     ## AnvilTensor
     ##  8
-    ## [ S32{} ]
+    ## [ i32{} ]
     ## AnvilTensor
     ##  9
-    ## [ S32{} ]
+    ## [ i32{} ]
     ## AnvilTensor
     ##  10
-    ## [ S32{} ]
+    ## [ i32{} ]
 
     ## $x
     ## AnvilTensor
