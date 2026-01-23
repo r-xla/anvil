@@ -800,7 +800,6 @@ nv_while <- nvl_while
 #'
 #' @export
 nv_expand_grid <- function(..., vary_first = FALSE) {
-
   args <- list(...)
   n_dims <- length(args)
   if (n_dims == 0L) {
@@ -808,16 +807,20 @@ nv_expand_grid <- function(..., vary_first = FALSE) {
   }
 
   # Get the number of elements per input
- lengths <- vapply(args, function(x) {
-    sh <- shape_abstract(x)
-    if (length(sh) == 0L) {
-      1L
-    } else if (length(sh) == 1L) {
-      sh[1L]
-    } else {
-      cli_abort("Each input must be a scalar or 1-D tensor")
-    }
-  }, integer(1L))
+  lengths <- vapply(
+    args,
+    function(x) {
+      sh <- shape_abstract(x)
+      if (length(sh) == 0L) {
+        1L
+      } else if (length(sh) == 1L) {
+        sh[1L]
+      } else {
+        cli_abort("Each input must be a scalar or 1-D tensor")
+      }
+    },
+    integer(1L)
+  )
 
   # Total number of combinations
   n_combinations <- prod(lengths)

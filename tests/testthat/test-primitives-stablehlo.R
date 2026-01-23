@@ -472,12 +472,15 @@ test_that("p_reverse", {
 })
 
 test_that("p_iota", {
-  f <- jit(function() nvl_iota(1L, "i32", 5L))
+  f <- jit(function() nvl_iota(1L, "i32", 5L, start = 0L))
   expect_equal(f(), nv_tensor(0:4, dtype = "i32"))
 
-  # 2D along first dimension
+  f <- jit(function() nvl_iota(1L, "i32", 5L, start = 1L))
+  expect_equal(f(), nv_tensor(1:5, dtype = "i32"))
+
+  # 2D along first dimension (default start = 1)
   f2 <- jit(function() nvl_iota(1L, "i32", c(3L, 2L)))
-  expected <- matrix(c(0L, 1L, 2L, 0L, 1L, 2L), 3, 2)
+  expected <- matrix(c(1L, 2L, 3L, 1L, 2L, 3L), 3, 2)
   expect_equal(f2(), nv_tensor(expected, dtype = "i32"))
 })
 

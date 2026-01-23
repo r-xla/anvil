@@ -16,7 +16,7 @@
       x
     Output
       AnvilTensor
-       1.0000
+       1
       [ CPUf32{} ] 
 
 # AbstractTensor
@@ -32,7 +32,7 @@
       x
     Output
       ConcreteTensor
-       1.0000 3.0000 5.0000
-       2.0000 4.0000 6.0000
+       1 3 5
+       2 4 6
       [ CPUf32{2x3} ] 
 

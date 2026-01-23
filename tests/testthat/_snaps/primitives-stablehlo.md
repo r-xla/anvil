@@ -4,8 +4,8 @@
       out <<- f(x)
     Output
       AnvilTensor
-       1.0000
-       2.0000
-       3.0000
+       1
+       2
+       3
       [ F32{3} ]
 

@@ -34,14 +34,37 @@ describe("nv_subset", {
       dim(r_result) <- new_dims
     }
 
-    # Anvil-side: pass quos directly to nv_subset
     x <- nv_tensor(arr)
-    anvil_result <- as_array(jit(function(x) {
+
+    # Static anvil-side: pass quos directly to nv_subset
+    static_result <- as_array(jit(function(x) {
       rlang::inject(nv_subset(x, !!!quos))
     })(x))
-    browser()
 
-    expect_equal(anvil_result, r_result)
+    # Dynamic anvil-side: convert scalar ints and lists to tensors
+    dyn_env <- new.env(parent = environment())
+    dyn_quos <- vector("list", length(specs))
+    for (i in seq_along(specs)) {
+      subset <- specs[[i]]
+      expr <- rlang::quo_get_expr(quos[[i]])
+      if (is.list(subset)) {
+        var <- paste0(".dyn_", i)
+        dyn_env[[var]] <- nv_tensor(vapply(subset, as.integer, integer(1L)), dtype = "i32")
+        dyn_quos[[i]] <- rlang::new_quosure(as.name(var), dyn_env)
+      } else if (is.numeric(subset) && length(subset) == 1L) {
+        var <- paste0(".dyn_", i)
+        dyn_env[[var]] <- nv_scalar(as.integer(subset), dtype = "i32")
+        dyn_quos[[i]] <- rlang::new_quosure(as.name(var), dyn_env)
+      } else {
+        dyn_quos[[i]] <- quos[[i]]
+      }
+    }
+    dynamic_result <- as_array(jit(function(x) {
+      rlang::inject(nv_subset(x, !!!dyn_quos))
+    })(x))
+
+    expect_equal(static_result, r_result)
+    expect_equal(dynamic_result, r_result)
   }
 
   it("1D: single element (drops dim)", {
@@ -151,14 +174,37 @@ describe("nv_subset_assign", {
     # R-side: assign
     r_result <- do.call(`[<-`, c(list(arr), r_args, list(value = value)))
 
-    # Anvil-side: pass quos directly to nv_subset_assign
     x <- nv_tensor(arr)
     v <- nv_tensor(value)
-    anvil_result <- as_array(jit(function(x, v) {
+
+    # Static anvil-side
+    static_result <- as_array(jit(function(x, v) {
       rlang::inject(nv_subset_assign(x, !!!quos, value = v))
     })(x, v))
 
-    expect_equal(anvil_result, r_result)
+    # Dynamic anvil-side: convert scalar ints and lists to tensors
+    dyn_env <- new.env(parent = environment())
+    dyn_quos <- vector("list", length(specs))
+    for (i in seq_along(specs)) {
+      subset <- specs[[i]]
+      if (is.list(subset)) {
+        var <- paste0(".dyn_", i)
+        dyn_env[[var]] <- nv_tensor(vapply(subset, as.integer, integer(1L)), dtype = "i32")
+        dyn_quos[[i]] <- rlang::new_quosure(as.name(var), dyn_env)
+      } else if (is.numeric(subset) && length(subset) == 1L) {
+        var <- paste0(".dyn_", i)
+        dyn_env[[var]] <- nv_scalar(as.integer(subset), dtype = "i32")
+        dyn_quos[[i]] <- rlang::new_quosure(as.name(var), dyn_env)
+      } else {
+        dyn_quos[[i]] <- quos[[i]]
+      }
+    }
+    dynamic_result <- as_array(jit(function(x, v) {
+      rlang::inject(nv_subset_assign(x, !!!dyn_quos, value = v))
+    })(x, v))
+
+    expect_equal(static_result, r_result)
+    expect_equal(dynamic_result, r_result)
   }
 
   it("1D: single element", {
@@ -224,6 +270,38 @@ describe("nv_subset_assign", {
     check_subset_assign(c(5L, 6L), list(1, 3, 5), list(2, 4))
   })
 
+  it("2D: single in first dim, range in second", {
+    check_subset_assign(c(5L, 8L), 3L, 2:6)
+  })
+
+  it("2D: gather in one dim, single in the other", {
+    check_subset_assign(c(5L, 6L), list(2, 4), 3L)
+  })
+
+  it("3D: gather in first two dims, range in third", {
+    check_subset_assign(c(4L, 5L, 6L), list(1, 3), list(2, 4, 5), 2:4)
+  })
+
+  it("2D: single-element list preserves dim", {
+    check_subset_assign(c(4L, 3L), list(2), `:`)
+  })
+
+  it("4D case with 2 multi-index subset", {
+    check_subset_assign(c(3, 4, 2, 4), 1:2, list(1, 2, 4), `:`, list(3, 1))
+  })
+
+  it("5D case with 3 multi-index subset", {
+    check_subset_assign(c(3, 4, 2, 4, 3), 1:2, list(1, 2, 4), `:`, list(3, 1), list(2, 2))
+  })
+
+  it("5D case with 3 multi-index subset and single", {
+    check_subset_assign(c(3, 4, 2, 4, 3), 1, list(1, 2, 4), `:`, list(3, 1), list(2, 2))
+  })
+
+  it("5D case with 3 multi-index subset and 2 singles", {
+    check_subset_assign(c(3, 4, 2, 4, 3), 1, list(1, 2, 4), 2, list(3, 1), list(2, 2))
+  })
+
   it("errors when update shape doesn't match subset shape", {
     expect_error(
       jit_eval({
@@ -234,7 +312,6 @@ describe("nv_subset_assign", {
     )
   })
 })
-
 
 
 describe("subset_specs_start_indices", {

@@ -658,8 +658,10 @@ describe("boolean ops", {
 
 describe("p_gather", {
   it("works in simple example", {
-    expect_jit_equal({
-      gradient(\(x, y) x[2] * y)(nv_tensor(c(1, 2, 3)), nv_scalar(4))},
+    expect_jit_equal(
+      {
+        gradient(\(x, y) x[2] * y)(nv_tensor(c(1, 2, 3)), nv_scalar(4))
+      },
       list(x = nv_tensor(c(0, 4, 0)), y = nv_scalar(2))
     )
   })
@@ -703,7 +705,7 @@ describe("p_gather", {
   it("accumulates gradients for overlapping gather indices", {
     # If we gather the same element multiple times, gradients accumulate
     f <- jit(gradient(function(x) {
-      y <- x[list(2, 2)]  # gather x[2] twice
+      y <- x[list(2, 2)] # gather x[2] twice
       nv_reduce_sum(y, dims = 1L, drop = TRUE)
     }))
     x <- nv_tensor(c(1, 2, 3), dtype = "f32")
@@ -715,7 +717,7 @@ describe("p_gather", {
   it("computes gradient for 2D gather (row selection)", {
     # Gather rows from 2D matrix
     f <- jit(gradient(function(x) {
-      y <- x[list(1, 3), ]  # select rows 1 and 3
+      y <- x[list(1, 3), ] # select rows 1 and 3
       nv_reduce_sum(y, dims = c(1L, 2L), drop = TRUE)
     }))
     x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4), dtype = "f32")
@@ -796,7 +798,6 @@ describe("p_scatter", {
       "simple replacement"
     )
   })
-
 })
 
 if (nzchar(system.file(package = "torch"))) {

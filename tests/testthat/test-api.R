@@ -110,12 +110,31 @@ describe("nv_expand_grid", {
         nv_scalar(7L, dtype = "i64"),
         nv_scalar(2L, dtype = "i64")
       ),
-      nv_tensor(matrix(c(
-        1L, 2L, 7L, 2L,
-        1L, 4L, 7L, 2L,
-        3L, 2L, 7L, 2L,
-        3L, 4L, 7L, 2L
-      ), nrow = 4, byrow = TRUE), dtype = "i64")
+      nv_tensor(
+        matrix(
+          c(
+            1L,
+            2L,
+            7L,
+            2L,
+            1L,
+            4L,
+            7L,
+            2L,
+            3L,
+            2L,
+            7L,
+            2L,
+            3L,
+            4L,
+            7L,
+            2L
+          ),
+          nrow = 4,
+          byrow = TRUE
+        ),
+        dtype = "i64"
+      )
     )
   })
 
@@ -133,11 +152,13 @@ describe("nv_expand_grid", {
 
   it("works with three vectors", {
     # 2 x 2 x 2 = 8 combinations
-    out <- jit(\() nv_expand_grid(
-      nv_tensor(c(1L, 2L), dtype = "i64"),
-      nv_tensor(c(3L, 4L), dtype = "i64"),
-      nv_tensor(c(5L, 6L), dtype = "i64")
-    ))()
+    out <- jit(\() {
+      nv_expand_grid(
+        nv_tensor(c(1L, 2L), dtype = "i64"),
+        nv_tensor(c(3L, 4L), dtype = "i64"),
+        nv_tensor(c(5L, 6L), dtype = "i64")
+      )
+    })()
     expect_equal(dim(as_array(out)), c(8, 3))
     arr <- as_array(out)
     # First varies slowest, last varies fastest (unlike R's expand.grid)

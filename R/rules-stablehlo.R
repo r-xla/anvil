@@ -351,8 +351,17 @@ p_reverse[["stablehlo"]] <- function(operand, dims) {
   list(stablehlo::hlo_reverse(operand, dims - 1L))
 }
 
-p_iota[["stablehlo"]] <- function(dim, dtype, shape) {
-  list(stablehlo::hlo_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape))
+p_iota[["stablehlo"]] <- function(dim, dtype, shape, start) {
+  out <- stablehlo::hlo_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape)
+  if (start != 0L) {
+    offset <- stablehlo::hlo_broadcast_in_dim(
+      stablehlo::hlo_scalar(start, dtype = dtype, func = out$func),
+      integer(0),
+      shape
+    )
+    out <- stablehlo::hlo_add(out, offset)
+  }
+  list(out)
 }
 
 p_pad[["stablehlo"]] <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {

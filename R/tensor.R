@@ -271,6 +271,27 @@ LiteralTensor <- function(data, shape, dtype = default_dtype(data), ambiguous) {
   )
 }
 
+#' @title Iota Tensor Class
+#' @description
+#' A [`AbstractTensor`] representing a tensor where the data is a R scalar literal (e.g., `1L`, `2.5`)
+#' or an [`AnvilTensor`].
+#' Usually, their type is ambiguous, unless created via [`nv_fill`].
+#'
+#' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
+#'   The shape of the tensor.
+#' @param dimension (`integer(1)`)\cr
+IotaTensor <- function(shape, dimension, dtype, ambiguous = FALSE) {
+  structure(
+    list(
+      dtype = dtype,
+      shape = shape,
+      dimension = dimension,
+      ambiguous = ambiguous
+    ),
+    class = c("IotaTensor", "AbstractTensor")
+  )
+}
+
 is_literal_tensor <- function(x) {
   inherits(x, "LiteralTensor")
 }

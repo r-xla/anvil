@@ -665,7 +665,21 @@ p_dynamic_update_slice[["backward"]] <- function(inputs, outputs, grads, .requir
   result
 }
 
-p_gather[["backward"]] <- function(inputs, outputs, grads, slice_sizes, offset_dims, collapsed_slice_dims, operand_batching_dims, start_indices_batching_dims, start_index_map, index_vector_dim, indices_are_sorted, unique_indices, .required) {
+p_gather[["backward"]] <- function(
+  inputs,
+  outputs,
+  grads,
+  slice_sizes,
+  offset_dims,
+  collapsed_slice_dims,
+  operand_batching_dims,
+  start_indices_batching_dims,
+  start_index_map,
+  index_vector_dim,
+  indices_are_sorted,
+  unique_indices,
+  .required
+) {
   operand <- inputs[[1L]]
   start_indices <- inputs[[2L]]
   grad <- grads[[1L]]
@@ -884,11 +898,7 @@ p_scatter[["backward"]] <- function(
 
     id_dtype <- "i64"
     # Create IDs: 1, 2, 3, ..., num_ids (0 is reserved for "no update")
-    # iota produces [0, 1, 2, ...], so we add 1 to get [1, 2, 3, ...]
-    iota_vals <- nvl_reshape(nvl_iota(1L, id_dtype, num_ids), ids_shape)
-    one_scalar <- nvl_fill(1L, dtype = id_dtype, shape = integer())
-    one_broadcast <- nvl_broadcast_in_dim(one_scalar, ids_shape, integer())
-    update_ids <- nvl_add(iota_vals, one_broadcast)
+    update_ids <- nvl_reshape(nvl_iota(1L, id_dtype, num_ids, start = 1L), ids_shape)
     update_ids <- nvl_broadcast_in_dim(update_ids, update_shape, seq_along(update_shape))
 
     # b) Scatter the IDs to see which update "wins" at each position

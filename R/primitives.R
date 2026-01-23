@@ -1039,8 +1039,8 @@ p_iota <- AnvilPrimitive("iota")
 #'   Shape of the output tensor.
 #' @return [`tensorish`]
 #' @export
-nvl_iota <- function(dim, dtype, shape) {
-  infer_fn <- function(dim, dtype, shape) {
+nvl_iota <- function(dim, dtype, shape, start = 1L) {
+  infer_fn <- function(dim, dtype, shape, start) {
     # stablehlo uses 0-based indexing, anvil uses 1-based
     # Convert dim to Constant as required by stablehlo
     iota_dim_const <- stablehlo::r_to_constant(
@@ -1051,12 +1051,14 @@ nvl_iota <- function(dim, dtype, shape) {
     out <- stablehlo::infer_types_iota(iota_dimension = iota_dim_const, dtype = dtype, shape = shape)[[1L]]
     list(vt2at(out))
   }
-  graph_desc_add(
+  result <- graph_desc_add(
     p_iota,
     list(),
-    list(dim = dim, dtype = dtype, shape = shape),
+    list(dim = dim, dtype = dtype, shape = shape, start = start),
     infer_fn = infer_fn
   )[[1L]]
+
+  result
 }
 
 p_pad <- AnvilPrimitive("pad")
