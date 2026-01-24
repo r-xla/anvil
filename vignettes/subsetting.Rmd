@@ -81,4 +81,4 @@ jit_eval({
 
 Note that we don't support R vectors of length > 1, because we then can't properly distinguish beteeen scalar literals and length 1 vectors.
 
-
+We 

@@ -4,7 +4,7 @@
 \alias{nv_iota}
 \title{Iota}
 \usage{
-nv_iota(dim, dtype, shape)
+nv_iota(dim, dtype, shape, start = 1L)
 }
 \arguments{
 \item{dim}{(\code{integer(1)})\cr

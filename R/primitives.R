@@ -404,104 +404,6 @@ nvl_dynamic_update_slice <- function(operand, update, ...) {
   )[[1L]]
 }
 
-p_gather <- AnvilPrimitive("gather")
-#' @title Primitive Gather
-#' @description
-#' Gathers slices from the operand at positions specified by start_indices.
-#' @template param_operand
-#' @param start_indices ([`tensorish`])\cr
-#'   Tensor of integer type containing the starting indices for the gather operation.
-#' @param slice_sizes (`integer()`)\cr
-#'   The sizes of the slices to gather in each dimension.
-#' @param offset_dims (`integer()`)\cr
-#'   Dimensions of the operand to gather from.
-#' @param collapsed_slice_dims (`integer()`)\cr
-#'   Dimensions of the slice to gather.
-#' @param operand_batching_dims (`integer()`)\cr
-#'   Dimensions of the operand to gather from.
-#' @param start_indices_batching_dims (`integer()`)\cr
-#'   Dimensions of the start_indices to gather from.
-#' @param start_index_map (`integer()`)\cr
-#'   Mapping from the start_indices to the operand dimensions.
-#' @param index_vector_dim (`integer(1)`)\cr
-#'   Dimension of the index vector.
-#' @param indices_are_sorted (`logical(1)`)\cr
-#'   Whether indices are guaranteed to be sorted.
-#' @param unique_indices (`logical(1)`)\cr
-#'   Whether indices are guaranteed to be unique (no duplicates).
-#' @return [`tensorish`]
-#' @export
-nvl_gather <- function(
-  operand,
-  start_indices,
-  slice_sizes,
-  offset_dims,
-  collapsed_slice_dims,
-  operand_batching_dims,
-  start_indices_batching_dims,
-  start_index_map,
-  index_vector_dim,
-  indices_are_sorted = FALSE,
-  unique_indices = FALSE
-) {
-  infer_fn <- function(
-    operand,
-    start_indices,
-    slice_sizes,
-    offset_dims,
-    collapsed_slice_dims,
-    operand_batching_dims,
-    start_indices_batching_dims,
-    start_index_map,
-    index_vector_dim,
-    indices_are_sorted,
-    unique_indices
-  ) {
-    # Convert 1-based dimension numbers to 0-based
-    gather_dimension_numbers <- stablehlo::GatherDimensionNumbers(
-      offset_dims = offset_dims - 1L,
-      collapsed_slice_dims = collapsed_slice_dims - 1L,
-      operand_batching_dims = operand_batching_dims - 1L,
-      start_indices_batching_dims = start_indices_batching_dims - 1L,
-      start_index_map = start_index_map - 1L,
-      index_vector_dim = index_vector_dim - 1L
-    )
-
-    # Create constant attributes
-    slice_sizes_attr <- r_to_constant(slice_sizes, dtype = "i64", shape = length(slice_sizes))
-    indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "i1", shape = integer())
-
-    # Note: start_indices values are NOT converted here (no -1)
-    # The conversion from 1-based to 0-based indices happens in the stablehlo rule
-    out <- stablehlo::infer_types_gather(
-      at2vt(operand),
-      at2vt(start_indices),
-      gather_dimension_numbers = gather_dimension_numbers,
-      slice_sizes = slice_sizes_attr,
-      indices_are_sorted = indices_sorted_attr
-    )[[1L]]
-
-    out <- vt2at(out)
-    out$ambiguous <- operand$ambiguous
-    list(out)
-  }
-  graph_desc_add(
-    p_gather,
-    args = list(operand = operand, start_indices = start_indices),
-    params = list(
-      slice_sizes = slice_sizes,
-      offset_dims = offset_dims,
-      collapsed_slice_dims = collapsed_slice_dims,
-      operand_batching_dims = operand_batching_dims,
-      start_indices_batching_dims = start_indices_batching_dims,
-      start_index_map = start_index_map,
-      index_vector_dim = index_vector_dim,
-      indices_are_sorted = indices_are_sorted,
-      unique_indices = unique_indices
-    ),
-    infer_fn = infer_fn
-  )[[1L]]
-}
 
 # reduction operators
 
@@ -1404,17 +1306,17 @@ p_scatter <- AnvilPrimitive("scatter", subgraphs = "update_computation_graph")
 #' @param update ([`tensorish`])\cr
 #'   Update values tensor.
 #' @param update_window_dims (`integer()`)\cr
-#'   1-based dimensions of the update tensor that correspond to window dimensions.
+#'   Update window dimensions.
 #' @param inserted_window_dims (`integer()`)\cr
-#'   1-based dimensions inserted into the update tensor.
+#'   Inserted window dimensions.
 #' @param input_batching_dims (`integer()`)\cr
-#'   1-based batch dimensions in the input tensor.
+#'   Input batching dimensions.
 #' @param scatter_indices_batching_dims (`integer()`)\cr
-#'   1-based batch dimensions in the scatter indices.
+#'   Scatter indices batching dimensions.
 #' @param scatter_dims_to_operand_dims (`integer()`)\cr
-#'   1-based mapping from scatter indices to operand dimensions.
+#'   Mapping from scatter indices to operand dimensions.
 #' @param index_vector_dim (`integer(1)`)\cr
-#'   1-based dimension in scatter_indices containing the index vectors.
+#'   Dimension in scatter_indices containing the index vectors.
 #' @param indices_are_sorted (`logical(1)`)\cr
 #'   Whether indices are sorted.
 #' @param unique_indices (`logical(1)`)\cr
@@ -1427,10 +1329,10 @@ nvl_scatter <- function(
   input,
   scatter_indices,
   update,
-  update_window_dims = integer(),
-  inserted_window_dims = integer(),
-  input_batching_dims = integer(),
-  scatter_indices_batching_dims = integer(),
+  update_window_dims,
+  inserted_window_dims,
+  input_batching_dims,
+  scatter_indices_batching_dims,
   scatter_dims_to_operand_dims,
   index_vector_dim,
   indices_are_sorted = FALSE,
@@ -1490,20 +1392,6 @@ nvl_scatter <- function(
     unique_indices,
     update_computation_graph
   ) {
-    # Verify update_computation_graph has correct structure
-    if (length(update_computation_graph$inputs) != 2L) {
-      cli_abort("update_computation must have exactly 2 inputs (got {length(update_computation_graph$inputs)})")
-    }
-    if (length(update_computation_graph$outputs) != 1L) {
-      cli_abort("update_computation must return 1 output")
-    }
-
-    # Verify output is a scalar
-    out_shape <- update_computation_graph$outputs[[1L]]$aval$shape
-    if (length(out_shape$dims) != 0L) {
-      cli_abort("update_computation output must be a scalar")
-    }
-
     # Convert 1-based dimension numbers to 0-based
     scatter_dimension_numbers <- stablehlo::ScatterDimensionNumbers(
       update_window_dims = update_window_dims - 1L,
@@ -1514,12 +1402,9 @@ nvl_scatter <- function(
       index_vector_dim = index_vector_dim - 1L
     )
 
-    # Create constant attributes
     indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "i1", shape = integer())
     unique_indices_attr <- r_to_constant(unique_indices, dtype = "i1", shape = integer())
 
-    # Note: scatter_indices values are NOT converted here (no -1)
-    # The conversion from 1-based to 0-based indices happens in the stablehlo rule
     out <- stablehlo::infer_types_scatter(
       inputs = list(at2vt(input)),
       scatter_indices = at2vt(scatter_indices),
@@ -1531,7 +1416,6 @@ nvl_scatter <- function(
     )[[1L]]
 
     out <- vt2at(out)
-    # Preserve ambiguity from inputs and update computation
     out$ambiguous <- input$ambiguous
     list(out)
   }
@@ -1556,4 +1440,99 @@ nvl_scatter <- function(
   )
 
   out[[1L]]
+}
+
+p_gather <- AnvilPrimitive("gather")
+#' @title Primitive Gather
+#' @description
+#' Gathers slices from the operand at positions specified by start_indices.
+#' @template param_operand
+#' @param start_indices ([`tensorish`])\cr
+#'   Tensor of integer type containing the starting indices for the gather operation.
+#' @param slice_sizes (`integer()`)\cr
+#'   The sizes of the slices to gather in each dimension.
+#' @param offset_dims (`integer()`)\cr
+#'   Dimensions of the operand to gather from.
+#' @param collapsed_slice_dims (`integer()`)\cr
+#'   Dimensions of the slice to gather.
+#' @param operand_batching_dims (`integer()`)\cr
+#'   Dimensions of the operand to gather from.
+#' @param start_indices_batching_dims (`integer()`)\cr
+#'   Dimensions of the start_indices to gather from.
+#' @param start_index_map (`integer()`)\cr
+#'   Mapping from the start_indices to the operand dimensions.
+#' @param index_vector_dim (`integer(1)`)\cr
+#'   Dimension of the index vector.
+#' @param indices_are_sorted (`logical(1)`)\cr
+#'   Whether indices are guaranteed to be sorted.
+#' @param unique_indices (`logical(1)`)\cr
+#'   Whether indices are guaranteed to be unique (no duplicates).
+#' @return [`tensorish`]
+#' @export
+nvl_gather <- function(
+  operand,
+  start_indices,
+  slice_sizes,
+  offset_dims,
+  collapsed_slice_dims,
+  operand_batching_dims,
+  start_indices_batching_dims,
+  start_index_map,
+  index_vector_dim,
+  indices_are_sorted = FALSE,
+  unique_indices = FALSE
+) {
+  infer_fn <- function(
+    operand,
+    start_indices,
+    slice_sizes,
+    offset_dims,
+    collapsed_slice_dims,
+    operand_batching_dims,
+    start_indices_batching_dims,
+    start_index_map,
+    index_vector_dim,
+    indices_are_sorted,
+    unique_indices
+  ) {
+    gather_dimension_numbers <- stablehlo::GatherDimensionNumbers(
+      offset_dims = offset_dims - 1L,
+      collapsed_slice_dims = collapsed_slice_dims - 1L,
+      operand_batching_dims = operand_batching_dims - 1L,
+      start_indices_batching_dims = start_indices_batching_dims - 1L,
+      start_index_map = start_index_map - 1L,
+      index_vector_dim = index_vector_dim - 1L
+    )
+
+    slice_sizes_attr <- r_to_constant(slice_sizes, dtype = "i64", shape = length(slice_sizes))
+    indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "i1", shape = integer())
+
+    out <- stablehlo::infer_types_gather(
+      at2vt(operand),
+      at2vt(start_indices),
+      gather_dimension_numbers = gather_dimension_numbers,
+      slice_sizes = slice_sizes_attr,
+      indices_are_sorted = indices_sorted_attr
+    )[[1L]]
+
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
+    list(out)
+  }
+  graph_desc_add(
+    p_gather,
+    args = list(operand = operand, start_indices = start_indices),
+    params = list(
+      slice_sizes = slice_sizes,
+      offset_dims = offset_dims,
+      collapsed_slice_dims = collapsed_slice_dims,
+      operand_batching_dims = operand_batching_dims,
+      start_indices_batching_dims = start_indices_batching_dims,
+      start_index_map = start_index_map,
+      index_vector_dim = index_vector_dim,
+      indices_are_sorted = indices_are_sorted,
+      unique_indices = unique_indices
+    ),
+    infer_fn = infer_fn
+  )[[1L]]
 }

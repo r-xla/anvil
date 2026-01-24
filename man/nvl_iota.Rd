@@ -4,7 +4,7 @@
 \alias{nvl_iota}
 \title{Primitive Iota}
 \usage{
-nvl_iota(dim, dtype, shape)
+nvl_iota(dim, dtype, shape, start = 1L)
 }
 \arguments{
 \item{dim}{(\code{integer(1)})\cr

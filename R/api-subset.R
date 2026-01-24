@@ -278,7 +278,11 @@ subset_specs_to_scatter <- function(subsets) {
     scatter_dims_to_operand_dims = seq_len(rank),
     index_vector_dim = index_vector_dim,
     indices_are_sorted = !multi_index_subset,
-    unique_indices = TRUE,
+    unique_indices = !multi_index_subset || all(vapply(
+      subsets[multi_index_dims],
+      function(s) s$static && !anyDuplicated(s$indices),
+      logical(1L)
+    )),
     update_shape = update_shape,
     multi_index_subset = multi_index_subset
   )
@@ -501,6 +505,14 @@ nv_subset_assign <- function(x, ..., value) {
 
   if (!ndims_abstract(value)) {
     value <- nv_broadcast_to(value, params$update_shape)
+  } else {
+    value_shape <- shape_abstract(value)
+    if (!identical(value_shape, params$update_shape)) {
+      cli_abort(c(
+        "Update shape does not match subset shape.",
+        x = "Got {shape2string(value_shape)} and {shape2string(params$update_shape)}"
+      ))
+    }
   }
 
   nvl_scatter(
@@ -514,7 +526,6 @@ nv_subset_assign <- function(x, ..., value) {
     scatter_dims_to_operand_dims = params$scatter_dims_to_operand_dims,
     index_vector_dim = params$index_vector_dim,
     indices_are_sorted = params$indices_are_sorted,
-    unique_indices = params$unique_indices,
-    update_computation = function(old, new) new
+    unique_indices = params$unique_indices
   )
 }
