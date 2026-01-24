@@ -17,9 +17,10 @@
 #'   The default (`NULL`) is to infer it from the data if possible.
 #'   Note that [`nv_tensor`] interprets length 1 vectors as having shape `(1)`.
 #'   To create a "scalar" with dimension `()`, use [`nv_scalar`].
-#' @param ambiguous (`logical(1)`)\cr
+#' @param ambiguous (`NULL` | `logical(1)`)\cr
 #'   Whether the dtype should be marked as ambiguous.
-#'   For [nv_tensor()], defaults to `FALSE` (non-ambiguous).
+#'   For [nv_tensor()], defaults to `FALSE` (non-ambiguous) for new tensors,
+#'   or preserves the existing value when `data` is already an [`AnvilTensor`].
 #'   For [nv_scalar()], defaults to `TRUE` when `dtype` is `NULL` and data is numeric, `FALSE` otherwise.
 #'
 #' @return ([`AnvilTensor`]) A tensor object.
@@ -29,7 +30,27 @@ NULL
 
 #' @rdname AnvilTensor
 #' @export
-nv_tensor <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = FALSE) {
+nv_tensor <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL) {
+  if (is_anvil_tensor(data)) {
+    if (!is.null(device) && device(data) != pjrt::as_pjrt_device(device)) {
+      cli_abort("Cannot change device of existing AnvilTensor from {.val {platform(data)}} to {.val {device}}")
+    }
+    if (!is.null(shape) && !identical(shape(data), as.integer(shape))) {
+      cli_abort("Cannot change shape of existing AnvilTensor")
+    }
+    if (!is.null(dtype)) {
+      if (dtype(data) != as_dtype(dtype)) {
+        cli_abort("Cannot change dtype of existing AnvilTensor from {.val {dtype(data)}} to {.val {dtype}}")
+      }
+    }
+    if (!is.null(ambiguous) && ambiguous(data) != ambiguous) {
+      cli_abort("Cannot change ambiguous of existing AnvilTensor from {.val {ambiguous(data)}} to {.val {ambiguous}}")
+    }
+    return(data)
+  }
+  if (is.null(ambiguous)) {
+    ambiguous <- FALSE
+  }
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
   }
@@ -357,17 +378,8 @@ print.AnvilTensor <- function(x, header = TRUE, ...) {
   invisible(x)
 }
 
-#' @title Waldo Comparison Proxy for AnvilTensor
-#' @description
-#' Provides a proxy object for waldo comparisons of AnvilTensors.
-#' This allows `testthat::expect_equal` to compare AnvilTensors.
-#'
-#' @param x An AnvilTensor
-#' @param path The comparison path (used by waldo)
-#' @return A list containing object and path for comparison
-#' @export
-#' @keywords internal
-compare_proxy.AnvilTensor <- function(x, path) {
+# fmt: skip
+compare_proxy.AnvilTensor <- function(x, path) { # nolint
   list(
     object = list(
       data = as_array(x),

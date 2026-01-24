@@ -113,8 +113,8 @@ static_start_indices <- function(starts) {
 #' integer type present among dynamic tensor indices. Conversion is only performed
 #' when at least one subset is dynamic.
 #'
-#' - Without multi_index_dims: returns a 1D tensor of shape [rank] (all starts are scalar).
-#' - With multi_index_dims: returns a tensor of shape [gather_shape..., rank] where the
+#' - Without multi_index_dims: returns a 1D tensor of shape `(rank)` (all starts are scalar).
+#' - With multi_index_dims: returns a tensor of shape `(gather_shape..., rank)` where the
 #'   gather dimensions' indices are broadcast across the cartesian product.
 #'
 #' @param subsets List of SubsetSpec objects (from parse_subset_specs)
@@ -144,7 +144,7 @@ subset_specs_start_indices <- function(subsets) {
 #'
 #' @param subsets List of SubsetSpec objects (from parse_subset_specs)
 #' @return A list with all parameters needed for nvl_gather:
-#'   - start_indices: tensor of start indices (shape [gather_shape..., rank] or [1, rank])
+#'   - start_indices: tensor of start indices (shape `(gather_shape..., rank)` or `(1, rank)`)
 #'   - slice_sizes: integer vector
 #'   - offset_dims: integer vector
 #'   - collapsed_slice_dims: integer vector
@@ -278,11 +278,12 @@ subset_specs_to_scatter <- function(subsets) {
     scatter_dims_to_operand_dims = seq_len(rank),
     index_vector_dim = index_vector_dim,
     indices_are_sorted = !multi_index_subset,
-    unique_indices = !multi_index_subset || all(vapply(
-      subsets[multi_index_dims],
-      function(s) s$static && !anyDuplicated(s$indices),
-      logical(1L)
-    )),
+    unique_indices = !multi_index_subset ||
+      all(vapply(
+        subsets[multi_index_dims],
+        function(s) s$static && !anyDuplicated(s$indices),
+        logical(1L)
+      )),
     update_shape = update_shape,
     multi_index_subset = multi_index_subset
   )
@@ -361,9 +362,10 @@ parse_subset_spec <- function(quo, dim_size) {
 
   # R vectors of length > 1 - not allowed (use list() instead)
   if (is.numeric(e) && length(e) > 1L) {
-    cli_abort(
-      "Vectors of length > 1 are not allowed as subset indices. Use list() to select multiple elements, e.g. x[list(1, 3), ] instead of x[c(1, 3), ]"
-    )
+    cli_abort(c(
+      "Vectors of length > 1 are not allowed as subset indices.",
+      "i" = "Use {.code list()} to select multiple elements, e.g. {.code x[list(1, 3), ]}."
+    ))
   }
 
   # list() - preserves dimensions (keep as R integer vector, convert to tensor later)
@@ -424,9 +426,22 @@ parse_subset_spec <- function(quo, dim_size) {
 #'   - Single integers (e.g., `3`) for single elements (drops dimension)
 #'   - `list(i)` for single element without dropping dimension
 #'   - `list(i, j, ...)` for multiple non-contiguous elements
-#'   - Scalar tensors for dynamic indexing (does not drop dimension)
+#'   - Scalar tensors for dynamic indexing (drops dimension)
 #'   - Missing (empty or `:`) to select all elements in that dimension
 #' @return [`tensorish`]
+#' @seealso [nv_subset_assign()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' # Scalar index drops dimension
+#' jit_eval(nv_tensor(matrix(1:6, 2, 3))[1, ])
+#'
+#' # Range preserves dimension
+#' jit_eval(nv_tensor(1:10)[2:5])
+#'
+#' # list() preserves dimension for single element
+#' jit_eval(nv_tensor(1:10)[list(3)])
+#'
+#' # list() selects non-contiguous elements
+#' jit_eval(nv_tensor(1:10)[list(1, 5, 10)])
 #' @export
 nv_subset <- function(x, ...) {
   if (!is_tensorish(x)) {
@@ -460,24 +475,40 @@ nv_subset <- function(x, ...) {
 
 #' @title Update Subset
 #' @description
-#' Updates elements of a tensor.
-#' This has copy-on-write semantics just like for standard R arrays.
+#' Updates elements of a tensor at specified positions.
+#' This has copy-on-write semantics just like for standard R arrays:
+#' a new tensor is returned with the specified positions updated.
+#'
+#' Unlike [`nv_subset()`], single integer indices do **not** drop dimensions here,
+#' since the update value must match the subset's shape including all dimensions.
+#'
 #' @param x ([`tensorish`])\cr
 #'   Input tensor to update.
 #' @param ... Subset specifications. Can be:
 #'   - Ranges (e.g., `2:5`) for contiguous slices. Must be static.
 #'   - Single integers (e.g., `3`) for single elements
-#'   - Missing (selects all) for full dimension
+#'   - `list(i, j, ...)` for multiple non-contiguous elements
+#'   - Scalar tensors or 1D tensor indices for dynamic indexing
+#'   - Missing (empty or `:`) to select all elements in that dimension
 #' @param value ([`tensorish`])\cr
-#'   Values to write. Shape must match the subset shape.
-#' @return [`tensorish`]
+#'   Values to write. Scalars are broadcast to the subset shape.
+#'   Non-scalar values must have a shape matching the subset shape.
+#' @return [`tensorish`] A new tensor with the subset updated.
+#' @seealso [nv_subset()]
 #' @export
-#' @examples
-#' \dontrun{
-#' # Update contiguous slice
-#' x <- nv_tensor(1:10)
-#' x <- nv_subset_assign(x, 2:4, value = nv_tensor(c(20, 30, 40)))
-#' }
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' # Update a contiguous slice
+#' jit_eval({
+#'   x <- nv_tensor(1:10, dtype = "f32")
+#'   nv_subset_assign(x, 2:4, value = nv_tensor(c(20, 30, 40), dtype = "f32"))
+#' })
+#'
+#' # Update with `[<-` syntax
+#' jit_eval({
+#'   x <- nv_tensor(1:10, dtype = "f32")
+#'   x[1] <- nv_scalar(99, dtype = "f32")
+#'   x
+#' })
 nv_subset_assign <- function(x, ..., value) {
   if (!is_tensorish(x)) {
     cli_abort("Expected tensorish `x`, but got {.cls {class(x)[1]}}")

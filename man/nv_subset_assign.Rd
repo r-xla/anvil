@@ -14,23 +14,42 @@ Input tensor to update.}
 \itemize{
 \item Ranges (e.g., \code{2:5}) for contiguous slices. Must be static.
 \item Single integers (e.g., \code{3}) for single elements
-\item Missing (selects all) for full dimension
+\item \code{list(i, j, ...)} for multiple non-contiguous elements
+\item Scalar tensors or 1D tensor indices for dynamic indexing
+\item Missing (empty or \code{:}) to select all elements in that dimension
 }}
 
 \item{value}{(\code{\link{tensorish}})\cr
-Values to write. Shape must match the subset shape.}
+Values to write. Scalars are broadcast to the subset shape.
+Non-scalar values must have a shape matching the subset shape.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}} A new tensor with the subset updated.
 }
 \description{
-Updates elements of a tensor.
-This has copy-on-write semantics just like for standard R arrays.
+Updates elements of a tensor at specified positions.
+This has copy-on-write semantics just like for standard R arrays:
+a new tensor is returned with the specified positions updated.
+
+Unlike \code{\link[=nv_subset]{nv_subset()}}, single integer indices do \strong{not} drop dimensions here,
+since the update value must match the subset's shape including all dimensions.
 }
 \examples{
-\dontrun{
-# Update contiguous slice
-x <- nv_tensor(1:10)
-x <- nv_subset_assign(x, 2:4, value = nv_tensor(c(20, 30, 40)))
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+# Update a contiguous slice
+jit_eval({
+  x <- nv_tensor(1:10, dtype = "f32")
+  nv_subset_assign(x, 2:4, value = nv_tensor(c(20, 30, 40), dtype = "f32"))
+})
+
+# Update with `[<-` syntax
+jit_eval({
+  x <- nv_tensor(1:10, dtype = "f32")
+  x[1] <- nv_scalar(99, dtype = "f32")
+  x
+})
+\dontshow{\}) # examplesIf}
 }
+\seealso{
+\code{\link[=nv_subset]{nv_subset()}}
 }

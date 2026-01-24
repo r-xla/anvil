@@ -11,6 +11,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 [![CRAN
 status](https://www.r-pkg.org/badges/version/anvil)](https://CRAN.R-project.org/package=anvil)
 [![codecov](https://codecov.io/gh/r-xla/anvil/branch/main/graph/badge.svg)](https://codecov.io/gh/r-xla/anvil)
+[![r-universe](https://r-xla.r-universe.dev/badges/anvil)](https://r-xla.r-universe.dev/anvil)
 <!-- badges: end -->
 
 Composable code transformation framework for R, allowing you to run
@@ -39,6 +40,9 @@ options(repos = c(
 ))
 ```
 
+You can also use one of the prebuilt [Docker
+images](https://github.com/r-xla/docker).
+
 ## Quick Start
 
 Below, we create a standard R function. We cannot directly call this
@@ -58,7 +62,7 @@ b <- nv_scalar(-2.0, "f32")
 x <- nv_scalar(3.0, "f32")
 
 f_jit(a, b, x)
-#> AnvilTensor 
+#> AnvilTensor
 #>  1.0000
 #> [ CPUf32{} ]
 ```
@@ -70,12 +74,12 @@ the above function.
 g_jit <- jit(gradient(f, wrt = c("a", "b")))
 g_jit(a, b, x)
 #> $a
-#> AnvilTensor 
+#> AnvilTensor
 #>  3.0000
 #> [ CPUf32{} ] 
 #> 
 #> $b
-#> AnvilTensor 
+#> AnvilTensor
 #>  1.0000
 #> [ CPUf32{} ]
 ```

@@ -8,10 +8,10 @@ nvl_scatter(
   input,
   scatter_indices,
   update,
-  update_window_dims = integer(),
-  inserted_window_dims = integer(),
-  input_batching_dims = integer(),
-  scatter_indices_batching_dims = integer(),
+  update_window_dims,
+  inserted_window_dims,
+  input_batching_dims,
+  scatter_indices_batching_dims,
   scatter_dims_to_operand_dims,
   index_vector_dim,
   indices_are_sorted = FALSE,
@@ -30,22 +30,22 @@ Tensor of integer type containing indices.}
 Update values tensor.}
 
 \item{update_window_dims}{(\code{integer()})\cr
-1-based dimensions of the update tensor that correspond to window dimensions.}
+Update window dimensions.}
 
 \item{inserted_window_dims}{(\code{integer()})\cr
-1-based dimensions inserted into the update tensor.}
+Inserted window dimensions.}
 
 \item{input_batching_dims}{(\code{integer()})\cr
-1-based batch dimensions in the input tensor.}
+Input batching dimensions.}
 
 \item{scatter_indices_batching_dims}{(\code{integer()})\cr
-1-based batch dimensions in the scatter indices.}
+Scatter indices batching dimensions.}
 
 \item{scatter_dims_to_operand_dims}{(\code{integer()})\cr
-1-based mapping from scatter indices to operand dimensions.}
+Mapping from scatter indices to operand dimensions.}
 
 \item{index_vector_dim}{(\code{integer(1)})\cr
-1-based dimension in scatter_indices containing the index vectors.}
+Dimension in scatter_indices containing the index vectors.}
 
 \item{indices_are_sorted}{(\code{logical(1)})\cr
 Whether indices are sorted.}

@@ -16,7 +16,7 @@ Input tensor to subset.}
 \item Single integers (e.g., \code{3}) for single elements (drops dimension)
 \item \code{list(i)} for single element without dropping dimension
 \item \code{list(i, j, ...)} for multiple non-contiguous elements
-\item Scalar tensors for dynamic indexing (does not drop dimension)
+\item Scalar tensors for dynamic indexing (drops dimension)
 \item Missing (empty or \code{:}) to select all elements in that dimension
 }}
 }
@@ -36,4 +36,22 @@ Dimension dropping behavior:
 \item Ranges (e.g., \code{x[1:3, ]}) never drop dimensions
 \item 1D tensor indices never drop dimensions
 }
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+# Scalar index drops dimension
+jit_eval(nv_tensor(matrix(1:6, 2, 3))[1, ])
+
+# Range preserves dimension
+jit_eval(nv_tensor(1:10)[2:5])
+
+# list() preserves dimension for single element
+jit_eval(nv_tensor(1:10)[list(3)])
+
+# list() selects non-contiguous elements
+jit_eval(nv_tensor(1:10)[list(1, 5, 10)])
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_subset_assign]{nv_subset_assign()}}
 }

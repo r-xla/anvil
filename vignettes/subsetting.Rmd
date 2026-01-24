@@ -11,11 +11,10 @@ In this vignette, you will learn how to subset tensors in {anvil} and how to upd
 Because tensor shapes in {anvil} programs are static (for now), only certain subsetting operations are supported and they come with some surprises.
 
 First, it is only possible to subset via `indices` and not, for example, using boolean masks.
-This is, because the output shape of a tensor subsetted by a boolean mask is unknown as it depends on how many elements in the boolean mask are `TRUE`.
+This is because the output shape of a tensor subsetted by a boolean mask is unknown as it depends on how many elements in the boolean mask are `TRUE`.
 
 ```{r, error = TRUE}
 library(anvil)
-set.seed(42)
 jit_eval({
   x <- nv_tensor(1:3)
   x[nv_tensor(c(TRUE, TRUE, FALSE))]
@@ -23,62 +22,174 @@ jit_eval({
 ```
 
 Second, no error can be thrown when subsetting with invalid indices, as the XLA backend we use for compilation does not support this.
-Instead, the out-of-bound indices are clamped to the valid range:
+Instead, out-of-bound indices are clamped to the valid range:
 
 ```{r}
 jit_eval({
   x <- nv_tensor(1:3)
-  x[nv_tensor(3:5)]
+  x[nv_tensor(3:5, dtype = "i32")]
 })
 ```
 
-With these restrictions in mind, we will now cover the different ways how to subset a tensor.
-A complete subset on a tensor is defined by specifying an individual subset for each dimension of a tensor.
-Such a subset can be a:
+## Index Types
 
-1. Known single element, which is a length-1 R vector
-3. Known range, such as `2:5`
-4. Known scatter, like `list(1, 3, 6)`.
-2. Unknown single element, which is a 0-dimensional tensor
-5. Unknown scatter, which are expressed as 1-dimensional tensors.
+With these restrictions in mind, we will now cover the different ways to subset a tensor.
+A complete subset is defined by specifying an individual index for each dimension of a tensor.
+Such an index can be:
 
-All of these can be combined arbitrarily (can they, what about multiple scatters?)
+1. A **known single element** (R integer literal), which drops the dimension.
+2. A **known range** (e.g., `2:5`), which preserves the dimension.
+3. A **known list** (e.g., `list(1, 3, 6)`), which selects non-contiguous elements and preserves the dimension.
+4. An **unknown single element** (0-dimensional tensor), which drops the dimension.
+5. An **unknown list** (1-dimensional tensor), which preserves the dimension.
 
-We start with a simple example:
+These can be combined freely across different dimensions.
+
+## Dropping vs. Preserving Dimensions
+
+Let's start with a 1D tensor:
 
 ```{r}
-x <- nv_scalar(1:10)
+x <- nv_tensor(1:10, dtype = "i32")
 ```
 
-If we want to get the first element of the vector, we have to decide whether to drop the dimension or not.
-If we subset with `AnvilTensor`s, we drop the dimension only iff the tensor is a scalar.
-If it's a 1-dimensional tensor of shape `(1)`, we keep the dimension:
+If we want to get a single element, we have to decide whether to drop the dimension or not.
+A scalar R index drops the dimension, while `list()` with a single element preserves it:
+
+```{r}
+# Drops the dimension (result is a scalar)
+jit_eval(x[1])
+
+# Preserves the dimension (result has shape (1))
+jit_eval(x[list(1)])
+```
+
+The same distinction applies to tensor indices: a 0D scalar tensor drops the dimension, while a 1D tensor of shape `(1)` preserves it:
+
+```{r}
+# Drops the dimension
+jit_eval(x[nv_scalar(1L)])
+
+# Preserves the dimension
+jit_eval(x[nv_tensor(1L, dtype = "i32", shape = 1L)])
+```
+
+## Ranges
+
+Ranges always preserve dimensions and select contiguous slices:
+
+```{r}
+jit_eval(x[2:5])
+```
+
+Ranges must be static (known at compile time).
+
+## Selecting Multiple Non-Contiguous Elements
+
+Use `list()` to select multiple non-contiguous elements:
+
+```{r}
+jit_eval(x[list(1, 5, 10)])
+```
+
+Alternatively, pass a 1D tensor:
+
+```{r}
+jit_eval(x[nv_tensor(c(1L, 5L, 10L), dtype = "i32")])
+```
+
+Note that R vectors of length > 1 are not supported as subset indices, because they can't be distinguished from scalar literals in all cases.
+Use `list()` for known indices and 1D tensors for dynamic indices.
+
+## Multi-Dimensional Subsetting
+
+For multi-dimensional tensors, specify one index per dimension separated by commas.
+Trailing dimensions that are left unspecified select all elements:
+
+```{r}
+m <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4), dtype = "i32")
+
+# Select row 2 (drops dimension 1)
+jit_eval(m[2, ])
+
+# Select column 3 (drops dimension 2)
+jit_eval(m[, 3])
+
+# Select a submatrix (2:3 rows, 1:2 columns)
+jit_eval(m[2:3, 1:2])
+
+# Trailing `,` is optional: m[2:3] is the same as m[2:3, ]
+jit_eval(m[2:3])
+```
+
+You can also select non-contiguous elements along multiple dimensions simultaneously.
+This creates a cartesian product of the indices:
+
+```{r}
+# Select rows 1 and 3, columns 2 and 4 → result has shape (2, 2)
+jit_eval(m[list(1, 3), list(2, 4)])
+```
+
+## Subset Assignment
+
+Use `nv_subset_assign()` or `[<-` to update elements of a tensor.
+This has copy-on-write semantics: a new tensor is returned with the specified positions updated.
 
 ```{r}
 jit_eval({
-  x[nv_scalar(1L)]
-  x[nv_tensor(1L, shape = c(1))]
+  x <- nv_tensor(1:10, dtype = "f32")
+  x[3:5] <- nv_tensor(c(30, 40, 50), dtype = "f32")
+  x
 })
 ```
 
-Similarly, if we subset using R vectors, we can drop the dimension by using a length-1 vector and we can keep it by using a list of length 1.
+Scalar values are broadcast to fill the subset:
 
 ```{r}
 jit_eval({
-  x[1]
-  x[list(1)]
+  x <- nv_tensor(1:10, dtype = "f32")
+  x[3:5] <- nv_scalar(0, dtype = "f32")
+  x
 })
 ```
 
-We can also subset multiple elements, either by passing a 1-dimensional tensor or an R list of length > 1:
+Multi-dimensional assignment works the same way:
 
 ```{r}
 jit_eval({
-  x[list(1, 3, 5)]
-  x[nv_tensor(c(1L, 3L, 5L))]
+  m <- nv_tensor(matrix(0, 3, 4), dtype = "f32")
+  m[1:2, 2:3] <- nv_tensor(matrix(c(1, 2, 3, 4), 2, 2), dtype = "f32")
+  m
 })
 ```
 
-Note that we don't support R vectors of length > 1, because we then can't properly distinguish beteeen scalar literals and length 1 vectors.
+## Differentiability
 
-We 
+Both `nv_subset()` and `nv_subset_assign()` are differentiable.
+Gradients flow through the subset operations correctly:
+
+```{r}
+grad_fn <- jit(gradient(function(x) {
+  nv_reduce_sum(x[2:4])
+}))
+grad_fn(nv_tensor(1:5, dtype = "f32"))
+```
+
+The gradient is 1 at positions 2-4 (the elements that contribute to the sum) and 0 elsewhere.
+
+For subset assignment, gradients flow to both the original tensor and the assigned value:
+
+```{r}
+grad_fn <- jit(gradient(function(x, v) {
+  y <- x
+  y[2:3] <- v
+  nv_reduce_sum(y)
+}))
+
+grad_fn(
+  nv_tensor(1:5, dtype = "f32"),
+  nv_tensor(c(10, 20), dtype = "f32")
+)
+```
+
+Positions that were overwritten in `x` receive gradient 0, while the assigned values in `v` receive gradient 1.

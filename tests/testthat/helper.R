@@ -15,6 +15,7 @@ expect_jit_unary <- function(nv_fun, rfun, x, scalar = !is.array(x)) {
   f <- jit(function(a) {
     nv_fun(a)
   })
+
   out <- if (scalar) {
     f(nv_scalar(x))
   } else {
@@ -50,9 +51,6 @@ expect_grad_binary <- function(nv_fun, d_rx, d_ry, x, y) {
   testthat::expect_equal(gx, d_rx(x, y), tolerance = 1e-5)
   testthat::expect_equal(gy, d_ry(x, y), tolerance = 1e-5)
 }
-
-#nvj_add <- jit(nv_add)
-#nvj_mul <- jit(nv_mul)
 
 skip_if_not_cpu <- function(msg = "") {
   if (is_cuda()) {
@@ -93,7 +91,6 @@ generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
 }
-
 
 verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
   if (is.null(f_wrapper)) {

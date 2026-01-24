@@ -687,7 +687,7 @@ describe("p_scatter", {
     # All 10 updates write to position 1; only the last one wins
     f <- jit(gradient(function(update) {
       x <- nv_tensor(rep(0, 10), dtype = "f64")
-      x <- nv_subset_assign(x, list(1,1,1,1,1,1,1,1,1,1), value = update)
+      x <- nv_subset_assign(x, list(1, 1, 1, 1, 1, 1, 1, 1, 1, 1), value = update)
       nv_reduce_sum(x, dims = 1L, drop = TRUE)
     }))
     update <- nv_tensor(1:10, dtype = "f64")

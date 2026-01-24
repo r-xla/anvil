@@ -216,8 +216,7 @@ gather_clamp_indices <- function(
     return(start_indices)
   }
 
-  # Build min and max bounds for each coordinate
-  min_bounds <- rep(1L, n_index_coords)
+  # Build max bounds for each coordinate
   max_bounds <- integer(n_index_coords)
   for (coord_idx in seq_len(n_index_coords)) {
     operand_dim <- start_index_map[coord_idx]
