@@ -8,7 +8,7 @@
        2
        3
        4
-      [ CPUi32{4x1} ] 
+      [ CPUi32{4,1} ] 
 
 # nv_scalar
 
@@ -34,5 +34,14 @@
       ConcreteTensor
        1 3 5
        2 4 6
-      [ CPUf32{2x3} ] 
+      [ CPUf32{2,3} ] 
+
+# stablehlo dtype is printed
+
+    Code
+      nv_tensor(TRUE)
+    Output
+      AnvilTensor
+       1
+      [ CPUi1{1} ] 
 

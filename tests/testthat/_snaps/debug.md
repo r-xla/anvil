@@ -48,5 +48,5 @@
       DebugBox(ConcreteTensor)
        1 3
        2 4
-      [ CPUf32{2x2} ] 
+      [ CPUf32{2,2} ] 
 

@@ -136,3 +136,8 @@ test_that("to_abstract", {
   x <- GraphBox(aval, local_descriptor())
   expect_equal(to_abstract(x), aval$aval)
 })
+
+test_that("stablehlo dtype is printed", {
+  skip_if(!is_cpu())
+  expect_snapshot(nv_tensor(TRUE))
+})

@@ -374,7 +374,10 @@ print.AnvilTensor <- function(x, header = TRUE, ...) {
   if (header) {
     cat("AnvilTensor\n")
   }
-  print(x$tensor, header = FALSE)
+  dtype_str <- paste0(as.character(dtype(x)), if (x$ambiguous) "?")
+  footer <- sprintf("[ %s%s{%s} ]", toupper(platform(x)), dtype_str, paste0(shape(x), collapse = ","))
+
+  print(x$tensor, header = FALSE, footer = footer)
   invisible(x)
 }
 

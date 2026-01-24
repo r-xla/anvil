@@ -356,9 +356,10 @@ p_rng_bit_generator[["stablehlo"]] <- function(initial_state, rng_algorithm, dty
   stablehlo::hlo_rng_bit_generator(initial_state, rng_algorithm, dtype, shape)
 }
 
-p_print[["stablehlo"]] <- function(operand) {
+p_print[["stablehlo"]] <- function(operand, footer) {
   backend_config <- stablehlo::CustomOpBackendConfig(list(
-    stablehlo::StringAttr(name = "print_header", value = "AnvilTensor")
+    stablehlo::StringAttr(name = "print_header", value = "AnvilTensor"),
+    stablehlo::StringAttr(name = "print_footer", value = footer)
   ))
 
   # has side-effect
