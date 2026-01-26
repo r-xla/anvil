@@ -611,9 +611,27 @@ nv_reverse <- nvl_reverse
 #'   Dimension along which values increase.
 #' @template param_dtype
 #' @template param_shape
+#' @template param_ambiguous
+#' @param start (`integer(1)`)\cr
+#'   Starting value.
 #' @return [`tensorish`]
 #' @export
 nv_iota <- nvl_iota
+
+#' @title Sequence
+#' @description Creates a tensor with values increasing from start to end.
+#' @param start,end (`integer(1)`)\cr
+#'   Start and end values.
+#' @template param_dtype
+#' @template param_ambiguous
+#' @return [`tensorish`]
+#' @export
+nv_seq <- function(start, end, dtype = "i32", ambiguous = FALSE) {
+  assert_int(start)
+  assert_int(end)
+  assert(start <= end)
+  nv_iota(shape = end - start + 1, dtype = dtype, ambiguous = ambiguous, dim = 1L, start = start)
+}
 
 #' @title Pad
 #' @description Pads a tensor with a given padding value.

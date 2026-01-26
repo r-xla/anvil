@@ -315,7 +315,7 @@ p_reverse[["stablehlo"]] <- function(operand, dims) {
   list(stablehlo::hlo_reverse(operand, dims - 1L))
 }
 
-p_iota[["stablehlo"]] <- function(dim, dtype, shape, start) {
+p_iota[["stablehlo"]] <- function(dim, dtype, shape, start, ambiguous) {
   out <- stablehlo::hlo_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape)
   if (start != 0L) {
     offset <- stablehlo::hlo_broadcast_in_dim(

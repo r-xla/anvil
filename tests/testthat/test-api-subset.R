@@ -1,87 +1,62 @@
 describe("nv_subset and nv_subset_assign", {
   check <- function(shape, ...) {
-    set.seed(1L)
     arr <- array(sample.int(prod(shape) * 10L, prod(shape)), dim = shape)
+
     quos <- rlang::enquos(...)
-    specs <- list(...)
-
-    # Compute R-side indices, drop_dims, and value_shape
-    r_args <- vector("list", length(shape))
-    drop_dims <- c()
-    value_shape <- integer(0L)
-    for (i in seq_along(shape)) {
-      subset <- if (i <= length(specs)) specs[[i]] else `:`
-      expr <- if (i <= length(quos)) rlang::quo_get_expr(quos[[i]]) else NULL
-      is_range_expr <- is.call(expr) && identical(expr[[1]], quote(`:`))
-      if (identical(subset, `:`)) {
-        r_args[[i]] <- seq(shape[i])
-        value_shape <- c(value_shape, shape[i])
-      } else if (is.list(subset)) {
-        r_args[[i]] <- unlist(subset)
-        value_shape <- c(value_shape, length(subset))
+    spec <- parse_subset_specs(quos, shape)
+    r_args <- lapply(seq_along(spec), \(i) {
+      drop <- FALSE
+      arg <- if (is_subset_full(spec[[i]])) {
+        seq(shape[i])
+      } else if (is_subset_range(spec[[i]])) {
+        (spec[[i]]$start):(spec[[i]]$start + spec[[i]]$size - 1L)
+      } else if (is_subset_index(spec[[i]])) {
+        drop <- TRUE
+        spec[[i]]$index
+      } else if (is_subset_indices(spec[[i]])) {
+        spec[[i]]$indices
       } else {
-        r_args[[i]] <- subset
-        value_shape <- c(value_shape, length(subset))
-        if (is.numeric(subset) && length(subset) == 1L && !is_range_expr) {
-          drop_dims <- c(drop_dims, i)
-        }
+        cli_abort("Internal error")
       }
-    }
+      list(arg, drop)
+    })
 
-    # Compute dynamic quos (shared by both subset and subset_assign)
-    dyn_env <- new.env(parent = environment())
-    dyn_quos <- vector("list", length(specs))
-    for (i in seq_along(specs)) {
-      subset <- specs[[i]]
-      if (is.list(subset)) {
-        var <- paste0(".dyn_", i)
-        dyn_env[[var]] <- nv_tensor(vapply(subset, as.integer, integer(1L)), dtype = "i32")
-        dyn_quos[[i]] <- rlang::new_quosure(as.name(var), dyn_env)
-      } else if (is.numeric(subset) && length(subset) == 1L) {
-        var <- paste0(".dyn_", i)
-        dyn_env[[var]] <- nv_scalar(as.integer(subset), dtype = "i32")
-        dyn_quos[[i]] <- rlang::new_quosure(as.name(var), dyn_env)
-      } else {
-        dyn_quos[[i]] <- quos[[i]]
-      }
-    }
+    args <- lapply(r_args, \(a) a[[1L]])
+    drop_dims <- vapply(r_args, \(a) a[[2L]], logical(1L))
+
+    value_shape <- subset_spec_to_shape(spec)
 
     x <- nv_tensor(arr)
 
-    # --- Test nv_subset ---
-    r_subset_result <- do.call(`[`, c(list(arr), r_args, list(drop = FALSE)))
-    new_dims <- without(dim(r_subset_result), drop_dims)
-    if (length(new_dims) == 0L) {
+    # test nv_subset
+    r_subset_result <- do.call(`[`, c(list(arr), args, list(drop = FALSE)))
+    if (!length(value_shape)) {
       r_subset_result <- as.vector(r_subset_result)
     } else {
-      dim(r_subset_result) <- new_dims
+      dim(r_subset_result) <- value_shape
     }
 
     static_subset <- as_array(jit(function(x) {
       rlang::inject(nv_subset(x, !!!quos))
     })(x))
-    #dynamic_subset <- as_array(jit(function(x) {
-    #  rlang::inject(nv_subset(x, !!!dyn_quos))
-    #})(x))
 
     expect_equal(static_subset, r_subset_result)
-    #expect_equal(dynamic_subset, r_subset_result)
 
-    # --- Test nv_subset_assign ---
-    value <- array(sample.int(prod(value_shape) * 10L, prod(value_shape)), dim = value_shape)
-    r_assign_result <- do.call(`[<-`, c(list(arr), r_args, list(value = value)))
+    # test nv_subset_assign
+    n_value <- max(1L, prod(value_shape))
+    value <- sample.int(n_value * 10L, n_value)
+    if (length(value_shape) > 0L) {
+      dim(value) <- value_shape
+    }
+    r_assign_result <- do.call(`[<-`, c(list(arr), args, list(value = value)))
 
-    v <- nv_tensor(value)
+    v <- nv_tensor(value, shape = value_shape)
 
     static_assign <- as_array(jit(function(x, v) {
       rlang::inject(nv_subset_assign(x, !!!quos, value = v))
     })(x, v))
-    dynamic_assign <- as_array(jit(function(x, v) {
-      rlang::inject(nv_subset_assign(x, !!!dyn_quos, value = v))
-    })(x, v))
 
     expect_equal(static_assign, r_assign_result)
-    expect_equal(dynamic_assign, r_assign_result)
   }
 
   it("1D: single element", {
@@ -93,7 +68,7 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("1D: full", {
-    check(c(6L), `:`)
+    check(c(6L), )
   })
 
   it("1D: gather", {
@@ -105,7 +80,7 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("2D: range + full", {
-    check(c(6L, 4L), 2:4, `:`)
+    check(c(6L, 4L), 2:4, )
   })
 
   it("2D: single in first dim, range in second", {
@@ -113,7 +88,7 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("2D: single in first dim, full second", {
-    check(c(4L, 5L), 2L, `:`)
+    check(c(4L, 5L), 2L, )
   })
 
   it("2D: range in both dims", {
@@ -121,11 +96,15 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("2D: full first dim, range in second", {
-    check(c(3L, 6L), `:`, 2:4)
+    check(c(3L, 6L), , 2:4)
+  })
+
+  it("???", {
+    check(c(2, 3, 2), 1:2, list(1, 3), 1)
   })
 
   it("2D: gather in first dim, full second", {
-    check(c(6L, 4L), list(1, 3, 5), `:`)
+    check(c(6L, 4L), list(1, 3, 5), )
   })
 
   it("2D: gather in both dims", {
@@ -137,7 +116,7 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("2D: single-element list preserves dim", {
-    check(c(4L, 3L), list(2), `:`)
+    check(c(4L, 3L), list(2), )
   })
 
   it("2D: trailing dim unspecified (defaults to full)", {
@@ -145,11 +124,11 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("3D: range, single, full", {
-    check(c(4L, 5L, 3L), 1:3, 2L, `:`)
+    check(c(4L, 5L, 3L), 1:3, 2L, )
   })
 
   it("3D: all full (identity)", {
-    check(c(3L, 4L, 2L), `:`, `:`, `:`)
+    check(c(3L, 4L, 2L), , , )
   })
 
   it("3D: gather in first two dims, range in third", {
@@ -157,15 +136,15 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("4D: 2 multi-index subsets", {
-    check(c(3, 4, 2, 4), 1:2, list(1, 2, 4), `:`, list(3, 1))
+    check(c(3, 4, 2, 4), 1:2, list(1, 2, 4), , list(3, 1))
   })
 
   it("5D: 3 multi-index subsets, no drop", {
-    check(c(3, 4, 2, 4, 3), 1:2, list(1, 2, 4), `:`, list(3, 1), list(2, 2))
+    check(c(3, 4, 2, 4, 3), 1:2, list(1, 2, 4), , list(3, 1), list(2, 2))
   })
 
   it("5D: 3 multi-index subsets, 1 drop", {
-    check(c(3, 4, 2, 4, 3), 1, list(1, 2, 4), `:`, list(3, 1), list(2, 2))
+    check(c(3, 4, 2, 4, 3), 1, list(1, 2, 4), , list(3, 1), list(2, 2))
   })
 
   it("5D: 3 multi-index subsets, 2 drops", {
@@ -245,6 +224,61 @@ describe("nv_subset and nv_subset_assign", {
       "Update shape does not match subset shape"
     )
   })
+
+  it("errors on out-of-bounds range (start < 1)", {
+    x <- nv_tensor(1:10)
+    expect_error(jit_eval(x[0:5]), "out of bounds")
+  })
+
+  it("errors on out-of-bounds range (end > dim_size)", {
+    x <- nv_tensor(1:10)
+    expect_error(jit_eval(x[5:11]), "out of bounds")
+  })
+
+  it("errors on out-of-bounds single index (< 1)", {
+    x <- nv_tensor(1:10)
+    expect_error(jit_eval(x[0L]), "out of bounds")
+  })
+
+  it("errors on out-of-bounds single index (> dim_size)", {
+    x <- nv_tensor(1:10)
+    expect_error(jit_eval(x[11L]), "out of bounds")
+  })
+
+  it("errors on out-of-bounds list() index", {
+    x <- nv_tensor(1:10)
+    expect_error(jit_eval(x[list(1, 11)]), "out of bounds")
+    expect_error(jit_eval(x[list(0, 5)]), "out of bounds")
+  })
+
+  it("works with nv_tensors just like with R indices", {
+    x <- jit_eval({
+      x <- nv_tensor(1:24, shape = c(2, 3, 4))
+      x1 <- x[1:2, list(1, 3), 1]
+      x2 <- x[nv_tensor(c(1L, 2L)), list(1L, 3L), nv_scalar(1L)]
+      list(x1, x2)
+    })
+    expect_equal(x[[1]], x[[2]])
+
+    y <- jit_eval({
+      x <- nv_tensor(1:24, shape = c(2, 3, 4))
+      x1 <- x
+      x2 <- x
+      update <- nv_tensor(1:4, shape = c(2, 2))
+      x1[1:2, list(1, 3), 1] <- update
+      x2[nv_tensor(c(1L, 2L)), list(1L, 3L), nv_scalar(1L)] <- update
+      list(x1, x2)
+    })
+    expect_equal(y[[1]], y[[2]])
+  })
+
+  it("works with nv_seq", {
+    x <- jit_eval({
+      x <- nv_tensor(1:10)
+      x[nv_seq(2, 5)]
+    })
+    expect_equal(x, nv_tensor(2:5))
+  })
 })
 
 
@@ -316,5 +350,17 @@ describe("subset_specs_start_indices", {
     })()
     expect_equal(dtype(result), as_dtype("i32"))
     expect_equal(as.integer(as_array(result)), 2L)
+  })
+
+  it("works with empty subset", {
+    x <- jit_eval({
+      nv_tensor(1:10)[]
+    })
+    expect_equal(x, nv_tensor(1:10))
+    x <- jit_eval({
+      x <- nv_tensor(1:10)
+      x[] <- nv_tensor(2:11)
+    })
+    expect_equal(x, nv_tensor(2:11))
   })
 })

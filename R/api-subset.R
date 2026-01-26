@@ -37,6 +37,18 @@ is_subset_range <- function(x) inherits(x, "SubsetRange")
 is_subset_index <- function(x) inherits(x, "SubsetIndex")
 is_subset_indices <- function(x) inherits(x, "SubsetIndices")
 
+subset_spec_to_shape <- function(specs) {
+  shp <- integer()
+  for (spec in specs) {
+    if (is_subset_index(spec)) {
+      next
+    }
+    shp <- c(shp, spec$size)
+  }
+  return(shp)
+}
+
+
 subset_start_positions <- function(subsets) {
   subset_start_position <- function(s) {
     if (is_subset_index(s)) {
@@ -250,13 +262,19 @@ subset_specs_to_scatter <- function(subsets) {
 
   scatter_indices <- subset_specs_start_indices(subsets)
 
+  # SubsetIndex dims are individually addressed (dropped from update),
+  # just like collapsed_slice_dims in the gather path.
+  index_dims <- which(vapply(subsets, is_subset_index, logical(1L)))
+  inserted_window_dims <- sort(c(multi_index_dims, index_dims))
+  surviving_dims <- setdiff(seq_len(rank), index_dims)
+
   if (multi_index_subset) {
     # scatter_indices shape: [gather_shape..., rank]
     n_gather <- length(multi_index_dims)
-    inserted_window_dims <- multi_index_dims
-    update_window_dims <- setdiff(seq_len(rank), multi_index_dims)
+    multi_among_surviving <- which(surviving_dims %in% multi_index_dims)
+    update_window_dims <- setdiff(seq_along(surviving_dims), multi_among_surviving)
     update_shape <- vapply(
-      seq_len(rank),
+      surviving_dims,
       function(i) {
         if (i %in% multi_index_dims) subsets[[i]]$size else slice_sizes[i]
       },
@@ -265,9 +283,8 @@ subset_specs_to_scatter <- function(subsets) {
     index_vector_dim <- n_gather + 1L
   } else {
     # scatter_indices shape: [rank] (no batch dims)
-    update_window_dims <- seq_len(rank)
-    inserted_window_dims <- integer(0L)
-    update_shape <- slice_sizes
+    update_window_dims <- seq_along(surviving_dims)
+    update_shape <- slice_sizes[surviving_dims]
     index_vector_dim <- 1L
   }
 
@@ -332,32 +349,36 @@ parse_subset_spec <- function(quo, dim_size) {
 
   e <- rlang::quo_get_expr(quo)
 
-  # Range (a:b) - must check before evaluating since `:` has special meaning
-  if (is.call(e) && identical(e[[1]], quote(`:`))) {
+  # Check for range expression (a:b) before evaluating
+  if (rlang::is_call(e, ":")) {
     env <- rlang::quo_get_env(quo)
-    start <- rlang::eval_tidy(rlang::new_quosure(e[[2]], env))
-    end <- rlang::eval_tidy(rlang::new_quosure(e[[3]], env))
-    if (is_integerish(start) && is_integerish(end)) {
-      start <- as.integer(start)
-      end <- as.integer(end)
-      if (start > end) {
-        cli_abort("Range start ({start}) must be less than or equal to end ({end})")
-      }
-      return(SubsetRange(start, end))
+    start <- rlang::eval_tidy(e[[2]], env = env)
+    end <- rlang::eval_tidy(e[[3]], env = env)
+
+    if (!is_integerish(start) || !is_integerish(end)) {
+      cli_abort("Range indices must be scalar integers")
     }
-    cli_abort("Ranges must be static")
+
+    start <- as.integer(start)
+    end <- as.integer(end)
+
+    if (start < 1L || end > dim_size) {
+      cli_abort("Range {start}:{end} is out of bounds for dimension of size {dim_size}")
+    }
+
+    return(SubsetRange(start, end))
   }
 
   # Evaluate the quosure
   e <- rlang::eval_tidy(quo)
 
-  if (identical(e, `:`)) {
-    return(SubsetFull(dim_size))
-  }
-
   # Single integer - drops dimension
   if (is_integerish(e)) {
-    return(SubsetIndex(as.integer(e)))
+    idx <- as.integer(e)
+    if (idx < 1L || idx > dim_size) {
+      cli_abort("Index {idx} is out of bounds for dimension of size {dim_size}")
+    }
+    return(SubsetIndex(idx))
   }
 
   # R vectors of length > 1 - not allowed (use list() instead)
@@ -378,12 +399,20 @@ parse_subset_spec <- function(quo, dim_size) {
     }
 
     indices <- vapply(e, as.integer, integer(1L))
+    oob <- indices < 1L | indices > dim_size
+    if (any(oob)) {
+      bad <- indices[oob][1L] # nolint
+      cli_abort("Index {bad} is out of bounds for dimension of size {dim_size}")
+    }
     return(SubsetIndices(indices))
   }
 
   # AnvilRange (dynamic range) - not supported
-  if (inherits(e, "AnvilRange")) {
-    cli_abort("Ranges must be static")
+  if (inherits(e, "IotaTensor")) {
+    if (length(shape) != 1L) {
+      cli_abort("IotaTensor must be 1D, but got {length(shape)}D")
+    }
+    return(SubsetRange(e$start, e$end))
   }
 
   # Tensor indices (AnvilTensor or GraphBox)
@@ -408,40 +437,12 @@ parse_subset_spec <- function(quo, dim_size) {
 
 #' @title Subset a Tensor
 #' @description
-#' Extracts a subset from a tensor using gather semantics.
-#' Supports both static and dynamic indexing.
-#'
-#' Dimension dropping behavior:
-#' - R literal indices (e.g., `x[1, ]`) automatically drop that dimension
-#' - Scalar tensor indices (0D tensors) also drop the dimension
-#' - To preserve a dimension when selecting a single element, use `list()`: `x[list(1), ]`
-#' - To select multiple non-contiguous elements, use `list()`: `x[list(1, 3, 5), ]`
-#' - Ranges (e.g., `x[1:3, ]`) never drop dimensions
-#' - 1D tensor indices never drop dimensions
-#'
+#' Extracts a subset from a tensor.
+#' See vignette("subsetting") for more details.
 #' @param x ([`tensorish`])\cr
 #'   Input tensor to subset.
-#' @param ... Subset specifications. Can be:
-#'   - Ranges (e.g., `2:5`) for contiguous slices. Must be static.
-#'   - Single integers (e.g., `3`) for single elements (drops dimension)
-#'   - `list(i)` for single element without dropping dimension
-#'   - `list(i, j, ...)` for multiple non-contiguous elements
-#'   - Scalar tensors for dynamic indexing (drops dimension)
-#'   - Missing (empty or `:`) to select all elements in that dimension
+#' @param ... Subset specifications.
 #' @return [`tensorish`]
-#' @seealso [nv_subset_assign()]
-#' @examplesIf pjrt::plugin_is_downloaded()
-#' # Scalar index drops dimension
-#' jit_eval(nv_tensor(matrix(1:6, 2, 3))[1, ])
-#'
-#' # Range preserves dimension
-#' jit_eval(nv_tensor(1:10)[2:5])
-#'
-#' # list() preserves dimension for single element
-#' jit_eval(nv_tensor(1:10)[list(3)])
-#'
-#' # list() selects non-contiguous elements
-#' jit_eval(nv_tensor(1:10)[list(1, 5, 10)])
 #' @export
 nv_subset <- function(x, ...) {
   if (!is_tensorish(x)) {
@@ -476,39 +477,17 @@ nv_subset <- function(x, ...) {
 #' @title Update Subset
 #' @description
 #' Updates elements of a tensor at specified positions.
-#' This has copy-on-write semantics just like for standard R arrays:
-#' a new tensor is returned with the specified positions updated.
-#'
-#' Unlike [`nv_subset()`], single integer indices do **not** drop dimensions here,
-#' since the update value must match the subset's shape including all dimensions.
+#' See vignette("subsetting") for more details.
 #'
 #' @param x ([`tensorish`])\cr
 #'   Input tensor to update.
-#' @param ... Subset specifications. Can be:
-#'   - Ranges (e.g., `2:5`) for contiguous slices. Must be static.
-#'   - Single integers (e.g., `3`) for single elements
-#'   - `list(i, j, ...)` for multiple non-contiguous elements
-#'   - Scalar tensors or 1D tensor indices for dynamic indexing
-#'   - Missing (empty or `:`) to select all elements in that dimension
+#' @param ... Subset specifications.
 #' @param value ([`tensorish`])\cr
 #'   Values to write. Scalars are broadcast to the subset shape.
 #'   Non-scalar values must have a shape matching the subset shape.
 #' @return [`tensorish`] A new tensor with the subset updated.
 #' @seealso [nv_subset()]
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
-#' # Update a contiguous slice
-#' jit_eval({
-#'   x <- nv_tensor(1:10, dtype = "f32")
-#'   nv_subset_assign(x, 2:4, value = nv_tensor(c(20, 30, 40), dtype = "f32"))
-#' })
-#'
-#' # Update with `[<-` syntax
-#' jit_eval({
-#'   x <- nv_tensor(1:10, dtype = "f32")
-#'   x[1] <- nv_scalar(99, dtype = "f32")
-#'   x
-#' })
 nv_subset_assign <- function(x, ..., value) {
   if (!is_tensorish(x)) {
     cli_abort("Expected tensorish `x`, but got {.cls {class(x)[1]}}")

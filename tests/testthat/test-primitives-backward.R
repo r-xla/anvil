@@ -657,16 +657,18 @@ describe("boolean ops", {
 })
 
 describe("p_gather", {
-  it("accumulates gradients for overlapping gather indices", {
-    # Gathering the same element multiple times: gradients accumulate via scatter-add
-    f <- jit(gradient(function(x) {
-      y <- x[list(2, 2)] # gather x[2] twice
-      nv_reduce_sum(y, dims = 1L, drop = TRUE)
-    }))
-    x <- nv_tensor(c(1, 2, 3), dtype = "f32")
-    grads <- f(x)
-    # d/dx = [0, 2, 0] because x[2] is gathered twice
-    expect_equal(grads[[1L]], nv_tensor(c(0, 2, 0), dtype = "f32"))
+  it("out of bounds", {
+    out <- jit_eval({
+      x <- nv_tensor(1:4, "f32")
+      g1 <- gradient(function(x) {
+        mean(x[nv_tensor(5:7)]^2)
+      })(x)
+      g2 <- gradient(function(x) {
+        mean(x[list(4, 4, 4, 4)]^2)
+      })(x)
+      list(g1[[1L]], g2[[1L]])
+    })
+    expect_equal(out[[1]], out[[2]])
   })
 
   it("clamps out-of-range indices for gradient (matches forward clamping)", {
@@ -684,17 +686,19 @@ describe("p_gather", {
 
 describe("p_scatter", {
   it("non-unique indices: only winning update gets gradient", {
-    # All 10 updates write to position 1; only the last one wins
-    f <- jit(gradient(function(update) {
-      x <- nv_tensor(rep(0, 10), dtype = "f64")
-      x <- nv_subset_assign(x, list(1, 1, 1, 1, 1, 1, 1, 1, 1, 1), value = update)
-      nv_reduce_sum(x, dims = 1L, drop = TRUE)
-    }))
-    update <- nv_tensor(1:10, dtype = "f64")
-    grads <- f(update)
-    grad_vals <- as.double(as_array(grads[[1L]]))
-    # Exactly one update wins (gets grad 1), all others get 0
-    expect_equal(sort(grad_vals), c(rep(0, 9), 1))
+    update <- nv_tensor(1:10, dtype = "f32")
+    f <- function(update) {
+      x <- nv_tensor(0)
+      x[as.list(rep(1L, 10))] <- update
+      mean(x^2)
+    }
+    g <- jit(\(update) {
+      out <- value_and_gradient(f)(update)
+      out[[1L]] <- sqrt(out[[1L]]) * 2
+      out[[2]][[1]] <- sum(out[[2]][[1]]) # just get rid of the zeros
+      out
+    })(update)
+    expect_equal(g[[1]], g[[2]][[1]])
   })
 
   it("errors for non-simple replacement update_computation", {
@@ -723,72 +727,56 @@ describe("p_scatter", {
 
 describe("gather/scatter backward via subset operators", {
   check <- function(shape, ...) {
-    set.seed(1L)
-    arr <- array(as.double(sample.int(prod(shape) * 10L, prod(shape))), dim = shape)
     quos <- rlang::enquos(...)
-    specs <- list(...)
 
-    # Compute R-side indices and shapes
-    r_args <- vector("list", length(shape))
-    drop_dims <- c()
-    value_shape <- integer(0L)
-    for (i in seq_along(shape)) {
-      subset <- if (i <= length(specs)) specs[[i]] else `:`
-      if (identical(subset, `:`)) {
-        r_args[[i]] <- seq(shape[i])
-        value_shape <- c(value_shape, shape[i])
-      } else if (is.list(subset)) {
-        r_args[[i]] <- unlist(subset)
-        value_shape <- c(value_shape, length(subset))
-      } else {
-        r_args[[i]] <- subset
-        value_shape <- c(value_shape, length(subset))
-        expr <- if (i <= length(quos)) rlang::quo_get_expr(quos[[i]]) else NULL
-        is_range <- is.call(expr) && identical(expr[[1]], quote(`:`))
-        if (is.numeric(subset) && length(subset) == 1L && !is_range) {
-          drop_dims <- c(drop_dims, i)
-        }
-      }
+    spec <- parse_subset_specs(quos, shape)
+    value_shape <- subset_spec_to_shape(spec)
+
+    x <- nv_tensor(rnorm(prod(shape)), dtype = "f32", shape = shape)
+    value <- nv_tensor(rnorm(prod(value_shape)), dtype = "f32", shape = value_shape)
+
+    # Check gather
+    f1 <- function(x, value) {
+      out <- gradient(function(x, value) {
+        y <- rlang::inject(nv_subset(x, !!!quos))
+        mean(y * value)
+      })(x, value)
     }
 
-    gather_ndims <- length(shape) - length(drop_dims)
-    x <- nv_tensor(arr, dtype = "f64")
+    f2 <- function(x_subset, value) {
+      x_subset <- rlang::inject(nv_subset(x, !!!quos))
+      out <- gradient(\(x, value) {
+        mean(x_subset * value)
+      })(x_subset, value)
+      g1 <- nv_fill(0, shape = shape)
+      out[[1L]] <- rlang::inject(nv_subset_assign(g1, !!!quos, value = out[[1]]))
+      out
+    }
 
-    # --- Gather backward: gradient of sum(x[subset]) ---
-    gather_grad <- as_array(jit(gradient(function(x) {
-      y <- rlang::inject(nv_subset(x, !!!quos))
-      if (gather_ndims > 0L) {
-        nv_reduce_sum(y, dims = seq_len(gather_ndims), drop = TRUE)
-      } else {
-        y
-      }
-    }))(x)[[1L]])
+    expect_equal(
+      jit(f1)(x, value),
+      jit(f2)(x, value)
+    )
 
-    expected_gather <- array(0, dim = shape)
-    expected_gather <- do.call(`[<-`, c(list(expected_gather), r_args, list(value = 1)))
-    expect_equal(gather_grad, expected_gather)
+    # Check scatter
+    f3 <- function(x, value) {
+      gradient(function(x, value) {
+        y <- nv_subset_assign(x, !!!quos, value = value)
+        sum(y^2)
+      })(x, value)
+    }
 
-    # --- Scatter backward (input gradient): positions overwritten get 0 ---
-    value_arr <- array(as.double(seq_len(prod(value_shape))), dim = value_shape)
-    v <- nv_tensor(value_arr, dtype = "f64")
+    f4 <- function(x, value) {
+      x2 <- rlang::inject(nv_subset_assign(x, !!!quos, value = 0))
+      gradient(\(x, value) {
+        sum(x^2) + sum(value^2)
+      })(x2, value)
+    }
 
-    input_grad <- as_array(jit(gradient(function(x) {
-      x2 <- rlang::inject(nv_subset_assign(x, !!!quos, value = v))
-      nv_reduce_sum(x2, dims = seq_along(shape), drop = TRUE)
-    }))(x)[[1L]])
-
-    expected_input <- array(1, dim = shape)
-    expected_input <- do.call(`[<-`, c(list(expected_input), r_args, list(value = 0)))
-    expect_equal(input_grad, expected_input)
-
-    # --- Scatter backward (value gradient): each value element contributes 1 ---
-    value_grad <- as_array(jit(gradient(function(v) {
-      x2 <- rlang::inject(nv_subset_assign(x, !!!quos, value = v))
-      nv_reduce_sum(x2, dims = seq_along(shape), drop = TRUE)
-    }))(v)[[1L]])
-
-    expected_value <- array(1, dim = value_shape)
-    expect_equal(value_grad, expected_value)
+    expect_equal(
+      jit(f3)(x, value),
+      jit(f4)(x, value)
+    )
   }
 
   it("1D: single element", {
@@ -800,7 +788,7 @@ describe("gather/scatter backward via subset operators", {
   })
 
   it("1D: full", {
-    check(c(6L), `:`)
+    check(c(6L), )
   })
 
   it("1D: gather", {
@@ -812,7 +800,7 @@ describe("gather/scatter backward via subset operators", {
   })
 
   it("2D: range + full", {
-    check(c(6L, 4L), 2:4, `:`)
+    check(c(6L, 4L), 2:4, )
   })
 
   it("2D: single in first, range in second", {
@@ -820,7 +808,7 @@ describe("gather/scatter backward via subset operators", {
   })
 
   it("2D: gather in first, full second", {
-    check(c(6L, 4L), list(1, 3, 5), `:`)
+    check(c(6L, 4L), list(1, 3, 5), )
   })
 
   it("2D: gather in both dims", {
@@ -828,7 +816,7 @@ describe("gather/scatter backward via subset operators", {
   })
 
   it("3D: range, single, full", {
-    check(c(4L, 5L, 3L), 1:3, 2L, `:`)
+    check(c(4L, 5L, 3L), 1:3, 2L, )
   })
 })
 

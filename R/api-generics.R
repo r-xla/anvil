@@ -132,36 +132,24 @@ t.AnvilBox <- function(x) {
 #' @export
 t.AnvilTensor <- t.AnvilBox
 
-#' @title Subset and Subset-Assign for Tensors
-#' @description
-#' These methods enable `[` and `[<-` syntax for [`AnvilTensor`] and [`AnvilBox`] objects,
-#' delegating to [`nv_subset()`] and [`nv_subset_assign()`] respectively.
-#' @param x A tensor object.
-#' @param ... Subset specifications (see [`nv_subset()`]).
-#' @param value For `[<-`: the replacement values (see [`nv_subset_assign()`]).
-#' @return A tensor.
-#' @seealso [nv_subset()], [nv_subset_assign()]
-#' @name sub-.set.AnvilBox
-NULL
-
-#' @rdname sub-.set.AnvilBox
+#' @rdname nv_subset
 #' @export
 `[.AnvilBox` <- function(x, ...) {
   quos <- rlang::enquos(...)
   rlang::inject(nv_subset(x, !!!quos))
 }
 
-#' @rdname sub-.set.AnvilBox
+#' @rdname nv_subset
 #' @export
 `[.AnvilTensor` <- `[.AnvilBox`
 
-#' @rdname sub-.set.AnvilBox
+#' @rdname nv_subset_assign
 #' @export
 `[<-.AnvilBox` <- function(x, ..., value) {
   quos <- rlang::enquos(...)
   rlang::inject(nv_subset_assign(x, !!!quos, value = value))
 }
 
-#' @rdname sub-.set.AnvilBox
+#' @rdname nv_subset_assign
 #' @export
 `[<-.AnvilTensor` <- `[<-.AnvilBox`

@@ -939,10 +939,13 @@ p_iota <- AnvilPrimitive("iota")
 #' @template param_dtype
 #' @param shape (`integer()`)\cr
 #'   Shape of the output tensor.
+#' @param start (`integer(1)`)\cr
+#'   Starting value.
+#' @template param_ambiguous
 #' @return [`tensorish`]
 #' @export
-nvl_iota <- function(dim, dtype, shape, start = 1L) {
-  infer_fn <- function(dim, dtype, shape, start) {
+nvl_iota <- function(dim, dtype, shape, start = 1L, ambiguous = FALSE) {
+  infer_fn <- function(dim, dtype, shape, start, ambiguous) {
     # stablehlo uses 0-based indexing, anvil uses 1-based
     # Convert dim to Constant as required by stablehlo
     iota_dim_const <- stablehlo::r_to_constant(
@@ -950,13 +953,15 @@ nvl_iota <- function(dim, dtype, shape, start = 1L) {
       dtype = "i64",
       shape = integer(0)
     )
-    out <- stablehlo::infer_types_iota(iota_dimension = iota_dim_const, dtype = dtype, shape = shape)[[1L]]
-    list(vt2at(out))
+    # Just for the checks
+    stablehlo::infer_types_iota(iota_dimension = iota_dim_const, dtype = dtype, shape = shape)[[1L]]
+
+    list(IotaTensor(shape = shape, dtype = dtype, dimension = dim, start = start, ambiguous = ambiguous))
   }
   result <- graph_desc_add(
     p_iota,
     list(),
-    list(dim = dim, dtype = dtype, shape = shape, start = start),
+    list(dim = dim, dtype = dtype, shape = shape, start = start, ambiguous = ambiguous),
     infer_fn = infer_fn
   )[[1L]]
 
