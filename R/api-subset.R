@@ -220,6 +220,7 @@ subset_specs_to_gather <- function(subsets) {
     start_index_map = seq_len(rank),
     index_vector_dim = index_vector_dim,
     indices_are_sorted = !multi_index_subset,
+    # TODO: Could improve this
     unique_indices = !multi_index_subset,
     multi_index_subset = multi_index_subset
   )
@@ -294,13 +295,8 @@ subset_specs_to_scatter <- function(subsets) {
     inserted_window_dims = inserted_window_dims,
     scatter_dims_to_operand_dims = seq_len(rank),
     index_vector_dim = index_vector_dim,
+    # TODO: Could improve this
     indices_are_sorted = !multi_index_subset,
-    unique_indices = !multi_index_subset ||
-      all(vapply(
-        subsets[multi_index_dims],
-        function(s) s$static && !anyDuplicated(s$indices),
-        logical(1L)
-      )),
     update_shape = update_shape,
     multi_index_subset = multi_index_subset
   )
