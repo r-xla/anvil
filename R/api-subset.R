@@ -297,6 +297,7 @@ subset_specs_to_scatter <- function(subsets) {
     index_vector_dim = index_vector_dim,
     # TODO: Could improve this
     indices_are_sorted = !multi_index_subset,
+    unique_indices = !multi_index_subset,
     update_shape = update_shape,
     multi_index_subset = multi_index_subset
   )
