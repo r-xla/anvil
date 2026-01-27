@@ -426,6 +426,9 @@ Internal data structures and functions
   : Concrete Tensor Class
 - [`LiteralTensor()`](https://r-xla.github.io/anvil/reference/LiteralTensor.md)
   : Literal Tensor Class
+- [`eq_type()`](https://r-xla.github.io/anvil/reference/eq_type.md)
+  [`neq_type()`](https://r-xla.github.io/anvil/reference/eq_type.md) :
+  Compare AbstractTensor Types
 
 ## Tree utilities
 
