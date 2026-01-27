@@ -21,22 +21,28 @@ test_that("AbstractTensor", {
   )
   expect_snapshot(x)
   expect_true(inherits(x, "AbstractTensor"))
-  expect_true(x == x)
+  expect_true(eq_type(x, x, ambiguity = TRUE))
 
   expect_false(
-    x ==
+    eq_type(
+      x,
       AbstractTensor(
         FloatType(32),
         Shape(c(2, 1))
-      )
+      ),
+      ambiguity = TRUE
+    )
   )
 
   expect_false(
-    x ==
+    eq_type(
+      x,
       AbstractTensor(
         FloatType(64),
         Shape(c(2, 3))
-      )
+      ),
+      ambiguity = TRUE
+    )
   )
 })
 
@@ -67,16 +73,31 @@ test_that("format", {
   expect_equal(format(nv_tensor(1:4, shape = c(4, 1))), "AnvilTensor(dtype=i32, shape=4x1)")
 })
 
-test_that("!= does not ignore ambiguity", {
+test_that("eq_type and neq_type respect ambiguity argument", {
+  # With ambiguity = TRUE, different ambiguity means not equal
   expect_true(
-    AbstractTensor("f32", 1L, TRUE) != AbstractTensor("f32", 1L, FALSE)
+    neq_type(AbstractTensor("f32", 1L, TRUE), AbstractTensor("f32", 1L, FALSE), ambiguity = TRUE)
   )
   expect_true(
-    AbstractTensor("f32", 1L, FALSE) != AbstractTensor("f32", 1L, TRUE)
+    neq_type(AbstractTensor("f32", 1L, FALSE), AbstractTensor("f32", 1L, TRUE), ambiguity = TRUE)
   )
   expect_true(
-    AbstractTensor("f32", 1L, TRUE) == AbstractTensor("f32", 1L, TRUE)
+    eq_type(AbstractTensor("f32", 1L, TRUE), AbstractTensor("f32", 1L, TRUE), ambiguity = TRUE)
   )
+  # With ambiguity = FALSE, ambiguity is ignored
+  expect_true(
+    eq_type(AbstractTensor("f32", 1L, TRUE), AbstractTensor("f32", 1L, FALSE), ambiguity = FALSE)
+  )
+  expect_true(
+    eq_type(AbstractTensor("f32", 1L, FALSE), AbstractTensor("f32", 1L, TRUE), ambiguity = FALSE)
+  )
+})
+
+test_that("== and != operators throw errors for AbstractTensor", {
+  x <- AbstractTensor("f32", 1L, FALSE)
+  y <- AbstractTensor("f32", 1L, FALSE)
+  expect_error(x == y, "Use.*eq_type")
+  expect_error(x != y, "Use.*neq_type")
 })
 
 test_that("to_abstract", {

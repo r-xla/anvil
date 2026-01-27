@@ -310,15 +310,44 @@ platform.ConcreteTensor <- function(x, ...) {
 
 #' @export
 `==.AbstractTensor` <- function(e1, e2) {
-  if (!inherits(e2, "AbstractTensor")) {
-    return(FALSE)
-  }
-  e1$dtype == e2$dtype && e1$shape == e2$shape && e1$ambiguous == e2$ambiguous
+  cli_abort("Use {.fn eq_type} instead of {.code ==} for comparing AbstractTensors")
 }
 
 #' @export
 `!=.AbstractTensor` <- function(e1, e2) {
-  !(e1 == e2) # nolint
+  cli_abort("Use {.fn neq_type} instead of {.code !=} for comparing AbstractTensors")
+}
+
+#' @title Compare AbstractTensor Types
+#' @description
+#' Compare two AbstractTensors for type equality.
+#' @param e1 ([`AbstractTensor`])\cr
+#'   First tensor to compare.
+#' @param e2 ([`AbstractTensor`])\cr
+#'   Second tensor to compare.
+#' @param ambiguity (`logical(1)`)\cr
+#'   Whether to consider the ambiguous field when comparing.
+#'   If `TRUE`, tensors with different ambiguity are not equal.
+#'   If `FALSE`, only dtype and shape are compared.
+#' @return `logical(1)` - `TRUE` if the tensors are equal, `FALSE` otherwise.
+#' @export
+eq_type <- function(e1, e2, ambiguity) {
+  if (!inherits(e1, "AbstractTensor") || !inherits(e2, "AbstractTensor")) {
+    cli_abort("e1 and e2 must be AbstractTensors")
+  }
+  if (!(e1$dtype == e2$dtype) || !identical(e1$shape, e2$shape)) {
+    return(FALSE)
+  }
+  if (ambiguity && (e1$ambiguous != e2$ambiguous)) {
+    return(FALSE)
+  }
+  TRUE
+}
+
+#' @rdname eq_type
+#' @export
+neq_type <- function(e1, e2, ambiguity) {
+  !eq_type(e1, e2, ambiguity)
 }
 
 #' @export
