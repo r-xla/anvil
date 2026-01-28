@@ -1,9 +1,9 @@
 ---
 title: "Get Started"
-output: rmarkdown::html_vignette
+format: html
 vignette: >
   %\VignetteIndexEntry{Get Started}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
 ---
 

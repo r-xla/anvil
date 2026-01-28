@@ -526,6 +526,16 @@ is_shape <- function(x) {
 #' x
 NULL
 
+#' @title Check if an Object is a Tensor-ish Object
+#' @description
+#' Check if an object is a tensor-ish object.
+#' @param x (`any`)\cr
+#'   Object to check.
+#' @param literal (`logical(1)`)\cr
+#'   Whether to allow R literals (i.e., `1L`, `1.0`, `TRUE`, etc.) to be considered tensor-ish.
+#'   Defaults to `TRUE`.
+#' @return `logical(1)`
+#' @export
 is_tensorish <- function(x, literal = TRUE) {
   ok <- inherits(x, "AnvilTensor") ||
     inherits(x, "AbstractTensor") ||

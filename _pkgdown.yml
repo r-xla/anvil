@@ -39,6 +39,9 @@ navbar:
         href: articles/internals.html
       - text: Primitives Overview
         href: articles/primitives.html
+      - text: Extending
+      - text: Adding a Primitive
+        href: articles/contributing.html
 
 reference:
   - title: Tensor Creation
@@ -243,6 +246,9 @@ reference:
       - IotaTensor
       - eq_type
       - neq_type
+      - at2vt
+      - vt2at
+      - is_tensorish
 
   - title: Tree utilities
     desc: Utilities for working with nested structures
