@@ -5,7 +5,7 @@ Creates a tensor with values increasing along the specified dimension.
 ## Usage
 
 ``` r
-nv_iota(dim, dtype, shape)
+nv_iota(dim, dtype, shape, start = 1L, ambiguous = FALSE)
 ```
 
 ## Arguments
@@ -25,6 +25,18 @@ nv_iota(dim, dtype, shape)
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
   Shape.
+
+- start:
+
+  (`integer(1)`)  
+  Starting value.
+
+- ambiguous:
+
+  (`logical(1)`)  
+  Whether the type is ambiguous. Ambiguous types usually arise from R
+  literals (e.g., `1L`, `1.0`) and follow special promotion rules. See
+  the vignette "Type Promotion" for more details.
 
 ## Value
 

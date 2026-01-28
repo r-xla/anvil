@@ -1,6 +1,6 @@
 # Primitives Reference
 
-The table below shows all 68 primitives and which rules they implement.
+The table below shows all 70 primitives and which rules they implement.
 Note that a rule might be missing because it was just not added yet, or
 because it does not apply for a specific primitive.
 
@@ -27,6 +27,7 @@ because it does not apply for a specific primitive.
 | expm1                  | ✓         |    ✓     |
 | fill                   | ✓         |    ✗     |
 | floor                  | ✓         |    ✓     |
+| gather                 | ✓         |    ✓     |
 | greater                | ✓         |    ✓     |
 | greater_equal          | ✓         |    ✓     |
 | if                     | ✓         |    ✓     |
@@ -60,6 +61,7 @@ because it does not apply for a specific primitive.
 | rng_bit_generator      | ✓         |    ✗     |
 | round                  | ✓         |    ✓     |
 | rsqrt                  | ✓         |    ✓     |
+| scatter                | ✓         |    ✓     |
 | select                 | ✓         |    ✓     |
 | shift_left             | ✓         |    ✓     |
 | shift_right_arithmetic | ✓         |    ✓     |

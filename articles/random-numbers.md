@@ -98,11 +98,20 @@ h <- jit(function(state) {
   list(first = result1[[2]], second = result2[[2]])
 })
 
-output <- h(state)
-as_array(output$first)
-#> [1] 0.8690484 0.3102535 0.1506324
-as_array(output$second)
-#> [1] 0.8690484 0.3102535 0.1506324
+h(state)
+#> $first
+#> AnvilTensor
+#>  0.8690
+#>  0.3103
+#>  0.1506
+#> [ CPUf32{3} ] 
+#> 
+#> $second
+#> AnvilTensor
+#>  0.8690
+#>  0.3103
+#>  0.1506
+#> [ CPUf32{3} ]
 ```
 
 As you can see, both calls produced identical random numbers because we
@@ -118,11 +127,20 @@ proper_rng <- jit(function(state) {
   list(first = result1[[2]], second = result2[[2]])
 })
 
-output <- proper_rng(state)
-as_array(output$first)
-#> [1] 0.8690484 0.3102535 0.1506324
-as_array(output$second)
-#> [1] 0.5203207 0.1064724 0.2499373
+proper_rng(state)
+#> $first
+#> AnvilTensor
+#>  0.8690
+#>  0.3103
+#>  0.1506
+#> [ CPUf32{3} ] 
+#> 
+#> $second
+#> AnvilTensor
+#>  0.5203
+#>  0.1065
+#>  0.2499
+#> [ CPUf32{3} ]
 ```
 
 Now we get different random numbers because we properly propagated the

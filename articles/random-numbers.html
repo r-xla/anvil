@@ -43,6 +43,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/anvil.html">Get Started</a></li>
     <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
+    <li><a class="dropdown-item" href="../articles/subsetting.html">Subsetting</a></li>
     <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
     <li><a class="dropdown-item" href="../articles/debugging.html">Debugging</a></li>
     <li><a class="dropdown-item" href="../articles/primitives.html">Primitives Overview</a></li>
@@ -170,11 +171,20 @@ done in the example below:</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>first <span class="op">=</span> <span class="va">result1</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, second <span class="op">=</span> <span class="va">result2</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu">h</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://r-xla.github.io/tengen/reference/as_array.html" class="external-link">as_array</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">first</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.8690484 0.3102535 0.1506324</span></span>
-<span><span class="fu"><a href="https://r-xla.github.io/tengen/reference/as_array.html" class="external-link">as_array</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">second</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.8690484 0.3102535 0.1506324</span></span></code></pre></div>
+<span><span class="fu">h</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $first</span></span>
+<span><span class="co">#&gt; AnvilTensor</span></span>
+<span><span class="co">#&gt;  0.8690</span></span>
+<span><span class="co">#&gt;  0.3103</span></span>
+<span><span class="co">#&gt;  0.1506</span></span>
+<span><span class="co">#&gt; [ CPUf32{3} ] </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $second</span></span>
+<span><span class="co">#&gt; AnvilTensor</span></span>
+<span><span class="co">#&gt;  0.8690</span></span>
+<span><span class="co">#&gt;  0.3103</span></span>
+<span><span class="co">#&gt;  0.1506</span></span>
+<span><span class="co">#&gt; [ CPUf32{3} ]</span></span></code></pre></div>
 <p>As you can see, both calls produced identical random numbers because
 we used the same state for both. To get different random numbers in
 subsequent calls, you need to pass the <strong>new</strong> state
@@ -187,11 +197,20 @@ returned by the previous call:</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>first <span class="op">=</span> <span class="va">result1</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, second <span class="op">=</span> <span class="va">result2</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu">proper_rng</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://r-xla.github.io/tengen/reference/as_array.html" class="external-link">as_array</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">first</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.8690484 0.3102535 0.1506324</span></span>
-<span><span class="fu"><a href="https://r-xla.github.io/tengen/reference/as_array.html" class="external-link">as_array</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">second</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.5203207 0.1064724 0.2499373</span></span></code></pre></div>
+<span><span class="fu">proper_rng</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $first</span></span>
+<span><span class="co">#&gt; AnvilTensor</span></span>
+<span><span class="co">#&gt;  0.8690</span></span>
+<span><span class="co">#&gt;  0.3103</span></span>
+<span><span class="co">#&gt;  0.1506</span></span>
+<span><span class="co">#&gt; [ CPUf32{3} ] </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $second</span></span>
+<span><span class="co">#&gt; AnvilTensor</span></span>
+<span><span class="co">#&gt;  0.5203</span></span>
+<span><span class="co">#&gt;  0.1065</span></span>
+<span><span class="co">#&gt;  0.2499</span></span>
+<span><span class="co">#&gt; [ CPUf32{3} ]</span></span></code></pre></div>
 <p>Now we get different random numbers because we properly propagated
 the state.</p>
   </main>

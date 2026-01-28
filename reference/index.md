@@ -14,6 +14,8 @@ Functions for creating and initializing tensors
   Constant
 - [`nv_iota()`](https://r-xla.github.io/anvil/reference/nv_iota.md) :
   Iota
+- [`nv_seq()`](https://r-xla.github.io/anvil/reference/nv_seq.md) :
+  Sequence
 - [`nv_aten()`](https://r-xla.github.io/anvil/reference/AbstractTensor.md)
   [`AbstractTensor()`](https://r-xla.github.io/anvil/reference/AbstractTensor.md)
   : Abstract Tensor Class
@@ -86,6 +88,14 @@ Functions for reshaping and rearranging tensors
 - [`nv_pad()`](https://r-xla.github.io/anvil/reference/nv_pad.md) : Pad
 - [`nv_reverse()`](https://r-xla.github.io/anvil/reference/nv_reverse.md)
   : Reverse
+- [`` `[`( ``*`<AnvilBox>`*`)`](https://r-xla.github.io/anvil/reference/nv_subset.md)
+  [`` `[`( ``*`<AnvilTensor>`*`)`](https://r-xla.github.io/anvil/reference/nv_subset.md)
+  [`nv_subset()`](https://r-xla.github.io/anvil/reference/nv_subset.md)
+  : Subset a Tensor
+- [`` `[<-`( ``*`<AnvilBox>`*`)`](https://r-xla.github.io/anvil/reference/nv_subset_assign.md)
+  [`` `[<-`( ``*`<AnvilTensor>`*`)`](https://r-xla.github.io/anvil/reference/nv_subset_assign.md)
+  [`nv_subset_assign()`](https://r-xla.github.io/anvil/reference/nv_subset_assign.md)
+  : Update Subset
 
 ## Arithmetic operations
 
@@ -320,6 +330,8 @@ Internal data structures and functions
   : Concrete Tensor Class
 - [`LiteralTensor()`](https://r-xla.github.io/anvil/reference/LiteralTensor.md)
   : Literal Tensor Class
+- [`IotaTensor()`](https://r-xla.github.io/anvil/reference/IotaTensor.md)
+  : Iota Tensor Class
 - [`eq_type()`](https://r-xla.github.io/anvil/reference/eq_type.md)
   [`neq_type()`](https://r-xla.github.io/anvil/reference/eq_type.md) :
   Compare AbstractTensor Types
@@ -389,6 +401,8 @@ Low-level primitive operations (nvl\_\* functions)
   Primitive Fill
 - [`nvl_floor()`](https://r-xla.github.io/anvil/reference/nvl_floor.md)
   : Primitive Floor
+- [`nvl_gather()`](https://r-xla.github.io/anvil/reference/nvl_gather.md)
+  : Primitive Gather
 - [`nvl_ge()`](https://r-xla.github.io/anvil/reference/nvl_ge.md) :
   Primitive Greater Equal
 - [`nvl_gt()`](https://r-xla.github.io/anvil/reference/nvl_gt.md) :
@@ -455,6 +469,8 @@ Low-level primitive operations (nvl\_\* functions)
   : Primitive Round
 - [`nvl_rsqrt()`](https://r-xla.github.io/anvil/reference/nvl_rsqrt.md)
   : Primitive Reciprocal Square Root
+- [`nvl_scatter()`](https://r-xla.github.io/anvil/reference/nvl_scatter.md)
+  : Primitive Scatter
 - [`nvl_select()`](https://r-xla.github.io/anvil/reference/nvl_select.md)
   : Primitive Select
 - [`nvl_shift_left()`](https://r-xla.github.io/anvil/reference/nvl_shift_left.md)

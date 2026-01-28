@@ -43,6 +43,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/anvil.html">Get Started</a></li>
     <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
+    <li><a class="dropdown-item" href="../articles/subsetting.html">Subsetting</a></li>
     <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
     <li><a class="dropdown-item" href="../articles/debugging.html">Debugging</a></li>
     <li><a class="dropdown-item" href="../articles/primitives.html">Primitives Overview</a></li>
@@ -90,7 +91,7 @@
 
     
     
-<p>The table below shows all 68 primitives and which rules they
+<p>The table below shows all 70 primitives and which rules they
 implement. Note that a rule might be missing because it was just not
 added yet, or because it does not apply for a specific primitive.</p>
 <table class="table">
@@ -206,167 +207,177 @@ added yet, or because it does not apply for a specific primitive.</p>
 <td align="center">✓</td>
 </tr>
 <tr class="even">
+<td align="left">gather</td>
+<td align="left">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr class="odd">
 <td align="left">greater</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">greater_equal</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">if</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">iota</td>
 <td align="left">✓</td>
 <td align="center">✗</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">is_finite</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">less</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">less_equal</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">log</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">log1p</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">logistic</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">maximum</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">minimum</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">mul</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">negate</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">not</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">not_equal</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">or</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">pad</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">popcnt</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">power</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">print</td>
 <td align="left">✓</td>
 <td align="center">✗</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">reduce_all</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">reduce_any</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">reduce_max</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">reduce_min</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">reduce_prod</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">reduce_sum</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">remainder</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">reshape</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">reverse</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">rng_bit_generator</td>
 <td align="left">✓</td>
 <td align="center">✗</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">round</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">rsqrt</td>
+<td align="left">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr class="even">
+<td align="left">scatter</td>
 <td align="left">✓</td>
 <td align="center">✓</td>
 </tr>
