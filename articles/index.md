@@ -7,6 +7,8 @@
 - [Internals](https://r-xla.github.io/anvil/articles/internals.md):
 - [Logistic
   Regression](https://r-xla.github.io/anvil/articles/logistic-regression.md):
+- [Adding a
+  Primitive](https://r-xla.github.io/anvil/articles/new_primitive.md):
 - [Primitives
   Reference](https://r-xla.github.io/anvil/articles/primitives.md):
 - [Random Number

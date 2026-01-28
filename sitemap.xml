@@ -8,6 +8,7 @@
 <url><loc>https://r-xla.github.io/anvil/articles/index.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/articles/internals.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/articles/logistic-regression.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/articles/new_primitive.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/articles/primitives.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/articles/random-numbers.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/articles/subsetting.html</loc></url>
@@ -34,6 +35,7 @@
 <url><loc>https://r-xla.github.io/anvil/reference/abstract_properties.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/ambiguous.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/assert_shapevec.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/at2vt.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/build_tree.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/common_dtype.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/debug_box.html</loc></url>
@@ -43,6 +45,7 @@
 <url><loc>https://r-xla.github.io/anvil/reference/gradient.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/graph_desc_add.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/index.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/is_tensorish.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/jit.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/jit_eval.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/local_descriptor.html</loc></url>
@@ -203,5 +206,6 @@
 <url><loc>https://r-xla.github.io/anvil/reference/tree_size.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/unflatten.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/unwrap_if_tensor.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/vt2at.html</loc></url>
 </urlset>
 

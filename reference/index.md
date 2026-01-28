@@ -335,6 +335,12 @@ Internal data structures and functions
 - [`eq_type()`](https://r-xla.github.io/anvil/reference/eq_type.md)
   [`neq_type()`](https://r-xla.github.io/anvil/reference/eq_type.md) :
   Compare AbstractTensor Types
+- [`at2vt()`](https://r-xla.github.io/anvil/reference/at2vt.md) :
+  Convert AbstractTensor to ValueType
+- [`vt2at()`](https://r-xla.github.io/anvil/reference/vt2at.md) :
+  Convert ValueType to AbstractTensor
+- [`is_tensorish()`](https://r-xla.github.io/anvil/reference/is_tensorish.md)
+  : Check if an Object is a Tensor-ish Object
 
 ## Tree utilities
 
