@@ -13,35 +13,33 @@ This example showcases {anvil}'s random number generation, JIT compilation, and 
 
 ## The Problem
 
-We consider a simple Bayesian inference problem: estimating the mean $\mu$ of a normal distribution with known variance $\sigma^2$.
-Given observations $x_1, \ldots, x_n \sim \mathcal{N}(\mu, \sigma^2)$ and a prior $\mu \sim \mathcal{N}(\mu_0, \tau_0^2)$, the posterior is:
+We consider a classic Bayesian inference problem: estimating the probability of success $\theta$ from binomial data.
+Given $k$ successes out of $n$ trials, where $k \sim \text{Binomial}(n, \theta)$, and a Beta prior $\theta \sim \text{Beta}(\alpha, \beta)$, the posterior is:
 
-$$\mu | x \sim \mathcal{N}\left(\frac{\frac{\mu_0}{\tau_0^2} + \frac{n\bar{x}}{\sigma^2}}{\frac{1}{\tau_0^2} + \frac{n}{\sigma^2}}, \left(\frac{1}{\tau_0^2} + \frac{n}{\sigma^2}\right)^{-1}\right)$$
+$$\theta | k \sim \text{Beta}(\alpha + k, \beta + n - k)$$
 
-While this posterior has an analytical solution, we'll use it to validate our MCMC implementation.
+While this posterior has an analytical solution (the Beta-Binomial is a conjugate model), we'll use it to validate our MCMC implementation.
 
 ## Simulating Data
 
-Let's generate some observations from a normal distribution with true mean $\mu = 2$ and known variance $\sigma^2 = 1$.
+Let's generate some observations from a binomial distribution with true success probability $\theta = 0.7$.
 
 ```{r}
 library(anvil)
 set.seed(123)
 
-n <- 50
-true_mu <- 2
-sigma_sq <- 1
+n_trials <- 50
+true_theta <- 0.7
 
-x <- rnorm(n, mean = true_mu, sd = sqrt(sigma_sq))
-x_bar <- mean(x)
-x_bar
+k_successes <- rbinom(1, size = n_trials, prob = true_theta)
+k_successes
 ```
 
-We specify a weakly informative prior $\mu \sim \mathcal{N}(0, 10^2)$.
+We specify a weakly informative prior $\theta \sim \text{Beta}(1, 1)$, which is equivalent to a uniform distribution on $[0, 1]$.
 
 ```{r}
-mu_0 <- 0
-tau_0_sq <- 100
+alpha_prior <- 1
+beta_prior <- 1
 ```
 
 ## The Log-Posterior
@@ -49,16 +47,15 @@ tau_0_sq <- 100
 For numerical stability, we work with the log-posterior (up to a normalizing constant).
 The log-posterior is the sum of the log-likelihood and the log-prior:
 
-$$\log p(\mu | x) \propto -\frac{1}{2\sigma^2} \sum_{i=1}^{n} (x_i - \mu)^2 - \frac{1}{2\tau_0^2} (\mu - \mu_0)^2$$
+$$\log p(\theta | k) \propto k \log(\theta) + (n - k) \log(1 - \theta) + (\alpha - 1) \log(\theta) + (\beta - 1) \log(1 - \theta)$$
 
 ```{r}
-log_posterior <- function(mu, x, sigma_sq, mu_0, tau_0_sq) {
-  # Log-likelihood
-  residuals <- x - mu
-  log_lik <- -nv_reduce_sum(residuals * residuals) / (2 * sigma_sq)
+log_posterior <- function(theta, k, n, alpha, beta) {
+  # Log-likelihood: Binomial
+  log_lik <- k * log(theta) + (n - k) * log(1 - theta)
 
-  # Log-prior
-  log_prior <- -(mu - mu_0)^2 / (2 * tau_0_sq)
+  # Log-prior: Beta(alpha, beta)
+  log_prior <- (alpha - 1) * log(theta) + (beta - 1) * log(1 - theta)
 
   log_lik + log_prior
 }
@@ -68,33 +65,40 @@ log_posterior <- function(mu, x, sigma_sq, mu_0, tau_0_sq) {
 
 The Metropolis-Hastings algorithm generates samples from the posterior through an accept-reject mechanism:
 
-1. Propose a new value $\mu'$ from a proposal distribution $q(\mu' | \mu)$
-2. Compute the acceptance probability $\alpha = \min\left(1, \frac{p(\mu' | x) q(\mu | \mu')}{p(\mu | x) q(\mu' | \mu)}\right)$
-3. Accept $\mu'$ with probability $\alpha$, otherwise keep $\mu$
+1. Propose a new value $\theta'$ from a proposal distribution $q(\theta' | \theta)$
+2. Compute the acceptance probability $\alpha = \min\left(1, \frac{p(\theta' | k) q(\theta | \theta')}{p(\theta | k) q(\theta' | \theta)}\right)$
+3. Accept $\theta'$ with probability $\alpha$, otherwise keep $\theta$
 
-We use a symmetric random walk proposal $\mu' \sim \mathcal{N}(\mu, \delta^2)$, which simplifies the acceptance ratio to the ratio of posteriors.
+We use a symmetric random walk proposal $\theta' \sim \mathcal{N}(\theta, \delta^2)$, which simplifies the acceptance ratio to the ratio of posteriors.
+Since $\theta$ must be in $[0, 1]$, proposals outside this range are automatically rejected.
 
 ```{r}
-mh_step <- function(mu, x, sigma_sq, mu_0, tau_0_sq, proposal_sd, rng_state) {
+mh_step <- function(theta, k, n, alpha, beta, proposal_sd, rng_state) {
   # Propose new value
-  result <- nv_rnorm(rng_state, dtype = "f32", shape = integer())
+  result <- nv_rnorm(1L, rng_state, dtype = "f32")
   rng_state <- result[[1]]
-  proposal <- mu + proposal_sd * result[[2]]
+  z <- nv_reshape(result[[2]], shape = integer())  # reshape to scalar
+  proposal <- theta + proposal_sd * z
 
   # Compute log acceptance ratio
-  log_p_current <- log_posterior(mu, x, sigma_sq, mu_0, tau_0_sq)
-  log_p_proposal <- log_posterior(proposal, x, sigma_sq, mu_0, tau_0_sq)
+  # Proposals outside [0, 1] get log_alpha = -Inf (automatic rejection)
+  log_p_current <- log_posterior(theta, k, n, alpha, beta)
+  log_p_proposal <- log_posterior(proposal, k, n, alpha, beta)
   log_alpha <- log_p_proposal - log_p_current
 
+  # Reject if proposal is outside [0, 1]
+  out_of_bounds <- (proposal <= 0) | (proposal >= 1)
+  log_alpha <- nv_select(out_of_bounds, nv_scalar(-Inf, dtype = "f32"), log_alpha)
+
   # Accept or reject
-  result <- nv_runif(rng_state, dtype = "f32", shape = integer())
+  result <- nv_runif(1L, rng_state, dtype = "f32")
   rng_state <- result[[1]]
-  u <- result[[2]]
+  u <- nv_reshape(result[[2]], shape = integer())  # reshape to scalar
 
   accepted <- log(u) < log_alpha
-  mu_new <- nv_select(accepted, proposal, mu)
+  theta_new <- nv_select(accepted, proposal, theta)
 
-  list(mu = mu_new, rng_state = rng_state, accepted = accepted)
+  list(theta = theta_new, rng_state = rng_state, accepted = accepted)
 }
 ```
 
@@ -104,113 +108,40 @@ We'll run the sampler for a number of iterations, storing the samples.
 First, let's set up the data and parameters as tensors.
 
 ```{r}
-x_tensor <- nv_tensor(x, dtype = "f32")
-sigma_sq_tensor <- nv_scalar(sigma_sq, dtype = "f32")
-mu_0_tensor <- nv_scalar(mu_0, dtype = "f32")
-tau_0_sq_tensor <- nv_scalar(tau_0_sq, dtype = "f32")
-proposal_sd <- nv_scalar(0.5, dtype = "f32")
+k_tensor <- nv_scalar(k_successes, dtype = "f32")
+n_tensor <- nv_scalar(n_trials, dtype = "f32")
+alpha_tensor <- nv_scalar(alpha_prior, dtype = "f32")
+beta_tensor <- nv_scalar(beta_prior, dtype = "f32")
+proposal_sd <- nv_scalar(0.1, dtype = "f32")
 ```
 
-Let's run a basic loop from R first to understand the algorithm.
-
-```{r}
-mh_step_jit <- jit(mh_step)
-
-n_samples <- 5000
-samples <- numeric(n_samples)
-accepted_count <- 0
-
-mu_current <- nv_scalar(0, dtype = "f32")
-rng_state <- nv_rng_state(seed = 42L)
-
-for (i in seq_len(n_samples)) {
-  result <- mh_step_jit(
-    mu_current, x_tensor, sigma_sq_tensor,
-    mu_0_tensor, tau_0_sq_tensor, proposal_sd, rng_state
-  )
-  mu_current <- result$mu
-  rng_state <- result$rng_state
-  samples[i] <- as_array(mu_current)
-  accepted_count <- accepted_count + as_array(result$accepted)
-}
-
-acceptance_rate <- accepted_count / n_samples
-acceptance_rate
-```
-
-The acceptance rate is around 40-60%, which indicates a well-tuned proposal distribution.
-
-## Visualizing Results
-
-Let's examine the trace plot to check for convergence.
-
-```{r, echo = FALSE, fig.width = 6, fig.height = 4}
-plot(samples, type = "l", col = "steelblue",
-     xlab = "Iteration", ylab = expression(mu),
-     main = "Trace Plot")
-```
-
-After a short burn-in period, the chain appears to have converged.
-Let's discard the first 500 samples as burn-in and examine the posterior distribution.
-
-```{r}
-burn_in <- 500
-posterior_samples <- samples[(burn_in + 1):n_samples]
-```
-
-```{r, echo = FALSE, fig.width = 6, fig.height = 4}
-hist(posterior_samples, breaks = 40, freq = FALSE, col = "lightblue",
-     xlab = expression(mu), main = "Posterior Distribution",
-     xlim = c(1.5, 3))
-
-# Overlay analytical posterior
-posterior_precision <- 1/tau_0_sq + n/sigma_sq
-posterior_var <- 1/posterior_precision
-posterior_mean <- (mu_0/tau_0_sq + n*x_bar/sigma_sq) / posterior_precision
-curve(dnorm(x, posterior_mean, sqrt(posterior_var)), add = TRUE, col = "red", lwd = 2)
-legend("topright", legend = c("MCMC samples", "Analytical posterior"),
-       fill = c("lightblue", NA), border = c("black", NA),
-       lty = c(NA, 1), col = c(NA, "red"), lwd = c(NA, 2))
-```
-
-The MCMC samples match the analytical posterior well.
-Let's compare the posterior summaries.
-
-```{r}
-cat("MCMC posterior mean:", mean(posterior_samples), "\n")
-cat("Analytical posterior mean:", posterior_mean, "\n")
-cat("MCMC posterior sd:", sd(posterior_samples), "\n")
-cat("Analytical posterior sd:", sqrt(posterior_var), "\n")
-```
-
-## Using nv_while for Efficient Sampling
-
-As discussed in the "Get Started" vignette, we can use `nv_while()` to run the entire sampling loop within a single compiled function.
+We use `nv_while()` to run the entire sampling loop within a single compiled function.
 This eliminates the overhead of switching between R and the XLA runtime on each iteration.
-
-For this, we need to store all samples in a tensor and update it at each iteration using `nvl_dynamic_update_slice()`.
+We store all samples in a tensor and update it at each iteration using `nvl_dynamic_update_slice()`.
 
 ```{r}
-mcmc_loop <- jit(function(x, sigma_sq, mu_0, tau_0_sq, proposal_sd,
-                          mu_init, rng_state, n_samples) {
+n_samples <- 5000L
+
+mcmc_loop <- jit(function(k, n, alpha, beta, proposal_sd,
+                          theta_init, rng_state) {
   samples <- nv_fill(0, shape = n_samples, dtype = "f32")
 
   result <- nv_while(
     list(
-      mu = mu_init,
+      theta = theta_init,
       samples = samples,
       rng_state = rng_state,
       i = nv_scalar(0L)
     ),
-    \(mu, samples, rng_state, i) i < n_samples,
-    \(mu, samples, rng_state, i) {
-      step <- mh_step(mu, x, sigma_sq, mu_0, tau_0_sq, proposal_sd, rng_state)
+    \(theta, samples, rng_state, i) i < n_samples,
+    \(theta, samples, rng_state, i) {
+      step <- mh_step(theta, k, n, alpha, beta, proposal_sd, rng_state)
 
-      # Store sample (i + 1L converts from 0-based loop counter to 1-based index)
-      samples_new <- nvl_dynamic_update_slice(samples, nv_reshape(step$mu, 1L), i + 1L)
+      # Store sample
+      samples_new <- nvl_dynamic_update_slice(samples, nv_reshape(step$theta, 1L), i)
 
       list(
-        mu = step$mu,
+        theta = step$theta,
         samples = samples_new,
         rng_state = step$rng_state,
         i = i + 1L
@@ -225,28 +156,55 @@ mcmc_loop <- jit(function(x, sigma_sq, mu_0, tau_0_sq, proposal_sd,
 Now we can run the entire MCMC chain with a single function call.
 
 ```{r}
-samples_fast <- mcmc_loop(
-  x_tensor, sigma_sq_tensor, mu_0_tensor, tau_0_sq_tensor, proposal_sd,
-  nv_scalar(0, dtype = "f32"),
-  nv_rng_state(seed = 42L),
-  nv_scalar(5000L)
-)
-
-samples_fast_r <- as_array(samples_fast)
+samples <- as_array(mcmc_loop(
+  k_tensor, n_tensor, alpha_tensor, beta_tensor, proposal_sd,
+  nv_scalar(0.5, dtype = "f32"),
+  nv_rng_state(seed = 42L)
+))
 ```
 
-Let's verify the results match.
+## Results
+
+Let's examine the trace plot to check for convergence.
 
 ```{r, echo = FALSE, fig.width = 6, fig.height = 4}
-posterior_samples_fast <- samples_fast_r[(burn_in + 1):n_samples]
-hist(posterior_samples_fast, breaks = 40, freq = FALSE, col = "lightblue",
-     xlab = expression(mu), main = "Posterior Distribution (nv_while)")
-curve(dnorm(x, posterior_mean, sqrt(posterior_var)), add = TRUE, col = "red", lwd = 2)
+plot(samples, type = "l", col = "steelblue",
+     xlab = "Iteration", ylab = expression(theta),
+     main = "Trace Plot")
 ```
+
+After a short burn-in period, the chain appears to have converged.
+Let's discard the first 500 samples as burn-in and examine the posterior distribution.
 
 ```{r}
-cat("nv_while posterior mean:", mean(posterior_samples_fast), "\n")
-cat("nv_while posterior sd:", sd(posterior_samples_fast), "\n")
+burn_in <- 500
+posterior_samples <- samples[(burn_in + 1):n_samples]
 ```
 
-The `nv_while` version produces equivalent results while compiling the entire sampling procedure into a single XLA executable.
+```{r, echo = FALSE, fig.width = 6, fig.height = 4}
+hist(posterior_samples, breaks = 40, freq = FALSE, col = "lightblue",
+     xlab = expression(theta), main = "Posterior Distribution",
+     xlim = c(0.4, 1))
+
+# Overlay analytical posterior: Beta(alpha + k, beta + n - k)
+alpha_post <- alpha_prior + k_successes
+beta_post <- beta_prior + n_trials - k_successes
+curve(dbeta(x, alpha_post, beta_post), add = TRUE, col = "red", lwd = 2)
+legend("topleft", legend = c("MCMC samples", "Analytical posterior"),
+       fill = c("lightblue", NA), border = c("black", NA),
+       lty = c(NA, 1), col = c(NA, "red"), lwd = c(NA, 2))
+```
+
+The MCMC samples match the analytical posterior well.
+Let's compare the posterior summaries.
+
+```{r}
+# Analytical posterior moments
+posterior_mean <- alpha_post / (alpha_post + beta_post)
+posterior_var <- (alpha_post * beta_post) / ((alpha_post + beta_post)^2 * (alpha_post + beta_post + 1))
+
+cat("MCMC posterior mean:", mean(posterior_samples), "\n")
+cat("Analytical posterior mean:", posterior_mean, "\n")
+cat("MCMC posterior sd:", sd(posterior_samples), "\n")
+cat("Analytical posterior sd:", sqrt(posterior_var), "\n")
+```
