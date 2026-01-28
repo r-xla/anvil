@@ -11,9 +11,14 @@ toc:
 
 navbar:
   structure:
-    left:  [intro, reference, news, articles, technical]
+    left:  [reference, news, articles, examples, technical]
     right: [search, github, lightswitch]
   components:
+    examples:
+      text: Examples
+      menu:
+      - text: Logistic Regression
+        href: articles/logistic-regression.html
     articles:
       text: Articles
       menu:
@@ -27,13 +32,13 @@ navbar:
         href: articles/random-numbers.html
       - text: Debugging
         href: articles/debugging.html
-      - text: Primitives Overview
-        href: articles/primitives.html
     technical:
       text: Technical
       menu:
       - text: Internals
         href: articles/internals.html
+      - text: Primitives Overview
+        href: articles/primitives.html
       - text: Extending
       - text: Implementing a New Primitive
         href: articles/contributing.html
@@ -55,6 +60,7 @@ reference:
   - title: Tensor attributes and converters
     desc: Functions for querying tensor attributes and converting them
     contents:
+      - ambiguous
       - dtype
       - shape
       - ndims
