@@ -15,6 +15,8 @@ ndims_abstract(x)
 ambiguous_abstract(x)
 
 dtype_abstract(x)
+
+ambiguous_abstract(x)
 }
 \arguments{
 \item{x}{(\code{\link{tensorish}})\cr}

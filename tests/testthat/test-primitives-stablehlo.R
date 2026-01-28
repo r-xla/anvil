@@ -472,12 +472,15 @@ test_that("p_reverse", {
 })
 
 test_that("p_iota", {
-  f <- jit(function() nvl_iota(1L, "i32", 5L))
+  f <- jit(function() nvl_iota(1L, "i32", 5L, start = 0L))
   expect_equal(f(), nv_tensor(0:4, dtype = "i32"))
 
-  # 2D along first dimension
+  f <- jit(function() nvl_iota(1L, "i32", 5L, start = 1L))
+  expect_equal(f(), nv_tensor(1:5, dtype = "i32"))
+
+  # 2D along first dimension (default start = 1)
   f2 <- jit(function() nvl_iota(1L, "i32", c(3L, 2L)))
-  expected <- matrix(c(0L, 1L, 2L, 0L, 1L, 2L), 3, 2)
+  expected <- matrix(c(1L, 2L, 3L, 1L, 2L, 3L), 3, 2)
   expect_equal(f2(), nv_tensor(expected, dtype = "i32"))
 })
 
@@ -485,6 +488,56 @@ test_that("p_popcnt", {
   f <- jit(function(x) nvl_popcnt(x))
   x <- nv_tensor(c(0L, 1L, 2L, 3L, 7L, 255L), dtype = "i32")
   expect_equal(f(x), nv_tensor(c(0L, 1L, 1L, 2L, 3L, 8L), dtype = "i32"))
+})
+
+test_that("p_gather", {
+  # Simple 1D gather: select elements at specific indices
+  f <- jit(function(x, indices) {
+    nvl_gather(
+      operand = x,
+      start_indices = indices,
+      slice_sizes = c(1L),
+      offset_dims = integer(),
+      collapsed_slice_dims = 1L,
+      operand_batching_dims = integer(),
+      start_indices_batching_dims = integer(),
+      start_index_map = 1L,
+      index_vector_dim = 2L,
+      indices_are_sorted = FALSE,
+      unique_indices = FALSE
+    )
+  })
+
+  x <- nv_tensor(c(10L, 20L, 30L, 40L, 50L), dtype = "i32")
+  indices <- nv_tensor(c(1L, 3L, 5L), dtype = "i64", shape = c(3, 1))
+  out <- f(x, indices)
+  expect_equal(out, nv_tensor(c(10L, 30L, 50L), dtype = "i32"))
+})
+
+test_that("p_scatter", {
+  # Simple 1D scatter: update elements at specific indices
+  f <- jit(function(x, indices, updates) {
+    nvl_scatter(
+      input = x,
+      scatter_indices = indices,
+      update = updates,
+      update_window_dims = integer(),
+      inserted_window_dims = 1L,
+      input_batching_dims = integer(),
+      scatter_indices_batching_dims = integer(),
+      scatter_dims_to_operand_dims = 1L,
+      index_vector_dim = 2L,
+      indices_are_sorted = FALSE,
+      unique_indices = TRUE,
+      update_computation = function(old, new) new
+    )
+  })
+
+  x <- nv_tensor(c(1L, 2L, 3L, 4L, 5L), dtype = "i32")
+  indices <- nv_tensor(c(1L, 3L, 5L), dtype = "i64", shape = c(3, 1))
+  updates <- nv_tensor(c(100L, 300L, 500L), dtype = "i32")
+  out <- f(x, indices, updates)
+  expect_equal(out, nv_tensor(c(100L, 2L, 300L, 4L, 500L), dtype = "i32"))
 })
 
 test_that("p_print", {

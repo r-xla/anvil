@@ -130,6 +130,5 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
 jit_eval <- function(expr) {
   expr <- substitute(expr)
   eval_env <- new.env(parent = parent.frame())
-
   jit(\() eval(expr, envir = eval_env))()
 }

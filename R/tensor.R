@@ -292,6 +292,48 @@ LiteralTensor <- function(data, shape, dtype = default_dtype(data), ambiguous) {
   )
 }
 
+#' @title Iota Tensor Class
+#' @description
+#' An [`AbstractTensor`] representing a tensor where the data is a sequence of integers.
+#' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
+#'   The shape of the tensor.
+#' @param dtype ([`stablehlo::TensorDataType`])\cr
+#'   The data type.
+#' @param start (`integer(1)`)\cr
+#'   The starting value.
+#' @param dimension (`integer(1)`)\cr
+#'   The dimension along which values increase.
+#' @template param_ambiguous
+#' @export
+IotaTensor <- function(shape, dtype, dimension, start = 1L, ambiguous = FALSE) {
+  shape <- as_shape(shape)
+  dtype <- as_dtype(dtype)
+  assert_flag(ambiguous)
+  assert_int(dimension, lower = 1L, upper = length(shape))
+  assert_int(start)
+  structure(
+    list(shape = shape, dtype = dtype, dimension = dimension, start = start, ambiguous = ambiguous),
+    class = c("IotaTensor", "AbstractTensor")
+  )
+}
+
+#' @export
+format.IotaTensor <- function(x, ...) {
+  sprintf(
+    "IotaTensor(shape=%s, dtype=%s, dimension=%s, start=%s)",
+    shape2string(x$shape),
+    dtype2string(x$dtype, x$ambiguous),
+    x$dimension,
+    x$start
+  )
+}
+
+#' @export
+print.IotaTensor <- function(x, ...) {
+  cat(format(x), "\n")
+  invisible(x)
+}
+
 is_literal_tensor <- function(x) {
   inherits(x, "LiteralTensor")
 }
@@ -484,7 +526,7 @@ is_shape <- function(x) {
 #' x
 NULL
 
-is_tensorish <- function(x, literal) {
+is_tensorish <- function(x, literal = TRUE) {
   ok <- inherits(x, "AnvilTensor") ||
     inherits(x, "AbstractTensor") ||
     is_box(x)

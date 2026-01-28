@@ -54,6 +54,7 @@ Collate:
     'api-generics.R'
     'api-rng.R'
     'jit.R'
+    'api-subset.R'
     'api-utilities.R'
     'asserts.R'
     'backward.R'
