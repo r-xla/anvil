@@ -125,6 +125,10 @@ shape2string <- function(x, parenthesize = TRUE) {
   }
 }
 
+shapes2string <- function(shapes) {
+  paste0(sapply(shapes, shape2string), sep = ", ")
+}
+
 zeros <- function(dtype, shape, ambiguous) {
   nvl_fill(0L, dtype = dtype, shape = shape, ambiguous = ambiguous)
 }
@@ -172,6 +176,12 @@ dtype_abstract <- function(x) {
   dtype(to_abstract(x))
 }
 
+#' @export
+#' @rdname abstract_properties
+ambiguous_abstract <- function(x) {
+  to_abstract(x)$ambiguous
+}
+
 dtype2string <- function(dtype, ambiguous = FALSE) {
   paste0(repr(dtype), if (ambiguous) "?")
 }
@@ -182,4 +192,87 @@ is_lit <- function(x) {
 
 cache_size <- function(f) {
   environment(f)$cache$size
+}
+
+# Clamp gather start indices to valid ranges, matching XLA's forward pass behavior.
+# This ensures that out-of-bounds indices are clamped to [1, operand_size - slice_size + 1]
+# for each dimension.
+gather_clamp_indices <- function(
+  start_indices,
+  operand_shape,
+  slice_sizes,
+  start_index_map,
+  index_vector_dim
+) {
+  # slice_sizes are in the order of the operand_shape, so we need to reverse the start_index_map
+  if (length(operand_shape) != length(slice_sizes)) {
+    cli_abort("operand_shape and slice_sizes must have the same length")
+  }
+
+  indices_shape <- shape(start_indices)
+  n_index_coords <- length(start_index_map)
+
+  if (n_index_coords == 0L) {
+    return(start_indices)
+  }
+
+  # Build max bounds for each coordinate
+  max_bounds <- integer(n_index_coords)
+  for (coord_idx in seq_len(n_index_coords)) {
+    operand_dim <- start_index_map[coord_idx]
+    operand_size <- operand_shape[operand_dim]
+    slice_size_for_dim <- slice_sizes[operand_dim]
+    max_bounds[coord_idx] <- max(1L, operand_size - slice_size_for_dim + 1L)
+  }
+
+  if (index_vector_dim <= length(indices_shape)) {
+    # Explicit index vector dimension - build bounds tensors
+    bounds_shape <- rep(1L, length(indices_shape))
+    bounds_shape[index_vector_dim] <- n_index_coords
+
+    min_tensor <- nvl_broadcast_in_dim(
+      nvl_fill(1L, dtype = dtype(start_indices), shape = integer()),
+      indices_shape,
+      integer()
+    )
+
+    # The max bound is the same for a given slice along the index_vector_dim
+    max_tensor_vals <- nvl_reshape(
+      nv_convert(nv_tensor(max_bounds, dtype = "i64"), dtype = dtype(start_indices)),
+      bounds_shape
+    )
+    max_tensor <- nv_broadcast_to(max_tensor_vals, indices_shape)
+
+    nvl_clamp(min_tensor, start_indices, max_tensor)
+  } else {
+    # Implicit index vector (single coordinate)
+    min_tensor <- nvl_fill(1L, dtype = dtype(start_indices), shape = integer())
+    max_tensor <- nvl_fill(max_bounds[1L], dtype = dtype(start_indices), shape = integer())
+    nvl_clamp(min_tensor, start_indices, max_tensor)
+  }
+}
+
+# Compute gather slice_sizes from scatter parameters.
+# This inverts a scatter into a gather: for each operand dimension, the slice
+# size is 1 for inserted/batching dims, or the update's window size otherwise.
+scatter_to_gather_slice_sizes <- function(
+  update_shape,
+  input_shape,
+  update_window_dims,
+  inserted_window_dims,
+  input_batching_dims
+) {
+  slice_sizes <- integer(length(input_shape))
+  update_window_pos <- 1L
+  for (i in seq_along(input_shape)) {
+    if (i %in% inserted_window_dims) {
+      slice_sizes[i] <- 1L
+    } else if (i %in% input_batching_dims) {
+      slice_sizes[i] <- 1L
+    } else {
+      slice_sizes[i] <- update_shape[update_window_dims[update_window_pos]]
+      update_window_pos <- update_window_pos + 1L
+    }
+  }
+  slice_sizes
 }

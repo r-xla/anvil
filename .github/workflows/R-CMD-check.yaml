@@ -12,7 +12,6 @@ permissions: read-all
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.runner }}
-    container: ${{ matrix.container }}
 
     name: ${{ matrix.config.os }} - ${{ matrix.config.platform }} (${{ matrix.config.r }})${{ matrix.config.torch && ' – with torch' || '' }}
 
@@ -23,24 +22,9 @@ jobs:
           - { os: "macos", r: "release", platform: "cpu" }
           - { os: "ubuntu", r: "release", platform: "cpu" }
           - { os: "ubuntu", r: "release", platform: "cpu", torch: true }
-          - { os: "ubuntu", r: "release", platform: "cuda", torch: true}
           - { os: "windows", r: "release", platform: "cpu"}
 
         include:
-          - config: {os: "ubuntu", platform: "cuda"}
-            container: {image: 'nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04', options: '--gpus all --runtime=nvidia'}
-            runner: ['self-hosted', 'gpu']
-            setup: |
-              DEBIAN_FRONTEND="noninteractive" apt-get update -y
-              DEBIAN_FRONTEND="noninteractive" apt-get install -y sudo software-properties-common dialog apt-utils tzdata libpng-dev locales pkg-config wget
-              DEBIAN_FRONTEND="noninteractive" locale-gen en_US.UTF-8
-              DEBIAN_FRONTEND="noninteractive" update-locale LANG=en_US.UTF-8
-              cd /tmp
-              wget https://developer.download.nvidia.com/compute/nvshmem/3.2.5/local_installers/nvshmem-local-repo-ubuntu2404-3.2.5_3.2.5-1_amd64.deb
-              sudo dpkg -i nvshmem-local-repo-ubuntu2404-3.2.5_3.2.5-1_amd64.deb
-              sudo cp /var/nvshmem-local-repo-ubuntu2404-3.2.5/nvshmem-*-keyring.gpg /usr/share/keyrings/
-              sudo apt-get update
-              sudo apt-get -y --allow-change-held-packages install nvshmem-cuda-12=3.4.5-1 libnccl2 libnccl-dev libnvshmem3-cuda-12=3.4.5-1 libnvshmem3-static-cuda-12=3.4.5-1 libnvshmem3-dev-cuda-12=3.4.5-1
           - config: {os: "ubuntu", platform: "cpu"}
             runner: 'ubuntu-latest'
           - config: {os: "macos", platform: "cpu"}
@@ -63,47 +47,34 @@ jobs:
 
       - uses: actions/checkout@v5
 
-
-      - uses: r-lib/actions/setup-pandoc@v2
-
       - uses: r-lib/actions/setup-r@v2
-        if: matrix.config.r != null
         with:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
           extra-repositories: https://r-xla.r-universe.dev
 
-      - name: Inspect R libs and caches
-        run: |
-          echo "HOME=$HOME"
-          Rscript -e 'print(.libPaths()); print(Sys.getenv(c("R_LIBS_USER","R_LIBS","HOME")));'
-          Rscript -e 'if (requireNamespace("pak", quietly=TRUE)) pak::cache_summary()'
-
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - uses: ./.github/actions/r-check
         with:
-          extra-packages: any::rcmdcheck
-          needs: check
-          cache: false
-          upgrade: 'TRUE'
+          install-torch: ${{ matrix.config.torch == true }}
 
-      - name: Install torch
-        if: ${{ matrix.config.torch }}
-        run: |
-          Rscript -e 'install.packages("torch")'
-          Rscript -e 'torch::install_torch()'
+  R-CMD-check-cuda:
+    needs: R-CMD-check
+    runs-on: ['self-hosted', 'gpu']
+    container:
+      image: 'sebffischer/anvil-cuda-base:latest'
+      options: '--gpus all --runtime=nvidia'
 
-      - name: Install deps on cuda
-        if: ${{ matrix.config.platform == 'cuda' }}
-        run: |
-          Rscript -e 'install.packages("remotes")'
-          Rscript -e 'remotes::install_github("r-xla/pjrt")'
-          Rscript -e 'remotes::install_github("r-xla/stablehlo")'
-          Rscript -e 'remotes::install_github("r-xla/tengen")'
-          Rscript -e 'remotes::install_github("r-xla/xlamisc")'
+    name: ubuntu - cuda (release) – with torch
 
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+      PJRT_PLATFORM: cuda
 
-      - uses: r-lib/actions/check-r-package@v2
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/r-check
         with:
-          upload-snapshots: true
-          build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+          install-torch: 'true'

@@ -17,9 +17,10 @@
 #'   The default (`NULL`) is to infer it from the data if possible.
 #'   Note that [`nv_tensor`] interprets length 1 vectors as having shape `(1)`.
 #'   To create a "scalar" with dimension `()`, use [`nv_scalar`].
-#' @param ambiguous (`logical(1)`)\cr
+#' @param ambiguous (`NULL` | `logical(1)`)\cr
 #'   Whether the dtype should be marked as ambiguous.
-#'   For [nv_tensor()], defaults to `FALSE` (non-ambiguous).
+#'   For [nv_tensor()], defaults to `FALSE` (non-ambiguous) for new tensors,
+#'   or preserves the existing value when `data` is already an [`AnvilTensor`].
 #'   For [nv_scalar()], defaults to `TRUE` when `dtype` is `NULL` and data is numeric, `FALSE` otherwise.
 #'
 #' @return ([`AnvilTensor`]) A tensor object.
@@ -29,7 +30,27 @@ NULL
 
 #' @rdname AnvilTensor
 #' @export
-nv_tensor <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = FALSE) {
+nv_tensor <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL) {
+  if (is_anvil_tensor(data)) {
+    if (!is.null(device) && device(data) != pjrt::as_pjrt_device(device)) {
+      cli_abort("Cannot change device of existing AnvilTensor from {.val {platform(data)}} to {.val {device}}")
+    }
+    if (!is.null(shape) && !identical(shape(data), as.integer(shape))) {
+      cli_abort("Cannot change shape of existing AnvilTensor")
+    }
+    if (!is.null(dtype)) {
+      if (dtype(data) != as_dtype(dtype)) {
+        cli_abort("Cannot change dtype of existing AnvilTensor from {.val {dtype(data)}} to {.val {dtype}}")
+      }
+    }
+    if (!is.null(ambiguous) && ambiguous(data) != ambiguous) {
+      cli_abort("Cannot change ambiguous of existing AnvilTensor from {.val {ambiguous(data)}} to {.val {ambiguous}}")
+    }
+    return(data)
+  }
+  if (is.null(ambiguous)) {
+    ambiguous <- FALSE
+  }
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
   }
@@ -271,6 +292,48 @@ LiteralTensor <- function(data, shape, dtype = default_dtype(data), ambiguous) {
   )
 }
 
+#' @title Iota Tensor Class
+#' @description
+#' An [`AbstractTensor`] representing a tensor where the data is a sequence of integers.
+#' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
+#'   The shape of the tensor.
+#' @param dtype ([`stablehlo::TensorDataType`])\cr
+#'   The data type.
+#' @param start (`integer(1)`)\cr
+#'   The starting value.
+#' @param dimension (`integer(1)`)\cr
+#'   The dimension along which values increase.
+#' @template param_ambiguous
+#' @export
+IotaTensor <- function(shape, dtype, dimension, start = 1L, ambiguous = FALSE) {
+  shape <- as_shape(shape)
+  dtype <- as_dtype(dtype)
+  assert_flag(ambiguous)
+  assert_int(dimension, lower = 1L, upper = length(shape))
+  assert_int(start)
+  structure(
+    list(shape = shape, dtype = dtype, dimension = dimension, start = start, ambiguous = ambiguous),
+    class = c("IotaTensor", "AbstractTensor")
+  )
+}
+
+#' @export
+format.IotaTensor <- function(x, ...) {
+  sprintf(
+    "IotaTensor(shape=%s, dtype=%s, dimension=%s, start=%s)",
+    shape2string(x$shape),
+    dtype2string(x$dtype, x$ambiguous),
+    x$dimension,
+    x$start
+  )
+}
+
+#' @export
+print.IotaTensor <- function(x, ...) {
+  cat(format(x), "\n")
+  invisible(x)
+}
+
 is_literal_tensor <- function(x) {
   inherits(x, "LiteralTensor")
 }
@@ -289,15 +352,44 @@ platform.ConcreteTensor <- function(x, ...) {
 
 #' @export
 `==.AbstractTensor` <- function(e1, e2) {
-  if (!inherits(e2, "AbstractTensor")) {
-    return(FALSE)
-  }
-  e1$dtype == e2$dtype && e1$shape == e2$shape && e1$ambiguous == e2$ambiguous
+  cli_abort("Use {.fn eq_type} instead of {.code ==} for comparing AbstractTensors")
 }
 
 #' @export
 `!=.AbstractTensor` <- function(e1, e2) {
-  !(e1 == e2) # nolint
+  cli_abort("Use {.fn neq_type} instead of {.code !=} for comparing AbstractTensors")
+}
+
+#' @title Compare AbstractTensor Types
+#' @description
+#' Compare two AbstractTensors for type equality.
+#' @param e1 ([`AbstractTensor`])\cr
+#'   First tensor to compare.
+#' @param e2 ([`AbstractTensor`])\cr
+#'   Second tensor to compare.
+#' @param ambiguity (`logical(1)`)\cr
+#'   Whether to consider the ambiguous field when comparing.
+#'   If `TRUE`, tensors with different ambiguity are not equal.
+#'   If `FALSE`, only dtype and shape are compared.
+#' @return `logical(1)` - `TRUE` if the tensors are equal, `FALSE` otherwise.
+#' @export
+eq_type <- function(e1, e2, ambiguity) {
+  if (!inherits(e1, "AbstractTensor") || !inherits(e2, "AbstractTensor")) {
+    cli_abort("e1 and e2 must be AbstractTensors")
+  }
+  if (!(e1$dtype == e2$dtype) || !identical(e1$shape, e2$shape)) {
+    return(FALSE)
+  }
+  if (ambiguity && (e1$ambiguous != e2$ambiguous)) {
+    return(FALSE)
+  }
+  TRUE
+}
+
+#' @rdname eq_type
+#' @export
+neq_type <- function(e1, e2, ambiguity) {
+  !eq_type(e1, e2, ambiguity)
 }
 
 #' @export
@@ -353,14 +445,15 @@ print.AnvilTensor <- function(x, header = TRUE, ...) {
   if (header) {
     cat("AnvilTensor\n")
   }
-  print(x$tensor, header = FALSE)
+  dtype_str <- paste0(as.character(dtype(x)), if (x$ambiguous) "?")
+  footer <- sprintf("[ %s%s{%s} ]", toupper(platform(x)), dtype_str, paste0(shape(x), collapse = ","))
+
+  print(x$tensor, header = FALSE, footer = footer)
   invisible(x)
 }
 
-#' @title Waldo Comparison Proxy for AnvilTensor
-#' @export
-#' @keywords internal
-compare_proxy.AnvilTensor <- function(x, path) {
+# fmt: skip
+compare_proxy.AnvilTensor <- function(x, path) { # nolint
   list(
     object = list(
       data = as_array(x),
@@ -433,7 +526,7 @@ is_shape <- function(x) {
 #' x
 NULL
 
-is_tensorish <- function(x, literal) {
+is_tensorish <- function(x, literal = TRUE) {
   ok <- inherits(x, "AnvilTensor") ||
     inherits(x, "AbstractTensor") ||
     is_box(x)

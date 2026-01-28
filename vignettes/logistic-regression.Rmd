@@ -23,7 +23,7 @@ Here, we will use a simple gradient descept algorithm for didactic purposes.
 
 ## Data
 
-We'll use the classic Titanic dataset from base R, which contains survival data for passengers.
+We'll use the classic Titanic dataset from base R, which contains survival data for the most famous shipwreck in history.
 The `Titanic` object is a contingency table, so we first expand it into individual observations.
 
 ```{r}
@@ -45,6 +45,19 @@ X <- scale(X)
 n <- nrow(X)
 p <- ncol(X)
 ```
+
+The dataset contains `r n` observations and `r p` predictor variables.
+Our goal is to predict survival (`Survived`) based on three categorical features:
+
+- **Class**: Passenger class (1st, 2nd, 3rd, or Crew) - encoded as dummy variables with 1st class as the reference category
+- **Sex**: Male or Female - encoded with Male as the reference category
+- **Age**: Child or Adult - encoded with Child as the reference category
+
+```{r}
+summary(titanic)
+```
+
+The general survival rate was `r sprintf("%.2f", mean(y) * 100)`%.
 
 Now we convert the data to `AnvilTensor`s.
 
@@ -102,7 +115,7 @@ This keeps the entire training loop within a single compiled function, which is 
 
 ```{r}
 fit_logreg <- jit(function(X, y, beta, alpha, n_epochs, lr) {
-  outputput <- nv_while(
+  output <- nv_while(
     list(beta = beta, alpha = alpha, epoch = nv_scalar(0L)),
     \(beta, alpha, epoch) epoch < n_epochs,
     \(beta, alpha, epoch) {
@@ -142,14 +155,18 @@ glm_fit <- glm(y ~ X, family = binomial)
 
 Now let's compare the coefficients:
 
-```{r}
+```{r, echo = FALSE}
 anvil_coef <- c(as_array(result$alpha), as.vector(as_array(result$beta)))
 glm_coef <- coef(glm_fit)
 
+# Clean up parameter names (remove "X" prefix from glm output)
+param_names <- gsub("^X", "", names(glm_coef))
+
 comparison <- data.frame(
-  Parameter = names(glm_coef),
+  Parameter = param_names,
   anvil = anvil_coef,
-  glm = glm_coef
+  glm = glm_coef,
+  row.names = NULL
 )
 comparison
 ```

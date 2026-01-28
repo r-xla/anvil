@@ -404,6 +404,7 @@ nvl_dynamic_update_slice <- function(operand, update, ...) {
   )[[1L]]
 }
 
+
 # reduction operators
 
 make_reduce_op <- function(prim, infer_fn = infer_reduce) {
@@ -938,10 +939,13 @@ p_iota <- AnvilPrimitive("iota")
 #' @template param_dtype
 #' @param shape (`integer()`)\cr
 #'   Shape of the output tensor.
+#' @param start (`integer(1)`)\cr
+#'   Starting value.
+#' @template param_ambiguous
 #' @return [`tensorish`]
 #' @export
-nvl_iota <- function(dim, dtype, shape) {
-  infer_fn <- function(dim, dtype, shape) {
+nvl_iota <- function(dim, dtype, shape, start = 1L, ambiguous = FALSE) {
+  infer_fn <- function(dim, dtype, shape, start, ambiguous) {
     # stablehlo uses 0-based indexing, anvil uses 1-based
     # Convert dim to Constant as required by stablehlo
     iota_dim_const <- stablehlo::r_to_constant(
@@ -949,15 +953,19 @@ nvl_iota <- function(dim, dtype, shape) {
       dtype = "i64",
       shape = integer(0)
     )
-    out <- stablehlo::infer_types_iota(iota_dimension = iota_dim_const, dtype = dtype, shape = shape)[[1L]]
-    list(vt2at(out))
+    # Just for the checks
+    stablehlo::infer_types_iota(iota_dimension = iota_dim_const, dtype = dtype, shape = shape)[[1L]]
+
+    list(IotaTensor(shape = shape, dtype = dtype, dimension = dim, start = start, ambiguous = ambiguous))
   }
-  graph_desc_add(
+  result <- graph_desc_add(
     p_iota,
     list(),
-    list(dim = dim, dtype = dtype, shape = shape),
+    list(dim = dim, dtype = dtype, shape = shape, start = start, ambiguous = ambiguous),
     infer_fn = infer_fn
   )[[1L]]
+
+  result
 }
 
 p_pad <- AnvilPrimitive("pad")
@@ -1117,13 +1125,10 @@ nvl_if <- function(pred, true, false) {
   if (debug_mode) {
     current_desc <- local_descriptor()
   }
-  # TODO(split pr)
 
   desc_true <- local_descriptor()
   true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true, lit_to_tensor = TRUE)
   desc_false <- local_descriptor()
-
-  # TODO: Apply promotion rules to the outputs of the branches
 
   for (const in desc_true$constants) {
     get_box_or_register_const(desc_false, const)
@@ -1138,12 +1143,14 @@ nvl_if <- function(pred, true, false) {
     cli_abort("true and false branches must have the same output structure")
   }
 
+  # TODO: Apply promotion rules to the outputs of the branches
+
   infer_fn <- function(pred, true_graph, false_graph) {
-    # the returned values might have different ambiguity, so we need to handle it
-    # an output is ambiguous if it's type is ambiguous in both branches
+    # The returned values might have different ambiguity, so we need to handle it.
+    # An output is ambiguous if its type is ambiguous in both branches.
     lapply(seq_along(true_graph$outputs), function(i) {
       aval_true <- true_graph$outputs[[i]]$aval
-      aval_false <- true_graph$outputs[[i]]$aval
+      aval_false <- false_graph$outputs[[i]]$aval
       if (aval_true$ambiguous && aval_false$ambiguous) {
         return(aval_true)
       }
@@ -1228,11 +1235,11 @@ nvl_while <- function(init, cond, body) {
     outs <- list(...)
     outs_body <- lapply(body_graph$outputs, \(out) out$aval)
     inputs_body <- lapply(body_graph$inputs, \(inp) inp$aval)
-    # == ignores ambiguity
-    if (!all(sapply(seq_along(outs), \(i) outs[[i]] == outs_body[[i]]))) {
+    # ignore ambiguity when comparing dtypes
+    if (!all(sapply(seq_along(outs), \(i) eq_type(outs[[i]], outs_body[[i]], ambiguity = FALSE)))) {
       cli_abort("outs must be have same type as outs_body")
     }
-    if (!all(sapply(seq_along(inputs_body), \(i) inputs_body[[i]] == outs_body[[i]]))) {
+    if (!all(sapply(seq_along(inputs_body), \(i) eq_type(inputs_body[[i]], outs_body[[i]], ambiguity = FALSE)))) {
       cli_abort("inputs_body must be have same type as outs_body")
     }
     # function might change the ambiguity, so we return the body outputs and not the inputs
@@ -1262,7 +1269,15 @@ p_print <- AnvilPrimitive("print")
 #' @return [`tensorish`]
 #' @export
 nvl_print <- function(operand) {
-  graph_desc_add(p_print, list(operand = operand), infer_fn = list)[[1L]]
+  # HACK: ambiguity is not available in stablehlo, so we need to pre-compute this
+  # and pass it as a "param", although it is not really one
+  # TODO: We should also include the platform/device, but it is currently not avilable in GraphDescriptor
+  dtype_str <- paste0(as.character(dtype(operand)), if (ambiguous_abstract(operand)) "?")
+  footer <- sprintf("[ %s{%s} ]", dtype_str, paste0(shape(operand), collapse = ","))
+  # slig
+  graph_desc_add(p_print, list(operand = operand), list(footer = footer), infer_fn = function(operand, ...) {
+    list(operand)
+  })[[1L]]
 }
 
 # RNG primitives
@@ -1289,4 +1304,247 @@ nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dt
     params = list(rng_algorithm = rng_algorithm, dtype = dtype, shape = shape),
     infer_fn = infer_fn
   )
+}
+
+p_scatter <- AnvilPrimitive("scatter", subgraphs = "update_computation_graph")
+#' @title Primitive Scatter
+#' @description
+#' Produces a result tensor equal to the input tensor except that
+#' slices specified by scatter_indices are updated with values from the update tensor.
+#' @param input ([`tensorish`])\cr
+#'   Input tensor to scatter into.
+#' @param scatter_indices ([`tensorish`])\cr
+#'   Tensor of integer type containing indices.
+#' @param update ([`tensorish`])\cr
+#'   Update values tensor.
+#' @param update_window_dims (`integer()`)\cr
+#'   Update window dimensions.
+#' @param inserted_window_dims (`integer()`)\cr
+#'   Inserted window dimensions.
+#' @param input_batching_dims (`integer()`)\cr
+#'   Input batching dimensions.
+#' @param scatter_indices_batching_dims (`integer()`)\cr
+#'   Scatter indices batching dimensions.
+#' @param scatter_dims_to_operand_dims (`integer()`)\cr
+#'   Mapping from scatter indices to operand dimensions.
+#' @param index_vector_dim (`integer(1)`)\cr
+#'   Dimension in scatter_indices containing the index vectors.
+#' @param indices_are_sorted (`logical(1)`)\cr
+#'   Whether indices are sorted.
+#' @param unique_indices (`logical(1)`)\cr
+#'   Whether indices are unique.
+#' @param update_computation (`function`)\cr
+#'   Binary function to combine existing and update values.
+#' @return [`tensorish`]
+#' @export
+nvl_scatter <- function(
+  input,
+  scatter_indices,
+  update,
+  update_window_dims,
+  inserted_window_dims,
+  input_batching_dims,
+  scatter_indices_batching_dims,
+  scatter_dims_to_operand_dims,
+  index_vector_dim,
+  indices_are_sorted = FALSE,
+  unique_indices = FALSE,
+  update_computation = NULL
+) {
+  # otherwise, delayed promise evaluation means they might be added to the update_descriptor
+  force(input)
+  force(scatter_indices)
+  force(update)
+  if (is.null(update_computation)) {
+    update_computation <- function(old, new) new
+  } else if (!is.function(update_computation)) {
+    cli_abort("update_computation must be a function")
+  }
+
+  current_desc <- .current_descriptor(silent = TRUE)
+  debug_mode <- is.null(current_desc)
+  if (debug_mode) {
+    current_desc <- local_descriptor()
+  }
+
+  # Trace the update computation function
+  # For scatter, the update computation takes 2 scalar arguments (current, update)
+  desc_update <- local_descriptor()
+
+  # Create dummy arguments for tracing - use the input's dtype
+  input_dtype <- dtype_abstract(input)
+  update_dtype <- dtype_abstract(update)
+  if (input_dtype != update_dtype) {
+    cli_abort("input and update must have the same dtype")
+  }
+
+  dummy_args <- list(
+    AbstractTensor(dtype = input_dtype, shape = Shape(integer()), ambiguous = ambiguous_abstract(input)),
+    AbstractTensor(dtype = input_dtype, shape = Shape(integer()), ambiguous = ambiguous_abstract(update))
+  )
+
+  update_computation_graph <- trace_fn(update_computation, dummy_args, desc = desc_update)
+
+  # Register constants from the update computation graph
+  for (const in update_computation_graph$constants) {
+    get_box_or_register_const(current_desc, const)
+  }
+
+  infer_fn <- function(
+    input,
+    scatter_indices,
+    update,
+    update_window_dims,
+    inserted_window_dims,
+    input_batching_dims,
+    scatter_indices_batching_dims,
+    scatter_dims_to_operand_dims,
+    index_vector_dim,
+    indices_are_sorted,
+    unique_indices,
+    update_computation_graph
+  ) {
+    # Convert 1-based dimension numbers to 0-based
+    scatter_dimension_numbers <- stablehlo::ScatterDimensionNumbers(
+      update_window_dims = update_window_dims - 1L,
+      inserted_window_dims = inserted_window_dims - 1L,
+      input_batching_dims = input_batching_dims - 1L,
+      scatter_indices_batching_dims = scatter_indices_batching_dims - 1L,
+      scatter_dims_to_operand_dims = scatter_dims_to_operand_dims - 1L,
+      index_vector_dim = index_vector_dim - 1L
+    )
+
+    indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "i1", shape = integer())
+    unique_indices_attr <- r_to_constant(unique_indices, dtype = "i1", shape = integer())
+
+    out <- stablehlo::infer_types_scatter(
+      inputs = list(at2vt(input)),
+      scatter_indices = at2vt(scatter_indices),
+      updates = list(at2vt(update)),
+      scatter_dimension_numbers = scatter_dimension_numbers,
+      indices_are_sorted = indices_sorted_attr,
+      unique_indices = unique_indices_attr,
+      update_computation = stablehlo(update_computation_graph, constants_as_inputs = FALSE)[[1L]]
+    )[[1L]]
+
+    out <- vt2at(out)
+    out$ambiguous <- input$ambiguous
+    list(out)
+  }
+
+  out <- graph_desc_add(
+    p_scatter,
+    args = list(input = input, scatter_indices = scatter_indices, update = update),
+    params = list(
+      update_window_dims = update_window_dims,
+      inserted_window_dims = inserted_window_dims,
+      input_batching_dims = input_batching_dims,
+      scatter_indices_batching_dims = scatter_indices_batching_dims,
+      scatter_dims_to_operand_dims = scatter_dims_to_operand_dims,
+      index_vector_dim = index_vector_dim,
+      indices_are_sorted = indices_are_sorted,
+      unique_indices = unique_indices,
+      update_computation_graph = update_computation_graph
+    ),
+    infer_fn = infer_fn,
+    desc = current_desc,
+    debug_mode = debug_mode
+  )
+
+  out[[1L]]
+}
+
+p_gather <- AnvilPrimitive("gather")
+#' @title Primitive Gather
+#' @description
+#' Gathers slices from the operand at positions specified by start_indices.
+#' @template param_operand
+#' @param start_indices ([`tensorish`])\cr
+#'   Tensor of integer type containing the starting indices for the gather operation.
+#' @param slice_sizes (`integer()`)\cr
+#'   The sizes of the slices to gather in each dimension.
+#' @param offset_dims (`integer()`)\cr
+#'   Dimensions of the operand to gather from.
+#' @param collapsed_slice_dims (`integer()`)\cr
+#'   Dimensions of the slice to gather.
+#' @param operand_batching_dims (`integer()`)\cr
+#'   Dimensions of the operand to gather from.
+#' @param start_indices_batching_dims (`integer()`)\cr
+#'   Dimensions of the start_indices to gather from.
+#' @param start_index_map (`integer()`)\cr
+#'   Mapping from the start_indices to the operand dimensions.
+#' @param index_vector_dim (`integer(1)`)\cr
+#'   Dimension of the index vector.
+#' @param indices_are_sorted (`logical(1)`)\cr
+#'   Whether indices are guaranteed to be sorted.
+#' @param unique_indices (`logical(1)`)\cr
+#'   Whether indices are guaranteed to be unique (no duplicates).
+#' @return [`tensorish`]
+#' @export
+nvl_gather <- function(
+  operand,
+  start_indices,
+  slice_sizes,
+  offset_dims,
+  collapsed_slice_dims,
+  operand_batching_dims,
+  start_indices_batching_dims,
+  start_index_map,
+  index_vector_dim,
+  indices_are_sorted = FALSE,
+  unique_indices = FALSE
+) {
+  infer_fn <- function(
+    operand,
+    start_indices,
+    slice_sizes,
+    offset_dims,
+    collapsed_slice_dims,
+    operand_batching_dims,
+    start_indices_batching_dims,
+    start_index_map,
+    index_vector_dim,
+    indices_are_sorted,
+    unique_indices
+  ) {
+    gather_dimension_numbers <- stablehlo::GatherDimensionNumbers(
+      offset_dims = offset_dims - 1L,
+      collapsed_slice_dims = collapsed_slice_dims - 1L,
+      operand_batching_dims = operand_batching_dims - 1L,
+      start_indices_batching_dims = start_indices_batching_dims - 1L,
+      start_index_map = start_index_map - 1L,
+      index_vector_dim = index_vector_dim - 1L
+    )
+
+    slice_sizes_attr <- r_to_constant(slice_sizes, dtype = "i64", shape = length(slice_sizes))
+    indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "i1", shape = integer())
+
+    out <- stablehlo::infer_types_gather(
+      at2vt(operand),
+      at2vt(start_indices),
+      gather_dimension_numbers = gather_dimension_numbers,
+      slice_sizes = slice_sizes_attr,
+      indices_are_sorted = indices_sorted_attr
+    )[[1L]]
+
+    out <- vt2at(out)
+    out$ambiguous <- operand$ambiguous
+    list(out)
+  }
+  graph_desc_add(
+    p_gather,
+    args = list(operand = operand, start_indices = start_indices),
+    params = list(
+      slice_sizes = slice_sizes,
+      offset_dims = offset_dims,
+      collapsed_slice_dims = collapsed_slice_dims,
+      operand_batching_dims = operand_batching_dims,
+      start_indices_batching_dims = start_indices_batching_dims,
+      start_index_map = start_index_map,
+      index_vector_dim = index_vector_dim,
+      indices_are_sorted = indices_are_sorted,
+      unique_indices = unique_indices
+    ),
+    infer_fn = infer_fn
+  )[[1L]]
 }

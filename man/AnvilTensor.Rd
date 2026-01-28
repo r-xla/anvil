@@ -7,7 +7,7 @@
 \alias{nv_empty}
 \title{AnvilTensor}
 \usage{
-nv_tensor(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = FALSE)
+nv_tensor(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL)
 
 nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL)
 
@@ -32,9 +32,10 @@ The default (\code{NULL}) is to infer it from the data if possible.
 Note that \code{\link{nv_tensor}} interprets length 1 vectors as having shape \code{(1)}.
 To create a "scalar" with dimension \verb{()}, use \code{\link{nv_scalar}}.}
 
-\item{ambiguous}{(\code{logical(1)})\cr
+\item{ambiguous}{(\code{NULL} | \code{logical(1)})\cr
 Whether the dtype should be marked as ambiguous.
-For \code{\link[=nv_tensor]{nv_tensor()}}, defaults to \code{FALSE} (non-ambiguous).
+For \code{\link[=nv_tensor]{nv_tensor()}}, defaults to \code{FALSE} (non-ambiguous) for new tensors,
+or preserves the existing value when \code{data} is already an \code{\link{AnvilTensor}}.
 For \code{\link[=nv_scalar]{nv_scalar()}}, defaults to \code{TRUE} when \code{dtype} is \code{NULL} and data is numeric, \code{FALSE} otherwise.}
 }
 \value{

@@ -1,0 +1,32 @@
+name: 'R CMD check'
+description: 'Common steps for R package checking (requires checkout first)'
+
+inputs:
+  install-torch:
+    description: 'Whether to install torch'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: r-lib/actions/setup-pandoc@v2
+
+    - uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        extra-packages: any::rcmdcheck
+        needs: check
+        cache: false
+        upgrade: 'TRUE'
+
+    - name: Install torch
+      if: inputs.install-torch == 'true'
+      shell: bash
+      run: |
+        Rscript -e 'install.packages("torch")'
+        Rscript -e 'torch::install_torch()'
+
+    - uses: r-lib/actions/check-r-package@v2
+      with:
+        upload-snapshots: true
+        build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'

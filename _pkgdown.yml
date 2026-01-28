@@ -26,17 +26,19 @@ navbar:
         href: articles/anvil.html
       - text: Type Promotion
         href: articles/type-promotion.html
+      - text: Subsetting
+        href: articles/subsetting.html
       - text: Random Number Generation
         href: articles/random-numbers.html
       - text: Debugging
         href: articles/debugging.html
-      - text: Primitives Overview
-        href: articles/primitives.html
     technical:
       text: Technical
       menu:
       - text: Internals
         href: articles/internals.html
+      - text: Primitives Overview
+        href: articles/primitives.html
 
 reference:
   - title: Tensor Creation
@@ -49,6 +51,7 @@ reference:
       - nv_empty
       - nv_fill
       - nv_iota
+      - nv_seq
       - nv_aten
 
   - title: Tensor attributes and converters
@@ -58,6 +61,7 @@ reference:
       - dtype
       - shape
       - ndims
+      - ambiguous
       - device
       - starts_with("platform")
       - as_array
@@ -94,6 +98,8 @@ reference:
       - nv_static_slice
       - nv_pad
       - nv_reverse
+      - nv_subset
+      - nv_subset_assign
 
   - title: Arithmetic operations
     desc: Basic arithmetic operations on tensors
@@ -234,6 +240,9 @@ reference:
       - AbstractTensor
       - ConcreteTensor
       - LiteralTensor
+      - IotaTensor
+      - eq_type
+      - neq_type
 
   - title: Tree utilities
     desc: Utilities for working with nested structures
