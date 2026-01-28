@@ -197,6 +197,16 @@ In our case, no such convenience is needed and the functionality is not too low-
 nv_repeat_along <- nvl_repeat_along
 ```
 
+Note that in the `nv_*` wrapper function, you can only access certain properties of the input tensorish values via:
+
+- `shape_abstract()`
+- `ndims_abstract()`
+- `dtype_abstract()`
+- `ambiguous_abstract()`
+
+If you, for example, use `shape()` instead of `shape_abstract()`, your function won't work with R literals.
+I.e., `<extract>_abstract()` first converts the input to an `AbstractTensor` (if possible) and then extracts the property.
+
 ### Using Your Primitive
 
 You can now use the primitive:
