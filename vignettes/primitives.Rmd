@@ -1,0 +1,45 @@
+---
+title: "Primitives Reference"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Primitives Reference}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r, echo = FALSE}
+library(anvil)
+
+prims <- prim()
+
+# Extract primitive info
+primitives_list <- lapply(prims, function(p) {
+  has_stablehlo <- !is.null(p$rules[["stablehlo"]])
+  has_backward <- !is.null(p$rules[["backward"]])
+
+  data.frame(
+    Name = p$name,
+    StableHLO = if (has_stablehlo) "\u2713" else "\u2717",
+    Backward = if (has_backward) "\u2713" else "\u2717"
+  )
+})
+
+primitives_df <- do.call(rbind, Filter(Negate(is.null), primitives_list))
+primitives_df <- primitives_df[order(primitives_df$Name), ]
+rownames(primitives_df) <- NULL
+```
+
+The table below shows all `r nrow(primitives_df)` primitives and which rules they implement.
+Note that a rule might be missing because it was just not added yet, or because it does not apply for a specific primitive.
+
+
+```{r, echo = FALSE}
+knitr::kable(primitives_df, align = c("l", "l", "c", "c", "l"))
+```

@@ -9,7 +9,7 @@ str_to_torch_dtype <- function(str) {
     "i32" = torch::torch_int32(),
     "i64" = torch::torch_int64(),
     "ui8" = torch::torch_uint8(),
-    stop(sprintf("Unsupported dtype: %s", str))
+    cli_abort(sprintf("Unsupported dtype: %s", str))
   )
 }
 
@@ -24,7 +24,7 @@ as_array_torch <- function(x) {
 }
 
 generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
-  if (dtype == "pred") {
+  data <- if (dtype == "pred") {
     sample(c(TRUE, FALSE), size = prod(dimension), replace = TRUE)
   } else if (dtype %in% c("ui8", "ui16", "ui32", "ui64")) {
     sample(0:20, size = prod(dimension), replace = TRUE)
@@ -41,6 +41,10 @@ generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
       rchisq(prod(dimension), df = 1)
     }
   }
+
+  # For scalars (dimension = integer()), return the value directly
+  # For arrays, wrap in array() to preserve dimensions
+  if (length(dimension) == 0L) data else array(data, dim = dimension)
 }
 
 make_nv <- function(x, dtype) {

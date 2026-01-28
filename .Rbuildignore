@@ -22,3 +22,6 @@ SPEC.md
 ^Makefile$
 ^air.toml$
 ^TODO.md$
+anvil.Rproj
+^benchmarks/
+^\.claude$

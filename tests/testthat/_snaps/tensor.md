@@ -3,36 +3,45 @@
     Code
       x
     Output
-      AnvilTensor 
+      AnvilTensor
        1
        2
        3
        4
-      [ CPUi32{4x1} ] 
+      [ CPUi32{4,1} ] 
 
 # nv_scalar
 
     Code
       x
     Output
-      AnvilTensor 
-       1.0000
+      AnvilTensor
+       1
       [ CPUf32{} ] 
 
-# ShapedTensor
+# AbstractTensor
 
     Code
       x
     Output
-      ShapedTensor(dtype=f32, shape=2x3) 
+      AbstractTensor(dtype=f32, shape=2x3) 
 
 # ConcreteTensor
 
     Code
       x
     Output
-      ConcreteTensor(dtype=f32, shape=2x3) 
-       1.0000 3.0000 5.0000
-       2.0000 4.0000 6.0000
-      [ CPUf32{2x3} ] 
+      ConcreteTensor
+       1 3 5
+       2 4 6
+      [ CPUf32{2,3} ] 
+
+# stablehlo dtype is printed
+
+    Code
+      nv_tensor(TRUE)
+    Output
+      AnvilTensor
+       1
+      [ CPUi1{1} ] 
 

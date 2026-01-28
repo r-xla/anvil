@@ -1,0 +1,881 @@
+# All the backward rules are only operating on GraphValues
+
+# length(grads) == length(outputs)
+p_add[["backward"]] <- function(inputs, outputs, grads, .required) {
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) grad,
+    if (.required[[2L]]) grad
+  )
+}
+
+p_mul[["backward"]] <- function(inputs, outputs, grads, .required) {
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) nvl_mul(grad, rhs),
+    if (.required[[2L]]) nvl_mul(grad, lhs)
+  )
+}
+
+p_sub[["backward"]] <- function(inputs, outputs, grads, .required) {
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) grad,
+    if (.required[[2L]]) nvl_negate(grad)
+  )
+}
+
+p_negate[["backward"]] <- function(inputs, outputs, grads, .required) {
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) nvl_negate(grad)
+  )
+}
+
+p_div[["backward"]] <- function(inputs, outputs, grads, .required) {
+  rhs <- inputs[[2L]]
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) nvl_div(grad, rhs),
+    if (.required[[2L]]) nvl_div(nvl_mul(grad, nvl_negate(y)), rhs)
+  )
+}
+
+p_remainder[["backward"]] <- function(inputs, outputs, grads, .required) {
+  # we follow pytorch here and ignore non-differentiable parts
+  # the function is locally linear, i.e., y = lhs - k * rhs, where k = floor(lhs / rhs)
+  # so the gradient is 1 for lhs and -k for rhs
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) grad,
+    if (.required[[2L]]) nvl_mul(grad, nvl_negate(nvl_floor(nvl_div(lhs, rhs))))
+  )
+}
+
+p_pow[["backward"]] <- function(inputs, outputs, grads, .required) {
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) {
+      one <- ones_like(lhs, FALSE)
+      nvl_mul(nvl_mul(grad, rhs), nvl_pow(lhs, nvl_sub(rhs, one)))
+    },
+    if (.required[[2L]]) {
+      nvl_mul(grad, nvl_mul(nvl_log(lhs), y))
+    }
+  )
+}
+
+p_log[["backward"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) nvl_div(grad, operand)
+  )
+}
+
+p_exp[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) nvl_mul(grad, y)
+  )
+}
+
+p_sqrt[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx sqrt(x) = 1 / (2 * sqrt(x))
+    if (.required[[1L]]) {
+      half <- nvl_fill(0.5, dtype = dtype(y), shape = shape(y))
+      nvl_div(nvl_mul(grad, half), y)
+    }
+  )
+}
+
+p_rsqrt[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx 1/sqrt(x) = -0.5 * x^(-3/2) = -0.5 * rsqrt(x)^3
+    if (.required[[1L]]) {
+      neg_half <- nvl_fill(-0.5, dtype = dtype(y), shape = shape(y))
+      nvl_mul(nvl_mul(grad, neg_half), nvl_mul(y, nvl_mul(y, y)))
+    }
+  )
+}
+
+p_tanh[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx tanh(x) = 1 - tanh(x)^2
+    if (.required[[1L]]) {
+      one <- nvl_fill(1, dtype = dtype(y), shape = shape(y))
+      nvl_mul(grad, nvl_sub(one, nvl_mul(y, y)))
+    }
+  )
+}
+
+p_tan[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx tan(x) = 1 + tan(x)^2
+    if (.required[[1L]]) {
+      one <- nvl_fill(1, dtype = dtype(y), shape = shape(y))
+      nvl_mul(grad, nvl_add(one, nvl_mul(y, y)))
+    }
+  )
+}
+
+p_sine[["backward"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx sin(x) = cos(x)
+    if (.required[[1L]]) nvl_mul(grad, nvl_cosine(operand))
+  )
+}
+
+p_cosine[["backward"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx cos(x) = -sin(x)
+    if (.required[[1L]]) nvl_mul(grad, nvl_negate(nvl_sine(operand)))
+  )
+}
+
+p_abs[["backward"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx |x| = sign(x)
+    if (.required[[1L]]) nvl_mul(grad, nvl_sign(operand))
+  )
+}
+
+p_max[["backward"]] <- p_min[["backward"]] <- function(inputs, outputs, grads, .required) {
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
+  grad <- grads[[1L]]
+
+  if (.required[[1L]] || .required[[2L]]) {
+    y <- outputs[[1L]]
+    mask_lhs <- nvl_convert(nvl_eq(lhs, y), dtype = dtype(grad))
+    mask_rhs <- nvl_convert(nvl_eq(rhs, y), dtype = dtype(grad))
+    count <- nvl_add(mask_lhs, mask_rhs)
+  }
+
+  list(
+    if (.required[[1L]]) nvl_div(nvl_mul(grad, mask_lhs), count),
+    if (.required[[2L]]) nvl_div(nvl_mul(grad, mask_rhs), count)
+  )
+}
+
+p_dot_general[["backward"]] <- function(inputs, outputs, grads, contracting_dims, batching_dims, .required) {
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
+  grad <- grads[[1L]]
+
+  # batching dimensions
+  bd_lhs <- batching_dims[[1L]]
+  bd_rhs <- batching_dims[[2L]]
+  # contracting dimensions
+  cd_lhs <- contracting_dims[[1L]]
+  cd_rhs <- contracting_dims[[2L]]
+  # remaining dimensions
+  rem_dims <- function(operand, b_dims, c_dims) {
+    ii <- c(b_dims, c_dims)
+    seq_len(ndims(operand))[if (length(ii)) -ii else TRUE]
+  }
+  rd_lhs <- rem_dims(lhs, bd_lhs, cd_lhs)
+  rd_rhs <- rem_dims(rhs, bd_rhs, cd_rhs)
+
+  # output dimensions
+  bd_out <- seq_along(bd_lhs)
+  d_lhs_out <- seq_along(rd_lhs) +
+    if (length(bd_out)) bd_out[length(bd_out)] else 0L
+  d_rhs_out <- seq_along(rd_rhs) +
+    if (length(d_lhs_out)) d_lhs_out[length(d_lhs_out)] else 0L
+
+  conv_perm <- function(x) {
+    ids_new <- integer(length(x))
+    for (i in seq_along(x)) {
+      ids_new[x[i]] <- i
+    }
+    ids_new
+  }
+
+  cd_lhs2 <- cd_lhs[order(cd_rhs)]
+  perm_lhs <- conv_perm(c(bd_lhs, rd_lhs, cd_lhs2))
+
+  cd_rhs2 <- cd_rhs[order(cd_lhs)]
+  perm_rhs <- conv_perm(c(bd_rhs, rd_rhs, cd_rhs2))
+
+  list(
+    if (.required[[1L]]) {
+      grad_lhs <- nvl_dot_general(
+        grad,
+        rhs,
+        contracting_dims = list(d_rhs_out, rd_rhs),
+        batching_dims = list(bd_out, bd_rhs)
+      )
+      nvl_transpose(grad_lhs, perm_lhs)
+    },
+    if (.required[[2L]]) {
+      grad_rhs <- nvl_dot_general(
+        grad,
+        lhs,
+        contracting_dims = list(d_lhs_out, rd_lhs),
+        batching_dims = list(bd_out, bd_lhs)
+      )
+      nvl_transpose(grad_rhs, perm_rhs)
+    }
+  )
+}
+
+p_transpose[["backward"]] <- function(inputs, outputs, grads, permutation, .required) {
+  grad <- grads[[1L]]
+  inv <- integer(length(permutation))
+  for (i in seq_along(permutation)) {
+    inv[permutation[[i]]] <- i
+  }
+  list(
+    if (.required[[1L]]) nvl_transpose(grad, inv)
+  )
+}
+
+p_reshape[["backward"]] <- function(inputs, outputs, grads, shape, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) nvl_reshape(grad, shape(operand))
+  )
+}
+
+p_reduce_sum[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) {
+      bdims <- if (drop) {
+        without(seq_along(shape(operand)), dims)
+      } else {
+        seq_along(shape(grad))
+      }
+      nvl_broadcast_in_dim(grad, shape(operand), bdims)
+    }
+  )
+}
+
+p_reduce_max[["backward"]] <- p_reduce_min[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+
+  list(
+    if (.required[[1L]]) {
+      bdims <- if (drop) {
+        without(seq_along(shape(operand)), dims)
+      } else {
+        seq_along(shape(grad))
+      }
+
+      y <- outputs[[1L]]
+      y_bc <- nvl_broadcast_in_dim(y, shape(operand), bdims)
+
+      grad_bc <- nvl_broadcast_in_dim(grad, shape(operand), bdims)
+      mask <- nvl_eq(operand, y_bc)
+      mask_f <- nvl_convert(mask, dtype = dtype(grad_bc))
+
+      count <- nvl_reduce_sum(mask_f, dims = dims, drop = drop)
+      count_bc <- nvl_broadcast_in_dim(count, shape(operand), bdims)
+
+      nvl_div(nvl_mul(grad_bc, mask_f), count_bc)
+    }
+  )
+}
+
+p_broadcast_in_dim[["backward"]] <- function(inputs, outputs, grads, shape_out, broadcast_dimensions, .required) {
+  operand <- inputs[[1L]]
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+
+  list(
+    if (.required[[1L]]) {
+      # Sum grad over the axes that were introduced by broadcasting
+      new_dims <- setdiff(seq_len(ndims(y)), broadcast_dimensions)
+      expand_dims <- broadcast_dimensions[(shape(y)[broadcast_dimensions] != 1L) & (shape(operand) == 1L)]
+      reduce_dims <- c(new_dims, expand_dims)
+
+      x <- if (length(reduce_dims)) nvl_reduce_sum(grad, dims = reduce_dims, drop = FALSE) else grad
+
+      # Drop the singular added dimensions
+      if (length(new_dims)) {
+        reshape_dims <- shape(x)
+        reshape_dims <- reshape_dims[-new_dims]
+        x <- nvl_reshape(x, reshape_dims)
+      }
+
+      # If broadcast_dimensions are not in increasing order, reorder the
+      # remaining axes back to the original operand axis order.
+      if (is.unsorted(broadcast_dimensions)) {
+        x <- nvl_transpose(x, order(broadcast_dimensions))
+      }
+      x
+    }
+  )
+}
+
+# control flow backward ---------------------------------------------------------
+
+p_select[["backward"]] <- function(inputs, outputs, grads, .required) {
+  pred <- inputs[[1L]]
+  true_value <- inputs[[2L]]
+  grad <- grads[[1L]]
+  zero <- if (.required[[2L]] || .required[[3L]]) {
+    zeros_like(true_value, ambiguous = TRUE)
+  }
+
+  list(
+    if (.required[[1L]]) cli_abort("Predicate cannot be differentiated"),
+    if (.required[[2L]]) nvl_select(pred, grad, zero),
+    if (.required[[3L]]) nvl_select(nvl_not(pred), grad, zero)
+  )
+}
+
+p_if[["backward"]] <- function(inputs, outputs, grads, true, false, node_map, .required) {
+  cli_abort("Not yet implemented")
+}
+
+# convert backward -----------------
+
+p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  # the ambiguity is determined by the input, not the `ambiguous` parameter
+  list(
+    if (.required[[1L]]) nvl_convert(grad, dtype(operand), inputs[[1L]]$gnode$aval$ambiguous)
+  )
+}
+
+# for comparison primitives --------------------------
+# There are cases, where one wants to propagate through them, because a float was converted
+# to an int/bool that eventually influenced the output
+# But, we never read the final gradients of such inputs (because we can only differentiate
+# with respect to floats)
+# so it's okay if the dtype of the gradient does not match the operand type
+# Instead, we just return ambiguous zeros, that will be promoted to any dtype required
+
+backward_zero_bin <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad_in <- if (.required[[1]] || .required[[2L]]) {
+    grad_in <- nv_fill(0L, dtype = dtype(operand), shape = shape(operand))
+  }
+
+  list(
+    if (.required[[1L]]) grad_in,
+    if (.required[[2L]]) grad_in
+  )
+}
+
+p_eq[["backward"]] <- backward_zero_bin
+p_ne[["backward"]] <- backward_zero_bin
+p_gt[["backward"]] <- backward_zero_bin
+p_ge[["backward"]] <- backward_zero_bin
+p_lt[["backward"]] <- backward_zero_bin
+p_le[["backward"]] <- backward_zero_bin
+
+# zero-grads (ignores the non-differentiable points)
+
+backward_zero_uni <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  list(
+    if (.required[[1L]]) nvl_fill(0L, dtype = dtype(operand), shape = shape(operand))
+  )
+}
+
+
+p_floor[["backward"]] <- backward_zero_uni
+p_ceil[["backward"]] <- backward_zero_uni
+p_sign[["backward"]] <- backward_zero_uni
+p_round[["backward"]] <- function(inputs, outputs, grads, method, .required) {
+  backward_zero_uni(inputs, outputs, grads, .required)
+}
+
+p_cbrt[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx cbrt(x) = 1 / (3 * cbrt(x)^2)
+    if (.required[[1L]]) {
+      three <- nvl_fill(3, dtype = dtype(y), shape = shape(y))
+      nvl_div(grad, nv_mul(nvl_mul(y, y), three))
+    }
+  )
+}
+
+p_expm1[["backward"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx (exp(x) - 1) = exp(x)
+    if (.required[[1L]]) nvl_mul(grad, nvl_exp(operand))
+  )
+}
+
+p_log1p[["backward"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx log(1 + x) = 1 / (1 + x)
+    if (.required[[1L]]) {
+      one <- nvl_fill(1, dtype = dtype(operand), shape = shape(operand))
+      nvl_div(grad, nvl_add(one, operand))
+    }
+  )
+}
+
+p_logistic[["backward"]] <- function(inputs, outputs, grads, .required) {
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx sigmoid(x) = sigmoid(x) * (1 - sigmoid(x))
+    if (.required[[1L]]) {
+      one <- nvl_fill(1, dtype = dtype(y), shape = shape(y))
+      nvl_mul(grad, nvl_mul(y, nvl_sub(one, y)))
+    }
+  )
+}
+
+p_clamp[["backward"]] <- function(inputs, outputs, grads, .required) {
+  min_val <- inputs[[1L]]
+  operand <- inputs[[2L]]
+  max_val <- inputs[[3L]]
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+
+  # because stablehlo.clamp broadcasts scalars, we need to handle this here before the eq call
+  # this is an inconsistency in stablehlo, as it broadcasts scalars in clamp, but not in eq
+  # (and most other functions)
+  if (ndims(min_val) == 0L) {
+    min_val <- nvl_broadcast_in_dim(min_val, shape(operand), integer())
+  }
+  if (ndims(max_val) == 0L) {
+    max_val <- nvl_broadcast_in_dim(max_val, shape(operand), integer())
+  }
+
+  # the points where operand is equal to min_val or max_val are non differentiable,
+  # so we just implement it like torch, which uses 1 for the gradient there.
+  mask_operand <- nvl_convert(nvl_eq(operand, y), dtype = dtype(grad))
+
+  list(
+    if (.required[[1L]]) cli_abort("Gradient for min_val not implemented"),
+    if (.required[[2L]]) nvl_mul(grad, mask_operand),
+    if (.required[[3L]]) cli_abort("Gradient for max_val not implemented")
+  )
+}
+
+p_reverse[["backward"]] <- function(inputs, outputs, grads, dims, .required) {
+  grad <- grads[[1L]]
+  list(
+    # Reverse the gradient along the same dimensions
+    if (.required[[1L]]) nvl_reverse(grad, dims)
+  )
+}
+
+p_pad[["backward"]] <- function(
+  inputs,
+  outputs,
+  grads,
+  edge_padding_low,
+  edge_padding_high,
+  interior_padding,
+  .required
+) {
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) {
+      # select the non-padded elements
+      out_shape <- shape(outputs[[1L]])
+      strides <- interior_padding + 1L
+      start_indices <- edge_padding_low + 1L
+      limit_indices <- out_shape - edge_padding_high
+      nvl_static_slice(grad, start_indices, limit_indices, strides)
+    },
+    if (.required[[2L]]) {
+      cli_abort("Gradient for padding_value not implemented")
+    }
+  )
+}
+
+# Non-differentiable operations (logical/bitwise) return zero gradients
+# (Floats might be converted to integers that are then fed into these operations, but we then
+# propagate back to the floats, which requires the existence of these rules)
+
+p_and[["backward"]] <- backward_zero_bin
+p_or[["backward"]] <- backward_zero_bin
+p_xor[["backward"]] <- backward_zero_bin
+p_not[["backward"]] <- backward_zero_uni
+
+p_shift_left[["backward"]] <- backward_zero_bin
+p_shift_right_arithmetic[["backward"]] <- backward_zero_bin
+p_shift_right_logical[["backward"]] <- backward_zero_bin
+
+p_is_finite[["backward"]] <- backward_zero_uni
+p_popcnt[["backward"]] <- backward_zero_uni
+
+p_reduce_all[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+  operand <- inputs[[1L]]
+  list(
+    if (.required[[1L]]) nvl_fill(FALSE, dtype = dtype(operand), shape = shape(operand))
+  )
+}
+
+p_reduce_any[["backward"]] <- p_reduce_all[["backward"]]
+
+p_bitcast_convert[["backward"]] <- function(inputs, outputs, grads, dtype, .required) {
+  operand <- inputs[[1L]]
+  list(
+    if (.required[[1L]]) nvl_fill(0L, dtype = dtype(operand), shape = shape(operand))
+  )
+}
+
+p_atan2[["backward"]] <- function(inputs, outputs, grads, .required) {
+  lhs <- inputs[[1L]]
+  rhs <- inputs[[2L]]
+  grad <- grads[[1L]]
+  if (.required[[1L]] || .required[[2L]]) {
+    denom <- nvl_add(nvl_mul(lhs, lhs), nvl_mul(rhs, rhs))
+  }
+  list(
+    if (.required[[1L]]) nvl_div(nvl_mul(grad, rhs), denom),
+    if (.required[[2L]]) nvl_div(nvl_mul(grad, nvl_negate(lhs)), denom)
+  )
+}
+
+# concatenate backward: split the gradient back along the concatenation dimension
+p_concatenate[["backward"]] <- function(inputs, outputs, grads, dimension, .required) {
+  grad <- grads[[1L]]
+  n_inputs <- length(inputs)
+  input_grads <- vector("list", n_inputs)
+
+  offset <- 1L
+  limit_indices <- shape(grad)
+  start_indices <- rep(1L, length(shape(inputs[[1]])))
+  for (i in seq_len(n_inputs)) {
+    input_shape <- shape(inputs[[i]])
+    dim_size <- input_shape[dimension]
+    if (.required[[i]]) {
+      strides <- rep(1L, length(input_shape))
+      start_indices[dimension] <- offset
+      limit_indices[dimension] <- offset + dim_size - 1L
+      input_grads[[i]] <- nvl_static_slice(grad, start_indices, limit_indices, strides)
+    }
+    offset <- offset + dim_size
+  }
+  input_grads
+}
+
+
+p_reduce_prod[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+  operand <- inputs[[1L]]
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+
+  list(
+    if (.required[[1L]]) {
+      bdims <- if (drop) {
+        without(seq_along(shape(operand)), dims)
+      } else {
+        seq_along(shape(grad))
+      }
+      y_bc <- nvl_broadcast_in_dim(y, shape(operand), bdims)
+      grad_bc <- nvl_broadcast_in_dim(grad, shape(operand), bdims)
+      nvl_div(nvl_mul(grad_bc, y_bc), operand)
+    }
+  )
+}
+# slice backward: pad with zeros
+p_static_slice[["backward"]] <- function(inputs, outputs, grads, start_indices, limit_indices, strides, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    if (.required[[1L]]) {
+      input_shape <- shape(operand)
+      grad_shape <- shape(grad)
+      edge_padding_low <- start_indices - 1L
+      edge_padding_high <- input_shape - start_indices - (grad_shape - 1L) * strides
+      interior_padding <- strides - 1L
+      nvl_pad(
+        grad,
+        zeros(dtype(grad), integer(), FALSE),
+        edge_padding_low,
+        edge_padding_high,
+        interior_padding
+      )
+    }
+  )
+}
+
+p_dynamic_slice[["backward"]] <- function(inputs, outputs, grads, slice_sizes, .required) {
+  operand <- inputs[[1L]]
+  start_indices <- inputs[-1L]
+  grad <- grads[[1L]]
+
+  result <- vector("list", length(inputs))
+
+  # dynamic_update_slice does the same clamping as dynamic_slice, so it naturally handles
+  # out of bound indices (in the same weird way)
+  if (.required[[1L]]) {
+    zeros <- zeros_like(operand, FALSE)
+    result[[1L]] <- rlang::exec(nvl_dynamic_update_slice, zeros, grad, !!!start_indices)
+  }
+
+  result
+}
+
+p_dynamic_update_slice[["backward"]] <- function(inputs, outputs, grads, .required) {
+  update <- inputs[[2L]]
+  start_indices <- inputs[-(1:2)]
+  grad <- grads[[1L]]
+
+  result <- vector("list", length(inputs))
+
+  # dynamic_update_slice does the same clamping as dynamic_slice, so it naturally handles
+  # out of bound indices (in the same weird way)
+  if (.required[[1L]]) {
+    zeros <- zeros_like(update, FALSE)
+    result[[1L]] <- rlang::exec(nvl_dynamic_update_slice, grad, zeros, !!!start_indices)
+  }
+
+  if (.required[[2L]]) {
+    result[[2L]] <- rlang::exec(nvl_dynamic_slice, grad, !!!start_indices, slice_sizes = shape(update))
+  }
+
+  result
+}
+
+p_gather[["backward"]] <- function(
+  inputs,
+  outputs,
+  grads,
+  slice_sizes,
+  offset_dims,
+  collapsed_slice_dims,
+  operand_batching_dims,
+  start_indices_batching_dims,
+  start_index_map,
+  index_vector_dim,
+  indices_are_sorted,
+  unique_indices,
+  .required
+) {
+  operand <- inputs[[1L]]
+  start_indices <- inputs[[2L]]
+  grad <- grads[[1L]]
+
+  # Scatter is basically the "reverse" of gather
+  # We have to take care of two things here:
+  # 1. Out-of-bounds indices:
+  #    Let's say we have an `x` of shape (5, ) and in the forward pass do y = x[6]
+  #    which is clamped to x[5]
+  #    If dout/y = g; then dout/dx = c(0, 0, 0, 0, g)
+  #    But if we just do the reverse x[6] <- g, this gets lost
+  #    (scatter can ignore out-of-bounds indices because the output shape is determined by the input shape)
+  #    So we need to clamp the start_indices to what they actually were.
+  # 2. Multiple reads (x[list(1, 1), 2])
+  #    --> accumulate the gradients using update nvl_add
+
+  list(
+    if (.required[[1L]]) {
+      # Clamp indices to valid range (same as forward pass clamping behavior)
+      scatter_indices <- gather_clamp_indices(
+        start_indices = start_indices,
+        operand_shape = shape(operand),
+        slice_sizes = slice_sizes,
+        start_index_map = start_index_map,
+        index_vector_dim = index_vector_dim
+      )
+
+      nvl_scatter(
+        input = zeros_like(operand, FALSE),
+        scatter_indices = scatter_indices,
+        update = grad,
+        update_window_dims = offset_dims,
+        inserted_window_dims = collapsed_slice_dims,
+        input_batching_dims = operand_batching_dims,
+        scatter_indices_batching_dims = start_indices_batching_dims,
+        scatter_dims_to_operand_dims = start_index_map,
+        index_vector_dim = index_vector_dim,
+        indices_are_sorted = indices_are_sorted,
+        unique_indices = unique_indices,
+        # Use addition to accumulate gradients when multiple gather positions
+        # read from the same source location
+        update_computation = nvl_add
+      )
+    },
+    if (.required[[2L]]) zeros_like(start_indices, FALSE)
+  )
+}
+
+
+p_scatter[["backward"]] <- function(
+  inputs,
+  outputs,
+  grads,
+  update_window_dims,
+  inserted_window_dims,
+  input_batching_dims,
+  scatter_indices_batching_dims,
+  scatter_dims_to_operand_dims,
+  index_vector_dim,
+  indices_are_sorted,
+  unique_indices,
+  update_computation_graph,
+  .required
+) {
+  input <- inputs[[1L]]
+  scatter_indices <- inputs[[2L]]
+  update <- inputs[[3L]]
+  grad <- grads[[1L]]
+
+  if (!identical(update_computation_graph$outputs[[1L]], update_computation_graph$inputs[[2L]])) {
+    cli_abort("Scatter backward only supports simple replacement (update_computation = function(old, new) new)")
+  }
+
+  # Generally, the backward of scatter is:
+  # - for the update: gather from the gradient
+  # - for the input: zero out the positions that were overwritten
+
+  # The only problem is when scatter writes multiple times to the same position (unique_indices = FALSE),
+  # XLA doesn't guarantee which update "wins" at each position. We use the ID trick from JAX's scatter JVP:
+  # https://github.com/jax-ml/jax/blob/ecd3795959e91c3c28cec8696f4c82f2a28bc086/jax/_src/lax/slicing.py
+
+  update_shape <- shape(update)
+  input_shape <- shape(input)
+
+  slice_sizes <- scatter_to_gather_slice_sizes(
+    update_shape = update_shape,
+    input_shape = input_shape,
+    update_window_dims = update_window_dims,
+    inserted_window_dims = inserted_window_dims,
+    input_batching_dims = input_batching_dims
+  )
+
+  list(
+    # Gradient for input: zero out overwritten positions.
+    # Works for both unique and non-unique: scattering zero is idempotent.
+    if (.required[[1L]]) {
+      nvl_scatter(
+        input = grad,
+        scatter_indices = scatter_indices,
+        update = zeros_like(update, FALSE),
+        update_window_dims = update_window_dims,
+        inserted_window_dims = inserted_window_dims,
+        input_batching_dims = input_batching_dims,
+        scatter_indices_batching_dims = scatter_indices_batching_dims,
+        scatter_dims_to_operand_dims = scatter_dims_to_operand_dims,
+        index_vector_dim = index_vector_dim,
+        indices_are_sorted = indices_are_sorted,
+        unique_indices = unique_indices,
+        update_computation = function(old, new) new
+      )
+    },
+    # Gradient for scatter_indices: not differentiable
+    if (.required[[2L]]) zeros_like(scatter_indices, FALSE),
+    # Gradient for update: gather from gradient at update positions
+    if (.required[[3L]]) {
+      if (unique_indices) {
+        nvl_gather(
+          operand = grad,
+          start_indices = scatter_indices,
+          slice_sizes = slice_sizes,
+          offset_dims = update_window_dims,
+          collapsed_slice_dims = inserted_window_dims,
+          operand_batching_dims = input_batching_dims,
+          start_indices_batching_dims = scatter_indices_batching_dims,
+          start_index_map = scatter_dims_to_operand_dims,
+          index_vector_dim = index_vector_dim,
+          indices_are_sorted = indices_are_sorted,
+          unique_indices = TRUE
+        )
+      } else {
+        # Non-unique indices: use the ID trick to determine which updates won.
+        # https://github.com/jax-ml/jax/blob/ecd3795959e91c3c28cec8696f4c82f2a28bc086/jax/_src/lax/slicing.py
+        # Example: (x has shape (2,)) x[c(1, 1)] <- c(2, 3) --> we don't know whether 2 or 2 was assigned to position 1.
+        # -->
+        # 1. x <- c(0, 0)
+        # 2. Assign unique indices x[c(1, 1)] <- c(1, 2)
+        # 3. gather the winners: x[c(1, 1)], which e.g. gives c(2, 2)
+        # 4. Compare c(1, 2) == c(2, 2) = c(FALSE, TRUE) -> second one wins
+        # 5. Mask out the losers; grad[1] <- 0
+
+        # a) Create unique positive IDs for each update "batch" position
+        ids_shape <- update_shape
+        ids_shape[update_window_dims] <- 1L
+        num_ids <- prod(ids_shape)
+        id_dtype <- "i64"
+        update_ids <- nvl_reshape(nvl_iota(1L, id_dtype, num_ids, start = 1L), ids_shape)
+        update_ids <- nvl_broadcast_in_dim(update_ids, update_shape, seq_along(update_shape))
+
+        # b) Scatter IDs to see which update "wins" at each position
+        scattered_ids <- nvl_scatter(
+          input = nvl_fill(0L, dtype = id_dtype, shape = input_shape),
+          scatter_indices = scatter_indices,
+          update = update_ids,
+          update_window_dims = update_window_dims,
+          inserted_window_dims = inserted_window_dims,
+          input_batching_dims = input_batching_dims,
+          scatter_indices_batching_dims = scatter_indices_batching_dims,
+          scatter_dims_to_operand_dims = scatter_dims_to_operand_dims,
+          index_vector_dim = index_vector_dim,
+          indices_are_sorted = indices_are_sorted,
+          unique_indices = FALSE,
+          update_computation = function(old, new) new
+        )
+
+        # c) Gather scattered IDs back to update positions
+        gathered_ids <- nvl_gather(
+          operand = scattered_ids,
+          start_indices = scatter_indices,
+          slice_sizes = slice_sizes,
+          offset_dims = update_window_dims,
+          collapsed_slice_dims = inserted_window_dims,
+          operand_batching_dims = input_batching_dims,
+          start_indices_batching_dims = scatter_indices_batching_dims,
+          start_index_map = scatter_dims_to_operand_dims,
+          index_vector_dim = index_vector_dim,
+          indices_are_sorted = indices_are_sorted,
+          unique_indices = FALSE
+        )
+
+        # d) Gather gradient and mask: only winning updates get gradient
+        grad_at_positions <- nvl_gather(
+          operand = grad,
+          start_indices = scatter_indices,
+          slice_sizes = slice_sizes,
+          offset_dims = update_window_dims,
+          collapsed_slice_dims = inserted_window_dims,
+          operand_batching_dims = input_batching_dims,
+          start_indices_batching_dims = scatter_indices_batching_dims,
+          start_index_map = scatter_dims_to_operand_dims,
+          index_vector_dim = index_vector_dim,
+          indices_are_sorted = indices_are_sorted,
+          unique_indices = FALSE
+        )
+        mask <- nvl_eq(update_ids, gathered_ids)
+        nvl_select(mask, grad_at_positions, zeros_like(grad_at_positions, FALSE))
+      }
+    }
+  )
+}
