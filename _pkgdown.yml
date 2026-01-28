@@ -40,7 +40,7 @@ navbar:
       - text: Primitives Overview
         href: articles/primitives.html
       - text: Extending
-      - text: Implementing a New Primitive
+      - text: Adding a Primitive
         href: articles/contributing.html
 
 reference:

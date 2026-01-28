@@ -181,7 +181,18 @@ The backward rule receives:
 
 It returns a list with one gradient per input (or `NULL` if not required).
 
-### Step 5: Add an `nv_` API Function
+## Step 5: Register the Primitive
+
+To not pollute the global namespace, the primitive objects (`p_repeat_along` in our case) are not exported.
+Instead, they can be retrieved via `prim("repeat_along")`.
+To make this work, you need to register the primitive object:
+
+```{r}
+register_primitive("repeat_along", p_repeat_along)
+prim("repeat_along")
+```
+
+### Step 6: Add an `nv_` API Function
 
 In {anvil}, we also offer convenience wrappers around the primitives.
 An example is `nvl_add` vs `nv_add`, where the latter calls into the former after optionally broadcasting (scalar) inputs:
