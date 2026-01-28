@@ -19,8 +19,6 @@ navbar:
       menu:
       - text: Logistic Regression
         href: articles/logistic-regression.html
-      - text: MCMC Sampling
-        href: articles/mcmc.html
     articles:
       text: Articles
       menu:
