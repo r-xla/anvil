@@ -1,7 +1,6 @@
 #' Convert AbstractTensor to ValueType
 #' @description
 #' Convert an `AbstractTensor` to a `ValueType`.
-#' @name stablehlo_converters
 #' @param x (`AbstractTensor`)
 #' @return (`ValueType`)
 #' @export
