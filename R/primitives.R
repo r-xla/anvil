@@ -1125,13 +1125,10 @@ nvl_if <- function(pred, true, false) {
   if (debug_mode) {
     current_desc <- local_descriptor()
   }
-  # TODO(split pr)
 
   desc_true <- local_descriptor()
   true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true, lit_to_tensor = TRUE)
   desc_false <- local_descriptor()
-
-  # TODO: Apply promotion rules to the outputs of the branches
 
   for (const in desc_true$constants) {
     get_box_or_register_const(desc_false, const)
@@ -1146,12 +1143,14 @@ nvl_if <- function(pred, true, false) {
     cli_abort("true and false branches must have the same output structure")
   }
 
+  # TODO: Apply promotion rules to the outputs of the branches
+
   infer_fn <- function(pred, true_graph, false_graph) {
-    # the returned values might have different ambiguity, so we need to handle it
-    # an output is ambiguous if it's type is ambiguous in both branches
+    # The returned values might have different ambiguity, so we need to handle it.
+    # An output is ambiguous if its type is ambiguous in both branches.
     lapply(seq_along(true_graph$outputs), function(i) {
       aval_true <- true_graph$outputs[[i]]$aval
-      aval_false <- true_graph$outputs[[i]]$aval
+      aval_false <- false_graph$outputs[[i]]$aval
       if (aval_true$ambiguous && aval_false$ambiguous) {
         return(aval_true)
       }
@@ -1236,11 +1235,11 @@ nvl_while <- function(init, cond, body) {
     outs <- list(...)
     outs_body <- lapply(body_graph$outputs, \(out) out$aval)
     inputs_body <- lapply(body_graph$inputs, \(inp) inp$aval)
-    # == ignores ambiguity
-    if (!all(sapply(seq_along(outs), \(i) outs[[i]] == outs_body[[i]]))) {
+    # ignore ambiguity when comparing dtypes
+    if (!all(sapply(seq_along(outs), \(i) eq_type(outs[[i]], outs_body[[i]], ambiguity = FALSE)))) {
       cli_abort("outs must be have same type as outs_body")
     }
-    if (!all(sapply(seq_along(inputs_body), \(i) inputs_body[[i]] == outs_body[[i]]))) {
+    if (!all(sapply(seq_along(inputs_body), \(i) eq_type(inputs_body[[i]], outs_body[[i]], ambiguity = FALSE)))) {
       cli_abort("inputs_body must be have same type as outs_body")
     }
     # function might change the ambiguity, so we return the body outputs and not the inputs
