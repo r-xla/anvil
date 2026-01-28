@@ -77,9 +77,7 @@ h <- jit(function(state) {
   list(first = result1[[2]], second = result2[[2]])
 })
 
-output <- h(state)
-as_array(output$first)
-as_array(output$second)
+h(state)
 ```
 
 As you can see, both calls produced identical random numbers because we used the same state for both.
@@ -93,9 +91,7 @@ proper_rng <- jit(function(state) {
   list(first = result1[[2]], second = result2[[2]])
 })
 
-output <- proper_rng(state)
-as_array(output$first)
-as_array(output$second)
+proper_rng(state)
 ```
 
 Now we get different random numbers because we properly propagated the state.

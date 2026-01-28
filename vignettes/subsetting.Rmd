@@ -22,7 +22,8 @@ We start by listing possible subsets and whether they support dynamic values (te
 Ranges cannot have dynamic values, because then the size of the subset would be unknown (what's the size of `a:b` where `a` and `b` are unknown?).
 Boolean masks are not supported, because the output shape depends on the data, which is not known at compile time.
 If you want to modify tensors based on a mask, see `nv_select()`.
-Negative indexing (e.g., `x[-1]` to exclude elements) is currently also not supported and will throw an error.
+Negative indexing (e.g., `x[-1]` to exclude elements) is currently also not supported.
+For static values, this will throw an error, for dynamic values, it will be clamped to the valid range.
 If you are missing a feature, please open an issue on GitHub.
 
 We will start with subsetting and then move on to subset-assignment.
@@ -37,6 +38,7 @@ The index can be either static or dynamic and we can drop or keep the dimension:
 ```{r}
 library(anvil)
 x <- nv_tensor(1:10)
+x
 ```
 
 * Static & Drop:
@@ -65,6 +67,10 @@ x <- nv_tensor(1:10)
 
 * Dynamic & Keep:
 
+  Below, we almost perform the same operation as above, only do we use a tensor of shape `(1)` instead of a scalar with shape `()`.
+  The difference is that subsetting with the former will preserve the dimension, while the latter will drop it, as we have seen above.
+  This ensures that the dimensionality of the result is the same for any 1D subset specification, and not suddenly "simplify" the result to 0D.
+
   ```{r}
   jit_eval({
     x[nv_tensor(2L)]
@@ -90,7 +96,7 @@ Next, we subset multiple elements, where we only have to distinguish between sta
   ```
 
 We are using `list()` instead of 1-dimension vectors, because otherwise the case where we use a length-1 vector would be ambiguous (do we drop or keep the dimension?).
-This allows us to do without the dubious `drop` parameter.
+This allows us to do without a `drop` parameter.
 
 We can also use a range that can be specified either canonically via `a:b` or using `nv_seq()`.
 
@@ -105,6 +111,7 @@ jit_eval({
 
 Note that the `a:b` syntax works via Non-Standard-Evaluation (NSE), so we can distinguish it from the actual vector `2:5`.
 Internally, it is translated to `nv_seq(a, b)`.
+
 It is also possible to select the whole range by omitting the specification altogether.
 
 ```{r}
@@ -118,7 +125,7 @@ jit_eval({
 We start by creating a 2-dimensional tensor.
 
 ```{r}
-x <- nv_tensor(1:12, shape = c(3, 4))
+x <- nv_tensor(matrix(1:12, nrow = 3, byrow = TRUE))
 x
 ```
 
@@ -133,6 +140,12 @@ jit_eval({
 })
 jit_eval({
   x[list(1), 2:3]
+})
+jit_eval({
+  x[list(1, 3), 2:3]
+})
+jit_eval({
+  x[1:2, 2:3]
 })
 jit_eval({
   x[1, 2:3]
@@ -181,7 +194,7 @@ Also, it must have a data type that is convertible to the data type of the tenso
 
 ```{r, error = TRUE}
 jit_eval({
-  x[, 3] <- nv_tensor(c(1.0, 2.0, 3.0))
+  x[, 3] <- nv_tensor(c(1.5, 2.5, 3.5))
   x
 })
 ```
@@ -204,6 +217,7 @@ Here, the write to index 100 is silently ignored, while indices 1 and 3 are upda
 ### Duplicate Indices
 
 When writing to the same element multiple times, there is no gaurantee which value will be written.
+Specifically, this might differ between backends (CPU vs. GPU).
 
 ```{r}
 x <- nv_tensor(1:5)
