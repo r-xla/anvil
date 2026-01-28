@@ -5,6 +5,8 @@
 - [Get Started](https://r-xla.github.io/anvil/articles/anvil.md):
 - [Debugging](https://r-xla.github.io/anvil/articles/debugging.md):
 - [Internals](https://r-xla.github.io/anvil/articles/internals.md):
+- [Logistic
+  Regression](https://r-xla.github.io/anvil/articles/logistic-regression.md):
 - [Primitives
   Reference](https://r-xla.github.io/anvil/articles/primitives.md):
 - [Random Number

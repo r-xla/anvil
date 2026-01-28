@@ -24,6 +24,8 @@ Functions for creating and initializing tensors
 
 Functions for querying tensor attributes and converting them
 
+- [`ambiguous()`](https://r-xla.github.io/anvil/reference/ambiguous.md)
+  : Get Ambiguity of a Tensor
 - [`reexports`](https://r-xla.github.io/anvil/reference/reexports.md)
   [`shape`](https://r-xla.github.io/anvil/reference/reexports.md)
   [`device`](https://r-xla.github.io/anvil/reference/reexports.md)
@@ -36,8 +38,6 @@ Functions for querying tensor attributes and converting them
   [`platform`](https://r-xla.github.io/anvil/reference/reexports.md)
   [`Shape`](https://r-xla.github.io/anvil/reference/reexports.md) :
   Objects exported from other packages
-- [`ambiguous()`](https://r-xla.github.io/anvil/reference/ambiguous.md)
-  : Get Ambiguity of a Tensor
 - [`platform(`*`<AbstractTensor>`*`)`](https://r-xla.github.io/anvil/reference/platform.AbstractTensor.md)
   : Platform for AbstractTensor
 - [`platform(`*`<ConcreteTensor>`*`)`](https://r-xla.github.io/anvil/reference/platform.ConcreteTensor.md)
