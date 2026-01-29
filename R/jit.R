@@ -13,16 +13,22 @@
 #'   allowing in-place operations and reducing memory usage.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
 #'   The device to use if no input tensors are provided to infer the platform.
+#' @param async (`logical(1)`)\cr
+#'   Whether to use asynchronous execution. When `TRUE` (the default),
+#'   computations are dispatched without blocking until the result is needed
+#'   (e.g., when calling `as_array()`). This improves performance by allowing
+#'   multiple operations to be pipelined.
 #' @return (`function`)
 #' @export
-jit <- function(f, static = character(), cache_size = 100L, donate = character(), device = NULL) {
+jit <- function(f, static = character(), cache_size = 100L, donate = character(),
+                device = NULL, async = TRUE) {
   cache <- xlamisc::LRUCache$new(cache_size)
   assert_subset(static, formalArgs2(f))
   assert_string(device, null.ok = TRUE)
 
   call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat, avals_out = NULL) {
     args_nonstatic <- args_flat[!is_static_flat]
-    args_unwrapped <- lapply(args_nonstatic, \(a) a$tensor)
+    args_unwrapped <- lapply(args_nonstatic, get_buffer)
     out_vals <- rlang::exec(
       pjrt::pjrt_execute,
       exec,
@@ -34,6 +40,24 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
       out_vals <- Map(function(val, aval) nv_tensor(val, ambiguous = aval$ambiguous), out_vals, avals_out)
     } else {
       out_vals <- lapply(out_vals, nv_tensor)
+    }
+    unflatten(out_node, out_vals)
+  }
+
+  call_xla_async <- function(exec, out_node, consts_flat, args_flat, is_static_flat, avals_out = NULL) {
+    args_nonstatic <- args_flat[!is_static_flat]
+    args_unwrapped <- lapply(args_nonstatic, get_buffer)
+    out_vals <- rlang::exec(
+      pjrt::pjrt_execute_async,
+      exec,
+      !!!consts_flat,
+      !!!args_unwrapped,
+      simplify = FALSE
+    )
+    if (!is.null(avals_out)) {
+      out_vals <- Map(function(val, aval) nv_tensor_from_promise(val, ambiguous = aval$ambiguous), out_vals, avals_out)
+    } else {
+      out_vals <- lapply(out_vals, nv_tensor_from_promise)
     }
     unflatten(out_node, out_vals)
   }
@@ -82,7 +106,8 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
     class(in_tree) <- c("ListNode", "Node")
     cache_hit <- cache$get(list(in_tree, avals_in, platform))
     if (!is.null(cache_hit)) {
-      return(call_xla(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat, cache_hit[[4]]))
+      call_fn <- if (async) call_xla_async else call_xla
+      return(call_fn(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat, cache_hit[[4]]))
     }
     desc <- local_descriptor()
     graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = avals_in, in_tree = in_tree)
@@ -113,7 +138,8 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
     program <- pjrt_program(src = src, format = "mlir")
     exec <- pjrt_compile(program, client = pjrt::pjrt_client(platform))
     cache$set(list(in_tree, avals_in, platform), list(exec, out_tree, const_tensors, avals_out))
-    call_xla(exec, out_tree, const_tensors, args_flat, is_static_flat, avals_out)
+    call_fn <- if (async) call_xla_async else call_xla
+    call_fn(exec, out_tree, const_tensors, args_flat, is_static_flat, avals_out)
   }
   formals(f_jit) <- formals2(f)
   f_jit

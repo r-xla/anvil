@@ -62,13 +62,33 @@ is_anvil_tensor <- function(x) {
   inherits(x, "AnvilTensor")
 }
 
+# Extract buffer without blocking (buffer is valid immediately even in promise)
+get_buffer <- function(x) {
+  tensor <- x$tensor
+  if (inherits(tensor, "PJRTBufferPromise")) {
+    tensor$buffer
+  } else {
+    tensor
+  }
+}
+
+# Block until tensor is ready, return buffer
+await_tensor <- function(x) {
+  tensor <- x$tensor
+  if (inherits(tensor, "PJRTBufferPromise")) {
+    pjrt::value(tensor)
+  } else {
+    tensor
+  }
+}
+
 #' Get the underlying PJRT buffer from an AnvilTensor or pass through other values
 #' @param x An AnvilTensor or any other value
 #' @return The underlying PJRT buffer if x is an AnvilTensor, otherwise x unchanged
 #' @keywords internal
 unwrap_if_tensor <- function(x) {
   if (is_anvil_tensor(x)) {
-    x$tensor
+    await_tensor(x)
   } else {
     x
   }
@@ -81,9 +101,18 @@ ensure_nv_tensor <- function(x, ambiguous = FALSE) {
     }
     return(x)
   }
-  assert_class(x, "PJRTBuffer")
+  if (!inherits(x, "PJRTBuffer") && !inherits(x, "PJRTBufferPromise")) {
+    cli_abort("x must be a PJRTBuffer or PJRTBufferPromise, not {.cls {class(x)}}")
+  }
   structure(
     list(tensor = x, ambiguous = ambiguous),
+    class = "AnvilTensor"
+  )
+}
+
+nv_tensor_from_promise <- function(promise, ambiguous = FALSE) {
+  structure(
+    list(tensor = promise, ambiguous = ambiguous),
     class = "AnvilTensor"
   )
 }
@@ -120,7 +149,7 @@ nv_aten <- function(dtype, shape, ambiguous = FALSE) {
 
 #' @export
 dtype.AnvilTensor <- function(x, ...) {
-  as_dtype(as.character(pjrt::elt_type(x$tensor)))
+  as_dtype(as.character(pjrt::elt_type(get_buffer(x))))
 }
 
 #' @title Get Ambiguity of a Tensor
@@ -146,28 +175,28 @@ ambiguous.AbstractTensor <- function(x, ...) {
 
 #' @export
 shape.AnvilTensor <- function(x, ...) {
-  tengen::shape(x$tensor)
+  tengen::shape(get_buffer(x))
 }
 
 #' @export
 as_array.AnvilTensor <- function(x, ...) {
-  tengen::as_array(x$tensor)
+  tengen::as_array(await_tensor(x))
 }
 
 #' @export
 as_raw.AnvilTensor <- function(x, ...) {
-  tengen::as_raw(x$tensor)
+  tengen::as_raw(await_tensor(x))
 }
 
 #' @method ndims AnvilTensor
 #' @export
 ndims.AnvilTensor <- function(x, ...) {
-  tengen::ndims(x$tensor)
+  tengen::ndims(get_buffer(x))
 }
 
 #' @export
 platform.AnvilTensor <- function(x, ...) {
-  pjrt::platform(x$tensor)
+  pjrt::platform(get_buffer(x))
 }
 
 #' @title Abstract Tensor Class
@@ -448,7 +477,7 @@ print.AnvilTensor <- function(x, header = TRUE, ...) {
   dtype_str <- paste0(as.character(dtype(x)), if (x$ambiguous) "?")
   footer <- sprintf("[ %s%s{%s} ]", toupper(platform(x)), dtype_str, paste0(shape(x), collapse = ","))
 
-  print(x$tensor, header = FALSE, footer = footer)
+  print(await_tensor(x), header = FALSE, footer = footer)
   invisible(x)
 }
 

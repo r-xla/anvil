@@ -5,12 +5,12 @@
 
 #' @export
 hlo_scalar.AnvilTensor <- function(value, ..., func = NULL) {
-  stablehlo::hlo_scalar(value$tensor, ..., func = func)
+  stablehlo::hlo_scalar(await_tensor(value), ..., func = func)
 }
 
 #' @export
 hlo_tensor.AnvilTensor <- function(value, ..., func = NULL) {
-  stablehlo::hlo_tensor(value$tensor, ..., func = func)
+  stablehlo::hlo_tensor(await_tensor(value), ..., func = func)
 }
 
 #' @title HloEnv
