@@ -205,6 +205,14 @@ test_that("Only constants in group generics", {
   expect_equal(f(), nv_scalar(3))
 })
 
+test_that("donate: must be formal args of f", {
+  expect_error(jit(function(x) x, donate = "y"), "subset of")
+})
+
+test_that("donate: cannot also be static", {
+  expect_error(jit(function(x, y) x, donate = "x", static = "x"), "donate.*static")
+})
+
 test_that("donate: no aliasing with type mismatch", {
   skip_if(!is_cpu()) # might get a segfault on other platforms
   f <- jit(function(x) x, donate = "x")
