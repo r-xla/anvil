@@ -7,6 +7,11 @@ test_that("tensor", {
   expect_equal(as_array(x), array(1:4, c(4, 1)))
 })
 
+test_that("device returns the pjrt device", {
+  x <- nv_tensor(1, device = "cpu")
+  expect_true(device(x) == pjrt::as_pjrt_device("cpu"))
+})
+
 test_that("nv_scalar", {
   x <- nv_scalar(1L, dtype = "f32", device = "cpu")
   x

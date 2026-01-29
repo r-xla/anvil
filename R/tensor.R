@@ -170,6 +170,11 @@ platform.AnvilTensor <- function(x, ...) {
   pjrt::platform(x$tensor)
 }
 
+#' @export
+device.AnvilTensor <- function(x, ...) {
+  device(x$tensor)
+}
+
 #' @title Abstract Tensor Class
 #' @description
 #' Abstract representation of a tensor with a (possibly ambiguous) dtype and shape, but no concrete data.
