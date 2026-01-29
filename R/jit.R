@@ -19,7 +19,8 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
   cache <- xlamisc::LRUCache$new(cache_size)
   assert_subset(static, formalArgs2(f))
   assert_subset(donate, formalArgs2(f))
-  if (length(common <- intersect(donate, static))) {
+  # fmt: skip
+  if (length(common <- intersect(donate, static))) { # nolint
     cli_abort("{.val {common}} cannot be both in {.arg donate} and {.arg static}.")
   }
   assert_string(device, null.ok = TRUE)
