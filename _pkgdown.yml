@@ -207,6 +207,7 @@ reference:
       - value_and_gradient
       - transform_gradient
       - jit
+      - xla
       - jit_eval
       - stablehlo
 

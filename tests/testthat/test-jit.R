@@ -256,6 +256,14 @@ test_that("jit_eval does not modify calling environment", {
   expect_equal(x, nv_tensor(1:2))
 })
 
+test_that("xla: basic test", {
+  f_add <- function(x, y) x + y
+  args <- list(x = nv_aten("f32", c()), y = nv_aten("f32", c()))
+  f_compiled <- xla(f_add, args = args)
+  result <- f_compiled(nv_scalar(1, dtype = "f32"), nv_scalar(2, dtype = "f32"))
+  expect_equal(result, nv_scalar(3, dtype = "f32"))
+})
+
 test_that("hash for cache depends on in_tree (#122)", {
   f <- jit(\(...) {
     args <- list(...)
