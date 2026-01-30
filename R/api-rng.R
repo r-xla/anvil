@@ -104,7 +104,7 @@ nv_runif <- function(
   )
 
   # Replace values <= 0 with smallest_step
-  U <- nv_select(le_zero, smallest_step, U)
+  U <- nv_ifelse(le_zero, smallest_step, U)
 
   # expand to range
   U <- nv_mul(U, .range)

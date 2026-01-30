@@ -189,7 +189,7 @@ test_that("p_select", {
   p <- nv_tensor(c(TRUE, FALSE, TRUE, FALSE), dtype = "pred")
   a <- nv_tensor(as.integer(c(1, 2, 3, 4)), dtype = "i32")
   b <- nv_tensor(as.integer(c(10, 20, 30, 40)), dtype = "i32")
-  out <- jit(nvl_select)(p, a, b)
+  out <- jit(nvl_ifelse)(p, a, b)
   pt <- torch::torch_tensor(as_array(p), dtype = torch::torch_bool())
   at <- torch::torch_tensor(as_array(a), dtype = torch::torch_int32())
   bt <- torch::torch_tensor(as_array(b), dtype = torch::torch_int32())

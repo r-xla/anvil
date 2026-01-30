@@ -464,7 +464,7 @@ test_that("p_select", {
   b_torch <- torch::torch_tensor(b_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
   f_anvil <- function(a, b) {
-    out <- nvl_select(x_anvil, a, b)
+    out <- nvl_ifelse(x_anvil, a, b)
     nv_reduce_sum(out, dims = 1:2, drop = TRUE)
   }
   grads <- jit(gradient(f_anvil))(a_anvil, b_anvil)

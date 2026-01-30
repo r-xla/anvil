@@ -188,7 +188,7 @@ reference:
     contents:
       - nv_if
       - nv_while
-      - nv_select
+      - nv_ifelse
 
   - title: Random number generation
     desc: Functions for generating random numbers

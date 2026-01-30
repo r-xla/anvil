@@ -348,8 +348,8 @@ p_select[["backward"]] <- function(inputs, outputs, grads, .required) {
 
   list(
     if (.required[[1L]]) cli_abort("Predicate cannot be differentiated"),
-    if (.required[[2L]]) nvl_select(pred, grad, zero),
-    if (.required[[3L]]) nvl_select(nvl_not(pred), grad, zero)
+    if (.required[[2L]]) nvl_ifelse(pred, grad, zero),
+    if (.required[[3L]]) nvl_ifelse(nvl_not(pred), grad, zero)
   )
 }
 
@@ -874,7 +874,7 @@ p_scatter[["backward"]] <- function(
           unique_indices = FALSE
         )
         mask <- nvl_eq(update_ids, gathered_ids)
-        nvl_select(mask, grad_at_positions, zeros_like(grad_at_positions, FALSE))
+        nvl_ifelse(mask, grad_at_positions, zeros_like(grad_at_positions, FALSE))
       }
     }
   )
