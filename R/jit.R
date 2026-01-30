@@ -18,6 +18,11 @@
 jit <- function(f, static = character(), cache_size = 100L, donate = character(), device = NULL) {
   cache <- xlamisc::LRUCache$new(cache_size)
   assert_subset(static, formalArgs2(f))
+  assert_subset(donate, formalArgs2(f))
+  # fmt: skip
+  if (length(common <- intersect(donate, static))) { # nolint
+    cli_abort("{.val {common}} cannot be both in {.arg donate} and {.arg static}.")
+  }
   assert_string(device, null.ok = TRUE)
 
   call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat, ambiguous_out = NULL) {
