@@ -38,6 +38,7 @@
 <url><loc>https://r-xla.github.io/anvil/reference/at2vt.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/build_tree.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/common_dtype.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/compile_to_xla.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/debug_box.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/dot-current_descriptor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/eq_type.html</loc></url>
@@ -72,6 +73,7 @@
 <url><loc>https://r-xla.github.io/anvil/reference/nv_ge.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_gt.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_if.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nv_ifelse.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_iota.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_is_finite.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_le.html</loc></url>
@@ -103,7 +105,6 @@
 <url><loc>https://r-xla.github.io/anvil/reference/nv_round.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_rsqrt.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_runif.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/reference/nv_select.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_seq.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_serialization.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_shift_left.html</loc></url>
@@ -146,6 +147,7 @@
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_ge.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_gt.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_if.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nvl_ifelse.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_iota.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_is_finite.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_le.html</loc></url>
@@ -177,7 +179,6 @@
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_round.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_rsqrt.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_scatter.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/reference/nvl_select.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_shift_left.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_shift_right_arithmetic.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_shift_right_logical.html</loc></url>
@@ -207,5 +208,6 @@
 <url><loc>https://r-xla.github.io/anvil/reference/unflatten.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/unwrap_if_tensor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/vt2at.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/xla.html</loc></url>
 </urlset>
 

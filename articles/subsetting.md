@@ -21,7 +21,7 @@ would be unknown (what’s the size of `a:b` where `a` and `b` are
 unknown?). Boolean masks are not supported, because the output shape
 depends on the data, which is not known at compile time. If you want to
 modify tensors based on a mask, see
-[`nv_select()`](https://r-xla.github.io/anvil/reference/nv_select.md).
+[`nv_ifelse()`](https://r-xla.github.io/anvil/reference/nv_ifelse.md).
 Negative indexing (e.g., `x[-1]` to exclude elements) is currently also
 not supported. For static values, this will throw an error, for dynamic
 values, it will be clamped to the valid range. If you are missing a

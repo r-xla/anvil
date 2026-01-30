@@ -1,11 +1,11 @@
-# Select
+# Ifelse
 
 return values from true_value and false_value conditioned on pred
 
 ## Usage
 
 ``` r
-nv_select(pred, true_value, false_value)
+nv_ifelse(pred, true_value, false_value)
 ```
 
 ## Arguments

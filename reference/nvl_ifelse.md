@@ -1,11 +1,11 @@
-# Primitive Select
+# Primitive Ifelse
 
 Selects elements based on a predicate.
 
 ## Usage
 
 ``` r
-nvl_select(pred, true_value, false_value)
+nvl_ifelse(pred, true_value, false_value)
 ```
 
 ## Arguments

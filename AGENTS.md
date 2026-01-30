@@ -110,3 +110,7 @@ the tensorish inputs, so they are not accidentally embedded into the
 sub-graphdescriptor. This can happen in R, because the evaluation of
 promises in function calls is delayed until they are actually needed,
 which causes hard-to-debug errors.
+
+## Pkgdown
+
+When adding a new exported function, ensure it’s in `_pkgdown.yml` file.

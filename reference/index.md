@@ -234,8 +234,8 @@ Control flow operations
 - [`nv_if()`](https://r-xla.github.io/anvil/reference/nv_if.md) : If
 - [`nv_while()`](https://r-xla.github.io/anvil/reference/nv_while.md) :
   While
-- [`nv_select()`](https://r-xla.github.io/anvil/reference/nv_select.md)
-  : Select
+- [`nv_ifelse()`](https://r-xla.github.io/anvil/reference/nv_ifelse.md)
+  : Ifelse
 
 ## Random number generation
 
@@ -266,6 +266,8 @@ Code transformations
   : Transform a graph to its gradient
 - [`jit()`](https://r-xla.github.io/anvil/reference/jit.md) : JIT
   compile a function
+- [`xla()`](https://r-xla.github.io/anvil/reference/xla.md) : Compile a
+  function to an XLA executable and wrap it as an R function
 - [`jit_eval()`](https://r-xla.github.io/anvil/reference/jit_eval.md) :
   Jit an Evaluate an Expression
 - [`stablehlo()`](https://r-xla.github.io/anvil/reference/stablehlo.md)
@@ -415,6 +417,8 @@ Low-level primitive operations (nvl\_\* functions)
   Primitive Greater Than
 - [`nvl_if()`](https://r-xla.github.io/anvil/reference/nvl_if.md) :
   Primitive If
+- [`nvl_ifelse()`](https://r-xla.github.io/anvil/reference/nvl_ifelse.md)
+  : Primitive Ifelse
 - [`nvl_iota()`](https://r-xla.github.io/anvil/reference/nvl_iota.md) :
   Primitive Iota
 - [`nvl_is_finite()`](https://r-xla.github.io/anvil/reference/nvl_is_finite.md)
@@ -477,8 +481,6 @@ Low-level primitive operations (nvl\_\* functions)
   : Primitive Reciprocal Square Root
 - [`nvl_scatter()`](https://r-xla.github.io/anvil/reference/nvl_scatter.md)
   : Primitive Scatter
-- [`nvl_select()`](https://r-xla.github.io/anvil/reference/nvl_select.md)
-  : Primitive Select
 - [`nvl_shift_left()`](https://r-xla.github.io/anvil/reference/nvl_shift_left.md)
   : Primitive Shift Left
 - [`nvl_shift_right_arithmetic()`](https://r-xla.github.io/anvil/reference/nvl_shift_right_arithmetic.md)
