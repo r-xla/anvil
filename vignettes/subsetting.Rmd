@@ -21,7 +21,7 @@ We start by listing possible subsets and whether they support dynamic values (te
 
 Ranges cannot have dynamic values, because then the size of the subset would be unknown (what's the size of `a:b` where `a` and `b` are unknown?).
 Boolean masks are not supported, because the output shape depends on the data, which is not known at compile time.
-If you want to modify tensors based on a mask, see `nv_select()`.
+If you want to modify tensors based on a mask, see `nv_ifelse()`.
 Negative indexing (e.g., `x[-1]` to exclude elements) is currently also not supported.
 For static values, this will throw an error, for dynamic values, it will be clamped to the valid range.
 If you are missing a feature, please open an issue on GitHub.

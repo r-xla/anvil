@@ -1067,7 +1067,7 @@ nvl_convert <- function(operand, dtype, ambiguous = FALSE) {
 
 
 p_select <- AnvilPrimitive("select")
-#' @title Primitive Select
+#' @title Primitive Ifelse
 #' @description
 #' Selects elements based on a predicate.
 #' @param pred ([`tensorish`])\cr
@@ -1078,7 +1078,7 @@ p_select <- AnvilPrimitive("select")
 #'   Value when pred is false.
 #' @return [`tensorish`]
 #' @export
-nvl_select <- function(pred, true_value, false_value) {
+nvl_ifelse <- function(pred, true_value, false_value) {
   infer_fn <- function(pred, true_value, false_value) {
     both_ambiguous <- true_value$ambiguous && false_value$ambiguous
     out <- stablehlo::infer_types_select(

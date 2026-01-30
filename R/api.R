@@ -263,7 +263,7 @@ nv_static_slice <- nvl_static_slice
 #' @export
 nv_print <- nvl_print
 
-#' @title Select
+#' @title Ifelse
 #' @description
 #' return values from true_value and false_value conditioned on pred
 #' @param pred condition
@@ -271,7 +271,7 @@ nv_print <- nvl_print
 #' @param false_value on false
 #' @return [`tensorish`]
 #' @export
-nv_select <- nvl_select
+nv_ifelse <- nvl_ifelse
 
 ## Binary ops ------------------------------------------------------------------
 
