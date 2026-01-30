@@ -116,8 +116,14 @@ test_that("multiple returns", {
   )
 })
 
-test_that("calling jit on jit", {
-  # TODO: (Not sure what we want here)
+test_that("jitted function has class JitFunction", {
+  f_jit <- jit(function(x) x)
+  expect_s3_class(f_jit, "JitFunction")
+})
+
+test_that("calling jit on jit errors", {
+  f_jit <- jit(function(x) x)
+  expect_error(jit(f_jit)(nv_tensor(1)), "must not be a jitted function")
 })
 
 test_that("keeps argument names", {

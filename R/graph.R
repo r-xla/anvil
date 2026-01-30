@@ -493,6 +493,9 @@ trace_fn <- function(
   args_flat = NULL,
   in_tree = NULL
 ) {
+  if (inherits(f, "JitFunction")) {
+    cli_abort("{.arg f} must not be a jitted function.")
+  }
   if (is.null(args)) {
     if (is.null(args_flat) || is.null(in_tree)) {
       cli_abort("args or args_flat and in_tree must be provided")
