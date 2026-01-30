@@ -116,6 +116,7 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
     call_xla(exec, out_tree, const_tensors, args_flat, is_static_flat, avals_out)
   }
   formals(f_jit) <- formals2(f)
+  class(f_jit) <- "JitFunction"
   f_jit
 }
 
