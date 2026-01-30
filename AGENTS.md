@@ -91,3 +91,7 @@ Other accessors are currently not available.
 
 Whenever we are combining non-standard evaluation (NSE) with tracing of sub-graphs, we need to `force()` the tensorish inputs, so they are not accidentally embedded into the sub-graphdescriptor.
 This can happen in R, because the evaluation of promises in function calls is delayed until they are actually needed, which causes hard-to-debug errors.
+
+## Pkgdown
+
+When adding a new exported function, ensure it's in `_pkgdown.yml` file.
