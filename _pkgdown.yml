@@ -206,6 +206,7 @@ reference:
       - gradient
       - value_and_gradient
       - transform_gradient
+      - graph_to_quickr_function
       - jit
       - xla
       - jit_eval
