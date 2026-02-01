@@ -14,7 +14,7 @@ graph_desc_add(
 )
 }
 \arguments{
-\item{prim}{(\code{\link{Primitive}})\cr
+\item{prim}{(\code{\link{AnvilPrimitive}})\cr
 The primitive to add.}
 
 \item{args}{(\code{list} of \code{\link{GraphNode}})\cr

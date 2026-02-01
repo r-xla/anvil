@@ -1,12 +1,13 @@
 #' @include api.R
 
-ops_impl <- function(e1, e2) {
+#' @export
+Ops.AnvilBox <- function(e1, e2) {
   switch(
     .Generic, # nolint
     "+" = nv_add(e1, e2),
     "-" = {
       if (missing(e2)) {
-        nv_neg(e1)
+        nv_negate(e1)
       } else {
         nv_sub(e1, e2)
       }
@@ -26,30 +27,22 @@ ops_impl <- function(e1, e2) {
   )
 }
 
-#' @method Ops anvil::Box
 #' @export
-`Ops.anvil::Box` <- ops_impl
+Ops.AnvilTensor <- Ops.AnvilBox
 
-#' @method Ops AnvilTensor
 #' @export
-Ops.AnvilTensor <- ops_impl
-
-matrix_ops_impl <- function(x, y) {
+matrixOps.AnvilBox <- function(x, y) {
   switch(
     .Generic, # nolint
     "%*%" = nv_matmul(x, y)
   )
 }
 
-#' @method matrixOps anvil::Box
 #' @export
-`matrixOps.anvil::Box` <- matrix_ops_impl
+matrixOps.AnvilTensor <- matrixOps.AnvilBox
 
-#' @method matrixOps AnvilTensor
 #' @export
-matrixOps.AnvilTensor <- matrix_ops_impl
-
-math_impl <- function(x, ...) {
+Math.AnvilBox <- function(x, ...) {
   switch(
     .Generic, # nolint
     "abs" = nv_abs(x),
@@ -68,15 +61,11 @@ math_impl <- function(x, ...) {
   )
 }
 
-#' @method Math anvil::Box
 #' @export
-`Math.anvil::Box` <- math_impl
+Math.AnvilTensor <- Math.AnvilBox
 
-#' @method Math AnvilTensor
 #' @export
-Math.AnvilTensor <- math_impl
-
-math2_impl <- function(x, digits, ...) {
+Math2.AnvilBox <- function(x, digits, ...) {
   method <- list(...)$method
   switch(
     .Generic, # nolint
@@ -90,16 +79,12 @@ math2_impl <- function(x, digits, ...) {
   )
 }
 
-#' @method Math2 anvil::Box
 #' @export
-`Math2.anvil::Box` <- math2_impl
+Math2.AnvilTensor <- Math2.AnvilBox
 
-#' @method Math2 AnvilTensor
+
 #' @export
-Math2.AnvilTensor <- math2_impl
-
-
-summary_impl <- function(..., na.rm) {
+Summary.AnvilBox <- function(..., na.rm) {
   if (...length() != 1L) {
     cli_abort("Currently only one argument is supported for Summary group generic")
   }
@@ -118,25 +103,16 @@ summary_impl <- function(..., na.rm) {
   )
 }
 
-#' @method Summary anvil::Box
 #' @export
-`Summary.anvil::Box` <- summary_impl
+Summary.AnvilTensor <- Summary.AnvilBox
 
-#' @method Summary AnvilTensor
 #' @export
-Summary.AnvilTensor <- summary_impl
-
-mean_impl <- function(x, ...) {
+mean.AnvilBox <- function(x, ...) {
   nv_reduce_mean(x, dims = seq_along(shape(x)), drop = TRUE)
 }
 
-#' @method mean anvil::Box
 #' @export
-`mean.anvil::Box` <- mean_impl
-
-#' @method mean AnvilTensor
-#' @export
-mean.AnvilTensor <- mean_impl
+mean.AnvilTensor <- mean.AnvilBox
 
 # if we don't give it the name nv_transpose, pkgdown thinks t.anvil is a package
 
@@ -149,13 +125,31 @@ mean.AnvilTensor <- mean_impl
 #'   Permutation of dimensions. If `NULL` (default), reverses the dimensions.
 #' @return [`nv_tensor`]
 #' @export
-#' @method t anvil::Box
-`t.anvil::Box` <- function(x) {
+t.AnvilBox <- function(x) {
   nv_transpose(x)
 }
 
-#' @method t AnvilTensor
 #' @export
-t.AnvilTensor <- function(x) {
-  nv_transpose(x)
+t.AnvilTensor <- t.AnvilBox
+
+#' @rdname nv_subset
+#' @export
+`[.AnvilBox` <- function(x, ...) {
+  quos <- rlang::enquos(...)
+  rlang::inject(nv_subset(x, !!!quos))
 }
+
+#' @rdname nv_subset
+#' @export
+`[.AnvilTensor` <- `[.AnvilBox`
+
+#' @rdname nv_subset_assign
+#' @export
+`[<-.AnvilBox` <- function(x, ..., value) {
+  quos <- rlang::enquos(...)
+  rlang::inject(nv_subset_assign(x, !!!quos, value = value))
+}
+
+#' @rdname nv_subset_assign
+#' @export
+`[<-.AnvilTensor` <- `[<-.AnvilBox`

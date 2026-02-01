@@ -24,11 +24,13 @@ test_that("jit: a constant", {
     nv_scalar(3)
   )
   x <- nv_scalar(2)
-  # the constant is now saved in f_jit, so new x is not foundj
+  # the constant is now saved in f_jit, so new x is not found
+  cache_size(f_jit)
   expect_equal(
     f_jit(nv_scalar(2)),
     nv_scalar(3)
   )
+  cache_size(f_jit)
 })
 
 test_that("jit basic test", {
@@ -114,8 +116,14 @@ test_that("multiple returns", {
   )
 })
 
-test_that("calling jit on jit", {
-  # TODO: (Not sure what we want here)
+test_that("jitted function has class JitFunction", {
+  f_jit <- jit(function(x) x)
+  expect_s3_class(f_jit, "JitFunction")
+})
+
+test_that("calling jit on jit errors", {
+  f_jit <- jit(function(x) x)
+  expect_error(jit(f_jit)(nv_tensor(1)), "must not be a jitted function")
 })
 
 test_that("keeps argument names", {
@@ -169,6 +177,7 @@ test_that("can mark arguments as static ", {
       }
     },
     static = "add_one"
+    # TODO: Better error message ...
   )
   expect_equal(f(nv_tensor(1), TRUE), nv_tensor(2))
   expect_equal(f(nv_tensor(1), FALSE), nv_tensor(1))
@@ -202,6 +211,14 @@ test_that("Only constants in group generics", {
   expect_equal(f(), nv_scalar(3))
 })
 
+test_that("donate: must be formal args of f", {
+  expect_error(jit(function(x) x, donate = "y"), "subset of")
+})
+
+test_that("donate: cannot also be static", {
+  expect_error(jit(function(x, y) x, donate = "x", static = "x"), "donate.*static")
+})
+
 test_that("donate: no aliasing with type mismatch", {
   skip_if(!is_cpu()) # might get a segfault on other platforms
   f <- jit(function(x) x, donate = "x")
@@ -213,7 +230,7 @@ test_that("donate: no aliasing with type mismatch", {
 test_that("... works (#19)", {
   expect_equal(
     jit(sum)(nv_tensor(1:10)),
-    nv_scalar(55L)
+    nv_scalar(55L, dtype = "i32")
   )
 
   f <- function(..., a) {
@@ -221,19 +238,48 @@ test_that("... works (#19)", {
   }
   expect_equal(
     jit(f)(a = nv_scalar(1L), nv_tensor(1:10)),
-    nv_scalar(56L)
+    nv_scalar(56L, dtype = "i32")
   )
 })
 
-test_that("error message when passing invalid input", {
-  expect_error(jit(nv_tan)(1L), "Expected anvil tensor, but got")
-})
-
 test_that("good error message when passing AbstractTensors", {
-  expect_error(jit(nv_neg)(nv_aten("f32", c(2, 2))), "Expected anvil tensor, but got")
+  expect_error(jit(nv_negate)(nv_aten("f32", c(2, 2))), "Expected AnvilTensor")
 })
 
 test_that("jit: respects device argument", {
   f <- jit(function() 1, device = "cpu")
   expect_equal(f(), nv_scalar(1, device = "cpu"))
+})
+
+test_that("literals are not converted to scalar tensors", {
+  f <- jit(nv_sine)
+  expect_error(f(1), "Expected AnvilTensor")
+})
+
+test_that("jit_eval does not modify calling environment", {
+  x <- nv_tensor(1:2)
+  jit_eval({
+    x <- nv_tensor(3:4)
+  })
+  expect_equal(x, nv_tensor(1:2))
+})
+
+test_that("xla: basic test", {
+  f_add <- function(x, y) x + y
+  args <- list(x = nv_aten("f32", c()), y = nv_aten("f32", c()))
+  f_compiled <- xla(f_add, args = args)
+  result <- f_compiled(nv_scalar(1, dtype = "f32"), nv_scalar(2, dtype = "f32"))
+  expect_equal(result, nv_scalar(3, dtype = "f32"))
+})
+
+test_that("hash for cache depends on in_tree (#122)", {
+  f <- jit(\(...) {
+    args <- list(...)
+    args[[1]][[1L]][[1L]]
+  })
+  expect_equal(cache_size(f), 0L)
+  expect_equal(f(list(list(nv_scalar(1L)), nv_scalar(2L))), nv_scalar(1L))
+  expect_equal(cache_size(f), 1L)
+  expect_equal(f(list(list(nv_scalar(1L), nv_scalar(2L)))), nv_scalar(1L))
+  expect_equal(cache_size(f), 2L)
 })

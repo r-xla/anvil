@@ -3,5 +3,5 @@
     Code
       p
     Output
-      <Primitive:abc>
+      <AnvilPrimitive:abc>
 

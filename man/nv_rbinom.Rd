@@ -10,8 +10,8 @@ nv_rbinom(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32")
 \item{shape}{(\code{integer()})\cr
 Shape.}
 
-\item{initial_state}{([\code{ui64[2]}][tensorish])\cr
-RNG state.}
+\item{initial_state}{(\code{\link{tensorish}})\cr
+RNG state (\code{ui64[2]}).}
 
 \item{n}{(\code{integer(1)})\cr
 Number of trials. Default is 1 (Bernoulli).}

@@ -21,7 +21,7 @@ Imports:
     methods,
     pjrt,
     rlang,
-    S7,
+    safetensors (>= 0.2.0),
     stablehlo,
     tengen,
     withr,
@@ -56,6 +56,7 @@ Collate:
     'api-generics.R'
     'api-rng.R'
     'jit.R'
+    'api-subset.R'
     'api-utilities.R'
     'asserts.R'
     'backward.R'
@@ -63,7 +64,7 @@ Collate:
     'tensor.R'
     'debug.R'
     'flatten.R'
-    'mut.R'
+    'graph-passes.R'
     'graph.R'
     'graph-print.R'
     'promotion.R'
@@ -73,5 +74,6 @@ Collate:
     'reexports.R'
     'rules-backward.R'
     'rules-stablehlo.R'
+    'serialize.R'
     'stablehlo.R'
     'zzz.R'

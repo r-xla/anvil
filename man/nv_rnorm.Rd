@@ -10,8 +10,8 @@ nv_rnorm(shape, initial_state, dtype = "f32", mu = 0, sigma = 1)
 \item{shape}{(\code{integer()})\cr
 Shape.}
 
-\item{initial_state}{([\code{ui64[2]}][tensorish])\cr
-RNG state.}
+\item{initial_state}{(\code{\link{tensorish}})\cr
+RNG state (\code{ui64[2]}).}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}

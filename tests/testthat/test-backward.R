@@ -58,7 +58,10 @@ test_that("nested inputs", {
   f <- jit(gradient(function(x) {
     nvl_mul(x[[1]][[1]], x[[1]][[1]])
   }))
-  expect_equal(f(list(list(nv_scalar(1))))[[1L]], list(list(nv_scalar(2))))
+  expect_equal(
+    f(list(list(nv_scalar(1)))),
+    list(x = list(list(nv_scalar(2))))
+  )
 })
 
 test_that("no nested outpus", {
@@ -70,7 +73,7 @@ test_that("constants work (scalar)", {
   f <- jit(gradient(function(x) {
     nvl_mul(x, nv_scalar(2))
   }))
-  expect_equal(f(nv_scalar(1))[[1L]], nv_scalar(2))
+  expect_equal(f(nv_scalar(1)), list(x = nv_scalar(2.0)))
 })
 
 test_that("broadcasting works", {
@@ -84,11 +87,14 @@ test_that("second order gradient (scalar)", {
     nvl_mul(x, x)
   }
   fg2 <- jit(gradient(\(x) gradient(f)(x)[[1L]]))
-  expect_equal(fg2(nv_scalar(1)), list(x = nv_scalar(2)))
+  expect_equal(
+    fg2(nv_scalar(1)),
+    list(x = nv_scalar(2.0))
+  )
 })
 
 test_that("neg works", {
-  g <- jit(gradient(nvl_neg))
+  g <- jit(gradient(nvl_negate))
   expect_equal(g(nv_scalar(1))[[1L]], nv_scalar(-1))
 })
 
@@ -96,11 +102,8 @@ test_that("names for grad: primitive", {
   g <- jit(gradient(`*`))
   expect_equal(formalArgs2(g), c("e1", "e2"))
   expect_equal(
-    list(
-      e1 = nv_scalar(1),
-      e2 = nv_scalar(2)
-    ),
-    g(nv_scalar(2), nv_scalar(1))
+    g(nv_scalar(2), nv_scalar(1)),
+    list(e1 = nv_scalar(1.0), e2 = nv_scalar(2.0))
   )
 })
 
@@ -110,13 +113,8 @@ test_that("names for grad: function", {
   }
   g <- jit(gradient(f))
   expect_equal(formals(g), formals(f))
-  expect_equal(
-    list(
-      e1 = nv_scalar(1),
-      e2 = nv_scalar(2)
-    ),
-    g(nv_scalar(2), nv_scalar(1))
-  )
+  result <- g(nv_scalar(2), nv_scalar(1))
+  expect_equal(result, list(e1 = nv_scalar(1.0), e2 = nv_scalar(2.0)))
 })
 
 # New tests for selective gradients (wrt)
@@ -144,10 +142,6 @@ test_that("partial gradient simple", {
 #  expect_null(out[[3L]])
 #})
 #
-#test_that("wrt nested inputs", {
-#  # TODO:
-#})
-#
 
 #test_that("pullback", {
 #  fbwd <- jit(pullback(nv_add, lhs = nv_scalar(1.0), rhs = nv_scalar(2.0), wrt = "lhs"))
@@ -171,7 +165,10 @@ test_that("gradients are present even if they don't influence the output", {
     z <- nv_mul(x, x)
     return(y)
   }))
-  expect_equal(g2(nv_scalar(1), nv_scalar(1)), list(x = nv_scalar(0), y = nv_scalar(1)))
+  expect_equal(
+    g2(nv_scalar(1), nv_scalar(1)),
+    list(x = nv_scalar(0.0), y = nv_scalar(1.0))
+  )
 })
 
 test_that("wrt non-existent argument", {
@@ -211,4 +208,70 @@ test_that("select backward works for constant predicate", {
   g <- jit(gradient(f, wrt = "x"))
   out <- g(nv_scalar(2.0, dtype = "f64"))
   expect_equal(out$x, nv_scalar(1.0, dtype = "f64"))
+})
+
+test_that("wrt for non-tensor input: gradient", {
+  expect_snapshot(error = TRUE, {
+    g <- gradient(nv_round, wrt = "method")
+    g(nv_scalar(1), method = "nearest_even")
+  })
+})
+
+test_that("wrt for non-tensor input: value_and_gradient", {
+  expect_snapshot(error = TRUE, {
+    g <- value_and_gradient(nv_round, wrt = "method")
+    g(nv_scalar(1), method = "nearest_even")
+  })
+})
+
+test_that("wrt for nested non-tensor input: gradient", {
+  f <- function(x) {
+    nvl_mul(x[[1]], x[[2]])
+  }
+  expect_snapshot(error = TRUE, {
+    g <- gradient(f, wrt = "x")
+    g(x = list(nv_scalar(1), 2L))
+  })
+})
+
+test_that("wrt for nested non-tensor input: value_and_gradient", {
+  f <- function(x) {
+    nvl_mul(x[[1]], x[[2]])
+  }
+  expect_snapshot(error = TRUE, {
+    g <- value_and_gradient(f, wrt = "x")
+    g(x = list(nv_scalar(1), 2L))
+  })
+})
+
+test_that("can only compute gradient w.r.t. float tensors", {
+  expect_snapshot(error = TRUE, {
+    gradient(nv_floor, wrt = "operand")(nv_scalar(1L))
+  })
+})
+
+test_that("can differentiate through integer/bool functions", {
+  f <- function(x) {
+    x1 <- nv_convert(x, "i32")
+    x2 <- nvl_popcnt(x1)
+    x3 <- nv_convert(x2, "f32")
+    mean(x3)
+  }
+  g <- jit(gradient(f))
+  expect_equal(
+    g(nv_tensor(c(1, 2))),
+    list(x = nv_tensor(c(0, 0)))
+  )
+})
+
+test_that("Can propagate ambiguous float32 through integer/bool functions", {
+  f <- function(x) {
+    x1 <- nv_convert(x, "i32")
+    x2 <- nv_convert(x1, "i1")
+    x3 <- nvl_not(x1)
+    x4 <- nv_convert(x3, "f32")
+    mean(x4)
+  }
+  grad <- jit(gradient(f))
+  grad(nv_scalar(1))
 })

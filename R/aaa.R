@@ -7,14 +7,14 @@ NULL
 #' @importFrom stablehlo local_func hlo_input hlo_return hlo_tensor hlo_scalar
 #' @importFrom stablehlo UnsignedType TensorType
 #' @import checkmate
-#' @import S7
 #' @import tengen
 #' @importFrom pjrt pjrt_buffer pjrt_scalar pjrt_execute pjrt_compile pjrt_program elt_type
 #' @importFrom utils gethash hashtab maphash numhash
-#' @importFrom xlamisc list_of seq_len0 seq_along0
+#' @importFrom xlamisc seq_len0 seq_along0
 #' @importFrom utils head tail
 #' @importFrom cli cli_abort
 #' @importFrom methods Math2 formalArgs
+#' @importFrom utils capture.output
 ## usethis namespace: end
 NULL
 
@@ -24,8 +24,4 @@ globals$interpretation_rules <- c("stablehlo", "backward")
 globals[["DESCRIPTOR_STASH"]] <- list()
 globals[["CURRENT_DESCRIPTOR"]] <- NULL
 
-# FIXME(hack): mut<GraphValue> is used as defult of the constructor in GraphDescriptor (print.default(GraphBox))
-# should fix this
-utils::globalVariables(c("globals", "mut<GraphValue>", "mut<GraphDescriptor>"))
-
-class_hashtab <- S7::new_S3_class("hashtab")
+utils::globalVariables(c("globals"))

@@ -4,7 +4,7 @@
 \alias{GraphBox}
 \title{Graph Box}
 \usage{
-GraphBox(gnode = `mut<GraphValue>`(), desc = `mut<GraphDescriptor>`())
+GraphBox(gnode, desc)
 }
 \arguments{
 \item{gnode}{(\code{\link{GraphNode}})\cr
@@ -12,6 +12,9 @@ The node.}
 
 \item{desc}{(\code{\link{GraphDescriptor}})\cr
 The descriptor of the graph.}
+}
+\value{
+(\code{GraphBox})
 }
 \description{
 Box that represents a node in a \code{\link{GraphDescriptor}}.

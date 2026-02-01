@@ -443,6 +443,383 @@ test_that("p_pad backward with interior padding", {
   expect_equal(g4[[1L]], nv_tensor(matrix(rep(1, 6), 2, 3), dtype = "f64"))
 })
 
+test_that("p_dynamic_slice backward", {
+  # Gradient should scatter the incoming gradient back to the operand position
+  f <- jit(gradient(
+    function(x, start_i) {
+      sliced <- nvl_dynamic_slice(x, start_i, slice_sizes = 3L)
+      nv_reduce_sum(sliced, dims = 1L, drop = TRUE)
+    },
+    wrt = "x"
+  ))
+
+  x <- nv_tensor(1:10, dtype = "f64", shape = 10L)
+  start_i <- nv_scalar(3L, dtype = "i32")
+  grad <- f(x, start_i)[[1L]]
+
+  # Gradient is 1 at positions 3, 4, 5 (the sliced region) and 0 elsewhere
+  expect_equal(grad, nv_tensor(c(0, 0, 1, 1, 1, 0, 0, 0, 0, 0), dtype = "f64", shape = 10L))
+
+  # Test 2D case
+  f2d <- jit(gradient(
+    function(x, start_i, start_j) {
+      sliced <- nvl_dynamic_slice(x, start_i, start_j, slice_sizes = c(2L, 2L))
+      nv_reduce_sum(sliced, dims = c(1L, 2L), drop = TRUE)
+    },
+    wrt = "x"
+  ))
+
+  x2d <- nv_tensor(1:12, dtype = "f64", shape = c(3L, 4L))
+  start_i <- nv_scalar(2L, dtype = "i32")
+  start_j <- nv_scalar(2L, dtype = "i32")
+  grad2d <- f2d(x2d, start_i, start_j)[[1L]]
+
+  # Gradient is 1 at positions (2,2), (2,3), (3,2), (3,3) and 0 elsewhere
+  expect_equal(grad2d, nv_tensor(c(0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0), dtype = "f64", shape = c(3, 4)))
+})
+
+test_that("p_dynamic_slice backward with out-of-bounds", {
+  # Test that gradient works correctly when indices are clamped
+  f <- jit(gradient(
+    function(x, start_i) {
+      sliced <- nvl_dynamic_slice(x, start_i, slice_sizes = c(5L))
+      nv_reduce_sum(sliced, dims = 1L, drop = TRUE)
+    },
+    wrt = "x"
+  ))
+
+  x <- nv_tensor(1:10, dtype = "f64", shape = 10L)
+  # Request slice at position 8 with size 5, will be clamped to position 6
+  start_i <- nv_scalar(8L, dtype = "i32")
+  grad <- f(x, start_i)[[1L]]
+
+  # Gradient should be 1 at positions 6-10 (the actual sliced region after clamping)
+  expect_equal(grad, nv_tensor(c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1), dtype = "f64", shape = 10L))
+})
+
+test_that("p_dynamic_update_slice backward", {
+  # Test gradient for operand (zero out the updated region)
+  f_operand <- jit(gradient(
+    function(x, update, start_i) {
+      updated <- nvl_dynamic_update_slice(x, update, start_i)
+      nv_reduce_sum(updated, dims = 1L, drop = TRUE)
+    },
+    wrt = "x"
+  ))
+
+  x <- nv_tensor(1:10, dtype = "f64", shape = 10L)
+  update <- nv_tensor(c(100, 200, 300), dtype = "f64", shape = 3L)
+  start_i <- nv_scalar(4L, dtype = "i32")
+  grad_x <- f_operand(x, update, start_i)[[1L]]
+
+  # Gradient is 0 at positions 4, 5, 6 (the updated region) and 1 elsewhere
+  expect_equal(grad_x, nv_tensor(c(1, 1, 1, 0, 0, 0, 1, 1, 1, 1), dtype = "f64", shape = 10L))
+
+  # Test gradient for update (slice out the corresponding region from grad)
+  f_update <- jit(gradient(
+    function(x, update, start_i) {
+      updated <- nvl_dynamic_update_slice(x, update, start_i)
+      nv_reduce_sum(updated, dims = 1L, drop = TRUE)
+    },
+    wrt = "update"
+  ))
+
+  grad_update <- f_update(x, update, start_i)[[1L]]
+
+  # Gradient for update is all 1s (since we sum everything)
+  expect_equal(grad_update, nv_tensor(c(1, 1, 1), dtype = "f64", shape = 3L))
+})
+
+test_that("p_dynamic_update_slice backward with out-of-bounds", {
+  # Test that gradient works correctly when indices are clamped
+  f_operand <- jit(gradient(
+    function(x, update, start_i) {
+      updated <- nvl_dynamic_update_slice(x, update, start_i)
+      nv_reduce_sum(updated, dims = 1L, drop = TRUE)
+    },
+    wrt = "x"
+  ))
+
+  x <- nv_tensor(1:10, dtype = "f64", shape = 10L)
+  update <- nv_tensor(c(100, 200, 300, 400, 500), dtype = "f64", shape = 5L)
+  # Request update at position 8 with size 5, will be clamped to position 6
+  start_i <- nv_scalar(8L, dtype = "i32")
+  grad_x <- f_operand(x, update, start_i)[[1L]]
+
+  # Gradient is 0 at positions 6-10 (the actual updated region after clamping) and 1 elsewhere
+  expect_equal(grad_x, nv_tensor(c(1, 1, 1, 1, 1, 0, 0, 0, 0, 0), dtype = "f64", shape = 10L))
+
+  # Test gradient for update with out-of-bounds
+  f_update <- jit(gradient(
+    function(x, update, start_i) {
+      updated <- nvl_dynamic_update_slice(x, update, start_i)
+      nv_reduce_sum(updated, dims = 1L, drop = TRUE)
+    },
+    wrt = "update"
+  ))
+
+  grad_update <- f_update(x, update, start_i)[[1L]]
+
+  # Gradient for update is all 1s (since we sum everything from the clamped position)
+  expect_equal(grad_update, nv_tensor(c(1, 1, 1, 1, 1), dtype = "f64", shape = 5L))
+})
+
+test_that("p_is_finite", {
+  x <- nv_tensor(c(1.0, Inf, -Inf, NaN, 0.5, -0.5), dtype = "f32")
+  verify_zero_grad_unary(nvl_is_finite, x)
+})
+
+test_that("p_popcnt", {
+  x <- nv_tensor(c(0L, 1L, 3L, 7L, 15L), dtype = "i32")
+  verify_zero_grad_unary(nvl_popcnt, x)
+})
+
+describe("shift ops", {
+  it("p_shift_left returns zero gradients", {
+    x <- nv_tensor(c(1L, 2L, 4L, 8L), dtype = "i32")
+    y <- nv_tensor(c(1L, 1L, 1L, 1L), dtype = "i32")
+    verify_zero_grad_binary(nvl_shift_left, x, y)
+  })
+
+  it("p_shift_right_arithmetic returns zero gradients", {
+    x <- nv_tensor(c(8L, 16L, 32L, -8L), dtype = "i32")
+    y <- nv_tensor(c(1L, 2L, 1L, 1L), dtype = "i32")
+    verify_zero_grad_binary(nvl_shift_right_arithmetic, x, y)
+  })
+
+  it("p_shift_right_logical returns zero gradients", {
+    x <- nv_tensor(c(8L, 16L, 32L, 64L), dtype = "i32")
+    y <- nv_tensor(c(1L, 2L, 1L, 2L), dtype = "i32")
+    verify_zero_grad_binary(nvl_shift_right_logical, x, y)
+  })
+})
+
+test_that("p_bitcast_convert", {
+  x <- nv_tensor(c(1.0, 2.0, 3.0, 4.0), dtype = "f32")
+  verify_zero_grad_unary(nvl_bitcast_convert, x, f_wrapper = function(x) {
+    out <- nvl_bitcast_convert(x, dtype = "i32")
+    out <- nv_convert(out, "f32")
+    nv_reduce_sum(out, dims = 1L, drop = TRUE)
+  })
+})
+
+describe("boolean ops", {
+  expected_zeros <- nv_tensor(rep(0, 4), dtype = "f32")
+
+  verify_bool_binary <- function(nvl_fn) {
+    x <- nv_tensor(c(1, 0, 0, 1))
+    y <- nv_tensor(c(1, 1, 0, 0))
+    f <- function(x, y) {
+      x <- nv_convert(x, "i1")
+      y <- nv_convert(y, "i1")
+      out <- nvl_fn(x, y)
+      nv_convert(out, "f32")
+    }
+    verify_zero_grad_binary(f, x, y)
+  }
+
+  verify_bool_reduce <- function(nvl_fn) {
+    x <- nv_tensor(c(1.0, 1.0, 0.0, 0.0), dtype = "f32")
+    f <- function(x) {
+      x_pred <- nv_convert(x, "i1")
+      out <- nvl_fn(x_pred, dims = 1L, drop = TRUE)
+      nv_convert(out, "f32")
+    }
+    grads <- jit(gradient(f))(x)
+    testthat::expect_equal(grads[[1L]], expected_zeros)
+  }
+
+  it("p_and returns zero gradients", {
+    verify_bool_binary(nvl_and)
+  })
+  it("p_or returns zero gradients", {
+    verify_bool_binary(nvl_or)
+  })
+  it("p_xor returns zero gradients", {
+    verify_bool_binary(nvl_xor)
+  })
+  it("p_not returns zero gradients", {
+    x <- nv_tensor(c(1.0, 0.0, 1.0, 0.0), dtype = "f32")
+    f <- function(x) {
+      x_pred <- nv_convert(x, "i1")
+      out <- nvl_not(x_pred)
+      out <- nv_convert(out, "f32")
+      nv_reduce_sum(out, dims = 1L, drop = TRUE)
+    }
+    verify_zero_grad_unary(nvl_not, x, f_wrapper = f)
+  })
+  it("p_reduce_all returns zero gradients", {
+    verify_bool_reduce(nvl_reduce_all)
+  })
+  it("p_reduce_any returns zero gradients", {
+    verify_bool_reduce(nvl_reduce_any)
+  })
+})
+
+describe("p_gather", {
+  it("out of bounds", {
+    out <- jit_eval({
+      x <- nv_tensor(1:4, "f32")
+      g1 <- gradient(function(x) {
+        mean(x[nv_tensor(5:7)]^2)
+      })(x)
+      g2 <- gradient(function(x) {
+        mean(x[list(4, 4, 4, 4)]^2)
+      })(x)
+      list(g1[[1L]], g2[[1L]])
+    })
+    expect_equal(out[[1]], out[[2]])
+  })
+
+  it("clamps out-of-range indices for gradient (matches forward clamping)", {
+    # Index 10 on a size-4 tensor is clamped to 4 on forward pass.
+    # The backward gradient should flow to the clamped position (4), not 10.
+    f <- jit(gradient(function(x) {
+      idx <- nv_scalar(10L, dtype = "i32")
+      nv_subset(x, idx)
+    }))
+    x <- nv_tensor(c(1, 2, 3, 4), dtype = "f64")
+    grads <- f(x)
+    expect_equal(grads[[1L]], nv_tensor(c(0, 0, 0, 1), dtype = "f64"))
+  })
+})
+
+describe("p_scatter", {
+  it("non-unique indices: only winning update gets gradient", {
+    update <- nv_tensor(1:10, dtype = "f32")
+    f <- function(update) {
+      x <- nv_tensor(0)
+      x[as.list(rep(1L, 10))] <- update
+      mean(x^2)
+    }
+    g <- jit(\(update) {
+      out <- value_and_gradient(f)(update)
+      out[[1L]] <- sqrt(out[[1L]]) * 2
+      out[[2]][[1]] <- sum(out[[2]][[1]]) # just get rid of the zeros
+      out
+    })(update)
+    expect_equal(g[[1]], g[[2]][[1]])
+  })
+
+  it("errors for non-simple replacement update_computation", {
+    expect_error(
+      jit(gradient(function(x) {
+        out <- nvl_scatter(
+          input = x,
+          scatter_indices = nv_tensor(2L, dtype = "i64"),
+          update = nv_scalar(10, dtype = "f32"),
+          update_window_dims = integer(),
+          inserted_window_dims = 1L,
+          input_batching_dims = integer(),
+          scatter_indices_batching_dims = integer(),
+          scatter_dims_to_operand_dims = 1L,
+          index_vector_dim = 1L,
+          indices_are_sorted = TRUE,
+          unique_indices = TRUE,
+          update_computation = function(old, new) nvl_add(old, new)
+        )
+        nv_reduce_sum(out, dims = 1L, drop = TRUE)
+      }))(nv_tensor(1:5, dtype = "f32")),
+      "simple replacement"
+    )
+  })
+})
+
+describe("gather/scatter backward via subset operators", {
+  check <- function(shape, ...) {
+    quos <- rlang::enquos(...)
+
+    spec <- parse_subset_specs(quos, shape)
+    value_shape <- subset_spec_to_shape(spec)
+
+    x <- nv_tensor(rnorm(prod(shape)), dtype = "f32", shape = shape)
+    value <- nv_tensor(rnorm(prod(value_shape)), dtype = "f32", shape = value_shape)
+
+    # Check gather
+    f1 <- function(x, value) {
+      out <- gradient(function(x, value) {
+        y <- rlang::inject(nv_subset(x, !!!quos))
+        mean(y * value)
+      })(x, value)
+    }
+
+    f2 <- function(x_subset, value) {
+      x_subset <- rlang::inject(nv_subset(x, !!!quos))
+      out <- gradient(\(x, value) {
+        mean(x_subset * value)
+      })(x_subset, value)
+      g1 <- nv_fill(0, shape = shape)
+      out[[1L]] <- rlang::inject(nv_subset_assign(g1, !!!quos, value = out[[1]]))
+      out
+    }
+
+    expect_equal(
+      jit(f1)(x, value),
+      jit(f2)(x, value)
+    )
+
+    # Check scatter
+    f3 <- function(x, value) {
+      gradient(function(x, value) {
+        y <- nv_subset_assign(x, !!!quos, value = value)
+        sum(y^2)
+      })(x, value)
+    }
+
+    f4 <- function(x, value) {
+      x2 <- rlang::inject(nv_subset_assign(x, !!!quos, value = 0))
+      gradient(\(x, value) {
+        sum(x^2) + sum(value^2)
+      })(x2, value)
+    }
+
+    expect_equal(
+      jit(f3)(x, value),
+      jit(f4)(x, value)
+    )
+  }
+
+  it("1D: single element", {
+    check(c(8L), 3L)
+  })
+
+  it("1D: range", {
+    check(c(10L), 2:5)
+  })
+
+  it("1D: full", {
+    check(c(6L), )
+  })
+
+  it("1D: gather", {
+    check(c(10L), list(1, 4, 7))
+  })
+
+  it("2D: single in both dims (scalar gather)", {
+    check(c(4L, 5L), 2L, 3L)
+  })
+
+  it("2D: range + full", {
+    check(c(6L, 4L), 2:4, )
+  })
+
+  it("2D: single in first, range in second", {
+    check(c(5L, 8L), 3L, 2:6)
+  })
+
+  it("2D: gather in first, full second", {
+    check(c(6L, 4L), list(1, 3, 5), )
+  })
+
+  it("2D: gather in both dims", {
+    check(c(5L, 6L), list(1, 3), list(2, 4))
+  })
+
+  it("3D: range, single, full", {
+    check(c(4L, 5L, 3L), 1:3, 2L, )
+  })
+})
+
 if (nzchar(system.file(package = "torch"))) {
   source(
     system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"),

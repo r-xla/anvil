@@ -4,7 +4,7 @@
 \alias{nv_iota}
 \title{Iota}
 \usage{
-nv_iota(dim, dtype, shape)
+nv_iota(dim, dtype, shape, start = 1L, ambiguous = FALSE)
 }
 \arguments{
 \item{dim}{(\code{integer(1)})\cr
@@ -15,6 +15,14 @@ Data type.}
 
 \item{shape}{(\code{integer()})\cr
 Shape.}
+
+\item{start}{(\code{integer(1)})\cr
+Starting value.}
+
+\item{ambiguous}{(\code{logical(1)})\cr
+Whether the type is ambiguous.
+Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
+See the vignette "Type Promotion" for more details.}
 }
 \value{
 \code{\link{tensorish}}

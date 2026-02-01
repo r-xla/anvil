@@ -10,8 +10,8 @@ test_that("p_mul", {
   expect_jit_torch_binary(nvl_mul, torch::torch_mul, c(2, 3), c(2, 3))
 })
 
-test_that("p_neg", {
-  expect_jit_torch_unary(nvl_neg, torch::torch_neg, c(2, 3))
+test_that("p_negate", {
+  expect_jit_torch_unary(nvl_negate, torch::torch_neg, c(2, 3))
 })
 
 test_that("p_div", {
@@ -178,7 +178,7 @@ test_that("p_broadcast_in_dim", {
   input_shape <- c(2L, 3L)
   target_shape <- c(4L, 2L, 3L)
   bdims <- c(2L, 3L)
-  x <- array(generate_test_data(input_shape, dtype = "f32"), input_shape)
+  x <- generate_test_data(input_shape, dtype = "f32")
   f <- jit(function(a) nvl_broadcast_in_dim(a, target_shape, bdims))
   out_nv <- f(nv_tensor(x))
   out_th <- torch::torch_tensor(x)$unsqueeze(1)$expand(target_shape)
@@ -189,7 +189,7 @@ test_that("p_select", {
   p <- nv_tensor(c(TRUE, FALSE, TRUE, FALSE), dtype = "pred")
   a <- nv_tensor(as.integer(c(1, 2, 3, 4)), dtype = "i32")
   b <- nv_tensor(as.integer(c(10, 20, 30, 40)), dtype = "i32")
-  out <- jit(nvl_select)(p, a, b)
+  out <- jit(nvl_ifelse)(p, a, b)
   pt <- torch::torch_tensor(as_array(p), dtype = torch::torch_bool())
   at <- torch::torch_tensor(as_array(a), dtype = torch::torch_int32())
   bt <- torch::torch_tensor(as_array(b), dtype = torch::torch_int32())

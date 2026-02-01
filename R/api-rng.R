@@ -1,11 +1,4 @@
-#' @title Internal: Random Unit Uniform Numbers
-#' @name nv_runif
-#' @description
-#' generate random uniform numbers in [0, 1)
-#' @param initial_state state seed
-#' @param dtype (`character(1)` | [`TensorDataType`])\cr
-#'   Output dtype either "f32" or "f64"
-#' @template param_shape
+#' @rdname nv_runif
 nv_unif_rand <- function(
   shape,
   initial_state,
@@ -24,7 +17,7 @@ nv_unif_rand <- function(
     initial_state = initial_state,
     "THREE_FRY",
     paste0("ui", sub("f(\\d+)", "\\1", dtype)),
-    shape_out = shape
+    shape = shape
   )
 
   # shift value: 9 for f32, 11 for f64
@@ -62,6 +55,7 @@ nv_unif_rand <- function(
 #' @title Sample from a Uniform Distribution
 #' @description
 #' Sample from a uniform distribution in the open interval (lower, upper).
+#' Note that `nv_rand_unif()` generates values in [0, 1), while `nv_runif()` generates values in (lower, upper).
 #' @template param_initial_state
 #' @template param_dtype
 #' @template param_shape
@@ -110,7 +104,7 @@ nv_runif <- function(
   )
 
   # Replace values <= 0 with smallest_step
-  U <- nv_select(le_zero, smallest_step, U)
+  U <- nv_ifelse(le_zero, smallest_step, U)
 
   # expand to range
   U <- nv_mul(U, .range)
@@ -188,7 +182,7 @@ nv_rnorm <- function(shape, initial_state, dtype = "f32", mu = 0, sigma = 1) {
 
   # if n is uneven, only keep N(1,...,n), i.e. discard last entry of N
   if (n %% 2 == 1) {
-    N <- nv_slice(N, start_indices = 1L, limit_indices = n, strides = 1L)
+    N <- nv_static_slice(N, start_indices = 1L, limit_indices = n, strides = 1L)
   }
 
   # reshape N to match requested shape

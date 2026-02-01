@@ -53,7 +53,7 @@ devtools::check()
 
 ## Development Practices
 
-1. Use S7 (object-oriented system) for defining types and classes.
+1. Use S3 (object-oriented system) for defining types and classes.
 2. Follow the established pattern for adding new operations and types
 3. Add tests in `tests/testthat/`
 4. Document functions with roxygen2 comments
@@ -65,7 +65,9 @@ devtools::check()
    There, `grad` is the gradient of the terminal output with respect to the function's output and the function should return the gradient of the terminal output with respect to the inputs.
    The tests are in the file `insts/extra-tests/test-primitives-pullback-torch.R`
 
-## Style
+## Comments
+
+Only add comments if the code is not self-explanatory.
 
 * For length-1 vectors, don't use `c()`. For example, use `1L` instead of `c(1L)`.
 
@@ -84,3 +86,12 @@ API functions are prefixed by `nv_` and are defined in files like api.R or api-r
 Often, they wrap primitives, but make them more convenient to use.
 When accessing properties from `tensorish` values, use `shape_abstract`, `ndims_abstract`, and `dtype_abstract`.
 Other accessors are currently not available.
+
+## NSE and Tracing
+
+Whenever we are combining non-standard evaluation (NSE) with tracing of sub-graphs, we need to `force()` the tensorish inputs, so they are not accidentally embedded into the sub-graphdescriptor.
+This can happen in R, because the evaluation of promises in function calls is delayed until they are actually needed, which causes hard-to-debug errors.
+
+## Pkgdown
+
+When adding a new exported function, ensure it's in `_pkgdown.yml` file.

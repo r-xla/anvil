@@ -2,7 +2,7 @@ test_that("literals", {
   f <- function(x) {
     x * 1L
   }
-  graph <- trace_fn(f, list(x = nv_scalar(1)))
+  graph <- trace_fn(f, list(x = nv_scalar(1, dtype = "f32")))
   expect_snapshot(graph)
 
   # higher-dimensional literals
@@ -22,17 +22,17 @@ test_that("ambiguity is printed via ?", {
 })
 
 test_that("constants", {
-  y <- nv_scalar(1)
+  y <- nv_scalar(1, dtype = "f32")
   f <- function(x) {
     x + y
   }
-  graph <- trace_fn(f, list(x = nv_scalar(2)))
+  graph <- trace_fn(f, list(x = nv_scalar(2, dtype = "f32")))
   expect_snapshot(graph)
 })
 
 test_that("sub-graphs (if)", {
   f <- function(x) {
-    nv_if(x, nv_scalar(1), nv_scalar(2))
+    nv_if(x, nv_scalar(1, dtype = "f32"), nv_scalar(2, dtype = "f32"))
   }
   graph <- trace_fn(f, list(x = nv_scalar(TRUE)))
   expect_snapshot(graph)
@@ -40,11 +40,11 @@ test_that("sub-graphs (if)", {
 
 test_that("sub-graphs (while)", {
   f <- function(x) {
-    nv_while(list(i = nv_scalar(0)), \(i) i < x, \(i) {
-      list(i = i + nv_scalar(1))
+    nv_while(list(i = nv_scalar(0, dtype = "f32")), \(i) i < x, \(i) {
+      list(i = i + nv_scalar(1, dtype = "f32"))
     })
   }
-  graph <- trace_fn(f, list(x = nv_scalar(10)))
+  graph <- trace_fn(f, list(x = nv_scalar(10, dtype = "f32")))
   expect_snapshot(graph)
 })
 

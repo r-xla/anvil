@@ -12,14 +12,16 @@
 #'   Shape.
 #' @param dtype (character(1))\cr
 #'   Data type.
+#' @template param_ambiguous
+#' @return [`tensorish`]
 #' @export
-nv_fill <- function(value, shape, dtype = NULL) {
+nv_fill <- function(value, shape, dtype = NULL, ambiguous = FALSE) {
   dtype <- if (is.null(dtype)) {
     default_dtype(value)
   } else {
     as_dtype(dtype)
   }
-  nvl_fill(value, shape, dtype)
+  nvl_fill(value, shape, dtype, ambiguous)
 }
 
 
@@ -163,7 +165,11 @@ nv_broadcast_to <- function(operand, shape) {
 #' @return [`tensorish`]
 #' @export
 nv_convert <- function(operand, dtype) {
-  nvl_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
+  if (dtype_abstract(operand) != as_dtype(dtype)) {
+    nvl_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
+  } else {
+    operand
+  }
 }
 
 #' @rdname nv_transpose
@@ -183,7 +189,13 @@ nv_transpose <- function(x, permutation = NULL) {
 #'   The new shape.
 #' @return [`tensorish`]
 #' @export
-nv_reshape <- nvl_reshape
+nv_reshape <- function(operand, shape) {
+  if (!identical(shape_abstract(operand), shape)) {
+    nvl_reshape(operand, shape)
+  } else {
+    operand
+  }
+}
 
 #' @title Concatenate
 #' @description
@@ -191,9 +203,47 @@ nv_reshape <- nvl_reshape
 #' @param ... tensors
 #' @param dimension (`integer()`)\cr
 #'   The dimension to concatenate along to. Other dimensions must be the same.
+#'   If this is `NULL` (default), it assumes all ranks are at most 1 and the concatenation dimension is 1.
 #' @return [`tensorish`]
 #' @export
-nv_concatenate <- nvl_concatenate
+nv_concatenate <- function(..., dimension = NULL) {
+  args <- list(...)
+  args <- do.call(nv_promote_to_common, args)
+  shapes <- lapply(args, shape_abstract)
+  ranks <- lengths(shapes)
+  non_scalar_shapes <- shapes[ranks > 0L]
+  n_scalars <- sum(ranks == 0L)
+  assert_int(dimension, lower = 1L, upper = max(max(ranks), 1L), null.ok = max(ranks) <= 1L)
+  dimension <- dimension %??% 1L
+
+  non_scalar_shapes_without_dim <- lapply(non_scalar_shapes, \(shape) {
+    shape[-dimension]
+  })
+  if (length(non_scalar_shapes) && length(unique(non_scalar_shapes_without_dim)) != 1L) {
+    cli_abort(c(
+      "All non-scalar tensors must have the same shape (except for the concatenation dimension)",
+      x = "Got shapes {shapes2string(shapes)} and dimension {dimension}"
+    ))
+  }
+  size_out_dimension <- n_scalars + sum(vapply(non_scalar_shapes, \(shape) shape[dimension], integer(1L)))
+
+  out_shape <- if (length(non_scalar_shapes)) {
+    x <- non_scalar_shapes[[1L]]
+    x[dimension] <- size_out_dimension
+  } else {
+    n_scalars
+  }
+  out_shape_dim_is_one <- out_shape
+  out_shape_dim_is_one[dimension] <- 1L
+  args <- lapply(args, \(arg) {
+    if (ndims_abstract(arg) == 0L) {
+      nv_broadcast_to(arg, out_shape_dim_is_one)
+    } else {
+      arg
+    }
+  })
+  rlang::exec(nvl_concatenate, !!!args, dimension = dimension)
+}
 
 #' @title Slice
 #' @description
@@ -204,7 +254,7 @@ nv_concatenate <- nvl_concatenate
 #' @param strides stride size
 #' @return [`tensorish`]
 #' @export
-nv_slice <- nvl_slice
+nv_static_slice <- nvl_static_slice
 
 #' @title Print Tensor
 #' @description
@@ -213,7 +263,7 @@ nv_slice <- nvl_slice
 #' @export
 nv_print <- nvl_print
 
-#' @title Select
+#' @title Ifelse
 #' @description
 #' return values from true_value and false_value conditioned on pred
 #' @param pred condition
@@ -221,7 +271,7 @@ nv_print <- nvl_print
 #' @param false_value on false
 #' @return [`tensorish`]
 #' @export
-nv_select <- nvl_select
+nv_ifelse <- nvl_ifelse
 
 ## Binary ops ------------------------------------------------------------------
 
@@ -398,7 +448,7 @@ nv_bitcast_convert <- nvl_bitcast_convert
 #' @template param_operand
 #' @return [`tensorish`]
 #' @export
-nv_neg <- nvl_neg
+nv_negate <- nvl_negate
 
 #' @title Logical Not
 #' @description Element-wise logical NOT operation.
@@ -561,9 +611,27 @@ nv_reverse <- nvl_reverse
 #'   Dimension along which values increase.
 #' @template param_dtype
 #' @template param_shape
+#' @template param_ambiguous
+#' @param start (`integer(1)`)\cr
+#'   Starting value.
 #' @return [`tensorish`]
 #' @export
 nv_iota <- nvl_iota
+
+#' @title Sequence
+#' @description Creates a tensor with values increasing from start to end.
+#' @param start,end (`integer(1)`)\cr
+#'   Start and end values.
+#' @template param_dtype
+#' @template param_ambiguous
+#' @return [`tensorish`]
+#' @export
+nv_seq <- function(start, end, dtype = "i32", ambiguous = FALSE) {
+  assert_int(start)
+  assert_int(end)
+  assert(start <= end)
+  nv_iota(shape = end - start + 1, dtype = dtype, ambiguous = ambiguous, dim = 1L, start = start)
+}
 
 #' @title Pad
 #' @description Pads a tensor with a given padding value.

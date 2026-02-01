@@ -52,10 +52,24 @@ wrap_biv_torch <- function(.g, args_torch, shp) {
   }
 }
 
-verify_grad_uni_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = NULL, tol = 0, non_negative = FALSE) {
+verify_grad_uni_scalar <- function(
+  .f,
+  .g,
+  ndims = 0L,
+  dtypes = "f32",
+  args_f = NULL,
+  tol = 0,
+  non_negative = FALSE,
+  gen = NULL
+) {
   dtype <- sample(dtypes, 1L)
   shp <- integer()
-  operand <- generate_test_data(integer(), dtype, non_negative = non_negative)
+
+  if (is.null(gen)) {
+    operand <- generate_test_data(integer(), dtype, non_negative = non_negative)
+  } else {
+    operand <- gen(shp, dtype)
+  }
 
   operand_anvil <- nv_scalar(operand, dtype = dtype)
 
@@ -78,6 +92,8 @@ verify_grad_uni_scalar <- function(.f, .g, ndims = 0L, dtypes = "f32", args_f = 
   out <- .g_torch(operand_torch)
   out$backward(retrain_graph = TRUE)
 
+  expect_equal(to_abstract(grads_anvil[[1L]], TRUE), to_abstract(operand_anvil, TRUE))
+
   testthat::expect_equal(
     tengen::as_array(grads_anvil[[1L]]),
     as_array_torch(operand_torch$grad),
@@ -93,14 +109,20 @@ verify_grad_uni_tensor <- function(
   args_f = NULL,
   shape = NULL,
   tol = 0,
-  non_negative = FALSE
+  non_negative = FALSE,
+  gen = NULL
 ) {
   shp <- if (is.null(shape)) sample(1:3, ndims, replace = TRUE) else shape
   dtype <- sample(dtypes, 1L)
-  operand <- array(
-    generate_test_data(shp, dtype = dtype, non_negative = non_negative),
-    shp
-  )
+
+  if (is.null(gen)) {
+    operand <- array(
+      generate_test_data(shp, dtype = dtype, non_negative = non_negative),
+      shp
+    )
+  } else {
+    operand <- gen(shp, dtype)
+  }
 
   operand_anvil <- nv_tensor(operand, dtype = dtype)
 
@@ -120,6 +142,8 @@ verify_grad_uni_tensor <- function(
   grads_anvil <- jit(gradient(.f_anvil))(operand_anvil)
   .g_torch(operand_torch)$backward()
 
+  expect_equal(to_abstract(grads_anvil[[1L]], TRUE), to_abstract(operand_anvil, TRUE))
+
   testthat::expect_equal(
     tengen::as_array(grads_anvil[[1L]]),
     as_array_torch(operand_torch$grad),
@@ -134,7 +158,9 @@ verify_grad_biv_scalar <- function(
   dtypes = "f32",
   args_f = NULL,
   tol = 1e-5,
-  non_negative = list(FALSE, FALSE)
+  non_negative = list(FALSE, FALSE),
+  gen_lhs = NULL,
+  gen_rhs = NULL
 ) {
   dtype <- sample(dtypes, 1L)
   shp <- integer()
@@ -143,8 +169,16 @@ verify_grad_biv_scalar <- function(
     non_negative <- rep(non_negative, 2)
   }
 
-  lhs <- generate_test_data(integer(), dtype, non_negative = non_negative[[1]])
-  rhs <- generate_test_data(integer(), dtype, non_negative = non_negative[[2]])
+  if (is.null(gen_lhs)) {
+    lhs <- generate_test_data(integer(), dtype, non_negative = non_negative[[1]])
+  } else {
+    lhs <- gen_lhs(shp, dtype)
+  }
+  if (is.null(gen_rhs)) {
+    rhs <- generate_test_data(integer(), dtype, non_negative = non_negative[[2]])
+  } else {
+    rhs <- gen_rhs(shp, dtype)
+  }
 
   lhs_anvil <- nv_scalar(lhs, dtype = dtype)
   rhs_anvil <- nv_scalar(rhs, dtype = dtype)
@@ -170,6 +204,9 @@ verify_grad_biv_scalar <- function(
   out <- .g_torch(lhs_torch, rhs_torch)
   out$backward(retrain_graph = TRUE)
 
+  expect_equal(to_abstract(grads_anvil[[1L]], TRUE), to_abstract(lhs_anvil, TRUE))
+  expect_equal(to_abstract(grads_anvil[[2L]], TRUE), to_abstract(rhs_anvil, TRUE))
+
   testthat::expect_equal(
     tengen::as_array(grads_anvil[[1L]]),
     as_array_torch(lhs_torch$grad), # nolint
@@ -191,7 +228,9 @@ verify_grad_biv_tensor <- function(
   args_f = NULL,
   shape = NULL,
   tol = 0,
-  non_negative = list(FALSE, FALSE)
+  non_negative = list(FALSE, FALSE),
+  gen_lhs = NULL,
+  gen_rhs = NULL
 ) {
   # Prefer shapes without size-0 or size-1 axes to avoid backend broadcast edge-cases
   shp <- if (is.null(shape)) sample(1:3, ndims, replace = TRUE) else shape
@@ -201,14 +240,22 @@ verify_grad_biv_tensor <- function(
     non_negative <- rep(non_negative, 2)
   }
 
-  lhs <- array(
-    generate_test_data(shp, dtype = dtype, non_negative = non_negative[[1]]), # nolint
-    shp
-  )
-  rhs <- array(
-    generate_test_data(shp, dtype = dtype, non_negative = non_negative[[2]]), # nolint
-    shp
-  )
+  if (is.null(gen_lhs)) {
+    lhs <- array(
+      generate_test_data(shp, dtype = dtype, non_negative = non_negative[[1]]), # nolint
+      shp
+    )
+  } else {
+    lhs <- gen_lhs(shp, dtype)
+  }
+  if (is.null(gen_rhs)) {
+    rhs <- array(
+      generate_test_data(shp, dtype = dtype, non_negative = non_negative[[2]]), # nolint
+      shp
+    )
+  } else {
+    rhs <- gen_rhs(shp, dtype)
+  }
 
   lhs_anvil <- nv_tensor(lhs)
   rhs_anvil <- nv_tensor(rhs)
@@ -225,6 +272,9 @@ verify_grad_biv_tensor <- function(
 
   grads_anvil <- jit(gradient(.f_anvil))(lhs_anvil, rhs_anvil)
   .g_torch(lhs_torch, rhs_torch)$backward()
+
+  expect_equal(to_abstract(grads_anvil[[1L]], TRUE), to_abstract(lhs_anvil, TRUE))
+  expect_equal(to_abstract(grads_anvil[[2L]], TRUE), to_abstract(rhs_anvil, TRUE))
 
   testthat::expect_equal(
     tengen::as_array(grads_anvil[[1L]]),
@@ -246,9 +296,21 @@ verify_grad_biv <- function(
   dtypes = "f32",
   args_f = NULL,
   tol = 0,
-  non_negative = list(FALSE, FALSE)
+  non_negative = list(FALSE, FALSE),
+  gen_lhs = NULL,
+  gen_rhs = NULL
 ) {
-  verify_grad_biv_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol, non_negative = non_negative)
+  verify_grad_biv_scalar(
+    f,
+    g,
+    ndims = 0L,
+    dtypes = dtypes,
+    args_f = args_f,
+    tol = tol,
+    non_negative = non_negative,
+    gen_lhs = gen_lhs,
+    gen_rhs = gen_rhs
+  )
   verify_grad_biv_tensor(
     f,
     g,
@@ -256,7 +318,9 @@ verify_grad_biv <- function(
     dtypes = dtypes,
     args_f = args_f,
     tol = tol,
-    non_negative = non_negative
+    non_negative = non_negative,
+    gen_lhs = gen_lhs,
+    gen_rhs = gen_rhs
   )
 }
 
@@ -268,10 +332,20 @@ verify_grad_uni <- function(
   args_f = NULL,
   tol = 0,
   non_negative = FALSE,
-  skip_scalar = FALSE
+  skip_scalar = FALSE,
+  gen = NULL
 ) {
   if (!skip_scalar) {
-    verify_grad_uni_scalar(f, g, ndims = 0L, dtypes = dtypes, args_f = args_f, tol = tol, non_negative = non_negative)
+    verify_grad_uni_scalar(
+      f,
+      g,
+      ndims = 0L,
+      dtypes = dtypes,
+      args_f = args_f,
+      tol = tol,
+      non_negative = non_negative,
+      gen = gen
+    )
   }
   verify_grad_uni_tensor(
     f,
@@ -280,9 +354,11 @@ verify_grad_uni <- function(
     dtypes = dtypes,
     args_f = args_f,
     tol = tol,
-    non_negative = non_negative
+    non_negative = non_negative,
+    gen = gen
   )
 }
+
 
 test_that("p_add", {
   verify_grad_biv(nvl_add, torch::torch_add)
@@ -296,8 +372,8 @@ test_that("p_mul", {
   verify_grad_biv(nvl_mul, torch::torch_mul)
 })
 
-test_that("p_neg", {
-  verify_grad_uni(nvl_neg, torch::torch_neg)
+test_that("p_negate", {
+  verify_grad_uni(nvl_negate, torch::torch_neg)
 })
 
 test_that("p_exp", {
@@ -376,19 +452,19 @@ test_that("p_broadcast_in_dim", {
 
 test_that("p_select", {
   shp <- c(2L, 3L)
-  x_arr <- array(generate_test_data(shp, dtype = "pred"), shp)
+  x_arr <- generate_test_data(shp, dtype = "pred")
   x_anvil <- nv_tensor(x_arr, dtype = "pred")
   x_torch <- torch::torch_tensor(x_arr, dtype = torch::torch_bool())
 
-  a_arr <- array(generate_test_data(shp, dtype = "f32"), shp)
-  b_arr <- array(generate_test_data(shp, dtype = "f32"), shp)
+  a_arr <- generate_test_data(shp, dtype = "f32")
+  b_arr <- generate_test_data(shp, dtype = "f32")
   a_anvil <- nv_tensor(a_arr, dtype = "f32")
   b_anvil <- nv_tensor(b_arr, dtype = "f32")
   a_torch <- torch::torch_tensor(a_arr, requires_grad = TRUE, dtype = torch::torch_float32())
   b_torch <- torch::torch_tensor(b_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
   f_anvil <- function(a, b) {
-    out <- nvl_select(x_anvil, a, b)
+    out <- nvl_ifelse(x_anvil, a, b)
     nv_reduce_sum(out, dims = 1:2, drop = TRUE)
   }
   grads <- jit(gradient(f_anvil))(a_anvil, b_anvil)
@@ -554,5 +630,155 @@ test_that("p_reverse", {
     },
     tol = 1e-5,
     skip_scalar = TRUE
+  )
+})
+
+test_that("p_atan2", {
+  # Generator that avoids (0, 0) which is undefined
+  gen_nonzero <- function(shp, dtype) {
+    vals <- generate_test_data(shp, dtype = dtype)
+    # Ensure we don't have both values near zero
+    if (length(shp) == 0L) {
+      if (abs(vals) < 0.1) vals <- vals + sign(vals + 0.1) * 0.5
+    } else {
+      vals[abs(vals) < 0.1] <- vals[abs(vals) < 0.1] + 0.5
+    }
+    if (length(shp) == 0L) vals else array(vals, shp)
+  }
+
+  verify_grad_biv(
+    nvl_atan2,
+    torch::torch_atan2,
+    tol = 1e-5,
+    gen_lhs = gen_nonzero,
+    gen_rhs = gen_nonzero
+  )
+})
+
+test_that("p_concatenate", {
+  verify_grad_concatenate <- function(shapes, dimension = 2L, dtype = "f32", tol = 1e-5) {
+    n <- length(shapes)
+    arrs <- lapply(shapes, function(shp) generate_test_data(shp, dtype = dtype))
+    nvs <- lapply(arrs, function(arr) nv_tensor(arr, dtype = dtype))
+    ths <- lapply(arrs, function(arr) torch::torch_tensor(arr, requires_grad = TRUE))
+
+    f_nv <- function(...) {
+      args <- list(...)
+      out <- do.call(nvl_concatenate, c(args, list(dimension = dimension)))
+      nv_reduce_sum(out, dims = seq_len(ndims(out)), drop = TRUE)
+    }
+
+    grads_nv <- do.call(jit(gradient(f_nv)), nvs)
+
+    out_th <- torch::torch_cat(ths, dim = dimension)
+    torch::torch_sum(out_th)$backward()
+
+    for (i in seq_len(n)) {
+      testthat::expect_equal(
+        tengen::as_array(grads_nv[[i]]),
+        as_array_torch(ths[[i]]$grad),
+        tolerance = tol
+      )
+    }
+  }
+  verify_grad_concatenate(list(c(2L, 3L), c(2L, 4L)))
+  verify_grad_concatenate(list(c(2L, 2L), c(2L, 3L), c(2L, 1L)))
+  verify_grad_concatenate(list(c(1, 3), c(2, 3)), 1L)
+})
+
+test_that("p_reduce_prod", {
+  # Test with non-zero values to avoid division by zero in gradient
+  gen_nonzero <- function(shp, dtype) {
+    vals <- generate_test_data(shp, dtype = dtype)
+    # Shift values away from zero
+    if (length(shp) == 0L) {
+      if (abs(vals) < 0.5) vals <- vals + sign(vals + 0.1) * 1
+    } else {
+      vals[abs(vals) < 0.5] <- vals[abs(vals) < 0.5] + sign(vals[abs(vals) < 0.5] + 0.1) * 1
+    }
+    if (length(shp) == 0L) vals else array(vals, shp)
+  }
+
+  shp <- c(2L, 3L)
+  dtype <- "f32"
+
+  x_arr <- gen_nonzero(shp, dtype)
+  x_nv <- nv_tensor(x_arr, dtype = dtype)
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+
+  # Test reduce along one dimension
+  f_nv <- function(x) {
+    y <- nvl_reduce_prod(x, dims = 2L, drop = TRUE)
+    nv_reduce_sum(y, dims = 1L, drop = TRUE)
+  }
+
+  grads_nv <- jit(gradient(f_nv))(x_nv)
+
+  out_th <- torch::torch_prod(x_th, dim = 2, keepdim = FALSE)
+  torch::torch_sum(out_th)$backward()
+
+  expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
+})
+
+describe("p_static_slice", {
+  verify_slice_grad <- function(shp, start_indices, limit_indices, strides, torch_slice_fn) {
+    dtype <- "f32"
+    x_arr <- generate_test_data(shp, dtype = dtype)
+    x_nv <- nv_tensor(x_arr, dtype = dtype)
+    x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+
+    f_nv <- function(x) {
+      out <- nvl_static_slice(x, start_indices, limit_indices, strides)
+      nv_reduce_sum(out, dims = seq_len(ndims(out)), drop = TRUE)
+    }
+
+    grads_nv <- jit(gradient(f_nv))(x_nv)
+    out_th <- torch_slice_fn(x_th)
+    torch::torch_sum(out_th)$backward()
+
+    testthat::expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-5)
+  }
+
+  it("works with unit strides", {
+    verify_slice_grad(
+      c(4L, 5L),
+      c(2L, 2L),
+      c(4L, 4L),
+      c(1L, 1L),
+      \(x) x[2:4, 2:4]
+    )
+  })
+
+  it("works with non-unit strides", {
+    verify_slice_grad(
+      c(6L, 8L),
+      c(1L, 1L),
+      c(6L, 8L),
+      c(2L, 2L),
+      \(x) {
+        x[c(1, 3, 5), c(1, 3, 5, 7)]
+      }
+    )
+  })
+})
+
+test_that("p_remainder", {
+  # Generator that avoids zero divisors and values near discontinuities
+  gen_nonzero <- function(shp, dtype) {
+    vals <- generate_test_data(shp, dtype = dtype)
+    # Shift values away from zero to avoid division by zero
+    if (length(shp) == 0L) {
+      if (abs(vals) < 0.5) vals <- vals + sign(vals + 0.1) * 1
+    } else {
+      vals[abs(vals) < 0.5] <- vals[abs(vals) < 0.5] + sign(vals[abs(vals) < 0.5] + 0.1) * 1
+    }
+    if (length(shp) == 0L) vals else array(vals, shp)
+  }
+
+  verify_grad_biv(
+    nvl_remainder,
+    torch::torch_remainder,
+    tol = 1e-5,
+    gen_rhs = gen_nonzero # Avoid zero divisors
   )
 })

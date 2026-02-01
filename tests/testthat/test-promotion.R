@@ -10,7 +10,7 @@ test_that("ambiguity is propagated by binary ops", {
 
 test_that("ambiguity is propagated by unary ops", {
   f <- function(x) {
-    nv_neg(1L) + x
+    nv_negate(1L) + x
   }
   expect_equal(
     jit(f)(nv_scalar(2L, "i16")),
@@ -60,5 +60,5 @@ test_that("boolean is not ambiguous", {
     x * TRUE
   }
   graph <- trace_fn(f, list(x = nv_scalar(1L)))
-  expect_false(graph@calls[[1L]]@inputs[[1L]]@aval@ambiguous)
+  expect_false(graph$calls[[1L]]$inputs[[1L]]$aval$ambiguous)
 })

@@ -7,14 +7,14 @@
 transform_gradient(graph, wrt)
 }
 \arguments{
-\item{graph}{(\code{Graph})\cr
+\item{graph}{(\code{\link{AnvilGraph}})\cr
 The graph to transform.}
 
 \item{wrt}{(\code{character})\cr
 The names of the variables to compute the gradient with respect to.}
 }
 \value{
-A \code{\link{Graph}} object.
+An \code{\link{AnvilGraph}} object.
 }
 \description{
 Transform a graph to its gradient.

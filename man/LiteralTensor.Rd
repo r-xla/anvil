@@ -7,8 +7,8 @@
 LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
 }
 \arguments{
-\item{data}{(\code{numeric(1)} | \code{integer(1)} | \code{logical(1)})\cr
-The scalar value.}
+\item{data}{(\code{numeric(1)} | \code{integer(1)} | \code{logical(1)} | \code{\link{AnvilTensor}})\cr
+The scalar value or scalarish AnvilTensor (contains 1 element).}
 
 \item{shape}{(\code{\link[stablehlo:Shape]{stablehlo::Shape}} | \code{integer()})\cr
 The shape of the tensor.}
@@ -22,7 +22,8 @@ Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and 
 See the vignette "Type Promotion" for more details.}
 }
 \description{
-A \code{\link{AbstractTensor}} representing a tensor where the data is a R scalar literal (e.g., \code{1L}, \code{2.5}).
+A \code{\link{AbstractTensor}} representing a tensor where the data is a R scalar literal (e.g., \code{1L}, \code{2.5})
+or an \code{\link{AnvilTensor}}.
 Usually, their type is ambiguous, unless created via \code{\link{nv_fill}}.
 }
 \seealso{

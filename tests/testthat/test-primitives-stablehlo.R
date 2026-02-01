@@ -33,9 +33,9 @@ test_that("p_bitcast_convert", {
   expect_true(is.integer(as_array(out)))
 })
 
-test_that("p_slice", {
+test_that("p_static_slice", {
   f <- function() {
-    nv_slice(
+    nv_static_slice(
       nv_tensor(1:6, dtype = "ui64", shape = c(2, 3)),
       start_indices = c(1, 1),
       limit_indices = c(2, 2),
@@ -45,6 +45,65 @@ test_that("p_slice", {
   g <- jit(f)
   out <- g()
   expect_equal(as_array(out), matrix(c(1:4), nrow = 2))
+})
+
+test_that("p_dynamic_slice", {
+  # Basic dynamic slice with scalar indices
+  f <- function(start_i, start_j) {
+    x <- nv_tensor(1:12, dtype = "i32", shape = c(3, 4))
+    nvl_dynamic_slice(x, start_i, start_j, slice_sizes = c(2L, 2L))
+  }
+  g <- jit(f)
+  # Slice starting at (1, 1) should give [[1, 4], [2, 5]]
+  out <- g(nv_scalar(1L, dtype = "i32"), nv_scalar(1L, dtype = "i32"))
+  expect_equal(out, nv_tensor(c(1L, 2L, 4L, 5L), dtype = "i32", shape = c(2, 2)))
+
+  # Slice starting at (2, 2) should give [[5, 8], [6, 9]]
+  out <- g(nv_scalar(2L, dtype = "i32"), nv_scalar(2L, dtype = "i32"))
+  expect_equal(out, nv_tensor(c(5L, 6L, 8L, 9L), dtype = "i32", shape = c(2, 2)))
+
+  # 1D case
+  f1d <- function(start_i) {
+    x <- nv_tensor(1:10, dtype = "i32", shape = c(10))
+    nvl_dynamic_slice(x, start_i, slice_sizes = c(3L))
+  }
+  g1d <- jit(f1d)
+  out <- g1d(nv_scalar(3L, dtype = "i32"))
+  expect_equal(out, nv_tensor(c(3L, 4L, 5L), dtype = "i32", shape = 3L))
+})
+
+test_that("p_dynamic_update_slice", {
+  # Basic dynamic update slice with scalar indices
+  f <- function(start_i, start_j) {
+    x <- nv_tensor(1:12, dtype = "i32", shape = c(3, 4))
+    update <- nv_tensor(c(100L, 200L, 300L, 400L), dtype = "i32", shape = c(2, 2))
+    nvl_dynamic_update_slice(x, update, start_i, start_j)
+  }
+  g <- jit(f)
+
+  # Update at (1, 1) - top-left corner
+  out <- g(nv_scalar(1L, dtype = "i32"), nv_scalar(1L, dtype = "i32"))
+  expect_equal(
+    out,
+    nv_tensor(c(100L, 200L, 3L, 300L, 400L, 6L, 7L, 8L, 9L, 10L, 11L, 12L), dtype = "i32", shape = c(3, 4))
+  )
+
+  # Update at (2, 3) - bottom-right corner
+  out <- g(nv_scalar(2L, dtype = "i32"), nv_scalar(3L, dtype = "i32"))
+  expect_equal(
+    out,
+    nv_tensor(c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 100L, 200L, 10L, 300L, 400L), dtype = "i32", shape = c(3, 4))
+  )
+
+  # 1D case
+  f1d <- function(start_i) {
+    x <- nv_tensor(1:10, dtype = "i32", shape = c(10))
+    update <- nv_tensor(c(100L, 200L, 300L), dtype = "i32", shape = c(3))
+    nvl_dynamic_update_slice(x, update, start_i)
+  }
+  g1d <- jit(f1d)
+  out <- g1d(nv_scalar(4L, dtype = "i32"))
+  expect_equal(out, nv_tensor(c(1L, 2L, 3L, 100L, 200L, 300L, 7L, 8L, 9L, 10L), dtype = "i32", shape = 10L))
 })
 
 test_that("p_concatenate", {
@@ -170,10 +229,10 @@ test_that("p_reduce_all", {
 
 test_that("p_broadcast_in_dim", {
   x <- 1L
-  f <- jit(nvl_broadcast_in_dim, static = c("shape_out", "broadcast_dimensions"))
+  f <- jit(nvl_broadcast_in_dim, static = c("shape", "broadcast_dimensions"))
   expect_equal(
     f(nv_scalar(1L), c(1, 2), integer()),
-    nv_tensor(1L, shape = c(1, 2)),
+    nv_tensor(1L, shape = c(1, 2), ambiguous = TRUE),
     tolerance = 1e-5
   )
 })
@@ -196,156 +255,182 @@ test_that("p_transpose", {
   )
 })
 
-test_that("p_if: capture non-argument", {
-  f <- jit(function(pred, x) {
-    x1 <- nv_mul(x, x)
-    x2 <- nv_add(x, x)
-    nv_if(pred, x1, x2)
+describe("p_if", {
+  it("can capture non-arguments", {
+    f <- jit(function(pred, x) {
+      x1 <- nv_mul(x, x)
+      x2 <- nv_add(x, x)
+      nv_if(pred, x1, x2)
+    })
+    expect_equal(
+      f(nv_scalar(TRUE), nv_scalar(2)),
+      nv_scalar(4)
+    )
+    expect_equal(
+      f(nv_scalar(FALSE), nv_scalar(2)),
+      nv_scalar(4)
+    )
   })
-  f(nv_scalar(TRUE), nv_scalar(2))
+
+  it("works in simple example", {
+    # simple
+    f <- function(pred, x) nvl_if(pred, x, x * x)
+    fj <- jit(f)
+    expect_equal(fj(nv_scalar(TRUE), nv_scalar(2)), nv_scalar(2))
+    expect_equal(fj(nv_scalar(FALSE), nv_scalar(2)), nv_scalar(4))
+    graph <- trace_fn(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
+
+    graph <- trace_fn(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
+
+    f <- jit(function(pred, x) {
+      nvl_if(pred, list(list(x)), list(list(x * x)))
+    })
+    expect_equal(
+      f(nv_scalar(TRUE), nv_scalar(2)),
+      list(list(nv_scalar(2)))
+    )
+    expect_equal(
+      f(nv_scalar(FALSE), nv_scalar(2)),
+      list(list(nv_scalar(4)))
+    )
+
+    g <- jit(function(pred, x) {
+      nvl_if(pred, list(x[[1]]), list(x[[1]] * x[[1]]))
+    })
+    expect_equal(
+      g(nv_scalar(FALSE), list(nv_scalar(2))),
+      list(nv_scalar(4))
+    )
+  })
+
+  it("identical constants in both branches receive the same GraphValue", {
+    x <- nv_scalar(1)
+    f <- function(y) nvl_if(y, x, x)
+    graph <- trace_fn(f, list(y = nv_scalar(TRUE)))
+    fj <- jit(f)
+    expect_equal(fj(nv_scalar(TRUE)), nv_scalar(1))
+    expect_equal(fj(nv_scalar(FALSE)), nv_scalar(1))
+
+    g <- jit(function(pred) {
+      y <- nv_scalar(2)
+      nvl_if(pred, y, y * nv_scalar(3))
+    })
+    expect_equal(g(nv_scalar(TRUE)), nv_scalar(2))
+    expect_equal(g(nv_scalar(FALSE)), nv_scalar(6))
+  })
+
+  it("works with literals as predicate", {
+    expect_equal(jit_eval(nv_if(TRUE, 1, 2)), nv_scalar(1))
+  })
 })
 
-test_that("p_if", {
-  # simple
-  f <- function(pred, x) nvl_if(pred, x, x * x)
-  fj <- jit(f)
-  expect_equal(fj(nv_scalar(TRUE), nv_scalar(2)), nv_scalar(2))
-  expect_equal(fj(nv_scalar(FALSE), nv_scalar(2)), nv_scalar(4))
-  graph <- trace_fn(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
-
-  graph <- trace_fn(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
-
-  f <- jit(function(pred, x) {
-    nvl_if(pred, list(list(x)), list(list(x * x)))
-  })
-  expect_equal(
-    f(nv_scalar(TRUE), nv_scalar(2)),
-    list(list(nv_scalar(2)))
-  )
-  expect_equal(
-    f(nv_scalar(FALSE), nv_scalar(2)),
-    list(list(nv_scalar(4)))
-  )
-
-  g <- jit(function(pred, x) {
-    nvl_if(pred, list(x[[1]]), list(x[[1]] * x[[1]]))
-  })
-  expect_equal(
-    g(nv_scalar(FALSE), list(nv_scalar(2))),
-    list(nv_scalar(4))
-  )
-})
-
-test_that("p_if: identically constants in both branches receive the same GraphValue", {
-  x <- nv_scalar(1)
-  f <- function(y) nvl_if(y, x, x)
-  graph <- trace_fn(f, list(y = nv_scalar(TRUE)))
-  fj <- jit(f)
-  expect_equal(fj(nv_scalar(TRUE)), nv_scalar(1))
-  expect_equal(fj(nv_scalar(FALSE)), nv_scalar(1))
-
-  g <- jit(function(pred) {
-    y <- nv_scalar(2)
-    nvl_if(pred, y, y * nv_scalar(3))
-  })
-  expect_equal(g(nv_scalar(TRUE)), nv_scalar(2))
-  expect_equal(g(nv_scalar(FALSE)), nv_scalar(6))
-})
 
 # TODO: Continue here
-test_that("p_while: simple case", {
-  f <- jit(function(n) {
-    nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
-      i <- i + nv_scalar(1L)
-      list(i = i)
-    })
-  })
-
-  expect_equal(
-    f(nv_scalar(10L)),
-    list(i = nv_scalar(11L))
-  )
-})
-
-test_that("p_while: use literals in the loop", {
-  f <- jit(function(n) {
-    nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
-      i <- i + 1L
-      list(i = i)
-    })
-  })
-  expect_equal(f(nv_scalar(10L)), list(i = nv_scalar(11L)))
-})
-
-test_that("p_while: two state variables", {
-  f <- jit(function(n) {
-    nv_while(
-      list(i = nv_scalar(1L), s = nv_scalar(0L)),
-      \(i, s) i <= n,
-      \(i, s) {
+describe("p_while", {
+  it("works in simple case", {
+    f <- jit(function(n) {
+      nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
         i <- i + nv_scalar(1L)
-        s <- s + i
-        list(i = i, s = s)
-      }
+        list(i = i)
+      })
+    })
+
+    expect_equal(
+      f(nv_scalar(10L)),
+      list(i = nv_scalar(11L))
     )
   })
 
-  res <- f(nv_scalar(10L))
-  expect_equal(
-    res$i,
-    nv_scalar(11L)
-  )
-  # s counts sum of i at each increment; i advances from 2 to 11
-  # s = sum(2:11) = 2+3+...+11 = 65
-  expect_equal(
-    res$s,
-    nv_scalar(sum(2:11))
-  )
-})
-
-test_that("p_while: two states", {
-  f <- jit(function(n) {
-    nv_while(
-      list(i = nv_scalar(1L), j = nv_scalar(2L)),
-      \(i, j) {
-        # nolint
-        i <= n
-      },
-      \(i, j) {
-        i <- i + nv_scalar(1L)
-        list(i = i, j = j)
-      }
-    ) # nolint
+  it("can use literals in the loop", {
+    f <- jit(function(n) {
+      nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
+        i <- i + 1L
+        list(i = i)
+      })
+    })
+    expect_equal(f(nv_scalar(10L)), list(i = nv_scalar(11L)))
   })
 
-  expect_equal(
-    f(nv_scalar(10L)),
-    list(i = nv_scalar(11L), j = nv_scalar(2L))
-  )
-})
+  it("works with two state variables", {
+    f <- jit(function(n) {
+      nv_while(
+        list(i = nv_scalar(1L), s = nv_scalar(0L)),
+        \(i, s) i <= n,
+        \(i, s) {
+          i <- i + nv_scalar(1L)
+          s <- s + i
+          list(i = i, s = s)
+        }
+      )
+    })
 
-test_that("p_while: nested state", {
-  f <- jit(function(n) {
-    nv_while(
-      list(i = list(nv_scalar(1L))),
-      \(i) {
-        i[[1]] <= n
-      },
-      \(i) {
-        i <- i[[1L]]
-        i <- i + nv_scalar(1L)
-        list(i = list(i))
-      }
+    res <- f(nv_scalar(10L))
+    expect_equal(
+      res$i,
+      nv_scalar(11L)
+    )
+    expect_equal(
+      res$s,
+      nv_scalar(sum(2:11))
     )
   })
-  expect_equal(
-    f(nv_scalar(10L)),
-    list(i = list(nv_scalar(11L)))
-  )
-})
 
-test_that("p_while: errors", {
-  # TODO:
+  it("works with two states where one is unused", {
+    f <- jit(function(n) {
+      nv_while(
+        list(i = nv_scalar(1L), j = nv_scalar(2L)),
+        \(i, j) {
+          # nolint
+          i <= n
+        },
+        \(i, j) {
+          i <- i + nv_scalar(1L)
+          list(i = i, j = j)
+        }
+      ) # nolint
+    })
+
+    expect_equal(
+      f(nv_scalar(10L)),
+      list(i = nv_scalar(11L), j = nv_scalar(2L))
+    )
+  })
+
+  it("works with nested state", {
+    f <- jit(function(n) {
+      nv_while(
+        list(i = list(nv_scalar(1L))),
+        \(i) {
+          i[[1]] <= n
+        },
+        \(i) {
+          i <- i[[1L]]
+          i <- i + nv_scalar(1L)
+          list(i = list(i))
+        }
+      )
+    })
+    expect_equal(
+      f(nv_scalar(10L)),
+      list(i = list(nv_scalar(11L)))
+    )
+  })
+
+  it("works with literal initial state", {
+    f <- jit(function(n, x) {
+      i <- 1L
+      out <- nv_while(list(i = i), \(i) i <= n, \(i) {
+        i <- i + 1L
+        list(i = i)
+      })
+      x + out$i
+    })
+    expect_equal(f(nv_scalar(10L), nv_scalar(5L)), nv_scalar(16L))
+  })
+
+  it("errors", {
+    # TODO:
+  })
 })
 
 
@@ -387,12 +472,15 @@ test_that("p_reverse", {
 })
 
 test_that("p_iota", {
-  f <- jit(function() nvl_iota(1L, "i32", 5L))
+  f <- jit(function() nvl_iota(1L, "i32", 5L, start = 0L))
   expect_equal(f(), nv_tensor(0:4, dtype = "i32"))
 
-  # 2D along first dimension
+  f <- jit(function() nvl_iota(1L, "i32", 5L, start = 1L))
+  expect_equal(f(), nv_tensor(1:5, dtype = "i32"))
+
+  # 2D along first dimension (default start = 1)
   f2 <- jit(function() nvl_iota(1L, "i32", c(3L, 2L)))
-  expected <- matrix(c(0L, 1L, 2L, 0L, 1L, 2L), 3, 2)
+  expected <- matrix(c(1L, 2L, 3L, 1L, 2L, 3L), 3, 2)
   expect_equal(f2(), nv_tensor(expected, dtype = "i32"))
 })
 
@@ -402,14 +490,65 @@ test_that("p_popcnt", {
   expect_equal(f(x), nv_tensor(c(0L, 1L, 1L, 2L, 3L, 8L), dtype = "i32"))
 })
 
+test_that("p_gather", {
+  # Simple 1D gather: select elements at specific indices
+  f <- jit(function(x, indices) {
+    nvl_gather(
+      operand = x,
+      start_indices = indices,
+      slice_sizes = c(1L),
+      offset_dims = integer(),
+      collapsed_slice_dims = 1L,
+      operand_batching_dims = integer(),
+      start_indices_batching_dims = integer(),
+      start_index_map = 1L,
+      index_vector_dim = 2L,
+      indices_are_sorted = FALSE,
+      unique_indices = FALSE
+    )
+  })
+
+  x <- nv_tensor(c(10L, 20L, 30L, 40L, 50L), dtype = "i32")
+  indices <- nv_tensor(c(1L, 3L, 5L), dtype = "i64", shape = c(3, 1))
+  out <- f(x, indices)
+  expect_equal(out, nv_tensor(c(10L, 30L, 50L), dtype = "i32"))
+})
+
+test_that("p_scatter", {
+  # Simple 1D scatter: update elements at specific indices
+  f <- jit(function(x, indices, updates) {
+    nvl_scatter(
+      input = x,
+      scatter_indices = indices,
+      update = updates,
+      update_window_dims = integer(),
+      inserted_window_dims = 1L,
+      input_batching_dims = integer(),
+      scatter_indices_batching_dims = integer(),
+      scatter_dims_to_operand_dims = 1L,
+      index_vector_dim = 2L,
+      indices_are_sorted = FALSE,
+      unique_indices = TRUE,
+      update_computation = function(old, new) new
+    )
+  })
+
+  x <- nv_tensor(c(1L, 2L, 3L, 4L, 5L), dtype = "i32")
+  indices <- nv_tensor(c(1L, 3L, 5L), dtype = "i64", shape = c(3, 1))
+  updates <- nv_tensor(c(100L, 300L, 500L), dtype = "i32")
+  out <- f(x, indices, updates)
+  expect_equal(out, nv_tensor(c(100L, 2L, 300L, 4L, 500L), dtype = "i32"))
+})
+
 test_that("p_print", {
   skip_if(!is_cpu(), "print_tensor only works on CPU")
 
   f <- jit(function(x) nvl_print(x))
   x <- nv_tensor(c(1.0, 2.0, 3.0), dtype = "f32")
-  out <- f(x)
-  expect_equal(as_array(out), as_array(x))
-  expect_snapshot(f(x))
+  expect_snapshot({
+    out <<- f(x)
+  })
+  expect_equal(x, out)
 })
 
 # we don't want to include torch in Suggests just for the tests, as it's a relatively

@@ -12,7 +12,7 @@ The name of the primitive.
 If \code{NULL}, returns a list of all primitives.}
 }
 \value{
-(\code{Primitive})
+(\code{AnvilPrimitive})
 }
 \description{
 Get a primitive by name.

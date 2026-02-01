@@ -42,14 +42,14 @@ common_type_info <- function(...) {
     cli_abort("No arguments provided")
   } else if (length(args) == 1L) {
     arg <- to_abstract(args[[1L]])
-    return(list(dtype(arg), arg@ambiguous))
+    return(list(dtype(arg), arg$ambiguous))
   }
   init <- to_abstract(args[[1L]])
   cdt <- dtype(init)
-  cdt_ambiguous <- init@ambiguous
+  cdt_ambiguous <- init$ambiguous
   for (arg in args[-1L]) {
     arg <- to_abstract(arg)
-    out <- common_dtype(cdt, dtype(arg), cdt_ambiguous, arg@ambiguous)
+    out <- common_dtype(cdt, dtype(arg), cdt_ambiguous, arg$ambiguous)
     cdt <- out[[1L]]
     cdt_ambiguous <- out[[2L]]
   }
@@ -65,10 +65,10 @@ promote_dt_ambiguous_to_known <- function(adtype, dtype) {
   # there are only two cases where we cast a known type to an amibugous type:
   # 1. the ambiguous type is a float and the known type is not
   # 2. the known type is a bool but ambiguous type is not
-  if (inherits(adtype, FloatType) && !inherits(dtype, FloatType)) {
+  if (inherits(adtype, "FloatType") && !inherits(dtype, "FloatType")) {
     return(adtype)
   }
-  if (!inherits(adtype, BooleanType) && inherits(dtype, BooleanType)) {
+  if (!inherits(adtype, "BooleanType") && inherits(dtype, "BooleanType")) {
     return(adtype)
   }
   return(dtype)
@@ -78,46 +78,46 @@ promote_dt_known <- function(dt1, dt2) {
   if (dt1 == dt2) {
     return(dt1)
   }
-  if (inherits(dt1, BooleanType)) {
+  if (inherits(dt1, "BooleanType")) {
     return(dt2)
   }
-  if (inherits(dt2, BooleanType)) {
+  if (inherits(dt2, "BooleanType")) {
     return(dt1)
   }
-  if (inherits(dt1, FloatType)) {
-    if (inherits(dt2, FloatType)) {
-      return(FloatType(max(dt1@value, dt2@value)))
+  if (inherits(dt1, "FloatType")) {
+    if (inherits(dt2, "FloatType")) {
+      return(FloatType(max(dt1$value, dt2$value)))
     }
     # bools and integers are cast to the float
     return(dt1)
   }
-  if (inherits(dt2, FloatType)) {
+  if (inherits(dt2, "FloatType")) {
     return(dt2)
   }
-  if (inherits(dt1, IntegerType)) {
-    if (inherits(dt2, IntegerType)) {
-      return(IntegerType(max(dt1@value, dt2@value)))
+  if (inherits(dt1, "IntegerType")) {
+    if (inherits(dt2, "IntegerType")) {
+      return(IntegerType(max(dt1$value, dt2$value)))
     }
-    if (dt2@value < dt1@value) {
+    if (dt2$value < dt1$value) {
       # the int can hold the unsigned int
       return(dt1)
     }
     # int can't hold the unsigned int
     # we use signed int, but increase bits of unsigned int
     # this can lead to overflows then we have uint64 but this can't be avoided
-    return(IntegerType(min(64L, dt2@value * 2L)))
+    return(IntegerType(min(64L, dt2$value * 2L)))
   }
-  if (inherits(dt2, IntegerType)) {
-    if (inherits(dt1, UnsignedType)) {
-      if (dt2@value > dt1@value) {
+  if (inherits(dt2, "IntegerType")) {
+    if (inherits(dt1, "UnsignedType")) {
+      if (dt2$value > dt1$value) {
         return(dt2)
       }
-      return(IntegerType(min(64L, dt1@value * 2L)))
+      return(IntegerType(min(64L, dt1$value * 2L)))
     }
     cli_abort("internal error")
   }
   # both are unsigned
-  UnsignedType(max(dt1@value, dt2@value))
+  UnsignedType(max(dt1$value, dt2$value))
 }
 
 default_dtype <- function(x) {
@@ -130,4 +130,15 @@ default_dtype <- function(x) {
   } else {
     cli_abort("No default type for: {.class class(x)[1L]}")
   }
+}
+
+promotable_to <- function(from, to) {
+  if (identical(from, to)) {
+    return(TRUE)
+  }
+  dt <- common_dtype(from, to)
+  if (dt$dtype != to) {
+    return(FALSE)
+  }
+  TRUE
 }

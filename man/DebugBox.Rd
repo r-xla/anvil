@@ -4,11 +4,14 @@
 \alias{DebugBox}
 \title{Debug Box Class}
 \usage{
-DebugBox(aval = AbstractTensor())
+DebugBox(aval)
 }
 \arguments{
 \item{aval}{(\code{AbstractTensor})\cr
 The abstract tensor representing the value.}
+}
+\value{
+(\code{DebugBox})
 }
 \description{
 Box representing a value in debug mode.

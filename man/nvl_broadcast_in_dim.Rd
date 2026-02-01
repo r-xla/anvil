@@ -4,13 +4,13 @@
 \alias{nvl_broadcast_in_dim}
 \title{Primitive Broadcast}
 \usage{
-nvl_broadcast_in_dim(operand, shape_out, broadcast_dimensions)
+nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
 
-\item{shape_out}{(\code{integer()})\cr
+\item{shape}{(\code{integer()})\cr
 Target shape.}
 
 \item{broadcast_dimensions}{(\code{integer()})\cr

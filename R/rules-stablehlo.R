@@ -2,7 +2,9 @@
 
 # TODO: Here we don't have to re-do the type inference again, because it was already done.
 
-p_fill[["stablehlo"]] <- function(value, shape, dtype) {
+p_fill[["stablehlo"]] <- function(value, shape, dtype, ambiguous) {
+  # ambiguity only relevant for type promotion, but when we lower
+  # there is no type promotion, so it has no effect
   list(stablehlo::hlo_tensor(value, shape = shape, dtype = dtype))
 }
 
@@ -18,7 +20,7 @@ p_sub[["stablehlo"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_subtract(lhs, rhs))
 }
 
-p_neg[["stablehlo"]] <- function(operand) {
+p_negate[["stablehlo"]] <- function(operand) {
   list(stablehlo::hlo_negate(operand))
 }
 
@@ -30,8 +32,8 @@ p_pow[["stablehlo"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_power(lhs, rhs))
 }
 
-p_broadcast_in_dim[["stablehlo"]] <- function(operand, shape_out, broadcast_dimensions) {
-  list(stablehlo::hlo_broadcast_in_dim(operand, broadcast_dimensions - 1L, shape_out))
+p_broadcast_in_dim[["stablehlo"]] <- function(operand, shape, broadcast_dimensions) {
+  list(stablehlo::hlo_broadcast_in_dim(operand, broadcast_dimensions - 1L, shape))
 }
 
 p_dot_general[["stablehlo"]] <- function(lhs, rhs, contracting_dims, batching_dims) {
@@ -52,39 +54,70 @@ p_concatenate[["stablehlo"]] <- function(..., dimension) {
   list(stablehlo::hlo_concatenate(..., dimension = dimension - 1L))
 }
 
-p_slice[["stablehlo"]] <- function(operand, start_indices, limit_indices, strides) {
+p_static_slice[["stablehlo"]] <- function(operand, start_indices, limit_indices, strides) {
   # we use 1:n, which includes n, but this translates to 0:n in stablehlo
   list(stablehlo::hlo_slice(operand, start_indices - 1L, limit_indices, strides))
 }
 
+p_dynamic_slice[["stablehlo"]] <- function(operand, ..., slice_sizes) {
+  start_indices <- list(...)
+  # Convert start indices from 1-based to 0-based by subtracting 1
+  start_indices_0based <- lapply(start_indices, function(idx) {
+    one <- stablehlo::hlo_scalar(1L, dtype = dtype(idx), func = idx$func)
+    stablehlo::hlo_subtract(idx, one)
+  })
+  list(rlang::exec(
+    stablehlo::hlo_dynamic_slice,
+    operand,
+    !!!start_indices_0based,
+    slice_sizes = slice_sizes
+  ))
+}
+
+p_dynamic_update_slice[["stablehlo"]] <- function(operand, update, ...) {
+  start_indices <- list(...)
+  # Convert start indices from 1-based to 0-based by subtracting 1
+  start_indices_0based <- lapply(start_indices, function(idx) {
+    one <- stablehlo::hlo_scalar(1L, dtype = dtype(idx), func = idx$func)
+    stablehlo::hlo_subtract(idx, one)
+  })
+  list(rlang::exec(
+    stablehlo::hlo_dynamic_update_slice,
+    operand,
+    update,
+    !!!start_indices_0based
+  ))
+}
+
+
 .stablehlo_apply_reduce <- function(reductor, operand, init, dims, drop) {
   local_func("")
-  dt <- as.character(operand@value_type@type@dtype)
+  dt <- as.character(operand$value_type$type$dtype)
   f <- hlo_return(reductor(
     hlo_input("x", dt),
     hlo_input("y", dt)
   ))
-  out <- stablehlo::hlo_reduce(list(operand), init(operand), dims - 1L, f)
+  out <- stablehlo::hlo_reduce(list(operand), list(init(operand)), dims - 1L, f)
 
   if (drop) {
     return(list(out))
   }
 
-  shape_out <- shape(operand@value_type)
+  shape_out <- shape(operand$value_type)
   shape_out[dims] <- 1L
   list(stablehlo::hlo_reshape(out, shape_out))
 }
 
 p_reduce_sum[["stablehlo"]] <- function(operand, dims, drop) {
   init <- function(operand) {
-    hlo_scalar(0, dtype = dtype(operand), func = operand@func)
+    hlo_scalar(0, dtype = dtype(operand), func = operand$func)
   }
   .stablehlo_apply_reduce(stablehlo::hlo_add, operand, init, dims, drop)
 }
 
 p_reduce_prod[["stablehlo"]] <- function(operand, dims, drop) {
   init <- function(operand) {
-    hlo_scalar(1, dtype = dtype(operand), func = operand@func)
+    hlo_scalar(1, dtype = dtype(operand), func = operand$func)
   }
   .stablehlo_apply_reduce(stablehlo::hlo_multiply, operand, init, dims, drop)
 }
@@ -123,16 +156,13 @@ p_reduce_all[["stablehlo"]] <- function(operand, dims, drop) {
 # comparison jit rules ----------------------------------------------------------
 
 .compare_type_for <- function(vt) {
-  dt <- vt@value_type@type@dtype
-  if (inherits(dt, stablehlo::FloatType)) {
+  dt <- vt$value_type$type$dtype
+  if (inherits(dt, "FloatType")) {
     "FLOAT"
-  } else if (inherits(dt, stablehlo::IntegerType)) {
+  } else if (inherits(dt, "IntegerType")) {
     "SIGNED"
-  } else if (inherits(dt, stablehlo::UnsignedType)) {
+  } else if (inherits(dt, "UnsignedType") || inherits(dt, "BooleanType")) {
     "UNSIGNED"
-  } else if (inherits(dt, stablehlo::BooleanType)) {
-    # StableHLO uses SIGNED for i1 compares
-    "SIGNED"
   } else {
     cli_abort("Unsupported dtype for compare")
   }
@@ -285,8 +315,17 @@ p_reverse[["stablehlo"]] <- function(operand, dims) {
   list(stablehlo::hlo_reverse(operand, dims - 1L))
 }
 
-p_iota[["stablehlo"]] <- function(dim, dtype, shape) {
-  list(stablehlo::hlo_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape))
+p_iota[["stablehlo"]] <- function(dim, dtype, shape, start, ambiguous) {
+  out <- stablehlo::hlo_iota(iota_dimension = dim - 1L, dtype = dtype, shape = shape)
+  if (start != 0L) {
+    offset <- stablehlo::hlo_broadcast_in_dim(
+      stablehlo::hlo_scalar(start, dtype = dtype, func = out$func),
+      integer(0),
+      shape
+    )
+    out <- stablehlo::hlo_add(out, offset)
+  }
+  list(out)
 }
 
 p_pad[["stablehlo"]] <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
@@ -313,13 +352,14 @@ p_select[["stablehlo"]] <- function(pred, true_value, false_value) {
 
 # RNG jit rules --------------------------------------------------------
 
-p_rng_bit_generator[["stablehlo"]] <- function(initial_state, rng_algorithm, dtype, shape_out) {
-  stablehlo::hlo_rng_bit_generator(initial_state, rng_algorithm, dtype, shape_out)
+p_rng_bit_generator[["stablehlo"]] <- function(initial_state, rng_algorithm, dtype, shape) {
+  stablehlo::hlo_rng_bit_generator(initial_state, rng_algorithm, dtype, shape)
 }
 
-p_print[["stablehlo"]] <- function(operand) {
+p_print[["stablehlo"]] <- function(operand, footer) {
   backend_config <- stablehlo::CustomOpBackendConfig(list(
-    stablehlo::StringAttr(name = "print_header", value = "AnvilTensor")
+    stablehlo::StringAttr(name = "print_header", value = "AnvilTensor"),
+    stablehlo::StringAttr(name = "print_footer", value = footer)
   ))
 
   # has side-effect
@@ -346,4 +386,83 @@ p_while[["stablehlo"]] <- function(..., cond_graph, body_graph, .env) {
   body_func <- stablehlo(body_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
   cond_func <- stablehlo(cond_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
   stablehlo::hlo_while(..., cond = cond_func, body = body_func, simplify = FALSE)
+}
+
+p_scatter[["stablehlo"]] <- function(
+  input,
+  scatter_indices,
+  update,
+  update_window_dims,
+  inserted_window_dims,
+  input_batching_dims,
+  scatter_indices_batching_dims,
+  scatter_dims_to_operand_dims,
+  index_vector_dim,
+  indices_are_sorted,
+  unique_indices,
+  update_computation_graph,
+  .env
+) {
+  update_func <- stablehlo(update_computation_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
+
+  scatter_dimension_numbers <- stablehlo::ScatterDimensionNumbers(
+    update_window_dims = update_window_dims - 1L,
+    inserted_window_dims = inserted_window_dims - 1L,
+    input_batching_dims = input_batching_dims - 1L,
+    scatter_indices_batching_dims = scatter_indices_batching_dims - 1L,
+    scatter_dims_to_operand_dims = scatter_dims_to_operand_dims - 1L,
+    index_vector_dim = index_vector_dim - 1L
+  )
+
+  one <- stablehlo::hlo_tensor(1L, shape = shape(scatter_indices), dtype = dtype(scatter_indices))
+  scatter_indices_0based <- stablehlo::hlo_subtract(scatter_indices, one)
+
+  result <- stablehlo::hlo_scatter(
+    inputs = list(input),
+    scatter_indices = scatter_indices_0based,
+    updates = list(update),
+    scatter_dimension_numbers = scatter_dimension_numbers,
+    indices_are_sorted = indices_are_sorted,
+    unique_indices = unique_indices,
+    update_computation = update_func
+  )
+
+  list(result)
+}
+
+p_gather[["stablehlo"]] <- function(
+  operand,
+  start_indices,
+  slice_sizes,
+  offset_dims,
+  collapsed_slice_dims,
+  operand_batching_dims,
+  start_indices_batching_dims,
+  start_index_map,
+  index_vector_dim,
+  indices_are_sorted,
+  unique_indices
+) {
+  # Convert 1-based dimension numbers to 0-based for stablehlo
+  gdn_0based <- stablehlo::GatherDimensionNumbers(
+    offset_dims = offset_dims - 1L,
+    collapsed_slice_dims = collapsed_slice_dims - 1L,
+    operand_batching_dims = operand_batching_dims - 1L,
+    start_indices_batching_dims = start_indices_batching_dims - 1L,
+    start_index_map = start_index_map - 1L,
+    index_vector_dim = index_vector_dim - 1L
+  )
+
+  one <- stablehlo::hlo_tensor(1L, dtype = dtype(start_indices), shape = shape(start_indices))
+  start_indices_0based <- stablehlo::hlo_subtract(start_indices, one)
+
+  result <- stablehlo::hlo_gather(
+    operand,
+    start_indices_0based,
+    gather_dimension_numbers = gdn_0based,
+    slice_sizes = slice_sizes,
+    indices_are_sorted = indices_are_sorted
+  )
+
+  list(result)
 }

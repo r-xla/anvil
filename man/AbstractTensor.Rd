@@ -5,7 +5,7 @@
 \alias{AbstractTensor}
 \title{Abstract Tensor Class}
 \usage{
-nv_aten(dtype, shape)
+nv_aten(dtype, shape, ambiguous = FALSE)
 
 AbstractTensor(dtype, shape, ambiguous = FALSE)
 }
@@ -24,9 +24,6 @@ See the vignette "Type Promotion" for more details.}
 \description{
 Abstract representation of a tensor with a (possibly ambiguous) dtype and shape, but no concrete data.
 Used during tracing to represent tensor metadata without actual values.
-}
-\details{
-Two tensors are considered equal (\code{==}) if they have the same dtype and shape, ignoring ambiguity.
 }
 \seealso{
 \link{ConcreteTensor}, \link{LiteralTensor}, \code{\link[=to_abstract]{to_abstract()}}

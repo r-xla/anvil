@@ -11,6 +11,7 @@
 \alias{ndims}
 \alias{is_dtype}
 \alias{as_dtype}
+\alias{platform}
 \alias{Shape}
 \title{Objects exported from other packages}
 \keyword{internal}
@@ -19,6 +20,8 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
+  \item{pjrt}{\code{\link[pjrt]{platform}}}
+
   \item{stablehlo}{\code{\link[stablehlo]{as_dtype}}, \code{\link[stablehlo]{is_dtype}}, \code{\link[stablehlo]{Shape}}}
 
   \item{tengen}{\code{\link[tengen]{as_array}}, \code{\link[tengen]{as_raw}}, \code{\link[tengen]{device}}, \code{\link[tengen]{dtype}}, \code{\link[tengen]{ndims}}, \code{\link[tengen]{shape}}}
