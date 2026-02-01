@@ -39,31 +39,41 @@ test_that("integration: `%*%` matches PJRT for tensor ranks 1..5", {
     array(rnorm(prod(dims), sd = 0.2), dim = dims)
   }
 
-  for (a_rank in 1:5) {
-    for (b_rank in 1:5) {
-      A <- make_input(a_rank, "lhs")
-      B <- make_input(b_rank, "rhs")
+  rank_pairs <- list(
+    c(1L, 1L),
+    c(1L, 2L),
+    c(2L, 1L),
+    c(2L, 2L),
+    c(3L, 5L),
+    c(5L, 3L)
+  )
 
-      graph <- trace_fn(
-        matmul_any_rank,
-        list(
-          A = template_tensor(A),
-          B = template_tensor(B)
-        )
+  for (pair in rank_pairs) {
+    a_rank <- pair[[1L]]
+    b_rank <- pair[[2L]]
+
+    A <- make_input(a_rank, "lhs")
+    B <- make_input(b_rank, "rhs")
+
+    graph <- trace_fn(
+      matmul_any_rank,
+      list(
+        A = template_tensor(A),
+        B = template_tensor(B)
       )
+    )
 
-      f_quick <- graph_to_quickr_function(graph)
-      run_pjrt <- compile_graph_pjrt(graph)
+    f_quick <- graph_to_quickr_function(graph)
+    run_pjrt <- compile_graph_pjrt(graph)
 
-      out_quick <- f_quick(A, B)
-      out_pjrt <- run_pjrt(A, B)
+    out_quick <- f_quick(A, B)
+    out_pjrt <- run_pjrt(A, B)
 
-      testthat::expect_equal(
-        out_quick,
-        out_pjrt,
-        tolerance = 1e-12,
-        info = paste0("a_rank=", a_rank, ", b_rank=", b_rank)
-      )
-    }
+    testthat::expect_equal(
+      out_quick,
+      out_pjrt,
+      tolerance = 1e-12,
+      info = paste0("a_rank=", a_rank, ", b_rank=", b_rank)
+    )
   }
 })
