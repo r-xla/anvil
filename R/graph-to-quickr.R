@@ -10,7 +10,7 @@ NULL
 #' [`AnvilTensor`]) and returns plain R values/arrays.
 #'
 #' If the graph returns multiple outputs (e.g. a nested list), the compiled
-#' function returns the same structure by packing/unpacking values for {quickr}.
+#' function returns the same structure by packing/unpacking values for `quickr`.
 #'
 #' At the moment this only supports graphs with a flat (non-nested) argument
 #' list.

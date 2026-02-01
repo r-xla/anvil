@@ -2,19 +2,19 @@
 % Please edit documentation in R/graph-to-quickr.R
 \name{graph_to_quickr_function}
 \alias{graph_to_quickr_function}
-\title{Convert a Graph to a quickr-compiled function}
+\title{Convert an AnvilGraph to a quickr-compiled function}
 \usage{
 graph_to_quickr_function(graph)
 }
 \arguments{
-\item{graph}{(\code{\link{Graph}})\cr
+\item{graph}{(\code{\link{AnvilGraph}})\cr
 Graph to convert.}
 }
 \value{
 (\code{function})
 }
 \description{
-Lowers a supported subset of \code{anvil::Graph} objects to a plain R function and
+Lowers a supported subset of \code{anvil::AnvilGraph} objects to a plain R function and
 compiles it with \code{quickr::quick()}.
 }
 \details{
@@ -22,7 +22,7 @@ The returned function expects plain R scalars/vectors/arrays (not
 \code{\link{AnvilTensor}}) and returns plain R values/arrays.
 
 If the graph returns multiple outputs (e.g. a nested list), the compiled
-function returns the same structure by packing/unpacking values for {quickr}.
+function returns the same structure by packing/unpacking values for \code{quickr}.
 
 At the moment this only supports graphs with a flat (non-nested) argument
 list.
