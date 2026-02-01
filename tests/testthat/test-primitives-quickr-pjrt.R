@@ -101,7 +101,7 @@ quickr_pjrt_cases <- list(
     set.seed(5)
     shape <- c(2L, 3L)
     x <- make_input(shape)
-    list(quickr_case(function(x) nv_neg(x), list(x = make_template(shape)), list(x = x), info = "negate"))
+    list(quickr_case(function(x) nv_negate(x), list(x = make_template(shape)), list(x = x), info = "negate"))
   },
   reshape = function() {
     set.seed(6)
@@ -132,7 +132,7 @@ quickr_pjrt_cases <- list(
     shape_out <- c(2L, 3L)
     x <- make_input(shape_in)
     list(quickr_case(
-      function(x) nvl_broadcast_in_dim(x, shape_out = shape_out, broadcast_dimensions = c(1L, 2L)),
+      function(x) nvl_broadcast_in_dim(x, shape = shape_out, broadcast_dimensions = c(1L, 2L)),
       list(x = make_template(shape_in)),
       list(x = x),
       info = "broadcast_in_dim"

@@ -7,18 +7,18 @@ compile_graph_pjrt <- function(graph) {
   constants <- out[[2L]]
 
   const_tensors <- lapply(constants, function(const) {
-    if (!is_concrete_tensor(const@aval)) {
+    if (!is_concrete_tensor(const$aval)) {
       cli::cli_abort("Internal error: non-concrete constant in graph")
     }
-    const@aval@data
+    anvil:::unwrap_if_tensor(const$aval$data)
   })
 
   src <- stablehlo::repr(func)
   program <- pjrt::pjrt_program(src = src, format = "mlir")
   exec <- pjrt::pjrt_compile(program)
 
-  input_nodes <- graph@inputs
-  out_tree <- graph@out_tree
+  input_nodes <- graph$inputs
+  out_tree <- graph$out_tree
 
   as_r <- function(x) {
     if (inherits(x, "AnvilTensor")) {
@@ -41,8 +41,8 @@ compile_graph_pjrt <- function(graph) {
         if (inherits(x, "AnvilTensor")) {
           return(x)
         }
-        expected_shape <- gval@aval@shape@dims
-        expected_dtype <- as.character(gval@aval@dtype)
+        expected_shape <- gval$aval$shape$dims
+        expected_dtype <- as.character(gval$aval$dtype)
         if (expected_dtype == "i1") {
           expected_dtype <- "pred"
         }
@@ -59,7 +59,8 @@ compile_graph_pjrt <- function(graph) {
       input_nodes
     )
 
-    out_vals <- rlang::exec(pjrt::pjrt_execute, exec, !!!const_tensors, !!!args_nv, simplify = FALSE)
+    args_unwrapped <- lapply(args_nv, anvil:::unwrap_if_tensor)
+    out_vals <- rlang::exec(pjrt::pjrt_execute, exec, !!!const_tensors, !!!args_unwrapped, simplify = FALSE)
     out_vals <- lapply(out_vals, nv_tensor)
     out_nv <- unflatten(out_tree, out_vals)
     as_r(out_nv)

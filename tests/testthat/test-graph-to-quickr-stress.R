@@ -15,7 +15,7 @@ test_that("graph_to_quickr_function handles long scalar chain (stress)", {
   }
 
   graph <- trace_fn(chain_fn, list(x = nv_scalar(0.0, dtype = "f64")))
-  expect_gt(length(graph@calls), 12L)
+  expect_gt(length(graph$calls), 12L)
 
   x <- 0.123
   f_quick <- graph_to_quickr_function(graph)

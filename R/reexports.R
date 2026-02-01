@@ -31,10 +31,6 @@ stablehlo::is_dtype
 stablehlo::as_dtype
 
 
-#' @importFrom pjrt platform
-#' @export
-pjrt::platform
-
 #' @importFrom stablehlo Shape
 #' @export
 stablehlo::Shape

@@ -1,9 +1,9 @@
 #' @include graph-to-quickr-r.R
 NULL
 
-#' Convert a Graph to a quickr-compiled function
+#' Convert an AnvilGraph to a quickr-compiled function
 #'
-#' Lowers a supported subset of `anvil::Graph` objects to a plain R function and
+#' Lowers a supported subset of `anvil::AnvilGraph` objects to a plain R function and
 #' compiles it with `quickr::quick()`.
 #'
 #' The returned function expects plain R scalars/vectors/arrays (not
@@ -21,18 +21,18 @@ NULL
 #' The code generator currently supports tensors up to rank 5. Some primitives
 #' are more restricted (e.g. `transpose` currently only handles rank-2 tensors).
 #'
-#' @param graph ([`Graph`])\cr
+#' @param graph ([`AnvilGraph`])\cr
 #'   Graph to convert.
 #' @return (`function`)
 #' @export
 graph_to_quickr_function <- function(graph) {
   if (!is_graph(graph)) {
-    cli_abort("{.arg graph} must be a {.cls anvil::Graph}")
+    cli_abort("{.arg graph} must be a {.cls anvil::AnvilGraph}")
   }
 
   assert_quickr_installed("{.fn graph_to_quickr_function}")
 
-  in_tree <- graph@in_tree
+  in_tree <- graph$in_tree
   if (inherits(in_tree, "ListNode") && any(vapply(in_tree$nodes, inherits, logical(1L), "ListNode"))) {
     cli_abort(c(
       "{.fn graph_to_quickr_function} currently supports only flat (non-nested) argument lists.",
@@ -40,8 +40,8 @@ graph_to_quickr_function <- function(graph) {
     ))
   }
 
-  needs_pack <- !(inherits(graph@out_tree, "LeafNode") && length(graph@outputs) == 1L)
-  needs_wrapper <- isTRUE(needs_pack) || length(graph@constants)
+  needs_pack <- !(inherits(graph$out_tree, "LeafNode") && length(graph$outputs) == 1L)
+  needs_wrapper <- isTRUE(needs_pack) || length(graph$constants)
 
   r_fun <- graph_to_quickr_r_function(graph, include_declare = TRUE, pack_output = needs_pack)
   inner_quick <- quickr_eager_compile(r_fun)
@@ -51,14 +51,14 @@ graph_to_quickr_function <- function(graph) {
   }
 
   r_arg_names <- names(formals(r_fun))
-  n_user <- length(graph@inputs)
+  n_user <- length(graph$inputs)
   user_arg_names <- r_arg_names[seq_len(n_user)]
 
   const_args <- list()
-  if (length(graph@constants)) {
-    const_arg_names <- r_arg_names[(n_user + 1L):(n_user + length(graph@constants))]
-    const_vals <- lapply(graph@constants, function(node) {
-      as_array(node@aval@data)
+  if (length(graph$constants)) {
+    const_arg_names <- r_arg_names[(n_user + 1L):(n_user + length(graph$constants))]
+    const_vals <- lapply(graph$constants, function(node) {
+      as_array(node$aval$data)
     })
     const_args <- stats::setNames(const_vals, const_arg_names)
   }
@@ -81,12 +81,8 @@ graph_to_quickr_function <- function(graph) {
     return(wrapper)
   }
 
-  out_infos <- lapply(graph@outputs, function(node) {
-    if (is_graph_value(node)) {
-      list(dtype = as.character(node@aval@dtype), shape = node@aval@shape@dims)
-    } else {
-      list(dtype = as.character(dtype(node)), shape = integer())
-    }
+  out_infos <- lapply(graph$outputs, function(node) {
+    list(dtype = as.character(dtype(node)), shape = shape(node))
   })
   out_lens <- vapply(
     out_infos,
@@ -101,7 +97,7 @@ graph_to_quickr_function <- function(graph) {
 
   wrapper_env <- new.env(parent = environment())
   wrapper_env$inner_quick <- inner_quick
-  wrapper_env$out_tree <- graph@out_tree
+  wrapper_env$out_tree <- graph$out_tree
   wrapper_env$out_infos <- out_infos
   wrapper_env$out_lens <- out_lens
   wrapper_env$user_arg_names <- user_arg_names

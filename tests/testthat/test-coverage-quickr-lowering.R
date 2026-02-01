@@ -438,15 +438,15 @@ test_that("quickr lowering helpers cover edge cases", {
 })
 
 test_that("graph_to_quickr_r_function covers validation branches", {
-  testthat::expect_error(graph_to_quickr_r_function(list()), "Graph", fixed = FALSE)
+  testthat::expect_error(graph_to_quickr_r_function(list()), "AnvilGraph", fixed = FALSE)
 
-  g0 <- Graph(calls = list(), in_tree = NULL, out_tree = NULL, inputs = list(), outputs = list(), constants = list())
+  g0 <- AnvilGraph(calls = list(), in_tree = NULL, out_tree = NULL, inputs = list(), outputs = list(), constants = list())
   testthat::expect_error(graph_to_quickr_r_function(g0), "non-NULL", fixed = FALSE)
 
   g_in1 <- GraphValue(AbstractTensor("f64", integer()))
   g_in2 <- GraphValue(AbstractTensor("f64", integer()))
   g_out <- GraphValue(AbstractTensor("f64", integer()))
-  g_bad_tree <- Graph(
+  g_bad_tree <- AnvilGraph(
     calls = list(),
     in_tree = LeafNode(1L),
     out_tree = LeafNode(1L),
@@ -487,13 +487,13 @@ test_that("graph_to_quickr_r_function covers validation branches", {
     },
     list(x = nv_scalar(1.0, dtype = "f64"))
   )
-  graph4@constants <- list(GraphValue(AbstractTensor("f64", integer())))
+  graph4$constants <- list(GraphValue(AbstractTensor("f64", integer())))
   testthat::expect_error(graph_to_quickr_r_function(graph4), "concrete", fixed = FALSE)
 
   in_val <- GraphValue(AbstractTensor("f64", integer()))
   lit <- GraphLiteral(LiteralTensor(1.0, shape = integer(), dtype = "f64", ambiguous = FALSE))
   bad_call <- PrimitiveCall(primitive = p_add, inputs = list(in_val, in_val), params = list(), outputs = list(lit))
-  graph5 <- Graph(
+  graph5 <- AnvilGraph(
     calls = list(bad_call),
     in_tree = LeafNode(1L),
     out_tree = LeafNode(1L),
@@ -516,8 +516,8 @@ test_that("assert_quickr_installed_with errors when installed is FALSE", {
   testthat::expect_error(assert_quickr_installed_with(NULL, FALSE), "must be installed", fixed = FALSE)
 })
 
-test_that("graph_to_quickr_function errors on non-Graph", {
-  testthat::expect_error(graph_to_quickr_function(1), "Graph", fixed = FALSE)
+test_that("graph_to_quickr_function errors on non-AnvilGraph", {
+  testthat::expect_error(graph_to_quickr_function(1), "AnvilGraph", fixed = FALSE)
 })
 
 test_that("graph_to_quickr_function decodes logical and integer leaves", {

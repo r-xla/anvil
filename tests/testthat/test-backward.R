@@ -203,7 +203,7 @@ test_that("gradient: does not depend on input", {
 
 test_that("select backward works for constant predicate", {
   f <- function(x) {
-    nv_select(nv_scalar(TRUE, dtype = "pred"), x, -x)
+    nv_ifelse(nv_scalar(TRUE, dtype = "pred"), x, -x)
   }
   g <- jit(gradient(f, wrt = "x"))
   out <- g(nv_scalar(2.0, dtype = "f64"))

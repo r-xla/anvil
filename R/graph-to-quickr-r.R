@@ -141,7 +141,7 @@ quickr_emit_full_like <- function(out_sym, value_expr, shape_out, out_aval) {
 
 quickr_expr_of_node <- function(node, node_expr) {
   if (is_graph_literal(node)) {
-    return(quickr_scalar_cast(node@aval@data, as.character(dtype(node))))
+    return(quickr_scalar_cast(node$aval$data, as.character(dtype(node))))
   }
   expr <- node_expr[[node]]
   if (is.null(expr)) {
@@ -726,8 +726,8 @@ quickr_lower_registry <- local({
       quickr_emit_broadcast_in_dim(
         out_sym,
         inputs[[1L]],
-        shape(operand_node@aval),
-        params$shape_out,
+        shape(operand_node$aval),
+        params$shape,
         params$broadcast_dimensions,
         out_aval
       )
@@ -749,8 +749,8 @@ quickr_lower_registry <- local({
         out_sym,
         inputs[[1L]],
         inputs[[2L]],
-        shape(lhs_node@aval),
-        shape(rhs_node@aval),
+        shape(lhs_node$aval),
+        shape(rhs_node$aval),
         shape(out_aval),
         out_aval,
         params$contracting_dims,
@@ -772,7 +772,7 @@ quickr_lower_registry <- local({
     if (!is_graph_value(operand_node)) {
       cli_abort("reshape: only GraphValue inputs are supported")
     }
-    quickr_emit_reshape(out_sym, inputs[[1L]], shape(operand_node@aval), params$shape, out_aval)
+    quickr_emit_reshape(out_sym, inputs[[1L]], shape(operand_node$aval), params$shape, out_aval)
   })
 
   quickr_register_prim_lowerer(reg, "sum", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
@@ -782,7 +782,7 @@ quickr_lower_registry <- local({
     if (!is_graph_value(operand_node)) {
       cli_abort("sum: only GraphValue inputs are supported")
     }
-    quickr_emit_reduce_sum(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval)
+    quickr_emit_reduce_sum(out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
   })
 
   quickr_register_prim_lowerer(
@@ -795,7 +795,7 @@ quickr_lower_registry <- local({
       if (!is_graph_value(operand_node)) {
         cli_abort("reduce_sum: only GraphValue inputs are supported")
       }
-      quickr_emit_reduce_sum(out_sym, inputs[[1L]], shape(operand_node@aval), params$dims, params$drop, out_aval)
+      quickr_emit_reduce_sum(out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
     }
   )
 
@@ -810,18 +810,18 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
   pack_output <- as.logical(pack_output)
 
   if (!is_graph(graph)) {
-    cli_abort("{.arg graph} must be a {.cls anvil::Graph}")
+    cli_abort("{.arg graph} must be a {.cls anvil::AnvilGraph}")
   }
-  if (is.null(graph@in_tree) || is.null(graph@out_tree)) {
+  if (is.null(graph$in_tree) || is.null(graph$out_tree)) {
     cli_abort("{.arg graph} must have non-NULL {.field in_tree} and {.field out_tree}")
   }
 
-  in_paths <- quickr_tree_leaf_paths(graph@in_tree)
-  if (length(in_paths) != length(graph@inputs)) {
+  in_paths <- quickr_tree_leaf_paths(graph$in_tree)
+  if (length(in_paths) != length(graph$inputs)) {
     cli_abort("Internal error: input tree size does not match graph inputs")
   }
   user_arg_names <- quickr_paths_to_names(in_paths)
-  const_arg_names <- quickr_make_const_arg_names(user_arg_names, length(graph@constants))
+  const_arg_names <- quickr_make_const_arg_names(user_arg_names, length(graph$constants))
   all_arg_names <- c(user_arg_names, const_arg_names)
 
   prefix <- "anvil_quickr_"
@@ -832,7 +832,7 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
   }
 
   supported_prims <- ls(envir = quickr_lower_registry, all.names = TRUE)
-  call_prims <- unique(vapply(graph@calls, \(x) x@primitive@name, character(1L)))
+  call_prims <- unique(vapply(graph$calls, \(x) x$primitive$name, character(1L)))
   unsupported_prims <- setdiff(call_prims, supported_prims)
   if (length(unsupported_prims)) {
     cli_abort(c(
@@ -846,38 +846,38 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
   }
 
   node_expr <- hashtab()
-  for (i in seq_along(graph@inputs)) {
-    node_expr[[graph@inputs[[i]]]] <- as.name(user_arg_names[[i]])
+  for (i in seq_along(graph$inputs)) {
+    node_expr[[graph$inputs[[i]]]] <- as.name(user_arg_names[[i]])
   }
 
   stmts <- list()
 
   if (isTRUE(include_declare)) {
     arg_avals <- c(
-      lapply(graph@inputs, \(x) x@aval),
-      lapply(graph@constants, \(x) x@aval)
+      lapply(graph$inputs, \(x) x$aval),
+      lapply(graph$constants, \(x) x$aval)
     )
     stmts <- c(stmts, list(quickr_declare_stmt(all_arg_names, arg_avals)))
   }
 
-  for (i in seq_along(graph@constants)) {
-    const_node <- graph@constants[[i]]
+  for (i in seq_along(graph$constants)) {
+    const_node <- graph$constants[[i]]
     if (!is_graph_value(const_node)) {
       cli_abort("quickr lowering: graph constants must be GraphValue nodes") # nocov
     }
-    if (!is_concrete_tensor(const_node@aval)) {
+    if (!is_concrete_tensor(const_node$aval)) {
       cli_abort("quickr lowering: graph constants must be concrete tensors")
     }
     node_expr[[const_node]] <- as.name(const_arg_names[[i]])
   }
 
   tmp_i <- 0L
-  for (call in graph@calls) {
-    input_exprs <- lapply(call@inputs, quickr_expr_of_node, node_expr = node_expr)
-    out_syms <- vector("list", length(call@outputs))
-    out_avals <- vector("list", length(call@outputs))
-    for (i in seq_along(call@outputs)) {
-      out_node <- call@outputs[[i]]
+  for (call in graph$calls) {
+    input_exprs <- lapply(call$inputs, quickr_expr_of_node, node_expr = node_expr)
+    out_syms <- vector("list", length(call$outputs))
+    out_avals <- vector("list", length(call$outputs))
+    for (i in seq_along(call$outputs)) {
+      out_node <- call$outputs[[i]]
       if (!is_graph_value(out_node)) {
         cli_abort("Unsupported: non-GraphValue primitive outputs")
       }
@@ -885,19 +885,19 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
       sym <- as.name(paste0(prefix, "v", tmp_i))
       node_expr[[out_node]] <- sym
       out_syms[[i]] <- sym
-      out_avals[[i]] <- out_node@aval
+      out_avals[[i]] <- out_node$aval
     }
-    lower <- get0(call@primitive@name, envir = quickr_lower_registry, inherits = FALSE)
-    stmts <- c(stmts, lower(call@primitive@name, input_exprs, call@params, out_syms, call@inputs, out_avals))
+    lower <- get0(call$primitive$name, envir = quickr_lower_registry, inherits = FALSE)
+    stmts <- c(stmts, lower(call$primitive$name, input_exprs, call$params, out_syms, call$inputs, out_avals))
   }
 
-  out_exprs <- lapply(graph@outputs, quickr_expr_of_node, node_expr = node_expr)
+  out_exprs <- lapply(graph$outputs, quickr_expr_of_node, node_expr = node_expr)
   result_sym <- as.name(paste0(prefix, "out"))
 
   if (isTRUE(pack_output)) {
-    out_shapes <- lapply(graph@outputs, function(node) {
+    out_shapes <- lapply(graph$outputs, function(node) {
       if (is_graph_value(node)) {
-        node@aval@shape@dims
+        node$aval$shape$dims
       } else {
         integer()
       }
@@ -949,7 +949,7 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
 
     stmts <- c(stmts, list(out_sym))
   } else {
-    if (!inherits(graph@out_tree, "LeafNode") || length(out_exprs) != 1L) {
+    if (!inherits(graph$out_tree, "LeafNode") || length(out_exprs) != 1L) {
       cli_abort("Internal error: {.arg pack_output} must be TRUE for graphs with multiple outputs")
     }
     stmts <- c(stmts, list(rlang::call2("<-", result_sym, out_exprs[[1L]]), result_sym))
