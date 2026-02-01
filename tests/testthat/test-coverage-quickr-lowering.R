@@ -440,7 +440,14 @@ test_that("quickr lowering helpers cover edge cases", {
 test_that("graph_to_quickr_r_function covers validation branches", {
   testthat::expect_error(graph_to_quickr_r_function(list()), "AnvilGraph", fixed = FALSE)
 
-  g0 <- AnvilGraph(calls = list(), in_tree = NULL, out_tree = NULL, inputs = list(), outputs = list(), constants = list())
+  g0 <- AnvilGraph(
+    calls = list(),
+    in_tree = NULL,
+    out_tree = NULL,
+    inputs = list(),
+    outputs = list(),
+    constants = list()
+  )
   testthat::expect_error(graph_to_quickr_r_function(g0), "non-NULL", fixed = FALSE)
 
   g_in1 <- GraphValue(AbstractTensor("f64", integer()))
