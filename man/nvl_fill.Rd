@@ -27,3 +27,18 @@ See the vignette "Type Promotion" for more details.}
 \description{
 Creates a tensor filled with a scalar value.
 }
+\section{Shapes}{
+
+Output shape is \code{shape}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_constant]{stablehlo::hlo_constant()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval(nvl_fill(3.14, shape = c(2, 3), dtype = "f32"))
+}
+}

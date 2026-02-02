@@ -7,7 +7,7 @@
 nvl_cbrt(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{tensorish}} of floating-point type)\cr
 Operand.}
 }
 \value{
@@ -15,4 +15,22 @@ Operand.}
 }
 \description{
 Element-wise cube root.
+}
+\section{Shapes}{
+
+Operand can have any shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_cbrt]{stablehlo::hlo_cbrt()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(1, 8, 27))
+  nvl_cbrt(x)
+})
+}
 }

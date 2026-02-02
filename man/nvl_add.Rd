@@ -16,3 +16,22 @@ Left and right operand.}
 \description{
 Adds two tensors element-wise.
 }
+\section{Shapes}{
+
+\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_add]{stablehlo::hlo_add()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  y <- nv_tensor(c(4, 5, 6))
+  nvl_add(x, y)
+})
+}
+}

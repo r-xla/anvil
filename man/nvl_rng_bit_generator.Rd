@@ -7,7 +7,7 @@
 nvl_rng_bit_generator(initial_state, rng_algorithm = "THREE_FRY", dtype, shape)
 }
 \arguments{
-\item{initial_state}{(\code{\link{tensorish}})\cr
+\item{initial_state}{(1-d \code{\link{tensorish}} of type \code{ui64})\cr
 RNG state tensor.}
 
 \item{rng_algorithm}{(\code{character(1)})\cr
@@ -24,4 +24,22 @@ List of new state and random tensor.
 }
 \description{
 Generates random bits using the specified algorithm.
+}
+\section{Shapes}{
+
+\code{initial_state} must be 1-d. Returns a list with the updated state (same shape as \code{initial_state}) and a random tensor with the specified \code{shape}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_rng_bit_generator]{stablehlo::hlo_rng_bit_generator()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  state <- nv_tensor(c(0L, 0L), dtype = "ui64")
+  nvl_rng_bit_generator(state, dtype = "f32", shape = c(3))
+})
+}
 }

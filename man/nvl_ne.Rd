@@ -16,3 +16,22 @@ Left and right operand.}
 \description{
 Element-wise inequality comparison.
 }
+\section{Shapes}{
+
+\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} with \code{comparison_direction = "NE"}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  y <- nv_tensor(c(1, 3, 2))
+  nvl_ne(x, y)
+})
+}
+}

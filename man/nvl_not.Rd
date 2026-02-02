@@ -7,7 +7,7 @@
 nvl_not(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{tensorish}} of boolean or integer type)\cr
 Operand.}
 }
 \value{
@@ -15,4 +15,22 @@ Operand.}
 }
 \description{
 Element-wise logical NOT.
+}
+\section{Shapes}{
+
+Operand can have any shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_not]{stablehlo::hlo_not()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(TRUE, FALSE, TRUE))
+  nvl_not(x)
+})
+}
 }

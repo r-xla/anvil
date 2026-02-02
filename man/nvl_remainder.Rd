@@ -7,7 +7,7 @@
 nvl_remainder(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+\item{lhs, rhs}{(\code{\link{tensorish}} of integer or floating-point type)\cr
 Left and right operand.}
 }
 \value{
@@ -15,4 +15,23 @@ Left and right operand.}
 }
 \description{
 Element-wise remainder of division.
+}
+\section{Shapes}{
+
+\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_remainder]{stablehlo::hlo_remainder()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(7, 10, 15))
+  y <- nv_tensor(c(3, 4, 6))
+  nvl_remainder(x, y)
+})
+}
 }

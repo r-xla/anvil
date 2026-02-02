@@ -7,7 +7,7 @@
 nvl_and(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+\item{lhs, rhs}{(\code{\link{tensorish}} of boolean or integer type)\cr
 Left and right operand.}
 }
 \value{
@@ -15,4 +15,23 @@ Left and right operand.}
 }
 \description{
 Element-wise logical AND.
+}
+\section{Shapes}{
+
+\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_and]{stablehlo::hlo_and()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(TRUE, FALSE, TRUE))
+  y <- nv_tensor(c(TRUE, TRUE, FALSE))
+  nvl_and(x, y)
+})
+}
 }

@@ -7,7 +7,7 @@
 nvl_floor(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{tensorish}} of floating-point type)\cr
 Operand.}
 }
 \value{
@@ -15,4 +15,22 @@ Operand.}
 }
 \description{
 Element-wise floor.
+}
+\section{Shapes}{
+
+Operand can have any shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_floor]{stablehlo::hlo_floor()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(1.2, 2.7, -1.5))
+  nvl_floor(x)
+})
+}
 }

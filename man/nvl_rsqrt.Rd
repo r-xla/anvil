@@ -7,7 +7,7 @@
 nvl_rsqrt(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{tensorish}} of floating-point type)\cr
 Operand.}
 }
 \value{
@@ -15,4 +15,22 @@ Operand.}
 }
 \description{
 Element-wise reciprocal square root.
+}
+\section{Shapes}{
+
+Operand can have any shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_rsqrt]{stablehlo::hlo_rsqrt()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(1, 4, 9))
+  nvl_rsqrt(x)
+})
+}
 }

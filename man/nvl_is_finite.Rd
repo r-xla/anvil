@@ -7,7 +7,7 @@
 nvl_is_finite(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{tensorish}} of floating-point type)\cr
 Operand.}
 }
 \value{
@@ -15,4 +15,22 @@ Operand.}
 }
 \description{
 Element-wise check if values are finite (not Inf, -Inf, or NaN).
+}
+\section{Shapes}{
+
+Operand can have any shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_is_finite]{stablehlo::hlo_is_finite()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(1, Inf, NaN, -Inf, 0))
+  nvl_is_finite(x)
+})
+}
 }

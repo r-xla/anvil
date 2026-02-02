@@ -7,7 +7,7 @@
 nvl_logistic(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{tensorish}} of floating-point type)\cr
 Operand.}
 }
 \value{
@@ -15,4 +15,22 @@ Operand.}
 }
 \description{
 Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
+}
+\section{Shapes}{
+
+Operand can have any shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_logistic]{stablehlo::hlo_logistic()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(-2, 0, 2))
+  nvl_logistic(x)
+})
+}
 }

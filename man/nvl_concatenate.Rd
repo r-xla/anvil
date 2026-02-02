@@ -19,3 +19,22 @@ Dimension to concatenate along.}
 \description{
 Concatenates tensors along a dimension.
 }
+\section{Shapes}{
+
+All inputs must have the same shape except along \code{dimension}. The output dimension size is the sum of the input dimension sizes along \code{dimension}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_concatenate]{stablehlo::hlo_concatenate()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  y <- nv_tensor(c(4, 5, 6))
+  nvl_concatenate(x, y, dimension = 1L)
+})
+}
+}

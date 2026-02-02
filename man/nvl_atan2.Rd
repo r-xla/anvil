@@ -7,7 +7,7 @@
 nvl_atan2(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+\item{lhs, rhs}{(\code{\link{tensorish}} of floating-point type)\cr
 Left and right operand.}
 }
 \value{
@@ -15,4 +15,23 @@ Left and right operand.}
 }
 \description{
 Element-wise atan2 operation.
+}
+\section{Shapes}{
+
+\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_atan2]{stablehlo::hlo_atan2()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  y <- nv_tensor(c(1, 0, -1))
+  x <- nv_tensor(c(0, 1, 0))
+  nvl_atan2(y, x)
+})
+}
 }

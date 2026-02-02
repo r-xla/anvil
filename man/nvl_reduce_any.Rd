@@ -7,7 +7,7 @@
 nvl_reduce_any(operand, dims, drop = TRUE)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{tensorish}} of boolean type)\cr
 Operand.}
 
 \item{dims}{(\code{integer()})\cr
@@ -17,8 +17,30 @@ Dimensions to reduce.}
 Whether to drop reduced dimensions.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}} (boolean)
 }
 \description{
 Logical OR along dimensions.
+}
+\section{Shapes}{
+
+\itemize{
+\item \code{operand}: any shape
+\item output (\code{drop = TRUE}): shape of \code{operand} with \code{dims} removed
+\item output (\code{drop = FALSE}): shape of \code{operand} with \code{dims} set to 1
+}
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code{\link[stablehlo:hlo_or]{stablehlo::hlo_or()}} as the reducer.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+  nvl_reduce_any(x, dims = 1L)
+})
+}
 }

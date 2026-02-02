@@ -22,3 +22,25 @@ Batch dimensions.}
 \description{
 General dot product of two tensors.
 }
+\section{Shapes}{
+
+Contracting dimensions in \code{lhs} and \code{rhs} must have matching sizes. Batching dimensions must also have matching sizes. The output shape is the batching dimensions followed by the remaining (non-contracted, non-batched) dimensions of \code{lhs}, then \code{rhs}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_dot_general]{stablehlo::hlo_dot_general()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(matrix(1:6, nrow = 2))
+  y <- nv_tensor(matrix(1:6, nrow = 3))
+  nvl_dot_general(x, y,
+    contracting_dims = list(2L, 1L),
+    batching_dims = list(integer(0), integer(0))
+  )
+})
+}
+}

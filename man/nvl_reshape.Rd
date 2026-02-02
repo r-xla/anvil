@@ -19,3 +19,21 @@ Shape.}
 \description{
 Reshapes a tensor to a new shape.
 }
+\section{Shapes}{
+
+\code{shape} must have the same number of elements as \code{operand}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_reshape]{stablehlo::hlo_reshape()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(1:6)
+  nvl_reshape(x, shape = c(2, 3))
+})
+}
+}

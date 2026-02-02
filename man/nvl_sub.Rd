@@ -7,7 +7,7 @@
 nvl_sub(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+\item{lhs, rhs}{(\code{\link{tensorish}} of integer or floating-point type)\cr
 Left and right operand.}
 }
 \value{
@@ -15,4 +15,23 @@ Left and right operand.}
 }
 \description{
 Subtracts two tensors element-wise.
+}
+\section{Shapes}{
+
+\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_subtract]{stablehlo::hlo_subtract()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  y <- nv_tensor(c(4, 5, 6))
+  nvl_sub(x, y)
+})
+}
 }

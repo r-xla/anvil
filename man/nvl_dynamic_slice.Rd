@@ -10,7 +10,8 @@ nvl_dynamic_slice(operand, ..., slice_sizes)
 \item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
 
-\item{...}{Scalar tensor start indices (1-based), one per dimension.}
+\item{...}{(\code{\link{tensorish}} of integer type)\cr
+Scalar start indices (1-based), one per dimension.}
 
 \item{slice_sizes}{(\code{integer()})\cr
 Size of the slice in each dimension.}
@@ -34,3 +35,22 @@ and \code{slice_sizes = 5} will effectively use \code{start_indices = 6} to keep
 the slice within bounds.
 }
 
+\section{Shapes}{
+
+Each start index in \code{...} must be a scalar tensor. The number of start indices must equal \code{rank(operand)}. \code{slice_sizes} must satisfy \code{slice_sizes <= shape(operand)} per dimension. Output shape is \code{slice_sizes}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_dynamic_slice]{stablehlo::hlo_dynamic_slice()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(1:10)
+  start <- nv_scalar(3L)
+  nvl_dynamic_slice(x, start, slice_sizes = 3L)
+})
+}
+}

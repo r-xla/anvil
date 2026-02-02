@@ -16,3 +16,22 @@ Left and right operand.}
 \description{
 Element-wise maximum of two tensors.
 }
+\section{Shapes}{
+
+\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_maximum]{stablehlo::hlo_maximum()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(1, 5, 3))
+  y <- nv_tensor(c(4, 2, 6))
+  nvl_max(x, y)
+})
+}
+}

@@ -7,7 +7,7 @@
 nvl_div(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+\item{lhs, rhs}{(\code{\link{tensorish}} of integer or floating-point type)\cr
 Left and right operand.}
 }
 \value{
@@ -15,4 +15,23 @@ Left and right operand.}
 }
 \description{
 Divides two tensors element-wise.
+}
+\section{Shapes}{
+
+\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_divide]{stablehlo::hlo_divide()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(10, 20, 30))
+  y <- nv_tensor(c(2, 5, 10))
+  nvl_div(x, y)
+})
+}
 }

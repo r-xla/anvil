@@ -26,3 +26,21 @@ Step sizes.}
 Extracts a slice from a tensor using static (compile-time) indices.
 For dynamic indices, use \code{\link[=nvl_dynamic_slice]{nvl_dynamic_slice()}}.
 }
+\section{Shapes}{
+
+\code{start_indices}, \code{limit_indices}, and \code{strides} must each have length equal to \code{rank(operand)}. Output shape is \code{ceiling((limit_indices - start_indices) / strides)}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_slice]{stablehlo::hlo_slice()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(1:10)
+  nvl_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
+})
+}
+}

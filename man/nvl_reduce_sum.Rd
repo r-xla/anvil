@@ -22,3 +22,25 @@ Whether to drop reduced dimensions.}
 \description{
 Sums tensor elements along dimensions.
 }
+\section{Shapes}{
+
+\itemize{
+\item \code{operand}: any shape
+\item output (\code{drop = TRUE}): shape of \code{operand} with \code{dims} removed
+\item output (\code{drop = FALSE}): shape of \code{operand} with \code{dims} set to 1
+}
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code{\link[stablehlo:hlo_add]{stablehlo::hlo_add()}} as the reducer.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(matrix(1:6, nrow = 2))
+  nvl_reduce_sum(x, dims = 1L)
+})
+}
+}

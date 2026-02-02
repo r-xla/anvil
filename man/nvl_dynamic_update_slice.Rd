@@ -13,8 +13,8 @@ Operand.}
 \item{update}{(\code{\link{tensorish}})\cr
 The values to write at the specified position.}
 
-\item{...}{(\code{\link{tensorish}})\cr
-Scalar tensor start indices (1-based), one per dimension.}
+\item{...}{(\code{\link{tensorish}} of integer type)\cr
+Scalar start indices (1-based), one per dimension.}
 }
 \value{
 \code{\link{tensorish}}
@@ -23,6 +23,16 @@ Scalar tensor start indices (1-based), one per dimension.}
 Updates a dynamically positioned slice in a tensor.
 The start position is specified at runtime via tensor indices.
 }
+\section{Shapes}{
+
+\code{update} must have the same rank as \code{operand}, with \code{shape(update) <= shape(operand)} per dimension. Each start index in \code{...} must be a scalar tensor. The output has the same shape as \code{operand}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_dynamic_update_slice]{stablehlo::hlo_dynamic_update_slice()}}.
+}
+
 \section{Out Of Bounds Behavior}{
 
 If the slice would extend beyond the bounds of the operand tensor,
@@ -35,3 +45,13 @@ and \code{slice_sizes = 5} will effectively use \code{start_indices = 6} to keep
 the slice within bounds.
 }
 
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(1:5)
+  update <- nv_tensor(c(10L, 20L))
+  start <- nv_scalar(2L)
+  nvl_dynamic_update_slice(x, update, start)
+})
+}
+}

@@ -7,7 +7,7 @@
 nvl_shift_left(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+\item{lhs, rhs}{(\code{\link{tensorish}} of integer type)\cr
 Left and right operand.}
 }
 \value{
@@ -15,4 +15,23 @@ Left and right operand.}
 }
 \description{
 Element-wise left bit shift.
+}
+\section{Shapes}{
+
+\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_shift_left]{stablehlo::hlo_shift_left()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(1L, 2L, 4L))
+  y <- nv_tensor(c(1L, 2L, 1L))
+  nvl_shift_left(x, y)
+})
+}
 }

@@ -24,3 +24,21 @@ See the vignette "Type Promotion" for more details.}
 \description{
 Converts tensor to a different dtype.
 }
+\section{Shapes}{
+
+Output has the same shape as \code{operand}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_convert]{stablehlo::hlo_convert()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(1L, 2L, 3L))
+  nvl_convert(x, dtype = "f32")
+})
+}
+}

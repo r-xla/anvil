@@ -36,7 +36,7 @@ To create a "scalar" with dimension \verb{()}, use \code{\link{nv_scalar}}.}
 Whether the dtype should be marked as ambiguous.
 For \code{\link[=nv_tensor]{nv_tensor()}}, defaults to \code{FALSE} (non-ambiguous) for new tensors,
 or preserves the existing value when \code{data} is already an \code{\link{AnvilTensor}}.
-For \code{\link[=nv_scalar]{nv_scalar()}}, defaults to \code{TRUE} when \code{dtype} is \code{NULL} and data is numeric, \code{FALSE} otherwise.}
+For \code{\link[=nv_scalar]{nv_scalar()}}, defaults to \code{FALSE} (non-ambiguous).}
 }
 \value{
 (\code{\link{AnvilTensor}}) A tensor object.

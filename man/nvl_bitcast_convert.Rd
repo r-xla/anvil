@@ -19,3 +19,21 @@ Data type.}
 \description{
 Reinterprets tensor bits as a different dtype.
 }
+\section{Shapes}{
+
+If the source and target types have the same bit width, the output has the same shape as \code{operand}. Otherwise the last dimension is adjusted based on the bit-width ratio.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_bitcast_convert]{stablehlo::hlo_bitcast_convert()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(1L)
+  nvl_bitcast_convert(x, dtype = "f32")
+})
+}
+}

@@ -34,3 +34,23 @@ Amount of padding to add between elements in each dimension.}
 \description{
 Pads a tensor with a given padding value.
 }
+\section{Shapes}{
+
+\code{padding_value} must be scalar. \code{edge_padding_low}, \code{edge_padding_high}, and \code{interior_padding} must each have length equal to \code{rank(operand)}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_pad]{stablehlo::hlo_pad()}}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  nvl_pad(x, nv_scalar(0),
+    edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
+  )
+})
+}
+}

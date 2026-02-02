@@ -16,3 +16,22 @@ Left and right operand.}
 \description{
 Element-wise less than or equal comparison.
 }
+\section{Shapes}{
+
+\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} with \code{comparison_direction = "LE"}.
+}
+
+\examples{
+\dontrun{
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  y <- nv_tensor(c(3, 2, 1))
+  nvl_le(x, y)
+})
+}
+}
