@@ -504,7 +504,7 @@ train_while(X, beta_hat, alpha_hat, y, nv_scalar(100L))
     ## $i
     ## AnvilTensor
     ##  100
-    ## [ CPUi32?{} ]
+    ## [ CPUi32{} ]
 
 The same approach works analogously for `if`-statements, where the
 {anvil} primitive `nv_if` is available.

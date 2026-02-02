@@ -156,22 +156,23 @@ Promotion rules: ambiguous (row) × known (column)
 
 ## Creating Tensors with Different Ambiguity
 
-The
+Both
 [`nv_scalar()`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
 and
 [`nv_tensor()`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
-functions have different default behaviors regarding ambiguity:
-
-- [`nv_scalar()`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
-  creates **ambiguous** tensors by default (when not specifying dtype
-  explicitly), unless the data is `logical`.
-
-- [`nv_tensor()`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
-  creates **non-ambiguous** tensors by default
+create **non-ambiguous** tensors by default. You can explicitly control
+ambiguity using the `ambiguous` parameter:
 
 ``` r
 s1 <- nv_scalar(1.0)
 ambiguous(s1)
+```
+
+    ## [1] FALSE
+
+``` r
+s2 <- nv_scalar(1.0, ambiguous = TRUE)
+ambiguous(s2)
 ```
 
     ## [1] TRUE
@@ -179,22 +180,6 @@ ambiguous(s1)
 ``` r
 t1 <- nv_tensor(c(1.0, 2.0, 3.0))
 ambiguous(t1)
-```
-
-    ## [1] FALSE
-
-``` r
-s2 <- nv_scalar(1.0, dtype = "f32")
-ambiguous(s2)
-```
-
-    ## [1] FALSE
-
-You can explicitly control ambiguity using the `ambiguous` parameter:
-
-``` r
-s3 <- nv_scalar(1.0, ambiguous = FALSE)
-ambiguous(s3)
 ```
 
     ## [1] FALSE

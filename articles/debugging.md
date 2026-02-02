@@ -23,13 +23,13 @@ y <- nv_scalar(1) + nv_tensor(1:4, shape = c(2, 2))
 y
 ```
 
-    ## f32?{2,2}
+    ## f32{2,2}
 
 ``` r
 mean(y)
 ```
 
-    ## f32?{}
+    ## f32{}
 
 To use debug mode, you can pass `AnvilTensor` and literals (`1L`,
 `1.0`).
@@ -38,7 +38,7 @@ To use debug mode, you can pass `AnvilTensor` and literals (`1L`,
 1 + nv_scalar(1)
 ```
 
-    ## f32?{}
+    ## f32{}
 
 If you only want to specify the abstract types, you can also directly
 pass `DebugBox` objects:
@@ -188,34 +188,34 @@ for (i in 1:10) {
 
     ## AnvilTensor
     ##  1
-    ## [ CPUi32?{} ] 
+    ## [ CPUi32{} ] 
     ## AnvilTensor
     ##  2
-    ## [ CPUi32?{} ] 
+    ## [ CPUi32{} ] 
     ## AnvilTensor
     ##  3
-    ## [ CPUi32?{} ] 
+    ## [ CPUi32{} ] 
     ## AnvilTensor
     ##  4
-    ## [ CPUi32?{} ] 
+    ## [ CPUi32{} ] 
     ## AnvilTensor
     ##  5
-    ## [ CPUi32?{} ] 
+    ## [ CPUi32{} ] 
     ## AnvilTensor
     ##  6
-    ## [ CPUi32?{} ] 
+    ## [ CPUi32{} ] 
     ## AnvilTensor
     ##  7
-    ## [ CPUi32?{} ] 
+    ## [ CPUi32{} ] 
     ## AnvilTensor
     ##  8
-    ## [ CPUi32?{} ] 
+    ## [ CPUi32{} ] 
     ## AnvilTensor
     ##  9
-    ## [ CPUi32?{} ] 
+    ## [ CPUi32{} ] 
     ## AnvilTensor
     ##  10
-    ## [ CPUi32?{} ]
+    ## [ CPUi32{} ]
 
 For the second approach, we use `nv_while` to implement the loop.
 

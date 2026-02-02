@@ -1131,34 +1131,22 @@ f64
 <div class="section level2">
 <h2 id="creating-tensors-with-different-ambiguity">Creating Tensors with Different Ambiguity<a class="anchor" aria-label="anchor" href="#creating-tensors-with-different-ambiguity"></a>
 </h2>
-<p>The <code><a href="../reference/AnvilTensor.html">nv_scalar()</a></code> and <code><a href="../reference/AnvilTensor.html">nv_tensor()</a></code> functions
-have different default behaviors regarding ambiguity:</p>
-<ul>
-<li><p><code><a href="../reference/AnvilTensor.html">nv_scalar()</a></code> creates <strong>ambiguous</strong>
-tensors by default (when not specifying dtype explicitly), unless the
-data is <code>logical</code>.</p></li>
-<li><p><code><a href="../reference/AnvilTensor.html">nv_tensor()</a></code> creates <strong>non-ambiguous</strong>
-tensors by default</p></li>
-</ul>
+<p>Both <code><a href="../reference/AnvilTensor.html">nv_scalar()</a></code> and <code><a href="../reference/AnvilTensor.html">nv_tensor()</a></code> create
+<strong>non-ambiguous</strong> tensors by default. You can explicitly
+control ambiguity using the <code>ambiguous</code> parameter:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/ambiguous.html">ambiguous</a></span><span class="op">(</span><span class="va">s1</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
+<pre><code><span><span class="co">## [1] FALSE</span></span></code></pre>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">s2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, ambiguous <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ambiguous.html">ambiguous</a></span><span class="op">(</span><span class="va">s2</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">t1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/ambiguous.html">ambiguous</a></span><span class="op">(</span><span class="va">t1</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] FALSE</span></span></code></pre>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">s2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/ambiguous.html">ambiguous</a></span><span class="op">(</span><span class="va">s2</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] FALSE</span></span></code></pre>
-<p>You can explicitly control ambiguity using the <code>ambiguous</code>
-parameter:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">s3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, ambiguous <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/ambiguous.html">ambiguous</a></span><span class="op">(</span><span class="va">s3</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] FALSE</span></span></code></pre>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">t2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span><span class="op">)</span>, ambiguous <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/ambiguous.html">ambiguous</a></span><span class="op">(</span><span class="va">t2</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
@@ -1168,7 +1156,7 @@ parameter:</p>
 </h2>
 <p>Ambiguity is propagated through operations. Consider the following
 example:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">z</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">+</span> <span class="fl">1L</span></span>
 <span>  <span class="va">z</span> <span class="op">*</span> <span class="va">y</span></span>

@@ -156,7 +156,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x555a5883e928>
+    ## <bytecode: 0x55c55c47c200>
     ## <environment: namespace:anvil>
 
 The
@@ -207,7 +207,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x555a5883dcb0>
+    ## <bytecode: 0x55c55c47f3b8>
     ## <environment: namespace:anvil>
 
 The
@@ -506,7 +506,7 @@ graph
 
     ## <AnvilGraph>
     ##   Inputs:
-    ##     %x1: i32?[]
+    ##     %x1: i32[]
     ##   Constants:
     ##     %c1: f32[1000000]
     ##   Body:

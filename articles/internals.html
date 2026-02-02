@@ -261,7 +261,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x555a5883e928&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55c55c47c200&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -304,7 +304,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x555a5883dcb0&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55c55c47f3b8&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
@@ -547,7 +547,7 @@ below:</p>
 <span><span class="va">graph</span></span></code></pre></div>
 <pre><code><span><span class="co">## &lt;AnvilGraph&gt;</span></span>
 <span><span class="co">##   Inputs:</span></span>
-<span><span class="co">##     %x1: i32?[]</span></span>
+<span><span class="co">##     %x1: i32[]</span></span>
 <span><span class="co">##   Constants:</span></span>
 <span><span class="co">##     %c1: f32[1000000]</span></span>
 <span><span class="co">##   Body:</span></span>
