@@ -232,7 +232,7 @@ test_that("p_broadcast_in_dim", {
   f <- jit(nvl_broadcast_in_dim, static = c("shape", "broadcast_dimensions"))
   expect_equal(
     f(nv_scalar(1L), c(1, 2), integer()),
-    nv_tensor(1L, shape = c(1, 2), ambiguous = TRUE),
+    nv_tensor(1L, shape = c(1, 2)),
     tolerance = 1e-5
   )
 })
@@ -320,7 +320,7 @@ describe("p_if", {
   })
 
   it("works with literals as predicate", {
-    expect_equal(jit_eval(nv_if(TRUE, 1, 2)), nv_scalar(1))
+    expect_equal(jit_eval(nv_if(TRUE, 1, 2)), nv_scalar(1, ambiguous = TRUE))
   })
 })
 

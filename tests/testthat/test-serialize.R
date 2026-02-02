@@ -20,7 +20,7 @@ test_that("nv_write and nv_read works for a single tensor", {
 
 test_that("serialization preserves ambiguity", {
   # Create tensors with different ambiguity
-  ambiguous_tensor <- nv_scalar(1.0) # ambiguous
+  ambiguous_tensor <- nv_scalar(1.0, ambiguous = TRUE) # ambiguous
   non_ambiguous_tensor <- nv_tensor(1.0, dtype = "f32") # non-ambiguous
 
   lst <- list(

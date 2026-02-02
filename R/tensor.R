@@ -21,7 +21,7 @@
 #'   Whether the dtype should be marked as ambiguous.
 #'   For [nv_tensor()], defaults to `FALSE` (non-ambiguous) for new tensors,
 #'   or preserves the existing value when `data` is already an [`AnvilTensor`].
-#'   For [nv_scalar()], defaults to `TRUE` when `dtype` is `NULL` and data is numeric, `FALSE` otherwise.
+#'   For [nv_scalar()], defaults to `FALSE` (non-ambiguous).
 #'
 #' @return ([`AnvilTensor`]) A tensor object.
 #'
@@ -91,9 +91,8 @@ ensure_nv_tensor <- function(x, ambiguous = FALSE) {
 #' @rdname AnvilTensor
 #' @export
 nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL) {
-  # Ambiguous if dtype is not explicitly specified (and not logical)
   if (is.null(ambiguous)) {
-    ambiguous <- is.null(dtype) && !is.logical(data)
+    ambiguous <- FALSE
   }
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
