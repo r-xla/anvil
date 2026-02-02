@@ -115,7 +115,7 @@ test_that("to_abstract", {
 
   # pure
   x <- nv_scalar(1)
-  expect_equal(to_abstract(x, pure = TRUE), AbstractTensor("f32", c(), TRUE))
+  expect_equal(to_abstract(x, pure = TRUE), AbstractTensor("f32", c(), FALSE))
   expect_error(to_abstract(list(1, 2)), "is not a tensor-like object")
 })
 

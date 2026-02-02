@@ -156,9 +156,9 @@ describe("gather_clamp_indices", {
 })
 
 test_that("ambiguous_abstract", {
-  # Ambiguous scalar (no explicit dtype)
-  expect_true(ambiguous_abstract(nv_scalar(1.0)))
-  expect_true(ambiguous_abstract(nv_scalar(1L)))
+  # Non-ambiguous scalar (no explicit dtype)
+  expect_false(ambiguous_abstract(nv_scalar(1.0)))
+  expect_false(ambiguous_abstract(nv_scalar(1L)))
 
   # Non-ambiguous scalar (explicit dtype)
   expect_false(ambiguous_abstract(nv_scalar(1.0, dtype = "f32")))
