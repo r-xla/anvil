@@ -37,10 +37,10 @@ Calls \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code{\li
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
   nvl_reduce_all(x, dims = 1L)
 })
-}
+\dontshow{\}) # examplesIf}
 }

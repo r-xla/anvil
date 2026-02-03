@@ -27,11 +27,11 @@ Calls \code{\link[stablehlo:hlo_shift_left]{stablehlo::hlo_shift_left()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(1L, 2L, 4L))
   y <- nv_tensor(c(1L, 2L, 1L))
   nvl_shift_left(x, y)
 })
-}
+\dontshow{\}) # examplesIf}
 }

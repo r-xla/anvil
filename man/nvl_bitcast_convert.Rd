@@ -30,10 +30,10 @@ Calls \code{\link[stablehlo:hlo_bitcast_convert]{stablehlo::hlo_bitcast_convert(
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(1L)
   nvl_bitcast_convert(x, dtype = "f32")
 })
-}
+\dontshow{\}) # examplesIf}
 }

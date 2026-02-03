@@ -33,10 +33,10 @@ Calls \code{\link[stablehlo:hlo_select]{stablehlo::hlo_select()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   pred <- nv_tensor(c(TRUE, FALSE, TRUE))
   nvl_ifelse(pred, nv_tensor(c(1, 2, 3)), nv_tensor(c(4, 5, 6)))
 })
-}
+\dontshow{\}) # examplesIf}
 }

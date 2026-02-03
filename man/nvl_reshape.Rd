@@ -30,10 +30,10 @@ Calls \code{\link[stablehlo:hlo_reshape]{stablehlo::hlo_reshape()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(1:6)
   nvl_reshape(x, shape = c(2, 3))
 })
-}
+\dontshow{\}) # examplesIf}
 }

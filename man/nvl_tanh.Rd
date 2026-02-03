@@ -27,10 +27,10 @@ Calls \code{\link[stablehlo:hlo_tanh]{stablehlo::hlo_tanh()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(-1, 0, 1))
   nvl_tanh(x)
 })
-}
+\dontshow{\}) # examplesIf}
 }

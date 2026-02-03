@@ -27,10 +27,10 @@ Calls \code{\link[stablehlo:hlo_log_plus_one]{stablehlo::hlo_log_plus_one()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(0, 0.001, 1))
   nvl_log1p(x)
 })
-}
+\dontshow{\}) # examplesIf}
 }

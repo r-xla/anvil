@@ -27,10 +27,10 @@ Calls \code{\link[stablehlo:hlo_ceil]{stablehlo::hlo_ceil()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(1.2, 2.7, -1.5))
   nvl_ceil(x)
 })
-}
+\dontshow{\}) # examplesIf}
 }

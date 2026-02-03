@@ -27,11 +27,11 @@ Calls \code{\link[stablehlo:hlo_minimum]{stablehlo::hlo_minimum()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(1, 5, 3))
   y <- nv_tensor(c(4, 2, 6))
   nvl_min(x, y)
 })
-}
+\dontshow{\}) # examplesIf}
 }

@@ -27,11 +27,11 @@ Calls \code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} with \code{c
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(1, 2, 3))
   y <- nv_tensor(c(3, 2, 1))
   nvl_gt(x, y)
 })
-}
+\dontshow{\}) # examplesIf}
 }

@@ -33,10 +33,10 @@ Calls \code{\link[stablehlo:hlo_broadcast_in_dim]{stablehlo::hlo_broadcast_in_di
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(1, 2, 3))
   nvl_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
 })
-}
+\dontshow{\}) # examplesIf}
 }

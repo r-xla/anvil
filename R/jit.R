@@ -206,11 +206,13 @@ xla <- function(f, args, donate = character(), platform = "cpu") {
 #' Compiles and evaluates an expression.
 #' @param expr (`expression`)\cr
 #'   Expression to run.
+#' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
+#'   The device to use if no input tensors are provided to infer the platform.
 #' @return (`any`)\cr
 #'   Result of the expression.
 #' @export
-jit_eval <- function(expr) {
+jit_eval <- function(expr, device = "cpu") {
   expr <- substitute(expr)
   eval_env <- new.env(parent = parent.frame())
-  jit(\() eval(expr, envir = eval_env))()
+  jit(\() eval(expr, envir = eval_env), device = device)()
 }

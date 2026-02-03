@@ -33,7 +33,7 @@ Calls \code{\link[stablehlo:hlo_dot_general]{stablehlo::hlo_dot_general()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(matrix(1:6, nrow = 2))
   y <- nv_tensor(matrix(1:6, nrow = 3))
@@ -42,5 +42,5 @@ jit_eval({
     batching_dims = list(integer(0), integer(0))
   )
 })
-}
+\dontshow{\}) # examplesIf}
 }

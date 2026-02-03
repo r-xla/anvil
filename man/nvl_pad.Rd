@@ -45,12 +45,12 @@ Calls \code{\link[stablehlo:hlo_pad]{stablehlo::hlo_pad()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(1, 2, 3))
   nvl_pad(x, nv_scalar(0),
     edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
   )
 })
-}
+\dontshow{\}) # examplesIf}
 }

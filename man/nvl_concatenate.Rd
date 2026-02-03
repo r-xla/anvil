@@ -30,11 +30,11 @@ Calls \code{\link[stablehlo:hlo_concatenate]{stablehlo::hlo_concatenate()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(1, 2, 3))
   y <- nv_tensor(c(4, 5, 6))
   nvl_concatenate(x, y, dimension = 1L)
 })
-}
+\dontshow{\}) # examplesIf}
 }

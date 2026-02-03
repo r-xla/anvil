@@ -27,10 +27,10 @@ Calls \code{\link[stablehlo:hlo_sine]{stablehlo::hlo_sine()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(0, pi / 2, pi))
   nvl_sine(x)
 })
-}
+\dontshow{\}) # examplesIf}
 }

@@ -30,10 +30,10 @@ Calls \code{\link[stablehlo:hlo_reverse]{stablehlo::hlo_reverse()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(1, 2, 3, 4, 5))
   nvl_reverse(x, dims = 1L)
 })
-}
+\dontshow{\}) # examplesIf}
 }

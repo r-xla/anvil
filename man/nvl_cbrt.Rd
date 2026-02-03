@@ -27,10 +27,10 @@ Calls \code{\link[stablehlo:hlo_cbrt]{stablehlo::hlo_cbrt()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(1, 8, 27))
   nvl_cbrt(x)
 })
-}
+\dontshow{\}) # examplesIf}
 }

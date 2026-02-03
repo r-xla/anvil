@@ -46,11 +46,11 @@ Calls \code{\link[stablehlo:hlo_dynamic_slice]{stablehlo::hlo_dynamic_slice()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(1:10)
   start <- nv_scalar(3L)
   nvl_dynamic_slice(x, start, slice_sizes = 3L)
 })
-}
+\dontshow{\}) # examplesIf}
 }

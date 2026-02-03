@@ -33,10 +33,10 @@ Calls \code{\link[stablehlo:hlo_clamp]{stablehlo::hlo_clamp()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(-1, 0.5, 2))
   nvl_clamp(nv_scalar(0), x, nv_scalar(1))
 })
-}
+\dontshow{\}) # examplesIf}
 }

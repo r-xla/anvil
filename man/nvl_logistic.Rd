@@ -27,10 +27,10 @@ Calls \code{\link[stablehlo:hlo_logistic]{stablehlo::hlo_logistic()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(-2, 0, 2))
   nvl_logistic(x)
 })
-}
+\dontshow{\}) # examplesIf}
 }

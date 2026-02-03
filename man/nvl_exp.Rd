@@ -27,10 +27,10 @@ Calls \code{\link[stablehlo:hlo_exponential]{stablehlo::hlo_exponential()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(0, 1, 2))
   nvl_exp(x)
 })
-}
+\dontshow{\}) # examplesIf}
 }

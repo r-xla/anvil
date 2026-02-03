@@ -33,7 +33,7 @@ Calls \code{\link[stablehlo:hlo_if]{stablehlo::hlo_if()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval(nvl_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
-}
+\dontshow{\}) # examplesIf}
 }

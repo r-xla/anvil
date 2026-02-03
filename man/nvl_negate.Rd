@@ -27,10 +27,10 @@ Calls \code{\link[stablehlo:hlo_negate]{stablehlo::hlo_negate()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(1, -2, 3))
   nvl_negate(x)
 })
-}
+\dontshow{\}) # examplesIf}
 }

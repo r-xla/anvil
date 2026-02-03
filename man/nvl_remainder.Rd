@@ -27,11 +27,11 @@ Calls \code{\link[stablehlo:hlo_remainder]{stablehlo::hlo_remainder()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(7, 10, 15))
   y <- nv_tensor(c(3, 4, 6))
   nvl_remainder(x, y)
 })
-}
+\dontshow{\}) # examplesIf}
 }

@@ -46,12 +46,12 @@ the slice within bounds.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(1:5)
   update <- nv_tensor(c(10L, 20L))
   start <- nv_scalar(2L)
   nvl_dynamic_update_slice(x, update, start)
 })
-}
+\dontshow{\}) # examplesIf}
 }

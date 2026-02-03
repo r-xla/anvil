@@ -37,10 +37,10 @@ Calls \code{\link[stablehlo:hlo_slice]{stablehlo::hlo_slice()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(1:10)
   nvl_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 })
-}
+\dontshow{\}) # examplesIf}
 }

@@ -35,10 +35,10 @@ Calls \code{\link[stablehlo:hlo_convert]{stablehlo::hlo_convert()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(1L, 2L, 3L))
   nvl_convert(x, dtype = "f32")
 })
-}
+\dontshow{\}) # examplesIf}
 }

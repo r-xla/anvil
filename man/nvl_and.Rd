@@ -27,11 +27,11 @@ Calls \code{\link[stablehlo:hlo_and]{stablehlo::hlo_and()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(TRUE, FALSE, TRUE))
   y <- nv_tensor(c(TRUE, TRUE, FALSE))
   nvl_and(x, y)
 })
-}
+\dontshow{\}) # examplesIf}
 }

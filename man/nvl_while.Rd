@@ -33,7 +33,7 @@ Calls \code{\link[stablehlo:hlo_while]{stablehlo::hlo_while()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   nvl_while(
     init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
@@ -44,5 +44,5 @@ jit_eval({
     )
   )
 })
-}
+\dontshow{\}) # examplesIf}
 }

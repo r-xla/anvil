@@ -74,7 +74,7 @@ Calls \code{\link[stablehlo:hlo_scatter]{stablehlo::hlo_scatter()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   input <- nv_tensor(c(0, 0, 0, 0, 0))
   indices <- nv_tensor(matrix(c(1L, 3L), ncol = 1))
@@ -89,5 +89,5 @@ jit_eval({
     index_vector_dim = 2L
   )
 })
-}
+\dontshow{\}) # examplesIf}
 }

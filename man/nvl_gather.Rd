@@ -69,7 +69,7 @@ Calls \code{\link[stablehlo:hlo_gather]{stablehlo::hlo_gather()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   operand <- nv_tensor(matrix(1:9, nrow = 3))
   indices <- nv_tensor(matrix(c(1L, 3L), ncol = 1))
@@ -84,5 +84,5 @@ jit_eval({
     index_vector_dim = 2L
   )
 })
-}
+\dontshow{\}) # examplesIf}
 }

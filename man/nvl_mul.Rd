@@ -27,11 +27,11 @@ Calls \code{\link[stablehlo:hlo_multiply]{stablehlo::hlo_multiply()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(1, 2, 3))
   y <- nv_tensor(c(4, 5, 6))
   nvl_mul(x, y)
 })
-}
+\dontshow{\}) # examplesIf}
 }

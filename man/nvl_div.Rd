@@ -27,11 +27,11 @@ Calls \code{\link[stablehlo:hlo_divide]{stablehlo::hlo_divide()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(10, 20, 30))
   y <- nv_tensor(c(2, 5, 10))
   nvl_div(x, y)
 })
-}
+\dontshow{\}) # examplesIf}
 }

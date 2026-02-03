@@ -27,10 +27,10 @@ Calls \code{\link[stablehlo:hlo_sqrt]{stablehlo::hlo_sqrt()}}.
 }
 
 \examples{
-\dontrun{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_tensor(c(1, 4, 9))
   nvl_sqrt(x)
 })
-}
+\dontshow{\}) # examplesIf}
 }
