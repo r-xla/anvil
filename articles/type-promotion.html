@@ -124,10 +124,10 @@ flag indicating whether the result is ambiguous, which we will cover
 later.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/common_dtype.html">common_dtype</a></span><span class="op">(</span><span class="st">"f64"</span>, <span class="st">"f32"</span><span class="op">)</span><span class="op">$</span><span class="va">dtype</span></span></code></pre></div>
-<pre><code><span><span class="co">## &lt;FloatType: 64&gt;</span></span></code></pre>
+<pre><code><span><span class="co">## &lt;f64&gt;</span></span></code></pre>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/common_dtype.html">common_dtype</a></span><span class="op">(</span><span class="st">"i64"</span>, <span class="st">"f32"</span><span class="op">)</span><span class="op">$</span><span class="va">dtype</span></span></code></pre></div>
-<pre><code><span><span class="co">## &lt;FloatType: 32&gt;</span></span></code></pre>
+<pre><code><span><span class="co">## &lt;f32&gt;</span></span></code></pre>
 <p>A table with the promotion rules is below.</p>
 <table class="table">
 <caption>
@@ -637,21 +637,21 @@ known.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/common_dtype.html">common_dtype</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="st">"f64"</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $dtype</span></span>
-<span><span class="co">## &lt;FloatType: 32&gt;</span></span>
+<span><span class="co">## &lt;f32&gt;</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $ambiguous</span></span>
 <span><span class="co">## [1] FALSE</span></span></code></pre>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/common_dtype.html">common_dtype</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="st">"f64"</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $dtype</span></span>
-<span><span class="co">## &lt;FloatType: 64&gt;</span></span>
+<span><span class="co">## &lt;f64&gt;</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $ambiguous</span></span>
 <span><span class="co">## [1] TRUE</span></span></code></pre>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/common_dtype.html">common_dtype</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="st">"f64"</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $dtype</span></span>
-<span><span class="co">## &lt;FloatType: 64&gt;</span></span>
+<span><span class="co">## &lt;f64&gt;</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $ambiguous</span></span>
 <span><span class="co">## [1] FALSE</span></span></code></pre>

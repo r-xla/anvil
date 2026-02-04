@@ -6,7 +6,7 @@ executable, and returns an R function that executes it.
 ## Usage
 
 ``` r
-xla(f, args, donate = character(), platform = "cpu")
+xla(f, args, donate = character(), device = "cpu")
 ```
 
 ## Arguments
@@ -26,10 +26,10 @@ xla(f, args, donate = character(), platform = "cpu")
   ([`character()`](https://rdrr.io/r/base/character.html))  
   Names of the arguments whose buffers should be donated.
 
-- platform:
+- device:
 
   (`character(1)`)  
-  Target platform (e.g. `"cpu"`, `"cuda"`, `"metal"`).
+  Target device (e.g. `"cpu"`, `"cuda"`).
 
 ## Value
 

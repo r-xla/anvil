@@ -33,13 +33,13 @@ ambiguous, which we will cover later.
 common_dtype("f64", "f32")$dtype
 ```
 
-    ## <FloatType: 64>
+    ## <f64>
 
 ``` r
 common_dtype("i64", "f32")$dtype
 ```
 
-    ## <FloatType: 32>
+    ## <f32>
 
 A table with the promotion rules is below.
 
@@ -102,7 +102,7 @@ common_dtype("f32", "f64", FALSE, TRUE)
 ```
 
     ## $dtype
-    ## <FloatType: 32>
+    ## <f32>
     ## 
     ## $ambiguous
     ## [1] FALSE
@@ -112,7 +112,7 @@ common_dtype("f32", "f64", TRUE, TRUE)
 ```
 
     ## $dtype
-    ## <FloatType: 64>
+    ## <f64>
     ## 
     ## $ambiguous
     ## [1] TRUE
@@ -122,7 +122,7 @@ common_dtype("f32", "f64", FALSE, FALSE)
 ```
 
     ## $dtype
-    ## <FloatType: 64>
+    ## <f64>
     ## 
     ## $ambiguous
     ## [1] FALSE

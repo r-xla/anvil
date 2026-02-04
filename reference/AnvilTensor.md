@@ -54,8 +54,7 @@ nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
   Whether the dtype should be marked as ambiguous. For `nv_tensor()`,
   defaults to `FALSE` (non-ambiguous) for new tensors, or preserves the
   existing value when `data` is already an `AnvilTensor`. For
-  `nv_scalar()`, defaults to `TRUE` when `dtype` is `NULL` and data is
-  numeric, `FALSE` otherwise.
+  `nv_scalar()`, defaults to `FALSE` (non-ambiguous).
 
 ## Value
 
