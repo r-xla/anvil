@@ -181,10 +181,8 @@ current <code>GraphDescriptor</code>.</li>
 </ol>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nvl_repeat_along</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">operand</span>, <span class="va">times</span>, <span class="va">dim</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># type of operand is checked by graph_desc_add()</span></span>
 <span>  <span class="va">infer_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">operand</span>, <span class="va">times</span>, <span class="va">dim</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="../reference/is_tensorish.html">is_tensorish</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="fu">cli</span><span class="fu">::</span><span class="fu"><a href="https://cli.r-lib.org/reference/cli_abort.html" class="external-link">cli_abort</a></span><span class="op">(</span><span class="st">"{.arg operand} must be a tensor-ish object, but is {.cls {class(operand)[1]}}"</span><span class="op">)</span></span>
-<span>    <span class="op">}</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu">checkmate</span><span class="fu">::</span><span class="fu"><a href="https://mllg.github.io/checkmate/reference/checkIntegerish.html" class="external-link">test_integerish</a></span><span class="op">(</span><span class="va">dim</span>, lower <span class="op">=</span> <span class="fl">1</span>, upper <span class="op">=</span> <span class="fu"><a href="https://r-xla.github.io/tengen/reference/ndims.html" class="external-link">ndims</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span>, len <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="fu">cli</span><span class="fu">::</span><span class="fu"><a href="https://cli.r-lib.org/reference/cli_abort.html" class="external-link">cli_abort</a></span><span class="op">(</span><span class="st">"{.arg dim} must be between 1 and {ndims(operand)}, but is {.val dim}"</span><span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
@@ -338,12 +336,12 @@ An example is <code>nvl_add</code> vs <code>nv_add</code>, where the
 latter calls into the former after optionally broadcasting (scalar)
 inputs:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/nv_add.html">nv_add</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; f32?{2}</span></span>
-<span><span class="fu"><a href="../reference/nvl_add.html">nvl_add</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/nv_add.html">nv_add</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; i32{2}</span></span>
+<span><span class="fu"><a href="../reference/nvl_add.html">nvl_add</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `nvl_add()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `lhs` and `rhs` must have the same tensor type.</span></span>
-<span><span class="co">#&gt; <span style="color: #BB0000;">✖</span> Got <span style="color: #0000BB;">tensor&lt;f32&gt;</span> and <span style="color: #0000BB;">tensor&lt;2xi32&gt;</span>.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BB0000;">✖</span> Got <span style="color: #0000BB;">tensor&lt;i32&gt;</span> and <span style="color: #0000BB;">tensor&lt;2xi32&gt;</span>.</span></span></code></pre></div>
 <p>In our case, no such convenience is needed and the functionality is
 not too low-level (for it to be generally useful), so we can just
 reassign the <code>nvl_*</code> function to an <code>nv_*</code>

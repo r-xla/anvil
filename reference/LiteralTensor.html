@@ -5,11 +5,11 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Literal Tensor Class — LiteralTensor"><meta name="description" content="A AbstractTensor representing a tensor where the data is a R scalar literal (e.g., 1L, 2.5)
-or an AnvilTensor.
-Usually, their type is ambiguous, unless created via nv_fill."><meta property="og:description" content="A AbstractTensor representing a tensor where the data is a R scalar literal (e.g., 1L, 2.5)
-or an AnvilTensor.
-Usually, their type is ambiguous, unless created via nv_fill."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Literal Tensor Class — LiteralTensor"><meta name="description" content="An AbstractTensor where all elements have the same constant value.
+This either arises when using literals in traced code (e.g. x + 1) or when using
+nv_fill() to create a constant."><meta property="og:description" content="An AbstractTensor where all elements have the same constant value.
+This either arises when using literals in traced code (e.g. x + 1) or when using
+nv_fill() to create a constant."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -69,9 +69,9 @@ Usually, their type is ambiguous, unless created via nv_fill."></head><body>
     </div>
 
     <div class="ref-description section level2">
-    <p>A <code><a href="AbstractTensor.html">AbstractTensor</a></code> representing a tensor where the data is a R scalar literal (e.g., <code>1L</code>, <code>2.5</code>)
-or an <code><a href="AnvilTensor.html">AnvilTensor</a></code>.
-Usually, their type is ambiguous, unless created via <code><a href="nv_fill.html">nv_fill</a></code>.</p>
+    <p>An <code><a href="AbstractTensor.html">AbstractTensor</a></code> where all elements have the same constant value.
+This either arises when using literals in traced code (e.g. <code>x + 1</code>) or when using
+<code><a href="nv_fill.html">nv_fill()</a></code> to create a constant.</p>
     </div>
 
     <div class="section level2">
@@ -84,7 +84,7 @@ Usually, their type is ambiguous, unless created via <code><a href="nv_fill.html
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>(<code>numeric(1)</code> | <code>integer(1)</code> | <code>logical(1)</code> | <code><a href="AnvilTensor.html">AnvilTensor</a></code>)<br>
+<dd><p>(<code>double(1)</code> | <code>integer(1)</code> | <code>logical(1)</code> | <code><a href="AnvilTensor.html">AnvilTensor</a></code>)<br>
 The scalar value or scalarish AnvilTensor (contains 1 element).</p></dd>
 
 
@@ -102,14 +102,61 @@ The data type. Defaults to <code>f32</code> for numeric, <code>i32</code> for in
 <dd><p>(<code>logical(1)</code>)<br>
 Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., <code>1L</code>, <code>1.0</code>) and follow special promotion rules.
-See the vignette "Type Promotion" for more details.</p></dd>
+See the <code><a href="../articles/type-promotion.html">vignette("type-promotion")</a></code> for more details.</p></dd>
 
 </dl></div>
     <div class="section level2">
-    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><a href="AbstractTensor.html">AbstractTensor</a>, <a href="ConcreteTensor.html">ConcreteTensor</a></p></div>
+    <h2 id="type-ambiguity">Type Ambiguity<a class="anchor" aria-label="anchor" href="#type-ambiguity"></a></h2>
+
+
+<p>When arising from R literals, the resulting <code>LiteralTensor</code> is ambiguous because no type
+information was available. See the <code><a href="../articles/type-promotion.html">vignette("type-promotion")</a></code> for more details.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="lowering">Lowering<a class="anchor" aria-label="anchor" href="#lowering"></a></h2>
+
+
+<p><code>LiteralTensor</code>s become constants inlined into the stableHLO program.
+I.e., they lower to <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_constant.html" class="external-link">stablehlo::hlo_tensor()</a></code>.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">LiteralTensor</span><span class="op">(</span><span class="fl">1L</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="op">)</span>, ambiguous <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">x</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> LiteralTensor(1, i32?, ()) </span>
+<span class="r-in"><span><span class="fu"><a href="ambiguous.html">ambiguous</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-in"><span><span class="fu"><a href="https://r-xla.github.io/tengen/reference/shape.html" class="external-link">shape</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> integer(0)</span>
+<span class="r-in"><span><span class="fu"><a href="https://r-xla.github.io/tengen/reference/ndims.html" class="external-link">ndims</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0</span>
+<span class="r-in"><span><span class="fu"><a href="https://r-xla.github.io/tengen/reference/dtype.html" class="external-link">dtype</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;i32&gt;</span>
+<span class="r-in"><span><span class="co"># How it appears during tracing:</span></span></span>
+<span class="r-in"><span><span class="co"># 1. via R literals</span></span></span>
+<span class="r-in"><span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">graph</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;AnvilGraph&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Inputs: (none)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Body: (empty)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Outputs:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1:f32? </span>
+<span class="r-in"><span><span class="va">graph</span><span class="op">$</span><span class="va">outputs</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">aval</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> LiteralTensor(1, f32?, ()) </span>
+<span class="r-in"><span><span class="co"># 2. via nv_fill()</span></span></span>
+<span class="r-in"><span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="fu"><a href="nv_fill.html">nv_fill</a></span><span class="op">(</span><span class="fl">2L</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">graph</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;AnvilGraph&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Inputs: (none)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Body:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     %1: i32[2, 2] = fill [value = 2, dtype = i32, shape = c(2, 2), ambiguous = FALSE] ()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Outputs:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     %1: i32[2, 2] </span>
+<span class="r-in"><span><span class="va">graph</span><span class="op">$</span><span class="va">outputs</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">aval</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AbstractTensor(dtype=i32, shape=2x2) </span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

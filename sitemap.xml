@@ -46,7 +46,6 @@
 <url><loc>https://r-xla.github.io/anvil/reference/gradient.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/graph_desc_add.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/index.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/reference/is_tensorish.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/jit.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/jit_eval.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/local_descriptor.html</loc></url>
@@ -193,7 +192,6 @@
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_while.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nvl_xor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/platform.AbstractTensor.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/reference/platform.ConcreteTensor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/prim.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/reexports.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/register_primitive.html</loc></url>

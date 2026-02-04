@@ -82,10 +82,8 @@ The `nvl_*` function does two things:
 
 ``` r
 nvl_repeat_along <- function(operand, times, dim) {
+  # type of operand is checked by graph_desc_add()
   infer_fn <- function(operand, times, dim) {
-    if (!is_tensorish(operand)) {
-      cli::cli_abort("{.arg operand} must be a tensor-ish object, but is {.cls {class(operand)[1]}}")
-    }
     if (!checkmate::test_integerish(dim, lower = 1, upper = ndims(operand), len = 1L)) {
       cli::cli_abort("{.arg dim} must be between 1 and {ndims(operand)}, but is {.val dim}")
     }
@@ -239,12 +237,12 @@ example is `nvl_add` vs `nv_add`, where the latter calls into the former
 after optionally broadcasting (scalar) inputs:
 
 ``` r
-nv_add(1, nv_tensor(2:3))
-#> f32?{2}
-nvl_add(1, nv_tensor(2:3))
+nv_add(1L, nv_tensor(2:3))
+#> i32{2}
+nvl_add(1L, nv_tensor(2:3))
 #> Error in `nvl_add()`:
 #> ! `lhs` and `rhs` must have the same tensor type.
-#> ✖ Got tensor<f32> and tensor<2xi32>.
+#> ✖ Got tensor<i32> and tensor<2xi32>.
 ```
 
 In our case, no such convenience is needed and the functionality is not
