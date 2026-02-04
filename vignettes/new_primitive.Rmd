@@ -1,9 +1,9 @@
 ---
 title: "Adding a Primitive"
-format: html
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Adding a Primitive}
-  %\VignetteEngine{quarto::html}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
