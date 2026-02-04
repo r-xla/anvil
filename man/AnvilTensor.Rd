@@ -70,7 +70,8 @@ Tensors can be serialized to and from the
 \href{https://huggingface.co/docs/safetensors/index}{safetensors} format:
 \itemize{
 \item \code{\link[=nv_serialization]{nv_write()}} / \code{\link[=nv_serialization]{nv_read()}}: Save/load tensors to/from a file.
-\item \code{\link[=nv_serialization]{nv_serialize()}} / \code{\link[=nv_serialization]{nv_unserialize()}}: Serialize/deserialize tensors to/from raw vectors.
+\item \code{\link[=nv_serialization]{nv_serialize()}} / \code{\link[=nv_serialization]{nv_unserialize()}}:
+Serialize/deserialize tensors to/from raw vectors.
 }
 }
 

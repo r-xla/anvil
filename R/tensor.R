@@ -23,7 +23,8 @@
 #' Tensors can be serialized to and from the
 #' [safetensors](https://huggingface.co/docs/safetensors/index) format:
 #' - [`nv_write()`][nv_serialization] / [`nv_read()`][nv_serialization]: Save/load tensors to/from a file.
-#' - [`nv_serialize()`][nv_serialization] / [`nv_unserialize()`][nv_serialization]: Serialize/deserialize tensors to/from raw vectors.
+#' - [`nv_serialize()`][nv_serialization] / [`nv_unserialize()`][nv_serialization]:
+#'   Serialize/deserialize tensors to/from raw vectors.
 #'
 #' @seealso nv_fill, nv_iota, nv_seq, as_array, [nv_serialization]
 #'
