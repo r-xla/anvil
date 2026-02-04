@@ -56,8 +56,7 @@ y
     ##  2 4 6
     ## [ CPUi32{2,3} ]
 
-The
-[`as_array()`](https://r-xla.github.io/tengen/reference/as_array.html)
+The [`as_array()`](https://r-xla.github.io/anvil/reference/as_array.md)
 function allows to convert `AnvilTensor`s back to R objects. Note that
 for 0-dimensional tensors, the result is an R vector of length 1, as R
 arrays cannot have 0 dimensions.

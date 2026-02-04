@@ -262,8 +262,7 @@ properties of the input tensorish values via:
 - [`ambiguous_abstract()`](https://r-xla.github.io/anvil/reference/abstract_properties.md)
 
 If you, for example, use
-[`shape()`](https://r-xla.github.io/tengen/reference/shape.html) instead
-of
+[`shape()`](https://r-xla.github.io/anvil/reference/shape.md) instead of
 [`shape_abstract()`](https://r-xla.github.io/anvil/reference/abstract_properties.md),
 your function won’t work with R literals. I.e., `<extract>_abstract()`
 first converts the input to an `AbstractTensor` (if possible) and then

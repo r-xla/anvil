@@ -183,17 +183,17 @@ current <code>GraphDescriptor</code>.</li>
 <code class="sourceCode R"><span><span class="va">nvl_repeat_along</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">operand</span>, <span class="va">times</span>, <span class="va">dim</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="co"># type of operand is checked by graph_desc_add()</span></span>
 <span>  <span class="va">infer_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">operand</span>, <span class="va">times</span>, <span class="va">dim</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu">checkmate</span><span class="fu">::</span><span class="fu"><a href="https://mllg.github.io/checkmate/reference/checkIntegerish.html" class="external-link">test_integerish</a></span><span class="op">(</span><span class="va">dim</span>, lower <span class="op">=</span> <span class="fl">1</span>, upper <span class="op">=</span> <span class="fu"><a href="https://r-xla.github.io/tengen/reference/ndims.html" class="external-link">ndims</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span>, len <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu">checkmate</span><span class="fu">::</span><span class="fu"><a href="https://mllg.github.io/checkmate/reference/checkIntegerish.html" class="external-link">test_integerish</a></span><span class="op">(</span><span class="va">dim</span>, lower <span class="op">=</span> <span class="fl">1</span>, upper <span class="op">=</span> <span class="fu"><a href="../reference/ndims.html">ndims</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span>, len <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="fu">cli</span><span class="fu">::</span><span class="fu"><a href="https://cli.r-lib.org/reference/cli_abort.html" class="external-link">cli_abort</a></span><span class="op">(</span><span class="st">"{.arg dim} must be between 1 and {ndims(operand)}, but is {.val dim}"</span><span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu">checkmate</span><span class="fu">::</span><span class="fu"><a href="https://mllg.github.io/checkmate/reference/checkIntegerish.html" class="external-link">test_integerish</a></span><span class="op">(</span><span class="va">times</span>, lower <span class="op">=</span> <span class="fl">1</span>, len <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="fu">cli_abort</span><span class="op">(</span><span class="st">"times must be a positive integer, but is {times}"</span><span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
-<span>    <span class="va">new_shape</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-xla.github.io/tengen/reference/shape.html" class="external-link">shape</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span></span>
+<span>    <span class="va">new_shape</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape.html">shape</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span></span>
 <span>    <span class="va">new_shape</span><span class="op">[</span><span class="va">dim</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">new_shape</span><span class="op">[</span><span class="va">dim</span><span class="op">]</span> <span class="op">*</span> <span class="va">times</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="../reference/AbstractTensor.html">AbstractTensor</a></span><span class="op">(</span></span>
-<span>      dtype <span class="op">=</span> <span class="fu"><a href="https://r-xla.github.io/tengen/reference/dtype.html" class="external-link">dtype</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span>,</span>
-<span>      shape <span class="op">=</span> <span class="fu"><a href="https://r-xla.github.io/stablehlo/reference/Shape.html" class="external-link">Shape</a></span><span class="op">(</span><span class="va">new_shape</span><span class="op">)</span>,</span>
+<span>      dtype <span class="op">=</span> <span class="fu"><a href="../reference/dtype.html">dtype</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span>,</span>
+<span>      shape <span class="op">=</span> <span class="fu"><a href="../reference/Shape-constructor.html">Shape</a></span><span class="op">(</span><span class="va">new_shape</span><span class="op">)</span>,</span>
 <span>      ambiguous <span class="op">=</span> <span class="va">operand</span><span class="op">$</span><span class="va">ambiguous</span></span>
 <span>    <span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
@@ -285,8 +285,8 @@ that the output (and therefore it’s gradient) has shape
 <span>  <span class="va">grad</span> <span class="op">&lt;-</span> <span class="va">grads</span><span class="op">[[</span><span class="fl">1L</span><span class="op">]</span><span class="op">]</span></span>
 <span>  <span class="va">operand</span> <span class="op">&lt;-</span> <span class="va">inputs</span><span class="op">[[</span><span class="fl">1L</span><span class="op">]</span><span class="op">]</span></span>
 <span></span>
-<span>  <span class="va">old_shape</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-xla.github.io/tengen/reference/shape.html" class="external-link">shape</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span></span>
-<span>  <span class="va">grad_shape</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-xla.github.io/tengen/reference/shape.html" class="external-link">shape</a></span><span class="op">(</span><span class="va">grad</span><span class="op">)</span></span>
+<span>  <span class="va">old_shape</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape.html">shape</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span></span>
+<span>  <span class="va">grad_shape</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape.html">shape</a></span><span class="op">(</span><span class="va">grad</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="va">new_shape</span> <span class="op">&lt;-</span> <span class="va">grad_shape</span></span>
 <span>  <span class="va">new_shape</span><span class="op">[</span><span class="va">dim</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">old_shape</span><span class="op">[</span><span class="va">dim</span><span class="op">]</span></span>
@@ -356,7 +356,7 @@ access certain properties of the input tensorish values via:</p>
 <li><code><a href="../reference/abstract_properties.html">dtype_abstract()</a></code></li>
 <li><code><a href="../reference/abstract_properties.html">ambiguous_abstract()</a></code></li>
 </ul>
-<p>If you, for example, use <code><a href="https://r-xla.github.io/tengen/reference/shape.html" class="external-link">shape()</a></code> instead of
+<p>If you, for example, use <code><a href="../reference/shape.html">shape()</a></code> instead of
 <code><a href="../reference/abstract_properties.html">shape_abstract()</a></code>, your function won’t work with R literals.
 I.e., <code>&lt;extract&gt;_abstract()</code> first converts the input
 to an <code>AbstractTensor</code> (if possible) and then extracts the

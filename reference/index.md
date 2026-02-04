@@ -26,20 +26,26 @@ Functions for querying tensor attributes and converting them
 
 - [`ambiguous()`](https://r-xla.github.io/anvil/reference/ambiguous.md)
   : Get Ambiguity of a Tensor
-- [`reexports`](https://r-xla.github.io/anvil/reference/reexports.md)
-  [`shape`](https://r-xla.github.io/anvil/reference/reexports.md)
-  [`device`](https://r-xla.github.io/anvil/reference/reexports.md)
-  [`as_array`](https://r-xla.github.io/anvil/reference/reexports.md)
-  [`as_raw`](https://r-xla.github.io/anvil/reference/reexports.md)
-  [`dtype`](https://r-xla.github.io/anvil/reference/reexports.md)
-  [`ndims`](https://r-xla.github.io/anvil/reference/reexports.md)
-  [`is_dtype`](https://r-xla.github.io/anvil/reference/reexports.md)
-  [`as_dtype`](https://r-xla.github.io/anvil/reference/reexports.md)
-  [`platform`](https://r-xla.github.io/anvil/reference/reexports.md)
-  [`Shape`](https://r-xla.github.io/anvil/reference/reexports.md) :
-  Objects exported from other packages
+- [`dtype()`](https://r-xla.github.io/anvil/reference/dtype.md) : Get
+  the data type of a tensor
+- [`shape()`](https://r-xla.github.io/anvil/reference/shape.md) : Get
+  the shape of a tensor
+- [`ndims()`](https://r-xla.github.io/anvil/reference/ndims.md) : Get
+  the number of dimensions of a tensor
+- [`device()`](https://r-xla.github.io/anvil/reference/device.md) : Get
+  the device of a tensor
 - [`platform(`*`<AbstractTensor>`*`)`](https://r-xla.github.io/anvil/reference/platform.AbstractTensor.md)
   : Platform for AbstractTensor
+- [`platform()`](https://r-xla.github.io/anvil/reference/platform.md) :
+  Get the platform of a tensor or buffer
+- [`as_array()`](https://r-xla.github.io/anvil/reference/as_array.md) :
+  Convert a tensor to an R array
+- [`as_raw()`](https://r-xla.github.io/anvil/reference/as_raw.md) :
+  Convert a tensor to a raw vector
+- [`as_dtype()`](https://r-xla.github.io/anvil/reference/as_dtype.md) :
+  Convert to a TensorDataType
+- [`is_dtype()`](https://r-xla.github.io/anvil/reference/is_dtype.md) :
+  Check if an object is a TensorDataType
 
 ## Tensor Serialization
 
@@ -341,6 +347,8 @@ Internal data structures and functions
   Convert ValueType to AbstractTensor
 - [`is_tensorish()`](https://r-xla.github.io/anvil/reference/tensorish.md)
   : Tensor-like Objects
+- [`Shape()`](https://r-xla.github.io/anvil/reference/Shape-constructor.md)
+  : Create a Shape object
 
 ## Tree utilities
 
@@ -356,10 +364,6 @@ Utilities for working with nested structures
   : Reindex Tree
 - [`tree_size()`](https://r-xla.github.io/anvil/reference/tree_size.md)
   : Tree Size
-
-## Tensor classes
-
-Core tensor classes and constructors
 
 ## Primitives
 
