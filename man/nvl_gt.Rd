@@ -8,22 +8,21 @@ nvl_gt(lhs, rhs)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Tensorish values of any data type.
+Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}} (boolean)
+\code{\link{tensorish}}\cr
+Has the same shape as the inputs and boolean data type.
+It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise greater than comparison.
+For a more user-friendly interface, see \code{\link[=nv_gt]{nv_gt()}}.
 }
-\section{Shapes}{
-
-\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
-}
-
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} with \code{comparison_direction = "GT"}.
+Lowers to \code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} with \code{comparison_direction = "GT"}.
 }
 
 \examples{

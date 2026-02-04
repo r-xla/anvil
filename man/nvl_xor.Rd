@@ -7,23 +7,30 @@
 nvl_xor(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}} of boolean or integer type)\cr
-Left and right operand.}
+\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+Tensorish values of data type boolean, integer, or unsigned integer.
+Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the inputs.
+It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise logical XOR.
+For a more user-friendly interface, see \code{\link[=nv_xor]{nv_xor()}}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_xor]{stablehlo::hlo_xor()}}.
+Lowers to \code{\link[stablehlo:hlo_xor]{stablehlo::hlo_xor()}}.
 }
 
 \examples{

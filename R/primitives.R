@@ -93,12 +93,17 @@ p_add <- AnvilPrimitive("add")
 #' @title Primitive Addition
 #' @description
 #' Adds two tensors element-wise.
-#' @template params_lhs_rhs
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_add()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of any data type.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id add
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_add()].
+#' Lowers to [stablehlo::hlo_add()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 2, 3))
@@ -112,12 +117,17 @@ p_mul <- AnvilPrimitive("mul")
 #' @title Primitive Multiplication
 #' @description
 #' Multiplies two tensors element-wise.
-#' @template params_lhs_rhs
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_mul()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of any data type.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id mul
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_multiply()].
+#' Lowers to [stablehlo::hlo_multiply()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 2, 3))
@@ -131,13 +141,17 @@ p_sub <- AnvilPrimitive("sub")
 #' @title Primitive Subtraction
 #' @description
 #' Subtracts two tensors element-wise.
-#' @param lhs,rhs ([`tensorish`] of integer or floating-point type)\cr
-#'   Left and right operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_sub()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of data type integer, unsigned integer, or floating-point.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id sub
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_subtract()].
+#' Lowers to [stablehlo::hlo_subtract()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 2, 3))
@@ -170,13 +184,17 @@ p_div <- AnvilPrimitive("divide")
 #' @title Primitive Division
 #' @description
 #' Divides two tensors element-wise.
-#' @param lhs,rhs ([`tensorish`] of integer or floating-point type)\cr
-#'   Left and right operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_div()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of data type integer, unsigned integer, or floating-point.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id divide
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_divide()].
+#' Lowers to [stablehlo::hlo_divide()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(10, 20, 30))
@@ -190,13 +208,17 @@ p_pow <- AnvilPrimitive("power")
 #' @title Primitive Power
 #' @description
 #' Raises lhs to the power of rhs element-wise.
-#' @param lhs,rhs ([`tensorish`] of integer or floating-point type)\cr
-#'   Left and right operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_pow()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of data type integer, unsigned integer, or floating-point.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id power
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_power()].
+#' Lowers to [stablehlo::hlo_power()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(2, 3, 4))
@@ -742,12 +764,17 @@ p_eq <- AnvilPrimitive("equal")
 #' @title Primitive Equal
 #' @description
 #' Element-wise equality comparison.
-#' @template params_lhs_rhs
-#' @return [`tensorish`] (boolean)
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_eq()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of any data type.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape as the inputs and boolean data type.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id equal
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_compare()] with `comparison_direction = "EQ"`.
+#' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "EQ"`.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 2, 3))
@@ -761,12 +788,17 @@ p_ne <- AnvilPrimitive("not_equal")
 #' @title Primitive Not Equal
 #' @description
 #' Element-wise inequality comparison.
-#' @template params_lhs_rhs
-#' @return [`tensorish`] (boolean)
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_ne()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of any data type.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape as the inputs and boolean data type.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id not_equal
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_compare()] with `comparison_direction = "NE"`.
+#' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "NE"`.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 2, 3))
@@ -780,12 +812,17 @@ p_gt <- AnvilPrimitive("greater")
 #' @title Primitive Greater Than
 #' @description
 #' Element-wise greater than comparison.
-#' @template params_lhs_rhs
-#' @return [`tensorish`] (boolean)
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_gt()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of any data type.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape as the inputs and boolean data type.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id greater
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_compare()] with `comparison_direction = "GT"`.
+#' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "GT"`.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 2, 3))
@@ -799,12 +836,17 @@ p_ge <- AnvilPrimitive("greater_equal")
 #' @title Primitive Greater Equal
 #' @description
 #' Element-wise greater than or equal comparison.
-#' @template params_lhs_rhs
-#' @return [`tensorish`] (boolean)
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_ge()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of any data type.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape as the inputs and boolean data type.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id greater_equal
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_compare()] with `comparison_direction = "GE"`.
+#' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "GE"`.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 2, 3))
@@ -818,12 +860,17 @@ p_lt <- AnvilPrimitive("less")
 #' @title Primitive Less Than
 #' @description
 #' Element-wise less than comparison.
-#' @template params_lhs_rhs
-#' @return [`tensorish`] (boolean)
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_lt()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of any data type.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape as the inputs and boolean data type.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id less
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_compare()] with `comparison_direction = "LT"`.
+#' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "LT"`.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 2, 3))
@@ -837,12 +884,17 @@ p_le <- AnvilPrimitive("less_equal")
 #' @title Primitive Less Equal
 #' @description
 #' Element-wise less than or equal comparison.
-#' @template params_lhs_rhs
-#' @return [`tensorish`] (boolean)
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_le()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of any data type.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape as the inputs and boolean data type.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id less_equal
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_compare()] with `comparison_direction = "LE"`.
+#' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "LE"`.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 2, 3))
@@ -858,12 +910,17 @@ p_max <- AnvilPrimitive("maximum")
 #' @title Primitive Maximum
 #' @description
 #' Element-wise maximum of two tensors.
-#' @template params_lhs_rhs
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_max()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of any data type.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id maximum
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_maximum()].
+#' Lowers to [stablehlo::hlo_maximum()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 5, 3))
@@ -877,12 +934,17 @@ p_min <- AnvilPrimitive("minimum")
 #' @title Primitive Minimum
 #' @description
 #' Element-wise minimum of two tensors.
-#' @template params_lhs_rhs
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_min()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of any data type.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id minimum
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_minimum()].
+#' Lowers to [stablehlo::hlo_minimum()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 5, 3))
@@ -896,13 +958,17 @@ p_remainder <- AnvilPrimitive("remainder")
 #' @title Primitive Remainder
 #' @description
 #' Element-wise remainder of division.
-#' @param lhs,rhs ([`tensorish`] of integer or floating-point type)\cr
-#'   Left and right operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_remainder()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of data type integer, unsigned integer, or floating-point.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id remainder
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_remainder()].
+#' Lowers to [stablehlo::hlo_remainder()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(7, 10, 15))
@@ -916,13 +982,17 @@ p_and <- AnvilPrimitive("and")
 #' @title Primitive And
 #' @description
 #' Element-wise logical AND.
-#' @param lhs,rhs ([`tensorish`] of boolean or integer type)\cr
-#'   Left and right operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_and()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of data type boolean, integer, or unsigned integer.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id and
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_and()].
+#' Lowers to [stablehlo::hlo_and()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(TRUE, FALSE, TRUE))
@@ -955,13 +1025,17 @@ p_or <- AnvilPrimitive("or")
 #' @title Primitive Or
 #' @description
 #' Element-wise logical OR.
-#' @param lhs,rhs ([`tensorish`] of boolean or integer type)\cr
-#'   Left and right operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_or()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of data type boolean, integer, or unsigned integer.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id or
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_or()].
+#' Lowers to [stablehlo::hlo_or()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(TRUE, FALSE, TRUE))
@@ -975,13 +1049,17 @@ p_xor <- AnvilPrimitive("xor")
 #' @title Primitive Xor
 #' @description
 #' Element-wise logical XOR.
-#' @param lhs,rhs ([`tensorish`] of boolean or integer type)\cr
-#'   Left and right operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_xor()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of data type boolean, integer, or unsigned integer.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id xor
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_xor()].
+#' Lowers to [stablehlo::hlo_xor()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(TRUE, FALSE, TRUE))
@@ -1003,13 +1081,17 @@ p_shift_left <- AnvilPrimitive("shift_left")
 #' @title Primitive Shift Left
 #' @description
 #' Element-wise left bit shift.
-#' @param lhs,rhs ([`tensorish`] of integer type)\cr
-#'   Left and right operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_shift_left()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of data type boolean, integer, or unsigned integer.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id shift_left
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_shift_left()].
+#' Lowers to [stablehlo::hlo_shift_left()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1L, 2L, 4L))
@@ -1026,13 +1108,17 @@ p_shift_right_logical <- AnvilPrimitive("shift_right_logical")
 #' @title Primitive Logical Shift Right
 #' @description
 #' Element-wise logical right bit shift.
-#' @param lhs,rhs ([`tensorish`] of integer type)\cr
-#'   Left and right operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_shift_right_logical()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of data type boolean, integer, or unsigned integer.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id shift_right_logical
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_shift_right_logical()].
+#' Lowers to [stablehlo::hlo_shift_right_logical()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(8L, 16L, 32L))
@@ -1049,13 +1135,17 @@ p_shift_right_arithmetic <- AnvilPrimitive("shift_right_arithmetic")
 #' @title Primitive Arithmetic Shift Right
 #' @description
 #' Element-wise arithmetic right bit shift.
-#' @param lhs,rhs ([`tensorish`] of integer type)\cr
-#'   Left and right operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_shift_right_arithmetic()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of data type boolean, integer, or unsigned integer.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id shift_right_arithmetic
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_shift_right_arithmetic()].
+#' Lowers to [stablehlo::hlo_shift_right_arithmetic()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(8L, -16L, 32L))
@@ -1072,13 +1162,17 @@ p_atan2 <- AnvilPrimitive("atan2")
 #' @title Primitive Atan2
 #' @description
 #' Element-wise atan2 operation.
-#' @param lhs,rhs ([`tensorish`] of floating-point type)\cr
-#'   Left and right operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' `lhs` and `rhs` must have the same shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_atan2()].
+#' @param lhs,rhs ([`tensorish`])\cr
+#'   Tensorish values of data type floating-point.
+#'   Must have the same shape.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the inputs.
+#'   It is ambiguous if both inputs are ambiguous.
+#' @templateVar primitive_id atan2
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_atan2()].
+#' Lowers to [stablehlo::hlo_atan2()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   y <- nv_tensor(c(1, 0, -1))

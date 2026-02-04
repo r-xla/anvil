@@ -8,22 +8,21 @@ nvl_max(lhs, rhs)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Tensorish values of any data type.
+Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the inputs.
+It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise maximum of two tensors.
+For a more user-friendly interface, see \code{\link[=nv_max]{nv_max()}}.
 }
-\section{Shapes}{
-
-\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
-}
-
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_maximum]{stablehlo::hlo_maximum()}}.
+Lowers to \code{\link[stablehlo:hlo_maximum]{stablehlo::hlo_maximum()}}.
 }
 
 \examples{

@@ -7,23 +7,30 @@
 nvl_atan2(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}} of floating-point type)\cr
-Left and right operand.}
+\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+Tensorish values of data type floating-point.
+Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the inputs.
+It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise atan2 operation.
+For a more user-friendly interface, see \code{\link[=nv_atan2]{nv_atan2()}}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_atan2]{stablehlo::hlo_atan2()}}.
+Lowers to \code{\link[stablehlo:hlo_atan2]{stablehlo::hlo_atan2()}}.
 }
 
 \examples{

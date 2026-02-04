@@ -7,23 +7,30 @@
 nvl_shift_left(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}} of integer type)\cr
-Left and right operand.}
+\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+Tensorish values of data type boolean, integer, or unsigned integer.
+Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the inputs.
+It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise left bit shift.
+For a more user-friendly interface, see \code{\link[=nv_shift_left]{nv_shift_left()}}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_shift_left]{stablehlo::hlo_shift_left()}}.
+Lowers to \code{\link[stablehlo:hlo_shift_left]{stablehlo::hlo_shift_left()}}.
 }
 
 \examples{

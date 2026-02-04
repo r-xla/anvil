@@ -7,23 +7,30 @@
 nvl_sub(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}} of integer or floating-point type)\cr
-Left and right operand.}
+\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+Tensorish values of data type integer, unsigned integer, or floating-point.
+Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the inputs.
+It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Subtracts two tensors element-wise.
+For a more user-friendly interface, see \code{\link[=nv_sub]{nv_sub()}}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-\code{lhs} and \code{rhs} must have the same shape. The output has the same shape.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_subtract]{stablehlo::hlo_subtract()}}.
+Lowers to \code{\link[stablehlo:hlo_subtract]{stablehlo::hlo_subtract()}}.
 }
 
 \examples{
