@@ -15,33 +15,100 @@ nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
 }
 \arguments{
 \item{data}{(any)\cr
-Object convertible to a \code{\link[pjrt:pjrt_buffer]{PJRTBuffer}}.}
+Object convertible to a \code{\link[pjrt:pjrt_buffer]{PJRTBuffer}}.
+Includes \code{integer()}, \code{double()}, \code{logical()} vectors and arrays.}
 
 \item{dtype}{(\code{NULL} | \code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 One of pred, i8, i16, i32, i64, ui8, ui16, ui32, ui64, f32, f64 or a \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}}.
-The default (\code{NULL}) uses \code{f32} for numeric data, \code{i32} for integer data, and \code{pred} for logical data.}
+The default (\code{NULL}) uses \code{f32} for numeric data, \code{i32} for integer data, and \code{i1} for logical data.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
-The platform name for the tensor (\code{"cpu"}, \code{"cuda"}, \code{"metal"}).
-Default is to use the CPU, unless the data is already a \code{\link[pjrt:pjrt_buffer]{PJRTBuffer}}.
-You can change the default by setting the \code{PJRT_PLATFORM} environment variable.}
+The device for the tensor (\code{"cpu"}, \code{"cuda"}).
+Default is to use the CPU for new tensors.
+This can be changed by setting the \code{PJRT_PLATFORM} environment variable.}
 
 \item{shape}{(\code{NULL} | \code{integer()})\cr
-Shape.
+The output shape of the tensor.
 The default (\code{NULL}) is to infer it from the data if possible.
 Note that \code{\link{nv_tensor}} interprets length 1 vectors as having shape \code{(1)}.
-To create a "scalar" with dimension \verb{()}, use \code{\link{nv_scalar}}.}
+To create a "scalar" with dimension \verb{()}, use \code{\link{nv_scalar}} or explicitly specify \code{shape = c()}.}
 
 \item{ambiguous}{(\code{NULL} | \code{logical(1)})\cr
 Whether the dtype should be marked as ambiguous.
-For \code{\link[=nv_tensor]{nv_tensor()}}, defaults to \code{FALSE} (non-ambiguous) for new tensors,
-or preserves the existing value when \code{data} is already an \code{\link{AnvilTensor}}.
-For \code{\link[=nv_scalar]{nv_scalar()}}, defaults to \code{FALSE} (non-ambiguous).}
+Defaults to \code{FALSE} for new tensors.}
 }
 \value{
-(\code{\link{AnvilTensor}}) A tensor object.
+(\code{\link{AnvilTensor}})
 }
 \description{
-Tensor objects in anvil that hold array data with automatic differentiation support.
-Create tensors using \code{\link[=nv_tensor]{nv_tensor()}}, \code{\link[=nv_scalar]{nv_scalar()}}, or \code{\link[=nv_empty]{nv_empty()}}.
+The main tensor object.
+Its type is determined by a data type and a shape.
+
+To transform tensors, apply \code{\link[=jit]{jit()}}ted functions.
+Directly calling operations (e.g. \code{nv_add(x, y)}) on \code{AnvilTensor} objects
+only performs type inference and returns an \code{\link{AbstractTensor}} --
+see \code{vignette("debugging")} for details.
+
+To compare whether two abstract tensors are equal, use \code{\link[=eq_type]{eq_type()}}.
+}
+\section{Extractors}{
+
+The following generic functions can be used to extract information from an \code{AnvilTensor}:
+\itemize{
+\item \code{\link[tengen:dtype]{dtype()}}: Get the data type of the tensor.
+\item \code{\link[tengen:shape]{shape()}}: Get the shape (dimensions) of the tensor.
+\item \code{\link[tengen:ndims]{ndims()}}: Get the number of dimensions.
+\item \code{\link[tengen:device]{device()}}: Get the device of the tensor.
+\item \code{\link[pjrt:platform]{platform()}}: Get the platform (e.g. \code{"cpu"}, \code{"cuda"}).
+\item \code{\link[=ambiguous]{ambiguous()}}: Get whether the dtype is ambiguous.
+}
+}
+
+\section{Serialization}{
+
+Tensors can be serialized to and from the
+\href{https://huggingface.co/docs/safetensors/index}{safetensors} format:
+\itemize{
+\item \code{\link[=nv_serialization]{nv_write()}} / \code{\link[=nv_serialization]{nv_read()}}: Save/load tensors to/from a file.
+\item \code{\link[=nv_serialization]{nv_serialize()}} / \code{\link[=nv_serialization]{nv_unserialize()}}: Serialize/deserialize tensors to/from raw vectors.
+}
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+# A 1-d tensor (vector) with shape (4). Default type for integers is `i32`
+nv_tensor(1:4)
+
+# Specify a dtype
+nv_tensor(c(1.5, 2.5, 3.5), dtype = "f64")
+
+# A 2x3 matrix
+nv_tensor(1:6, shape = c(2L, 3L))
+
+# A scalar tensor.
+nv_scalar(3.14)
+
+# A 0x3 tensor
+nv_empty("f32", shape = c(0L, 3L))
+
+# --- Extractors ---
+x <- nv_tensor(1:6, shape = c(2L, 3L))
+dtype(x)
+shape(x)
+ndims(x)
+device(x)
+platform(x)
+ambiguous(x)
+
+# --- Transforming tensors with jit ---
+add_one <- jit(function(x) x + 1)
+add_one(nv_tensor(1:4))
+
+# --- Debug mode (calling operations directly) ---
+# Outside of jit, operations only perform type inference:
+nv_add(nv_tensor(1:3), nv_tensor(4:6))
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+nv_fill, nv_iota, nv_seq, as_array, \link{nv_serialization}
 }

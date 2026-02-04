@@ -11,11 +11,25 @@ to_abstract(x, pure = FALSE)
 Object to convert.}
 
 \item{pure}{(\code{logical(1)})\cr
-Whether to convert to a pure abstract tensor, i.e., without any concrete data.}
+Whether to convert to a pure \code{AbstractTensor} and not e.g. \code{LiteralTensor} or \code{ConcreteTensor}.}
 }
 \value{
 \code{\link{AbstractTensor}}
 }
 \description{
 Convert an object to its abstract tensor representation (\code{\link{AbstractTensor}}).
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+# R literals become LiteralTensors (ambiguous by default, except logicals)
+to_abstract(1.5)
+to_abstract(1L)
+to_abstract(TRUE)
+
+# AnvilTensors become ConcreteTensors
+to_abstract(nv_tensor(1:4))
+
+# Use pure = TRUE to strip subclass info
+to_abstract(nv_tensor(1:4), pure = TRUE)
+\dontshow{\}) # examplesIf}
 }

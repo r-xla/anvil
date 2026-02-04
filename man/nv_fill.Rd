@@ -19,7 +19,7 @@ Data type.}
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
-See the vignette "Type Promotion" for more details.}
+See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
 \code{\link{tensorish}}

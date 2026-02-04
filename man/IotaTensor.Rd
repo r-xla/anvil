@@ -22,8 +22,32 @@ The starting value.}
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
-See the vignette "Type Promotion" for more details.}
+See the \code{vignette("type-promotion")} for more details.}
 }
 \description{
-An \code{\link{AbstractTensor}} representing a tensor where the data is a sequence of integers.
+An \code{\link{AbstractTensor}} representing an integer sequence.
+Usually created by \code{\link[=nv_iota]{nv_iota()}} / \code{\link[=nv_seq]{nv_seq()}}, which both call \code{\link[=nvl_iota]{nvl_iota()}} internally.
+Inherits from \code{\link{AbstractTensor}}.
+}
+\section{Lowering}{
+
+When lowering to stableHLO, these become \code{iota} operations that generate the integer sequence
+so they do not need to actually hold the data in the executable, similar to \code{ALTREP}s in R.
+It lowers to \code{\link[stablehlo:hlo_iota]{stablehlo::hlo_iota()}}, optionally shifting the starting value via
+\code{\link[stablehlo:hlo_add]{stablehlo::hlo_add()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+x <- IotaTensor(shape = 4L, dtype = "i32", dimension = 1L)
+x
+ambiguous(x)
+shape(x)
+ndims(x)
+dtype(x)
+# How it appears during tracing:
+graph <- trace_fn(function() nv_iota(dim = 1L, dtype = "i32", shape = 4L), list())
+graph
+graph$outputs[[1]]$aval
+\dontshow{\}) # examplesIf}
 }

@@ -10,7 +10,7 @@ nv_aten(dtype, shape, ambiguous = FALSE)
 AbstractTensor(dtype, shape, ambiguous = FALSE)
 }
 \arguments{
-\item{dtype}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+\item{dtype}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}} | \code{character(1)})\cr
 The data type of the tensor.}
 
 \item{shape}{(\code{\link[stablehlo:Shape]{stablehlo::Shape}} | \code{integer()})\cr
@@ -19,12 +19,51 @@ The shape of the tensor. Can be provided as an integer vector.}
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
-See the vignette "Type Promotion" for more details.}
+See the \code{vignette("type-promotion")} for more details.}
 }
 \description{
-Abstract representation of a tensor with a (possibly ambiguous) dtype and shape, but no concrete data.
-Used during tracing to represent tensor metadata without actual values.
+Representation of an abstract tensor type.
+During tracing, it is wrapped in a \code{\link{GraphNode}} held by a \code{\link{GraphBox}}.
+In the lowered \code{\link{AnvilGraph}} it is also part of \code{\link{GraphNode}}s representing the values in the program.
+
+The base class represents an \emph{unknown} value, but child classes exist for:
+\itemize{
+\item closed-over constants: \code{\link{ConcreteTensor}}
+\item scalar tensors arising from R literals: \code{\link{LiteralTensor}}
+\item sequence patterns: \code{\link{IotaTensor}}
+}
+
+To convert a \code{\link{tensorish}} value to an abstract tensor, use \code{\link[=to_abstract]{to_abstract()}}.
+}
+\section{Extractors}{
+
+The following extractors are available on \code{AbstractTensor} objects:
+\itemize{
+\item \code{\link[tengen:dtype]{dtype()}}: Get the data type of the tensor.
+\item \code{\link[tengen:shape]{shape()}}: Get the shape (dimensions) of the tensor.
+\item \code{\link[=ambiguous]{ambiguous()}}: Get whether the dtype is ambiguous.
+\item \code{\link[tengen:ndims]{ndims()}}: Get the number of dimensions.
+}
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+# -- Creating abstract tensors --
+a <- AbstractTensor("f32", c(2L, 3L))
+a
+dtype(a)
+shape(a)
+ambiguous(a)
+
+# Shorthand
+nv_aten("f32", c(2L, 3L))
+
+# How AbstractTensors appear in an AnvilGraph
+graph <- trace_fn(function(x) x + 1, list(x = nv_aten("i32", 4L)))
+graph
+graph$inputs[[1]]$aval
+\dontshow{\}) # examplesIf}
 }
 \seealso{
-\link{ConcreteTensor}, \link{LiteralTensor}, \code{\link[=to_abstract]{to_abstract()}}
+\link{LiteralTensor}, \link{ConcreteTensor}, \link{IotaTensor}, \link{GraphValue}, \code{\link[=to_abstract]{to_abstract()}}, \link{GraphBox}
 }

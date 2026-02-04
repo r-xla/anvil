@@ -1,29 +1,83 @@
 #' @title AnvilTensor
 #' @description
-#' Tensor objects in anvil that hold array data with automatic differentiation support.
-#' Create tensors using [`nv_tensor()`], [`nv_scalar()`], or [`nv_empty()`].
+#' The main tensor object.
+#' Its type is determined by a data type and a shape.
+#'
+#' To transform tensors, apply [`jit()`]ted functions.
+#' Directly calling operations (e.g. `nv_add(x, y)`) on `AnvilTensor` objects
+#' only performs type inference and returns an [`AbstractTensor`] --
+#' see `vignette("debugging")` for details.
+#'
+#' To compare whether two abstract tensors are equal, use [`eq_type()`].
+#'
+#' @section Extractors:
+#' The following generic functions can be used to extract information from an `AnvilTensor`:
+#' - [`dtype()`][tengen::dtype]: Get the data type of the tensor.
+#' - [`shape()`][tengen::shape]: Get the shape (dimensions) of the tensor.
+#' - [`ndims()`][tengen::ndims]: Get the number of dimensions.
+#' - [`device()`][tengen::device]: Get the device of the tensor.
+#' - [`platform()`][pjrt::platform]: Get the platform (e.g. `"cpu"`, `"cuda"`).
+#' - [`ambiguous()`]: Get whether the dtype is ambiguous.
+#'
+#' @section Serialization:
+#' Tensors can be serialized to and from the
+#' [safetensors](https://huggingface.co/docs/safetensors/index) format:
+#' - [`nv_write()`][nv_serialization] / [`nv_read()`][nv_serialization]: Save/load tensors to/from a file.
+#' - [`nv_serialize()`][nv_serialization] / [`nv_unserialize()`][nv_serialization]: Serialize/deserialize tensors to/from raw vectors.
+#'
+#' @seealso nv_fill, nv_iota, nv_seq, as_array, [nv_serialization]
 #'
 #' @param data (any)\cr
 #'   Object convertible to a [`PJRTBuffer`][pjrt::pjrt_buffer].
+#'   Includes `integer()`, `double()`, `logical()` vectors and arrays.
 #' @param dtype (`NULL` | `character(1)` | [`TensorDataType`])\cr
 #'   One of `r stablehlo:::roxy_dtypes()` or a [`stablehlo::TensorDataType`].
-#'   The default (`NULL`) uses `f32` for numeric data, `i32` for integer data, and `pred` for logical data.
+#'   The default (`NULL`) uses `f32` for numeric data, `i32` for integer data, and `i1` for logical data.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
-#'   The platform name for the tensor (`"cpu"`, `"cuda"`, `"metal"`).
-#'   Default is to use the CPU, unless the data is already a [`PJRTBuffer`][pjrt::pjrt_buffer].
-#'   You can change the default by setting the `PJRT_PLATFORM` environment variable.
+#'   The device for the tensor (`"cpu"`, `"cuda"`).
+#'   Default is to use the CPU for new tensors.
+#'   This can be changed by setting the `PJRT_PLATFORM` environment variable.
 #' @param shape (`NULL` | `integer()`)\cr
-#'   Shape.
+#'   The output shape of the tensor.
 #'   The default (`NULL`) is to infer it from the data if possible.
 #'   Note that [`nv_tensor`] interprets length 1 vectors as having shape `(1)`.
-#'   To create a "scalar" with dimension `()`, use [`nv_scalar`].
+#'   To create a "scalar" with dimension `()`, use [`nv_scalar`] or explicitly specify `shape = c()`.
 #' @param ambiguous (`NULL` | `logical(1)`)\cr
 #'   Whether the dtype should be marked as ambiguous.
-#'   For [nv_tensor()], defaults to `FALSE` (non-ambiguous) for new tensors,
-#'   or preserves the existing value when `data` is already an [`AnvilTensor`].
-#'   For [nv_scalar()], defaults to `FALSE` (non-ambiguous).
+#'   Defaults to `FALSE` for new tensors.
+#' @return ([`AnvilTensor`])
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' # A 1-d tensor (vector) with shape (4). Default type for integers is `i32`
+#' nv_tensor(1:4)
 #'
-#' @return ([`AnvilTensor`]) A tensor object.
+#' # Specify a dtype
+#' nv_tensor(c(1.5, 2.5, 3.5), dtype = "f64")
+#'
+#' # A 2x3 matrix
+#' nv_tensor(1:6, shape = c(2L, 3L))
+#'
+#' # A scalar tensor.
+#' nv_scalar(3.14)
+#'
+#' # A 0x3 tensor
+#' nv_empty("f32", shape = c(0L, 3L))
+#'
+#' # --- Extractors ---
+#' x <- nv_tensor(1:6, shape = c(2L, 3L))
+#' dtype(x)
+#' shape(x)
+#' ndims(x)
+#' device(x)
+#' platform(x)
+#' ambiguous(x)
+#'
+#' # --- Transforming tensors with jit ---
+#' add_one <- jit(function(x) x + 1)
+#' add_one(nv_tensor(1:4))
+#'
+#' # --- Debug mode (calling operations directly) ---
+#' # Outside of jit, operations only perform type inference:
+#' nv_add(nv_tensor(1:3), nv_tensor(4:6))
 #'
 #' @name AnvilTensor
 NULL
@@ -176,15 +230,47 @@ device.AnvilTensor <- function(x, ...) {
 
 #' @title Abstract Tensor Class
 #' @description
-#' Abstract representation of a tensor with a (possibly ambiguous) dtype and shape, but no concrete data.
-#' Used during tracing to represent tensor metadata without actual values.
+#' Representation of an abstract tensor type.
+#' During tracing, it is wrapped in a [`GraphNode`] held by a [`GraphBox`].
+#' In the lowered [`AnvilGraph`] it is also part of [`GraphNode`]s representing the values in the program.
 #'
-#' @param dtype ([`stablehlo::TensorDataType`])\cr
+#' The base class represents an *unknown* value, but child classes exist for:
+#' * closed-over constants: [`ConcreteTensor`]
+#' * scalar tensors arising from R literals: [`LiteralTensor`]
+#' * sequence patterns: [`IotaTensor`]
+#'
+#' To convert a [`tensorish`] value to an abstract tensor, use [`to_abstract()`].
+#'
+#' @section Extractors:
+#' The following extractors are available on `AbstractTensor` objects:
+#' - [`dtype()`][tengen::dtype]: Get the data type of the tensor.
+#' - [`shape()`][tengen::shape]: Get the shape (dimensions) of the tensor.
+#' - [`ambiguous()`]: Get whether the dtype is ambiguous.
+#' - [`ndims()`][tengen::ndims]: Get the number of dimensions.
+#'
+#' @param dtype ([`stablehlo::TensorDataType`] | `character(1)`)\cr
 #'   The data type of the tensor.
 #' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
 #'   The shape of the tensor. Can be provided as an integer vector.
 #' @template param_ambiguous
-#' @seealso [ConcreteTensor], [LiteralTensor], [to_abstract()]
+#' @seealso [LiteralTensor], [ConcreteTensor], [IotaTensor], [GraphValue], [to_abstract()], [GraphBox]
+#'
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' # -- Creating abstract tensors --
+#' a <- AbstractTensor("f32", c(2L, 3L))
+#' a
+#' dtype(a)
+#' shape(a)
+#' ambiguous(a)
+#'
+#' # Shorthand
+#' nv_aten("f32", c(2L, 3L))
+#'
+#' # How AbstractTensors appear in an AnvilGraph
+#' graph <- trace_fn(function(x) x + 1, list(x = nv_aten("i32", 4L)))
+#' graph
+#' graph$inputs[[1]]$aval
+#'
 #' @export
 AbstractTensor <- function(dtype, shape, ambiguous = FALSE) {
   shape <- as_shape(shape)
@@ -232,15 +318,39 @@ shape.AbstractTensor <- function(x, ...) {
   x$shape$dims
 }
 
+#' @method ndims AbstractTensor
+#' @export
+ndims.AbstractTensor <- function(x, ...) {
+  length(x$shape$dims)
+}
+
 #' @title Concrete Tensor Class
 #' @description
-#' A [`AbstractTensor`] that also holds a reference to the actual tensor data.
-#' Used to represent constants captured during tracing.
-#' Preserves the ambiguity from the underlying [`AnvilTensor`].
+#' An [`AbstractTensor`] that also holds a reference to the actual tensor data.
+#' Usually represents a closed-over constant in a program.
+#' Inherits from [`AbstractTensor`].
+#'
+#' @section Lowering:
+#' When lowering to XLA, these become inputs to the executable instead of embedding them into
+#' programs as constants.
+#' This is to avoid increasing compilation time and bloating the size of the executable.
 #'
 #' @param data ([`AnvilTensor`])\cr
 #'   The actual tensor data.
-#' @seealso [AbstractTensor], [LiteralTensor]
+#'
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' y <- nv_tensor(c(0.5, 0.6))
+#' x <- ConcreteTensor(y)
+#' x
+#' ambiguous(x)
+#' shape(x)
+#' ndims(x)
+#' dtype(x)
+#'
+#' # How it appears during tracing
+#' graph <- trace_fn(function() y, list())
+#' graph
+#' graph$outputs[[1]]$aval
 #' @export
 ConcreteTensor <- function(data) {
   if (!inherits(data, "AnvilTensor")) {
@@ -260,18 +370,42 @@ ConcreteTensor <- function(data) {
 
 #' @title Literal Tensor Class
 #' @description
-#' A [`AbstractTensor`] representing a tensor where the data is a R scalar literal (e.g., `1L`, `2.5`)
-#' or an [`AnvilTensor`].
-#' Usually, their type is ambiguous, unless created via [`nv_fill`].
+#' An [`AbstractTensor`] where all elements have the same constant value.
+#' This either arises when using literals in traced code (e.g. `x + 1`) or when using
+#' [`nv_fill()`] to create a constant.
 #'
-#' @param data (`numeric(1)` | `integer(1)` | `logical(1)` | [`AnvilTensor`])\cr
+#' @section Type Ambiguity:
+#' When arising from R literals, the resulting `LiteralTensor` is ambiguous because no type
+#' information was available. See the `vignette("type-promotion")` for more details.
+#'
+#' @section Lowering:
+#' `LiteralTensor`s become constants inlined into the stableHLO program.
+#' I.e., they lower to [`stablehlo::hlo_tensor()`].
+#'
+#' @param data (`double(1)` | `integer(1)` | `logical(1)` | [`AnvilTensor`])\cr
 #'   The scalar value or scalarish AnvilTensor (contains 1 element).
 #' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
 #'   The shape of the tensor.
 #' @param dtype ([`stablehlo::TensorDataType`])\cr
 #'   The data type. Defaults to `f32` for numeric, `i32` for integer, `i1` for logical.
 #' @template param_ambiguous
-#' @seealso [AbstractTensor], [ConcreteTensor]
+#'
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' x <- LiteralTensor(1L, shape = integer(), ambiguous = TRUE)
+#' x
+#' ambiguous(x)
+#' shape(x)
+#' ndims(x)
+#' dtype(x)
+#' # How it appears during tracing:
+#' # 1. via R literals
+#' graph <- trace_fn(function() 1, list())
+#' graph
+#' graph$outputs[[1]]$aval
+#' # 2. via nv_fill()
+#' graph <- trace_fn(function() nv_fill(2L, shape = c(2, 2)), list())
+#' graph
+#' graph$outputs[[1]]$aval
 #' @export
 LiteralTensor <- function(data, shape, dtype = default_dtype(data), ambiguous) {
   if (!test_scalar(data) && !inherits(data, "AnvilTensor")) {
@@ -298,16 +432,37 @@ LiteralTensor <- function(data, shape, dtype = default_dtype(data), ambiguous) {
 
 #' @title Iota Tensor Class
 #' @description
-#' An [`AbstractTensor`] representing a tensor where the data is a sequence of integers.
+#' An [`AbstractTensor`] representing an integer sequence.
+#' Usually created by [`nv_iota()`] / [`nv_seq()`], which both call [`nvl_iota()`] internally.
+#' Inherits from [`AbstractTensor`].
+#'
+#' @section Lowering:
+#' When lowering to stableHLO, these become `iota` operations that generate the integer sequence
+#' so they do not need to actually hold the data in the executable, similar to `ALTREP`s in R.
+#' It lowers to [`stablehlo::hlo_iota()`], optionally shifting the starting value via
+#' [`stablehlo::hlo_add()`].
+#'
 #' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
 #'   The shape of the tensor.
 #' @param dtype ([`stablehlo::TensorDataType`])\cr
 #'   The data type.
-#' @param start (`integer(1)`)\cr
-#'   The starting value.
 #' @param dimension (`integer(1)`)\cr
 #'   The dimension along which values increase.
+#' @param start (`integer(1)`)\cr
+#'   The starting value.
 #' @template param_ambiguous
+#'
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' x <- IotaTensor(shape = 4L, dtype = "i32", dimension = 1L)
+#' x
+#' ambiguous(x)
+#' shape(x)
+#' ndims(x)
+#' dtype(x)
+#' # How it appears during tracing:
+#' graph <- trace_fn(function() nv_iota(dim = 1L, dtype = "i32", shape = 4L), list())
+#' graph
+#' graph$outputs[[1]]$aval
 #' @export
 IotaTensor <- function(shape, dtype, dimension, start = 1L, ambiguous = FALSE) {
   shape <- as_shape(shape)
@@ -342,14 +497,7 @@ is_literal_tensor <- function(x) {
   inherits(x, "LiteralTensor")
 }
 
-#' @title Platform for ConcreteTensor
-#' @description
-#' Get the platform of a ConcreteTensor.
-#' @param x A ConcreteTensor.
-#' @param ... Additional arguments (unused).
-#' @return The platform string.
-#' @method platform ConcreteTensor
-#' @export
+#' @exportS3Method platform ConcreteTensor
 platform.ConcreteTensor <- function(x, ...) {
   platform(x$data)
 }
@@ -376,12 +524,32 @@ platform.ConcreteTensor <- function(x, ...) {
 #'   If `TRUE`, tensors with different ambiguity are not equal.
 #'   If `FALSE`, only dtype and shape are compared.
 #' @return `logical(1)` - `TRUE` if the tensors are equal, `FALSE` otherwise.
+#' @examples
+#' a <- nv_aten("f32", c(2L, 3L))
+#' b <- nv_aten("f32", c(2L, 3L))
+#'
+#' # Same dtype and shape
+#' eq_type(a, b, ambiguity = FALSE)
+#'
+#' # Different dtype
+#' eq_type(a, nv_aten("i32", c(2L, 3L)), ambiguity = FALSE)
+#'
+#' # Different shape
+#' eq_type(a, nv_aten("f32", c(3L, 2L)), ambiguity = FALSE)
+#'
+#' # ambiguity parameter controls whether ambiguous field is compared
+#' c <- nv_aten("f32", c(2L, 3L), ambiguous = TRUE)
+#' eq_type(a, c, ambiguity = FALSE)
+#' eq_type(a, c, ambiguity = TRUE)
+#'
+#' # neq_type is the negation of eq_type
+#' neq_type(a, b, ambiguity = FALSE)
 #' @export
 eq_type <- function(e1, e2, ambiguity) {
   if (!inherits(e1, "AbstractTensor") || !inherits(e2, "AbstractTensor")) {
     cli_abort("e1 and e2 must be AbstractTensors")
   }
-  if (!(e1$dtype == e2$dtype) || !identical(e1$shape, e2$shape)) {
+  if (e1$dtype != e2$dtype || !identical(e1$shape, e2$shape)) {
     return(FALSE)
   }
   if (ambiguity && (e1$ambiguous != e2$ambiguous)) {
@@ -474,8 +642,20 @@ compare_proxy.AnvilTensor <- function(x, path) { # nolint
 #' @param x (`any`)\cr
 #'   Object to convert.
 #' @param pure (`logical(1)`)\cr
-#'   Whether to convert to a pure abstract tensor, i.e., without any concrete data.
+#'   Whether to convert to a pure `AbstractTensor` and not e.g. `LiteralTensor` or `ConcreteTensor`.
 #' @return [`AbstractTensor`]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' # R literals become LiteralTensors (ambiguous by default, except logicals)
+#' to_abstract(1.5)
+#' to_abstract(1L)
+#' to_abstract(TRUE)
+#'
+#' # AnvilTensors become ConcreteTensors
+#' to_abstract(nv_tensor(1:4))
+#'
+#' # Use pure = TRUE to strip subclass info
+#' to_abstract(nv_tensor(1:4), pure = TRUE)
+#'
 #' @export
 to_abstract <- function(x, pure = FALSE) {
   x <- if (is_anvil_tensor(x)) {
@@ -519,30 +699,43 @@ is_shape <- function(x) {
 
 #' @title Tensor-like Objects
 #' @description
-#' A value that is either an [`AnvilTensor`][nv_tensor], can be converted to it, or
-#' represents an abstract version of it.
-#' This also includes atomic R vectors.
+#' A `tensorish` value is any object that can be passed as an input to
+#' anvil primitive functions such as [`nvl_add`].
 #'
-#' @name tensorish
-#' @seealso [nv_tensor], [ConcreteTensor], [AbstractTensor], [LiteralTensor], [GraphBox]
-#' @examplesIf pjrt::plugin_is_downloaded()
-#' x <- nv_tensor(1:4, dtype = "f32")
-#' x
-NULL
-
-#' @title Check if an Object is a Tensor-ish Object
-#' @description
-#' Check if an object is a tensor-ish object.
+#' The following types are tensorish:
+#' * [`AnvilTensor`]: a concrete tensor holding data on a device.
+#' * [`GraphBox`]: a boxed abstract tensor representing a value in a graph.
+#' * Literals: `numeric(1)`, `integer(1)`, `logical(1)`: promoted to scalar tensors.
+#'
+#' Use [`is_tensorish()`] to check whether a value is tensorish.
+#'
 #' @param x (`any`)\cr
 #'   Object to check.
 #' @param literal (`logical(1)`)\cr
-#'   Whether to allow R literals (i.e., `1L`, `1.0`, `TRUE`, etc.) to be considered tensor-ish.
-#'   Defaults to `TRUE`.
+#'   Whether to accept R literals as tensorish.
 #' @return `logical(1)`
+#' @name tensorish
+#' @seealso [AnvilTensor], [GraphBox]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' # AnvilTensors are tensorish
+#' is_tensorish(nv_tensor(1:4))
+#'
+#' # Scalar R literals are tensorish by default
+#' is_tensorish(1.5)
+#'
+#' # Non-scalar vectors are not tensorish
+#' is_tensorish(1:4)
+#'
+#' is_tensorish(DebugBox(nv_aten("f32", c(2L, 3L))))
+#'
+#' # Disable literal promotion
+#' is_tensorish(1.5, literal = FALSE)
+NULL
+
+#' @rdname tensorish
 #' @export
 is_tensorish <- function(x, literal = TRUE) {
   ok <- inherits(x, "AnvilTensor") ||
-    inherits(x, "AbstractTensor") ||
     is_box(x)
 
   if (!ok && literal) {
