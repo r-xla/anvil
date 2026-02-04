@@ -4,14 +4,14 @@
 \alias{jit_eval}
 \title{Jit an Evaluate an Expression}
 \usage{
-jit_eval(expr, device)
+jit_eval(expr, device = NULL)
 }
 \arguments{
 \item{expr}{(\code{expression})\cr
 Expression to run.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
-The device to use if no input tensors are provided to infer the platform.}
+The device to use if no input tensors are provided.}
 }
 \value{
 (\code{any})\cr
