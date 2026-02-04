@@ -11,10 +11,30 @@ ConcreteTensor(data)
 The actual tensor data.}
 }
 \description{
-A \code{\link{AbstractTensor}} that also holds a reference to the actual tensor data.
-Used to represent constants captured during tracing.
-Preserves the ambiguity from the underlying \code{\link{AnvilTensor}}.
+An \code{\link{AbstractTensor}} that also holds a reference to the actual tensor data.
+Usually represents a closed-over constant in a program.
+Inherits from \code{\link{AbstractTensor}}.
 }
-\seealso{
-\link{AbstractTensor}, \link{LiteralTensor}
+\section{Lowering}{
+
+When lowering to XLA, these become inputs to the executable instead of embedding them into
+programs as constants.
+This is to avoid increasing compilation time and bloating the size of the executable.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+y <- nv_tensor(c(0.5, 0.6))
+x <- ConcreteTensor(y)
+x
+ambiguous(x)
+shape(x)
+ndims(x)
+dtype(x)
+
+# How it appears during tracing
+graph <- trace_fn(function() y, list())
+graph
+graph$outputs[[1]]$aval
+\dontshow{\}) # examplesIf}
 }
