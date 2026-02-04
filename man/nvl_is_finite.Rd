@@ -8,11 +8,35 @@ nvl_is_finite(operand)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of data type floating-point.}
 }
 \value{
-\code{\link{tensorish}} of boolean type
+\code{\link{tensorish}}\cr
+Has the same shape as the input and boolean data type.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise check if values are finite (not Inf, -Inf, or NaN).
+Is the same as \code{\link[=nv_is_finite]{nv_is_finite()}}.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_is_finite]{stablehlo::hlo_is_finite()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, Inf, NaN, -Inf, 0))
+  nvl_is_finite(x)
+})
+\dontshow{\}) # examplesIf}
 }

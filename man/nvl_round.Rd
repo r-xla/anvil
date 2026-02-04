@@ -7,7 +7,7 @@
 nvl_round(operand, method = "nearest_even")
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{tensorish}} of floating-point type)\cr
 Operand.}
 
 \item{method}{(\code{character(1)})\cr
@@ -18,4 +18,23 @@ Rounding method ("nearest_even" or "afz").}
 }
 \description{
 Element-wise rounding.
+}
+\section{Shapes}{
+
+Operand can have any shape. The output has the same shape.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_round_nearest_even]{stablehlo::hlo_round_nearest_even()}} or
+\code{\link[stablehlo:hlo_round_nearest_afz]{stablehlo::hlo_round_nearest_afz()}} depending on the \code{method} parameter.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1.4, 2.5, 3.6))
+  nvl_round(x)
+})
+\dontshow{\}) # examplesIf}
 }

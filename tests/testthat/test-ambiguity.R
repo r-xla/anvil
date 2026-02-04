@@ -105,6 +105,17 @@ test_that("format.AnvilTensor shows ambiguity with ?", {
   expect_match(format(x_nonamb), "f32[^?]|f32$")
 })
 
+test_that("boolean reductions never produce ambiguous output", {
+  f_any <- jit(function(x) nvl_reduce_any(x, dims = 1L))
+  f_all <- jit(function(x) nvl_reduce_all(x, dims = 1L))
+
+  # Even with ambiguous input, output is never ambiguous
+  x_amb <- nv_tensor(c(TRUE, FALSE), ambiguous = TRUE)
+  expect_true(ambiguous(x_amb))
+  expect_false(ambiguous(f_any(x_amb)))
+  expect_false(ambiguous(f_all(x_amb)))
+})
+
 test_that("ambiguous() generic works for AnvilTensor and AbstractTensor", {
   # AnvilTensor
   x_anvil_amb <- nv_scalar(1.0, ambiguous = TRUE)

@@ -8,11 +8,35 @@ nvl_sign(operand)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of data type signed integer or floating-point.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise sign.
+Is the same as \code{\link[=nv_sign]{nv_sign()}}. You can also use \code{\link[=sign]{sign()}}.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_sign]{stablehlo::hlo_sign()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(-3, 0, 5))
+  nvl_sign(x)
+})
+\dontshow{\}) # examplesIf}
 }

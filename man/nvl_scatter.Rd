@@ -23,8 +23,8 @@ nvl_scatter(
 \item{input}{(\code{\link{tensorish}})\cr
 Input tensor to scatter into.}
 
-\item{scatter_indices}{(\code{\link{tensorish}})\cr
-Tensor of integer type containing indices.}
+\item{scatter_indices}{(\code{\link{tensorish}} of integer type)\cr
+Indices tensor.}
 
 \item{update}{(\code{\link{tensorish}})\cr
 Update values tensor.}
@@ -62,4 +62,34 @@ Binary function to combine existing and update values.}
 \description{
 Produces a result tensor equal to the input tensor except that
 slices specified by scatter_indices are updated with values from the update tensor.
+}
+\section{Shapes}{
+
+Output has the same shape as \code{input}. See
+\code{\link[stablehlo:hlo_scatter]{stablehlo::hlo_scatter()}} for detailed dimension constraints on
+\code{scatter_indices}, \code{update}, and the dimension mapping parameters.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_scatter]{stablehlo::hlo_scatter()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  input <- nv_tensor(c(0, 0, 0, 0, 0))
+  indices <- nv_tensor(matrix(c(1L, 3L), ncol = 1))
+  updates <- nv_tensor(c(10, 30))
+  nvl_scatter(
+    input, indices, updates,
+    update_window_dims = integer(0),
+    inserted_window_dims = 1L,
+    input_batching_dims = integer(0),
+    scatter_indices_batching_dims = integer(0),
+    scatter_dims_to_operand_dims = 1L,
+    index_vector_dim = 2L
+  )
+})
+\dontshow{\}) # examplesIf}
 }

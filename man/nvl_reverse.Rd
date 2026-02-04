@@ -19,3 +19,21 @@ Dimensions to reverse (1-indexed).}
 \description{
 Reverses the order of elements along specified dimensions.
 }
+\section{Shapes}{
+
+Output has the same shape as \code{operand}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_reverse]{stablehlo::hlo_reverse()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3, 4, 5))
+  nvl_reverse(x, dims = 1L)
+})
+\dontshow{\}) # examplesIf}
+}

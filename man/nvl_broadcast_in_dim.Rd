@@ -22,3 +22,23 @@ Dimension mapping.}
 \description{
 Broadcasts a tensor to a new shape.
 }
+\section{Shapes}{
+
+\code{length(broadcast_dimensions)} must equal the rank of \code{operand}.
+Each dimension of \code{operand} must either be 1 or match
+\code{shape[broadcast_dimensions[i]]}. Output shape is \code{shape}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_broadcast_in_dim]{stablehlo::hlo_broadcast_in_dim()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  nvl_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
+})
+\dontshow{\}) # examplesIf}
+}

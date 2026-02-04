@@ -7,8 +7,8 @@
 nvl_if(pred, true, false)
 }
 \arguments{
-\item{pred}{(\code{\link{tensorish}})\cr
-Scalar boolean predicate.}
+\item{pred}{(\code{\link{tensorish}} of boolean type, scalar)\cr
+Predicate.}
 
 \item{true}{(\code{expression})\cr
 Expression for true branch.}
@@ -21,4 +21,19 @@ Result of the executed branch.
 }
 \description{
 Conditional execution of branches.
+}
+\section{Shapes}{
+
+\code{pred} must be scalar. Both branches must return outputs with the same shapes.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_if]{stablehlo::hlo_if()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval(nvl_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
+\dontshow{\}) # examplesIf}
 }

@@ -30,3 +30,18 @@ See the \code{vignette("type-promotion")} for more details.}
 \description{
 Creates a tensor with values increasing along the specified dimension.
 }
+\section{Shapes}{
+
+Output shape is \code{shape}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_iota]{stablehlo::hlo_iota()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval(nvl_iota(dim = 1L, dtype = "i32", shape = 5L))
+\dontshow{\}) # examplesIf}
+}

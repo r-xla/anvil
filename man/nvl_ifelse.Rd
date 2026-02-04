@@ -7,8 +7,8 @@
 nvl_ifelse(pred, true_value, false_value)
 }
 \arguments{
-\item{pred}{(\code{\link{tensorish}})\cr
-Boolean predicate tensor.}
+\item{pred}{(\code{\link{tensorish}} of boolean type)\cr
+Predicate tensor.}
 
 \item{true_value}{(\code{\link{tensorish}})\cr
 Value when pred is true.}
@@ -21,4 +21,24 @@ Value when pred is false.}
 }
 \description{
 Selects elements based on a predicate.
+}
+\section{Shapes}{
+
+\code{pred} must be either scalar or the same shape as \code{true_value}.
+\code{true_value} and \code{false_value} must have the same shape. Output has
+the shape of \code{true_value}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_select]{stablehlo::hlo_select()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  pred <- nv_tensor(c(TRUE, FALSE, TRUE))
+  nvl_ifelse(pred, nv_tensor(c(1, 2, 3)), nv_tensor(c(4, 5, 6)))
+})
+\dontshow{\}) # examplesIf}
 }

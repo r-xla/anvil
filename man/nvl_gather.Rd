@@ -22,8 +22,8 @@ nvl_gather(
 \item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
 
-\item{start_indices}{(\code{\link{tensorish}})\cr
-Tensor of integer type containing the starting indices for the gather operation.}
+\item{start_indices}{(\code{\link{tensorish}} of integer type)\cr
+Starting indices for the gather operation.}
 
 \item{slice_sizes}{(\code{integer()})\cr
 The sizes of the slices to gather in each dimension.}
@@ -57,4 +57,34 @@ Whether indices are guaranteed to be unique (no duplicates).}
 }
 \description{
 Gathers slices from the operand at positions specified by start_indices.
+}
+\section{Shapes}{
+
+See \code{\link[stablehlo:hlo_gather]{stablehlo::hlo_gather()}} for detailed dimension constraints
+on \code{start_indices}, \code{slice_sizes}, and the dimension mapping
+parameters.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_gather]{stablehlo::hlo_gather()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  operand <- nv_tensor(matrix(1:9, nrow = 3))
+  indices <- nv_tensor(matrix(c(1L, 3L), ncol = 1))
+  nvl_gather(
+    operand, indices,
+    slice_sizes = c(1L, 3L),
+    offset_dims = 2L,
+    collapsed_slice_dims = 1L,
+    operand_batching_dims = integer(0),
+    start_indices_batching_dims = integer(0),
+    start_index_map = 1L,
+    index_vector_dim = 2L
+  )
+})
+\dontshow{\}) # examplesIf}
 }

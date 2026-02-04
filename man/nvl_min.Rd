@@ -8,11 +8,29 @@ nvl_min(lhs, rhs)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Tensorish values of any data type.
+Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the inputs.
+It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise minimum of two tensors.
+For a more user-friendly interface, see \code{\link[=nv_min]{nv_min()}}.
+}
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_minimum]{stablehlo::hlo_minimum()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 5, 3))
+  y <- nv_tensor(c(4, 2, 6))
+  nvl_min(x, y)
+})
+\dontshow{\}) # examplesIf}
 }

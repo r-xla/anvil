@@ -8,11 +8,29 @@ nvl_ne(lhs, rhs)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Tensorish values of any data type.
+Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}} (boolean)
+\code{\link{tensorish}}\cr
+Has the same shape as the inputs and boolean data type.
+It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise inequality comparison.
+For a more user-friendly interface, see \code{\link[=nv_ne]{nv_ne()}}, or use the \code{!=} operator.
+}
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} with \code{comparison_direction = "NE"}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  y <- nv_tensor(c(1, 3, 2))
+  nvl_ne(x, y)
+})
+\dontshow{\}) # examplesIf}
 }

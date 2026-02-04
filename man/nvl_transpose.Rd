@@ -19,3 +19,21 @@ Dimension permutation.}
 \description{
 Transposes a tensor according to a permutation.
 }
+\section{Shapes}{
+
+Output shape is \code{shape(operand)[permutation]}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_transpose]{stablehlo::hlo_transpose()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(matrix(1:6, nrow = 2))
+  nvl_transpose(x, permutation = c(2L, 1L))
+})
+\dontshow{\}) # examplesIf}
+}

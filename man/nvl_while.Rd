@@ -22,3 +22,27 @@ Final state after loop terminates.
 \description{
 Executes a while loop.
 }
+\section{Shapes}{
+
+\code{cond} must return a scalar boolean. \code{body} must return the same shapes as \code{init}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_while]{stablehlo::hlo_while()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  nvl_while(
+    init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
+    cond = function(i, total) nvl_lt(i, nv_scalar(5L)),
+    body = function(i, total) list(
+      i = nvl_add(i, nv_scalar(1L)),
+      total = nvl_add(total, i)
+    )
+  )
+})
+\dontshow{\}) # examplesIf}
+}

@@ -18,3 +18,21 @@ Prints a tensor during execution.
 Returns the input unchanged.
 Note: Currently only works on CPU backend.
 }
+\section{Shapes}{
+
+Output has the same shape as \code{operand}.
+}
+
+\section{StableHLO}{
+
+Uses \code{\link[stablehlo:hlo_custom_call]{stablehlo::hlo_custom_call()}} internally.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  nvl_print(x)
+})
+\dontshow{\}) # examplesIf}
+}

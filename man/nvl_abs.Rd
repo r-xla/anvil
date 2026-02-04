@@ -8,11 +8,35 @@ nvl_abs(operand)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of data type signed integer or floating-point.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise absolute value.
+Is the same as \code{\link[=nv_abs]{nv_abs()}}. You can also use \code{\link[=abs]{abs()}}.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_abs]{stablehlo::hlo_abs()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(-1, 2, -3))
+  nvl_abs(x)
+})
+\dontshow{\}) # examplesIf}
 }

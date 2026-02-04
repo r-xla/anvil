@@ -8,11 +8,37 @@ nvl_and(lhs, rhs)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Tensorish values of data type boolean, integer, or unsigned integer.
+Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the inputs.
+It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise logical AND.
+For a more user-friendly interface, see \code{\link[=nv_and]{nv_and()}}, or use the \code{&} operator.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_and]{stablehlo::hlo_and()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(TRUE, FALSE, TRUE))
+  y <- nv_tensor(c(TRUE, TRUE, FALSE))
+  nvl_and(x, y)
+})
+\dontshow{\}) # examplesIf}
 }

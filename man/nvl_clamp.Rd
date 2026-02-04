@@ -22,3 +22,22 @@ Maximum value (scalar or same shape as operand).}
 \description{
 Element-wise clamp: max(min_val, min(operand, max_val)).
 }
+\section{Shapes}{
+
+\code{min_val} and \code{max_val} must each be either scalar or the same
+shape as \code{operand}. The output has the same shape as \code{operand}.
+}
+
+\section{StableHLO}{
+
+Calls \code{\link[stablehlo:hlo_clamp]{stablehlo::hlo_clamp()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(-1, 0.5, 2))
+  nvl_clamp(nv_scalar(0), x, nv_scalar(1))
+})
+\dontshow{\}) # examplesIf}
+}
