@@ -7,23 +7,29 @@
 nvl_expm1(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}} of floating-point type)\cr
-Operand.}
+\item{operand}{(\code{\link{tensorish}})\cr
+Tensorish value of data type floating-point.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise exp(x) - 1, more accurate for small x.
+For a more user-friendly interface, see \code{\link[=nv_expm1]{nv_expm1()}}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Operand can have any shape. The output has the same shape.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_exponential_minus_one]{stablehlo::hlo_exponential_minus_one()}}.
+Lowers to \code{\link[stablehlo:hlo_exponential_minus_one]{stablehlo::hlo_exponential_minus_one()}}.
 }
 
 \examples{

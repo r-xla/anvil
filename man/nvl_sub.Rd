@@ -18,7 +18,7 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Subtracts two tensors element-wise.
-For a more user-friendly interface, see \code{\link[=nv_sub]{nv_sub()}}.
+For a more user-friendly interface, see \code{\link[=nv_sub]{nv_sub()}}, or use the \code{-} operator.
 }
 \section{Implemented Rules}{
 

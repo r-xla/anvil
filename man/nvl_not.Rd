@@ -7,23 +7,29 @@
 nvl_not(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}} of boolean or integer type)\cr
-Operand.}
+\item{operand}{(\code{\link{tensorish}})\cr
+Tensorish value of data type boolean, integer, or unsigned integer.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise logical NOT.
+For a more user-friendly interface, see \code{\link[=nv_not]{nv_not()}}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Operand can have any shape. The output has the same shape.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_not]{stablehlo::hlo_not()}}.
+Lowers to \code{\link[stablehlo:hlo_not]{stablehlo::hlo_not()}}.
 }
 
 \examples{

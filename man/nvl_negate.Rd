@@ -7,23 +7,29 @@
 nvl_negate(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}} of integer or floating-point type)\cr
-Operand.}
+\item{operand}{(\code{\link{tensorish}})\cr
+Tensorish value of data type integer or floating-point.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Negates a tensor element-wise.
+For a more user-friendly interface, see \code{\link[=nv_negate]{nv_negate()}}, or use the unary \code{-} operator.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Operand can have any shape. The output has the same shape.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_negate]{stablehlo::hlo_negate()}}.
+Lowers to \code{\link[stablehlo:hlo_negate]{stablehlo::hlo_negate()}}.
 }
 
 \examples{

@@ -18,7 +18,7 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise inequality comparison.
-For a more user-friendly interface, see \code{\link[=nv_ne]{nv_ne()}}.
+For a more user-friendly interface, see \code{\link[=nv_ne]{nv_ne()}}, or use the \code{!=} operator.
 }
 \section{StableHLO}{
 

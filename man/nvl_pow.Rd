@@ -18,7 +18,7 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Raises lhs to the power of rhs element-wise.
-For a more user-friendly interface, see \code{\link[=nv_pow]{nv_pow()}}.
+For a more user-friendly interface, see \code{\link[=nv_pow]{nv_pow()}}, or use the \code{^} operator.
 }
 \section{StableHLO}{
 

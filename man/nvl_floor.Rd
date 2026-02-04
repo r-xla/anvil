@@ -7,23 +7,29 @@
 nvl_floor(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}} of floating-point type)\cr
-Operand.}
+\item{operand}{(\code{\link{tensorish}})\cr
+Tensorish value of data type floating-point.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise floor.
+For a more user-friendly interface, see \code{\link[=nv_floor]{nv_floor()}}, or use \code{\link[=floor]{floor()}}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Operand can have any shape. The output has the same shape.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_floor]{stablehlo::hlo_floor()}}.
+Lowers to \code{\link[stablehlo:hlo_floor]{stablehlo::hlo_floor()}}.
 }
 
 \examples{

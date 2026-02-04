@@ -18,7 +18,7 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise greater than or equal comparison.
-For a more user-friendly interface, see \code{\link[=nv_ge]{nv_ge()}}.
+For a more user-friendly interface, see \code{\link[=nv_ge]{nv_ge()}}, or use the \code{>=} operator.
 }
 \section{StableHLO}{
 

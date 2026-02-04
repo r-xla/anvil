@@ -7,23 +7,29 @@
 nvl_log1p(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}} of floating-point type)\cr
-Operand.}
+\item{operand}{(\code{\link{tensorish}})\cr
+Tensorish value of data type floating-point.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise log(1 + x), more accurate for small x.
+For a more user-friendly interface, see \code{\link[=nv_log1p]{nv_log1p()}}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Operand can have any shape. The output has the same shape.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_log_plus_one]{stablehlo::hlo_log_plus_one()}}.
+Lowers to \code{\link[stablehlo:hlo_log_plus_one]{stablehlo::hlo_log_plus_one()}}.
 }
 
 \examples{

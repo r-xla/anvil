@@ -7,23 +7,29 @@
 nvl_popcnt(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}} of integer type)\cr
-Operand.}
+\item{operand}{(\code{\link{tensorish}})\cr
+Tensorish value of data type integer or unsigned integer.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise population count (number of set bits).
+For a more user-friendly interface, see \code{\link[=nv_popcnt]{nv_popcnt()}}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Operand can have any shape. The output has the same shape.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_popcnt]{stablehlo::hlo_popcnt()}}.
+Lowers to \code{\link[stablehlo:hlo_popcnt]{stablehlo::hlo_popcnt()}}.
 }
 
 \examples{

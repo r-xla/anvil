@@ -7,23 +7,29 @@
 nvl_tanh(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}} of floating-point type)\cr
-Operand.}
+\item{operand}{(\code{\link{tensorish}})\cr
+Tensorish value of data type floating-point.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise hyperbolic tangent.
+For a more user-friendly interface, see \code{\link[=nv_tanh]{nv_tanh()}}, or use \code{\link[=tanh]{tanh()}}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Operand can have any shape. The output has the same shape.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_tanh]{stablehlo::hlo_tanh()}}.
+Lowers to \code{\link[stablehlo:hlo_tanh]{stablehlo::hlo_tanh()}}.
 }
 
 \examples{

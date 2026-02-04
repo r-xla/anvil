@@ -18,7 +18,7 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise less than comparison.
-For a more user-friendly interface, see \code{\link[=nv_lt]{nv_lt()}}.
+For a more user-friendly interface, see \code{\link[=nv_lt]{nv_lt()}}, or use the \code{<} operator.
 }
 \section{StableHLO}{
 

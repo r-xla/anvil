@@ -93,7 +93,7 @@ p_add <- AnvilPrimitive("add")
 #' @title Primitive Addition
 #' @description
 #' Adds two tensors element-wise.
-#' For a more user-friendly interface, see [nv_add()].
+#' For a more user-friendly interface, see [nv_add()], or use the `+` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of any data type.
 #'   Must have the same shape.
@@ -117,7 +117,7 @@ p_mul <- AnvilPrimitive("mul")
 #' @title Primitive Multiplication
 #' @description
 #' Multiplies two tensors element-wise.
-#' For a more user-friendly interface, see [nv_mul()].
+#' For a more user-friendly interface, see [nv_mul()], or use the `*` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of any data type.
 #'   Must have the same shape.
@@ -141,7 +141,7 @@ p_sub <- AnvilPrimitive("sub")
 #' @title Primitive Subtraction
 #' @description
 #' Subtracts two tensors element-wise.
-#' For a more user-friendly interface, see [nv_sub()].
+#' For a more user-friendly interface, see [nv_sub()], or use the `-` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of data type integer, unsigned integer, or floating-point.
 #'   Must have the same shape.
@@ -165,13 +165,16 @@ p_negate <- AnvilPrimitive("negate")
 #' @title Primitive Negation
 #' @description
 #' Negates a tensor element-wise.
-#' @param operand ([`tensorish`] of integer or floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_negate()], or use the unary `-` operator.
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type integer or floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id negate
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_negate()].
+#' Lowers to [stablehlo::hlo_negate()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, -2, 3))
@@ -184,7 +187,7 @@ p_div <- AnvilPrimitive("divide")
 #' @title Primitive Division
 #' @description
 #' Divides two tensors element-wise.
-#' For a more user-friendly interface, see [nv_div()].
+#' For a more user-friendly interface, see [nv_div()], or use the `/` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of data type integer, unsigned integer, or floating-point.
 #'   Must have the same shape.
@@ -208,7 +211,7 @@ p_pow <- AnvilPrimitive("power")
 #' @title Primitive Power
 #' @description
 #' Raises lhs to the power of rhs element-wise.
-#' For a more user-friendly interface, see [nv_pow()].
+#' For a more user-friendly interface, see [nv_pow()], or use the `^` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of data type integer, unsigned integer, or floating-point.
 #'   Must have the same shape.
@@ -764,7 +767,7 @@ p_eq <- AnvilPrimitive("equal")
 #' @title Primitive Equal
 #' @description
 #' Element-wise equality comparison.
-#' For a more user-friendly interface, see [nv_eq()].
+#' For a more user-friendly interface, see [nv_eq()], or use the `==` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of any data type.
 #'   Must have the same shape.
@@ -788,7 +791,7 @@ p_ne <- AnvilPrimitive("not_equal")
 #' @title Primitive Not Equal
 #' @description
 #' Element-wise inequality comparison.
-#' For a more user-friendly interface, see [nv_ne()].
+#' For a more user-friendly interface, see [nv_ne()], or use the `!=` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of any data type.
 #'   Must have the same shape.
@@ -812,7 +815,7 @@ p_gt <- AnvilPrimitive("greater")
 #' @title Primitive Greater Than
 #' @description
 #' Element-wise greater than comparison.
-#' For a more user-friendly interface, see [nv_gt()].
+#' For a more user-friendly interface, see [nv_gt()], or use the `>` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of any data type.
 #'   Must have the same shape.
@@ -836,7 +839,7 @@ p_ge <- AnvilPrimitive("greater_equal")
 #' @title Primitive Greater Equal
 #' @description
 #' Element-wise greater than or equal comparison.
-#' For a more user-friendly interface, see [nv_ge()].
+#' For a more user-friendly interface, see [nv_ge()], or use the `>=` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of any data type.
 #'   Must have the same shape.
@@ -860,7 +863,7 @@ p_lt <- AnvilPrimitive("less")
 #' @title Primitive Less Than
 #' @description
 #' Element-wise less than comparison.
-#' For a more user-friendly interface, see [nv_lt()].
+#' For a more user-friendly interface, see [nv_lt()], or use the `<` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of any data type.
 #'   Must have the same shape.
@@ -884,7 +887,7 @@ p_le <- AnvilPrimitive("less_equal")
 #' @title Primitive Less Equal
 #' @description
 #' Element-wise less than or equal comparison.
-#' For a more user-friendly interface, see [nv_le()].
+#' For a more user-friendly interface, see [nv_le()], or use the `<=` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of any data type.
 #'   Must have the same shape.
@@ -958,7 +961,7 @@ p_remainder <- AnvilPrimitive("remainder")
 #' @title Primitive Remainder
 #' @description
 #' Element-wise remainder of division.
-#' For a more user-friendly interface, see [nv_remainder()].
+#' For a more user-friendly interface, see [nv_remainder()], or use the `%%` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of data type integer, unsigned integer, or floating-point.
 #'   Must have the same shape.
@@ -982,7 +985,7 @@ p_and <- AnvilPrimitive("and")
 #' @title Primitive And
 #' @description
 #' Element-wise logical AND.
-#' For a more user-friendly interface, see [nv_and()].
+#' For a more user-friendly interface, see [nv_and()], or use the `&` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of data type boolean, integer, or unsigned integer.
 #'   Must have the same shape.
@@ -1006,13 +1009,16 @@ p_not <- AnvilPrimitive("not")
 #' @title Primitive Not
 #' @description
 #' Element-wise logical NOT.
-#' @param operand ([`tensorish`] of boolean or integer type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_not()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type boolean, integer, or unsigned integer.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id not
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_not()].
+#' Lowers to [stablehlo::hlo_not()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(TRUE, FALSE, TRUE))
@@ -1025,7 +1031,7 @@ p_or <- AnvilPrimitive("or")
 #' @title Primitive Or
 #' @description
 #' Element-wise logical OR.
-#' For a more user-friendly interface, see [nv_or()].
+#' For a more user-friendly interface, see [nv_or()], or use the `|` operator.
 #' @param lhs,rhs ([`tensorish`])\cr
 #'   Tensorish values of data type boolean, integer, or unsigned integer.
 #'   Must have the same shape.
@@ -1212,13 +1218,16 @@ p_abs <- AnvilPrimitive("abs")
 #' @title Primitive Absolute Value
 #' @description
 #' Element-wise absolute value.
-#' @param operand ([`tensorish`] of signed integer or floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_abs()], or use [abs()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type signed integer or floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id abs
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_abs()].
+#' Lowers to [stablehlo::hlo_abs()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(-1, 2, -3))
@@ -1231,13 +1240,16 @@ p_sqrt <- AnvilPrimitive("sqrt")
 #' @title Primitive Square Root
 #' @description
 #' Element-wise square root.
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_sqrt()], or use [sqrt()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id sqrt
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_sqrt()].
+#' Lowers to [stablehlo::hlo_sqrt()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 4, 9))
@@ -1247,17 +1259,19 @@ p_sqrt <- AnvilPrimitive("sqrt")
 nvl_sqrt <- make_unary_op(p_sqrt, stablehlo::infer_types_sqrt)
 
 p_rsqrt <- AnvilPrimitive("rsqrt")
-
 #' @title Primitive Reciprocal Square Root
 #' @description
 #' Element-wise reciprocal square root.
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_rsqrt()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id rsqrt
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_rsqrt()].
+#' Lowers to [stablehlo::hlo_rsqrt()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 4, 9))
@@ -1270,13 +1284,16 @@ p_log <- AnvilPrimitive("log")
 #' @title Primitive Logarithm
 #' @description
 #' Element-wise natural logarithm.
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_log()], or use [log()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id log
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_log()].
+#' Lowers to [stablehlo::hlo_log()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 2.718, 7.389))
@@ -1289,13 +1306,16 @@ p_tanh <- AnvilPrimitive("tanh")
 #' @title Primitive Hyperbolic Tangent
 #' @description
 #' Element-wise hyperbolic tangent.
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_tanh()], or use [tanh()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id tanh
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_tanh()].
+#' Lowers to [stablehlo::hlo_tanh()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(-1, 0, 1))
@@ -1308,13 +1328,16 @@ p_tan <- AnvilPrimitive("tan")
 #' @title Primitive Tangent
 #' @description
 #' Element-wise tangent.
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_tan()], or use [tan()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id tan
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_tan()].
+#' Lowers to [stablehlo::hlo_tan()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(0, 0.5, 1))
@@ -1327,13 +1350,16 @@ p_sine <- AnvilPrimitive("sine")
 #' @title Primitive Sine
 #' @description
 #' Element-wise sine.
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_sine()], or use [sin()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id sine
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_sine()].
+#' Lowers to [stablehlo::hlo_sine()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(0, pi / 2, pi))
@@ -1346,13 +1372,16 @@ p_cosine <- AnvilPrimitive("cosine")
 #' @title Primitive Cosine
 #' @description
 #' Element-wise cosine.
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_cosine()], or use [cos()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id cosine
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_cosine()].
+#' Lowers to [stablehlo::hlo_cosine()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(0, pi / 2, pi))
@@ -1365,13 +1394,16 @@ p_floor <- AnvilPrimitive("floor")
 #' @title Primitive Floor
 #' @description
 #' Element-wise floor.
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_floor()], or use [floor()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id floor
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_floor()].
+#' Lowers to [stablehlo::hlo_floor()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1.2, 2.7, -1.5))
@@ -1384,13 +1416,16 @@ p_ceil <- AnvilPrimitive("ceil")
 #' @title Primitive Ceiling
 #' @description
 #' Element-wise ceiling.
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_ceil()], or use [ceiling()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id ceil
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_ceil()].
+#' Lowers to [stablehlo::hlo_ceil()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1.2, 2.7, -1.5))
@@ -1403,13 +1438,16 @@ p_sign <- AnvilPrimitive("sign")
 #' @title Primitive Sign
 #' @description
 #' Element-wise sign.
-#' @param operand ([`tensorish`] of signed integer or floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_sign()], or use [sign()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type signed integer or floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id sign
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_sign()].
+#' Lowers to [stablehlo::hlo_sign()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(-3, 0, 5))
@@ -1422,13 +1460,16 @@ p_exp <- AnvilPrimitive("exp")
 #' @title Primitive Exponential
 #' @description
 #' Element-wise exponential.
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_exp()], or use [exp()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id exp
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_exponential()].
+#' Lowers to [stablehlo::hlo_exponential()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(0, 1, 2))
@@ -1441,13 +1482,16 @@ p_expm1 <- AnvilPrimitive("expm1")
 #' @title Primitive Exponential Minus One
 #' @description
 #' Element-wise exp(x) - 1, more accurate for small x.
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_expm1()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id expm1
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_exponential_minus_one()].
+#' Lowers to [stablehlo::hlo_exponential_minus_one()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(0, 0.001, 1))
@@ -1460,13 +1504,16 @@ p_log1p <- AnvilPrimitive("log1p")
 #' @title Primitive Log Plus One
 #' @description
 #' Element-wise log(1 + x), more accurate for small x.
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_log1p()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id log1p
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_log_plus_one()].
+#' Lowers to [stablehlo::hlo_log_plus_one()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(0, 0.001, 1))
@@ -1479,13 +1526,16 @@ p_cbrt <- AnvilPrimitive("cbrt")
 #' @title Primitive Cube Root
 #' @description
 #' Element-wise cube root.
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_cbrt()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id cbrt
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_cbrt()].
+#' Lowers to [stablehlo::hlo_cbrt()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 8, 27))
@@ -1498,13 +1548,16 @@ p_logistic <- AnvilPrimitive("logistic")
 #' @title Primitive Logistic (Sigmoid)
 #' @description
 #' Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_logistic()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id logistic
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_logistic()].
+#' Lowers to [stablehlo::hlo_logistic()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(-2, 0, 2))
@@ -1517,13 +1570,16 @@ p_is_finite <- AnvilPrimitive("is_finite")
 #' @title Primitive Is Finite
 #' @description
 #' Element-wise check if values are finite (not Inf, -Inf, or NaN).
-#' @param operand ([`tensorish`] of floating-point type)\cr
-#'   Operand.
-#' @return [`tensorish`] of boolean type
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_is_finite()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point.
+#' @return [`tensorish`]\cr
+#'   Has the same shape as the input and boolean data type.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id is_finite
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_is_finite()].
+#' Lowers to [stablehlo::hlo_is_finite()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, Inf, NaN, -Inf, 0))
@@ -1542,13 +1598,16 @@ p_popcnt <- AnvilPrimitive("popcnt")
 #' @title Primitive Population Count
 #' @description
 #' Element-wise population count (number of set bits).
-#' @param operand ([`tensorish`] of integer type)\cr
-#'   Operand.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' Operand can have any shape. The output has the same shape.
+#' For a more user-friendly interface, see [nv_popcnt()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type integer or unsigned integer.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id popcnt
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_popcnt()].
+#' Lowers to [stablehlo::hlo_popcnt()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(7L, 3L, 15L))

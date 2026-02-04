@@ -18,7 +18,7 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise logical OR.
-For a more user-friendly interface, see \code{\link[=nv_or]{nv_or()}}.
+For a more user-friendly interface, see \code{\link[=nv_or]{nv_or()}}, or use the \code{|} operator.
 }
 \section{Implemented Rules}{
 

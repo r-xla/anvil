@@ -7,23 +7,29 @@
 nvl_cosine(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}} of floating-point type)\cr
-Operand.}
+\item{operand}{(\code{\link{tensorish}})\cr
+Tensorish value of data type floating-point.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise cosine.
+For a more user-friendly interface, see \code{\link[=nv_cosine]{nv_cosine()}}, or use \code{\link[=cos]{cos()}}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Operand can have any shape. The output has the same shape.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_cosine]{stablehlo::hlo_cosine()}}.
+Lowers to \code{\link[stablehlo:hlo_cosine]{stablehlo::hlo_cosine()}}.
 }
 
 \examples{

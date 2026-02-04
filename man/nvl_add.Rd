@@ -18,7 +18,7 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Adds two tensors element-wise.
-For a more user-friendly interface, see \code{\link[=nv_add]{nv_add()}}.
+For a more user-friendly interface, see \code{\link[=nv_add]{nv_add()}}, or use the \code{+} operator.
 }
 \section{Implemented Rules}{
 

@@ -18,7 +18,7 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise logical AND.
-For a more user-friendly interface, see \code{\link[=nv_and]{nv_and()}}.
+For a more user-friendly interface, see \code{\link[=nv_and]{nv_and()}}, or use the \code{&} operator.
 }
 \section{Implemented Rules}{
 
