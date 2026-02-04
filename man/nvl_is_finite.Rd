@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise check if values are finite (not Inf, -Inf, or NaN).
-For a more user-friendly interface, see \code{\link[=nv_is_finite]{nv_is_finite()}}.
+Is the same as \code{\link[=nv_is_finite]{nv_is_finite()}}.
 }
 \section{Implemented Rules}{
 

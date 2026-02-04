@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise population count (number of set bits).
-For a more user-friendly interface, see \code{\link[=nv_popcnt]{nv_popcnt()}}.
+Is the same as \code{\link[=nv_popcnt]{nv_popcnt()}}.
 }
 \section{Implemented Rules}{
 

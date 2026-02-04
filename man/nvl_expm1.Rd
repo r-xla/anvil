@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise exp(x) - 1, more accurate for small x.
-For a more user-friendly interface, see \code{\link[=nv_expm1]{nv_expm1()}}.
+Is the same as \code{\link[=nv_expm1]{nv_expm1()}}.
 }
 \section{Implemented Rules}{
 

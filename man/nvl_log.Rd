@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise natural logarithm.
-For a more user-friendly interface, see \code{\link[=nv_log]{nv_log()}}, or use \code{\link[=log]{log()}}.
+Is the same as \code{\link[=nv_log]{nv_log()}}. You can also use \code{\link[=log]{log()}}.
 }
 \section{Implemented Rules}{
 

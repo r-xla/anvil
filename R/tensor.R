@@ -97,7 +97,7 @@ nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL) {
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
   }
-  x <- pjrt_scalar(data, dtype, device = device)
+  x <- pjrt_scalar(data, dtype = dtype, device = device)
   ensure_nv_tensor(x, ambiguous = ambiguous)
 }
 

@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise cube root.
-For a more user-friendly interface, see \code{\link[=nv_cbrt]{nv_cbrt()}}.
+Is the same as \code{\link[=nv_cbrt]{nv_cbrt()}}.
 }
 \section{Implemented Rules}{
 

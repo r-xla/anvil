@@ -7,33 +7,38 @@
 nvl_reduce_all(operand, dims, drop = TRUE)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}} of boolean type)\cr
-Operand.}
+\item{operand}{(\code{\link{tensorish}})\cr
+Tensorish value of boolean data type.}
 
 \item{dims}{(\code{integer()})\cr
-Dimensions to reduce.}
+Dimensions to reduce over.}
 
 \item{drop}{(\code{logical(1)})\cr
-Whether to drop reduced dimensions.}
+Whether to drop the reduced dimensions from the output shape.
+If \code{TRUE}, the reduced dimensions are removed.
+If \code{FALSE}, the reduced dimensions are set to 1.}
 }
 \value{
-\code{\link{tensorish}} (boolean)
+\code{\link{tensorish}}\cr
+Boolean tensor. Never ambiguous.
+When \code{drop = TRUE}, the shape is that of \code{operand} with \code{dims} removed.
+When \code{drop = FALSE}, the shape is that of \code{operand} with \code{dims} set to 1.
 }
 \description{
-Logical AND along dimensions.
+Performs logical AND along the specified dimensions.
+Is the same as \code{\link[=nv_reduce_all]{nv_reduce_all()}}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
 \itemize{
-\item \code{operand}: any shape
-\item output (\code{drop = TRUE}): shape of \code{operand} with \code{dims} removed
-\item output (\code{drop = FALSE}): shape of \code{operand} with \code{dims} set to 1
+\item \code{stablehlo}
+\item \code{backward}
 }
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code{\link[stablehlo:hlo_and]{stablehlo::hlo_and()}} as the reducer.
+Lowers to \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code{\link[stablehlo:hlo_and]{stablehlo::hlo_and()}} as the reducer.
 }
 
 \examples{

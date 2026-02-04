@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise cosine.
-For a more user-friendly interface, see \code{\link[=nv_cosine]{nv_cosine()}}, or use \code{\link[=cos]{cos()}}.
+Is the same as \code{\link[=nv_cosine]{nv_cosine()}}. You can also use \code{\link[=cos]{cos()}}.
 }
 \section{Implemented Rules}{
 

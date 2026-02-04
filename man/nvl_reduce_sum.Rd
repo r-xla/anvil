@@ -8,32 +8,38 @@ nvl_reduce_sum(operand, dims, drop = TRUE)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{dims}{(\code{integer()})\cr
-Dimensions to reduce.}
+Dimensions to reduce over.}
 
 \item{drop}{(\code{logical(1)})\cr
-Whether to drop reduced dimensions.}
+Whether to drop the reduced dimensions from the output shape.
+If \code{TRUE}, the reduced dimensions are removed.
+If \code{FALSE}, the reduced dimensions are set to 1.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type as the input.
+When \code{drop = TRUE}, the shape is that of \code{operand} with \code{dims} removed.
+When \code{drop = FALSE}, the shape is that of \code{operand} with \code{dims} set to 1.
+It is ambiguous if the input is ambiguous.
 }
 \description{
-Sums tensor elements along dimensions.
+Sums tensor elements along the specified dimensions.
+Is the same as \code{\link[=nv_reduce_sum]{nv_reduce_sum()}}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
 \itemize{
-\item \code{operand}: any shape
-\item output (\code{drop = TRUE}): shape of \code{operand} with \code{dims} removed
-\item output (\code{drop = FALSE}): shape of \code{operand} with \code{dims} set to 1
+\item \code{stablehlo}
+\item \code{backward}
 }
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code{\link[stablehlo:hlo_add]{stablehlo::hlo_add()}} as the reducer.
+Lowers to \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code{\link[stablehlo:hlo_add]{stablehlo::hlo_add()}} as the reducer.
 }
 
 \examples{

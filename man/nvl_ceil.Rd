@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise ceiling.
-For a more user-friendly interface, see \code{\link[=nv_ceil]{nv_ceil()}}, or use \code{\link[=ceiling]{ceiling()}}.
+Is the same as \code{\link[=nv_ceil]{nv_ceil()}}. You can also use \code{\link[=ceiling]{ceiling()}}.
 }
 \section{Implemented Rules}{
 

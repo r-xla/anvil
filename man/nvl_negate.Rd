@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Negates a tensor element-wise.
-For a more user-friendly interface, see \code{\link[=nv_negate]{nv_negate()}}, or use the unary \code{-} operator.
+Is the same as \code{\link[=nv_negate]{nv_negate()}}. You can also use the unary \code{-} operator.
 }
 \section{Implemented Rules}{
 

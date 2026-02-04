@@ -56,7 +56,7 @@ infer_reduce_boolean <- function(operand, dims, drop) {
   list(AbstractTensor(
     dtype = "pred",
     shape = Shape(new_shape),
-    ambiguous = operand$ambiguous
+    ambiguous = FALSE
   ))
 }
 
@@ -165,7 +165,7 @@ p_negate <- AnvilPrimitive("negate")
 #' @title Primitive Negation
 #' @description
 #' Negates a tensor element-wise.
-#' For a more user-friendly interface, see [nv_negate()], or use the unary `-` operator.
+#' Is the same as [nv_negate()]. You can also use the unary `-` operator.
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type integer or floating-point.
 #' @return [`tensorish`]\cr
@@ -596,19 +596,25 @@ make_reduce_op <- function(prim, infer_fn = infer_reduce) {
 p_reduce_sum <- AnvilPrimitive("reduce_sum")
 #' @title Primitive Sum Reduction
 #' @description
-#' Sums tensor elements along dimensions.
-#' @template param_operand
+#' Sums tensor elements along the specified dimensions.
+#' Is the same as [nv_reduce_sum()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of any data type.
 #' @param dims (`integer()`)\cr
-#'   Dimensions to reduce.
+#'   Dimensions to reduce over.
 #' @param drop (`logical(1)`)\cr
-#'   Whether to drop reduced dimensions.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' - `operand`: any shape
-#' - output (`drop = TRUE`): shape of `operand` with `dims` removed
-#' - output (`drop = FALSE`): shape of `operand` with `dims` set to 1
+#'   Whether to drop the reduced dimensions from the output shape.
+#'   If `TRUE`, the reduced dimensions are removed.
+#'   If `FALSE`, the reduced dimensions are set to 1.
+#' @return [`tensorish`]\cr
+#'   Has the same data type as the input.
+#'   When `drop = TRUE`, the shape is that of `operand` with `dims` removed.
+#'   When `drop = FALSE`, the shape is that of `operand` with `dims` set to 1.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id reduce_sum
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_reduce()] with [stablehlo::hlo_add()] as the reducer.
+#' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_add()] as the reducer.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(matrix(1:6, nrow = 2))
@@ -620,19 +626,25 @@ nvl_reduce_sum <- make_reduce_op(p_reduce_sum)
 p_reduce_prod <- AnvilPrimitive("reduce_prod")
 #' @title Primitive Product Reduction
 #' @description
-#' Multiplies tensor elements along dimensions.
-#' @template param_operand
+#' Multiplies tensor elements along the specified dimensions.
+#' Is the same as [nv_reduce_prod()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of any data type.
 #' @param dims (`integer()`)\cr
-#'   Dimensions to reduce.
+#'   Dimensions to reduce over.
 #' @param drop (`logical(1)`)\cr
-#'   Whether to drop reduced dimensions.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' - `operand`: any shape
-#' - output (`drop = TRUE`): shape of `operand` with `dims` removed
-#' - output (`drop = FALSE`): shape of `operand` with `dims` set to 1
+#'   Whether to drop the reduced dimensions from the output shape.
+#'   If `TRUE`, the reduced dimensions are removed.
+#'   If `FALSE`, the reduced dimensions are set to 1.
+#' @return [`tensorish`]\cr
+#'   Has the same data type as the input.
+#'   When `drop = TRUE`, the shape is that of `operand` with `dims` removed.
+#'   When `drop = FALSE`, the shape is that of `operand` with `dims` set to 1.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id reduce_prod
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_reduce()] with [stablehlo::hlo_multiply()] as the reducer.
+#' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_multiply()] as the reducer.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(matrix(1:6, nrow = 2))
@@ -644,19 +656,25 @@ nvl_reduce_prod <- make_reduce_op(p_reduce_prod)
 p_reduce_max <- AnvilPrimitive("reduce_max")
 #' @title Primitive Max Reduction
 #' @description
-#' Finds maximum along dimensions.
-#' @template param_operand
+#' Finds the maximum of tensor elements along the specified dimensions.
+#' Is the same as [nv_reduce_max()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of any data type.
 #' @param dims (`integer()`)\cr
-#'   Dimensions to reduce.
+#'   Dimensions to reduce over.
 #' @param drop (`logical(1)`)\cr
-#'   Whether to drop reduced dimensions.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' - `operand`: any shape
-#' - output (`drop = TRUE`): shape of `operand` with `dims` removed
-#' - output (`drop = FALSE`): shape of `operand` with `dims` set to 1
+#'   Whether to drop the reduced dimensions from the output shape.
+#'   If `TRUE`, the reduced dimensions are removed.
+#'   If `FALSE`, the reduced dimensions are set to 1.
+#' @return [`tensorish`]\cr
+#'   Has the same data type as the input.
+#'   When `drop = TRUE`, the shape is that of `operand` with `dims` removed.
+#'   When `drop = FALSE`, the shape is that of `operand` with `dims` set to 1.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id reduce_max
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_reduce()] with [stablehlo::hlo_maximum()] as the reducer.
+#' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_maximum()] as the reducer.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(matrix(1:6, nrow = 2))
@@ -668,19 +686,25 @@ nvl_reduce_max <- make_reduce_op(p_reduce_max)
 p_reduce_min <- AnvilPrimitive("reduce_min")
 #' @title Primitive Min Reduction
 #' @description
-#' Finds minimum along dimensions.
-#' @template param_operand
+#' Finds the minimum of tensor elements along the specified dimensions.
+#' Is the same as [nv_reduce_min()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of any data type.
 #' @param dims (`integer()`)\cr
-#'   Dimensions to reduce.
+#'   Dimensions to reduce over.
 #' @param drop (`logical(1)`)\cr
-#'   Whether to drop reduced dimensions.
-#' @return [`tensorish`]
-#' @section Shapes:
-#' - `operand`: any shape
-#' - output (`drop = TRUE`): shape of `operand` with `dims` removed
-#' - output (`drop = FALSE`): shape of `operand` with `dims` set to 1
+#'   Whether to drop the reduced dimensions from the output shape.
+#'   If `TRUE`, the reduced dimensions are removed.
+#'   If `FALSE`, the reduced dimensions are set to 1.
+#' @return [`tensorish`]\cr
+#'   Has the same data type as the input.
+#'   When `drop = TRUE`, the shape is that of `operand` with `dims` removed.
+#'   When `drop = FALSE`, the shape is that of `operand` with `dims` set to 1.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id reduce_min
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_reduce()] with [stablehlo::hlo_minimum()] as the reducer.
+#' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_minimum()] as the reducer.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(matrix(1:6, nrow = 2))
@@ -692,20 +716,24 @@ nvl_reduce_min <- make_reduce_op(p_reduce_min)
 p_reduce_any <- AnvilPrimitive("reduce_any")
 #' @title Primitive Any Reduction
 #' @description
-#' Logical OR along dimensions.
-#' @param operand ([`tensorish`] of boolean type)\cr
-#'   Operand.
+#' Performs logical OR along the specified dimensions.
+#' Is the same as [nv_reduce_any()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of boolean data type.
 #' @param dims (`integer()`)\cr
-#'   Dimensions to reduce.
+#'   Dimensions to reduce over.
 #' @param drop (`logical(1)`)\cr
-#'   Whether to drop reduced dimensions.
-#' @return [`tensorish`] (boolean)
-#' @section Shapes:
-#' - `operand`: any shape
-#' - output (`drop = TRUE`): shape of `operand` with `dims` removed
-#' - output (`drop = FALSE`): shape of `operand` with `dims` set to 1
+#'   Whether to drop the reduced dimensions from the output shape.
+#'   If `TRUE`, the reduced dimensions are removed.
+#'   If `FALSE`, the reduced dimensions are set to 1.
+#' @return [`tensorish`]\cr
+#'   Boolean tensor. Never ambiguous.
+#'   When `drop = TRUE`, the shape is that of `operand` with `dims` removed.
+#'   When `drop = FALSE`, the shape is that of `operand` with `dims` set to 1.
+#' @templateVar primitive_id reduce_any
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_reduce()] with [stablehlo::hlo_or()] as the reducer.
+#' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_or()] as the reducer.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
@@ -717,20 +745,24 @@ nvl_reduce_any <- make_reduce_op(p_reduce_any, infer_reduce_boolean)
 p_reduce_all <- AnvilPrimitive("reduce_all")
 #' @title Primitive All Reduction
 #' @description
-#' Logical AND along dimensions.
-#' @param operand ([`tensorish`] of boolean type)\cr
-#'   Operand.
+#' Performs logical AND along the specified dimensions.
+#' Is the same as [nv_reduce_all()].
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of boolean data type.
 #' @param dims (`integer()`)\cr
-#'   Dimensions to reduce.
+#'   Dimensions to reduce over.
 #' @param drop (`logical(1)`)\cr
-#'   Whether to drop reduced dimensions.
-#' @return [`tensorish`] (boolean)
-#' @section Shapes:
-#' - `operand`: any shape
-#' - output (`drop = TRUE`): shape of `operand` with `dims` removed
-#' - output (`drop = FALSE`): shape of `operand` with `dims` set to 1
+#'   Whether to drop the reduced dimensions from the output shape.
+#'   If `TRUE`, the reduced dimensions are removed.
+#'   If `FALSE`, the reduced dimensions are set to 1.
+#' @return [`tensorish`]\cr
+#'   Boolean tensor. Never ambiguous.
+#'   When `drop = TRUE`, the shape is that of `operand` with `dims` removed.
+#'   When `drop = FALSE`, the shape is that of `operand` with `dims` set to 1.
+#' @templateVar primitive_id reduce_all
+#' @template section_rules
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_reduce()] with [stablehlo::hlo_and()] as the reducer.
+#' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_and()] as the reducer.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
@@ -1009,7 +1041,7 @@ p_not <- AnvilPrimitive("not")
 #' @title Primitive Not
 #' @description
 #' Element-wise logical NOT.
-#' For a more user-friendly interface, see [nv_not()].
+#' Is the same as [nv_not()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type boolean, integer, or unsigned integer.
 #' @return [`tensorish`]\cr
@@ -1218,7 +1250,7 @@ p_abs <- AnvilPrimitive("abs")
 #' @title Primitive Absolute Value
 #' @description
 #' Element-wise absolute value.
-#' For a more user-friendly interface, see [nv_abs()], or use [abs()].
+#' Is the same as [nv_abs()]. You can also use [abs()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type signed integer or floating-point.
 #' @return [`tensorish`]\cr
@@ -1240,7 +1272,7 @@ p_sqrt <- AnvilPrimitive("sqrt")
 #' @title Primitive Square Root
 #' @description
 #' Element-wise square root.
-#' For a more user-friendly interface, see [nv_sqrt()], or use [sqrt()].
+#' Is the same as [nv_sqrt()]. You can also use [sqrt()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1262,7 +1294,7 @@ p_rsqrt <- AnvilPrimitive("rsqrt")
 #' @title Primitive Reciprocal Square Root
 #' @description
 #' Element-wise reciprocal square root.
-#' For a more user-friendly interface, see [nv_rsqrt()].
+#' Is the same as [nv_rsqrt()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1284,7 +1316,7 @@ p_log <- AnvilPrimitive("log")
 #' @title Primitive Logarithm
 #' @description
 #' Element-wise natural logarithm.
-#' For a more user-friendly interface, see [nv_log()], or use [log()].
+#' Is the same as [nv_log()]. You can also use [log()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1306,7 +1338,7 @@ p_tanh <- AnvilPrimitive("tanh")
 #' @title Primitive Hyperbolic Tangent
 #' @description
 #' Element-wise hyperbolic tangent.
-#' For a more user-friendly interface, see [nv_tanh()], or use [tanh()].
+#' Is the same as [nv_tanh()]. You can also use [tanh()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1328,7 +1360,7 @@ p_tan <- AnvilPrimitive("tan")
 #' @title Primitive Tangent
 #' @description
 #' Element-wise tangent.
-#' For a more user-friendly interface, see [nv_tan()], or use [tan()].
+#' Is the same as [nv_tan()]. You can also use [tan()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1350,7 +1382,7 @@ p_sine <- AnvilPrimitive("sine")
 #' @title Primitive Sine
 #' @description
 #' Element-wise sine.
-#' For a more user-friendly interface, see [nv_sine()], or use [sin()].
+#' Is the same as [nv_sine()]. You can also use [sin()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1372,7 +1404,7 @@ p_cosine <- AnvilPrimitive("cosine")
 #' @title Primitive Cosine
 #' @description
 #' Element-wise cosine.
-#' For a more user-friendly interface, see [nv_cosine()], or use [cos()].
+#' Is the same as [nv_cosine()]. You can also use [cos()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1394,7 +1426,7 @@ p_floor <- AnvilPrimitive("floor")
 #' @title Primitive Floor
 #' @description
 #' Element-wise floor.
-#' For a more user-friendly interface, see [nv_floor()], or use [floor()].
+#' Is the same as [nv_floor()]. You can also use [floor()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1416,7 +1448,7 @@ p_ceil <- AnvilPrimitive("ceil")
 #' @title Primitive Ceiling
 #' @description
 #' Element-wise ceiling.
-#' For a more user-friendly interface, see [nv_ceil()], or use [ceiling()].
+#' Is the same as [nv_ceil()]. You can also use [ceiling()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1438,7 +1470,7 @@ p_sign <- AnvilPrimitive("sign")
 #' @title Primitive Sign
 #' @description
 #' Element-wise sign.
-#' For a more user-friendly interface, see [nv_sign()], or use [sign()].
+#' Is the same as [nv_sign()]. You can also use [sign()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type signed integer or floating-point.
 #' @return [`tensorish`]\cr
@@ -1460,7 +1492,7 @@ p_exp <- AnvilPrimitive("exp")
 #' @title Primitive Exponential
 #' @description
 #' Element-wise exponential.
-#' For a more user-friendly interface, see [nv_exp()], or use [exp()].
+#' Is the same as [nv_exp()]. You can also use [exp()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1482,7 +1514,7 @@ p_expm1 <- AnvilPrimitive("expm1")
 #' @title Primitive Exponential Minus One
 #' @description
 #' Element-wise exp(x) - 1, more accurate for small x.
-#' For a more user-friendly interface, see [nv_expm1()].
+#' Is the same as [nv_expm1()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1504,7 +1536,7 @@ p_log1p <- AnvilPrimitive("log1p")
 #' @title Primitive Log Plus One
 #' @description
 #' Element-wise log(1 + x), more accurate for small x.
-#' For a more user-friendly interface, see [nv_log1p()].
+#' Is the same as [nv_log1p()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1526,7 +1558,7 @@ p_cbrt <- AnvilPrimitive("cbrt")
 #' @title Primitive Cube Root
 #' @description
 #' Element-wise cube root.
-#' For a more user-friendly interface, see [nv_cbrt()].
+#' Is the same as [nv_cbrt()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1548,7 +1580,7 @@ p_logistic <- AnvilPrimitive("logistic")
 #' @title Primitive Logistic (Sigmoid)
 #' @description
 #' Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
-#' For a more user-friendly interface, see [nv_logistic()].
+#' Is the same as [nv_logistic()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1570,7 +1602,7 @@ p_is_finite <- AnvilPrimitive("is_finite")
 #' @title Primitive Is Finite
 #' @description
 #' Element-wise check if values are finite (not Inf, -Inf, or NaN).
-#' For a more user-friendly interface, see [nv_is_finite()].
+#' Is the same as [nv_is_finite()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point.
 #' @return [`tensorish`]\cr
@@ -1598,7 +1630,7 @@ p_popcnt <- AnvilPrimitive("popcnt")
 #' @title Primitive Population Count
 #' @description
 #' Element-wise population count (number of set bits).
-#' For a more user-friendly interface, see [nv_popcnt()].
+#' Is the same as [nv_popcnt()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type integer or unsigned integer.
 #' @return [`tensorish`]\cr

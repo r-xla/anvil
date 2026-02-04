@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise absolute value.
-For a more user-friendly interface, see \code{\link[=nv_abs]{nv_abs()}}, or use \code{\link[=abs]{abs()}}.
+Is the same as \code{\link[=nv_abs]{nv_abs()}}. You can also use \code{\link[=abs]{abs()}}.
 }
 \section{Implemented Rules}{
 

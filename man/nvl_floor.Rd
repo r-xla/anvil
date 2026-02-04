@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise floor.
-For a more user-friendly interface, see \code{\link[=nv_floor]{nv_floor()}}, or use \code{\link[=floor]{floor()}}.
+Is the same as \code{\link[=nv_floor]{nv_floor()}}. You can also use \code{\link[=floor]{floor()}}.
 }
 \section{Implemented Rules}{
 

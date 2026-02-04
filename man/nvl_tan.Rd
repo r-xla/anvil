@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise tangent.
-For a more user-friendly interface, see \code{\link[=nv_tan]{nv_tan()}}, or use \code{\link[=tan]{tan()}}.
+Is the same as \code{\link[=nv_tan]{nv_tan()}}. You can also use \code{\link[=tan]{tan()}}.
 }
 \section{Implemented Rules}{
 

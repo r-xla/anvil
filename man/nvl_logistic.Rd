@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
-For a more user-friendly interface, see \code{\link[=nv_logistic]{nv_logistic()}}.
+Is the same as \code{\link[=nv_logistic]{nv_logistic()}}.
 }
 \section{Implemented Rules}{
 

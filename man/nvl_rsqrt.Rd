@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise reciprocal square root.
-For a more user-friendly interface, see \code{\link[=nv_rsqrt]{nv_rsqrt()}}.
+Is the same as \code{\link[=nv_rsqrt]{nv_rsqrt()}}.
 }
 \section{Implemented Rules}{
 

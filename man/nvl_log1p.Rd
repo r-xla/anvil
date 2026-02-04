@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise log(1 + x), more accurate for small x.
-For a more user-friendly interface, see \code{\link[=nv_log1p]{nv_log1p()}}.
+Is the same as \code{\link[=nv_log1p]{nv_log1p()}}.
 }
 \section{Implemented Rules}{
 

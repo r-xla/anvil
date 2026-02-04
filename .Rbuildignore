@@ -25,3 +25,4 @@ SPEC.md
 anvil.Rproj
 ^benchmarks/
 ^\.claude$
+^primitives\.md$

@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise sign.
-For a more user-friendly interface, see \code{\link[=nv_sign]{nv_sign()}}, or use \code{\link[=sign]{sign()}}.
+Is the same as \code{\link[=nv_sign]{nv_sign()}}. You can also use \code{\link[=sign]{sign()}}.
 }
 \section{Implemented Rules}{
 

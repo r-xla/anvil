@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise sine.
-For a more user-friendly interface, see \code{\link[=nv_sine]{nv_sine()}}, or use \code{\link[=sin]{sin()}}.
+Is the same as \code{\link[=nv_sine]{nv_sine()}}. You can also use \code{\link[=sin]{sin()}}.
 }
 \section{Implemented Rules}{
 

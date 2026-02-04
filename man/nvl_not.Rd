@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise logical NOT.
-For a more user-friendly interface, see \code{\link[=nv_not]{nv_not()}}.
+Is the same as \code{\link[=nv_not]{nv_not()}}.
 }
 \section{Implemented Rules}{
 

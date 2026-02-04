@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise exponential.
-For a more user-friendly interface, see \code{\link[=nv_exp]{nv_exp()}}, or use \code{\link[=exp]{exp()}}.
+Is the same as \code{\link[=nv_exp]{nv_exp()}}. You can also use \code{\link[=exp]{exp()}}.
 }
 \section{Implemented Rules}{
 

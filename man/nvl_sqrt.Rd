@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise square root.
-For a more user-friendly interface, see \code{\link[=nv_sqrt]{nv_sqrt()}}, or use \code{\link[=sqrt]{sqrt()}}.
+Is the same as \code{\link[=nv_sqrt]{nv_sqrt()}}. You can also use \code{\link[=sqrt]{sqrt()}}.
 }
 \section{Implemented Rules}{
 

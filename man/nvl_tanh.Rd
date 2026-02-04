@@ -17,7 +17,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise hyperbolic tangent.
-For a more user-friendly interface, see \code{\link[=nv_tanh]{nv_tanh()}}, or use \code{\link[=tanh]{tanh()}}.
+Is the same as \code{\link[=nv_tanh]{nv_tanh()}}. You can also use \code{\link[=tanh]{tanh()}}.
 }
 \section{Implemented Rules}{
 
