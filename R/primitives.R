@@ -94,12 +94,8 @@ p_add <- AnvilPrimitive("add")
 #' @description
 #' Adds two tensors element-wise.
 #' For a more user-friendly interface, see [nv_add()], or use the `+` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of any data type.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_any
+#' @template return_prim_binary
 #' @templateVar primitive_id add
 #' @template section_rules
 #' @section StableHLO:
@@ -118,12 +114,8 @@ p_mul <- AnvilPrimitive("mul")
 #' @description
 #' Multiplies two tensors element-wise.
 #' For a more user-friendly interface, see [nv_mul()], or use the `*` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of any data type.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_any
+#' @template return_prim_binary
 #' @templateVar primitive_id mul
 #' @template section_rules
 #' @section StableHLO:
@@ -142,12 +134,8 @@ p_sub <- AnvilPrimitive("sub")
 #' @description
 #' Subtracts two tensors element-wise.
 #' For a more user-friendly interface, see [nv_sub()], or use the `-` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of data type integer, unsigned integer, or floating-point.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_numeric
+#' @template return_prim_binary
 #' @templateVar primitive_id sub
 #' @template section_rules
 #' @section StableHLO:
@@ -168,9 +156,7 @@ p_negate <- AnvilPrimitive("negate")
 #' Is the same as [nv_negate()]. You can also use the unary `-` operator.
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type integer or floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template return_prim_unary
 #' @templateVar primitive_id negate
 #' @template section_rules
 #' @section StableHLO:
@@ -188,12 +174,8 @@ p_div <- AnvilPrimitive("divide")
 #' @description
 #' Divides two tensors element-wise.
 #' For a more user-friendly interface, see [nv_div()], or use the `/` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of data type integer, unsigned integer, or floating-point.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_numeric
+#' @template return_prim_binary
 #' @templateVar primitive_id divide
 #' @template section_rules
 #' @section StableHLO:
@@ -212,12 +194,8 @@ p_pow <- AnvilPrimitive("power")
 #' @description
 #' Raises lhs to the power of rhs element-wise.
 #' For a more user-friendly interface, see [nv_pow()], or use the `^` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of data type integer, unsigned integer, or floating-point.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_numeric
+#' @template return_prim_binary
 #' @templateVar primitive_id power
 #' @template section_rules
 #' @section StableHLO:
@@ -394,15 +372,26 @@ p_concatenate <- AnvilPrimitive("concatenate")
 #' @title Primitive Concatenate
 #' @description
 #' Concatenates tensors along a dimension.
+#' For a more user-friendly interface, see [nv_concatenate()], which also handles
+#' type promotion and scalar broadcasting.
 #' @param ... ([`tensorish`])\cr
-#'   Tensors to concatenate.
+#'   Tensors to concatenate. Must all have the same data type and rank.
+#'   All dimensions must match except along `dimension`.
 #' @param dimension (`integer(1)`)\cr
-#'   Dimension to concatenate along.
-#' @return [`tensorish`]
+#'   Dimension along which to concatenate (1-indexed).
+#' @return [`tensorish`]\cr
+#'   Has the same data type as the inputs.
+#'   The output shape matches the inputs in all dimensions except `dimension`,
+#'   which is the sum of the input sizes along that dimension.
+#'   It is ambiguous if all inputs are ambiguous.
+#' @templateVar primitive_id concatenate
+#' @template section_rules
 #' @section Shapes:
-#' All inputs must have the same shape except along `dimension`. The output dimension size is the sum of the input dimension sizes along `dimension`.
+#' All inputs must have the same rank and shape except along `dimension`.
+#' The output dimension size along `dimension` is the sum of the input
+#' dimension sizes along `dimension`.
 #' @section StableHLO:
-#' Calls [stablehlo::hlo_concatenate()].
+#' Lowers to [stablehlo::hlo_concatenate()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_tensor(c(1, 2, 3))
@@ -598,19 +587,14 @@ p_reduce_sum <- AnvilPrimitive("reduce_sum")
 #' @description
 #' Sums tensor elements along the specified dimensions.
 #' Is the same as [nv_reduce_sum()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of any data type.
+#' @template param_prim_operand_any
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reduce over.
 #' @param drop (`logical(1)`)\cr
 #'   Whether to drop the reduced dimensions from the output shape.
 #'   If `TRUE`, the reduced dimensions are removed.
 #'   If `FALSE`, the reduced dimensions are set to 1.
-#' @return [`tensorish`]\cr
-#'   Has the same data type as the input.
-#'   When `drop = TRUE`, the shape is that of `operand` with `dims` removed.
-#'   When `drop = FALSE`, the shape is that of `operand` with `dims` set to 1.
-#'   It is ambiguous if the input is ambiguous.
+#' @template return_prim_reduce
 #' @templateVar primitive_id reduce_sum
 #' @template section_rules
 #' @section StableHLO:
@@ -628,19 +612,14 @@ p_reduce_prod <- AnvilPrimitive("reduce_prod")
 #' @description
 #' Multiplies tensor elements along the specified dimensions.
 #' Is the same as [nv_reduce_prod()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of any data type.
+#' @template param_prim_operand_any
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reduce over.
 #' @param drop (`logical(1)`)\cr
 #'   Whether to drop the reduced dimensions from the output shape.
 #'   If `TRUE`, the reduced dimensions are removed.
 #'   If `FALSE`, the reduced dimensions are set to 1.
-#' @return [`tensorish`]\cr
-#'   Has the same data type as the input.
-#'   When `drop = TRUE`, the shape is that of `operand` with `dims` removed.
-#'   When `drop = FALSE`, the shape is that of `operand` with `dims` set to 1.
-#'   It is ambiguous if the input is ambiguous.
+#' @template return_prim_reduce
 #' @templateVar primitive_id reduce_prod
 #' @template section_rules
 #' @section StableHLO:
@@ -658,19 +637,14 @@ p_reduce_max <- AnvilPrimitive("reduce_max")
 #' @description
 #' Finds the maximum of tensor elements along the specified dimensions.
 #' Is the same as [nv_reduce_max()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of any data type.
+#' @template param_prim_operand_any
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reduce over.
 #' @param drop (`logical(1)`)\cr
 #'   Whether to drop the reduced dimensions from the output shape.
 #'   If `TRUE`, the reduced dimensions are removed.
 #'   If `FALSE`, the reduced dimensions are set to 1.
-#' @return [`tensorish`]\cr
-#'   Has the same data type as the input.
-#'   When `drop = TRUE`, the shape is that of `operand` with `dims` removed.
-#'   When `drop = FALSE`, the shape is that of `operand` with `dims` set to 1.
-#'   It is ambiguous if the input is ambiguous.
+#' @template return_prim_reduce
 #' @templateVar primitive_id reduce_max
 #' @template section_rules
 #' @section StableHLO:
@@ -688,19 +662,14 @@ p_reduce_min <- AnvilPrimitive("reduce_min")
 #' @description
 #' Finds the minimum of tensor elements along the specified dimensions.
 #' Is the same as [nv_reduce_min()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of any data type.
+#' @template param_prim_operand_any
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reduce over.
 #' @param drop (`logical(1)`)\cr
 #'   Whether to drop the reduced dimensions from the output shape.
 #'   If `TRUE`, the reduced dimensions are removed.
 #'   If `FALSE`, the reduced dimensions are set to 1.
-#' @return [`tensorish`]\cr
-#'   Has the same data type as the input.
-#'   When `drop = TRUE`, the shape is that of `operand` with `dims` removed.
-#'   When `drop = FALSE`, the shape is that of `operand` with `dims` set to 1.
-#'   It is ambiguous if the input is ambiguous.
+#' @template return_prim_reduce
 #' @templateVar primitive_id reduce_min
 #' @template section_rules
 #' @section StableHLO:
@@ -718,18 +687,14 @@ p_reduce_any <- AnvilPrimitive("reduce_any")
 #' @description
 #' Performs logical OR along the specified dimensions.
 #' Is the same as [nv_reduce_any()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of boolean data type.
+#' @template param_prim_operand_boolean
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reduce over.
 #' @param drop (`logical(1)`)\cr
 #'   Whether to drop the reduced dimensions from the output shape.
 #'   If `TRUE`, the reduced dimensions are removed.
 #'   If `FALSE`, the reduced dimensions are set to 1.
-#' @return [`tensorish`]\cr
-#'   Boolean tensor. Never ambiguous.
-#'   When `drop = TRUE`, the shape is that of `operand` with `dims` removed.
-#'   When `drop = FALSE`, the shape is that of `operand` with `dims` set to 1.
+#' @template return_prim_reduce_boolean
 #' @templateVar primitive_id reduce_any
 #' @template section_rules
 #' @section StableHLO:
@@ -747,18 +712,14 @@ p_reduce_all <- AnvilPrimitive("reduce_all")
 #' @description
 #' Performs logical AND along the specified dimensions.
 #' Is the same as [nv_reduce_all()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of boolean data type.
+#' @template param_prim_operand_boolean
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reduce over.
 #' @param drop (`logical(1)`)\cr
 #'   Whether to drop the reduced dimensions from the output shape.
 #'   If `TRUE`, the reduced dimensions are removed.
 #'   If `FALSE`, the reduced dimensions are set to 1.
-#' @return [`tensorish`]\cr
-#'   Boolean tensor. Never ambiguous.
-#'   When `drop = TRUE`, the shape is that of `operand` with `dims` removed.
-#'   When `drop = FALSE`, the shape is that of `operand` with `dims` set to 1.
+#' @template return_prim_reduce_boolean
 #' @templateVar primitive_id reduce_all
 #' @template section_rules
 #' @section StableHLO:
@@ -800,12 +761,8 @@ p_eq <- AnvilPrimitive("equal")
 #' @description
 #' Element-wise equality comparison.
 #' For a more user-friendly interface, see [nv_eq()], or use the `==` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of any data type.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape as the inputs and boolean data type.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_any
+#' @template return_prim_compare
 #' @templateVar primitive_id equal
 #' @template section_rules
 #' @section StableHLO:
@@ -824,12 +781,8 @@ p_ne <- AnvilPrimitive("not_equal")
 #' @description
 #' Element-wise inequality comparison.
 #' For a more user-friendly interface, see [nv_ne()], or use the `!=` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of any data type.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape as the inputs and boolean data type.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_any
+#' @template return_prim_compare
 #' @templateVar primitive_id not_equal
 #' @template section_rules
 #' @section StableHLO:
@@ -848,12 +801,8 @@ p_gt <- AnvilPrimitive("greater")
 #' @description
 #' Element-wise greater than comparison.
 #' For a more user-friendly interface, see [nv_gt()], or use the `>` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of any data type.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape as the inputs and boolean data type.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_any
+#' @template return_prim_compare
 #' @templateVar primitive_id greater
 #' @template section_rules
 #' @section StableHLO:
@@ -872,12 +821,8 @@ p_ge <- AnvilPrimitive("greater_equal")
 #' @description
 #' Element-wise greater than or equal comparison.
 #' For a more user-friendly interface, see [nv_ge()], or use the `>=` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of any data type.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape as the inputs and boolean data type.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_any
+#' @template return_prim_compare
 #' @templateVar primitive_id greater_equal
 #' @template section_rules
 #' @section StableHLO:
@@ -896,12 +841,8 @@ p_lt <- AnvilPrimitive("less")
 #' @description
 #' Element-wise less than comparison.
 #' For a more user-friendly interface, see [nv_lt()], or use the `<` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of any data type.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape as the inputs and boolean data type.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_any
+#' @template return_prim_compare
 #' @templateVar primitive_id less
 #' @template section_rules
 #' @section StableHLO:
@@ -920,12 +861,8 @@ p_le <- AnvilPrimitive("less_equal")
 #' @description
 #' Element-wise less than or equal comparison.
 #' For a more user-friendly interface, see [nv_le()], or use the `<=` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of any data type.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape as the inputs and boolean data type.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_any
+#' @template return_prim_compare
 #' @templateVar primitive_id less_equal
 #' @template section_rules
 #' @section StableHLO:
@@ -946,12 +883,8 @@ p_max <- AnvilPrimitive("maximum")
 #' @description
 #' Element-wise maximum of two tensors.
 #' For a more user-friendly interface, see [nv_max()].
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of any data type.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_any
+#' @template return_prim_binary
 #' @templateVar primitive_id maximum
 #' @template section_rules
 #' @section StableHLO:
@@ -970,12 +903,8 @@ p_min <- AnvilPrimitive("minimum")
 #' @description
 #' Element-wise minimum of two tensors.
 #' For a more user-friendly interface, see [nv_min()].
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of any data type.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_any
+#' @template return_prim_binary
 #' @templateVar primitive_id minimum
 #' @template section_rules
 #' @section StableHLO:
@@ -994,12 +923,8 @@ p_remainder <- AnvilPrimitive("remainder")
 #' @description
 #' Element-wise remainder of division.
 #' For a more user-friendly interface, see [nv_remainder()], or use the `%%` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of data type integer, unsigned integer, or floating-point.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_numeric
+#' @template return_prim_binary
 #' @templateVar primitive_id remainder
 #' @template section_rules
 #' @section StableHLO:
@@ -1018,12 +943,8 @@ p_and <- AnvilPrimitive("and")
 #' @description
 #' Element-wise logical AND.
 #' For a more user-friendly interface, see [nv_and()], or use the `&` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of data type boolean, integer, or unsigned integer.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_intlike
+#' @template return_prim_binary
 #' @templateVar primitive_id and
 #' @template section_rules
 #' @section StableHLO:
@@ -1044,9 +965,7 @@ p_not <- AnvilPrimitive("not")
 #' Is the same as [nv_not()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type boolean, integer, or unsigned integer.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template return_prim_unary
 #' @templateVar primitive_id not
 #' @template section_rules
 #' @section StableHLO:
@@ -1064,12 +983,8 @@ p_or <- AnvilPrimitive("or")
 #' @description
 #' Element-wise logical OR.
 #' For a more user-friendly interface, see [nv_or()], or use the `|` operator.
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of data type boolean, integer, or unsigned integer.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_intlike
+#' @template return_prim_binary
 #' @templateVar primitive_id or
 #' @template section_rules
 #' @section StableHLO:
@@ -1088,12 +1003,8 @@ p_xor <- AnvilPrimitive("xor")
 #' @description
 #' Element-wise logical XOR.
 #' For a more user-friendly interface, see [nv_xor()].
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of data type boolean, integer, or unsigned integer.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_intlike
+#' @template return_prim_binary
 #' @templateVar primitive_id xor
 #' @template section_rules
 #' @section StableHLO:
@@ -1120,12 +1031,8 @@ p_shift_left <- AnvilPrimitive("shift_left")
 #' @description
 #' Element-wise left bit shift.
 #' For a more user-friendly interface, see [nv_shift_left()].
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of data type boolean, integer, or unsigned integer.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_intlike
+#' @template return_prim_binary
 #' @templateVar primitive_id shift_left
 #' @template section_rules
 #' @section StableHLO:
@@ -1147,12 +1054,8 @@ p_shift_right_logical <- AnvilPrimitive("shift_right_logical")
 #' @description
 #' Element-wise logical right bit shift.
 #' For a more user-friendly interface, see [nv_shift_right_logical()].
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of data type boolean, integer, or unsigned integer.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_intlike
+#' @template return_prim_binary
 #' @templateVar primitive_id shift_right_logical
 #' @template section_rules
 #' @section StableHLO:
@@ -1174,12 +1077,8 @@ p_shift_right_arithmetic <- AnvilPrimitive("shift_right_arithmetic")
 #' @description
 #' Element-wise arithmetic right bit shift.
 #' For a more user-friendly interface, see [nv_shift_right_arithmetic()].
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of data type boolean, integer, or unsigned integer.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_intlike
+#' @template return_prim_binary
 #' @templateVar primitive_id shift_right_arithmetic
 #' @template section_rules
 #' @section StableHLO:
@@ -1201,12 +1100,8 @@ p_atan2 <- AnvilPrimitive("atan2")
 #' @description
 #' Element-wise atan2 operation.
 #' For a more user-friendly interface, see [nv_atan2()].
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensorish values of data type floating-point.
-#'   Must have the same shape.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the inputs.
-#'   It is ambiguous if both inputs are ambiguous.
+#' @template params_prim_lhs_rhs_float
+#' @template return_prim_binary
 #' @templateVar primitive_id atan2
 #' @template section_rules
 #' @section StableHLO:
@@ -1251,11 +1146,8 @@ p_abs <- AnvilPrimitive("abs")
 #' @description
 #' Element-wise absolute value.
 #' Is the same as [nv_abs()]. You can also use [abs()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type signed integer or floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_signed_numeric
+#' @template return_prim_unary
 #' @templateVar primitive_id abs
 #' @template section_rules
 #' @section StableHLO:
@@ -1273,11 +1165,8 @@ p_sqrt <- AnvilPrimitive("sqrt")
 #' @description
 #' Element-wise square root.
 #' Is the same as [nv_sqrt()]. You can also use [sqrt()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id sqrt
 #' @template section_rules
 #' @section StableHLO:
@@ -1295,11 +1184,8 @@ p_rsqrt <- AnvilPrimitive("rsqrt")
 #' @description
 #' Element-wise reciprocal square root.
 #' Is the same as [nv_rsqrt()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id rsqrt
 #' @template section_rules
 #' @section StableHLO:
@@ -1317,11 +1203,8 @@ p_log <- AnvilPrimitive("log")
 #' @description
 #' Element-wise natural logarithm.
 #' Is the same as [nv_log()]. You can also use [log()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id log
 #' @template section_rules
 #' @section StableHLO:
@@ -1339,11 +1222,8 @@ p_tanh <- AnvilPrimitive("tanh")
 #' @description
 #' Element-wise hyperbolic tangent.
 #' Is the same as [nv_tanh()]. You can also use [tanh()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id tanh
 #' @template section_rules
 #' @section StableHLO:
@@ -1361,11 +1241,8 @@ p_tan <- AnvilPrimitive("tan")
 #' @description
 #' Element-wise tangent.
 #' Is the same as [nv_tan()]. You can also use [tan()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id tan
 #' @template section_rules
 #' @section StableHLO:
@@ -1383,11 +1260,8 @@ p_sine <- AnvilPrimitive("sine")
 #' @description
 #' Element-wise sine.
 #' Is the same as [nv_sine()]. You can also use [sin()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id sine
 #' @template section_rules
 #' @section StableHLO:
@@ -1405,11 +1279,8 @@ p_cosine <- AnvilPrimitive("cosine")
 #' @description
 #' Element-wise cosine.
 #' Is the same as [nv_cosine()]. You can also use [cos()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id cosine
 #' @template section_rules
 #' @section StableHLO:
@@ -1427,11 +1298,8 @@ p_floor <- AnvilPrimitive("floor")
 #' @description
 #' Element-wise floor.
 #' Is the same as [nv_floor()]. You can also use [floor()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id floor
 #' @template section_rules
 #' @section StableHLO:
@@ -1449,11 +1317,8 @@ p_ceil <- AnvilPrimitive("ceil")
 #' @description
 #' Element-wise ceiling.
 #' Is the same as [nv_ceil()]. You can also use [ceiling()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id ceil
 #' @template section_rules
 #' @section StableHLO:
@@ -1471,11 +1336,8 @@ p_sign <- AnvilPrimitive("sign")
 #' @description
 #' Element-wise sign.
 #' Is the same as [nv_sign()]. You can also use [sign()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type signed integer or floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_signed_numeric
+#' @template return_prim_unary
 #' @templateVar primitive_id sign
 #' @template section_rules
 #' @section StableHLO:
@@ -1493,11 +1355,8 @@ p_exp <- AnvilPrimitive("exp")
 #' @description
 #' Element-wise exponential.
 #' Is the same as [nv_exp()]. You can also use [exp()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id exp
 #' @template section_rules
 #' @section StableHLO:
@@ -1515,11 +1374,8 @@ p_expm1 <- AnvilPrimitive("expm1")
 #' @description
 #' Element-wise exp(x) - 1, more accurate for small x.
 #' Is the same as [nv_expm1()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id expm1
 #' @template section_rules
 #' @section StableHLO:
@@ -1537,11 +1393,8 @@ p_log1p <- AnvilPrimitive("log1p")
 #' @description
 #' Element-wise log(1 + x), more accurate for small x.
 #' Is the same as [nv_log1p()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id log1p
 #' @template section_rules
 #' @section StableHLO:
@@ -1559,11 +1412,8 @@ p_cbrt <- AnvilPrimitive("cbrt")
 #' @description
 #' Element-wise cube root.
 #' Is the same as [nv_cbrt()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id cbrt
 #' @template section_rules
 #' @section StableHLO:
@@ -1581,11 +1431,8 @@ p_logistic <- AnvilPrimitive("logistic")
 #' @description
 #' Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
 #' Is the same as [nv_logistic()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
 #' @templateVar primitive_id logistic
 #' @template section_rules
 #' @section StableHLO:
@@ -1603,8 +1450,7 @@ p_is_finite <- AnvilPrimitive("is_finite")
 #' @description
 #' Element-wise check if values are finite (not Inf, -Inf, or NaN).
 #' Is the same as [nv_is_finite()].
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point.
+#' @template param_prim_operand_float
 #' @return [`tensorish`]\cr
 #'   Has the same shape as the input and boolean data type.
 #'   It is ambiguous if the input is ambiguous.
@@ -1633,9 +1479,7 @@ p_popcnt <- AnvilPrimitive("popcnt")
 #' Is the same as [nv_popcnt()].
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type integer or unsigned integer.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as the input.
-#'   It is ambiguous if the input is ambiguous.
+#' @template return_prim_unary
 #' @templateVar primitive_id popcnt
 #' @template section_rules
 #' @section StableHLO:

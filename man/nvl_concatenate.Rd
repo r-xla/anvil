@@ -8,25 +8,42 @@ nvl_concatenate(..., dimension)
 }
 \arguments{
 \item{...}{(\code{\link{tensorish}})\cr
-Tensors to concatenate.}
+Tensors to concatenate. Must all have the same data type and rank.
+All dimensions must match except along \code{dimension}.}
 
 \item{dimension}{(\code{integer(1)})\cr
-Dimension to concatenate along.}
+Dimension along which to concatenate (1-indexed).}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type as the inputs.
+The output shape matches the inputs in all dimensions except \code{dimension},
+which is the sum of the input sizes along that dimension.
+It is ambiguous if all inputs are ambiguous.
 }
 \description{
 Concatenates tensors along a dimension.
+For a more user-friendly interface, see \code{\link[=nv_concatenate]{nv_concatenate()}}, which also handles
+type promotion and scalar broadcasting.
 }
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
 \section{Shapes}{
 
-All inputs must have the same shape except along \code{dimension}. The output dimension size is the sum of the input dimension sizes along \code{dimension}.
+All inputs must have the same rank and shape except along \code{dimension}.
+The output dimension size along \code{dimension} is the sum of the input
+dimension sizes along \code{dimension}.
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_concatenate]{stablehlo::hlo_concatenate()}}.
+Lowers to \code{\link[stablehlo:hlo_concatenate]{stablehlo::hlo_concatenate()}}.
 }
 
 \examples{
