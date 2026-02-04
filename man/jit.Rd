@@ -28,7 +28,8 @@ Donated buffers can be aliased with outputs of the same type,
 allowing in-place operations and reducing memory usage.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
-The device to use if no input tensors are provided to infer the platform.}
+The device to use if no input tensors are provided.
+The default is to infer it from the arguments.}
 }
 \value{
 (\code{function})

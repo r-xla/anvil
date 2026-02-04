@@ -12,7 +12,8 @@
 #'   Donated buffers can be aliased with outputs of the same type,
 #'   allowing in-place operations and reducing memory usage.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
-#'   The device to use if no input tensors are provided to infer the platform.
+#'   The device to use if no input tensors are provided.
+#'   The default is to infer it from the arguments.
 #' @return (`function`)
 #' @export
 jit <- function(f, static = character(), cache_size = 100L, donate = character(), device = NULL) {
@@ -89,7 +90,7 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
     if (!is.null(cache_hit)) {
       return(call_xla(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat, cache_hit[[4]]))
     }
-    compiled <- compile_to_xla(f, args_flat = avals_in, in_tree = in_tree, donate = donate, platform = platform)
+    compiled <- compile_to_xla(f, args_flat = avals_in, in_tree = in_tree, donate = donate, device = platform)
     exec <- compiled$exec
     out_tree <- compiled$out_tree
     const_tensors <- compiled$const_tensors
@@ -115,15 +116,15 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
 #'   Tree structure of the inputs.
 #' @param donate (`character()`)\cr
 #'   Names of the arguments whose buffers should be donated.
-#' @param platform (`character(1)`)\cr
-#'   Target platform (e.g. `"cpu"`, `"cuda"`, `"metal"`).
+#' @param device (`character(1)`)\cr
+#'   Target device (e.g. `"cpu"`, `"cuda"`).
 #' @return A `list` with elements:
 #'   - `exec`: The compiled PJRT executable.
 #'   - `out_tree`: The output tree structure.
 #'   - `const_tensors`: Constants needed at execution time.
 #'   - `ambiguous_out`: Logical vector indicating which outputs are ambiguous (`NULL` if none are).
 #' @keywords internal
-compile_to_xla <- function(f, args_flat, in_tree, donate = character(), platform = "cpu") {
+compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device = "cpu") {
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
   graph <- inline_scalarish_constants(graph)
@@ -149,7 +150,7 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), platform
 
   src <- stablehlo::repr(func)
   program <- pjrt_program(src = src, format = "mlir")
-  exec <- pjrt_compile(program, client = pjrt::pjrt_client(platform))
+  exec <- pjrt_compile(program, client = pjrt::pjrt_client(device))
 
   list(exec = exec, out_tree = out_tree, const_tensors = const_tensors, ambiguous_out = ambiguous_out)
 }
@@ -164,16 +165,16 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), platform
 #'   List of abstract input values (as passed to `f`).
 #' @param donate (`character()`)\cr
 #'   Names of the arguments whose buffers should be donated.
-#' @param platform (`character(1)`)\cr
-#'   Target platform (e.g. `"cpu"`, `"cuda"`, `"metal"`).
+#' @param device (`character(1)`)\cr
+#'   Target device (e.g. `"cpu"`, `"cuda"`).
 #' @return (`function`)\cr
 #'   A function that accepts [`AnvilTensor`] arguments (matching the flat inputs)
 #'   and returns the result as [`AnvilTensor`]s.
 #' @export
-xla <- function(f, args, donate = character(), platform = "cpu") {
+xla <- function(f, args, donate = character(), device = "cpu") {
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
-  compiled <- compile_to_xla(f, args_flat = args_flat, in_tree = in_tree, donate = donate, platform = platform)
+  compiled <- compile_to_xla(f, args_flat = args_flat, in_tree = in_tree, donate = donate, device = device)
   exec <- compiled$exec
   out_tree <- compiled$out_tree
   const_tensors <- compiled$const_tensors
@@ -207,11 +208,11 @@ xla <- function(f, args, donate = character(), platform = "cpu") {
 #' @param expr (`expression`)\cr
 #'   Expression to run.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
-#'   The device to use if no input tensors are provided to infer the platform.
+#'   The device to use if no input tensors are provided.
 #' @return (`any`)\cr
 #'   Result of the expression.
 #' @export
-jit_eval <- function(expr, device = "cpu") {
+jit_eval <- function(expr, device = NULL) {
   expr <- substitute(expr)
   eval_env <- new.env(parent = parent.frame())
   jit(\() eval(expr, envir = eval_env), device = device)()
