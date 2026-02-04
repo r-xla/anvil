@@ -79,7 +79,8 @@ This is a mutable class.</p>
 <span>  out_tree <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  inputs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  outputs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  constants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  constants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  is_static_flat <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -95,7 +96,9 @@ This can also be another call into a graph when the primitive is a <code>p_call<
 
 <dt id="arg-in-tree">in_tree<a class="anchor" aria-label="anchor" href="#arg-in-tree"></a></dt>
 <dd><p>(<code>NULL | Node</code>)<br>
-The tree of inputs.</p></dd>
+The tree of inputs. May contain leaves for both tensor inputs and static
+(non-tensor) arguments. Only the tensor leaves correspond to entries in
+<code>inputs</code>; use <code>is_static_flat</code> to distinguish them.</p></dd>
 
 
 <dt id="arg-out-tree">out_tree<a class="anchor" aria-label="anchor" href="#arg-out-tree"></a></dt>
@@ -105,7 +108,7 @@ The tree of outputs.</p></dd>
 
 <dt id="arg-inputs">inputs<a class="anchor" aria-label="anchor" href="#arg-inputs"></a></dt>
 <dd><p>(<code>list(GraphValue)</code>)<br>
-The inputs to the graph.</p></dd>
+The inputs to the graph (tensor arguments only).</p></dd>
 
 
 <dt id="arg-outputs">outputs<a class="anchor" aria-label="anchor" href="#arg-outputs"></a></dt>
@@ -116,6 +119,12 @@ The outputs of the graph.</p></dd>
 <dt id="arg-constants">constants<a class="anchor" aria-label="anchor" href="#arg-constants"></a></dt>
 <dd><p>(<code>list(GraphValue)</code>)<br>
 The constants of the graph.</p></dd>
+
+
+<dt id="arg-is-static-flat">is_static_flat<a class="anchor" aria-label="anchor" href="#arg-is-static-flat"></a></dt>
+<dd><p>(<code>NULL | logical()</code>)<br>
+Boolean mask indicating which flat positions in <code>in_tree</code> are static (non-tensor) args.
+<code>NULL</code> when all args are tensor inputs.</p></dd>
 
 </dl></div>
     <div class="section level2">

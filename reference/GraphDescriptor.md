@@ -15,7 +15,8 @@ GraphDescriptor(
   in_tree = NULL,
   out_tree = NULL,
   inputs = list(),
-  outputs = list()
+  outputs = list(),
+  is_static_flat = NULL
 )
 ```
 
@@ -44,7 +45,9 @@ GraphDescriptor(
 - in_tree:
 
   (`NULL | Node`)  
-  The tree of inputs.
+  The tree of inputs. May contain leaves for both tensor inputs and
+  static (non-tensor) arguments. Only the tensor leaves correspond to
+  entries in `inputs`; use `is_static_flat` to distinguish them.
 
 - out_tree:
 
@@ -54,12 +57,18 @@ GraphDescriptor(
 - inputs:
 
   (`list(GraphValue)`)  
-  The inputs to the graph.
+  The inputs to the graph (tensor arguments only).
 
 - outputs:
 
   (`list(GraphValue)`)  
   The outputs of the graph.
+
+- is_static_flat:
+
+  (`NULL | logical()`)  
+  Boolean mask indicating which flat positions in `in_tree` are static
+  (non-tensor) args. `NULL` when all args are tensor inputs.
 
 ## Value
 
