@@ -250,6 +250,7 @@ reference:
       - at2vt
       - vt2at
       - is_tensorish
+      - Shape
 
   - title: Tree utilities
     desc: Utilities for working with nested structures
@@ -259,9 +260,6 @@ reference:
       - build_tree
       - reindex_tree
       - tree_size
-
-  - title: Tensor classes
-    desc: Core tensor classes and constructors
 
   - title: Primitives
     desc: Low-level primitive operations (nvl_* functions)
