@@ -38,3 +38,22 @@ nvl_fill(value, shape, dtype, ambiguous = FALSE)
 ## Value
 
 [`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+
+## Shapes
+
+Output shape is `shape`.
+
+## StableHLO
+
+Calls
+[`stablehlo::hlo_constant()`](https://r-xla.github.io/stablehlo/reference/hlo_constant.html).
+
+## Examples
+
+``` r
+jit_eval(nvl_fill(3.14, shape = c(2, 3), dtype = "f32"))
+#> AnvilTensor
+#>  3.1400 3.1400 3.1400
+#>  3.1400 3.1400 3.1400
+#> [ CPUf32{2,3} ] 
+```

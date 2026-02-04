@@ -44,3 +44,32 @@ nvl_pad(
 ## Value
 
 [`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+
+## Shapes
+
+`padding_value` must be scalar. `edge_padding_low`, `edge_padding_high`,
+and `interior_padding` must each have length equal to `rank(operand)`.
+
+## StableHLO
+
+Calls
+[`stablehlo::hlo_pad()`](https://r-xla.github.io/stablehlo/reference/hlo_pad.html).
+
+## Examples
+
+``` r
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  nvl_pad(x, nv_scalar(0),
+    edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
+  )
+})
+#> AnvilTensor
+#>  0
+#>  0
+#>  1
+#>  2
+#>  3
+#>  0
+#> [ CPUf32{6} ] 
+```

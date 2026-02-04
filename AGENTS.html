@@ -100,7 +100,12 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Generate documentation from roxygen comments</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">document</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
+<p>When writing roxygen2 documentation for primitives or API functions:</p>
+<ul><li>Check the <code>man-roxygen/</code> directory for existing templates (e.g. <code>param_operand.R</code>, <code>param_shape.R</code>, <code>param_dtype.R</code>, <code>param_ambiguous.R</code>, <code>params_lhs_rhs.R</code>, <code>section_rules.R</code>, <code>section_shapes_binary.R</code>, etc.). Use <code>@template</code> to avoid duplicating common parameter descriptions.</li>
+<li>Where the template is too generic for a specific primitive (e.g. the operand has specific dtype constraints), write the <code>@param</code> inline instead of using the template.</li>
+<li>Use <code>@templateVar primitive_id &lt;name&gt;</code> with <code>@template section_rules</code> to auto-generate the “Implemented Rules” section.</li>
+<li>Use <code>@rdname</code> or <code>@inheritParams</code> to inherit documentation from related functions where possible, avoiding duplication across <code>nvl_*</code> and <code>nv_*</code> variants.</li>
+</ul></div>
 <div class="section level3">
 <h3 id="check">Check<a class="anchor" aria-label="anchor" href="#check"></a></h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">

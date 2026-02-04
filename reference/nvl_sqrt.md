@@ -1,6 +1,8 @@
 # Primitive Square Root
 
-Element-wise square root.
+Element-wise square root. Is the same as
+[`nv_sqrt()`](https://r-xla.github.io/anvil/reference/nv_sqrt.md). You
+can also use [`sqrt()`](https://rdrr.io/r/base/MathFun.html).
 
 ## Usage
 
@@ -13,8 +15,35 @@ nvl_sqrt(operand)
 - operand:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Operand.
+  Tensorish value of data type floating-point.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the same shape and data type as the input. It is ambiguous if the
+input is ambiguous.
+
+## Implemented Rules
+
+- `stablehlo`
+
+- `backward`
+
+## StableHLO
+
+Lowers to
+[`stablehlo::hlo_sqrt()`](https://r-xla.github.io/stablehlo/reference/hlo_sqrt.html).
+
+## Examples
+
+``` r
+jit_eval({
+  x <- nv_tensor(c(1, 4, 9))
+  nvl_sqrt(x)
+})
+#> AnvilTensor
+#>  1
+#>  2
+#>  3
+#> [ CPUf32{3} ] 
+```

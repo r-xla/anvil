@@ -33,3 +33,26 @@ nvl_convert(operand, dtype, ambiguous = FALSE)
 ## Value
 
 [`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+
+## Shapes
+
+Output has the same shape as `operand`.
+
+## StableHLO
+
+Calls
+[`stablehlo::hlo_convert()`](https://r-xla.github.io/stablehlo/reference/hlo_convert.html).
+
+## Examples
+
+``` r
+jit_eval({
+  x <- nv_tensor(c(1L, 2L, 3L))
+  nvl_convert(x, dtype = "f32")
+})
+#> AnvilTensor
+#>  1
+#>  2
+#>  3
+#> [ CPUf32{3} ] 
+```

@@ -78,7 +78,7 @@
 
 
 <dl><dt id="arg-initial-state">initial_state<a class="anchor" aria-label="anchor" href="#arg-initial-state"></a></dt>
-<dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
+<dd><p>(1-d <code><a href="tensorish.html">tensorish</a></code> of type <code>ui64</code>)<br>
 RNG state tensor.</p></dd>
 
 
@@ -101,7 +101,42 @@ Output shape.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>List of new state and random tensor.</p>
     </div>
+    <div class="section level2">
+    <h2 id="shapes">Shapes<a class="anchor" aria-label="anchor" href="#shapes"></a></h2>
 
+
+<p><code>initial_state</code> must be 1-d. Returns a list with the updated state
+(same shape as <code>initial_state</code>) and a random tensor with the
+specified <code>shape</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="stablehlo">StableHLO<a class="anchor" aria-label="anchor" href="#stablehlo"></a></h2>
+
+
+<p>Calls <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_rng_bit_generator.html" class="external-link">stablehlo::hlo_rng_bit_generator()</a></code>.</p>
+    </div>
+
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">state</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">0L</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"ui64"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">nvl_rng_bit_generator</span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUui64{2} ] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1.7973e+09</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2.5791e+09</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1.3515e+09</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUui32{3} ] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

@@ -43,3 +43,25 @@ nvl_iota(dim, dtype, shape, start = 1L, ambiguous = FALSE)
 ## Value
 
 [`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+
+## Shapes
+
+Output shape is `shape`.
+
+## StableHLO
+
+Calls
+[`stablehlo::hlo_iota()`](https://r-xla.github.io/stablehlo/reference/hlo_iota.html).
+
+## Examples
+
+``` r
+jit_eval(nvl_iota(dim = 1L, dtype = "i32", shape = 5L))
+#> AnvilTensor
+#>  1
+#>  2
+#>  3
+#>  4
+#>  5
+#> [ CPUi32{5} ] 
+```

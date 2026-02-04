@@ -18,7 +18,9 @@ nvl_dynamic_slice(operand, ..., slice_sizes)
 
 - ...:
 
-  Scalar tensor start indices (1-based), one per dimension.
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+  of integer type)  
+  Scalar start indices (1-based), one per dimension.
 
 - slice_sizes:
 
@@ -39,3 +41,30 @@ effective start position may differ from the requested one.
 For example, slicing a tensor of shape `c(10)` with `start_indices = 8`
 and `slice_sizes = 5` will effectively use `start_indices = 6` to keep
 the slice within bounds.
+
+## Shapes
+
+Each start index in `...` must be a scalar tensor. The number of start
+indices must equal `rank(operand)`. `slice_sizes` must satisfy
+`slice_sizes <= shape(operand)` per dimension. Output shape is
+`slice_sizes`.
+
+## StableHLO
+
+Calls
+[`stablehlo::hlo_dynamic_slice()`](https://r-xla.github.io/stablehlo/reference/hlo_dynamic_slice.html).
+
+## Examples
+
+``` r
+jit_eval({
+  x <- nv_tensor(1:10)
+  start <- nv_scalar(3L)
+  nvl_dynamic_slice(x, start, slice_sizes = 3L)
+})
+#> AnvilTensor
+#>  3
+#>  4
+#>  5
+#> [ CPUi32{3} ] 
+```
