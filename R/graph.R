@@ -118,15 +118,20 @@ PrimitiveCall <- function(primitive, inputs, params, outputs) {
 #'   The primitive calls that make up the graph.
 #'   This can also be another call into a graph when the primitive is a `p_call`.
 #' @param in_tree (`NULL | Node`)\cr
-#'   The tree of inputs.
+#'   The tree of inputs. May contain leaves for both tensor inputs and static
+#'   (non-tensor) arguments. Only the tensor leaves correspond to entries in
+#'   `inputs`; use `is_static_flat` to distinguish them.
 #' @param out_tree (`NULL | Node`)\cr
 #'   The tree of outputs.
 #' @param inputs (`list(GraphValue)`)\cr
-#'   The inputs to the graph.
+#'   The inputs to the graph (tensor arguments only).
 #' @param outputs (`list(GraphValue)`)\cr
 #'   The outputs of the graph.
 #' @param constants (`list(GraphValue)`)\cr
 #'   The constants of the graph.
+#' @param is_static_flat (`NULL | logical()`)\cr
+#'   Boolean mask indicating which flat positions in `in_tree` are static (non-tensor) args.
+#'   `NULL` when all args are tensor inputs.
 #' @return (`AnvilGraph`)
 # @export
 AnvilGraph <- function(
@@ -135,7 +140,8 @@ AnvilGraph <- function(
   out_tree = NULL,
   inputs = list(),
   outputs = list(),
-  constants = list()
+  constants = list(),
+  is_static_flat = NULL
 ) {
   # Use an environment for reference semantics (mutable)
   env <- new.env(parent = emptyenv())
@@ -145,6 +151,7 @@ AnvilGraph <- function(
   env$inputs <- inputs
   env$outputs <- outputs
   env$constants <- constants
+  env$is_static_flat <- is_static_flat
 
   structure(env, class = "AnvilGraph")
 }
@@ -161,13 +168,18 @@ AnvilGraph <- function(
 #' @param constants (`list(GraphValue)`)\cr
 #'   The constants of the graph.
 #' @param in_tree (`NULL | Node`)\cr
-#'   The tree of inputs.
+#'   The tree of inputs. May contain leaves for both tensor inputs and static
+#'   (non-tensor) arguments. Only the tensor leaves correspond to entries in
+#'   `inputs`; use `is_static_flat` to distinguish them.
 #' @param out_tree (`NULL | Node`)\cr
 #'   The tree of outputs.
 #' @param inputs (`list(GraphValue)`)\cr
-#'   The inputs to the graph.
+#'   The inputs to the graph (tensor arguments only).
 #' @param outputs (`list(GraphValue)`)\cr
 #'   The outputs of the graph.
+#' @param is_static_flat (`NULL | logical()`)\cr
+#'   Boolean mask indicating which flat positions in `in_tree` are static (non-tensor) args.
+#'   `NULL` when all args are tensor inputs.
 #' @return (`GraphDescriptor`)
 #' @export
 GraphDescriptor <- function(
@@ -178,7 +190,8 @@ GraphDescriptor <- function(
   in_tree = NULL,
   out_tree = NULL,
   inputs = list(),
-  outputs = list()
+  outputs = list(),
+  is_static_flat = NULL
 ) {
   # Use an environment for reference semantics (mutable)
   env <- new.env(parent = emptyenv())
@@ -190,6 +203,7 @@ GraphDescriptor <- function(
   env$out_tree <- out_tree
   env$inputs <- inputs
   env$outputs <- outputs
+  env$is_static_flat <- is_static_flat
 
   structure(env, class = "GraphDescriptor")
 }
@@ -222,12 +236,13 @@ is_graph_descriptor <- function(x) {
 descriptor_to_graph <- function(descriptor) {
   graph <- AnvilGraph(
     calls = descriptor$calls,
+    in_tree = descriptor$in_tree,
+    out_tree = descriptor$out_tree,
     inputs = descriptor$inputs,
     outputs = descriptor$outputs,
-    constants = descriptor$constants
+    constants = descriptor$constants,
+    is_static_flat = descriptor$is_static_flat
   )
-  graph$in_tree <- descriptor$in_tree
-  graph$out_tree <- descriptor$out_tree
   maybe_restore_previous_desc(descriptor)
   graph
 }
@@ -516,6 +531,8 @@ trace_fn <- function(
 
   # box tensors and add them as inputs to the current graph
   inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc, toplevel = toplevel, lit_to_tensor = lit_to_tensor)
+  # Track which flat args are static (non-tensor) values vs. graph inputs
+  desc$is_static_flat <- vapply(inputs_flat, Negate(is_graph_box), logical(1L))
   output <- do.call(f_flat, inputs_flat)
 
   out_tree <- output[[1L]]

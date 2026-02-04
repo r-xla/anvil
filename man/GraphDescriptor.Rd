@@ -12,7 +12,8 @@ GraphDescriptor(
   in_tree = NULL,
   out_tree = NULL,
   inputs = list(),
-  outputs = list()
+  outputs = list(),
+  is_static_flat = NULL
 )
 }
 \arguments{
@@ -29,16 +30,22 @@ Mapping: \code{GraphValue} -> \code{GraphBox}}
 The constants of the graph.}
 
 \item{in_tree}{(\code{NULL | Node})\cr
-The tree of inputs.}
+The tree of inputs. May contain leaves for both tensor inputs and static
+(non-tensor) arguments. Only the tensor leaves correspond to entries in
+\code{inputs}; use \code{is_static_flat} to distinguish them.}
 
 \item{out_tree}{(\code{NULL | Node})\cr
 The tree of outputs.}
 
 \item{inputs}{(\code{list(GraphValue)})\cr
-The inputs to the graph.}
+The inputs to the graph (tensor arguments only).}
 
 \item{outputs}{(\code{list(GraphValue)})\cr
 The outputs of the graph.}
+
+\item{is_static_flat}{(\code{NULL | logical()})\cr
+Boolean mask indicating which flat positions in \code{in_tree} are static (non-tensor) args.
+\code{NULL} when all args are tensor inputs.}
 }
 \value{
 (\code{GraphDescriptor})
