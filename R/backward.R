@@ -64,7 +64,16 @@ transform_gradient <- function(graph, wrt) {
     ))
   }
 
-  requires_grad <- flat_mask_from_names(graph$in_tree, wrt)
+  requires_grad_all <- flat_mask_from_names(graph$in_tree, wrt)
+  # Filter mask to only include entries for non-static inputs
+  # Note that in `gradient()` we already check that non of the wrts can be static.
+  # since in_tree may include static (non-tensor) args not present in graph$inputs.
+  is_static <- graph$is_static_flat
+  requires_grad <- if (is.null(is_static)) {
+    requires_grad_all
+  } else {
+    requires_grad_all[!is_static]
+  }
 
   for (i in seq_along(graph$inputs)) {
     required_env[[graph$inputs[[i]]]] <- requires_grad[[i]]

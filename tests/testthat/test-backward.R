@@ -255,6 +255,38 @@ test_that("can differentiate through integer/bool functions", {
   )
 })
 
+test_that("gradient with static (non-tensor) argument", {
+  f <- function(x, y) {
+    if (x) y * y else y * 7
+  }
+  g <- jit(gradient(f, wrt = "y"), static = "x")
+
+  # x=TRUE -> y*y -> dy/dy = 2*y = 6
+  out_true <- g(TRUE, nv_scalar(3.0))
+  expect_equal(out_true[[1L]], nv_scalar(6.0))
+
+  # x=FALSE -> y*7 -> dy/dy = 7
+  out_false <- g(FALSE, nv_scalar(3.0))
+  expect_equal(out_false[[1L]], nv_scalar(7.0))
+})
+
+test_that("value_and_gradient with static (non-tensor) argument", {
+  f <- function(x, y) {
+    if (x) y * y else y * 7
+  }
+  vg <- jit(value_and_gradient(f, wrt = "y"), static = "x")
+
+  # x=TRUE -> y*y = 9, dy/dy = 6
+  result_true <- vg(TRUE, nv_scalar(3.0))
+  expect_equal(result_true$value, nv_scalar(9.0))
+  expect_equal(result_true$grad[[1L]], nv_scalar(6.0))
+
+  # x=FALSE -> y*7 = 21, dy/dy = 7
+  result_false <- vg(FALSE, nv_scalar(3.0))
+  expect_equal(result_false$value, nv_scalar(21.0))
+  expect_equal(result_false$grad[[1L]], nv_scalar(7.0))
+})
+
 test_that("Can propagate ambiguous float32 through integer/bool functions", {
   f <- function(x) {
     x1 <- nv_convert(x, "i32")
