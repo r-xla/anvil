@@ -24,7 +24,9 @@ Selects elements based on a predicate.
 }
 \section{Shapes}{
 
-\code{pred} must be either scalar or the same shape as \code{true_value}. \code{true_value} and \code{false_value} must have the same shape. Output has the shape of \code{true_value}.
+\code{pred} must be either scalar or the same shape as \code{true_value}.
+\code{true_value} and \code{false_value} must have the same shape. Output has
+the shape of \code{true_value}.
 }
 
 \section{StableHLO}{

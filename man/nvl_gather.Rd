@@ -60,7 +60,9 @@ Gathers slices from the operand at positions specified by start_indices.
 }
 \section{Shapes}{
 
-See \code{\link[stablehlo:hlo_gather]{stablehlo::hlo_gather()}} for detailed dimension constraints on \code{start_indices}, \code{slice_sizes}, and the dimension mapping parameters.
+See \code{\link[stablehlo:hlo_gather]{stablehlo::hlo_gather()}} for detailed dimension constraints
+on \code{start_indices}, \code{slice_sizes}, and the dimension mapping
+parameters.
 }
 
 \section{StableHLO}{

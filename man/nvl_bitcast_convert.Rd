@@ -21,7 +21,9 @@ Reinterprets tensor bits as a different dtype.
 }
 \section{Shapes}{
 
-If the source and target types have the same bit width, the output has the same shape as \code{operand}. Otherwise the last dimension is adjusted based on the bit-width ratio.
+If the source and target types have the same bit width, the output
+has the same shape as \code{operand}. Otherwise the last dimension is
+adjusted based on the bit-width ratio.
 }
 
 \section{StableHLO}{

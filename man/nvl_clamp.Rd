@@ -24,7 +24,8 @@ Element-wise clamp: max(min_val, min(operand, max_val)).
 }
 \section{Shapes}{
 
-\code{min_val} and \code{max_val} must each be either scalar or the same shape as \code{operand}. The output has the same shape as \code{operand}.
+\code{min_val} and \code{max_val} must each be either scalar or the same
+shape as \code{operand}. The output has the same shape as \code{operand}.
 }
 
 \section{StableHLO}{

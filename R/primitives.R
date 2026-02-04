@@ -221,7 +221,9 @@ p_broadcast_in_dim <- AnvilPrimitive("broadcast_in_dim")
 #' @return [`tensorish`]
 #' @importFrom stablehlo r_to_constant
 #' @section Shapes:
-#' `length(broadcast_dimensions)` must equal the rank of `operand`. Each dimension of `operand` must either be 1 or match `shape[broadcast_dimensions[i]]`. Output shape is `shape`.
+#' `length(broadcast_dimensions)` must equal the rank of `operand`.
+#' Each dimension of `operand` must either be 1 or match
+#' `shape[broadcast_dimensions[i]]`. Output shape is `shape`.
 #' @section StableHLO:
 #' Calls [stablehlo::hlo_broadcast_in_dim()].
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -268,7 +270,10 @@ p_dot_general <- AnvilPrimitive("dot_general")
 #'   Batch dimensions.
 #' @return [`tensorish`]
 #' @section Shapes:
-#' Contracting dimensions in `lhs` and `rhs` must have matching sizes. Batching dimensions must also have matching sizes. The output shape is the batching dimensions followed by the remaining (non-contracted, non-batched) dimensions of `lhs`, then `rhs`.
+#' Contracting dimensions in `lhs` and `rhs` must have matching sizes.
+#' Batching dimensions must also have matching sizes. The output shape
+#' is the batching dimensions followed by the remaining
+#' (non-contracted, non-batched) dimensions of `lhs`, then `rhs`.
 #' @section StableHLO:
 #' Calls [stablehlo::hlo_dot_general()].
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -438,7 +443,9 @@ p_static_slice <- AnvilPrimitive("static_slice")
 #'   Step sizes.
 #' @return [`tensorish`]
 #' @section Shapes:
-#' `start_indices`, `limit_indices`, and `strides` must each have length equal to `rank(operand)`. Output shape is `ceiling((limit_indices - start_indices) / strides)`.
+#' `start_indices`, `limit_indices`, and `strides` must each have
+#' length equal to `rank(operand)`. Output shape is
+#' `ceiling((limit_indices - start_indices) / strides)`.
 #' @section StableHLO:
 #' Calls [stablehlo::hlo_slice()].
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -492,7 +499,10 @@ p_dynamic_slice <- AnvilPrimitive("dynamic_slice")
 #' the slice within bounds.
 #' @return [`tensorish`]
 #' @section Shapes:
-#' Each start index in `...` must be a scalar tensor. The number of start indices must equal `rank(operand)`. `slice_sizes` must satisfy `slice_sizes <= shape(operand)` per dimension. Output shape is `slice_sizes`.
+#' Each start index in `...` must be a scalar tensor. The number of
+#' start indices must equal `rank(operand)`. `slice_sizes` must satisfy
+#' `slice_sizes <= shape(operand)` per dimension. Output shape is
+#' `slice_sizes`.
 #' @section StableHLO:
 #' Calls [stablehlo::hlo_dynamic_slice()].
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -536,7 +546,10 @@ p_dynamic_update_slice <- AnvilPrimitive("dynamic_update_slice")
 #' @inheritSection nvl_dynamic_slice Out Of Bounds Behavior
 #' @return [`tensorish`]
 #' @section Shapes:
-#' `update` must have the same rank as `operand`, with `shape(update) <= shape(operand)` per dimension. Each start index in `...` must be a scalar tensor. The output has the same shape as `operand`.
+#' `update` must have the same rank as `operand`, with
+#' `shape(update) <= shape(operand)` per dimension. Each start index
+#' in `...` must be a scalar tensor. The output has the same shape as
+#' `operand`.
 #' @section StableHLO:
 #' Calls [stablehlo::hlo_dynamic_update_slice()].
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -1123,7 +1136,9 @@ p_bitcast_convert <- AnvilPrimitive("bitcast_convert")
 #' @template param_dtype
 #' @return [`tensorish`]
 #' @section Shapes:
-#' If the source and target types have the same bit width, the output has the same shape as `operand`. Otherwise the last dimension is adjusted based on the bit-width ratio.
+#' If the source and target types have the same bit width, the output
+#' has the same shape as `operand`. Otherwise the last dimension is
+#' adjusted based on the bit-width ratio.
 #' @section StableHLO:
 #' Calls [stablehlo::hlo_bitcast_convert()].
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -1511,7 +1526,8 @@ p_clamp <- AnvilPrimitive("clamp")
 #'   Maximum value (scalar or same shape as operand).
 #' @return [`tensorish`]
 #' @section Shapes:
-#' `min_val` and `max_val` must each be either scalar or the same shape as `operand`. The output has the same shape as `operand`.
+#' `min_val` and `max_val` must each be either scalar or the same
+#' shape as `operand`. The output has the same shape as `operand`.
 #' @section StableHLO:
 #' Calls [stablehlo::hlo_clamp()].
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -1621,7 +1637,9 @@ p_pad <- AnvilPrimitive("pad")
 #'   Amount of padding to add between elements in each dimension.
 #' @return [`tensorish`]
 #' @section Shapes:
-#' `padding_value` must be scalar. `edge_padding_low`, `edge_padding_high`, and `interior_padding` must each have length equal to `rank(operand)`.
+#' `padding_value` must be scalar. `edge_padding_low`,
+#' `edge_padding_high`, and `interior_padding` must each have length
+#' equal to `rank(operand)`.
 #' @section StableHLO:
 #' Calls [stablehlo::hlo_pad()].
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -1747,7 +1765,9 @@ p_select <- AnvilPrimitive("select")
 #'   Value when pred is false.
 #' @return [`tensorish`]
 #' @section Shapes:
-#' `pred` must be either scalar or the same shape as `true_value`. `true_value` and `false_value` must have the same shape. Output has the shape of `true_value`.
+#' `pred` must be either scalar or the same shape as `true_value`.
+#' `true_value` and `false_value` must have the same shape. Output has
+#' the shape of `true_value`.
 #' @section StableHLO:
 #' Calls [stablehlo::hlo_select()].
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -2002,7 +2022,9 @@ p_rng_bit_generator <- AnvilPrimitive("rng_bit_generator")
 #'   Output shape.
 #' @return List of new state and random tensor.
 #' @section Shapes:
-#' `initial_state` must be 1-d. Returns a list with the updated state (same shape as `initial_state`) and a random tensor with the specified `shape`.
+#' `initial_state` must be 1-d. Returns a list with the updated state
+#' (same shape as `initial_state`) and a random tensor with the
+#' specified `shape`.
 #' @section StableHLO:
 #' Calls [stablehlo::hlo_rng_bit_generator()].
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -2054,7 +2076,9 @@ p_scatter <- AnvilPrimitive("scatter", subgraphs = "update_computation_graph")
 #'   Binary function to combine existing and update values.
 #' @return [`tensorish`]
 #' @section Shapes:
-#' Output has the same shape as `input`. See [stablehlo::hlo_scatter()] for detailed dimension constraints on `scatter_indices`, `update`, and the dimension mapping parameters.
+#' Output has the same shape as `input`. See
+#' [stablehlo::hlo_scatter()] for detailed dimension constraints on
+#' `scatter_indices`, `update`, and the dimension mapping parameters.
 #' @section StableHLO:
 #' Calls [stablehlo::hlo_scatter()].
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -2217,7 +2241,9 @@ p_gather <- AnvilPrimitive("gather")
 #'   Whether indices are guaranteed to be unique (no duplicates).
 #' @return [`tensorish`]
 #' @section Shapes:
-#' See [stablehlo::hlo_gather()] for detailed dimension constraints on `start_indices`, `slice_sizes`, and the dimension mapping parameters.
+#' See [stablehlo::hlo_gather()] for detailed dimension constraints
+#' on `start_indices`, `slice_sizes`, and the dimension mapping
+#' parameters.
 #' @section StableHLO:
 #' Calls [stablehlo::hlo_gather()].
 #' @examplesIf pjrt::plugin_is_downloaded()

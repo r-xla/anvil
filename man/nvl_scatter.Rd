@@ -65,7 +65,9 @@ slices specified by scatter_indices are updated with values from the update tens
 }
 \section{Shapes}{
 
-Output has the same shape as \code{input}. See \code{\link[stablehlo:hlo_scatter]{stablehlo::hlo_scatter()}} for detailed dimension constraints on \code{scatter_indices}, \code{update}, and the dimension mapping parameters.
+Output has the same shape as \code{input}. See
+\code{\link[stablehlo:hlo_scatter]{stablehlo::hlo_scatter()}} for detailed dimension constraints on
+\code{scatter_indices}, \code{update}, and the dimension mapping parameters.
 }
 
 \section{StableHLO}{

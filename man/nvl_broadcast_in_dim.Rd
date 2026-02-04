@@ -24,7 +24,9 @@ Broadcasts a tensor to a new shape.
 }
 \section{Shapes}{
 
-\code{length(broadcast_dimensions)} must equal the rank of \code{operand}. Each dimension of \code{operand} must either be 1 or match \code{shape[broadcast_dimensions[i]]}. Output shape is \code{shape}.
+\code{length(broadcast_dimensions)} must equal the rank of \code{operand}.
+Each dimension of \code{operand} must either be 1 or match
+\code{shape[broadcast_dimensions[i]]}. Output shape is \code{shape}.
 }
 
 \section{StableHLO}{

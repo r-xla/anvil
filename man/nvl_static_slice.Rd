@@ -28,7 +28,9 @@ For dynamic indices, use \code{\link[=nvl_dynamic_slice]{nvl_dynamic_slice()}}.
 }
 \section{Shapes}{
 
-\code{start_indices}, \code{limit_indices}, and \code{strides} must each have length equal to \code{rank(operand)}. Output shape is \code{ceiling((limit_indices - start_indices) / strides)}.
+\code{start_indices}, \code{limit_indices}, and \code{strides} must each have
+length equal to \code{rank(operand)}. Output shape is
+\code{ceiling((limit_indices - start_indices) / strides)}.
 }
 
 \section{StableHLO}{

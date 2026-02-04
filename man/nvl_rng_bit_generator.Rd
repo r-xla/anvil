@@ -27,7 +27,9 @@ Generates random bits using the specified algorithm.
 }
 \section{Shapes}{
 
-\code{initial_state} must be 1-d. Returns a list with the updated state (same shape as \code{initial_state}) and a random tensor with the specified \code{shape}.
+\code{initial_state} must be 1-d. Returns a list with the updated state
+(same shape as \code{initial_state}) and a random tensor with the
+specified \code{shape}.
 }
 
 \section{StableHLO}{

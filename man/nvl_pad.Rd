@@ -36,7 +36,9 @@ Pads a tensor with a given padding value.
 }
 \section{Shapes}{
 
-\code{padding_value} must be scalar. \code{edge_padding_low}, \code{edge_padding_high}, and \code{interior_padding} must each have length equal to \code{rank(operand)}.
+\code{padding_value} must be scalar. \code{edge_padding_low},
+\code{edge_padding_high}, and \code{interior_padding} must each have length
+equal to \code{rank(operand)}.
 }
 
 \section{StableHLO}{

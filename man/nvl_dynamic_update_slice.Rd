@@ -25,7 +25,10 @@ The start position is specified at runtime via tensor indices.
 }
 \section{Shapes}{
 
-\code{update} must have the same rank as \code{operand}, with \code{shape(update) <= shape(operand)} per dimension. Each start index in \code{...} must be a scalar tensor. The output has the same shape as \code{operand}.
+\code{update} must have the same rank as \code{operand}, with
+\code{shape(update) <= shape(operand)} per dimension. Each start index
+in \code{...} must be a scalar tensor. The output has the same shape as
+\code{operand}.
 }
 
 \section{StableHLO}{

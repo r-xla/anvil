@@ -37,7 +37,10 @@ the slice within bounds.
 
 \section{Shapes}{
 
-Each start index in \code{...} must be a scalar tensor. The number of start indices must equal \code{rank(operand)}. \code{slice_sizes} must satisfy \code{slice_sizes <= shape(operand)} per dimension. Output shape is \code{slice_sizes}.
+Each start index in \code{...} must be a scalar tensor. The number of
+start indices must equal \code{rank(operand)}. \code{slice_sizes} must satisfy
+\code{slice_sizes <= shape(operand)} per dimension. Output shape is
+\code{slice_sizes}.
 }
 
 \section{StableHLO}{

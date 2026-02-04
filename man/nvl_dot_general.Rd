@@ -24,7 +24,10 @@ General dot product of two tensors.
 }
 \section{Shapes}{
 
-Contracting dimensions in \code{lhs} and \code{rhs} must have matching sizes. Batching dimensions must also have matching sizes. The output shape is the batching dimensions followed by the remaining (non-contracted, non-batched) dimensions of \code{lhs}, then \code{rhs}.
+Contracting dimensions in \code{lhs} and \code{rhs} must have matching sizes.
+Batching dimensions must also have matching sizes. The output shape
+is the batching dimensions followed by the remaining
+(non-contracted, non-batched) dimensions of \code{lhs}, then \code{rhs}.
 }
 
 \section{StableHLO}{
