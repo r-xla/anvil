@@ -2,9 +2,14 @@
 
 A `tensorish` value is any object that can be passed as an input to
 anvil primitive functions such as
-[`nvl_add`](https://r-xla.github.io/anvil/reference/nvl_add.md).
+[`nvl_add`](https://r-xla.github.io/anvil/reference/nvl_add.md) or is an
+output of such a function.
 
-The following types are tensorish:
+During runtime, these are
+[`AnvilTensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
+objects.
+
+The following types are tensorish (during compile-time):
 
 - [`AnvilTensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md):
   a concrete tensor holding data on a device.
