@@ -279,9 +279,9 @@ xla <- function(f, args, donate = character(), device = NULL) {
 #' @return (`any`)\cr
 #'   Result of the compiled and evaluated expression.
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded("cpu")
+#' @examplesIf pjrt::plugin_is_downloaded()
 #' x <- nv_tensor(c(1, 2, 3), dtype = "f32")
-#' jit_eval(x + x, device = "cpu")
+#' jit_eval(x + x)
 jit_eval <- function(expr, device = NULL) {
   expr <- substitute(expr)
   eval_env <- new.env(parent = parent.frame())

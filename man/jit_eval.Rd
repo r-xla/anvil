@@ -26,8 +26,8 @@ invoking the result.
 Useful if you want to evaluate an expression once.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded("cpu")) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_tensor(c(1, 2, 3), dtype = "f32")
-jit_eval(x + x, device = "cpu")
+jit_eval(x + x)
 \dontshow{\}) # examplesIf}
 }
