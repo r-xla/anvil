@@ -180,6 +180,9 @@ AnvilGraph <- function(
 #' @param is_static_flat (`NULL | logical()`)\cr
 #'   Boolean mask indicating which flat positions in `in_tree` are static (non-tensor) args.
 #'   `NULL` when all args are tensor inputs.
+#' @param devices (`character()`)\cr
+#'   Device platforms encountered during tracing (e.g. `"cpu"`, `"cuda"`).
+#'   Populated automatically as tensors are registered.
 #' @return (`GraphDescriptor`)
 #' @export
 GraphDescriptor <- function(
@@ -191,7 +194,8 @@ GraphDescriptor <- function(
   out_tree = NULL,
   inputs = list(),
   outputs = list(),
-  is_static_flat = NULL
+  is_static_flat = NULL,
+  devices = character()
 ) {
   # Use an environment for reference semantics (mutable)
   env <- new.env(parent = emptyenv())
@@ -204,6 +208,7 @@ GraphDescriptor <- function(
   env$inputs <- inputs
   env$outputs <- outputs
   env$is_static_flat <- is_static_flat
+  env$devices <- devices
 
   structure(env, class = "GraphDescriptor")
 }
@@ -340,6 +345,7 @@ maybe_box_input <- function(x, desc, toplevel, lit_to_tensor) {
     # however, if the value does not exist in the parent graph, we need to add it as a constant
     # for that, we need to keep the value of the actual tensor, so we can later register it
     # see test: "can pass constant to nested trace_fn call if it ..." in test-graph.R
+    desc$devices <- c(desc$devices, device(x))
     gval <- if (toplevel) {
       # user-provided inputs are simply unknown
       GraphValue(aval = to_abstract(x, pure = TRUE))
@@ -407,6 +413,7 @@ get_box_or_register_const <- function(desc, x) {
     cli_abort("Internal error: trying to register a constant in a non-graph descriptor")
   }
   if (is_anvil_tensor(x)) {
+    desc$devices <- c(desc$devices, device(x))
     gval <- desc$tensor_to_gval[[x]]
     if (!is.null(gval)) {
       return(desc$gval_to_box[[gval]])
