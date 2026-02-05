@@ -8,14 +8,30 @@ GraphBox(gnode, desc)
 }
 \arguments{
 \item{gnode}{(\code{\link{GraphNode}})\cr
-The node.}
+The graph node -- either a \code{\link{GraphValue}} or a \code{\link{GraphLiteral}}.}
 
 \item{desc}{(\code{\link{GraphDescriptor}})\cr
-The descriptor of the graph.}
+The descriptor of the graph being built.}
 }
 \value{
 (\code{GraphBox})
 }
 \description{
-Box that represents a node in a \code{\link{GraphDescriptor}}.
+An \code{\link{AnvilBox}} subclass that wraps a \code{\link{GraphNode}} during graph construction (tracing).
+When a function is traced via \code{\link[=trace_fn]{trace_fn()}}, each intermediate tensor
+value is represented as a \code{GraphBox}.
+It also contains an associated \code{\link{GraphDescriptor}} in which the node "lives".
+}
+\section{Extractors}{
+
+\itemize{
+\item \code{\link[tengen:dtype]{dtype()}}
+\item \code{\link[tengen:shape]{shape()}}
+\item \code{\link[tengen:ndims]{ndims()}}
+\item \code{\link[=ambiguous]{ambiguous()}}
+}
+}
+
+\seealso{
+\link{AnvilBox}, \link{DebugBox}, \code{\link[=trace_fn]{trace_fn()}}, \code{\link[=jit]{jit()}}
 }

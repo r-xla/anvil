@@ -7,12 +7,46 @@
 DebugBox(aval)
 }
 \arguments{
-\item{aval}{(\code{AbstractTensor})\cr
+\item{aval}{(\code{\link{AbstractTensor}})\cr
 The abstract tensor representing the value.}
 }
 \value{
 (\code{DebugBox})
 }
 \description{
-Box representing a value in debug mode.
+\code{\link{AnvilBox}} subclass that wraps an \code{\link{AbstractTensor}} for use in debug mode.
+When anvil operations (e.g. \code{\link[=nv_add]{nv_add()}}) are called outside of \code{\link[=jit]{jit()}},
+they return \code{DebugBox} objects instead of actual computed results.
+This allows checking the types and shapes of intermediate values
+without compiling or running a computation -- see \code{vignette("debugging")} for details.
+
+The convenience constructor \code{\link[=debug_box]{debug_box()}} creates a \code{DebugBox} from a dtype and shape directly.
+}
+\section{Extractors}{
+
+\itemize{
+\item \code{\link[tengen:dtype]{dtype()}}
+\item \code{\link[tengen:shape]{shape()}}
+\item \code{\link[tengen:ndims]{ndims()}}
+\item \code{\link[=ambiguous]{ambiguous()}}
+}
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_tensor(1:4)
+y <- nv_tensor(5:8)
+result <- nv_add(x, y)
+result
+dtype(result)
+shape(result)
+
+# Create directly via debug_box()
+db <- debug_box("f32", c(2L, 3L))
+db
+nv_reduce_sum(db, dims = 2L)
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\link{AnvilBox}, \link{GraphBox}, \code{\link[=debug_box]{debug_box()}}, \link{AbstractTensor}
 }

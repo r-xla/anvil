@@ -251,12 +251,20 @@ descriptor_to_graph <- function(descriptor) {
 
 #' @title Graph Box
 #' @description
-#' Box that represents a node in a [`GraphDescriptor`].
+#' An [`AnvilBox`] subclass that wraps a [`GraphNode`] during graph construction (tracing).
+#' When a function is traced via [`trace_fn()`], each intermediate tensor
+#' value is represented as a `GraphBox`.
+#' It also contains an associated [`GraphDescriptor`] in which the node "lives".
+#'
+#' @inheritSection DebugBox Extractors
+#'
 #' @param gnode ([`GraphNode`])\cr
-#'   The node.
+#'   The graph node -- either a [`GraphValue`] or a [`GraphLiteral`].
 #' @param desc ([`GraphDescriptor`])\cr
-#'   The descriptor of the graph.
+#'   The descriptor of the graph being built.
 #' @return (`GraphBox`)
+#'
+#' @seealso [AnvilBox], [DebugBox], [trace_fn()], [jit()]
 #' @export
 GraphBox <- function(gnode, desc) {
   if (!is_graph_node(gnode)) {
@@ -278,6 +286,17 @@ shape.GraphBox <- function(x, ...) {
 #' @export
 dtype.GraphBox <- function(x, ...) {
   dtype(x$gnode)
+}
+
+#' @export
+#' @method ndims GraphBox
+ndims.GraphBox <- function(x, ...) {
+  ndims(x$gnode)
+}
+
+#' @export
+ambiguous.GraphBox <- function(x, ...) {
+  ambiguous(x$gnode)
 }
 
 #' @export

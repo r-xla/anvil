@@ -1,8 +1,7 @@
 #' @title AnvilBox
 #' @description
-#' Virtual base class for GraphBox and DebugBox.
-#' This class is used to represent values during graph construction and debugging.
-#' Cannot be instantiated directly - use [`GraphBox()`] or [`DebugBox()`] instead.
+#' Virtual S3 base class for [`GraphBox`] and [`DebugBox`].
+#' @seealso [DebugBox], [GraphBox], [debug_box()]
 #' @name AnvilBox
 NULL
 

@@ -166,12 +166,6 @@ ndims_abstract <- function(x) {
 
 #' @rdname abstract_properties
 #' @export
-ambiguous_abstract <- function(x) {
-  to_abstract(x)$ambiguous
-}
-
-#' @rdname abstract_properties
-#' @export
 dtype_abstract <- function(x) {
   dtype(to_abstract(x))
 }
