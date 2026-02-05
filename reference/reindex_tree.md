@@ -1,6 +1,11 @@
 # Reindex Tree
 
-Recursively reindex leaf nodes starting from a counter.
+Reassigns leaf indices so they form a contiguous sequence starting from
+the current counter value. This is used internally after filtering nodes
+from a tree (e.g. via
+[`filter_list_node()`](https://r-xla.github.io/anvil/reference/filter_list_node.md))
+to ensure leaf indices still map correctly to positions in a flat list.
+Not intended for direct use.
 
 ## Usage
 
@@ -12,12 +17,14 @@ reindex_tree(x, counter)
 
 - x:
 
-  Tree node to reindex.
+  (`Node`)  
+  A tree node to reindex.
 
 - counter:
 
-  Counter object for generating new indices.
+  (environment)  
+  A mutable counter created by `new_counter()`.
 
 ## Value
 
-Reindexed tree node.
+A new `Node` with updated leaf indices.

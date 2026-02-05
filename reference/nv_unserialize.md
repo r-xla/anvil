@@ -1,69 +1,55 @@
-# Tensor serialization and I/O
+# Deserialize tensors from raw bytes
 
-Read and write tensors using the safetensors format. to/from raw vectors
-in memory.
+Deserializes tensors from the
+[safetensors](https://huggingface.co/docs/safetensors/index) format.
 
 ## Usage
 
 ``` r
-nv_write(tensors, path)
-
-nv_read(path, device = NULL)
-
-nv_serialize(tensors, con = NULL)
-
 nv_unserialize(con, device = NULL)
 ```
 
 ## Arguments
 
-- tensors:
+- con:
 
-  (named `list` of
-  [`AnvilTensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md))  
-  Named list of tensors.
-
-- path:
-
-  (`character(1)`)  
-  Path to the safetensors file.
+  (connection \| [`raw`](https://rdrr.io/r/base/raw.html))  
+  A connection or raw vector to read from.
 
 - device:
 
   (`NULL` \| `character(1)` \|
   [`PJRTDevice`](https://r-xla.github.io/pjrt/reference/pjrt_device.html))  
-  The device for the tensor (`"cpu"`, `"cuda"`, ...). Default is to use
-  the CPU.
-
-- con:
-
-  (connection)  
-  A connection object to read/write from.
+  The device on which to place the loaded tensors (`"cpu"`, `"cuda"`,
+  ...). Default is to use the CPU.
 
 ## Value
 
-- `nv_write()`: `NULL` (invisibly)
-
-- `nv_read()`: Named list of
-  [`AnvilTensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
-  objects
-
-- `nv_serialize()`: Raw vector containing serialized tensors
-
-- `nv_unserialize()`: Named list of
-  [`AnvilTensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
-  objects
+Named `list` of
+[`AnvilTensor`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
+objects.
 
 ## Details
 
-These functions wrap the safetensors format functionality provided by
-the [safetensors](https://CRAN.R-project.org/package=safetensors)
-package.
+The data type, shape, and
+[ambiguity](https://r-xla.github.io/anvil/reference/ambiguous.md) of
+each tensor are restored from the serialized data.
+
+## See also
+
+[`nv_serialize()`](https://r-xla.github.io/anvil/reference/nv_serialize.md),
+[`nv_save()`](https://r-xla.github.io/anvil/reference/nv_save.md),
+[`nv_read()`](https://r-xla.github.io/anvil/reference/nv_read.md)
 
 ## Examples
 
 ``` r
 x <- nv_tensor(array(1:6, dim = c(2, 3)))
+x
+#> AnvilTensor
+#>  1 3 5
+#>  2 4 6
+#> [ CPUi32{2,3} ] 
 raw_data <- nv_serialize(list(x = x))
 raw_data
 #>   [1] 0c 01 00 00 00 00 00 00 7b 22 78 22 3a 7b 22 73 68 61 70 65 22 3a 5b 32 2c
@@ -78,8 +64,7 @@ raw_data
 #> [226] 36 64 36 35 37 33 30 30 30 30 30 30 31 30 30 30 30 30 30 30 30 31 30 30 30
 #> [251] 34 30 30 30 39 30 30 30 30 30 30 30 31 37 38 30 30 30 30 30 30 66 65 22 7d
 #> [276] 7d 01 00 00 00 03 00 00 00 05 00 00 00 02 00 00 00 04 00 00 00 06 00 00 00
-reloaded <- nv_unserialize(raw_data)
-reloaded
+nv_unserialize(raw_data)
 #> $x
 #> AnvilTensor
 #>  1 3 5

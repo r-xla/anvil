@@ -6,7 +6,7 @@ executable, and returns an R function that executes it.
 ## Usage
 
 ``` r
-xla(f, args, donate = character(), device = "cpu")
+xla(f, args, donate = character(), device = NULL)
 ```
 
 ## Arguments
@@ -29,7 +29,7 @@ xla(f, args, donate = character(), device = "cpu")
 - device:
 
   (`character(1)`)  
-  Target device (e.g. `"cpu"`, `"cuda"`).
+  Target device such as `"cpu"` (default) or `"cuda"`.
 
 ## Value
 

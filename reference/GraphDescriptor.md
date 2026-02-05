@@ -16,7 +16,8 @@ GraphDescriptor(
   out_tree = NULL,
   inputs = list(),
   outputs = list(),
-  is_static_flat = NULL
+  is_static_flat = NULL,
+  devices = character()
 )
 ```
 
@@ -69,6 +70,12 @@ GraphDescriptor(
   (`NULL | logical()`)  
   Boolean mask indicating which flat positions in `in_tree` are static
   (non-tensor) args. `NULL` when all args are tensor inputs.
+
+- devices:
+
+  ([`character()`](https://rdrr.io/r/base/character.html))  
+  Device platforms encountered during tracing (e.g. `"cpu"`, `"cuda"`).
+  Populated automatically as tensors are registered.
 
 ## Value
 

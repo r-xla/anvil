@@ -7,7 +7,7 @@ executable along with metadata needed for execution.
 ## Usage
 
 ``` r
-compile_to_xla(f, args_flat, in_tree, donate = character(), device = "cpu")
+compile_to_xla(f, args_flat, in_tree, donate = character(), device = NULL)
 ```
 
 ## Arguments
@@ -34,8 +34,9 @@ compile_to_xla(f, args_flat, in_tree, donate = character(), device = "cpu")
 
 - device:
 
-  (`character(1)`)  
-  Target device (e.g. `"cpu"`, `"cuda"`).
+  (`NULL` \| `character(1)`)  
+  Target device (e.g. `"cpu"`, `"cuda"`). If `NULL`, inferred from
+  traced tensors.
 
 ## Value
 

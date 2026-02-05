@@ -5,7 +5,15 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Reindex Tree — reindex_tree"><meta name="description" content="Recursively reindex leaf nodes starting from a counter."><meta property="og:description" content="Recursively reindex leaf nodes starting from a counter."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Reindex Tree — reindex_tree"><meta name="description" content="Reassigns leaf indices so they form a contiguous sequence starting from the
+current counter value. This is used internally after filtering nodes from a tree (e.g.
+via filter_list_node()) to ensure leaf indices still map correctly to
+positions in a flat list.
+Not intended for direct use."><meta property="og:description" content="Reassigns leaf indices so they form a contiguous sequence starting from the
+current counter value. This is used internally after filtering nodes from a tree (e.g.
+via filter_list_node()) to ensure leaf indices still map correctly to
+positions in a flat list.
+Not intended for direct use."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -65,7 +73,11 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Recursively reindex leaf nodes starting from a counter.</p>
+    <p>Reassigns leaf indices so they form a contiguous sequence starting from the
+current counter value. This is used internally after filtering nodes from a tree (e.g.
+via <code><a href="filter_list_node.html">filter_list_node()</a></code>) to ensure leaf indices still map correctly to
+positions in a flat list.
+Not intended for direct use.</p>
     </div>
 
     <div class="section level2">
@@ -78,16 +90,18 @@
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>Tree node to reindex.</p></dd>
+<dd><p>(<code>Node</code>)<br>
+A tree node to reindex.</p></dd>
 
 
 <dt id="arg-counter">counter<a class="anchor" aria-label="anchor" href="#arg-counter"></a></dt>
-<dd><p>Counter object for generating new indices.</p></dd>
+<dd><p>(environment)<br>
+A mutable counter created by <code>new_counter()</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Reindexed tree node.</p>
+    <p>A new <code>Node</code> with updated leaf indices.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

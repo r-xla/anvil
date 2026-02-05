@@ -42,8 +42,7 @@ jit(
 
   (`NULL` \| `character(1)` \|
   [`PJRTDevice`](https://r-xla.github.io/pjrt/reference/pjrt_device.html))  
-  The device to use if no input tensors are provided. The default is to
-  infer it from the arguments.
+  The device to use if the device cannot be inferred.
 
 ## Value
 

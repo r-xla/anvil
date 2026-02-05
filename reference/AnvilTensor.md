@@ -99,20 +99,20 @@ an `AnvilTensor`:
 Tensors can be serialized to and from the
 [safetensors](https://huggingface.co/docs/safetensors/index) format:
 
-- [`nv_write()`](https://r-xla.github.io/anvil/reference/nv_serialization.md)
-  /
-  [`nv_read()`](https://r-xla.github.io/anvil/reference/nv_serialization.md):
+- [`nv_save()`](https://r-xla.github.io/anvil/reference/nv_save.md) /
+  [`nv_read()`](https://r-xla.github.io/anvil/reference/nv_read.md):
   Save/load tensors to/from a file.
 
-- [`nv_serialize()`](https://r-xla.github.io/anvil/reference/nv_serialization.md)
+- [`nv_serialize()`](https://r-xla.github.io/anvil/reference/nv_serialize.md)
   /
-  [`nv_unserialize()`](https://r-xla.github.io/anvil/reference/nv_serialization.md):
+  [`nv_unserialize()`](https://r-xla.github.io/anvil/reference/nv_unserialize.md):
   Serialize/deserialize tensors to/from raw vectors.
 
 ## See also
 
 nv_fill, nv_iota, nv_seq, as_array,
-[nv_serialization](https://r-xla.github.io/anvil/reference/nv_serialization.md)
+[`nv_save()`](https://r-xla.github.io/anvil/reference/nv_save.md),
+[`nv_serialize()`](https://r-xla.github.io/anvil/reference/nv_serialize.md)
 
 ## Examples
 

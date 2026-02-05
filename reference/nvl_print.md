@@ -34,7 +34,7 @@ internally.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
+  x <- nv_tensor(c(1, 2, 3), device = "cpu")
   nvl_print(x)
 })
 #> AnvilTensor

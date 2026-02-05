@@ -19,7 +19,9 @@ jit_eval(expr, device = NULL)
 
   (`NULL` \| `character(1)` \|
   [`PJRTDevice`](https://r-xla.github.io/pjrt/reference/pjrt_device.html))  
-  The device to use if no input tensors are provided.
+  The device to use. By default (`NULL`), the device is inferred from
+  the tensors encountered during tracing, falling back to
+  `PJRT_PLATFORM` or `"cpu"`.
 
 ## Value
 

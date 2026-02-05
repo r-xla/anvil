@@ -84,7 +84,9 @@ Expression to run.</p></dd>
 
 <dt id="arg-device">device<a class="anchor" aria-label="anchor" href="#arg-device"></a></dt>
 <dd><p>(<code>NULL</code> | <code>character(1)</code> | <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_device.html" class="external-link">PJRTDevice</a></code>)<br>
-The device to use if no input tensors are provided.</p></dd>
+The device to use. By default (<code>NULL</code>), the device is inferred from
+the tensors encountered during tracing, falling back to <code>PJRT_PLATFORM</code>
+or <code>"cpu"</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
