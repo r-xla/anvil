@@ -19,9 +19,11 @@ Whether to accept R literals as tensorish.}
 }
 \description{
 A \code{tensorish} value is any object that can be passed as an input to
-anvil primitive functions such as \code{\link{nvl_add}}.
+anvil primitive functions such as \code{\link{nvl_add}} or is an output of such a function.
 
-The following types are tensorish:
+During runtime, these are \code{\link{AnvilTensor}} objects.
+
+The following types are tensorish (during compile-time):
 \itemize{
 \item \code{\link{AnvilTensor}}: a concrete tensor holding data on a device.
 \item \code{\link{GraphBox}}: a boxed abstract tensor representing a value in a graph.

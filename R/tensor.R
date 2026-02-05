@@ -701,9 +701,11 @@ is_shape <- function(x) {
 #' @title Tensor-like Objects
 #' @description
 #' A `tensorish` value is any object that can be passed as an input to
-#' anvil primitive functions such as [`nvl_add`].
+#' anvil primitive functions such as [`nvl_add`] or is an output of such a function.
 #'
-#' The following types are tensorish:
+#' During runtime, these are [`AnvilTensor`] objects.
+#'
+#' The following types are tensorish (during compile-time):
 #' * [`AnvilTensor`]: a concrete tensor holding data on a device.
 #' * [`GraphBox`]: a boxed abstract tensor representing a value in a graph.
 #' * Literals: `numeric(1)`, `integer(1)`, `logical(1)`: promoted to scalar tensors.
