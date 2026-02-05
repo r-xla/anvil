@@ -10,8 +10,6 @@ shape_abstract(x)
 
 ndims_abstract(x)
 
-ambiguous_abstract(x)
-
 dtype_abstract(x)
 
 ambiguous_abstract(x)

@@ -5,7 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Create a Debug Box — debug_box"><meta name="description" content="Create a debug box."><meta property="og:description" content="Create a debug box."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Create a Debug Box — debug_box"><meta name="description" content="Convenience constructor that creates a DebugBox from a data type and shape,
+without having to manually construct an AbstractTensor first."><meta property="og:description" content="Convenience constructor that creates a DebugBox from a data type and shape,
+without having to manually construct an AbstractTensor first."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -65,7 +67,8 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Create a debug box.</p>
+    <p>Convenience constructor that creates a <code><a href="DebugBox.html">DebugBox</a></code> from a data type and shape,
+without having to manually construct an <code><a href="AbstractTensor.html">AbstractTensor</a></code> first.</p>
     </div>
 
     <div class="section level2">
@@ -98,7 +101,23 @@ See the <code><a href="../articles/type-promotion.html">vignette("type-promotion
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>(<code><a href="DebugBox.html">DebugBox</a></code>)</p>
     </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><a href="DebugBox.html">DebugBox</a>, <a href="AbstractTensor.html">AbstractTensor</a>, <code><a href="trace_fn.html">trace_fn()</a></code></p></div>
+    </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Create a debug box representing a 2x3 f32 tensor</span></span></span>
+<span class="r-in"><span><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu">debug_box</span><span class="op">(</span><span class="st">"f32"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">3L</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">db</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> f32{2,3}</span>
+<span class="r-in"><span><span class="fu"><a href="dtype.html">dtype</a></span><span class="op">(</span><span class="va">db</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;f32&gt;</span>
+<span class="r-in"><span><span class="fu"><a href="shape.html">shape</a></span><span class="op">(</span><span class="va">db</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2 3</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

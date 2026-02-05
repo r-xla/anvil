@@ -406,8 +406,8 @@ Internal data structures and functions
 
 - [`shape_abstract()`](https://r-xla.github.io/anvil/reference/abstract_properties.md)
   [`ndims_abstract()`](https://r-xla.github.io/anvil/reference/abstract_properties.md)
-  [`ambiguous_abstract()`](https://r-xla.github.io/anvil/reference/abstract_properties.md)
   [`dtype_abstract()`](https://r-xla.github.io/anvil/reference/abstract_properties.md)
+  [`ambiguous_abstract()`](https://r-xla.github.io/anvil/reference/abstract_properties.md)
   : Abstract Properties
 - [`to_abstract()`](https://r-xla.github.io/anvil/reference/to_abstract.md)
   : Convert to Abstract Tensor

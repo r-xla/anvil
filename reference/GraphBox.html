@@ -5,7 +5,13 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Graph Box — GraphBox"><meta name="description" content="Box that represents a node in a GraphDescriptor."><meta property="og:description" content="Box that represents a node in a GraphDescriptor."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Graph Box — GraphBox"><meta name="description" content='An AnvilBox subclass that wraps a GraphNode during graph construction (tracing).
+When a function is traced via trace_fn(), each intermediate tensor
+value is represented as a GraphBox.
+It also contains an associated GraphDescriptor in which the node "lives".'><meta property="og:description" content='An AnvilBox subclass that wraps a GraphNode during graph construction (tracing).
+When a function is traced via trace_fn(), each intermediate tensor
+value is represented as a GraphBox.
+It also contains an associated GraphDescriptor in which the node "lives".'></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -65,7 +71,10 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Box that represents a node in a <code><a href="GraphDescriptor.html">GraphDescriptor</a></code>.</p>
+    <p>An <code><a href="AnvilBox.html">AnvilBox</a></code> subclass that wraps a <code><a href="GraphNode.html">GraphNode</a></code> during graph construction (tracing).
+When a function is traced via <code><a href="trace_fn.html">trace_fn()</a></code>, each intermediate tensor
+value is represented as a <code>GraphBox</code>.
+It also contains an associated <code><a href="GraphDescriptor.html">GraphDescriptor</a></code> in which the node "lives".</p>
     </div>
 
     <div class="section level2">
@@ -79,17 +88,30 @@
 
 <dl><dt id="arg-gnode">gnode<a class="anchor" aria-label="anchor" href="#arg-gnode"></a></dt>
 <dd><p>(<code><a href="GraphNode.html">GraphNode</a></code>)<br>
-The node.</p></dd>
+The graph node – either a <code><a href="GraphValue.html">GraphValue</a></code> or a <code><a href="GraphLiteral.html">GraphLiteral</a></code>.</p></dd>
 
 
 <dt id="arg-desc">desc<a class="anchor" aria-label="anchor" href="#arg-desc"></a></dt>
 <dd><p>(<code><a href="GraphDescriptor.html">GraphDescriptor</a></code>)<br>
-The descriptor of the graph.</p></dd>
+The descriptor of the graph being built.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>(<code>GraphBox</code>)</p>
+    </div>
+    <div class="section level2">
+    <h2 id="extractors">Extractors<a class="anchor" aria-label="anchor" href="#extractors"></a></h2>
+
+
+<ul><li><p><code><a href="https://r-xla.github.io/tengen/reference/dtype.html" class="external-link">dtype()</a></code></p></li>
+<li><p><code><a href="https://r-xla.github.io/tengen/reference/shape.html" class="external-link">shape()</a></code></p></li>
+<li><p><code><a href="https://r-xla.github.io/tengen/reference/ndims.html" class="external-link">ndims()</a></code></p></li>
+<li><p><code><a href="ambiguous.html">ambiguous()</a></code></p></li>
+</ul></div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><a href="AnvilBox.html">AnvilBox</a>, <a href="DebugBox.html">DebugBox</a>, <code><a href="trace_fn.html">trace_fn()</a></code>, <code><a href="jit.html">jit()</a></code></p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
