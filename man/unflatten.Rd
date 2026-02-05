@@ -7,13 +7,30 @@
 unflatten(node, x)
 }
 \arguments{
-\item{node}{Tree node describing the structure.}
+\item{node}{(\code{Node})\cr
+Tree describing the target structure, as returned by \code{\link[=build_tree]{build_tree()}}.}
 
-\item{x}{Flat list to unflatten.}
+\item{x}{(list)\cr
+Flat list of leaf values, typically produced by \code{\link[=flatten]{flatten()}}.}
 }
 \value{
-Reconstructed nested structure.
+The reconstructed nested structure (list or single value).
 }
 \description{
-Reconstruct a nested structure from a flat list using a tree structure.
+Reconstructs a nested structure from a flat list by using a tree previously
+created with \code{\link[=build_tree]{build_tree()}}. Each \code{LeafNode} in the tree selects the
+corresponding element from \code{x} by index, and \code{ListNode}s restore the
+original nesting and names.
+}
+\examples{
+x <- list(a = 1, b = list(c = 2, d = 3))
+tree <- build_tree(x)
+flat <- flatten(x)
+
+unflatten(tree, flat)
+
+unflatten(tree, list(10, 20, 30))
+}
+\seealso{
+\code{\link[=flatten]{flatten()}}, \code{\link[=build_tree]{build_tree()}}
 }

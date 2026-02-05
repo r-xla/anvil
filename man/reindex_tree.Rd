@@ -7,13 +7,19 @@
 reindex_tree(x, counter)
 }
 \arguments{
-\item{x}{Tree node to reindex.}
+\item{x}{(\code{Node})\cr
+A tree node to reindex.}
 
-\item{counter}{Counter object for generating new indices.}
+\item{counter}{(environment)\cr
+A mutable counter created by \code{new_counter()}.}
 }
 \value{
-Reindexed tree node.
+A new \code{Node} with updated leaf indices.
 }
 \description{
-Recursively reindex leaf nodes starting from a counter.
+Reassigns leaf indices so they form a contiguous sequence starting from the
+current counter value. This is used internally after filtering nodes from a tree (e.g.
+via \code{\link[=filter_list_node]{filter_list_node()}}) to ensure leaf indices still map correctly to
+positions in a flat list.
+Not intended for direct use.
 }

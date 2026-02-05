@@ -7,11 +7,27 @@
 flatten(x)
 }
 \arguments{
-\item{x}{Object to flatten.}
+\item{x}{(any)\cr
+Object to flatten.}
 }
 \value{
-A flat list.
+\code{list()} containing the flattened values.
 }
 \description{
-Flatten a nested structure into a flat list.
+Recursively flattens a nested list into a single flat list containing only the
+leaf values, preserving left-to-right order.
+
+Currently only lists are flattened and all other objects are treated as leaves.
+
+Use \code{\link[=build_tree]{build_tree()}} to capture the nesting structure so it can be restored with
+\code{\link[=unflatten]{unflatten()}}.
+}
+\examples{
+x <- list(a = 1, b = list(c = 2, d = 3))
+flatten(x)
+
+flatten(list(1:3, "hello"))
+}
+\seealso{
+\code{\link[=build_tree]{build_tree()}}, \code{\link[=unflatten]{unflatten()}}, \code{\link[=tree_size]{tree_size()}}
 }

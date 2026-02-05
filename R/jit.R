@@ -12,8 +12,7 @@
 #'   Donated buffers can be aliased with outputs of the same type,
 #'   allowing in-place operations and reducing memory usage.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
-#'   The device to use if no input tensors are provided.
-#'   The default is to infer it from the arguments.
+#'   The device to use if the device cannot be inferred.
 #' @return (`function`)
 #' @export
 jit <- function(f, static = character(), cache_size = 100L, donate = character(), device = NULL) {
@@ -21,7 +20,8 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
   assert_subset(static, formalArgs2(f))
   assert_subset(donate, formalArgs2(f))
   # fmt: skip
-  if (length(common <- intersect(donate, static))) { # nolint
+  common <- intersect(donate, static)
+  if (length(common)) {
     cli_abort("{.val {common}} cannot be both in {.arg donate} and {.arg static}.")
   }
   assert_string(device, null.ok = TRUE)
@@ -74,14 +74,13 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
         "Inputs live on different platforms: {.val {unique(platforms)}}."
       )
     }
-    # FIXME: platform does not always return "cuda" on CUDA gpus,
-    # so we might store the same entry twice (via "cuda" and via the specific GPU-dependent name)
     platform <- if (length(platforms) > 0) {
       platforms[1]
     } else if (!is.null(device)) {
       device
     } else {
-      Sys.getenv("PJRT_PLATFORM", "cpu")
+      # try to infer from constants
+      NULL
     }
 
     in_tree$marked <- NULL
@@ -116,17 +115,40 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
 #'   Tree structure of the inputs.
 #' @param donate (`character()`)\cr
 #'   Names of the arguments whose buffers should be donated.
-#' @param device (`character(1)`)\cr
-#'   Target device (e.g. `"cpu"`, `"cuda"`).
+#' @param device (`NULL` | `character(1)`)\cr
+#'   Target device (e.g. `"cpu"`, `"cuda"`). If `NULL`, inferred from traced tensors.
 #' @return A `list` with elements:
 #'   - `exec`: The compiled PJRT executable.
 #'   - `out_tree`: The output tree structure.
 #'   - `const_tensors`: Constants needed at execution time.
 #'   - `ambiguous_out`: Logical vector indicating which outputs are ambiguous (`NULL` if none are).
 #' @keywords internal
-compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device = "cpu") {
+compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device = NULL) {
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
+
+  # FIXME: This should also respect the devices of args_flat
+  traced_devices <- unique(vapply(desc$devices, as.character, character(1)))
+  if (length(traced_devices) > 1) {
+    cli_abort("Tensors live on different devices: {traced_devices}.")
+  }
+
+  if (!is.null(device) && length(traced_devices) && traced_devices[[1L]] != pjrt::as_pjrt_device(device)) {
+    cli_abort(
+      "Provided device {.val {device}} does not match traced device {.val {traced_devices}}."
+    )
+  }
+
+  # TODO: Clean this up.
+  # pjrt_execute should take in device instead of client
+  client <- if (!is.null(device)) {
+    pjrt::pjrt_client(device)
+  } else if (length(traced_devices)) {
+    pjrt::pjrt_client(pjrt::platform(desc$devices[[1L]]))
+  } else {
+    pjrt::pjrt_client(Sys.getenv("PJRT_PLATFORM", "cpu"))
+  }
+
   graph <- inline_scalarish_constants(graph)
   graph <- remove_unused_constants(graph)
 
@@ -150,7 +172,7 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
 
   src <- stablehlo::repr(func)
   program <- pjrt_program(src = src, format = "mlir")
-  exec <- pjrt_compile(program, client = pjrt::pjrt_client(device))
+  exec <- pjrt_compile(program, client = client)
 
   list(exec = exec, out_tree = out_tree, const_tensors = const_tensors, ambiguous_out = ambiguous_out)
 }
@@ -166,12 +188,14 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
 #' @param donate (`character()`)\cr
 #'   Names of the arguments whose buffers should be donated.
 #' @param device (`character(1)`)\cr
-#'   Target device (e.g. `"cpu"`, `"cuda"`).
+#'   Target device such as `"cpu"` (default) or `"cuda"`.
 #' @return (`function`)\cr
 #'   A function that accepts [`AnvilTensor`] arguments (matching the flat inputs)
 #'   and returns the result as [`AnvilTensor`]s.
 #' @export
-xla <- function(f, args, donate = character(), device = "cpu") {
+xla <- function(f, args, donate = character(), device = NULL) {
+  # FIXME: Also use device inference from trace_fn
+  device <- device %||% Sys.getenv("PJRT_PLATFORM", "cpu")
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
   compiled <- compile_to_xla(f, args_flat = args_flat, in_tree = in_tree, donate = donate, device = device)
@@ -208,7 +232,9 @@ xla <- function(f, args, donate = character(), device = "cpu") {
 #' @param expr (`expression`)\cr
 #'   Expression to run.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
-#'   The device to use if no input tensors are provided.
+#'   The device to use. By default (`NULL`), the device is inferred from
+#'   the tensors encountered during tracing, falling back to `PJRT_PLATFORM`
+#'   or `"cpu"`.
 #' @return (`any`)\cr
 #'   Result of the expression.
 #' @export

@@ -11,7 +11,9 @@ jit_eval(expr, device = NULL)
 Expression to run.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
-The device to use if no input tensors are provided.}
+The device to use. By default (\code{NULL}), the device is inferred from
+the tensors encountered during tracing, falling back to \code{PJRT_PLATFORM}
+or \code{"cpu"}.}
 }
 \value{
 (\code{any})\cr

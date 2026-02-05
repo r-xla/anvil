@@ -22,11 +22,11 @@
 #' @section Serialization:
 #' Tensors can be serialized to and from the
 #' [safetensors](https://huggingface.co/docs/safetensors/index) format:
-#' - [`nv_write()`][nv_serialization] / [`nv_read()`][nv_serialization]: Save/load tensors to/from a file.
-#' - [`nv_serialize()`][nv_serialization] / [`nv_unserialize()`][nv_serialization]:
+#' - [`nv_save()`] / [`nv_read()`]: Save/load tensors to/from a file.
+#' - [`nv_serialize()`] / [`nv_unserialize()`]:
 #'   Serialize/deserialize tensors to/from raw vectors.
 #'
-#' @seealso nv_fill, nv_iota, nv_seq, as_array, [nv_serialization]
+#' @seealso nv_fill, nv_iota, nv_seq, as_array, [nv_save()], [nv_serialize()]
 #'
 #' @param data (any)\cr
 #'   Object convertible to a [`PJRTBuffer`][pjrt::pjrt_buffer].

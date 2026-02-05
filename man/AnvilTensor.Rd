@@ -69,8 +69,8 @@ The following generic functions can be used to extract information from an \code
 Tensors can be serialized to and from the
 \href{https://huggingface.co/docs/safetensors/index}{safetensors} format:
 \itemize{
-\item \code{\link[=nv_serialization]{nv_write()}} / \code{\link[=nv_serialization]{nv_read()}}: Save/load tensors to/from a file.
-\item \code{\link[=nv_serialization]{nv_serialize()}} / \code{\link[=nv_serialization]{nv_unserialize()}}:
+\item \code{\link[=nv_save]{nv_save()}} / \code{\link[=nv_read]{nv_read()}}: Save/load tensors to/from a file.
+\item \code{\link[=nv_serialize]{nv_serialize()}} / \code{\link[=nv_unserialize]{nv_unserialize()}}:
 Serialize/deserialize tensors to/from raw vectors.
 }
 }
@@ -111,5 +111,5 @@ nv_add(nv_tensor(1:3), nv_tensor(4:6))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-nv_fill, nv_iota, nv_seq, as_array, \link{nv_serialization}
+nv_fill, nv_iota, nv_seq, as_array, \code{\link[=nv_save]{nv_save()}}, \code{\link[=nv_serialize]{nv_serialize()}}
 }

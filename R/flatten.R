@@ -30,9 +30,22 @@ new_counter <- function() {
 
 #' @title Flatten
 #' @description
-#' Flatten a nested structure into a flat list.
-#' @param x Object to flatten.
-#' @return A flat list.
+#' Recursively flattens a nested list into a single flat list containing only the
+#' leaf values, preserving left-to-right order.
+#'
+#' Currently only lists are flattened and all other objects are treated as leaves.
+#'
+#' Use [build_tree()] to capture the nesting structure so it can be restored with
+#' [unflatten()].
+#' @param x (any)\cr
+#'   Object to flatten.
+#' @return `list()` containing the flattened values.
+#' @seealso [build_tree()], [unflatten()], [tree_size()]
+#' @examples
+#' x <- list(a = 1, b = list(c = 2, d = 3))
+#' flatten(x)
+#'
+#' flatten(list(1:3, "hello"))
 #' @export
 flatten <- function(x) {
   UseMethod("flatten")
@@ -51,10 +64,26 @@ flatten.default <- function(x) {
 
 #' @title Build Tree
 #' @description
-#' Build a tree structure from a nested object for tracking structure during flattening/unflattening.
-#' @param x Object to build tree from.
-#' @param counter Internal counter for leaf indices.
-#' @return `Node`
+#' Captures the nesting structure of an object as a tree of `Node`s. Each leaf
+#' in the input becomes a `LeafNode` with an integer index corresponding to its
+#' position in the flat list produced by [flatten()]. Lists become `ListNode`s
+#' that record child nodes and names. The resulting tree can be passed to
+#' [unflatten()] to reconstruct the original structure from a flat list.
+#' @param x (any)\cr
+#'   Object whose structure to capture. Lists are recursed into; everything else
+#'   is a leaf.
+#' @param counter (NULL | environment)\cr
+#'   Internal counter for assigning leaf indices. Mostly used internally and otherwise left as
+#'   `NULL` (default.)
+#' @return A `Node` (`LeafNode` for scalars, `ListNode` for lists).
+#' @seealso [flatten()], [unflatten()], [tree_size()], [reindex_tree()]
+#' @examples
+#' x <- list(a = 1, b = list(c = 2, d = 3))
+#' tree <- build_tree(x)
+#' tree_size(tree)
+#'
+#' flat <- flatten(x)
+#' unflatten(tree, flat)
 #' @export
 build_tree <- function(x, counter = NULL) {
   UseMethod("build_tree")
@@ -114,10 +143,24 @@ build_tree.MarkedArgs <- function(x, counter = NULL) {
 
 #' @title Unflatten
 #' @description
-#' Reconstruct a nested structure from a flat list using a tree structure.
-#' @param node Tree node describing the structure.
-#' @param x Flat list to unflatten.
-#' @return Reconstructed nested structure.
+#' Reconstructs a nested structure from a flat list by using a tree previously
+#' created with [build_tree()]. Each `LeafNode` in the tree selects the
+#' corresponding element from `x` by index, and `ListNode`s restore the
+#' original nesting and names.
+#' @param node (`Node`)\cr
+#'   Tree describing the target structure, as returned by [build_tree()].
+#' @param x (list)\cr
+#'   Flat list of leaf values, typically produced by [flatten()].
+#' @return The reconstructed nested structure (list or single value).
+#' @seealso [flatten()], [build_tree()]
+#' @examples
+#' x <- list(a = 1, b = list(c = 2, d = 3))
+#' tree <- build_tree(x)
+#' flat <- flatten(x)
+#'
+#' unflatten(tree, flat)
+#'
+#' unflatten(tree, list(10, 20, 30))
 #' @export
 unflatten <- function(node, x) {
   UseMethod("unflatten")
@@ -160,9 +203,17 @@ MarkedListNode <- function(nodes, names, marked) {
 
 #' @title Tree Size
 #' @description
-#' Get the number of leaf nodes in a tree.
-#' @param x Tree node.
-#' @return Integer count of leaf nodes.
+#' Counts the number of leaf nodes in a tree. This equals the length of the
+#' flat list produced by [flatten()] on the original structure.
+#' @param x (`Node`)\cr
+#'   A tree node as returned by [build_tree()].
+#' @return A scalar `integer`.
+#' @seealso [build_tree()], [flatten()]
+#' @examples
+#' tree <- build_tree(list(a = 1, b = list(c = 2, d = 3)))
+#' tree_size(tree)
+#'
+#' tree_size(build_tree(list(1)))
 #' @export
 tree_size <- function(x) {
   UseMethod("tree_size")
@@ -183,6 +234,26 @@ tree_size.MarkedListNode <- function(x) {
   sum(vapply(x$nodes, tree_size, integer(1L)))
 }
 
+#' @title Filter List Node
+#' @description
+#' Subsets a `ListNode` to keep only the children whose names match `names`,
+#' then reindexes the leaf nodes so they map to contiguous positions in a flat
+#' list. If all names are kept the original tree is returned unchanged.
+#' @param tree (`ListNode`)\cr
+#'   A named list node as returned by [build_tree()].
+#' @param names (character)\cr
+#'   Names of children to keep.
+#' @return A `ListNode` containing only the selected children with reindexed
+#'   leaves.
+#' @seealso [build_tree()], [reindex_tree()], [unflatten()]
+#' @examples
+#' x <- list(a = 1, b = 2, c = 3)
+#' tree <- build_tree(x)
+#' sub <- filter_list_node(tree, c("a", "c"))
+#' tree_size(sub)
+#'
+#' unflatten(sub, x[c("a", "c")])
+#' @export
 filter_list_node <- function(tree, names) {
   stopifnot(inherits(tree, "ListNode"))
   if (is.null(tree$names)) {
@@ -199,10 +270,16 @@ filter_list_node <- function(tree, names) {
 
 #' @title Reindex Tree
 #' @description
-#' Recursively reindex leaf nodes starting from a counter.
-#' @param x Tree node to reindex.
-#' @param counter Counter object for generating new indices.
-#' @return Reindexed tree node.
+#' Reassigns leaf indices so they form a contiguous sequence starting from the
+#' current counter value. This is used internally after filtering nodes from a tree (e.g.
+#' via [filter_list_node()]) to ensure leaf indices still map correctly to
+#' positions in a flat list.
+#' Not intended for direct use.
+#' @param x (`Node`)\cr
+#'   A tree node to reindex.
+#' @param counter (environment)\cr
+#'   A mutable counter created by `new_counter()`.
+#' @return A new `Node` with updated leaf indices.
 #' @export
 reindex_tree <- function(x, counter) {
   UseMethod("reindex_tree")

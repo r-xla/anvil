@@ -75,11 +75,10 @@ reference:
   - title: Tensor Serialization
     desc: Functions for serializing and deserializing tensors
     contents:
+      - nv_save
+      - nv_read
       - nv_serialize
       - nv_unserialize
-      - nv_write
-      - nv_read
-      - nv_serialization
 
   - title: Type conversion and promotion
     desc: Functions for type conversion and promotion
@@ -260,6 +259,7 @@ reference:
       - build_tree
       - reindex_tree
       - tree_size
+      - filter_list_node
 
   - title: Primitives
     desc: Low-level primitive operations (nvl_* functions)
