@@ -32,10 +32,10 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0)
 Remotes:
-    r-xla/stablehlo,
-    r-xla/tengen,
-    r-xla/xlamisc,
-    r-xla/pjrt
+    r-xla/stablehlo@*release,
+    r-xla/tengen@*release,
+    r-xla/xlamisc@*release,
+    r-xla/pjrt@*release
 Additional_repositories:
     https://r-xla.r-universe.dev
 VignetteBuilder:

@@ -22,5 +22,18 @@ See the \code{vignette("type-promotion")} for more details.}
 (\code{\link{DebugBox}})
 }
 \description{
-Create a debug box.
+Convenience constructor that creates a \code{\link{DebugBox}} from a data type and shape,
+without having to manually construct an \code{\link{AbstractTensor}} first.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+# Create a debug box representing a 2x3 f32 tensor
+db <- debug_box("f32", c(2L, 3L))
+db
+dtype(db)
+shape(db)
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\link{DebugBox}, \link{AbstractTensor}, \code{\link[=trace_fn]{trace_fn()}}
 }

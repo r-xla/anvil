@@ -4,7 +4,8 @@
 \alias{AnvilBox}
 \title{AnvilBox}
 \description{
-Virtual base class for GraphBox and DebugBox.
-This class is used to represent values during graph construction and debugging.
-Cannot be instantiated directly - use \code{\link[=GraphBox]{GraphBox()}} or \code{\link[=DebugBox]{DebugBox()}} instead.
+Virtual S3 base class for \code{\link{GraphBox}} and \code{\link{DebugBox}}.
+}
+\seealso{
+\link{DebugBox}, \link{GraphBox}, \code{\link[=debug_box]{debug_box()}}
 }
