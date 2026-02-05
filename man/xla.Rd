@@ -2,16 +2,17 @@
 % Please edit documentation in R/jit.R
 \name{xla}
 \alias{xla}
-\title{Compile a function to an XLA executable and wrap it as an R function}
+\title{Ahead-of-time compile a function to XLA}
 \usage{
 xla(f, args, donate = character(), device = NULL)
 }
 \arguments{
 \item{f}{(\code{function})\cr
-Function to compile.}
+Function to compile. Must accept and return \code{\link{AnvilTensor}}s.}
 
 \item{args}{(\code{list})\cr
-List of abstract input values (as passed to \code{f}).}
+List of abstract tensor specifications (e.g. from \code{\link[=nv_aten]{nv_aten()}}) describing the
+expected shapes and dtypes of \code{f}'s arguments.}
 
 \item{donate}{(\code{character()})\cr
 Names of the arguments whose buffers should be donated.}
@@ -25,6 +26,28 @@ A function that accepts \code{\link{AnvilTensor}} arguments (matching the flat i
 and returns the result as \code{\link{AnvilTensor}}s.
 }
 \description{
-Takes a function, traces it, translates to StableHLO, compiles to an XLA executable,
-and returns an R function that executes it.
+Compiles a function to an XLA executable via tracing.
+
+Returns a callable R function that executes the compiled binary.
+Unlike \code{\link[=jit]{jit()}}, compilation happens eagerly at
+definition time rather than on first call, so the input shapes and dtypes must be
+specified upfront via abstract tensors (see \code{\link[=nv_aten]{nv_aten()}}).
+}
+\details{
+Traces \code{f} with the given abstract \code{args} (via \code{\link[=trace_fn]{trace_fn()}}), lowers the resulting graph
+via \code{\link[=stablehlo]{stablehlo()}} and then compiles it to an XLA executable via \code{\link[pjrt:pjrt_compile]{pjrt::pjrt_compile()}}.
+and compiles it to an XLA executable immediately.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+f_compiled <- xla(function(x, y) x + y,
+  args = list(x = nv_aten("f32", c(2, 2)), y = nv_aten("f32", c(2, 2)))
+)
+a <- nv_tensor(array(1:4, c(2, 2)), dtype = "f32")
+b <- nv_tensor(array(5:8, c(2, 2)), dtype = "f32")
+f_compiled(a, b)
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=jit]{jit()}} for lazy compilation, \code{\link[=compile_to_xla]{compile_to_xla()}} for the lower-level API.
 }

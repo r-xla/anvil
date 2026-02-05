@@ -26,7 +26,7 @@
 #' - [`nv_serialize()`] / [`nv_unserialize()`]:
 #'   Serialize/deserialize tensors to/from raw vectors.
 #'
-#' @seealso nv_fill, nv_iota, nv_seq, as_array, [nv_save()], [nv_serialize()]
+#' @seealso [nv_fill], [nv_iota], [nv_seq], [as_array], [nv_serialize]
 #'
 #' @param data (any)\cr
 #'   Object convertible to a [`PJRTBuffer`][pjrt::pjrt_buffer].

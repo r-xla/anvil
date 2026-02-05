@@ -16,32 +16,48 @@ trace_fn(
 }
 \arguments{
 \item{f}{(\code{function})\cr
-The function to trace_fn.}
+The function to trace. Must not be a \code{JitFunction} (i.e. already jitted).}
 
 \item{args}{(\code{list} of (\code{\link{AnvilTensor}} | \code{\link{AbstractTensor}}))\cr
-The (unflattened) arguments to the function.}
+The (unflattened) arguments to the function. Mutually exclusive with the
+\code{args_flat}/\code{in_tree} pair.}
 
 \item{desc}{(\code{NULL} | \code{GraphDescriptor})\cr
-The descriptor to use for the graph.}
+Optional descriptor. When \code{NULL} (default), a new descriptor is created.}
 
 \item{toplevel}{(\code{logical(1)})\cr
-Whether the function is being traced at the top level.
-If this is \code{TRUE}, inputs that are \code{AnvilTensor}s are treated as unknown.
-If this is \code{FALSE} (default), \code{AnvilTensor}s are treated as constants.}
+If \code{TRUE}, concrete \code{\link{AnvilTensor}} inputs are treated as unknown (traced) values.
+If \code{FALSE} (default), they are treated as known constants.}
 
 \item{lit_to_tensor}{(\code{logical(1)})\cr
-Whether to convert literal inputs to \code{AnvilTensor}s.
-Should only be used for higher-order primitives like if and while, where no static inputs are possible.}
+Whether to convert literal inputs to tensors. Used internally by higher-order
+primitives such as \code{nv_if} and \code{nv_while}.}
 
 \item{args_flat}{(\code{list})\cr
-The flattened arguments. Also requires passing \code{in_tree}.}
+Flattened arguments. Must be accompanied by \code{in_tree}.}
 
 \item{in_tree}{(\code{Node})\cr
-The tree structure of the arguments.}
+Tree structure describing how \code{args_flat} maps back to \code{f}'s arguments.}
 }
 \value{
-(\code{\link{AnvilGraph}})
+An \code{\link{AnvilGraph}} containing the traced operations.
 }
 \description{
-Create a graph representation of an R function by tracing.
+Executes \code{f} with abstract tensor arguments and records every primitive operation into
+an \code{\link{AnvilGraph}}.
+
+The resulting graph can be lowered to StableHLO (via \code{\link[=stablehlo]{stablehlo()}}) or transformed
+(e.g. via \code{\link[=transform_gradient]{transform_gradient()}}).
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+graph <- trace_fn(function(x, y) x + y,
+  args = list(x = nv_tensor(1, dtype = "f32"), y = nv_tensor(2, dtype = "f32"))
+)
+graph
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=stablehlo]{stablehlo()}} to lower the graph, \code{\link[=jit]{jit()}} / \code{\link[=xla]{xla()}} for end-to-end
+compilation.
 }

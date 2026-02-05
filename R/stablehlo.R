@@ -53,22 +53,40 @@ env_get <- function(env, gval) {
   cli_abort("GraphValue not found in environment")
 }
 
-#' @title Lower a function to StableHLO
+#' @title Lower a graph to StableHLO
 #' @description
-#' Immediately lower a flattened function to a StableHLO Func object.
+#' Converts a traced [`AnvilGraph`] into the StableHLO intermediate representation (IR).
+#' Each graph operation is translated to its corresponding StableHLO op. The result can
+#' be serialized to MLIR text via `stablehlo::repr()` and subsequently compiled to an
+#' XLA executable with `pjrt::pjrt_compile()`.
+#'
+#' The rules for translating to stablehlo are stored in `$rules[["stablehlo"]]` of the primitives.
+#'
+#' This is a low-level function; most users should use [`jit()`] or [`xla()`] instead.
 #' @param graph ([`AnvilGraph`])\cr
-#'   The graph to lower.
+#'   The graph to lower (e.g. produced by [`trace_fn()`]).
 #' @param constants_as_inputs (`logical(1)`)\cr
-#'   Whether to add constants as inputs.
+#'   If `TRUE` (default), constants are registered as inputs to the StableHLO function
+#'   so they can be passed in at execution time.
+#'   If `FALSE`, they are not added as inputs. Set to `FALSE` for closures.
+#'   Note that `GraphLiteral`s are always inlined into the StableHLO function.
 #' @param env (`HloEnv` | `NULL`)\cr
-#'   The environment for storing graph value to func variable mappings.
+#'   Optional environment for reusing variable mappings across nested function lowerings
+#'   (e.g. for higher-order primitives like `nv_while`).
 #' @param donate (`character()`)\cr
 #'   Names of the arguments whose buffers should be donated.
-#'   Donated buffers can be aliased with outputs of the same type.
-#' @return (`list`) with elements:
-#'   - `func`: The StableHLO `Func` object
-#'   - `constants`: The constants of the graph
+#'   Donated buffers can be aliased with outputs of the same type, enabling in-place
+#'   operations.
+#' @return A `list` of length 2:
+#'   - the [`stablehlo::Func`]
+#'   - The list of [`GraphValue`]s holding [`ConcreteTensor`]s.
+#' @seealso [`trace_fn()`], [`jit()`], [`xla()`]
 #' @export
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' x <- nv_tensor(c(1, 2))
+#' graph <- trace_fn(function(y) y + x, list(y = nv_aten("f32", shape = c())))
+#' graph
+#' stablehlo(graph)
 stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = character()) {
   # Node -> FuncValue
   env <- HloEnv(parent = env)

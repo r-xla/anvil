@@ -111,5 +111,5 @@ nv_add(nv_tensor(1:3), nv_tensor(4:6))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-nv_fill, nv_iota, nv_seq, as_array, \code{\link[=nv_save]{nv_save()}}, \code{\link[=nv_serialize]{nv_serialize()}}
+\link{nv_fill}, \link{nv_iota}, \link{nv_seq}, \link{as_array}, \link{nv_serialize}
 }

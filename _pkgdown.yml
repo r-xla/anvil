@@ -208,6 +208,7 @@ reference:
       - jit
       - xla
       - jit_eval
+      - compile_to_xla
       - stablehlo
 
   - title: Debugging

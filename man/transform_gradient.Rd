@@ -8,16 +8,30 @@ transform_gradient(graph, wrt)
 }
 \arguments{
 \item{graph}{(\code{\link{AnvilGraph}})\cr
-The graph to transform.}
+The graph to transform. Must produce a single scalar float output.}
 
 \item{wrt}{(\code{character})\cr
-The names of the variables to compute the gradient with respect to.}
+Names of the graph inputs to differentiate with respect to.}
 }
 \value{
-An \code{\link{AnvilGraph}} object.
+An \code{\link{AnvilGraph}} whose outputs are the requested gradients.
 }
 \description{
-Transform a graph to its gradient.
-This is a low-level function that should usually not be used directly.
-Use \code{\link[=gradient]{gradient()}} instead.
+Low-level graph transformation that appends the backward pass to a
+traced \code{\link{AnvilGraph}}. The function \code{f} represented by \code{graph} must return a single
+float scalar. The resulting graph computes the gradients of that scalar with respect
+to the inputs specified by \code{wrt}.
+
+The backward rules are stored in \verb{$rules[["backward"]]} of the primitives.
+
+This is the building block used by \code{\link[=gradient]{gradient()}} and \code{\link[=value_and_gradient]{value_and_gradient()}}; prefer
+those higher-level wrappers unless you need to operate on graphs directly.
+}
+\examples{
+graph <- trace_fn(nvl_mul, list(nv_aten("f32", c()), nv_aten("f32", c())))
+graph
+transform_gradient(graph, "lhs")
+}
+\seealso{
+\code{\link[=gradient]{gradient()}}, \code{\link[=value_and_gradient]{value_and_gradient()}}
 }
