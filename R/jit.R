@@ -21,7 +21,7 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
   assert_subset(donate, formalArgs2(f))
   # fmt: skip
   common <- intersect(donate, static)
-  if (length(common)) { # nolint
+  if (length(common)) {
     cli_abort("{.val {common}} cannot be both in {.arg donate} and {.arg static}.")
   }
   assert_string(device, null.ok = TRUE)
