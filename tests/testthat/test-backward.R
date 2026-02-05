@@ -298,3 +298,9 @@ test_that("Can propagate ambiguous float32 through integer/bool functions", {
   grad <- jit(gradient(f))
   grad(nv_scalar(1))
 })
+
+test_that("trace_fn matches args with formals", {
+  graph1 <- trace_fn(nvl_add, list(nv_aten("f32", c()), nv_aten("f32", c())))
+  graph2 <- trace_fn(nvl_add, list(lhs = nv_aten("f32", c()), rhs = nv_aten("f32", c())))
+  expect_equal(graph1$in_tree, graph2$in_tree)
+})

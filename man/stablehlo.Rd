@@ -2,31 +2,54 @@
 % Please edit documentation in R/stablehlo.R
 \name{stablehlo}
 \alias{stablehlo}
-\title{Lower a function to StableHLO}
+\title{Lower a graph to StableHLO}
 \usage{
 stablehlo(graph, constants_as_inputs = TRUE, env = NULL, donate = character())
 }
 \arguments{
 \item{graph}{(\code{\link{AnvilGraph}})\cr
-The graph to lower.}
+The graph to lower (e.g. produced by \code{\link[=trace_fn]{trace_fn()}}).}
 
 \item{constants_as_inputs}{(\code{logical(1)})\cr
-Whether to add constants as inputs.}
+If \code{TRUE} (default), constants are registered as inputs to the StableHLO function
+so they can be passed in at execution time.
+If \code{FALSE}, they are not added as inputs. Set to \code{FALSE} for closures.
+Note that \code{GraphLiteral}s are always inlined into the StableHLO function.}
 
 \item{env}{(\code{HloEnv} | \code{NULL})\cr
-The environment for storing graph value to func variable mappings.}
+Optional environment for reusing variable mappings across nested function lowerings
+(e.g. for higher-order primitives like \code{nv_while}).}
 
 \item{donate}{(\code{character()})\cr
 Names of the arguments whose buffers should be donated.
-Donated buffers can be aliased with outputs of the same type.}
+Donated buffers can be aliased with outputs of the same type, enabling in-place
+operations.}
 }
 \value{
-(\code{list}) with elements:
+A \code{list} of length 2:
 \itemize{
-\item \code{func}: The StableHLO \code{Func} object
-\item \code{constants}: The constants of the graph
+\item the \code{\link[stablehlo:Func]{stablehlo::Func}}
+\item The list of \code{\link{GraphValue}}s holding \code{\link{ConcreteTensor}}s.
 }
 }
 \description{
-Immediately lower a flattened function to a StableHLO Func object.
+Converts a traced \code{\link{AnvilGraph}} into the StableHLO intermediate representation (IR).
+Each graph operation is translated to its corresponding StableHLO op. The result can
+be serialized to MLIR text via \code{stablehlo::repr()} and subsequently compiled to an
+XLA executable with \code{pjrt::pjrt_compile()}.
+
+The rules for translating to stablehlo are stored in \verb{$rules[["stablehlo"]]} of the primitives.
+
+This is a low-level function; most users should use \code{\link[=jit]{jit()}} or \code{\link[=xla]{xla()}} instead.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_tensor(c(1, 2))
+graph <- trace_fn(function(y) y + x, list(y = nv_aten("f32", shape = c())))
+graph
+stablehlo(graph)
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=trace_fn]{trace_fn()}}, \code{\link[=jit]{jit()}}, \code{\link[=xla]{xla()}}
 }

@@ -484,28 +484,48 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
   graph
 }
 
+match_args_to_formals <- function(f, args) {
+  g <- function() {
+    as.list(match.call()[-1L])
+  }
+  formals(g) <- formals(f)
+  do.call(g, args)
+}
+
 #' @title Trace an R function into a Graph
 #' @description
-#' Create a graph representation of an R function by tracing.
+#' Executes `f` with abstract tensor arguments and records every primitive operation into
+#' an [`AnvilGraph`].
+#'
+#' The resulting graph can be lowered to StableHLO (via [`stablehlo()`]) or transformed
+#' (e.g. via [`transform_gradient()`]).
+#'
 #' @param f (`function`)\cr
-#'   The function to trace_fn.
+#'   The function to trace. Must not be a `JitFunction` (i.e. already jitted).
 #' @param args (`list` of ([`AnvilTensor`] | [`AbstractTensor`]))\cr
-#'   The (unflattened) arguments to the function.
+#'   The (unflattened) arguments to the function. Mutually exclusive with the
+#'   `args_flat`/`in_tree` pair.
 #' @param desc (`NULL` | `GraphDescriptor`)\cr
-#'   The descriptor to use for the graph.
+#'   Optional descriptor. When `NULL` (default), a new descriptor is created.
 #' @param toplevel (`logical(1)`)\cr
-#'   Whether the function is being traced at the top level.
-#'   If this is `TRUE`, inputs that are `AnvilTensor`s are treated as unknown.
-#'   If this is `FALSE` (default), `AnvilTensor`s are treated as constants.
+#'   If `TRUE`, concrete [`AnvilTensor`] inputs are treated as unknown (traced) values.
+#'   If `FALSE` (default), they are treated as known constants.
 #' @param lit_to_tensor (`logical(1)`)\cr
-#'   Whether to convert literal inputs to `AnvilTensor`s.
-#'   Should only be used for higher-order primitives like if and while, where no static inputs are possible.
+#'   Whether to convert literal inputs to tensors. Used internally by higher-order
+#'   primitives such as `nv_if` and `nv_while`.
 #' @param args_flat (`list`)\cr
-#'   The flattened arguments. Also requires passing `in_tree`.
+#'   Flattened arguments. Must be accompanied by `in_tree`.
 #' @param in_tree (`Node`)\cr
-#'   The tree structure of the arguments.
-#' @return ([`AnvilGraph`])
+#'   Tree structure describing how `args_flat` maps back to `f`'s arguments.
+#' @return An [`AnvilGraph`] containing the traced operations.
+#' @seealso [`stablehlo()`] to lower the graph, [`jit()`] / [`xla()`] for end-to-end
+#'   compilation.
 #' @export
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' graph <- trace_fn(function(x, y) x + y,
+#'   args = list(x = nv_tensor(1, dtype = "f32"), y = nv_tensor(2, dtype = "f32"))
+#' )
+#' graph
 trace_fn <- function(
   f,
   args = NULL,
@@ -526,6 +546,8 @@ trace_fn <- function(
     if (!is.null(args_flat) || !is.null(in_tree)) {
       cli_abort("args and args_flat and in_tree must not be provided together")
     }
+    # Match args with parameters of f before flattening
+    args <- match_args_to_formals(f, args)
     in_tree <- build_tree(args)
     args_flat <- flatten(args)
   }
