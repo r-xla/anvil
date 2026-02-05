@@ -14,7 +14,11 @@ nvl_dot_general(lhs, rhs, contracting_dims, batching_dims)
 - lhs, rhs:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Left and right operand.
+  Left and right operand. Operands are [promoted to a common data
+  type](https://r-xla.github.io/anvil/reference/nv_promote_to_common.md).
+  Scalars are
+  [broadcast](https://r-xla.github.io/anvil/reference/nv_broadcast_scalars.md)
+  to the shape of the other operand.
 
 - contracting_dims:
 

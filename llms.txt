@@ -117,7 +117,7 @@ Functions for creating and initializing tensors
 - [`is_tensorish()`](https://r-xla.github.io/anvil/reference/tensorish.md)
   : Tensor-like Objects
 - [`nv_fill()`](https://r-xla.github.io/anvil/reference/nv_fill.md) :
-  Constant
+  Fill Constant
 - [`nv_iota()`](https://r-xla.github.io/anvil/reference/nv_iota.md) :
   Iota
 - [`nv_seq()`](https://r-xla.github.io/anvil/reference/nv_seq.md) :
@@ -171,7 +171,7 @@ Functions for serializing and deserializing tensors
 Functions for type conversion and promotion
 
 - [`nv_convert()`](https://r-xla.github.io/anvil/reference/nv_convert.md)
-  : Convert Tensor to Different Data Type
+  : Convert Data Type
 - [`nv_bitcast_convert()`](https://r-xla.github.io/anvil/reference/nv_bitcast_convert.md)
   : Bitcast Conversion
 - [`nv_promote_to_common()`](https://r-xla.github.io/anvil/reference/nv_promote_to_common.md)
@@ -181,7 +181,7 @@ Functions for type conversion and promotion
 - [`nv_broadcast_tensors()`](https://r-xla.github.io/anvil/reference/nv_broadcast_tensors.md)
   : Broadcast Tensors to a Common Shape
 - [`nv_broadcast_to()`](https://r-xla.github.io/anvil/reference/nv_broadcast_to.md)
-  : Broadcast
+  : Broadcast to Shape
 - [`common_dtype()`](https://r-xla.github.io/anvil/reference/common_dtype.md)
   : Type Promotion Rules
 
@@ -197,7 +197,7 @@ Functions for reshaping and rearranging tensors
 - [`nv_concatenate()`](https://r-xla.github.io/anvil/reference/nv_concatenate.md)
   : Concatenate
 - [`nv_static_slice()`](https://r-xla.github.io/anvil/reference/nv_static_slice.md)
-  : Slice
+  : Static Slice
 - [`nv_pad()`](https://r-xla.github.io/anvil/reference/nv_pad.md) : Pad
 - [`nv_reverse()`](https://r-xla.github.io/anvil/reference/nv_reverse.md)
   : Reverse
@@ -292,14 +292,20 @@ Mathematical and trigonometric functions
 
 Operations that reduce tensor dimensions
 
-- [`nv_reduce_sum()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md)
-  [`nv_reduce_mean()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md)
-  [`nv_reduce_prod()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md)
-  [`nv_reduce_max()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md)
-  [`nv_reduce_min()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md)
-  [`nv_reduce_any()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md)
-  [`nv_reduce_all()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md)
-  : Reduction Operators
+- [`nv_reduce_sum()`](https://r-xla.github.io/anvil/reference/nv_reduce_sum.md)
+  : Sum Reduction
+- [`nv_reduce_mean()`](https://r-xla.github.io/anvil/reference/nv_reduce_mean.md)
+  : Mean Reduction
+- [`nv_reduce_prod()`](https://r-xla.github.io/anvil/reference/nv_reduce_prod.md)
+  : Product Reduction
+- [`nv_reduce_max()`](https://r-xla.github.io/anvil/reference/nv_reduce_max.md)
+  : Max Reduction
+- [`nv_reduce_min()`](https://r-xla.github.io/anvil/reference/nv_reduce_min.md)
+  : Min Reduction
+- [`nv_reduce_any()`](https://r-xla.github.io/anvil/reference/nv_reduce_any.md)
+  : Any Reduction
+- [`nv_reduce_all()`](https://r-xla.github.io/anvil/reference/nv_reduce_all.md)
+  : All Reduction
 
 ## Linear algebra
 
@@ -344,18 +350,18 @@ Other element-wise tensor operations
 
 Control flow operations
 
-- [`nv_if()`](https://r-xla.github.io/anvil/reference/nv_if.md) : If
+- [`nv_if()`](https://r-xla.github.io/anvil/reference/nv_if.md) :
+  Conditional Branching
 - [`nv_while()`](https://r-xla.github.io/anvil/reference/nv_while.md) :
-  While
+  While Loop
 - [`nv_ifelse()`](https://r-xla.github.io/anvil/reference/nv_ifelse.md)
-  : Ifelse
+  : Conditional Element Selection
 
 ## Random number generation
 
 Functions for generating random numbers
 
-- [`nv_unif_rand()`](https://r-xla.github.io/anvil/reference/nv_runif.md)
-  [`nv_runif()`](https://r-xla.github.io/anvil/reference/nv_runif.md) :
+- [`nv_runif()`](https://r-xla.github.io/anvil/reference/nv_runif.md) :
   Sample from a Uniform Distribution
 - [`nv_rnorm()`](https://r-xla.github.io/anvil/reference/nv_rnorm.md) :
   Sample from a Normal Distribution
@@ -364,7 +370,7 @@ Functions for generating random numbers
 - [`nv_rdunif()`](https://r-xla.github.io/anvil/reference/nv_rdunif.md)
   : Sample from a Discrete Uniform Distribution
 - [`nv_rng_state()`](https://r-xla.github.io/anvil/reference/nv_rng_state.md)
-  : Generate random state
+  : Generate RNG State
 
 ## Transformations
 

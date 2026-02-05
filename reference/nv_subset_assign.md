@@ -1,7 +1,7 @@
 # Update Subset
 
-Updates elements of a tensor at specified positions. See
-vignette("subsetting") for more details.
+Updates elements of a tensor at specified positions, returning a new
+tensor. You can also use the `[<-` operator.
 
 ## Usage
 
@@ -20,23 +20,44 @@ nv_subset_assign(x, ..., value)
 - x:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Input tensor to update.
+  Tensor to update.
 
 - ...:
 
-  Subset specifications.
+    
+  Subset specifications, one per dimension. See
+  [`vignette("subsetting")`](https://r-xla.github.io/anvil/articles/subsetting.md)
+  for details.
 
 - value:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Values to write. Scalars are broadcast to the subset shape. Non-scalar
-  values must have a shape matching the subset shape.
+  Replacement values. Scalars are broadcast to the subset shape.
+  Non-scalar values must match the subset shape.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md) A
-new tensor with the subset updated.
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+A new tensor with the same shape as `x` and the subset replaced.
 
 ## See also
 
-[`nv_subset()`](https://r-xla.github.io/anvil/reference/nv_subset.md)
+[`nv_subset()`](https://r-xla.github.io/anvil/reference/nv_subset.md),
+[`vignette("subsetting")`](https://r-xla.github.io/anvil/articles/subsetting.md)
+for a comprehensive guide.
+
+## Examples
+
+``` r
+jit_eval({
+  x <- nv_tensor(matrix(1:12, nrow = 3))
+  # Set row 1 to zeros
+  x[1, ] <- 0L
+  x
+})
+#> AnvilTensor
+#>   0  0  0  0
+#>   2  5  8 11
+#>   3  6  9 12
+#> [ CPUi32{3,4} ] 
+```

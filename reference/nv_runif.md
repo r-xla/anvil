@@ -1,14 +1,11 @@
 # Sample from a Uniform Distribution
 
-Sample from a uniform distribution in the open interval (lower, upper).
-Note that `nv_rand_unif()` generates values in \[0, 1), while
-`nv_runif()` generates values in (lower, upper).
+Samples from a uniform distribution in the open interval
+`(lower, upper)`.
 
 ## Usage
 
 ``` r
-nv_unif_rand(shape, initial_state, dtype = "f64")
-
 nv_runif(shape, initial_state, dtype = "f32", lower = 0, upper = 1)
 ```
 
@@ -39,4 +36,26 @@ nv_runif(shape, initial_state, dtype = "f32", lower = 0, upper = 1)
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
 [`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-List of two tensors: the new RNG state and the generated random numbers.
+List of two elements: the updated RNG state and the sampled values.
+
+## See also
+
+Other rng:
+[`nv_rbinom()`](https://r-xla.github.io/anvil/reference/nv_rbinom.md),
+[`nv_rdunif()`](https://r-xla.github.io/anvil/reference/nv_rdunif.md),
+[`nv_rng_state()`](https://r-xla.github.io/anvil/reference/nv_rng_state.md),
+[`nv_rnorm()`](https://r-xla.github.io/anvil/reference/nv_rnorm.md)
+
+## Examples
+
+``` r
+jit_eval({
+  state <- nv_rng_state(42L)
+  result <- nv_runif(c(2, 3), state)
+  result[[2]]
+})
+#> AnvilTensor
+#>  0.8690 0.1506 0.5203
+#>  0.3103 0.9928 0.1065
+#> [ CPUf32{2,3} ] 
+```

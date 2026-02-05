@@ -50,7 +50,7 @@ as the reducer.
 
 ## See also
 
-[`nv_reduce_any()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md)
+[`nv_reduce_any()`](https://r-xla.github.io/anvil/reference/nv_reduce_any.md)
 
 ## Examples
 

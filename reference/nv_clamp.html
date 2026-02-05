@@ -67,7 +67,7 @@ Converts min_val and max_val to the data type of operand."></head><body>
     </div>
 
     <div class="ref-description section level2">
-    <p>Element-wise clamp: max(min_val, min(operand, max_val)).
+    <p>Element-wise clamp: <code>max(min_val, min(operand, max_val))</code>.
 Converts <code>min_val</code> and <code>max_val</code> to the data type of <code>operand</code>.</p>
     </div>
 
@@ -80,30 +80,43 @@ Converts <code>min_val</code> and <code>max_val</code> to the data type of <code
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-min-val">min_val<a class="anchor" aria-label="anchor" href="#arg-min-val"></a></dt>
+<dl><dt id="arg-min-val-max-val">min_val, max_val<a class="anchor" aria-label="anchor" href="#arg-min-val-max-val"></a></dt>
 <dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
-Minimum value.</p></dd>
+Minimum and maximum values (scalar or same shape as <code>operand</code>).</p></dd>
 
 
 <dt id="arg-operand">operand<a class="anchor" aria-label="anchor" href="#arg-operand"></a></dt>
 <dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
 Operand.</p></dd>
 
-
-<dt id="arg-max-val">max_val<a class="anchor" aria-label="anchor" href="#arg-max-val"></a></dt>
-<dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
-Maximum value.</p></dd>
-
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code><a href="tensorish.html">tensorish</a></code></p>
+    <p><code><a href="tensorish.html">tensorish</a></code><br>
+Has the same shape and data type as the input.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The underlying stableHLO function already broadcasts scalars, so no need to broadcast manually.</p>
     </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="nvl_clamp.html">nvl_clamp()</a></code> for the underlying primitive.</p></div>
+    </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">0.5</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">nv_clamp</span><span class="op">(</span><span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, <span class="va">x</span>, <span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.5000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{3} ] </span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

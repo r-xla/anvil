@@ -1,7 +1,7 @@
 # Reshape
 
-Reshape a tensor. Note that row-major order is used, which differs from
-R's column-major order.
+Reshapes a tensor to a new shape without changing the underlying data.
+Returns the input unchanged if it already has the target shape.
 
 ## Usage
 
@@ -19,8 +19,32 @@ nv_reshape(operand, shape)
 - shape:
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  The new shape.
+  Target shape. Must have the same number of elements as `operand`.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the given `shape` and the same data type as `operand`.
+
+## Details
+
+Note that row-major order is used, which differs from R's column-major
+order.
+
+## See also
+
+[`nvl_reshape()`](https://r-xla.github.io/anvil/reference/nvl_reshape.md)
+for the underlying primitive.
+
+## Examples
+
+``` r
+jit_eval({
+  x <- nv_tensor(1:6)
+  nv_reshape(x, c(2, 3))
+})
+#> AnvilTensor
+#>  1 2 3
+#>  4 5 6
+#> [ CPUi32{2,3} ] 
+```

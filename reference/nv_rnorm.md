@@ -1,7 +1,7 @@
 # Sample from a Normal Distribution
 
-Sample from a normal distribution with mean \\\mu\\ and standard
-deviation \\\sigma\\.
+Samples from a normal distribution with mean \\\mu\\ and standard
+deviation \\\sigma\\ using the Box-Muller transform.
 
 ## Usage
 
@@ -29,20 +29,42 @@ nv_rnorm(shape, initial_state, dtype = "f32", mu = 0, sigma = 1)
 
 - mu:
 
-  (`numeric(1)`)  
-  Expected value.
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  Mean.
 
 - sigma:
 
-  (`numeric(1)`)  
-  Standard deviation.
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  Standard deviation. Must be positive, otherwise results are invalid.
 
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
 [`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-List of two tensors: the new RNG state and the generated random numbers.
+List of two elements: the updated RNG state and the sampled values.
 
 ## Covariance
 
-To implement a covariance structure use cholesky decomposition.
+To implement a covariance structure use Cholesky decomposition.
+
+## See also
+
+Other rng:
+[`nv_rbinom()`](https://r-xla.github.io/anvil/reference/nv_rbinom.md),
+[`nv_rdunif()`](https://r-xla.github.io/anvil/reference/nv_rdunif.md),
+[`nv_rng_state()`](https://r-xla.github.io/anvil/reference/nv_rng_state.md),
+[`nv_runif()`](https://r-xla.github.io/anvil/reference/nv_runif.md)
+
+## Examples
+
+``` r
+jit_eval({
+  state <- nv_rng_state(42L)
+  result <- nv_rnorm(c(2, 3), state)
+  result[[2]]
+})
+#> AnvilTensor
+#>  -0.0675  0.9489  1.9457
+#>  -0.5255  1.2002  0.0008
+#> [ CPUf32{2,3} ] 
+```

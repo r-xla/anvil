@@ -1,7 +1,8 @@
 # Sample from a Binomial Distribution
 
-Sample from a binomial distribution with \$n\$ trials and success
-probability \$p\$.
+Samples from a binomial distribution with \\n\\ trials and success
+probability \\p\\. When `n = 1` (the default), this is a Bernoulli
+distribution.
 
 ## Usage
 
@@ -24,12 +25,12 @@ nv_rbinom(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32")
 - n:
 
   (`integer(1)`)  
-  Number of trials. Default is 1 (Bernoulli).
+  Number of trials.
 
 - prob:
 
   (`numeric(1)`)  
-  Probability of success on each trial. Default is 0.5.
+  Probability of success on each trial.
 
 - dtype:
 
@@ -41,4 +42,27 @@ nv_rbinom(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32")
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
 [`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-List of two tensors: the new RNG state and the generated random samples.
+List of two elements: the updated RNG state and the sampled values.
+
+## See also
+
+Other rng:
+[`nv_rdunif()`](https://r-xla.github.io/anvil/reference/nv_rdunif.md),
+[`nv_rng_state()`](https://r-xla.github.io/anvil/reference/nv_rng_state.md),
+[`nv_rnorm()`](https://r-xla.github.io/anvil/reference/nv_rnorm.md),
+[`nv_runif()`](https://r-xla.github.io/anvil/reference/nv_runif.md)
+
+## Examples
+
+``` r
+jit_eval({
+  state <- nv_rng_state(42L)
+  # Bernoulli samples
+  result <- nv_rbinom(c(2, 3), state)
+  result[[2]]
+})
+#> AnvilTensor
+#>  0 0 1
+#>  0 1 1
+#> [ CPUi32{2,3} ] 
+```

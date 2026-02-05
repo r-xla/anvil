@@ -82,7 +82,9 @@ dimensions and batching.</p>
 
 <dl><dt id="arg-lhs-rhs">lhs, rhs<a class="anchor" aria-label="anchor" href="#arg-lhs-rhs"></a></dt>
 <dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
-Left and right operand.</p></dd>
+Left and right operand.
+Operands are <a href="nv_promote_to_common.html">promoted to a common data type</a>.
+Scalars are <a href="nv_broadcast_scalars.html">broadcast</a> to the shape of the other operand.</p></dd>
 
 
 <dt id="arg-contracting-dims">contracting_dims<a class="anchor" aria-label="anchor" href="#arg-contracting-dims"></a></dt>

@@ -1,6 +1,7 @@
 # Sequence
 
-Creates a tensor with values increasing from start to end.
+Creates a 1-D tensor with integer values from `start` to `end`
+(inclusive), analogous to R's `seq(start, end)`.
 
 ## Usage
 
@@ -13,7 +14,7 @@ nv_seq(start, end, dtype = "i32", ambiguous = FALSE)
 - start, end:
 
   (`integer(1)`)  
-  Start and end values.
+  Start and end values. Must satisfy `start <= end`.
 
 - dtype:
 
@@ -32,4 +33,23 @@ nv_seq(start, end, dtype = "i32", ambiguous = FALSE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+1-D tensor of length `end - start + 1`.
+
+## See also
+
+[`nv_iota()`](https://r-xla.github.io/anvil/reference/nv_iota.md) for
+multi-dimensional sequences.
+
+## Examples
+
+``` r
+jit_eval(nv_seq(3, 7))
+#> AnvilTensor
+#>  3
+#>  4
+#>  5
+#>  6
+#>  7
+#> [ CPUi32{5} ] 
+```

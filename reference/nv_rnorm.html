@@ -5,7 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Sample from a Normal Distribution — nv_rnorm"><meta name="description" content="Sample from a normal distribution with mean \(\mu\) and standard deviation \(\sigma\)."><meta property="og:description" content="Sample from a normal distribution with mean \(\mu\) and standard deviation \(\sigma\)."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Sample from a Normal Distribution — nv_rnorm"><meta name="description" content="Samples from a normal distribution with mean \(\mu\) and standard deviation \(\sigma\)
+using the Box-Muller transform."><meta property="og:description" content="Samples from a normal distribution with mean \(\mu\) and standard deviation \(\sigma\)
+using the Box-Muller transform."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -65,7 +67,8 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Sample from a normal distribution with mean \(\mu\) and standard deviation \(\sigma\).</p>
+    <p>Samples from a normal distribution with mean \(\mu\) and standard deviation \(\sigma\)
+using the Box-Muller transform.</p>
     </div>
 
     <div class="section level2">
@@ -93,27 +96,48 @@ Data type.</p></dd>
 
 
 <dt id="arg-mu">mu<a class="anchor" aria-label="anchor" href="#arg-mu"></a></dt>
-<dd><p>(<code>numeric(1)</code>)<br>
-Expected value.</p></dd>
+<dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
+Mean.</p></dd>
 
 
 <dt id="arg-sigma">sigma<a class="anchor" aria-label="anchor" href="#arg-sigma"></a></dt>
-<dd><p>(<code>numeric(1)</code>)<br>
-Standard deviation.</p></dd>
+<dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
+Standard deviation. Must be positive, otherwise results are invalid.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>(<code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> of <code><a href="tensorish.html">tensorish</a></code>)<br>
-List of two tensors: the new RNG state and the generated random numbers.</p>
+List of two elements: the updated RNG state and the sampled values.</p>
     </div>
     <div class="section level2">
     <h2 id="covariance">Covariance<a class="anchor" aria-label="anchor" href="#covariance"></a></h2>
 
 
-<p>To implement a covariance structure use cholesky decomposition.</p>
+<p>To implement a covariance structure use Cholesky decomposition.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p>Other rng:
+<code><a href="nv_rbinom.html">nv_rbinom()</a></code>,
+<code><a href="nv_rdunif.html">nv_rdunif()</a></code>,
+<code><a href="nv_rng_state.html">nv_rng_state()</a></code>,
+<code><a href="nv_runif.html">nv_runif()</a></code></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">state</span> <span class="op">&lt;-</span> <span class="fu"><a href="nv_rng_state.html">nv_rng_state</a></span><span class="op">(</span><span class="fl">42L</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">nv_rnorm</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, <span class="va">state</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">result</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.0675  0.9489  1.9457</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.5255  1.2002  0.0008</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{2,3} ] </span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

@@ -105,7 +105,13 @@
 <url><loc>https://r-xla.github.io/anvil/reference/nv_rbinom.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_rdunif.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_read.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/reference/nv_reduce_ops.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nv_reduce_all.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nv_reduce_any.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nv_reduce_max.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nv_reduce_mean.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nv_reduce_min.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nv_reduce_prod.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/nv_reduce_sum.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_remainder.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_reshape.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/nv_reverse.html</loc></url>

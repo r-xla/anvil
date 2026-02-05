@@ -1,6 +1,7 @@
 # Iota
 
-Creates a tensor with values increasing along the specified dimension.
+Creates a tensor with values increasing along the specified dimension,
+starting from `start`.
 
 ## Usage
 
@@ -29,7 +30,7 @@ nv_iota(dim, dtype, shape, start = 1L, ambiguous = FALSE)
 - start:
 
   (`integer(1)`)  
-  Starting value.
+  Starting value (default 1).
 
 - ambiguous:
 
@@ -42,4 +43,25 @@ nv_iota(dim, dtype, shape, start = 1L, ambiguous = FALSE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the given `dtype` and `shape`.
+
+## See also
+
+[`nv_seq()`](https://r-xla.github.io/anvil/reference/nv_seq.md) for a
+simpler 1-D sequence,
+[`nvl_iota()`](https://r-xla.github.io/anvil/reference/nvl_iota.md) for
+the underlying primitive.
+
+## Examples
+
+``` r
+jit_eval(nv_iota(dim = 1L, dtype = "i32", shape = 5L))
+#> AnvilTensor
+#>  1
+#>  2
+#>  3
+#>  4
+#>  5
+#> [ CPUi32{5} ] 
+```

@@ -117,16 +117,13 @@ Has the given <code>dtype</code>.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># 1xi32 -&gt; (32/8 * 1)xi8 = 4xi8</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">1L</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">nvl_bitcast_convert</span><span class="op">(</span><span class="va">x</span>, dtype <span class="op">=</span> <span class="st">"i8"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1 0 0 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi8{1,4} ] </span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># 4xi8 -&gt; (4 * 8/32)xi32 = 1xi32</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">4</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"i8"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">nvl_bitcast_convert</span><span class="op">(</span><span class="va">x</span>, dtype <span class="op">=</span> <span class="st">"i32"</span><span class="op">)</span></span></span>
