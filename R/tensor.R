@@ -209,8 +209,8 @@ as_array.AnvilTensor <- function(x, ...) {
 }
 
 #' @export
-as_raw.AnvilTensor <- function(x, ...) {
-  tengen::as_raw(x$tensor)
+as_raw.AnvilTensor <- function(x, row_major = FALSE, ...) {
+  tengen::as_raw(x$tensor, row_major = row_major)
 }
 
 #' @method ndims AnvilTensor
