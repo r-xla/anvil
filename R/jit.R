@@ -52,14 +52,12 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
     args_flat <- flatten(args)
     is_static_flat <- in_tree$marked
 
-    platforms <- character()
     avals_in <- Map(
       function(x, is_static) {
         if (is_static) {
           x
         } else {
           if (is_anvil_tensor(x)) {
-            platforms <<- c(platforms, platform(x))
             return(nv_aten(dtype(x), shape(x), ambiguous = ambiguous(x)))
           }
           cli_abort("Expected AnvilTensor, but got {.cls {class(x)[1]}}")
@@ -69,28 +67,13 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
       is_static_flat
     )
 
-    if (length(unique(platforms)) > 1) {
-      cli_abort(
-        "Inputs live on different platforms: {.val {unique(platforms)}}."
-      )
-    }
-    # FIXME: platform does not always return "cuda" on CUDA gpus,
-    # so we might store the same entry twice (via "cuda" and via the specific GPU-dependent name)
-    platform <- if (length(platforms) > 0) {
-      platforms[1]
-    } else if (!is.null(device)) {
-      device
-    } else {
-      NULL
-    }
-
     in_tree$marked <- NULL
     class(in_tree) <- c("ListNode", "Node")
     cache_hit <- cache$get(list(in_tree, avals_in, platform))
     if (!is.null(cache_hit)) {
       return(call_xla(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat, cache_hit[[4]]))
     }
-    compiled <- compile_to_xla(f, args_flat = avals_in, in_tree = in_tree, donate = donate, device = platform)
+    compiled <- compile_to_xla(f, args_flat = avals_in, in_tree = in_tree, donate = donate, device = device)
     exec <- compiled$exec
     out_tree <- compiled$out_tree
     const_tensors <- compiled$const_tensors
