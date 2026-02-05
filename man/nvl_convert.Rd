@@ -8,10 +8,10 @@ nvl_convert(operand, dtype, ambiguous = FALSE)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
-Data type.}
+Target data type.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.
@@ -19,19 +19,24 @@ Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and 
 See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the given \code{dtype} and the same shape as \code{operand}.
+Ambiguity is controlled by the \code{ambiguous} parameter.
 }
 \description{
-Converts tensor to a different dtype.
+Converts the elements of a tensor to a different data type.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Output has the same shape as \code{operand}.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_convert]{stablehlo::hlo_convert()}}.
+Lowers to \code{\link[stablehlo:hlo_convert]{stablehlo::hlo_convert()}}.
 }
 
 \examples{
@@ -41,4 +46,7 @@ jit_eval({
   nvl_convert(x, dtype = "f32")
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_convert]{nv_convert()}}
 }

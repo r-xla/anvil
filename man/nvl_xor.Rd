@@ -18,7 +18,6 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise logical XOR.
-For a more user-friendly interface, see \code{\link[=nv_xor]{nv_xor()}}.
 }
 \section{Implemented Rules}{
 
@@ -41,4 +40,7 @@ jit_eval({
   nvl_xor(x, y)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_xor]{nv_xor()}}
 }

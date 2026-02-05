@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise natural logarithm.
-Is the same as \code{\link[=nv_log]{nv_log()}}. You can also use \code{\link[=log]{log()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_log(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_log]{nv_log()}}, \code{\link[=log]{log()}}
 }

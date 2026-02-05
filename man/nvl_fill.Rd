@@ -8,10 +8,10 @@ nvl_fill(value, shape, dtype, ambiguous = FALSE)
 }
 \arguments{
 \item{value}{(\code{numeric(1)})\cr
-Scalar value.}
+Scalar value to fill the tensor with.}
 
 \item{shape}{(\code{integer()})\cr
-Shape.}
+Shape of the output tensor.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}
@@ -22,23 +22,33 @@ Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and 
 See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the given \code{shape} and \code{dtype}.
 }
 \description{
-Creates a tensor filled with a scalar value.
+Creates a tensor of a given shape and data type, filled with a scalar value.
+The advantage of using this function instead of e.g. doing
+\code{nv_tensor(1, shape = c(100, 100))} is that lowering of \code{\link[=nvl_fill]{nvl_fill()}} is
+efficiently represented in the compiled program, while the latter uses
+100 * 100 * 4 bytes of memory.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Output shape is \code{shape}.
+\itemize{
+\item \code{stablehlo}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_constant]{stablehlo::hlo_constant()}}.
+Lowers to \code{\link[stablehlo:hlo_constant]{stablehlo::hlo_tensor()}}.
 }
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval(nvl_fill(3.14, shape = c(2, 3), dtype = "f32"))
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_fill]{nv_fill()}}
 }

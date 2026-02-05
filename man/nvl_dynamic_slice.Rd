@@ -8,52 +8,69 @@ nvl_dynamic_slice(operand, ..., slice_sizes)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{...}{(\code{\link{tensorish}} of integer type)\cr
-Scalar start indices (1-based), one per dimension.}
+Scalar start indices, one per dimension. Each must be a
+scalar tensor. Pass one scalar per dimension of \code{operand}.}
 
 \item{slice_sizes}{(\code{integer()})\cr
-Size of the slice in each dimension.}
+Size of the slice in each dimension. Must have length equal to
+\code{ndims(operand)} and satisfy \verb{1 <= slice_sizes <= nv_shape(operand)}
+per dimension.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type as the input and shape \code{slice_sizes}.
+It is ambiguous if the input is ambiguous.
 }
 \description{
-Extracts a dynamically positioned slice from a tensor.
-The start position is specified at runtime via tensor indices.
+Extracts a slice from a tensor whose start position is determined at
+runtime via tensor-valued indices. The slice shape (\code{slice_sizes}) is
+a fixed R integer vector.
+
+Use \code{\link[=nvl_static_slice]{nvl_static_slice()}} instead when all indices are known at compile
+time and you need stride support.
 }
 \section{Out Of Bounds Behavior}{
 
-If the slice would extend beyond the bounds of the operand tensor,
-the start indices are clamped so that the slice fits within the tensor.
+Start indices are clamped before the slice is extracted:
+\code{adjusted_start_indices = clamp(1, start_indices, nv_shape(operand) - slice_sizes + 1)}.
 This means that out-of-bounds indices will not cause an error, but
 the effective start position may differ from the requested one.
-
-For example, slicing a tensor of shape \code{c(10)} with \code{start_indices = 8}
-and \code{slice_sizes = 5} will effectively use \code{start_indices = 6} to keep
-the slice within bounds.
 }
 
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Each start index in \code{...} must be a scalar tensor. The number of
-start indices must equal \code{rank(operand)}. \code{slice_sizes} must satisfy
-\code{slice_sizes <= shape(operand)} per dimension. Output shape is
-\code{slice_sizes}.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_dynamic_slice]{stablehlo::hlo_dynamic_slice()}}.
+Lowers to \code{\link[stablehlo:hlo_dynamic_slice]{stablehlo::hlo_dynamic_slice()}}.
 }
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+# 1-D: extract 3 elements starting at position 3
 jit_eval({
   x <- nv_tensor(1:10)
   start <- nv_scalar(3L)
   nvl_dynamic_slice(x, start, slice_sizes = 3L)
 })
+
+# 2-D: extract a 2x2 block from a matrix
+jit_eval({
+  x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4))
+  row_start <- nv_scalar(2L)
+  col_start <- nv_scalar(1L)
+  nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
+})
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_static_slice]{nvl_static_slice()}}, \code{\link[=nvl_dynamic_update_slice]{nvl_dynamic_update_slice()}}, \code{\link[=nvl_scatter]{nvl_scatter()}}, \code{\link[=nvl_gather]{nvl_gather()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{[}
 }

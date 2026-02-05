@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
-Is the same as \code{\link[=nv_logistic]{nv_logistic()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_logistic(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_logistic]{nv_logistic()}}
 }

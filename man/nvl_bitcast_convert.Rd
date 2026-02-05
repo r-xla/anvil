@@ -8,34 +8,49 @@ nvl_bitcast_convert(operand, dtype)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
-Data type.}
+Target data type. If it has the same bit width as the input, the output
+shape is unchanged. If narrower, an extra trailing dimension is added.
+If wider, the last dimension is consumed.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the given \code{dtype}.
 }
 \description{
-Reinterprets tensor bits as a different dtype.
+Reinterprets the bits of a tensor as a different data type without
+modifying the underlying data.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-If the source and target types have the same bit width, the output
-has the same shape as \code{operand}. Otherwise the last dimension is
-adjusted based on the bit-width ratio.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_bitcast_convert]{stablehlo::hlo_bitcast_convert()}}.
+Lowers to \code{\link[stablehlo:hlo_bitcast_convert]{stablehlo::hlo_bitcast_convert()}}.
 }
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+# 1xi32 -> (32/8 * 1)xi8 = 4xi8
 jit_eval({
   x <- nv_tensor(1L)
-  nvl_bitcast_convert(x, dtype = "f32")
+  nvl_bitcast_convert(x, dtype = "i8")
+})
+
+# 4xi8 -> (4 * 8/32)xi32 = 1xi32
+jit_eval({
+  x <- nv_tensor(rep(1L, 4), dtype = "i8")
+  nvl_bitcast_convert(x, dtype = "i32")
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_bitcast_convert]{nv_bitcast_convert()}}
 }

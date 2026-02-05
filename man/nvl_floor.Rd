@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise floor.
-Is the same as \code{\link[=nv_floor]{nv_floor()}}. You can also use \code{\link[=floor]{floor()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_floor(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_floor]{nv_floor()}}, \code{\link[=floor]{floor()}}
 }

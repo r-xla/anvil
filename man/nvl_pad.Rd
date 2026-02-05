@@ -14,10 +14,10 @@ nvl_pad(
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{padding_value}{(\code{\link{tensorish}})\cr
-Scalar value to use for padding.}
+Scalar value to use for padding. Must have the same dtype as \code{operand}.}
 
 \item{edge_padding_low}{(\code{integer()})\cr
 Amount of padding to add at the start of each dimension.}
@@ -29,21 +29,25 @@ Amount of padding to add at the end of each dimension.}
 Amount of padding to add between elements in each dimension.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type as \code{operand}.
+For the output shape see the underlying stablehlo documentation (\code{\link[stablehlo:hlo_pad]{stablehlo::hlo_pad()}}).
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Pads a tensor with a given padding value.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-\code{padding_value} must be scalar. \code{edge_padding_low},
-\code{edge_padding_high}, and \code{interior_padding} must each have length
-equal to \code{rank(operand)}.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_pad]{stablehlo::hlo_pad()}}.
+Lowers to \code{\link[stablehlo:hlo_pad]{stablehlo::hlo_pad()}}.
 }
 
 \examples{

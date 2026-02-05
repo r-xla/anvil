@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise exp(x) - 1, more accurate for small x.
-Is the same as \code{\link[=nv_expm1]{nv_expm1()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_expm1(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_expm1]{nv_expm1()}}
 }

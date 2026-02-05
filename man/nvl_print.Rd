@@ -8,24 +8,29 @@ nvl_print(operand)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Returns \code{operand} as-is.
 }
 \description{
-Prints a tensor during execution.
-Returns the input unchanged.
-Note: Currently only works on CPU backend.
+Prints a tensor value to the console during execution and returns the
+input unchanged. This is useful for debugging JIT-compiled code.
 }
-\section{Shapes}{
+\note{
+Currently only works on the CPU backend.
+}
+\section{Implemented Rules}{
 
-Output has the same shape as \code{operand}.
+\itemize{
+\item \code{stablehlo}
+}
 }
 
 \section{StableHLO}{
 
-Uses \code{\link[stablehlo:hlo_custom_call]{stablehlo::hlo_custom_call()}} internally.
+Lowers to \code{\link[stablehlo:hlo_custom_call]{stablehlo::hlo_custom_call()}}.
 }
 
 \examples{
@@ -35,4 +40,7 @@ jit_eval({
   nvl_print(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_print]{nv_print()}}
 }

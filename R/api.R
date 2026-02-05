@@ -585,16 +585,22 @@ nv_popcnt <- nvl_popcnt
 
 #' @title Clamp
 #' @description Element-wise clamp: max(min_val, min(operand, max_val)).
+#' Converts `min_val` and `max_val` to the data type of `operand`.
+#' @details
+#' The underlying stableHLO function already broadcasts scalars, so no need to broadcast manually.
 #' @param min_val ([`tensorish`])\cr
 #'   Minimum value.
 #' @template param_operand
 #' @param max_val ([`tensorish`])\cr
 #'   Maximum value.
-#' @details
-#' The underlying stableHLO function already broadcasts scalars, so no need to broadcast manually.
 #' @return [`tensorish`]
 #' @export
-nv_clamp <- nvl_clamp
+nv_clamp <- function(min_val, operand, max_val) {
+  op_dtype <- dtype_abstract(operand)
+  min_val <- nv_convert(min_val, op_dtype)
+  max_val <- nv_convert(max_val, op_dtype)
+  nvl_clamp(min_val, operand, max_val)
+}
 
 #' @title Reverse
 #' @description Reverses the order of elements along specified dimensions.

@@ -8,53 +8,69 @@ nvl_dynamic_update_slice(operand, update, ...)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{update}{(\code{\link{tensorish}})\cr
-The values to write at the specified position.}
+The values to write at the specified position. Must have the same
+data type and number of dimensions as \code{operand}, with
+\code{nv_shape(update) <= nv_shape(operand)} per dimension.}
 
 \item{...}{(\code{\link{tensorish}} of integer type)\cr
-Scalar start indices (1-based), one per dimension.}
+Scalar start indices, one per dimension of \code{operand}.
+Each must be a scalar tensor.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type and shape as \code{operand}.
+It is ambiguous if the input is ambiguous.
 }
 \description{
-Updates a dynamically positioned slice in a tensor.
-The start position is specified at runtime via tensor indices.
+Returns a copy of \code{operand} with a slice replaced by \code{update} at a
+runtime-determined position. This is the write counterpart of
+\code{\link[=nvl_dynamic_slice]{nvl_dynamic_slice()}}: dynamic slice reads a block from a tensor,
+while dynamic update slice writes a block into a tensor.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-\code{update} must have the same rank as \code{operand}, with
-\code{shape(update) <= shape(operand)} per dimension. Each start index
-in \code{...} must be a scalar tensor. The output has the same shape as
-\code{operand}.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_dynamic_update_slice]{stablehlo::hlo_dynamic_update_slice()}}.
+Lowers to \code{\link[stablehlo:hlo_dynamic_update_slice]{stablehlo::hlo_dynamic_update_slice()}}.
 }
 
 \section{Out Of Bounds Behavior}{
 
-If the slice would extend beyond the bounds of the operand tensor,
-the start indices are clamped so that the slice fits within the tensor.
+Start indices are clamped before the slice is extracted:
+\code{adjusted_start_indices = clamp(1, start_indices, nv_shape(operand) - slice_sizes + 1)}.
 This means that out-of-bounds indices will not cause an error, but
 the effective start position may differ from the requested one.
-
-For example, slicing a tensor of shape \code{c(10)} with \code{start_indices = 8}
-and \code{slice_sizes = 5} will effectively use \code{start_indices = 6} to keep
-the slice within bounds.
 }
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+# 1-D: overwrite two elements starting at position 2
 jit_eval({
   x <- nv_tensor(1:5)
   update <- nv_tensor(c(10L, 20L))
   start <- nv_scalar(2L)
   nvl_dynamic_update_slice(x, update, start)
 })
+
+# 2-D: write a 2x2 block into a 3x4 matrix
+jit_eval({
+  x <- nv_tensor(matrix(0L, nrow = 3, ncol = 4))
+  update <- nv_tensor(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
+  row_start <- nv_scalar(2L)
+  col_start <- nv_scalar(3L)
+  nvl_dynamic_update_slice(x, update, row_start, col_start)
+})
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_dynamic_slice]{nvl_dynamic_slice()}}, \code{\link[=nvl_scatter]{nvl_scatter()}}, \code{\link[=nvl_gather]{nvl_gather()}}, \code{\link[=nv_subset_assign]{nv_subset_assign()}}, \verb{[<-}
 }

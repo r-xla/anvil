@@ -18,7 +18,6 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise atan2 operation.
-For a more user-friendly interface, see \code{\link[=nv_atan2]{nv_atan2()}}.
 }
 \section{Implemented Rules}{
 
@@ -41,4 +40,7 @@ jit_eval({
   nvl_atan2(y, x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_atan2]{nv_atan2()}}
 }

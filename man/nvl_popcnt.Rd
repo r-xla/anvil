@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise population count (number of set bits).
-Is the same as \code{\link[=nv_popcnt]{nv_popcnt()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_popcnt(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_popcnt]{nv_popcnt()}}
 }

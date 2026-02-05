@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise exponential.
-Is the same as \code{\link[=nv_exp]{nv_exp()}}. You can also use \code{\link[=exp]{exp()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_exp(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_exp]{nv_exp()}}, \code{\link[=exp]{exp()}}
 }

@@ -18,7 +18,6 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise less than comparison.
-For a more user-friendly interface, see \code{\link[=nv_lt]{nv_lt()}}, or use the \code{<} operator.
 }
 \section{StableHLO}{
 
@@ -33,4 +32,7 @@ jit_eval({
   nvl_lt(x, y)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_lt]{nv_lt()}}, \code{<}
 }

@@ -20,58 +20,97 @@ nvl_gather(
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{start_indices}{(\code{\link{tensorish}} of integer type)\cr
-Starting indices for the gather operation.}
+Tensor of starting indices. Contains index vectors that map to
+positions in \code{operand} via \code{start_index_map}. The dimension
+specified by \code{index_vector_dim} holds the index vectors.}
 
 \item{slice_sizes}{(\code{integer()})\cr
-The sizes of the slices to gather in each dimension.}
+Size of the slice to gather from \code{operand} in each dimension.
+Must have length equal to \code{ndims(operand)}.}
 
 \item{offset_dims}{(\code{integer()})\cr
-Dimensions of the operand to gather from.}
+Dimensions in the output that correspond to the non-collapsed
+slice dimensions of \code{operand}.}
 
 \item{collapsed_slice_dims}{(\code{integer()})\cr
-Dimensions of the slice to gather.}
+Dimensions of \code{operand} that are collapsed (removed) from the
+slice. The corresponding entries in \code{slice_sizes} must be \code{1}.
+Together with \code{offset_dims} and \code{operand_batching_dims}, these
+must account for all dimensions of \code{operand}.}
 
 \item{operand_batching_dims}{(\code{integer()})\cr
-Dimensions of the operand to gather from.}
+Dimensions of \code{operand} that are batch dimensions.
+Use \code{integer(0)} when there are no batch dimensions.}
 
 \item{start_indices_batching_dims}{(\code{integer()})\cr
-Dimensions of the start_indices to gather from.}
+Dimensions of \code{start_indices} that correspond to batch
+dimensions. Must have the same length as \code{operand_batching_dims}.}
 
 \item{start_index_map}{(\code{integer()})\cr
-Mapping from the start_indices to the operand dimensions.}
+Maps each component of the index vector to an \code{operand}
+dimension. For example, \code{start_index_map = c(1L)} means each
+index vector indexes into the first dimension of \code{operand}.}
 
 \item{index_vector_dim}{(\code{integer(1)})\cr
-Dimension of the index vector.}
+Dimension of \code{start_indices} that contains the index vectors.
+If set to \code{ndims(start_indices) + 1}, each scalar element of
+\code{start_indices} is treated as a length-1 index vector.}
 
 \item{indices_are_sorted}{(\code{logical(1)})\cr
-Whether indices are guaranteed to be sorted.}
+Whether indices are guaranteed to be sorted. Setting to \code{TRUE}
+may improve performance but produces undefined behavior if the
+indices are not actually sorted. Default \code{FALSE}.}
 
 \item{unique_indices}{(\code{logical(1)})\cr
-Whether indices are guaranteed to be unique (no duplicates).}
+Whether indices are guaranteed to be unique (no duplicates).
+Setting to \code{TRUE} may improve performance but produces undefined
+behavior if the indices are not actually unique. Default \code{FALSE}.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type as \code{operand}. The output shape is composed
+of the offset dimensions (from the slice) and the remaining
+dimensions from \code{start_indices}. See the underluing stableHLO function
+for more details.
 }
 \description{
-Gathers slices from the operand at positions specified by start_indices.
-}
-\section{Shapes}{
+Gathers slices from the \code{operand} tensor at positions specified by
+\code{start_indices}. Each index vector in \code{start_indices} identifies a
+starting position in \code{operand}, and a slice of size \code{slice_sizes} is
+extracted from that position. The gathered slices are assembled into
+the output tensor.
 
-See \code{\link[stablehlo:hlo_gather]{stablehlo::hlo_gather()}} for detailed dimension constraints
-on \code{start_indices}, \code{slice_sizes}, and the dimension mapping
-parameters.
+This is the inverse of \code{\link[=nvl_scatter]{nvl_scatter()}}: gather reads slices from a
+tensor at given indices, while scatter writes slices into a tensor at
+given indices.
+}
+\section{Out Of Bounds Behavior}{
+
+Start indices are clamped before the slice is extracted:
+\code{clamp(1, start_index, nv_shape(operand) - slice_sizes + 1)}.
+This means that out-of-bounds indices will not cause an error, but
+the effective start position may differ from the requested one.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_gather]{stablehlo::hlo_gather()}}.
+Lowers to \code{\link[stablehlo:hlo_gather]{stablehlo::hlo_gather()}}.
 }
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+# Gather rows 1 and 3 from a 3x3 matrix
 jit_eval({
   operand <- nv_tensor(matrix(1:9, nrow = 3))
   indices <- nv_tensor(matrix(c(1L, 3L), ncol = 1))
@@ -87,4 +126,7 @@ jit_eval({
   )
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_scatter]{nvl_scatter()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{\link[=nv_subset_assign]{nv_subset_assign()}}, \code{[}, \verb{[<-}
 }

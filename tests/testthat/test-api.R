@@ -77,6 +77,13 @@ test_that("promote to common", {
   )
 })
 
+test_that("nv_clamp converts min and max to operand dtype", {
+  expect_equal(
+    jit_eval(nv_clamp(nv_scalar(0L), nv_tensor(c(-1, 0.5, 2), dtype = "f32"), nv_scalar(1L))),
+    nv_tensor(c(0, 0.5, 1), dtype = "f32")
+  )
+})
+
 describe("nv_concatenate", {
   it("auto-promotes to common", {
     expect_equal(
