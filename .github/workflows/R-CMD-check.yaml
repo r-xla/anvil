@@ -67,7 +67,7 @@ jobs:
       image: 'sebffischer/anvil-cuda-base:latest'
       options: '--gpus all --runtime=nvidia'
 
-    name: ubuntu - cuda (release) – with torch
+    name: ubuntu - cuda (release)
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -78,5 +78,3 @@ jobs:
       - uses: actions/checkout@v5
 
       - uses: ./.github/actions/r-check
-        with:
-          install-torch: 'true'
