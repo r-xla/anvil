@@ -27,7 +27,7 @@ The underlying stableHLO function already broadcasts scalars, so no need to broa
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(-1, 0.5, 2), device = "cpu")
+  x <- nv_tensor(c(-1, 0.5, 2))
   nv_clamp(nv_scalar(0), x, nv_scalar(1))
 })
 \dontshow{\}) # examplesIf}

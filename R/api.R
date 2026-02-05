@@ -1009,7 +1009,7 @@ nv_popcnt <- nvl_popcnt
 #' @seealso [nvl_clamp()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(-1, 0.5, 2), device = "cpu")
+#'   x <- nv_tensor(c(-1, 0.5, 2))
 #'   nv_clamp(nv_scalar(0), x, nv_scalar(1))
 #' })
 #' @export
