@@ -4,7 +4,7 @@
 \alias{xla}
 \title{Compile a function to an XLA executable and wrap it as an R function}
 \usage{
-xla(f, args, donate = character(), device = "cpu")
+xla(f, args, donate = character(), device = NULL)
 }
 \arguments{
 \item{f}{(\code{function})\cr
@@ -17,7 +17,7 @@ List of abstract input values (as passed to \code{f}).}
 Names of the arguments whose buffers should be donated.}
 
 \item{device}{(\code{character(1)})\cr
-Target device (e.g. \code{"cpu"}, \code{"cuda"}).}
+Target device such as \code{"cpu"} (default) or \code{"cuda"}.}
 }
 \value{
 (\code{function})\cr

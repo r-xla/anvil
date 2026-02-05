@@ -259,6 +259,7 @@ reference:
       - build_tree
       - reindex_tree
       - tree_size
+      - filter_list_node
 
   - title: Tensor classes
     desc: Core tensor classes and constructors

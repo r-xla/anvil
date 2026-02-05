@@ -166,12 +166,13 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
 #' @param donate (`character()`)\cr
 #'   Names of the arguments whose buffers should be donated.
 #' @param device (`character(1)`)\cr
-#'   Target device (e.g. `"cpu"`, `"cuda"`).
+#'   Target device such as `"cpu"` (default) or `"cuda"`.
 #' @return (`function`)\cr
 #'   A function that accepts [`AnvilTensor`] arguments (matching the flat inputs)
 #'   and returns the result as [`AnvilTensor`]s.
 #' @export
-xla <- function(f, args, donate = character(), device = "cpu") {
+xla <- function(f, args, donate = character(), device = NULL) {
+  device <- device %||% Sys.getenv("PJRT_PLATFORM", "cpu")
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
   compiled <- compile_to_xla(f, args_flat = args_flat, in_tree = in_tree, donate = donate, device = device)
