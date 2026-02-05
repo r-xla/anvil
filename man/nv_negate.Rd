@@ -11,8 +11,20 @@ nv_negate(operand)
 Operand.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
 }
 \description{
-Element-wise negation.
+Negates a tensor element-wise. You can also use the unary \code{-} operator.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, -2, 3))
+  -x
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_negate]{nvl_negate()}} for the underlying primitive.
 }

@@ -11,8 +11,20 @@ nv_cosine(operand)
 Operand.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
 }
 \description{
-Element-wise cosine.
+Element-wise cosine. You can also use \code{cos()}.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(0, pi / 2, pi))
+  cos(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_cosine]{nvl_cosine()}} for the underlying primitive.
 }

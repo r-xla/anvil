@@ -2,7 +2,7 @@
 % Please edit documentation in R/api.R
 \name{nv_convert}
 \alias{nv_convert}
-\title{Convert Tensor to Different Data Type}
+\title{Convert Data Type}
 \usage{
 nv_convert(operand, dtype)
 }
@@ -14,8 +14,21 @@ Operand.}
 Data type.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the given \code{dtype} and the same shape as \code{operand}.
 }
 \description{
-Convert a tensor to a different data type.
+Converts the elements of a tensor to a different data type.
+Returns the input unchanged if it already has the target type.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1L, 2L, 3L))
+  nv_convert(x, dtype = "f32")
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_convert]{nvl_convert()}} for the underlying primitive.
 }

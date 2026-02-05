@@ -10,6 +10,25 @@ nv_print(operand)
 \item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
 }
+\value{
+\code{\link{tensorish}}\cr
+Returns \code{operand} unchanged.
+}
 \description{
-Prints a tensor during JIT execution.
+Prints a tensor value to the console during JIT execution and returns the
+input unchanged. Useful for debugging.
+}
+\note{
+Currently only works on the CPU backend.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3), device = "cpu")
+  nv_print(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_print]{nvl_print()}} for the underlying primitive.
 }

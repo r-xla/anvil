@@ -1,4 +1,3 @@
-#' @rdname nv_runif
 nv_unif_rand <- function(
   shape,
   initial_state,
@@ -54,15 +53,21 @@ nv_unif_rand <- function(
 
 #' @title Sample from a Uniform Distribution
 #' @description
-#' Sample from a uniform distribution in the open interval (lower, upper).
-#' Note that `nv_rand_unif()` generates values in [0, 1), while `nv_runif()` generates values in (lower, upper).
+#' Samples from a uniform distribution in the open interval `(lower, upper)`.
+#' @template param_shape
 #' @template param_initial_state
 #' @template param_dtype
-#' @template param_shape
 #' @param lower,upper (`numeric(1)`)\cr
 #'   Lower and upper bound.
 #' @return (`list()` of [`tensorish`])\cr
-#'   List of two tensors: the new RNG state and the generated random numbers.
+#'   List of two elements: the updated RNG state and the sampled values.
+#' @family rng
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   state <- nv_rng_state(42L)
+#'   result <- nv_runif(c(2, 3), state)
+#'   result[[2]]
+#' })
 #' @export
 nv_runif <- function(
   shape,
@@ -116,18 +121,26 @@ nv_runif <- function(
 
 #' @title Sample from a Normal Distribution
 #' @description
-#' Sample from a normal distribution with mean \eqn{\mu} and standard deviation \eqn{\sigma}.
+#' Samples from a normal distribution with mean \eqn{\mu} and standard deviation \eqn{\sigma}
+#' using the Box-Muller transform.
+#' @template param_shape
 #' @template param_initial_state
 #' @template param_dtype
-#' @template param_shape
-#' @param mu (`numeric(1)`)\cr
-#'   Expected value.
-#' @param sigma (`numeric(1)`)\cr
-#'   Standard deviation.
-#' @section Covariance:
-#' To implement a covariance structure use cholesky decomposition.
+#' @param mu ([`tensorish`])\cr
+#'   Mean.
+#' @param sigma ([`tensorish`])\cr
+#'   Standard deviation. Must be positive, otherwise results are invalid.
 #' @return (`list()` of [`tensorish`])\cr
-#'   List of two tensors: the new RNG state and the generated random numbers.
+#'   List of two elements: the updated RNG state and the sampled values.
+#' @section Covariance:
+#' To implement a covariance structure use Cholesky decomposition.
+#' @family rng
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   state <- nv_rng_state(42L)
+#'   result <- nv_rnorm(c(2, 3), state)
+#'   result[[2]]
+#' })
 #' @export
 nv_rnorm <- function(shape, initial_state, dtype = "f32", mu = 0, sigma = 1) {
   checkmate::assertChoice(dtype, c("f32", "f64"))
@@ -173,12 +186,12 @@ nv_rnorm <- function(shape, initial_state, dtype = "f32", mu = 0, sigma = 1) {
   # multiply with requested sd:
   # was:    var(Z) = 1
   # now:    var(Z) = sd^2
-  N <- nv_mul(Z, nv_scalar(sigma, dtype = dtype))
+  N <- Z * sigma
 
   # add requested mu:
   # was:    mean(Z) = 0
   # now:    mean(Z) = mu
-  N <- nv_add(N, nv_scalar(mu, dtype = dtype))
+  N <- N + mu
 
   # if n is uneven, only keep N(1,...,n), i.e. discard last entry of N
   if (n %% 2 == 1) {
@@ -194,16 +207,25 @@ nv_rnorm <- function(shape, initial_state, dtype = "f32", mu = 0, sigma = 1) {
 
 #' @title Sample from a Binomial Distribution
 #' @description
-#' Sample from a binomial distribution with $n$ trials and success probability $p$.
+#' Samples from a binomial distribution with \eqn{n} trials and success probability \eqn{p}.
+#' When `n = 1` (the default), this is a Bernoulli distribution.
+#' @template param_shape
 #' @template param_initial_state
 #' @param n (`integer(1)`)\cr
-#'   Number of trials. Default is 1 (Bernoulli).
+#'   Number of trials.
 #' @param prob (`numeric(1)`)\cr
-#'   Probability of success on each trial. Default is 0.5.
+#'   Probability of success on each trial.
 #' @template param_dtype
-#' @template param_shape
 #' @return (`list()` of [`tensorish`])\cr
-#'   List of two tensors: the new RNG state and the generated random samples.
+#'   List of two elements: the updated RNG state and the sampled values.
+#' @family rng
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   state <- nv_rng_state(42L)
+#'   # Bernoulli samples
+#'   result <- nv_rbinom(c(2, 3), state)
+#'   result[[2]]
+#' })
 #' @export
 nv_rbinom <- function(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32") {
   checkmate::assert_int(n, lower = 1)
@@ -234,15 +256,23 @@ nv_rbinom <- function(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32") {
 
 #' @title Sample from a Discrete Uniform Distribution
 #' @description
-#' Sample from a discrete distribution, analogous to R's `sample()` function.
-#' Samples integers from 1 to n with uniform probability and with replacement.
-#' @param n (`integer(1)`)\cr
-#'   Number of categories to sample from (samples integers 1 to n).
+#' Samples integers from `1` to `n` with equal probability (with replacement),
+#' analogous to R's `sample.int(n, size, replace = TRUE)`.
 #' @template param_shape
 #' @template param_initial_state
+#' @param n (`integer(1)`)\cr
+#'   Number of categories (samples integers `1` to `n`).
 #' @template param_dtype
 #' @return (`list()` of [`tensorish`])\cr
-#'   List of two tensors: the new RNG state and the sampled integers.
+#'   List of two elements: the updated RNG state and the sampled integers.
+#' @family rng
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   state <- nv_rng_state(42L)
+#'   # Roll 6 dice
+#'   result <- nv_rdunif(6, state, n = 6L)
+#'   result[[2]]
+#' })
 #' @export
 nv_rdunif <- function(shape, initial_state, n, dtype = "i32") {
   checkmate::assert_int(n, lower = 1)

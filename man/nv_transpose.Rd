@@ -10,14 +10,27 @@ nv_transpose(x, permutation = NULL)
 \method{t}{AnvilBox}(x)
 }
 \arguments{
-\item{x}{(\code{\link{nv_tensor}})}
+\item{x}{(\code{\link{tensorish}})\cr
+Tensor to transpose.}
 
-\item{permutation}{(\code{integer()} | \code{NULl})\cr
-Permutation of dimensions. If \code{NULL} (default), reverses the dimensions.}
+\item{permutation}{(\code{integer()} | \code{NULL})\cr
+New ordering of dimensions. If \code{NULL} (default), reverses the dimensions.}
 }
 \value{
-\code{\link{nv_tensor}}
+\code{\link{tensorish}}\cr
+Has the same data type as \code{x} and shape \code{nv_shape(x)[permutation]}.
 }
 \description{
-Transpose a tensor.
+Permutes the dimensions of a tensor. You can also use \code{t()} for matrices.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(matrix(1:6, nrow = 2))
+  t(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_transpose]{nvl_transpose()}} for the underlying primitive.
 }

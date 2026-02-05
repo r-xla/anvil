@@ -14,21 +14,34 @@ nv_subset_assign(x, ..., value)
 }
 \arguments{
 \item{x}{(\code{\link{tensorish}})\cr
-Input tensor to update.}
+Tensor to update.}
 
-\item{...}{Subset specifications.}
+\item{...}{\cr
+Subset specifications, one per dimension. See \code{vignette("subsetting")}
+for details.}
 
 \item{value}{(\code{\link{tensorish}})\cr
-Values to write. Scalars are broadcast to the subset shape.
-Non-scalar values must have a shape matching the subset shape.}
+Replacement values. Scalars are broadcast to the subset shape.
+Non-scalar values must match the subset shape.}
 }
 \value{
-\code{\link{tensorish}} A new tensor with the subset updated.
+\code{\link{tensorish}}\cr
+A new tensor with the same shape as \code{x} and the subset replaced.
 }
 \description{
-Updates elements of a tensor at specified positions.
-See vignette("subsetting") for more details.
+Updates elements of a tensor at specified positions, returning a new tensor.
+You can also use the \verb{[<-} operator.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(matrix(1:12, nrow = 3))
+  # Set row 1 to zeros
+  x[1, ] <- 0L
+  x
+})
+\dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_subset]{nv_subset()}}
+\code{\link[=nv_subset]{nv_subset()}}, \code{vignette("subsetting")} for a comprehensive guide.
 }

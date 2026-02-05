@@ -11,8 +11,20 @@ nv_not(operand)
 Operand.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
 }
 \description{
-Element-wise logical NOT operation.
+Element-wise logical NOT. You can also use the \code{!} operator.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(TRUE, FALSE, TRUE))
+  !x
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_not]{nvl_not()}} for the underlying primitive.
 }

@@ -11,8 +11,20 @@ nv_log1p(operand)
 Operand.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
 }
 \description{
-Element-wise log(1 + x), more accurate for small x.
+Element-wise \code{log(1 + x)}, more accurate for small \code{x}.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(0, 0.001, 1))
+  nv_log1p(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_log1p]{nvl_log1p()}} for the underlying primitive.
 }

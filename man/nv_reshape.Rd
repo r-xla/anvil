@@ -11,12 +11,27 @@ nv_reshape(operand, shape)
 Operand.}
 
 \item{shape}{(\code{integer()})\cr
-The new shape.}
+Target shape. Must have the same number of elements as \code{operand}.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the given \code{shape} and the same data type as \code{operand}.
 }
 \description{
-Reshape a tensor.
+Reshapes a tensor to a new shape without changing the underlying data.
+Returns the input unchanged if it already has the target shape.
+}
+\details{
 Note that row-major order is used, which differs from R's column-major order.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(1:6)
+  nv_reshape(x, c(2, 3))
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_reshape]{nvl_reshape()}} for the underlying primitive.
 }

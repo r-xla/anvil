@@ -8,7 +8,9 @@ nvl_dot_general(lhs, rhs, contracting_dims, batching_dims)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Left and right operand.
+Operands are \link[=nv_promote_to_common]{promoted to a common data type}.
+Scalars are \link[=nv_broadcast_scalars]{broadcast} to the shape of the other operand.}
 
 \item{contracting_dims}{(\code{list(integer(), integer())})\cr
 A list of two integer vectors specifying which dimensions of \code{lhs} and

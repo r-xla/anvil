@@ -7,22 +7,31 @@
 nv_clamp(min_val, operand, max_val)
 }
 \arguments{
-\item{min_val}{(\code{\link{tensorish}})\cr
-Minimum value.}
+\item{min_val, max_val}{(\code{\link{tensorish}})\cr
+Minimum and maximum values (scalar or same shape as \code{operand}).}
 
 \item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
-
-\item{max_val}{(\code{\link{tensorish}})\cr
-Maximum value.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
 }
 \description{
-Element-wise clamp: max(min_val, min(operand, max_val)).
+Element-wise clamp: \code{max(min_val, min(operand, max_val))}.
 Converts \code{min_val} and \code{max_val} to the data type of \code{operand}.
 }
 \details{
 The underlying stableHLO function already broadcasts scalars, so no need to broadcast manually.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(-1, 0.5, 2), device = "cpu")
+  nv_clamp(nv_scalar(0), x, nv_scalar(1))
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_clamp]{nvl_clamp()}} for the underlying primitive.
 }

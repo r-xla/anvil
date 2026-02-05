@@ -434,12 +434,30 @@ parse_subset_spec <- function(quo, dim_size) {
 
 #' @title Subset a Tensor
 #' @description
-#' Extracts a subset from a tensor.
-#' See vignette("subsetting") for more details.
+#' Extracts a subset from a tensor. You can also use the `[` operator.
+#' Supports R-style indexing including scalar indices (which drop dimensions),
+#' ranges (`a:b`), and `list()` for selecting multiple elements along a
+#' dimension.
 #' @param x ([`tensorish`])\cr
-#'   Input tensor to subset.
-#' @param ... Subset specifications.
+#'   Tensor to subset.
+#' @param ... \cr
+#'   Subset specifications, one per dimension. Omitted trailing dimensions
+#'   select all elements. See `vignette("subsetting")` for details.
 #' @return [`tensorish`]
+#' @seealso [nv_subset_assign()] for updating subsets, `vignette("subsetting")`
+#'   for a comprehensive guide.
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(matrix(1:12, nrow = 3))
+#'   # Select row 2
+#'   x[2, ]
+#' })
+#'
+#' jit_eval({
+#'   x <- nv_tensor(matrix(1:12, nrow = 3))
+#'   # Select rows 1 to 2, all columns
+#'   x[1:2, ]
+#' })
 #' @export
 nv_subset <- function(x, ...) {
   if (!is_tensorish(x)) {
@@ -473,17 +491,26 @@ nv_subset <- function(x, ...) {
 
 #' @title Update Subset
 #' @description
-#' Updates elements of a tensor at specified positions.
-#' See vignette("subsetting") for more details.
-#'
+#' Updates elements of a tensor at specified positions, returning a new tensor.
+#' You can also use the `[<-` operator.
 #' @param x ([`tensorish`])\cr
-#'   Input tensor to update.
-#' @param ... Subset specifications.
+#'   Tensor to update.
+#' @param ... \cr
+#'   Subset specifications, one per dimension. See `vignette("subsetting")`
+#'   for details.
 #' @param value ([`tensorish`])\cr
-#'   Values to write. Scalars are broadcast to the subset shape.
-#'   Non-scalar values must have a shape matching the subset shape.
-#' @return [`tensorish`] A new tensor with the subset updated.
-#' @seealso [nv_subset()]
+#'   Replacement values. Scalars are broadcast to the subset shape.
+#'   Non-scalar values must match the subset shape.
+#' @return [`tensorish`]\cr
+#'   A new tensor with the same shape as `x` and the subset replaced.
+#' @seealso [nv_subset()], `vignette("subsetting")` for a comprehensive guide.
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(matrix(1:12, nrow = 3))
+#'   # Set row 1 to zeros
+#'   x[1, ] <- 0L
+#'   x
+#' })
 #' @export
 nv_subset_assign <- function(x, ..., value) {
   if (!is_tensorish(x)) {

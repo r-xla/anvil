@@ -124,11 +124,19 @@ mean.AnvilTensor <- mean.AnvilBox
 #' @title Transpose
 #' @name nv_transpose
 #' @description
-#' Transpose a tensor.
-#' @param x ([`nv_tensor`])
-#' @param permutation (`integer()` | `NULl`)\cr
-#'   Permutation of dimensions. If `NULL` (default), reverses the dimensions.
-#' @return [`nv_tensor`]
+#' Permutes the dimensions of a tensor. You can also use `t()` for matrices.
+#' @param x ([`tensorish`])\cr
+#'   Tensor to transpose.
+#' @param permutation (`integer()` | `NULL`)\cr
+#'   New ordering of dimensions. If `NULL` (default), reverses the dimensions.
+#' @return [`tensorish`]\cr
+#'   Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
+#' @seealso [nvl_transpose()] for the underlying primitive.
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(matrix(1:6, nrow = 2))
+#'   t(x)
+#' })
 #' @export
 t.AnvilBox <- function(x) {
   nv_transpose(x)

@@ -2,23 +2,35 @@
 % Please edit documentation in R/api.R
 \name{nv_if}
 \alias{nv_if}
-\title{If}
+\title{Conditional Branching}
 \usage{
 nv_if(pred, true, false)
 }
 \arguments{
-\item{pred}{(\code{\link{tensorish}})\cr
-Flag.}
+\item{pred}{(\code{\link{tensorish}} of boolean type, scalar)\cr
+Predicate.}
 
-\item{true}{(NSE)\cr
-Expression to evaluate if the condition is true.}
+\item{true}{(\code{expression})\cr
+Expression for the true branch (non-standard evaluation).}
 
-\item{false}{(NSE)\cr
-Expression to evaluate if the condition is false.}
+\item{false}{(\code{expression})\cr
+Expression for the false branch (non-standard evaluation).
+Must return outputs with the same shapes as the true branch.}
 }
 \value{
-\code{\link{tensorish}}
+Result of the executed branch.
 }
 \description{
-Functional if statement.
+Conditional execution of two branches.
+Unlike \code{\link[=nv_ifelse]{nv_ifelse()}}, which selects elements, this executes only one
+of the two branches depending on a scalar predicate.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval(nv_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_if]{nvl_if()}} for the underlying primitive, \code{\link[=nv_ifelse]{nv_ifelse()}} for
+element-wise selection.
 }

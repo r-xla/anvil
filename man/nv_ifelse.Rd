@@ -2,20 +2,37 @@
 % Please edit documentation in R/api.R
 \name{nv_ifelse}
 \alias{nv_ifelse}
-\title{Ifelse}
+\title{Conditional Element Selection}
 \usage{
 nv_ifelse(pred, true_value, false_value)
 }
 \arguments{
-\item{pred}{condition}
+\item{pred}{(\code{\link{tensorish}} of boolean type)\cr
+Predicate tensor. Must be scalar or the same shape as \code{true_value}.}
 
-\item{true_value}{on true}
+\item{true_value}{(\code{\link{tensorish}})\cr
+Values to return where \code{pred} is \code{TRUE}.}
 
-\item{false_value}{on false}
+\item{false_value}{(\code{\link{tensorish}})\cr
+Values to return where \code{pred} is \code{FALSE}.
+Must have the same shape and data type as \code{true_value}.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as \code{true_value}.
 }
 \description{
-return values from true_value and false_value conditioned on pred
+Selects elements from \code{true_value} or \code{false_value} based on \code{pred},
+analogous to R's \code{\link[=ifelse]{ifelse()}}.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  pred <- nv_tensor(c(TRUE, FALSE, TRUE))
+  nv_ifelse(pred, nv_tensor(c(1, 2, 3)), nv_tensor(c(4, 5, 6)))
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_ifelse]{nvl_ifelse()}} for the underlying primitive.
 }
