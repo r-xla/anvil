@@ -1,9 +1,6 @@
 # Primitive Remainder
 
-Element-wise remainder of division. For a more user-friendly interface,
-see
-[`nv_remainder()`](https://r-xla.github.io/anvil/reference/nv_remainder.md),
-or use the `%%` operator.
+Element-wise remainder of division.
 
 ## Usage
 
@@ -35,6 +32,11 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_remainder()`](https://r-xla.github.io/stablehlo/reference/hlo_remainder.html).
+
+## See also
+
+[`nv_remainder()`](https://r-xla.github.io/anvil/reference/nv_remainder.md),
+`%%`
 
 ## Examples
 

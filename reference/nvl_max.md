@@ -1,7 +1,6 @@
 # Primitive Maximum
 
-Element-wise maximum of two tensors. For a more user-friendly interface,
-see [`nv_max()`](https://r-xla.github.io/anvil/reference/nv_max.md).
+Element-wise maximum of two tensors.
 
 ## Usage
 
@@ -26,6 +25,10 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_maximum()`](https://r-xla.github.io/stablehlo/reference/hlo_maximum.html).
+
+## See also
+
+[`nv_max()`](https://r-xla.github.io/anvil/reference/nv_max.md)
 
 ## Examples
 

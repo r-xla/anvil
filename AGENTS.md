@@ -51,16 +51,22 @@ devtools::document()
 
 When writing roxygen2 documentation for primitives or API functions:
 
+- Do not mention “1-based” indexing in documentation. Since this is an R
+  package, 1-based indexing is the default and stating it is redundant.
+
 - Check the `man-roxygen/` directory for existing templates
   (e.g. `param_operand.R`, `param_shape.R`, `param_dtype.R`,
   `param_ambiguous.R`, `params_lhs_rhs.R`, `section_rules.R`,
   `section_shapes_binary.R`, etc.). Use `@template` to avoid duplicating
   common parameter descriptions.
+
 - Where the template is too generic for a specific primitive (e.g. the
   operand has specific dtype constraints), write the `@param` inline
   instead of using the template.
+
 - Use `@templateVar primitive_id <name>` with `@template section_rules`
   to auto-generate the “Implemented Rules” section.
+
 - Use `@rdname` or `@inheritParams` to inherit documentation from
   related functions where possible, avoiding duplication across `nvl_*`
   and `nv_*` variants.

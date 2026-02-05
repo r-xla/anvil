@@ -5,7 +5,13 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive While Loop — nvl_while"><meta name="description" content="Executes a while loop."><meta property="og:description" content="Executes a while loop."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive While Loop — nvl_while"><meta name="description" content="Repeatedly executes body while cond returns TRUE, like R's
+while loop. The loop state is initialized with init and
+passed through each iteration.
+Otherwise, no state is maintained between iterations."><meta property="og:description" content="Repeatedly executes body while cond returns TRUE, like R's
+while loop. The loop state is initialized with init and
+passed through each iteration.
+Otherwise, no state is maintained between iterations."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -65,7 +71,10 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Executes a while loop.</p>
+    <p>Repeatedly executes <code>body</code> while <code>cond</code> returns <code>TRUE</code>, like R's
+<code>while</code> loop. The loop state is initialized with <code>init</code> and
+passed through each iteration.
+Otherwise, no state is maintained between iterations.</p>
     </div>
 
     <div class="section level2">
@@ -78,58 +87,66 @@
 
 
 <dl><dt id="arg-init">init<a class="anchor" aria-label="anchor" href="#arg-init"></a></dt>
-<dd><p>(<code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code>)<br>
+<dd><p>(<code>named list()</code>)<br>
 Named list of initial state values.</p></dd>
 
 
 <dt id="arg-cond">cond<a class="anchor" aria-label="anchor" href="#arg-cond"></a></dt>
 <dd><p>(<code>function</code>)<br>
-Condition function returning boolean.</p></dd>
+Condition function that receives the current state as arguments
+and outputs whether to continue the loop.</p></dd>
 
 
 <dt id="arg-body">body<a class="anchor" aria-label="anchor" href="#arg-body"></a></dt>
 <dd><p>(<code>function</code>)<br>
-Body function returning updated state.</p></dd>
+Body function that receives the current state as arguments and
+returns a named list with the same structure, dtypes, and shapes
+as <code>init</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Final state after loop terminates.</p>
+    <p>Named list with the same structure as <code>init</code> containing the
+final state after the loop terminates.</p>
     </div>
     <div class="section level2">
-    <h2 id="shapes">Shapes<a class="anchor" aria-label="anchor" href="#shapes"></a></h2>
+    <h2 id="implemented-rules">Implemented Rules<a class="anchor" aria-label="anchor" href="#implemented-rules"></a></h2>
 
 
-<p><code>cond</code> must return a scalar boolean. <code>body</code> must return the same shapes as <code>init</code>.</p>
-    </div>
+<ul><li><p><code>stablehlo</code></p></li>
+</ul></div>
     <div class="section level2">
     <h2 id="stablehlo">StableHLO<a class="anchor" aria-label="anchor" href="#stablehlo"></a></h2>
 
 
-<p>Calls <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_while.html" class="external-link">stablehlo::hlo_while()</a></code>.</p>
+<p>Lowers to <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_while.html" class="external-link">stablehlo::hlo_while()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="nv_while.html">nv_while()</a></code></p></div>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="fu">nvl_while</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    init <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>i <span class="op">=</span> <span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span>, total <span class="op">=</span> <span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    cond <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">i</span>, <span class="va">total</span><span class="op">)</span> <span class="fu"><a href="nvl_lt.html">nvl_lt</a></span><span class="op">(</span><span class="va">i</span>, <span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">5L</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    init <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>i <span class="op">=</span> <span class="fl">0L</span>, total <span class="op">=</span> <span class="fl">0L</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    cond <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">i</span>, <span class="va">total</span><span class="op">)</span> <span class="va">i</span> <span class="op">&lt;=</span> <span class="fl">5L</span>,</span></span>
 <span class="r-in"><span>    body <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">i</span>, <span class="va">total</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>      i <span class="op">=</span> <span class="fu"><a href="nvl_add.html">nvl_add</a></span><span class="op">(</span><span class="va">i</span>, <span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1L</span><span class="op">)</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>      total <span class="op">=</span> <span class="fu"><a href="nvl_add.html">nvl_add</a></span><span class="op">(</span><span class="va">total</span>, <span class="va">i</span><span class="op">)</span></span></span>
+<span class="r-in"><span>      i <span class="op">=</span> <span class="va">i</span> <span class="op">+</span> <span class="fl">1L</span>,</span></span>
+<span class="r-in"><span>      total <span class="op">=</span> <span class="va">total</span> <span class="op">+</span> <span class="va">i</span></span></span>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $i</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{} ] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32?{} ] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $total</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{} ] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32?{} ] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>

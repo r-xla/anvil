@@ -19,12 +19,13 @@ nvl_pad(
 - operand:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Operand.
+  Tensorish value of any data type.
 
 - padding_value:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Scalar value to use for padding.
+  Scalar value to use for padding. Must have the same dtype as
+  `operand`.
 
 - edge_padding_low:
 
@@ -43,16 +44,21 @@ nvl_pad(
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the same data type as `operand`. For the output shape see the
+underlying stablehlo documentation
+([`stablehlo::hlo_pad()`](https://r-xla.github.io/stablehlo/reference/hlo_pad.html)).
+It is ambiguous if the input is ambiguous.
 
-## Shapes
+## Implemented Rules
 
-`padding_value` must be scalar. `edge_padding_low`, `edge_padding_high`,
-and `interior_padding` must each have length equal to `rank(operand)`.
+- `stablehlo`
+
+- `backward`
 
 ## StableHLO
 
-Calls
+Lowers to
 [`stablehlo::hlo_pad()`](https://r-xla.github.io/stablehlo/reference/hlo_pad.html).
 
 ## Examples

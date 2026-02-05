@@ -1,8 +1,6 @@
 # Primitive Min Reduction
 
-Finds the minimum of tensor elements along the specified dimensions. Is
-the same as
-[`nv_reduce_min()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md).
+Finds the minimum of tensor elements along the specified dimensions.
 
 ## Usage
 
@@ -50,6 +48,10 @@ Lowers to
 with
 [`stablehlo::hlo_minimum()`](https://r-xla.github.io/stablehlo/reference/hlo_minimum.html)
 as the reducer.
+
+## See also
+
+[`nv_reduce_min()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md)
 
 ## Examples
 

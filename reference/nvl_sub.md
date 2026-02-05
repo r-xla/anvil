@@ -1,8 +1,6 @@
 # Primitive Subtraction
 
-Subtracts two tensors element-wise. For a more user-friendly interface,
-see [`nv_sub()`](https://r-xla.github.io/anvil/reference/nv_sub.md), or
-use the `-` operator.
+Subtracts two tensors element-wise.
 
 ## Usage
 
@@ -34,6 +32,10 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_subtract()`](https://r-xla.github.io/stablehlo/reference/hlo_subtract.html).
+
+## See also
+
+[`nv_sub()`](https://r-xla.github.io/anvil/reference/nv_sub.md), `-`
 
 ## Examples
 

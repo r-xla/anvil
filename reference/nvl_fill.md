@@ -1,6 +1,10 @@
 # Primitive Fill
 
-Creates a tensor filled with a scalar value.
+Creates a tensor of a given shape and data type, filled with a scalar
+value. The advantage of using this function instead of e.g. doing
+`nv_tensor(1, shape = c(100, 100))` is that lowering of `nvl_fill()` is
+efficiently represented in the compiled program, while the latter uses
+100 \* 100 \* 4 bytes of memory.
 
 ## Usage
 
@@ -13,12 +17,12 @@ nvl_fill(value, shape, dtype, ambiguous = FALSE)
 - value:
 
   (`numeric(1)`)  
-  Scalar value.
+  Scalar value to fill the tensor with.
 
 - shape:
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Shape.
+  Shape of the output tensor.
 
 - dtype:
 
@@ -37,16 +41,21 @@ nvl_fill(value, shape, dtype, ambiguous = FALSE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the given `shape` and `dtype`.
 
-## Shapes
+## Implemented Rules
 
-Output shape is `shape`.
+- `stablehlo`
 
 ## StableHLO
 
-Calls
-[`stablehlo::hlo_constant()`](https://r-xla.github.io/stablehlo/reference/hlo_constant.html).
+Lowers to
+[`stablehlo::hlo_tensor()`](https://r-xla.github.io/stablehlo/reference/hlo_constant.html).
+
+## See also
+
+[`nv_fill()`](https://r-xla.github.io/anvil/reference/nv_fill.md)
 
 ## Examples
 

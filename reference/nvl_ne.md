@@ -1,8 +1,6 @@
 # Primitive Not Equal
 
-Element-wise inequality comparison. For a more user-friendly interface,
-see [`nv_ne()`](https://r-xla.github.io/anvil/reference/nv_ne.md), or
-use the `!=` operator.
+Element-wise inequality comparison.
 
 ## Usage
 
@@ -28,6 +26,10 @@ if both inputs are ambiguous.
 Lowers to
 [`stablehlo::hlo_compare()`](https://r-xla.github.io/stablehlo/reference/hlo_compare.html)
 with `comparison_direction = "NE"`.
+
+## See also
+
+[`nv_ne()`](https://r-xla.github.io/anvil/reference/nv_ne.md), `!=`
 
 ## Examples
 

@@ -1,6 +1,8 @@
 # Primitive Reshape
 
-Reshapes a tensor to a new shape.
+Reshapes a tensor to a new shape without changing the underlying data.
+Note that row-major order is used, which differs from R's column-major
+order.
 
 ## Usage
 
@@ -13,25 +15,33 @@ nvl_reshape(operand, shape)
 - operand:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Operand.
+  Tensorish value of any data type.
 
 - shape:
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Shape.
+  Target shape. Must have the same number of elements as `operand`.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the same data type as the input and the given `shape`. It is
+ambiguous if the input is ambiguous.
 
-## Shapes
+## Implemented Rules
 
-`shape` must have the same number of elements as `operand`.
+- `stablehlo`
+
+- `backward`
 
 ## StableHLO
 
-Calls
+Lowers to
 [`stablehlo::hlo_reshape()`](https://r-xla.github.io/stablehlo/reference/hlo_reshape.html).
+
+## See also
+
+[`nv_reshape()`](https://r-xla.github.io/anvil/reference/nv_reshape.md)
 
 ## Examples
 

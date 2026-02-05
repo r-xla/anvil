@@ -1,9 +1,6 @@
 # Primitive Power
 
-Raises lhs to the power of rhs element-wise. For a more user-friendly
-interface, see
-[`nv_pow()`](https://r-xla.github.io/anvil/reference/nv_pow.md), or use
-the `^` operator.
+Raises lhs to the power of rhs element-wise.
 
 ## Usage
 
@@ -29,6 +26,10 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_power()`](https://r-xla.github.io/stablehlo/reference/hlo_power.html).
+
+## See also
+
+[`nv_pow()`](https://r-xla.github.io/anvil/reference/nv_pow.md), `^`
 
 ## Examples
 

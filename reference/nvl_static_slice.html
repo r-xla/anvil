@@ -6,8 +6,12 @@
     }
   };
 </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive Static Slice — nvl_static_slice"><meta name="description" content="Extracts a slice from a tensor using static (compile-time) indices.
-For dynamic indices, use nvl_dynamic_slice()."><meta property="og:description" content="Extracts a slice from a tensor using static (compile-time) indices.
-For dynamic indices, use nvl_dynamic_slice()."></head><body>
+All indices, limits, and strides are fixed R integers.
+Use nvl_dynamic_slice() instead when the start position must be
+computed at runtime (e.g. depends on tensor values)."><meta property="og:description" content="Extracts a slice from a tensor using static (compile-time) indices.
+All indices, limits, and strides are fixed R integers.
+Use nvl_dynamic_slice() instead when the start position must be
+computed at runtime (e.g. depends on tensor values)."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -68,7 +72,9 @@ For dynamic indices, use nvl_dynamic_slice()."></head><body>
 
     <div class="ref-description section level2">
     <p>Extracts a slice from a tensor using static (compile-time) indices.
-For dynamic indices, use <code><a href="nvl_dynamic_slice.html">nvl_dynamic_slice()</a></code>.</p>
+All indices, limits, and strides are fixed R integers.</p>
+<p>Use <code><a href="nvl_dynamic_slice.html">nvl_dynamic_slice()</a></code> instead when the start position must be
+computed at runtime (e.g. depends on tensor values).</p>
     </div>
 
     <div class="section level2">
@@ -82,46 +88,56 @@ For dynamic indices, use <code><a href="nvl_dynamic_slice.html">nvl_dynamic_slic
 
 <dl><dt id="arg-operand">operand<a class="anchor" aria-label="anchor" href="#arg-operand"></a></dt>
 <dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
-Operand.</p></dd>
+Tensorish value of any data type.</p></dd>
 
 
 <dt id="arg-start-indices">start_indices<a class="anchor" aria-label="anchor" href="#arg-start-indices"></a></dt>
 <dd><p>(<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>)<br>
-Start indices (1-based).</p></dd>
+Start indices (inclusive), one per dimension. Must satisfy
+<code>1 &lt;= start_indices &lt;= limit_indices</code> per dimension.</p></dd>
 
 
 <dt id="arg-limit-indices">limit_indices<a class="anchor" aria-label="anchor" href="#arg-limit-indices"></a></dt>
 <dd><p>(<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>)<br>
-End indices (exclusive).</p></dd>
+End indices (inclusive), one per dimension. Must satisfy
+<code>limit_indices &lt;= nv_shape(operand)</code> per dimension.</p></dd>
 
 
 <dt id="arg-strides">strides<a class="anchor" aria-label="anchor" href="#arg-strides"></a></dt>
 <dd><p>(<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>)<br>
-Step sizes.</p></dd>
+Step sizes, one per dimension. Must be <code>&gt;= 1</code>. A stride of <code>1</code>
+selects every element; a stride of <code>2</code> selects every other element, etc.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code><a href="tensorish.html">tensorish</a></code></p>
+    <p><code><a href="tensorish.html">tensorish</a></code><br>
+Has the same data type as the input and shape
+<code>ceiling((limit_indices - start_indices + 1) / strides)</code>.
+It is ambiguous if the input is ambiguous.</p>
     </div>
     <div class="section level2">
-    <h2 id="shapes">Shapes<a class="anchor" aria-label="anchor" href="#shapes"></a></h2>
+    <h2 id="implemented-rules">Implemented Rules<a class="anchor" aria-label="anchor" href="#implemented-rules"></a></h2>
 
 
-<p><code>start_indices</code>, <code>limit_indices</code>, and <code>strides</code> must each have
-length equal to <code>rank(operand)</code>. Output shape is
-<code>ceiling((limit_indices - start_indices) / strides)</code>.</p>
-    </div>
+<ul><li><p><code>stablehlo</code></p></li>
+<li><p><code>backward</code></p></li>
+</ul></div>
     <div class="section level2">
     <h2 id="stablehlo">StableHLO<a class="anchor" aria-label="anchor" href="#stablehlo"></a></h2>
 
 
-<p>Calls <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_slice.html" class="external-link">stablehlo::hlo_slice()</a></code>.</p>
+<p>Lowers to <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_slice.html" class="external-link">stablehlo::hlo_slice()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="nvl_dynamic_slice.html">nvl_dynamic_slice()</a></code>, <code><a href="nvl_scatter.html">nvl_scatter()</a></code>, <code><a href="nvl_gather.html">nvl_gather()</a></code>, <code><a href="nv_subset.html">nv_subset()</a></code>, <code>[</code></p></div>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># 1-D: extract elements 2 through 4 (limit is exclusive)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">nvl_static_slice</span><span class="op">(</span><span class="va">x</span>, start_indices <span class="op">=</span> <span class="fl">2L</span>, limit_indices <span class="op">=</span> <span class="fl">5L</span>, strides <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
@@ -131,6 +147,34 @@ length equal to <code>rank(operand)</code>. Output shape is
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{4} ] </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 1-D: every other element using strides</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">nvl_static_slice</span><span class="op">(</span><span class="va">x</span>, start_indices <span class="op">=</span> <span class="fl">1L</span>, limit_indices <span class="op">=</span> <span class="fl">10L</span>, strides <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{5} ] </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 2-D: extract a submatrix (rows 1-2, columns 2-3)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">12</span>, nrow <span class="op">=</span> <span class="fl">3</span>, ncol <span class="op">=</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">nvl_static_slice</span><span class="op">(</span><span class="va">x</span>,</span></span>
+<span class="r-in"><span>    start_indices <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    limit_indices <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3L</span>, <span class="fl">4L</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    strides       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   4  7 10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   5  8 11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   6  9 12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{3,3} ] </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

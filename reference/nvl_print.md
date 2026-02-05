@@ -1,7 +1,7 @@
 # Primitive Print
 
-Prints a tensor during execution. Returns the input unchanged. Note:
-Currently only works on CPU backend.
+Prints a tensor value to the console during execution and returns the
+input unchanged. This is useful for debugging JIT-compiled code.
 
 ## Usage
 
@@ -14,21 +14,29 @@ nvl_print(operand)
 - operand:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Operand.
+  Tensorish value of any data type.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Returns `operand` as-is.
 
-## Shapes
+## Note
 
-Output has the same shape as `operand`.
+Currently only works on the CPU backend.
+
+## Implemented Rules
+
+- `stablehlo`
 
 ## StableHLO
 
-Uses
-[`stablehlo::hlo_custom_call()`](https://r-xla.github.io/stablehlo/reference/hlo_custom_call.html)
-internally.
+Lowers to
+[`stablehlo::hlo_custom_call()`](https://r-xla.github.io/stablehlo/reference/hlo_custom_call.html).
+
+## See also
+
+[`nv_print()`](https://r-xla.github.io/anvil/reference/nv_print.md)
 
 ## Examples
 

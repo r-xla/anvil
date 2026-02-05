@@ -1,8 +1,6 @@
 # Primitive Sign
 
-Element-wise sign. Is the same as
-[`nv_sign()`](https://r-xla.github.io/anvil/reference/nv_sign.md). You
-can also use [`sign()`](https://rdrr.io/r/base/sign.html).
+Element-wise sign.
 
 ## Usage
 
@@ -33,6 +31,11 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_sign()`](https://r-xla.github.io/stablehlo/reference/hlo_sign.html).
+
+## See also
+
+[`nv_sign()`](https://r-xla.github.io/anvil/reference/nv_sign.md),
+[`sign()`](https://rdrr.io/r/base/sign.html)
 
 ## Examples
 

@@ -1,8 +1,6 @@
 # Primitive Exponential
 
-Element-wise exponential. Is the same as
-[`nv_exp()`](https://r-xla.github.io/anvil/reference/nv_exp.md). You can
-also use [`exp()`](https://rdrr.io/r/base/Log.html).
+Element-wise exponential.
 
 ## Usage
 
@@ -33,6 +31,11 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_exponential()`](https://r-xla.github.io/stablehlo/reference/hlo_exponential.html).
+
+## See also
+
+[`nv_exp()`](https://r-xla.github.io/anvil/reference/nv_exp.md),
+[`exp()`](https://rdrr.io/r/base/Log.html)
 
 ## Examples
 

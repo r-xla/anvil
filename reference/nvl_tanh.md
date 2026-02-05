@@ -1,8 +1,6 @@
 # Primitive Hyperbolic Tangent
 
-Element-wise hyperbolic tangent. Is the same as
-[`nv_tanh()`](https://r-xla.github.io/anvil/reference/nv_tanh.md). You
-can also use [`tanh()`](https://rdrr.io/r/base/Hyperbolic.html).
+Element-wise hyperbolic tangent.
 
 ## Usage
 
@@ -33,6 +31,11 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_tanh()`](https://r-xla.github.io/stablehlo/reference/hlo_tanh.html).
+
+## See also
+
+[`nv_tanh()`](https://r-xla.github.io/anvil/reference/nv_tanh.md),
+[`tanh()`](https://rdrr.io/r/base/Hyperbolic.html)
 
 ## Examples
 

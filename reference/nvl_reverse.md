@@ -13,7 +13,7 @@ nvl_reverse(operand, dims)
 - operand:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Operand.
+  Tensorish value of any data type.
 
 - dims:
 
@@ -22,16 +22,24 @@ nvl_reverse(operand, dims)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the same data type and shape as `operand`. It is ambiguous if the
+input is ambiguous.
 
-## Shapes
+## Implemented Rules
 
-Output has the same shape as `operand`.
+- `stablehlo`
+
+- `backward`
 
 ## StableHLO
 
-Calls
+Lowers to
 [`stablehlo::hlo_reverse()`](https://r-xla.github.io/stablehlo/reference/hlo_reverse.html).
+
+## See also
+
+[`nv_reverse()`](https://r-xla.github.io/anvil/reference/nv_reverse.md)
 
 ## Examples
 

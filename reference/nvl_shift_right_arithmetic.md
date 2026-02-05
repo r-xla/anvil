@@ -1,8 +1,6 @@
 # Primitive Arithmetic Shift Right
 
-Element-wise arithmetic right bit shift. For a more user-friendly
-interface, see
-[`nv_shift_right_arithmetic()`](https://r-xla.github.io/anvil/reference/nv_shift_right_arithmetic.md).
+Element-wise arithmetic right bit shift.
 
 ## Usage
 
@@ -34,6 +32,10 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_shift_right_arithmetic()`](https://r-xla.github.io/stablehlo/reference/hlo_shift_right_arithmetic.html).
+
+## See also
+
+[`nv_shift_right_arithmetic()`](https://r-xla.github.io/anvil/reference/nv_shift_right_arithmetic.md)
 
 ## Examples
 

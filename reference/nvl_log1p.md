@@ -1,7 +1,6 @@
 # Primitive Log Plus One
 
-Element-wise log(1 + x), more accurate for small x. Is the same as
-[`nv_log1p()`](https://r-xla.github.io/anvil/reference/nv_log1p.md).
+Element-wise log(1 + x), more accurate for small x.
 
 ## Usage
 
@@ -32,6 +31,10 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_log_plus_one()`](https://r-xla.github.io/stablehlo/reference/hlo_log_plus_one.html).
+
+## See also
+
+[`nv_log1p()`](https://r-xla.github.io/anvil/reference/nv_log1p.md)
 
 ## Examples
 

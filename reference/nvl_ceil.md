@@ -1,8 +1,6 @@
 # Primitive Ceiling
 
-Element-wise ceiling. Is the same as
-[`nv_ceil()`](https://r-xla.github.io/anvil/reference/nv_ceil.md). You
-can also use [`ceiling()`](https://rdrr.io/r/base/Round.html).
+Element-wise ceiling.
 
 ## Usage
 
@@ -33,6 +31,11 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_ceil()`](https://r-xla.github.io/stablehlo/reference/hlo_ceil.html).
+
+## See also
+
+[`nv_ceil()`](https://r-xla.github.io/anvil/reference/nv_ceil.md),
+[`ceiling()`](https://rdrr.io/r/base/Round.html)
 
 ## Examples
 

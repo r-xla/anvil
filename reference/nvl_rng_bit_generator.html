@@ -5,7 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive RNG Bit Generator — nvl_rng_bit_generator"><meta name="description" content="Generates random bits using the specified algorithm."><meta property="og:description" content="Generates random bits using the specified algorithm."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive RNG Bit Generator — nvl_rng_bit_generator"><meta name="description" content="Generates pseudo-random numbers using the specified algorithm and returns
+the updated RNG state together with the generated values."><meta property="og:description" content="Generates pseudo-random numbers using the specified algorithm and returns
+the updated RNG state together with the generated values."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -65,7 +67,8 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Generates random bits using the specified algorithm.</p>
+    <p>Generates pseudo-random numbers using the specified algorithm and returns
+the updated RNG state together with the generated values.</p>
     </div>
 
     <div class="section level2">
@@ -78,62 +81,67 @@
 
 
 <dl><dt id="arg-initial-state">initial_state<a class="anchor" aria-label="anchor" href="#arg-initial-state"></a></dt>
-<dd><p>(1-d <code><a href="tensorish.html">tensorish</a></code> of type <code>ui64</code>)<br>
-RNG state tensor.</p></dd>
+<dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
+RNG state (<code>ui64[2]</code>).</p></dd>
 
 
 <dt id="arg-rng-algorithm">rng_algorithm<a class="anchor" aria-label="anchor" href="#arg-rng-algorithm"></a></dt>
 <dd><p>(<code>character(1)</code>)<br>
-Algorithm name (default "THREE_FRY").</p></dd>
+RNG algorithm name. Default is <code>"THREE_FRY"</code>.</p></dd>
 
 
 <dt id="arg-dtype">dtype<a class="anchor" aria-label="anchor" href="#arg-dtype"></a></dt>
 <dd><p>(<code>character(1)</code> | <code><a href="https://r-xla.github.io/stablehlo/reference/TensorDataType.html" class="external-link">stablehlo::TensorDataType</a></code>)<br>
-Data type.</p></dd>
+Data type of the generated random values.</p></dd>
 
 
 <dt id="arg-shape">shape<a class="anchor" aria-label="anchor" href="#arg-shape"></a></dt>
 <dd><p>(<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>)<br>
-Output shape.</p></dd>
+Shape.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>List of new state and random tensor.</p>
+    <p><code>list</code> of two <code><a href="tensorish.html">tensorish</a></code> values:<br>
+The first element is the updated RNG state with the same dtype and shape
+as <code>initial_state</code>. The second element is a tensor of random values with
+the given <code>dtype</code> and <code>shape</code>.</p>
     </div>
     <div class="section level2">
-    <h2 id="shapes">Shapes<a class="anchor" aria-label="anchor" href="#shapes"></a></h2>
+    <h2 id="implemented-rules">Implemented Rules<a class="anchor" aria-label="anchor" href="#implemented-rules"></a></h2>
 
 
-<p><code>initial_state</code> must be 1-d. Returns a list with the updated state
-(same shape as <code>initial_state</code>) and a random tensor with the
-specified <code>shape</code>.</p>
-    </div>
+<ul><li><p><code>stablehlo</code></p></li>
+</ul></div>
     <div class="section level2">
     <h2 id="stablehlo">StableHLO<a class="anchor" aria-label="anchor" href="#stablehlo"></a></h2>
 
 
-<p>Calls <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_rng_bit_generator.html" class="external-link">stablehlo::hlo_rng_bit_generator()</a></code>.</p>
+<p>Lowers to <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_rng_bit_generator.html" class="external-link">stablehlo::hlo_rng_bit_generator()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="nv_runif.html">nv_runif()</a></code>, <code><a href="nv_rnorm.html">nv_rnorm()</a></code></p></div>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">state</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">0L</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"ui64"</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="fu">nvl_rng_bit_generator</span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">nvl_rng_bit_generator</span><span class="op">(</span><span class="va">state</span>, dtype <span class="op">=</span> <span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUui64{2} ] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1.7973e+09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2.5791e+09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1.3515e+09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUui32{3} ] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1.7973e+09 2.5791e+09</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1.3515e+09 3.2358e+09</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1.6886e+09 4.2293e+09</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUui32{3,2} ] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>

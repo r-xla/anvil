@@ -1,8 +1,6 @@
 # Primitive Is Finite
 
-Element-wise check if values are finite (not Inf, -Inf, or NaN). Is the
-same as
-[`nv_is_finite()`](https://r-xla.github.io/anvil/reference/nv_is_finite.md).
+Element-wise check if values are finite (not Inf, -Inf, or NaN).
 
 ## Usage
 
@@ -33,6 +31,10 @@ if the input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_is_finite()`](https://r-xla.github.io/stablehlo/reference/hlo_is_finite.html).
+
+## See also
+
+[`nv_is_finite()`](https://r-xla.github.io/anvil/reference/nv_is_finite.md)
 
 ## Examples
 

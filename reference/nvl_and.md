@@ -1,8 +1,6 @@
 # Primitive And
 
-Element-wise logical AND. For a more user-friendly interface, see
-[`nv_and()`](https://r-xla.github.io/anvil/reference/nv_and.md), or use
-the `&` operator.
+Element-wise logical AND.
 
 ## Usage
 
@@ -34,6 +32,10 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_and()`](https://r-xla.github.io/stablehlo/reference/hlo_and.html).
+
+## See also
+
+[`nv_and()`](https://r-xla.github.io/anvil/reference/nv_and.md), `&`
 
 ## Examples
 

@@ -5,11 +5,7 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive Concatenate — nvl_concatenate"><meta name="description" content="Concatenates tensors along a dimension.
-For a more user-friendly interface, see nv_concatenate(), which also handles
-type promotion and scalar broadcasting."><meta property="og:description" content="Concatenates tensors along a dimension.
-For a more user-friendly interface, see nv_concatenate(), which also handles
-type promotion and scalar broadcasting."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive Concatenate — nvl_concatenate"><meta name="description" content="Concatenates tensors along a dimension."><meta property="og:description" content="Concatenates tensors along a dimension."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -69,9 +65,7 @@ type promotion and scalar broadcasting."></head><body>
     </div>
 
     <div class="ref-description section level2">
-    <p>Concatenates tensors along a dimension.
-For a more user-friendly interface, see <code><a href="nv_concatenate.html">nv_concatenate()</a></code>, which also handles
-type promotion and scalar broadcasting.</p>
+    <p>Concatenates tensors along a dimension.</p>
     </div>
 
     <div class="section level2">
@@ -85,8 +79,8 @@ type promotion and scalar broadcasting.</p>
 
 <dl><dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
-Tensors to concatenate. Must all have the same data type and rank.
-All dimensions must match except along <code>dimension</code>.</p></dd>
+Tensors to concatenate. Must all have the same data type, ndims,
+and shape except along <code>dimension</code>.</p></dd>
 
 
 <dt id="arg-dimension">dimension<a class="anchor" aria-label="anchor" href="#arg-dimension"></a></dt>
@@ -110,18 +104,14 @@ It is ambiguous if all inputs are ambiguous.</p>
 <li><p><code>backward</code></p></li>
 </ul></div>
     <div class="section level2">
-    <h2 id="shapes">Shapes<a class="anchor" aria-label="anchor" href="#shapes"></a></h2>
-
-
-<p>All inputs must have the same rank and shape except along <code>dimension</code>.
-The output dimension size along <code>dimension</code> is the sum of the input
-dimension sizes along <code>dimension</code>.</p>
-    </div>
-    <div class="section level2">
     <h2 id="stablehlo">StableHLO<a class="anchor" aria-label="anchor" href="#stablehlo"></a></h2>
 
 
 <p>Lowers to <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_concatenate.html" class="external-link">stablehlo::hlo_concatenate()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="nv_concatenate.html">nv_concatenate()</a></code></p></div>
     </div>
 
     <div class="section level2">

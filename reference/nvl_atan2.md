@@ -1,7 +1,6 @@
 # Primitive Atan2
 
-Element-wise atan2 operation. For a more user-friendly interface, see
-[`nv_atan2()`](https://r-xla.github.io/anvil/reference/nv_atan2.md).
+Element-wise atan2 operation.
 
 ## Usage
 
@@ -33,6 +32,10 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_atan2()`](https://r-xla.github.io/stablehlo/reference/hlo_atan2.html).
+
+## See also
+
+[`nv_atan2()`](https://r-xla.github.io/anvil/reference/nv_atan2.md)
 
 ## Examples
 

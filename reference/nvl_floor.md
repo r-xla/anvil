@@ -1,8 +1,6 @@
 # Primitive Floor
 
-Element-wise floor. Is the same as
-[`nv_floor()`](https://r-xla.github.io/anvil/reference/nv_floor.md). You
-can also use [`floor()`](https://rdrr.io/r/base/Round.html).
+Element-wise floor.
 
 ## Usage
 
@@ -33,6 +31,11 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_floor()`](https://r-xla.github.io/stablehlo/reference/hlo_floor.html).
+
+## See also
+
+[`nv_floor()`](https://r-xla.github.io/anvil/reference/nv_floor.md),
+[`floor()`](https://rdrr.io/r/base/Round.html)
 
 ## Examples
 

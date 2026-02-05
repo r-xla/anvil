@@ -1,8 +1,6 @@
 # Primitive Logarithm
 
-Element-wise natural logarithm. Is the same as
-[`nv_log()`](https://r-xla.github.io/anvil/reference/nv_log.md). You can
-also use [`log()`](https://rdrr.io/r/base/Log.html).
+Element-wise natural logarithm.
 
 ## Usage
 
@@ -33,6 +31,11 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_log()`](https://r-xla.github.io/stablehlo/reference/hlo_log.html).
+
+## See also
+
+[`nv_log()`](https://r-xla.github.io/anvil/reference/nv_log.md),
+[`log()`](https://rdrr.io/r/base/Log.html)
 
 ## Examples
 

@@ -1,7 +1,6 @@
 # Primitive Population Count
 
-Element-wise population count (number of set bits). Is the same as
-[`nv_popcnt()`](https://r-xla.github.io/anvil/reference/nv_popcnt.md).
+Element-wise population count (number of set bits).
 
 ## Usage
 
@@ -32,6 +31,10 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_popcnt()`](https://r-xla.github.io/stablehlo/reference/hlo_popcnt.html).
+
+## See also
+
+[`nv_popcnt()`](https://r-xla.github.io/anvil/reference/nv_popcnt.md)
 
 ## Examples
 

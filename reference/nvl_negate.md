@@ -1,8 +1,6 @@
 # Primitive Negation
 
-Negates a tensor element-wise. Is the same as
-[`nv_negate()`](https://r-xla.github.io/anvil/reference/nv_negate.md).
-You can also use the unary `-` operator.
+Negates a tensor element-wise.
 
 ## Usage
 
@@ -33,6 +31,11 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_negate()`](https://r-xla.github.io/stablehlo/reference/hlo_negate.html).
+
+## See also
+
+[`nv_negate()`](https://r-xla.github.io/anvil/reference/nv_negate.md),
+unary `-`
 
 ## Examples
 

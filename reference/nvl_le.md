@@ -1,9 +1,6 @@
 # Primitive Less Equal
 
-Element-wise less than or equal comparison. For a more user-friendly
-interface, see
-[`nv_le()`](https://r-xla.github.io/anvil/reference/nv_le.md), or use
-the `<=` operator.
+Element-wise less than or equal comparison.
 
 ## Usage
 
@@ -29,6 +26,10 @@ if both inputs are ambiguous.
 Lowers to
 [`stablehlo::hlo_compare()`](https://r-xla.github.io/stablehlo/reference/hlo_compare.html)
 with `comparison_direction = "LE"`.
+
+## See also
+
+[`nv_le()`](https://r-xla.github.io/anvil/reference/nv_le.md), `<=`
 
 ## Examples
 

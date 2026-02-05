@@ -1,7 +1,6 @@
 # Primitive Exponential Minus One
 
-Element-wise exp(x) - 1, more accurate for small x. Is the same as
-[`nv_expm1()`](https://r-xla.github.io/anvil/reference/nv_expm1.md).
+Element-wise exp(x) - 1, more accurate for small x.
 
 ## Usage
 
@@ -32,6 +31,10 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_exponential_minus_one()`](https://r-xla.github.io/stablehlo/reference/hlo_exponential_minus_one.html).
+
+## See also
+
+[`nv_expm1()`](https://r-xla.github.io/anvil/reference/nv_expm1.md)
 
 ## Examples
 

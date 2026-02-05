@@ -5,7 +5,11 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive If — nvl_if"><meta name="description" content="Conditional execution of branches."><meta property="og:description" content="Conditional execution of branches."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive If — nvl_if"><meta name="description" content="Conditional execution of one of two branches based on a scalar boolean
+predicate. Unlike nvl_ifelse() which operates element-wise, this
+evaluates only the selected branch."><meta property="og:description" content="Conditional execution of one of two branches based on a scalar boolean
+predicate. Unlike nvl_ifelse() which operates element-wise, this
+evaluates only the selected branch."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -65,7 +69,9 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Conditional execution of branches.</p>
+    <p>Conditional execution of one of two branches based on a scalar boolean
+predicate. Unlike <code><a href="nvl_ifelse.html">nvl_ifelse()</a></code> which operates element-wise, this
+evaluates only the selected branch.</p>
     </div>
 
     <div class="section level2">
@@ -78,35 +84,37 @@
 
 
 <dl><dt id="arg-pred">pred<a class="anchor" aria-label="anchor" href="#arg-pred"></a></dt>
-<dd><p>(<code><a href="tensorish.html">tensorish</a></code> of boolean type, scalar)<br>
-Predicate.</p></dd>
+<dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
+Scalar boolean predicate that determines which branch to execute.</p></dd>
 
 
-<dt id="arg-true">true<a class="anchor" aria-label="anchor" href="#arg-true"></a></dt>
-<dd><p>(<code>expression</code>)<br>
-Expression for true branch.</p></dd>
-
-
-<dt id="arg-false">false<a class="anchor" aria-label="anchor" href="#arg-false"></a></dt>
-<dd><p>(<code>expression</code>)<br>
-Expression for false branch.</p></dd>
+<dt id="arg-true-false">true, false<a class="anchor" aria-label="anchor" href="#arg-true-false"></a></dt>
+<dd><p>(NSE)<br>
+Expressions for the true and false branches. Both must return outputs
+with the same structure, dtypes, and shapes.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Result of the executed branch.</p>
+    <p>Result of the executed branch.<br>
+An output is ambiguous if it is ambiguous in both branches.</p>
     </div>
     <div class="section level2">
-    <h2 id="shapes">Shapes<a class="anchor" aria-label="anchor" href="#shapes"></a></h2>
+    <h2 id="implemented-rules">Implemented Rules<a class="anchor" aria-label="anchor" href="#implemented-rules"></a></h2>
 
 
-<p><code>pred</code> must be scalar. Both branches must return outputs with the same shapes.</p>
-    </div>
+<ul><li><p><code>stablehlo</code></p></li>
+<li><p><code>backward</code></p></li>
+</ul></div>
     <div class="section level2">
     <h2 id="stablehlo">StableHLO<a class="anchor" aria-label="anchor" href="#stablehlo"></a></h2>
 
 
-<p>Calls <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_if.html" class="external-link">stablehlo::hlo_if()</a></code>.</p>
+<p>Lowers to <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_if.html" class="external-link">stablehlo::hlo_if()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="nv_if.html">nv_if()</a></code>, <code><a href="nvl_ifelse.html">nvl_ifelse()</a></code></p></div>
     </div>
 
     <div class="section level2">

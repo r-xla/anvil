@@ -1,7 +1,6 @@
 # Primitive All Reduction
 
-Performs logical AND along the specified dimensions. Is the same as
-[`nv_reduce_all()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md).
+Performs logical AND along the specified dimensions.
 
 ## Usage
 
@@ -48,6 +47,10 @@ Lowers to
 with
 [`stablehlo::hlo_and()`](https://r-xla.github.io/stablehlo/reference/hlo_and.html)
 as the reducer.
+
+## See also
+
+[`nv_reduce_all()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md)
 
 ## Examples
 

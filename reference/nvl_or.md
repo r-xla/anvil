@@ -1,8 +1,6 @@
 # Primitive Or
 
-Element-wise logical OR. For a more user-friendly interface, see
-[`nv_or()`](https://r-xla.github.io/anvil/reference/nv_or.md), or use
-the `|` operator.
+Element-wise logical OR.
 
 ## Usage
 
@@ -34,6 +32,10 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_or()`](https://r-xla.github.io/stablehlo/reference/hlo_or.html).
+
+## See also
+
+[`nv_or()`](https://r-xla.github.io/anvil/reference/nv_or.md), `|`
 
 ## Examples
 

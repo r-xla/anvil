@@ -1,9 +1,6 @@
 # Primitive Concatenate
 
-Concatenates tensors along a dimension. For a more user-friendly
-interface, see
-[`nv_concatenate()`](https://r-xla.github.io/anvil/reference/nv_concatenate.md),
-which also handles type promotion and scalar broadcasting.
+Concatenates tensors along a dimension.
 
 ## Usage
 
@@ -16,8 +13,8 @@ nvl_concatenate(..., dimension)
 - ...:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Tensors to concatenate. Must all have the same data type and rank. All
-  dimensions must match except along `dimension`.
+  Tensors to concatenate. Must all have the same data type, ndims, and
+  shape except along `dimension`.
 
 - dimension:
 
@@ -38,16 +35,14 @@ ambiguous.
 
 - `backward`
 
-## Shapes
-
-All inputs must have the same rank and shape except along `dimension`.
-The output dimension size along `dimension` is the sum of the input
-dimension sizes along `dimension`.
-
 ## StableHLO
 
 Lowers to
 [`stablehlo::hlo_concatenate()`](https://r-xla.github.io/stablehlo/reference/hlo_concatenate.html).
+
+## See also
+
+[`nv_concatenate()`](https://r-xla.github.io/anvil/reference/nv_concatenate.md)
 
 ## Examples
 

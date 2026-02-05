@@ -1,6 +1,6 @@
 # Primitive Round
 
-Element-wise rounding.
+Rounds the elements of a tensor to the nearest integer.
 
 ## Usage
 
@@ -12,30 +12,38 @@ nvl_round(operand, method = "nearest_even")
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
-  of floating-point type)  
-  Operand.
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  Tensorish value of data type floating-point.
 
 - method:
 
   (`character(1)`)  
-  Rounding method ("nearest_even" or "afz").
+  Rounding method. `"nearest_even"` (default) rounds to the nearest even
+  integer on a tie, `"afz"` rounds away from zero on a tie.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the same dtype and shape as `operand`. It is ambiguous if the input
+is ambiguous.
 
-## Shapes
+## Implemented Rules
 
-Operand can have any shape. The output has the same shape.
+- `stablehlo`
+
+- `backward`
 
 ## StableHLO
 
-Calls
+Lowers to
 [`stablehlo::hlo_round_nearest_even()`](https://r-xla.github.io/stablehlo/reference/hlo_round_nearest_even.html)
 or
 [`stablehlo::hlo_round_nearest_afz()`](https://r-xla.github.io/stablehlo/reference/hlo_round_nearest_afz.html)
 depending on the `method` parameter.
+
+## See also
+
+[`nv_round()`](https://r-xla.github.io/anvil/reference/nv_round.md)
 
 ## Examples
 

@@ -1,8 +1,6 @@
 # Primitive Absolute Value
 
-Element-wise absolute value. Is the same as
-[`nv_abs()`](https://r-xla.github.io/anvil/reference/nv_abs.md). You can
-also use [`abs()`](https://rdrr.io/r/base/MathFun.html).
+Element-wise absolute value.
 
 ## Usage
 
@@ -33,6 +31,11 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_abs()`](https://r-xla.github.io/stablehlo/reference/hlo_abs.html).
+
+## See also
+
+[`nv_abs()`](https://r-xla.github.io/anvil/reference/nv_abs.md),
+[`abs()`](https://rdrr.io/r/base/MathFun.html)
 
 ## Examples
 

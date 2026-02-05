@@ -1,7 +1,13 @@
 # Primitive Dynamic Slice
 
-Extracts a dynamically positioned slice from a tensor. The start
-position is specified at runtime via tensor indices.
+Extracts a slice from a tensor whose start position is determined at
+runtime via tensor-valued indices. The slice shape (`slice_sizes`) is a
+fixed R integer vector.
+
+Use
+[`nvl_static_slice()`](https://r-xla.github.io/anvil/reference/nvl_static_slice.md)
+instead when all indices are known at compile time and you need stride
+support.
 
 ## Usage
 
@@ -14,49 +20,59 @@ nvl_dynamic_slice(operand, ..., slice_sizes)
 - operand:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Operand.
+  Tensorish value of any data type.
 
 - ...:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
   of integer type)  
-  Scalar start indices (1-based), one per dimension.
+  Scalar start indices, one per dimension. Each must be a scalar tensor.
+  Pass one scalar per dimension of `operand`.
 
 - slice_sizes:
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Size of the slice in each dimension.
+  Size of the slice in each dimension. Must have length equal to
+  `ndims(operand)` and satisfy `1 <= slice_sizes <= nv_shape(operand)`
+  per dimension.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the same data type as the input and shape `slice_sizes`. It is
+ambiguous if the input is ambiguous.
 
 ## Out Of Bounds Behavior
 
-If the slice would extend beyond the bounds of the operand tensor, the
-start indices are clamped so that the slice fits within the tensor. This
-means that out-of-bounds indices will not cause an error, but the
+Start indices are clamped before the slice is extracted:
+`adjusted_start_indices = clamp(1, start_indices, nv_shape(operand) - slice_sizes + 1)`.
+This means that out-of-bounds indices will not cause an error, but the
 effective start position may differ from the requested one.
 
-For example, slicing a tensor of shape `c(10)` with `start_indices = 8`
-and `slice_sizes = 5` will effectively use `start_indices = 6` to keep
-the slice within bounds.
+## Implemented Rules
 
-## Shapes
+- `stablehlo`
 
-Each start index in `...` must be a scalar tensor. The number of start
-indices must equal `rank(operand)`. `slice_sizes` must satisfy
-`slice_sizes <= shape(operand)` per dimension. Output shape is
-`slice_sizes`.
+- `backward`
 
 ## StableHLO
 
-Calls
+Lowers to
 [`stablehlo::hlo_dynamic_slice()`](https://r-xla.github.io/stablehlo/reference/hlo_dynamic_slice.html).
+
+## See also
+
+[`nvl_static_slice()`](https://r-xla.github.io/anvil/reference/nvl_static_slice.md),
+[`nvl_dynamic_update_slice()`](https://r-xla.github.io/anvil/reference/nvl_dynamic_update_slice.md),
+[`nvl_scatter()`](https://r-xla.github.io/anvil/reference/nvl_scatter.md),
+[`nvl_gather()`](https://r-xla.github.io/anvil/reference/nvl_gather.md),
+[`nv_subset()`](https://r-xla.github.io/anvil/reference/nv_subset.md),
+`[`
 
 ## Examples
 
 ``` r
+# 1-D: extract 3 elements starting at position 3
 jit_eval({
   x <- nv_tensor(1:10)
   start <- nv_scalar(3L)
@@ -67,4 +83,16 @@ jit_eval({
 #>  4
 #>  5
 #> [ CPUi32{3} ] 
+
+# 2-D: extract a 2x2 block from a matrix
+jit_eval({
+  x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4))
+  row_start <- nv_scalar(2L)
+  col_start <- nv_scalar(1L)
+  nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
+})
+#> AnvilTensor
+#>  2 5
+#>  3 6
+#> [ CPUi32{2,2} ] 
 ```

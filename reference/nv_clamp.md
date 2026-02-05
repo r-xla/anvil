@@ -1,6 +1,7 @@
 # Clamp
 
-Element-wise clamp: max(min_val, min(operand, max_val)).
+Element-wise clamp: max(min_val, min(operand, max_val)). Converts
+`min_val` and `max_val` to the data type of `operand`.
 
 ## Usage
 

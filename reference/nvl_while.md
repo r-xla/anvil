@@ -1,6 +1,8 @@
 # Primitive While Loop
 
-Executes a while loop.
+Repeatedly executes `body` while `cond` returns `TRUE`, like R's `while`
+loop. The loop state is initialized with `init` and passed through each
+iteration. Otherwise, no state is maintained between iterations.
 
 ## Usage
 
@@ -12,54 +14,60 @@ nvl_while(init, cond, body)
 
 - init:
 
-  ([`list()`](https://rdrr.io/r/base/list.html))  
+  (`named list()`)  
   Named list of initial state values.
 
 - cond:
 
   (`function`)  
-  Condition function returning boolean.
+  Condition function that receives the current state as arguments and
+  outputs whether to continue the loop.
 
 - body:
 
   (`function`)  
-  Body function returning updated state.
+  Body function that receives the current state as arguments and returns
+  a named list with the same structure, dtypes, and shapes as `init`.
 
 ## Value
 
-Final state after loop terminates.
+Named list with the same structure as `init` containing the final state
+after the loop terminates.
 
-## Shapes
+## Implemented Rules
 
-`cond` must return a scalar boolean. `body` must return the same shapes
-as `init`.
+- `stablehlo`
 
 ## StableHLO
 
-Calls
+Lowers to
 [`stablehlo::hlo_while()`](https://r-xla.github.io/stablehlo/reference/hlo_while.html).
+
+## See also
+
+[`nv_while()`](https://r-xla.github.io/anvil/reference/nv_while.md)
 
 ## Examples
 
 ``` r
 jit_eval({
   nvl_while(
-    init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
-    cond = function(i, total) nvl_lt(i, nv_scalar(5L)),
+    init = list(i = 0L, total = 0L),
+    cond = function(i, total) i <= 5L,
     body = function(i, total) list(
-      i = nvl_add(i, nv_scalar(1L)),
-      total = nvl_add(total, i)
+      i = i + 1L,
+      total = total + i
     )
   )
 })
 #> $i
 #> AnvilTensor
-#>  5
-#> [ CPUi32{} ] 
+#>  6
+#> [ CPUi32?{} ] 
 #> 
 #> $total
 #> AnvilTensor
-#>  10
-#> [ CPUi32{} ] 
+#>  15
+#> [ CPUi32?{} ] 
 #> 
 ```

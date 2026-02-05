@@ -1,7 +1,6 @@
 # Primitive Minimum
 
-Element-wise minimum of two tensors. For a more user-friendly interface,
-see [`nv_min()`](https://r-xla.github.io/anvil/reference/nv_min.md).
+Element-wise minimum of two tensors.
 
 ## Usage
 
@@ -26,6 +25,10 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_minimum()`](https://r-xla.github.io/stablehlo/reference/hlo_minimum.html).
+
+## See also
+
+[`nv_min()`](https://r-xla.github.io/anvil/reference/nv_min.md)
 
 ## Examples
 

@@ -1,8 +1,6 @@
 # Primitive Tangent
 
-Element-wise tangent. Is the same as
-[`nv_tan()`](https://r-xla.github.io/anvil/reference/nv_tan.md). You can
-also use [`tan()`](https://rdrr.io/r/base/Trig.html).
+Element-wise tangent.
 
 ## Usage
 
@@ -33,6 +31,11 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_tan()`](https://r-xla.github.io/stablehlo/reference/hlo_tan.html).
+
+## See also
+
+[`nv_tan()`](https://r-xla.github.io/anvil/reference/nv_tan.md),
+[`tan()`](https://rdrr.io/r/base/Trig.html)
 
 ## Examples
 

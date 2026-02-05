@@ -1,7 +1,6 @@
 # Primitive Reciprocal Square Root
 
-Element-wise reciprocal square root. Is the same as
-[`nv_rsqrt()`](https://r-xla.github.io/anvil/reference/nv_rsqrt.md).
+Element-wise reciprocal square root.
 
 ## Usage
 
@@ -32,6 +31,10 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_rsqrt()`](https://r-xla.github.io/stablehlo/reference/hlo_rsqrt.html).
+
+## See also
+
+[`nv_rsqrt()`](https://r-xla.github.io/anvil/reference/nv_rsqrt.md)
 
 ## Examples
 

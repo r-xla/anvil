@@ -1,9 +1,6 @@
 # Primitive Greater Equal
 
-Element-wise greater than or equal comparison. For a more user-friendly
-interface, see
-[`nv_ge()`](https://r-xla.github.io/anvil/reference/nv_ge.md), or use
-the `>=` operator.
+Element-wise greater than or equal comparison.
 
 ## Usage
 
@@ -29,6 +26,10 @@ if both inputs are ambiguous.
 Lowers to
 [`stablehlo::hlo_compare()`](https://r-xla.github.io/stablehlo/reference/hlo_compare.html)
 with `comparison_direction = "GE"`.
+
+## See also
+
+[`nv_ge()`](https://r-xla.github.io/anvil/reference/nv_ge.md), `>=`
 
 ## Examples
 

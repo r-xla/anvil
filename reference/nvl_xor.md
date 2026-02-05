@@ -1,7 +1,6 @@
 # Primitive Xor
 
-Element-wise logical XOR. For a more user-friendly interface, see
-[`nv_xor()`](https://r-xla.github.io/anvil/reference/nv_xor.md).
+Element-wise logical XOR.
 
 ## Usage
 
@@ -33,6 +32,10 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_xor()`](https://r-xla.github.io/stablehlo/reference/hlo_xor.html).
+
+## See also
+
+[`nv_xor()`](https://r-xla.github.io/anvil/reference/nv_xor.md)
 
 ## Examples
 

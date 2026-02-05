@@ -1,8 +1,6 @@
 # Primitive Square Root
 
-Element-wise square root. Is the same as
-[`nv_sqrt()`](https://r-xla.github.io/anvil/reference/nv_sqrt.md). You
-can also use [`sqrt()`](https://rdrr.io/r/base/MathFun.html).
+Element-wise square root.
 
 ## Usage
 
@@ -33,6 +31,11 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_sqrt()`](https://r-xla.github.io/stablehlo/reference/hlo_sqrt.html).
+
+## See also
+
+[`nv_sqrt()`](https://r-xla.github.io/anvil/reference/nv_sqrt.md),
+[`sqrt()`](https://rdrr.io/r/base/MathFun.html)
 
 ## Examples
 

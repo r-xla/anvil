@@ -1,7 +1,6 @@
 # Primitive Shift Left
 
-Element-wise left bit shift. For a more user-friendly interface, see
-[`nv_shift_left()`](https://r-xla.github.io/anvil/reference/nv_shift_left.md).
+Element-wise left bit shift.
 
 ## Usage
 
@@ -33,6 +32,10 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_shift_left()`](https://r-xla.github.io/stablehlo/reference/hlo_shift_left.html).
+
+## See also
+
+[`nv_shift_left()`](https://r-xla.github.io/anvil/reference/nv_shift_left.md)
 
 ## Examples
 

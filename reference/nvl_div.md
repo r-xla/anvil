@@ -1,8 +1,6 @@
 # Primitive Division
 
-Divides two tensors element-wise. For a more user-friendly interface,
-see [`nv_div()`](https://r-xla.github.io/anvil/reference/nv_div.md), or
-use the `/` operator.
+Divides two tensors element-wise.
 
 ## Usage
 
@@ -28,6 +26,10 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_divide()`](https://r-xla.github.io/stablehlo/reference/hlo_divide.html).
+
+## See also
+
+[`nv_div()`](https://r-xla.github.io/anvil/reference/nv_div.md), `/`
 
 ## Examples
 

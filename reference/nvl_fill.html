@@ -5,7 +5,15 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive Fill — nvl_fill"><meta name="description" content="Creates a tensor filled with a scalar value."><meta property="og:description" content="Creates a tensor filled with a scalar value."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive Fill — nvl_fill"><meta name="description" content="Creates a tensor of a given shape and data type, filled with a scalar value.
+The advantage of using this function instead of e.g. doing
+nv_tensor(1, shape = c(100, 100)) is that lowering of nvl_fill() is
+efficiently represented in the compiled program, while the latter uses
+100 * 100 * 4 bytes of memory."><meta property="og:description" content="Creates a tensor of a given shape and data type, filled with a scalar value.
+The advantage of using this function instead of e.g. doing
+nv_tensor(1, shape = c(100, 100)) is that lowering of nvl_fill() is
+efficiently represented in the compiled program, while the latter uses
+100 * 100 * 4 bytes of memory."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -65,7 +73,11 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Creates a tensor filled with a scalar value.</p>
+    <p>Creates a tensor of a given shape and data type, filled with a scalar value.
+The advantage of using this function instead of e.g. doing
+<code>nv_tensor(1, shape = c(100, 100))</code> is that lowering of <code>nvl_fill()</code> is
+efficiently represented in the compiled program, while the latter uses
+100 * 100 * 4 bytes of memory.</p>
     </div>
 
     <div class="section level2">
@@ -79,12 +91,12 @@
 
 <dl><dt id="arg-value">value<a class="anchor" aria-label="anchor" href="#arg-value"></a></dt>
 <dd><p>(<code>numeric(1)</code>)<br>
-Scalar value.</p></dd>
+Scalar value to fill the tensor with.</p></dd>
 
 
 <dt id="arg-shape">shape<a class="anchor" aria-label="anchor" href="#arg-shape"></a></dt>
 <dd><p>(<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>)<br>
-Shape.</p></dd>
+Shape of the output tensor.</p></dd>
 
 
 <dt id="arg-dtype">dtype<a class="anchor" aria-label="anchor" href="#arg-dtype"></a></dt>
@@ -101,19 +113,24 @@ See the <code><a href="../articles/type-promotion.html">vignette("type-promotion
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code><a href="tensorish.html">tensorish</a></code></p>
+    <p><code><a href="tensorish.html">tensorish</a></code><br>
+Has the given <code>shape</code> and <code>dtype</code>.</p>
     </div>
     <div class="section level2">
-    <h2 id="shapes">Shapes<a class="anchor" aria-label="anchor" href="#shapes"></a></h2>
+    <h2 id="implemented-rules">Implemented Rules<a class="anchor" aria-label="anchor" href="#implemented-rules"></a></h2>
 
 
-<p>Output shape is <code>shape</code>.</p>
-    </div>
+<ul><li><p><code>stablehlo</code></p></li>
+</ul></div>
     <div class="section level2">
     <h2 id="stablehlo">StableHLO<a class="anchor" aria-label="anchor" href="#stablehlo"></a></h2>
 
 
-<p>Calls <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_constant.html" class="external-link">stablehlo::hlo_constant()</a></code>.</p>
+<p>Lowers to <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_constant.html" class="external-link">stablehlo::hlo_tensor()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="nv_fill.html">nv_fill()</a></code></p></div>
     </div>
 
     <div class="section level2">

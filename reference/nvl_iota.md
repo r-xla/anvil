@@ -42,16 +42,21 @@ nvl_iota(dim, dtype, shape, start = 1L, ambiguous = FALSE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the given `dtype` and `shape`.
 
-## Shapes
+## Implemented Rules
 
-Output shape is `shape`.
+- `stablehlo`
 
 ## StableHLO
 
-Calls
+Lowers to
 [`stablehlo::hlo_iota()`](https://r-xla.github.io/stablehlo/reference/hlo_iota.html).
+
+## See also
+
+[`nv_iota()`](https://r-xla.github.io/anvil/reference/nv_iota.md)
 
 ## Examples
 

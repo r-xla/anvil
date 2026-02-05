@@ -1,6 +1,7 @@
 # Primitive Bitcast Convert
 
-Reinterprets tensor bits as a different dtype.
+Reinterprets the bits of a tensor as a different data type without
+modifying the underlying data.
 
 ## Usage
 
@@ -13,37 +14,54 @@ nvl_bitcast_convert(operand, dtype)
 - operand:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Operand.
+  Tensorish value of any data type.
 
 - dtype:
 
   (`character(1)` \|
   [`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
-  Data type.
+  Target data type. If it has the same bit width as the input, the
+  output shape is unchanged. If narrower, an extra trailing dimension is
+  added. If wider, the last dimension is consumed.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the given `dtype`.
 
-## Shapes
+## Implemented Rules
 
-If the source and target types have the same bit width, the output has
-the same shape as `operand`. Otherwise the last dimension is adjusted
-based on the bit-width ratio.
+- `stablehlo`
+
+- `backward`
 
 ## StableHLO
 
-Calls
+Lowers to
 [`stablehlo::hlo_bitcast_convert()`](https://r-xla.github.io/stablehlo/reference/hlo_bitcast_convert.html).
+
+## See also
+
+[`nv_bitcast_convert()`](https://r-xla.github.io/anvil/reference/nv_bitcast_convert.md)
 
 ## Examples
 
 ``` r
+# 1xi32 -> (32/8 * 1)xi8 = 4xi8
 jit_eval({
   x <- nv_tensor(1L)
-  nvl_bitcast_convert(x, dtype = "f32")
+  nvl_bitcast_convert(x, dtype = "i8")
 })
 #> AnvilTensor
-#>  1.4013e-45
-#> [ CPUf32{1} ] 
+#>  1 0 0 0
+#> [ CPUi8{1,4} ] 
+
+# 4xi8 -> (4 * 8/32)xi32 = 1xi32
+jit_eval({
+  x <- nv_tensor(rep(1L, 4), dtype = "i8")
+  nvl_bitcast_convert(x, dtype = "i32")
+})
+#> AnvilTensor
+#>  1.6843e+07
+#> [ CPUi32{} ] 
 ```

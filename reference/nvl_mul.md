@@ -1,8 +1,6 @@
 # Primitive Multiplication
 
-Multiplies two tensors element-wise. For a more user-friendly interface,
-see [`nv_mul()`](https://r-xla.github.io/anvil/reference/nv_mul.md), or
-use the `*` operator.
+Multiplies two tensors element-wise.
 
 ## Usage
 
@@ -33,6 +31,10 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_multiply()`](https://r-xla.github.io/stablehlo/reference/hlo_multiply.html).
+
+## See also
+
+[`nv_mul()`](https://r-xla.github.io/anvil/reference/nv_mul.md), `*`
 
 ## Examples
 

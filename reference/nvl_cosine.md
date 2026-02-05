@@ -1,8 +1,6 @@
 # Primitive Cosine
 
-Element-wise cosine. Is the same as
-[`nv_cosine()`](https://r-xla.github.io/anvil/reference/nv_cosine.md).
-You can also use [`cos()`](https://rdrr.io/r/base/Trig.html).
+Element-wise cosine.
 
 ## Usage
 
@@ -33,6 +31,11 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_cosine()`](https://r-xla.github.io/stablehlo/reference/hlo_cosine.html).
+
+## See also
+
+[`nv_cosine()`](https://r-xla.github.io/anvil/reference/nv_cosine.md),
+[`cos()`](https://rdrr.io/r/base/Trig.html)
 
 ## Examples
 

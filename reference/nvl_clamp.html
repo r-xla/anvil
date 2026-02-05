@@ -5,7 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive Clamp — nvl_clamp"><meta name="description" content="Element-wise clamp: max(min_val, min(operand, max_val))."><meta property="og:description" content="Element-wise clamp: max(min_val, min(operand, max_val))."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive Clamp — nvl_clamp"><meta name="description" content="Clamps every element of operand to the range [min_val, max_val],
+i.e. max(min_val, min(operand, max_val))."><meta property="og:description" content="Clamps every element of operand to the range [min_val, max_val],
+i.e. max(min_val, min(operand, max_val))."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -65,7 +67,8 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Element-wise clamp: max(min_val, min(operand, max_val)).</p>
+    <p>Clamps every element of <code>operand</code> to the range <code>[min_val, max_val]</code>,
+i.e. <code>max(min_val, min(operand, max_val))</code>.</p>
     </div>
 
     <div class="section level2">
@@ -79,35 +82,41 @@
 
 <dl><dt id="arg-min-val">min_val<a class="anchor" aria-label="anchor" href="#arg-min-val"></a></dt>
 <dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
-Minimum value (scalar or same shape as operand).</p></dd>
+Minimum value. Must be scalar or the same shape as <code>operand</code>.</p></dd>
 
 
 <dt id="arg-operand">operand<a class="anchor" aria-label="anchor" href="#arg-operand"></a></dt>
 <dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
-Operand.</p></dd>
+Tensorish value of any data type.</p></dd>
 
 
 <dt id="arg-max-val">max_val<a class="anchor" aria-label="anchor" href="#arg-max-val"></a></dt>
 <dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
-Maximum value (scalar or same shape as operand).</p></dd>
+Maximum value. Must be scalar or the same shape as <code>operand</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code><a href="tensorish.html">tensorish</a></code></p>
+    <p><code><a href="tensorish.html">tensorish</a></code><br>
+Has the same data type and shape as <code>operand</code>.
+It is ambiguous if the input is ambiguous.</p>
     </div>
     <div class="section level2">
-    <h2 id="shapes">Shapes<a class="anchor" aria-label="anchor" href="#shapes"></a></h2>
+    <h2 id="implemented-rules">Implemented Rules<a class="anchor" aria-label="anchor" href="#implemented-rules"></a></h2>
 
 
-<p><code>min_val</code> and <code>max_val</code> must each be either scalar or the same
-shape as <code>operand</code>. The output has the same shape as <code>operand</code>.</p>
-    </div>
+<ul><li><p><code>stablehlo</code></p></li>
+<li><p><code>backward</code></p></li>
+</ul></div>
     <div class="section level2">
     <h2 id="stablehlo">StableHLO<a class="anchor" aria-label="anchor" href="#stablehlo"></a></h2>
 
 
-<p>Calls <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_clamp.html" class="external-link">stablehlo::hlo_clamp()</a></code>.</p>
+<p>Lowers to <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_clamp.html" class="external-link">stablehlo::hlo_clamp()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="nv_clamp.html">nv_clamp()</a></code></p></div>
     </div>
 
     <div class="section level2">

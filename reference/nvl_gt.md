@@ -1,9 +1,6 @@
 # Primitive Greater Than
 
-Element-wise greater than comparison. For a more user-friendly
-interface, see
-[`nv_gt()`](https://r-xla.github.io/anvil/reference/nv_gt.md), or use
-the `>` operator.
+Element-wise greater than comparison.
 
 ## Usage
 
@@ -29,6 +26,10 @@ if both inputs are ambiguous.
 Lowers to
 [`stablehlo::hlo_compare()`](https://r-xla.github.io/stablehlo/reference/hlo_compare.html)
 with `comparison_direction = "GT"`.
+
+## See also
+
+[`nv_gt()`](https://r-xla.github.io/anvil/reference/nv_gt.md), `>`
 
 ## Examples
 

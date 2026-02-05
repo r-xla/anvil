@@ -1,8 +1,6 @@
 # Primitive Product Reduction
 
-Multiplies tensor elements along the specified dimensions. Is the same
-as
-[`nv_reduce_prod()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md).
+Multiplies tensor elements along the specified dimensions.
 
 ## Usage
 
@@ -50,6 +48,10 @@ Lowers to
 with
 [`stablehlo::hlo_multiply()`](https://r-xla.github.io/stablehlo/reference/hlo_multiply.html)
 as the reducer.
+
+## See also
+
+[`nv_reduce_prod()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md)
 
 ## Examples
 

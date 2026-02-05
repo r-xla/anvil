@@ -1,6 +1,6 @@
 # Primitive Convert
 
-Converts tensor to a different dtype.
+Converts the elements of a tensor to a different data type.
 
 ## Usage
 
@@ -13,13 +13,13 @@ nvl_convert(operand, dtype, ambiguous = FALSE)
 - operand:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Operand.
+  Tensorish value of any data type.
 
 - dtype:
 
   (`character(1)` \|
   [`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
-  Data type.
+  Target data type.
 
 - ambiguous:
 
@@ -32,16 +32,24 @@ nvl_convert(operand, dtype, ambiguous = FALSE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the given `dtype` and the same shape as `operand`. Ambiguity is
+controlled by the `ambiguous` parameter.
 
-## Shapes
+## Implemented Rules
 
-Output has the same shape as `operand`.
+- `stablehlo`
+
+- `backward`
 
 ## StableHLO
 
-Calls
+Lowers to
 [`stablehlo::hlo_convert()`](https://r-xla.github.io/stablehlo/reference/hlo_convert.html).
+
+## See also
+
+[`nv_convert()`](https://r-xla.github.io/anvil/reference/nv_convert.md)
 
 ## Examples
 

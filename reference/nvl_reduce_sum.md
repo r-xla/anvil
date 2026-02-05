@@ -1,7 +1,6 @@
 # Primitive Sum Reduction
 
-Sums tensor elements along the specified dimensions. Is the same as
-[`nv_reduce_sum()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md).
+Sums tensor elements along the specified dimensions.
 
 ## Usage
 
@@ -49,6 +48,10 @@ Lowers to
 with
 [`stablehlo::hlo_add()`](https://r-xla.github.io/stablehlo/reference/hlo_add.html)
 as the reducer.
+
+## See also
+
+[`nv_reduce_sum()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md)
 
 ## Examples
 

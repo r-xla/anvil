@@ -1,8 +1,6 @@
 # Primitive Addition
 
-Adds two tensors element-wise. For a more user-friendly interface, see
-[`nv_add()`](https://r-xla.github.io/anvil/reference/nv_add.md), or use
-the `+` operator.
+Adds two tensors element-wise.
 
 ## Usage
 
@@ -33,6 +31,10 @@ inputs are ambiguous.
 
 Lowers to
 [`stablehlo::hlo_add()`](https://r-xla.github.io/stablehlo/reference/hlo_add.html).
+
+## See also
+
+[`nv_add()`](https://r-xla.github.io/anvil/reference/nv_add.md), `+`
 
 ## Examples
 

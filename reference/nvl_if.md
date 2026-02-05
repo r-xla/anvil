@@ -1,6 +1,9 @@
 # Primitive If
 
-Conditional execution of branches.
+Conditional execution of one of two branches based on a scalar boolean
+predicate. Unlike
+[`nvl_ifelse()`](https://r-xla.github.io/anvil/reference/nvl_ifelse.md)
+which operates element-wise, this evaluates only the selected branch.
 
 ## Usage
 
@@ -12,33 +15,35 @@ nvl_if(pred, true, false)
 
 - pred:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
-  of boolean type, scalar)  
-  Predicate.
+  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  Scalar boolean predicate that determines which branch to execute.
 
-- true:
+- true, false:
 
-  (`expression`)  
-  Expression for true branch.
-
-- false:
-
-  (`expression`)  
-  Expression for false branch.
+  (NSE)  
+  Expressions for the true and false branches. Both must return outputs
+  with the same structure, dtypes, and shapes.
 
 ## Value
 
-Result of the executed branch.
+Result of the executed branch.  
+An output is ambiguous if it is ambiguous in both branches.
 
-## Shapes
+## Implemented Rules
 
-`pred` must be scalar. Both branches must return outputs with the same
-shapes.
+- `stablehlo`
+
+- `backward`
 
 ## StableHLO
 
-Calls
+Lowers to
 [`stablehlo::hlo_if()`](https://r-xla.github.io/stablehlo/reference/hlo_if.html).
+
+## See also
+
+[`nv_if()`](https://r-xla.github.io/anvil/reference/nv_if.md),
+[`nvl_ifelse()`](https://r-xla.github.io/anvil/reference/nvl_ifelse.md)
 
 ## Examples
 

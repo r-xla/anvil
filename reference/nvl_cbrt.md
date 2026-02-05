@@ -1,7 +1,6 @@
 # Primitive Cube Root
 
-Element-wise cube root. Is the same as
-[`nv_cbrt()`](https://r-xla.github.io/anvil/reference/nv_cbrt.md).
+Element-wise cube root.
 
 ## Usage
 
@@ -32,6 +31,10 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_cbrt()`](https://r-xla.github.io/stablehlo/reference/hlo_cbrt.html).
+
+## See also
+
+[`nv_cbrt()`](https://r-xla.github.io/anvil/reference/nv_cbrt.md)
 
 ## Examples
 

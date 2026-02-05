@@ -1,6 +1,6 @@
 # Primitive Transpose
 
-Transposes a tensor according to a permutation.
+Permutes the dimensions of a tensor.
 
 ## Usage
 
@@ -13,25 +13,37 @@ nvl_transpose(operand, permutation)
 - operand:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Operand.
+  Tensorish value of any data type.
 
 - permutation:
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Dimension permutation.
+  Specifies the new ordering of dimensions. Must be a permutation of
+  `seq_len(ndims)` where `ndims` is the number of dimensions of
+  `operand`.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the same data type as the input and shape
+`nv_shape(operand)[permutation]`. It is ambiguous if the input is
+ambiguous.
 
-## Shapes
+## Implemented Rules
 
-Output shape is `shape(operand)[permutation]`.
+- `stablehlo`
+
+- `backward`
 
 ## StableHLO
 
-Calls
+Lowers to
 [`stablehlo::hlo_transpose()`](https://r-xla.github.io/stablehlo/reference/hlo_transpose.html).
+
+## See also
+
+[`nv_transpose()`](https://r-xla.github.io/anvil/reference/nv_transpose.md),
+[`t()`](https://rdrr.io/r/base/t.html)
 
 ## Examples
 

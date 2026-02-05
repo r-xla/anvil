@@ -1,8 +1,6 @@
 # Primitive Equal
 
-Element-wise equality comparison. For a more user-friendly interface,
-see [`nv_eq()`](https://r-xla.github.io/anvil/reference/nv_eq.md), or
-use the `==` operator.
+Element-wise equality comparison.
 
 ## Usage
 
@@ -28,6 +26,10 @@ if both inputs are ambiguous.
 Lowers to
 [`stablehlo::hlo_compare()`](https://r-xla.github.io/stablehlo/reference/hlo_compare.html)
 with `comparison_direction = "EQ"`.
+
+## See also
+
+[`nv_eq()`](https://r-xla.github.io/anvil/reference/nv_eq.md), `==`
 
 ## Examples
 

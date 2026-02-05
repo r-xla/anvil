@@ -1,7 +1,6 @@
 # Primitive Logistic (Sigmoid)
 
-Element-wise logistic sigmoid: 1 / (1 + exp(-x)). Is the same as
-[`nv_logistic()`](https://r-xla.github.io/anvil/reference/nv_logistic.md).
+Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
 
 ## Usage
 
@@ -32,6 +31,10 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_logistic()`](https://r-xla.github.io/stablehlo/reference/hlo_logistic.html).
+
+## See also
+
+[`nv_logistic()`](https://r-xla.github.io/anvil/reference/nv_logistic.md)
 
 ## Examples
 

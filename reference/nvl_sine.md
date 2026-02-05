@@ -1,8 +1,6 @@
 # Primitive Sine
 
-Element-wise sine. Is the same as
-[`nv_sine()`](https://r-xla.github.io/anvil/reference/nv_sine.md). You
-can also use [`sin()`](https://rdrr.io/r/base/Trig.html).
+Element-wise sine.
 
 ## Usage
 
@@ -33,6 +31,11 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_sine()`](https://r-xla.github.io/stablehlo/reference/hlo_sine.html).
+
+## See also
+
+[`nv_sine()`](https://r-xla.github.io/anvil/reference/nv_sine.md),
+[`sin()`](https://rdrr.io/r/base/Trig.html)
 
 ## Examples
 

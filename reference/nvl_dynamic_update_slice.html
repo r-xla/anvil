@@ -5,9 +5,13 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive Dynamic Update Slice — nvl_dynamic_update_slice"><meta name="description" content="Updates a dynamically positioned slice in a tensor.
-The start position is specified at runtime via tensor indices."><meta property="og:description" content="Updates a dynamically positioned slice in a tensor.
-The start position is specified at runtime via tensor indices."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Primitive Dynamic Update Slice — nvl_dynamic_update_slice"><meta name="description" content="Returns a copy of operand with a slice replaced by update at a
+runtime-determined position. This is the write counterpart of
+nvl_dynamic_slice(): dynamic slice reads a block from a tensor,
+while dynamic update slice writes a block into a tensor."><meta property="og:description" content="Returns a copy of operand with a slice replaced by update at a
+runtime-determined position. This is the write counterpart of
+nvl_dynamic_slice(): dynamic slice reads a block from a tensor,
+while dynamic update slice writes a block into a tensor."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -67,8 +71,10 @@ The start position is specified at runtime via tensor indices."></head><body>
     </div>
 
     <div class="ref-description section level2">
-    <p>Updates a dynamically positioned slice in a tensor.
-The start position is specified at runtime via tensor indices.</p>
+    <p>Returns a copy of <code>operand</code> with a slice replaced by <code>update</code> at a
+runtime-determined position. This is the write counterpart of
+<code><a href="nvl_dynamic_slice.html">nvl_dynamic_slice()</a></code>: dynamic slice reads a block from a tensor,
+while dynamic update slice writes a block into a tensor.</p>
     </div>
 
     <div class="section level2">
@@ -82,54 +88,59 @@ The start position is specified at runtime via tensor indices.</p>
 
 <dl><dt id="arg-operand">operand<a class="anchor" aria-label="anchor" href="#arg-operand"></a></dt>
 <dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
-Operand.</p></dd>
+Tensorish value of any data type.</p></dd>
 
 
 <dt id="arg-update">update<a class="anchor" aria-label="anchor" href="#arg-update"></a></dt>
 <dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
-The values to write at the specified position.</p></dd>
+The values to write at the specified position. Must have the same
+data type and number of dimensions as <code>operand</code>, with
+<code>nv_shape(update) &lt;= nv_shape(operand)</code> per dimension.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>(<code><a href="tensorish.html">tensorish</a></code> of integer type)<br>
-Scalar start indices (1-based), one per dimension.</p></dd>
+Scalar start indices, one per dimension of <code>operand</code>.
+Each must be a scalar tensor.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code><a href="tensorish.html">tensorish</a></code></p>
+    <p><code><a href="tensorish.html">tensorish</a></code><br>
+Has the same data type and shape as <code>operand</code>.
+It is ambiguous if the input is ambiguous.</p>
     </div>
     <div class="section level2">
-    <h2 id="shapes">Shapes<a class="anchor" aria-label="anchor" href="#shapes"></a></h2>
+    <h2 id="implemented-rules">Implemented Rules<a class="anchor" aria-label="anchor" href="#implemented-rules"></a></h2>
 
 
-<p><code>update</code> must have the same rank as <code>operand</code>, with
-<code>shape(update) &lt;= shape(operand)</code> per dimension. Each start index
-in <code>...</code> must be a scalar tensor. The output has the same shape as
-<code>operand</code>.</p>
-    </div>
+<ul><li><p><code>stablehlo</code></p></li>
+<li><p><code>backward</code></p></li>
+</ul></div>
     <div class="section level2">
     <h2 id="stablehlo">StableHLO<a class="anchor" aria-label="anchor" href="#stablehlo"></a></h2>
 
 
-<p>Calls <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_dynamic_update_slice.html" class="external-link">stablehlo::hlo_dynamic_update_slice()</a></code>.</p>
+<p>Lowers to <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_dynamic_update_slice.html" class="external-link">stablehlo::hlo_dynamic_update_slice()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="out-of-bounds-behavior">Out Of Bounds Behavior<a class="anchor" aria-label="anchor" href="#out-of-bounds-behavior"></a></h2>
 
 
-<p>If the slice would extend beyond the bounds of the operand tensor,
-the start indices are clamped so that the slice fits within the tensor.
+<p>Start indices are clamped before the slice is extracted:
+<code>adjusted_start_indices = clamp(1, start_indices, nv_shape(operand) - slice_sizes + 1)</code>.
 This means that out-of-bounds indices will not cause an error, but
 the effective start position may differ from the requested one.</p>
-<p>For example, slicing a tensor of shape <code>c(10)</code> with <code>start_indices = 8</code>
-and <code>slice_sizes = 5</code> will effectively use <code>start_indices = 6</code> to keep
-the slice within bounds.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="nvl_dynamic_slice.html">nvl_dynamic_slice()</a></code>, <code><a href="nvl_scatter.html">nvl_scatter()</a></code>, <code><a href="nvl_gather.html">nvl_gather()</a></code>, <code><a href="nv_subset_assign.html">nv_subset_assign()</a></code>, <code>[&lt;-</code></p></div>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># 1-D: overwrite two elements starting at position 2</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="va">update</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10L</span>, <span class="fl">20L</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="va">start</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2L</span><span class="op">)</span></span></span>
@@ -142,6 +153,20 @@ the slice within bounds.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{5} ] </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 2-D: write a 2x2 block into a 3x4 matrix</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, nrow <span class="op">=</span> <span class="fl">3</span>, ncol <span class="op">=</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">update</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span>, <span class="fl">3L</span>, <span class="fl">4L</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">row_start</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2L</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">col_start</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">3L</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">nvl_dynamic_update_slice</span><span class="op">(</span><span class="va">x</span>, <span class="va">update</span>, <span class="va">row_start</span>, <span class="va">col_start</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0 0 0 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0 0 1 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0 0 2 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{3,4} ] </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

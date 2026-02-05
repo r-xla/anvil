@@ -1,6 +1,9 @@
 # Primitive Ifelse
 
-Selects elements based on a predicate.
+Element-wise selection based on a boolean predicate, like R's
+[`ifelse()`](https://rdrr.io/r/base/ifelse.html). For each element,
+returns the corresponding element from `true_value` where `pred` is
+`TRUE` and from `false_value` where `pred` is `FALSE`.
 
 ## Usage
 
@@ -14,32 +17,34 @@ nvl_ifelse(pred, true_value, false_value)
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
   of boolean type)  
-  Predicate tensor.
+  Predicate tensor. Must be scalar or have the same shape as
+  `true_value`.
 
-- true_value:
-
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Value when pred is true.
-
-- false_value:
+- true_value, false_value:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Value when pred is false.
+  Values to select from. Must have the same dtype and shape.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the same dtype and shape as `true_value`. It is ambiguous if both
+`true_value` and `false_value` are ambiguous.
 
-## Shapes
+## Implemented Rules
 
-`pred` must be either scalar or the same shape as `true_value`.
-`true_value` and `false_value` must have the same shape. Output has the
-shape of `true_value`.
+- `stablehlo`
+
+- `backward`
 
 ## StableHLO
 
-Calls
+Lowers to
 [`stablehlo::hlo_select()`](https://r-xla.github.io/stablehlo/reference/hlo_select.html).
+
+## See also
+
+[`nv_ifelse()`](https://r-xla.github.io/anvil/reference/nv_ifelse.md)
 
 ## Examples
 

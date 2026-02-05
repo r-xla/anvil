@@ -1,8 +1,6 @@
 # Primitive Max Reduction
 
-Finds the maximum of tensor elements along the specified dimensions. Is
-the same as
-[`nv_reduce_max()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md).
+Finds the maximum of tensor elements along the specified dimensions.
 
 ## Usage
 
@@ -50,6 +48,10 @@ Lowers to
 with
 [`stablehlo::hlo_maximum()`](https://r-xla.github.io/stablehlo/reference/hlo_maximum.html)
 as the reducer.
+
+## See also
+
+[`nv_reduce_max()`](https://r-xla.github.io/anvil/reference/nv_reduce_ops.md)
 
 ## Examples
 

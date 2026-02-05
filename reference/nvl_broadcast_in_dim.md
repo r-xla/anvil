@@ -1,6 +1,7 @@
 # Primitive Broadcast
 
-Broadcasts a tensor to a new shape.
+Broadcasts a tensor to a new shape by replicating the data along new or
+size-1 dimensions.
 
 ## Usage
 
@@ -13,32 +14,40 @@ nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
 - operand:
 
   ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Operand.
+  Tensorish value of any data type.
 
 - shape:
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Target shape.
+  Target shape. Each mapped dimension must either match the
+  corresponding operand dimension or the operand dimension must be 1.
 
 - broadcast_dimensions:
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Dimension mapping.
+  Maps each dimension of `operand` to a dimension of the output. Must
+  have length equal to the number of dimensions of `operand`.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
+[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+Has the same data type as the input and the given `shape`. It is
+ambiguous if the input is ambiguous.
 
-## Shapes
+## Implemented Rules
 
-`length(broadcast_dimensions)` must equal the rank of `operand`. Each
-dimension of `operand` must either be 1 or match
-`shape[broadcast_dimensions[i]]`. Output shape is `shape`.
+- `stablehlo`
+
+- `backward`
 
 ## StableHLO
 
-Calls
+Lowers to
 [`stablehlo::hlo_broadcast_in_dim()`](https://r-xla.github.io/stablehlo/reference/hlo_broadcast_in_dim.html).
+
+## See also
+
+[`nv_broadcast_to()`](https://r-xla.github.io/anvil/reference/nv_broadcast_to.md)
 
 ## Examples
 

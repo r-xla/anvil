@@ -1,7 +1,6 @@
 # Primitive Not
 
-Element-wise logical NOT. Is the same as
-[`nv_not()`](https://r-xla.github.io/anvil/reference/nv_not.md).
+Element-wise logical NOT.
 
 ## Usage
 
@@ -32,6 +31,10 @@ input is ambiguous.
 
 Lowers to
 [`stablehlo::hlo_not()`](https://r-xla.github.io/stablehlo/reference/hlo_not.html).
+
+## See also
+
+[`nv_not()`](https://r-xla.github.io/anvil/reference/nv_not.md)
 
 ## Examples
 
