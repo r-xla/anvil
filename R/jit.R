@@ -52,12 +52,14 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
     args_flat <- flatten(args)
     is_static_flat <- in_tree$marked
 
+    platforms <- character()
     avals_in <- Map(
       function(x, is_static) {
         if (is_static) {
           x
         } else {
           if (is_anvil_tensor(x)) {
+            platforms <<- c(platforms, platform(x))
             return(nv_aten(dtype(x), shape(x), ambiguous = ambiguous(x)))
           }
           cli_abort("Expected AnvilTensor, but got {.cls {class(x)[1]}}")
@@ -67,13 +69,27 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
       is_static_flat
     )
 
+    if (length(unique(platforms)) > 1) {
+      cli_abort(
+        "Inputs live on different platforms: {.val {unique(platforms)}}."
+      )
+    }
+    platform <- if (length(platforms) > 0) {
+      platforms[1]
+    } else if (!is.null(device)) {
+      device
+    } else {
+      # try to infer from constants
+      NULL
+    }
+
     in_tree$marked <- NULL
     class(in_tree) <- c("ListNode", "Node")
     cache_hit <- cache$get(list(in_tree, avals_in, platform))
     if (!is.null(cache_hit)) {
       return(call_xla(cache_hit[[1]], cache_hit[[2]], cache_hit[[3]], args_flat, is_static_flat, cache_hit[[4]]))
     }
-    compiled <- compile_to_xla(f, args_flat = avals_in, in_tree = in_tree, donate = donate, device = device)
+    compiled <- compile_to_xla(f, args_flat = avals_in, in_tree = in_tree, donate = donate, device = platform)
     exec <- compiled$exec
     out_tree <- compiled$out_tree
     const_tensors <- compiled$const_tensors
@@ -111,20 +127,26 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
 
-  if (is.null(device)) {
-    traced_devices <- unique(vapply(desc$devices, as.character, character(1)))
-    if (length(traced_devices) > 1) {
-      cli_abort("Tensors live on different devices: {.val {traced_devices}}.")
-    }
-    # TODO: Clean this up.
-    # pjrt_execute should take in device instead of client
-    client <- if (!length(traced_devices)) {
-      pjrt::pjrt_client(Sys.getenv("PJRT_PLATFORM", "cpu"))
-    } else {
-      pjrt::pjrt_client(pjrt::platform(desc$devices[[1L]]))
-    }
+  # FIXME: This should also respect the devices of args_flat
+  traced_devices <- unique(vapply(desc$devices, as.character, character(1)))
+  if (length(traced_devices) > 1) {
+    cli_abort("Tensors live on different devices: {traced_devices}.")
+  }
+
+  if (!is.null(device) && length(traced_devices) && traced_devices[[1L]] != pjrt::as_pjrt_device(device)) {
+    cli_abort(
+      "Provided device {.val {device}} does not match traced device {.val {traced_devices}}."
+    )
+  }
+
+  # TODO: Clean this up.
+  # pjrt_execute should take in device instead of client
+  client <- if (!is.null(device)) {
+    pjrt::pjrt_client(device)
+  } else if (length(traced_devices)) {
+    pjrt::pjrt_client(pjrt::platform(desc$devices[[1L]]))
   } else {
-    client <- pjrt::pjrt_client(device)
+    pjrt::pjrt_client(Sys.getenv("PJRT_PLATFORM", "cpu"))
   }
 
   graph <- inline_scalarish_constants(graph)
@@ -172,6 +194,7 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
 #'   and returns the result as [`AnvilTensor`]s.
 #' @export
 xla <- function(f, args, donate = character(), device = NULL) {
+  # FIXME: Also use device inference from trace_fn
   device <- device %||% Sys.getenv("PJRT_PLATFORM", "cpu")
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
