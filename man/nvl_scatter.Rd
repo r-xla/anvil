@@ -21,62 +21,104 @@ nvl_scatter(
 }
 \arguments{
 \item{input}{(\code{\link{tensorish}})\cr
-Input tensor to scatter into.}
+Tensorish value of any data type. The base tensor to scatter into.}
 
 \item{scatter_indices}{(\code{\link{tensorish}} of integer type)\cr
-Indices tensor.}
+Tensor of indices. Contains index vectors that map to positions in
+\code{input} via \code{scatter_dims_to_operand_dims}. The dimension specified
+by \code{index_vector_dim} holds the index vectors.}
 
 \item{update}{(\code{\link{tensorish}})\cr
-Update values tensor.}
+Update values tensor. Must have the same data type as \code{input}.}
 
 \item{update_window_dims}{(\code{integer()})\cr
-Update window dimensions.}
+Dimensions of \code{update} that are window dimensions, i.e. they
+correspond to the slice being written into \code{input}.}
 
 \item{inserted_window_dims}{(\code{integer()})\cr
-Inserted window dimensions.}
+Dimensions of \code{input} whose slices have size 1 and are inserted
+(not present) in the \code{update} window. Together with
+\code{update_window_dims} and \code{input_batching_dims}, these must account
+for all dimensions of \code{input}.}
 
 \item{input_batching_dims}{(\code{integer()})\cr
-Input batching dimensions.}
+Dimensions of \code{input} that are batch dimensions.
+Use \code{integer(0)} when there are no batch dimensions.}
 
 \item{scatter_indices_batching_dims}{(\code{integer()})\cr
-Scatter indices batching dimensions.}
+Dimensions of \code{scatter_indices} that correspond to batch
+dimensions. Must have the same length as \code{input_batching_dims}.}
 
 \item{scatter_dims_to_operand_dims}{(\code{integer()})\cr
-Mapping from scatter indices to operand dimensions.}
+Maps each component of the index vector to an \code{input} dimension.
+For example, \code{scatter_dims_to_operand_dims = c(1L)} means each
+index vector indexes into the first dimension of \code{input}.}
 
 \item{index_vector_dim}{(\code{integer(1)})\cr
-Dimension in scatter_indices containing the index vectors.}
+Dimension of \code{scatter_indices} that contains the index vectors.
+If set to \code{ndims(scatter_indices) + 1}, each scalar element of
+\code{scatter_indices} is treated as a length-1 index vector.}
 
 \item{indices_are_sorted}{(\code{logical(1)})\cr
-Whether indices are sorted.}
+Whether indices are guaranteed to be sorted. Setting to \code{TRUE}
+may improve performance but produces undefined behavior if the
+indices are not actually sorted. Default \code{FALSE}.}
 
 \item{unique_indices}{(\code{logical(1)})\cr
-Whether indices are unique.}
+Whether indices are guaranteed to be unique (no duplicates).
+Setting to \code{TRUE} may improve performance but produces undefined
+behavior if the indices are not actually unique. Default \code{FALSE}.}
 
 \item{update_computation}{(\code{function})\cr
-Binary function to combine existing and update values.}
+Binary function \code{f(old, new)} that combines the existing value in
+\code{input} with the value from \code{update}. The default (\code{NULL}) uses
+\code{function(old, new) new}, which replaces the old value.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type and shape as \code{input}.
+It is ambiguous if \code{input} is ambiguous.
 }
 \description{
-Produces a result tensor equal to the input tensor except that
-slices specified by scatter_indices are updated with values from the update tensor.
-}
-\section{Shapes}{
+Produces a result tensor identical to \code{input} except that slices at
+positions specified by \code{scatter_indices} are updated with values from
+the \code{update} tensor. When multiple indices point to the same location,
+the \code{update_computation} function determines how to combine the values
+(by default the new value replaces the old one).
 
-Output has the same shape as \code{input}. See
-\code{\link[stablehlo:hlo_scatter]{stablehlo::hlo_scatter()}} for detailed dimension constraints on
-\code{scatter_indices}, \code{update}, and the dimension mapping parameters.
+This is the inverse of \code{\link[=nvl_gather]{nvl_gather()}}: gather reads slices from a tensor
+at given indices, while scatter writes slices into a tensor at given
+indices.
+}
+\section{Out Of Bounds Behavior}{
+
+If a computed result index falls outside the bounds of \code{input}, the
+update for that index is silently ignored.
+}
+
+\section{Update Order}{
+
+When multiple indices in \code{scatter_indices} map to the same element
+of \code{input}, the order in which \code{update_computation} is applied is
+implementation-defined and may vary between plugins ("cpu", "cuda").
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_scatter]{stablehlo::hlo_scatter()}}.
+Lowers to \code{\link[stablehlo:hlo_scatter]{stablehlo::hlo_scatter()}}.
 }
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+# Scatter values 10 and 30 into positions 1 and 3 of a zero vector
 jit_eval({
   input <- nv_tensor(c(0, 0, 0, 0, 0))
   indices <- nv_tensor(matrix(c(1L, 3L), ncol = 1))
@@ -92,4 +134,7 @@ jit_eval({
   )
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_gather]{nvl_gather()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{\link[=nv_subset_assign]{nv_subset_assign()}}, \code{[}, \verb{[<-}
 }

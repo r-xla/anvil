@@ -8,25 +8,31 @@ nvl_transpose(operand, permutation)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{permutation}{(\code{integer()})\cr
-Dimension permutation.}
+Specifies the new ordering of dimensions. Must be a permutation of
+\code{seq_len(ndims)} where \code{ndims} is the number of dimensions of \code{operand}.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type as the input and shape \code{nv_shape(operand)[permutation]}.
+It is ambiguous if the input is ambiguous.
 }
 \description{
-Transposes a tensor according to a permutation.
+Permutes the dimensions of a tensor.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Output shape is \code{shape(operand)[permutation]}.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_transpose]{stablehlo::hlo_transpose()}}.
+Lowers to \code{\link[stablehlo:hlo_transpose]{stablehlo::hlo_transpose()}}.
 }
 
 \examples{
@@ -36,4 +42,7 @@ jit_eval({
   nvl_transpose(x, permutation = c(2L, 1L))
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_transpose]{nv_transpose()}}, \code{\link[=t]{t()}}
 }

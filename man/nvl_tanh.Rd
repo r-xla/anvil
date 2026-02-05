@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise hyperbolic tangent.
-Is the same as \code{\link[=nv_tanh]{nv_tanh()}}. You can also use \code{\link[=tanh]{tanh()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_tanh(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_tanh]{nv_tanh()}}, \code{\link[=tanh]{tanh()}}
 }

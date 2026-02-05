@@ -18,7 +18,6 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Multiplies two tensors element-wise.
-For a more user-friendly interface, see \code{\link[=nv_mul]{nv_mul()}}, or use the \code{*} operator.
 }
 \section{Implemented Rules}{
 
@@ -41,4 +40,7 @@ jit_eval({
   nvl_mul(x, y)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_mul]{nv_mul()}}, \code{*}
 }

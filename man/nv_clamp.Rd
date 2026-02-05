@@ -21,6 +21,7 @@ Maximum value.}
 }
 \description{
 Element-wise clamp: max(min_val, min(operand, max_val)).
+Converts \code{min_val} and \code{max_val} to the data type of \code{operand}.
 }
 \details{
 The underlying stableHLO function already broadcasts scalars, so no need to broadcast manually.

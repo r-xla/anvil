@@ -18,7 +18,6 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise logical OR.
-For a more user-friendly interface, see \code{\link[=nv_or]{nv_or()}}, or use the \code{|} operator.
 }
 \section{Implemented Rules}{
 
@@ -41,4 +40,7 @@ jit_eval({
   nvl_or(x, y)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_or]{nv_or()}}, \code{|}
 }

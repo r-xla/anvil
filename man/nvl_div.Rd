@@ -18,7 +18,6 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Divides two tensors element-wise.
-For a more user-friendly interface, see \code{\link[=nv_div]{nv_div()}}, or use the \code{/} operator.
 }
 \section{StableHLO}{
 
@@ -33,4 +32,7 @@ jit_eval({
   nvl_div(x, y)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_div]{nv_div()}}, \code{/}
 }

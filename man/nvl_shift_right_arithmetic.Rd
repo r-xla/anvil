@@ -18,7 +18,6 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise arithmetic right bit shift.
-For a more user-friendly interface, see \code{\link[=nv_shift_right_arithmetic]{nv_shift_right_arithmetic()}}.
 }
 \section{Implemented Rules}{
 
@@ -41,4 +40,7 @@ jit_eval({
   nvl_shift_right_arithmetic(x, y)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_shift_right_arithmetic]{nv_shift_right_arithmetic()}}
 }

@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise sign.
-Is the same as \code{\link[=nv_sign]{nv_sign()}}. You can also use \code{\link[=sign]{sign()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_sign(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_sign]{nv_sign()}}, \code{\link[=sign]{sign()}}
 }

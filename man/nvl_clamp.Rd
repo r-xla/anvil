@@ -8,29 +8,34 @@ nvl_clamp(min_val, operand, max_val)
 }
 \arguments{
 \item{min_val}{(\code{\link{tensorish}})\cr
-Minimum value (scalar or same shape as operand).}
+Minimum value. Must be scalar or the same shape as \code{operand}.}
 
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{max_val}{(\code{\link{tensorish}})\cr
-Maximum value (scalar or same shape as operand).}
+Maximum value. Must be scalar or the same shape as \code{operand}.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type and shape as \code{operand}.
+It is ambiguous if the input is ambiguous.
 }
 \description{
-Element-wise clamp: max(min_val, min(operand, max_val)).
+Clamps every element of \code{operand} to the range \verb{[min_val, max_val]},
+i.e. \code{max(min_val, min(operand, max_val))}.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-\code{min_val} and \code{max_val} must each be either scalar or the same
-shape as \code{operand}. The output has the same shape as \code{operand}.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_clamp]{stablehlo::hlo_clamp()}}.
+Lowers to \code{\link[stablehlo:hlo_clamp]{stablehlo::hlo_clamp()}}.
 }
 
 \examples{
@@ -40,4 +45,7 @@ jit_eval({
   nvl_clamp(nv_scalar(0), x, nv_scalar(1))
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_clamp]{nv_clamp()}}
 }

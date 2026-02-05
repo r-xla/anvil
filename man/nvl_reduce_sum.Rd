@@ -27,7 +27,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Sums tensor elements along the specified dimensions.
-Is the same as \code{\link[=nv_reduce_sum]{nv_reduce_sum()}}.
 }
 \section{Implemented Rules}{
 
@@ -49,4 +48,7 @@ jit_eval({
   nvl_reduce_sum(x, dims = 1L)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_reduce_sum]{nv_reduce_sum()}}
 }

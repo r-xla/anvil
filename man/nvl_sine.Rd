@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise sine.
-Is the same as \code{\link[=nv_sine]{nv_sine()}}. You can also use \code{\link[=sin]{sin()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_sine(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_sine]{nv_sine()}}, \code{\link[=sin]{sin()}}
 }

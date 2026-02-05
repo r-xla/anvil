@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise tangent.
-Is the same as \code{\link[=nv_tan]{nv_tan()}}. You can also use \code{\link[=tan]{tan()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_tan(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_tan]{nv_tan()}}, \code{\link[=tan]{tan()}}
 }

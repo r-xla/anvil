@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise square root.
-Is the same as \code{\link[=nv_sqrt]{nv_sqrt()}}. You can also use \code{\link[=sqrt]{sqrt()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_sqrt(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_sqrt]{nv_sqrt()}}, \code{\link[=sqrt]{sqrt()}}
 }

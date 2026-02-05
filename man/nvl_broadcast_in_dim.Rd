@@ -8,30 +8,35 @@ nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{shape}{(\code{integer()})\cr
-Target shape.}
+Target shape. Each mapped dimension must either match the corresponding
+operand dimension or the operand dimension must be 1.}
 
 \item{broadcast_dimensions}{(\code{integer()})\cr
-Dimension mapping.}
+Maps each dimension of \code{operand} to a dimension of the output.
+Must have length equal to the number of dimensions of \code{operand}.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type as the input and the given \code{shape}.
+It is ambiguous if the input is ambiguous.
 }
 \description{
-Broadcasts a tensor to a new shape.
+Broadcasts a tensor to a new shape by replicating the data along new or size-1 dimensions.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-\code{length(broadcast_dimensions)} must equal the rank of \code{operand}.
-Each dimension of \code{operand} must either be 1 or match
-\code{shape[broadcast_dimensions[i]]}. Output shape is \code{shape}.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_broadcast_in_dim]{stablehlo::hlo_broadcast_in_dim()}}.
+Lowers to \code{\link[stablehlo:hlo_broadcast_in_dim]{stablehlo::hlo_broadcast_in_dim()}}.
 }
 
 \examples{
@@ -41,4 +46,7 @@ jit_eval({
   nvl_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_broadcast_to]{nv_broadcast_to()}}
 }

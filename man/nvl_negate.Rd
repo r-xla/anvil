@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Negates a tensor element-wise.
-Is the same as \code{\link[=nv_negate]{nv_negate()}}. You can also use the unary \code{-} operator.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_negate(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_negate]{nv_negate()}}, unary \code{-}
 }

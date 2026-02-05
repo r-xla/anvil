@@ -18,7 +18,6 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise minimum of two tensors.
-For a more user-friendly interface, see \code{\link[=nv_min]{nv_min()}}.
 }
 \section{StableHLO}{
 
@@ -33,4 +32,7 @@ jit_eval({
   nvl_min(x, y)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_min]{nv_min()}}
 }

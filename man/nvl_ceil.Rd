@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise ceiling.
-Is the same as \code{\link[=nv_ceil]{nv_ceil()}}. You can also use \code{\link[=ceiling]{ceiling()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_ceil(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_ceil]{nv_ceil()}}, \code{\link[=ceiling]{ceiling()}}
 }

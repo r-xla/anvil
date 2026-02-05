@@ -8,41 +8,71 @@ nvl_static_slice(operand, start_indices, limit_indices, strides)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{start_indices}{(\code{integer()})\cr
-Start indices (1-based).}
+Start indices (inclusive), one per dimension. Must satisfy
+\verb{1 <= start_indices <= limit_indices} per dimension.}
 
 \item{limit_indices}{(\code{integer()})\cr
-End indices (exclusive).}
+End indices (inclusive), one per dimension. Must satisfy
+\code{limit_indices <= nv_shape(operand)} per dimension.}
 
 \item{strides}{(\code{integer()})\cr
-Step sizes.}
+Step sizes, one per dimension. Must be \verb{>= 1}. A stride of \code{1}
+selects every element; a stride of \code{2} selects every other element, etc.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type as the input and shape
+\code{ceiling((limit_indices - start_indices + 1) / strides)}.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Extracts a slice from a tensor using static (compile-time) indices.
-For dynamic indices, use \code{\link[=nvl_dynamic_slice]{nvl_dynamic_slice()}}.
-}
-\section{Shapes}{
+All indices, limits, and strides are fixed R integers.
 
-\code{start_indices}, \code{limit_indices}, and \code{strides} must each have
-length equal to \code{rank(operand)}. Output shape is
-\code{ceiling((limit_indices - start_indices) / strides)}.
+Use \code{\link[=nvl_dynamic_slice]{nvl_dynamic_slice()}} instead when the start position must be
+computed at runtime (e.g. depends on tensor values).
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_slice]{stablehlo::hlo_slice()}}.
+Lowers to \code{\link[stablehlo:hlo_slice]{stablehlo::hlo_slice()}}.
 }
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+# 1-D: extract elements 2 through 4 (limit is exclusive)
 jit_eval({
   x <- nv_tensor(1:10)
   nvl_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 })
+
+# 1-D: every other element using strides
+jit_eval({
+  x <- nv_tensor(1:10)
+  nvl_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
+})
+
+# 2-D: extract a submatrix (rows 1-2, columns 2-3)
+jit_eval({
+  x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4))
+  nvl_static_slice(x,
+    start_indices = c(1L, 2L),
+    limit_indices = c(3L, 4L),
+    strides       = c(1L, 1L)
+  )
+})
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_dynamic_slice]{nvl_dynamic_slice()}}, \code{\link[=nvl_scatter]{nvl_scatter()}}, \code{\link[=nvl_gather]{nvl_gather()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{[}
 }

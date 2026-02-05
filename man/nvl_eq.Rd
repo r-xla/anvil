@@ -18,7 +18,6 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise equality comparison.
-For a more user-friendly interface, see \code{\link[=nv_eq]{nv_eq()}}, or use the \code{==} operator.
 }
 \section{StableHLO}{
 
@@ -33,4 +32,7 @@ jit_eval({
   nvl_eq(x, y)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_eq]{nv_eq()}}, \code{==}
 }

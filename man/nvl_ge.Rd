@@ -18,7 +18,6 @@ It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise greater than or equal comparison.
-For a more user-friendly interface, see \code{\link[=nv_ge]{nv_ge()}}, or use the \code{>=} operator.
 }
 \section{StableHLO}{
 
@@ -33,4 +32,7 @@ jit_eval({
   nvl_ge(x, y)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_ge]{nv_ge()}}, \code{>=}
 }

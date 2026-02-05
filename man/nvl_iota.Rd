@@ -25,23 +25,29 @@ Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and 
 See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the given \code{dtype} and \code{shape}.
 }
 \description{
 Creates a tensor with values increasing along the specified dimension.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Output shape is \code{shape}.
+\itemize{
+\item \code{stablehlo}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_iota]{stablehlo::hlo_iota()}}.
+Lowers to \code{\link[stablehlo:hlo_iota]{stablehlo::hlo_iota()}}.
 }
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval(nvl_iota(dim = 1L, dtype = "i32", shape = 5L))
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_iota]{nv_iota()}}
 }

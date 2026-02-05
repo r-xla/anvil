@@ -26,7 +26,6 @@ When \code{drop = FALSE}, the shape is that of \code{operand} with \code{dims} s
 }
 \description{
 Performs logical OR along the specified dimensions.
-Is the same as \code{\link[=nv_reduce_any]{nv_reduce_any()}}.
 }
 \section{Implemented Rules}{
 
@@ -48,4 +47,7 @@ jit_eval({
   nvl_reduce_any(x, dims = 1L)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_reduce_any]{nv_reduce_any()}}
 }

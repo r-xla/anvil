@@ -8,25 +8,30 @@ nvl_reverse(operand, dims)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{dims}{(\code{integer()})\cr
 Dimensions to reverse (1-indexed).}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type and shape as \code{operand}.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Reverses the order of elements along specified dimensions.
 }
-\section{Shapes}{
+\section{Implemented Rules}{
 
-Output has the same shape as \code{operand}.
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
 }
 
 \section{StableHLO}{
 
-Calls \code{\link[stablehlo:hlo_reverse]{stablehlo::hlo_reverse()}}.
+Lowers to \code{\link[stablehlo:hlo_reverse]{stablehlo::hlo_reverse()}}.
 }
 
 \examples{
@@ -36,4 +41,7 @@ jit_eval({
   nvl_reverse(x, dims = 1L)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_reverse]{nv_reverse()}}
 }

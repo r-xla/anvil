@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise absolute value.
-Is the same as \code{\link[=nv_abs]{nv_abs()}}. You can also use \code{\link[=abs]{abs()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_abs(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_abs]{nv_abs()}}, \code{\link[=abs]{abs()}}
 }

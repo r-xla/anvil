@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise cosine.
-Is the same as \code{\link[=nv_cosine]{nv_cosine()}}. You can also use \code{\link[=cos]{cos()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_cosine(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_cosine]{nv_cosine()}}, \code{\link[=cos]{cos()}}
 }

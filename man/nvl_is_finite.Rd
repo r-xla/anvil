@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise check if values are finite (not Inf, -Inf, or NaN).
-Is the same as \code{\link[=nv_is_finite]{nv_is_finite()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_is_finite(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_is_finite]{nv_is_finite()}}
 }

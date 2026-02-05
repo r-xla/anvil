@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise reciprocal square root.
-Is the same as \code{\link[=nv_rsqrt]{nv_rsqrt()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_rsqrt(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_rsqrt]{nv_rsqrt()}}
 }

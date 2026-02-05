@@ -17,7 +17,6 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise log(1 + x), more accurate for small x.
-Is the same as \code{\link[=nv_log1p]{nv_log1p()}}.
 }
 \section{Implemented Rules}{
 
@@ -39,4 +38,7 @@ jit_eval({
   nvl_log1p(x)
 })
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_log1p]{nv_log1p()}}
 }
