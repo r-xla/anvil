@@ -8,11 +8,26 @@ nv_add(lhs, rhs)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Left and right operand.
+Operands are \link[=nv_promote_to_common]{promoted to a common data type}.
+Scalars are \link[=nv_broadcast_scalars]{broadcast} to the shape of the other operand.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and the promoted common data type of the inputs.
 }
 \description{
-Element-wise addition of two tensors.
+Adds two tensors element-wise. You can also use the \code{+} operator.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  y <- nv_tensor(c(4, 5, 6))
+  x + y
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_add]{nvl_add()}} for the underlying primitive.
 }

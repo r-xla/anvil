@@ -2,23 +2,42 @@
 % Please edit documentation in R/api.R
 \name{nv_while}
 \alias{nv_while}
-\title{While}
+\title{While Loop}
 \usage{
 nv_while(init, cond, body)
 }
 \arguments{
 \item{init}{(\code{list()})\cr
-Initial state.}
+Named list of initial state values.}
 
 \item{cond}{(\code{function})\cr
-Condition function: \code{f: state -> bool}.}
+Condition function returning a scalar boolean.
+Receives the state values as arguments.}
 
 \item{body}{(\code{function})\cr
-Body function. \code{f: state -> state}.}
+Body function returning the updated state as a named list
+with the same structure as \code{init}.}
 }
 \value{
-\code{\link{tensorish}}
+Final state after the loop terminates (same structure as \code{init}).
 }
 \description{
-Functional while loop.
+Executes a functional while loop.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  nv_while(
+    init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
+    cond = function(i, total) i < 5L,
+    body = function(i, total) list(
+      i = i + 1L,
+      total = total + i
+    )
+  )
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_while]{nvl_while()}} for the underlying primitive.
 }

@@ -7,15 +7,31 @@
 nv_concatenate(..., dimension = NULL)
 }
 \arguments{
-\item{...}{tensors}
+\item{...}{(\code{\link{tensorish}})\cr
+Tensors to concatenate. Must have the same shape except along \code{dimension}.}
 
-\item{dimension}{(\code{integer()})\cr
-The dimension to concatenate along to. Other dimensions must be the same.
-If this is \code{NULL} (default), it assumes all ranks are at most 1 and the concatenation dimension is 1.}
+\item{dimension}{(\code{integer(1)} | \code{NULL})\cr
+Dimension along which to concatenate.
+If \code{NULL} (default), assumes all inputs are at most 1-D and concatenates along dimension 1.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the common data type and a shape matching the inputs in all
+dimensions except \code{dimension}, which is the sum of input sizes.
 }
 \description{
-Concatenate a variadic number of tensors.
+Concatenates tensors along a dimension. Operands are promoted to a common
+data type and scalars are broadcast before concatenation.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  y <- nv_tensor(c(4, 5, 6))
+  nv_concatenate(x, y)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_concatenate]{nvl_concatenate()}} for the underlying primitive.
 }

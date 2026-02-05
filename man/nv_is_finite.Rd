@@ -11,8 +11,20 @@ nv_is_finite(operand)
 Operand.}
 }
 \value{
-\code{\link{tensorish}} of boolean type
+\code{\link{tensorish}}\cr
+Has the same shape as the input and boolean data type.
 }
 \description{
-Element-wise check if values are finite (not Inf, -Inf, or NaN).
+Element-wise check if values are finite (not \code{Inf}, \code{-Inf}, or \code{NaN}).
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, Inf, NaN, -Inf, 0))
+  nv_is_finite(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_is_finite]{nvl_is_finite()}} for the underlying primitive.
 }

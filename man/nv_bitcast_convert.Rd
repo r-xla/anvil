@@ -10,8 +10,27 @@ nv_bitcast_convert(operand, dtype)
 \item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
 
-\item{dtype}{requested dtype}
+\item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+Target data type.}
+}
+\value{
+\code{\link{tensorish}}\cr
+Has the given \code{dtype}.
 }
 \description{
-Reinterpret Bits
+Reinterprets the bits of a tensor as a different data type without modifying
+the underlying data. If the target type is narrower, an extra trailing
+dimension is added; if wider, the last dimension is consumed.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(1L)
+  nvl_bitcast_convert(x, dtype = "i8")
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_bitcast_convert]{nvl_bitcast_convert()}} for the underlying primitive, \code{\link[=nv_convert]{nv_convert()}}
+for value-preserving type conversion.
 }

@@ -14,8 +14,20 @@ Operand.}
 Dimensions to reverse.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as \code{operand}.
 }
 \description{
 Reverses the order of elements along specified dimensions.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3, 4, 5))
+  nv_reverse(x, dims = 1L)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_reverse]{nvl_reverse()}} for the underlying primitive.
 }

@@ -7,15 +7,16 @@
 nv_matmul(lhs, rhs)
 }
 \arguments{
-\item{lhs}{(\code{\link{tensorish}})}
-
-\item{rhs}{(\code{\link{tensorish}})}
+\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+Tensors with at least 2 dimensions.
+Operands are \link[=nv_promote_to_common]{promoted to a common data type}.}
 }
 \value{
 \code{\link{tensorish}}
 }
 \description{
-Matrix multiplication of two tensors.
+Matrix multiplication of two tensors. You can also use the \code{\%*\%} operator.
+Supports batched matrix multiplication when inputs have more than 2 dimensions.
 }
 \section{Shapes}{
 
@@ -26,3 +27,15 @@ Matrix multiplication of two tensors.
 }
 }
 
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(matrix(1:6, nrow = 2))
+  y <- nv_tensor(matrix(1:6, nrow = 3))
+  x \%*\% y
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_dot_general]{nvl_dot_general()}} for the underlying primitive.
+}

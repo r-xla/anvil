@@ -1,10 +1,17 @@
-#' @title Generate random state
+#' @title Generate RNG State
 #' @name nv_rng_state
 #' @description
-#' lightweight function to generate an initial state
+#' Creates an initial RNG state from a seed. This state is required by all
+#' random sampling functions and is updated after each call.
 #' @param seed (`integer(1)`)\cr
-#'   Seed value
-#' @return [`nv_tensor`] of dtype `ui64` and shape (2)
+#'   Seed value.
+#' @return [`nv_tensor`] of dtype `ui64` and shape `(2)`.
+#' @family rng
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   state <- nv_rng_state(42L)
+#'   state
+#' })
 #' @export
 nv_rng_state <- function(seed) {
   checkmate::assert_int(seed)

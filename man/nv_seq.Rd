@@ -8,7 +8,7 @@ nv_seq(start, end, dtype = "i32", ambiguous = FALSE)
 }
 \arguments{
 \item{start, end}{(\code{integer(1)})\cr
-Start and end values.}
+Start and end values. Must satisfy \code{start <= end}.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}
@@ -19,8 +19,18 @@ Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and 
 See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+1-D tensor of length \code{end - start + 1}.
 }
 \description{
-Creates a tensor with values increasing from start to end.
+Creates a 1-D tensor with integer values from \code{start} to \code{end} (inclusive),
+analogous to R's \code{seq(start, end)}.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval(nv_seq(3, 7))
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_iota]{nv_iota()}} for multi-dimensional sequences.
 }

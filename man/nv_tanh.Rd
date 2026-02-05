@@ -11,8 +11,20 @@ nv_tanh(operand)
 Operand.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
 }
 \description{
-Element-wise hyperbolic tangent.
+Element-wise hyperbolic tangent. You can also use \code{tanh()}.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(-1, 0, 1))
+  tanh(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_tanh]{nvl_tanh()}} for the underlying primitive.
 }

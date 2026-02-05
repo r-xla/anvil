@@ -14,14 +14,37 @@ nv_subset(x, ...)
 }
 \arguments{
 \item{x}{(\code{\link{tensorish}})\cr
-Input tensor to subset.}
+Tensor to subset.}
 
-\item{...}{Subset specifications.}
+\item{...}{\cr
+Subset specifications, one per dimension. Omitted trailing dimensions
+select all elements. See \code{vignette("subsetting")} for details.}
 }
 \value{
 \code{\link{tensorish}}
 }
 \description{
-Extracts a subset from a tensor.
-See vignette("subsetting") for more details.
+Extracts a subset from a tensor. You can also use the \code{[} operator.
+Supports R-style indexing including scalar indices (which drop dimensions),
+ranges (\code{a:b}), and \code{list()} for selecting multiple elements along a
+dimension.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(matrix(1:12, nrow = 3))
+  # Select row 2
+  x[2, ]
+})
+
+jit_eval({
+  x <- nv_tensor(matrix(1:12, nrow = 3))
+  # Select rows 1 to 2, all columns
+  x[1:2, ]
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_subset_assign]{nv_subset_assign()}} for updating subsets, \code{vignette("subsetting")}
+for a comprehensive guide.
 }

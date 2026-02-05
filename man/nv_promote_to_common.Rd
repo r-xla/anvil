@@ -16,3 +16,13 @@ Tensors to promote.}
 \description{
 Promote tensors to a common data type, see \code{\link{common_dtype}} for more details.
 }
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(1L)
+  y <- nv_tensor(1.5)
+  # integer is promoted to float
+  nv_promote_to_common(x, y)
+})
+\dontshow{\}) # examplesIf}
+}

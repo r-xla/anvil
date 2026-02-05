@@ -38,13 +38,10 @@ Lowers to \code{\link[stablehlo:hlo_bitcast_convert]{stablehlo::hlo_bitcast_conv
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-# 1xi32 -> (32/8 * 1)xi8 = 4xi8
 jit_eval({
   x <- nv_tensor(1L)
   nvl_bitcast_convert(x, dtype = "i8")
 })
-
-# 4xi8 -> (4 * 8/32)xi32 = 1xi32
 jit_eval({
   x <- nv_tensor(rep(1L, 4), dtype = "i8")
   nvl_bitcast_convert(x, dtype = "i32")
