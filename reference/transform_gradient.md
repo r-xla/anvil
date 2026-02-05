@@ -1,9 +1,20 @@
 # Transform a graph to its gradient
 
-Transform a graph to its gradient. This is a low-level function that
-should usually not be used directly. Use
-[`gradient()`](https://r-xla.github.io/anvil/reference/gradient.md)
-instead.
+Low-level graph transformation that appends the backward pass to a
+traced
+[`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md).
+The function `f` represented by `graph` must return a single float
+scalar. The resulting graph computes the gradients of that scalar with
+respect to the inputs specified by `wrt`.
+
+The backward rules are stored in `$rules[["backward"]]` of the
+primitives.
+
+This is the building block used by
+[`gradient()`](https://r-xla.github.io/anvil/reference/gradient.md) and
+[`value_and_gradient()`](https://r-xla.github.io/anvil/reference/value_and_gradient.md);
+prefer those higher-level wrappers unless you need to operate on graphs
+directly.
 
 ## Usage
 
@@ -16,14 +27,46 @@ transform_gradient(graph, wrt)
 - graph:
 
   ([`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md))  
-  The graph to transform.
+  The graph to transform. Must produce a single scalar float output.
 
 - wrt:
 
   (`character`)  
-  The names of the variables to compute the gradient with respect to.
+  Names of the graph inputs to differentiate with respect to.
 
 ## Value
 
 An [`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md)
-object.
+whose outputs are the requested gradients.
+
+## See also
+
+[`gradient()`](https://r-xla.github.io/anvil/reference/gradient.md),
+[`value_and_gradient()`](https://r-xla.github.io/anvil/reference/value_and_gradient.md)
+
+## Examples
+
+``` r
+graph <- trace_fn(nvl_mul, list(nv_aten("f32", c()), nv_aten("f32", c())))
+graph
+#> <AnvilGraph>
+#>   Inputs:
+#>     %x1: f32[]
+#>     %x2: f32[]
+#>   Body:
+#>     %1: f32[] = mul(%x1, %x2)
+#>   Outputs:
+#>     %1: f32[] 
+transform_gradient(graph, "lhs")
+#> <AnvilGraph>
+#>   Inputs:
+#>     %x1: f32[]
+#>     %x2: f32[]
+#>   Constants:
+#>     %c1: f32[]
+#>   Body:
+#>     %1: f32[] = mul(%x1, %x2)
+#>     %2: f32[] = mul(%c1, %x2)
+#>   Outputs:
+#>     %2: f32[] 
+```

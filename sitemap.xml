@@ -218,6 +218,7 @@
 <url><loc>https://r-xla.github.io/anvil/reference/tree_size.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/unflatten.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/unwrap_if_tensor.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/reference/value_and_gradient.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/vt2at.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/reference/xla.html</loc></url>
 </urlset>

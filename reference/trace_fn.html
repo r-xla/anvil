@@ -5,7 +5,13 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Trace an R function into a Graph — trace_fn"><meta name="description" content="Create a graph representation of an R function by tracing."><meta property="og:description" content="Create a graph representation of an R function by tracing."></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Trace an R function into a Graph — trace_fn"><meta name="description" content="Executes f with abstract tensor arguments and records every primitive operation into
+an AnvilGraph.
+The resulting graph can be lowered to StableHLO (via stablehlo()) or transformed
+(e.g. via transform_gradient())."><meta property="og:description" content="Executes f with abstract tensor arguments and records every primitive operation into
+an AnvilGraph.
+The resulting graph can be lowered to StableHLO (via stablehlo()) or transformed
+(e.g. via transform_gradient())."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -65,7 +71,10 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Create a graph representation of an R function by tracing.</p>
+    <p>Executes <code>f</code> with abstract tensor arguments and records every primitive operation into
+an <code><a href="AnvilGraph.html">AnvilGraph</a></code>.</p>
+<p>The resulting graph can be lowered to StableHLO (via <code><a href="stablehlo.html">stablehlo()</a></code>) or transformed
+(e.g. via <code><a href="transform_gradient.html">transform_gradient()</a></code>).</p>
     </div>
 
     <div class="section level2">
@@ -87,47 +96,68 @@
 
 <dl><dt id="arg-f">f<a class="anchor" aria-label="anchor" href="#arg-f"></a></dt>
 <dd><p>(<code>function</code>)<br>
-The function to trace_fn.</p></dd>
+The function to trace. Must not be a <code>JitFunction</code> (i.e. already jitted).</p></dd>
 
 
 <dt id="arg-args">args<a class="anchor" aria-label="anchor" href="#arg-args"></a></dt>
 <dd><p>(<code>list</code> of (<code><a href="AnvilTensor.html">AnvilTensor</a></code> | <code><a href="AbstractTensor.html">AbstractTensor</a></code>))<br>
-The (unflattened) arguments to the function.</p></dd>
+The (unflattened) arguments to the function. Mutually exclusive with the
+<code>args_flat</code>/<code>in_tree</code> pair.</p></dd>
 
 
 <dt id="arg-desc">desc<a class="anchor" aria-label="anchor" href="#arg-desc"></a></dt>
 <dd><p>(<code>NULL</code> | <code>GraphDescriptor</code>)<br>
-The descriptor to use for the graph.</p></dd>
+Optional descriptor. When <code>NULL</code> (default), a new descriptor is created.</p></dd>
 
 
 <dt id="arg-toplevel">toplevel<a class="anchor" aria-label="anchor" href="#arg-toplevel"></a></dt>
 <dd><p>(<code>logical(1)</code>)<br>
-Whether the function is being traced at the top level.
-If this is <code>TRUE</code>, inputs that are <code>AnvilTensor</code>s are treated as unknown.
-If this is <code>FALSE</code> (default), <code>AnvilTensor</code>s are treated as constants.</p></dd>
+If <code>TRUE</code>, concrete <code><a href="AnvilTensor.html">AnvilTensor</a></code> inputs are treated as unknown (traced) values.
+If <code>FALSE</code> (default), they are treated as known constants.</p></dd>
 
 
 <dt id="arg-lit-to-tensor">lit_to_tensor<a class="anchor" aria-label="anchor" href="#arg-lit-to-tensor"></a></dt>
 <dd><p>(<code>logical(1)</code>)<br>
-Whether to convert literal inputs to <code>AnvilTensor</code>s.
-Should only be used for higher-order primitives like if and while, where no static inputs are possible.</p></dd>
+Whether to convert literal inputs to tensors. Used internally by higher-order
+primitives such as <code>nv_if</code> and <code>nv_while</code>.</p></dd>
 
 
 <dt id="arg-args-flat">args_flat<a class="anchor" aria-label="anchor" href="#arg-args-flat"></a></dt>
 <dd><p>(<code>list</code>)<br>
-The flattened arguments. Also requires passing <code>in_tree</code>.</p></dd>
+Flattened arguments. Must be accompanied by <code>in_tree</code>.</p></dd>
 
 
 <dt id="arg-in-tree">in_tree<a class="anchor" aria-label="anchor" href="#arg-in-tree"></a></dt>
 <dd><p>(<code>Node</code>)<br>
-The tree structure of the arguments.</p></dd>
+Tree structure describing how <code>args_flat</code> maps back to <code>f</code>'s arguments.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>(<code><a href="AnvilGraph.html">AnvilGraph</a></code>)</p>
+    <p>An <code><a href="AnvilGraph.html">AnvilGraph</a></code> containing the traced operations.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="stablehlo.html">stablehlo()</a></code> to lower the graph, <code><a href="jit.html">jit()</a></code> / <code><a href="xla.html">xla()</a></code> for end-to-end
+compilation.</p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu">trace_fn</span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="va">y</span>,</span></span>
+<span class="r-in"><span>  args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">1</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">2</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">graph</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;AnvilGraph&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Inputs:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     %x1: f32[1]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     %x2: f32[1]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Body:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     %1: f32[1] = add(%x1, %x2)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Outputs:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     %1: f32[1] </span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

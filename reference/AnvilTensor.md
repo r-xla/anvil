@@ -110,9 +110,11 @@ Tensors can be serialized to and from the
 
 ## See also
 
-nv_fill, nv_iota, nv_seq, as_array,
-[`nv_save()`](https://r-xla.github.io/anvil/reference/nv_save.md),
-[`nv_serialize()`](https://r-xla.github.io/anvil/reference/nv_serialize.md)
+[nv_fill](https://r-xla.github.io/anvil/reference/nv_fill.md),
+[nv_iota](https://r-xla.github.io/anvil/reference/nv_iota.md),
+[nv_seq](https://r-xla.github.io/anvil/reference/nv_seq.md),
+[as_array](https://r-xla.github.io/anvil/reference/as_array.md),
+[nv_serialize](https://r-xla.github.io/anvil/reference/nv_serialize.md)
 
 ## Examples
 
