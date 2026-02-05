@@ -1992,7 +1992,7 @@ p_print <- AnvilPrimitive("print")
 #' Uses [stablehlo::hlo_custom_call()] internally.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
+#'   x <- nv_tensor(c(1, 2, 3), device = "cpu")
 #'   nvl_print(x)
 #' })
 #' @export
