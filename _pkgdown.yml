@@ -75,11 +75,10 @@ reference:
   - title: Tensor Serialization
     desc: Functions for serializing and deserializing tensors
     contents:
+      - nv_save
+      - nv_read
       - nv_serialize
       - nv_unserialize
-      - nv_write
-      - nv_read
-      - nv_serialization
 
   - title: Type conversion and promotion
     desc: Functions for type conversion and promotion

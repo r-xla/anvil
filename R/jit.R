@@ -209,11 +209,13 @@ xla <- function(f, args, donate = character(), device = NULL) {
 #' @param expr (`expression`)\cr
 #'   Expression to run.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
-#'   The device to use if no input tensors are provided.
+#'   The device to use if no input tensors are provided. Defaults to `"cpu"`.
 #' @return (`any`)\cr
 #'   Result of the expression.
 #' @export
-jit_eval <- function(expr, device = NULL) {
+jit_eval <- function(expr, device = "cpu") {
+  # If we respect `PJRT_PLATFORM` here we always have to specify the device explicitly.
+  # TODO: https://github.com/r-xla/anvil/issues/172
   expr <- substitute(expr)
   eval_env <- new.env(parent = parent.frame())
   jit(\() eval(expr, envir = eval_env), device = device)()

@@ -1,37 +1,28 @@
-#' @title Tensor serialization and I/O
-#' @name nv_serialization
+#' @title Save tensors to a file
+#'
 #' @description
-#' Read and write tensors using the safetensors format.
-#' to/from raw vectors in memory.
-#'
-#' @param tensors (named `list` of [`AnvilTensor`])\cr
-#'   Named list of tensors.
-#' @param path (`character(1)`)\cr
-#'   Path to the safetensors file.
-#' @param con (connection)\cr
-#'   A connection object to read/write from.
-#' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
-#'   The device for the tensor (`"cpu"`, `"cuda"`, ...).
-#'   Default is to use the CPU.
-#'
-#' @return
-#' - `nv_write()`: `NULL` (invisibly)
-#' - `nv_read()`: Named list of [`AnvilTensor`] objects
-#' - `nv_serialize()`: Raw vector containing serialized tensors
-#' - `nv_unserialize()`: Named list of [`AnvilTensor`] objects
+#' Saves a named list of tensors to a file in the
+#' [safetensors](https://huggingface.co/docs/safetensors/index) format.
 #'
 #' @details
-#' These functions wrap the safetensors format functionality provided by the
-#' \CRANpkg{safetensors} package.
+#' This is a convenience wrapper around [`nv_serialize()`] that opens and closes
+#' a file connection.
 #'
+#' @param tensors (named `list` of [`AnvilTensor`])\cr
+#'   Named list of tensors to save. Names must be unique.
+#' @param path (`character(1)`)\cr
+#'   File path to write to.
+#'
+#' @returns `NULL` (invisibly).
+#' @seealso [nv_read()], [nv_serialize()], [nv_unserialize()]
 #' @export
 #' @examplesIf pjrt::plugin_is_downloaded("cpu")
 #' x <- nv_tensor(array(1:6, dim = c(2, 3)))
-#' raw_data <- nv_serialize(list(x = x))
-#' raw_data
-#' reloaded <- nv_unserialize(raw_data)
-#' reloaded
-nv_write <- function(tensors, path) {
+#' x
+#' path <- tempfile(fileext = ".safetensors")
+#' nv_save(list(x = x), path)
+#' nv_read(path)
+nv_save <- function(tensors, path) {
   checkmate::assert_list(tensors, names = "unique", types = "AnvilTensor")
   checkmate::assert_string(path)
 
@@ -41,8 +32,31 @@ nv_write <- function(tensors, path) {
   invisible(NULL)
 }
 
-#' @rdname nv_serialization
+#' @title Read tensors from a file
+#'
+#' @description
+#' Loads tensors from a file in the
+#' [safetensors](https://huggingface.co/docs/safetensors/index) format.
+#'
+#' @details
+#' This is a convenience wrapper around [`nv_unserialize()`] that opens and
+#' closes a file connection.
+#'
+#' @param path (`character(1)`)\cr
+#'   Path to the safetensors file.
+#' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
+#'   The device on which to place the loaded tensors (`"cpu"`, `"cuda"`, ...).
+#'   Default is to use the CPU.
+#'
+#' @returns Named `list` of [`AnvilTensor`] objects.
+#' @seealso [nv_save()], [nv_serialize()], [nv_unserialize()]
 #' @export
+#' @examplesIf pjrt::plugin_is_downloaded("cpu")
+#' x <- nv_tensor(array(1:6, dim = c(2, 3)))
+#' x
+#' path <- tempfile(fileext = ".safetensors")
+#' nv_save(list(x = x), path)
+#' nv_read(path)
 nv_read <- function(path, device = NULL) {
   checkmate::assert_string(path)
   checkmate::assert_file_exists(path)
@@ -51,8 +65,30 @@ nv_read <- function(path, device = NULL) {
   nv_unserialize(con, device = device)
 }
 
-#' @rdname nv_serialization
+#' @title Serialize tensors to raw bytes
+#'
+#' @description
+#' Serializes a named list of tensors into the
+#' [safetensors](https://huggingface.co/docs/safetensors/index) format.
+#'
+#' @details
+#' The ambiguity of the tensors is stored in the metadata and preserved in write-read roundtrips.
+#'
+#' @param tensors (named `list` of [`AnvilTensor`])\cr
+#'   Named list of tensors to serialize. Names must be unique.
+#' @param con (`NULL` | connection)\cr
+#'   An optional connection to write to.
+#'   If `NULL` (default), a raw vector is returned.
+#'
+#' @returns A [`raw`] vector if `con` is `NULL`, otherwise `NULL` (invisibly).
+#' @seealso [nv_unserialize()], [nv_save()], [nv_read()]
 #' @export
+#' @examplesIf pjrt::plugin_is_downloaded("cpu")
+#' x <- nv_tensor(array(1:6, dim = c(2, 3)))
+#' x
+#' raw_data <- nv_serialize(list(x = x))
+#' raw_data
+#' nv_unserialize(raw_data)
 nv_serialize <- function(tensors, con = NULL) {
   checkmate::assert_list(tensors, names = "unique", types = "AnvilTensor")
 
@@ -75,8 +111,31 @@ nv_serialize <- function(tensors, con = NULL) {
   }
 }
 
-#' @rdname nv_serialization
+#' @title Deserialize tensors from raw bytes
+#'
+#' @description
+#' Deserializes tensors from the
+#' [safetensors](https://huggingface.co/docs/safetensors/index) format.
+#'
+#' @details
+#' The data type, shape, and [ambiguity][ambiguous()] of each tensor are
+#' restored from the serialized data.
+#'
+#' @param con (connection | [`raw`])\cr
+#'   A connection or raw vector to read from.
+#' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
+#'   The device on which to place the loaded tensors (`"cpu"`, `"cuda"`, ...).
+#'   Default is to use the CPU.
+#'
+#' @returns Named `list` of [`AnvilTensor`] objects.
+#' @seealso [nv_serialize()], [nv_save()], [nv_read()]
 #' @export
+#' @examplesIf pjrt::plugin_is_downloaded("cpu")
+#' x <- nv_tensor(array(1:6, dim = c(2, 3)))
+#' x
+#' raw_data <- nv_serialize(list(x = x))
+#' raw_data
+#' nv_unserialize(raw_data)
 nv_unserialize <- function(con, device = NULL) {
   result <- safetensors::safe_load_file(con, framework = "pjrt", device = device)
 
