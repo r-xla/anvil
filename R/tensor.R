@@ -213,22 +213,6 @@ as_raw.AnvilTensor <- function(x, row_major = FALSE, ...) {
   tengen::as_raw(x$tensor, row_major = row_major)
 }
 
-#' @title Platform
-#' @description
-#' Get the platform of a tensor or PJRT object.
-#' @param x A tensor or PJRT object.
-#' @param ... Additional arguments (unused).
-#' @return The platform string.
-#' @export
-platform <- function(x, ...) {
-  UseMethod("platform")
-}
-
-#' @export
-platform.default <- function(x, ...) {
-  pjrt::platform(x, ...)
-}
-
 #' @method ndims AnvilTensor
 #' @export
 ndims.AnvilTensor <- function(x, ...) {

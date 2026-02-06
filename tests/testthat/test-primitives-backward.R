@@ -821,8 +821,5 @@ describe("gather/scatter backward via subset operators", {
 })
 
 if (nzchar(system.file(package = "torch"))) {
-  source(
-    system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"),
-    local = TRUE
-  )
+  source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
 }
