@@ -85,6 +85,30 @@ binary_case <- function(op, name, seed, adjust_y = NULL) {
   list(quickr_case(function(x, y) op(x, y), templates, list(x = x, y = y), info = name))
 }
 
+compare_case <- function(op, name, seed) {
+  withr::local_seed(seed)
+  shape <- c(2L, 3L)
+  x <- make_input(shape)
+  y <- make_input(shape)
+  templates <- list(
+    x = make_template(shape),
+    y = make_template(shape)
+  )
+  list(quickr_case(function(x, y) op(x, y), templates, list(x = x, y = y), info = name))
+}
+
+pred_binary_case <- function(op, name, seed) {
+  withr::local_seed(seed)
+  shape <- c(2L, 3L)
+  x <- matrix(sample(c(TRUE, FALSE), 6, replace = TRUE), nrow = 2, ncol = 3)
+  y <- matrix(sample(c(TRUE, FALSE), 6, replace = TRUE), nrow = 2, ncol = 3)
+  templates <- list(
+    x = make_template(shape, dtype = "pred"),
+    y = make_template(shape, dtype = "pred")
+  )
+  list(quickr_case(function(x, y) op(x, y), templates, list(x = x, y = y), info = name))
+}
+
 quickr_pjrt_cases <- list(
   fill = function() {
     case <- function(value, shape, dtype, info) {
@@ -218,6 +242,63 @@ quickr_pjrt_cases <- list(
       list(x = x),
       info = "reduce_sum"
     ))
+  },
+  select = function() {
+    withr::local_seed(13)
+
+    shape <- c(2L, 3L)
+    pred <- matrix(sample(c(TRUE, FALSE), 6, replace = TRUE), nrow = 2, ncol = 3)
+    x <- make_input(shape)
+    y <- make_input(shape)
+
+    list(quickr_case(
+      function(pred, x, y) nvl_ifelse(pred, x, y),
+      list(
+        pred = make_template(shape, dtype = "pred"),
+        x = make_template(shape, dtype = "f64"),
+        y = make_template(shape, dtype = "f64")
+      ),
+      list(pred = pred, x = x, y = y),
+      info = "select"
+    ))
+  },
+  equal = function() {
+    compare_case(nv_eq, "eq", seed = 14)
+  },
+  not_equal = function() {
+    compare_case(nv_ne, "ne", seed = 15)
+  },
+  greater = function() {
+    compare_case(nv_gt, "gt", seed = 16)
+  },
+  greater_equal = function() {
+    compare_case(nv_ge, "ge", seed = 17)
+  },
+  less = function() {
+    compare_case(nv_lt, "lt", seed = 18)
+  },
+  less_equal = function() {
+    compare_case(nv_le, "le", seed = 19)
+  },
+  and = function() {
+    pred_binary_case(nv_and, "and", seed = 20)
+  },
+  or = function() {
+    pred_binary_case(nv_or, "or", seed = 21)
+  },
+  xor = function() {
+    pred_binary_case(nv_xor, "xor", seed = 22)
+  },
+  not = function() {
+    withr::local_seed(23)
+    shape <- c(2L, 3L)
+    x <- matrix(sample(c(TRUE, FALSE), 6, replace = TRUE), nrow = 2, ncol = 3)
+    list(quickr_case(
+      function(x) nv_not(x),
+      list(x = make_template(shape, dtype = "pred")),
+      list(x = x),
+      info = "not"
+    ))
   }
 )
 
@@ -229,6 +310,17 @@ quickr_primitives <- sort(c(
   "mul",
   "divide",
   "negate",
+  "equal",
+  "not_equal",
+  "greater",
+  "greater_equal",
+  "less",
+  "less_equal",
+  "and",
+  "or",
+  "xor",
+  "not",
+  "select",
   "broadcast_in_dim",
   "dot_general",
   "transpose",

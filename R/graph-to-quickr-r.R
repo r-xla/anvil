@@ -666,6 +666,93 @@ quickr_lower_registry <- local({
 
   quickr_register_prim_lowerer(
     reg,
+    c("equal", "not_equal", "greater", "greater_equal", "less", "less_equal"),
+    function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      dt_lhs <- as.character(dtype(input_nodes[[1L]]$aval))
+      dt_rhs <- as.character(dtype(input_nodes[[2L]]$aval))
+
+      if (dt_lhs %in% c("pred", "i1") || dt_rhs %in% c("pred", "i1")) {
+        if (!prim_name %in% c("equal", "not_equal")) {
+          cli_abort("{prim_name}: comparisons on {.val pred} values are not supported by quickr lowering")
+        }
+
+        a <- inputs[[1L]]
+        b <- inputs[[2L]]
+        not_a <- rlang::call2("!", a)
+        not_b <- rlang::call2("!", b)
+
+        eqv <- rlang::call2(
+          "|",
+          rlang::call2("&", a, b),
+          rlang::call2("&", not_a, not_b)
+        )
+        xor_expr <- rlang::call2(
+          "|",
+          rlang::call2("&", a, not_b),
+          rlang::call2("&", not_a, b)
+        )
+
+        out_expr <- if (prim_name == "equal") eqv else xor_expr
+        return(quickr_emit_assign(out_syms[[1L]], out_expr))
+      }
+
+      op <- switch(
+        prim_name,
+        equal = "==",
+        not_equal = "!=",
+        greater = ">",
+        greater_equal = ">=",
+        less = "<",
+        less_equal = "<=",
+        cli_abort("Internal error: unknown comparison primitive: {.val {prim_name}}")
+      )
+      quickr_emit_assign(out_syms[[1L]], rlang::call2(op, inputs[[1L]], inputs[[2L]]))
+    }
+  )
+
+  quickr_register_prim_lowerer(
+    reg,
+    c("and", "or", "xor"),
+    function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      dt <- as.character(dtype(input_nodes[[1L]]$aval))
+      if (!dt %in% c("pred", "i1")) {
+        cli_abort("{prim_name}: only {.val pred} dtype is supported by quickr lowering")
+      }
+
+      a <- inputs[[1L]]
+      b <- inputs[[2L]]
+      not_a <- rlang::call2("!", a)
+      not_b <- rlang::call2("!", b)
+
+      out_expr <- switch(
+        prim_name,
+        and = rlang::call2("&", a, b),
+        or = rlang::call2("|", a, b),
+        xor = rlang::call2(
+          "|",
+          rlang::call2("&", a, not_b),
+          rlang::call2("&", not_a, b)
+        ),
+        cli_abort("Internal error: unknown boolean primitive: {.val {prim_name}}")
+      )
+      quickr_emit_assign(out_syms[[1L]], out_expr)
+    }
+  )
+
+  quickr_register_prim_lowerer(reg, "not", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+    dt <- as.character(dtype(input_nodes[[1L]]$aval))
+    if (!dt %in% c("pred", "i1")) {
+      cli_abort("not: only {.val pred} dtype is supported by quickr lowering")
+    }
+    quickr_emit_assign(out_syms[[1L]], rlang::call2("!", inputs[[1L]]))
+  })
+
+  quickr_register_prim_lowerer(reg, "select", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+    quickr_emit_assign(out_syms[[1L]], rlang::call2("ifelse", inputs[[1L]], inputs[[2L]], inputs[[3L]]))
+  })
+
+  quickr_register_prim_lowerer(
+    reg,
     "broadcast_in_dim",
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
       out_sym <- out_syms[[1L]]

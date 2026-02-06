@@ -275,7 +275,7 @@ test_that("graph_to_quickr_function matches PJRT for convert scalar and rank-3",
 test_that("graph_to_quickr_function errors on unsupported primitives and ranks", {
   testthat::skip_if_not_installed("quickr")
 
-  graph <- trace_fn(function(x) nv_exp(x), list(x = nv_scalar(0.0, dtype = "f64")))
+  graph <- trace_fn(function(x) nv_logistic(x), list(x = nv_scalar(0.0, dtype = "f64")))
   expect_error(graph_to_quickr_function(graph), "does not support these primitives", fixed = FALSE)
 
   # input rank > 5 is rejected during quickr argument declaration
