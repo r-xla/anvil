@@ -4,7 +4,11 @@ NULL
 # Helpers ----------------------------------------------------------------------
 
 quickr_user_arg_names <- function(n) {
-  paste0("x", seq_len(as.integer(n)))
+  n <- as.integer(n)
+  if (!n) {
+    return(character())
+  }
+  paste0("x", seq_len(n))
 }
 
 quickr_dtype_to_r_ctor <- function(dt_chr) {
@@ -90,30 +94,52 @@ quickr_emit_full_like <- function(out_sym, value_expr, shape_out, out_aval) {
   )
 }
 
-quickr_emit_convert <- function(out_sym, operand_expr, shape_in, out_aval) {
+quickr_emit_convert <- function(out_sym, operand_expr, shape_in, in_aval, out_aval) {
   shape_in <- as.integer(shape_in)
   rank <- length(shape_in)
-  dt_chr <- as.character(dtype(out_aval))
+  dt_out <- as.character(dtype(out_aval))
+  dt_in <- as.character(dtype(in_aval))
 
-  caster <- if (dt_chr %in% c("f32", "f64")) {
-    "as.double"
-  } else if (grepl("^(u?i)(8|16|32|64)$", dt_chr)) {
-    "as.integer"
-  } else if (dt_chr %in% c("pred", "i1")) {
-    "as.logical"
-  } else {
-    cli_abort("convert: unsupported dtype: {.val {dt_chr}}")
+  cast_expr <- function(expr) {
+    if (dt_out %in% c("f32", "f64")) {
+      return(rlang::call2("as.double", expr))
+    }
+
+    if (grepl("^(u?i)(8|16|32|64)$", dt_out)) {
+      if (grepl("^(u?i)(8|16|32|64)$", dt_in)) {
+        return(expr)
+      }
+      if (dt_in %in% c("pred", "i1")) {
+        return(rlang::call2("ifelse", expr, 1L, 0L))
+      }
+      # StableHLO convert truncates toward zero; implement via floor/ceiling.
+      return(rlang::call2(
+        "ifelse",
+        rlang::call2(">=", expr, 0),
+        rlang::call2("floor", expr),
+        rlang::call2("ceiling", expr)
+      ))
+    }
+
+    if (dt_out %in% c("pred", "i1")) {
+      if (dt_in %in% c("pred", "i1")) {
+        return(expr)
+      }
+      return(rlang::call2("!=", expr, 0))
+    }
+
+    cli_abort("convert: unsupported dtype: {.val {dt_out}}")
   }
 
   if (rank == 0L) {
-    return(quickr_emit_assign(out_sym, rlang::call2(caster, operand_expr)))
+    return(quickr_emit_assign(out_sym, cast_expr(operand_expr)))
   }
   if (rank > 5L) {
     cli_abort("convert: only tensors up to rank 5 are supported")
   }
 
   out_zero <- quickr_zero_literal_for(out_aval)
-  ctor <- quickr_dtype_to_r_ctor(dt_chr)
+  ctor <- quickr_dtype_to_r_ctor(dt_out)
   alloc_out <- if (rank == 1L) {
     rlang::call2(ctor, as.integer(shape_in[[1L]]))
   } else if (rank == 2L) {
@@ -126,7 +152,7 @@ quickr_emit_convert <- function(out_sym, operand_expr, shape_in, out_aval) {
   subscript <- function(expr, idxs) as.call(c(list(as.name("["), expr), idxs))
   in_at <- subscript(operand_expr, idxs)
   out_at <- subscript(out_sym, idxs)
-  inner <- rlang::call2("<-", out_at, rlang::call2(caster, in_at))
+  inner <- rlang::call2("<-", out_at, cast_expr(in_at))
 
   body <- inner
   for (d in seq_len(rank)) {
@@ -611,7 +637,7 @@ quickr_register_prim_lowerer <- function(registry, name, fun) {
 quickr_lower_registry <- local({
   reg <- new.env(parent = emptyenv())
 
-  quickr_register_prim_lowerer(reg, "constant", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+  quickr_register_prim_lowerer(reg, "fill", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
     out_sym <- out_syms[[1L]]
     out_aval <- out_avals[[1L]]
     dt_chr <- as.character(params$dtype)
@@ -623,7 +649,7 @@ quickr_lower_registry <- local({
     out_sym <- out_syms[[1L]]
     out_aval <- out_avals[[1L]]
     operand_node <- input_nodes[[1L]]
-    quickr_emit_convert(out_sym, inputs[[1L]], shape(operand_node$aval), out_aval)
+    quickr_emit_convert(out_sym, inputs[[1L]], shape(operand_node$aval), operand_node$aval, out_aval)
   })
 
   quickr_register_prim_lowerer(

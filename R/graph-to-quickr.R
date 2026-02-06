@@ -13,7 +13,7 @@ NULL
 #' function returns the same structure by packing/unpacking values for `quickr`.
 #'
 #' Currently supported primitives are:
-#' `constant`, `convert`, `add`, `sub`, `mul`, `divide`, `negate`, `broadcast_in_dim`,
+#' `fill`, `convert`, `add`, `sub`, `mul`, `divide`, `negate`, `broadcast_in_dim`,
 #' `dot_general`, `transpose`, `reshape`, `sum`.
 #' The code generator currently supports tensors up to rank 5. Some primitives
 #' are more restricted (e.g. `transpose` currently only handles rank-2 tensors).
@@ -33,7 +33,14 @@ graph_to_quickr_function <- function(graph) {
   needs_flatten <- inherits(in_tree, "ListNode") && any(vapply(in_tree$nodes, inherits, logical(1L), "ListNode"))
 
   needs_pack <- !(inherits(graph$out_tree, "LeafNode") && length(graph$outputs) == 1L)
-  needs_wrapper <- isTRUE(needs_pack) || length(graph$constants) || isTRUE(needs_flatten)
+  out_infos <- lapply(graph$outputs, function(node) {
+    list(dtype = as.character(dtype(node)), shape = shape(node))
+  })
+  needs_dimfix <- !isTRUE(needs_pack) &&
+    length(out_infos) == 1L &&
+    length(out_infos[[1L]]$shape) == 1L
+
+  needs_wrapper <- isTRUE(needs_pack) || length(graph$constants) || isTRUE(needs_flatten) || isTRUE(needs_dimfix)
 
   r_fun <- graph_to_quickr_r_function(graph, include_declare = TRUE, pack_output = needs_pack)
   inner_quick <- quickr_eager_compile(r_fun)
@@ -42,7 +49,7 @@ graph_to_quickr_function <- function(graph) {
     return(inner_quick)
   }
 
-  r_arg_names <- names(formals(r_fun))
+  r_arg_names <- names(formals(r_fun)) %||% character()
   n_user <- length(graph$inputs)
   leaf_arg_names <- r_arg_names[seq_len(n_user)]
 
@@ -55,9 +62,6 @@ graph_to_quickr_function <- function(graph) {
     const_args <- stats::setNames(const_vals, const_arg_names)
   }
 
-  out_infos <- lapply(graph$outputs, function(node) {
-    list(dtype = as.character(dtype(node)), shape = shape(node))
-  })
   out_lens <- vapply(
     out_infos,
     function(info) {
@@ -87,6 +91,7 @@ graph_to_quickr_function <- function(graph) {
   wrapper_env$out_tree <- graph$out_tree
   wrapper_env$out_infos <- out_infos
   wrapper_env$out_lens <- out_lens
+  wrapper_env$needs_dimfix <- needs_dimfix
   wrapper_env$leaf_arg_names <- leaf_arg_names
   wrapper_env$needs_flatten <- needs_flatten
   wrapper_env$top_names <- if (isTRUE(needs_flatten)) top_names else NULL
@@ -96,6 +101,8 @@ graph_to_quickr_function <- function(graph) {
     if (isTRUE(needs_flatten)) {
       args_top <- mget(top_names, envir = environment(), inherits = FALSE)
       args <- flatten(args_top)
+    } else if (!length(leaf_arg_names)) {
+      args <- list()
     } else {
       args <- mget(leaf_arg_names, envir = environment(), inherits = FALSE)
     }
@@ -108,6 +115,9 @@ graph_to_quickr_function <- function(graph) {
     packed <- do.call(inner_quick, c(const_args, args))
 
     if (!isTRUE(needs_pack)) {
+      if (isTRUE(needs_dimfix)) {
+        return(array(packed, dim = as.integer(out_infos[[1L]]$shape)))
+      }
       return(packed)
     }
 
