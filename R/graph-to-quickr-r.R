@@ -172,9 +172,7 @@ quickr_expr_of_node <- function(node, node_expr) {
     return(quickr_scalar_cast(node$aval$data, as.character(dtype(node))))
   }
   expr <- node_expr[[node]]
-  if (is.null(expr)) {
-    cli_abort("Internal error: node not mapped to an expression")
-  }
+  stopifnot(!is.null(expr))
   expr
 }
 
@@ -328,9 +326,7 @@ quickr_emit_transpose <- function(out_sym, operand_expr, permutation, out_shape,
   if (identical(permutation, c(1L, 2L))) {
     return(quickr_emit_assign(out_sym, operand_expr))
   }
-  if (!identical(permutation, c(2L, 1L))) {
-    cli_abort("transpose: only permutation=c(2,1) is supported")
-  }
+  stopifnot(identical(permutation, c(2L, 1L)))
 
   zero <- quickr_zero_literal_for(out_aval)
   m <- as.integer(out_shape[[1L]])
@@ -360,10 +356,6 @@ quickr_emit_broadcast_in_dim <- function(out_sym, operand_expr, shape_in, shape_
 
   rank_in <- length(shape_in)
   rank_out <- length(shape_out)
-
-  if (rank_out == 0L) {
-    cli_abort("broadcast_in_dim: cannot broadcast to a scalar")
-  }
 
   if (rank_in == 0L) {
     return(quickr_emit_full_like(out_sym, operand_expr, shape_out, out_aval))
