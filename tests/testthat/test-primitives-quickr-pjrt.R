@@ -24,8 +24,9 @@ expect_quickr_matches_pjrt <- function(fn, templates, args, tolerance = 1e-12, i
   f_quick <- graph_to_quickr_function(graph)
   run_pjrt <- compile_graph_pjrt(graph) # nolint
 
-  out_quick <- rlang::exec(f_quick, !!!args)
-  out_pjrt <- rlang::exec(run_pjrt, !!!args)
+  args <- args[names(templates)]
+  out_quick <- do.call(f_quick, unname(args))
+  out_pjrt <- do.call(run_pjrt, unname(args))
   out_quick <- normalize_quickr_output(out_quick, out_pjrt)
 
   testthat::expect_equal(out_quick, out_pjrt, tolerance = tolerance, info = info)
@@ -70,7 +71,7 @@ run_quickr_cases <- function(cases) {
 }
 
 binary_case <- function(op, name, seed, adjust_y = NULL) {
-  set.seed(seed)
+  withr::local_seed(seed)
   shape <- c(2L, 3L)
   x <- make_input(shape)
   y <- make_input(shape)
@@ -98,13 +99,13 @@ quickr_pjrt_cases <- list(
     binary_case(nv_div, "divide", seed = 4, adjust_y = function(y) y + 1)
   },
   negate = function() {
-    set.seed(5)
+    withr::local_seed(5)
     shape <- c(2L, 3L)
     x <- make_input(shape)
     list(quickr_case(function(x) nv_negate(x), list(x = make_template(shape)), list(x = x), info = "negate"))
   },
   reshape = function() {
-    set.seed(6)
+    withr::local_seed(6)
     shape_in <- c(2L, 3L)
     shape_out <- c(3L, 2L)
     x <- make_input(shape_in)
@@ -116,7 +117,7 @@ quickr_pjrt_cases <- list(
     ))
   },
   transpose = function() {
-    set.seed(7)
+    withr::local_seed(7)
     shape <- c(2L, 3L)
     x <- make_input(shape)
     list(quickr_case(
@@ -127,7 +128,7 @@ quickr_pjrt_cases <- list(
     ))
   },
   broadcast_in_dim = function() {
-    set.seed(8)
+    withr::local_seed(8)
     shape_in <- c(2L, 1L)
     shape_out <- c(2L, 3L)
     x <- make_input(shape_in)
@@ -139,7 +140,7 @@ quickr_pjrt_cases <- list(
     ))
   },
   dot_general = function() {
-    set.seed(9)
+    withr::local_seed(9)
     lhs_shape <- c(2L, 3L)
     rhs_shape <- c(3L, 4L)
     lhs <- make_input(lhs_shape)
@@ -159,13 +160,13 @@ quickr_pjrt_cases <- list(
     ))
   },
   sum = function() {
-    set.seed(10)
+    withr::local_seed(10)
     shape <- c(2L, 3L)
     x <- make_input(shape)
     list(quickr_case(function(x) sum(x), list(x = make_template(shape)), list(x = x), info = "sum"))
   },
   reduce_sum = function() {
-    set.seed(11)
+    withr::local_seed(11)
     shape <- c(2L, 3L)
     x <- make_input(shape)
     list(quickr_case(

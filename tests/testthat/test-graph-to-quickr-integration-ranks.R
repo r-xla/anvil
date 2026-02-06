@@ -1,7 +1,7 @@
 test_that("integration: `%*%` matches PJRT for tensor ranks 1..5", {
   testthat::skip_if_not_installed("quickr")
 
-  set.seed(4)
+  withr::local_seed(4)
 
   m <- 3L
   n <- 4L
@@ -15,6 +15,30 @@ test_that("integration: `%*%` matches PJRT for tensor ranks 1..5", {
     if (ndims(B) == 1L) {
       B <- nv_reshape(B, c(shape(B), 1L))
     }
+
+    pad_and_broadcast <- function(x, target_shape) {
+      if (identical(shape(x), target_shape)) {
+        return(x)
+      }
+      if (ndims(x) < length(target_shape)) {
+        x <- nv_reshape(x, c(rep.int(1L, length(target_shape) - ndims(x)), shape(x)))
+      }
+      nvl_broadcast_in_dim(x, shape = target_shape, broadcast_dimensions = seq_len(length(target_shape)))
+    }
+
+    shA <- shape(A)
+    shB <- shape(B)
+    rA <- length(shA)
+    rB <- length(shB)
+    target_batch <- if (rA >= rB) {
+      shA[seq_len(rA - 2L)]
+    } else {
+      shB[seq_len(rB - 2L)]
+    }
+
+    A <- pad_and_broadcast(A, c(target_batch, shA[(rA - 1L):rA]))
+    B <- pad_and_broadcast(B, c(target_batch, shB[(rB - 1L):rB]))
+
     A %*% B
   }
 
