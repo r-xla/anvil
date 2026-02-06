@@ -753,6 +753,19 @@ quickr_lower_registry <- local({
 
   quickr_register_prim_lowerer(
     reg,
+    c("abs", "sqrt", "log", "floor", "ceil", "exp"),
+    function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      fun <- switch(
+        prim_name,
+        ceil = "ceiling",
+        prim_name
+      )
+      quickr_emit_assign(out_syms[[1L]], rlang::call2(fun, inputs[[1L]]))
+    }
+  )
+
+  quickr_register_prim_lowerer(
+    reg,
     "broadcast_in_dim",
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
       out_sym <- out_syms[[1L]]

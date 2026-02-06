@@ -109,6 +109,14 @@ pred_binary_case <- function(op, name, seed) {
   list(quickr_case(function(x, y) op(x, y), templates, list(x = x, y = y), info = name))
 }
 
+unary_case <- function(op, name, seed, non_negative = FALSE) {
+  withr::local_seed(seed)
+  shape <- c(2L, 3L)
+  x <- make_input(shape, non_negative = non_negative)
+  templates <- list(x = make_template(shape))
+  list(quickr_case(function(x) op(x), templates, list(x = x), info = name))
+}
+
 quickr_pjrt_cases <- list(
   fill = function() {
     case <- function(value, shape, dtype, info) {
@@ -299,6 +307,24 @@ quickr_pjrt_cases <- list(
       list(x = x),
       info = "not"
     ))
+  },
+  abs = function() {
+    unary_case(nv_abs, "abs", seed = 24)
+  },
+  sqrt = function() {
+    unary_case(nv_sqrt, "sqrt", seed = 25, non_negative = TRUE)
+  },
+  log = function() {
+    unary_case(nv_log, "log", seed = 26, non_negative = TRUE)
+  },
+  exp = function() {
+    unary_case(nv_exp, "exp", seed = 27)
+  },
+  floor = function() {
+    unary_case(nv_floor, "floor", seed = 28)
+  },
+  ceil = function() {
+    unary_case(nv_ceil, "ceil", seed = 29)
   }
 )
 
@@ -321,6 +347,12 @@ quickr_primitives <- sort(c(
   "xor",
   "not",
   "select",
+  "abs",
+  "sqrt",
+  "log",
+  "exp",
+  "floor",
+  "ceil",
   "broadcast_in_dim",
   "dot_general",
   "transpose",
