@@ -13,8 +13,11 @@ NULL
 #' function returns the same structure by packing/unpacking values for `quickr`.
 #'
 #' Currently supported primitives are:
-#' `fill`, `convert`, `add`, `sub`, `mul`, `divide`, `negate`, `broadcast_in_dim`,
-#' `dot_general`, `transpose`, `reshape`, `sum`.
+#' `fill`, `convert`, `add`, `sub`, `mul`, `divide`, `negate`, `abs`, `sqrt`,
+#' `log`, `exp`, `floor`, `ceil`, `power`, `maximum`, `minimum`, `equal`,
+#' `not_equal`, `greater`, `greater_equal`, `less`, `less_equal`, `and`, `or`,
+#' `xor`, `not`, `select`, `broadcast_in_dim`, `dot_general`, `transpose`,
+#' `reshape`, `sum`, `reduce_sum`, `reduce_prod`, `reduce_max`, `reduce_min`.
 #' The code generator currently supports tensors up to rank 5. Some primitives
 #' are more restricted (e.g. `transpose` currently only handles rank-2 tensors).
 #'

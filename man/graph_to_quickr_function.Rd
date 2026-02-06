@@ -25,8 +25,11 @@ If the graph returns multiple outputs (e.g. a nested list), the compiled
 function returns the same structure by packing/unpacking values for \code{quickr}.
 
 Currently supported primitives are:
-\code{fill}, \code{convert}, \code{add}, \code{sub}, \code{mul}, \code{divide}, \code{negate}, \code{broadcast_in_dim},
-\code{dot_general}, \code{transpose}, \code{reshape}, \code{sum}.
+\code{fill}, \code{convert}, \code{add}, \code{sub}, \code{mul}, \code{divide}, \code{negate}, \code{abs}, \code{sqrt},
+\code{log}, \code{exp}, \code{floor}, \code{ceil}, \code{power}, \code{maximum}, \code{minimum}, \code{equal},
+\code{not_equal}, \code{greater}, \code{greater_equal}, \code{less}, \code{less_equal}, \code{and}, \code{or},
+\code{xor}, \code{not}, \code{select}, \code{broadcast_in_dim}, \code{dot_general}, \code{transpose},
+\code{reshape}, \code{sum}, \code{reduce_sum}, \code{reduce_prod}, \code{reduce_max}, \code{reduce_min}.
 The code generator currently supports tensors up to rank 5. Some primitives
 are more restricted (e.g. \code{transpose} currently only handles rank-2 tensors).
 }
