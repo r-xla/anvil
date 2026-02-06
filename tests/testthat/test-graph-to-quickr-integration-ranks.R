@@ -23,7 +23,7 @@ test_that("integration: `%*%` matches PJRT for tensor ranks 1..5", {
       if (ndims(x) < length(target_shape)) {
         x <- nv_reshape(x, c(rep.int(1L, length(target_shape) - ndims(x)), shape(x)))
       }
-      nvl_broadcast_in_dim(x, shape = target_shape, broadcast_dimensions = seq_len(length(target_shape)))
+      nvl_broadcast_in_dim(x, shape = target_shape, broadcast_dimensions = seq_along(target_shape))
     }
 
     shA <- shape(A)
