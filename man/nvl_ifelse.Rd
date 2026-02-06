@@ -7,18 +7,44 @@
 nvl_ifelse(pred, true_value, false_value)
 }
 \arguments{
-\item{pred}{(\code{\link{tensorish}})\cr
-Boolean predicate tensor.}
+\item{pred}{(\code{\link{tensorish}} of boolean type)\cr
+Predicate tensor. Must be scalar or have the same shape as
+\code{true_value}.}
 
-\item{true_value}{(\code{\link{tensorish}})\cr
-Value when pred is true.}
-
-\item{false_value}{(\code{\link{tensorish}})\cr
-Value when pred is false.}
+\item{true_value, false_value}{(\code{\link{tensorish}})\cr
+Values to select from. Must have the same dtype and shape.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same dtype and shape as \code{true_value}.
+It is ambiguous if both \code{true_value} and \code{false_value} are ambiguous.
 }
 \description{
-Selects elements based on a predicate.
+Element-wise selection based on a boolean predicate, like R's \code{\link[=ifelse]{ifelse()}}.
+For each element, returns the corresponding element from \code{true_value} where
+\code{pred} is \code{TRUE} and from \code{false_value} where \code{pred} is \code{FALSE}.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_select]{stablehlo::hlo_select()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  pred <- nv_tensor(c(TRUE, FALSE, TRUE))
+  nvl_ifelse(pred, nv_tensor(c(1, 2, 3)), nv_tensor(c(4, 5, 6)))
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_ifelse]{nv_ifelse()}}
 }

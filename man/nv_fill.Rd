@@ -2,28 +2,38 @@
 % Please edit documentation in R/api.R
 \name{nv_fill}
 \alias{nv_fill}
-\title{Constant}
+\title{Fill Constant}
 \usage{
 nv_fill(value, shape, dtype = NULL, ambiguous = FALSE)
 }
 \arguments{
-\item{value}{(any)\cr
-Value.}
+\item{value}{(\code{numeric(1)})\cr
+Scalar value to fill the tensor with.}
 
-\item{shape}{(integer())\cr
-Shape.}
+\item{shape}{(\code{integer()})\cr
+Shape of the output tensor.}
 
-\item{dtype}{(character(1))\cr
-Data type.}
+\item{dtype}{(\code{character(1)} | \code{NULL})\cr
+Data type. If \code{NULL} (default), inferred from \code{value}.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
-See the vignette "Type Promotion" for more details.}
+See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the given \code{shape} and \code{dtype}.
 }
 \description{
-Create a constant.
+Creates a tensor filled with a scalar value. More memory-efficient than
+\code{nv_tensor(value, shape = shape)} for large tensors.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval(nv_fill(0, shape = c(2, 3)))
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_fill]{nvl_fill()}} for the underlying primitive.
 }

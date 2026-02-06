@@ -4,7 +4,7 @@
 \alias{compile_to_xla}
 \title{Trace, lower, and compile a function to an XLA executable}
 \usage{
-compile_to_xla(f, args_flat, in_tree, donate = character(), platform = "cpu")
+compile_to_xla(f, args_flat, in_tree, donate = character(), device = NULL)
 }
 \arguments{
 \item{f}{(\code{function})\cr
@@ -19,8 +19,8 @@ Tree structure of the inputs.}
 \item{donate}{(\code{character()})\cr
 Names of the arguments whose buffers should be donated.}
 
-\item{platform}{(\code{character(1)})\cr
-Target platform (e.g. \code{"cpu"}, \code{"cuda"}, \code{"metal"}).}
+\item{device}{(\code{NULL} | \code{character(1)})\cr
+Target device (e.g. \code{"cpu"}, \code{"cuda"}). If \code{NULL}, inferred from traced tensors.}
 }
 \value{
 A \code{list} with elements:

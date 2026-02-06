@@ -8,14 +8,44 @@ nvl_concatenate(..., dimension)
 }
 \arguments{
 \item{...}{(\code{\link{tensorish}})\cr
-Tensors to concatenate.}
+Tensors to concatenate. Must all have the same data type, ndims,
+and shape except along \code{dimension}.}
 
 \item{dimension}{(\code{integer(1)})\cr
-Dimension to concatenate along.}
+Dimension along which to concatenate (1-indexed).}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type as the inputs.
+The output shape matches the inputs in all dimensions except \code{dimension},
+which is the sum of the input sizes along that dimension.
+It is ambiguous if all inputs are ambiguous.
 }
 \description{
 Concatenates tensors along a dimension.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_concatenate]{stablehlo::hlo_concatenate()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  y <- nv_tensor(c(4, 5, 6))
+  nvl_concatenate(x, y, dimension = 1L)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_concatenate]{nv_concatenate()}}
 }

@@ -17,7 +17,7 @@ nv_pad(
 Operand.}
 
 \item{padding_value}{(\code{\link{tensorish}})\cr
-Scalar value to use for padding.}
+Scalar value to use for padding. Must have the same dtype as \code{operand}.}
 
 \item{edge_padding_low}{(\code{integer()})\cr
 Amount of padding to add at the start of each dimension.}
@@ -25,12 +25,25 @@ Amount of padding to add at the start of each dimension.}
 \item{edge_padding_high}{(\code{integer()})\cr
 Amount of padding to add at the end of each dimension.}
 
-\item{interior_padding}{(\code{integer()})\cr
-Amount of padding to add between elements in each dimension (default 0).}
+\item{interior_padding}{(\code{integer()} | \code{NULL})\cr
+Amount of padding to add between elements in each dimension.
+If \code{NULL} (default), no interior padding is applied.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type as \code{operand}.
 }
 \description{
-Pads a tensor with a given padding value.
+Pads a tensor with a given value at the edges and optionally between elements.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_pad]{nvl_pad()}} for the underlying primitive.
 }

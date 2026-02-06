@@ -2,17 +2,34 @@
 % Please edit documentation in R/api-utilities.R
 \name{nv_rng_state}
 \alias{nv_rng_state}
-\title{Generate random state}
+\title{Generate RNG State}
 \usage{
 nv_rng_state(seed)
 }
 \arguments{
 \item{seed}{(\code{integer(1)})\cr
-Seed value}
+Seed value.}
 }
 \value{
-\code{\link{nv_tensor}} of dtype \code{ui64} and shape (2)
+\code{\link{nv_tensor}} of dtype \code{ui64} and shape \code{(2)}.
 }
 \description{
-lightweight function to generate an initial state
+Creates an initial RNG state from a seed. This state is required by all
+random sampling functions and is updated after each call.
 }
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  state <- nv_rng_state(42L)
+  state
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+Other rng: 
+\code{\link{nv_rbinom}()},
+\code{\link{nv_rdunif}()},
+\code{\link{nv_rnorm}()},
+\code{\link{nv_runif}()}
+}
+\concept{rng}

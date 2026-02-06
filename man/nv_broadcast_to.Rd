@@ -2,7 +2,7 @@
 % Please edit documentation in R/api.R
 \name{nv_broadcast_to}
 \alias{nv_broadcast_to}
-\title{Broadcast}
+\title{Broadcast to Shape}
 \usage{
 nv_broadcast_to(operand, shape)
 }
@@ -11,11 +11,24 @@ nv_broadcast_to(operand, shape)
 Operand.}
 
 \item{shape}{(\code{integer()})\cr
-Output shape.}
+Target shape. Each existing dimension must either match or be 1.}
 }
 \value{
-(\code{\link{tensorish}})
+\code{\link{tensorish}}\cr
+Has the given \code{shape} and the same data type as \code{operand}.
 }
 \description{
-Broadcast a tensor to a given shape using NumPy broadcasting rules.
+Broadcasts a tensor to a target shape using NumPy-style broadcasting rules.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  nv_broadcast_to(x, shape = c(2, 3))
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_broadcast_tensors]{nv_broadcast_tensors()}}, \code{\link[=nv_broadcast_scalars]{nv_broadcast_scalars()}},
+\code{\link[=nvl_broadcast_in_dim]{nvl_broadcast_in_dim()}} for the underlying primitive.
 }

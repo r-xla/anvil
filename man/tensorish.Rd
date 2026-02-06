@@ -2,18 +2,53 @@
 % Please edit documentation in R/tensor.R
 \name{tensorish}
 \alias{tensorish}
+\alias{is_tensorish}
 \title{Tensor-like Objects}
+\usage{
+is_tensorish(x, literal = TRUE)
+}
+\arguments{
+\item{x}{(\code{any})\cr
+Object to check.}
+
+\item{literal}{(\code{logical(1)})\cr
+Whether to accept R literals as tensorish.}
+}
+\value{
+\code{logical(1)}
+}
 \description{
-A value that is either an \code{\link[=nv_tensor]{AnvilTensor}}, can be converted to it, or
-represents an abstract version of it.
-This also includes atomic R vectors.
+A \code{tensorish} value is any object that can be passed as an input to
+anvil primitive functions such as \code{\link{nvl_add}} or is an output of such a function.
+
+During runtime, these are \code{\link{AnvilTensor}} objects.
+
+The following types are tensorish (during compile-time):
+\itemize{
+\item \code{\link{AnvilTensor}}: a concrete tensor holding data on a device.
+\item \code{\link{GraphBox}}: a boxed abstract tensor representing a value in a graph.
+\item Literals: \code{numeric(1)}, \code{integer(1)}, \code{logical(1)}: promoted to scalar tensors.
+}
+
+Use \code{\link[=is_tensorish]{is_tensorish()}} to check whether a value is tensorish.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(1:4, dtype = "f32")
-x
+# AnvilTensors are tensorish
+is_tensorish(nv_tensor(1:4))
+
+# Scalar R literals are tensorish by default
+is_tensorish(1.5)
+
+# Non-scalar vectors are not tensorish
+is_tensorish(1:4)
+
+is_tensorish(DebugBox(nv_aten("f32", c(2L, 3L))))
+
+# Disable literal promotion
+is_tensorish(1.5, literal = FALSE)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\link{nv_tensor}, \link{ConcreteTensor}, \link{AbstractTensor}, \link{LiteralTensor}, \link{GraphBox}
+\link{AnvilTensor}, \link{GraphBox}
 }

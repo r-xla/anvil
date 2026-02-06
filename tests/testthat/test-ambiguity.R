@@ -1,15 +1,15 @@
-test_that("nv_scalar returns ambiguous tensor when dtype is NULL (default)", {
-  # Numeric scalars without explicit dtype should be ambiguous
+test_that("nv_scalar returns non-ambiguous tensor by default", {
+  # Numeric scalars without explicit dtype should be non-ambiguous
   x_f32 <- nv_scalar(1.0)
-  expect_true(ambiguous(x_f32))
+  expect_false(ambiguous(x_f32))
   expect_equal(dtype(x_f32), as_dtype("f32"))
 
-  # Integer scalars without explicit dtype should be ambiguous
+  # Integer scalars without explicit dtype should be non-ambiguous
   x_i32 <- nv_scalar(1L)
-  expect_true(ambiguous(x_i32))
+  expect_false(ambiguous(x_i32))
   expect_equal(dtype(x_i32), as_dtype("i32"))
 
-  # Logical scalars are never ambiguous (pred type)
+  # Logical scalars are also non-ambiguous
   x_pred <- nv_scalar(TRUE)
   expect_false(ambiguous(x_pred))
   expect_equal(dtype(x_pred), as_dtype("pred"))
@@ -42,23 +42,22 @@ test_that("JIT propagates ambiguity from inputs to outputs", {
   f <- jit(function(x, y) x + y)
 
   # Both inputs ambiguous -> output should be ambiguous
-  x_amb <- nv_scalar(1.0) # ambiguous
-
-  y_amb <- nv_scalar(2.0) # ambiguous
+  x_amb <- nv_scalar(1.0, ambiguous = TRUE)
+  y_amb <- nv_scalar(2.0, ambiguous = TRUE)
   result_amb <- f(x_amb, y_amb)
   expect_true(ambiguous(result_amb))
-  expect_equal(result_amb, nv_scalar(3.0))
+  expect_equal(result_amb, nv_scalar(3.0, ambiguous = TRUE))
 
   # One input non-ambiguous -> output should be non-ambiguous
-  x_nonamb <- nv_scalar(1.0, dtype = "f32") # non-ambiguous
-  y_amb2 <- nv_scalar(2.0) # ambiguous
+  x_nonamb <- nv_scalar(1.0, dtype = "f32")
+  y_amb2 <- nv_scalar(2.0, ambiguous = TRUE)
   result_mixed <- f(x_nonamb, y_amb2)
   expect_false(ambiguous(result_mixed))
   expect_equal(result_mixed, nv_scalar(3.0, dtype = "f32"))
 
   # Both inputs non-ambiguous -> output should be non-ambiguous
-  x_nonamb2 <- nv_scalar(1.0, dtype = "f32") # non-ambiguous
-  y_nonamb <- nv_scalar(2.0, dtype = "f32") # non-ambiguous
+  x_nonamb2 <- nv_scalar(1.0, dtype = "f32")
+  y_nonamb <- nv_scalar(2.0, dtype = "f32")
   result_nonamb <- f(x_nonamb2, y_nonamb)
   expect_false(ambiguous(result_nonamb))
   expect_equal(result_nonamb, nv_scalar(3.0, dtype = "f32"))
@@ -68,10 +67,10 @@ test_that("JIT preserves ambiguity through unary operations", {
   f <- jit(function(x) -x)
 
   # Ambiguous input -> ambiguous output
-  x_amb <- nv_scalar(1.0)
+  x_amb <- nv_scalar(1.0, ambiguous = TRUE)
   result_amb <- f(x_amb)
   expect_true(ambiguous(result_amb))
-  expect_equal(result_amb, nv_scalar(-1.0))
+  expect_equal(result_amb, nv_scalar(-1.0, ambiguous = TRUE))
 
   # Non-ambiguous input -> non-ambiguous output
   x_nonamb <- nv_scalar(1.0, dtype = "f32")
@@ -81,34 +80,45 @@ test_that("JIT preserves ambiguity through unary operations", {
 })
 
 test_that("JIT handles constants with ambiguity", {
-  # Constant created with ambiguous nv_scalar
+  # Constant created with non-ambiguous nv_scalar (new default)
   f <- jit(function(x) x + nv_scalar(10))
 
-  x_amb <- nv_scalar(1.0)
+  x_amb <- nv_scalar(1.0, ambiguous = TRUE)
   result <- f(x_amb)
-  # Both input and constant are ambiguous, so output is ambiguous
-  expect_true(ambiguous(result))
+  # Input is ambiguous, constant is non-ambiguous -> non-ambiguous
+  expect_false(ambiguous(result))
   expect_equal(result, nv_scalar(11.0))
 
-  # Non-ambiguous input with ambiguous constant
+  # Non-ambiguous input with non-ambiguous constant
   x_nonamb <- nv_scalar(1.0, dtype = "f32")
   result2 <- f(x_nonamb)
-  # Mixed: one non-ambiguous, one ambiguous -> non-ambiguous
+  # Both non-ambiguous -> non-ambiguous
   expect_false(ambiguous(result2))
   expect_equal(result2, nv_scalar(11.0, dtype = "f32"))
 })
 
 test_that("format.AnvilTensor shows ambiguity with ?", {
-  x_amb <- nv_scalar(1.0)
+  x_amb <- nv_scalar(1.0, ambiguous = TRUE)
   expect_match(format(x_amb), "f32\\?")
 
   x_nonamb <- nv_scalar(1.0, dtype = "f32")
   expect_match(format(x_nonamb), "f32[^?]|f32$")
 })
 
+test_that("boolean reductions never produce ambiguous output", {
+  f_any <- jit(function(x) nvl_reduce_any(x, dims = 1L))
+  f_all <- jit(function(x) nvl_reduce_all(x, dims = 1L))
+
+  # Even with ambiguous input, output is never ambiguous
+  x_amb <- nv_tensor(c(TRUE, FALSE), ambiguous = TRUE)
+  expect_true(ambiguous(x_amb))
+  expect_false(ambiguous(f_any(x_amb)))
+  expect_false(ambiguous(f_all(x_amb)))
+})
+
 test_that("ambiguous() generic works for AnvilTensor and AbstractTensor", {
   # AnvilTensor
-  x_anvil_amb <- nv_scalar(1.0)
+  x_anvil_amb <- nv_scalar(1.0, ambiguous = TRUE)
   expect_true(ambiguous(x_anvil_amb))
 
   x_anvil_nonamb <- nv_tensor(1.0)

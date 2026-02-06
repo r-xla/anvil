@@ -14,18 +14,37 @@ Shape.}
 RNG state (\code{ui64[2]}).}
 
 \item{n}{(\code{integer(1)})\cr
-Number of trials. Default is 1 (Bernoulli).}
+Number of trials.}
 
 \item{prob}{(\code{numeric(1)})\cr
-Probability of success on each trial. Default is 0.5.}
+Probability of success on each trial.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}
 }
 \value{
 (\code{list()} of \code{\link{tensorish}})\cr
-List of two tensors: the new RNG state and the generated random samples.
+List of two elements: the updated RNG state and the sampled values.
 }
 \description{
-Sample from a binomial distribution with $n$ trials and success probability $p$.
+Samples from a binomial distribution with \eqn{n} trials and success probability \eqn{p}.
+When \code{n = 1} (the default), this is a Bernoulli distribution.
 }
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  state <- nv_rng_state(42L)
+  # Bernoulli samples
+  result <- nv_rbinom(c(2, 3), state)
+  result[[2]]
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+Other rng: 
+\code{\link{nv_rdunif}()},
+\code{\link{nv_rng_state}()},
+\code{\link{nv_rnorm}()},
+\code{\link{nv_runif}()}
+}
+\concept{rng}

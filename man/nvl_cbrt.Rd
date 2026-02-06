@@ -8,11 +8,37 @@ nvl_cbrt(operand)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of data type floating-point.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise cube root.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_cbrt]{stablehlo::hlo_cbrt()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 8, 27))
+  nvl_cbrt(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_cbrt]{nv_cbrt()}}
 }

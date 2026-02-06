@@ -7,18 +7,54 @@
 nvl_while(init, cond, body)
 }
 \arguments{
-\item{init}{(\code{list()})\cr
+\item{init}{(\verb{named list()})\cr
 Named list of initial state values.}
 
 \item{cond}{(\code{function})\cr
-Condition function returning boolean.}
+Condition function that receives the current state as arguments
+and outputs whether to continue the loop.}
 
 \item{body}{(\code{function})\cr
-Body function returning updated state.}
+Body function that receives the current state as arguments and
+returns a named list with the same structure, dtypes, and shapes
+as \code{init}.}
 }
 \value{
-Final state after loop terminates.
+Named list with the same structure as \code{init} containing the
+final state after the loop terminates.
 }
 \description{
-Executes a while loop.
+Repeatedly executes \code{body} while \code{cond} returns \code{TRUE}, like R's
+\code{while} loop. The loop state is initialized with \code{init} and
+passed through each iteration.
+Otherwise, no state is maintained between iterations.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_while]{stablehlo::hlo_while()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  nvl_while(
+    init = list(i = 0L, total = 0L),
+    cond = function(i, total) i <= 5L,
+    body = function(i, total) list(
+      i = i + 1L,
+      total = total + i
+    )
+  )
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_while]{nv_while()}}
 }

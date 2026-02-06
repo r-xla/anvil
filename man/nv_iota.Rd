@@ -17,16 +17,26 @@ Data type.}
 Shape.}
 
 \item{start}{(\code{integer(1)})\cr
-Starting value.}
+Starting value (default 1).}
 
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
-See the vignette "Type Promotion" for more details.}
+See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the given \code{dtype} and \code{shape}.
 }
 \description{
-Creates a tensor with values increasing along the specified dimension.
+Creates a tensor with values increasing along the specified dimension,
+starting from \code{start}.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval(nv_iota(dim = 1L, dtype = "i32", shape = 5L))
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_seq]{nv_seq()}} for a simpler 1-D sequence, \code{\link[=nvl_iota]{nvl_iota()}} for the underlying primitive.
 }

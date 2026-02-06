@@ -16,11 +16,24 @@ Shape.}
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
-See the vignette "Type Promotion" for more details.}
+See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
 (\code{\link{DebugBox}})
 }
 \description{
-Create a debug box.
+Convenience constructor that creates a \code{\link{DebugBox}} from a data type and shape,
+without having to manually construct an \code{\link{AbstractTensor}} first.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+# Create a debug box representing a 2x3 f32 tensor
+db <- debug_box("f32", c(2L, 3L))
+db
+dtype(db)
+shape(db)
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\link{DebugBox}, \link{AbstractTensor}, \code{\link[=trace_fn]{trace_fn()}}
 }

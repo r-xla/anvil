@@ -12,7 +12,7 @@
     Condition
       Error in `nvl_ceil()`:
       ! `operand` must have dtype FloatType.
-      x Got <i32>.
+      x Got i32.
 
 ---
 

@@ -7,13 +7,32 @@
 build_tree(x, counter = NULL)
 }
 \arguments{
-\item{x}{Object to build tree from.}
+\item{x}{(any)\cr
+Object whose structure to capture. Lists are recursed into; everything else
+is a leaf.}
 
-\item{counter}{Internal counter for leaf indices.}
+\item{counter}{(NULL | environment)\cr
+Internal counter for assigning leaf indices. Mostly used internally and otherwise left as
+\code{NULL} (default.)}
 }
 \value{
-\code{Node}
+A \code{Node} (\code{LeafNode} for scalars, \code{ListNode} for lists).
 }
 \description{
-Build a tree structure from a nested object for tracking structure during flattening/unflattening.
+Captures the nesting structure of an object as a tree of \code{Node}s. Each leaf
+in the input becomes a \code{LeafNode} with an integer index corresponding to its
+position in the flat list produced by \code{\link[=flatten]{flatten()}}. Lists become \code{ListNode}s
+that record child nodes and names. The resulting tree can be passed to
+\code{\link[=unflatten]{unflatten()}} to reconstruct the original structure from a flat list.
+}
+\examples{
+x <- list(a = 1, b = list(c = 2, d = 3))
+tree <- build_tree(x)
+tree_size(tree)
+
+flat <- flatten(x)
+unflatten(tree, flat)
+}
+\seealso{
+\code{\link[=flatten]{flatten()}}, \code{\link[=unflatten]{unflatten()}}, \code{\link[=tree_size]{tree_size()}}, \code{\link[=reindex_tree]{reindex_tree()}}
 }

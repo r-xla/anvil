@@ -248,7 +248,7 @@ test_that("good error message when passing AbstractTensors", {
 
 test_that("jit: respects device argument", {
   f <- jit(function() 1, device = "cpu")
-  expect_equal(f(), nv_scalar(1, device = "cpu"))
+  expect_equal(f(), nv_scalar(1, device = "cpu", ambiguous = TRUE))
 })
 
 test_that("literals are not converted to scalar tensors", {

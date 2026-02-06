@@ -2,7 +2,7 @@
 % Please edit documentation in R/api.R
 \name{nv_static_slice}
 \alias{nv_static_slice}
-\title{Slice}
+\title{Static Slice}
 \usage{
 nv_static_slice(operand, start_indices, limit_indices, strides)
 }
@@ -10,15 +10,31 @@ nv_static_slice(operand, start_indices, limit_indices, strides)
 \item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
 
-\item{start_indices}{start of slice}
+\item{start_indices}{(\code{integer()})\cr
+Start indices (inclusive), one per dimension.}
 
-\item{limit_indices}{end of slice}
+\item{limit_indices}{(\code{integer()})\cr
+End indices (inclusive), one per dimension.}
 
-\item{strides}{stride size}
+\item{strides}{(\code{integer()})\cr
+Step sizes, one per dimension. A stride of 1 selects every element.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type as \code{operand}.
 }
 \description{
-return slice of operand.
+Extracts a slice from a tensor using static (compile-time) indices.
+For dynamic indexing, use \code{\link[=nv_subset]{nv_subset()}} instead.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(1:10)
+  nv_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_subset]{nv_subset()}}, \code{\link[=nvl_static_slice]{nvl_static_slice()}} for the underlying primitive.
 }

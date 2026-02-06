@@ -8,11 +8,37 @@ nvl_ceil(operand)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of data type floating-point.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise ceiling.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_ceil]{stablehlo::hlo_ceil()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1.2, 2.7, -1.5))
+  nvl_ceil(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_ceil]{nv_ceil()}}, \code{\link[=ceiling]{ceiling()}}
 }

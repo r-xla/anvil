@@ -8,11 +8,31 @@ nvl_div(lhs, rhs)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Tensorish values of data type integer, unsigned integer, or floating-point.
+Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the inputs.
+It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Divides two tensors element-wise.
+}
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_divide]{stablehlo::hlo_divide()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(10, 20, 30))
+  y <- nv_tensor(c(2, 5, 10))
+  nvl_div(x, y)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_div]{nv_div()}}, \code{/}
 }

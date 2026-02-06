@@ -8,11 +8,31 @@ nvl_max(lhs, rhs)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Tensorish values of any data type.
+Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the inputs.
+It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise maximum of two tensors.
+}
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_maximum]{stablehlo::hlo_maximum()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 5, 3))
+  y <- nv_tensor(c(4, 2, 6))
+  nvl_max(x, y)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_max]{nv_max()}}
 }

@@ -11,22 +11,31 @@ nv_broadcast_tensors(...)
 Tensors to broadcast.}
 }
 \value{
-(\code{list()} of \code{\link{tensorish}})
+(\code{list()} of \code{\link{tensorish}})\cr
+List of tensors, all with the same shape.
 }
 \description{
-Broadcast tensors to a common shape.
+Broadcasts tensors to a common shape using NumPy-style broadcasting rules.
 }
 \section{Broadcasting Rules}{
 
-We follow the standard NumPy broadcasting rules:
 \enumerate{
-\item If the tensors have different numbers of dimensions, prepend 1s to the shape of the smaller tensor.
-\item For each dimension, if:
-\itemize{
-\item the sizes are the same, do nothing.
-\item one of the tensors has size 1, expand it to the corresponding size of the other tensor.
-\item the sizes are different and neither is 1, raise an error.
-}
+\item If the tensors have different numbers of dimensions, prepend size-1
+dimensions to the shorter shape.
+\item For each dimension: if the sizes match, keep them; if one is 1, expand
+it to the other's size; otherwise raise an error.
 }
 }
 
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(matrix(1:6, nrow = 2))
+  y <- nv_tensor(c(10, 20, 30))
+  nv_broadcast_tensors(x, y)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_broadcast_scalars]{nv_broadcast_scalars()}}, \code{\link[=nv_broadcast_to]{nv_broadcast_to()}}
+}

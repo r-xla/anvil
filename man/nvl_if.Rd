@@ -8,17 +8,39 @@ nvl_if(pred, true, false)
 }
 \arguments{
 \item{pred}{(\code{\link{tensorish}})\cr
-Scalar boolean predicate.}
+Scalar boolean predicate that determines which branch to execute.}
 
-\item{true}{(\code{expression})\cr
-Expression for true branch.}
-
-\item{false}{(\code{expression})\cr
-Expression for false branch.}
+\item{true, false}{(NSE)\cr
+Expressions for the true and false branches. Both must return outputs
+with the same structure, dtypes, and shapes.}
 }
 \value{
-Result of the executed branch.
+Result of the executed branch.\cr
+An output is ambiguous if it is ambiguous in both branches.
 }
 \description{
-Conditional execution of branches.
+Conditional execution of one of two branches based on a scalar boolean
+predicate. Unlike \code{\link[=nvl_ifelse]{nvl_ifelse()}} which operates element-wise, this
+evaluates only the selected branch.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_if]{stablehlo::hlo_if()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval(nvl_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_if]{nv_if()}}, \code{\link[=nvl_ifelse]{nvl_ifelse()}}
 }

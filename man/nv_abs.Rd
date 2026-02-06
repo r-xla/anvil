@@ -11,8 +11,20 @@ nv_abs(operand)
 Operand.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
 }
 \description{
-Element-wise absolute value.
+Element-wise absolute value. You can also use \code{abs()}.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(-1, 2, -3))
+  abs(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_abs]{nvl_abs()}} for the underlying primitive.
 }

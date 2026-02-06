@@ -11,8 +11,20 @@ nv_sqrt(operand)
 Operand.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
 }
 \description{
-Element-wise square root.
+Element-wise square root. You can also use \code{sqrt()}.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 4, 9))
+  sqrt(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_sqrt]{nvl_sqrt()}} for the underlying primitive.
 }

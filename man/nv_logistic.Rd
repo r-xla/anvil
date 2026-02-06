@@ -11,8 +11,20 @@ nv_logistic(operand)
 Operand.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
 }
 \description{
-Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
+Element-wise logistic sigmoid: \code{1 / (1 + exp(-x))}.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(-2, 0, 2))
+  nv_logistic(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_logistic]{nvl_logistic()}} for the underlying primitive.
 }

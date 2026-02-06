@@ -1,6 +1,6 @@
 Package: anvil
 Title: Framework for R code transformations
-Version: 0.0.0.9000
+Version: 0.1.0.9000
 Authors@R: c(
     person("Sebastian", "Fischer", , "seb.fischer@tutamail.com", role = c("cre", "aut"),
            comment = c(ORCID = "https://orcid.org/0000-0002-9609-3197")),
@@ -33,10 +33,10 @@ Suggests:
     quickr (>= 0.2.1.9000),
     testthat (>= 3.0.0)
 Remotes:
-    r-xla/stablehlo,
-    r-xla/tengen,
-    r-xla/xlamisc,
-    r-xla/pjrt,
+    r-xla/stablehlo@*release,
+    r-xla/tengen@*release,
+    r-xla/xlamisc@*release,
+    r-xla/pjrt@*release,
     t-kalinowski/quickr
 Additional_repositories:
     https://r-xla.r-universe.dev

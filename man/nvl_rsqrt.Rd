@@ -8,11 +8,37 @@ nvl_rsqrt(operand)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of data type floating-point.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise reciprocal square root.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_rsqrt]{stablehlo::hlo_rsqrt()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 4, 9))
+  nvl_rsqrt(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_rsqrt]{nv_rsqrt()}}
 }

@@ -8,11 +8,37 @@ nvl_not(operand)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of data type boolean, integer, or unsigned integer.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise logical NOT.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_not]{stablehlo::hlo_not()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(TRUE, FALSE, TRUE))
+  nvl_not(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_not]{nv_not()}}
 }

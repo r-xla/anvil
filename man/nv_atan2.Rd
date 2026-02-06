@@ -8,11 +8,27 @@ nv_atan2(lhs, rhs)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Left and right operand.
+Operands are \link[=nv_promote_to_common]{promoted to a common data type}.
+Scalars are \link[=nv_broadcast_scalars]{broadcast} to the shape of the other operand.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and the promoted common data type of the inputs.
 }
 \description{
-Element-wise two-argument arctangent.
+Element-wise two-argument arctangent, i.e. the angle (in radians) between the positive
+x-axis and the point \verb{(rhs, lhs)}.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  y <- nv_tensor(c(1, 0, -1))
+  x <- nv_tensor(c(0, 1, 0))
+  nv_atan2(y, x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_atan2]{nvl_atan2()}} for the underlying primitive.
 }

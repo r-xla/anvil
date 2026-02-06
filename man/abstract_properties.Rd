@@ -4,15 +4,13 @@
 \alias{abstract_properties}
 \alias{shape_abstract}
 \alias{ndims_abstract}
-\alias{ambiguous_abstract}
 \alias{dtype_abstract}
+\alias{ambiguous_abstract}
 \title{Abstract Properties}
 \usage{
 shape_abstract(x)
 
 ndims_abstract(x)
-
-ambiguous_abstract(x)
 
 dtype_abstract(x)
 

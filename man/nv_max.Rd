@@ -8,11 +8,26 @@ nv_max(lhs, rhs)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Left and right operand.
+Operands are \link[=nv_promote_to_common]{promoted to a common data type}.
+Scalars are \link[=nv_broadcast_scalars]{broadcast} to the shape of the other operand.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and the promoted common data type of the inputs.
 }
 \description{
 Element-wise maximum of two tensors.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 5, 3))
+  y <- nv_tensor(c(4, 2, 6))
+  nv_max(x, y)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_max]{nvl_max()}} for the underlying primitive.
 }

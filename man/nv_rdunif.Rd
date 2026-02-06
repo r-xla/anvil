@@ -14,16 +14,34 @@ Shape.}
 RNG state (\code{ui64[2]}).}
 
 \item{n}{(\code{integer(1)})\cr
-Number of categories to sample from (samples integers 1 to n).}
+Number of categories (samples integers \code{1} to \code{n}).}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
 Data type.}
 }
 \value{
 (\code{list()} of \code{\link{tensorish}})\cr
-List of two tensors: the new RNG state and the sampled integers.
+List of two elements: the updated RNG state and the sampled integers.
 }
 \description{
-Sample from a discrete distribution, analogous to R's \code{sample()} function.
-Samples integers from 1 to n with uniform probability and with replacement.
+Samples integers from \code{1} to \code{n} with equal probability (with replacement),
+analogous to R's \code{sample.int(n, size, replace = TRUE)}.
 }
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  state <- nv_rng_state(42L)
+  # Roll 6 dice
+  result <- nv_rdunif(6, state, n = 6L)
+  result[[2]]
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+Other rng: 
+\code{\link{nv_rbinom}()},
+\code{\link{nv_rng_state}()},
+\code{\link{nv_rnorm}()},
+\code{\link{nv_runif}()}
+}
+\concept{rng}

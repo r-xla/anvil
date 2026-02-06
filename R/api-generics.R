@@ -22,6 +22,7 @@ Ops.AnvilBox <- function(e1, e2) {
     ">=" = nv_ge(e1, e2),
     "<" = nv_lt(e1, e2),
     "<=" = nv_le(e1, e2),
+    "!" = nv_not(e1),
     "&" = nv_and(e1, e2),
     "|" = nv_or(e1, e2)
   )
@@ -49,6 +50,8 @@ Math.AnvilBox <- function(x, ...) {
     "exp" = nv_exp(x),
     "sqrt" = nv_sqrt(x),
     "log" = nv_log(x),
+    "log2" = nv_div(nv_log(x), log(2)),
+    "log10" = nv_div(nv_log(x), log(10)),
     "tanh" = nv_tanh(x),
     "tan" = nv_tan(x),
     "cos" = nv_cosine(x),
@@ -56,6 +59,8 @@ Math.AnvilBox <- function(x, ...) {
     "floor" = nv_floor(x),
     "ceiling" = nv_ceil(x),
     "sign" = nv_sign(x),
+    "expm1" = nv_expm1(x),
+    "log1p" = nv_log1p(x),
     "round" = nv_round(x),
     cli_abort("invalid method: {(.Generic)}")
   )
@@ -119,11 +124,19 @@ mean.AnvilTensor <- mean.AnvilBox
 #' @title Transpose
 #' @name nv_transpose
 #' @description
-#' Transpose a tensor.
-#' @param x ([`nv_tensor`])
-#' @param permutation (`integer()` | `NULl`)\cr
-#'   Permutation of dimensions. If `NULL` (default), reverses the dimensions.
-#' @return [`nv_tensor`]
+#' Permutes the dimensions of a tensor. You can also use `t()` for matrices.
+#' @param x ([`tensorish`])\cr
+#'   Tensor to transpose.
+#' @param permutation (`integer()` | `NULL`)\cr
+#'   New ordering of dimensions. If `NULL` (default), reverses the dimensions.
+#' @return [`tensorish`]\cr
+#'   Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
+#' @seealso [nvl_transpose()] for the underlying primitive.
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(matrix(1:6, nrow = 2))
+#'   t(x)
+#' })
 #' @export
 t.AnvilBox <- function(x) {
   nv_transpose(x)

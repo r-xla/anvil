@@ -11,8 +11,20 @@ nv_ceil(operand)
 Operand.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
 }
 \description{
-Element-wise ceiling (round toward positive infinity).
+Element-wise ceiling (round toward positive infinity). You can also use \code{ceiling()}.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1.2, 2.7, -1.5))
+  ceiling(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_ceil]{nvl_ceil()}} for the underlying primitive.
 }

@@ -8,17 +8,46 @@ nvl_reduce_all(operand, dims, drop = TRUE)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of boolean data type.}
 
 \item{dims}{(\code{integer()})\cr
-Dimensions to reduce.}
+Dimensions to reduce over.}
 
 \item{drop}{(\code{logical(1)})\cr
-Whether to drop reduced dimensions.}
+Whether to drop the reduced dimensions from the output shape.
+If \code{TRUE}, the reduced dimensions are removed.
+If \code{FALSE}, the reduced dimensions are set to 1.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Boolean tensor. Never ambiguous.
+When \code{drop = TRUE}, the shape is that of \code{operand} with \code{dims} removed.
+When \code{drop = FALSE}, the shape is that of \code{operand} with \code{dims} set to 1.
 }
 \description{
-Logical AND along dimensions.
+Performs logical AND along the specified dimensions.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code{\link[stablehlo:hlo_and]{stablehlo::hlo_and()}} as the reducer.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+  nvl_reduce_all(x, dims = 1L)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_reduce_all]{nv_reduce_all()}}
 }

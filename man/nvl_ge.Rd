@@ -8,11 +8,31 @@ nvl_ge(lhs, rhs)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Tensorish values of any data type.
+Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}} (boolean)
+\code{\link{tensorish}}\cr
+Has the same shape as the inputs and boolean data type.
+It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Element-wise greater than or equal comparison.
+}
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} with \code{comparison_direction = "GE"}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  y <- nv_tensor(c(3, 2, 1))
+  nvl_ge(x, y)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_ge]{nv_ge()}}, \code{>=}
 }

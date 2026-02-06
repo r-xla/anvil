@@ -8,11 +8,31 @@ nvl_pow(lhs, rhs)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Tensorish values of data type integer, unsigned integer, or floating-point.
+Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the inputs.
+It is ambiguous if both inputs are ambiguous.
 }
 \description{
 Raises lhs to the power of rhs element-wise.
+}
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_power]{stablehlo::hlo_power()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(2, 3, 4))
+  y <- nv_tensor(c(3, 2, 1))
+  nvl_pow(x, y)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_pow]{nv_pow()}}, \code{^}
 }

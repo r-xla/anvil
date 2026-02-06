@@ -8,14 +8,41 @@ nvl_reshape(operand, shape)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{shape}{(\code{integer()})\cr
-Shape.}
+Target shape. Must have the same number of elements as \code{operand}.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type as the input and the given \code{shape}.
+It is ambiguous if the input is ambiguous.
 }
 \description{
-Reshapes a tensor to a new shape.
+Reshapes a tensor to a new shape without changing the underlying data.
+Note that row-major order is used, which differs from R's column-major order.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_reshape]{stablehlo::hlo_reshape()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(1:6)
+  nvl_reshape(x, shape = c(2, 3))
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_reshape]{nv_reshape()}}
 }

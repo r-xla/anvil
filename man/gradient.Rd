@@ -2,37 +2,48 @@
 % Please edit documentation in R/backward.R
 \name{gradient}
 \alias{gradient}
-\alias{value_and_gradient}
 \title{Gradient}
 \usage{
 gradient(f, wrt = NULL)
-
-value_and_gradient(f, wrt = NULL)
 }
 \arguments{
 \item{f}{(\code{function})\cr
-Function to compute the gradient of.}
+Function to differentiate. Arguments can be tensorish (\code{\link{AnvilTensor}}) or
+static (non-tensor) values. Must return a single scalar float tensor.}
 
 \item{wrt}{(\code{character} or \code{NULL})\cr
 Names of the arguments to compute the gradient with respect to.
-If \code{NULL} (the default), the gradient is computed with respect to all arguments.}
+Only tensorish (float tensor) arguments can be included; static arguments
+must not appear in \code{wrt}.
+If \code{NULL} (the default), the gradient is computed with respect to all
+arguments (which must all be tensorish in that case).}
+}
+\value{
+\code{function}
 }
 \description{
-Transform a function to its gradient.
+Returns a new function that computes the gradient of \code{f} via reverse-mode automatic
+differentiation. \code{f} must return a single float scalar. The returned function has the
+same signature as \code{f} and returns the gradients in the same structure as the inputs
+(or the subset selected by \code{wrt}).
 }
-\section{Functions}{
-\itemize{
-\item \code{value_and_gradient()}: Returns both the value and the gradient
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+f <- function(x, y) sum(x * y)
+g <- jit(gradient(f))
+g(nv_tensor(c(1, 2), dtype = "f32"), nv_tensor(c(3, 4), dtype = "f32"))
 
-}}
-\section{Ambiguity}{
+# Differentiate with respect to a single argument
+g_x <- jit(gradient(f, wrt = "x"))
+g_x(nv_tensor(c(1, 2), dtype = "f32"), nv_tensor(c(3, 4), dtype = "f32"))
 
-When performing the backward pass, the ambiguity does not really play a role anymore.
-This is because we don't call into \code{nv_}-functions anymore that promote non-matching tensors,
-but only primitive \code{nvl_}-functions.
-The promotion has already be done in the forward pass.
-We still want to ensure, however, that the gradient values have the same ambiguity as the input values.
-This is simply achieved by setting the ambiguity at the end of the backward pass.
-The ambiguity of a single backward rule therefore does not really matter.
+# Static (non-tensor) arguments are passed through but cannot be in wrt
+f2 <- function(x, power) sum(x^power)
+g2 <- jit(gradient(f2, wrt = "x"), static = "power")
+g2(nv_tensor(c(1, 2, 3), dtype = "f32"), power = 2L)
+\dontshow{\}) # examplesIf}
 }
-
+\seealso{
+\code{\link[=value_and_gradient]{value_and_gradient()}} to get both the output and gradients,
+\code{\link[=transform_gradient]{transform_gradient()}} for the low-level graph transformation.
+}

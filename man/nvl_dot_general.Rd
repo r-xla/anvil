@@ -8,17 +8,52 @@ nvl_dot_general(lhs, rhs, contracting_dims, batching_dims)
 }
 \arguments{
 \item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Left and right operand.}
+Left and right operand.
+Operands are \link[=nv_promote_to_common]{promoted to a common data type}.
+Scalars are \link[=nv_broadcast_scalars]{broadcast} to the shape of the other operand.}
 
-\item{contracting_dims}{(\code{list()})\cr
-Dimensions to contract.}
+\item{contracting_dims}{(\code{list(integer(), integer())})\cr
+A list of two integer vectors specifying which dimensions of \code{lhs} and
+\code{rhs} to contract over. The contracted dimensions must have matching sizes.}
 
-\item{batching_dims}{(\code{list()})\cr
-Batch dimensions.}
+\item{batching_dims}{(\code{list(integer(), integer())})\cr
+A list of two integer vectors specifying which dimensions of \code{lhs} and
+\code{rhs} are batch dimensions. These must have matching sizes.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+The output shape is the batch dimensions followed by the remaining
+(non-contracted, non-batched) dimensions of \code{lhs}, then \code{rhs}.
 }
 \description{
-General dot product of two tensors.
+General dot product of two tensors, supporting contraction over arbitrary
+dimensions and batching.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_dot_general]{stablehlo::hlo_dot_general()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(matrix(1:6, nrow = 2))
+  y <- nv_tensor(matrix(1:6, nrow = 3))
+  nvl_dot_general(x, y,
+    contracting_dims = list(2L, 1L),
+    batching_dims = list(integer(0), integer(0))
+  )
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_matmul]{nv_matmul()}}, \code{\%*\%}
 }

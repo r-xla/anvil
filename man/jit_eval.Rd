@@ -2,18 +2,32 @@
 % Please edit documentation in R/jit.R
 \name{jit_eval}
 \alias{jit_eval}
-\title{Jit an Evaluate an Expression}
+\title{JIT-compile and evaluate an expression}
 \usage{
-jit_eval(expr)
+jit_eval(expr, device = NULL)
 }
 \arguments{
-\item{expr}{(\code{expression})\cr
-Expression to run.}
+\item{expr}{(NSE)\cr
+Expression to compile and evaluate.}
+
+\item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
+The device to use. By default (\code{NULL}), the device is inferred from
+the tensors encountered during tracing, falling back to \code{"cpu"}.
+or \code{"cpu"}.}
 }
 \value{
 (\code{any})\cr
-Result of the expression.
+Result of the compiled and evaluated expression.
 }
 \description{
-Compiles and evaluates an expression.
+Convenience wrapper that JIT-compiles and immediately evaluates a single expression.
+Equivalent to wrapping \code{expr} in an anonymous function, calling \code{\link[=jit]{jit()}} on it, and
+invoking the result.
+Useful if you want to evaluate an expression once.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_tensor(c(1, 2, 3), dtype = "f32")
+jit_eval(x + x)
+\dontshow{\}) # examplesIf}
 }

@@ -8,14 +8,40 @@ nvl_reverse(operand, dims)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of any data type.}
 
 \item{dims}{(\code{integer()})\cr
 Dimensions to reverse (1-indexed).}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same data type and shape as \code{operand}.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Reverses the order of elements along specified dimensions.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_reverse]{stablehlo::hlo_reverse()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3, 4, 5))
+  nvl_reverse(x, dims = 1L)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_reverse]{nv_reverse()}}
 }

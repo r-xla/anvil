@@ -7,7 +7,7 @@
 LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
 }
 \arguments{
-\item{data}{(\code{numeric(1)} | \code{integer(1)} | \code{logical(1)} | \code{\link{AnvilTensor}})\cr
+\item{data}{(\code{double(1)} | \code{integer(1)} | \code{logical(1)} | \code{\link{AnvilTensor}})\cr
 The scalar value or scalarish AnvilTensor (contains 1 element).}
 
 \item{shape}{(\code{\link[stablehlo:Shape]{stablehlo::Shape}} | \code{integer()})\cr
@@ -19,13 +19,41 @@ The data type. Defaults to \code{f32} for numeric, \code{i32} for integer, \code
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
-See the vignette "Type Promotion" for more details.}
+See the \code{vignette("type-promotion")} for more details.}
 }
 \description{
-A \code{\link{AbstractTensor}} representing a tensor where the data is a R scalar literal (e.g., \code{1L}, \code{2.5})
-or an \code{\link{AnvilTensor}}.
-Usually, their type is ambiguous, unless created via \code{\link{nv_fill}}.
+An \code{\link{AbstractTensor}} where all elements have the same constant value.
+This either arises when using literals in traced code (e.g. \code{x + 1}) or when using
+\code{\link[=nv_fill]{nv_fill()}} to create a constant.
 }
-\seealso{
-\link{AbstractTensor}, \link{ConcreteTensor}
+\section{Type Ambiguity}{
+
+When arising from R literals, the resulting \code{LiteralTensor} is ambiguous because no type
+information was available. See the \code{vignette("type-promotion")} for more details.
+}
+
+\section{Lowering}{
+
+\code{LiteralTensor}s become constants inlined into the stableHLO program.
+I.e., they lower to \code{\link[stablehlo:hlo_constant]{stablehlo::hlo_tensor()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+x <- LiteralTensor(1L, shape = integer(), ambiguous = TRUE)
+x
+ambiguous(x)
+shape(x)
+ndims(x)
+dtype(x)
+# How it appears during tracing:
+# 1. via R literals
+graph <- trace_fn(function() 1, list())
+graph
+graph$outputs[[1]]$aval
+# 2. via nv_fill()
+graph <- trace_fn(function() nv_fill(2L, shape = c(2, 2)), list())
+graph
+graph$outputs[[1]]$aval
+\dontshow{\}) # examplesIf}
 }

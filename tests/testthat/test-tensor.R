@@ -7,6 +7,11 @@ test_that("tensor", {
   expect_equal(as_array(x), array(1:4, c(4, 1)))
 })
 
+test_that("device returns the pjrt device", {
+  x <- nv_tensor(1, device = "cpu")
+  expect_true(device(x) == pjrt::as_pjrt_device("cpu"))
+})
+
 test_that("nv_scalar", {
   x <- nv_scalar(1L, dtype = "f32", device = "cpu")
   x
@@ -115,7 +120,7 @@ test_that("to_abstract", {
 
   # pure
   x <- nv_scalar(1)
-  expect_equal(to_abstract(x, pure = TRUE), AbstractTensor("f32", c(), TRUE))
+  expect_equal(to_abstract(x, pure = TRUE), AbstractTensor("f32", c(), FALSE))
   expect_error(to_abstract(list(1, 2)), "is not a tensor-like object")
 })
 

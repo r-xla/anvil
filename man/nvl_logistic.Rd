@@ -8,11 +8,37 @@ nvl_logistic(operand)
 }
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
-Operand.}
+Tensorish value of data type floating-point.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
+It is ambiguous if the input is ambiguous.
 }
 \description{
 Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{backward}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_logistic]{stablehlo::hlo_logistic()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(-2, 0, 2))
+  nvl_logistic(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_logistic]{nv_logistic()}}
 }

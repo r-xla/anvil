@@ -7,11 +7,22 @@
 tree_size(x)
 }
 \arguments{
-\item{x}{Tree node.}
+\item{x}{(\code{Node})\cr
+A tree node as returned by \code{\link[=build_tree]{build_tree()}}.}
 }
 \value{
-Integer count of leaf nodes.
+A scalar \code{integer}.
 }
 \description{
-Get the number of leaf nodes in a tree.
+Counts the number of leaf nodes in a tree. This equals the length of the
+flat list produced by \code{\link[=flatten]{flatten()}} on the original structure.
+}
+\examples{
+tree <- build_tree(list(a = 1, b = list(c = 2, d = 3)))
+tree_size(tree)
+
+tree_size(build_tree(list(1)))
+}
+\seealso{
+\code{\link[=build_tree]{build_tree()}}, \code{\link[=flatten]{flatten()}}
 }

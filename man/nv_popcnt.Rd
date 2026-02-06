@@ -11,8 +11,20 @@ nv_popcnt(operand)
 Operand.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{tensorish}}\cr
+Has the same shape and data type as the input.
 }
 \description{
-Element-wise population count (number of set bits in integer).
+Element-wise population count (number of set bits).
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  x <- nv_tensor(c(7L, 3L, 15L))
+  nv_popcnt(x)
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nvl_popcnt]{nvl_popcnt()}} for the underlying primitive.
 }

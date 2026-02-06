@@ -8,20 +8,47 @@ nvl_rng_bit_generator(initial_state, rng_algorithm = "THREE_FRY", dtype, shape)
 }
 \arguments{
 \item{initial_state}{(\code{\link{tensorish}})\cr
-RNG state tensor.}
+RNG state (\code{ui64[2]}).}
 
 \item{rng_algorithm}{(\code{character(1)})\cr
-Algorithm name (default "THREE_FRY").}
+RNG algorithm name. Default is \code{"THREE_FRY"}.}
 
 \item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
-Data type.}
+Data type of the generated random values.}
 
 \item{shape}{(\code{integer()})\cr
-Output shape.}
+Shape.}
 }
 \value{
-List of new state and random tensor.
+\code{list} of two \code{\link{tensorish}} values:\cr
+The first element is the updated RNG state with the same dtype and shape
+as \code{initial_state}. The second element is a tensor of random values with
+the given \code{dtype} and \code{shape}.
 }
 \description{
-Generates random bits using the specified algorithm.
+Generates pseudo-random numbers using the specified algorithm and returns
+the updated RNG state together with the generated values.
+}
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+}
+}
+
+\section{StableHLO}{
+
+Lowers to \code{\link[stablehlo:hlo_rng_bit_generator]{stablehlo::hlo_rng_bit_generator()}}.
+}
+
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+jit_eval({
+  state <- nv_tensor(c(0L, 0L), dtype = "ui64")
+  nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
+})
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=nv_runif]{nv_runif()}}, \code{\link[=nv_rnorm]{nv_rnorm()}}
 }

@@ -14,25 +14,51 @@ jit(
 }
 \arguments{
 \item{f}{(\code{function})\cr
-Function to compile.}
+Function to compile. Must accept and return \code{\link{AnvilTensor}}s (and/or
+static arguments).}
 
 \item{static}{(\code{character()})\cr
-Which parameters of \code{f} are static.}
+Names of parameters of \code{f} that are \emph{not} tensors. Static values are
+embedded as constants in the compiled program; a new compilation is triggered whenever
+a static value changes. For example useful when you want R control flow in your function.}
 
 \item{cache_size}{(\code{integer(1)})\cr
-The size of the cache for the jit-compiled functions.}
+Maximum number of compiled executables to keep in the LRU cache.}
 
 \item{donate}{(\code{character()})\cr
 Names of the arguments whose buffers should be donated.
 Donated buffers can be aliased with outputs of the same type,
-allowing in-place operations and reducing memory usage.}
+allowing in-place operations and reducing memory usage.
+An argument cannot appear in both \code{donate} and \code{static}.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
-The device to use if no input tensors are provided to infer the platform.}
+The device to use if it cannot be inferred from the inputs or constants.
+Defaults to \code{"cpu"}.}
 }
 \value{
+A \code{JitFunction} with the same formals as \code{f}.
+
 (\code{function})
 }
 \description{
-Convert a function to a JIT compiled function.
+Wraps a function so that it is traced, lowered to StableHLO, and compiled to an XLA
+executable on first call. Subsequent calls with the same input shapes and dtypes hit an
+LRU cache and skip recompilation. Unlike \code{\link[=xla]{xla()}}, the compiled executable is not
+created eagerly but lazily on the first invocation.
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+f <- jit(function(x, y) x + y)
+f(nv_tensor(1), nv_tensor(2))
+
+# Static arguments enable data-dependent control flow
+g <- jit(function(x, flag) {
+  if (flag) x + 1 else x * 2
+}, static = "flag")
+g(nv_tensor(3), TRUE)
+g(nv_tensor(3), FALSE)
+\dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=xla]{xla()}} for ahead-of-time compilation, \code{\link[=jit_eval]{jit_eval()}} for evaluating an expression once.
 }
