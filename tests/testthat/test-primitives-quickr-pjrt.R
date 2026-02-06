@@ -86,6 +86,21 @@ binary_case <- function(op, name, seed, adjust_y = NULL) {
 }
 
 quickr_pjrt_cases <- list(
+  fill = function() {
+    case <- function(value, shape, dtype, info) {
+      quickr_case(
+        function() nv_fill(value, shape = shape, dtype = dtype),
+        list(),
+        list(),
+        info = info
+      )
+    }
+    list(
+      case(3.25, integer(), "f64", "fill: f64 scalar"),
+      case(2L, c(4L), "i32", "fill: i32 vector"),
+      case(TRUE, c(2L, 3L), "pred", "fill: pred matrix")
+    )
+  },
   add = function() {
     binary_case(nv_add, "add", seed = 1)
   },
@@ -97,6 +112,34 @@ quickr_pjrt_cases <- list(
   },
   divide = function() {
     binary_case(nv_div, "divide", seed = 4, adjust_y = function(y) y + 1)
+  },
+  convert = function() {
+    withr::local_seed(12)
+
+    x <- matrix(rnorm(6, sd = 0.2), nrow = 2, ncol = 3)
+    y <- matrix(sample.int(10, 6, replace = TRUE), nrow = 2, ncol = 3)
+    z <- matrix(sample(c(TRUE, FALSE), 6, replace = TRUE), nrow = 2, ncol = 3)
+
+    list(
+      quickr_case(
+        function(x) nvl_convert(x, dtype = "i32"),
+        list(x = make_template(dim(x), dtype = "f64")),
+        list(x = x),
+        info = "convert: f64 -> i32"
+      ),
+      quickr_case(
+        function(y) nvl_convert(y, dtype = "f64"),
+        list(y = make_template(dim(y), dtype = "i32")),
+        list(y = y),
+        info = "convert: i32 -> f64"
+      ),
+      quickr_case(
+        function(z) nvl_convert(z, dtype = "pred"),
+        list(z = make_template(dim(z), dtype = "pred")),
+        list(z = z),
+        info = "convert: pred -> pred"
+      )
+    )
   },
   negate = function() {
     withr::local_seed(5)
