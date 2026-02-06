@@ -454,14 +454,32 @@ quickr_emit_reduce2_axis_loop <- function(
   )
 }
 
-quickr_emit_reduce_sum <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
+quickr_emit_reduce <- function(kind, out_sym, operand_expr, shape_in, dims, drop, out_aval) {
+  kind <- as.character(kind)
   dims <- sort(unique(as.integer(dims)))
   rank <- length(shape_in)
-  zero <- quickr_zero_literal_for(out_aval)
+  if (!kind %in% c("sum", "prod", "max", "min")) {
+    cli_abort("Internal error: unknown reduction kind: {.val {kind}}")
+  }
+  if (kind %in% c("sum", "prod")) {
+    dt_out <- as.character(dtype(out_aval))
+    init_acc_scalar <- if (kind == "sum") {
+      quickr_zero_literal_for(out_aval)
+    } else if (dt_out %in% c("f32", "f64")) {
+      1.0
+    } else {
+      1L
+    }
+    if (as.character(dtype(out_aval)) %in% c("pred", "i1")) {
+      cli_abort("{kind}: pred reductions are not supported by quickr lowering")
+    }
+  } else {
+    init_acc_scalar <- NULL
+  }
 
   if (rank == 0L) {
     if (length(dims)) {
-      cli_abort("sum: scalar reduction dims must be empty")
+      cli_abort("{kind}: scalar reduction dims must be empty")
     }
     return(quickr_emit_assign(out_sym, operand_expr))
   }
@@ -471,14 +489,14 @@ quickr_emit_reduce_sum <- function(out_sym, operand_expr, shape_in, dims, drop, 
       return(quickr_emit_assign(out_sym, operand_expr))
     }
     if (!identical(dims, 1L)) {
-      cli_abort("sum: unsupported reduction dims for rank-1 tensor")
+      cli_abort("{kind}: unsupported reduction dims for rank-1 tensor")
     }
     if (isTRUE(drop)) {
-      return(quickr_emit_assign(out_sym, rlang::call2("sum", operand_expr)))
+      return(quickr_emit_assign(out_sym, rlang::call2(kind, operand_expr)))
     }
     return(quickr_emit_assign(
       out_sym,
-      rlang::call2("array", rlang::call2("sum", operand_expr), dim = 1L)
+      rlang::call2("array", rlang::call2(kind, operand_expr), dim = 1L)
     ))
   }
 
@@ -489,54 +507,76 @@ quickr_emit_reduce_sum <- function(out_sym, operand_expr, shape_in, dims, drop, 
 
     if (identical(dims, c(1L, 2L))) {
       if (isTRUE(drop)) {
-        return(quickr_emit_assign(out_sym, rlang::call2("sum", operand_expr)))
+        return(quickr_emit_assign(out_sym, rlang::call2(kind, operand_expr)))
       }
       return(quickr_emit_assign(
         out_sym,
-        rlang::call2("matrix", rlang::call2("sum", operand_expr), nrow = 1L, ncol = 1L)
+        rlang::call2("matrix", rlang::call2(kind, operand_expr), nrow = 1L, ncol = 1L)
       ))
     }
 
-    update <- function(ii, jj, acc) {
-      rlang::call2("<-", acc, rlang::call2("+", acc, rlang::call2("[", operand_expr, ii, jj)))
-    }
+    update <- switch(
+      kind,
+      sum = function(ii, jj, acc) rlang::call2("<-", acc, rlang::call2("+", acc, rlang::call2("[", operand_expr, ii, jj))),
+      prod = function(ii, jj, acc) rlang::call2("<-", acc, rlang::call2("*", acc, rlang::call2("[", operand_expr, ii, jj))),
+      max = function(ii, jj, acc) rlang::call2("<-", acc, rlang::call2("max", acc, rlang::call2("[", operand_expr, ii, jj))),
+      min = function(ii, jj, acc) rlang::call2("<-", acc, rlang::call2("min", acc, rlang::call2("[", operand_expr, ii, jj)))
+    )
 
     if (identical(dims, 2L)) {
+      init_acc_expr <- if (kind %in% c("max", "min")) {
+        ii <- as.name(paste0("i_", as.character(out_sym)))
+        rlang::call2("[", operand_expr, ii, 1L)
+      } else {
+        init_acc_scalar
+      }
+      inner_start <- if (kind %in% c("max", "min")) 2L else 1L
       alloc <- if (isTRUE(drop)) {
         quickr_emit_assign(out_sym, rlang::call2(ctor, m))
       } else {
-        quickr_emit_assign(out_sym, rlang::call2("matrix", zero, nrow = m, ncol = 1L))
+        quickr_emit_assign(out_sym, rlang::call2("matrix", quickr_zero_literal_for(out_aval), nrow = m, ncol = 1L))
       }
-      return(quickr_emit_reduce2_axis_loop(out_sym, m, n, 2L, drop, alloc, zero, 1L, update))
+      return(quickr_emit_reduce2_axis_loop(out_sym, m, n, 2L, drop, alloc, init_acc_expr, inner_start, update))
     }
 
     if (identical(dims, 1L)) {
+      init_acc_expr <- if (kind %in% c("max", "min")) {
+        jj <- as.name(paste0("j_", as.character(out_sym)))
+        rlang::call2("[", operand_expr, 1L, jj)
+      } else {
+        init_acc_scalar
+      }
+      inner_start <- if (kind %in% c("max", "min")) 2L else 1L
       alloc <- if (isTRUE(drop)) {
         quickr_emit_assign(out_sym, rlang::call2(ctor, n))
       } else {
-        quickr_emit_assign(out_sym, rlang::call2("matrix", zero, nrow = 1L, ncol = n))
+        quickr_emit_assign(out_sym, rlang::call2("matrix", quickr_zero_literal_for(out_aval), nrow = 1L, ncol = n))
       }
-      return(quickr_emit_reduce2_axis_loop(out_sym, m, n, 1L, drop, alloc, zero, 1L, update))
+      return(quickr_emit_reduce2_axis_loop(out_sym, m, n, 1L, drop, alloc, init_acc_expr, inner_start, update))
     }
 
-    cli_abort("sum: unsupported reduction dims for rank-2 tensor")
+    cli_abort("{kind}: unsupported reduction dims for rank-2 tensor")
   }
 
   if (!length(dims)) {
     return(quickr_emit_assign(out_sym, operand_expr))
   }
   if (!identical(dims, seq_len(rank))) {
-    cli_abort("sum: for rank > 2, only full reductions (dims = seq_len(rank)) are supported")
+    cli_abort("{kind}: for rank > 2, only full reductions (dims = seq_len(rank)) are supported")
   }
 
   if (isTRUE(drop)) {
-    return(quickr_emit_assign(out_sym, rlang::call2("sum", operand_expr)))
+    return(quickr_emit_assign(out_sym, rlang::call2(kind, operand_expr)))
   }
 
   quickr_emit_assign(
     out_sym,
-    rlang::call2("array", rlang::call2("sum", operand_expr), dim = rep(1L, rank))
+    rlang::call2("array", rlang::call2(kind, operand_expr), dim = rep(1L, rank))
   )
+}
+
+quickr_emit_reduce_sum <- function(out_sym, operand_expr, shape_in, dims, drop, out_aval) {
+  quickr_emit_reduce("sum", out_sym, operand_expr, shape_in, dims, drop, out_aval)
 }
 
 quickr_emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_aval) {
@@ -850,6 +890,27 @@ quickr_lower_registry <- local({
       quickr_emit_reduce_sum(out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
     }
   )
+
+  quickr_register_prim_lowerer(reg, "reduce_prod", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+    out_sym <- out_syms[[1L]]
+    out_aval <- out_avals[[1L]]
+    operand_node <- input_nodes[[1L]]
+    quickr_emit_reduce("prod", out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
+  })
+
+  quickr_register_prim_lowerer(reg, "reduce_max", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+    out_sym <- out_syms[[1L]]
+    out_aval <- out_avals[[1L]]
+    operand_node <- input_nodes[[1L]]
+    quickr_emit_reduce("max", out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
+  })
+
+  quickr_register_prim_lowerer(reg, "reduce_min", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+    out_sym <- out_syms[[1L]]
+    out_aval <- out_avals[[1L]]
+    operand_node <- input_nodes[[1L]]
+    quickr_emit_reduce("min", out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
+  })
 
   reg
 })

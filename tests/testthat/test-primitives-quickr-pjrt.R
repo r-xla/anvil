@@ -251,6 +251,17 @@ quickr_pjrt_cases <- list(
       info = "reduce_sum"
     ))
   },
+  reduce_prod = function() {
+    withr::local_seed(33)
+    shape <- c(2L, 3L)
+    x <- make_input(shape, non_negative = TRUE)
+    list(quickr_case(
+      function(x) nvl_reduce_prod(x, dims = 2L, drop = TRUE),
+      list(x = make_template(shape)),
+      list(x = x),
+      info = "reduce_prod"
+    ))
+  },
   select = function() {
     withr::local_seed(13)
 
@@ -378,7 +389,8 @@ quickr_primitives <- sort(c(
   "transpose",
   "reshape",
   "sum",
-  "reduce_sum"
+  "reduce_sum",
+  "reduce_prod"
 ))
 
 for (prim in quickr_primitives) {
