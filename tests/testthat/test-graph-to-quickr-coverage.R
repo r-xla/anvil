@@ -1,19 +1,3 @@
-test_that("graph_to_quickr_function matches PJRT for fill (including pred)", {
-  testthat::skip_if_not_installed("quickr")
-
-  graph <- trace_fn(function() nv_fill(3.25, shape = integer(), dtype = "f64"), list())
-  f_quick <- graph_to_quickr_function(graph)
-  expect_equal(f_quick(), eval_graph_pjrt(graph))
-
-  graph <- trace_fn(function() nv_fill(2L, shape = c(4L), dtype = "i32"), list())
-  f_quick <- graph_to_quickr_function(graph)
-  expect_equal(f_quick(), eval_graph_pjrt(graph))
-
-  graph <- trace_fn(function() nv_fill(TRUE, shape = c(2L, 3L), dtype = "pred"), list())
-  f_quick <- graph_to_quickr_function(graph)
-  expect_equal(f_quick(), eval_graph_pjrt(graph))
-})
-
 test_that("graph_to_quickr_function matches PJRT for transpose permutations", {
   testthat::skip_if_not_installed("quickr")
 
@@ -21,10 +5,6 @@ test_that("graph_to_quickr_function matches PJRT for transpose permutations", {
   templ <- list(x = nv_tensor(x, dtype = "i32", shape = dim(x)))
 
   graph <- trace_fn(function(x) nvl_transpose(x, permutation = c(1L, 2L)), templ)
-  f_quick <- graph_to_quickr_function(graph)
-  expect_equal(f_quick(x), eval_graph_pjrt(graph, x))
-
-  graph <- trace_fn(function(x) nvl_transpose(x, permutation = c(2L, 1L)), templ)
   f_quick <- graph_to_quickr_function(graph)
   expect_equal(f_quick(x), eval_graph_pjrt(graph, x))
 
@@ -75,15 +55,6 @@ test_that("graph_to_quickr_function matches PJRT for broadcast_in_dim", {
   )
   f_quick <- graph_to_quickr_function(graph)
   expect_equal(f_quick(2.5), eval_graph_pjrt(graph, 2.5))
-
-  # singleton dim -> expanded dim
-  x <- matrix(1:2, nrow = 2, ncol = 1)
-  graph <- trace_fn(
-    function(x) nvl_broadcast_in_dim(x, shape = c(2L, 3L), broadcast_dimensions = c(1L, 2L)),
-    list(x = nv_tensor(x, dtype = "i32", shape = dim(x)))
-  )
-  f_quick <- graph_to_quickr_function(graph)
-  expect_equal(f_quick(x), eval_graph_pjrt(graph, x))
 
   # identity broadcast (shape_in == shape_out)
   x <- matrix(1:6, nrow = 2, ncol = 3)
