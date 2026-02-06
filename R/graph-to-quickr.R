@@ -3,7 +3,7 @@ NULL
 
 #' Convert an AnvilGraph to a quickr-compiled function
 #'
-#' Lowers a supported subset of `anvil::AnvilGraph` objects to a plain R function and
+#' Lowers a supported subset of `AnvilGraph` objects to a plain R function and
 #' compiles it with `quickr::quick()`.
 #'
 #' The returned function expects plain R scalars/vectors/arrays (not
@@ -24,7 +24,7 @@ NULL
 #' @export
 graph_to_quickr_function <- function(graph) {
   if (!is_graph(graph)) {
-    cli_abort("{.arg graph} must be a {.cls anvil::AnvilGraph}")
+    cli_abort("{.arg graph} must be a {.cls AnvilGraph}")
   }
 
   assert_quickr_installed("{.fn graph_to_quickr_function}")

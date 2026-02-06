@@ -746,7 +746,7 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
   pack_output <- as.logical(pack_output)
 
   if (!is_graph(graph)) {
-    cli_abort("{.arg graph} must be a {.cls anvil::AnvilGraph}")
+    cli_abort("{.arg graph} must be a {.cls AnvilGraph}")
   }
   if (is.null(graph$in_tree) || is.null(graph$out_tree)) {
     cli_abort("{.arg graph} must have non-NULL {.field in_tree} and {.field out_tree}")

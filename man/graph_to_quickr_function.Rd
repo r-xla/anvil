@@ -14,7 +14,7 @@ Graph to convert.}
 (\code{function})
 }
 \description{
-Lowers a supported subset of \code{anvil::AnvilGraph} objects to a plain R function and
+Lowers a supported subset of \code{AnvilGraph} objects to a plain R function and
 compiles it with \code{quickr::quick()}.
 }
 \details{

@@ -221,7 +221,21 @@ quickr_pjrt_cases <- list(
   }
 )
 
-quickr_primitives <- sort(ls(anvil:::quickr_lower_registry, all.names = TRUE))
+quickr_primitives <- sort(c(
+  "fill",
+  "convert",
+  "add",
+  "sub",
+  "mul",
+  "divide",
+  "negate",
+  "broadcast_in_dim",
+  "dot_general",
+  "transpose",
+  "reshape",
+  "sum",
+  "reduce_sum"
+))
 
 for (prim in quickr_primitives) {
   test_that(paste0("quickr matches pjrt for primitive: ", prim), {
