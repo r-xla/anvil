@@ -325,6 +325,23 @@ quickr_pjrt_cases <- list(
   },
   ceil = function() {
     unary_case(nv_ceil, "ceil", seed = 29)
+  },
+  maximum = function() {
+    binary_case(nv_max, "maximum", seed = 30)
+  },
+  minimum = function() {
+    binary_case(nv_min, "minimum", seed = 31)
+  },
+  power = function() {
+    withr::local_seed(32)
+    shape <- c(2L, 3L)
+    x <- make_input(shape, non_negative = TRUE)
+    y <- make_input(shape, non_negative = TRUE)
+    templates <- list(
+      x = make_template(shape),
+      y = make_template(shape)
+    )
+    list(quickr_case(function(x, y) nv_pow(x, y), templates, list(x = x, y = y), info = "power"))
   }
 )
 
@@ -353,6 +370,9 @@ quickr_primitives <- sort(c(
   "exp",
   "floor",
   "ceil",
+  "maximum",
+  "minimum",
+  "power",
   "broadcast_in_dim",
   "dot_general",
   "transpose",

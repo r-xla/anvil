@@ -766,6 +766,22 @@ quickr_lower_registry <- local({
 
   quickr_register_prim_lowerer(
     reg,
+    c("maximum", "minimum"),
+    function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      cmp <- if (prim_name == "maximum") ">=" else "<="
+      quickr_emit_assign(
+        out_syms[[1L]],
+        rlang::call2("ifelse", rlang::call2(cmp, inputs[[1L]], inputs[[2L]]), inputs[[1L]], inputs[[2L]])
+      )
+    }
+  )
+
+  quickr_register_prim_lowerer(reg, "power", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+    quickr_emit_assign(out_syms[[1L]], rlang::call2("^", inputs[[1L]], inputs[[2L]]))
+  })
+
+  quickr_register_prim_lowerer(
+    reg,
     "broadcast_in_dim",
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
       out_sym <- out_syms[[1L]]
