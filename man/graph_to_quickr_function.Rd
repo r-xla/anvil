@@ -24,11 +24,8 @@ The returned function expects plain R scalars/vectors/arrays (not
 If the graph returns multiple outputs (e.g. a nested list), the compiled
 function returns the same structure by packing/unpacking values for \code{quickr}.
 
-At the moment this only supports graphs with a flat (non-nested) argument
-list.
-
 Currently supported primitives are:
-\code{constant}, \code{add}, \code{sub}, \code{mul}, \code{divide}, \code{negate}, \code{broadcast_in_dim},
+\code{constant}, \code{convert}, \code{add}, \code{sub}, \code{mul}, \code{divide}, \code{negate}, \code{broadcast_in_dim},
 \code{dot_general}, \code{transpose}, \code{reshape}, \code{sum}.
 The code generator currently supports tensors up to rank 5. Some primitives
 are more restricted (e.g. \code{transpose} currently only handles rank-2 tensors).

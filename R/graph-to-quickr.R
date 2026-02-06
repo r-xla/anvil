@@ -12,11 +12,8 @@ NULL
 #' If the graph returns multiple outputs (e.g. a nested list), the compiled
 #' function returns the same structure by packing/unpacking values for `quickr`.
 #'
-#' At the moment this only supports graphs with a flat (non-nested) argument
-#' list.
-#'
 #' Currently supported primitives are:
-#' `constant`, `add`, `sub`, `mul`, `divide`, `negate`, `broadcast_in_dim`,
+#' `constant`, `convert`, `add`, `sub`, `mul`, `divide`, `negate`, `broadcast_in_dim`,
 #' `dot_general`, `transpose`, `reshape`, `sum`.
 #' The code generator currently supports tensors up to rank 5. Some primitives
 #' are more restricted (e.g. `transpose` currently only handles rank-2 tensors).
@@ -33,15 +30,10 @@ graph_to_quickr_function <- function(graph) {
   assert_quickr_installed("{.fn graph_to_quickr_function}")
 
   in_tree <- graph$in_tree
-  if (inherits(in_tree, "ListNode") && any(vapply(in_tree$nodes, inherits, logical(1L), "ListNode"))) {
-    cli_abort(c(
-      "{.fn graph_to_quickr_function} currently supports only flat (non-nested) argument lists.",
-      i = "Pass tensors as top-level arguments, not nested lists."
-    ))
-  }
+  needs_flatten <- inherits(in_tree, "ListNode") && any(vapply(in_tree$nodes, inherits, logical(1L), "ListNode"))
 
   needs_pack <- !(inherits(graph$out_tree, "LeafNode") && length(graph$outputs) == 1L)
-  needs_wrapper <- isTRUE(needs_pack) || length(graph$constants)
+  needs_wrapper <- isTRUE(needs_pack) || length(graph$constants) || isTRUE(needs_flatten)
 
   r_fun <- graph_to_quickr_r_function(graph, include_declare = TRUE, pack_output = needs_pack)
   inner_quick <- quickr_eager_compile(r_fun)
@@ -52,7 +44,7 @@ graph_to_quickr_function <- function(graph) {
 
   r_arg_names <- names(formals(r_fun))
   n_user <- length(graph$inputs)
-  user_arg_names <- r_arg_names[seq_len(n_user)]
+  leaf_arg_names <- r_arg_names[seq_len(n_user)]
 
   const_args <- list()
   if (length(graph$constants)) {
@@ -61,24 +53,6 @@ graph_to_quickr_function <- function(graph) {
       as_array(node$aval$data)
     })
     const_args <- stats::setNames(const_vals, const_arg_names)
-  }
-
-  if (!isTRUE(needs_pack)) {
-    wrapper <- function() {}
-    formals(wrapper) <- formals(r_fun)[seq_len(n_user)]
-
-    wrapper_env <- new.env(parent = environment())
-    wrapper_env$inner_quick <- inner_quick
-    wrapper_env$user_arg_names <- user_arg_names
-    wrapper_env$const_args <- const_args
-
-    body(wrapper) <- quote({
-      args <- mget(user_arg_names, envir = environment(), inherits = FALSE)
-      do.call(inner_quick, c(const_args, args))
-    })
-
-    environment(wrapper) <- wrapper_env
-    return(wrapper)
   }
 
   out_infos <- lapply(graph$outputs, function(node) {
@@ -93,19 +67,49 @@ graph_to_quickr_function <- function(graph) {
   )
 
   wrapper <- function() {}
-  formals(wrapper) <- formals(r_fun)[seq_len(n_user)]
+  if (isTRUE(needs_flatten)) {
+    top_names <- in_tree$names %||% rep("", length(in_tree$nodes))
+    top_names <- vapply(
+      top_names,
+      function(x) {
+        if (is.null(x) || !nzchar(x)) "x" else x
+      },
+      character(1L)
+    )
+    top_names <- make.unique(make.names(top_names))
+    formals(wrapper) <- as.pairlist(stats::setNames(rep(list(quote(expr = )), length(top_names)), top_names))
+  } else {
+    formals(wrapper) <- formals(r_fun)[seq_len(n_user)]
+  }
 
   wrapper_env <- new.env(parent = environment())
   wrapper_env$inner_quick <- inner_quick
   wrapper_env$out_tree <- graph$out_tree
   wrapper_env$out_infos <- out_infos
   wrapper_env$out_lens <- out_lens
-  wrapper_env$user_arg_names <- user_arg_names
+  wrapper_env$leaf_arg_names <- leaf_arg_names
+  wrapper_env$needs_flatten <- needs_flatten
+  wrapper_env$top_names <- if (isTRUE(needs_flatten)) top_names else NULL
   wrapper_env$const_args <- const_args
 
   body(wrapper) <- quote({
-    args <- mget(user_arg_names, envir = environment(), inherits = FALSE)
+    if (isTRUE(needs_flatten)) {
+      args_top <- mget(top_names, envir = environment(), inherits = FALSE)
+      args <- flatten(args_top)
+    } else {
+      args <- mget(leaf_arg_names, envir = environment(), inherits = FALSE)
+    }
+
+    if (length(args) != length(leaf_arg_names)) {
+      cli_abort("Expected {length(leaf_arg_names)} inputs, got {length(args)}")
+    }
+
+    args <- stats::setNames(args, leaf_arg_names)
     packed <- do.call(inner_quick, c(const_args, args))
+
+    if (!isTRUE(needs_pack)) {
+      return(packed)
+    }
 
     decode_leaf <- function(seg, shape, dtype) {
       base <- if (dtype %in% c("pred", "i1")) {

@@ -3,57 +3,8 @@ NULL
 
 # Helpers ----------------------------------------------------------------------
 
-quickr_tree_leaf_paths <- function(node, path = list()) {
-  if (inherits(node, "LeafNode")) {
-    return(list(path))
-  }
-  if (!inherits(node, "ListNode")) {
-    cli_abort("Unsupported node type in tree: {.cls {class(node)[[1L]]}}")
-  }
-
-  out <- list()
-  for (i in seq_along(node$nodes)) {
-    nm <- if (is.null(node$names)) {
-      ""
-    } else {
-      nm_i <- node$names[[i]]
-      if (is.null(nm_i)) "" else nm_i
-    }
-    key <- if (nzchar(nm)) nm else i
-    out <- c(out, quickr_tree_leaf_paths(node$nodes[[i]], c(path, list(key))))
-  }
-  out
-}
-
-quickr_paths_to_names <- function(paths) {
-  raw <- vapply(
-    paths,
-    function(path) {
-      if (!length(path)) {
-        return("x")
-      }
-      parts <- vapply(
-        path,
-        function(p) {
-          if (is.character(p)) p else as.character(p)
-        },
-        character(1L)
-      )
-      paste(parts, collapse = "_")
-    },
-    character(1L)
-  )
-  make.unique(make.names(raw))
-}
-
-quickr_make_const_arg_names <- function(user_arg_names, n) {
-  n <- as.integer(n)
-  if (n <= 0L) {
-    return(character())
-  }
-  raw <- paste0("anvil_const", seq_len(n))
-  combined <- make.unique(c(user_arg_names, raw))
-  combined[(length(user_arg_names) + 1L):length(combined)]
+quickr_user_arg_names <- function(n) {
+  paste0("x", seq_len(as.integer(n)))
 }
 
 quickr_dtype_to_r_ctor <- function(dt_chr) {
@@ -139,6 +90,57 @@ quickr_emit_full_like <- function(out_sym, value_expr, shape_out, out_aval) {
   )
 }
 
+quickr_emit_convert <- function(out_sym, operand_expr, shape_in, out_aval) {
+  shape_in <- as.integer(shape_in)
+  rank <- length(shape_in)
+  dt_chr <- as.character(dtype(out_aval))
+
+  caster <- if (dt_chr %in% c("f32", "f64")) {
+    "as.double"
+  } else if (grepl("^(u?i)(8|16|32|64)$", dt_chr)) {
+    "as.integer"
+  } else if (dt_chr %in% c("pred", "i1")) {
+    "as.logical"
+  } else {
+    cli_abort("convert: unsupported dtype: {.val {dt_chr}}")
+  }
+
+  if (rank == 0L) {
+    return(quickr_emit_assign(out_sym, rlang::call2(caster, operand_expr)))
+  }
+  if (rank > 5L) {
+    cli_abort("convert: only tensors up to rank 5 are supported")
+  }
+
+  out_zero <- quickr_zero_literal_for(out_aval)
+  ctor <- quickr_dtype_to_r_ctor(dt_chr)
+  alloc_out <- if (rank == 1L) {
+    rlang::call2(ctor, as.integer(shape_in[[1L]]))
+  } else if (rank == 2L) {
+    rlang::call2("matrix", out_zero, nrow = as.integer(shape_in[[1L]]), ncol = as.integer(shape_in[[2L]]))
+  } else {
+    rlang::call2("array", out_zero, dim = shape_in)
+  }
+
+  idxs <- lapply(seq_len(rank), function(d) as.name(paste0("i_", as.character(out_sym), "_", d)))
+  subscript <- function(expr, idxs) as.call(c(list(as.name("["), expr), idxs))
+  in_at <- subscript(operand_expr, idxs)
+  out_at <- subscript(out_sym, idxs)
+  inner <- rlang::call2("<-", out_at, rlang::call2(caster, in_at))
+
+  body <- inner
+  for (d in seq_len(rank)) {
+    body <- as.call(list(
+      as.name("for"),
+      idxs[[d]],
+      rlang::call2("seq_len", as.integer(shape_in[[d]])),
+      body
+    ))
+  }
+
+  c(list(rlang::call2("<-", out_sym, alloc_out)), list(body))
+}
+
 quickr_expr_of_node <- function(node, node_expr) {
   if (is_graph_literal(node)) {
     return(quickr_scalar_cast(node$aval$data, as.character(dtype(node))))
@@ -181,62 +183,8 @@ quickr_emit_dot_general <- function(
   bd_lhs <- as.integer(batching_dims[[1L]])
   bd_rhs <- as.integer(batching_dims[[2L]])
 
-  if (length(cd_lhs) != length(cd_rhs)) {
-    cli_abort("dot_general: contracting_dims must have the same length for lhs and rhs")
-  }
-  if (length(bd_lhs) != length(bd_rhs)) {
-    cli_abort("dot_general: batching_dims must have the same length for lhs and rhs")
-  }
-
-  check_dims <- function(dims, rank, label) {
-    if (!length(dims)) {
-      return(invisible(NULL))
-    }
-    if (any(is.na(dims))) {
-      cli_abort("dot_general: {label} must not contain missing values")
-    }
-    if (any(dims < 1L) || any(dims > rank)) {
-      cli_abort("dot_general: {label} out of range for rank {rank}")
-    }
-    if (anyDuplicated(dims)) {
-      cli_abort("dot_general: {label} must be unique")
-    }
-    invisible(NULL)
-  }
-
-  check_dims(cd_lhs, lhs_rank, "lhs contracting_dims")
-  check_dims(cd_rhs, rhs_rank, "rhs contracting_dims")
-  check_dims(bd_lhs, lhs_rank, "lhs batching_dims")
-  check_dims(bd_rhs, rhs_rank, "rhs batching_dims")
-
-  if (length(intersect(cd_lhs, bd_lhs))) {
-    cli_abort("dot_general: lhs contracting_dims and batching_dims must be disjoint")
-  }
-  if (length(intersect(cd_rhs, bd_rhs))) {
-    cli_abort("dot_general: rhs contracting_dims and batching_dims must be disjoint")
-  }
-
-  for (i in seq_along(bd_lhs)) {
-    n_lhs <- lhs_shape[[bd_lhs[[i]]]]
-    n_rhs <- rhs_shape[[bd_rhs[[i]]]]
-    if (!identical(n_lhs, n_rhs)) {
-      cli_abort("dot_general: batch dim sizes differ between lhs and rhs")
-    }
-  }
-  for (i in seq_along(cd_lhs)) {
-    n_lhs <- lhs_shape[[cd_lhs[[i]]]]
-    n_rhs <- rhs_shape[[cd_rhs[[i]]]]
-    if (!identical(n_lhs, n_rhs)) {
-      cli_abort("dot_general: contracting dim sizes differ between lhs and rhs")
-    }
-  }
-
   free_lhs <- setdiff(seq_len(lhs_rank), c(bd_lhs, cd_lhs))
   free_rhs <- setdiff(seq_len(rhs_rank), c(bd_rhs, cd_rhs))
-  expected_out <- c(lhs_shape[bd_lhs], lhs_shape[free_lhs], rhs_shape[free_rhs])
-  if (!identical(out_shape, as.integer(expected_out))) {
-    cli_abort("dot_general: output shape mismatch")
-  }
 
   for_loop <- function(var_sym, upper, body) {
     as.call(list(
@@ -398,25 +346,6 @@ quickr_emit_broadcast_in_dim <- function(out_sym, operand_expr, shape_in, shape_
   if (rank_in > 5L || rank_out > 5L) {
     cli_abort("broadcast_in_dim: only tensors up to rank 5 are supported")
   }
-  if (length(broadcast_dimensions) != rank_in) {
-    cli_abort("broadcast_in_dim: broadcast_dimensions must have length equal to rank(operand)")
-  }
-  if (any(broadcast_dimensions < 1L) || any(broadcast_dimensions > rank_out)) {
-    cli_abort("broadcast_in_dim: broadcast_dimensions out of range")
-  }
-  if (anyDuplicated(broadcast_dimensions)) {
-    cli_abort("broadcast_in_dim: broadcast_dimensions must be unique")
-  }
-
-  for (d_in in seq_len(rank_in)) {
-    d_out <- broadcast_dimensions[[d_in]]
-    n_in <- as.integer(shape_in[[d_in]])
-    n_out <- as.integer(shape_out[[d_out]])
-    if (!(n_in == 1L || identical(n_in, n_out))) {
-      cli_abort("broadcast_in_dim: shape mismatch between input and output dimensions")
-    }
-  }
-
   out_zero <- quickr_zero_literal_for(out_aval)
   stmts <- quickr_emit_assign(out_sym, rlang::call2("array", out_zero, dim = as.integer(shape_out)))
 
@@ -599,9 +528,6 @@ quickr_emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_
   if (length(shape_in) > 5L || length(shape_out) > 5L) {
     cli_abort("reshape: only tensors up to rank 5 are supported")
   }
-  if (Reduce(`*`, shape_in, init = 1L) != Reduce(`*`, shape_out, init = 1L)) {
-    cli_abort("reshape: input and output sizes differ")
-  }
 
   nflat <- Reduce(`*`, shape_in, init = 1L)
   if (identical(as.integer(nflat), 1L)) {
@@ -693,6 +619,13 @@ quickr_lower_registry <- local({
     quickr_emit_full_like(out_sym, value_expr, params$shape, out_aval)
   })
 
+  quickr_register_prim_lowerer(reg, "convert", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+    out_sym <- out_syms[[1L]]
+    out_aval <- out_avals[[1L]]
+    operand_node <- input_nodes[[1L]]
+    quickr_emit_convert(out_sym, inputs[[1L]], shape(operand_node$aval), out_aval)
+  })
+
   quickr_register_prim_lowerer(
     reg,
     c("add", "sub", "mul", "divide"),
@@ -720,9 +653,6 @@ quickr_lower_registry <- local({
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
       operand_node <- input_nodes[[1L]]
-      if (!is_graph_value(operand_node)) {
-        cli_abort("broadcast_in_dim: only GraphValue inputs are supported")
-      }
       quickr_emit_broadcast_in_dim(
         out_sym,
         inputs[[1L]],
@@ -742,9 +672,6 @@ quickr_lower_registry <- local({
       out_aval <- out_avals[[1L]]
       lhs_node <- input_nodes[[1L]]
       rhs_node <- input_nodes[[2L]]
-      if (!is_graph_value(lhs_node) || !is_graph_value(rhs_node)) {
-        cli_abort("dot_general: only GraphValue inputs are supported")
-      }
       quickr_emit_dot_general(
         out_sym,
         inputs[[1L]],
@@ -769,9 +696,6 @@ quickr_lower_registry <- local({
     out_sym <- out_syms[[1L]]
     out_aval <- out_avals[[1L]]
     operand_node <- input_nodes[[1L]]
-    if (!is_graph_value(operand_node)) {
-      cli_abort("reshape: only GraphValue inputs are supported")
-    }
     quickr_emit_reshape(out_sym, inputs[[1L]], shape(operand_node$aval), params$shape, out_aval)
   })
 
@@ -779,9 +703,6 @@ quickr_lower_registry <- local({
     out_sym <- out_syms[[1L]]
     out_aval <- out_avals[[1L]]
     operand_node <- input_nodes[[1L]]
-    if (!is_graph_value(operand_node)) {
-      cli_abort("sum: only GraphValue inputs are supported")
-    }
     quickr_emit_reduce_sum(out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
   })
 
@@ -792,9 +713,6 @@ quickr_lower_registry <- local({
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
       operand_node <- input_nodes[[1L]]
-      if (!is_graph_value(operand_node)) {
-        cli_abort("reduce_sum: only GraphValue inputs are supported")
-      }
       quickr_emit_reduce_sum(out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
     }
   )
@@ -816,12 +734,13 @@ graph_to_quickr_r_function <- function(graph, include_declare = TRUE, pack_outpu
     cli_abort("{.arg graph} must have non-NULL {.field in_tree} and {.field out_tree}")
   }
 
-  in_paths <- quickr_tree_leaf_paths(graph$in_tree)
-  if (length(in_paths) != length(graph$inputs)) {
-    cli_abort("Internal error: input tree size does not match graph inputs")
+  user_arg_names <- quickr_user_arg_names(length(graph$inputs))
+  n_const <- length(graph$constants)
+  const_arg_names <- if (n_const) {
+    paste0("anvil_const", seq_len(n_const))
+  } else {
+    character()
   }
-  user_arg_names <- quickr_paths_to_names(in_paths)
-  const_arg_names <- quickr_make_const_arg_names(user_arg_names, length(graph$constants))
   all_arg_names <- c(user_arg_names, const_arg_names)
 
   prefix <- "anvil_quickr_"
