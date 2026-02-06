@@ -130,7 +130,7 @@ test_that("graph_to_quickr_function matches PJRT for reduce_sum variants", {
   f_quick <- graph_to_quickr_function(graph)
   expect_equal(f_quick(x), eval_graph_pjrt(graph, x))
 
-  # rank-1, no-op reduction (drop=TRUE currently has ambiguous shape inference for dims=integer())
+  # rank-1, no-op reduction
   graph <- trace_fn(
     function(x) nvl_reduce_sum(x, dims = integer(), drop = FALSE),
     list(x = nv_tensor(x, dtype = "i32", shape = c(length(x))))
