@@ -17,13 +17,13 @@ Source:
 [`DESCRIPTION`](https://github.com/r-xla/anvil/blob/main/DESCRIPTION)
 
 Fischer S, Falbel D, German N (2026). *anvil: Framework for R code
-transformations*. R package version 0.1.0,
+transformations*. R package version 0.1.0.9000,
 <https://r-xla.github.io/anvil/>.
 
     @Manual{,
       title = {anvil: Framework for R code transformations},
       author = {Sebastian Fischer and Daniel Falbel and Nikolai German},
       year = {2026},
-      note = {R package version 0.1.0},
+      note = {R package version 0.1.0.9000},
       url = {https://r-xla.github.io/anvil/},
     }
