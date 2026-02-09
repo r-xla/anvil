@@ -1,6 +1,6 @@
 compile_graph_pjrt <- function(graph) {
-  skip_if_not_installed("pjrt")
-  skip_if_not_installed("stablehlo")
+  testthat::skip_if_not_installed("pjrt")
+  testthat::skip_if_not_installed("stablehlo")
 
   unwrap_if_tensor_for_test <- function(x) {
     if (inherits(x, "AnvilTensor")) {

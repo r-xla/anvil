@@ -1,7 +1,7 @@
 skip_if_no_quickr_or_pjrt <- function() {
-  skip_if_not_installed("quickr")
-  skip_if_not_installed("pjrt")
-  skip_if_not_installed("stablehlo")
+  testthat::skip_if_not_installed("quickr")
+  testthat::skip_if_not_installed("pjrt")
+  testthat::skip_if_not_installed("stablehlo")
 }
 
 normalize_quickr_output <- function(x, ref) {
@@ -24,10 +24,11 @@ quickr_eval_graph_pjrt <- function(graph, ...) {
     stopifnot(length(args_flat) == length(is_static_flat))
     args_flat <- args_flat[!is_static_flat]
   }
-  do.call(eval_graph_pjrt, c(list(graph), args_flat))
+  # lintr doesn't see helpers across files; use get() to avoid "no visible binding".
+  do.call(get("eval_graph_pjrt", mode = "function"), c(list(graph), args_flat))
 }
 
-expect_quickr_pipeline_matches_pjrt <- function(graph, ..., tolerance = 1e-12) {
+expect_quickr_pipeline_matches_pjrt <- function(graph, ..., tolerance = 1e-12) { # nolint: object_length_linter.
   f_r <- graph_to_quickr_r_function(graph)
   f_quick <- graph_to_quickr_function(graph)
 
@@ -38,13 +39,13 @@ expect_quickr_pipeline_matches_pjrt <- function(graph, ..., tolerance = 1e-12) {
   out_r <- normalize_quickr_output(out_r, out_pjrt)
   out_quick <- normalize_quickr_output(out_quick, out_pjrt)
 
-  expect_equal(out_r, out_pjrt, tolerance = tolerance)
-  expect_equal(out_quick, out_pjrt, tolerance = tolerance)
+  testthat::expect_equal(out_r, out_pjrt, tolerance = tolerance)
+  testthat::expect_equal(out_quick, out_pjrt, tolerance = tolerance)
 
   invisible(list(out_r = out_r, out_quick = out_quick, out_pjrt = out_pjrt))
 }
 
-expect_quickr_pipeline_matches_pjrt_fn <- function(fn, templates, runs, tolerance = 1e-12) {
+expect_quickr_pipeline_matches_pjrt_fn <- function(fn, templates, runs, tolerance = 1e-12) { # nolint
   graph <- trace_fn(fn, templates)
   f_r <- graph_to_quickr_r_function(graph)
   f_quick <- graph_to_quickr_function(graph)

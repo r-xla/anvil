@@ -1,10 +1,10 @@
 expect_graph_to_quickr_error <- function(fn, templates, pattern) {
   graph <- trace_fn(fn, templates)
-  expect_error(graph_to_quickr_function(graph), pattern, fixed = FALSE)
+  testthat::expect_error(graph_to_quickr_function(graph), pattern, fixed = FALSE)
 }
 
 test_that("graph_to_quickr_function errors on unsupported primitives", {
-  skip_if_not_installed("quickr")
+  testthat::skip_if_not_installed("quickr")
 
   unsupported_fns <- list(
     function(x) nv_popcnt(x),
@@ -26,7 +26,7 @@ test_that("graph_to_quickr_function errors on unsupported primitives", {
 })
 
 test_that("graph_to_quickr_function errors on unsupported ranks", {
-  skip_if_not_installed("quickr")
+  testthat::skip_if_not_installed("quickr")
 
   # input rank > 5 is rejected during quickr argument declaration
   x6 <- array(0, dim = rep(1L, 6L))
@@ -45,36 +45,36 @@ test_that("graph_to_quickr_function errors on unsupported ranks", {
 })
 
 test_that("graph_to_quickr_function rejects unsupported dtypes", {
-  skip_if_not_installed("quickr")
+  testthat::skip_if_not_installed("quickr")
 
   graph <- trace_fn(function(x) x + x, list(x = nv_aten("i64", c())))
-  expect_error(graph_to_quickr_function(graph), "Unsupported dtype.*i64", fixed = FALSE)
+  testthat::expect_error(graph_to_quickr_function(graph), "Unsupported dtype.*i64", fixed = FALSE)
 })
 
 test_that("graph_to_quickr_function rejects transpose ranks other than 2", {
-  skip_if_not_installed("quickr")
+  testthat::skip_if_not_installed("quickr")
 
   x3 <- array(1:8, dim = c(2L, 2L, 2L))
   graph <- trace_fn(
     function(x) nvl_transpose(x, permutation = c(2L, 1L, 3L)),
     list(x = nv_tensor(x3, dtype = "i32", shape = dim(x3)))
   )
-  expect_error(graph_to_quickr_function(graph), "transpose: only rank-2", fixed = FALSE)
+  testthat::expect_error(graph_to_quickr_function(graph), "transpose: only rank-2", fixed = FALSE)
 })
 
 test_that("graph_to_quickr_function rejects reshape ranks > 5", {
-  skip_if_not_installed("quickr")
+  testthat::skip_if_not_installed("quickr")
 
   x5 <- array(1, dim = rep(1L, 5L))
   graph <- trace_fn(
     function(x) nvl_reshape(x, shape = rep(1L, 6L)),
     list(x = nv_tensor(x5, dtype = "i32", shape = dim(x5)))
   )
-  expect_error(graph_to_quickr_function(graph), "reshape: only tensors up to rank 5", fixed = FALSE)
+  testthat::expect_error(graph_to_quickr_function(graph), "reshape: only tensors up to rank 5", fixed = FALSE)
 })
 
 test_that("graph_to_quickr_function rejects broadcast_in_dim ranks > 5", {
-  skip_if_not_installed("quickr")
+  testthat::skip_if_not_installed("quickr")
 
   graph <- trace_fn(
     function(x) nvl_broadcast_in_dim(x, shape = rep(1L, 6L), broadcast_dimensions = 6L),
