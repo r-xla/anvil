@@ -33,10 +33,10 @@ Suggests:
     quickr (>= 0.2.1.9000),
     testthat (>= 3.0.0)
 Remotes:
-    r-xla/stablehlo@*release,
+    r-xla/stablehlo,
     r-xla/tengen@*release,
     r-xla/xlamisc@*release,
-    r-xla/pjrt@*release,
+    r-xla/pjrt,
     t-kalinowski/quickr
 Additional_repositories:
     https://r-xla.r-universe.dev

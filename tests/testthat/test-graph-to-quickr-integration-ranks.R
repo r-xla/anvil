@@ -1,5 +1,5 @@
 test_that("integration: `%*%` matches PJRT for tensor ranks 1..5", {
-  testthat::skip_if_not_installed("quickr")
+  skip_if_no_quickr_or_pjrt()
 
   withr::local_seed(4)
 
@@ -79,25 +79,11 @@ test_that("integration: `%*%` matches PJRT for tensor ranks 1..5", {
     A <- make_input(a_rank, "lhs")
     B <- make_input(b_rank, "rhs")
 
-    graph <- trace_fn(
-      matmul_any_rank,
-      list(
-        A = template_tensor(A),
-        B = template_tensor(B)
-      )
-    )
-
-    f_quick <- graph_to_quickr_function(graph)
-    run_pjrt <- compile_graph_pjrt(graph)
-
-    out_quick <- f_quick(A, B)
-    out_pjrt <- run_pjrt(A, B)
-
-    testthat::expect_equal(
-      out_quick,
-      out_pjrt,
-      tolerance = 1e-12,
+    templates <- list(A = template_tensor(A), B = template_tensor(B))
+    run <- list(
+      args = list(A = A, B = B),
       info = paste0("a_rank=", a_rank, ", b_rank=", b_rank)
     )
+    expect_quickr_pipeline_matches_pjrt_fn(matmul_any_rank, templates, list(run), tolerance = 1e-12)
   }
 })

@@ -1,5 +1,5 @@
 test_that("graph_to_quickr_function handles long scalar chain (stress)", {
-  testthat::skip_if_not_installed("quickr")
+  skip_if_no_quickr_or_pjrt()
 
   decay <- nv_scalar(0.999, dtype = "f64")
   shift <- nv_scalar(0.001, dtype = "f64")
@@ -14,17 +14,8 @@ test_that("graph_to_quickr_function handles long scalar chain (stress)", {
     x
   }
 
-  graph <- trace_fn(chain_fn, list(x = nv_scalar(0.0, dtype = "f64")))
-  expect_gt(length(graph$calls), 12L)
-
   x <- 0.123
-  f_quick <- graph_to_quickr_function(graph)
-  out_quick <- f_quick(x)
-
-  expected <- x
-  for (i in seq_len(n_steps)) {
-    expected <- expected * 0.999 + 0.001
-  }
-
-  expect_equal(out_quick, expected, tolerance = 1e-12)
+  templates <- list(x = nv_scalar(0.0, dtype = "f64"))
+  run <- list(args = list(x = x), info = "run")
+  expect_quickr_pipeline_matches_pjrt_fn(chain_fn, templates, list(run), tolerance = 1e-12)
 })

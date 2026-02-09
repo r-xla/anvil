@@ -1,6 +1,6 @@
 compile_graph_pjrt <- function(graph) {
-  testthat::skip_if_not_installed("pjrt")
-  testthat::skip_if_not_installed("stablehlo")
+  skip_if_not_installed("pjrt")
+  skip_if_not_installed("stablehlo")
 
   unwrap_if_tensor_for_test <- function(x) {
     if (inherits(x, "AnvilTensor")) {
@@ -12,6 +12,9 @@ compile_graph_pjrt <- function(graph) {
 
   flatten_args_for_test <- function(x) {
     if (is.list(x)) {
+      if (!length(x)) {
+        return(list())
+      }
       Reduce(c, lapply(unname(x), flatten_args_for_test))
     } else {
       list(x)

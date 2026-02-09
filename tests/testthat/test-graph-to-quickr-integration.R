@@ -1,5 +1,5 @@
 test_that("integration: MNIST-shaped classifier training from rank-5 image batch via quickr loss + grad", {
-  testthat::skip_if_not_installed("quickr")
+  skip_if_no_quickr_or_pjrt()
 
   withr::local_seed(1)
 
@@ -47,11 +47,15 @@ test_that("integration: MNIST-shaped classifier training from rank-5 image batch
   )
 
   f_quick <- graph_to_quickr_function(graph)
+  f_r <- graph_to_quickr_r_function(graph)
   run_pjrt <- compile_graph_pjrt(graph)
 
+  out_r0 <- f_r(X, Y, W, b)
   out_quick0 <- f_quick(X, Y, W, b)
   out_pjrt0 <- run_pjrt(X, Y, W, b)
+  out_r0 <- normalize_quickr_output(out_r0, out_pjrt0)
   expect_equal(out_quick0, out_pjrt0, tolerance = 1e-10)
+  expect_equal(out_r0, out_pjrt0, tolerance = 1e-10)
 
   lr <- 0.1
   losses <- numeric(5)
@@ -68,7 +72,7 @@ test_that("integration: MNIST-shaped classifier training from rank-5 image batch
 })
 
 test_that("integration: tfp/greta-like log_prob + grad workflow via quickr", {
-  testthat::skip_if_not_installed("quickr")
+  skip_if_no_quickr_or_pjrt()
 
   withr::local_seed(2)
 
@@ -106,11 +110,15 @@ test_that("integration: tfp/greta-like log_prob + grad workflow via quickr", {
   )
 
   f_quick <- graph_to_quickr_function(graph)
+  f_r <- graph_to_quickr_r_function(graph)
   run_pjrt <- compile_graph_pjrt(graph)
 
+  out_r0 <- f_r(0.1, -0.2)
   out_quick0 <- f_quick(0.1, -0.2)
   out_pjrt0 <- run_pjrt(0.1, -0.2)
+  out_r0 <- normalize_quickr_output(out_r0, out_pjrt0)
   expect_equal(out_quick0, out_pjrt0, tolerance = 1e-10)
+  expect_equal(out_r0, out_pjrt0, tolerance = 1e-10)
 
   # A few steps of gradient ascent (MAP for this quadratic objective).
   w_quick <- 0.0

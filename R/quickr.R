@@ -12,8 +12,8 @@ assert_quickr_installed_with <- function(caller, installed) {
   if (isTRUE(installed)) {
     return(invisible(TRUE))
   }
-  caller <- if (is.null(caller) || !nzchar(caller)) "this feature" else caller
-  cli_abort("{.pkg quickr} must be installed to use {caller}")
+  caller <- if (is.null(caller) || !nzchar(caller)) "this feature" else caller # nocov
+  cli_abort("{.pkg quickr} must be installed to use {caller}") # nocov
 }
 
 quickr_eager_compile <- function(fun) {

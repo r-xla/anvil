@@ -25,11 +25,79 @@ If the graph returns multiple outputs (e.g. a nested list), the compiled
 function returns the same structure by packing/unpacking values for \code{quickr}.
 
 Currently supported primitives are:
-\code{fill}, \code{convert}, \code{add}, \code{sub}, \code{mul}, \code{divide}, \code{negate}, \code{abs}, \code{sqrt},
-\code{log}, \code{exp}, \code{floor}, \code{ceil}, \code{power}, \code{maximum}, \code{minimum}, \code{equal},
+\code{fill}, \code{iota}, \code{reverse}, \code{concatenate}, \code{pad}, \code{gather}, \code{scatter}, \code{convert}, \code{add}, \code{sub}, \code{mul}, \code{divide},
+\code{negate}, \code{abs}, \code{sqrt}, \code{log}, \code{log1p}, \code{exp}, \code{expm1}, \code{logistic}, \code{sine}, \code{cosine}, \code{tan}, \code{tanh},
+\code{floor}, \code{ceil}, \code{power}, \code{maximum}, \code{minimum}, \code{equal},
 \code{not_equal}, \code{greater}, \code{greater_equal}, \code{less}, \code{less_equal}, \code{and}, \code{or},
 \code{xor}, \code{not}, \code{select}, \code{broadcast_in_dim}, \code{dot_general}, \code{transpose},
-\code{reshape}, \code{sum}, \code{reduce_sum}, \code{reduce_prod}, \code{reduce_max}, \code{reduce_min}.
+\code{reshape}, \code{sum}, \code{reduce_sum}, \code{reduce_prod}, \code{reduce_max}, \code{reduce_min}, \code{reduce_any}, \code{reduce_all},
+\code{static_slice}, \code{dynamic_slice}, \code{dynamic_update_slice}.
+Higher-order primitives supported: \code{if}, \code{while}.
+
+Supported dtypes are \code{f32}, \code{f64}, \code{i32}, and \code{pred}.
 The code generator currently supports tensors up to rank 5. Some primitives
 are more restricted (e.g. \code{transpose} currently only handles rank-2 tensors).
+}
+\examples{
+\dontshow{if (pjrt::plugin_is_downloaded() && requireNamespace("quickr", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# Simple: two scalar inputs
+fn <- function(x, y) x + y
+
+graph <- trace_fn(
+  fn,
+  args = list(
+    x = nv_scalar(0.0, dtype = "f64"),
+    y = nv_scalar(0.0, dtype = "f64")
+  )
+)
+
+f_quickr <- graph_to_quickr_function(graph)
+f_pjrt <- jit(fn)
+
+out_quickr <- f_quickr(0.5, 1.25)
+out_pjrt <- as_array(f_pjrt(nv_scalar(0.5, dtype = "f64"), nv_scalar(1.25, dtype = "f64")))
+stopifnot(isTRUE(all.equal(out_quickr, out_pjrt, tolerance = 1e-12)))
+
+# Nested inputs + nested outputs
+fn2 <- function(x) {
+  total <- x$a + x$b$u - x$b$v
+  list(
+    total = total,
+    parts = list(a = x$a, b = list(u = x$b$u, v = x$b$v))
+  )
+}
+
+graph2 <- trace_fn(
+  fn2,
+  args = list(
+    x = list(
+      a = nv_scalar(0.0, dtype = "f64"),
+      b = list(
+        u = nv_scalar(0.0, dtype = "f64"),
+        v = nv_scalar(0.0, dtype = "f64")
+      )
+    )
+  )
+)
+
+f2_quickr <- graph_to_quickr_function(graph2)
+f2_pjrt <- jit(fn2)
+
+to_r <- function(x) {
+  if (inherits(x, "AnvilTensor")) {
+    as_array(x)
+  } else if (is.list(x)) {
+    lapply(x, to_r)
+  } else {
+    x
+  }
+}
+
+x2_r <- list(a = 0.5, b = list(u = 1.25, v = 0.75))
+x2_nv <- rapply(x2_r, function(x) nv_scalar(x, dtype = "f64"), how = "replace")
+
+out2_quickr <- f2_quickr(x2_r)
+out2_pjrt <- to_r(f2_pjrt(x2_nv))
+stopifnot(isTRUE(all.equal(out2_quickr, out2_pjrt, tolerance = 1e-12)))
+\dontshow{\}) # examplesIf}
 }
