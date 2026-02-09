@@ -517,10 +517,18 @@ quickr_emit_reduce <- function(kind, out_sym, operand_expr, shape_in, dims, drop
 
     update <- switch(
       kind,
-      sum = function(ii, jj, acc) rlang::call2("<-", acc, rlang::call2("+", acc, rlang::call2("[", operand_expr, ii, jj))),
-      prod = function(ii, jj, acc) rlang::call2("<-", acc, rlang::call2("*", acc, rlang::call2("[", operand_expr, ii, jj))),
-      max = function(ii, jj, acc) rlang::call2("<-", acc, rlang::call2("max", acc, rlang::call2("[", operand_expr, ii, jj))),
-      min = function(ii, jj, acc) rlang::call2("<-", acc, rlang::call2("min", acc, rlang::call2("[", operand_expr, ii, jj)))
+      sum = function(ii, jj, acc) {
+        rlang::call2("<-", acc, rlang::call2("+", acc, rlang::call2("[", operand_expr, ii, jj)))
+      },
+      prod = function(ii, jj, acc) {
+        rlang::call2("<-", acc, rlang::call2("*", acc, rlang::call2("[", operand_expr, ii, jj)))
+      },
+      max = function(ii, jj, acc) {
+        rlang::call2("<-", acc, rlang::call2("max", acc, rlang::call2("[", operand_expr, ii, jj)))
+      },
+      min = function(ii, jj, acc) {
+        rlang::call2("<-", acc, rlang::call2("min", acc, rlang::call2("[", operand_expr, ii, jj)))
+      }
     )
 
     if (identical(dims, 2L)) {
@@ -891,26 +899,38 @@ quickr_lower_registry <- local({
     }
   )
 
-  quickr_register_prim_lowerer(reg, "reduce_prod", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
-    out_sym <- out_syms[[1L]]
-    out_aval <- out_avals[[1L]]
-    operand_node <- input_nodes[[1L]]
-    quickr_emit_reduce("prod", out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
-  })
+  quickr_register_prim_lowerer(
+    reg,
+    "reduce_prod",
+    function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      operand_node <- input_nodes[[1L]]
+      quickr_emit_reduce("prod", out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
+    }
+  )
 
-  quickr_register_prim_lowerer(reg, "reduce_max", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
-    out_sym <- out_syms[[1L]]
-    out_aval <- out_avals[[1L]]
-    operand_node <- input_nodes[[1L]]
-    quickr_emit_reduce("max", out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
-  })
+  quickr_register_prim_lowerer(
+    reg,
+    "reduce_max",
+    function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      operand_node <- input_nodes[[1L]]
+      quickr_emit_reduce("max", out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
+    }
+  )
 
-  quickr_register_prim_lowerer(reg, "reduce_min", function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
-    out_sym <- out_syms[[1L]]
-    out_aval <- out_avals[[1L]]
-    operand_node <- input_nodes[[1L]]
-    quickr_emit_reduce("min", out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
-  })
+  quickr_register_prim_lowerer(
+    reg,
+    "reduce_min",
+    function(prim_name, inputs, params, out_syms, input_nodes, out_avals) {
+      out_sym <- out_syms[[1L]]
+      out_aval <- out_avals[[1L]]
+      operand_node <- input_nodes[[1L]]
+      quickr_emit_reduce("min", out_sym, inputs[[1L]], shape(operand_node$aval), params$dims, params$drop, out_aval)
+    }
+  )
 
   reg
 })
