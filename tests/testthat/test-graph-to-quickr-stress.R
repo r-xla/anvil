@@ -17,5 +17,5 @@ test_that("graph_to_quickr_function handles long scalar chain (stress)", {
   x <- 0.123
   templates <- list(x = nv_scalar(0.0, dtype = "f64"))
   run <- list(args = list(x = x), info = "run")
-  expect_quickr_pipeline_matches_pjrt_fn(chain_fn, templates, list(run), tolerance = 1e-12)
+  expect_quickr_matches_pjrt_fn(chain_fn, templates, list(run), tolerance = 1e-12)
 })

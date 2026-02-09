@@ -84,6 +84,6 @@ test_that("integration: `%*%` matches PJRT for tensor ranks 1..5", {
       args = list(A = A, B = B),
       info = paste0("a_rank=", a_rank, ", b_rank=", b_rank)
     )
-    expect_quickr_pipeline_matches_pjrt_fn(matmul_any_rank, templates, list(run), tolerance = 1e-12)
+    expect_quickr_matches_pjrt_fn(matmul_any_rank, templates, list(run), tolerance = 1e-12)
   }
 })

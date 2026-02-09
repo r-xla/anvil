@@ -8,7 +8,7 @@ test_that("graph_to_quickr_function supports list outputs", {
     list(x = nv_scalar(1.0, dtype = "f64"))
   )
 
-  expect_quickr_pipeline_matches_pjrt(graph, 0.5)
+  expect_quickr_matches_pjrt(graph, 0.5)
 })
 
 test_that("graph_to_quickr_function rejects non-graph inputs", {
@@ -34,7 +34,7 @@ test_that("graph_to_quickr_function supports nested inputs", {
     )
   )
 
-  expect_quickr_pipeline_matches_pjrt(graph, x = list(a = 0.5, b = 1.25))
+  expect_quickr_matches_pjrt(graph, x = list(a = 0.5, b = 1.25))
 })
 
 test_that("graph_to_quickr_function handles GraphLiteral inputs (R scalar literals)", {
@@ -47,7 +47,7 @@ test_that("graph_to_quickr_function handles GraphLiteral inputs (R scalar litera
     list(x = nv_scalar(0.0, dtype = "f64"))
   )
 
-  expect_quickr_pipeline_matches_pjrt(graph, 2.5)
+  expect_quickr_matches_pjrt(graph, 2.5)
 })
 
 test_that("graph_to_quickr_function produces a stable flat signature", {
@@ -68,7 +68,7 @@ test_that("graph_to_quickr_function produces a stable flat signature", {
   expect_identical(names(formals(f_quick)), c("x1", "x2"))
   expect_identical(names(formals(f_r)), c("x1", "x2"))
 
-  expect_quickr_pipeline_matches_pjrt(graph, 0.5, 1.25)
+  expect_quickr_matches_pjrt(graph, 0.5, 1.25)
 })
 
 test_that("graph_to_quickr_function handles zero-length output leaves when packing", {
@@ -85,7 +85,7 @@ test_that("graph_to_quickr_function handles zero-length output leaves when packi
     list()
   )
 
-  out <- expect_quickr_pipeline_matches_pjrt(graph)
+  out <- expect_quickr_matches_pjrt(graph)
   out_quick <- out$out_quick
   expect_identical(dim(out_quick$a), c(0L, 2L))
 })
@@ -116,7 +116,7 @@ test_that("graph_to_quickr_function ignores static args when flattening nested i
   )
 
   x <- list(a = list(u = 0.5, v = 1.5), b = 2.0)
-  expect_quickr_pipeline_matches_pjrt(graph, x = x, flag = TRUE)
+  expect_quickr_matches_pjrt(graph, x = x, flag = TRUE)
 })
 
 test_that("graph_to_quickr_function accepts flat static args (no nested inputs)", {
@@ -143,7 +143,7 @@ test_that("graph_to_quickr_function accepts flat static args (no nested inputs)"
   expect_identical(names(formals(f_quick)), c("x", "flag"))
   expect_identical(names(formals(f_r)), c("x", "flag"))
 
-  out_true <- expect_quickr_pipeline_matches_pjrt(graph, x = 0.5, flag = TRUE)
+  out_true <- expect_quickr_matches_pjrt(graph, x = 0.5, flag = TRUE)
   expect_equal(out_true$out_quick, 1.5)
 })
 
@@ -165,7 +165,7 @@ test_that("graph_to_quickr_function generates placeholder names for unnamed `...
   )
 
   # Formals are generated from empty in_tree names; call by position to keep this robust.
-  out <- expect_quickr_pipeline_matches_pjrt(graph, 0.25, list(a = 0.5, b = 1.0))
+  out <- expect_quickr_matches_pjrt(graph, 0.25, list(a = 0.5, b = 1.0))
   expect_equal(out$out_quick, 0.25 + 0.5 + 1.0)
 })
 
@@ -217,7 +217,7 @@ test_that("graph_to_quickr_function preserves 1D output dims", {
     list(x = nv_tensor(array(0, dim = 3L), dtype = "f64", shape = 3L))
   )
 
-  out <- expect_quickr_pipeline_matches_pjrt(graph, c(0.5, 1.5, 2.5))
+  out <- expect_quickr_matches_pjrt(graph, c(0.5, 1.5, 2.5))
   expect_identical(dim(out$out_quick), c(3L))
 })
 
@@ -231,7 +231,7 @@ test_that("graph_to_quickr_function decodes pred leaves when packing outputs", {
     list(x = nv_scalar(0.0, dtype = "f64"))
   )
 
-  out <- expect_quickr_pipeline_matches_pjrt(graph, -0.5)
+  out <- expect_quickr_matches_pjrt(graph, -0.5)
   out <- out$out_quick
 
   expect_identical(out$p, FALSE)

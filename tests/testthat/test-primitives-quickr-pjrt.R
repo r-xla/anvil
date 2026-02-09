@@ -127,7 +127,7 @@ test_that("quickr pipeline matches PJRT: core math + comparisons + reductions", 
     info = "run2"
   )
 
-  expect_quickr_pipeline_matches_pjrt_fn(core_ops, templates, list(run1, run2), tolerance = 1e-6)
+  expect_quickr_matches_pjrt_fn(core_ops, templates, list(run1, run2), tolerance = 1e-6)
 })
 
 test_that("quickr pipeline matches PJRT: fill/iota/reverse/concatenate/convert/broadcast/transpose/reshape", {
@@ -230,7 +230,7 @@ test_that("quickr pipeline matches PJRT: fill/iota/reverse/concatenate/convert/b
     info = "run"
   )
 
-  expect_quickr_pipeline_matches_pjrt_fn(shape_ops, templates, list(run))
+  expect_quickr_matches_pjrt_fn(shape_ops, templates, list(run))
 })
 
 test_that("quickr pipeline matches PJRT: broadcast + iota slice assignments compile at rank 3", {
@@ -255,7 +255,7 @@ test_that("quickr pipeline matches PJRT: broadcast + iota slice assignments comp
     info = "run"
   )
 
-  expect_quickr_pipeline_matches_pjrt_fn(fn, templates, list(run))
+  expect_quickr_matches_pjrt_fn(fn, templates, list(run))
 })
 
 test_that("quickr pipeline matches PJRT: zero-length dims (reverse/concatenate/boolean reductions)", {
@@ -296,7 +296,7 @@ test_that("quickr pipeline matches PJRT: zero-length dims (reverse/concatenate/b
     )
   )
 
-  out <- expect_quickr_pipeline_matches_pjrt(graph, X, empty_cols, empty_rows)
+  out <- expect_quickr_matches_pjrt(graph, X, empty_cols, empty_rows)
   pjrt <- out$out_pjrt
 
   expect_equal(pjrt$cat_rows, X)
@@ -376,7 +376,7 @@ test_that("quickr pipeline matches PJRT: reduction branch coverage", {
     info = "run"
   )
 
-  expect_quickr_pipeline_matches_pjrt_fn(reduce_ops, templates, list(run))
+  expect_quickr_matches_pjrt_fn(reduce_ops, templates, list(run))
 })
 
 test_that("quickr pipeline matches PJRT: indexing ops (slice/update/pad) + gather/scatter", {
@@ -502,7 +502,7 @@ test_that("quickr pipeline matches PJRT: indexing ops (slice/update/pad) + gathe
     info = "clamp_high"
   )
 
-  expect_quickr_pipeline_matches_pjrt_fn(idx_ops, templates, list(run_clamp_low, run_clamp_high))
+  expect_quickr_matches_pjrt_fn(idx_ops, templates, list(run_clamp_low, run_clamp_high))
 })
 
 test_that("quickr pipeline matches PJRT: gather can return a scalar", {
@@ -530,7 +530,7 @@ test_that("quickr pipeline matches PJRT: gather can return a scalar", {
   run_low <- list(args = list(x = 1:5, idx = 0L), info = "clamp_low")
   run_high <- list(args = list(x = 1:5, idx = 100L), info = "clamp_high")
 
-  expect_quickr_pipeline_matches_pjrt_fn(gather_scalar, templates, list(run_low, run_high))
+  expect_quickr_matches_pjrt_fn(gather_scalar, templates, list(run_low, run_high))
 })
 
 test_that("quickr pipeline matches PJRT: dot_general variants", {
@@ -590,7 +590,7 @@ test_that("quickr pipeline matches PJRT: dot_general variants", {
     info = "run"
   )
 
-  expect_quickr_pipeline_matches_pjrt_fn(dot_ops, templates, list(run))
+  expect_quickr_matches_pjrt_fn(dot_ops, templates, list(run))
 })
 
 test_that("quickr pipeline matches PJRT: control flow (if/while)", {
@@ -624,5 +624,5 @@ test_that("quickr pipeline matches PJRT: control flow (if/while)", {
   run_true <- list(args = list(p = TRUE), info = "p=TRUE")
   run_false <- list(args = list(p = FALSE), info = "p=FALSE")
 
-  expect_quickr_pipeline_matches_pjrt_fn(cf_ops, templates, list(run_true, run_false))
+  expect_quickr_matches_pjrt_fn(cf_ops, templates, list(run_true, run_false))
 })

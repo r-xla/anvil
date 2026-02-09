@@ -28,8 +28,7 @@ quickr_eval_graph_pjrt <- function(graph, ...) {
   do.call(get("eval_graph_pjrt", mode = "function"), c(list(graph), args_flat))
 }
 
-expect_quickr_pipeline_matches_pjrt <- function(graph, ..., tolerance = 1e-12) {
-  # nolint: object_length_linter.
+expect_quickr_matches_pjrt <- function(graph, ..., tolerance = 1e-12) {
   f_r <- graph_to_quickr_r_function(graph)
   f_quick <- graph_to_quickr_function(graph)
 
@@ -46,8 +45,12 @@ expect_quickr_pipeline_matches_pjrt <- function(graph, ..., tolerance = 1e-12) {
   invisible(list(out_r = out_r, out_quick = out_quick, out_pjrt = out_pjrt))
 }
 
-expect_quickr_pipeline_matches_pjrt_fn <- function(fn, templates, runs, tolerance = 1e-12) {
-  # nolint
+expect_quickr_matches_pjrt_fn <- function(
+  fn,
+  templates,
+  runs,
+  tolerance = 1e-12
+) {
   graph <- trace_fn(fn, templates)
   f_r <- graph_to_quickr_r_function(graph)
   f_quick <- graph_to_quickr_function(graph)

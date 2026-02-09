@@ -74,5 +74,5 @@ test_that("integration: indexing-heavy graph matches PJRT", {
     info = "run"
   )
 
-  expect_quickr_pipeline_matches_pjrt_fn(fn, templates, list(run))
+  expect_quickr_matches_pjrt_fn(fn, templates, list(run))
 })
