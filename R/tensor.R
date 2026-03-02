@@ -469,7 +469,8 @@ IotaTensor <- function(shape, dtype, dimension, start = 1L, ambiguous = FALSE) {
   shape <- as_shape(shape)
   dtype <- as_dtype(dtype)
   assert_flag(ambiguous)
-  assert_int(dimension, lower = 1L, upper = length(shape))
+  # stablehlo::Shape is a wrapper object; its rank is length(shape$dims), not length(shape)
+  assert_int(dimension, lower = 1L, upper = length(shape$dims))
   assert_int(start)
   structure(
     list(shape = shape, dtype = dtype, dimension = dimension, start = start, ambiguous = ambiguous),
