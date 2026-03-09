@@ -506,6 +506,47 @@ test_that("quickr pipeline matches PJRT: zero-length dims (reverse/concatenate/b
   expect_equal(as.logical(pjrt$all_rows), rep.int(TRUE, 3L))
 })
 
+test_that("quickr pipeline matches PJRT: zero-length dims for numeric sum/prod reductions", {
+  skip_if_no_quickr_or_pjrt()
+
+  reduce_empty_numeric <- function(v_empty, empty_cols, empty_rows) {
+    list(
+      sum_v = nv_reduce_sum(v_empty, dims = 1L, drop = TRUE),
+      prod_v_keep = nv_reduce_prod(v_empty, dims = 1L, drop = FALSE),
+      sum_cols = nv_reduce_sum(empty_cols, dims = 2L, drop = TRUE),
+      prod_cols = nv_reduce_prod(empty_cols, dims = 2L, drop = TRUE),
+      sum_rows = nv_reduce_sum(empty_rows, dims = 1L, drop = TRUE),
+      prod_rows = nv_reduce_prod(empty_rows, dims = 1L, drop = TRUE),
+      sum_full = nv_reduce_sum(empty_cols, dims = c(1L, 2L), drop = TRUE),
+      prod_full = nv_reduce_prod(empty_cols, dims = c(1L, 2L), drop = TRUE)
+    )
+  }
+
+  v_empty <- integer()
+  empty_cols <- matrix(integer(), nrow = 2L, ncol = 0L)
+  empty_rows <- matrix(integer(), nrow = 0L, ncol = 3L)
+  graph <- trace_fn(
+    reduce_empty_numeric,
+    list(
+      v_empty = nv_tensor(array(0L, dim = 0L), dtype = "i32", shape = 0L),
+      empty_cols = nv_tensor(array(0L, dim = c(2L, 0L)), dtype = "i32", shape = c(2L, 0L)),
+      empty_rows = nv_tensor(array(0L, dim = c(0L, 3L)), dtype = "i32", shape = c(0L, 3L))
+    )
+  )
+
+  out_pjrt <- quickr_eval_graph_pjrt(graph, v_empty, empty_cols, empty_rows)
+  expect_identical(out_pjrt$sum_v, 0L)
+  expect_identical(out_pjrt$prod_v_keep, array(1L, dim = 1L))
+  expect_identical(out_pjrt$sum_cols, array(c(0L, 0L), dim = 2L))
+  expect_identical(out_pjrt$prod_cols, array(c(1L, 1L), dim = 2L))
+  expect_identical(out_pjrt$sum_rows, array(c(0L, 0L, 0L), dim = 3L))
+  expect_identical(out_pjrt$prod_rows, array(c(1L, 1L, 1L), dim = 3L))
+  expect_identical(out_pjrt$sum_full, 0L)
+  expect_identical(out_pjrt$prod_full, 1L)
+
+  expect_quickr_matches_pjrt(graph, v_empty, empty_cols, empty_rows)
+})
+
 test_that("quickr pipeline matches PJRT: reduction branch coverage", {
   skip_if_no_quickr_or_pjrt()
 

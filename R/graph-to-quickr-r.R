@@ -1077,7 +1077,7 @@ quickr_emit_reduce <- function(kind, out_sym, operand_expr, shape_in, dims, drop
   if (!kind %in% c("sum", "prod", "max", "min")) {
     cli_abort("Internal error: unknown reduction kind: {.val {kind}}")
   }
-  if (length(dims) && isTRUE(any(shape_in[dims] == 0L, na.rm = TRUE))) {
+  if (kind %in% c("max", "min") && length(dims) && isTRUE(any(shape_in[dims] == 0L, na.rm = TRUE))) {
     cli_abort("{kind}: reductions over empty dimensions are not supported by quickr lowering")
   }
   if (kind %in% c("sum", "prod")) {
