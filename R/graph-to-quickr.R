@@ -156,7 +156,7 @@ graph_to_quickr_make_wrapper <- function(
     packed <- do.call(inner, c(const_args, args))
 
     if (!isTRUE(needs_pack)) {
-      return(packed)
+      return(decode_leaf(packed, out_infos[[1L]]$shape, out_infos[[1L]]$dtype))
     }
 
     leaves <- vector("list", length(out_infos))

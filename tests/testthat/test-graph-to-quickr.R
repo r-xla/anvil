@@ -316,6 +316,35 @@ test_that("graph_to_quickr_function preserves rank-1 dims for direct quickr outp
   expect_equal(f_quick(x), out_pjrt, tolerance = 1e-12)
 })
 
+test_that("graph_to_quickr_function preserves rank-1 dims for wrapped quickr outputs", {
+  skip_if_no_quickr_or_pjrt()
+
+  graph <- trace_fn(
+    function(x, flag) {
+      if (flag) {
+        nv_log1p(x)
+      } else {
+        nv_log1p(x)
+      }
+    },
+    list(
+      x = nv_tensor(array(0, dim = 3L), dtype = "f64", shape = 3L),
+      flag = TRUE
+    )
+  )
+
+  x <- array(c(0.1, 0.2, 0.3), dim = 3L)
+  out_pjrt <- quickr_eval_graph_pjrt(graph, x, TRUE)
+  f_r <- graph_to_quickr_r_function(graph)
+  f_quick <- graph_to_quickr_function(graph)
+
+  expect_identical(dim(out_pjrt), c(3L))
+  expect_identical(dim(f_r(x, TRUE)), c(3L))
+  expect_identical(dim(f_quick(x, TRUE)), c(3L))
+  expect_equal(f_r(x, TRUE), out_pjrt, tolerance = 1e-12)
+  expect_equal(f_quick(x, TRUE), out_pjrt, tolerance = 1e-12)
+})
+
 test_that("graph_to_quickr_function decodes pred leaves when packing outputs", {
   skip_if_no_quickr_or_pjrt()
 
