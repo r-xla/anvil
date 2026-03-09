@@ -182,6 +182,68 @@ test_that("quickr pipeline matches PJRT: tanh stays finite for large inputs", {
   expect_identical(f_quick(x), out_pjrt)
 })
 
+test_that("quickr pipeline matches PJRT: select preserves tensor semantics in plain R", {
+  skip_if_no_quickr_or_pjrt()
+
+  select_cases <- function(pred_scalar, x, y, pred_empty, x_empty, y_empty) {
+    list(
+      scalar_pred = nv_ifelse(pred_scalar, x, y),
+      empty = nv_ifelse(pred_empty, x_empty, y_empty)
+    )
+  }
+
+  graph <- trace_fn(
+    select_cases,
+    list(
+      pred_scalar = nv_scalar(FALSE, dtype = "pred"),
+      x = nv_tensor(array(0L, dim = 3L), dtype = "i32", shape = 3L),
+      y = nv_tensor(array(0L, dim = 3L), dtype = "i32", shape = 3L),
+      pred_empty = nv_tensor(array(FALSE, dim = 0L), dtype = "pred", shape = 0L),
+      x_empty = nv_tensor(array(0L, dim = 0L), dtype = "i32", shape = 0L),
+      y_empty = nv_tensor(array(0L, dim = 0L), dtype = "i32", shape = 0L)
+    )
+  )
+
+  out_pjrt <- quickr_eval_graph_pjrt(
+    graph,
+    TRUE,
+    array(c(1L, 2L, 3L), dim = 3L),
+    array(c(4L, 5L, 6L), dim = 3L),
+    array(logical(), dim = 0L),
+    array(integer(), dim = 0L),
+    array(integer(), dim = 0L)
+  )
+
+  expect_identical(out_pjrt$scalar_pred, array(c(1L, 2L, 3L), dim = 3L))
+  expect_identical(out_pjrt$empty, array(integer(), dim = 0L))
+
+  f_r <- graph_to_quickr_r_function(graph)
+  f_quick <- graph_to_quickr_function(graph)
+
+  expect_identical(
+    f_r(
+      TRUE,
+      array(c(1L, 2L, 3L), dim = 3L),
+      array(c(4L, 5L, 6L), dim = 3L),
+      array(logical(), dim = 0L),
+      array(integer(), dim = 0L),
+      array(integer(), dim = 0L)
+    ),
+    out_pjrt
+  )
+  expect_identical(
+    f_quick(
+      TRUE,
+      array(c(1L, 2L, 3L), dim = 3L),
+      array(c(4L, 5L, 6L), dim = 3L),
+      array(logical(), dim = 0L),
+      array(integer(), dim = 0L),
+      array(integer(), dim = 0L)
+    ),
+    out_pjrt
+  )
+})
+
 test_that("quickr pipeline matches PJRT: expm1 stays accurate near zero", {
   skip_if_no_quickr_or_pjrt()
 

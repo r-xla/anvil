@@ -208,6 +208,37 @@ quickr_emit_truncating_i32 <- function(out_sym, operand_expr, shape_out) {
   quickr_emit_assign(out_sym, rlang::call2("array", casted, dim = shape_out))
 }
 
+quickr_emit_select <- function(out_sym, pred_expr, true_expr, false_expr, pred_shape, out_aval) {
+  pred_shape <- as.integer(pred_shape)
+  out_shape <- as.integer(shape(out_aval))
+  rank <- length(out_shape)
+
+  if (!length(pred_shape)) {
+    return(list(
+      rlang::call2("<-", out_sym, false_expr),
+      as.call(list(as.name("if"), pred_expr, rlang::call2("<-", out_sym, true_expr)))
+    ))
+  }
+
+  if (!identical(pred_shape, out_shape)) {
+    cli_abort("select: predicate shape must be scalar or match the output shape")
+  }
+
+  init <- quickr_emit_assign(out_sym, false_expr)
+  if (rank == 0L || isTRUE(any(out_shape == 0L))) {
+    return(init)
+  }
+
+  idx_syms <- lapply(seq_len(rank), function(d) as.name(paste0("i_", as.character(out_sym), "_", d)))
+  pred_at <- quickr_subscript(pred_expr, idx_syms)
+  out_at <- quickr_subscript(out_sym, idx_syms)
+  true_at <- quickr_subscript(true_expr, idx_syms)
+  assign_true <- rlang::call2("<-", out_at, true_at)
+  body <- as.call(list(as.name("if"), pred_at, assign_true))
+
+  c(init, list(quickr_row_major_loop(idx_syms, out_shape, body)))
+}
+
 quickr_stable_expm1_expr <- function(x_expr) {
   poly <- rlang::call2(
     "*",
@@ -1917,7 +1948,14 @@ quickr_lower_registry <- local({
     reg,
     "select",
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
-      quickr_emit_assign(out_syms[[1L]], rlang::call2("ifelse", inputs[[1L]], inputs[[2L]], inputs[[3L]]))
+      quickr_emit_select(
+        out_syms[[1L]],
+        inputs[[1L]],
+        inputs[[2L]],
+        inputs[[3L]],
+        shape(input_nodes[[1L]]$aval),
+        out_avals[[1L]]
+      )
     }
   )
 
