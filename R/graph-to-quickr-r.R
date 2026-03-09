@@ -1421,6 +1421,9 @@ quickr_lower_graph_calls <- function(graph, ctx) {
     }
 
     lower <- get0(call$primitive$name, envir = quickr_lower_registry, inherits = FALSE)
+    if (is.null(lower)) {
+      quickr_abort_unsupported_primitives(call$primitive$name, ls(envir = quickr_lower_registry, all.names = TRUE))
+    }
     stmts <- c(
       stmts,
       lower(
@@ -2192,6 +2195,39 @@ quickr_lower_registry <- local({
 
 # Graph -> quickr-compatible R function ----------------------------------------
 
+quickr_abort_unsupported_primitives <- function(unsupported_prims, supported_prims) {
+  unsupported_prims <- unique(as.character(unsupported_prims))
+  if (!length(unsupported_prims)) {
+    return(invisible(NULL))
+  }
+
+  cli_abort(c(
+    "{.fn graph_to_quickr_function} does not support these primitives: {toString(unsupported_prims)}",
+    i = "Supported primitives: {toString(sort(supported_prims))}"
+  ))
+}
+
+quickr_find_unsupported_primitives <- function(graph, supported_prims) {
+  unsupported_prims <- character()
+
+  for (call in graph$calls) {
+    prim_name <- call$primitive$name
+    if (!prim_name %in% supported_prims) {
+      unsupported_prims <- c(unsupported_prims, prim_name)
+    }
+    if (is_higher_order_primitive(call$primitive)) {
+      for (subgraph in subgraphs(call)) {
+        unsupported_prims <- c(
+          unsupported_prims,
+          quickr_find_unsupported_primitives(subgraph, supported_prims)
+        )
+      }
+    }
+  }
+
+  unique(unsupported_prims)
+}
+
 graph_to_quickr_r_fun_impl <- function(graph, include_declare = TRUE, pack_output = FALSE) {
   include_declare <- as.logical(include_declare)
   pack_output <- as.logical(pack_output)
@@ -2220,14 +2256,8 @@ graph_to_quickr_r_fun_impl <- function(graph, include_declare = TRUE, pack_outpu
   }
 
   supported_prims <- ls(envir = quickr_lower_registry, all.names = TRUE)
-  call_prims <- unique(vapply(graph$calls, \(x) x$primitive$name, character(1L)))
-  unsupported_prims <- setdiff(call_prims, supported_prims)
-  if (length(unsupported_prims)) {
-    cli_abort(c(
-      "{.fn graph_to_quickr_function} does not support these primitives: {toString(unsupported_prims)}",
-      i = "Supported primitives: {toString(sort(supported_prims))}"
-    ))
-  }
+  unsupported_prims <- quickr_find_unsupported_primitives(graph, supported_prims)
+  quickr_abort_unsupported_primitives(unsupported_prims, supported_prims)
 
   make_formals <- function(nms) {
     as.pairlist(stats::setNames(rep(list(quote(expr = )), length(nms)), nms))

@@ -25,6 +25,31 @@ test_that("graph_to_quickr_function errors on unsupported primitives", {
   }
 })
 
+test_that("graph_to_quickr lowerers validate unsupported primitives in nested subgraphs", {
+  testthat::skip_if_not_installed("quickr")
+
+  graph <- trace_fn(
+    function(p, x) {
+      nv_if(p, nv_popcnt(x), x)
+    },
+    list(
+      p = nv_scalar(TRUE, dtype = "pred"),
+      x = nv_scalar(1L, dtype = "i32")
+    )
+  )
+
+  expect_error(
+    graph_to_quickr_function(graph),
+    "does not support these primitives: popcnt",
+    fixed = FALSE
+  )
+  expect_error(
+    graph_to_quickr_r_function(graph),
+    "does not support these primitives: popcnt",
+    fixed = FALSE
+  )
+})
+
 test_that("graph_to_quickr_function errors on unsupported ranks", {
   testthat::skip_if_not_installed("quickr")
 
