@@ -208,6 +208,49 @@ quickr_emit_truncating_i32 <- function(out_sym, operand_expr, shape_out) {
   quickr_emit_assign(out_sym, rlang::call2("array", casted, dim = shape_out))
 }
 
+quickr_stable_expm1_expr <- function(x_expr) {
+  poly <- rlang::call2(
+    "*",
+    x_expr,
+    rlang::call2(
+      "+",
+      1.0,
+      rlang::call2(
+        "*",
+        x_expr,
+        rlang::call2(
+          "+",
+          0.5,
+          rlang::call2(
+            "*",
+            x_expr,
+            rlang::call2(
+              "+",
+              1.0 / 6.0,
+              rlang::call2(
+                "*",
+                x_expr,
+                rlang::call2(
+                  "+",
+                  1.0 / 24.0,
+                  rlang::call2("*", x_expr, 1.0 / 120.0)
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+
+  rlang::call2(
+    "ifelse",
+    rlang::call2("<", rlang::call2("abs", x_expr), 1e-5),
+    poly,
+    rlang::call2("-", rlang::call2("exp", x_expr), 1.0)
+  )
+}
+
 quickr_emit_iota <- function(out_sym, dim, start, shape_out, out_aval) {
   dim <- as.integer(dim)
   shape_out <- as.integer(shape_out)
@@ -1862,8 +1905,7 @@ quickr_lower_registry <- local({
     reg,
     "expm1",
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
-      x <- inputs[[1L]]
-      quickr_emit_assign(out_syms[[1L]], rlang::call2("-", rlang::call2("exp", x), 1))
+      quickr_emit_assign(out_syms[[1L]], quickr_stable_expm1_expr(inputs[[1L]]))
     }
   )
 

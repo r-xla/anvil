@@ -182,6 +182,29 @@ test_that("quickr pipeline matches PJRT: tanh stays finite for large inputs", {
   expect_identical(f_quick(x), out_pjrt)
 })
 
+test_that("quickr pipeline matches PJRT: expm1 stays accurate near zero", {
+  skip_if_no_quickr_or_pjrt()
+
+  expm1_small <- function(x) {
+    nv_expm1(x)
+  }
+
+  graph <- trace_fn(
+    expm1_small,
+    list(x = nv_scalar(0.0, dtype = "f64"))
+  )
+
+  x <- 1e-16
+  out_pjrt <- quickr_eval_graph_pjrt(graph, x)
+  expect_identical(out_pjrt, x)
+
+  f_r <- graph_to_quickr_r_function(graph)
+  f_quick <- graph_to_quickr_function(graph)
+
+  expect_identical(f_r(x), out_pjrt)
+  expect_identical(f_quick(x), out_pjrt)
+})
+
 test_that("quickr pipeline matches PJRT: pad supports negative edge padding crop", {
   skip_if_no_quickr_or_pjrt()
 
