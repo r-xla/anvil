@@ -467,7 +467,7 @@ test_that("quickr pipeline matches PJRT: i32 power keeps integer semantics", {
   skip_if_no_quickr_or_pjrt()
 
   pow_i32 <- function(x, y) {
-    x ^ y
+    x^y
   }
 
   graph <- trace_fn(

@@ -1436,7 +1436,7 @@ quickr_lower_graph_calls <- function(graph, ctx) {
 
     lower <- get0(call$primitive$name, envir = quickr_lower_registry, inherits = FALSE)
     if (is.null(lower)) {
-      quickr_abort_unsupported_primitives(call$primitive$name, ls(envir = quickr_lower_registry, all.names = TRUE))
+      quickr_abort_unsupported_prims(call$primitive$name, ls(envir = quickr_lower_registry, all.names = TRUE))
     }
     stmts <- c(
       stmts,
@@ -2221,7 +2221,7 @@ quickr_lower_registry <- local({
 
 # Graph -> quickr-compatible R function ----------------------------------------
 
-quickr_abort_unsupported_primitives <- function(unsupported_prims, supported_prims) {
+quickr_abort_unsupported_prims <- function(unsupported_prims, supported_prims) {
   unsupported_prims <- unique(as.character(unsupported_prims))
   if (!length(unsupported_prims)) {
     return(invisible(NULL))
@@ -2233,7 +2233,7 @@ quickr_abort_unsupported_primitives <- function(unsupported_prims, supported_pri
   ))
 }
 
-quickr_find_unsupported_primitives <- function(graph, supported_prims) {
+quickr_find_unsupported_prims <- function(graph, supported_prims) {
   unsupported_prims <- character()
 
   for (call in graph$calls) {
@@ -2245,7 +2245,7 @@ quickr_find_unsupported_primitives <- function(graph, supported_prims) {
       for (subgraph in subgraphs(call)) {
         unsupported_prims <- c(
           unsupported_prims,
-          quickr_find_unsupported_primitives(subgraph, supported_prims)
+          quickr_find_unsupported_prims(subgraph, supported_prims)
         )
       }
     }
@@ -2282,8 +2282,8 @@ graph_to_quickr_r_fun_impl <- function(graph, include_declare = TRUE, pack_outpu
   }
 
   supported_prims <- ls(envir = quickr_lower_registry, all.names = TRUE)
-  unsupported_prims <- quickr_find_unsupported_primitives(graph, supported_prims)
-  quickr_abort_unsupported_primitives(unsupported_prims, supported_prims)
+  unsupported_prims <- quickr_find_unsupported_prims(graph, supported_prims)
+  quickr_abort_unsupported_prims(unsupported_prims, supported_prims)
 
   make_formals <- function(nms) {
     as.pairlist(stats::setNames(rep(list(quote(expr = )), length(nms)), nms))

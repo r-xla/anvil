@@ -43,7 +43,7 @@ graph_to_quickr_prepare <- function(graph) {
   )
 }
 
-quickr_assert_static_args_match <- function(args_flat, is_static_flat, static_args_flat) {
+quickr_assert_static_args <- function(args_flat, is_static_flat, static_args_flat) {
   if (is.null(is_static_flat) || !isTRUE(any(is_static_flat))) {
     return(invisible(NULL))
   }
@@ -64,7 +64,9 @@ quickr_assert_static_args_match <- function(args_flat, is_static_flat, static_ar
     logical(1L)
   )
   if (any(mismatch)) {
-    cli_abort("Static arguments must match the values used to trace the graph. Retrace the graph for new static values.")
+    cli_abort(
+      "Static arguments must match the values used to trace the graph. Retrace the graph for new static values."
+    )
   }
 
   invisible(NULL)
@@ -143,7 +145,7 @@ graph_to_quickr_make_wrapper <- function(
         if (length(args) != length(is_static_flat)) {
           cli_abort("Expected {length(is_static_flat)} flattened inputs, got {length(args)}")
         }
-        quickr_assert_static_args_match(args, is_static_flat, static_args_flat)
+        quickr_assert_static_args(args, is_static_flat, static_args_flat)
         args <- args[!is_static_flat]
       }
       args <- stats::setNames(args, leaf_arg_names)
