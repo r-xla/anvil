@@ -32,6 +32,11 @@ Suggests:
     rmarkdown,
     quickr (>= 0.2.1.9000),
     testthat (>= 3.0.0)
+Remotes:
+    r-xla/stablehlo,
+    r-xla/tengen@*release,
+    r-xla/xlamisc@*release,
+    r-xla/pjrt
 Additional_repositories:
     https://r-xla.r-universe.dev,
     https://t-kalinowski.r-universe.dev
