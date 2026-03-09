@@ -205,6 +205,29 @@ test_that("quickr pipeline matches PJRT: expm1 stays accurate near zero", {
   expect_identical(f_quick(x), out_pjrt)
 })
 
+test_that("quickr pipeline matches PJRT: log1p stays accurate near zero", {
+  skip_if_no_quickr_or_pjrt()
+
+  log1p_small <- function(x) {
+    nv_log1p(x)
+  }
+
+  graph <- trace_fn(
+    log1p_small,
+    list(x = nv_scalar(0.0, dtype = "f64"))
+  )
+
+  x <- 1e-16
+  out_pjrt <- quickr_eval_graph_pjrt(graph, x)
+  expect_identical(out_pjrt, x)
+
+  f_r <- graph_to_quickr_r_function(graph)
+  f_quick <- graph_to_quickr_function(graph)
+
+  expect_identical(f_r(x), out_pjrt)
+  expect_identical(f_quick(x), out_pjrt)
+})
+
 test_that("quickr pipeline matches PJRT: pad supports negative edge padding crop", {
   skip_if_no_quickr_or_pjrt()
 
