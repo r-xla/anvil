@@ -1986,7 +1986,14 @@ quickr_lower_registry <- local({
     reg,
     "power",
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
-      quickr_emit_assign(out_syms[[1L]], rlang::call2("^", inputs[[1L]], inputs[[2L]]))
+      out_aval <- out_avals[[1L]]
+      expr <- rlang::call2("^", inputs[[1L]], inputs[[2L]])
+
+      if (identical(as.character(dtype(out_aval)), "i32")) {
+        return(quickr_emit_truncating_i32(out_syms[[1L]], expr, shape(out_aval)))
+      }
+
+      quickr_emit_assign(out_syms[[1L]], expr)
     }
   )
 

@@ -301,6 +301,34 @@ test_that("quickr pipeline matches PJRT: i32 reduce_prod preserves dtype in fast
   )
 })
 
+test_that("quickr pipeline matches PJRT: i32 power keeps integer semantics", {
+  skip_if_no_quickr_or_pjrt()
+
+  pow_i32 <- function(x, y) {
+    x ^ y
+  }
+
+  graph <- trace_fn(
+    pow_i32,
+    list(
+      x = nv_tensor(matrix(0L, nrow = 2L, ncol = 2L), dtype = "i32", shape = c(2L, 2L)),
+      y = nv_tensor(matrix(0L, nrow = 2L, ncol = 2L), dtype = "i32", shape = c(2L, 2L))
+    )
+  )
+
+  x <- matrix(c(2L, 3L, 4L, 5L), nrow = 2L, byrow = TRUE)
+  y <- matrix(c(-1L, 2L, 3L, 0L), nrow = 2L, byrow = TRUE)
+
+  out_pjrt <- quickr_eval_graph_pjrt(graph, x, y)
+  expect_identical(out_pjrt, matrix(c(0L, 9L, 64L, 1L), nrow = 2L, byrow = TRUE))
+
+  f_r <- graph_to_quickr_r_function(graph)
+  f_quick <- graph_to_quickr_function(graph)
+
+  expect_identical(f_r(x, y), out_pjrt)
+  expect_identical(f_quick(x, y), out_pjrt)
+})
+
 test_that("quickr pipeline matches PJRT: fill/iota/reverse/concatenate/convert/broadcast/transpose/reshape", {
   skip_if_no_quickr_or_pjrt()
 
