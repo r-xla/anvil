@@ -272,6 +272,28 @@ test_that("graph_to_quickr_function preserves 1D output dims", {
   expect_identical(dim(out$out_quick), c(3L))
 })
 
+test_that("graph_to_quickr_function preserves empty 1D output dims without wrapper", {
+  skip_if_no_quickr_or_pjrt()
+
+  graph <- trace_fn(
+    function(x) {
+      x
+    },
+    list(x = nv_tensor(array(0, dim = 0L), dtype = "f64", shape = 0L))
+  )
+
+  x <- array(numeric(), dim = 0L)
+  out_pjrt <- quickr_eval_graph_pjrt(graph, x)
+  f_r <- graph_to_quickr_r_function(graph)
+  f_quick <- graph_to_quickr_function(graph)
+
+  expect_identical(dim(out_pjrt), 0L)
+  expect_identical(dim(f_r(x)), 0L)
+  expect_identical(dim(f_quick(x)), 0L)
+  expect_identical(f_r(x), out_pjrt)
+  expect_identical(f_quick(x), out_pjrt)
+})
+
 test_that("graph_to_quickr_function decodes pred leaves when packing outputs", {
   skip_if_no_quickr_or_pjrt()
 
