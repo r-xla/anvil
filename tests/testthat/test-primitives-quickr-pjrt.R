@@ -130,6 +130,34 @@ test_that("quickr pipeline matches PJRT: core math + comparisons + reductions", 
   expect_quickr_matches_pjrt_fn(core_ops, templates, list(run1, run2), tolerance = 1e-6)
 })
 
+test_that("quickr pipeline matches PJRT: i32 divide truncates toward zero", {
+  skip_if_no_quickr_or_pjrt()
+
+  divide_i32 <- function(x, y) {
+    x / y
+  }
+
+  graph <- trace_fn(
+    divide_i32,
+    list(
+      x = nv_tensor(array(0L, dim = c(2L, 2L)), dtype = "i32", shape = c(2L, 2L)),
+      y = nv_tensor(array(1L, dim = c(2L, 2L)), dtype = "i32", shape = c(2L, 2L))
+    )
+  )
+
+  lhs <- matrix(c(7L, -7L, 7L, -7L), nrow = 2L, byrow = TRUE)
+  rhs <- matrix(c(2L, 2L, -2L, -2L), nrow = 2L, byrow = TRUE)
+
+  out_pjrt <- quickr_eval_graph_pjrt(graph, lhs, rhs)
+  expect_identical(out_pjrt, matrix(c(3L, -3L, -3L, 3L), nrow = 2L, byrow = TRUE))
+
+  f_r <- graph_to_quickr_r_function(graph)
+  f_quick <- graph_to_quickr_function(graph)
+
+  expect_identical(f_r(lhs, rhs), out_pjrt)
+  expect_identical(f_quick(lhs, rhs), out_pjrt)
+})
+
 test_that("quickr pipeline matches PJRT: fill/iota/reverse/concatenate/convert/broadcast/transpose/reshape", {
   skip_if_no_quickr_or_pjrt()
 

@@ -196,6 +196,18 @@ quickr_emit_convert <- function(out_sym, operand_expr, shape_in, in_aval, out_av
   quickr_emit_assign(out_sym, rlang::call2("array", casted, dim = shape_in))
 }
 
+quickr_emit_truncating_i32 <- function(out_sym, operand_expr, shape_out) {
+  shape_out <- as.integer(shape_out)
+  rank <- length(shape_out)
+  casted <- rlang::call2("as.integer", operand_expr)
+
+  if (rank <= 1L) {
+    return(quickr_emit_assign(out_sym, casted))
+  }
+
+  quickr_emit_assign(out_sym, rlang::call2("array", casted, dim = shape_out))
+}
+
 quickr_emit_iota <- function(out_sym, dim, start, shape_out, out_aval) {
   dim <- as.integer(dim)
   shape_out <- as.integer(shape_out)
@@ -1639,17 +1651,31 @@ quickr_lower_registry <- local({
 
   quickr_register_prim_lowerer(
     reg,
-    c("add", "sub", "mul", "divide"),
+    c("add", "sub", "mul"),
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       op <- switch(
         prim_name,
         add = "+",
         sub = "-",
         mul = "*",
-        divide = "/",
         cli_abort("Internal error: unknown binary primitive: {.val {prim_name}}")
       )
       quickr_emit_assign(out_syms[[1L]], rlang::call2(op, inputs[[1L]], inputs[[2L]]))
+    }
+  )
+
+  quickr_register_prim_lowerer(
+    reg,
+    "divide",
+    function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
+      out_aval <- out_avals[[1L]]
+      quotient <- rlang::call2("/", inputs[[1L]], inputs[[2L]])
+
+      if (as.character(dtype(out_aval)) == "i32") {
+        return(quickr_emit_truncating_i32(out_syms[[1L]], quotient, shape(out_aval)))
+      }
+
+      quickr_emit_assign(out_syms[[1L]], quotient)
     }
   )
 
