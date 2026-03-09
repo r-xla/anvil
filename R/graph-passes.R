@@ -21,7 +21,9 @@ remove_unused_constants <- function(graph) {
     out_tree = graph$out_tree,
     inputs = graph$inputs,
     outputs = graph$outputs,
-    constants = graph$constants
+    constants = graph$constants,
+    is_static_flat = graph$is_static_flat,
+    static_args_flat = graph$static_args_flat
   )
 
   is_used <- hashtab()
@@ -62,7 +64,9 @@ inline_scalarish_constants <- function(graph, map = NULL) {
     out_tree = graph$out_tree,
     inputs = graph$inputs,
     outputs = graph$outputs,
-    constants = graph$constants
+    constants = graph$constants,
+    is_static_flat = graph$is_static_flat,
+    static_args_flat = graph$static_args_flat
   )
 
   is_top_level <- is.null(map)

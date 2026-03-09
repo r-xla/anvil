@@ -147,6 +147,57 @@ test_that("graph_to_quickr_function accepts flat static args (no nested inputs)"
   expect_equal(out_true$out_quick, 1.5)
 })
 
+test_that("graph_to_quickr wrappers reject mismatched runtime static args", {
+  skip_if_not_installed("quickr")
+
+  flat_graph <- trace_fn(
+    function(x, flag) {
+      if (flag) {
+        x + 1
+      } else {
+        x - 1
+      }
+    },
+    list(
+      x = nv_scalar(0.0, dtype = "f64"),
+      flag = TRUE
+    )
+  )
+
+  flat_r <- graph_to_quickr_r_function(flat_graph)
+  flat_quick <- graph_to_quickr_function(flat_graph)
+
+  expect_error(flat_r(0.5, FALSE), "Static arguments must match", fixed = FALSE)
+  expect_error(flat_quick(0.5, FALSE), "Static arguments must match", fixed = FALSE)
+
+  nested_graph <- trace_fn(
+    function(x, flag) {
+      if (flag) {
+        x$a$u + x$b
+      } else {
+        x$a$v + x$b
+      }
+    },
+    list(
+      x = list(
+        a = list(
+          u = nv_scalar(1.0, dtype = "f64"),
+          v = nv_scalar(2.0, dtype = "f64")
+        ),
+        b = nv_scalar(3.0, dtype = "f64")
+      ),
+      flag = TRUE
+    )
+  )
+
+  nested_r <- graph_to_quickr_r_function(nested_graph)
+  nested_quick <- graph_to_quickr_function(nested_graph)
+  x <- list(a = list(u = 0.5, v = 1.5), b = 2.0)
+
+  expect_error(nested_r(x = x, flag = FALSE), "Static arguments must match", fixed = FALSE)
+  expect_error(nested_quick(x = x, flag = FALSE), "Static arguments must match", fixed = FALSE)
+})
+
 test_that("graph_to_quickr_function generates placeholder names for unnamed `...` inputs", {
   skip_if_no_quickr_or_pjrt()
 

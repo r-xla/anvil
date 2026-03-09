@@ -43,6 +43,33 @@ graph_to_quickr_prepare <- function(graph) {
   )
 }
 
+quickr_assert_static_args_match <- function(args_flat, is_static_flat, static_args_flat) {
+  if (is.null(is_static_flat) || !isTRUE(any(is_static_flat))) {
+    return(invisible(NULL))
+  }
+  if (is.null(static_args_flat)) {
+    cli_abort("This graph is missing traced static argument values. Retrace the graph before lowering to quickr.")
+  }
+
+  static_runtime <- args_flat[is_static_flat]
+  if (length(static_runtime) != length(static_args_flat)) {
+    cli_abort(
+      "Internal error: expected {length(static_args_flat)} static args, got {length(static_runtime)}"
+    )
+  }
+
+  mismatch <- vapply(
+    seq_along(static_args_flat),
+    function(i) !identical(static_runtime[[i]], static_args_flat[[i]]),
+    logical(1L)
+  )
+  if (any(mismatch)) {
+    cli_abort("Static arguments must match the values used to trace the graph. Retrace the graph for new static values.")
+  }
+
+  invisible(NULL)
+}
+
 graph_to_quickr_make_wrapper <- function(
   graph,
   r_fun,
@@ -104,6 +131,7 @@ graph_to_quickr_make_wrapper <- function(
   wrapper_env$use_in_tree_formals <- use_in_tree_formals
   wrapper_env$top_names <- if (isTRUE(use_in_tree_formals)) top_names else NULL
   wrapper_env$is_static_flat <- is_static_flat
+  wrapper_env$static_args_flat <- graph$static_args_flat
   wrapper_env$const_args <- const_args
   wrapper_env$decode_leaf <- quickr_decode_leaf
 
@@ -115,6 +143,7 @@ graph_to_quickr_make_wrapper <- function(
         if (length(args) != length(is_static_flat)) {
           cli_abort("Expected {length(is_static_flat)} flattened inputs, got {length(args)}")
         }
+        quickr_assert_static_args_match(args, is_static_flat, static_args_flat)
         args <- args[!is_static_flat]
       }
       args <- stats::setNames(args, leaf_arg_names)
