@@ -88,6 +88,15 @@ quickr_emit_full_like <- function(out_sym, value_expr, shape_out, out_aval) {
   )
 }
 
+quickr_emit_known_empty <- function(out_sym, out_aval) {
+  shape_out <- as.integer(shape(out_aval))
+  if (!length(shape_out) || !isTRUE(any(shape_out == 0L))) {
+    return(NULL)
+  }
+
+  quickr_emit_full_like(out_sym, quickr_zero_literal_for(out_aval), shape_out, out_aval)
+}
+
 quickr_subscript <- function(expr, idxs, drop = NULL) {
   if (!length(idxs)) {
     return(expr)
@@ -1994,6 +2003,10 @@ quickr_lower_registry <- local({
     reg,
     "expm1",
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
+      empty <- quickr_emit_known_empty(out_syms[[1L]], out_avals[[1L]])
+      if (!is.null(empty)) {
+        return(empty)
+      }
       quickr_emit_assign(out_syms[[1L]], quickr_stable_expm1_expr(inputs[[1L]]))
     }
   )
@@ -2002,6 +2015,10 @@ quickr_lower_registry <- local({
     reg,
     "log1p",
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
+      empty <- quickr_emit_known_empty(out_syms[[1L]], out_avals[[1L]])
+      if (!is.null(empty)) {
+        return(empty)
+      }
       quickr_emit_assign(out_syms[[1L]], quickr_stable_log1p_expr(inputs[[1L]]))
     }
   )
@@ -2020,6 +2037,10 @@ quickr_lower_registry <- local({
     reg,
     c("maximum", "minimum"),
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
+      empty <- quickr_emit_known_empty(out_syms[[1L]], out_avals[[1L]])
+      if (!is.null(empty)) {
+        return(empty)
+      }
       cmp <- if (prim_name == "maximum") ">=" else "<="
       quickr_emit_assign(
         out_syms[[1L]],

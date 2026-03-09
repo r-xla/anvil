@@ -290,6 +290,43 @@ test_that("quickr pipeline matches PJRT: expm1 stays accurate near zero", {
   expect_identical(f_quick(x), out_pjrt)
 })
 
+test_that("quickr pipeline matches PJRT: expm1/log1p preserve empty f64 dtype", {
+  skip_if_no_quickr_or_pjrt()
+
+  x <- array(double(), dim = 0L)
+
+  cases <- list(
+    list(
+      fn = function(x) {
+        nv_expm1(x)
+      },
+      info = "expm1"
+    ),
+    list(
+      fn = function(x) {
+        nv_log1p(x)
+      },
+      info = "log1p"
+    )
+  )
+
+  for (case in cases) {
+    graph <- trace_fn(
+      case$fn,
+      list(x = nv_tensor(x, dtype = "f64", shape = 0L))
+    )
+
+    out_pjrt <- quickr_eval_graph_pjrt(graph, x)
+    expect_identical(out_pjrt, x, info = case$info)
+
+    f_r <- graph_to_quickr_r_function(graph)
+    f_quick <- graph_to_quickr_function(graph)
+
+    expect_identical(f_r(x), out_pjrt, info = case$info)
+    expect_identical(f_quick(x), out_pjrt, info = case$info)
+  }
+})
+
 test_that("quickr pipeline matches PJRT: log1p stays accurate near zero", {
   skip_if_no_quickr_or_pjrt()
 
@@ -311,6 +348,46 @@ test_that("quickr pipeline matches PJRT: log1p stays accurate near zero", {
 
   expect_identical(f_r(x), out_pjrt)
   expect_identical(f_quick(x), out_pjrt)
+})
+
+test_that("quickr pipeline matches PJRT: maximum/minimum preserve empty f64 dtype", {
+  skip_if_no_quickr_or_pjrt()
+
+  x <- array(double(), dim = 0L)
+
+  cases <- list(
+    list(
+      fn = function(x, y) {
+        nv_max(x, y)
+      },
+      info = "maximum"
+    ),
+    list(
+      fn = function(x, y) {
+        nv_min(x, y)
+      },
+      info = "minimum"
+    )
+  )
+
+  for (case in cases) {
+    graph <- trace_fn(
+      case$fn,
+      list(
+        x = nv_tensor(x, dtype = "f64", shape = 0L),
+        y = nv_tensor(x, dtype = "f64", shape = 0L)
+      )
+    )
+
+    out_pjrt <- quickr_eval_graph_pjrt(graph, x, x)
+    expect_identical(out_pjrt, x, info = case$info)
+
+    f_r <- graph_to_quickr_r_function(graph)
+    f_quick <- graph_to_quickr_function(graph)
+
+    expect_identical(f_r(x, x), out_pjrt, info = case$info)
+    expect_identical(f_quick(x, x), out_pjrt, info = case$info)
+  }
 })
 
 test_that("quickr pipeline matches PJRT: pad supports negative edge padding crop", {
