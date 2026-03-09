@@ -158,6 +158,30 @@ test_that("quickr pipeline matches PJRT: i32 divide truncates toward zero", {
   expect_identical(f_quick(lhs, rhs), out_pjrt)
 })
 
+test_that("quickr pipeline matches PJRT: tanh stays finite for large inputs", {
+  skip_if_no_quickr_or_pjrt()
+
+  tanh_large <- function(x) {
+    nv_tanh(x)
+  }
+
+  graph <- trace_fn(
+    tanh_large,
+    list(x = nv_scalar(0.0, dtype = "f64"))
+  )
+
+  x <- 1000
+
+  out_pjrt <- quickr_eval_graph_pjrt(graph, x)
+  expect_true(is.finite(out_pjrt))
+
+  f_r <- graph_to_quickr_r_function(graph)
+  f_quick <- graph_to_quickr_function(graph)
+
+  expect_identical(f_r(x), out_pjrt)
+  expect_identical(f_quick(x), out_pjrt)
+})
+
 test_that("quickr pipeline matches PJRT: fill/iota/reverse/concatenate/convert/broadcast/transpose/reshape", {
   skip_if_no_quickr_or_pjrt()
 

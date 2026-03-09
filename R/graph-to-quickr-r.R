@@ -1801,12 +1801,7 @@ quickr_lower_registry <- local({
     reg,
     "tanh",
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
-      x <- inputs[[1L]]
-      two_x <- rlang::call2("*", 2, x)
-      e <- rlang::call2("exp", two_x)
-      num <- rlang::call2("-", e, 1)
-      den <- rlang::call2("+", e, 1)
-      quickr_emit_assign(out_syms[[1L]], rlang::call2("/", num, den))
+      quickr_emit_assign(out_syms[[1L]], rlang::call2("tanh", inputs[[1L]]))
     }
   )
 
