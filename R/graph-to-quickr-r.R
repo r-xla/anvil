@@ -987,6 +987,7 @@ quickr_emit_reduce <- function(kind, out_sym, operand_expr, shape_in, dims, drop
   shape_in <- as.integer(shape_in)
   dims <- sort(unique(as.integer(dims)))
   rank <- length(shape_in)
+  dt_out <- as.character(dtype(out_aval))
   if (!kind %in% c("sum", "prod", "max", "min")) {
     cli_abort("Internal error: unknown reduction kind: {.val {kind}}")
   }
@@ -994,7 +995,6 @@ quickr_emit_reduce <- function(kind, out_sym, operand_expr, shape_in, dims, drop
     cli_abort("{kind}: reductions over empty dimensions are not supported by quickr lowering")
   }
   if (kind %in% c("sum", "prod")) {
-    dt_out <- as.character(dtype(out_aval))
     init_acc_scalar <- if (kind == "sum") {
       quickr_zero_literal_for(out_aval)
     } else if (dt_out %in% c("f32", "f64")) {
@@ -1023,6 +1023,9 @@ quickr_emit_reduce <- function(kind, out_sym, operand_expr, shape_in, dims, drop
     if (!identical(dims, 1L)) {
       cli_abort("{kind}: unsupported reduction dims for rank-1 tensor")
     }
+    if (kind == "prod" && dt_out == "i32") {
+      return(quickr_emit_truncating_i32(out_sym, rlang::call2("prod", operand_expr), shape(out_aval)))
+    }
     if (isTRUE(drop)) {
       return(quickr_emit_assign(out_sym, rlang::call2(kind, operand_expr)))
     }
@@ -1038,6 +1041,9 @@ quickr_emit_reduce <- function(kind, out_sym, operand_expr, shape_in, dims, drop
     ctor <- quickr_dtype_to_r_ctor(as.character(dtype(out_aval)))
 
     if (identical(dims, c(1L, 2L))) {
+      if (kind == "prod" && dt_out == "i32") {
+        return(quickr_emit_truncating_i32(out_sym, rlang::call2("prod", operand_expr), shape(out_aval)))
+      }
       if (isTRUE(drop)) {
         return(quickr_emit_assign(out_sym, rlang::call2(kind, operand_expr)))
       }
@@ -1103,6 +1109,10 @@ quickr_emit_reduce <- function(kind, out_sym, operand_expr, shape_in, dims, drop
   }
   if (!identical(dims, seq_len(rank))) {
     cli_abort("{kind}: for rank > 2, only full reductions (dims = seq_len(rank)) are supported")
+  }
+
+  if (kind == "prod" && dt_out == "i32") {
+    return(quickr_emit_truncating_i32(out_sym, rlang::call2("prod", operand_expr), shape(out_aval)))
   }
 
   if (isTRUE(drop)) {

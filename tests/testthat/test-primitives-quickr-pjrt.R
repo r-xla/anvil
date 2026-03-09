@@ -212,6 +212,49 @@ test_that("quickr pipeline matches PJRT: pad supports negative edge padding crop
   expect_identical(f_quick(x), out_pjrt)
 })
 
+test_that("quickr pipeline matches PJRT: i32 reduce_prod preserves dtype in fast paths", {
+  skip_if_no_quickr_or_pjrt()
+
+  check_case <- function(fn, templates, args, expected) {
+    graph <- trace_fn(fn, templates)
+    out_pjrt <- do.call(quickr_eval_graph_pjrt, c(list(graph), args))
+    expect_identical(out_pjrt, expected)
+
+    f_r <- graph_to_quickr_r_function(graph)
+    f_quick <- graph_to_quickr_function(graph)
+
+    expect_identical(do.call(f_r, unname(args)), out_pjrt)
+    expect_identical(do.call(f_quick, unname(args)), out_pjrt)
+  }
+
+  check_case(
+    function(v) {
+      nv_reduce_prod(v, dims = 1L, drop = TRUE)
+    },
+    list(v = nv_tensor(c(0L, 0L, 0L), dtype = "i32", shape = 3L)),
+    list(v = c(2L, 3L, 4L)),
+    24L
+  )
+
+  check_case(
+    function(x2) {
+      nv_reduce_prod(x2, dims = c(1L, 2L), drop = TRUE)
+    },
+    list(x2 = nv_tensor(matrix(0L, nrow = 2L, ncol = 2L), dtype = "i32", shape = c(2L, 2L))),
+    list(x2 = matrix(c(2L, 3L, 4L, 5L), nrow = 2L, byrow = TRUE)),
+    120L
+  )
+
+  check_case(
+    function(x3) {
+      nv_reduce_prod(x3, dims = 1:3, drop = FALSE)
+    },
+    list(x3 = nv_tensor(array(0L, dim = c(1L, 2L, 2L)), dtype = "i32", shape = c(1L, 2L, 2L))),
+    list(x3 = array(c(1L, 2L, 3L, 4L), dim = c(1L, 2L, 2L))),
+    array(24L, dim = c(1L, 1L, 1L))
+  )
+})
+
 test_that("quickr pipeline matches PJRT: fill/iota/reverse/concatenate/convert/broadcast/transpose/reshape", {
   skip_if_no_quickr_or_pjrt()
 
