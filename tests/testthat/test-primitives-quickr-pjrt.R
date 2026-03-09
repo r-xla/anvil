@@ -158,6 +158,29 @@ test_that("quickr pipeline matches PJRT: i32 divide truncates toward zero", {
   expect_identical(f_quick(lhs, rhs), out_pjrt)
 })
 
+test_that("quickr pipeline matches PJRT: reshape unboxes singleton tensors to scalars", {
+  skip_if_no_quickr_or_pjrt()
+
+  reshape_to_scalar <- function(x) {
+    nv_reshape(x, shape = integer())
+  }
+
+  graph <- trace_fn(
+    reshape_to_scalar,
+    list(x = nv_tensor(matrix(0.0, nrow = 1L, ncol = 1L), dtype = "f64", shape = c(1L, 1L)))
+  )
+
+  x <- matrix(2.5, nrow = 1L, ncol = 1L)
+  out_pjrt <- quickr_eval_graph_pjrt(graph, x)
+  expect_identical(out_pjrt, 2.5)
+
+  f_r <- graph_to_quickr_r_function(graph)
+  f_quick <- graph_to_quickr_function(graph)
+
+  expect_identical(f_r(x), out_pjrt)
+  expect_identical(f_quick(x), out_pjrt)
+})
+
 test_that("quickr pipeline matches PJRT: tanh stays finite for large inputs", {
   skip_if_no_quickr_or_pjrt()
 

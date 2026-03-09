@@ -1346,7 +1346,12 @@ quickr_emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_
 
   nflat <- Reduce(`*`, shape_in, init = 1L)
   if (identical(as.integer(nflat), 1L)) {
-    return(quickr_emit_full_like(out_sym, operand_expr, shape_out, out_aval))
+    scalar_expr <- if (!length(shape_in)) {
+      operand_expr
+    } else {
+      quickr_subscript(operand_expr, rep.int(list(1L), length(shape_in)))
+    }
+    return(quickr_emit_full_like(out_sym, scalar_expr, shape_out, out_aval))
   }
 
   ctor <- quickr_dtype_to_r_ctor(as.character(dtype(out_aval)))

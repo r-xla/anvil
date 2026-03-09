@@ -338,7 +338,7 @@ graph_to_quickr_function <- function(graph) {
 
   if (!isTRUE(prep$needs_wrapper)) {
     out_shape <- as.integer(prep$out_infos[[1L]]$shape)
-    if (length(out_shape) == 1L && identical(out_shape[[1L]], 0L)) {
+    if (length(out_shape) == 1L) {
       return(quickr_wrap_direct_leaf(inner_quick, prep$out_infos[[1L]]))
     }
     return(inner_quick)
