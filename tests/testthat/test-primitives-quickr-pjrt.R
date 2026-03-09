@@ -182,6 +182,36 @@ test_that("quickr pipeline matches PJRT: tanh stays finite for large inputs", {
   expect_identical(f_quick(x), out_pjrt)
 })
 
+test_that("quickr pipeline matches PJRT: pad supports negative edge padding crop", {
+  skip_if_no_quickr_or_pjrt()
+
+  pad_crop <- function(x) {
+    nv_pad(
+      x,
+      nv_scalar(0L, dtype = "i32"),
+      edge_padding_low = c(-1L, 1L),
+      edge_padding_high = c(0L, 0L),
+      interior_padding = c(0L, 0L)
+    )
+  }
+
+  graph <- trace_fn(
+    pad_crop,
+    list(x = nv_tensor(matrix(0L, nrow = 2L, ncol = 2L), dtype = "i32", shape = c(2L, 2L)))
+  )
+
+  x <- matrix(c(1L, 2L, 3L, 4L), nrow = 2L, byrow = TRUE)
+
+  out_pjrt <- quickr_eval_graph_pjrt(graph, x)
+  expect_identical(out_pjrt, matrix(c(0L, 3L, 4L), nrow = 1L, byrow = TRUE))
+
+  f_r <- graph_to_quickr_r_function(graph)
+  f_quick <- graph_to_quickr_function(graph)
+
+  expect_identical(f_r(x), out_pjrt)
+  expect_identical(f_quick(x), out_pjrt)
+})
+
 test_that("quickr pipeline matches PJRT: fill/iota/reverse/concatenate/convert/broadcast/transpose/reshape", {
   skip_if_no_quickr_or_pjrt()
 

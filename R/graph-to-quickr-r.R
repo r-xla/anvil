@@ -523,30 +523,73 @@ quickr_emit_pad <- function(
 
   alloc_out <- quickr_alloc_full(out_shape, padding_value_expr)
 
-  out_idxs <- Map(
-    function(low, interior, n) {
-      stride <- interior + 1L
+  idx_expr <- function(start, len, stride = 1L, full_len = NULL) {
+    if (len <= 0L) {
+      return(integer())
+    }
+    if (len == 1L) {
+      return(start)
+    }
+    if (!is.null(full_len) && identical(start, 1L) && identical(len, full_len)) {
+      return(rlang::call2("seq_len", full_len))
+    }
+    if (identical(stride, 1L)) {
+      return(as.call(list(as.name(":"), start, start + len - 1L)))
+    }
+    rlang::call2(
+      "+",
+      start,
       rlang::call2(
-        "+",
-        low + 1L,
-        rlang::call2(
-          "*",
-          rlang::call2("-", rlang::call2("seq_len", n), 1L),
-          stride
-        )
+        "*",
+        rlang::call2("-", rlang::call2("seq_len", len), 1L),
+        stride
+      )
+    )
+  }
+
+  idx_map <- Map(
+    function(low, interior, n, out_n) {
+      stride <- interior + 1L
+      crop_low <- max(-low, 0L)
+      start_offset <- if (!crop_low) 0L else (crop_low + stride - 1L) %/% stride
+      output_start <- low + 1L + start_offset * stride
+
+      if (output_start > out_n || start_offset >= n) {
+        return(list(len = 0L, input = integer(), output = integer()))
+      }
+
+      len <- min(
+        n - start_offset,
+        ((out_n - output_start) %/% stride) + 1L
+      )
+
+      input_start <- start_offset + 1L
+      list(
+        len = len,
+        input = idx_expr(input_start, len, full_len = n),
+        output = idx_expr(output_start, len, stride = stride)
       )
     },
     as.list(edge_padding_low),
     as.list(interior_padding),
-    as.list(shape_in)
+    as.list(shape_in),
+    as.list(out_shape)
   )
+
+  if (isTRUE(any(vapply(idx_map, \(x) !x$len, logical(1L))))) {
+    return(quickr_emit_assign(out_sym, alloc_out))
+  }
+
+  in_idxs <- lapply(idx_map, `[[`, "input")
+  out_idxs <- lapply(idx_map, `[[`, "output")
+  rhs_expr <- quickr_subscript(operand_expr, in_idxs)
 
   list(
     rlang::call2("<-", out_sym, alloc_out),
     rlang::call2(
       "<-",
       quickr_subscript(out_sym, out_idxs),
-      operand_expr
+      rhs_expr
     )
   )
 }
