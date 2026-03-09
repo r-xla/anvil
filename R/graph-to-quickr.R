@@ -175,30 +175,6 @@ graph_to_quickr_make_wrapper <- function(
   wrapper
 }
 
-quickr_wrap_direct_leaf <- function(inner_fun, out_info) {
-  wrapper <- function() {}
-  formals(wrapper) <- formals(inner_fun)
-
-  arg_names <- names(formals(inner_fun)) %||% character()
-  wrapper_env <- new.env(parent = environment(graph_to_quickr_function))
-  wrapper_env$inner <- inner_fun
-  wrapper_env$arg_names <- arg_names
-  wrapper_env$out_info <- out_info
-  wrapper_env$decode_leaf <- quickr_decode_leaf
-
-  body(wrapper) <- quote({
-    args <- if (!length(arg_names)) {
-      list()
-    } else {
-      mget(arg_names, envir = environment(), inherits = FALSE)
-    }
-    decode_leaf(do.call(inner, args), out_info$shape, out_info$dtype)
-  })
-
-  environment(wrapper) <- wrapper_env
-  wrapper
-}
-
 #' Convert an AnvilGraph to a quickr-compatible R function
 #'
 #' Lowers a supported subset of `AnvilGraph` objects to a plain R function (no
@@ -339,7 +315,14 @@ graph_to_quickr_function <- function(graph) {
   if (!isTRUE(prep$needs_wrapper)) {
     out_shape <- as.integer(prep$out_infos[[1L]]$shape)
     if (length(out_shape) == 1L) {
-      return(quickr_wrap_direct_leaf(inner_quick, prep$out_infos[[1L]]))
+      return(graph_to_quickr_make_wrapper(
+        graph = graph,
+        r_fun = prep$r_fun,
+        inner_fun = inner_quick,
+        needs_pack = prep$needs_pack,
+        out_infos = prep$out_infos,
+        needs_flatten = prep$needs_flatten
+      ))
     }
     return(inner_quick)
   }
