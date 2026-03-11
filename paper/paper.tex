@@ -1,0 +1,716 @@
+% !TeX root = RJwrapper.tex
+\title{anvil: A Code Transformation Framework for the R Language}
+
+
+\author{by Sebastian Fischer, Daniel Falbel, Thomas Kalinowski, Niko German, Martin Binder, and Bernd Bischl}
+
+\maketitle
+
+\abstract{%
+The anvil package provides a composable code transformation framework for the R language. It currently supports (backward-mode) automatic differentiation and execution is handled by jit-compilation via the OpenXLA compiler framework, which has support for different hardware backends (CPU, GPU, etc.). Together, these features allow to implement numerical algorithms efficiently in pure R. All code transformations are based on first tracing R code into a computational graph via abstract evaluation. This allows to combine jit-compilable operations with standard R code, the latter being ``staged out'' during compilation. The package is also designed to be extendable, meaning it is possible to add new primitive operations or code transformations. By being mostly written in R, the package is also easy to contribute to.
+}
+
+\subsection{Introduction}\label{introduction}
+
+All statistical and machine learning models fundamentally rely on some form of array or matrix operations.
+Even though R as an interpreted language has performance limitations, relying on vectorized operations that call into optimized kernels can often be fast enough for many use cases.
+However, there are cases where the performance is not sufficient and one needs to resort to compiled languages such as C++.
+Furthermore, one might additionally want to have access to GPU acceleration or automatic differentiation for gradient based optimization.
+The R package \CRANpkg{torch} offers a collection of highly optimized tensor operations and can be run on both CPUs and GPUs.
+While the \CRANpkg{torch} package is very powerful, the program is still executed in R and only dispatches into highly optimized kernels for the tensor operations.
+While this already yields significant speedups compared to, e.g., standard R code, but there are still some drawbacks.
+First, this programming model means that intermediate results during program execution are stored in R and have to eventually be cleaned up by the R garbage collector.
+Especially when running large programs this can cause the R garbage collector to be run frequently and slow down the program.
+Second, when operating on small tensors with many operations (such as a loop), the continuous switching between R and the kernels can be costly and there is no optimization across the different operations.
+
+The goal of the \CRANpkg{anvil} package is to follow a different approach than \{torch\}.
+Instead of merely exposing individual tensor operations as R functions, we offer a set of operations that can be jit-compiled, differentiated, and executed on different hardware backends.
+The compilation is handled via the OpenXLA ecosystem (cite), which provides an open-source compiler framework, targeting different hardware backends like CPU or GPU.
+Its goal is to establish a standardized interface between frameworks for numerical computing and hardware-specific compilers.
+This is achieved by defining a common intermediate representation (IR) for representing numerical computations, which is called StableHLO (cite).
+We allow to create such programs in pure R via the \{stablehlo\} package.
+Further, via PJRT, OpenXLA provides an interface for the essential operations used in JIT-compiled tensor computing framework, which includes data allocation, compilation and execution.
+We provide an interface to PJRT through the \CRANpkg{pjrt} package.
+The \CRANpkg{anvil} package defines the core code transformation framework and uses the \{stablehlo\} and \{pjrt\} packages for JIT compilation.
+It works by abstractly evaluating R programs and staging out the supported anvil primitives into a intermediate representation, i.e., a computational graph.
+Such a graph can be transformed into another graph (e.g., for computing the gradient), or translated to StableHLO and subsequently compiled.
+Because the \CRANpkg{anvil} package is primarily written in R, it is easy to extend and contribute to.
+
+The main design of \CRANpkg{anvil} is inspired by the JAX Python library.
+Specifically, we are following their functional design and follow a similar approach for converting the R code into an intermediate representation (a computational graph) via tracing.
+Also for other design elements (like the handling of nested data structures) we following the JAX approach, which are often a natural choice, as JAX is also built on top of XLA.
+
+Next, we will discuss other R packages focussing on accelerating R code.
+Generally, when one decides on implementing a JIT compiler for R one needs to decide between feasability and expressiveness.
+The more complex the supported R code is that can be compiled, the harder it becomes to compile it.
+The most extreme version is to accelerate arbitrary R code.
+Of course, the R language itself has a compiler, which is used by the R interpreter to execute R code.
+However, R is not compiled directly to native code, but rather to a byte-code, which is then executed by the byte-code interpreter.
+Another approach of accelerating R code was the FastR project, which aimed for a drop-in replacement for the R interpreter (cite).
+However, due to certain design decisions in the R language (anything can happen at any time), accelerating arbitrary R code is rather difficult \citep{morandat2012evaluating}.
+Thus, a more fruitful approach seems to be to define domain specific languages (DSLs) in R and allow to compile them.
+
+The \CRANpkg{torch} package itself offers a way to JIT-compile torch code via the \texttt{torch::jit\_compile()} interface, which generates \texttt{TorchScript} code.
+However, \texttt{TorchScript} is in maintenance mode and it, e.g., does not support automatic differentiation.
+Introduced more recently, the \CRANpkg{quickr} allows to transpile R code into Fortran code, which can then be compiled.
+Their approach works by static analysis instead of tracing.
+However, it currently does not support automatic differentiation or GPU execution.
+An older package is the \CRANpkg{nimble} package, which allows to define Bayesian models in a DSL and compile them to C++ code.
+
+Othe packages:
+
+\begin{itemize}
+\tightlist
+\item
+  nimble
+\end{itemize}
+
+Besides native R packages, it is also possible to use Python packages via \CRANpkg{reticulate}.
+For example, this makes it possible to use JAX.
+However, this makes the installation more challenging and debugging becomes more difficult.
+
+TODO:
+* Discuss advantages of compiling vs eager mode
+* Relate to mlr3torch
+
+Next, we will cover the OpenXLA ecosystem and the packages \CRANpkg{stablehlo} and \CRANpkg{pjrt} that allow to create, compile, and execute StableHLO programs.
+In the third section, we will explain the main design of the \CRANpkg{anvil} package, including the underlying code transformation engine and the user interface.
+Afterwards, we present various examples how \CRANpkg{anvil} can be used to accelerate R code.
+In the fifth section, we will briefly discuss how to extend the pacakge.
+Then, we will present some benchmarks to illustrate the performance of the package on both CPU and GPU.
+Finally, we will conclude by discussing current limitations and directions for future work.
+
+\subsection{The OpenXLA Ecosystem}\label{the-openxla-ecosystem}
+
+\subsubsection{StableHLO}\label{stablehlo}
+
+The StableHLO language is an intermediate representation (IR) for representing numerical computations.
+Below, we see such a simple program that takes f32 tensors of shape \texttt{(2,\ 2)} and multiplies.
+
+\begin{verbatim}
+func @main(%arg0: tensor<2x2xf32>, %arg1: tensor<2x2xf32>) -> tensor<2x2xf32> {
+  %0 = "stablehlo.multiply"(%arg0, %arg1) : (tensor<2x2xf32>, tensor<2x2xf32>) -> tensor<2x2xf32>
+  return %0 : tensor<2x2xf32>
+}
+\end{verbatim}
+
+The language operates primarily on tensors and a tensor is composed of a shape and a data type.
+The body of a function is a sequence of primitive operations.
+Moreover, StableHLO is in single static assignment (SSA) form, meaning that each variable is assigned to exactly once.
+Also, values are immutable, so no in-place updates are possible (although compilers can of course optimize this).
+For a description of the language, see the \href{https://openxla.org/stablehlo/spec}{StableHLO specification}, which also contains a description of the around 100 supported primitive operations.
+
+The \CRANpkg{stablehlo} package provides a R interface to the StableHLO language.
+The motivation behind implementing this in pure R is to make the installation of the package easier as compared to interfacing the C++ implementation that requires LLVM.
+Below, we will re-create the above program using the \CRANpkg{stablehlo} package.
+
+\begin{verbatim}
+#> func.func @main () ->  {
+#> 
+#> }
+\end{verbatim}
+
+\begin{verbatim}
+#> Variable %x in:
+#> func.func @main (%x: tensor<2x2xf32>) ->  {
+#> 
+#> }
+\end{verbatim}
+
+\begin{verbatim}
+#> Variable %y in:
+#> func.func @main (%x: tensor<2x2xf32>, %y: tensor<2x2xf32>) ->  {
+#> 
+#> }
+\end{verbatim}
+
+\begin{verbatim}
+#> Variable %0 in:
+#> func.func @main (%x: tensor<2x2xf32>, %y: tensor<2x2xf32>) ->  {
+#> %0 = "stablehlo.multiply" (%x, %y): (tensor<2x2xf32>, tensor<2x2xf32>) -> (tensor<2x2xf32>)
+#> }
+\end{verbatim}
+
+\begin{verbatim}
+#> [1] "func.func @main (%x: tensor<2x2xf32>, %y: tensor<2x2xf32>) -> tensor<2x2xf32> {\n%0 = \"stablehlo.multiply\" (%x, %y): (tensor<2x2xf32>, tensor<2x2xf32>) -> (tensor<2x2xf32>)\n\"func.return\"(%0): (tensor<2x2xf32>) -> ()\n}\n"
+\end{verbatim}
+
+We won't cover this in more detail, but refer to the corresponding \href{https://r-xla.github.io/stablehlo/articles/stablehlo.html}{vignette} for more details.
+As far as the \CRANpkg{anvil} package is concerned, the most important thing is that we can easily create StableHLO programs in pure R.
+
+\subsubsection{PJRT}\label{pjrt}
+
+In order to do something with the above program, we need to be able to compile it, create data for it, and run it.
+This is possible via the \CRANpkg{pjrt} package, which interfaces the PJRT C++ library.
+The PJRT librari itself is header-only and only defines the interface.
+A specific implementation of the interface (e.g.~for CPU or NVIDIA GPU) is accessed by downloading prebuilt shared libraries and loading them dynamically.
+Just like for the \CRANpkg{stablehlo} package, we only shore the core functionality of \CRANpkg{pjrt} here and refer to the corresponding \href{https://r-xla.github.io/pjrt/articles/pjrt.html}{vignette} for more details.
+
+Below, we start by creating two \texttt{PJRTBuffer} objects from R data.
+Just like the tensors in the above StableHLO program, buffers have a shape and a data type.
+Shapes of length 0 are used to represent scalars.
+Buffers can also live in different devices, the CPU being the default.
+
+\begin{verbatim}
+#> PJRTBuffer 
+#>  1
+#>  2
+#>  3
+#>  4
+#> [ CPUf32{4} ]
+\end{verbatim}
+
+\begin{verbatim}
+#> PJRTBuffer 
+#>  5
+#>  6
+#>  7
+#>  8
+#> [ CPUf32{4} ]
+\end{verbatim}
+
+In order to run the above program, we convert the string representation into a \texttt{PJRTProgram} and then compile it into a \texttt{PJRTLoadedExecutable} object.
+Then, we can execute the program by passing the \texttt{PJRTBuffer} objects to the \texttt{PJRTLoadedExecutable} object.
+
+\begin{verbatim}
+#> PJRTProgram(format=mlir, code_size=218)
+#> func.func @main (%x: tensor<2x2xf32>, %y: tensor<2x2xf32>) -> tensor<2x2xf32> {
+#> %0 = "stablehlo.multiply" (%x, %y): (tensor<2x2xf32>, tensor<2x2xf32>) -> (tensor<2x2xf32>)
+#> "func.return"(%0): (tensor<2x2xf32>) -> ()
+#> }
+#> 
+#> 
+\end{verbatim}
+
+\begin{verbatim}
+#> <PJRTLoadedExecutable>
+\end{verbatim}
+
+We can now run the program by passing the \texttt{PJRTBuffer} objects to the \texttt{PJRTLoadedExecutable} object.
+
+Conversion back to R is possible via the \texttt{as\_array()} function.
+
+\begin{verbatim}
+#>      [,1] [,2]
+#> [1,]    5   12
+#> [2,]   21   32
+\end{verbatim}
+
+Because \texttt{PJRTBuffer} objects are external pointers that are not hanled natively by R's serialization mechanism, we provide a custom serialization method via the \CRANpkg{safetensors} R package.
+
+\begin{verbatim}
+#> PJRTBuffer 
+#>   5 12
+#>  21 32
+#> [ CPUf32{2x2} ]
+\end{verbatim}
+
+Next, we will cover the design of the \CRANpkg{anvil} package.
+
+\subsection{Package Design and Features}\label{package-design-and-features}
+
+The \CRANpkg{anvil} package implements a code transformation framework for the R language.
+In general, there are three types of transformations:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Transforming R code into a computational graph.
+\item
+  Transforming a computational graph into another computational graph.
+\item
+  Transforming a computational graph into an executable.
+\end{enumerate}
+
+We will now cover these three types of transformations in more detail.
+Then, we explain how these transformations are wrapped in the main user interface.
+
+\subsubsection{Core Graph Transformations}\label{core-graph-transformations}
+
+\paragraph{Tracing R code into a computational graph}\label{tracing-r-code-into-a-computational-graph}
+
+When it comes to translating code into other code, there are in principle two approaches:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Static analysis of the code.
+\item
+  Dynamically executing the code with ``special values'' that record certain operations and build up a (partial) representation of the program.
+\end{enumerate}
+
+In \CRANpkg{anvil}, we are following the latter approach, because it allows to seemlessly combine standard R code with jit-compilable operations.
+The function that takes in an R function and returns a computational graph is called \texttt{trace\_fn()}.
+In order for this to be useful, the function needs to call into anvil primitive functions.
+These primitive functions are similar to the stableHLO operations like \texttt{hlo\_add} from earlier.
+
+In the \CRANpkg{anvil} package these are called \texttt{nvl\_\textless{}op\textgreater{}} functions.
+Howveer, they are not exported directly, but in thin wrappers like \texttt{nv\_add}, which perform some convenience transformations (like type casting) that make them more ergonomic to use.
+These thin wrappers call into the primitive functions, however.
+The primitive functions are essentially graph building functions, also similar to the \texttt{hlo\_add} function from earlier.
+Below, we create an R function that takes in two values and multiplies them.
+Note that we could have also used the \texttt{*} infix operator, but we want to illustrate the use of the \texttt{nv\_multiply} function.
+
+We can now trace this function into a computational graph.
+At the beginning, this will create a \texttt{anvil::GraphDescriptor} that primitive functions can attach to to build up the graph.
+The types for the inputs are inferred from the example arguments.
+The \texttt{trace\_fn} transformation uses these example inputs to obtain abstract \texttt{GraphBox} objects, which are passed around during the evaluation of the function.
+They essentially define the type (shape and data type), and uniquely identify a specific \texttt{GraphValue} within a specific \texttt{GraphDescriptor}.
+Note that \texttt{trace\_fn} also takes in non-tensor values, which are evaluated like normal R code.
+
+\begin{verbatim}
+#> <AnvilGraph>
+#>   Inputs:
+#>     %x1: f32[]
+#>     %x2: f32[]
+#>   Body:
+#>     %1: f32[] = mul(%x1, %x2)
+#>   Outputs:
+#>     %1: f32[]
+\end{verbatim}
+
+Once the evaluation of \texttt{multiply\_r} with the special \texttt{GraphBox} objects is complete, the \texttt{GraphDescriptor} is converted into a \texttt{Graph} object.
+The only difference between them is that \texttt{GraphDescriptor} does some book-keeping during program creation which is not needed anymore afterwards.
+
+From the printed output of the graph we can see that a graph has:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Inputs: \texttt{GraphValue}s that are the inputs to the graph.
+\item
+  Constants: \texttt{GraphValue}s that are constants in the graph.
+\item
+  Body: A list of \texttt{PrimitiveCall} objects, which represent the primitive operations that make up the graph.
+\item
+  Outputs: \texttt{GraphValue}s that are the outputs of the graph.
+\item
+  In-tree and Out-tree: Because \texttt{Graph}s only take in tensor values, but we want to support nested data strctures, the in-tree and out-tree define how to (un-)flatten the inputs and outputs of the graph.
+\end{enumerate}
+
+STATIC SHAPES!!!
+
+\paragraph{Transforming a Graph into another Graph}\label{transforming-a-graph-into-another-graph}
+
+Once our program no longer consists arbitrary R code, but is in a standardized form, we can transform the program by creating another \texttt{Graph} object.
+Currently, the only example for such a type of transformation is the gradient transformation, which is implemented in the \texttt{transform\_gradient()} function.
+It takes in a \texttt{Graph} and the names of the arguments to compute the gradient with respect to.
+
+The \CRANpkg{anvil} package does not put any restrictions on \emph{how} such a transformation is implemented.
+Usually, however, such a transformation needs to store information for how to transform each primitiveF.
+For this reason, the \texttt{anvil::Primitive} objects have a \texttt{@rules} field that can be populated.
+For example, the backward rule for the addition primitive is implemented as follows:
+
+\begin{verbatim}
+#> function (inputs, outputs, grads, .required) 
+#> {
+#>     grad <- grads[[1L]]
+#>     list(if (.required[[1L]]) grad, if (.required[[2L]]) grad)
+#> }
+#> <bytecode: 0x105271558>
+#> <environment: namespace:anvil>
+\end{verbatim}
+
+The transformation function \texttt{transform\_gradient} basically walks the graph backwards and applies the backward rules to each primitive, producing a \texttt{Graph} that contains the forward and backward pass.
+
+\paragraph{Compiling a Graph}\label{compiling-a-graph}
+
+Whenever we are done transforming out \texttt{Graph} and are ready to execute it, we need to lower it.
+We can convert a \texttt{Graph} into a stablehlo program via the \texttt{stablehlo()} function.
+The output of this is a list containing:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  The StableHLO program.
+\item
+  The constant buffers in the \texttt{Graph}.
+\end{enumerate}
+
+\begin{verbatim}
+#> [1] "func.func @main (%0: tensor<f32>, %1: tensor<f32>) -> tensor<f32> {\n%2 = \"stablehlo.multiply\" (%0, %1): (tensor<f32>, tensor<f32>) -> (tensor<f32>)\n\"func.return\"(%2): (tensor<f32>) -> ()\n}\n"
+\end{verbatim}
+
+\begin{verbatim}
+#> list()
+\end{verbatim}
+
+While stablehlo allows to embed constants in the program, this can considerably increase the program size (think of big tensors) and slow down compile times.
+For this reason, non-scalar (TODO) constants are not inlined into the stableHLO executable, but added as inputs to the program and need to be provided when executing the program.
+
+Next, we will describe how these transformations are wrapped in the main user interface.
+
+\subsubsection{Main User Interface}\label{main-user-interface}
+
+The main user interface is centered around \texttt{jit()} and transformations functions like \texttt{gradient()} or \texttt{value\_and\_gradient()}.
+Furthermore, we can create tensors, which we will cover first.
+
+\paragraph{\texorpdfstring{The \texttt{AnvilTensor}}{The AnvilTensor}}\label{the-anviltensor}
+
+In order to create data for our programs, we can use the \texttt{nv\_tensor()}, \texttt{nv\_scalar()} and \texttt{nv\_empty()} functions.
+These essentially wrap the \texttt{pjrt\_buffer()} and \texttt{pjrt\_scalar()} functions from the \CRANpkg{pjrt} package.
+
+\begin{verbatim}
+#> AnvilTensor
+#>  1
+#> [ CPUf32{} ]
+\end{verbatim}
+
+\begin{verbatim}
+#> AnvilTensor
+#>  1
+#>  2
+#>  3
+#>  4
+#> [ CPUf32{4} ]
+\end{verbatim}
+
+Just like the \texttt{PJRTBuffer} objects, \texttt{AnvilTensor} objects can be serialized to a string and deserialized using the \CRANpkg{safetensors} R package.
+
+\paragraph{\texorpdfstring{\texttt{jit()}}{jit()}}\label{jit}
+
+\texttt{jit()} is the main function that takes in an R function and returns a JIT-compiled function
+Below, we apply it to a simple R function that prints a message and then multiplies two values.
+The print statement is included for didactive purposes and will become clear later.
+
+The output function is a regular R function, which contains the ``recipe'' for transforming the R function into a \texttt{Graph}, then lowering into a StableHLO program and finally executing it.
+
+\begin{verbatim}
+#> [1] "Hello useR!"
+\end{verbatim}
+
+\begin{verbatim}
+#> AnvilTensor
+#>  1
+#> [ CPUf32{} ]
+\end{verbatim}
+
+Of course, compiling the function every time the function is called would be very inefficient.
+Therefore, a cache is maintained that stores the executable (and constant values) for each unique combination of input types.
+
+If we execute it again, we get the same output, but the print statement is not shown.
+
+\begin{verbatim}
+#> AnvilTensor
+#>  1
+#> [ CPUf32{} ]
+\end{verbatim}
+
+If we apply it again to different input values (of the same types), we get a cache hit and directly execute the cached executable.
+
+\begin{verbatim}
+#> [1] "Hello useR!"
+\end{verbatim}
+
+\begin{verbatim}
+#> AnvilTensor
+#>  4
+#> [ CPUf32{} ]
+\end{verbatim}
+
+Because the compiled executable contains only the tensor operation, the print statement is not shown.
+If we apply the function to values of different types, we get a cache miss and the function is recompiled.
+This will show the print message again.
+
+\begin{verbatim}
+#> [1] "Hello useR!"
+\end{verbatim}
+
+\begin{verbatim}
+#> AnvilTensor
+#>  1
+#> [ CPUi32{} ]
+\end{verbatim}
+
+We can also JIT-compile functions that take in lists of tensors and output lists of tensors.
+
+\begin{verbatim}
+#> [[1]]
+#> AnvilTensor
+#>  1
+#>  2
+#>  3
+#>  4
+#> [ CPUf32{4} ]
+\end{verbatim}
+
+This will use the \texttt{in\_tree} and \texttt{out\_tree} fields of the \texttt{Graph} to flatten and unflatten the list of tensors.
+
+The functions we JIT-compile can also take in so called ``static'' arguemnts, that can be standard R values.
+Below, we define a function that either multiplies or adds two values, depending on the value of the \texttt{op} argument.
+We need to mark the \texttt{op} argument as static.
+
+The difference between static and non-static arguments is that for the former the function is recompiled for ever unique input type combination, while for the latter it needs to be recompiled for every unique value of the static argument.
+
+\begin{verbatim}
+#> AnvilTensor
+#>  2
+#>  3
+#>  4
+#>  5
+#> [ CPUf32{4} ]
+\end{verbatim}
+
+\begin{verbatim}
+#> AnvilTensor
+#>  1
+#>  2
+#>  3
+#>  4
+#> [ CPUf32{4} ]
+\end{verbatim}
+
+\paragraph{\texorpdfstring{Transformations like \texttt{gradient()}}{Transformations like gradient()}}\label{transformations-like-gradient}
+
+Just like \texttt{jit()}, the \texttt{gradient()} function takes in a function and outputs a function that contains the recipe for transforming the input function into a \texttt{Graph} representing the gradient of the input function.
+
+In order to be able to execute the gradient function, we need to wrap it in a \texttt{jit()} call.
+We can also jit a function that contains ``standard'' anvil operations and calls into the gradient function.
+
+The way this works is the following:
+When tracing the \texttt{val\_and\_grad} function, a \texttt{GraphDescriptor} is first initialized.
+When the \texttt{add\_or\_multiply} function is called, it populates the \texttt{GraphDescriptor} with the inputs \texttt{x} and \texttt{y} and adds the \texttt{PrimitiveCall} to the body representing the multiplication of \texttt{x} and \texttt{y}.
+When we then call into the \texttt{grad} function, we create another \texttt{GraphDescriptor}, because we need a graph-representation of the of the \texttt{add\_or\_multiply} function so we can transform it into its gradient.
+After this is done, the resulting gradient graph is inlined into the parent \texttt{GraphDescriptor}.
+
+We can see the output of this below:
+
+\begin{verbatim}
+#> <AnvilGraph>
+#>   Inputs:
+#>     %x1: f32[]
+#>     %x2: f32[]
+#>   Constants:
+#>     %c1: f32[]
+#>   Body:
+#>     %1: f32[] = add(%x1, %x2)
+#>     %2: f32[] = add(%x1, %1)
+#>   Outputs:
+#>     %c1: f32[]
+#>     %c1: f32[]
+\end{verbatim}
+
+Because this makes \texttt{f} just another graph-building function, we can wrap it in a \texttt{jit()} call and execute it.
+
+\begin{verbatim}
+#> $x
+#> AnvilTensor
+#>  1
+#> [ CPUf32{} ] 
+#> 
+#> $y
+#> AnvilTensor
+#>  1
+#> [ CPUf32{} ]
+\end{verbatim}
+
+\paragraph{Debugging}\label{debugging}
+
+One of the main disadvantages of the JIT-compilation approach is that it makes the program harder to debug, because the function cannot simply be executed line-by-line.
+For this reason, we offer a debugging mode that allows to execute a function without wrapping it in a \texttt{jit()} call.
+There, the function will be executed line-by-line.
+However, this will mean that we don't execute the real function, but only perform the abstract evaluation, meaning you can also see the types of the intermediate values.
+
+\begin{verbatim}
+#> [1] "Hello useR!"
+\end{verbatim}
+
+\begin{verbatim}
+#> f32{}
+\end{verbatim}
+
+It is also possible to print intermediate tensors during program execution via \texttt{nv\_print()}.
+
+\begin{verbatim}
+#> AnvilTensor
+#>  5
+#> [ f32{} ]
+\end{verbatim}
+
+\begin{verbatim}
+#> AnvilTensor
+#>  5
+#> [ CPUf32{} ]
+\end{verbatim}
+
+The difference between \texttt{nv\_print} and a standard \texttt{print()} call is that the former will be embedded in the StableHLO program and executed by the backend, while the latter will be executed during the tracing.
+The \texttt{nv\_print()} function is implemeted as a StableHLO custom call, c.f. the extending section.
+
+Finally, to aid debugging, we try to provide good error messages when applying graph-building functions to the wrong types of inputs.
+
+\subsubsection{Static Shapes}\label{static-shapes}
+
+While the JIT-compilation approach is very powerful, it has some limitations.
+One major restriction is that the shapes in the StableHLO programs are static and need to be known at compile time.
+This means that the approach does not do well when the input shapes are varying strongly.
+In principle, the StableHLO language does support dynamic shapes.
+However, the XLA compiler which we are using requires all shapes to be known at compile time.
+
+In order to lift this restriction, it would necessary to implement a different backend.
+One possible approach is to use the IREE compiler (cite, link), which also consumes StableHLO programs and does support dynamic shapes.
+Another approach might be to lower the \texttt{Graph} into a different language, e.g.~using the \CRANpkg{quickr} or by transpiling to Mojo.
+An advantage of the static shapes is that it allows for more aggressive optimizations by the compiler.
+
+\subsection{Examples}\label{examples}
+
+Despite \CRANpkg{anvil} being still in a rather early stage and there are many features we would like to add, it can already be used to accelerate real-world problems.
+In this section, we will cover two simple examples: Estimating a Bayesian logistic regression model via gradient descent and TODO.
+We choose these examples because they are simple enough to be implemented in a few lines of code, but still showcase the capabilities of the package.
+
+\subsubsection{Estimating a Bayesian Logistic Regression Model}\label{estimating-a-bayesian-logistic-regression-model}
+
+Our goal here is to define a function that optimizes a Bayesian logistic regression model via gradient descent.
+We assume a Gaussian prior on the weights:
+
+\[w \sim \mathcal{N}(0, \sigma_{\text{prior}}^2 I)\]
+
+Next, we generate some synthetic data using anvil.
+
+TODO: GPU
+
+\subsubsection{TODO}\label{todo}
+
+\subsection{Extending}\label{extending}
+
+One of the key design goals of \CRANpkg{anvil} is to be extendable.
+It is possible to add new primitive operations, transformations, and even backends.
+
+\subsubsection{New Primitive Operations}\label{new-primitive-operations}
+
+The simplest way to extend \CRANpkg{anvil} is to add new primitive operations.
+This consists of defining a \texttt{Primitive} object, implementing the transformation rules, and creating a graph-builder function for the primitive.
+Below, we show how to create the (already existing) addition primitive from scratch.
+We start by creating the \texttt{Primitive} object that holds the transformation rules.
+
+Next, we create the graph-builder function for the primitive.
+It needs to define the abstract evaluation rule (the \texttt{infer\_fn} argument) that describes how to convert the abstract inputs into abstract outputs.
+Then, it appends a \texttt{PrimitiveCall} object to the \texttt{GraphDescriptor} that represents the primitive call via \texttt{graph\_desc\_add()}.
+because \texttt{graph\_desc\_add} returns a list of values, we unbox it and return the first element.
+
+With this in place, we can already create \texttt{Graph} objects that use the new primitive.
+
+However, we also want to be able to translate this to StableHLO and compute gradients.
+
+We can define these rules by setting the \texttt{@rules} field of the \texttt{Primitive} object.
+We start with the stablehlo rule.
+It takes as inputs \texttt{FuncValue} objects and returns a list of \texttt{FuncValue} object.
+This is exactly what the inference functions from the \CRANpkg{stablehlo} do, so we can just use it:
+
+Next, we define the backward rule.
+It is expected to be a function with the following arguments:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{inputs}: The inputs to the primitive function during the forward pass.
+\item
+  \texttt{outputs}: The outputs of the primitive function during the forward pass.
+\item
+  \texttt{grads}: The gradients of the outputs of the primitive function during the backward pass.
+\item
+  \texttt{required}: A logical vector indicating which inputs require a gradient.
+\end{itemize}
+
+The \texttt{inputs}, \texttt{outputs} and \texttt{grads} are list of \texttt{GraphBox} objects and the function should return a list of the same length as the inputs.
+The values of this list must either be a \texttt{GraphBox} containing the gradient of the input with respect to the output (respecting the chain rule),
+or \texttt{NULL} if the input does not require a gradient.
+The \texttt{required} argument is a logical vector indicating which inputs require a gradient.
+
+From this implementation we can see that any primitive operations that can be expressed in terms of StableHLO operations can easily be added.
+While this is already quite powerful, there are cases where this is not enough.
+For this reason, it is in principle possible to implement custom calls that perform arbitrary operations defined in C++, possibly using CUDA.
+This is not super ergonomic yet, but this could be improved if it shows to be necessary.
+
+\subsubsection{New Transformations}\label{new-transformations}
+
+One exciting possiblity that \CRANpkg{anvil} provides is the ability to
+
+\subsubsection{Custom Backends}\label{custom-backends}
+
+\subsection{Benchmarks}\label{benchmarks}
+
+\subsubsection{Mention static shapes}\label{mention-static-shapes}
+
+\subsection{Discussion}\label{discussion}
+
+With the \CRANpkg{anvil} package, we are trying to bring high-performance numerical computing to the R language.
+While the compiled programs can considerably speed up certain types of programs, there are some limitations to the approach:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  We only support gradients for functions with scalar output and hence there is not yet support for Jacobians or Hessians.
+\item
+  No forward-mode automatic differentiation.
+\item
+  The programs have static shapes and need to be re-compiled for each new unique input shape.
+\end{enumerate}
+
+By releasing the package in a rather early stage, we hope to gather feedback from the community in order to prioritize features depending on the needs of the R community.
+
+\bibliography{references.bib}
+
+\address{%
+Sebastian Fischer\\
+LMU MunichMunich Center for Machine Learning\\%
+Department of Statistics\\ Ludwig-Maximilians-Universität Munich\\ Ludwigstr. 33, 80539 Munich, Germany\\
+%
+%
+\textit{ORCiD: \href{https://orcid.org/0000-0002-9609-3197}{0000-0002-9609-3197}}\\%
+\href{mailto:sebastian.fischer@stat.uni-muenchen.de}{\nolinkurl{sebastian.fischer@stat.uni-muenchen.de}}%
+}
+
+\address{%
+Daniel Falbel\\
+Posit Software, PBC\\%
+\\
+%
+%
+\textit{ORCiD: \href{https://orcid.org/0000-0002-0912-0225}{0000-0002-0912-0225}}\\%
+%
+}
+
+\address{%
+Thomas Kalinowski\\
+Posit Software, PBC\\%
+\\
+%
+%
+%
+%
+}
+
+\address{%
+Niko German\\
+LMU Munich\\%
+\\
+%
+%
+\textit{ORCiD: \href{https://orcid.org/0009-0001-7394-8367}{0009-0001-7394-8367}}\\%
+%
+}
+
+\address{%
+Martin Binder\\
+LMU MunichMunich Center for Machine Learning\\%
+\\
+%
+%
+\textit{ORCiD: \href{https://orcid.org/0009-0008-2578-2869}{0009-0008-2578-2869}}\\%
+%
+}
+
+\address{%
+Bernd Bischl\\
+LMU MunichMunich Center for Machine Learning\\%
+\\
+%
+%
+\textit{ORCiD: \href{https://orcid.org/0000-0001-6002-6980}{0000-0001-6002-6980}}\\%
+%
+}
