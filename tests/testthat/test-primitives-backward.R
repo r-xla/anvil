@@ -233,6 +233,77 @@ test_that("broadcasting", {
   expect_equal(out[[2L]], nv_tensor(0.5, shape = c(1, 2)))
 })
 
+test_that("p_cholesky", {
+  # Gradient of sum(chol(A)) w.r.t. A
+  f <- function(A) {
+    L <- nvl_cholesky(A, lower = TRUE)
+    nv_reduce_sum(L, dims = c(1L, 2L))
+  }
+  g <- jit(gradient(f))
+  A <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
+  grad_A <- as_array(g(A)$A)
+
+  # Numerical gradient (symmetric perturbation)
+  eps <- 1e-7
+  A_r <- matrix(c(4, 2, 2, 3), nrow = 2)
+  f_num <- function(A) sum(t(chol(A)))
+  grad_num <- matrix(0, 2, 2)
+  for (i in 1:2) {
+    for (j in i:2) {
+      D <- matrix(0, 2, 2)
+      D[i, j] <- 1
+      D[j, i] <- 1
+      val <- (f_num(A_r + eps * D) - f_num(A_r - eps * D)) / (2 * eps)
+      if (i == j) {
+        grad_num[i, j] <- val
+      } else {
+        grad_num[i, j] <- val / 2
+        grad_num[j, i] <- val / 2
+      }
+    }
+  }
+  expect_equal(grad_A, grad_num, tolerance = 1e-5)
+})
+
+test_that("p_triangular_solve", {
+  # Gradient of sum(solve(L, b)) w.r.t. L and b
+  f <- function(L, b) {
+    x <- nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+    nv_reduce_sum(x, dims = c(1L, 2L))
+  }
+  g <- jit(gradient(f))
+  L <- nv_tensor(matrix(c(3, 1, 0, 2), nrow = 2), dtype = "f64")
+  b <- nv_tensor(matrix(c(6, 5), nrow = 2), dtype = "f64")
+  result <- g(L, b)
+
+  # Numerical gradient
+  eps <- 1e-7
+  L_r <- matrix(c(3, 1, 0, 2), nrow = 2)
+  b_r <- c(6, 5)
+  f_num <- function(L, b) sum(forwardsolve(L, b))
+  grad_L_num <- matrix(0, 2, 2)
+  for (i in 1:2) {
+    for (j in 1:2) {
+      Lp <- L_r
+      Lp[i, j] <- Lp[i, j] + eps
+      Lm <- L_r
+      Lm[i, j] <- Lm[i, j] - eps
+      grad_L_num[i, j] <- (f_num(Lp, b_r) - f_num(Lm, b_r)) / (2 * eps)
+    }
+  }
+  expect_equal(as_array(result$L), grad_L_num, tolerance = 1e-5)
+
+  grad_b_num <- matrix(0, 2, 1)
+  for (i in 1:2) {
+    bp <- b_r
+    bp[i] <- bp[i] + eps
+    bm <- b_r
+    bm[i] <- bm[i] - eps
+    grad_b_num[i, 1] <- (f_num(L_r, bp) - f_num(L_r, bm)) / (2 * eps)
+  }
+  expect_equal(as_array(result$b), grad_b_num, tolerance = 1e-5)
+})
+
 test_that("p_if", {
   # TODO:
   #f <- jit(gradient(

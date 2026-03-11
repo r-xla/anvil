@@ -1165,6 +1165,59 @@ nv_matmul <- function(lhs, rhs) {
   )
 }
 
+#' @title Solve Linear System
+#' @description
+#' Solves the linear system `a %*% x = b` for `x`, where `a` is a square matrix.
+#' Uses Cholesky decomposition internally, so `a` must be symmetric
+#' positive-definite.
+#' @section Shapes:
+#' - `a`: `(n, n)`
+#' - `b`: `(n, k)` or `(n, 1)`
+#' - output: same shape as `b`
+#' @param a ([`tensorish`])\cr
+#'   Symmetric positive-definite matrix with at least 2 dimensions.
+#' @param b ([`tensorish`])\cr
+#'   Right-hand side matrix or vector. Must have the same data type as `a`.
+#' @return [`tensorish`]\cr
+#'   The solution `x` such that `a %*% x = b`.
+#' @title Cholesky Decomposition
+#' @description
+#' Computes the Cholesky decomposition of a symmetric positive-definite matrix.
+#' @param a ([`tensorish`])\cr
+#'   Symmetric positive-definite matrix with at least 2 dimensions.
+#' @param lower (`logical(1)`)\cr
+#'   If `TRUE` (default), compute the lower triangular factor `L` such that
+#'   `a = L %*% t(L)`. If `FALSE`, compute the upper triangular factor `U`
+#'   such that `a = t(U) %*% U`.
+#' @return [`tensorish`]\cr
+#'   Triangular matrix with the same shape and data type as the input.
+#' @seealso [nv_solve()], [nvl_cholesky()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   a <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+#'   nv_cholesky(a)
+#' })
+#' @export
+nv_cholesky <- function(a, lower = TRUE) {
+  nvl_cholesky(a, lower = lower)
+}
+
+#' @seealso [nvl_cholesky()], [nvl_triangular_solve()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   a <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+#'   b <- nv_tensor(matrix(c(1, 2), nrow = 2), dtype = "f32")
+#'   nv_solve(a, b)
+#' })
+#' @export
+nv_solve <- function(a, b) {
+  L <- nvl_cholesky(a, lower = TRUE)
+  # Solve L @ y = b
+  y <- nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+  # Solve L^T @ x = y
+  nvl_triangular_solve(L, y, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
+}
+
 #' @title Sum Reduction
 #' @description
 #' Sums tensor elements along the specified dimensions.

@@ -466,3 +466,18 @@ p_gather[["stablehlo"]] <- function(
 
   list(result)
 }
+
+p_cholesky[["stablehlo"]] <- function(operand, lower) {
+  list(stablehlo::hlo_cholesky(operand, lower = lower))
+}
+
+p_triangular_solve[["stablehlo"]] <- function(a, b, left_side, lower, unit_diagonal, transpose_a) {
+  list(stablehlo::hlo_triangular_solve(
+    a,
+    b,
+    left_side = left_side,
+    lower = lower,
+    unit_diagonal = unit_diagonal,
+    transpose_a = transpose_a
+  ))
+}

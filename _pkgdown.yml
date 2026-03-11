@@ -19,6 +19,8 @@ navbar:
       menu:
       - text: Logistic Regression
         href: articles/logistic-regression.html
+      - text: Gaussian Process
+        href: articles/gaussian-process.html
     articles:
       text: Articles
       menu:
@@ -162,6 +164,8 @@ reference:
     desc: Linear algebra operations
     contents:
       - nv_matmul
+      - nv_cholesky
+      - nv_solve
 
   - title: Logical and bitwise operations
     desc: Logical and bitwise operations on tensors

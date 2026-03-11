@@ -443,6 +443,34 @@ describe("p_while", {
   })
 })
 
+test_that("p_cholesky", {
+  A <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
+  L <- as_array(jit(function(A) nvl_cholesky(A, lower = TRUE))(A))
+  expect_equal(L[1, 1], 2)
+  expect_equal(L[2, 1], 1)
+  expect_equal(L[2, 2], sqrt(2), tolerance = 1e-10)
+  # Verify L %*% t(L) = A
+  expect_equal(L %*% t(L), matrix(c(4, 2, 2, 3), nrow = 2), tolerance = 1e-10)
+})
+
+test_that("p_triangular_solve", {
+  # Solve L %*% x = b where L = [[3, 0], [1, 2]]
+  L <- nv_tensor(matrix(c(3, 1, 0, 2), nrow = 2), dtype = "f64")
+  b <- nv_tensor(matrix(c(6, 5), nrow = 2), dtype = "f64")
+  x <- as_array(jit(function(L, b) {
+    nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+  })(L, b))
+  # x = L^{-1} b: 3*x1 = 6 -> x1 = 2; x1 + 2*x2 = 5 -> x2 = 1.5
+  expect_equal(c(x), c(2, 1.5), tolerance = 1e-10)
+
+  # Verify: solve with TRANSPOSE
+  x2 <- as_array(jit(function(L, b) {
+    nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
+  })(L, b))
+  # L^T x = b: [[3,1],[0,2]] x = [6,5] -> 2*x2=5 -> x2=2.5; 3*x1+x2=6 -> x1=7/6
+  expect_equal(c(x2), c(7 / 6, 2.5), tolerance = 1e-10)
+})
+
 
 test_that("error when multiplying lists in if-statement", {
   f <- jit(function(pred, x) {

@@ -1,0 +1,235 @@
+---
+title: "Gaussian Process"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Gaussian Process}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+In this vignette, we implement a Gaussian Process (GP) regression model from scratch.
+
+## Background
+
+A Gaussian Process is a distribution over functions, fully specified by a mean function $m(x)$ and
+a covariance (kernel) function $k(x, x')$.
+Given $n$ training observations $\mathbf{y}$ at inputs $\mathbf{X}$, the GP posterior predictive
+distribution at new inputs $\mathbf{X}_*$ is:
+
+$$\mathbf{f}_* | \mathbf{X}, \mathbf{y}, \mathbf{X}_* \sim \mathcal{N}(\boldsymbol{\mu}_*, \boldsymbol{\Sigma}_*)$$
+
+where
+
+$$\boldsymbol{\mu}_* = K(\mathbf{X}_*, \mathbf{X}) \, K(\mathbf{X}, \mathbf{X})^{-1} \, \mathbf{y}$$
+$$\boldsymbol{\Sigma}_* = K(\mathbf{X}_*, \mathbf{X}_*) - K(\mathbf{X}_*, \mathbf{X}) \, K(\mathbf{X}, \mathbf{X})^{-1} \, K(\mathbf{X}, \mathbf{X}_*)$$
+
+We will use the squared exponential (RBF) kernel:
+
+$$k(x, x') = \sigma_f^2 \exp\!\left(-\frac{(x - x')^2}{2 \ell^2}\right)$$
+
+with lengthscale $\ell$ and signal variance $\sigma_f^2$.
+
+## Data
+
+We generate synthetic data from a noisy sinusoidal function.
+
+```{r}
+library(anvil)
+set.seed(42)
+
+n_train <- 20
+noise_sd <- 0.2
+
+X_train <- sort(runif(n_train, -5, 5))
+y_train <- sin(X_train) + rnorm(n_train, sd = noise_sd)
+
+n_test <- 100
+X_test <- seq(-6, 6, length.out = n_test)
+
+plot(X_train, y_train, pch = 19, xlab = "x", ylab = "y", main = "Training Data")
+curve(sin, from = -6, to = 6, add = TRUE, col = "blue", lwd = 2)
+legend("topright", legend = c("Observations", "True function"),
+  pch = c(19, NA), lty = c(NA, 1), col = c("black", "blue"), lwd = c(NA, 2))
+```
+
+## Kernel
+
+The squared exponential kernel computes pairwise distances between input points and applies the RBF
+formula.
+We parameterize it with log-transformed hyperparameters for unconstrained optimization.
+
+```{r}
+rbf_kernel <- function(X1, X2, log_lengthscale, log_signal_var) {
+  lengthscale <- exp(log_lengthscale)
+  signal_var <- exp(log_signal_var)
+
+  # Compute squared distances: ||x - x'||^2 = ||x||^2 - 2 x^T x' + ||x'||^2
+  # X1 is (n, d), X2 is (m, d)
+  sq1 <- nv_reduce_sum(X1 * X1, dims = 2L, drop = FALSE) # (n, 1)
+  sq2 <- nv_reduce_sum(X2 * X2, dims = 2L, drop = FALSE) # (m, 1)
+  cross <- X1 %*% t(X2) # (n, m)
+  # Broadcast: (n,1) and (1,m) to (n,m)
+  sq_dist <- nv_broadcast_to(sq1, shape(cross)) -
+    2 * cross +
+    nv_broadcast_to(t(sq2), shape(cross))
+
+  signal_var * exp(-sq_dist / (2 * lengthscale^2))
+}
+```
+
+## Marginal Likelihood
+
+The log marginal likelihood of the GP is:
+
+$$\log p(\mathbf{y} | \mathbf{X}, \boldsymbol{\theta}) = -\frac{1}{2} \mathbf{y}^\top K_y^{-1} \mathbf{y} - \frac{1}{2} \log |K_y| - \frac{n}{2} \log 2\pi$$
+
+where $K_y = K(\mathbf{X}, \mathbf{X}) + \sigma_n^2 I$ includes the noise variance.
+
+Using the Cholesky decomposition $L = \text{chol}(K_y)$, we can compute this efficiently:
+
+- $K_y^{-1} \mathbf{y} = L^{-\top} L^{-1} \mathbf{y}$ (two triangular solves via `nv_solve`)
+- $\log |K_y| = 2 \sum_i \log L_{ii}$
+
+```{r}
+neg_log_marginal_likelihood <- function(X, y, log_lengthscale, log_signal_var, log_noise_var) {
+  n <- shape_abstract(y)[1L]
+  noise_var <- exp(log_noise_var)
+
+  K <- rbf_kernel(X, X, log_lengthscale, log_signal_var)
+  # Add noise variance to diagonal: K_y = K + sigma_n^2 * I
+  noise_diag <- noise_var * nv_tensor(diag(n), dtype = dtype_abstract(K))
+  K_y <- K + noise_diag
+
+  L <- nvl_cholesky(K_y, lower = TRUE)
+
+  # alpha = K_y^{-1} y = solve(K_y, y)
+  alpha <- nv_solve(K_y, y)
+
+  # Data fit term: 0.5 * y^T @ alpha
+  data_fit <- 0.5 * nv_reduce_sum(y * alpha, dims = c(1L, 2L))
+
+  # Log determinant: sum(log(diag(L)))
+  # Extract diagonal using a mask
+  diag_mask <- nv_tensor(diag(n), dtype = dtype_abstract(L))
+  diag_L <- nv_reduce_sum(L * diag_mask, dims = 2L)
+  log_det <- nv_reduce_sum(log(diag_L), dims = 1L)
+
+  # Constant term
+  const <- 0.5 * n * log(2 * pi)
+
+  data_fit + log_det + const
+}
+```
+
+## Hyperparameter Optimization
+
+We optimize the kernel hyperparameters by minimizing the negative log marginal likelihood using
+gradient descent.
+
+```{r}
+X_t <- nv_tensor(matrix(X_train, ncol = 1), dtype = "f32")
+y_t <- nv_tensor(matrix(y_train, ncol = 1), dtype = "f32")
+
+params <- c("log_lengthscale", "log_signal_var", "log_noise_var")
+nll_grad <- gradient(neg_log_marginal_likelihood, wrt = params)
+
+# Training loop
+train_gp <- jit(function(X, y, log_ls, log_sv, log_nv, n_steps, lr) {
+  nv_while(
+    list(log_ls = log_ls, log_sv = log_sv, log_nv = log_nv, step = nv_scalar(0L)),
+    \(log_ls, log_sv, log_nv, step) step < n_steps,
+    \(log_ls, log_sv, log_nv, step) {
+      grads <- nll_grad(X, y, log_ls, log_sv, log_nv)
+      list(
+        log_ls = log_ls - lr * grads$log_lengthscale,
+        log_sv = log_sv - lr * grads$log_signal_var,
+        log_nv = log_nv - lr * grads$log_noise_var,
+        step = step + 1L
+      )
+    }
+  )
+})
+```
+
+```{r}
+result <- train_gp(
+  X_t, y_t,
+  log_ls = nv_scalar(0, dtype = "f32"),
+  log_sv = nv_scalar(0, dtype = "f32"),
+  log_nv = nv_scalar(-1, dtype = "f32"),
+  n_steps = nv_scalar(500L),
+  lr = nv_scalar(0.01)
+)
+
+learned_ls <- as_array(result$log_ls)
+learned_sv <- as_array(result$log_sv)
+learned_nv <- as_array(result$log_nv)
+
+cat(sprintf(
+  "Learned hyperparameters:\n  lengthscale = %.3f\n  signal_var  = %.3f\n  noise_var   = %.3f\n",
+  exp(learned_ls), exp(learned_sv), exp(learned_nv)
+))
+```
+
+## Prediction
+
+With the optimized hyperparameters, we compute the posterior predictive distribution.
+
+```{r}
+predict_gp <- jit(function(X_train, y_train, X_test, log_ls, log_sv, log_nv) {
+  noise_var <- exp(log_nv)
+  n <- shape_abstract(X_train)[1L]
+
+  # Training kernel + noise
+  K <- rbf_kernel(X_train, X_train, log_ls, log_sv)
+  K_y <- K + noise_var * nv_tensor(diag(n), dtype = dtype_abstract(K))
+
+  # Cross-covariance and test kernel
+  K_s <- rbf_kernel(X_test, X_train, log_ls, log_sv)
+  K_ss <- rbf_kernel(X_test, X_test, log_ls, log_sv)
+
+  # Predictive mean: K_s @ K_y^{-1} @ y
+  alpha <- nv_solve(K_y, y_train)
+  mu <- K_s %*% alpha
+
+  # Predictive covariance: K_ss - K_s @ K_y^{-1} @ K_s^T
+  v <- nv_solve(K_y, t(K_s))
+  cov <- K_ss - K_s %*% v
+
+  list(mu = mu, cov = cov)
+})
+
+X_test_t <- nv_tensor(matrix(X_test, ncol = 1), dtype = "f32")
+
+pred <- predict_gp(
+  X_t, y_t, X_test_t,
+  result$log_ls, result$log_sv, result$log_nv
+)
+
+mu <- as.vector(as_array(pred$mu))
+var <- diag(as_array(pred$cov))
+sd <- sqrt(pmax(var, 0))
+```
+
+## Results
+
+```{r, fig.width=7, fig.height=5}
+plot(X_test, mu, type = "l", lwd = 2, col = "red",
+  ylim = range(c(mu - 2 * sd, mu + 2 * sd, y_train)),
+  xlab = "x", ylab = "y", main = "Gaussian Process Regression")
+polygon(
+  c(X_test, rev(X_test)),
+  c(mu + 2 * sd, rev(mu - 2 * sd)),
+  col = rgb(1, 0, 0, 0.15), border = NA
+)
+lines(X_test, mu, lwd = 2, col = "red")
+points(X_train, y_train, pch = 19)
+curve(sin, from = -6, to = 6, add = TRUE, col = "blue", lwd = 2, lty = 2)
+legend("topright",
+  legend = c("GP mean", "95% interval", "Observations", "True function"),
+  lty = c(1, NA, NA, 2), lwd = c(2, NA, NA, 2), pch = c(NA, 15, 19, NA),
+  col = c("red", rgb(1, 0, 0, 0.3), "black", "blue"))
+```
+
+The GP successfully recovers the underlying sinusoidal function with well-calibrated uncertainty
+bands that widen in regions far from training data.
