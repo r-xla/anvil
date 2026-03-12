@@ -19,6 +19,8 @@ navbar:
       menu:
       - text: Logistic Regression
         href: articles/logistic-regression.html
+      - text: Hamiltonian Monte Carlo
+        href: articles/mcmc.html
     articles:
       text: Articles
       menu:

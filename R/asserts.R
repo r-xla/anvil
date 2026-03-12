@@ -8,7 +8,7 @@
 #'   Name of the variable to use in error messages.
 #' @return Invisibly returns `x` if the assertion passes.
 #' @keywords internal
-assert_shapevec <- function(x, min_len = 1L, var_name = rlang::caller_arg(x)) {
+assert_shapevec <- function(x, min_len = 0L, var_name = rlang::caller_arg(x)) {
   ok <- test_integerish(x, lower = 1, min.len = min_len, any.missing = FALSE, null.ok = FALSE)
   if (!isTRUE(ok)) {
     if (is.null(x) || !is.numeric(x)) {
