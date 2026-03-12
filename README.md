@@ -63,7 +63,7 @@ x <- nv_scalar(3.0, "f32")
 
 f_jit(a, b, x)
 #> AnvilTensor
-#>  1.0000
+#>  1
 #> [ CPUf32{} ]
 ```
 
@@ -75,12 +75,12 @@ g_jit <- jit(gradient(f, wrt = c("a", "b")))
 g_jit(a, b, x)
 #> $a
 #> AnvilTensor
-#>  3.0000
+#>  3
 #> [ CPUf32{} ] 
 #> 
 #> $b
 #> AnvilTensor
-#>  1.0000
+#>  1
 #> [ CPUf32{} ]
 ```
 

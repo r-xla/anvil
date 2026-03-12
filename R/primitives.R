@@ -2512,9 +2512,11 @@ p_cholesky <- AnvilPrimitive("cholesky")
 #' @title Primitive Cholesky Decomposition
 #' @description
 #' Computes the Cholesky decomposition of a symmetric positive-definite matrix.
+#' Dimensions before the last two are batch dimensions.
 #' @param operand ([`tensorish`])\cr
 #'   Tensorish value of data type floating-point with at least 2 dimensions.
-#'   The last two dimensions must be equal (square matrix).
+#'   The last two dimensions must be equal (square matrix); any leading
+#'   dimensions are batch dimensions.
 #' @param lower (`logical(1)`)\cr
 #'   If `TRUE`, compute the lower triangular factor `L` such that
 #'   `operand = L %*% t(L)`. If `FALSE`, compute the upper triangular
@@ -2558,11 +2560,15 @@ p_triangular_solve <- AnvilPrimitive("triangular_solve")
 #' Solves a system of linear equations with a triangular coefficient matrix.
 #' When `left_side` is `TRUE`, solves `op(a) %*% x = b` for `x`.
 #' When `left_side` is `FALSE`, solves `x %*% op(a) = b` for `x`.
+#' Dimensions before the last two are batch dimensions and must match
+#' between `a` and `b` (no broadcasting).
 #' @param a ([`tensorish`])\cr
 #'   Triangular coefficient matrix of data type floating-point with at least 2
-#'   dimensions. The last two dimensions must be equal (square matrix).
+#'   dimensions. The last two dimensions must be equal (square matrix); any
+#'   leading dimensions are batch dimensions.
 #' @param b ([`tensorish`])\cr
-#'   Right-hand side tensor. Must have the same data type and rank as `a`.
+#'   Right-hand side tensor. Must have the same data type, rank, and batch
+#'   dimensions as `a`.
 #' @param left_side (`logical(1)`)\cr
 #'   If `TRUE`, solve `op(a) %*% x = b`. If `FALSE`, solve `x %*% op(a) = b`.
 #' @param lower (`logical(1)`)\cr

@@ -9,7 +9,8 @@ nvl_cholesky(operand, lower)
 \arguments{
 \item{operand}{(\code{\link{tensorish}})\cr
 Tensorish value of data type floating-point with at least 2 dimensions.
-The last two dimensions must be equal (square matrix).}
+The last two dimensions must be equal (square matrix); any leading
+dimensions are batch dimensions.}
 
 \item{lower}{(\code{logical(1)})\cr
 If \code{TRUE}, compute the lower triangular factor \code{L} such that
@@ -24,6 +25,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Computes the Cholesky decomposition of a symmetric positive-definite matrix.
+Dimensions before the last two are batch dimensions.
 }
 \section{Implemented Rules}{
 

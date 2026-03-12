@@ -880,11 +880,32 @@ p_scatter[["backward"]] <- function(
   )
 }
 
-# Helper: create a lower triangular mask for an n x n matrix
+# Helper: create a lower triangular mask for an n x n matrix (includes diagonal)
 tril_mask <- function(n, dt) {
   rows <- nvl_iota(dim = 1L, dtype = "i32", shape = c(n, n), start = 0L)
   cols <- nvl_iota(dim = 2L, dtype = "i32", shape = c(n, n), start = 0L)
   nvl_ge(rows, cols)
+}
+
+# Helper: create an upper triangular mask for an n x n matrix (includes diagonal)
+triu_mask <- function(n, dt) {
+  rows <- nvl_iota(dim = 1L, dtype = "i32", shape = c(n, n), start = 0L)
+  cols <- nvl_iota(dim = 2L, dtype = "i32", shape = c(n, n), start = 0L)
+  rows <= cols
+}
+
+diag_mask <- function(n) {
+  nvl_iota(dim = 1L, dtype = "i32", shape = c(n, n), start = 0L) ==
+    nvl_iota(dim = 2L, dtype = "i32", shape = c(n, n), start = 0L)
+}
+
+triangular_mask <- function(n, dt, lower, unit_diagonal) {
+  mask <- if (lower) tril_mask(n, dt) else triu_mask(n, dt)
+  if (unit_diagonal) {
+    nvl_ifelse(diag_mask(n), nvl_fill(FALSE, dtype = "i1", shape = c(n, n)), mask)
+  } else {
+    mask
+  }
 }
 
 p_cholesky[["backward"]] <- function(inputs, outputs, grads, lower, .required) {
@@ -896,41 +917,46 @@ p_cholesky[["backward"]] <- function(inputs, outputs, grads, lower, .required) {
   grad <- grads[[1L]]
   n <- shape(L)[length(shape(L))]
 
-  # Zero out the upper triangle of grad (only lower triangle of L is meaningful)
-  mask <- tril_mask(n, dtype(L))
-  grad <- nvl_ifelse(mask, grad, zeros_like(grad, FALSE))
+  tri_mask <- if (lower) tril_mask(n, dtype(L)) else triu_mask(n, dtype(L))
+  grad <- nvl_ifelse(tri_mask, grad, zeros_like(grad, FALSE))
+
+  # For upper triangular, transpose to work with the lower-triangular algorithm,
+  # then transpose back at the end
+  if (!lower) {
+    L <- t(L)
+    grad <- t(grad)
+  }
 
   # Iain Murray (2016): Differentiation of the Cholesky decomposition
-  # S = L^T @ grad_L
-  S <- nv_matmul(t(L), grad)
-  # Phi = tril(S) with diagonal halved
-  half <- nvl_fill(0.5, dtype = dtype(S), shape = shape(S))
-  diag_mask <- nvl_eq(
-    nvl_iota(dim = 1L, dtype = "i32", shape = shape(S), start = 0L),
-    nvl_iota(dim = 2L, dtype = "i32", shape = shape(S), start = 0L)
-  )
-  S_sym <- nvl_ifelse(diag_mask, nvl_mul(S, half), S)
-  Phi <- nvl_ifelse(mask, S_sym, zeros_like(S_sym, FALSE))
+  # https://arxiv.org/pdf/1602.07527
+  # Equation (10): tril(Sigma_bar) = Phi(L^{-T} (P + P^T) L^{-1})
+  # where P = Phi(L^T L_bar) and Phi takes the lower triangle and halves the diagonal.
+  # We implement this as:
+  #   P = Phi(L^T @ grad)
+  #   S = L^{-T} P L^{-1}  (via two triangular solves)
+  #   grad_A = (S + S^T) / 2  (symmetrize for the full-matrix gradient convention)
+  P <- nv_matmul(t(L), grad)
+  half <- nvl_fill(0.5, dtype = dtype(P), shape = shape(P))
+  dmask <- diag_mask(n)
+  P <- nvl_ifelse(dmask, nvl_mul(P, half), P)
+  lower_mask <- tril_mask(n, dtype(P))
+  P <- nvl_ifelse(lower_mask, P, zeros_like(P, FALSE))
 
-  # grad_A = L^{-T} @ Phi @ L^{-1}, then symmetrize
-  # Step 1: U = L^{-T} @ Phi  (solve L^T U = Phi)
-  U <- nvl_triangular_solve(L, Phi, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
-  # Step 2: grad_raw = U @ L^{-1}  (solve grad_raw @ L = U, i.e. right-side solve)
-  grad_raw <- nvl_triangular_solve(
-    L,
-    U,
-    left_side = FALSE,
-    lower = TRUE,
-    unit_diagonal = FALSE,
-    transpose_a = "NO_TRANSPOSE"
-  )
-  # Symmetrize: cholesky is defined on symmetric matrices
-  half <- nvl_fill(0.5, dtype = dtype(grad_raw), shape = shape(grad_raw))
-  grad_A <- nvl_mul(nvl_add(grad_raw, t(grad_raw)), half)
+  # S = L^{-T} P L^{-1}
+  S <- nvl_triangular_solve(L, P, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
+  S <- nvl_triangular_solve(L, S, left_side = FALSE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+
+  half <- nvl_fill(0.5, dtype = dtype(S), shape = shape(S))
+  grad_A <- nvl_mul(nvl_add(S, t(S)), half)
 
   list(grad_A)
 }
 
+# Giles (2008): An extended collection of matrix derivative results for forward
+# and reverse mode algorithmic differentiation, Section 2.3.1.
+# https://people.maths.ox.ac.uk/gilesm/files/NA-08-01.pdf
+# For C = A^{-1} B: B_bar = A^{-T} C_bar, A_bar = -B_bar C^T
+# Applied here with triangular structure and masking.
 p_triangular_solve[["backward"]] <- function(
   inputs,
   outputs,
@@ -945,10 +971,8 @@ p_triangular_solve[["backward"]] <- function(
   x <- outputs[[1L]]
   grad <- grads[[1L]]
 
-  # Determine the transpose mode for the adjoint solve
   adj_transpose <- if (transpose_a == "TRANSPOSE") "NO_TRANSPOSE" else "TRANSPOSE"
 
-  # grad_b is needed for grad_a, so always compute it when grad_a is required
   need_grad_b <- .required[[1L]] || .required[[2L]]
 
   if (left_side) {
@@ -966,7 +990,7 @@ p_triangular_solve[["backward"]] <- function(
     grad_a <- if (.required[[1L]]) {
       raw <- nvl_negate(nv_matmul(grad_b, t(x)))
       n <- shape(a)[length(shape(a))]
-      mask <- if (lower) tril_mask(n, dtype(a)) else nvl_not(tril_mask(n, dtype(a)))
+      mask <- triangular_mask(n, dtype(a), lower, unit_diagonal)
       if (transpose_a != "NO_TRANSPOSE") {
         raw <- t(raw)
       }
@@ -988,7 +1012,7 @@ p_triangular_solve[["backward"]] <- function(
     grad_a <- if (.required[[1L]]) {
       raw <- nvl_negate(nv_matmul(t(x), grad_b))
       n <- shape(a)[length(shape(a))]
-      mask <- if (lower) tril_mask(n, dtype(a)) else nvl_not(tril_mask(n, dtype(a)))
+      mask <- triangular_mask(n, dtype(a), lower, unit_diagonal)
       if (transpose_a != "NO_TRANSPOSE") {
         raw <- t(raw)
       }

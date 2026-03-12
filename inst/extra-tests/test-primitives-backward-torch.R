@@ -782,3 +782,147 @@ test_that("p_remainder", {
     gen_rhs = gen_nonzero # Avoid zero divisors
   )
 })
+
+gen_spd_matrix <- function(n) {
+  R <- matrix(rnorm(n * n), n, n)
+  A <- R %*% t(R) + diag(n)
+  array(A, dim = c(n, n))
+}
+
+gen_tri_matrix <- function(n, lower, unit_diagonal) {
+  M <- matrix(0, n, n)
+  if (lower) {
+    M[lower.tri(M, diag = TRUE)] <- rnorm(n * (n + 1) / 2)
+  } else {
+    M[upper.tri(M, diag = TRUE)] <- rnorm(n * (n + 1) / 2)
+  }
+  if (unit_diagonal) {
+    diag(M) <- 1
+  }
+  M
+}
+
+describe("p_cholesky", {
+  verify_cholesky_grad <- function(lower) {
+    n <- sample(2:4, 1L)
+    A_r <- gen_spd_matrix(n)
+
+    A_anvil <- nv_tensor(A_r, dtype = "f64")
+    A_torch <- torch::torch_tensor(A_r, requires_grad = TRUE, dtype = torch::torch_float64())
+
+    f_anvil <- function(A) {
+      L <- nvl_cholesky(A, lower = lower)
+      nv_reduce_sum(L, dims = c(1L, 2L))
+    }
+    grad_anvil <- as_array(jit(gradient(f_anvil))(A_anvil)[[1L]])
+
+    L_torch <- torch::linalg_cholesky(A_torch)
+    if (!lower) {
+      L_torch <- L_torch$t()
+    }
+    torch::torch_sum(L_torch)$backward()
+    grad_torch <- as_array_torch(A_torch$grad)
+
+    expect_equal(grad_anvil, grad_torch, tolerance = 1e-5)
+  }
+
+  it("lower = TRUE", verify_cholesky_grad(lower = TRUE))
+  it("lower = FALSE", verify_cholesky_grad(lower = FALSE))
+})
+
+describe("p_triangular_solve", {
+  verify_triangular_solve_grad <- function(left_side, lower, transpose_a, unit_diagonal) {
+    n <- sample(2:4, 1L)
+    m <- sample(1:3, 1L)
+    a_r <- gen_tri_matrix(n, lower, unit_diagonal)
+    b_r <- if (left_side) array(rnorm(n * m), c(n, m)) else array(rnorm(m * n), c(m, n))
+
+    a_anvil <- nv_tensor(a_r, dtype = "f64")
+    b_anvil <- nv_tensor(b_r, dtype = "f64")
+
+    a_torch <- torch::torch_tensor(a_r, requires_grad = TRUE, dtype = torch::torch_float64())
+    b_torch <- torch::torch_tensor(b_r, requires_grad = TRUE, dtype = torch::torch_float64())
+
+    f_anvil <- function(a, b) {
+      x <- nvl_triangular_solve(
+        a,
+        b,
+        left_side = left_side,
+        lower = lower,
+        unit_diagonal = unit_diagonal,
+        transpose_a = transpose_a
+      )
+      nv_reduce_sum(x, dims = c(1L, 2L))
+    }
+    grads_anvil <- jit(gradient(f_anvil))(a_anvil, b_anvil)
+
+    is_upper <- if (transpose_a == "TRANSPOSE") lower else !lower
+    a_effective <- if (transpose_a == "TRANSPOSE") a_torch$t() else a_torch
+    x_torch <- torch::linalg_solve_triangular(
+      a_effective,
+      b_torch,
+      upper = is_upper,
+      left = left_side,
+      unitriangular = unit_diagonal
+    )
+    torch::torch_sum(x_torch)$backward()
+
+    expect_equal(as_array(grads_anvil[[1L]]), as_array_torch(a_torch$grad), tolerance = 1e-5)
+    expect_equal(as_array(grads_anvil[[2L]]), as_array_torch(b_torch$grad), tolerance = 1e-5)
+  }
+
+  it(
+    "left_side, lower, no transpose",
+    verify_triangular_solve_grad(
+      left_side = TRUE,
+      lower = TRUE,
+      transpose_a = "NO_TRANSPOSE",
+      unit_diagonal = FALSE
+    )
+  )
+  it(
+    "left_side, lower, transpose",
+    verify_triangular_solve_grad(
+      left_side = TRUE,
+      lower = TRUE,
+      transpose_a = "TRANSPOSE",
+      unit_diagonal = FALSE
+    )
+  )
+  it(
+    "left_side, upper, no transpose",
+    verify_triangular_solve_grad(
+      left_side = TRUE,
+      lower = FALSE,
+      transpose_a = "NO_TRANSPOSE",
+      unit_diagonal = FALSE
+    )
+  )
+  it(
+    "right_side, lower, no transpose",
+    verify_triangular_solve_grad(
+      left_side = FALSE,
+      lower = TRUE,
+      transpose_a = "NO_TRANSPOSE",
+      unit_diagonal = FALSE
+    )
+  )
+  it(
+    "right_side, upper, transpose",
+    verify_triangular_solve_grad(
+      left_side = FALSE,
+      lower = FALSE,
+      transpose_a = "TRANSPOSE",
+      unit_diagonal = FALSE
+    )
+  )
+  it(
+    "left_side, lower, unit_diagonal",
+    verify_triangular_solve_grad(
+      left_side = TRUE,
+      lower = TRUE,
+      transpose_a = "NO_TRANSPOSE",
+      unit_diagonal = TRUE
+    )
+  )
+})

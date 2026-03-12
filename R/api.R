@@ -1165,26 +1165,14 @@ nv_matmul <- function(lhs, rhs) {
   )
 }
 
-#' @title Solve Linear System
-#' @description
-#' Solves the linear system `a %*% x = b` for `x`, where `a` is a square matrix.
-#' Uses Cholesky decomposition internally, so `a` must be symmetric
-#' positive-definite.
-#' @section Shapes:
-#' - `a`: `(n, n)`
-#' - `b`: `(n, k)` or `(n, 1)`
-#' - output: same shape as `b`
-#' @param a ([`tensorish`])\cr
-#'   Symmetric positive-definite matrix with at least 2 dimensions.
-#' @param b ([`tensorish`])\cr
-#'   Right-hand side matrix or vector. Must have the same data type as `a`.
-#' @return [`tensorish`]\cr
-#'   The solution `x` such that `a %*% x = b`.
 #' @title Cholesky Decomposition
 #' @description
 #' Computes the Cholesky decomposition of a symmetric positive-definite matrix.
+#' Supports batched inputs: dimensions before the last two are batch dimensions.
 #' @param a ([`tensorish`])\cr
 #'   Symmetric positive-definite matrix with at least 2 dimensions.
+#'   The last two dimensions form the square matrix; any leading dimensions
+#'   are batch dimensions.
 #' @param lower (`logical(1)`)\cr
 #'   If `TRUE` (default), compute the lower triangular factor `L` such that
 #'   `a = L %*% t(L)`. If `FALSE`, compute the upper triangular factor `U`
@@ -1202,7 +1190,27 @@ nv_cholesky <- function(a, lower = TRUE) {
   nvl_cholesky(a, lower = lower)
 }
 
-#' @seealso [nvl_cholesky()], [nvl_triangular_solve()]
+#' @title Solve Linear System
+#' @description
+#' Solves the linear system `a %*% x = b` for `x`, where `a` is a symmetric
+#' positive-definite matrix. Uses Cholesky decomposition internally.
+#' Supports batched inputs: `a` and `b` must have the same batch dimensions
+#' (all dimensions before the last two).
+#' @section Shapes:
+#' - `a`: `(..., n, n)`
+#' - `b`: `(..., n, k)`
+#' - output: same shape as `b`
+#'
+#' where `...` are zero or more batch dimensions that must match between
+#' `a` and `b`.
+#' @param a ([`tensorish`])\cr
+#'   Symmetric positive-definite matrix.
+#' @param b ([`tensorish`])\cr
+#'   Right-hand side matrix or vector. Must have the same data type and batch
+#'   dimensions as `a`.
+#' @return [`tensorish`]\cr
+#'   The solution `x` such that `a %*% x = b`.
+#' @seealso [nv_cholesky()], [nvl_cholesky()], [nvl_triangular_solve()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   a <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
@@ -1216,6 +1224,51 @@ nv_solve <- function(a, b) {
   y <- nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
   # Solve L^T @ x = y
   nvl_triangular_solve(L, y, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
+}
+
+#' @title Diagonal Matrix
+#' @description
+#' Creates a diagonal matrix from a 1-D tensor.
+#' @param x ([`tensorish`])\cr
+#'   A 1-D tensor of length `n` whose elements become the diagonal entries.
+#' @return [`tensorish`]\cr
+#'   An `n x n` matrix with `x` on the diagonal and zeros elsewhere.
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   nv_diag(nv_tensor(c(1, 2, 3)))
+#' })
+#' @export
+nv_diag <- function(x) {
+  n <- shape_abstract(x)[1L]
+  zeros <- nv_fill(0, c(n, n), dtype = dtype_abstract(x))
+  result <- nv_while(
+    list(mat = zeros, i = nv_scalar(1L)),
+    \(mat, i) i <= n,
+    \(mat, i) {
+      mat[i, i] <- x[i]
+      list(
+        mat = mat,
+        i = i + 1L
+      )
+    }
+  )
+  result$mat
+}
+
+#' @title Identity Matrix
+#' @description
+#' Creates an `n x n` identity matrix.
+#' @param n (`integer(1)`)\cr
+#'   Size of the identity matrix.
+#' @template param_dtype
+#' @return [`tensorish`]\cr
+#'   An `n x n` identity matrix.
+#' @seealso [nv_diag()] for general diagonal matrices.
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval(nv_eye(3L))
+#' @export
+nv_eye <- function(n, dtype = "f32") {
+  nv_diag(nv_fill(1, n, dtype = dtype))
 }
 
 #' @title Sum Reduction

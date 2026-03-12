@@ -9,10 +9,12 @@ nvl_triangular_solve(a, b, left_side, lower, unit_diagonal, transpose_a)
 \arguments{
 \item{a}{(\code{\link{tensorish}})\cr
 Triangular coefficient matrix of data type floating-point with at least 2
-dimensions. The last two dimensions must be equal (square matrix).}
+dimensions. The last two dimensions must be equal (square matrix); any
+leading dimensions are batch dimensions.}
 
 \item{b}{(\code{\link{tensorish}})\cr
-Right-hand side tensor. Must have the same data type and rank as \code{a}.}
+Right-hand side tensor. Must have the same data type, rank, and batch
+dimensions as \code{a}.}
 
 \item{left_side}{(\code{logical(1)})\cr
 If \code{TRUE}, solve \code{op(a) \%*\% x = b}. If \code{FALSE}, solve \code{x \%*\% op(a) = b}.}
@@ -35,6 +37,8 @@ It is ambiguous if both \code{a} and \code{b} are ambiguous.
 Solves a system of linear equations with a triangular coefficient matrix.
 When \code{left_side} is \code{TRUE}, solves \code{op(a) \%*\% x = b} for \code{x}.
 When \code{left_side} is \code{FALSE}, solves \code{x \%*\% op(a) = b} for \code{x}.
+Dimensions before the last two are batch dimensions and must match
+between \code{a} and \code{b} (no broadcasting).
 }
 \section{Implemented Rules}{
 

@@ -166,6 +166,8 @@ reference:
       - nv_matmul
       - nv_cholesky
       - nv_solve
+      - nv_diag
+      - nv_eye
 
   - title: Logical and bitwise operations
     desc: Logical and bitwise operations on tensors

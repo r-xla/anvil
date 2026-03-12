@@ -8,27 +8,32 @@ nv_solve(a, b)
 }
 \arguments{
 \item{a}{(\code{\link{tensorish}})\cr
-Symmetric positive-definite matrix with at least 2 dimensions.}
+Symmetric positive-definite matrix.}
 
 \item{b}{(\code{\link{tensorish}})\cr
-Right-hand side matrix or vector. Must have the same data type as \code{a}.}
+Right-hand side matrix or vector. Must have the same data type and batch
+dimensions as \code{a}.}
 }
 \value{
 \code{\link{tensorish}}\cr
 The solution \code{x} such that \code{a \%*\% x = b}.
 }
 \description{
-Solves the linear system \code{a \%*\% x = b} for \code{x}, where \code{a} is a square matrix.
-Uses Cholesky decomposition internally, so \code{a} must be symmetric
-positive-definite.
+Solves the linear system \code{a \%*\% x = b} for \code{x}, where \code{a} is a symmetric
+positive-definite matrix. Uses Cholesky decomposition internally.
+Supports batched inputs: \code{a} and \code{b} must have the same batch dimensions
+(all dimensions before the last two).
 }
 \section{Shapes}{
 
 \itemize{
-\item \code{a}: \verb{(n, n)}
-\item \code{b}: \verb{(n, k)} or \verb{(n, 1)}
+\item \code{a}: \verb{(..., n, n)}
+\item \code{b}: \verb{(..., n, k)}
 \item output: same shape as \code{b}
 }
+
+where \code{...} are zero or more batch dimensions that must match between
+\code{a} and \code{b}.
 }
 
 \examples{
@@ -41,5 +46,5 @@ jit_eval({
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_cholesky]{nvl_cholesky()}}, \code{\link[=nvl_triangular_solve]{nvl_triangular_solve()}}
+\code{\link[=nv_cholesky]{nv_cholesky()}}, \code{\link[=nvl_cholesky]{nvl_cholesky()}}, \code{\link[=nvl_triangular_solve]{nvl_triangular_solve()}}
 }
