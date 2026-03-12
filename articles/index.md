@@ -7,6 +7,7 @@
 - [Internals](https://r-xla.github.io/anvil/articles/internals.md):
 - [Logistic
   Regression](https://r-xla.github.io/anvil/articles/logistic-regression.md):
+- [Metropolis-Hastings](https://r-xla.github.io/anvil/articles/metropolis-hastings.md):
 - [Adding a
   Primitive](https://r-xla.github.io/anvil/articles/new_primitive.md):
 - [Primitives

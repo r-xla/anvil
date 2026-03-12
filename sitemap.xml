@@ -1,6 +1,7 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://r-xla.github.io/anvil/404.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/AGENTS.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/CLAUDE.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/LICENSE-text.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/LICENSE.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/articles/anvil.html</loc></url>
@@ -8,6 +9,7 @@
 <url><loc>https://r-xla.github.io/anvil/articles/index.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/articles/internals.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/articles/logistic-regression.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/articles/metropolis-hastings.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/articles/new_primitive.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/articles/primitives.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/articles/random-numbers.html</loc></url>
