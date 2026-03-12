@@ -1,6 +1,11 @@
 url: https://r-xla.github.io/anvil/
 destination: docs
 
+development:
+  mode: auto
+  version_label: default
+  version_tooltip: "Version"
+
 template:
   bootstrap: 5
   light-switch: true
