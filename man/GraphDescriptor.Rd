@@ -14,6 +14,7 @@ GraphDescriptor(
   inputs = list(),
   outputs = list(),
   is_static_flat = NULL,
+  static_args_flat = NULL,
   devices = character()
 )
 }
@@ -47,6 +48,9 @@ The outputs of the graph.}
 \item{is_static_flat}{(\code{NULL | logical()})\cr
 Boolean mask indicating which flat positions in \code{in_tree} are static (non-tensor) args.
 \code{NULL} when all args are tensor inputs.}
+
+\item{static_args_flat}{(\code{NULL | list()})\cr
+Flattened traced values for the static arguments indicated by \code{is_static_flat}.}
 
 \item{devices}{(\code{character()})\cr
 Device platforms encountered during tracing (e.g. \code{"cpu"}, \code{"cuda"}).

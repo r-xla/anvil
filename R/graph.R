@@ -132,6 +132,8 @@ PrimitiveCall <- function(primitive, inputs, params, outputs) {
 #' @param is_static_flat (`NULL | logical()`)\cr
 #'   Boolean mask indicating which flat positions in `in_tree` are static (non-tensor) args.
 #'   `NULL` when all args are tensor inputs.
+#' @param static_args_flat (`NULL | list()`)\cr
+#'   Flattened traced values for the static arguments indicated by `is_static_flat`.
 #' @return (`AnvilGraph`)
 # @export
 AnvilGraph <- function(
@@ -141,7 +143,8 @@ AnvilGraph <- function(
   inputs = list(),
   outputs = list(),
   constants = list(),
-  is_static_flat = NULL
+  is_static_flat = NULL,
+  static_args_flat = NULL
 ) {
   # Use an environment for reference semantics (mutable)
   env <- new.env(parent = emptyenv())
@@ -152,6 +155,7 @@ AnvilGraph <- function(
   env$outputs <- outputs
   env$constants <- constants
   env$is_static_flat <- is_static_flat
+  env$static_args_flat <- static_args_flat
 
   structure(env, class = "AnvilGraph")
 }
@@ -180,6 +184,8 @@ AnvilGraph <- function(
 #' @param is_static_flat (`NULL | logical()`)\cr
 #'   Boolean mask indicating which flat positions in `in_tree` are static (non-tensor) args.
 #'   `NULL` when all args are tensor inputs.
+#' @param static_args_flat (`NULL | list()`)\cr
+#'   Flattened traced values for the static arguments indicated by `is_static_flat`.
 #' @param devices (`character()`)\cr
 #'   Device platforms encountered during tracing (e.g. `"cpu"`, `"cuda"`).
 #'   Populated automatically as tensors are registered.
@@ -195,6 +201,7 @@ GraphDescriptor <- function(
   inputs = list(),
   outputs = list(),
   is_static_flat = NULL,
+  static_args_flat = NULL,
   devices = character()
 ) {
   # Use an environment for reference semantics (mutable)
@@ -208,6 +215,7 @@ GraphDescriptor <- function(
   env$inputs <- inputs
   env$outputs <- outputs
   env$is_static_flat <- is_static_flat
+  env$static_args_flat <- static_args_flat
   env$devices <- devices
 
   structure(env, class = "GraphDescriptor")
@@ -246,7 +254,8 @@ descriptor_to_graph <- function(descriptor) {
     inputs = descriptor$inputs,
     outputs = descriptor$outputs,
     constants = descriptor$constants,
-    is_static_flat = descriptor$is_static_flat
+    is_static_flat = descriptor$is_static_flat,
+    static_args_flat = descriptor$static_args_flat
   )
   maybe_restore_previous_desc(descriptor)
   graph
@@ -499,6 +508,8 @@ init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
     desc$outputs <- graph$outputs
   }
   desc$out_tree <- graph$out_tree
+  desc$is_static_flat <- graph$is_static_flat
+  desc$static_args_flat <- graph$static_args_flat
 
   graph
 }
@@ -589,6 +600,11 @@ trace_fn <- function(
 
   desc$out_tree <- out_tree
   desc$outputs <- lapply(outputs_flat, \(x) x$gnode)
+  if (!is.null(desc$is_static_flat) && isTRUE(any(desc$is_static_flat))) {
+    desc$static_args_flat <- args_flat[desc$is_static_flat]
+  } else {
+    desc$static_args_flat <- NULL
+  }
 
   if (any(vapply(outputs_flat, \(x) !is_graph_box(x), logical(1L)))) {
     cli_abort("Function .f must return only objects of type `GraphBox`.")

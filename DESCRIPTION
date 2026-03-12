@@ -30,6 +30,7 @@ Suggests:
     knitr,
     quarto,
     rmarkdown,
+    quickr (>= 0.2.1.9000),
     testthat (>= 3.0.0)
 Remotes:
     r-xla/stablehlo,
@@ -37,7 +38,8 @@ Remotes:
     r-xla/xlamisc@*release,
     r-xla/pjrt
 Additional_repositories:
-    https://r-xla.r-universe.dev
+    https://r-xla.r-universe.dev,
+    https://t-kalinowski.r-universe.dev
 VignetteBuilder:
     knitr
 Config/testthat/edition: 3
@@ -65,7 +67,10 @@ Collate:
     'graph-passes.R'
     'graph.R'
     'graph-print.R'
+    'graph-to-quickr-r.R'
+    'graph-to-quickr.R'
     'promotion.R'
+    'quickr.R'
     'reexports.R'
     'rules-backward.R'
     'rules-stablehlo.R'
