@@ -4,7 +4,7 @@
 \alias{assert_shapevec}
 \title{Assert Shape Vector}
 \usage{
-assert_shapevec(x, min_len = 1L, var_name = rlang::caller_arg(x))
+assert_shapevec(x, min_len = 0L, var_name = rlang::caller_arg(x))
 }
 \arguments{
 \item{x}{Object to check.}
