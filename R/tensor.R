@@ -106,10 +106,13 @@ nv_tensor <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous
   if (is.null(ambiguous)) {
     ambiguous <- FALSE
   }
+  if (inherits(data, "PJRTBuffer") || inherits(data, "PJRTBufferPromise")) {
+    return(ensure_nv_tensor(data, ambiguous = ambiguous))
+  }
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
   }
-  x <- pjrt_buffer(data, dtype, device = device, shape = shape)
+  x <- pjrt_buffer_async(data, dtype, device = device, shape = shape)
   ensure_nv_tensor(x, ambiguous = ambiguous)
 }
 
@@ -119,7 +122,8 @@ is_anvil_tensor <- function(x) {
 
 #' Get the underlying PJRT buffer from an AnvilTensor or pass through other values
 #' @param x An AnvilTensor or any other value
-#' @return The underlying PJRT buffer if x is an AnvilTensor, otherwise x unchanged
+#' @return The underlying tensor (PJRTBuffer or PJRTBufferPromise) if x is an AnvilTensor,
+#'   otherwise x unchanged
 #' @keywords internal
 unwrap_if_tensor <- function(x) {
   if (is_anvil_tensor(x)) {
@@ -129,6 +133,19 @@ unwrap_if_tensor <- function(x) {
   }
 }
 
+# Extract PJRTBuffer for metadata queries (non-blocking).
+# Works whether the tensor holds a PJRTBuffer or PJRTBufferPromise.
+tensor_buffer <- function(x) {
+  buf <- x$tensor
+  if (inherits(buf, "PJRTBufferPromise")) buf$buffer else buf
+}
+
+# Resolve the tensor to a PJRTBuffer (blocking if promise).
+tensor_resolve <- function(x) {
+  buf <- x$tensor
+  if (inherits(buf, "PJRTBufferPromise")) value(buf) else buf
+}
+
 ensure_nv_tensor <- function(x, ambiguous = FALSE) {
   if (inherits(x, "AnvilTensor")) {
     if (ambiguous != x$ambiguous) {
@@ -136,7 +153,9 @@ ensure_nv_tensor <- function(x, ambiguous = FALSE) {
     }
     return(x)
   }
-  assert_class(x, "PJRTBuffer")
+  if (!inherits(x, "PJRTBuffer") && !inherits(x, "PJRTBufferPromise")) {
+    cli_abort("Expected PJRTBuffer or PJRTBufferPromise, got {.cls {class(x)}}")
+  }
   structure(
     list(tensor = x, ambiguous = ambiguous),
     class = "AnvilTensor"
@@ -152,7 +171,7 @@ nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL) {
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
   }
-  x <- pjrt_scalar(data, dtype = dtype, device = device)
+  x <- pjrt_buffer_async(data, dtype = dtype, device = device, shape = integer())
   ensure_nv_tensor(x, ambiguous = ambiguous)
 }
 
@@ -162,7 +181,11 @@ nv_empty <- function(dtype, shape, device = NULL, ambiguous = FALSE) {
   if (is_dtype(dtype)) {
     dtype <- as.character(dtype)
   }
-  x <- pjrt::pjrt_empty(dtype, shape, device = device)
+  if (!any(shape == 0L)) {
+    cli_abort("Empty buffers must have at least one dimension equal to 0")
+  }
+  data <- if (identical(as.character(as_dtype(dtype)), "i1")) logical() else integer()
+  x <- pjrt_buffer_async(array(data, dim = as.integer(shape)), dtype = dtype, device = device)
   ensure_nv_tensor(x, ambiguous = ambiguous)
 }
 
@@ -174,7 +197,7 @@ nv_aten <- function(dtype, shape, ambiguous = FALSE) {
 
 #' @export
 dtype.AnvilTensor <- function(x, ...) {
-  as_dtype(as.character(pjrt::elt_type(x$tensor)))
+  as_dtype(as.character(pjrt::elt_type(tensor_buffer(x))))
 }
 
 #' @title Get Ambiguity of a Tensor
@@ -200,33 +223,38 @@ ambiguous.AbstractTensor <- function(x, ...) {
 
 #' @export
 shape.AnvilTensor <- function(x, ...) {
-  tengen::shape(x$tensor)
+  tengen::shape(tensor_buffer(x))
 }
 
 #' @export
 as_array.AnvilTensor <- function(x, ...) {
-  tengen::as_array(x$tensor)
+  buf <- x$tensor
+  if (inherits(buf, "PJRTBufferPromise")) {
+    value(as_array_async(buf))
+  } else {
+    tengen::as_array(buf)
+  }
 }
 
 #' @export
 as_raw.AnvilTensor <- function(x, row_major = FALSE, ...) {
-  tengen::as_raw(x$tensor, row_major = row_major)
+  tengen::as_raw(tensor_resolve(x), row_major = row_major)
 }
 
 #' @method ndims AnvilTensor
 #' @export
 ndims.AnvilTensor <- function(x, ...) {
-  tengen::ndims(x$tensor)
+  tengen::ndims(tensor_buffer(x))
 }
 
 #' @export
 platform.AnvilTensor <- function(x, ...) {
-  pjrt::platform(x$tensor)
+  pjrt::platform(tensor_buffer(x))
 }
 
 #' @export
 device.AnvilTensor <- function(x, ...) {
-  device(x$tensor)
+  device(tensor_buffer(x))
 }
 
 #' @title Abstract Tensor Class
@@ -621,7 +649,7 @@ print.AnvilTensor <- function(x, header = TRUE, ...) {
   dtype_str <- paste0(as.character(dtype(x)), if (x$ambiguous) "?")
   footer <- sprintf("[ %s%s{%s} ]", toupper(platform(x)), dtype_str, paste0(shape(x), collapse = ","))
 
-  print(x$tensor, header = FALSE, footer = footer)
+  print(tensor_resolve(x), header = FALSE, footer = footer)
   invisible(x)
 }
 
