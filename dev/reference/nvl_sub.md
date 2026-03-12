@@ -1,0 +1,53 @@
+# Primitive Subtraction
+
+Subtracts two tensors element-wise.
+
+## Usage
+
+``` r
+nvl_sub(lhs, rhs)
+```
+
+## Arguments
+
+- lhs, rhs:
+
+  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  Tensorish values of data type integer, unsigned integer, or
+  floating-point. Must have the same shape.
+
+## Value
+
+[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+Has the same shape and data type as the inputs. It is ambiguous if both
+inputs are ambiguous.
+
+## Implemented Rules
+
+- `stablehlo`
+
+- `backward`
+
+## StableHLO
+
+Lowers to
+[`stablehlo::hlo_subtract()`](https://r-xla.github.io/stablehlo/reference/hlo_subtract.html).
+
+## See also
+
+[`nv_sub()`](https://r-xla.github.io/anvil/dev/reference/nv_sub.md), `-`
+
+## Examples
+
+``` r
+jit_eval({
+  x <- nv_tensor(c(1, 2, 3))
+  y <- nv_tensor(c(4, 5, 6))
+  nvl_sub(x, y)
+})
+#> AnvilTensor
+#>  -3
+#>  -3
+#>  -3
+#> [ CPUf32{3} ] 
+```
