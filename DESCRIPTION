@@ -35,7 +35,7 @@ Remotes:
     r-xla/stablehlo,
     r-xla/tengen@*release,
     r-xla/xlamisc@*release,
-    r-xla/pjrt
+    r-xla/pjrt@feature/async-execution
 Additional_repositories:
     https://r-xla.r-universe.dev
 VignetteBuilder:

@@ -101,8 +101,8 @@ nv_serialize <- function(tensors, con = NULL) {
   hex_string <- paste(sprintf("%02x", as.integer(raw_bytes)), collapse = "")
   metadata <- list(`__ambiguity_info__` = hex_string)
 
-  # Unwrap AnvilTensors to get underlying PJRTBuffers for safetensors
-  tensors_unwrapped <- lapply(tensors, unwrap_if_tensor)
+  # Resolve promises and unwrap AnvilTensors to get PJRTBuffers for safetensors
+  tensors_unwrapped <- lapply(tensors, tensor_resolve)
 
   if (is.null(con)) {
     safetensors::safe_serialize(tensors_unwrapped, metadata = metadata)

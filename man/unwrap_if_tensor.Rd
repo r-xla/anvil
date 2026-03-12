@@ -10,7 +10,8 @@ unwrap_if_tensor(x)
 \item{x}{An AnvilTensor or any other value}
 }
 \value{
-The underlying PJRT buffer if x is an AnvilTensor, otherwise x unchanged
+The underlying tensor (PJRTBuffer or PJRTBufferPromise) if x is an AnvilTensor,
+otherwise x unchanged
 }
 \description{
 Get the underlying PJRT buffer from an AnvilTensor or pass through other values
