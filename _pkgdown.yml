@@ -164,8 +164,6 @@ reference:
     desc: Linear algebra operations
     contents:
       - nv_matmul
-      - nv_diag
-      - nv_eye
 
   - title: Logical and bitwise operations
     desc: Logical and bitwise operations on tensors
