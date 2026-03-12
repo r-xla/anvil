@@ -50,7 +50,7 @@ jit <- function(f, static = character(), cache_size = 100L, donate = character()
     args_nonstatic <- args_flat[!is_static_flat]
     args_unwrapped <- lapply(args_nonstatic, \(a) a$tensor)
     out_vals <- rlang::exec(
-      pjrt::pjrt_execute,
+      pjrt::pjrt_execute_async,
       exec,
       !!!consts_flat,
       !!!args_unwrapped,
@@ -247,7 +247,7 @@ xla <- function(f, args, donate = character(), device = NULL) {
     args <- lapply(args, eval, envir = parent.frame())
     args_unwrapped <- unname(lapply(args, \(a) a$tensor))
     out_vals <- rlang::exec(
-      pjrt::pjrt_execute,
+      pjrt::pjrt_execute_async,
       exec,
       !!!const_tensors,
       !!!args_unwrapped,

@@ -19,6 +19,8 @@ navbar:
       menu:
       - text: Logistic Regression
         href: articles/logistic-regression.html
+      - text: Metropolis-Hastings
+        href: vignettes/metropolis-hastings.html
     articles:
       text: Articles
       menu:
@@ -162,6 +164,8 @@ reference:
     desc: Linear algebra operations
     contents:
       - nv_matmul
+      - nv_diag
+      - nv_eye
 
   - title: Logical and bitwise operations
     desc: Logical and bitwise operations on tensors

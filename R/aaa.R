@@ -8,7 +8,7 @@ NULL
 #' @importFrom stablehlo UnsignedType TensorType
 #' @import checkmate
 #' @import tengen
-#' @importFrom pjrt pjrt_buffer pjrt_scalar pjrt_execute pjrt_compile pjrt_program elt_type
+#' @importFrom pjrt pjrt_buffer pjrt_buffer_async pjrt_scalar pjrt_execute pjrt_execute_async pjrt_compile pjrt_program elt_type value as_array_async
 #' @importFrom utils gethash hashtab maphash numhash
 #' @importFrom xlamisc seq_len0 seq_along0
 #' @importFrom utils head tail

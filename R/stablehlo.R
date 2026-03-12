@@ -5,12 +5,12 @@
 
 #' @export
 hlo_scalar.AnvilTensor <- function(value, ..., func = NULL) {
-  stablehlo::hlo_scalar(value$tensor, ..., func = func)
+  stablehlo::hlo_scalar(tensor_resolve(value), ..., func = func)
 }
 
 #' @export
 hlo_tensor.AnvilTensor <- function(value, ..., func = NULL) {
-  stablehlo::hlo_tensor(value$tensor, ..., func = func)
+  stablehlo::hlo_tensor(tensor_resolve(value), ..., func = func)
 }
 
 #' @title HloEnv
@@ -163,8 +163,12 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
     inputs <- lapply(call$inputs, \(x) {
       if (is_graph_literal(x)) {
         # need to add a literal to the program
+        literal_data <- unwrap_if_tensor(x$aval$data)
+        if (inherits(literal_data, "PJRTBufferPromise")) {
+          literal_data <- value(literal_data)
+        }
         fval <- hlo_tensor(
-          value = unwrap_if_tensor(x$aval$data),
+          value = literal_data,
           dtype = x$aval$dtype,
           shape = x$aval$shape$dims,
           func = func
