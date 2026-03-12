@@ -5,78 +5,45 @@ vignette: >
   %\VignetteIndexEntry{Metropolis-Hastings}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+bibliography: references.bib
 ---
 
-In this vignette, we show how to implement a random-walk Metropolis-Hastings
-sampler using {anvil}.
-Metropolis-Hastings is a foundational MCMC algorithm that generates samples from a target distribution by proposing moves and accepting or rejecting them based on the density ratio.
+In this vignette, we show how to implement a random-walk Metropolis-Hastings sampler using {anvil} [@hastings1970monte].
+Metropolis-Hastings is a well known MCMC algorithm that generates samples from a target distribution by proposing moves and accepting or rejecting them based on the density ratio.
 
 ## The Banana Distribution
 
-We sample from a "banana-shaped" distribution (`r anvil:::cite_bib("haario_1999")`).
-This 2-dimensional distribution consists of two gaussian densities, where the second is dependent on the first:
+We sample from a "banana-shaped" distribution [@haario1999adaptive].
+This 2-dimensional distribution consists of two Gaussian densities, where the second is dependent on the first:
 
-$$p(\theta_1, \theta_2) = \underbrace{\frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left(-\frac{\theta_1^2}{2\sigma^2}\right)}_{p(\theta_1)} \;\cdot\; \underbrace{\frac{1}{\sqrt{2\pi}} \exp\!\left(-\frac{\bigl(\theta_2 - b(\theta_1^2 - \sigma^2)\bigr)^2}{2}\right)}_{p(\theta_2 \mid \theta_1)}$$
+$$p(\theta_1, \theta_2) = \underbrace{\frac{1}{\sqrt{200\pi}} \exp\!\left(-\frac{\theta_1^2}{200}\right)}_{p(\theta_1)} \;\cdot\; \underbrace{\frac{1}{\sqrt{2\pi}} \exp\!\left(-\frac{\bigl(\theta_2 - b\theta_1^2 + 100b\bigr)^2}{2}\right)}_{p(\theta_2 \mid \theta_1)}$$
 
-While it is trivial to sample from this distribution, it serves as a useful test case for our own Metropolis-Hastings sampler.
+While it is trivial to sample from this distribution directly, it serves as a useful test case for our Metropolis-Hastings sampler implementation.
+The distribution has known analytical moments which we will use later to verify the correctness of our implementation.
+We set the hyperparameter $b$ to 0.01.
 
-The distribution has known analytical moments:
 
-- $\mathbb{E}[\theta_1] = 0$, $\text{Var}[\theta_1] = \sigma^2$
-- $\mathbb{E}[\theta_2] = 0$, $\text{Var}[\theta_2] = 2 b^2 \sigma^4 + 1$
-
-The mean of $\theta_2$ follows from
-$\mathbb{E}[\theta_2] = b(\mathbb{E}[\theta_1^2] - \sigma^2) = 0$,
-and its variance from the law of total variance:
-$\text{Var}[\theta_2] = b^2 \text{Var}[\theta_1^2] + 1 = 2b^2\sigma^4 + 1$.
-These closed-form moments make this distribution a useful test case,
-since we can verify that our sampler recovers the correct values.
-
-We use $\sigma^2 = 1$ and $b = 1$, giving
-$\text{SD}[\theta_1] = 1$ and $\text{SD}[\theta_2] = \sqrt{3} \approx 1.73$:
 
 ```{r}
 library(anvil)
-set.seed(123)
-
-sigma2 <- 1
-b_param <- 1
+b_param <- 0.01
 ```
 
 ```{r, echo = FALSE, fig.width = 7, fig.height = 5}
 log_p <- function(x1, x2) {
-  -x1^2 / (2 * sigma2) - (x2 - b_param * (x1^2 - sigma2))^2 / 2
+  -x1^2 / 200 - (x2 - b_param * x1^2 + 100 * b_param)^2 / 2
 }
 
-x1_grid <- seq(-4, 4, length.out = 200)
-x2_grid <- seq(-4, 8, length.out = 200)
+x1_grid <- seq(-30, 30, length.out = 200)
+x2_grid <- seq(-10, 15, length.out = 200)
 z <- outer(x1_grid, x2_grid, log_p)
 
 par(mar = c(4, 4, 2, 1))
 contour(
-  x1_grid, x2_grid, exp(z), nlevels = 15,
+  x1_grid, x2_grid, exp(z), nlevels = 7,
   xlab = expression(theta[1]), ylab = expression(theta[2]),
   main = "Banana Distribution", col = "grey40"
 )
-```
-
-## Log-Density
-
-The corresponding log-density (up to a constant) is:
-
-$$\log p(\theta_1, \theta_2) = -\frac{\theta_1^2}{2\sigma^2} - \frac{\bigl(\theta_2 - b(\theta_1^2 - \sigma^2)\bigr)^2}{2}$$
-
-We implement this in {anvil} and convert the parameters to `AnvilTensor`s:
-
-```{r}
-sigma2_t <- nv_scalar(sigma2, dtype = "f32")
-b_t <- nv_scalar(b_param, dtype = "f32")
-
-log_density <- function(theta, sigma2, b) {
-  theta1 <- theta[1]
-  theta2 <- theta[2]
-  -theta1^2 / (2 * sigma2) - (theta2 - b * (theta1^2 - sigma2))^2 / 2
-}
 ```
 
 ## Metropolis-Hastings Algorithm
@@ -84,47 +51,68 @@ log_density <- function(theta, sigma2, b) {
 The random-walk Metropolis-Hastings algorithm proceeds as follows:
 
 1. Propose $\theta' = \theta + \varepsilon$, where $\varepsilon \sim \mathcal{N}(0, s^2 I)$
-2. Compute the log acceptance ratio $\log \alpha = \log p(\theta') - \log p(\theta)$
+2. Compute the acceptance ratio $\alpha = p(\theta') / p(\theta)$
 3. Accept $\theta'$ with probability $\min(1, \alpha)$
 
-The accept/reject decision uses `nv_ifelse()`.
+In practice, we work with log-densities rather than densities directly.
+Density values can become extremely small in high-dimensional or concentrated distributions, causing floating-point underflow.
+By operating in log-space, the acceptance ratio $p(\theta') / p(\theta)$ becomes a simple difference $\log p(\theta') - \log p(\theta)$, which is numerically stable.
+Furthermore, because the algorithm only ever evaluates *ratios* of densities, any normalizing constant cancels out in the difference.
+This means we only need to know the log-density up to an additive constant.
+
+The log-density of the banana distribution (up to a constant) is:
+
+$$\log p(\theta_1, \theta_2) = -\frac{\theta_1^2}{200} - \frac{\bigl(\theta_2 - b\theta_1^2 + 100b\bigr)^2}{2}$$
+
+We implement this in {anvil} and convert the parameter to an `f64` tensor for maximal precision.
 
 ```{r}
-mh_step <- function(theta, rng_state, sigma2, b, proposal_sd) {
-  rng_out <- nv_rnorm(shape(theta), rng_state, dtype = "f32")
+b_t <- nv_scalar(b_param, dtype = "f64")
+
+log_density <- function(theta, b) {
+  theta1 <- theta[1]
+  theta2 <- theta[2]
+  -theta1^2 / 200 - (theta2 - b * theta1^2 + 100 * b)^2 / 2
+}
+```
+
+There are a few things to note in the code below:
+
+a) the accept/reject decision uses the primitive `nv_if()` and not a native R conditional.
+b) we sample a scalar uniform random number by setting `shape = integer()`
+c) the RNG state is passed around explicitly.
+
+
+```{r}
+mh_step <- function(theta, rng_state, b, proposal_sd) {
+  rng_out <- nv_rnorm(shape(theta), rng_state, dtype = "f64")
   rng_state <- rng_out[[1L]]
   proposal <- theta + proposal_sd * rng_out[[2L]]
 
-  log_current <- log_density(theta, sigma2, b)
-  log_proposed <- log_density(proposal, sigma2, b)
+  log_current <- log_density(theta, b)
+  log_proposed <- log_density(proposal, b)
   log_accept <- log_proposed - log_current
 
-  rng_out <- nv_runif(1L, rng_state, dtype = "f32")
+  rng_out <- nv_runif(integer(), rng_state, dtype = "f64")
   rng_state <- rng_out[[1L]]
   u <- rng_out[[2L]]
 
   accept <- log(u) < log_accept
-  new_theta <- nv_ifelse(
-    nv_broadcast_to(accept, shape_abstract(theta)),
-    proposal,
-    theta
-  )
-
+  new_theta <- nv_if(accept, proposal, theta)
   list(theta = new_theta, rng_state = rng_state)
 }
 ```
 
-We use `nv_while()` to run multiple thinned steps in a single JIT-compiled
-call, avoiding R loop overhead:
+Because subsequent samples are autocorrelated, we thin the output by keeping every nth sample.
+We implement this loop via `nv_while()` below, avoiding R loop overhead.
 
 ```{r}
-mh_sample <- jit(function(theta, rng_state, sigma2, b, proposal_sd, thin) {
+mh_sample <- jit(function(theta, rng_state, b, proposal_sd, thin) {
   result <- nv_while(
     init = list(theta = theta, rng_state = rng_state, i = nv_scalar(0L)),
     cond = \(theta, rng_state, i) i < thin,
     body = \(theta, rng_state, i) {
-      step <- mh_step(theta, rng_state, sigma2, b, proposal_sd)
-      list(theta = step$theta, rng_state = step$rng_state, i = i + 1L)
+      c(mh_step(theta, rng_state, b, proposal_sd), list(i = i + 1L))
     }
   )[1:2]
 })
@@ -132,65 +120,65 @@ mh_sample <- jit(function(theta, rng_state, sigma2, b, proposal_sd, thin) {
 
 ## Running the Sampler
 
-We run the sampler from R, collecting samples after a warmup period.
-The first call triggers JIT compilation; subsequent calls reuse the compiled
-code. Because random-walk proposals on a curved distribution produce highly
-correlated chains, we thin the output by keeping every 100th sample.
+We specify the required parameters and run the sampler.
+Again, note that we are passing around the RNG state explicitly.
 
 ```{r}
 n_samples <- 20000L
-n_warmup <- 500L
-thin <- nv_scalar(100L)
+n_warmup <- 5000L
+thin <- nv_scalar(200L)
 
-theta <- nv_tensor(c(0, 0), dtype = "f32")
+theta <- nv_tensor(c(0, 0), dtype = "f64")
 rng_state <- nv_rng_state(seed = 42L)
-proposal_sd <- nv_scalar(0.5, dtype = "f32")
+proposal_sd <- nv_scalar(3, dtype = "f64")
 
-result <- mh_sample(theta, rng_state, sigma2_t, b_t, proposal_sd, thin)
+result <- mh_sample(theta, rng_state, b_t, proposal_sd, thin)
 theta <- result$theta
 rng_state <- result$rng_state
 
 for (i in seq_len(n_warmup)) {
-  result <- mh_sample(theta, rng_state, sigma2_t, b_t, proposal_sd, thin)
+  result <- mh_sample(theta, rng_state, b_t, proposal_sd, thin)
   theta <- result$theta
   rng_state <- result$rng_state
 }
 
-samples <- matrix(NA_real_, nrow = n_samples, ncol = 2L)
-colnames(samples) <- c("theta1", "theta2")
+thetas <- vector("list", n_samples)
 
 for (i in seq_len(n_samples)) {
-  result <- mh_sample(theta, rng_state, sigma2_t, b_t, proposal_sd, thin)
+  result <- mh_sample(theta, rng_state, b_t, proposal_sd, thin)
   theta <- result$theta
   rng_state <- result$rng_state
-  samples[i, ] <- as.vector(as_array(theta))
+  thetas[[i]] <- theta
 }
+
+samples <- do.call(rbind, lapply(thetas, function(x) as.vector(as_array(x))))
+colnames(samples) <- c("theta1", "theta2")
 ```
 
-## Results
+Next, we compare the results with the analytical moments to see whether everything worked as expected.
 
-```{r}
+## Inspecting the Results
+
+The autocorrelation function (ACF) of the thinned samples shows that successive draws are nearly independent:
+
+```{r, echo = FALSE, fig.width = 7, fig.height = 4}
+par(mfrow = c(1, 2), mar = c(4, 4, 3, 1))
+acf(samples[, 1], main = expression(theta[1]), lag.max = 40)
+acf(samples[, 2], main = expression(theta[2]), lag.max = 40)
+```
+
+The banana distribution has known analytical moments.
+Since $\theta_1 \sim \mathcal{N}(0, 100)$ and $\theta_2 \mid \theta_1 \sim \mathcal{N}(b\theta_1^2 - 100b, 1)$:
+
+- $\mathbb{E}[\theta_1] = 0$, $\text{SD}[\theta_1] = 10$
+- $\mathbb{E}[\theta_2] = 0$, $\text{SD}[\theta_2] = \sqrt{2 \cdot 10^4 b^2 + 1}$
+
+```{r, echo = FALSE}
 sample_mean <- colMeans(samples)
 sample_sd <- apply(samples, 2, sd)
 
-cat("Sample means:\n")
-print(round(sample_mean, 3))
-cat("\nSample standard deviations:\n")
-print(round(sample_sd, 3))
-```
-
-## Verification
-
-The banana distribution has known analytical moments.
-Since $\theta_1 \sim \mathcal{N}(0, \sigma^2)$ and
-$\theta_2 \mid \theta_1 \sim \mathcal{N}(b(\theta_1^2 - \sigma^2), 1)$:
-
-- $\mathbb{E}[\theta_1] = 0$, $\text{SD}[\theta_1] = \sigma$
-- $\mathbb{E}[\theta_2] = 0$, $\text{SD}[\theta_2] = \sqrt{2 b^2 \sigma^4 + 1}$
-
-```{r, echo = FALSE}
 true_mean <- c(0, 0)
-true_sd <- c(sqrt(sigma2), sqrt(2 * b_param^2 * sigma2^2 + 1))
+true_sd <- c(10, sqrt(2e4 * b_param^2 + 1))
 
 comparison <- data.frame(
   Parameter = c("theta1", "theta2"),
@@ -222,15 +210,13 @@ points(
 ```
 
 And overlay the analytical marginal densities on histograms of the samples.
-The marginal of $\theta_1$ is Gaussian; the marginal of $\theta_2$ is
-obtained by numerically integrating out $\theta_1$:
 
 ```{r, echo = FALSE, fig.width = 7, fig.height = 4}
 marginal_theta2 <- Vectorize(function(t2) {
   integrate(function(t1) {
-    dnorm(t2, mean = b_param * (t1^2 - sigma2), sd = 1) *
-      dnorm(t1, mean = 0, sd = sqrt(sigma2))
-  }, lower = -6, upper = 6)$value
+    dnorm(t2, mean = b_param * t1^2 - 100 * b_param, sd = 1) *
+      dnorm(t1, mean = 0, sd = 10)
+  }, lower = -30, upper = 30)$value
 })
 
 par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
@@ -241,7 +227,7 @@ hist(
   xlab = expression(theta[1]), col = "lightblue", border = "white"
 )
 curve(
-  dnorm(x, mean = 0, sd = sqrt(sigma2)),
+  dnorm(x, mean = 0, sd = 10),
   add = TRUE, col = "red", lwd = 2
 )
 legend("topright", "Analytical", col = "red", lwd = 2, bty = "n", cex = 0.8)
