@@ -440,9 +440,8 @@ parse_subset_spec <- function(quo, dim_size) {
 #' dimension.
 #' @param x ([`tensorish`])\cr
 #'   Tensor to subset.
-#' @param ... \cr
-#'   Subset specifications, one per dimension. Omitted trailing dimensions
-#'   select all elements. See `vignette("subsetting")` for details.
+#' @param ... Subset specifications, one per dimension. Omitted trailing
+#'   dimensions select all elements. See `vignette("subsetting")` for details.
 #' @return [`tensorish`]
 #' @seealso [nv_subset_assign()] for updating subsets, `vignette("subsetting")`
 #'   for a comprehensive guide.
@@ -495,9 +494,8 @@ nv_subset <- function(x, ...) {
 #' You can also use the `[<-` operator.
 #' @param x ([`tensorish`])\cr
 #'   Tensor to update.
-#' @param ... \cr
-#'   Subset specifications, one per dimension. See `vignette("subsetting")`
-#'   for details.
+#' @param ... Subset specifications, one per dimension. See
+#'   `vignette("subsetting")` for details.
 #' @param value ([`tensorish`])\cr
 #'   Replacement values. Scalars are broadcast to the subset shape.
 #'   Non-scalar values must match the subset shape.

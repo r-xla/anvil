@@ -31,6 +31,8 @@ navbar:
     articles:
       text: Articles
       menu:
+      - text: Installation
+        href: articles/installation.html
       - text: Get Started
         href: articles/anvil.html
       - text: Type Promotion
