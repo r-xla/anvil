@@ -64,14 +64,13 @@ number of hard-coded kernels available.
 Suppose we have \\n\\ training inputs collected in a design matrix
 \\\mathbf{X}\\ and the corresponding function values \\\mathbf{f} =
 \[f(\mathbf{x}^{(1)}), \dots, f(\mathbf{x}^{(n)})\]^\top\\. We observe
-noisy targets \\\mathbf{y} = \mathbf{f} + \boldsymbol{\epsilon}\\, where
-\\\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \sigma^2
-\mathbf{I})\\. Given \\n\_\*\\ test inputs \\\mathbf{X}\_\*\\, we want
-to predict the latent function values \\\mathbf{f}\_\* =
-\[f(\mathbf{x}\_\*^{(1)}), \dots, f(\mathbf{x}\_\*^{(n\_\*)})\]^\top\\.
-Assuming a zero-mean GP prior \\\mathcal{GP}(\mathbf{0}, k(\mathbf{x},
-\mathbf{x}'))\\, the joint distribution of the observed values and the
-latent test values is:
+noisy targets \\\mathbf{y} = \mathbf{f} + \pmb{\epsilon}\\, where
+\\\pmb{\epsilon} \sim \mathcal{N}(\mathbf{0}, \sigma^2 \mathbf{I})\\.
+Given \\n\_\*\\ test inputs \\\mathbf{X}\_\*\\, we want to predict the
+latent function values \\\mathbf{f}\_\* = \[f(\mathbf{x}\_\*^{(1)}),
+\dots, f(\mathbf{x}\_\*^{(n\_\*)})\]^\top\\. Assuming a zero-mean GP
+prior \\\mathcal{GP}(\mathbf{0}, k(\mathbf{x}, \mathbf{x}'))\\, the
+joint distribution of the observed values and the latent test values is:
 
 \\\begin{bmatrix} \mathbf{y} \\ \mathbf{f}\_\* \end{bmatrix} \sim
 \mathcal{N}\\\left( \mathbf{0},\\ \begin{bmatrix} \mathbf{K} + \sigma^2
@@ -94,21 +93,21 @@ conditioning of Gaussian random variables to the joint distribution
 above, we obtain the posterior predictive distribution:
 
 \\\mathbf{f}\_\* \mid \mathbf{X}, \mathbf{y}, \mathbf{X}\_\* \sim
-\mathcal{N}(\boldsymbol{\mu}\_\*, \boldsymbol{\Sigma}\_\*)\\
+\mathcal{N}(\pmb{\mu}\_\*, \pmb{\Sigma}\_\*)\\
 
 with
 
-\\\boldsymbol{\mu}\_\* = \mathbf{K}\_\*^\top \mathbf{K}\_y^{-1}
-\mathbf{y}\\ \\\boldsymbol{\Sigma}\_\* = \mathbf{K}\_{\*\*} -
-\mathbf{K}\_\*^\top \mathbf{K}\_y^{-1} \mathbf{K}\_\*\\
+\\\pmb{\mu}\_\* = \mathbf{K}\_\*^\top \mathbf{K}\_y^{-1} \mathbf{y}\\
+\\\pmb{\Sigma}\_\* = \mathbf{K}\_{\*\*} - \mathbf{K}\_\*^\top
+\mathbf{K}\_y^{-1} \mathbf{K}\_\*\\
 
 where \\\mathbf{K}\_y := \mathbf{K} + \sigma^2 \mathbf{I}\\.
 
-The mean \\\boldsymbol{\mu}\_\*\\ is a linear combination of the
-training observations, weighted by the kernel similarity between the
-test and training points. The covariance \\\boldsymbol{\Sigma}\_\*\\ is
-the prior covariance minus a term that shrinks the uncertainty wherever
-training data is available.
+The mean \\\pmb{\mu}\_\*\\ is a linear combination of the training
+observations, weighted by the kernel similarity between the test and
+training points. The covariance \\\pmb{\Sigma}\_\*\\ is the prior
+covariance minus a term that shrinks the uncertainty wherever training
+data is available.
 
 Note that prediction is purely a matter of matrix computation — given
 the kernel hyperparameters, all quantities follow directly from the
@@ -186,19 +185,19 @@ marginal likelihood.
 
 ## Marginal Likelihood
 
-With \\\boldsymbol{\theta} = (\ell, \sigma_f^2, \sigma^2)\\, we can
-write down the log marginal likelihood as follows:
+With \\\pmb{\theta} = (\ell, \sigma_f^2, \sigma^2)\\, we can write down
+the log marginal likelihood as follows:
 
-\\p(\mathbf{y} \mid \mathbf{X}, \boldsymbol{\theta}) = \int p(\mathbf{y}
-\mid \mathbf{f}, \mathbf{X}) \\ p(\mathbf{f} \mid \mathbf{X},
-\boldsymbol{\theta}) \\ d\mathbf{f}\\
+\\p(\mathbf{y} \mid \mathbf{X}, \pmb{\theta}) = \int p(\mathbf{y} \mid
+\mathbf{f}, \mathbf{X}) \\ p(\mathbf{f} \mid \mathbf{X}, \pmb{\theta})
+\\ d\mathbf{f}\\
 
 Because both the likelihood \\p(\mathbf{y} \mid \mathbf{f}) =
 \mathcal{N}(\mathbf{f}, \sigma^2 \mathbf{I})\\ and the prior
 \\p(\mathbf{f}) = \mathcal{N}(\mathbf{0}, \mathbf{K})\\ are Gaussian,
 this integral has a closed-form solution:
 
-\\\log p(\mathbf{y} \mid \mathbf{X}, \boldsymbol{\theta}) =
+\\\log p(\mathbf{y} \mid \mathbf{X}, \pmb{\theta}) =
 \underbrace{-\tfrac{1}{2} \mathbf{y}^\top \mathbf{K}\_y^{-1}
 \mathbf{y}}\_{\text{data fit}} \\\underbrace{- \tfrac{1}{2} \log
 \|\mathbf{K}\_y\|}\_{\text{complexity penalty}} \\\underbrace{-
@@ -219,7 +218,7 @@ considering how they behave as the lengthscale \\\ell\\ increases
   value means less penalization). A small \\\ell\\ leads to a flexible
   model with a large \\\|\mathbf{K}\_y\|\\ and thus a heavy penalty.
 - The **constant** \\-\frac{n}{2} \log 2\pi\\ is a normalization term
-  independent of \\\boldsymbol{\theta}\\.
+  independent of \\\pmb{\theta}\\.
 
 Below, we implement the negative log marginal likelihood but leave out
 the constant term because we don’t need it for optimization.

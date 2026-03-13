@@ -48,11 +48,12 @@
     <li><a class="dropdown-item" href="../articles/debugging.html">Debugging</a></li>
   </ul>
 </li>
-<li class="nav-item dropdown">
+<li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-examples" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Examples</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-examples">
 <li><a class="dropdown-item" href="../articles/logistic-regression.html">Logistic Regression</a></li>
     <li><a class="dropdown-item" href="../articles/mcmc.html">Hamiltonian Monte Carlo</a></li>
+    <li><a class="dropdown-item" href="../articles/gaussian-process.html">Gaussian Process</a></li>
   </ul>
 </li>
 <li class="nav-item dropdown">
@@ -161,7 +162,7 @@ inputs collected in a design matrix <span class="math inline">\(\mathbf{X}\)</sp
 values <span class="math inline">\(\mathbf{f} = [f(\mathbf{x}^{(1)}),
 \dots, f(\mathbf{x}^{(n)})]^\top\)</span>. We observe noisy targets
 <span class="math inline">\(\mathbf{y} = \mathbf{f} +
-\boldsymbol{\epsilon}\)</span>, where <span class="math inline">\(\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0},
+\pmb{\epsilon}\)</span>, where <span class="math inline">\(\pmb{\epsilon} \sim \mathcal{N}(\mathbf{0},
 \sigma^2 \mathbf{I})\)</span>. Given <span class="math inline">\(n_*\)</span> test inputs <span class="math inline">\(\mathbf{X}_*\)</span>, we want to predict the
 latent function values <span class="math inline">\(\mathbf{f}_* =
 [f(\mathbf{x}_*^{(1)}), \dots, f(\mathbf{x}_*^{(n_*)})]^\top\)</span>.
@@ -193,19 +194,19 @@ points.</p>
 rule for conditioning of Gaussian random variables to the joint
 distribution above, we obtain the posterior predictive distribution:</p>
 <p><span class="math display">\[\mathbf{f}_* \mid \mathbf{X},
-\mathbf{y}, \mathbf{X}_* \sim \mathcal{N}(\boldsymbol{\mu}_*,
-\boldsymbol{\Sigma}_*)\]</span></p>
+\mathbf{y}, \mathbf{X}_* \sim \mathcal{N}(\pmb{\mu}_*,
+\pmb{\Sigma}_*)\]</span></p>
 <p>with</p>
-<p><span class="math display">\[\boldsymbol{\mu}_* = \mathbf{K}_*^\top
-\mathbf{K}_y^{-1} \mathbf{y}\]</span> <span class="math display">\[\boldsymbol{\Sigma}_* = \mathbf{K}_{**} -
+<p><span class="math display">\[\pmb{\mu}_* = \mathbf{K}_*^\top
+\mathbf{K}_y^{-1} \mathbf{y}\]</span> <span class="math display">\[\pmb{\Sigma}_* = \mathbf{K}_{**} -
 \mathbf{K}_*^\top \mathbf{K}_y^{-1} \mathbf{K}_*\]</span></p>
 <p>where <span class="math inline">\(\mathbf{K}_y := \mathbf{K} +
 \sigma^2 \mathbf{I}\)</span>.</p>
-<p>The mean <span class="math inline">\(\boldsymbol{\mu}_*\)</span> is a
-linear combination of the training observations, weighted by the kernel
-similarity between the test and training points. The covariance <span class="math inline">\(\boldsymbol{\Sigma}_*\)</span> is the prior
-covariance minus a term that shrinks the uncertainty wherever training
-data is available.</p>
+<p>The mean <span class="math inline">\(\pmb{\mu}_*\)</span> is a linear
+combination of the training observations, weighted by the kernel
+similarity between the test and training points. The covariance <span class="math inline">\(\pmb{\Sigma}_*\)</span> is the prior covariance
+minus a term that shrinks the uncertainty wherever training data is
+available.</p>
 <p>Note that prediction is purely a matter of matrix computation — given
 the kernel hyperparameters, all quantities follow directly from the
 formulas above.</p>
@@ -272,20 +273,19 @@ marginal likelihood.</p>
 <div class="section level2">
 <h2 id="marginal-likelihood">Marginal Likelihood<a class="anchor" aria-label="anchor" href="#marginal-likelihood"></a>
 </h2>
-<p>With <span class="math inline">\(\boldsymbol{\theta} = (\ell,
-\sigma_f^2, \sigma^2)\)</span>, we can write down the log marginal
-likelihood as follows:</p>
+<p>With <span class="math inline">\(\pmb{\theta} = (\ell, \sigma_f^2,
+\sigma^2)\)</span>, we can write down the log marginal likelihood as
+follows:</p>
 <p><span class="math display">\[p(\mathbf{y} \mid \mathbf{X},
-\boldsymbol{\theta}) = \int p(\mathbf{y} \mid \mathbf{f}, \mathbf{X}) \,
-p(\mathbf{f} \mid \mathbf{X}, \boldsymbol{\theta}) \,
-d\mathbf{f}\]</span></p>
+\pmb{\theta}) = \int p(\mathbf{y} \mid \mathbf{f}, \mathbf{X}) \,
+p(\mathbf{f} \mid \mathbf{X}, \pmb{\theta}) \, d\mathbf{f}\]</span></p>
 <p>Because both the likelihood <span class="math inline">\(p(\mathbf{y}
 \mid \mathbf{f}) = \mathcal{N}(\mathbf{f}, \sigma^2 \mathbf{I})\)</span>
 and the prior <span class="math inline">\(p(\mathbf{f}) =
 \mathcal{N}(\mathbf{0}, \mathbf{K})\)</span> are Gaussian, this integral
 has a closed-form solution:</p>
 <p><span class="math display">\[\log p(\mathbf{y} \mid \mathbf{X},
-\boldsymbol{\theta})
+\pmb{\theta})
 = \underbrace{-\tfrac{1}{2} \mathbf{y}^\top \mathbf{K}_y^{-1}
 \mathbf{y}}_{\text{data fit}}
   \;\underbrace{- \tfrac{1}{2} \log |\mathbf{K}_y|}_{\text{complexity
@@ -307,7 +307,7 @@ less penalization). A small <span class="math inline">\(\ell\)</span>
 leads to a flexible model with a large <span class="math inline">\(|\mathbf{K}_y|\)</span> and thus a heavy
 penalty.</li>
 <li>The <strong>constant</strong> <span class="math inline">\(-\frac{n}{2} \log 2\pi\)</span> is a normalization
-term independent of <span class="math inline">\(\boldsymbol{\theta}\)</span>.</li>
+term independent of <span class="math inline">\(\pmb{\theta}\)</span>.</li>
 </ul>
 <p>Below, we implement the negative log marginal likelihood but leave
 out the constant term because we don’t need it for optimization.</p>
