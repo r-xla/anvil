@@ -2,6 +2,7 @@ linters: lintr::linters_with_defaults(
  object_name_linter = NULL,
  commented_code_linter = NULL,
  line_length_linter = lintr::line_length_linter(120),
- return_linter = NULL
+ return_linter = NULL,
+ indentation_linter = indentation_linter(indent = 2L, hanging_indent_style = "never")
   )
-exclusions: list("R/RcppExports.R")
+exclusions: list("R/RcppExports.R", "inst/extra-tests")

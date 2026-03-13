@@ -453,6 +453,15 @@ test_that("p_cholesky", {
   expect_equal(L %*% t(L), matrix(c(4, 2, 2, 3), nrow = 2), tolerance = 1e-10)
 })
 
+test_that("p_cholesky zeros out non-triangular part", {
+  A <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
+  L <- as_array(jit(function(A) nvl_cholesky(A, lower = TRUE))(A))
+  expect_equal(L[1, 2], 0)
+
+  U <- as_array(jit(function(A) nvl_cholesky(A, lower = FALSE))(A))
+  expect_equal(U[2, 1], 0)
+})
+
 test_that("p_triangular_solve", {
   # Solve L %*% x = b where L = [[3, 0], [1, 2]]
   L <- nv_tensor(matrix(c(3, 1, 0, 2), nrow = 2), dtype = "f64")

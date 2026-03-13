@@ -39,6 +39,7 @@ When \code{left_side} is \code{TRUE}, solves \code{op(a) \%*\% x = b} for \code{
 When \code{left_side} is \code{FALSE}, solves \code{x \%*\% op(a) = b} for \code{x}.
 Dimensions before the last two are batch dimensions and must match
 between \code{a} and \code{b} (no broadcasting).
+Here \code{op} is \code{A} or \code{A^T} depending on \code{transpose_a}.
 }
 \section{Implemented Rules}{
 

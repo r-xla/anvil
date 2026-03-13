@@ -468,7 +468,28 @@ p_gather[["stablehlo"]] <- function(
 }
 
 p_cholesky[["stablehlo"]] <- function(operand, lower) {
-  list(stablehlo::hlo_cholesky(operand, lower = lower))
+  L <- stablehlo::hlo_cholesky(operand, lower = lower)
+  # The non-triangular part of the output is implementation-defined.
+  # Zero it out so downstream code (including backward rules) never sees garbage.
+  op_shape <- shape(operand$value_type)
+  n <- op_shape[length(op_shape)]
+  mat_shape <- c(n, n)
+  rows <- stablehlo::hlo_iota(iota_dimension = 0L, dtype = "i32", shape = mat_shape, func = operand$func)
+  cols <- stablehlo::hlo_iota(iota_dimension = 1L, dtype = "i32", shape = mat_shape, func = operand$func)
+  mask <- if (lower) {
+    stablehlo::hlo_compare(rows, cols, comparison_direction = "GE", compare_type = "SIGNED")
+  } else {
+    stablehlo::hlo_compare(rows, cols, comparison_direction = "LE", compare_type = "SIGNED")
+  }
+  if (length(op_shape) > 2L) {
+    mask <- stablehlo::hlo_broadcast_in_dim(mask, (length(op_shape) - 2L):(length(op_shape) - 1L), op_shape)
+  }
+  zero <- stablehlo::hlo_broadcast_in_dim(
+    stablehlo::hlo_scalar(0, dtype = dtype(operand), func = operand$func),
+    integer(0),
+    op_shape
+  )
+  list(stablehlo::hlo_select(mask, L, zero))
 }
 
 p_triangular_solve[["stablehlo"]] <- function(a, b, left_side, lower, unit_diagonal, transpose_a) {

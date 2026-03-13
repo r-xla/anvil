@@ -2562,6 +2562,7 @@ p_triangular_solve <- AnvilPrimitive("triangular_solve")
 #' When `left_side` is `FALSE`, solves `x %*% op(a) = b` for `x`.
 #' Dimensions before the last two are batch dimensions and must match
 #' between `a` and `b` (no broadcasting).
+#' Here `op` is `A` or `A^T` depending on `transpose_a`.
 #' @param a ([`tensorish`])\cr
 #'   Triangular coefficient matrix of data type floating-point with at least 2
 #'   dimensions. The last two dimensions must be equal (square matrix); any

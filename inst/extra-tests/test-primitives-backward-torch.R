@@ -925,4 +925,42 @@ describe("p_triangular_solve", {
       unit_diagonal = TRUE
     )
   )
+
+  # Verify the gradient zeros out non-triangular elements even when input is dense
+  verify_triangular_solve_masking <- function(lower, unit_diagonal) {
+    n <- 3L
+    a_r <- matrix(seq_len(n * n), n, n) + 0
+    diag(a_r) <- n + seq_len(n)
+    b_r <- matrix(rnorm(n * 2L), n, 2L)
+
+    a <- nv_tensor(a_r, dtype = "f64")
+    b <- nv_tensor(b_r, dtype = "f64")
+
+    f <- function(a, b) {
+      x <- nvl_triangular_solve(
+        a,
+        b,
+        left_side = TRUE,
+        lower = lower,
+        unit_diagonal = unit_diagonal,
+        transpose_a = "NO_TRANSPOSE"
+      )
+      nv_reduce_sum(x, dims = c(1L, 2L))
+    }
+    grad_a <- as_array(jit(gradient(f))(a, b)[[1L]])
+
+    if (lower) {
+      expect_true(all(grad_a[upper.tri(grad_a)] == 0))
+    } else {
+      expect_true(all(grad_a[lower.tri(grad_a)] == 0))
+    }
+    if (unit_diagonal) {
+      expect_true(all(diag(grad_a) == 0))
+    }
+  }
+
+  it("masking: lower", verify_triangular_solve_masking(lower = TRUE, unit_diagonal = FALSE))
+  it("masking: upper", verify_triangular_solve_masking(lower = FALSE, unit_diagonal = FALSE))
+  it("masking: lower, unit_diagonal", verify_triangular_solve_masking(lower = TRUE, unit_diagonal = TRUE))
+  it("masking: upper, unit_diagonal", verify_triangular_solve_masking(lower = FALSE, unit_diagonal = TRUE))
 })

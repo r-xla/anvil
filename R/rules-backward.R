@@ -64,7 +64,7 @@ p_pow[["backward"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
     if (.required[[1L]]) {
-      one <- ones_like(lhs, FALSE)
+      one <- ones_like(lhs)
       nvl_mul(nvl_mul(grad, rhs), nvl_pow(lhs, nvl_sub(rhs, one)))
     },
     if (.required[[2L]]) {
@@ -637,7 +637,7 @@ p_dynamic_slice[["backward"]] <- function(inputs, outputs, grads, slice_sizes, .
   # dynamic_update_slice does the same clamping as dynamic_slice, so it naturally handles
   # out of bound indices (in the same weird way)
   if (.required[[1L]]) {
-    zeros <- zeros_like(operand, FALSE)
+    zeros <- zeros_like(operand)
     result[[1L]] <- rlang::exec(nvl_dynamic_update_slice, zeros, grad, !!!start_indices)
   }
 
@@ -654,7 +654,7 @@ p_dynamic_update_slice[["backward"]] <- function(inputs, outputs, grads, .requir
   # dynamic_update_slice does the same clamping as dynamic_slice, so it naturally handles
   # out of bound indices (in the same weird way)
   if (.required[[1L]]) {
-    zeros <- zeros_like(update, FALSE)
+    zeros <- zeros_like(update)
     result[[1L]] <- rlang::exec(nvl_dynamic_update_slice, grad, zeros, !!!start_indices)
   }
 
@@ -708,7 +708,7 @@ p_gather[["backward"]] <- function(
       )
 
       nvl_scatter(
-        input = zeros_like(operand, FALSE),
+        input = zeros_like(operand),
         scatter_indices = scatter_indices,
         update = grad,
         update_window_dims = offset_dims,
@@ -724,7 +724,7 @@ p_gather[["backward"]] <- function(
         update_computation = nvl_add
       )
     },
-    if (.required[[2L]]) zeros_like(start_indices, FALSE)
+    if (.required[[2L]]) zeros_like(start_indices)
   )
 }
 
@@ -779,7 +779,7 @@ p_scatter[["backward"]] <- function(
       nvl_scatter(
         input = grad,
         scatter_indices = scatter_indices,
-        update = zeros_like(update, FALSE),
+        update = zeros_like(update),
         update_window_dims = update_window_dims,
         inserted_window_dims = inserted_window_dims,
         input_batching_dims = input_batching_dims,
@@ -792,7 +792,7 @@ p_scatter[["backward"]] <- function(
       )
     },
     # Gradient for scatter_indices: not differentiable
-    if (.required[[2L]]) zeros_like(scatter_indices, FALSE),
+    if (.required[[2L]]) zeros_like(scatter_indices),
     # Gradient for update: gather from gradient at update positions
     if (.required[[3L]]) {
       if (unique_indices) {
@@ -874,7 +874,7 @@ p_scatter[["backward"]] <- function(
           unique_indices = FALSE
         )
         mask <- nvl_eq(update_ids, gathered_ids)
-        nvl_ifelse(mask, grad_at_positions, zeros_like(grad_at_positions, FALSE))
+        nvl_ifelse(mask, grad_at_positions, zeros_like(grad_at_positions))
       }
     }
   )
@@ -908,55 +908,69 @@ triangular_mask <- function(n, dt, lower, unit_diagonal) {
   }
 }
 
+#' @describeIn nvl_cholesky Gradient Rule:
+#' @references
+#' `r xlamisc::format_bib("murray2016differentiation", "walter2012structured")`
 p_cholesky[["backward"]] <- function(inputs, outputs, grads, lower, .required) {
   if (!.required[[1L]]) {
     return(list(NULL))
   }
+  if (length(shape(outputs[[1L]])) > 2L) {
+    cli_abort("Batched cholesky gradient is not yet supported.")
+  }
+
+  # The Jacobian for cholesky is actually not unique.
+  # This is, because the derivative property only needs to hold for valid input perturbations.
+  # i.e., we want cholesky(x + dx) \approx cholesky(x) + dcholesky(x) %*% dx
+  # but here x + dx needs to be positive semi-definite.
+  # this is satisfied if dx is symmetric (dx is small)
+  # Because the property only needs to hold for symmetric inputs dx, their are an infinite number
+  # of solutions.
+  # We use the solution that is identical to the one used by {torch} (which we compare against
+  # in the test)
 
   L <- outputs[[1L]]
   grad <- grads[[1L]]
   n <- shape(L)[length(shape(L))]
 
-  tri_mask <- if (lower) tril_mask(n, dtype(L)) else triu_mask(n, dtype(L))
-  grad <- nvl_ifelse(tri_mask, grad, zeros_like(grad, FALSE))
+  # Phi: keep lower triangle, halve diagonal, zero upper triangle
+  phi <- function(x) {
+    eye <- nvl_convert(diag_mask(n), dtype = dtype(x))
+    one <- nvl_fill(1, dtype = dtype(x), shape = shape(x))
+    x <- nvl_div(x, nvl_add(one, eye))
+    nvl_ifelse(tril_mask(n, dtype(x)), x, zeros_like(x))
+  }
 
-  # For upper triangular, transpose to work with the lower-triangular algorithm,
-  # then transpose back at the end
+  # The stablehlo lowering already zeros out the non-triangular part of L,
+  # so grad is clean and no masking is needed here.
+
+  # For upper triangular, transpose to work with the lower-triangular algorithm.
+  # No transpose back needed at the end: grad_A is symmetric.
   if (!lower) {
     L <- t(L)
     grad <- t(grad)
   }
-
-  # Iain Murray (2016): Differentiation of the Cholesky decomposition
-  # https://arxiv.org/pdf/1602.07527
-  # Equation (10): tril(Sigma_bar) = Phi(L^{-T} (P + P^T) L^{-1})
-  # where P = Phi(L^T L_bar) and Phi takes the lower triangle and halves the diagonal.
-  # We implement this as:
-  #   P = Phi(L^T @ grad)
-  #   S = L^{-T} P L^{-1}  (via two triangular solves)
-  #   grad_A = (S + S^T) / 2  (symmetrize for the full-matrix gradient convention)
-  P <- nv_matmul(t(L), grad)
+  # We almost use Murray (2016) equation 10, but use M / 2 intead of phi(M) which are both
+  # equivalent for symmetric perturbations
+  P <- phi(nv_matmul(t(L), grad))
   half <- nvl_fill(0.5, dtype = dtype(P), shape = shape(P))
-  dmask <- diag_mask(n)
-  P <- nvl_ifelse(dmask, nvl_mul(P, half), P)
-  lower_mask <- tril_mask(n, dtype(P))
-  P <- nvl_ifelse(lower_mask, P, zeros_like(P, FALSE))
-
-  # S = L^{-T} P L^{-1}
-  S <- nvl_triangular_solve(L, P, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
-  S <- nvl_triangular_solve(L, S, left_side = FALSE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
-
-  half <- nvl_fill(0.5, dtype = dtype(S), shape = shape(S))
-  grad_A <- nvl_mul(nvl_add(S, t(S)), half)
+  S <- nvl_mul(nvl_add(P, t(P)), half)
+  S <- nvl_triangular_solve(L, S, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
+  grad_A <- nvl_triangular_solve(
+    L,
+    S,
+    left_side = FALSE,
+    lower = TRUE,
+    unit_diagonal = FALSE,
+    transpose_a = "NO_TRANSPOSE"
+  )
 
   list(grad_A)
 }
 
-# Giles (2008): An extended collection of matrix derivative results for forward
-# and reverse mode algorithmic differentiation, Section 2.3.1.
-# https://people.maths.ox.ac.uk/gilesm/files/NA-08-01.pdf
-# For C = A^{-1} B: B_bar = A^{-T} C_bar, A_bar = -B_bar C^T
-# Applied here with triangular structure and masking.
+#' @describeIn nvl_triangular_solve Gradient Rule:
+#' @references
+#' `r xlamisc::format_bib("giles2008extended")`
 p_triangular_solve[["backward"]] <- function(
   inputs,
   outputs,
@@ -971,12 +985,17 @@ p_triangular_solve[["backward"]] <- function(
   x <- outputs[[1L]]
   grad <- grads[[1L]]
 
+  if (length(shape(a)) > 2L) {
+    cli_abort("Batched triangular_solve gradient is not yet supported.")
+  }
+
+  # op(A) is A or A^T depending on transpose_a
   adj_transpose <- if (transpose_a == "TRANSPOSE") "NO_TRANSPOSE" else "TRANSPOSE"
 
   need_grad_b <- .required[[1L]] || .required[[2L]]
 
   if (left_side) {
-    # Forward: op(a) @ x = b
+    # From the paper: grad_b = op(A)^{-1} * grad
     grad_b <- if (need_grad_b) {
       nvl_triangular_solve(
         a,
@@ -987,6 +1006,15 @@ p_triangular_solve[["backward"]] <- function(
         transpose_a = adj_transpose
       )
     }
+    # From the paper: dx/da = -A^{-1} * dA * A^{-1} * B
+    # Similar to cholesky, where the perturbation needs to be symmetric, here the perturbation
+    # of A can be assumed to be a lower triangular matrix.
+    # Out derivative therefore only works when the input is a lower triangular matrix.
+    # I.e. dy/dx_{i, j} = 0 for the upper/lower triangular matrix
+    # But because the contangent can be anything, we need to handle this here.
+    # (we could either modify the contangent or mask the results; we choose the latter)
+    # Also if unit_diagonal = TRUE the diagonal elements are not read and hence also have no effect
+    # i.e. we also zero out those.
     grad_a <- if (.required[[1L]]) {
       raw <- nvl_negate(nv_matmul(grad_b, t(x)))
       n <- shape(a)[length(shape(a))]
@@ -994,11 +1022,11 @@ p_triangular_solve[["backward"]] <- function(
       if (transpose_a != "NO_TRANSPOSE") {
         raw <- t(raw)
       }
-      nvl_ifelse(mask, raw, zeros_like(raw, FALSE))
+      nvl_ifelse(mask, raw, zeros_like(raw))
     }
     if (!.required[[2L]]) grad_b <- NULL
   } else {
-    # Forward: x @ op(a) = b
+    # Right side: x @ op(a) = b
     grad_b <- if (need_grad_b) {
       nvl_triangular_solve(
         a,
@@ -1009,6 +1037,7 @@ p_triangular_solve[["backward"]] <- function(
         transpose_a = adj_transpose
       )
     }
+    # Same masking logic as the left_side case above.
     grad_a <- if (.required[[1L]]) {
       raw <- nvl_negate(nv_matmul(t(x), grad_b))
       n <- shape(a)[length(shape(a))]
@@ -1016,7 +1045,7 @@ p_triangular_solve[["backward"]] <- function(
       if (transpose_a != "NO_TRANSPOSE") {
         raw <- t(raw)
       }
-      nvl_ifelse(mask, raw, zeros_like(raw, FALSE))
+      nvl_ifelse(mask, raw, zeros_like(raw))
     }
     if (!.required[[2L]]) grad_b <- NULL
   }
