@@ -15,6 +15,9 @@ knitr::opts_chunk$set(
 
 # anvil
 
+Package website: [release](https://r-xla.github.io/anvil/) |
+[dev](https://r-xla.github.io/anvil/dev/)
+
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 ![R-CMD-check](https://github.com/r-xla/anvil/actions/workflows/R-CMD-check.yaml/badge.svg)

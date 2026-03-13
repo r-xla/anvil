@@ -11,7 +11,7 @@ Authors@R: c(
   )
 Description: Code transformation framework for R.
 License: MIT + file LICENSE
-URL: https://r-xla.github.io/anvil/, https://github.com/r-xla/anvild
+URL: https://r-xla.github.io/anvil/, https://github.com/r-xla/anvil
 BugReports: https://github.com/r-xla/anvil/issues
 Depends:
     R (>= 4.2.0)
