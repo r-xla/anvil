@@ -3,7 +3,7 @@
 
 # anvil
 
-Package website: [release](https://r-xla.github.io/anvil/) |
+Package website: [release](https://r-xla.github.io/anvil/) \|
 [dev](https://r-xla.github.io/anvil/dev/)
 
 <!-- badges: start -->
@@ -25,26 +25,11 @@ including CPU and GPU.
 
 ## Installation
 
-In order to install from source, you need a C++20 compiler, as well as
-`libprotobuf` and the `protobuf-compiler`.
-
-``` r
-pak::pak("r-xla/anvil")
-```
-
-You can also install from
-[r-universe](https://r-xla.r-universe.dev/builds), by adding the code
-below to your `.Rprofile`.
-
-``` r
-options(repos = c(
-  rxla = "https://r-xla.r-universe.dev",
-  CRAN = "https://cloud.r-project.org/"
-))
-```
-
-You can also use one of the prebuilt [Docker
-images](https://github.com/r-xla/docker).
+{anvil} can be installed from GitHub or
+[r-universe](https://r-xla.r-universe.dev/builds). Prebuilt [Docker
+images](https://github.com/r-xla/docker) are also available. See the
+[Installation](https://r-xla.github.io/anvil/articles/installation.html)
+vignette for detailed instructions.
 
 ## Quick Start
 
@@ -123,10 +108,6 @@ problem for fast running programs.
   - :white_check_mark: CPU backend is supported.
   - :warning: Metal (Apple GPU) backend is available but not fully
     functional.
-
-For more details, see the
-[Installation](https://r-xla.github.io/anvil/articles/installation.html)
-vignette.
 
 ## Acknowledgments
 
