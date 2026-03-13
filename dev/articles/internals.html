@@ -41,7 +41,8 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/anvil.html">Get Started</a></li>
+<li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
+    <li><a class="dropdown-item" href="../articles/anvil.html">Get Started</a></li>
     <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
     <li><a class="dropdown-item" href="../articles/subsetting.html">Subsetting</a></li>
     <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
@@ -265,7 +266,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x556e97a6e1b8&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55c8c7e75c70&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -308,7 +309,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x556e97a79470&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55c8c7e74ff8&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the

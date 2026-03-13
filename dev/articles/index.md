@@ -7,6 +7,7 @@
 - [FAQ](https://r-xla.github.io/anvil/dev/articles/faq.md):
 - [Gaussian
   Process](https://r-xla.github.io/anvil/dev/articles/gaussian-process.md):
+- [Installation](https://r-xla.github.io/anvil/dev/articles/installation.md):
 - [Internals](https://r-xla.github.io/anvil/dev/articles/internals.md):
 - [Logistic
   Regression](https://r-xla.github.io/anvil/dev/articles/logistic-regression.md):

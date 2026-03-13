@@ -27,7 +27,6 @@ nv_subset(x, ...)
 
 - ...:
 
-    
   Subset specifications, one per dimension. Omitted trailing dimensions
   select all elements. See
   [`vignette("subsetting")`](https://r-xla.github.io/anvil/dev/articles/subsetting.md)

@@ -24,7 +24,6 @@ nv_subset_assign(x, ..., value)
 
 - ...:
 
-    
   Subset specifications, one per dimension. See
   [`vignette("subsetting")`](https://r-xla.github.io/anvil/dev/articles/subsetting.md)
   for details.
