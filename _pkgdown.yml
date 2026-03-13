@@ -26,6 +26,8 @@ navbar:
         href: articles/logistic-regression.html
       - text: Hamiltonian Monte Carlo
         href: articles/mcmc.html
+      - text: Gaussian Process
+        href: articles/gaussian-process.html
     articles:
       text: Articles
       menu:
