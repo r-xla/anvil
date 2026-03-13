@@ -908,7 +908,8 @@ triangular_mask <- function(n, dt, lower, unit_diagonal) {
   }
 }
 
-#' @describeIn nvl_cholesky Gradient Rule:
+#' @name nvl_cholesky
+#' @rdname nvl_cholesky
 #' @references
 #' `r xlamisc::format_bib("murray2016differentiation", "walter2012structured")`
 p_cholesky[["backward"]] <- function(inputs, outputs, grads, lower, .required) {
@@ -968,7 +969,8 @@ p_cholesky[["backward"]] <- function(inputs, outputs, grads, lower, .required) {
   list(grad_A)
 }
 
-#' @describeIn nvl_triangular_solve Gradient Rule:
+#' @name nvl_triangular_solve
+#' @rdname nvl_triangular_solve
 #' @references
 #' `r xlamisc::format_bib("giles2008extended")`
 p_triangular_solve[["backward"]] <- function(
