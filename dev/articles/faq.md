@@ -1,0 +1,19 @@
+# FAQ
+
+## How do I control the number of threads used by XLA?
+
+XLA (the compiler backend used by `anvil`) may use multiple CPU threads
+for parallelism. On shared systems such as HPC clusters, it is often
+necessary to restrict which cores a process can use.
+
+The recommended approach is to control thread affinity **from outside
+the process**, using OS-level tools. On Linux, `taskset` is the most
+common option:
+
+``` bash
+# Pin the R process to cores 0-3
+taskset -c 0-3 Rscript my_script.R
+```
+
+See [jax#15866](https://github.com/jax-ml/jax/issues/15866) for more
+information.

@@ -4,6 +4,7 @@ pkgdown_sha: ~
 articles:
   anvil: anvil.html
   debugging: debugging.html
+  faq: faq.html
   gaussian-process: gaussian-process.html
   internals: internals.html
   logistic-regression: logistic-regression.html
@@ -13,7 +14,7 @@ articles:
   random-numbers: random-numbers.html
   subsetting: subsetting.html
   type-promotion: type-promotion.html
-last_built: 2026-03-13T10:22Z
+last_built: 2026-03-13T11:52Z
 urls:
   reference: https://r-xla.github.io/anvil/reference
   article: https://r-xla.github.io/anvil/articles
