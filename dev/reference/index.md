@@ -16,9 +16,10 @@ Functions for creating and initializing tensors
   : Iota
 - [`nv_seq()`](https://r-xla.github.io/anvil/dev/reference/nv_seq.md) :
   Sequence
-- [`nv_aten()`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md)
-  [`AbstractTensor()`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md)
-  : Abstract Tensor Class
+- [`nv_diag()`](https://r-xla.github.io/anvil/dev/reference/nv_diag.md)
+  : Diagonal Matrix
+- [`nv_eye()`](https://r-xla.github.io/anvil/dev/reference/nv_eye.md) :
+  Identity Matrix
 
 ## Tensor attributes and converters
 
@@ -209,6 +210,10 @@ Linear algebra operations
 
 - [`nv_matmul()`](https://r-xla.github.io/anvil/dev/reference/nv_matmul.md)
   : Matrix Multiplication
+- [`nv_cholesky()`](https://r-xla.github.io/anvil/dev/reference/nv_cholesky.md)
+  : Cholesky Decomposition
+- [`nv_solve()`](https://r-xla.github.io/anvil/dev/reference/nv_solve.md)
+  : Solve Linear System
 
 ## Logical and bitwise operations
 
@@ -401,6 +406,8 @@ Low-level primitive operations (nvl\_\* functions)
   : Primitive Cube Root
 - [`nvl_ceil()`](https://r-xla.github.io/anvil/dev/reference/nvl_ceil.md)
   : Primitive Ceiling
+- [`nvl_cholesky()`](https://r-xla.github.io/anvil/dev/reference/nvl_cholesky.md)
+  : Primitive Cholesky Decomposition
 - [`nvl_clamp()`](https://r-xla.github.io/anvil/dev/reference/nvl_clamp.md)
   : Primitive Clamp
 - [`nvl_concatenate()`](https://r-xla.github.io/anvil/dev/reference/nvl_concatenate.md)
@@ -521,6 +528,8 @@ Low-level primitive operations (nvl\_\* functions)
   : Primitive Hyperbolic Tangent
 - [`nvl_transpose()`](https://r-xla.github.io/anvil/dev/reference/nvl_transpose.md)
   : Primitive Transpose
+- [`nvl_triangular_solve()`](https://r-xla.github.io/anvil/dev/reference/nvl_triangular_solve.md)
+  : Primitive Triangular Solve
 - [`nvl_while()`](https://r-xla.github.io/anvil/dev/reference/nvl_while.md)
   : Primitive While Loop
 - [`nvl_xor()`](https://r-xla.github.io/anvil/dev/reference/nvl_xor.md)

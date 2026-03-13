@@ -67,8 +67,37 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="anvil-development-version">anvil (development version)<a class="anchor" aria-label="anchor" href="#anvil-development-version"></a></h2>
 <div class="section level3">
+<h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<ul><li>New primitives:
+<ul><li>
+<code><a href="../reference/nvl_cholesky.html">nvl_cholesky()</a></code> to compute the Cholesky decomposition of a matrix.</li>
+<li>
+<code><a href="../reference/nvl_triangular_solve.html">nvl_triangular_solve()</a></code> to solve a system of linear equations with a triangular matrix.</li>
+</ul></li>
+<li>New API functions:
+<ul><li>
+<code><a href="../reference/nv_diag.html">nv_diag()</a></code> to create a diagonal matrix from a 1-D tensor.</li>
+<li>
+<code><a href="../reference/nv_eye.html">nv_eye()</a></code> to create an identity matrix.</li>
+<li>
+<code><a href="../reference/nv_solve.html">nv_solve()</a></code> to solve a system of linear equations.</li>
+<li>
+<code><a href="../reference/nv_cholesky.html">nv_cholesky()</a></code> to compute the Cholesky decomposition of a matrix.</li>
+</ul></li>
+<li>Improved semantics:
+<ul><li>
+<code><a href="../reference/nvl_cholesky.html">nvl_cholesky()</a></code> now zeros out the upper/lower triangle of the output.</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
 <h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
-<ul><li>+-Inf/NaN are correctly created for <code>f64</code> when inlined into the XLA exectuable (<a href="https://github.com/r-xla/anvil/issues/182" class="external-link">#182</a>).</li>
+<ul><li>+-Inf/NaN are correctly created for <code>f64</code> when inlined into the XLA exectuable (<a href="https://github.com/r-xla/anvil/issues/182" class="external-link">#182</a>). This caused wrong results with e.g. <code><a href="../reference/nv_reduce_max.html">nv_reduce_max()</a></code> when working with <code>f64</code>.</li>
+<li>Corrected argument checks in <code><a href="../reference/nv_iota.html">nv_iota()</a></code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-development-version">Documentation<a class="anchor" aria-label="anchor" href="#documentation-development-version"></a></h3>
+<ul><li>New vignette on implementing Gaussian Processes.</li>
+<li>New vignette on implementing Metropolis-Hastings sampling.</li>
 </ul></div>
 </div>
     <div class="section level2">

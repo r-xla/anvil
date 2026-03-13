@@ -4,6 +4,8 @@
 
 - [Get Started](https://r-xla.github.io/anvil/dev/articles/anvil.md):
 - [Debugging](https://r-xla.github.io/anvil/dev/articles/debugging.md):
+- [Gaussian
+  Process](https://r-xla.github.io/anvil/dev/articles/gaussian-process.md):
 - [Internals](https://r-xla.github.io/anvil/dev/articles/internals.md):
 - [Logistic
   Regression](https://r-xla.github.io/anvil/dev/articles/logistic-regression.md):
