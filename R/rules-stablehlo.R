@@ -484,11 +484,7 @@ p_cholesky[["stablehlo"]] <- function(operand, lower) {
   if (length(op_shape) > 2L) {
     mask <- stablehlo::hlo_broadcast_in_dim(mask, (length(op_shape) - 2L):(length(op_shape) - 1L), op_shape)
   }
-  zero <- stablehlo::hlo_broadcast_in_dim(
-    stablehlo::hlo_scalar(0, dtype = dtype(operand), func = operand$func),
-    integer(0),
-    op_shape
-  )
+  zero <- stablehlo::hlo_tensor(0L, dtype = dtype(operand), shape = op_shape)
   list(stablehlo::hlo_select(mask, L, zero))
 }
 

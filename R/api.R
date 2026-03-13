@@ -1241,18 +1241,20 @@ nv_solve <- function(a, b) {
 nv_diag <- function(x) {
   n <- shape_abstract(x)[1L]
   zeros <- nv_fill(0, c(n, n), dtype = dtype_abstract(x))
-  result <- nv_while(
-    list(mat = zeros, i = nv_scalar(1L)),
-    \(mat, i) i <= n,
-    \(mat, i) {
-      mat[i, i] <- x[i]
-      list(
-        mat = mat,
-        i = i + 1L
-      )
-    }
+  idx <- nvl_reshape(nv_iota(dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
+  indices <- nv_concatenate(idx, idx, dimension = 2L)
+  nvl_scatter(
+    zeros,
+    indices,
+    x,
+    update_window_dims = integer(0),
+    inserted_window_dims = c(1L, 2L),
+    input_batching_dims = integer(0),
+    scatter_indices_batching_dims = integer(0),
+    scatter_dims_to_operand_dims = c(1L, 2L),
+    index_vector_dim = 2L,
+    unique_indices = TRUE
   )
-  result$mat
 }
 
 #' @title Identity Matrix

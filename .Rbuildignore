@@ -26,3 +26,4 @@ anvil.Rproj
 ^benchmarks/
 ^\.claude$
 ^primitives\.md$
+^\.git
