@@ -450,6 +450,30 @@ prim("add")[["backward"]]
 
 The transformation function `transform_gradient` basically walks the graph backwards and applies the backward rules to each primitive, producing a `Graph` that contains the forward and backward pass.
 
+#### Automatic Differentiation
+
+The `transform_gradient()` function implements backward-mode automatic differentiation (also known as reverse-mode AD).
+Given a `Graph` representing a function $f : \mathbb{R}^n \to \mathbb{R}$, it produces a new `Graph` that computes both the original output and the gradients of the output with respect to specified inputs.
+
+More concretely, consider a computational graph as a sequence of primitive operations $v_k = g_k(v_{\text{pa}(k)})$, where $v_{\text{pa}(k)}$ denotes the parent values (inputs) of operation $k$.
+The goal is to compute $\bar{v}_i = \frac{\partial f}{\partial v_i}$ for each intermediate value $v_i$.
+Starting from $\bar{f} = 1$, the backward pass walks the graph in reverse topological order and accumulates gradients via the chain rule:
+$$\bar{v}_i = \sum_{k : i \in \text{pa}(k)} \bar{v}_k \cdot \frac{\partial g_k}{\partial v_i}$$
+Each primitive's backward rule computes the local partial derivatives $\frac{\partial g_k}{\partial v_i}$ and multiplies them with the incoming gradient $\bar{v}_k$.
+This is the standard vector-Jacobian product (VJP) formulation of reverse-mode AD, which avoids materializing the full Jacobian matrices of intermediate operations.
+Instead, each backward rule directly computes the product of the incoming gradient vector with the local Jacobian, which is typically much cheaper and can often be expressed in closed form.
+
+In the implementation, the transformation walks the graph in reverse order.
+For each `PrimitiveCall`, it looks up the corresponding backward rule stored in the primitive's `@rules[["backward"]]` field.
+This backward rule receives the original inputs and outputs of the primitive call (from the forward pass) as well as the incoming gradient $\bar{v}_k$, and returns the gradient contributions for each input.
+These contributions are accumulated across all uses of a value to obtain the total gradient $\bar{v}_i$.
+
+Because the backward rules are themselves expressed in terms of primitive operations (i.e., they call `nvl_*` functions), the gradient graph is built using the same tracing mechanism as the forward pass.
+This means that the gradient computation is itself a `Graph` that can be further transformed or compiled --- for example, one could in principle compute higher-order derivatives by applying `transform_gradient()` again to the gradient graph.
+
+An important design choice is that the backward rules are stored per-primitive in the `@rules` field, rather than being hard-coded in the transformation.
+This makes it straightforward to add differentiation support for new primitives (see Section \ref{extending}) and keeps the transformation logic generic.
+
 #### Compiling a Graph
 
 Whenever we are done transforming out `Graph` and are ready to execute it, we need to lower it.
@@ -832,6 +856,23 @@ As a concrete example, there is an experimental backend that compiles `Graph` ob
 This demonstrates that the same graph can be lowered to fundamentally different targets.
 However, the process of adding a new backend currently requires some familiarity with the package internals. Providing a more streamlined and well-documented interface for registering custom backends is an area we plan to improve.
 
+## Testing
+
+Ensuring correctness of both the forward evaluation and the gradient computation is critical for a code transformation framework.
+In \CRANpkg{anvil}, we bootstrap correctness by comparing against the \CRANpkg{torch} package wherever possible.
+
+For forward-pass testing, each primitive's JIT-compiled output is compared against the corresponding \CRANpkg{torch} function on randomly generated inputs.
+For example, to test `nvl_add`, we generate random tensors, compute the result using both `jit(nvl_add)(x, y)` and `torch::torch_add(x, y)`, and assert that the outputs match up to numerical tolerance.
+This is done using helper functions like `expect_jit_torch_binary()` and `expect_jit_torch_unary()`, which handle the data generation and comparison.
+
+For backward-pass testing, the same strategy is applied to gradient computation.
+The anvil gradient (obtained via `jit(gradient(f))(x)`) is compared against the gradient computed by \CRANpkg{torch}'s autograd engine.
+For non-scalar functions, both sides are wrapped with a summation to produce a scalar loss before differentiating, ensuring a consistent comparison.
+
+Because \CRANpkg{torch} is not a hard dependency of the package, the torch-based tests are stored in `inst/extra-tests/` and are conditionally sourced only when \CRANpkg{torch} is installed.
+This keeps the test suite lightweight for users who do not have \CRANpkg{torch}, while still running the full comparison suite in CI.
+For primitives that have no direct \CRANpkg{torch} equivalent (e.g., random number generation or bitwise operations), manual tests with hardcoded expected values are used instead.
+
 ## Benchmarks
 
 Runtime benchmarks comparing \CRANpkg{anvil} on CPU and GPU are available at \url{https://r-xla.github.io/benchmarks/}.
@@ -857,6 +898,8 @@ To do this properly, the intermediate `AnvilGraph` needs to be extended to suppo
 Extending the Fortran backend to cover more primitives also means that the second major restriction can be lifted, at least when executing on CPUs.
 
 Apart from these steps, there also also many other next steps that would improve useability and make it more generally useful.
+Another important improvement is to decouple the intermediate representation (`AnvilGraph`) from StableHLO more thoroughly.
+Currently, the IR is tied too closely to StableHLO, which limits the ability to target alternative backends and to represent higher-level optimizations that do not map directly to StableHLO concepts.
 The simplest one is to extend the set of primitive operations supported in both \CRANpkg{anvil} and \CRANpkg{stablehlo}.
 Then, more useful API functions can be added, e.g. focusing on linear algebra operations.
 Also, other code transformations such as higher-order derivatives, forward-mode automatic differentiation or improved vectorization transformations could be added.
