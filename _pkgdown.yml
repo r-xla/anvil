@@ -16,7 +16,7 @@ toc:
 
 navbar:
   structure:
-    left:  [reference, news, articles, examples, technical]
+    left:  [reference, news, articles, examples, technical, faq]
     right: [search, github, lightswitch]
   components:
     examples:
@@ -41,6 +41,9 @@ navbar:
         href: articles/random-numbers.html
       - text: Debugging
         href: articles/debugging.html
+    faq:
+      text: FAQ
+      href: articles/faq.html
     technical:
       text: Technical
       menu:
