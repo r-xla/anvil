@@ -24,8 +24,8 @@ navbar:
       menu:
       - text: Logistic Regression
         href: articles/logistic-regression.html
-      - text: Hamiltonian Monte Carlo
-        href: articles/mcmc.html
+      - text: Metropolis Hastings
+        href: articles/metropolis-hastings.html
       - text: Gaussian Process
         href: articles/gaussian-process.html
     articles:
