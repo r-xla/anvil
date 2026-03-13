@@ -254,6 +254,54 @@ test_that("p_logistic", {
   expect_jit_torch_unary(nvl_logistic, torch::torch_sigmoid, c(2, 3))
 })
 
+describe("p_cholesky", {
+  it("lower = TRUE", {
+    A <- crossprod(matrix(rnorm(9), 3, 3)) + diag(3)
+    out_nv <- as_array(jit(function(a) nvl_cholesky(a, lower = TRUE))(nv_tensor(A, dtype = "f64")))
+    out_th <- as_array_torch(torch::linalg_cholesky(torch::torch_tensor(A, dtype = torch::torch_float64())))
+    expect_equal(out_nv, out_th, tolerance = 1e-6)
+  })
+
+  it("lower = FALSE", {
+    A <- crossprod(matrix(rnorm(9), 3, 3)) + diag(3)
+    out_nv <- as_array(jit(function(a) nvl_cholesky(a, lower = FALSE))(nv_tensor(A, dtype = "f64")))
+    out_th <- as_array_torch(torch::linalg_cholesky(torch::torch_tensor(A, dtype = torch::torch_float64()))$t())
+    expect_equal(out_nv, out_th, tolerance = 1e-6)
+  })
+})
+
+describe("p_triangular_solve", {
+  it("left_side, lower", {
+    L <- matrix(c(3, 1, 0, 2), nrow = 2)
+    b <- matrix(c(6, 5), nrow = 2)
+    out_nv <- as_array(jit(function(a, b) {
+      nvl_triangular_solve(a, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+    })(nv_tensor(L, dtype = "f64"), nv_tensor(b, dtype = "f64")))
+    out_th <- as_array_torch(torch::linalg_solve_triangular(
+      torch::torch_tensor(L, dtype = torch::torch_float64()),
+      torch::torch_tensor(b, dtype = torch::torch_float64()),
+      upper = FALSE,
+      left = TRUE
+    ))
+    expect_equal(out_nv, out_th, tolerance = 1e-6)
+  })
+
+  it("right_side, upper", {
+    U <- matrix(c(3, 0, 1, 2), nrow = 2)
+    b <- matrix(c(6, 5, 4, 3), nrow = 2)
+    out_nv <- as_array(jit(function(a, b) {
+      nvl_triangular_solve(a, b, left_side = FALSE, lower = FALSE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+    })(nv_tensor(U, dtype = "f64"), nv_tensor(b, dtype = "f64")))
+    out_th <- as_array_torch(torch::linalg_solve_triangular(
+      torch::torch_tensor(U, dtype = torch::torch_float64()),
+      torch::torch_tensor(b, dtype = torch::torch_float64()),
+      upper = TRUE,
+      left = FALSE
+    ))
+    expect_equal(out_nv, out_th, tolerance = 1e-6)
+  })
+})
+
 test_that("p_pad", {
   x_arr <- array(1:6, c(2, 3))
   x_nv <- nv_tensor(x_arr, dtype = "f32")

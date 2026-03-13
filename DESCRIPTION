@@ -58,6 +58,7 @@ Collate:
     'api-utilities.R'
     'asserts.R'
     'backward.R'
+    'bibentries.R'
     'box.R'
     'tensor.R'
     'debug.R'

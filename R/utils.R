@@ -138,13 +138,11 @@ ones <- function(dtype, shape, ambiguous) {
 }
 
 
-# TODO: Better handle ambiguity
-zeros_like <- function(x, ambiguous) {
+zeros_like <- function(x, ambiguous = FALSE) {
   zeros(dtype(x), shape(x), ambiguous)
 }
 
-# TODO: Handle ambiguity
-ones_like <- function(x, ambiguous) {
+ones_like <- function(x, ambiguous = FALSE) {
   ones(dtype(x), shape(x), ambiguous)
 }
 

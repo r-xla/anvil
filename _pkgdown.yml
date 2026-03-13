@@ -62,7 +62,8 @@ reference:
       - nv_fill
       - nv_iota
       - nv_seq
-      - nv_aten
+      - nv_diag
+      - nv_eye
 
   - title: Tensor attributes and converters
     desc: Functions for querying tensor attributes and converting them
@@ -169,6 +170,8 @@ reference:
     desc: Linear algebra operations
     contents:
       - nv_matmul
+      - nv_cholesky
+      - nv_solve
 
   - title: Logical and bitwise operations
     desc: Logical and bitwise operations on tensors
@@ -248,6 +251,7 @@ reference:
       - AnvilPrimitive
       - PrimitiveCall
       - register_primitive
+      - nv_aten
       - AbstractTensor
       - ConcreteTensor
       - LiteralTensor
