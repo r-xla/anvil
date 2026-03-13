@@ -16,9 +16,8 @@ nv_subset(x, ...)
 \item{x}{(\code{\link{tensorish}})\cr
 Tensor to subset.}
 
-\item{...}{\cr
-Subset specifications, one per dimension. Omitted trailing dimensions
-select all elements. See \code{vignette("subsetting")} for details.}
+\item{...}{Subset specifications, one per dimension. Omitted trailing
+dimensions select all elements. See \code{vignette("subsetting")} for details.}
 }
 \value{
 \code{\link{tensorish}}
