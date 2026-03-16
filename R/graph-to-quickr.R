@@ -177,7 +177,7 @@ graph_to_quickr_make_wrapper <- function(
   wrapper
 }
 
-#' Convert an AnvilGraph to a quickr-compatible R function
+#' Convert an AnvilGraph to a plain R function
 #'
 #' Lowers a supported subset of `AnvilGraph` objects to a plain R function (no
 #' compilation) suitable for `quickr::quick()`. The returned function expects
@@ -192,7 +192,7 @@ graph_to_quickr_make_wrapper <- function(
 #' @seealso [`jit()`] with `backend = "quickr"` for tracing and compiling a
 #'   regular R function in one step.
 #' @export
-graph_to_quickr_r_function <- function(graph) {
+graph_to_r_function <- function(graph) {
   if (!is_graph(graph)) {
     cli_abort("{.arg graph} must be a {.cls AnvilGraph}")
   }

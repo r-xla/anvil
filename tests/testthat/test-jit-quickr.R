@@ -28,3 +28,16 @@ test_that("jit: quickr backend does not support donate or device", {
     fixed = TRUE
   )
 })
+
+test_that("graph_to_r_function lowers a graph to a plain R function", {
+  skip_if_not_installed("quickr")
+
+  graph <- trace_fn(
+    function(x) x + 1,
+    list(x = nv_scalar(1.0, dtype = "f64"))
+  )
+
+  f <- graph_to_r_function(graph)
+
+  expect_equal(f(2), 3)
+})
