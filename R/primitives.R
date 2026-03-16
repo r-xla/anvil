@@ -2507,3 +2507,122 @@ nvl_gather <- function(
     infer_fn = infer_fn
   )[[1L]]
 }
+
+p_cholesky <- AnvilPrimitive("cholesky")
+#' @title Primitive Cholesky Decomposition
+#' @description
+#' Computes the Cholesky decomposition of a symmetric positive-definite matrix.
+#' Dimensions before the last two are batch dimensions.
+#' @param operand ([`tensorish`])\cr
+#'   Tensorish value of data type floating-point with at least 2 dimensions.
+#'   The last two dimensions must be equal (square matrix); any leading
+#'   dimensions are batch dimensions.
+#' @param lower (`logical(1)`)\cr
+#'   If `TRUE`, compute the lower triangular factor `L` such that
+#'   `operand = L %*% t(L)`. If `FALSE`, compute the upper triangular
+#'   factor `U` such that `operand = t(U) %*% U`.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as the input.
+#'   The values in the triangle not specified by `lower` are implementation-defined.
+#'   It is ambiguous if the input is ambiguous.
+#' @templateVar primitive_id cholesky
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_cholesky()].
+#' @seealso [nv_solve()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   # Create a positive-definite matrix
+#'   x <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+#'   nvl_cholesky(x, lower = TRUE)
+#' })
+#' @export
+nvl_cholesky <- function(operand, lower) {
+  infer_fn <- function(operand, lower) {
+    # Output has same shape and dtype as input (square matrix)
+    list(AbstractTensor(
+      dtype = dtype(operand),
+      shape = Shape(shape(operand)),
+      ambiguous = operand$ambiguous
+    ))
+  }
+  graph_desc_add(
+    p_cholesky,
+    list(operand = operand),
+    list(lower = lower),
+    infer_fn = infer_fn
+  )[[1L]]
+}
+
+p_triangular_solve <- AnvilPrimitive("triangular_solve")
+#' @title Primitive Triangular Solve
+#' @description
+#' Solves a system of linear equations with a triangular coefficient matrix.
+#' When `left_side` is `TRUE`, solves `op(a) %*% x = b` for `x`.
+#' When `left_side` is `FALSE`, solves `x %*% op(a) = b` for `x`.
+#' Dimensions before the last two are batch dimensions and must match
+#' between `a` and `b` (no broadcasting).
+#' Here `op` is `A` or `A^T` depending on `transpose_a`.
+#' @param a ([`tensorish`])\cr
+#'   Triangular coefficient matrix of data type floating-point with at least 2
+#'   dimensions. The last two dimensions must be equal (square matrix); any
+#'   leading dimensions are batch dimensions.
+#' @param b ([`tensorish`])\cr
+#'   Right-hand side tensor. Must have the same data type, rank, and batch
+#'   dimensions as `a`.
+#' @param left_side (`logical(1)`)\cr
+#'   If `TRUE`, solve `op(a) %*% x = b`. If `FALSE`, solve `x %*% op(a) = b`.
+#' @param lower (`logical(1)`)\cr
+#'   If `TRUE`, `a` is lower triangular. If `FALSE`, `a` is upper triangular.
+#' @param unit_diagonal (`logical(1)`)\cr
+#'   If `TRUE`, assume diagonal elements of `a` are 1.
+#' @param transpose_a (`character(1)`)\cr
+#'   One of `"NO_TRANSPOSE"`, `"TRANSPOSE"`, or `"ADJOINT"`.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as `b`.
+#'   It is ambiguous if both `a` and `b` are ambiguous.
+#' @templateVar primitive_id triangular_solve
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_triangular_solve()].
+#' @seealso [nv_solve()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   # Solve L %*% x = b where L is lower triangular
+#'   L <- nv_tensor(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
+#'   b <- nv_tensor(matrix(c(4, 3), nrow = 2), dtype = "f32")
+#'   nvl_triangular_solve(L, b,
+#'     left_side = TRUE, lower = TRUE,
+#'     unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"
+#'   )
+#' })
+#' @export
+nvl_triangular_solve <- function(a, b, left_side, lower, unit_diagonal, transpose_a) {
+  infer_fn <- function(a, b, left_side, lower, unit_diagonal, transpose_a) {
+    left_side_attr <- r_to_constant(as.logical(left_side), dtype = "i1", shape = integer())
+    lower_attr <- r_to_constant(as.logical(lower), dtype = "i1", shape = integer())
+    unit_diagonal_attr <- r_to_constant(as.logical(unit_diagonal), dtype = "i1", shape = integer())
+    out <- stablehlo::infer_types_triangular_solve(
+      at2vt(a),
+      at2vt(b),
+      left_side = left_side_attr,
+      lower = lower_attr,
+      unit_diagonal = unit_diagonal_attr,
+      transpose_a = transpose_a
+    )[[1L]]
+    out <- vt2at(out)
+    out$ambiguous <- a$ambiguous && b$ambiguous
+    list(out)
+  }
+  graph_desc_add(
+    p_triangular_solve,
+    list(a = a, b = b),
+    list(
+      left_side = left_side,
+      lower = lower,
+      unit_diagonal = unit_diagonal,
+      transpose_a = transpose_a
+    ),
+    infer_fn = infer_fn
+  )[[1L]]
+}

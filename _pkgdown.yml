@@ -1,6 +1,11 @@
 url: https://r-xla.github.io/anvil/
 destination: docs
 
+development:
+  mode: auto
+  version_label: default
+  version_tooltip: "Version"
+
 template:
   bootstrap: 5
   light-switch: true
@@ -11,7 +16,7 @@ toc:
 
 navbar:
   structure:
-    left:  [reference, news, articles, examples, technical]
+    left:  [reference, news, articles, examples, technical, faq]
     right: [search, github, lightswitch]
   components:
     examples:
@@ -19,9 +24,15 @@ navbar:
       menu:
       - text: Logistic Regression
         href: articles/logistic-regression.html
+      - text: Metropolis Hastings
+        href: articles/metropolis-hastings.html
+      - text: Gaussian Process
+        href: articles/gaussian-process.html
     articles:
       text: Articles
       menu:
+      - text: Installation
+        href: articles/installation.html
       - text: Get Started
         href: articles/anvil.html
       - text: Type Promotion
@@ -32,6 +43,9 @@ navbar:
         href: articles/random-numbers.html
       - text: Debugging
         href: articles/debugging.html
+    faq:
+      text: FAQ
+      href: articles/faq.html
     technical:
       text: Technical
       menu:
@@ -55,7 +69,8 @@ reference:
       - nv_fill
       - nv_iota
       - nv_seq
-      - nv_aten
+      - nv_diag
+      - nv_eye
 
   - title: Tensor attributes and converters
     desc: Functions for querying tensor attributes and converting them
@@ -162,6 +177,8 @@ reference:
     desc: Linear algebra operations
     contents:
       - nv_matmul
+      - nv_cholesky
+      - nv_solve
 
   - title: Logical and bitwise operations
     desc: Logical and bitwise operations on tensors
@@ -242,6 +259,7 @@ reference:
       - AnvilPrimitive
       - PrimitiveCall
       - register_primitive
+      - nv_aten
       - AbstractTensor
       - ConcreteTensor
       - LiteralTensor

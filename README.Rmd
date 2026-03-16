@@ -15,6 +15,9 @@ knitr::opts_chunk$set(
 
 # anvil
 
+Package website: [release](https://r-xla.github.io/anvil/) |
+[dev](https://r-xla.github.io/anvil/dev/)
+
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 ![R-CMD-check](https://github.com/r-xla/anvil/actions/workflows/R-CMD-check.yaml/badge.svg)
@@ -29,24 +32,9 @@ Programs can run on various hardware backends, including CPU and GPU.
 
 ## Installation
 
-In order to install from source, you need a C++20 compiler, as well as `libprotobuf` and the `protobuf-compiler`.
-
-``` r
-pak::pak("r-xla/anvil")
-```
-
-You can also install from
-[r-universe](https://r-xla.r-universe.dev/builds), by adding the code
-below to your `.Rprofile`.
-
-``` r
-options(repos = c(
-  rxla = "https://r-xla.r-universe.dev",
-  CRAN = "https://cloud.r-project.org/"
-))
-```
-
-You can also use one of the prebuilt [Docker images](https://github.com/r-xla/docker).
+{anvil} can be installed from GitHub or [r-universe](https://r-xla.r-universe.dev/builds).
+Prebuilt [Docker images](https://github.com/r-xla/docker) are also available.
+See the [Installation](https://r-xla.github.io/anvil/articles/installation.html) vignette for detailed instructions.
 
 ## Quick Start
 
@@ -91,6 +79,18 @@ While {anvil} allows to run certain types of programs extremely fast, it only ap
 Specifically, it is suitable for numerical algorithms, such as optimizing bayesian models, training neural networks or more generally numerical optimization.
 Another restriction is that {anvil} needs to re-compile the code for each new unique input shape.
 This has the advantage, that the compiler can make memory optimizations, but the compilation overhead might be a problem for fast running programs.
+
+## Platform Support
+
+- **Linux**
+  - :white_check_mark: CPU backend is fully supported.
+  - :white_check_mark: CUDA (NVIDIA GPU) backend is fully supported.
+- **Windows**
+  - :white_check_mark: CPU backend is fully supported.
+  - :warning: GPU is only supported via Windows Subsystem for Linux (WSL2).
+- **macOS**
+  - :white_check_mark: CPU backend is supported.
+  - :warning: Metal (Apple GPU) backend is available but not fully functional.
 
 ## Acknowledgments
 

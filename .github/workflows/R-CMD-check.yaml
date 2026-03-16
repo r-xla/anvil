@@ -32,8 +32,8 @@ jobs:
           - config: {os: "macos", platform: "cpu"}
             runner: 'macos-latest'
             setup: |
-              brew install protobuf@21
-              brew link protobuf@21 --force --overwrite
+              brew install protobuf
+              brew link protobuf --force --overwrite
           - config: {os: "windows", platform: "cpu"}
             runner: 'windows-latest'
 

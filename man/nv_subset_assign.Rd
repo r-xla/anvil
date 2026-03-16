@@ -16,9 +16,8 @@ nv_subset_assign(x, ..., value)
 \item{x}{(\code{\link{tensorish}})\cr
 Tensor to update.}
 
-\item{...}{\cr
-Subset specifications, one per dimension. See \code{vignette("subsetting")}
-for details.}
+\item{...}{Subset specifications, one per dimension. See
+\code{vignette("subsetting")} for details.}
 
 \item{value}{(\code{\link{tensorish}})\cr
 Replacement values. Scalars are broadcast to the subset shape.
