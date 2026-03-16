@@ -18,6 +18,18 @@ test_that("quickr rules are exposed through primitives", {
   expect_null(prim("print")[["quickr"]])
 })
 
+test_that("documented primitive ids resolve to registered primitives", {
+  primitive_lines <- readLines(test_path("../../R/primitives.R"))
+  primitive_ids <- sub(
+    "^#' @templateVar primitive_id ",
+    "",
+    grep("^#' @templateVar primitive_id ", primitive_lines, value = TRUE)
+  )
+
+  missing <- primitive_ids[vapply(primitive_ids, function(id) is.null(prim(id)), logical(1))]
+  expect_identical(missing, character())
+})
+
 describe("subgraphs", {
   it("extracts subgraphs from higher-order primitives", {
     true_graph <- trace_fn(function() nv_scalar(1), list())

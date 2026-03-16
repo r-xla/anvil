@@ -182,7 +182,7 @@ p_div <- AnvilPrimitive("divide")
 #' Divides two tensors element-wise.
 #' @template params_prim_lhs_rhs_numeric
 #' @template return_prim_binary
-#' @templateVar primitive_id divide
+#' @templateVar primitive_id div
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_divide()].
@@ -202,7 +202,7 @@ p_pow <- AnvilPrimitive("power")
 #' Raises lhs to the power of rhs element-wise.
 #' @template params_prim_lhs_rhs_numeric
 #' @template return_prim_binary
-#' @templateVar primitive_id power
+#' @templateVar primitive_id pow
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_power()].
@@ -844,7 +844,7 @@ p_eq <- AnvilPrimitive("equal")
 #' Element-wise equality comparison.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
-#' @templateVar primitive_id equal
+#' @templateVar primitive_id eq
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "EQ"`.
@@ -864,7 +864,7 @@ p_ne <- AnvilPrimitive("not_equal")
 #' Element-wise inequality comparison.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
-#' @templateVar primitive_id not_equal
+#' @templateVar primitive_id ne
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "NE"`.
@@ -884,7 +884,7 @@ p_gt <- AnvilPrimitive("greater")
 #' Element-wise greater than comparison.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
-#' @templateVar primitive_id greater
+#' @templateVar primitive_id gt
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "GT"`.
@@ -904,7 +904,7 @@ p_ge <- AnvilPrimitive("greater_equal")
 #' Element-wise greater than or equal comparison.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
-#' @templateVar primitive_id greater_equal
+#' @templateVar primitive_id ge
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "GE"`.
@@ -924,7 +924,7 @@ p_lt <- AnvilPrimitive("less")
 #' Element-wise less than comparison.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
-#' @templateVar primitive_id less
+#' @templateVar primitive_id lt
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "LT"`.
@@ -944,7 +944,7 @@ p_le <- AnvilPrimitive("less_equal")
 #' Element-wise less than or equal comparison.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
-#' @templateVar primitive_id less_equal
+#' @templateVar primitive_id le
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "LE"`.
@@ -966,7 +966,7 @@ p_max <- AnvilPrimitive("maximum")
 #' Element-wise maximum of two tensors.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_binary
-#' @templateVar primitive_id maximum
+#' @templateVar primitive_id max
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_maximum()].
@@ -986,7 +986,7 @@ p_min <- AnvilPrimitive("minimum")
 #' Element-wise minimum of two tensors.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_binary
-#' @templateVar primitive_id minimum
+#' @templateVar primitive_id min
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_minimum()].
