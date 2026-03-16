@@ -9,12 +9,15 @@ test_that("jit: quickr backend compiles simple function", {
 test_that("jit: quickr backend preserves nested multi-output shapes and types", {
   skip_if_not_installed("quickr")
 
-  f <- jit(function(x) {
-    list(
-      flags = x > 1L,
-      payload = list(shifted = x + 1L)
-    )
-  }, backend = "quickr")
+  f <- jit(
+    function(x) {
+      list(
+        flags = x > 1L,
+        payload = list(shifted = x + 1L)
+      )
+    },
+    backend = "quickr"
+  )
 
   out <- f(1:3)
 

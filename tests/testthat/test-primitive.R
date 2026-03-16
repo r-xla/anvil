@@ -18,13 +18,22 @@ test_that("quickr rules are exposed through primitives", {
   expect_null(prim("print")[["quickr"]])
 })
 
-test_that("documented primitive ids resolve to registered primitives", {
-  primitive_lines <- readLines(test_path("../../R/primitives.R"))
-  primitive_ids <- sub(
+documented_primitive_ids <- function() {
+  pkg_dir <- tryCatch(pkgload::pkg_path(), error = function(...) NULL)
+  if (is.null(pkg_dir) || !file.exists(file.path(pkg_dir, "R", "primitives.R"))) {
+    testthat::skip("R/primitives.R is only available when testing from package source")
+  }
+
+  primitive_lines <- readLines(file.path(pkg_dir, "R", "primitives.R"))
+  sub(
     "^#' @templateVar primitive_id ",
     "",
     grep("^#' @templateVar primitive_id ", primitive_lines, value = TRUE)
   )
+}
+
+test_that("documented primitive ids resolve to registered primitives", {
+  primitive_ids <- documented_primitive_ids()
 
   missing <- primitive_ids[vapply(primitive_ids, function(id) is.null(prim(id)), logical(1))]
   expect_identical(missing, character())

@@ -1415,7 +1415,7 @@ quickr_register_prim_lowerer <- function(primitive, fun) {
   invisible(fun)
 }
 
-quickr_supported_primitive_names <- function() {
+quickr_supported_prims <- function() {
   sort(unlist(
     lapply(prim(), function(primitive) {
       if (is.null(primitive$rules[["quickr"]])) {
@@ -1450,7 +1450,7 @@ quickr_lower_graph_calls <- function(graph, ctx) {
 
     lower <- call$primitive[["quickr"]]
     if (is.null(lower)) {
-      quickr_abort_unsupported_prims(call$primitive$name, quickr_supported_primitive_names())
+      quickr_abort_unsupported_prims(call$primitive$name, quickr_supported_prims())
     }
     stmts <- c(
       stmts,
@@ -2253,7 +2253,7 @@ graph_to_quickr_r_fun_impl <- function(graph, include_declare = TRUE) {
     prefix <- paste0("anvil_quickr", prefix_i, "_")
   }
 
-  supported_prims <- quickr_supported_primitive_names()
+  supported_prims <- quickr_supported_prims()
   unsupported_prims <- quickr_find_unsupported_prims(graph, supported_prims)
   quickr_abort_unsupported_prims(unsupported_prims, supported_prims)
 

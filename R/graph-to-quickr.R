@@ -170,7 +170,7 @@ graph_to_quickr_make_wrapper <- function(
   wrapper
 }
 
-graph_to_quickr_make_rank1_wrapper <- function(r_fun, inner_fun, out_shape) {
+quickr_make_rank1_wrapper <- function(r_fun, inner_fun, out_shape) {
   stopifnot(length(out_shape) == 1L)
 
   arg_names <- names(formals(r_fun)) %||% character()
@@ -339,7 +339,7 @@ graph_to_quickr_function <- function(graph) {
   if (!isTRUE(prep$needs_wrapper)) {
     out_shape <- as.integer(prep$out_infos[[1L]]$shape)
     if (length(out_shape) == 1L) {
-      return(graph_to_quickr_make_rank1_wrapper(
+      return(quickr_make_rank1_wrapper(
         r_fun = prep$r_fun,
         inner_fun = inner_quick,
         out_shape = out_shape
