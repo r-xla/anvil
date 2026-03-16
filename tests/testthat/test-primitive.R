@@ -19,12 +19,12 @@ test_that("quickr rules are exposed through primitives", {
 })
 
 documented_primitive_ids <- function() {
-  pkg_dir <- tryCatch(pkgload::pkg_path(), error = function(...) NULL)
-  if (is.null(pkg_dir) || !file.exists(file.path(pkg_dir, "R", "primitives.R"))) {
+  primitives_path <- testthat::test_path("..", "..", "R", "primitives.R")
+  if (!file.exists(primitives_path)) {
     testthat::skip("R/primitives.R is only available when testing from package source")
   }
 
-  primitive_lines <- readLines(file.path(pkg_dir, "R", "primitives.R"))
+  primitive_lines <- readLines(primitives_path)
   sub(
     "^#' @templateVar primitive_id ",
     "",
