@@ -37,6 +37,9 @@ Higher-order primitives supported: \code{if}, \code{while}.
 Supported dtypes are \code{f32}, \code{f64}, \code{i32}, and \code{pred}.
 The code generator currently supports tensors up to rank 5. Some primitives
 are more restricted (e.g. \code{transpose} currently only handles rank-2 tensors).
+
+Most users will prefer \code{\link[=jit]{jit()}} with \code{backend = "quickr"}. This function is
+the lower-level graph API.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded() && requireNamespace("quickr", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -101,3 +104,8 @@ out2_pjrt <- to_r(f2_pjrt(x2_nv))
 stopifnot(isTRUE(all.equal(out2_quickr, out2_pjrt, tolerance = 1e-12)))
 \dontshow{\}) # examplesIf}
 }
+\seealso{
+\code{\link[=jit]{jit()}} with \code{backend = "quickr"} for tracing and compiling a
+regular R function in one step.
+}
+\keyword{internal}

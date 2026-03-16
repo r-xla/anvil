@@ -183,9 +183,14 @@ graph_to_quickr_make_wrapper <- function(
 #' compilation) suitable for `quickr::quick()`. The returned function expects
 #' plain R scalars/vectors/arrays and returns plain R values/arrays.
 #'
+#' Most users will prefer [`jit()`] with `backend = "quickr"`. This function is
+#' the lower-level graph API.
+#'
 #' @param graph ([`AnvilGraph`])\cr
 #'   Graph to convert.
 #' @return (`function`)
+#' @seealso [`jit()`] with `backend = "quickr"` for tracing and compiling a
+#'   regular R function in one step.
 #' @export
 graph_to_quickr_r_function <- function(graph) {
   if (!is_graph(graph)) {
@@ -240,10 +245,15 @@ graph_to_quickr_r_function <- function(graph) {
 #' The code generator currently supports tensors up to rank 5. Some primitives
 #' are more restricted (e.g. `transpose` currently only handles rank-2 tensors).
 #'
+#' Most users will prefer [`jit()`] with `backend = "quickr"`. This function is
+#' the lower-level graph API.
+#'
 #' @param graph ([`AnvilGraph`])\cr
 #'   Graph to convert.
 #' @return (`function`)
-#' @export
+#' @seealso [`jit()`] with `backend = "quickr"` for tracing and compiling a
+#'   regular R function in one step.
+#' @keywords internal
 #' @examplesIf pjrt::plugin_is_downloaded() && requireNamespace("quickr", quietly = TRUE)
 #' # Simple: two scalar inputs
 #' fn <- function(x, y) x + y
