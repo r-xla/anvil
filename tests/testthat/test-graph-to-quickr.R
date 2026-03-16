@@ -71,7 +71,7 @@ test_that("graph_to_quickr_function produces a stable flat signature", {
   expect_quickr_matches_pjrt(graph, 0.5, 1.25)
 })
 
-test_that("graph_to_quickr_function handles zero-length output leaves when packing", {
+test_that("graph_to_quickr_function handles zero-length output leaves", {
   skip_if_no_quickr_or_pjrt()
 
   graph <- trace_fn(
@@ -345,7 +345,7 @@ test_that("graph_to_quickr_function preserves rank-1 dims for wrapped quickr out
   expect_equal(f_quick(x, TRUE), out_pjrt, tolerance = 1e-12)
 })
 
-test_that("graph_to_quickr_function decodes pred leaves when packing outputs", {
+test_that("graph_to_quickr_function preserves pred leaves in multiple outputs", {
   skip_if_no_quickr_or_pjrt()
 
   graph <- trace_fn(

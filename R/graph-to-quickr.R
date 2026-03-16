@@ -1,43 +1,61 @@
 #' @include rules-quickr.R
 NULL
 
-quickr_decode_leaf <- function(seg, shape, dtype) {
-  base <- if (dtype %in% c("pred", "i1")) {
-    seg != 0
-  } else if (dtype == "i32") {
-    as.integer(seg)
-  } else {
-    as.double(seg)
-  }
+quickr_restore_leaf <- function(value, shape) {
+  shape <- as.integer(shape)
 
   if (!length(shape)) {
-    return(base[[1L]])
+    return(value[[1L]])
   }
-  if (length(shape) == 2L) {
-    return(matrix(base, nrow = shape[[1L]], ncol = shape[[2L]]))
+
+  if (length(shape) == 1L) {
+    value_dims <- dim(value)
+    if (is.null(value_dims) || !identical(value_dims, shape)) {
+      return(array(value, dim = shape))
+    }
   }
-  array(base, dim = shape)
+
+  value
+}
+
+quickr_restore_output <- function(value, out_tree, out_infos) {
+  if (inherits(out_tree, "LeafNode") && length(out_infos) == 1L) {
+    return(quickr_restore_leaf(value, out_infos[[1L]]$shape))
+  }
+
+  if (!is.list(value) || length(value) != length(out_infos)) {
+    cli_abort("Internal error: expected {length(out_infos)} quickr outputs, got {length(value)}")
+  }
+
+  leaves <- .mapply(
+    function(x, info) quickr_restore_leaf(x, info$shape),
+    list(value, out_infos),
+    NULL
+  )
+  unflatten(out_tree, leaves)
 }
 
 graph_to_quickr_prepare <- function(graph) {
   in_tree <- graph$in_tree
   needs_flatten <- inherits(in_tree, "ListNode") && any(vapply(in_tree$nodes, inherits, logical(1L), "ListNode"))
 
-  needs_pack <- !(inherits(graph$out_tree, "LeafNode") && length(graph$outputs) == 1L)
+  needs_output_wrapper <- !(inherits(graph$out_tree, "LeafNode") && length(graph$outputs) == 1L)
   out_infos <- lapply(graph$outputs, function(node) {
     list(dtype = as.character(dtype(node)), shape = shape(node))
   })
   is_static_flat <- graph$is_static_flat
   has_static <- !is.null(is_static_flat) && isTRUE(any(is_static_flat))
 
-  needs_wrapper <- isTRUE(needs_pack) || length(graph$constants) || isTRUE(needs_flatten) || isTRUE(has_static)
+  needs_wrapper <- isTRUE(needs_output_wrapper) ||
+    length(graph$constants) ||
+    isTRUE(needs_flatten) ||
+    isTRUE(has_static)
 
-  r_fun <- graph_to_quickr_r_fun_impl(graph, include_declare = TRUE, pack_output = needs_pack) # nolint
+  r_fun <- graph_to_quickr_r_fun_impl(graph, include_declare = TRUE)
 
   list(
     r_fun = r_fun,
     needs_flatten = needs_flatten,
-    needs_pack = needs_pack,
     out_infos = out_infos,
     needs_wrapper = needs_wrapper
   )
@@ -76,7 +94,6 @@ graph_to_quickr_make_wrapper <- function(
   graph,
   r_fun,
   inner_fun,
-  needs_pack,
   out_infos,
   needs_flatten
 ) {
@@ -96,14 +113,6 @@ graph_to_quickr_make_wrapper <- function(
     })
     const_args <- stats::setNames(const_vals, const_arg_names)
   }
-
-  out_lens <- vapply(
-    out_infos,
-    function(info) {
-      if (!length(info$shape)) 1L else Reduce(`*`, as.integer(info$shape), init = 1L)
-    },
-    integer(1L)
-  )
 
   wrapper <- function() {}
   if (isTRUE(use_in_tree_formals)) {
@@ -127,15 +136,13 @@ graph_to_quickr_make_wrapper <- function(
   wrapper_env$inner <- inner_fun
   wrapper_env$out_tree <- graph$out_tree
   wrapper_env$out_infos <- out_infos
-  wrapper_env$out_lens <- out_lens
-  wrapper_env$needs_pack <- needs_pack
   wrapper_env$leaf_arg_names <- leaf_arg_names
   wrapper_env$use_in_tree_formals <- use_in_tree_formals
   wrapper_env$top_names <- if (isTRUE(use_in_tree_formals)) top_names else NULL
   wrapper_env$is_static_flat <- is_static_flat
   wrapper_env$static_args_flat <- graph$static_args_flat
   wrapper_env$const_args <- const_args
-  wrapper_env$decode_leaf <- quickr_decode_leaf
+  wrapper_env$restore_output <- quickr_restore_output
 
   body(wrapper) <- quote({
     if (isTRUE(use_in_tree_formals)) {
@@ -155,22 +162,8 @@ graph_to_quickr_make_wrapper <- function(
       args <- mget(leaf_arg_names, envir = environment(), inherits = FALSE)
     }
 
-    packed <- do.call(inner, c(const_args, args))
-
-    if (!isTRUE(needs_pack)) {
-      return(decode_leaf(packed, out_infos[[1L]]$shape, out_infos[[1L]]$dtype))
-    }
-
-    leaves <- vector("list", length(out_infos))
-    pos <- 0L
-    for (i in seq_along(out_infos)) {
-      len <- out_lens[[i]]
-      seg <- packed[pos + seq_len(len)]
-      pos <- pos + len
-      leaves[[i]] <- decode_leaf(seg, out_infos[[i]]$shape, out_infos[[i]]$dtype)
-    }
-
-    unflatten(out_tree, leaves)
+    value <- do.call(inner, c(const_args, args))
+    restore_output(value, out_tree, out_infos)
   })
 
   environment(wrapper) <- wrapper_env
@@ -214,11 +207,12 @@ graph_to_r_function <- function(graph) {
     graph = graph,
     r_fun = r_fun,
     inner_fun = r_fun,
-    needs_pack = prep$needs_pack,
     out_infos = prep$out_infos,
     needs_flatten = prep$needs_flatten
   )
 }
+
+graph_to_quickr_r_function <- graph_to_r_function
 
 #' Convert an AnvilGraph to a quickr-compiled function
 #'
@@ -229,7 +223,7 @@ graph_to_r_function <- function(graph) {
 #' [`AnvilTensor`]) and returns plain R values/arrays.
 #'
 #' If the graph returns multiple outputs (e.g. a nested list), the compiled
-#' function returns the same structure by packing/unpacking values for `quickr`.
+#' function returns the same structure by rebuilding the output tree in R.
 #'
 #' Currently supported primitives are:
 #' `fill`, `iota`, `reverse`, `concatenate`, `pad`, `gather`, `scatter`, `convert`, `add`, `sub`, `mul`, `divide`,
@@ -331,7 +325,6 @@ graph_to_quickr_function <- function(graph) {
         graph = graph,
         r_fun = prep$r_fun,
         inner_fun = inner_quick,
-        needs_pack = prep$needs_pack,
         out_infos = prep$out_infos,
         needs_flatten = prep$needs_flatten
       ))
@@ -343,7 +336,6 @@ graph_to_quickr_function <- function(graph) {
     graph = graph,
     r_fun = prep$r_fun,
     inner_fun = inner_quick,
-    needs_pack = prep$needs_pack,
     out_infos = prep$out_infos,
     needs_flatten = prep$needs_flatten
   )

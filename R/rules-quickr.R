@@ -2227,9 +2227,8 @@ quickr_find_unsupported_prims <- function(graph, supported_prims) {
   unique(unsupported_prims)
 }
 
-graph_to_quickr_r_fun_impl <- function(graph, include_declare = TRUE, pack_output = FALSE) {
+graph_to_quickr_r_fun_impl <- function(graph, include_declare = TRUE) {
   include_declare <- as.logical(include_declare)
-  pack_output <- as.logical(pack_output)
 
   if (!is_graph(graph)) {
     cli_abort("{.arg graph} must be a {.cls AnvilGraph}")
@@ -2300,73 +2299,21 @@ graph_to_quickr_r_fun_impl <- function(graph, include_declare = TRUE, pack_outpu
   out_exprs <- lowered$out_exprs
   result_sym <- as.name(paste0(prefix, "out"))
 
-  if (isTRUE(pack_output)) {
-    out_shapes <- lapply(graph$outputs, function(node) {
-      if (is_graph_value(node)) {
-        node$aval$shape$dims
-      } else {
-        integer()
-      }
-    })
-    out_lens <- vapply(
-      out_shapes,
-      function(shp) {
-        if (!length(shp)) 1L else Reduce(`*`, as.integer(shp), init = 1L)
-      },
-      integer(1L)
-    )
-    total_len <- sum(out_lens)
-
-    out_sym <- result_sym
-    stmts <- c(stmts, list(rlang::call2("<-", out_sym, rlang::call2("double", as.integer(total_len)))))
-
-    pos <- 0L
-    for (i in seq_along(out_exprs)) {
-      shp <- out_shapes[[i]]
-      rank <- length(shp)
-      len <- as.integer(out_lens[[i]])
-
-      if (rank == 0L) {
-        stmts <- c(
-          stmts,
-          list(rlang::call2(
-            "<-",
-            rlang::call2("[", out_sym, pos + 1L),
-            rlang::call2("as.double", out_exprs[[i]])
-          ))
-        )
-        pos <- pos + 1L
-        next
-      }
-
-      if (!len) {
-        next
-      }
-
-      idx <- rlang::call2("+", as.integer(pos), rlang::call2("seq_len", len))
-      stmts <- c(
-        stmts,
-        list(rlang::call2(
-          "<-",
-          rlang::call2("[", out_sym, idx),
-          rlang::call2("as.double", out_exprs[[i]])
-        ))
-      )
-      pos <- pos + len
-    }
-
-    stmts <- c(stmts, list(out_sym))
-  } else {
-    if (!inherits(graph$out_tree, "LeafNode") || length(out_exprs) != 1L) {
-      cli_abort("Internal error: {.arg pack_output} must be TRUE for graphs with multiple outputs")
-    }
-
+  if (inherits(graph$out_tree, "LeafNode") && length(out_exprs) == 1L) {
     out_node <- graph$outputs[[1L]]
     out_expr <- out_exprs[[1L]]
     if (is_graph_value(out_node) && length(shape(out_node$aval)) == 1L) {
       out_expr <- rlang::call2("array", out_expr, dim = as.integer(shape(out_node$aval)))
     }
     stmts <- c(stmts, list(rlang::call2("<-", result_sym, out_expr), result_sym))
+  } else {
+    out_syms <- vector("list", length(out_exprs))
+    for (i in seq_along(out_exprs)) {
+      out_sym <- new_tmp_sym()
+      out_syms[[i]] <- out_sym
+      stmts <- c(stmts, list(rlang::call2("<-", out_sym, out_exprs[[i]])))
+    }
+    stmts <- c(stmts, list(as.call(c(list(as.name("list")), out_syms))))
   }
 
   f <- function() {}

@@ -22,7 +22,7 @@ The returned function expects plain R scalars/vectors/arrays (not
 \code{\link{AnvilTensor}}) and returns plain R values/arrays.
 
 If the graph returns multiple outputs (e.g. a nested list), the compiled
-function returns the same structure by packing/unpacking values for \code{quickr}.
+function returns the same structure by rebuilding the output tree in R.
 
 Currently supported primitives are:
 \code{fill}, \code{iota}, \code{reverse}, \code{concatenate}, \code{pad}, \code{gather}, \code{scatter}, \code{convert}, \code{add}, \code{sub}, \code{mul}, \code{divide},
