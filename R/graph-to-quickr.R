@@ -1,4 +1,4 @@
-#' @include graph-to-quickr-r.R
+#' @include rules-quickr.R
 NULL
 
 quickr_decode_leaf <- function(seg, shape, dtype) {

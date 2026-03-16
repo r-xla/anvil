@@ -28,6 +28,7 @@ Concatenates tensors along a dimension.
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

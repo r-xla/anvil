@@ -30,6 +30,7 @@ Converts the elements of a tensor to a different data type.
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

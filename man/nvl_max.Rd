@@ -19,6 +19,15 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Element-wise maximum of two tensors.
 }
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{backward}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_maximum]{stablehlo::hlo_maximum()}}.

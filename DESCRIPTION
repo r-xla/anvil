@@ -67,7 +67,7 @@ Collate:
     'graph-passes.R'
     'graph.R'
     'graph-print.R'
-    'graph-to-quickr-r.R'
+    'rules-quickr.R'
     'graph-to-quickr.R'
     'promotion.R'
     'quickr.R'

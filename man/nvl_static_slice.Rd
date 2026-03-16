@@ -39,6 +39,7 @@ computed at runtime (e.g. depends on tensor values).
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

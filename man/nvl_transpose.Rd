@@ -26,6 +26,7 @@ Permutes the dimensions of a tensor.
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

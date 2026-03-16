@@ -22,6 +22,7 @@ Negates a tensor element-wise.
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

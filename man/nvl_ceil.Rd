@@ -22,6 +22,7 @@ Element-wise ceiling.
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

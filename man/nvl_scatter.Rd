@@ -107,6 +107,7 @@ implementation-defined and may vary between plugins ("cpu", "cuda").
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

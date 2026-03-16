@@ -13,6 +13,11 @@ test_that("prim", {
   expect_list(prim(), types = "AnvilPrimitive")
 })
 
+test_that("quickr rules are exposed through primitives", {
+  expect_true(is.function(prim("add")[["quickr"]]))
+  expect_null(prim("print")[["quickr"]])
+})
+
 describe("subgraphs", {
   it("extracts subgraphs from higher-order primitives", {
     true_graph <- trace_fn(function() nv_scalar(1), list())

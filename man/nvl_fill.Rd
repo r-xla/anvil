@@ -36,6 +36,7 @@ efficiently represented in the compiled program, while the latter uses
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 }
 }
 
