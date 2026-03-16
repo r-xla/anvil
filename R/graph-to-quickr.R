@@ -170,6 +170,24 @@ graph_to_quickr_make_wrapper <- function(
   wrapper
 }
 
+graph_to_quickr_make_rank1_wrapper <- function(r_fun, inner_fun, out_shape) {
+  stopifnot(length(out_shape) == 1L)
+
+  arg_names <- names(formals(r_fun)) %||% character()
+  inner_call <- as.call(c(list(as.name("inner")), lapply(arg_names, as.name)))
+  wrapper <- function() {}
+  formals(wrapper) <- formals(r_fun)
+
+  wrapper_env <- new.env(parent = environment(graph_to_quickr_function))
+  wrapper_env$inner <- inner_fun
+  wrapper_env$out_shape <- as.integer(out_shape)
+
+  body(wrapper) <- rlang::expr(array(!!inner_call, dim = out_shape))
+
+  environment(wrapper) <- wrapper_env
+  wrapper
+}
+
 #' Convert an AnvilGraph to a plain R function
 #'
 #' Lowers a supported subset of `AnvilGraph` objects to a plain R function (no
@@ -321,12 +339,10 @@ graph_to_quickr_function <- function(graph) {
   if (!isTRUE(prep$needs_wrapper)) {
     out_shape <- as.integer(prep$out_infos[[1L]]$shape)
     if (length(out_shape) == 1L) {
-      return(graph_to_quickr_make_wrapper(
-        graph = graph,
+      return(graph_to_quickr_make_rank1_wrapper(
         r_fun = prep$r_fun,
         inner_fun = inner_quick,
-        out_infos = prep$out_infos,
-        needs_flatten = prep$needs_flatten
+        out_shape = out_shape
       ))
     }
     return(inner_quick)

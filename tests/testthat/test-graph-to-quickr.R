@@ -316,6 +316,29 @@ test_that("graph_to_quickr_function preserves rank-1 dims for direct quickr outp
   expect_equal(f_quick(x), out_pjrt, tolerance = 1e-12)
 })
 
+test_that("graph_to_quickr_function uses a specialized rank-1 wrapper", {
+  skip_if_no_quickr_or_pjrt()
+
+  testthat::local_mocked_bindings(
+    quickr_restore_output = function(...) stop("should not be called"),
+    .package = "anvil"
+  )
+
+  graph <- trace_fn(
+    function(x) {
+      nv_expm1(x)
+    },
+    list(x = nv_tensor(array(0, dim = 3L), dtype = "f64", shape = 3L))
+  )
+
+  f_quick <- graph_to_quickr_function(graph)
+  x <- array(c(0.1, 0.2, 0.3), dim = 3L)
+  out <- f_quick(x)
+
+  expect_identical(dim(out), c(3L))
+  expect_equal(out, array(expm1(c(0.1, 0.2, 0.3)), dim = 3L), tolerance = 1e-12)
+})
+
 test_that("graph_to_quickr_function preserves rank-1 dims for wrapped quickr outputs", {
   skip_if_no_quickr_or_pjrt()
 
