@@ -2,8 +2,64 @@
 # Please edit paper.Rmd to modify this file
 
 ## ----setup, include=FALSE-----------------------------------------------------
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
+
+#> %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#ffffff', 'primaryBorderColor': '#333333', 'primaryTextColor': '#000000', 'lineColor': '#555555', 'secondaryColor': '#f5f5f5', 'tertiaryColor': '#ffffff', 'mainBkg': '#ffffff', 'nodeBorder': '#333333', 'clusterBkg': '#ffffff', 'clusterBorder': '#999999', 'titleColor': '#000000', 'edgeLabelBackground': '#ffffff'}}}%%
+#> graph TB
+#>     subgraph left ["Without OpenXLA (n × m)"]
+#>         direction LR
+#>         subgraph F1 [" Frontends "]
+#>             A1[JAX]
+#>             A2[PyTorch]
+#>             A3[TensorFlow]
+#>             A4[anvil]
+#>         end
+#>         subgraph B1 [" Backends "]
+#>             C1[CPU]
+#>             C2[GPU]
+#>             C3[TPU]
+#>         end
+#>         A1 --> C1
+#>         A1 --> C2
+#>         A1 --> C3
+#>         A2 --> C1
+#>         A2 --> C2
+#>         A2 --> C3
+#>         A3 --> C1
+#>         A3 --> C2
+#>         A3 --> C3
+#>         A4 --> C1
+#>         A4 --> C2
+#>         A4 --> C3
+#>     end
+#> 
+#>     subgraph right ["With OpenXLA (n + m)"]
+#>         direction LR
+#>         subgraph F2 [" Frontends "]
+#>             D1[JAX]
+#>             D2[PyTorch]
+#>             D3[TensorFlow]
+#>             D4[anvil]
+#>         end
+#>         subgraph O [" OpenXLA "]
+#>             IR[StableHLO]
+#>             RT[PJRT]
+#>         end
+#>         subgraph B2 [" Backends "]
+#>             G1[CPU]
+#>             G2[GPU]
+#>             G3[TPU]
+#>         end
+#>         D1 --> IR
+#>         D2 --> IR
+#>         D3 --> IR
+#>         D4 --> IR
+#>         IR --> RT
+#>         RT --> G1
+#>         RT --> G2
+#>         RT --> G3
+#>     end
 
 ## -----------------------------------------------------------------------------
 library(stablehlo)
@@ -17,7 +73,7 @@ z <- hlo_multiply(x, y)
 z
 f <- hlo_return(z)
 hlo_string <- repr(f)
-hlo_string
+cat(hlo_string, "\n")
 
 
 ## -----------------------------------------------------------------------------
@@ -170,22 +226,69 @@ multiply_print_jit <- jit(function(x, y) {
 multiply_print_jit(x, y)
 
 
-## ----eval=FALSE---------------------------------------------------------------
-# gen_data <- jit(function(n, p, random_state) {
-#   nv_
-# })
-# n <- 50000L
-# p <- 10L
-# 
-# # Generate features
-# X_r <- matrix(rnorm(n * p), nrow = n, ncol = p)
-# 
-# # True weights
-# w_true_r <- rnorm(p) * 0.7
-# 
-# # Generate binary outcomes using logistic model
-# prob <- 1 / (1 + exp(-X_r %*% w_true_r))
-# y_r <- rbinom(n, 1, prob)
+## -----------------------------------------------------------------------------
+set.seed(42)
+titanic_df <- as.data.frame(Titanic)
+titanic <- titanic_df[rep(seq_len(nrow(titanic_df)), titanic_df$Freq), 1:4]
+X <- scale(model.matrix(~ Class + Sex + Age, data = titanic)[, -1])
+y <- as.integer(titanic$Survived == "Yes")
+n <- nrow(X); p <- ncol(X)
+
+X_tensor <- nv_tensor(X, dtype = "f32")
+y_tensor <- nv_tensor(y, dtype = "f32", shape = c(n, 1L))
+
+
+## -----------------------------------------------------------------------------
+model_loss <- function(X, y, beta, alpha) {
+  probs <- nv_logistic(X %*% beta + alpha)
+  eps <- 1e-7
+  probs <- nv_clamp(eps, probs, 1 - eps)
+  loss <- -(y * log(probs) + (1 - y) * log(1 - probs))
+  mean(loss)
+}
+
+
+## -----------------------------------------------------------------------------
+model_loss_grad <- gradient(model_loss, wrt = c("beta", "alpha"))
+
+
+## -----------------------------------------------------------------------------
+fit_logreg <- jit(function(X, y, beta, alpha, n_epochs, lr) {
+  output <- nv_while(
+    list(beta = beta, alpha = alpha, epoch = nv_scalar(0L)),
+    \(beta, alpha, epoch) epoch < n_epochs,
+    \(beta, alpha, epoch) {
+      grads <- model_loss_grad(X, y, beta, alpha)
+      list(
+        beta = beta - lr * grads$beta,
+        alpha = alpha - lr * grads$alpha,
+        epoch = epoch + 1L
+      )
+    }
+  )
+  list(beta = output$beta, alpha = output$alpha)
+})
+
+
+## -----------------------------------------------------------------------------
+beta_init <- nv_tensor(rnorm(p), dtype = "f32", shape = c(p, 1L))
+alpha_init <- nv_scalar(0, dtype = "f32")
+
+result <- fit_logreg(
+  X_tensor, y_tensor, beta_init, alpha_init,
+  nv_scalar(50000L), nv_scalar(0.1)
+)
+
+
+## ----echo = FALSE-------------------------------------------------------------
+glm_fit <- glm(y ~ X, family = binomial)
+anvil_coef <- c(as_array(result$alpha), as.vector(as_array(result$beta)))
+glm_coef <- coef(glm_fit)
+param_names <- gsub("^X", "", names(glm_coef))
+comparison <- data.frame(
+  Parameter = param_names, anvil = anvil_coef, glm = glm_coef, row.names = NULL
+)
+comparison
 
 
 ## -----------------------------------------------------------------------------

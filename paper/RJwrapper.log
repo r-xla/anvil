@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2024.2.1)  9 MAR 2026 14:49
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2024.2.1)  18 MAR 2026 11:10
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -730,87 +730,36 @@ Package caption Info: End \AtBeginDocument code.
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
 (hyperref)                than one, level fixed on input line 13.
 
-[1{/Users/sebi/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/Users/sebi/Library/TinyTeX/texmf-dist/fonts/enc/dvips/base/8r.enc}
-
-]
-LaTeX Font Info:    Trying to load font information for T1+zi4 on input line 53.
+LaTeX Font Info:    Trying to load font information for T1+zi4 on input line 35.
 (/Users/sebi/Library/TinyTeX/texmf-dist/tex/latex/inconsolata/t1zi4.fd
 File: t1zi4.fd 2018/01/14 T1/zi4 (Inconsolata)
 )
 LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
-(Font)              scaled to size 10.20004pt on input line 53.
+(Font)              scaled to size 10.20004pt on input line 35.
 Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `zi4' (encoding: T1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
+[1{/Users/sebi/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/Users/sebi/Library/TinyTeX/texmf-dist/fonts/enc/dvips/base/8r.enc}
 
-Underfull \hbox (badness 5985) in paragraph at lines 53--59
-[]\T1/ppl/m/n/10 (+20) The [][]\T1/ppl/b/n/10 (+20) torch[][] \T1/ppl/m/n/10 (+20) pack-age it-self of-fers a way to JIT-compile torch code via the
- []
-
-
-Underfull \hbox (badness 5008) in paragraph at lines 53--59
-\T1/zi4/m/n/10 torch::jit_compile() \T1/ppl/m/n/10 (+20) in-ter-face, which gen-er-ates \T1/zi4/m/n/10 TorchScript \T1/ppl/m/n/10 (+20) code. How-ever,
- []
-
-LaTeX Font Info:    Trying to load font information for TS1+ppl on input line 65.
-(/Users/sebi/Library/TinyTeX/texmf-dist/tex/latex/psnfss/ts1ppl.fd
-File: ts1ppl.fd 2001/06/04 font definitions for TS1/ppl.
-)
-Overfull \hbox (79.32874pt too wide) in paragraph at lines 95--95
-[]  \T1/zi4/m/n/10 %0 = "stablehlo.multiply"(%arg0, %arg1) : (tensor<2x2xf32>, tensor<2x2xf32>) -> tensor<2x2xf32>[] 
- []
-
-[2{/Users/sebi/Library/TinyTeX/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}]
-Overfull \hbox (65.73215pt too wide) in paragraph at lines 132--132
-[]\T1/zi4/m/n/10 #> %0 = "stablehlo.multiply" (%x, %y): (tensor<2x2xf32>, tensor<2x2xf32>) -> (tensor<2x2xf32>)[] 
- []
-
-
-Overfull \hbox (759.29343pt too wide) in paragraph at lines 136--136
-[]\T1/zi4/m/n/10 #> [1] "func.func @main (%x: tensor<2x2xf32>, %y: tensor<2x2xf32>) -> tensor<2x2xf32> {\n%0 = \"stablehlo.multiply\" (%x, %y): (tensor<2x2xf32>, tensor<2x2xf32>) -> (tensor<2x2xf32>)\n\"func.return\"(%0): (tensor<2x2xf32>) -> ()\n}\n"[] 
- []
-
-[3]
-Overfull \hbox (4.53189pt too wide) in paragraph at lines 183--183
-[]\T1/zi4/m/n/10 #> func.func @main (%x: tensor<2x2xf32>, %y: tensor<2x2xf32>) -> tensor<2x2xf32> {[] 
- []
-
-
-Overfull \hbox (65.73215pt too wide) in paragraph at lines 183--183
-[]\T1/zi4/m/n/10 #> %0 = "stablehlo.multiply" (%x, %y): (tensor<2x2xf32>, tensor<2x2xf32>) -> (tensor<2x2xf32>)[] 
- []
-
-
-Underfull \hbox (badness 5726) in paragraph at lines 189--190
-[]\T1/ppl/m/n/10 (+20) We can now run the pro-gram by pass-ing the \T1/zi4/m/n/10 PJRTBuffer \T1/ppl/m/n/10 (+20) ob-jects to the
- []
-
-[4] [5]
-Overfull \hbox (616.49283pt too wide) in paragraph at lines 336--336
-[]\T1/zi4/m/n/10 #> [1] "func.func @main (%0: tensor<f32>, %1: tensor<f32>) -> tensor<f32> {\n%2 = \"stablehlo.multiply\" (%0, %1): (tensor<f32>, tensor<f32>) -> (tensor<f32>)\n\"func.return\"(%2): (tensor<f32>) -> ()\n}\n"[] 
- []
-
-LaTeX Font Info:    Font shape `T1/zi4/b/n' will be
-(Font)              scaled to size 10.20004pt on input line 352.
-[6] [7] [8] [9]
-LaTeX Font Info:    Trying to load font information for OT1+ppl on input line 569.
+{/Users/sebi/Library/TinyTeX/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}] [2] [3]
+LaTeX Font Info:    Trying to load font information for OT1+ppl on input line 144.
 (/Users/sebi/Library/TinyTeX/texmf-dist/tex/latex/psnfss/ot1ppl.fd
 File: ot1ppl.fd 2001/06/04 font definitions for OT1/ppl.
 )
-LaTeX Font Info:    Trying to load font information for OML+zplm on input line 569.
+LaTeX Font Info:    Trying to load font information for OML+zplm on input line 144.
 (/Users/sebi/Library/TinyTeX/texmf-dist/tex/latex/psnfss/omlzplm.fd
 File: omlzplm.fd 2002/09/08 Fontinst v1.914 font definitions for OML/zplm.
 )
-LaTeX Font Info:    Trying to load font information for OMS+zplm on input line 569.
+LaTeX Font Info:    Trying to load font information for OMS+zplm on input line 144.
 (/Users/sebi/Library/TinyTeX/texmf-dist/tex/latex/psnfss/omszplm.fd
 File: omszplm.fd 2002/09/08 Fontinst v1.914 font definitions for OMS/zplm.
 )
-LaTeX Font Info:    Trying to load font information for OMX+zplm on input line 569.
+LaTeX Font Info:    Trying to load font information for OMX+zplm on input line 144.
 (/Users/sebi/Library/TinyTeX/texmf-dist/tex/latex/psnfss/omxzplm.fd
 File: omxzplm.fd 2002/09/08 Fontinst v1.914 font definitions for OMX/zplm.
 )
-LaTeX Font Info:    Trying to load font information for OT1+zplm on input line 569.
+LaTeX Font Info:    Trying to load font information for OT1+zplm on input line 144.
 (/Users/sebi/Library/TinyTeX/texmf-dist/tex/latex/psnfss/ot1zplm.fd
 File: ot1zplm.fd 2002/09/08 Fontinst v1.914 font definitions for OT1/zplm.
 )
@@ -819,83 +768,153 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 10.42007pt on input line 569.
+(Font)              scaled to size 10.42007pt on input line 144.
 (/Users/sebi/Library/TinyTeX/texmf-dist/tex/latex/microtype/mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 7.91925pt on input line 569.
+(Font)              scaled to size 7.91925pt on input line 144.
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 6.25204pt on input line 569.
+(Font)              scaled to size 6.25204pt on input line 144.
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 10.42007pt on input line 569.
+(Font)              scaled to size 10.42007pt on input line 144.
 (/Users/sebi/Library/TinyTeX/texmf-dist/tex/latex/microtype/mt-msb.cfg
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 7.91925pt on input line 569.
+(Font)              scaled to size 7.91925pt on input line 144.
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 6.25204pt on input line 569.
-[10] (./RJwrapper.bbl (./RJwrapper.brf)
+(Font)              scaled to size 6.25204pt on input line 144.
+LaTeX Font Info:    Trying to load font information for TS1+zi4 on input line 202.
+(/Users/sebi/Library/TinyTeX/texmf-dist/tex/latex/inconsolata/ts1zi4.fd
+File: ts1zi4.fd 2018/01/14 TS1/zi4 (Inconsolata)
+)
+LaTeX Font Info:    Font shape `TS1/zi4/m/n' will be
+(Font)              scaled to size 10.20004pt on input line 202.
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `zi4' (encoding: TS1).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
+
+Overfull \hbox (1493.67569pt too wide) in paragraph at lines 202--202
+[]\T1/zi4/m/n/10 %%{init: {\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 theme\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 base\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 , \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 themeVariables\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : {\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 primaryColor\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 #ffffff\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 , \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 primaryBorderColor\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 #333333\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 , \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 primaryTextColor\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 #000000\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 , \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 lineColor\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 #555555\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 , \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 secondaryColor\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 #f5f5f5\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 , \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 tertiaryColor\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 #ffffff\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 , \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 mainBkg\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 #ffffff\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 , \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 nodeBorder\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 #333333\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 , \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 clusterBkg\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 #ffffff\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 , \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 clusterBorder\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 #999999\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 , \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 titleColor\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 #000000\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 , \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 edgeLabelBackground\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 : \TS1/zi4/m/n/10 '\T1/zi4/m/n/10 #ffffff\TS1/zi4/m/n/10 '\T1/zi4/m/n/10 }}}%%[] 
+ []
+
+[4{/Users/sebi/Library/TinyTeX/texmf-dist/fonts/enc/dvips/inconsolata/i4-ts1.enc}]
+Overfull \hbox (79.32874pt too wide) in paragraph at lines 214--214
+[]  \T1/zi4/m/n/10 %0 = "stablehlo.multiply"(%arg0, %arg1) : (tensor<2x2xf32>, tensor<2x2xf32>) -> tensor<2x2xf32>[] 
+ []
+
+[5]
+Overfull \hbox (65.73215pt too wide) in paragraph at lines 276--276
+[]\T1/zi4/m/n/10 #> %0 = "stablehlo.multiply" (%x, %y): (tensor<2x2xf32>, tensor<2x2xf32>) -> (tensor<2x2xf32>)[] 
+ []
+
+
+Overfull \hbox (4.53189pt too wide) in paragraph at lines 290--290
+[]\T1/zi4/m/n/10 #> func.func @main (%x: tensor<2x2xf32>, %y: tensor<2x2xf32>) -> tensor<2x2xf32> {[] 
+ []
+
+
+Overfull \hbox (65.73215pt too wide) in paragraph at lines 290--290
+[]\T1/zi4/m/n/10 #> %0 = "stablehlo.multiply" (%x, %y): (tensor<2x2xf32>, tensor<2x2xf32>) -> (tensor<2x2xf32>)[] 
+ []
+
+[6]
+Overfull \hbox (4.53189pt too wide) in paragraph at lines 353--353
+[]\T1/zi4/m/n/10 #> func.func @main (%x: tensor<2x2xf32>, %y: tensor<2x2xf32>) -> tensor<2x2xf32> {[] 
+ []
+
+
+Overfull \hbox (65.73215pt too wide) in paragraph at lines 353--353
+[]\T1/zi4/m/n/10 #> %0 = "stablehlo.multiply" (%x, %y): (tensor<2x2xf32>, tensor<2x2xf32>) -> (tensor<2x2xf32>)[] 
+ []
+
+
+Underfull \hbox (badness 5726) in paragraph at lines 364--365
+[]\T1/ppl/m/n/10 (+20) We can now run the pro-gram by pass-ing the \T1/zi4/m/n/10 PJRTBuffer \T1/ppl/m/n/10 (+20) ob-jects to the
+ []
+
+[7] [8]
+Overfull \hbox (18.12848pt too wide) in paragraph at lines 464--464
+[]\T1/zi4/m/n/10 graph <- trace_fn(multiply_r, list(x = nv_scalar(1, "f32"), y = nv_scalar(5, "f32")))[] 
+ []
+
+[9]
+LaTeX Font Info:    Trying to load font information for U+fplmbb on input line 533.
+(/Users/sebi/Library/TinyTeX/texmf-dist/tex/latex/psnfss/ufplmbb.fd
+File: ufplmbb.fd 2003/10/30 Fontinst v1.914 font definitions for U/fplmbb.
+) [10]
+Overfull \hbox (616.49283pt too wide) in paragraph at lines 576--576
+[]\T1/zi4/m/n/10 #> [1] "func.func @main (%0: tensor<f32>, %1: tensor<f32>) -> tensor<f32> {\n%2 = \"stablehlo.multiply\" (%0, %1): (tensor<f32>, tensor<f32>) -> (tensor<f32>)\n\"func.return\"(%2): (tensor<f32>) -> ()\n}\n"[] 
+ []
+
+LaTeX Font Info:    Font shape `T1/zi4/b/n' will be
+(Font)              scaled to size 10.20004pt on input line 596.
+[11] [12] [13] [14] [15] [16]
+LaTeX Font Info:    Trying to load font information for TS1+ppl on input line 1042.
+(/Users/sebi/Library/TinyTeX/texmf-dist/tex/latex/psnfss/ts1ppl.fd
+File: ts1ppl.fd 2001/06/04 font definitions for TS1/ppl.
+) [17] [18] [19] (./RJwrapper.bbl (./RJwrapper.brf)
 \tf@brf=\write6
 \openout6 = `RJwrapper.brf'.
 
 )
 
 LaTeX Font Warning: Font shape `T1/zi4/m/it' undefined
-(Font)              using `T1/zi4/m/n' instead on input line 666.
+(Font)              using `T1/zi4/m/n' instead on input line 1158.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 676--677
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 676--677
+Underfull \hbox (badness 10000) in paragraph at lines 1168--1169
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 686--687
+Underfull \hbox (badness 10000) in paragraph at lines 1168--1169
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 686--687
+Underfull \hbox (badness 10000) in paragraph at lines 1178--1179
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 696--697
+Underfull \hbox (badness 10000) in paragraph at lines 1178--1179
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 696--697
+Underfull \hbox (badness 10000) in paragraph at lines 1188--1189
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 706--707
+Underfull \hbox (badness 10000) in paragraph at lines 1188--1189
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 706--707
-
- []
-
-[11])
-Underfull \hbox (badness 10000) in paragraph at lines 716--66
+Underfull \hbox (badness 10000) in paragraph at lines 1198--1199
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 716--66
+Underfull \hbox (badness 10000) in paragraph at lines 1198--1199
 
  []
 
-[12] (./RJwrapper.aux)
+)
+Underfull \hbox (badness 10000) in paragraph at lines 1208--66
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1208--66
+
+ []
+
+[20] [21] (./RJwrapper.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
@@ -904,23 +923,23 @@ L3 programming layer <2024-01-22>
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 Package rerunfilecheck Info: File `RJwrapper.out' has not changed.
-(rerunfilecheck)             Checksum: DA1175AA171CEDB7F691745D97E6CFB4;1309.
+(rerunfilecheck)             Checksum: 6F7435B46125D364930858E4D15EA29B;1552.
 Package rerunfilecheck Info: File `RJwrapper.brf' has not changed.
 (rerunfilecheck)             Checksum: EF15169D51851973BFE5C74832C75124;65.
  ) 
 Here is how much of TeX's memory you used:
- 26660 strings out of 476162
- 484382 string characters out of 5793734
- 1938975 words of memory out of 5000000
- 47914 multiletter control sequences out of 15000+600000
- 592111 words of font info for 231 fonts, out of 8000000 for 9000
+ 26774 strings out of 476162
+ 485838 string characters out of 5793734
+ 1941975 words of memory out of 5000000
+ 47952 multiletter control sequences out of 15000+600000
+ 599107 words of font info for 276 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 117i,12n,131p,1006b,815s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4b.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4r.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/public/mathpazo/fplmri.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/urw/palatino/uplb8a.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/urw/palatino/uplr8a.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb>
-Output written on RJwrapper.pdf (12 pages, 162279 bytes).
+ 117i,12n,131p,1006b,865s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4b.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4r.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/public/mathpazo/fplmbb.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/public/mathpazo/fplmr.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/public/mathpazo/fplmri.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/urw/palatino/uplb8a.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/urw/palatino/uplr8a.pfb></Users/sebi/Library/TinyTeX/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb>
+Output written on RJwrapper.pdf (21 pages, 201790 bytes).
 PDF statistics:
- 214 PDF objects out of 1000 (max. 8388607)
- 182 compressed objects within 2 object streams
- 39 named destinations out of 1000 (max. 500000)
- 47693 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 340 PDF objects out of 1000 (max. 8388607)
+ 293 compressed objects within 3 object streams
+ 51 named destinations out of 1000 (max. 500000)
+ 48221 words of extra memory for PDF output out of 51595 (max. 10000000)
 
