@@ -36,10 +36,10 @@ Remotes:
     r-xla/stablehlo,
     r-xla/tengen@*release,
     r-xla/xlamisc@*release,
-    r-xla/pjrt
+    r-xla/pjrt,
+    t-kalinowski/quickr
 Additional_repositories:
-    https://r-xla.r-universe.dev,
-    https://t-kalinowski.r-universe.dev
+    https://r-xla.r-universe.dev
 VignetteBuilder:
     knitr
 Config/testthat/edition: 3
