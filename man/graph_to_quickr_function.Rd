@@ -41,69 +41,6 @@ are more restricted (e.g. \code{transpose} currently only handles rank-2 tensors
 Most users will prefer \code{\link[=jit]{jit()}} with \code{backend = "quickr"}. This function is
 the lower-level graph API.
 }
-\examples{
-\dontshow{if (pjrt::plugin_is_downloaded() && requireNamespace("quickr", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-# Simple: two scalar inputs
-fn <- function(x, y) x + y
-
-graph <- trace_fn(
-  fn,
-  args = list(
-    x = nv_scalar(0.0, dtype = "f64"),
-    y = nv_scalar(0.0, dtype = "f64")
-  )
-)
-
-f_quickr <- graph_to_quickr_function(graph)
-f_pjrt <- jit(fn)
-
-out_quickr <- f_quickr(0.5, 1.25)
-out_pjrt <- as_array(f_pjrt(nv_scalar(0.5, dtype = "f64"), nv_scalar(1.25, dtype = "f64")))
-stopifnot(isTRUE(all.equal(out_quickr, out_pjrt, tolerance = 1e-12)))
-
-# Nested inputs + nested outputs
-fn2 <- function(x) {
-  total <- x$a + x$b$u - x$b$v
-  list(
-    total = total,
-    parts = list(a = x$a, b = list(u = x$b$u, v = x$b$v))
-  )
-}
-
-graph2 <- trace_fn(
-  fn2,
-  args = list(
-    x = list(
-      a = nv_scalar(0.0, dtype = "f64"),
-      b = list(
-        u = nv_scalar(0.0, dtype = "f64"),
-        v = nv_scalar(0.0, dtype = "f64")
-      )
-    )
-  )
-)
-
-f2_quickr <- graph_to_quickr_function(graph2)
-f2_pjrt <- jit(fn2)
-
-to_r <- function(x) {
-  if (inherits(x, "AnvilTensor")) {
-    as_array(x)
-  } else if (is.list(x)) {
-    lapply(x, to_r)
-  } else {
-    x
-  }
-}
-
-x2_r <- list(a = 0.5, b = list(u = 1.25, v = 0.75))
-x2_nv <- rapply(x2_r, function(x) nv_scalar(x, dtype = "f64"), how = "replace")
-
-out2_quickr <- f2_quickr(x2_r)
-out2_pjrt <- to_r(f2_pjrt(x2_nv))
-stopifnot(isTRUE(all.equal(out2_quickr, out2_pjrt, tolerance = 1e-12)))
-\dontshow{\}) # examplesIf}
-}
 \seealso{
 \code{\link[=jit]{jit()}} with \code{backend = "quickr"} for tracing and compiling a
 regular R function in one step.
