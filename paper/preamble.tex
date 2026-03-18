@@ -1,0 +1,7 @@
+\usepackage{dsfont}
+\newcommand{\fp}[2]{\frac{\partial #1}{\partial #2}}
+\ifdefined\R
+  \renewcommand{\R}{\mathds{R}}
+\else
+  \newcommand{\R}{\mathds{R}}
+\fi

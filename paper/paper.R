@@ -5,62 +5,6 @@
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 
-#> %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#ffffff', 'primaryBorderColor': '#333333', 'primaryTextColor': '#000000', 'lineColor': '#555555', 'secondaryColor': '#f5f5f5', 'tertiaryColor': '#ffffff', 'mainBkg': '#ffffff', 'nodeBorder': '#333333', 'clusterBkg': '#ffffff', 'clusterBorder': '#999999', 'titleColor': '#000000', 'edgeLabelBackground': '#ffffff'}}}%%
-#> graph TB
-#>     subgraph left ["Without OpenXLA (n × m)"]
-#>         direction LR
-#>         subgraph F1 [" Frontends "]
-#>             A1[JAX]
-#>             A2[PyTorch]
-#>             A3[TensorFlow]
-#>             A4[anvil]
-#>         end
-#>         subgraph B1 [" Backends "]
-#>             C1[CPU]
-#>             C2[GPU]
-#>             C3[TPU]
-#>         end
-#>         A1 --> C1
-#>         A1 --> C2
-#>         A1 --> C3
-#>         A2 --> C1
-#>         A2 --> C2
-#>         A2 --> C3
-#>         A3 --> C1
-#>         A3 --> C2
-#>         A3 --> C3
-#>         A4 --> C1
-#>         A4 --> C2
-#>         A4 --> C3
-#>     end
-#> 
-#>     subgraph right ["With OpenXLA (n + m)"]
-#>         direction LR
-#>         subgraph F2 [" Frontends "]
-#>             D1[JAX]
-#>             D2[PyTorch]
-#>             D3[TensorFlow]
-#>             D4[anvil]
-#>         end
-#>         subgraph O [" OpenXLA "]
-#>             IR[StableHLO]
-#>             RT[PJRT]
-#>         end
-#>         subgraph B2 [" Backends "]
-#>             G1[CPU]
-#>             G2[GPU]
-#>             G3[TPU]
-#>         end
-#>         D1 --> IR
-#>         D2 --> IR
-#>         D3 --> IR
-#>         D4 --> IR
-#>         IR --> RT
-#>         RT --> G1
-#>         RT --> G2
-#>         RT --> G3
-#>     end
-
 ## -----------------------------------------------------------------------------
 library(stablehlo)
 func <- local_func("main")
@@ -72,27 +16,36 @@ y
 z <- hlo_multiply(x, y)
 z
 f <- hlo_return(z)
+f
 hlo_string <- repr(f)
-cat(hlo_string, "\n")
 
 
 ## -----------------------------------------------------------------------------
 library(pjrt)
-x <- pjrt_buffer(1:4, dtype = "f32", device = "cpu")
-x
-y <- pjrt_buffer(5:8, dtype = "f32", device = "cpu")
-y
+program <- pjrt_program(src = hlo_string, format = "mlir")
 
 
 ## -----------------------------------------------------------------------------
-program <- pjrt_program(src = hlo_string, format = "mlir")
-program
-executable <- pjrt_compile(program)
+client <- pjrt_client("cpu")
+executable <- pjrt_compile(program, client = client)
 executable
 
 
 ## -----------------------------------------------------------------------------
+x <- pjrt_buffer(1:4, shape = c(2, 2), dtype = "f32", device = "cpu")
+x
+y <- pjrt_buffer(5:8, shape = c(2, 2), dtype = "f32", device = "cpu")
+y
+
+
+## -----------------------------------------------------------------------------
+shape(x)
+device(x)
+
+
+## -----------------------------------------------------------------------------
 out <- pjrt_execute(executable, x, y)
+out
 
 
 ## -----------------------------------------------------------------------------
@@ -105,6 +58,23 @@ tmp <- tempfile(fileext = ".safetensors")
 safetensors::safe_save_file(list(x = out), tmp, framework = "pjrt")
 reloaded <- safetensors::safe_load_file(tmp, framework = "pjrt")
 reloaded$x
+
+
+## -----------------------------------------------------------------------------
+library(quickr)
+
+multiply_r <- function(x, y) {
+  declare(
+    type(x = double(NA, NA)),
+    type(y = double(NA, NA))
+  )
+  x * y
+}
+f <- quick(multiply_r)
+f(
+  matrix(c(1, 2, 3, 4), nrow = 2),
+  matrix(c(5, 6, 7, 8), nrow = 2)
+)
 
 
 ## -----------------------------------------------------------------------------
@@ -301,7 +271,7 @@ nvl_mul_custom <- function(x, y) {
 }
 
 
-## -----------------------------------------------------------------------------
+## ----out.width = "100%"-------------------------------------------------------
 p_mul_custom[["stablehlo"]] <- function(lhs, rhs) {
   list(stablehlo::hlo_multiply(lhs, rhs))
 }
