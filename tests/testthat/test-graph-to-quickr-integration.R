@@ -36,7 +36,7 @@ test_that("integration: MNIST-shaped classifier training from rank-5 image batch
     )
   }
 
-  graph <- trace_fn(
+  graph <- expect_no_warning(trace_fn(
     loss_and_grad,
     list(
       X = nv_tensor(X, dtype = "f64", shape = dim(X)),
@@ -44,7 +44,7 @@ test_that("integration: MNIST-shaped classifier training from rank-5 image batch
       W = nv_tensor(W, dtype = "f64", shape = dim(W)),
       b = nv_tensor(b, dtype = "f64", shape = c(k))
     )
-  )
+  ))
 
   f_quick <- graph_to_quickr_function(graph)
   f_r <- graph_to_quickr_r_function(graph)
@@ -101,13 +101,13 @@ test_that("integration: tfp/greta-like log_prob + grad workflow via quickr", {
     )
   }
 
-  graph <- trace_fn(
+  graph <- expect_no_warning(trace_fn(
     logp_and_grad,
     list(
       w = nv_scalar(0.0, dtype = "f64"),
       b = nv_scalar(0.0, dtype = "f64")
     )
-  )
+  ))
 
   f_quick <- graph_to_quickr_function(graph)
   f_r <- graph_to_quickr_r_function(graph)
