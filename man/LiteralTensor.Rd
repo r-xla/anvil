@@ -14,7 +14,8 @@ The scalar value or scalarish AnvilTensor (contains 1 element).}
 The shape of the tensor.}
 
 \item{dtype}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
-The data type. Defaults to \code{f32} for numeric, \code{i32} for integer, \code{i1} for logical.}
+The data type. Defaults to the current backend's default floating dtype,
+\code{i32} for integer, and \code{i1} for logical.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.

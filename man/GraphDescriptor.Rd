@@ -15,7 +15,8 @@ GraphDescriptor(
   outputs = list(),
   is_static_flat = NULL,
   static_args_flat = NULL,
-  devices = character()
+  devices = character(),
+  backend = NULL
 )
 }
 \arguments{
@@ -55,6 +56,9 @@ Flattened traced values for the static arguments indicated by \code{is_static_fl
 \item{devices}{(\code{character()})\cr
 Device platforms encountered during tracing (e.g. \code{"cpu"}, \code{"cuda"}).
 Populated automatically as tensors are registered.}
+
+\item{backend}{(\code{NULL} | \code{"xla"} | \code{"quickr"})\cr
+Backend associated with this graph descriptor.}
 }
 \value{
 (\code{GraphDescriptor})

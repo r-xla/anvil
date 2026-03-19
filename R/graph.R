@@ -189,6 +189,8 @@ AnvilGraph <- function(
 #' @param devices (`character()`)\cr
 #'   Device platforms encountered during tracing (e.g. `"cpu"`, `"cuda"`).
 #'   Populated automatically as tensors are registered.
+#' @param backend (`NULL` | `"xla"` | `"quickr"`)\cr
+#'   Backend associated with this graph descriptor.
 #' @return (`GraphDescriptor`)
 #' @export
 GraphDescriptor <- function(
