@@ -52,6 +52,18 @@ test_that("jit: quickr backend does not support donate or device", {
   )
 })
 
+test_that("jit: quickr backend traces floating literals as f64", {
+  withr::local_options(list(anvil.default_backend = "xla"))
+
+  graph <- trace_fn(
+    function() 1.0,
+    list(),
+    desc = local_descriptor(backend = "quickr")
+  )
+
+  expect_equal(dtype(graph$outputs[[1L]]$aval), as_dtype("f64"))
+})
+
 test_that("graph_to_r_function lowers a graph to a plain R function", {
   skip_if_not_installed("quickr")
 

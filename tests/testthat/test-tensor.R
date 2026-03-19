@@ -167,3 +167,13 @@ test_that("stablehlo dtype is printed", {
   skip_if(!is_cpu())
   expect_snapshot(nv_tensor(TRUE))
 })
+
+test_that("default floating dtype follows the configured backend", {
+  withr::local_options(list(anvil.default_backend = "xla"))
+  expect_equal(dtype(nv_tensor(1.0)), as_dtype("f32"))
+  expect_equal(dtype(nv_scalar(1.0)), as_dtype("f32"))
+
+  withr::local_options(list(anvil.default_backend = "quickr"))
+  expect_equal(dtype(nv_tensor(1.0)), as_dtype("f64"))
+  expect_equal(dtype(nv_scalar(1.0)), as_dtype("f64"))
+})

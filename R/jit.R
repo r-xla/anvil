@@ -71,10 +71,7 @@ jit <- function(
 }
 
 jit_normalize_backend <- function(backend) {
-  assert_string(backend)
-  backend <- tolower(backend)
-  assert_choice(backend, c("xla", "quickr"))
-  backend
+  normalize_backend(backend)
 }
 
 jit_validate_args <- function(f, static, donate, device, backend) {
@@ -230,7 +227,7 @@ quickr_jit_aval <- function(x) {
     )
   }
 
-  nv_aten(default_dtype(x), quickr_jit_shape(x), ambiguous = FALSE)
+  nv_aten(default_dtype(x, backend = "quickr"), quickr_jit_shape(x), ambiguous = FALSE)
 }
 
 jit_quickr_inputs <- function(args_flat, is_static_flat) {
@@ -287,7 +284,7 @@ jit_quickr_impl <- function(f, static, cache) {
 #'   - `ambiguous_out`: Logical vector indicating which outputs are ambiguous (`NULL` if none are).
 #' @keywords internal
 compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device = NULL) {
-  desc <- local_descriptor()
+  desc <- local_descriptor(backend = "xla")
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
 
   # FIXME: This should also respect the devices of args_flat
@@ -341,7 +338,7 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
 }
 
 compile_to_quickr <- function(f, args_flat, in_tree) {
-  desc <- local_descriptor()
+  desc <- local_descriptor(backend = "quickr")
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
   list(fun = graph_to_quickr_function(graph))
 }

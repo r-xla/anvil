@@ -202,7 +202,8 @@ GraphDescriptor <- function(
   outputs = list(),
   is_static_flat = NULL,
   static_args_flat = NULL,
-  devices = character()
+  devices = character(),
+  backend = NULL
 ) {
   # Use an environment for reference semantics (mutable)
   env <- new.env(parent = emptyenv())
@@ -217,6 +218,7 @@ GraphDescriptor <- function(
   env$is_static_flat <- is_static_flat
   env$static_args_flat <- static_args_flat
   env$devices <- devices
+  env$backend <- current_backend(backend)
 
   structure(env, class = "GraphDescriptor")
 }
