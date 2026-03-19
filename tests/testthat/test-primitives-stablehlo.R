@@ -73,6 +73,14 @@ test_that("p_dynamic_slice", {
 })
 
 test_that("p_dynamic_update_slice", {
+  scalar <- jit(function(x, update) {
+    nvl_dynamic_update_slice(x, update)
+  })
+  expect_equal(
+    scalar(nv_scalar(1L, dtype = "i32"), nv_scalar(100L, dtype = "i32")),
+    nv_scalar(100L, dtype = "i32")
+  )
+
   # Basic dynamic update slice with scalar indices
   f <- function(start_i, start_j) {
     x <- nv_tensor(1:12, dtype = "i32", shape = c(3, 4))
@@ -192,7 +200,7 @@ test_that("p_reduce_max", {
   expect_equal(out, array(c(0, 4)))
   # f64
   x <- jit_eval({
-    nv_reduce_max(nv_tensor(c(1, 2, 3), dtype = "f64"), dim = 1L)
+    nv_reduce_max(nv_tensor(c(1, 2, 3), dtype = "f64"), dims = 1L)
   })
   expect_equal(x, nv_scalar(3, dtype = "f64"))
 })
@@ -211,7 +219,7 @@ test_that("p_reduce_min", {
   expect_equal(out, array(c(-1, 2)))
   # f64
   x <- jit_eval({
-    nv_reduce_min(nv_tensor(c(1, 2, 3), dtype = "f64"), dim = 1L)
+    nv_reduce_min(nv_tensor(c(1, 2, 3), dtype = "f64"), dims = 1L)
   })
   expect_equal(x, nv_scalar(1, dtype = "f64"))
 })

@@ -76,6 +76,9 @@ p_dynamic_slice[["stablehlo"]] <- function(operand, ..., slice_sizes) {
 
 p_dynamic_update_slice[["stablehlo"]] <- function(operand, update, ...) {
   start_indices <- list(...)
+  if (!length(start_indices)) {
+    return(list(update))
+  }
   # Convert start indices from 1-based to 0-based by subtracting 1
   start_indices_0based <- lapply(start_indices, function(idx) {
     one <- stablehlo::hlo_scalar(1L, dtype = dtype(idx), func = idx$func)
