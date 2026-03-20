@@ -13,7 +13,7 @@ RNG state (\code{ui64[2]}).}
 \item{rng_algorithm}{(\code{character(1)})\cr
 RNG algorithm name. Default is \code{"THREE_FRY"}.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
 Data type of the generated random values.}
 
 \item{shape}{(\code{integer()})\cr

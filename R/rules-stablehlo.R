@@ -164,7 +164,7 @@ p_reduce_all[["stablehlo"]] <- function(operand, dims, drop) {
     "FLOAT"
   } else if (inherits(dt, "IntegerType")) {
     "SIGNED"
-  } else if (inherits(dt, "UnsignedType") || inherits(dt, "BooleanType")) {
+  } else if (inherits(dt, "UIntegerType") || inherits(dt, "BooleanType")) {
     "UNSIGNED"
   } else {
     cli_abort("Unsupported dtype for compare")

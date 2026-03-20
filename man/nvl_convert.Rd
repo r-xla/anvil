@@ -10,7 +10,7 @@ nvl_convert(operand, dtype, ambiguous = FALSE)
 \item{operand}{(\code{\link{tensorish}})\cr
 Tensorish value of any data type.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
 Target data type.}
 
 \item{ambiguous}{(\code{logical(1)})\cr

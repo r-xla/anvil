@@ -10,7 +10,7 @@ nv_convert(operand, dtype)
 \item{operand}{(\code{\link{tensorish}})\cr
 Operand.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
 Data type.}
 }
 \value{

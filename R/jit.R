@@ -301,12 +301,13 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
 
   # TODO: Clean this up.
   # pjrt_execute should take in device instead of client
-  client <- if (!is.null(device)) {
-    pjrt::pjrt_client(device)
+  device <- pjrt::as_pjrt_device(device %??% Sys.getenv("PJRT_PLATFORM", "cpu"))
+  device <- if (!is.null(device)) {
+    pjrt::as_pjrt_device(device)
   } else if (length(traced_devices)) {
-    pjrt::pjrt_client(pjrt::platform(desc$devices[[1L]]))
+    desc$devices[[1L]]
   } else {
-    pjrt::pjrt_client(Sys.getenv("PJRT_PLATFORM", "cpu"))
+    pjrt::as_pjrt_device(Sys.getenv("PJRT_PLATFORM", "cpu"))
   }
 
   graph <- inline_scalarish_constants(graph)
@@ -332,7 +333,7 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
 
   src <- stablehlo::repr(func)
   program <- pjrt_program(src = src, format = "mlir")
-  exec <- pjrt_compile(program, client = client)
+  exec <- pjrt_compile(program, device = device)
 
   list(exec = exec, out_tree = out_tree, const_tensors = const_tensors, ambiguous_out = ambiguous_out)
 }

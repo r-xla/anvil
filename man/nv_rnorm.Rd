@@ -13,7 +13,7 @@ Shape.}
 \item{initial_state}{(\code{\link{tensorish}})\cr
 RNG state (\code{ui64[2]}).}
 
-\item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
 Data type.}
 
 \item{mu}{(\code{\link{tensorish}})\cr

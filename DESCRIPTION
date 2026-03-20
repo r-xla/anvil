@@ -34,8 +34,8 @@ Suggests:
     testthat (>= 3.0.0)
 Remotes:
     r-xla/stablehlo,
-    r-xla/tengen@*release,
-    r-xla/xlamisc@*release,
+    r-xla/tengen,
+    r-xla/xlamisc,
     r-xla/pjrt,
     t-kalinowski/quickr
 Additional_repositories:

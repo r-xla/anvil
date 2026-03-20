@@ -10,7 +10,7 @@ nv_seq(start, end, dtype = "i32", ambiguous = FALSE)
 \item{start, end}{(\code{integer(1)})\cr
 Start and end values. Must satisfy \code{start <= end}.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
 Data type.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
