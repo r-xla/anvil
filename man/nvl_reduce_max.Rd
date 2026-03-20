@@ -32,6 +32,7 @@ Finds the maximum of tensor elements along the specified dimensions.
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

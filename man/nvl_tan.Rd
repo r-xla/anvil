@@ -22,6 +22,7 @@ Element-wise tangent.
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

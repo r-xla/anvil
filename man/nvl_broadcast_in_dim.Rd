@@ -30,6 +30,7 @@ Broadcasts a tensor to a new shape by replicating the data along new or size-1 d
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

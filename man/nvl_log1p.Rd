@@ -22,6 +22,7 @@ Element-wise log(1 + x), more accurate for small x.
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

@@ -19,7 +19,10 @@ nv_rng_state <- function(seed) {
 }
 
 #' @include jit.R
-.nv_rng_state <- jit(function(state) {
-  state <- nv_bitcast_convert(state, dtype = "ui16")
-  nv_convert(state, "ui64")
-})
+.nv_rng_state <- jit(
+  function(state) {
+    state <- nv_bitcast_convert(state, dtype = "ui16")
+    nv_convert(state, "ui64")
+  },
+  backend = "xla"
+)

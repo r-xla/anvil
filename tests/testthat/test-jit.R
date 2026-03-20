@@ -251,6 +251,14 @@ test_that("jit: respects device argument", {
   expect_equal(f(), nv_scalar(1, device = "cpu", ambiguous = TRUE))
 })
 
+test_that("jit: explicit xla backend overrides the configured default backend for traced float constants", {
+  withr::local_options(list(anvil.default_backend = "quickr"))
+
+  f <- jit(function() nv_fill(1.0, shape = 1L), backend = "xla")
+
+  expect_equal(dtype(f()), as_dtype("f32"))
+})
+
 test_that("literals are not converted to scalar tensors", {
   f <- jit(nv_sine)
   expect_error(f(1), "Expected AnvilTensor")

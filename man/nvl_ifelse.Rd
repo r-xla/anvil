@@ -28,6 +28,7 @@ For each element, returns the corresponding element from \code{true_value} where
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

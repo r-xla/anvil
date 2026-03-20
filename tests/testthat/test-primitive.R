@@ -13,6 +13,32 @@ test_that("prim", {
   expect_list(prim(), types = "AnvilPrimitive")
 })
 
+test_that("quickr rules are exposed through primitives", {
+  expect_true(is.function(prim("add")[["quickr"]]))
+  expect_null(prim("print")[["quickr"]])
+})
+
+documented_primitive_ids <- function() {
+  primitives_path <- testthat::test_path("..", "..", "R", "primitives.R")
+  if (!file.exists(primitives_path)) {
+    testthat::skip("R/primitives.R is only available when testing from package source")
+  }
+
+  primitive_lines <- readLines(primitives_path)
+  sub(
+    "^#' @templateVar primitive_id ",
+    "",
+    grep("^#' @templateVar primitive_id ", primitive_lines, value = TRUE)
+  )
+}
+
+test_that("documented primitive ids resolve to registered primitives", {
+  primitive_ids <- documented_primitive_ids()
+
+  missing <- primitive_ids[vapply(primitive_ids, function(id) is.null(prim(id)), logical(1))]
+  expect_identical(missing, character())
+})
+
 describe("subgraphs", {
   it("extracts subgraphs from higher-order primitives", {
     true_graph <- trace_fn(function() nv_scalar(1), list())

@@ -18,13 +18,10 @@ Returns \code{operand} unchanged.
 Prints a tensor value to the console during JIT execution and returns the
 input unchanged. Useful for debugging.
 }
-\note{
-Currently only works on the CPU backend.
-}
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3), device = "cpu")
+  x <- nv_tensor(c(1, 2, 3))
   nv_print(x)
 })
 \dontshow{\}) # examplesIf}
