@@ -85,8 +85,6 @@ g_jit(a, b, x)
   - It is possible to add new primitives, transformations, and (with
     some effort) new backends.
   - The package is written almost entirely in R.
-- Asynchronous Execution:
-  - Tensor creation and execution happen asynchronousl
 
 ## When to use this package?
 
