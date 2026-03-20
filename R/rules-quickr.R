@@ -20,7 +20,7 @@ quickr_dtype_info <- function(dt_chr) {
   if (dt_chr == "i32") {
     return(list(ctor = "integer", zero = 0L, scalar_cast = as.integer))
   }
-  if (dt_chr %in% c("pred", "i1")) {
+  if (dt_chr %in% "bool") {
     return(list(ctor = "logical", zero = FALSE, scalar_cast = as.logical))
   }
 
@@ -185,8 +185,8 @@ quickr_emit_convert <- function(out_sym, operand_expr, shape_in, in_aval, out_av
       return(rlang::call2("as.integer", expr))
     }
 
-    if (dt_out %in% c("pred", "i1")) {
-      if (dt_in %in% c("pred", "i1")) {
+    if (dt_out %in% "bool") {
+      if (dt_in %in% "bool") {
         return(expr)
       }
       # StableHLO convert to pred behaves like "x != 0".
@@ -1128,7 +1128,7 @@ quickr_emit_reduce <- function(kind, out_sym, operand_expr, shape_in, dims, drop
     } else {
       1L
     }
-    if (as.character(dtype(out_aval)) %in% c("pred", "i1")) {
+    if (as.character(dtype(out_aval)) %in% "bool") {
       cli_abort("{kind}: pred reductions are not supported by quickr lowering")
     }
   } else {
@@ -1876,7 +1876,7 @@ local({
       dt_lhs <- as.character(dtype(input_nodes[[1L]]$aval))
       dt_rhs <- as.character(dtype(input_nodes[[2L]]$aval))
 
-      if (dt_lhs %in% c("pred", "i1") || dt_rhs %in% c("pred", "i1")) {
+      if (dt_lhs %in% "bool" || dt_rhs %in% "bool") {
         if (!prim_name %in% c("equal", "not_equal")) {
           cli_abort("{prim_name}: comparisons on {.val pred} values are not supported by quickr lowering")
         }
@@ -1919,7 +1919,7 @@ local({
     list(p_and, p_or, p_xor),
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       dt <- as.character(dtype(input_nodes[[1L]]$aval))
-      if (!dt %in% c("pred", "i1")) {
+      if (!dt %in% "bool") {
         cli_abort("{prim_name}: only {.val pred} dtype is supported by quickr lowering")
       }
 
@@ -1947,7 +1947,7 @@ local({
     p_not,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       dt <- as.character(dtype(input_nodes[[1L]]$aval))
-      if (!dt %in% c("pred", "i1")) {
+      if (!dt %in% "bool") {
         cli_abort("not: only {.val pred} dtype is supported by quickr lowering")
       }
       quickr_emit_assign(out_syms[[1L]], rlang::call2("!", inputs[[1L]]))
@@ -2153,7 +2153,7 @@ local({
       out_aval <- out_avals[[1L]]
       operand_node <- input_nodes[[1L]]
       dt_in <- as.character(dtype(operand_node$aval))
-      if (!dt_in %in% c("pred", "i1")) {
+      if (!dt_in %in% "bool") {
         cli_abort("reduce_any: only {.val pred} inputs are supported by quickr lowering")
       }
       quickr_emit_reduce_boolean(
@@ -2175,7 +2175,7 @@ local({
       out_aval <- out_avals[[1L]]
       operand_node <- input_nodes[[1L]]
       dt_in <- as.character(dtype(operand_node$aval))
-      if (!dt_in %in% c("pred", "i1")) {
+      if (!dt_in %in% "bool") {
         cli_abort("reduce_all: only {.val pred} inputs are supported by quickr lowering")
       }
       quickr_emit_reduce_boolean(

@@ -13,7 +13,7 @@ The scalar value or scalarish AnvilTensor (contains 1 element).}
 \item{shape}{(\code{\link[stablehlo:Shape]{stablehlo::Shape}} | \code{integer()})\cr
 The shape of the tensor.}
 
-\item{dtype}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+\item{dtype}{(\code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
 The data type. Defaults to the current backend's default floating dtype,
 \code{i32} for integer, and \code{i1} for logical.}
 
