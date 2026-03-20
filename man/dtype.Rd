@@ -13,7 +13,7 @@ A tensor-like object.}
 \item{...}{Additional arguments passed to methods (unused).}
 }
 \value{
-A \code{\link[stablehlo:TensorDataType]{TensorDataType}}.
+A \code{\link[tengen:TensorDataType]{TensorDataType}}.
 }
 \description{
 Returns the data type of a tensor (e.g. \code{f32}, \code{i64}).

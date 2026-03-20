@@ -10,7 +10,7 @@ IotaTensor(shape, dtype, dimension, start = 1L, ambiguous = FALSE)
 \item{shape}{(\code{\link[stablehlo:Shape]{stablehlo::Shape}} | \code{integer()})\cr
 The shape of the tensor.}
 
-\item{dtype}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+\item{dtype}{(\code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
 The data type.}
 
 \item{dimension}{(\code{integer(1)})\cr

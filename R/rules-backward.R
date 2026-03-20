@@ -305,7 +305,7 @@ p_reduce_max[["backward"]] <- p_reduce_min[["backward"]] <- function(inputs, out
   )
 }
 
-p_broadcast_in_dim[["backward"]] <- function(inputs, outputs, grads, shape_out, broadcast_dimensions, .required) {
+p_broadcast_in_dim[["backward"]] <- function(inputs, outputs, grads, shape, broadcast_dimensions, .required) {
   operand <- inputs[[1L]]
   y <- outputs[[1L]]
   grad <- grads[[1L]]

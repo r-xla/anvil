@@ -10,7 +10,7 @@ nv_aten(dtype, shape, ambiguous = FALSE)
 AbstractTensor(dtype, shape, ambiguous = FALSE)
 }
 \arguments{
-\item{dtype}{(\code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}} | \code{character(1)})\cr
+\item{dtype}{(\code{\link[tengen:TensorDataType]{tengen::TensorDataType}} | \code{character(1)})\cr
 The data type of the tensor.}
 
 \item{shape}{(\code{\link[stablehlo:Shape]{stablehlo::Shape}} | \code{integer()})\cr

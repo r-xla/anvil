@@ -818,7 +818,7 @@ nvl_reduce_all <- make_reduce_op(p_reduce_all, infer_reduce_boolean)
 
 infer_compare <- function(lhs, rhs, comparison_direction) {
   check_dtype <- as.character(dtype(lhs))
-  compare_type <- if ((check_dtype == "i1") || grepl("^ui", check_dtype)) {
+  compare_type <- if ((check_dtype == "bool") || grepl("^ui", check_dtype)) {
     "UNSIGNED"
   } else if (grepl("^i", check_dtype)) {
     "SIGNED"

@@ -17,7 +17,7 @@ Coerces a value to a \code{TensorDataType}. Accepts data type strings
 (e.g. \code{"f32"}, \code{"i64"}, \code{"i1"}) or existing \code{TensorDataType} objects (they are returned unchanged).
 }
 \details{
-This is implemented via the generic \code{\link[stablehlo:as_dtype]{stablehlo::as_dtype()}}.
+This is implemented via the generic \code{\link[tengen:as_dtype]{tengen::as_dtype()}}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
@@ -26,5 +26,5 @@ as_dtype("i32")
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=is_dtype]{is_dtype()}}, \code{\link[stablehlo:as_dtype]{stablehlo::as_dtype()}}, \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}}
+\code{\link[=is_dtype]{is_dtype()}}, \code{\link[tengen:as_dtype]{tengen::as_dtype()}}, \code{\link[tengen:TensorDataType]{tengen::TensorDataType}}
 }

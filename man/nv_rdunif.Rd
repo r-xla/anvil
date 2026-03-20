@@ -16,7 +16,7 @@ RNG state (\code{ui64[2]}).}
 \item{n}{(\code{integer(1)})\cr
 Number of categories (samples integers \code{1} to \code{n}).}
 
-\item{dtype}{(\code{character(1)} | \code{\link[stablehlo:TensorDataType]{stablehlo::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
 Data type.}
 }
 \value{

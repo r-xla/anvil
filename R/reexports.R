@@ -101,7 +101,7 @@ tengen::as_raw
 #' @param x ([`tensorish`])\cr
 #'   A tensor-like object.
 #' @param ... Additional arguments passed to methods (unused).
-#' @returns A [`TensorDataType`][stablehlo::TensorDataType].
+#' @returns A [`TensorDataType`][tengen::TensorDataType].
 #' @seealso [tengen::dtype()]
 #' @name dtype
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -140,7 +140,7 @@ tengen::ndims
 #'
 #' @param x An object to test.
 #' @returns `TRUE` or `FALSE`.
-#' @seealso [as_dtype()], [stablehlo::is_dtype()]
+#' @seealso [as_dtype()], [tengen::is_dtype()]
 #' @name is_dtype
 #' @examples
 #' is_dtype("f32")
@@ -148,9 +148,9 @@ tengen::ndims
 NULL
 
 #' @rdname is_dtype
-#' @importFrom stablehlo is_dtype
+#' @importFrom tengen is_dtype
 #' @export
-stablehlo::is_dtype
+tengen::is_dtype
 
 #' @title Convert to a TensorDataType
 #'
@@ -158,11 +158,11 @@ stablehlo::is_dtype
 #' (e.g. `"f32"`, `"i64"`, `"i1"`) or existing `TensorDataType` objects (they are returned unchanged).
 #'
 #' @details
-#' This is implemented via the generic [`stablehlo::as_dtype()`].
+#' This is implemented via the generic [`tengen::as_dtype()`].
 #'
 #' @param x A character string or `TensorDataType` to convert.
 #' @returns A `TensorDataType` object.
-#' @seealso [is_dtype()], [stablehlo::as_dtype()], [`stablehlo::TensorDataType`]
+#' @seealso [is_dtype()], [tengen::as_dtype()], [`tengen::TensorDataType`]
 #' @name as_dtype
 #'
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -171,9 +171,9 @@ stablehlo::is_dtype
 NULL
 
 #' @rdname as_dtype
-#' @importFrom stablehlo as_dtype
+#' @importFrom tengen as_dtype
 #' @export
-stablehlo::as_dtype
+tengen::as_dtype
 
 #' @title Get the platform of a tensor or buffer
 #'

@@ -5,15 +5,15 @@
 #' to an ambiguous type.
 #' Promoting to an ambiguous type can happen in scenarios like `x + 1.2`, where `x` is a bool or an int.
 #'
-#' @param lhs_dtype ([`stablehlo::TensorDataType`])\cr
+#' @param lhs_dtype ([`tengen::TensorDataType`])\cr
 #'   The left-hand side type.
-#' @param rhs_dtype ([`stablehlo::TensorDataType`])\cr
+#' @param rhs_dtype ([`tengen::TensorDataType`])\cr
 #'   The right-hand side type.
 #' @param lhs_ambiguous (`logical(1)`)\cr
 #'   Whether the left-hand side type is ambiguous.
 #' @param rhs_ambiguous (`logical(1)`)\cr
 #'   Whether the right-hand side type is ambiguous.
-#' @return (`list(dtype = [`stablehlo::TensorDataType`], ambiguous = `logical(1)`)\cr
+#' @return (`list(dtype = [`tengen::TensorDataType`], ambiguous = `logical(1)`)\cr
 #' @export
 common_dtype <- function(lhs_dtype, rhs_dtype, lhs_ambiguous = FALSE, rhs_ambiguous = FALSE) {
   lhs_dtype <- as_dtype(lhs_dtype)
@@ -108,7 +108,7 @@ promote_dt_known <- function(dt1, dt2) {
     return(IntegerType(min(64L, dt2$value * 2L)))
   }
   if (inherits(dt2, "IntegerType")) {
-    if (inherits(dt1, "UnsignedType")) {
+    if (inherits(dt1, "UIntegerType")) {
       if (dt2$value > dt1$value) {
         return(dt2)
       }
@@ -117,7 +117,7 @@ promote_dt_known <- function(dt1, dt2) {
     cli_abort("internal error")
   }
   # both are unsigned
-  UnsignedType(max(dt1$value, dt2$value))
+  UIntegerType(max(dt1$value, dt2$value))
 }
 
 default_dtype <- function(x) {

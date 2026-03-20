@@ -32,7 +32,7 @@
 #'   Object convertible to a [`PJRTBuffer`][pjrt::pjrt_buffer].
 #'   Includes `integer()`, `double()`, `logical()` vectors and arrays.
 #' @param dtype (`NULL` | `character(1)` | [`TensorDataType`])\cr
-#'   One of `r stablehlo:::roxy_dtypes()` or a [`stablehlo::TensorDataType`].
+#'   One of `r stablehlo:::roxy_dtypes()` or a [`tengen::TensorDataType`].
 #'   The default (`NULL`) uses `f32` for numeric data, `i32` for integer data, and `i1` for logical data.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
 #'   The device for the tensor (`"cpu"`, `"cuda"`).
@@ -249,7 +249,7 @@ device.AnvilTensor <- function(x, ...) {
 #' - [`ambiguous()`]: Get whether the dtype is ambiguous.
 #' - [`ndims()`][tengen::ndims]: Get the number of dimensions.
 #'
-#' @param dtype ([`stablehlo::TensorDataType`] | `character(1)`)\cr
+#' @param dtype ([`tengen::TensorDataType`] | `character(1)`)\cr
 #'   The data type of the tensor.
 #' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
 #'   The shape of the tensor. Can be provided as an integer vector.
@@ -387,7 +387,7 @@ ConcreteTensor <- function(data) {
 #'   The scalar value or scalarish AnvilTensor (contains 1 element).
 #' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
 #'   The shape of the tensor.
-#' @param dtype ([`stablehlo::TensorDataType`])\cr
+#' @param dtype ([`tengen::TensorDataType`])\cr
 #'   The data type. Defaults to `f32` for numeric, `i32` for integer, `i1` for logical.
 #' @template param_ambiguous
 #'
@@ -445,7 +445,7 @@ LiteralTensor <- function(data, shape, dtype = default_dtype(data), ambiguous) {
 #'
 #' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
 #'   The shape of the tensor.
-#' @param dtype ([`stablehlo::TensorDataType`])\cr
+#' @param dtype ([`tengen::TensorDataType`])\cr
 #'   The data type.
 #' @param dimension (`integer(1)`)\cr
 #'   The dimension along which values increase.

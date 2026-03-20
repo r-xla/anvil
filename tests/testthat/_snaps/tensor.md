@@ -43,5 +43,5 @@
     Output
       AnvilTensor
        1
-      [ CPUi1{1} ] 
+      [ CPUbool{1} ] 
 
