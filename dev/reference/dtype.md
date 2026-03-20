@@ -22,7 +22,7 @@ dtype(x, ...)
 ## Value
 
 A
-[`TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html).
+[`TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html).
 
 ## Details
 

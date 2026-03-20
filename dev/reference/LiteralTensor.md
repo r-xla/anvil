@@ -29,7 +29,7 @@ LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
 
 - dtype:
 
-  ([`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
+  ([`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
   The data type. Defaults to `f32` for numeric, `i32` for integer, `i1`
   for logical.
 

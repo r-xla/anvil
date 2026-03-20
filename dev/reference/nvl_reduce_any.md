@@ -62,5 +62,5 @@ jit_eval({
 #> AnvilTensor
 #>  1
 #>  1
-#> [ CPUi1{2} ] 
+#> [ CPUbool{2} ] 
 ```

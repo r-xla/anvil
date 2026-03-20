@@ -157,7 +157,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x55c8c7e75c70>
+    ## <bytecode: 0x5597f7628160>
     ## <environment: namespace:anvil>
 
 The
@@ -208,7 +208,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x55c8c7e74ff8>
+    ## <bytecode: 0x5597f76274e8>
     ## <environment: namespace:anvil>
 
 The
@@ -224,7 +224,7 @@ func
 ```
 
     ## func.func @main (%0: tensor<f32>, %1: tensor<f32>) -> tensor<f32> {
-    ## %2 = "stablehlo.multiply" (%0, %1): (tensor<f32>, tensor<f32>) -> (tensor<f32>)
+    ## %2 = stablehlo.multiply %0, %1 : tensor<f32>
     ## "func.return"(%2): (tensor<f32>) -> ()
     ## }
 
@@ -549,14 +549,14 @@ out[[1L]]
     ## %3 = "stablehlo.broadcast_in_dim" (%2) {
     ## broadcast_dimensions = array<i64>
     ## }: (tensor<f32>) -> (tensor<1000000xf32>)
-    ## %4 = "stablehlo.add" (%3, %0): (tensor<1000000xf32>, tensor<1000000xf32>) -> (tensor<1000000xf32>)
+    ## %4 = stablehlo.add %3, %0 : tensor<1000000xf32>
     ## %5 = "stablehlo.constant" () {
     ## value = dense<1.00000000e+00> : tensor<f32>
     ## }: () -> (tensor<f32>)
     ## %6 = "stablehlo.broadcast_in_dim" (%5) {
     ## broadcast_dimensions = array<i64>
     ## }: (tensor<f32>) -> (tensor<1000000xf32>)
-    ## %7 = "stablehlo.add" (%4, %6): (tensor<1000000xf32>, tensor<1000000xf32>) -> (tensor<1000000xf32>)
+    ## %7 = stablehlo.add %4, %6 : tensor<1000000xf32>
     ## "func.return"(%7): (tensor<1000000xf32>) -> ()
     ## }
 

@@ -23,13 +23,13 @@ A `TensorDataType` object.
 ## Details
 
 This is implemented via the generic
-[`stablehlo::as_dtype()`](https://r-xla.github.io/stablehlo/reference/as_dtype.html).
+[`tengen::as_dtype()`](https://r-xla.github.io/tengen/reference/as_dtype.html).
 
 ## See also
 
 [`is_dtype()`](https://r-xla.github.io/anvil/dev/reference/is_dtype.md),
-[`stablehlo::as_dtype()`](https://r-xla.github.io/stablehlo/reference/as_dtype.html),
-[`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html)
+[`tengen::as_dtype()`](https://r-xla.github.io/tengen/reference/as_dtype.html),
+[`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html)
 
 ## Examples
 

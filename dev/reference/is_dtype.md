@@ -21,7 +21,7 @@ is_dtype(x)
 ## See also
 
 [`as_dtype()`](https://r-xla.github.io/anvil/dev/reference/as_dtype.md),
-[`stablehlo::is_dtype()`](https://r-xla.github.io/stablehlo/reference/is_dtype.html)
+[`tengen::is_dtype()`](https://r-xla.github.io/tengen/reference/is_dtype.html)
 
 ## Examples
 

@@ -92,7 +92,7 @@ stablehlo(graph)
 #> %2 = "stablehlo.broadcast_in_dim" (%1) {
 #> broadcast_dimensions = array<i64>
 #> }: (tensor<f32>) -> (tensor<2xf32>)
-#> %3 = "stablehlo.add" (%2, %0): (tensor<2xf32>, tensor<2xf32>) -> (tensor<2xf32>)
+#> %3 = stablehlo.add %2, %0 : tensor<2xf32>
 #> "func.return"(%3): (tensor<2xf32>) -> ()
 #> }
 #> 

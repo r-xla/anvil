@@ -20,7 +20,7 @@ nv_bitcast_convert(operand, dtype)
 - dtype:
 
   (`character(1)` \|
-  [`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
+  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
   Target data type.
 
 ## Value

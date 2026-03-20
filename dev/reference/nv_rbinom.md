@@ -35,7 +35,7 @@ nv_rbinom(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32")
 - dtype:
 
   (`character(1)` \|
-  [`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
+  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
   Data type.
 
 ## Value

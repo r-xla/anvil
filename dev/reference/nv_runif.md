@@ -24,7 +24,7 @@ nv_runif(shape, initial_state, dtype = "f32", lower = 0, upper = 1)
 - dtype:
 
   (`character(1)` \|
-  [`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
+  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
   Data type.
 
 - lower, upper:

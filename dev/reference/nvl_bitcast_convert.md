@@ -19,7 +19,7 @@ nvl_bitcast_convert(operand, dtype)
 - dtype:
 
   (`character(1)` \|
-  [`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
+  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
   Target data type. If it has the same bit width as the input, the
   output shape is unchanged. If narrower, an extra trailing dimension is
   added. If wider, the last dimension is consumed.

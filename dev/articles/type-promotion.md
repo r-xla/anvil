@@ -87,7 +87,7 @@ jit(\() list(1L, 1.0, TRUE))()
     ## [[3]]
     ## AnvilTensor
     ##  1
-    ## [ CPUi1{} ]
+    ## [ CPUbool{} ]
 
 However, because this is just a guess, they behave differently than
 known types during promotion. Therefore, the `common_dtype` function has

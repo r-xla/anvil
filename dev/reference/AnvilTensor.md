@@ -39,9 +39,9 @@ nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
 - dtype:
 
   (`NULL` \| `character(1)` \|
-  [`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html))  
+  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
   One of pred, i8, i16, i32, i64, ui8, ui16, ui32, ui64, f32, f64 or a
-  [`stablehlo::TensorDataType`](https://r-xla.github.io/stablehlo/reference/TensorDataType.html).
+  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html).
   The default (`NULL`) uses `f32` for numeric data, `i32` for integer
   data, and `i1` for logical data.
 
