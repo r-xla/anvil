@@ -226,14 +226,14 @@ test_that("p_reduce_min drop = FALSE", {
 test_that("p_reduce_any", {
   x <- array(c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE), c(2, 3))
   f <- jit(function(a) nvl_reduce_any(a, dims = 2L, drop = TRUE))
-  out <- as_array(f(nv_tensor(x, dtype = "pred")))
+  out <- as_array(f(nv_tensor(x, dtype = "bool")))
   expect_equal(out, array(c(TRUE, FALSE)))
 })
 
 test_that("p_reduce_all", {
   x <- array(c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE), c(2, 3))
   f <- jit(function(a) nvl_reduce_all(a, dims = 1L, drop = FALSE))
-  out <- as_array(f(nv_tensor(x, dtype = "pred")))
+  out <- as_array(f(nv_tensor(x, dtype = "bool")))
   expect_equal(out, array(rep(FALSE, 3), c(1, 3)))
 })
 
@@ -494,7 +494,7 @@ test_that("error when multiplying lists in if-statement", {
 test_that("p_is_finite", {
   f <- jit(function(x) nvl_is_finite(x))
   x <- nv_tensor(c(1.0, Inf, -Inf, NaN), dtype = "f32")
-  expect_equal(f(x), nv_tensor(c(TRUE, FALSE, FALSE, FALSE), dtype = "pred"))
+  expect_equal(f(x), nv_tensor(c(TRUE, FALSE, FALSE, FALSE), dtype = "bool"))
 })
 
 test_that("p_clamp", {

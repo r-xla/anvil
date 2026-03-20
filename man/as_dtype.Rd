@@ -14,7 +14,7 @@ A \code{TensorDataType} object.
 }
 \description{
 Coerces a value to a \code{TensorDataType}. Accepts data type strings
-(e.g. \code{"f32"}, \code{"i64"}, \code{"i1"}) or existing \code{TensorDataType} objects (they are returned unchanged).
+(e.g. \code{"f32"}, \code{"i64"}, \code{"bool"}) or existing \code{TensorDataType} objects (they are returned unchanged).
 }
 \details{
 This is implemented via the generic \code{\link[tengen:as_dtype]{tengen::as_dtype()}}.

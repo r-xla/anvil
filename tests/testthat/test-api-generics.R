@@ -30,10 +30,10 @@ describe("!", {
   it("negates boolean tensor", {
     expect_jit_equal(
       {
-        x <- nv_tensor(c(TRUE, FALSE, TRUE), dtype = "pred")
+        x <- nv_tensor(c(TRUE, FALSE, TRUE), dtype = "bool")
         !x
       },
-      nv_tensor(c(FALSE, TRUE, FALSE), dtype = "pred")
+      nv_tensor(c(FALSE, TRUE, FALSE), dtype = "bool")
     )
   })
 })

@@ -19,8 +19,8 @@ Object convertible to a \code{\link[pjrt:pjrt_buffer]{PJRTBuffer}}.
 Includes \code{integer()}, \code{double()}, \code{logical()} vectors and arrays.}
 
 \item{dtype}{(\code{NULL} | \code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
-One of pred, i8, i16, i32, i64, ui8, ui16, ui32, ui64, f32, f64 or a \code{\link[tengen:TensorDataType]{tengen::TensorDataType}}.
-The default (\code{NULL}) uses \code{f32} for numeric data, \code{i32} for integer data, and \code{i1} for logical data.}
+One of bool, i8, i16, i32, i64, ui8, ui16, ui32, ui64, f32, f64 or a \code{\link[tengen:TensorDataType]{tengen::TensorDataType}}.
+The default (\code{NULL}) uses \code{f32} for numeric data, \code{i32} for integer data, and \code{bool} for logical data.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
 The device for the tensor (\code{"cpu"}, \code{"cuda"}).

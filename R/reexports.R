@@ -155,7 +155,7 @@ tengen::is_dtype
 #' @title Convert to a TensorDataType
 #'
 #' @description Coerces a value to a `TensorDataType`. Accepts data type strings
-#' (e.g. `"f32"`, `"i64"`, `"i1"`) or existing `TensorDataType` objects (they are returned unchanged).
+#' (e.g. `"f32"`, `"i64"`, `"bool"`) or existing `TensorDataType` objects (they are returned unchanged).
 #'
 #' @details
 #' This is implemented via the generic [`tengen::as_dtype()`].

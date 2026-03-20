@@ -91,7 +91,7 @@ test_that("group generics", {
   # Ops: arithmetic
   expect_equal((ain + ain)$aval, ain$aval)
   # Ops: comparison
-  expect_equal((ain > ain)$aval, AbstractTensor("pred", c(2, 2), FALSE))
+  expect_equal((ain > ain)$aval, AbstractTensor("bool", c(2, 2), FALSE))
   # matrixOps
   expect_equal((ain %*% ain)$aval, ain$aval)
   # Math

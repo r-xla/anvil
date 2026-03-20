@@ -67,7 +67,7 @@ is_cpu <- function() {
 }
 
 generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
-  data <- if (dtype == "pred") {
+  data <- if (dtype == "bool") {
     sample(c(TRUE, FALSE), size = prod(dimension), replace = TRUE)
   } else if (dtype %in% c("ui8", "ui16", "ui32", "ui64")) {
     sample(0:20, size = prod(dimension), replace = TRUE)
