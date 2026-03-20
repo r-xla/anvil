@@ -192,7 +192,7 @@ test_that("p_reduce_max", {
   expect_equal(out, array(c(0, 4)))
   # f64
   x <- jit_eval({
-    nv_reduce_max(nv_tensor(c(1, 2, 3), dtype = "f64"), dim = 1L)
+    nv_reduce_max(nv_tensor(c(1, 2, 3), dtype = "f64"), dims = 1L)
   })
   expect_equal(x, nv_scalar(3, dtype = "f64"))
 })
@@ -211,7 +211,7 @@ test_that("p_reduce_min", {
   expect_equal(out, array(c(-1, 2)))
   # f64
   x <- jit_eval({
-    nv_reduce_min(nv_tensor(c(1, 2, 3), dtype = "f64"), dim = 1L)
+    nv_reduce_min(nv_tensor(c(1, 2, 3), dtype = "f64"), dims = 1L)
   })
   expect_equal(x, nv_scalar(1, dtype = "f64"))
 })

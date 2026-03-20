@@ -3,9 +3,9 @@ NULL
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom stablehlo repr BooleanType IntegerType FloatType Shape FuncId Func as_dtype FuncValue
+#' @importFrom stablehlo repr Shape FuncId Func FuncValue
 #' @importFrom stablehlo local_func hlo_input hlo_return hlo_tensor hlo_scalar
-#' @importFrom stablehlo UnsignedType TensorType
+#' @importFrom stablehlo TensorType
 #' @import checkmate
 #' @import tengen
 #' @importFrom pjrt pjrt_buffer pjrt_scalar pjrt_execute pjrt_compile pjrt_program elt_type
