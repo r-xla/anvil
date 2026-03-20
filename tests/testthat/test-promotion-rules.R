@@ -86,19 +86,19 @@ test_that("promote_dt_known", {
 
   check("f64", "f64", "f64")
   check("i32", "i32", "i32")
-  check("i1", "i1", "i1")
+  check("bool", "bool", "bool")
 
   # floats dominate
   check("f64", "f32", "f64")
   check("f64", "i32", "f64")
   check("f32", "i32", "f32")
-  check("f32", "i1", "f32")
+  check("f32", "bool", "f32")
 
   # signed ints
   check("i32", "i16", "i32")
   check("i64", "i32", "i64")
   check("i64", "i16", "i64")
-  check("i64", "i1", "i64")
+  check("i64", "bool", "i64")
   # against unsigned ints
   check("i32", "ui8", "i32")
   check("i32", "ui32", "i64")
@@ -120,11 +120,11 @@ test_that("promote_dt_ambiguous", {
   }
   check("i32", "i32", "i32")
   check("f32", "f32", "f32")
-  check("i1", "i1", "i1")
+  check("bool", "bool", "bool")
 
   check("i32", "f32", "f32")
-  check("i1", "f32", "f32")
-  check("i1", "i32", "i32")
+  check("bool", "f32", "f32")
+  check("bool", "i32", "i32")
 })
 
 test_that("promote_dt_ambiguous_to_known", {
@@ -135,19 +135,19 @@ test_that("promote_dt_ambiguous_to_known", {
     )
   }
   check("i32", "i32", "i32")
-  check("i1", "i1", "i1")
+  check("bool", "bool", "bool")
   check("f32", "f32", "f32")
   # ambiguous can only be i32 or f32
 
   check("i32", "i8", "i8")
   check("i32", "i64", "i64")
-  check("i32", "i1", "i32")
+  check("i32", "bool", "i32")
   check("i64", "f32", "f32")
 
   check("f32", "f64", "f64")
   check("f64", "f32", "f32")
   check("f32", "i32", "f32")
 
-  check("i1", "f32", "f32")
-  check("i1", "i32", "i32")
+  check("bool", "f32", "f32")
+  check("bool", "i32", "i32")
 })

@@ -15,7 +15,7 @@ The shape of the tensor.}
 
 \item{dtype}{(\code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
 The data type. Defaults to the current backend's default floating dtype,
-\code{i32} for integer, and \code{i1} for logical.}
+\code{i32} for integer, and \code{bool} for logical.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.

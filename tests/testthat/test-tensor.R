@@ -107,7 +107,7 @@ test_that("== and != operators throw errors for AbstractTensor", {
 
 test_that("to_abstract", {
   # literal
-  expect_equal(to_abstract(TRUE), LiteralTensor(TRUE, c(), "pred", FALSE))
+  expect_equal(to_abstract(TRUE), LiteralTensor(TRUE, c(), "bool", FALSE))
   expect_equal(to_abstract(1L), LiteralTensor(1L, c(), "i32", TRUE))
   expect_equal(to_abstract(1.0), LiteralTensor(1.0, c(), "f32", TRUE))
   # anvil tensor
@@ -151,7 +151,7 @@ test_that("as_shape for c() (i.e., NULL)", {
 
 test_that("to_abstract", {
   # literal
-  expect_equal(to_abstract(TRUE), LiteralTensor(TRUE, c(), "pred", FALSE))
+  expect_equal(to_abstract(TRUE), LiteralTensor(TRUE, c(), "bool", FALSE))
   expect_equal(to_abstract(1L), LiteralTensor(1L, c(), "i32", TRUE))
   expect_equal(to_abstract(1.0), LiteralTensor(1.0, c(), "f32", TRUE))
   # anvil tensor

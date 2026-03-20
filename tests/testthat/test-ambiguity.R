@@ -12,7 +12,7 @@ test_that("nv_scalar returns non-ambiguous tensor by default", {
   # Logical scalars are also non-ambiguous
   x_pred <- nv_scalar(TRUE)
   expect_false(ambiguous(x_pred))
-  expect_equal(dtype(x_pred), as_dtype("pred"))
+  expect_equal(dtype(x_pred), as_dtype("bool"))
 })
 
 test_that("nv_scalar returns non-ambiguous tensor when dtype is specified", {

@@ -610,8 +610,8 @@ describe("boolean ops", {
     x <- nv_tensor(c(1, 0, 0, 1))
     y <- nv_tensor(c(1, 1, 0, 0))
     f <- function(x, y) {
-      x <- nv_convert(x, "i1")
-      y <- nv_convert(y, "i1")
+      x <- nv_convert(x, "bool")
+      y <- nv_convert(y, "bool")
       out <- nvl_fn(x, y)
       nv_convert(out, "f32")
     }
@@ -621,7 +621,7 @@ describe("boolean ops", {
   verify_bool_reduce <- function(nvl_fn) {
     x <- nv_tensor(c(1.0, 1.0, 0.0, 0.0), dtype = "f32")
     f <- function(x) {
-      x_pred <- nv_convert(x, "i1")
+      x_pred <- nv_convert(x, "bool")
       out <- nvl_fn(x_pred, dims = 1L, drop = TRUE)
       nv_convert(out, "f32")
     }
@@ -641,7 +641,7 @@ describe("boolean ops", {
   it("p_not returns zero gradients", {
     x <- nv_tensor(c(1.0, 0.0, 1.0, 0.0), dtype = "f32")
     f <- function(x) {
-      x_pred <- nv_convert(x, "i1")
+      x_pred <- nv_convert(x, "bool")
       out <- nvl_not(x_pred)
       out <- nv_convert(out, "f32")
       nv_reduce_sum(out, dims = 1L, drop = TRUE)

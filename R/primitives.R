@@ -54,7 +54,7 @@ infer_reduce_boolean <- function(operand, dims, drop) {
     new_shape[dims] <- 1L
   }
   list(AbstractTensor(
-    dtype = "pred",
+    dtype = "bool",
     shape = Shape(new_shape),
     ambiguous = FALSE
   ))
@@ -2317,8 +2317,8 @@ nvl_scatter <- function(
       index_vector_dim = index_vector_dim - 1L
     )
 
-    indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "i1", shape = integer())
-    unique_indices_attr <- r_to_constant(unique_indices, dtype = "i1", shape = integer())
+    indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "bool", shape = integer())
+    unique_indices_attr <- r_to_constant(unique_indices, dtype = "bool", shape = integer())
 
     out <- stablehlo::infer_types_scatter(
       inputs = list(at2vt(input)),
@@ -2475,7 +2475,7 @@ nvl_gather <- function(
     )
 
     slice_sizes_attr <- r_to_constant(slice_sizes, dtype = "i64", shape = length(slice_sizes))
-    indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "i1", shape = integer())
+    indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "bool", shape = integer())
 
     out <- stablehlo::infer_types_gather(
       at2vt(operand),
@@ -2598,9 +2598,9 @@ p_triangular_solve <- AnvilPrimitive("triangular_solve")
 #' @export
 nvl_triangular_solve <- function(a, b, left_side, lower, unit_diagonal, transpose_a) {
   infer_fn <- function(a, b, left_side, lower, unit_diagonal, transpose_a) {
-    left_side_attr <- r_to_constant(as.logical(left_side), dtype = "i1", shape = integer())
-    lower_attr <- r_to_constant(as.logical(lower), dtype = "i1", shape = integer())
-    unit_diagonal_attr <- r_to_constant(as.logical(unit_diagonal), dtype = "i1", shape = integer())
+    left_side_attr <- r_to_constant(as.logical(left_side), dtype = "bool", shape = integer())
+    lower_attr <- r_to_constant(as.logical(lower), dtype = "bool", shape = integer())
+    unit_diagonal_attr <- r_to_constant(as.logical(unit_diagonal), dtype = "bool", shape = integer())
     out <- stablehlo::infer_types_triangular_solve(
       at2vt(a),
       at2vt(b),

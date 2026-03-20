@@ -452,8 +452,8 @@ test_that("p_broadcast_in_dim", {
 
 test_that("p_select", {
   shp <- c(2L, 3L)
-  x_arr <- generate_test_data(shp, dtype = "pred")
-  x_anvil <- nv_tensor(x_arr, dtype = "pred")
+  x_arr <- generate_test_data(shp, dtype = "bool")
+  x_anvil <- nv_tensor(x_arr, dtype = "bool")
   x_torch <- torch::torch_tensor(x_arr, dtype = torch::torch_bool())
 
   a_arr <- generate_test_data(shp, dtype = "f32")
