@@ -13,6 +13,11 @@
 * Improved semantics:
   * `nvl_cholesky()` now zeros out the upper/lower triangle of the output.
 
+## Performance
+
+* Many operations are now done asynchronously, which improves performance,
+  especially on GPUs.
+
 ## Bug Fixes
 
 * +-Inf/NaN are correctly created for `f64` when inlined into the XLA exectuable (#182).
@@ -23,6 +28,12 @@
 
 * New vignette on implementing Gaussian Processes.
 * New vignette on implementing Metropolis-Hastings sampling.
+* A installation guide was added.
+
+## Other
+
+* To construct booleans, we now support `pjrt_buffer(..., dtype = "bool")`.
+  Also `bool` is used in the printer (instead of `i1`).
 
 # anvil 0.1.0
 
