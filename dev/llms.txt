@@ -67,6 +67,8 @@ g_jit(a, b, x)
 - Fast:
   - Code is JIT compiled into a single kernel.
   - Runs on different hardware backends, including CPU and GPU.
+  - Asyncronous allocation and execution, allowing the accelerator to do
+    it’s job while R interpretes.
 - Extendable:
   - It is possible to add new primitives, transformations, and (with
     some effort) new backends.

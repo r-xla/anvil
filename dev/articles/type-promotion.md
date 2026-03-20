@@ -43,9 +43,9 @@ common_dtype("i64", "f32")$dtype
 
 A table with the promotion rules is below.
 
-|      | i1   | i8  | i16 | i32 | i64 | ui8  | ui16 | ui32 | ui64 | f32 | f64 |
+|      | bool | i8  | i16 | i32 | i64 | ui8  | ui16 | ui32 | ui64 | f32 | f64 |
 |:-----|:-----|:----|:----|:----|:----|:-----|:-----|:-----|:-----|:----|:----|
-| i1   | i1   | i8  | i16 | i32 | i64 | ui8  | ui16 | ui32 | ui64 | f32 | f64 |
+| bool | i1   | i8  | i16 | i32 | i64 | ui8  | ui16 | ui32 | ui64 | f32 | f64 |
 | i8   | i8   | i8  | i16 | i32 | i64 | i16  | i32  | i64  | i64  | f32 | f64 |
 | i16  | i16  | i16 | i16 | i32 | i64 | i16  | i32  | i64  | i64  | f32 | f64 |
 | i32  | i32  | i32 | i32 | i32 | i64 | i32  | i32  | i64  | i64  | f32 | f64 |
@@ -138,9 +138,9 @@ In both case, we promote the known type to the default type of the
 ambiguous type. The table below shows the promotion rules, where the
 rows are ambiguous and the columns are known.
 
-|      | i1   | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |
+|      | bool | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |
 |:-----|:-----|:----|:----|:----|:----|:----|:-----|:-----|:-----|:----|:----|
-| i1   | i1   | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |
+| bool | i1   | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |
 | i8   | i8   | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |
 | i16  | i16  | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |
 | i32  | i32  | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |

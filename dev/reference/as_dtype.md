@@ -1,8 +1,8 @@
 # Convert to a TensorDataType
 
 Coerces a value to a `TensorDataType`. Accepts data type strings (e.g.
-`"f32"`, `"i64"`, `"i1"`) or existing `TensorDataType` objects (they are
-returned unchanged).
+`"f32"`, `"i64"`, `"bool"`) or existing `TensorDataType` objects (they
+are returned unchanged).
 
 ## Usage
 
