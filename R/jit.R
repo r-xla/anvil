@@ -301,7 +301,6 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
 
   # TODO: Clean this up.
   # pjrt_execute should take in device instead of client
-  device <- pjrt::as_pjrt_device(device %??% Sys.getenv("PJRT_PLATFORM", "cpu"))
   device <- if (!is.null(device)) {
     pjrt::as_pjrt_device(device)
   } else if (length(traced_devices)) {

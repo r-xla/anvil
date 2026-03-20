@@ -331,14 +331,13 @@ nv_static_slice <- nvl_static_slice
 #' @description
 #' Prints a tensor value to the console during JIT execution and returns the
 #' input unchanged. Useful for debugging.
-#' @note Currently only works on the CPU backend.
 #' @template param_operand
 #' @return [`tensorish`]\cr
 #'   Returns `operand` unchanged.
 #' @seealso [nvl_print()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3), device = "cpu")
+#'   x <- nv_tensor(c(1, 2, 3))
 #'   nv_print(x)
 #' })
 #' @export

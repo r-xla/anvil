@@ -596,8 +596,6 @@ test_that("p_scatter", {
 })
 
 test_that("p_print", {
-  skip_if(!is_cpu(), "print_tensor only works on CPU")
-
   f <- jit(function(x) nvl_print(x))
   x <- nv_tensor(c(1.0, 2.0, 3.0), dtype = "f32")
   expect_snapshot({

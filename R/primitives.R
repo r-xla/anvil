@@ -2089,7 +2089,6 @@ p_print <- AnvilPrimitive("print")
 #' @description
 #' Prints a tensor value to the console during execution and returns the
 #' input unchanged. This is useful for debugging JIT-compiled code.
-#' @note Currently only works on the CPU backend.
 #' @template param_prim_operand_any
 #' @return [`tensorish`]\cr
 #'   Returns `operand` as-is.
@@ -2100,7 +2099,7 @@ p_print <- AnvilPrimitive("print")
 #' @seealso [nv_print()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3), device = "cpu")
+#'   x <- nv_tensor(c(1, 2, 3))
 #'   nvl_print(x)
 #' })
 #' @export
