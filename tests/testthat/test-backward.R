@@ -290,7 +290,7 @@ test_that("value_and_gradient with static (non-tensor) argument", {
 test_that("Can propagate ambiguous float32 through integer/bool functions", {
   f <- function(x) {
     x1 <- nv_convert(x, "i32")
-    x2 <- nv_convert(x1, "i1")
+    x2 <- nv_convert(x1, "bool")
     x3 <- nvl_not(x1)
     x4 <- nv_convert(x3, "f32")
     mean(x4)

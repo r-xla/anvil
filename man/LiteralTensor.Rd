@@ -14,7 +14,7 @@ The scalar value or scalarish AnvilTensor (contains 1 element).}
 The shape of the tensor.}
 
 \item{dtype}{(\code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
-The data type. Defaults to \code{f32} for numeric, \code{i32} for integer, \code{i1} for logical.}
+The data type. Defaults to \code{f32} for numeric, \code{i32} for integer, \code{bool} for logical.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.

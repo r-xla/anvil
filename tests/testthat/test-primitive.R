@@ -19,7 +19,7 @@ describe("subgraphs", {
     false_graph <- trace_fn(function() nv_scalar(2), list())
     call <- PrimitiveCall(
       primitive = p_if,
-      inputs = list(GraphValue(aval = nv_aten("pred", integer()))),
+      inputs = list(GraphValue(aval = nv_aten("bool", integer()))),
       params = list(true_graph = true_graph, false_graph = false_graph),
       outputs = list(GraphValue(aval = nv_aten("f32", integer())))
     )

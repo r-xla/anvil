@@ -81,19 +81,19 @@ test_that("p_remainder", {
 })
 
 test_that("p_and", {
-  expect_jit_torch_binary(nvl_and, torch::torch_logical_and, c(2, 3), c(2, 3), dtype = "pred")
+  expect_jit_torch_binary(nvl_and, torch::torch_logical_and, c(2, 3), c(2, 3), dtype = "bool")
 })
 
 test_that("p_not", {
-  expect_jit_torch_unary(nvl_not, \(x) !x, c(2, 3), dtype = "pred")
+  expect_jit_torch_unary(nvl_not, \(x) !x, c(2, 3), dtype = "bool")
 })
 
 test_that("p_or", {
-  expect_jit_torch_binary(nvl_or, torch::torch_logical_or, c(2, 3), c(2, 3), dtype = "pred")
+  expect_jit_torch_binary(nvl_or, torch::torch_logical_or, c(2, 3), c(2, 3), dtype = "bool")
 })
 
 test_that("p_xor", {
-  expect_jit_torch_binary(nvl_xor, torch::torch_logical_xor, c(2, 3), c(2, 3), dtype = "pred")
+  expect_jit_torch_binary(nvl_xor, torch::torch_logical_xor, c(2, 3), c(2, 3), dtype = "bool")
 })
 
 
@@ -186,7 +186,7 @@ test_that("p_broadcast_in_dim", {
 })
 
 test_that("p_select", {
-  p <- nv_tensor(c(TRUE, FALSE, TRUE, FALSE), dtype = "pred")
+  p <- nv_tensor(c(TRUE, FALSE, TRUE, FALSE), dtype = "bool")
   a <- nv_tensor(as.integer(c(1, 2, 3, 4)), dtype = "i32")
   b <- nv_tensor(as.integer(c(10, 20, 30, 40)), dtype = "i32")
   out <- jit(nvl_ifelse)(p, a, b)

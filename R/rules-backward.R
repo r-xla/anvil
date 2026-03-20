@@ -902,7 +902,7 @@ diag_mask <- function(n) {
 triangular_mask <- function(n, dt, lower, unit_diagonal) {
   mask <- if (lower) tril_mask(n, dt) else triu_mask(n, dt)
   if (unit_diagonal) {
-    nvl_ifelse(diag_mask(n), nvl_fill(FALSE, dtype = "i1", shape = c(n, n)), mask)
+    nvl_ifelse(diag_mask(n), nvl_fill(FALSE, dtype = "bool", shape = c(n, n)), mask)
   } else {
     mask
   }

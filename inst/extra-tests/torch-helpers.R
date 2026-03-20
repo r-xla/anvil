@@ -1,7 +1,7 @@
 str_to_torch_dtype <- function(str) {
   switch(
     str,
-    "pred" = torch::torch_bool(),
+    "bool" = torch::torch_bool(),
     "f32" = torch::torch_float32(),
     "f64" = torch::torch_float64(),
     "i8" = torch::torch_int8(),
@@ -24,7 +24,7 @@ as_array_torch <- function(x) {
 }
 
 generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
-  data <- if (dtype == "pred") {
+  data <- if (dtype == "bool") {
     sample(c(TRUE, FALSE), size = prod(dimension), replace = TRUE)
   } else if (dtype %in% c("ui8", "ui16", "ui32", "ui64")) {
     sample(0:20, size = prod(dimension), replace = TRUE)

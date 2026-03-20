@@ -33,7 +33,7 @@
 #'   Includes `integer()`, `double()`, `logical()` vectors and arrays.
 #' @param dtype (`NULL` | `character(1)` | [`TensorDataType`])\cr
 #'   One of `r stablehlo:::roxy_dtypes()` or a [`tengen::TensorDataType`].
-#'   The default (`NULL`) uses `f32` for numeric data, `i32` for integer data, and `i1` for logical data.
+#'   The default (`NULL`) uses `f32` for numeric data, `i32` for integer data, and `bool` for logical data.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
 #'   The device for the tensor (`"cpu"`, `"cuda"`).
 #'   Default is to use the CPU for new tensors.
@@ -388,7 +388,7 @@ ConcreteTensor <- function(data) {
 #' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
 #'   The shape of the tensor.
 #' @param dtype ([`tengen::TensorDataType`])\cr
-#'   The data type. Defaults to `f32` for numeric, `i32` for integer, `i1` for logical.
+#'   The data type. Defaults to `f32` for numeric, `i32` for integer, `bool` for logical.
 #' @template param_ambiguous
 #'
 #' @examplesIf pjrt::plugin_is_downloaded()
