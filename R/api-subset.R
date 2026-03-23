@@ -111,8 +111,7 @@ dynamic_start_indices <- function(starts) {
 .static_start_indices <- jit(
   function(...) {
     dynamic_start_indices(list(...))
-  },
-  backend = "xla"
+  }
 )
 
 static_start_indices <- function(starts) {
