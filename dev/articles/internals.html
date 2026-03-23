@@ -129,9 +129,10 @@ transformation, namely backward-mode automatic differentiation via
 <li>
 <code>AnvilGraph</code> <span class="math inline">\(\rightarrow\)</span> <code>Executable</code>: In
 order to perform the actual computation, the <code>AnvilGraph</code>
-needs to be converted into an executable. Currently, we only support the
-XLA backend (via <code>stablehlo</code> and <code>pjrt</code>), but we
-are working on an experimental <a href="https://github.com/t-kalinowski/quickr" class="external-link">quickr</a> backend.</li>
+needs to be converted into an executable. The main backend is XLA (via
+<code>stablehlo</code> and <code>pjrt</code>). There is also an
+experimental <a href="https://github.com/t-kalinowski/quickr" class="external-link">quickr</a>
+backend.</li>
 </ol>
 <div class="section level3">
 <h3 id="tracing-r-functions-into-graphs">Tracing R Functions into Graphs<a class="anchor" aria-label="anchor" href="#tracing-r-functions-into-graphs"></a>
@@ -266,7 +267,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x560526f77f98&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x5556fa4ea968&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -309,7 +310,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x560526f77320&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x5556fa4efa40&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the

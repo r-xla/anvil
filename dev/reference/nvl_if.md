@@ -33,6 +33,8 @@ An output is ambiguous if it is ambiguous in both branches.
 
 - `stablehlo`
 
+- `quickr`
+
 - `backward`
 
 ## StableHLO

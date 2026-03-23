@@ -49,6 +49,8 @@ Has the given `dtype` and `shape`.
 
 - `stablehlo`
 
+- `quickr`
+
 ## StableHLO
 
 Lowers to

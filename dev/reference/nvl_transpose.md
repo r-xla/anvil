@@ -33,6 +33,8 @@ ambiguous.
 
 - `stablehlo`
 
+- `quickr`
+
 - `backward`
 
 ## StableHLO

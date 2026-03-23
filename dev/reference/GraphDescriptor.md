@@ -17,7 +17,9 @@ GraphDescriptor(
   inputs = list(),
   outputs = list(),
   is_static_flat = NULL,
-  devices = character()
+  static_args_flat = NULL,
+  devices = character(),
+  backend = NULL
 )
 ```
 
@@ -71,11 +73,22 @@ GraphDescriptor(
   Boolean mask indicating which flat positions in `in_tree` are static
   (non-tensor) args. `NULL` when all args are tensor inputs.
 
+- static_args_flat:
+
+  (`NULL | list()`)  
+  Flattened traced values for the static arguments indicated by
+  `is_static_flat`.
+
 - devices:
 
   ([`character()`](https://rdrr.io/r/base/character.html))  
   Device platforms encountered during tracing (e.g. `"cpu"`, `"cuda"`).
   Populated automatically as tensors are registered.
+
+- backend:
+
+  (`NULL` \| `"xla"` \| `"quickr"`)  
+  Backend associated with this graph descriptor.
 
 ## Value
 

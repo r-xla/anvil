@@ -38,6 +38,8 @@ after the loop terminates.
 
 - `stablehlo`
 
+- `quickr`
+
 ## StableHLO
 
 Lowers to

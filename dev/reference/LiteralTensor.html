@@ -99,7 +99,8 @@ The shape of the tensor.</p></dd>
 
 <dt id="arg-dtype">dtype<a class="anchor" aria-label="anchor" href="#arg-dtype"></a></dt>
 <dd><p>(<code><a href="https://r-xla.github.io/tengen/reference/TensorDataType.html" class="external-link">tengen::TensorDataType</a></code>)<br>
-The data type. Defaults to <code>f32</code> for numeric, <code>i32</code> for integer, <code>bool</code> for logical.</p></dd>
+The data type. Defaults to the current backend's default floating dtype,
+<code>i32</code> for integer, and <code>bool</code> for logical.</p></dd>
 
 
 <dt id="arg-ambiguous">ambiguous<a class="anchor" aria-label="anchor" href="#arg-ambiguous"></a></dt>

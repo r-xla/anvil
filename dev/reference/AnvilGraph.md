@@ -13,7 +13,8 @@ AnvilGraph(
   inputs = list(),
   outputs = list(),
   constants = list(),
-  is_static_flat = NULL
+  is_static_flat = NULL,
+  static_args_flat = NULL
 )
 ```
 
@@ -57,6 +58,12 @@ AnvilGraph(
   (`NULL | logical()`)  
   Boolean mask indicating which flat positions in `in_tree` are static
   (non-tensor) args. `NULL` when all args are tensor inputs.
+
+- static_args_flat:
+
+  (`NULL | list()`)  
+  Flattened traced values for the static arguments indicated by
+  `is_static_flat`.
 
 ## Value
 

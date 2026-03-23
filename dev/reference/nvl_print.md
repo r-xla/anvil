@@ -21,10 +21,6 @@ nvl_print(operand)
 [`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
 Returns `operand` as-is.
 
-## Note
-
-Currently only works on the CPU backend.
-
 ## Implemented Rules
 
 - `stablehlo`
@@ -42,7 +38,7 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3), device = "cpu")
+  x <- nv_tensor(c(1, 2, 3))
   nvl_print(x)
 })
 #> AnvilTensor

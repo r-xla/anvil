@@ -38,6 +38,8 @@ of `operand` with `dims` set to 1.
 
 - `stablehlo`
 
+- `quickr`
+
 - `backward`
 
 ## StableHLO

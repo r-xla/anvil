@@ -56,6 +56,8 @@
 <url><loc>https://r-xla.github.io/anvil/dev/reference/flatten.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/gradient.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/graph_desc_add.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/graph_to_quickr_function.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/graph_to_r_function.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/index.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/is_dtype.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/jit.html</loc></url>

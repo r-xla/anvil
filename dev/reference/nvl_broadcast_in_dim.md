@@ -38,6 +38,8 @@ ambiguous if the input is ambiguous.
 
 - `stablehlo`
 
+- `quickr`
+
 - `backward`
 
 ## StableHLO

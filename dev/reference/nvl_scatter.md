@@ -132,6 +132,8 @@ implementation-defined and may vary between plugins ("cpu", "cuda").
 
 - `stablehlo`
 
+- `quickr`
+
 - `backward`
 
 ## StableHLO

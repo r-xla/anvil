@@ -84,7 +84,9 @@
 <span>  inputs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  outputs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  is_static_flat <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  devices <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  static_args_flat <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  devices <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  backend <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -140,10 +142,20 @@ Boolean mask indicating which flat positions in <code>in_tree</code> are static 
 <code>NULL</code> when all args are tensor inputs.</p></dd>
 
 
+<dt id="arg-static-args-flat">static_args_flat<a class="anchor" aria-label="anchor" href="#arg-static-args-flat"></a></dt>
+<dd><p>(<code>NULL | list()</code>)<br>
+Flattened traced values for the static arguments indicated by <code>is_static_flat</code>.</p></dd>
+
+
 <dt id="arg-devices">devices<a class="anchor" aria-label="anchor" href="#arg-devices"></a></dt>
 <dd><p>(<code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code>)<br>
 Device platforms encountered during tracing (e.g. <code>"cpu"</code>, <code>"cuda"</code>).
 Populated automatically as tensors are registered.</p></dd>
+
+
+<dt id="arg-backend">backend<a class="anchor" aria-label="anchor" href="#arg-backend"></a></dt>
+<dd><p>(<code>NULL</code> | <code>"xla"</code> | <code>"quickr"</code>)<br>
+Backend associated with this graph descriptor.</p></dd>
 
 </dl></div>
     <div class="section level2">

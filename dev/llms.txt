@@ -394,6 +394,8 @@ Code transformations
   : Value and Gradient
 - [`transform_gradient()`](https://r-xla.github.io/anvil/dev/reference/transform_gradient.md)
   : Transform a graph to its gradient
+- [`graph_to_r_function()`](https://r-xla.github.io/anvil/dev/reference/graph_to_r_function.md)
+  : Convert an AnvilGraph to a plain R function
 - [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) : JIT
   compile a function
 - [`xla()`](https://r-xla.github.io/anvil/dev/reference/xla.md) :

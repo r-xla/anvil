@@ -40,6 +40,8 @@ controlled by the `ambiguous` parameter.
 
 - `stablehlo`
 
+- `quickr`
+
 - `backward`
 
 ## StableHLO

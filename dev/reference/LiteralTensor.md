@@ -30,8 +30,8 @@ LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
 - dtype:
 
   ([`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
-  The data type. Defaults to `f32` for numeric, `i32` for integer,
-  `bool` for logical.
+  The data type. Defaults to the current backend's default floating
+  dtype, `i32` for integer, and `bool` for logical.
 
 - ambiguous:
 

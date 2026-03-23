@@ -71,7 +71,8 @@
 <h2 class="pkg-version" data-toc-text="development version" id="anvil-development-version">anvil (development version)<a class="anchor" aria-label="anchor" href="#anvil-development-version"></a></h2>
 <div class="section level3">
 <h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
-<ul><li>New primitives:
+<ul><li>An experimental <a href="https://github.com/t-kalinowski/quickr" class="external-link">{quickr}</a> backend is now available. It only runs on CPU for now and supports a subset of available operations. You can enable it globally via the <code>anvil.default_backend</code> option.</li>
+<li>New primitives:
 <ul><li>
 <code><a href="../reference/nvl_cholesky.html">nvl_cholesky()</a></code> to compute the Cholesky decomposition of a matrix.</li>
 <li>
@@ -91,6 +92,7 @@
 <ul><li>
 <code><a href="../reference/nvl_cholesky.html">nvl_cholesky()</a></code> now zeros out the upper/lower triangle of the output.</li>
 </ul></li>
+<li>Printing tensors via <code><a href="../reference/nv_print.html">nv_print()</a></code> now also works on GPUs.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="performance-development-version">Performance<a class="anchor" aria-label="anchor" href="#performance-development-version"></a></h3>

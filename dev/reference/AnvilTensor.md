@@ -42,8 +42,9 @@ nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
   [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
   One of bool, i8, i16, i32, i64, ui8, ui16, ui32, ui64, f32, f64 or a
   [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html).
-  The default (`NULL`) uses `f32` for numeric data, `i32` for integer
-  data, and `bool` for logical data.
+  The default (`NULL`) uses the current backend's default dtype: `f32`
+  for numeric data on `"xla"`, `f64` for numeric data on `"quickr"`,
+  `i32` for integer data, and `bool` for logical data.
 
 - device:
 

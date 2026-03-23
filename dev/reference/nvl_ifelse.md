@@ -35,6 +35,8 @@ Has the same dtype and shape as `true_value`. It is ambiguous if both
 
 - `stablehlo`
 
+- `quickr`
+
 - `backward`
 
 ## StableHLO

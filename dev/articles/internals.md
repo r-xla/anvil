@@ -20,8 +20,8 @@ for reshaping code. We refer to such a rewriting of code as a
     [`gradient()`](https://r-xla.github.io/anvil/dev/reference/gradient.md).
 3.  `AnvilGraph` \\\rightarrow\\ `Executable`: In order to perform the
     actual computation, the `AnvilGraph` needs to be converted into an
-    executable. Currently, we only support the XLA backend (via
-    `stablehlo` and `pjrt`), but we are working on an experimental
+    executable. The main backend is XLA (via `stablehlo` and `pjrt`).
+    There is also an experimental
     [quickr](https://github.com/t-kalinowski/quickr) backend.
 
 ### Tracing R Functions into Graphs
@@ -157,7 +157,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x560526f77f98>
+    ## <bytecode: 0x5556fa4ea968>
     ## <environment: namespace:anvil>
 
 The
@@ -208,7 +208,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x560526f77320>
+    ## <bytecode: 0x5556fa4efa40>
     ## <environment: namespace:anvil>
 
 The

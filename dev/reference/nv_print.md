@@ -21,10 +21,6 @@ nv_print(operand)
 [`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
 Returns `operand` unchanged.
 
-## Note
-
-Currently only works on the CPU backend.
-
 ## See also
 
 [`nvl_print()`](https://r-xla.github.io/anvil/dev/reference/nvl_print.md)
@@ -34,7 +30,7 @@ for the underlying primitive.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3), device = "cpu")
+  x <- nv_tensor(c(1, 2, 3))
   nv_print(x)
 })
 #> AnvilTensor

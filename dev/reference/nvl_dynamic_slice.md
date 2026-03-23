@@ -53,6 +53,8 @@ effective start position may differ from the requested one.
 
 - `stablehlo`
 
+- `quickr`
+
 - `backward`
 
 ## StableHLO

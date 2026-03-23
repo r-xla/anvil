@@ -43,6 +43,8 @@ The output shape is the batch dimensions followed by the remaining
 
 - `stablehlo`
 
+- `quickr`
+
 - `backward`
 
 ## StableHLO

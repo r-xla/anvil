@@ -84,7 +84,8 @@ This is a mutable class.</p>
 <span>  inputs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  outputs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  constants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  is_static_flat <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  is_static_flat <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  static_args_flat <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -129,6 +130,11 @@ The constants of the graph.</p></dd>
 <dd><p>(<code>NULL | logical()</code>)<br>
 Boolean mask indicating which flat positions in <code>in_tree</code> are static (non-tensor) args.
 <code>NULL</code> when all args are tensor inputs.</p></dd>
+
+
+<dt id="arg-static-args-flat">static_args_flat<a class="anchor" aria-label="anchor" href="#arg-static-args-flat"></a></dt>
+<dd><p>(<code>NULL | list()</code>)<br>
+Flattened traced values for the static arguments indicated by <code>is_static_flat</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
