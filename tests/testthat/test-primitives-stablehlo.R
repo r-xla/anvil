@@ -73,6 +73,14 @@ test_that("p_dynamic_slice", {
 })
 
 test_that("p_dynamic_update_slice", {
+  scalar <- jit(function(x, update) {
+    nvl_dynamic_update_slice(x, update)
+  })
+  expect_equal(
+    scalar(nv_scalar(1L, dtype = "i32"), nv_scalar(100L, dtype = "i32")),
+    nv_scalar(100L, dtype = "i32")
+  )
+
   # Basic dynamic update slice with scalar indices
   f <- function(start_i, start_j) {
     x <- nv_tensor(1:12, dtype = "i32", shape = c(3, 4))
@@ -588,8 +596,6 @@ test_that("p_scatter", {
 })
 
 test_that("p_print", {
-  skip_if(!is_cpu(), "print_tensor only works on CPU")
-
   f <- jit(function(x) nvl_print(x))
   x <- nv_tensor(c(1.0, 2.0, 3.0), dtype = "f32")
   expect_snapshot({

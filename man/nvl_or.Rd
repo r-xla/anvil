@@ -23,6 +23,7 @@ Element-wise logical OR.
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

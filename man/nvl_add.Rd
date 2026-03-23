@@ -23,6 +23,7 @@ Adds two tensors element-wise.
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 \item \code{backward}
 }
 }

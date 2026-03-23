@@ -35,6 +35,7 @@ Creates a tensor with values increasing along the specified dimension.
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 }
 }
 

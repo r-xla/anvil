@@ -9,7 +9,8 @@ jit(
   static = character(),
   cache_size = 100L,
   donate = character(),
-  device = NULL
+  device = NULL,
+  backend = getOption("anvil.default_backend", "xla")
 )
 }
 \arguments{
@@ -33,18 +34,27 @@ An argument cannot appear in both \code{donate} and \code{static}.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
 The device to use if it cannot be inferred from the inputs or constants.
-Defaults to \code{"cpu"}.}
+Defaults to \code{"cpu"}. Only supported for \code{backend = "xla"}.}
+
+\item{backend}{(\code{character(1)})\cr
+Compilation backend. \code{"xla"} (default) uses PJRT/XLA.
+\code{"quickr"} uses \code{quickr::quick()}. If omitted, the default comes from
+\code{getOption("anvil.default_backend", "xla")}.}
 }
 \value{
 A \code{JitFunction} with the same formals as \code{f}.
+For \code{backend = "xla"}, the returned wrapper expects and returns
+\code{\link{AnvilTensor}} values. For \code{backend = "quickr"}, the returned wrapper
+expects plain R numeric/integer/logical scalars, vectors, and arrays and
+returns plain R values.
 
 (\code{function})
 }
 \description{
-Wraps a function so that it is traced, lowered to StableHLO, and compiled to an XLA
-executable on first call. Subsequent calls with the same input shapes and dtypes hit an
-LRU cache and skip recompilation. Unlike \code{\link[=xla]{xla()}}, the compiled executable is not
-created eagerly but lazily on the first invocation.
+Wraps a function so that it is traced and compiled on first call. Subsequent
+calls with the same input structure, shapes, and dtypes hit an LRU cache and
+skip recompilation. Unlike \code{\link[=xla]{xla()}}, the compiled executable is not created
+eagerly but lazily on the first invocation.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
@@ -57,6 +67,10 @@ g <- jit(function(x, flag) {
 }, static = "flag")
 g(nv_tensor(3), TRUE)
 g(nv_tensor(3), FALSE)
+\dontshow{\}) # examplesIf}
+\dontshow{if (requireNamespace("quickr", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+h <- jit(function(x, y) x + y, backend = "quickr")
+h(1, 2)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

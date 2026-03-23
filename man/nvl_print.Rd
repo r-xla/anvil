@@ -18,9 +18,6 @@ Returns \code{operand} as-is.
 Prints a tensor value to the console during execution and returns the
 input unchanged. This is useful for debugging JIT-compiled code.
 }
-\note{
-Currently only works on the CPU backend.
-}
 \section{Implemented Rules}{
 
 \itemize{
@@ -36,7 +33,7 @@ Lowers to \code{\link[stablehlo:hlo_custom_call]{stablehlo::hlo_custom_call()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3), device = "cpu")
+  x <- nv_tensor(c(1, 2, 3))
   nvl_print(x)
 })
 \dontshow{\}) # examplesIf}
