@@ -7,7 +7,7 @@
 - An experimental [{quickr}](https://github.com/t-kalinowski/quickr)
   backend is now available. It only runs on CPU for now and supports a
   subset of available operations. You can enable it globally via the
-  `anvil.default_backend` option.
+  `anvil.backend` option.
 - New primitives:
   - [`nvl_cholesky()`](https://r-xla.github.io/anvil/dev/reference/nvl_cholesky.md)
     to compute the Cholesky decomposition of a matrix.

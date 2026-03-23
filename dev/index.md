@@ -73,6 +73,9 @@ g_jit(a, b, x)
   - It is possible to add new primitives, transformations, and (with
     some effort) new backends.
   - The package is written almost entirely in R.
+- Multi-backend:
+  - The backend supports execution via XLA as well as an experimental
+    {quickr}-based Fortran backend (CPU only).
 
 ## When to use this package?
 

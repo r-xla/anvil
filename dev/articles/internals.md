@@ -157,7 +157,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x5556fa4ea968>
+    ## <bytecode: 0x558da8a29200>
     ## <environment: namespace:anvil>
 
 The
@@ -208,7 +208,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x5556fa4efa40>
+    ## <bytecode: 0x558da8a2c3b8>
     ## <environment: namespace:anvil>
 
 The
