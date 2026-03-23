@@ -120,11 +120,11 @@ promote_dt_known <- function(dt1, dt2) {
   UIntegerType(max(dt1$value, dt2$value))
 }
 
-default_dtype <- function(x, backend = NULL) {
+default_dtype <- function(x) {
   if (is.integer(x)) {
     IntegerType(32)
   } else if (is.double(x)) {
-    if (current_backend(backend) == "quickr") {
+    if (current_backend() == "quickr") {
       FloatType(64)
     } else {
       FloatType(32)
