@@ -69,7 +69,8 @@ test_that("graph_to_r_function lowers a graph to a plain R function", {
 
   graph <- trace_fn(
     function(x) x + 1,
-    list(x = nv_scalar(1.0, dtype = "f64"))
+    list(x = nv_scalar(1.0, dtype = "f64")),
+    desc = local_descriptor(backend = "quickr")
   )
 
   f <- graph_to_r_function(graph)

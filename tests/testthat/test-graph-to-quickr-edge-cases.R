@@ -143,3 +143,14 @@ test_that("graph_to_quickr_function rejects unsupported reduce_sum variants", {
   )
   expect_error(graph_to_quickr_function(graph), "for rank > 2, only full reductions", fixed = FALSE)
 })
+
+test_that("throws error for unsupported dtype", {
+  skip_if_not_installed("quickr")
+
+  graph <- trace_fn(
+    function(x) x,
+    list(x = nv_aten("f32", 1L))
+  )
+
+  expect_error(graph_to_quickr_function(graph), "Unsupported dtype.*f32")
+})

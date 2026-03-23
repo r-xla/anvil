@@ -44,7 +44,8 @@ test_that("graph_to_quickr_function handles GraphLiteral inputs (R scalar litera
     function(x) {
       x + 1
     },
-    list(x = nv_scalar(0.0, dtype = "f64"))
+    list(x = nv_scalar(0.0, dtype = "f64")),
+    desc = local_descriptor(backend = "quickr")
   )
 
   expect_quickr_matches_pjrt(graph, 2.5)
@@ -135,7 +136,8 @@ test_that("graph_to_quickr_function accepts flat static args (no nested inputs)"
     list(
       x = nv_scalar(0.0, dtype = "f64"),
       flag = TRUE
-    )
+    ),
+    desc = local_descriptor(backend = "quickr")
   )
 
   f_quick <- graph_to_quickr_function(graph)
@@ -161,7 +163,8 @@ test_that("graph_to_quickr wrappers reject mismatched runtime static args", {
     list(
       x = nv_scalar(0.0, dtype = "f64"),
       flag = TRUE
-    )
+    ),
+    desc = local_descriptor(backend = "quickr")
   )
 
   flat_r <- graph_to_quickr_r_function(flat_graph)
@@ -265,7 +268,8 @@ test_that("graph_to_quickr_function preserves 1D output dims", {
     function(x) {
       x + 1
     },
-    list(x = nv_tensor(array(0, dim = 3L), dtype = "f64", shape = 3L))
+    list(x = nv_tensor(array(0, dim = 3L), dtype = "f64", shape = 3L)),
+    desc = local_descriptor(backend = "quickr")
   )
 
   out <- expect_quickr_matches_pjrt(graph, c(0.5, 1.5, 2.5))
@@ -375,7 +379,8 @@ test_that("graph_to_quickr_function preserves pred leaves in multiple outputs", 
     function(x) {
       list(p = x > 0, v = x + 1)
     },
-    list(x = nv_scalar(0.0, dtype = "f64"))
+    list(x = nv_scalar(0.0, dtype = "f64")),
+    desc = local_descriptor(backend = "quickr")
   )
 
   out <- expect_quickr_matches_pjrt(graph, -0.5)

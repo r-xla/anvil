@@ -5,7 +5,7 @@ quickr_restore_leaf <- function(value, shape) {
   shape <- as.integer(shape)
 
   if (!length(shape)) {
-    return(value[[1L]])
+    return(value)
   }
 
   if (length(shape) == 1L) {
@@ -243,17 +243,9 @@ graph_to_quickr_r_function <- graph_to_r_function
 #' If the graph returns multiple outputs (e.g. a nested list), the compiled
 #' function returns the same structure by rebuilding the output tree in R.
 #'
-#' Currently supported primitives are:
-#' `fill`, `iota`, `reverse`, `concatenate`, `pad`, `gather`, `scatter`, `convert`, `add`, `sub`, `mul`, `divide`,
-#' `negate`, `abs`, `sqrt`, `log`, `log1p`, `exp`, `expm1`, `logistic`, `sine`, `cosine`, `tan`, `tanh`,
-#' `floor`, `ceil`, `power`, `maximum`, `minimum`, `equal`,
-#' `not_equal`, `greater`, `greater_equal`, `less`, `less_equal`, `and`, `or`,
-#' `xor`, `not`, `select`, `broadcast_in_dim`, `dot_general`, `transpose`,
-#' `reshape`, `sum`, `reduce_sum`, `reduce_prod`, `reduce_max`, `reduce_min`, `reduce_any`, `reduce_all`,
-#' `static_slice`, `dynamic_slice`, `dynamic_update_slice`.
-#' Higher-order primitives supported: `if`, `while`.
+#' For a list of supported primitives see `vignette("primitives")`.
 #'
-#' Supported dtypes are `f32`, `f64`, `i32`, and `pred`.
+#' Supported dtypes are `f64`, `i32`, and `pred`.
 #' The code generator currently supports tensors up to rank 5. Some primitives
 #' are more restricted (e.g. `transpose` currently only handles rank-2 tensors).
 #'

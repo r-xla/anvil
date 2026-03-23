@@ -2,6 +2,9 @@
 
 ## New Features
 
+* An experimental [{quickr}](https://github.com/t-kalinowski/quickr) backend is now available.
+  It only runs on CPU for now and supports a subset of available operations.
+  You can enable it globally via the `anvil.default_backend` option.
 * New primitives:
   * `nvl_cholesky()` to compute the Cholesky decomposition of a matrix.
   * `nvl_triangular_solve()` to solve a system of linear equations with a triangular matrix.
@@ -12,6 +15,7 @@
   * `nv_cholesky()` to compute the Cholesky decomposition of a matrix.
 * Improved semantics:
   * `nvl_cholesky()` now zeros out the upper/lower triangle of the output.
+* Printing tensors via `nv_print()` now also works on GPUs.
 
 ## Performance
 

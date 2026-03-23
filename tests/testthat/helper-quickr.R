@@ -51,7 +51,7 @@ expect_quickr_matches_pjrt_fn <- function(
   runs,
   tolerance = 1e-12
 ) {
-  graph <- trace_fn(fn, templates)
+  graph <- trace_fn(fn, templates, desc = local_descriptor(backend = "quickr"))
   f_r <- graph_to_quickr_r_function(graph)
   f_quick <- graph_to_quickr_function(graph)
   run_pjrt <- compile_graph_pjrt(graph) # nolint

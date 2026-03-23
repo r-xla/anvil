@@ -24,17 +24,9 @@ The returned function expects plain R scalars/vectors/arrays (not
 If the graph returns multiple outputs (e.g. a nested list), the compiled
 function returns the same structure by rebuilding the output tree in R.
 
-Currently supported primitives are:
-\code{fill}, \code{iota}, \code{reverse}, \code{concatenate}, \code{pad}, \code{gather}, \code{scatter}, \code{convert}, \code{add}, \code{sub}, \code{mul}, \code{divide},
-\code{negate}, \code{abs}, \code{sqrt}, \code{log}, \code{log1p}, \code{exp}, \code{expm1}, \code{logistic}, \code{sine}, \code{cosine}, \code{tan}, \code{tanh},
-\code{floor}, \code{ceil}, \code{power}, \code{maximum}, \code{minimum}, \code{equal},
-\code{not_equal}, \code{greater}, \code{greater_equal}, \code{less}, \code{less_equal}, \code{and}, \code{or},
-\code{xor}, \code{not}, \code{select}, \code{broadcast_in_dim}, \code{dot_general}, \code{transpose},
-\code{reshape}, \code{sum}, \code{reduce_sum}, \code{reduce_prod}, \code{reduce_max}, \code{reduce_min}, \code{reduce_any}, \code{reduce_all},
-\code{static_slice}, \code{dynamic_slice}, \code{dynamic_update_slice}.
-Higher-order primitives supported: \code{if}, \code{while}.
+For a list of supported primitives see \code{vignette("primitives")}.
 
-Supported dtypes are \code{f32}, \code{f64}, \code{i32}, and \code{pred}.
+Supported dtypes are \code{f64}, \code{i32}, and \code{pred}.
 The code generator currently supports tensors up to rank 5. Some primitives
 are more restricted (e.g. \code{transpose} currently only handles rank-2 tensors).
 

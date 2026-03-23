@@ -14,7 +14,7 @@ quickr_user_arg_names <- function(n) {
 quickr_dtype_info <- function(dt_chr) {
   dt_chr <- as.character(dt_chr)
 
-  if (dt_chr %in% c("f32", "f64")) {
+  if (dt_chr == "f64") {
     return(list(ctor = "double", zero = 0.0, scalar_cast = as.double))
   }
   if (dt_chr == "i32") {
@@ -26,7 +26,7 @@ quickr_dtype_info <- function(dt_chr) {
 
   cli_abort(paste0(
     "Unsupported dtype for quickr lowering: {.val {dt_chr}}. ",
-    "Supported dtypes are: {.val f32}, {.val f64}, {.val i32}, {.val pred}."
+    "Supported dtypes are: {.val f64}, {.val i32}, {.val pred}."
   ))
 }
 
@@ -173,7 +173,7 @@ quickr_emit_convert <- function(out_sym, operand_expr, shape_in, in_aval, out_av
   quickr_dtype_info(dt_out)
 
   cast_expr <- function(expr) {
-    if (dt_out %in% c("f32", "f64")) {
+    if (dt_out == "f64") {
       return(rlang::call2("as.double", expr))
     }
 
@@ -1123,7 +1123,7 @@ quickr_emit_reduce <- function(kind, out_sym, operand_expr, shape_in, dims, drop
   if (kind %in% c("sum", "prod")) {
     init_acc_scalar <- if (kind == "sum") {
       quickr_zero_literal_for(out_aval)
-    } else if (dt_out %in% c("f32", "f64")) {
+    } else if (dt_out == "f64") {
       1.0
     } else {
       1L
