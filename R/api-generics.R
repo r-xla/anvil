@@ -50,8 +50,8 @@ Math.AnvilBox <- function(x, ...) {
     "exp" = nv_exp(x),
     "sqrt" = nv_sqrt(x),
     "log" = nv_log(x),
-    "log2" = nv_div(nv_log(x), log(2)),
-    "log10" = nv_div(nv_log(x), log(10)),
+    "log2" = nv_log2(x),
+    "log10" = nv_log10(x),
     "tanh" = nv_tanh(x),
     "tan" = nv_tan(x),
     "cos" = nv_cosine(x),
@@ -119,6 +119,39 @@ mean.AnvilBox <- function(x, ...) {
 #' @export
 mean.AnvilTensor <- mean.AnvilBox
 
+#' @rdname nv_is_nan
+#' @method is.nan AnvilBox
+#' @export
+is.nan.AnvilBox <- function(x) {
+  nv_is_nan(x)
+}
+
+#' @method is.nan AnvilTensor
+#' @export
+is.nan.AnvilTensor <- is.nan.AnvilBox
+
+#' @rdname nv_is_infinite
+#' @method is.infinite AnvilBox
+#' @export
+is.infinite.AnvilBox <- function(x) {
+  nv_is_infinite(x)
+}
+
+#' @method is.infinite AnvilTensor
+#' @export
+is.infinite.AnvilTensor <- is.infinite.AnvilBox
+
+#' @rdname nv_is_finite
+#' @method is.finite AnvilBox
+#' @export
+is.finite.AnvilBox <- function(x) {
+  nv_is_finite(x)
+}
+
+#' @method is.finite AnvilTensor
+#' @export
+is.finite.AnvilTensor <- is.finite.AnvilBox
+
 # if we don't give it the name nv_transpose, pkgdown thinks t.anvil is a package
 
 #' @title Transpose
@@ -166,3 +199,25 @@ t.AnvilTensor <- t.AnvilBox
 #' @rdname nv_subset_assign
 #' @export
 `[<-.AnvilTensor` <- `[<-.AnvilBox`
+
+#' @rdname nv_crossprod
+#' @method crossprod AnvilBox
+#' @export
+crossprod.AnvilBox <- function(x, y = NULL, ...) {
+  nv_crossprod(x, y)
+}
+
+#' @method crossprod AnvilTensor
+#' @export
+crossprod.AnvilTensor <- crossprod.AnvilBox
+
+#' @rdname nv_tcrossprod
+#' @method tcrossprod AnvilBox
+#' @export
+tcrossprod.AnvilBox <- function(x, y = NULL, ...) {
+  nv_tcrossprod(x, y)
+}
+
+#' @method tcrossprod AnvilTensor
+#' @export
+tcrossprod.AnvilTensor <- tcrossprod.AnvilBox

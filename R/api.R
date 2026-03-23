@@ -1433,3 +1433,410 @@ nv_if <- nvl_if
 #' })
 #' @export
 nv_while <- nvl_while
+
+## Additional math functions ---------------------------------------------------
+
+#' @title Base-2 Logarithm
+#' @description
+#' Element-wise base-2 logarithm. You can also use `log2()`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [nv_log()], [nv_log10()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(c(1, 2, 4, 8))
+#'   nv_log2(x)
+#' })
+#' @export
+nv_log2 <- function(operand) {
+  nv_log(operand) / log(2)
+}
+
+#' @title Base-10 Logarithm
+#' @description
+#' Element-wise base-10 logarithm. You can also use `log10()`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [nv_log()], [nv_log2()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(c(1, 10, 100, 1000))
+#'   nv_log10(x)
+#' })
+#' @export
+nv_log10 <- function(operand) {
+  nv_log(operand) / log(10)
+}
+
+#' @title Is NaN
+#' @description
+#' Element-wise check if values are NaN. You can also use `is.nan()`.
+#' Uses the property that `NaN != NaN`.
+#' @template param_operand
+#' @template return_unary_boolean
+#' @seealso [nv_is_finite()], [nv_is_infinite()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(c(1, NaN, Inf, -Inf, 0))
+#'   nv_is_nan(x)
+#' })
+#' @export
+nv_is_nan <- function(operand) {
+  operand != operand
+}
+
+#' @title Is Infinite
+#' @description
+#' Element-wise check if values are infinite (`Inf` or `-Inf`).
+#' You can also use `is.infinite()`.
+#' @template param_operand
+#' @template return_unary_boolean
+#' @seealso [nv_is_finite()], [nv_is_nan()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(c(1, NaN, Inf, -Inf, 0))
+#'   nv_is_infinite(x)
+#' })
+#' @export
+nv_is_infinite <- function(operand) {
+  !nv_is_finite(operand) & (operand == operand)
+}
+
+## Reduction operations --------------------------------------------------------
+
+#' @title Variance Reduction
+#' @description
+#' Computes the variance along the specified dimensions.
+#' @details
+#' Uses Bessel's correction by default (`correction = 1`), matching R's [var()].
+#' Set `correction = 0` for population variance.
+#' @template param_operand
+#' @template params_reduce
+#' @param correction (`integer(1)`)\cr
+#'   Degrees of freedom correction. Default is `1` (Bessel's correction).
+#' @template return_reduce
+#' @seealso [nv_sd()], [nv_reduce_mean()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(c(1, 2, 3, 4, 5))
+#'   nv_var(x, dims = 1L)
+#' })
+#' @export
+nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
+  nelts <- prod(shape_abstract(operand)[dims])
+  mean_bc <- nv_broadcast_to(
+    nv_reduce_mean(operand, dims, drop = FALSE),
+    shape_abstract(operand)
+  )
+  diff <- operand - mean_bc
+  nv_reduce_sum(diff * diff, dims, drop) / (nelts - correction)
+}
+
+#' @title Standard Deviation Reduction
+#' @description
+#' Computes the standard deviation along the specified dimensions.
+#' @details
+#' Uses Bessel's correction by default (`correction = 1`), matching R's [sd()].
+#' Set `correction = 0` for population standard deviation.
+#' @template param_operand
+#' @template params_reduce
+#' @param correction (`integer(1)`)\cr
+#'   Degrees of freedom correction. Default is `1` (Bessel's correction).
+#' @template return_reduce
+#' @seealso [nv_var()], [nv_reduce_mean()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(c(1, 2, 3, 4, 5))
+#'   nv_sd(x, dims = 1L)
+#' })
+#' @export
+nv_sd <- function(operand, dims, drop = TRUE, correction = 1L) {
+  nv_sqrt(nv_var(operand, dims, drop, correction))
+}
+
+## Tensor manipulation ---------------------------------------------------------
+
+#' @title Squeeze
+#' @description
+#' Removes dimensions of size 1 from a tensor.
+#' @template param_operand
+#' @param dims (`integer()` | `NULL`)\cr
+#'   Dimensions to squeeze. If `NULL` (default), all dimensions of size 1 are removed.
+#' @return [`tensorish`]\cr
+#'   Has the same data type as `operand` with the specified dimensions removed.
+#' @seealso [nv_unsqueeze()], [nv_reshape()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(1:6, shape = c(1, 6, 1))
+#'   nv_squeeze(x)
+#' })
+#' @export
+nv_squeeze <- function(operand, dims = NULL) {
+  shp <- shape_abstract(operand)
+  if (is.null(dims)) {
+    new_shape <- shp[shp != 1L]
+  } else {
+    for (d in dims) {
+      if (shp[d] != 1L) {
+        cli_abort("Cannot squeeze dimension {d} with size {shp[d]} (must be 1)")
+      }
+    }
+    new_shape <- shp[-dims]
+  }
+  if (length(new_shape) == 0L) new_shape <- integer(0)
+  nv_reshape(operand, new_shape)
+}
+
+#' @title Unsqueeze
+#' @description
+#' Inserts a dimension of size 1 at the specified position.
+#' @template param_operand
+#' @param dim (`integer(1)`)\cr
+#'   Position at which to insert the new dimension.
+#' @return [`tensorish`]\cr
+#'   Has the same data type as `operand` with an extra dimension of size 1.
+#' @seealso [nv_squeeze()], [nv_reshape()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(c(1, 2, 3))
+#'   nv_unsqueeze(x, dim = 1L)
+#' })
+#' @export
+nv_unsqueeze <- function(operand, dim) {
+  shp <- shape_abstract(operand)
+  assert_int(dim, lower = 1L, upper = length(shp) + 1L)
+  new_shape <- append(shp, 1L, after = dim - 1L)
+  nv_reshape(operand, new_shape)
+}
+
+#' @title Expand
+#' @description
+#' Broadcasts a tensor to a target shape, expanding dimensions of size 1.
+#' This is an alias for [nv_broadcast_to()].
+#' @template param_operand
+#' @param shape (`integer()`)\cr
+#'   Target shape.
+#' @return [`tensorish`]\cr
+#'   Has the given `shape` and the same data type as `operand`.
+#' @seealso [nv_broadcast_to()], [nv_broadcast_tensors()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(c(1, 2, 3))
+#'   nv_expand(x, shape = c(2, 3))
+#' })
+#' @export
+nv_expand <- nv_broadcast_to
+
+#' @title Flip
+#' @description
+#' Reverses the order of elements along specified dimensions.
+#' This is an alias for [nv_reverse()].
+#' @template param_operand
+#' @param dims (`integer()`)\cr
+#'   Dimensions to reverse.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as `operand`.
+#' @seealso [nv_reverse()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(c(1, 2, 3, 4, 5))
+#'   nv_flip(x, dims = 1L)
+#' })
+#' @export
+nv_flip <- nv_reverse
+
+#' @title Linspace
+#' @description
+#' Creates a 1-D tensor with `steps` evenly spaced values from `start` to `end`
+#' (inclusive), analogous to [seq()] with `length.out`.
+#' @param start (`numeric(1)`)\cr
+#'   Start value.
+#' @param end (`numeric(1)`)\cr
+#'   End value.
+#' @param steps (`integer(1)`)\cr
+#'   Number of values to generate. Must be at least 1.
+#' @param dtype (`character(1)`)\cr
+#'   Data type. Default `"f32"`.
+#' @return [`tensorish`]\cr
+#'   1-D tensor of length `steps`.
+#' @seealso [nv_seq()], [nv_iota()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval(nv_linspace(0, 1, steps = 5L))
+#' @export
+nv_linspace <- function(start, end, steps, dtype = "f32") {
+  assert_int(steps, lower = 1L)
+  if (steps == 1L) {
+    return(nv_fill(start, 1L, dtype = dtype))
+  }
+  indices <- nv_iota(dim = 1L, shape = steps, dtype = dtype, start = 0L)
+  indices * ((end - start) / (steps - 1L)) + start
+}
+
+## Linear algebra --------------------------------------------------------------
+
+#' @title Outer Product
+#' @description
+#' Computes the outer product of two 1-D tensors.
+#' @param x,y ([`tensorish`])\cr
+#'   1-D tensors.
+#' @return [`tensorish`]\cr
+#'   A 2-D tensor of shape `(length(x), length(y))`.
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(c(1, 2, 3))
+#'   y <- nv_tensor(c(4, 5))
+#'   nv_outer(x, y)
+#' })
+#' @export
+nv_outer <- function(x, y) {
+  args <- nv_promote_to_common(x, y)
+  x <- args[[1L]]
+  y <- args[[2L]]
+  x_exp <- nv_unsqueeze(x, dim = 2L)
+  y_exp <- nv_unsqueeze(y, dim = 1L)
+  bcast <- nv_broadcast_tensors(x_exp, y_exp)
+  nvl_mul(bcast[[1L]], bcast[[2L]])
+}
+
+#' @title Extract Diagonal
+#' @description
+#' Extracts the diagonal elements from a 2-D tensor.
+#' @param x ([`tensorish`])\cr
+#'   A 2-D tensor (matrix).
+#' @return [`tensorish`]\cr
+#'   A 1-D tensor of length `min(nrow, ncol)` containing the diagonal elements.
+#' @seealso [nv_diag()] for creating a diagonal matrix, [nv_trace()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(1:9, shape = c(3, 3))
+#'   nv_extract_diag(x)
+#' })
+#' @export
+nv_extract_diag <- function(x) {
+  shp <- shape_abstract(x)
+  n <- min(shp)
+  idx <- nvl_reshape(nv_iota(dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
+  indices <- nv_concatenate(idx, idx, dimension = 2L)
+  nvl_gather(
+    x,
+    start_indices = indices,
+    offset_dims = integer(0),
+    collapsed_slice_dims = c(1L, 2L),
+    operand_batching_dims = integer(0),
+    start_indices_batching_dims = integer(0),
+    start_index_map = c(1L, 2L),
+    index_vector_dim = 2L,
+    slice_sizes = c(1L, 1L)
+  )
+}
+
+#' @title Matrix Trace
+#' @description
+#' Computes the trace (sum of diagonal elements) of a 2-D tensor.
+#' @param x ([`tensorish`])\cr
+#'   A 2-D tensor (matrix).
+#' @return [`tensorish`]\cr
+#'   A scalar tensor with the same data type as `x`.
+#' @seealso [nv_extract_diag()], [nv_diag()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))
+#'   nv_trace(x)
+#' })
+#' @export
+nv_trace <- function(x) {
+  diag_vals <- nv_extract_diag(x)
+  nv_reduce_sum(diag_vals, dims = 1L, drop = TRUE)
+}
+
+#' @title Lower Triangular Matrix
+#' @description
+#' Returns the lower triangular part of a 2-D tensor, setting elements above
+#' the specified diagonal to zero.
+#' @param x ([`tensorish`])\cr
+#'   A 2-D tensor (matrix).
+#' @param diagonal (`integer(1)`)\cr
+#'   Diagonal offset. `0` (default) is the main diagonal, positive values
+#'   include diagonals above, negative values exclude diagonals below.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as `x`.
+#' @seealso [nv_triu()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_fill(1, c(3, 3))
+#'   nv_tril(x)
+#' })
+#' @export
+nv_tril <- function(x, diagonal = 0L) {
+  shp <- shape_abstract(x)
+  rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32")
+  cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32")
+  mask <- rows >= cols - as.integer(diagonal)
+  nv_ifelse(mask, x, nv_fill(0, shp, dtype = dtype_abstract(x)))
+}
+
+#' @title Upper Triangular Matrix
+#' @description
+#' Returns the upper triangular part of a 2-D tensor, setting elements below
+#' the specified diagonal to zero.
+#' @param x ([`tensorish`])\cr
+#'   A 2-D tensor (matrix).
+#' @param diagonal (`integer(1)`)\cr
+#'   Diagonal offset. `0` (default) is the main diagonal, positive values
+#'   exclude diagonals above, negative values include diagonals below.
+#' @return [`tensorish`]\cr
+#'   Has the same shape and data type as `x`.
+#' @seealso [nv_tril()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_fill(1, c(3, 3))
+#'   nv_triu(x)
+#' })
+#' @export
+nv_triu <- function(x, diagonal = 0L) {
+  shp <- shape_abstract(x)
+  rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32")
+  cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32")
+  mask <- rows <= cols - as.integer(diagonal)
+  nv_ifelse(mask, x, nv_fill(0, shp, dtype = dtype_abstract(x)))
+}
+
+#' @title Cross Product (Matrix)
+#' @description
+#' Computes `t(x) %*% y`. If `y` is missing, computes `t(x) %*% x`.
+#' @param x ([`tensorish`])\cr
+#'   A tensor with at least 2 dimensions.
+#' @param y ([`tensorish`] | `NULL`)\cr
+#'   Optional second tensor. If `NULL`, uses `x`.
+#' @return [`tensorish`]
+#' @seealso [nv_tcrossprod()], [nv_matmul()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(matrix(1:6, nrow = 3), dtype = "f32")
+#'   nv_crossprod(x)
+#' })
+#' @export
+nv_crossprod <- function(x, y = NULL) {
+  if (is.null(y)) y <- x
+  nv_matmul(nv_transpose(x), y)
+}
+
+#' @title Transpose Cross Product (Matrix)
+#' @description
+#' Computes `x %*% t(y)`. If `y` is missing, computes `x %*% t(x)`.
+#' @param x ([`tensorish`])\cr
+#'   A tensor with at least 2 dimensions.
+#' @param y ([`tensorish`] | `NULL`)\cr
+#'   Optional second tensor. If `NULL`, uses `x`.
+#' @return [`tensorish`]
+#' @seealso [nv_crossprod()], [nv_matmul()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_tensor(matrix(1:6, nrow = 2), dtype = "f32")
+#'   nv_tcrossprod(x)
+#' })
+#' @export
+nv_tcrossprod <- function(x, y = NULL) {
+  if (is.null(y)) y <- x
+  nv_matmul(x, nv_transpose(y))
+}
