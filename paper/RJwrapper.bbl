@@ -1,4 +1,4 @@
-\begin{thebibliography}{23}
+\begin{thebibliography}{24}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -24,6 +24,11 @@ P.-C. B{\"u}rkner.
 B.~Carpenter, A.~Gelman, M.~D. Hoffman, D.~Lee, B.~Goodrich, M.~Betancourt, M.~Brubaker, J.~Guo, P.~Li, and A.~Riddell.
 \newblock Stan: A probabilistic programming language.
 \newblock \emph{Journal of statistical software}, 76:\penalty0 1--32, 2017.
+
+\bibitem[Eddelbuettel(2013)]{ref-rcpp}
+D.~Eddelbuettel.
+\newblock Seamless r and c++ integration with rcpp.
+\newblock 2013.
 
 \bibitem[Falbel(2025)]{ref-safetensors}
 D.~Falbel.

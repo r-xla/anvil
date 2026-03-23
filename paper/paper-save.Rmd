@@ -87,7 +87,7 @@ Because the \CRANpkg{anvil} package is primarily written in R, it is easy to ext
 
 <!-- Inspirations for design -->
 
-The closest related work is the JAX python library, from which various design elements are inspired or adopted [@ref-jax2018github].
+The closest related work is the JAX python library, from which various design elements are inspired or adopted [@ref-jax].
 Primarily, we are using a similar functional design and handle jit compilation via OpenXLA.
 Also other design elements such as the handling of nested data structures or the type promotion rules are adopted from JAX.
 We also want to highlight the Autodidax tutorial, which describes the core ideas underpinning JAX (todo: cite), as well as microjax, which is a minimalistic Python library demonstrating JAX's code transformation engine (todo: cite).
@@ -235,9 +235,7 @@ func
 x <- hlo_input("x", "f32", shape = c(2, 2), func = func)
 x
 y <- hlo_input("y", "f32", shape = c(2, 2), func = func)
-y
 z <- hlo_multiply(x, y)
-z
 f <- hlo_return(z)
 f
 hlo_string <- repr(f)

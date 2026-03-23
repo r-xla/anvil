@@ -8,45 +8,46 @@ Warning--entry type for "ref-jax" isn't style-file defined
 Warning--entry type for "ref-iree" isn't style-file defined
 --line 109 of file references.bib
 Warning--I didn't find a database entry for "ref-jax2018github"
-You've used 23 entries,
+Warning--empty journal in ref-rcpp
+You've used 24 entries,
             2773 wiz_defined-function locations,
-            732 strings with 8523 characters,
-and the built_in function-call counts, 9957 in all, are:
-= -- 870
-> -- 676
-< -- 19
-+ -- 236
-- -- 213
-* -- 777
-:= -- 1618
-add.period$ -- 83
-call.type$ -- 23
-change.case$ -- 126
-chr.to.int$ -- 23
-cite$ -- 46
-duplicate$ -- 438
-empty$ -- 712
-format.name$ -- 240
-if$ -- 2015
+            736 strings with 8593 characters,
+and the built_in function-call counts, 10254 in all, are:
+= -- 895
+> -- 686
+< -- 20
++ -- 240
+- -- 216
+* -- 792
+:= -- 1666
+add.period$ -- 86
+call.type$ -- 24
+change.case$ -- 130
+chr.to.int$ -- 24
+cite$ -- 49
+duplicate$ -- 457
+empty$ -- 742
+format.name$ -- 244
+if$ -- 2076
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 10
-newline$ -- 135
-num.names$ -- 92
-pop$ -- 257
+missing$ -- 11
+newline$ -- 140
+num.names$ -- 96
+pop$ -- 268
 preamble$ -- 1
-purify$ -- 115
+purify$ -- 118
 quote$ -- 0
-skip$ -- 367
+skip$ -- 380
 stack$ -- 0
-substring$ -- 160
+substring$ -- 162
 swap$ -- 52
 text.length$ -- 2
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 248
-warning$ -- 0
-while$ -- 82
+type$ -- 259
+warning$ -- 1
+while$ -- 85
 width$ -- 0
-write$ -- 319
-(There were 3 warnings)
+write$ -- 330
+(There were 4 warnings)

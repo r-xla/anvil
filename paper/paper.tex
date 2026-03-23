@@ -30,6 +30,7 @@ Because the \CRANpkg{anvil} package is primarily written in R, it is easy to ext
 
 The closest related work is the JAX python library, from which various design elements are inspired or adopted \citep{ref-jax2018github}.
 Primarily, we are using a similar functional design and handle jit compilation via OpenXLA.
+Both JAX and \CRANpkg{anvil} translate code into a computational graph by recording an evaluation trace, an approach that is well established in the AD literature (\citet{ref-griewank2008evaluating}, Section 1).
 Also other design elements such as the handling of nested data structures or the type promotion rules are adopted from JAX.
 We also want to highlight the Autodidax tutorial, which describes the core ideas underpinning JAX (todo: cite), as well as microjax, which is a minimalistic Python library demonstrating JAX's code transformation engine (todo: cite).
 For the design of the \CRANpkg{stablehlo} package and the tracing implementation in \CRANpkg{anvil}, we have followed the design from \CRANpkg{mlr3torch}, which offers a similar graph-building interface for creating neural networks.
@@ -76,6 +77,7 @@ Besides, \CRANpkg{quickr} does not establish a new API, but instead aims to be a
 This works because it is implemented via a static analysis approach, so the package does not need control over the functions that can be compiled, as is the case for the tracing approach followed in \CRANpkg{anvil}.
 This also means that \CRANpkg{quickr} does not allow mixing ``non-compilable'' R code with compilable code, as is possible in \CRANpkg{anvil}, where the ``non-compilable'' code is staged out during tracing to the intermediate representation.
 The tracing approach is more flexible, but also requires the user to be more careful about the code that they are writing.
+One notable limitation of the tracing approach is that it does not support recursive function calls: since tracing works by executing the function once with abstract inputs and recording the resulting operations, a recursive call would lead to infinite unrolling during the trace, as the recursion depth is not known at trace time.
 There is also the ast2ast package, which translates a subset of R code into C++ \citep{ref-ast2ast}.
 It is similar in spirit to \CRANpkg{quickr}, but also supports forward and backward-mode automatic differentiation.
 Then, there are \CRANpkg{odin} and \CRANpkg{rxode2}, both of which focus on differential equations and compile a small subset of R code via translation to C, similar to \CRANpkg{quickr}.
@@ -216,7 +218,7 @@ z
 \begin{verbatim}
 #> Variable %0 in:
 #> func.func @main (%x: tensor<2x2xf32>, %y: tensor<2x2xf32>) ->  {
-#> %0 = "stablehlo.multiply" (%x, %y): (tensor<2x2xf32>, tensor<2x2xf32>) -> (tensor<2x2xf32>)
+#> %0 = stablehlo.multiply %x, %y : tensor<2x2xf32>
 #> }
 \end{verbatim}
 
@@ -227,7 +229,7 @@ f
 
 \begin{verbatim}
 #> func.func @main (%x: tensor<2x2xf32>, %y: tensor<2x2xf32>) -> tensor<2x2xf32> {
-#> %0 = "stablehlo.multiply" (%x, %y): (tensor<2x2xf32>, tensor<2x2xf32>) -> (tensor<2x2xf32>)
+#> %0 = stablehlo.multiply %x, %y : tensor<2x2xf32>
 #> "func.return"(%0): (tensor<2x2xf32>) -> ()
 #> }
 \end{verbatim}
@@ -256,7 +258,7 @@ For some more details, see the StableHLO specification or \href{https://r-xla.gi
 
 \paragraph{PJRT}\label{pjrt}
 
-The \CRANpkg{pjrt} package is the interface to the PJRT C++ library.
+The \CRANpkg{pjrt} package is the interface to the PJRT C++ library, implemented using \CRANpkg{Rcpp} \citep{ref-rcpp}.
 The PJRT library itself is header-only and only defines the interface for the underlying execution engine.
 A specific implementation of the interface (e.g.~for CPU or NVIDIA GPU) is accessed by downloading prebuilt shared libraries and loading them dynamically.
 Currently, these prebuilt PJRT plugins are obtained from the zig machine learning framework (zml).
@@ -379,7 +381,7 @@ reloaded$x
 #> [ CPUf32{2x2} ]
 \end{verbatim}
 
-\subsubsection{\texorpdfstring{\CRANpkg{quickr}}{}}\label{section}
+\subsubsection{\texorpdfstring{The \CRANpkg{quickr} Fortran Transpiler}{The  Fortran Transpiler}}\label{the-fortran-transpiler}
 
 The \CRANpkg{quickr} package serves as a second, experimental, backend for \CRANpkg{anvil} and was independently developed.
 It transpiles R code to Fortran code and compiles it.
@@ -420,32 +422,61 @@ A disadvantage is that \CRANpkg{quickr} currently does not support GPU accelerat
 
 Besides JIT compilation, another core feature of \CRANpkg{anvil} is its ability to automatically compute derivatives of R functions.
 Here, we briefly cover some central ideas behind AD to provide the background for understanding \CRANpkg{anvil}'s design.
-For a comprehensive treatment, we refer the reader to \citet{ref-griewank2008evaluating}.
+For a comprehensive treatment, we refer the reader to \citep{ref-griewank2008evaluating}.
+
+\paragraph{The Jacobian}\label{the-jacobian}
+
+Following \citet{ref-griewank2008evaluating}, consider a function \(F : \mathcal{D} \subset \R^n \to \R^m\), where \(\mathcal{D}\) is an open subset of \(\R^n\).
+The Jacobian of \(F\) is defined as the matrix-valued function \(F' : \mathcal{D} \subset \R^n \to \R^{m \times n}\), where the entries are given by \(F'(x)_{ij} = \fp{F_i}{x_j}\).
 
 \paragraph{Evaluation Procedures and the Chain Rule}\label{evaluation-procedures-and-the-chain-rule}
 
-AD exploits the fact that every computer program, no matter how complex, executes a sequence of elementary operations whose derivatives are known.
-Following \citet{ref-griewank2008evaluating}, consider a function \(F : \R^n \to \R^m\) that is evaluated by a computer program.
-Any such evaluation can be decomposed into a sequence of elementary operations (called \emph{elemental functions}) \(\varphi_i\) such as addition, multiplication, \(\sin\), \(\exp\), etc.
-The evaluation produces a sequence of intermediate variables
+AD exploits the fact that every computer program, no matter how complex, executes a sequence of operations whose derivatives are known.
+Following \citet{ref-griewank2008evaluating}, suppose \(F\) is evaluated by a computer program.
+Any such evaluation can be decomposed into a sequence of vector-valued \emph{primitive functions} \(\varphi_i\) (called \emph{elemental functions} in \citet{ref-griewank2008evaluating}) such as addition, multiplication, \(\sin\), \(\exp\), etc.
+The evaluation produces a sequence of variables \(v_1, \ldots, v_{n+l+m}\), where \(v_1, \ldots, v_n\) are the input variables (i.e., \(x\)), \(v_{n+1}, \ldots, v_{n+l}\) are intermediate variables, and \(v_{n+l+1}, \ldots, v_{n+l+m}\) are the output variables (i.e., \(y\)).
+Each non-input variable is obtained by applying a primitive function to some of the preceding variables:
 
-\[v_i = \varphi_i(v_j)_{j \prec i}, \qquad i = 1, \ldots, l\]
+\[v_i = \varphi_i(v_j)_{j \prec i}, \qquad i = n+1, \ldots, n+l+m\]
 
-where \(v_{1-n}, \ldots, v_0\) are the input variables (i.e., \(x\)), \(v_1, \ldots, v_l\) are the intermediate variables, and \(v_{l-m+1}, \ldots, v_l\) are the output variables (i.e., \(y\)).
-Here, the notation \(j \prec i\) indicates that \(v_j\) is a direct argument of \(\varphi_i\).
-This sequence of assignments is called an \emph{evaluation procedure} and can be visualized as a directed acyclic graph (the \emph{computational graph}), where each node corresponds to an intermediate variable and edges represent data dependencies.
+The \emph{data dependence relation} \(j \prec i\) indicates that \(v_j\) is a direct argument of \(\varphi_i\).
+This sequence of assignments is called an \emph{evaluation procedure} and can be represented as a directed acyclic graph (DAG) \(G = (V, E)\), where the vertex set \(V = \{v_1, \ldots, v_{n+l+m}\}\) contains all input, intermediate, and output variables, and the edge set \(E = \{(v_j, v_i) : j \prec i\}\) encodes the data dependencies.
+The relation \(\prec\) thus defines a partial order on the vertices, and any topological ordering of \(G\) yields a valid evaluation sequence.
+We refer to \(G\) as the \emph{computational graph} of \(F\).
 
-Since each elemental function \(\varphi_i\) is differentiable, the chain rule can be applied systematically to compute derivatives of \(F\).
-The two main modes of AD differ in the \emph{order} in which the chain rule is evaluated, leading to different computational trade-offs.
+A function is \(d\)-times continuously differentiable (\(C^d\)) if all its derivatives up to order \(d\) exist and are continuous.
+If each primitive function \(\varphi_i \in C^d(\mathcal{D}_i)\) on its open domain \(\mathcal{D}_i\), then the composite function \(F\) inherits this smoothness: \(F \in C^d(\mathcal{D})\) on the open set of inputs for which the evaluation procedure is well-defined (\citet{ref-griewank2008evaluating}, Proposition 2.1).
+This guarantees that the chain rule can be applied systematically to compute derivatives of \(F\), and that these derivatives are numerically stable (small input perturbations yield small changes in derivative values).
+Most standard primitives (\(+\), \(*\), \(\sin\), \(\exp\), \(\log\)) are \(C^\infty\) on their domains.
+
+\paragraph{Jacobian-Vector Products and Vector-Jacobian Products}\label{jacobian-vector-products-and-vector-jacobian-products}
+
+While computing the full Jacobian is often too expensive, two linear maps derived from it are central to AD:
+
+\begin{itemize}
+\tightlist
+\item
+  The \emph{Jacobian-vector product} (JVP): given a tangent vector \(\dot{x} \in \R^n\), the JVP computes \(F'(x) \dot{x} \in \R^m\).
+  This is a directional derivative, describing how the output changes when the input is perturbed in the direction \(\dot{x}\).
+\item
+  The \emph{vector-Jacobian product} (VJP): given an adjoint (or cotangent) vector \(\bar{y} \in \R^m\), the VJP computes \(\bar{y}^\top F'(x) \in \R^n\).
+  This describes how a linear functional of the output depends on each input.
+\end{itemize}
+
+A single JVP evaluation costs roughly the same as evaluating \(F\) itself, but yields only one column's worth of information about \(F'\).
+Similarly, a single VJP evaluation yields one row's worth.
+The two main modes of AD differ in which of these products they compute, and therefore in the \emph{order} in which the chain rule is evaluated, leading to different computational trade-offs.
 
 \paragraph{Forward Mode}\label{forward-mode}
 
 Forward-mode AD propagates derivatives alongside the function evaluation.
-Given a tangent (or direction) vector \(\dot{x} \in \R^n\), it computes for each intermediate variable \(v_i\) the corresponding tangent
+Since the \(v_i\) are vector-valued, the local partial derivative \(\fp{\varphi_i}{v_j}\) is a Jacobian matrix.
+Given a tangent (or direction) vector \(\dot{x} \in \R^n\), forward mode computes for each variable \(v_i\) the corresponding tangent \(\dot{v}_i\) (a vector of the same dimension as \(v_i\)):
 
-\[\dot{v}_i = \sum_{j \prec i} \fp{v_i}{v_j} \dot{v}_j\]
+\[\dot{v}_i = \sum_{j \prec i} \fp{\varphi_i}{v_j} \dot{v}_j\]
 
 proceeding forward through the evaluation procedure, from inputs to outputs.
+Each term \(\fp{\varphi_i}{v_j} \dot{v}_j\) is a local Jacobian-vector product.
 The final result \(\dot{y} = F'(x) \dot{x}\) is a \emph{Jacobian-vector product} (JVP).
 To obtain the full Jacobian \(F'(x) \in \R^{m \times n}\), one must perform \(n\) forward sweeps, one for each standard basis vector \(\dot{x} = e_j\).
 This makes forward mode efficient when \(n\) is small relative to \(m\).
@@ -453,22 +484,47 @@ This makes forward mode efficient when \(n\) is small relative to \(m\).
 \paragraph{Reverse Mode}\label{reverse-mode}
 
 Reverse-mode AD (also called the \emph{adjoint} mode) propagates sensitivities backward through the evaluation procedure.
-Given an adjoint vector \(\bar{y} \in \R^m\), it computes for each intermediate variable \(v_i\) the corresponding adjoint
+Given an adjoint vector \(\bar{y} \in \R^m\), it computes for each variable \(v_i\) the corresponding adjoint \(\bar{v}_i\) (a vector of the same dimension as \(v_i\)):
 
-\[\bar{v}_i = \sum_{k \succ i} \bar{v}_k \fp{v_k}{v_i}\]
+\[\bar{v}_i = \sum_{k \succ i} \left(\fp{\varphi_k}{v_i}\right)^\top \bar{v}_k\]
 
 proceeding in reverse order, from outputs to inputs, where \(k \succ i\) denotes that \(v_i\) is a direct argument of \(\varphi_k\).
-The final result \(\bar{x} = \bar{y}^\top F'(x)\) is a \emph{vector-Jacobian product} (VJP).
+Each term \(\left(\fp{\varphi_k}{v_i}\right)^\top \bar{v}_k\) is a local vector-Jacobian product (VJP).
+The final result \(\bar{x} = F'(x)^\top \bar{y}\) is the VJP of \(F\).
 
 The key advantage of reverse mode is that for a scalar-valued function (\(m = 1\)), setting \(\bar{y} = 1\) yields the full gradient \(\nabla F(x) \in \R^n\) in a \emph{single} reverse sweep, regardless of \(n\).
 This result is sometimes referred to as the ``cheap gradient principle'': the computational cost of evaluating the gradient is bounded by a small constant multiple (typically 2--5) of the cost of evaluating \(F\) itself (\citet{ref-griewank2008evaluating}, Chapter 3).
 This makes reverse mode dramatically more efficient than forward mode for the common case of gradient-based optimization, where one differentiates a scalar loss with respect to potentially many parameters.
 
-The trade-off is that reverse mode requires access to the intermediate values \(v_i\) from the forward evaluation during the backward sweep, since they are needed to evaluate the local partial derivatives \(\fp{v_k}{v_i}\).
+The trade-off is that reverse mode requires access to the intermediate values \(v_i\) from the forward evaluation during the backward sweep, since they are needed to evaluate the local Jacobians \(\fp{\varphi_k}{v_i}\).
 This introduces additional memory overhead that scales with the depth of the computation.
+
+\paragraph{Choosing Between Forward and Reverse Mode}\label{choosing-between-forward-and-reverse-mode}
+
+The choice between forward and reverse mode is governed by the relative dimensions of the domain and range of \(F\).
+Forward mode computes one JVP per sweep, so obtaining the full Jacobian requires \(n\) sweeps --- one per input dimension.
+Reverse mode computes one VJP per sweep, so obtaining the full Jacobian requires \(m\) sweeps --- one per output dimension.
+In terms of computational cost, each individual sweep of either mode has roughly the same cost as evaluating \(F\) itself (up to a small constant factor).
+The key difference lies in memory: forward mode can be executed alongside the original evaluation without storing intermediate values, whereas reverse mode must retain the intermediate values \(v_i\) from the forward pass for use during the backward sweep.
+
+In practice, the most common use case in machine learning and optimization is computing the gradient of a scalar-valued loss function (\(m = 1\)) with respect to potentially many parameters (\(n \gg 1\)).
+For this setting, reverse mode is the natural choice, as it yields the full gradient in a single sweep.
+Forward mode, on the other hand, is preferable when the number of inputs is small relative to the number of outputs (\(n \ll m\)), or when memory is constrained.
+It is also useful for computing directional derivatives or for higher-order differentiation, where forward-over-reverse compositions are common.
+
+Currently, \CRANpkg{anvil} implements only reverse-mode AD, as it covers the most important use case.
+Support for forward mode is planned for a future release.
 
 In \CRANpkg{anvil}, we implement backward-mode AD as a graph-to-graph transformation, as described in the next section.
 Each primitive operation stores its own local VJP rule, and the transformation walks the computational graph in reverse topological order to accumulate gradients.
+
+\paragraph{Non-Differentiable Functions}\label{non-differentiable-functions}
+
+However, some commonly used operations --- such as \(\text{abs}\), \(\max\), \(\min\), or ReLU --- are not differentiable at isolated points.
+\citet{ref-griewank2008evaluating} (Chapter 14) shows that such functions are \emph{piecewise differentiable}: they can be represented as a selection of finitely many smooth functions, and the non-differentiable points (boundaries between selections) have measure zero.
+Since \CRANpkg{anvil} operates on a fixed evaluation trace, each trace corresponds to a single smooth selection, and AD differentiates that branch.
+At non-differentiable points, the derivative of whichever branch was taken is returned --- for example, \(\text{abs}'(0) = 0\) and \(\text{ReLU}'(0) = 0\).
+This is the standard convention adopted by modern AD frameworks.
 
 \subsection{Package Design and Features}\label{package-design-and-features}
 
@@ -594,7 +650,7 @@ prim("add")[["backward"]]
 #>     grad <- grads[[1L]]
 #>     list(if (.required[[1L]]) grad, if (.required[[2L]]) grad)
 #> }
-#> <bytecode: 0x1149493d8>
+#> <bytecode: 0x1079b6cf8>
 #> <environment: namespace:anvil>
 \end{verbatim}
 
@@ -645,7 +701,7 @@ repr(out[[1]])
 \end{verbatim}
 
 \begin{verbatim}
-#> [1] "func.func @main (%0: tensor<f32>, %1: tensor<f32>) -> tensor<f32> {\n%2 = \"stablehlo.multiply\" (%0, %1): (tensor<f32>, tensor<f32>) -> (tensor<f32>)\n\"func.return\"(%2): (tensor<f32>) -> ()\n}\n"
+#> [1] "func.func @main (%0: tensor<f32>, %1: tensor<f32>) -> tensor<f32> {\n%2 = stablehlo.multiply %0, %1 : tensor<f32>\n\"func.return\"(%2): (tensor<f32>) -> ()\n}\n"
 \end{verbatim}
 
 \begin{verbatim}
@@ -1231,6 +1287,40 @@ Finally, one package that might be useful is to build a small modeling library o
 Sebastian Fischer is supported by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) -- 460135501 (NFDI project MaRDI).
 
 \subsection{Appendix}\label{appendix}
+
+\subsubsection{More On Automatic Differentiation}\label{more-on-automatic-differentiation}
+
+In the background section, we noted that forward-mode AD computes Jacobian-vector products (JVPs) and that a single JVP evaluation costs roughly the same as evaluating \(F\) itself.
+An important practical consequence of this is that computing a directional derivative \(F'(x) \dot{x}\) via a JVP is far more efficient than first materializing the full Jacobian \(F'(x)\) and then performing the matrix-vector product.
+
+To see why, consider the two approaches for computing \(F'(x)\dot{x}\) for a function \(F : \R^n \to \R^m\):
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Full Jacobian approach}: Compute the entire Jacobian \(F'(x) \in \R^{m \times n}\) by performing \(n\) forward sweeps (one per input dimension), then multiply \(F'(x) \dot{x}\).
+  The total cost is \(O(n \cdot C_F + mn)\), where \(C_F\) is the cost of evaluating \(F\).
+\item
+  \textbf{Direct JVP}: Compute \(F'(x) \dot{x}\) in a single forward sweep by propagating the tangent vector \(\dot{x}\) alongside the evaluation.
+  The total cost is \(O(C_F)\).
+\end{enumerate}
+
+The direct JVP avoids both the \(n\)-fold cost of materializing the Jacobian and the \(O(mn)\) cost of the subsequent matrix-vector product.
+The savings are most dramatic when \(n\) is large, which is precisely the setting encountered in many applications.
+
+\textbf{Example.}
+Consider the element-wise function \(F : \R^n \to \R^n\) defined by \(F(x)_i = \sin(x_i^2)\).
+The Jacobian is diagonal: \(F'(x) = \text{diag}(2 x_i \cos(x_i^2))\), so it has \(n\) non-zero entries.
+For a tangent vector \(\dot{x}\), the directional derivative is simply \((F'(x) \dot{x})_i = 2x_i \cos(x_i^2) \dot{x}_i\).
+
+With the full Jacobian approach, we must first compute all \(n\) diagonal entries by performing \(n\) forward sweeps, yielding the \(n \times n\) (diagonal) Jacobian matrix, and then multiply it by \(\dot{x}\).
+Even though the Jacobian happens to be diagonal, a generic AD system that materializes it does not exploit this structure and performs \(n\) full evaluations.
+
+With a direct JVP, the same result is obtained in a single forward sweep: each primitive operation propagates its local JVP, and the tangent \(\dot{x}_i\) flows through to produce \(2x_i \cos(x_i^2) \dot{x}_i\) directly --- at roughly the same cost as evaluating \(F\) once.
+For \(n = 1000\), this represents a roughly \(1000\times\) reduction in computational cost.
+
+The same argument applies symmetrically to vector-Jacobian products (VJPs) in reverse mode: computing \(\bar{y}^\top F'(x)\) via a single reverse sweep is far cheaper than materializing the full Jacobian and then left-multiplying by \(\bar{y}^\top\).
+This is precisely the principle that makes reverse-mode AD efficient for gradient computation.
 
 \subsubsection{AI Usage}\label{ai-usage}
 

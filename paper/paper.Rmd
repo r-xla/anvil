@@ -89,7 +89,9 @@ Because the \CRANpkg{anvil} package is primarily written in R, it is easy to ext
 
 The closest related work is the JAX python library, from which various design elements are inspired or adopted [@ref-jax2018github].
 Primarily, we are using a similar functional design and handle jit compilation via OpenXLA.
+Both JAX and \CRANpkg{anvil} translate code into a computational graph by recording an evaluation trace, an approach that is well established in the AD literature (@ref-griewank2008evaluating, Section 1).
 Also other design elements such as the handling of nested data structures or the type promotion rules are adopted from JAX.
+<!-- TODO: cite tagless final interpreters [@ref-types-tagless] and describe the relation -->
 We also want to highlight the Autodidax tutorial, which describes the core ideas underpinning JAX (todo: cite), as well as microjax, which is a minimalistic Python library demonstrating JAX's code transformation engine (todo: cite).
 For the design of the \CRANpkg{stablehlo} package and the tracing implementation in \CRANpkg{anvil}, we have followed the design from \CRANpkg{mlr3torch}, which offers a similar graph-building interface for creating neural networks.
 The API functions for the tensor operations are partly adopted from NumPy, which is a popular library for numerical computing in Python [@ref-harris2020array].
@@ -142,6 +144,7 @@ Besides, \CRANpkg{quickr} does not establish a new API, but instead aims to be a
 This works because it is implemented via a static analysis approach, so the package does not need control over the functions that can be compiled, as is the case for the tracing approach followed in \CRANpkg{anvil}.
 This also means that \CRANpkg{quickr} does not allow mixing "non-compilable" R code with compilable code, as is possible in \CRANpkg{anvil}, where the "non-compilable" code is staged out during tracing to the intermediate representation.
 The tracing approach is more flexible, but also requires the user to be more careful about the code that they are writing.
+One notable limitation of the tracing approach is that it does not support recursive function calls: since tracing works by executing the function once with abstract inputs and recording the resulting operations, a recursive call would lead to infinite unrolling during the trace, as the recursion depth is not known at trace time.
 There is also the ast2ast package, which translates a subset of R code into C++ [@ref-ast2ast].
 It is similar in spirit to \CRANpkg{quickr}, but also supports forward and backward-mode automatic differentiation.
 Then, there are \CRANpkg{odin} and \CRANpkg{rxode2}, both of which focus on differential equations and compile a small subset of R code via translation to C, similar to \CRANpkg{quickr}.
@@ -213,6 +216,7 @@ MLIR is part of the LLVM compiler infrastructure and provides a framework to def
 Such passes can e.g. perform optimizations or lower the abstraction level.
 It is in single static assignment (SSA) form, meaning that each variable is assigned to exactly once, and is fully functional.
 For a description of the language, see the [StableHLO specification](https://openxla.org/stablehlo/spec), which also contains a description of the around 100 supported primitive operations.
+To stay close to the language definition, the \CRANpkg{stablehlo} package uses 0-based indexing for dimensions and other indices.
 In order to use the StableHLO language in \CRANpkg{anvil}, it needs to be possible to translate R code into StableHLO programs.
 For this purpose, we have created the \CRANpkg{stablehlo} package.
 The package essentially consists of four parts:
@@ -263,7 +267,7 @@ For some more details, see the StableHLO specification or [this vignette](https:
 
 #### PJRT
 
-The \CRANpkg{pjrt} package is the interface to the PJRT C++ library.
+The \CRANpkg{pjrt} package is the interface to the PJRT C++ library, implemented using \CRANpkg{Rcpp} [@ref-rcpp].
 The PJRT library itself is header-only and only defines the interface for the underlying execution engine.
 A specific implementation of the interface (e.g. for CPU or NVIDIA GPU) is accessed by downloading prebuilt shared libraries and loading them dynamically.
 Currently, these prebuilt PJRT plugins are obtained from the zig machine learning framework (zml).
@@ -334,7 +338,7 @@ reloaded <- safetensors::safe_load_file(tmp, framework = "pjrt")
 reloaded$x
 ```
 
-### \CRANpkg{quickr}
+### The \CRANpkg{quickr} Fortran Transpiler
 
 The \CRANpkg{quickr} package serves as a second, experimental, backend for \CRANpkg{anvil} and was independently developed.
 It transpiles R code to Fortran code and compiles it.
@@ -369,32 +373,56 @@ A disadvantage is that \CRANpkg{quickr} currently does not support GPU accelerat
 
 Besides JIT compilation, another core feature of \CRANpkg{anvil} is its ability to automatically compute derivatives of R functions.
 Here, we briefly cover some central ideas behind AD to provide the background for understanding \CRANpkg{anvil}'s design.
-For a comprehensive treatment, we refer the reader to @ref-griewank2008evaluating.
+For a comprehensive treatment, we refer the reader to [@ref-griewank2008evaluating].
+
+#### The Jacobian
+
+Following @ref-griewank2008evaluating, consider a function $F : \mathcal{D} \subset \R^n \to \R^m$, where $\mathcal{D}$ is an open subset of $\R^n$.
+The Jacobian of $F$ is defined as the matrix-valued function $F' : \mathcal{D} \subset \R^n \to \R^{m \times n}$, where the entries are given by $F'(x)_{ij} = \fp{F_i}{x_j}$.
 
 #### Evaluation Procedures and the Chain Rule
 
-AD exploits the fact that every computer program, no matter how complex, executes a sequence of elementary operations whose derivatives are known.
-Following @ref-griewank2008evaluating, consider a function $F : \R^n \to \R^m$ that is evaluated by a computer program.
-Any such evaluation can be decomposed into a sequence of elementary operations (called *elemental functions*) $\varphi_i$ such as addition, multiplication, $\sin$, $\exp$, etc.
-The evaluation produces a sequence of intermediate variables
+AD exploits the fact that every computer program, no matter how complex, executes a sequence of operations whose derivatives are known.
+Following @ref-griewank2008evaluating, suppose $F$ is evaluated by a computer program.
+Any such evaluation can be decomposed into a sequence of vector-valued *primitive functions* $\varphi_i$ (called *elemental functions* in @ref-griewank2008evaluating) such as addition, multiplication, $\sin$, $\exp$, etc.
+The evaluation produces a sequence of variables $v_1, \ldots, v_{n+l+m}$, where $v_1, \ldots, v_n$ are the input variables (i.e., $x$), $v_{n+1}, \ldots, v_{n+l}$ are intermediate variables, and $v_{n+l+1}, \ldots, v_{n+l+m}$ are the output variables (i.e., $y$).
+Each non-input variable is obtained by applying a primitive function to some of the preceding variables:
 
-$$v_i = \varphi_i(v_j)_{j \prec i}, \qquad i = 1, \ldots, l$$
+$$v_i = \varphi_i(v_j)_{j \prec i}, \qquad i = n+1, \ldots, n+l+m$$
 
-where $v_{1-n}, \ldots, v_0$ are the input variables (i.e., $x$), $v_1, \ldots, v_l$ are the intermediate variables, and $v_{l-m+1}, \ldots, v_l$ are the output variables (i.e., $y$).
-Here, the notation $j \prec i$ indicates that $v_j$ is a direct argument of $\varphi_i$.
-This sequence of assignments is called an *evaluation procedure* and can be visualized as a directed acyclic graph (the *computational graph*), where each node corresponds to an intermediate variable and edges represent data dependencies.
+The *data dependence relation* $j \prec i$ indicates that $v_j$ is a direct argument of $\varphi_i$.
+This sequence of assignments is called an *evaluation procedure* and can be represented as a directed acyclic graph (DAG) $G = (V, E)$, where the vertex set $V = \{v_1, \ldots, v_{n+l+m}\}$ contains all input, intermediate, and output variables, and the edge set $E = \{(v_j, v_i) : j \prec i\}$ encodes the data dependencies.
+The relation $\prec$ thus defines a partial order on the vertices, and any topological ordering of $G$ yields a valid evaluation sequence.
+We refer to $G$ as the *computational graph* of $F$.
 
-Since each elemental function $\varphi_i$ is differentiable, the chain rule can be applied systematically to compute derivatives of $F$.
-The two main modes of AD differ in the *order* in which the chain rule is evaluated, leading to different computational trade-offs.
+A function is $d$-times continuously differentiable ($C^d$) if all its derivatives up to order $d$ exist and are continuous.
+If each primitive function $\varphi_i \in C^d(\mathcal{D}_i)$ on its open domain $\mathcal{D}_i$, then the composite function $F$ inherits this smoothness: $F \in C^d(\mathcal{D})$ on the open set of inputs for which the evaluation procedure is well-defined (@ref-griewank2008evaluating, Proposition 2.1).
+This guarantees that the chain rule can be applied systematically to compute derivatives of $F$, and that these derivatives are numerically stable (small input perturbations yield small changes in derivative values).
+Most standard primitives ($+$, $*$, $\sin$, $\exp$, $\log$) are $C^\infty$ on their domains.
+
+#### Jacobian-Vector Products and Vector-Jacobian Products
+
+While computing the full Jacobian is often too expensive, two linear maps derived from it are central to AD:
+
+- The *Jacobian-vector product* (JVP): given a tangent vector $\dot{x} \in \R^n$, the JVP computes $F'(x) \dot{x} \in \R^m$.
+  This is a directional derivative, describing how the output changes when the input is perturbed in the direction $\dot{x}$.
+- The *vector-Jacobian product* (VJP): given an adjoint (or cotangent) vector $\bar{y} \in \R^m$, the VJP computes $\bar{y}^\top F'(x) \in \R^n$.
+  This describes how a linear functional of the output depends on each input.
+
+A single JVP evaluation costs roughly the same as evaluating $F$ itself, but yields only one column's worth of information about $F'$.
+Similarly, a single VJP evaluation yields one row's worth.
+The two main modes of AD differ in which of these products they compute, and therefore in the *order* in which the chain rule is evaluated, leading to different computational trade-offs.
 
 #### Forward Mode
 
 Forward-mode AD propagates derivatives alongside the function evaluation.
-Given a tangent (or direction) vector $\dot{x} \in \R^n$, it computes for each intermediate variable $v_i$ the corresponding tangent
+Since the $v_i$ are vector-valued, the local partial derivative $\fp{\varphi_i}{v_j}$ is a Jacobian matrix.
+Given a tangent (or direction) vector $\dot{x} \in \R^n$, forward mode computes for each variable $v_i$ the corresponding tangent $\dot{v}_i$ (a vector of the same dimension as $v_i$):
 
-$$\dot{v}_i = \sum_{j \prec i} \fp{v_i}{v_j} \dot{v}_j$$
+$$\dot{v}_i = \sum_{j \prec i} \fp{\varphi_i}{v_j} \dot{v}_j$$
 
 proceeding forward through the evaluation procedure, from inputs to outputs.
+Each term $\fp{\varphi_i}{v_j} \dot{v}_j$ is a local Jacobian-vector product.
 The final result $\dot{y} = F'(x) \dot{x}$ is a *Jacobian-vector product* (JVP).
 To obtain the full Jacobian $F'(x) \in \R^{m \times n}$, one must perform $n$ forward sweeps, one for each standard basis vector $\dot{x} = e_j$.
 This makes forward mode efficient when $n$ is small relative to $m$.
@@ -402,28 +430,53 @@ This makes forward mode efficient when $n$ is small relative to $m$.
 #### Reverse Mode
 
 Reverse-mode AD (also called the *adjoint* mode) propagates sensitivities backward through the evaluation procedure.
-Given an adjoint vector $\bar{y} \in \R^m$, it computes for each intermediate variable $v_i$ the corresponding adjoint
+Given an adjoint vector $\bar{y} \in \R^m$, it computes for each variable $v_i$ the corresponding adjoint $\bar{v}_i$ (a vector of the same dimension as $v_i$):
 
-$$\bar{v}_i = \sum_{k \succ i} \bar{v}_k \fp{v_k}{v_i}$$
+$$\bar{v}_i = \sum_{k \succ i} \left(\fp{\varphi_k}{v_i}\right)^\top \bar{v}_k$$
 
 proceeding in reverse order, from outputs to inputs, where $k \succ i$ denotes that $v_i$ is a direct argument of $\varphi_k$.
-The final result $\bar{x} = \bar{y}^\top F'(x)$ is a *vector-Jacobian product* (VJP).
+Each term $\left(\fp{\varphi_k}{v_i}\right)^\top \bar{v}_k$ is a local vector-Jacobian product (VJP).
+The final result $\bar{x} = F'(x)^\top \bar{y}$ is the VJP of $F$.
 
 The key advantage of reverse mode is that for a scalar-valued function ($m = 1$), setting $\bar{y} = 1$ yields the full gradient $\nabla F(x) \in \R^n$ in a *single* reverse sweep, regardless of $n$.
 This result is sometimes referred to as the "cheap gradient principle": the computational cost of evaluating the gradient is bounded by a small constant multiple (typically 2--5) of the cost of evaluating $F$ itself (@ref-griewank2008evaluating, Chapter 3).
 This makes reverse mode dramatically more efficient than forward mode for the common case of gradient-based optimization, where one differentiates a scalar loss with respect to potentially many parameters.
 
-The trade-off is that reverse mode requires access to the intermediate values $v_i$ from the forward evaluation during the backward sweep, since they are needed to evaluate the local partial derivatives $\fp{v_k}{v_i}$.
+The trade-off is that reverse mode requires access to the intermediate values $v_i$ from the forward evaluation during the backward sweep, since they are needed to evaluate the local Jacobians $\fp{\varphi_k}{v_i}$.
 This introduces additional memory overhead that scales with the depth of the computation.
+
+#### Choosing Between Forward and Reverse Mode
+
+The choice between forward and reverse mode is governed by the relative dimensions of the domain and range of $F$.
+Forward mode computes one JVP per sweep, so obtaining the full Jacobian requires $n$ sweeps --- one per input dimension.
+Reverse mode computes one VJP per sweep, so obtaining the full Jacobian requires $m$ sweeps --- one per output dimension.
+In terms of computational cost, each individual sweep of either mode has roughly the same cost as evaluating $F$ itself (up to a small constant factor).
+The key difference lies in memory: forward mode can be executed alongside the original evaluation without storing intermediate values, whereas reverse mode must retain the intermediate values $v_i$ from the forward pass for use during the backward sweep.
+
+In practice, the most common use case in machine learning and optimization is computing the gradient of a scalar-valued loss function ($m = 1$) with respect to potentially many parameters ($n \gg 1$).
+For this setting, reverse mode is the natural choice, as it yields the full gradient in a single sweep.
+Forward mode, on the other hand, is preferable when the number of inputs is small relative to the number of outputs ($n \ll m$), or when memory is constrained.
+It is also useful for computing directional derivatives or for higher-order differentiation, where forward-over-reverse compositions are common.
+
+Currently, \CRANpkg{anvil} implements only reverse-mode AD, as it covers the most important use case.
+Support for forward mode is planned for a future release.
 
 In \CRANpkg{anvil}, we implement backward-mode AD as a graph-to-graph transformation, as described in the next section.
 Each primitive operation stores its own local VJP rule, and the transformation walks the computational graph in reverse topological order to accumulate gradients.
 
+#### Non-Differentiable Functions
+
+However, some commonly used operations --- such as $\text{abs}$, $\max$, $\min$, or ReLU --- are not differentiable at isolated points.
+@ref-griewank2008evaluating (Chapter 14) shows that such functions are *piecewise differentiable*: they can be represented as a selection of finitely many smooth functions, and the non-differentiable points (boundaries between selections) have measure zero.
+Since \CRANpkg{anvil} operates on a fixed evaluation trace, each trace corresponds to a single smooth selection, and AD differentiates that branch.
+At non-differentiable points, the derivative of whichever branch was taken is returned --- for example, $\text{abs}'(0) = 0$ and $\text{ReLU}'(0) = 0$.
+This is the standard convention adopted by modern AD frameworks.
+
 ## Package Design and Features
 
-Having coverved the underlying basics, we will now cover the main design of the \CRANpkg{anvil} frontend.
-The core idea of the package is centered around code transformations, an approach adopted from JAX [@ref-jax].
-In general, there are three types of transformations:
+Having coverved the underlying basics, we will now describe the main design of the \CRANpkg{anvil} frontend.
+The core idea of the package is centered around code transformations, an approach adopted from JAX [@ref-jax], but this is a general idea in
+In general, there are three types of transformations that are executed in sequence, with step 2 being executed an arbitrary number of times, possibly with different transformations (although we currently only support reverse mode AD).
 
 1. Transforming R code into a computational graph.
 2. Transforming a computational graph into another computational graph (e.g. for automatic differentiation).
@@ -434,8 +487,9 @@ Then, we explain how these transformations are wrapped in the main user interfac
 
 ### Code transformations
 
-#### Tracing R code into a computational graph
+#### Creating a Computational Graph from R Code
 
+The first step in the pipeline is to simplify the R code into a computational graph.
 When it comes to translating code into other code, there are in principle two approaches:
 
 1. Static analysis of the code.
@@ -443,15 +497,13 @@ When it comes to translating code into other code, there are in principle two ap
 
 In \CRANpkg{anvil}, we are following the latter approach, because it allows to seemlessly combine standard R code with jit-compilable operations.
 The function that takes in an R function and returns a computational graph is called `trace_fn()`.
-In order for this to be useful, the function needs to call into \CRANpkg{anvil} primitive functions.
+In order for this to be useful, the function needs to (either directly or indirectly) call into \CRANpkg{anvil} primitive functions, i.e., `nvl_<op>` function..
 These primitive functions are similar to the stableHLO operations like `hlo_add` from earlier.
-
-In the \CRANpkg{anvil} package these are called `nvl_<op>` functions.
-Howveer, they are not exported directly, but in thin wrappers like `nv_add`, which perform some convenience transformations (like type casting) that make them more ergonomic to use.
-These thin wrappers call into the primitive functions, however.
+In many cases, the primitive functions are not very ergonomic to use and we recommend using the thin wrappers like `nv_add` instead that additionally perform scalar broadcasting and type casting.
+These thin wrappers call into other anvil primitive functions, however.
 The primitive functions are essentially graph building functions, also similar to the `hlo_add` function from earlier.
 Below, we create an R function that takes in two values and multiplies them.
-Note that we could have also used the `*` infix operator, but we want to illustrate the use of the `nv_multiply` function.
+Note that we could have equally used the overloaded `*` infix operator, but use `nv_mul` for clarity.
 
 ```{r}
 library(anvil)
@@ -464,11 +516,14 @@ We can now trace this function into a computational graph.
 At the beginning, this will create a `anvil::GraphDescriptor` that primitive functions can attach to to build up the graph.
 The types for the inputs are inferred from the example arguments.
 The `trace_fn` transformation uses these example inputs to obtain abstract `GraphBox` objects, which are passed around during the evaluation of the function.
-They essentially define the type (shape and data type), and uniquely identify a specific `GraphValue` within a specific `GraphDescriptor`.
-Note that `trace_fn` also takes in non-tensor values, which are evaluated like normal R code.
+Such a `GraphBox` is the core object that allows to build up the graph.
+It contains a `GraphNode`, which is either a `GraphValue` or a `GraphLiteral` and a `GraphDescriptor`, which is essentially a graph in the making.
+The `GraphNode` contains an `AbstractTensor` (or one of its subclasses) which consists primarily of a shape and data type.
+Below, `nv_aten` creates `AbstractTensor` objects.
+Internally, a new `GraphDescriptor` is initialized and `GraphValue` and `GraphBox` objects are created from the provided `AbstractTensor`.
 
 ```{r}
-graph <- trace_fn(multiply_r, list(x = nv_scalar(1, "f32"), y = nv_scalar(5, "f32")))
+graph <- trace_fn(multiply_r, list(x = nv_aten(1, "f32"), y = nv_aten(5, "f32")))
 graph
 ```
 
@@ -496,7 +551,7 @@ gradient_graph <- transform_gradient(graph, wrt = c("x", "y"))
 ```
 
 The \CRANpkg{anvil} package does not put any restrictions on *how* such a transformation is implemented.
-Usually, however, such a transformation needs to store information for how to transform each primitiveF.
+Usually, however, such a transformation needs to store information for how to transform each primitive.
 For this reason, the `anvil::Primitive` objects have a `@rules` field that can be populated.
 For example, the backward rule for the addition primitive is implemented as follows:
 
@@ -504,11 +559,18 @@ For example, the backward rule for the addition primitive is implemented as foll
 prim("add")[["backward"]]
 ```
 
-The transformation function `transform_gradient` basically walks the graph backwards and applies the backward rules to each primitive, producing a `Graph` that contains the forward and backward pass.
+The transformation function `transform_gradient` basically walks the graph
+backwards and applies the backward rules to each primitive, producing a `Graph` that contains the forward and backward pass.
 
-#### Automatic Differentiation
+Other transformations such as forward mode AD or batching transformations (similar to R's `Vectorize`) could be implemented similarly.
 
-The `transform_gradient()` function implements backward-mode automatic differentiation (also known as reverse-mode AD).
+At this point, one might ask why the primitive functions are not simply defined as S3 generics that dispatch on specific Box sub-classes.
+The problem with this approach is that S3 generics need inputs to dispatch on.
+However, some primitives such as `nvl_iota()` only take non-tensor arguments (standard R values) so this is where the abstraction breaks down unless one wants to explicitly add arguments to the S3 generics.
+
+##### The `transform_gradient()` transformation
+
+The `transform_gradient()` function implements reverse-mode AD.
 Given a `Graph` representing a function $f : \mathbb{R}^n \to \mathbb{R}$, it produces a new `Graph` that computes both the original output and the gradients of the output with respect to specified inputs.
 
 More concretely, consider a computational graph as a sequence of primitive operations $v_k = g_k(v_{\text{pa}(k)})$, where $v_{\text{pa}(k)}$ denotes the parent values (inputs) of operation $k$.
@@ -550,6 +612,25 @@ For this reason, non-scalar (TODO) constants are not inlined into the stableHLO 
 
 Next, we will describe how these transformations are wrapped in the main user interface.
 
+#### Broadcasting
+
+Unlike NumPy or R's built-in recycling, \CRANpkg{anvil}'s primitive operations (`nvl_*`) do not automatically broadcast their inputs --- operands must have exactly matching shapes.
+This is a deliberate design choice: implicit broadcasting is a common source of subtle bugs, especially when shapes are dynamic or when operations are composed across multiple transformations.
+
+The API-level wrappers (`nv_add`, `nv_mul`, etc.) do perform *scalar* broadcasting --- if one operand is a scalar and the other is a tensor, the scalar is broadcast to match --- but they do not perform full NumPy-style broadcasting.
+For explicit shape manipulation, functions like `nv_broadcast_to()` and `nv_broadcast_tensors()` are provided:
+
+```{r}
+a <- nv_tensor(1:3, "f32", shape = c(1, 3L))
+b <- nv_tensor(1, "f32", shape = 1L)
+# This would fail: nvl_add(a, b)
+# Instead, broadcast explicitly:
+nv_add(a, b)
+```
+
+More generally, broadcasting could itself be implemented as a code transformation that wraps a function and automatically inserts the necessary broadcast operations before each primitive call, analogous to `broadcast(nv_add)`.
+This is not currently implemented, but illustrates how the code transformation approach naturally extends to concerns beyond differentiation and compilation.
+
 ### Main User Interface
 
 The main user interface is centered around `jit()` and transformations functions like `gradient()` or `value_and_gradient()`.
@@ -567,7 +648,7 @@ y <- nv_tensor(1:4, "f32")
 y
 ```
 
-Just like the `PJRTBuffer` objects, `AnvilTensor` objects can be serialized to a string and deserialized using the \CRANpkg{safetensors} R package.
+Just like the `PJRTBuffer` objects, `AnvilTensor` objects can be serialized and deserialized using the \CRANpkg{safetensors} package.
 
 #### `jit()`
 
@@ -687,6 +768,21 @@ Because this makes `f` just another graph-building function, we can wrap it in a
 f_jit <- jit(f)
 f_jit(x, y)
 ```
+
+#### Nested Transformations
+
+A key feature of the code transformation approach is that transformations can be nested.
+For example, a gradient function can be called inside a jit-compiled function, or a gradient can be taken of a function that itself computes a gradient (to obtain second-order derivatives).
+
+The mechanism that makes this possible is *graph inlining*.
+Consider a function that first computes `nv_mul(x, x)` and then calls a gradient transformation on `nv_add`.
+When the outer function is traced (e.g. inside `jit()`), the outer `GraphDescriptor` first records the multiplication.
+When the gradient call is encountered, a new inner `GraphDescriptor` is created to trace `nv_add` independently.
+This inner graph is then transformed by applying the backward rules, producing a gradient graph.
+The resulting gradient graph is then inlined into the outer `GraphDescriptor` --- its operations become part of the outer graph, connected to the existing values.
+From the perspective of the outer graph, the inlined operations are indistinguishable from operations that were added directly.
+
+This means that composing transformations does not require any special handling: each transformation operates on a self-contained graph, and the result is spliced back into the parent context.
 
 #### Debugging
 
@@ -964,6 +1060,9 @@ Also, other code transformations such as higher-order derivatives, forward-mode 
 
 Finally, one package that might be useful is to build a small modeling library on top of \CRANpkg{anvil}, which is aimed at optimizing models via gradient-based optimization methods, e.g. for training deep learning models.
 
+Useability of the package would also benefit from streamlining the installation.
+In order to use GPUs with the XLA backend, manual effort is required to install the specific dependencies (CUDA, cuDNN, nvshmem), which should be simplified.
+
 * JET.
 * Improving the intermediate representation.
 * Using {anvil} to implement common algorithms.
@@ -975,7 +1074,37 @@ Sebastian Fischer is supported by the Deutsche Forschungsgemeinschaft (DFG, Germ
 
 ## Appendix {.appendix}
 
+### More On Automatic Differentiation
+
+In the background section, we noted that forward-mode AD computes Jacobian-vector products (JVPs) and that a single JVP evaluation costs roughly the same as evaluating $F$ itself.
+An important practical consequence of this is that computing a directional derivative $F'(x) \dot{x}$ via a JVP is far more efficient than first materializing the full Jacobian $F'(x)$ and then performing the matrix-vector product.
+
+To see why, consider the two approaches for computing $F'(x)\dot{x}$ for a function $F : \R^n \to \R^m$:
+
+1. **Full Jacobian approach**: Compute the entire Jacobian $F'(x) \in \R^{m \times n}$ by performing $n$ forward sweeps (one per input dimension), then multiply $F'(x) \dot{x}$.
+   The total cost is $O(n \cdot C_F + mn)$, where $C_F$ is the cost of evaluating $F$.
+
+2. **Direct JVP**: Compute $F'(x) \dot{x}$ in a single forward sweep by propagating the tangent vector $\dot{x}$ alongside the evaluation.
+   The total cost is $O(C_F)$.
+
+The direct JVP avoids both the $n$-fold cost of materializing the Jacobian and the $O(mn)$ cost of the subsequent matrix-vector product.
+The savings are most dramatic when $n$ is large, which is precisely the setting encountered in many applications.
+
+**Example.**
+Consider the element-wise function $F : \R^n \to \R^n$ defined by $F(x)_i = \sin(x_i^2)$.
+The Jacobian is diagonal: $F'(x) = \text{diag}(2 x_i \cos(x_i^2))$, so it has $n$ non-zero entries.
+For a tangent vector $\dot{x}$, the directional derivative is simply $(F'(x) \dot{x})_i = 2x_i \cos(x_i^2) \dot{x}_i$.
+
+With the full Jacobian approach, we must first compute all $n$ diagonal entries by performing $n$ forward sweeps, yielding the $n \times n$ (diagonal) Jacobian matrix, and then multiply it by $\dot{x}$.
+Even though the Jacobian happens to be diagonal, a generic AD system that materializes it does not exploit this structure and performs $n$ full evaluations.
+
+With a direct JVP, the same result is obtained in a single forward sweep: each primitive operation propagates its local JVP, and the tangent $\dot{x}_i$ flows through to produce $2x_i \cos(x_i^2) \dot{x}_i$ directly --- at roughly the same cost as evaluating $F$ once.
+For $n = 1000$, this represents a roughly $1000\times$ reduction in computational cost.
+
+The same argument applies symmetrically to vector-Jacobian products (VJPs) in reverse mode: computing $\bar{y}^\top F'(x)$ via a single reverse sweep is far cheaper than materializing the full Jacobian and then left-multiplying by $\bar{y}^\top$.
+This is precisely the principle that makes reverse-mode AD efficient for gradient computation.
+
 ### AI Usage
 
 AI coding agents were used for the development of the software.
-However, all AI-generated code was reviewed by the authors.
+All generated code was carefully checked by the authors.

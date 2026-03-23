@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.1)  18 MAR 2026 14:11
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.1)  19 MAR 2026 14:52
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -770,23 +770,23 @@ Package natbib Warning: Citation `ref-jax2018github' on page 1 undefined on inpu
 [2]
 
 [3]
-LaTeX Font Info:    Trying to load font information for OT1+ppl on input line 133.
+LaTeX Font Info:    Trying to load font information for OT1+ppl on input line 135.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/ot1ppl.fd
 File: ot1ppl.fd 2001/06/04 font definitions for OT1/ppl.
 )
-LaTeX Font Info:    Trying to load font information for OML+zplm on input line 133.
+LaTeX Font Info:    Trying to load font information for OML+zplm on input line 135.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/omlzplm.fd
 File: omlzplm.fd 2002/09/08 Fontinst v1.914 font definitions for OML/zplm.
 )
-LaTeX Font Info:    Trying to load font information for OMS+zplm on input line 133.
+LaTeX Font Info:    Trying to load font information for OMS+zplm on input line 135.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/omszplm.fd
 File: omszplm.fd 2002/09/08 Fontinst v1.914 font definitions for OMS/zplm.
 )
-LaTeX Font Info:    Trying to load font information for OMX+zplm on input line 133.
+LaTeX Font Info:    Trying to load font information for OMX+zplm on input line 135.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/omxzplm.fd
 File: omxzplm.fd 2002/09/08 Fontinst v1.914 font definitions for OMX/zplm.
 )
-LaTeX Font Info:    Trying to load font information for OT1+zplm on input line 133.
+LaTeX Font Info:    Trying to load font information for OT1+zplm on input line 135.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/ot1zplm.fd
 File: ot1zplm.fd 2002/09/08 Fontinst v1.914 font definitions for OT1/zplm.
 )
@@ -795,53 +795,43 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 10.42007pt on input line 133.
+(Font)              scaled to size 10.42007pt on input line 135.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/microtype/mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 7.91925pt on input line 133.
+(Font)              scaled to size 7.91925pt on input line 135.
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 6.25204pt on input line 133.
+(Font)              scaled to size 6.25204pt on input line 135.
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 10.42007pt on input line 133.
+(Font)              scaled to size 10.42007pt on input line 135.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/microtype/mt-msb.cfg
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 7.91925pt on input line 133.
+(Font)              scaled to size 7.91925pt on input line 135.
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 6.25204pt on input line 133.
-LaTeX Font Info:    Trying to load font information for T1+zi4 on input line 138.
+(Font)              scaled to size 6.25204pt on input line 135.
+LaTeX Font Info:    Trying to load font information for T1+zi4 on input line 140.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/inconsolata/t1zi4.fd
 File: t1zi4.fd 2018/01/14 T1/zi4 (Inconsolata)
 )
 LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
-(Font)              scaled to size 10.20004pt on input line 138.
+(Font)              scaled to size 10.20004pt on input line 140.
 Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `zi4' (encoding: T1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 
-Overfull \hbox (79.32874pt too wide) in paragraph at lines 145--145
+Overfull \hbox (79.32874pt too wide) in paragraph at lines 147--147
 []  \T1/zi4/m/n/10 %0 = "stablehlo.multiply"(%arg0, %arg1) : (tensor<2x2xf32>, tensor<2x2xf32>) -> tensor<2x2xf32>[] 
  []
 
 
 
 [4{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}]
-Overfull \hbox (65.73215pt too wide) in paragraph at lines 221--221
-[]\T1/zi4/m/n/10 #> %0 = "stablehlo.multiply" (%x, %y): (tensor<2x2xf32>, tensor<2x2xf32>) -> (tensor<2x2xf32>)[] 
- []
-
-
-Overfull \hbox (4.53189pt too wide) in paragraph at lines 233--233
+Overfull \hbox (4.53189pt too wide) in paragraph at lines 235--235
 []\T1/zi4/m/n/10 #> func.func @main (%x: tensor<2x2xf32>, %y: tensor<2x2xf32>) -> tensor<2x2xf32> {[] 
- []
-
-
-Overfull \hbox (65.73215pt too wide) in paragraph at lines 233--233
-[]\T1/zi4/m/n/10 #> %0 = "stablehlo.multiply" (%x, %y): (tensor<2x2xf32>, tensor<2x2xf32>) -> (tensor<2x2xf32>)[] 
  []
 
 
@@ -851,43 +841,47 @@ Overfull \hbox (65.73215pt too wide) in paragraph at lines 233--233
 [6]
 
 [7]
-LaTeX Font Info:    Trying to load font information for U+dsrom on input line 428.
+LaTeX Font Info:    Trying to load font information for U+dsrom on input line 429.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/doublestroke/Udsrom.fd
 File: Udsrom.fd 1995/08/01 v0.1 Double stroke roman font definitions
 )
 Package microtype Info: Fixing zero \fontdimen 6 for font `U/dsrom/m/n/10'
-(microtype)             (new value: 10.0pt) on input line 428.
+(microtype)             (new value: 10.0pt) on input line 429.
 Package microtype Info: Fixing zero \fontdimen 6 for font `U/dsrom/m/n/7.6'
-(microtype)             (new value: 7.6pt) on input line 428.
+(microtype)             (new value: 7.6pt) on input line 429.
 Package microtype Info: Fixing zero \fontdimen 6 for font `U/dsrom/m/n/6'
-(microtype)             (new value: 6.0pt) on input line 428.
+(microtype)             (new value: 6.0pt) on input line 429.
 
 
 [8]
+LaTeX Font Info:    Trying to load font information for TS1+ppl on input line 459.
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/ts1ppl.fd
+File: ts1ppl.fd 2001/06/04 font definitions for TS1/ppl.
+)
 
 [9]
-Overfull \hbox (18.12848pt too wide) in paragraph at lines 537--537
+
+[10]
+Overfull \hbox (18.12848pt too wide) in paragraph at lines 593--593
 []\T1/zi4/m/n/10 graph <- trace_fn(multiply_r, list(x = nv_scalar(1, "f32"), y = nv_scalar(5, "f32")))[] 
  []
 
 
 
-[10]
-LaTeX Font Info:    Trying to load font information for U+fplmbb on input line 606.
+[11]
+LaTeX Font Info:    Trying to load font information for U+fplmbb on input line 662.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/ufplmbb.fd
 File: ufplmbb.fd 2003/10/30 Fontinst v1.914 font definitions for U/fplmbb.
 )
 
-[11]
-Overfull \hbox (616.49283pt too wide) in paragraph at lines 649--649
-[]\T1/zi4/m/n/10 #> [1] "func.func @main (%0: tensor<f32>, %1: tensor<f32>) -> tensor<f32> {\n%2 = \"stablehlo.multiply\" (%0, %1): (tensor<f32>, tensor<f32>) -> (tensor<f32>)\n\"func.return\"(%2): (tensor<f32>) -> ()\n}\n"[] 
+[12]
+Overfull \hbox (431.19899pt too wide) in paragraph at lines 705--705
+[]\T1/zi4/m/n/10 #> [1] "func.func @main (%0: tensor<f32>, %1: tensor<f32>) -> tensor<f32> {\n%2 = stablehlo.multiply %0, %1 : tensor<f32>\n\"func.return\"(%2): (tensor<f32>) -> ()\n}\n"[] 
  []
 
 LaTeX Font Info:    Font shape `T1/zi4/b/n' will be
-(Font)              scaled to size 10.20004pt on input line 669.
+(Font)              scaled to size 10.20004pt on input line 725.
 
-
-[12]
 
 [13]
 
@@ -898,75 +892,75 @@ LaTeX Font Info:    Font shape `T1/zi4/b/n' will be
 [16]
 
 [17]
-LaTeX Font Info:    Trying to load font information for TS1+ppl on input line 1115.
- (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/ts1ppl.fd
-File: ts1ppl.fd 2001/06/04 font definitions for TS1/ppl.
-)
 
 [18]
 
 [19]
 
-[20] (./RJwrapper.bbl (./RJwrapper.brf)
+[20]
+
+[21]
+
+[22] (./RJwrapper.bbl (./RJwrapper.brf)
 \tf@brf=\write6
 \openout6 = `RJwrapper.brf'.
 
 
 
-[21])
+[23])
 
 LaTeX Font Warning: Font shape `T1/zi4/m/it' undefined
-(Font)              using `T1/zi4/m/n' instead on input line 1250.
+(Font)              using `T1/zi4/m/n' instead on input line 1340.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1260--1261
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1260--1261
+Underfull \hbox (badness 10000) in paragraph at lines 1350--1351
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1270--1271
+Underfull \hbox (badness 10000) in paragraph at lines 1350--1351
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1270--1271
+Underfull \hbox (badness 10000) in paragraph at lines 1360--1361
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1280--1281
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1280--1281
+Underfull \hbox (badness 10000) in paragraph at lines 1360--1361
 
  []
 
 
 
-[22]
-Underfull \hbox (badness 10000) in paragraph at lines 1290--1291
+[24]
+Underfull \hbox (badness 10000) in paragraph at lines 1370--1371
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1290--1291
+Underfull \hbox (badness 10000) in paragraph at lines 1370--1371
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1380--1381
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1380--1381
 
  []
 
 )
-Underfull \hbox (badness 10000) in paragraph at lines 1300--67
+Underfull \hbox (badness 10000) in paragraph at lines 1390--67
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1300--67
+Underfull \hbox (badness 10000) in paragraph at lines 1390--67
 
  []
 
@@ -975,7 +969,7 @@ Package natbib Warning: There were undefined citations.
 
 
 
-[23] (./RJwrapper.aux)
+[25] (./RJwrapper.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -987,21 +981,21 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 Package rerunfilecheck Info: File `RJwrapper.out' has not changed.
 (rerunfilecheck)             Checksum: E1797AA03545266C9F795D795158CA56;1525.
 Package rerunfilecheck Info: File `RJwrapper.brf' has not changed.
-(rerunfilecheck)             Checksum: 480B5D962CA46577C8AC60CBEDA4D484;1388.
+(rerunfilecheck)             Checksum: 63D3B2E944A1B6CFD9C06043463387A0;1737.
  ) 
 Here is how much of TeX's memory you used:
- 27632 strings out of 473190
- 498592 string characters out of 5715801
- 913802 words of memory out of 5000000
- 49975 multiletter control sequences out of 15000+600000
- 601744 words of font info for 304 fonts, out of 8000000 for 9000
+ 27642 strings out of 473190
+ 498855 string characters out of 5715801
+ 914174 words of memory out of 5000000
+ 49986 multiletter control sequences out of 15000+600000
+ 601568 words of font info for 300 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 117i,12n,131p,1042b,959s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/local/texlive/2025/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4b.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4r.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/doublestroke/dsrom10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/mathpazo/fplmbb.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/mathpazo/fplmr.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/mathpazo/fplmri.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/palatino/uplb8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/palatino/uplr8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb>
-Output written on RJwrapper.pdf (23 pages, 222196 bytes).
+ 117i,12n,131p,1042b,963s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/local/texlive/2025/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4b.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4r.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/doublestroke/dsrom10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/mathpazo/fplmbb.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/mathpazo/fplmr.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/mathpazo/fplmri.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/palatino/uplb8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/palatino/uplr8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb>
+Output written on RJwrapper.pdf (25 pages, 243691 bytes).
 PDF statistics:
- 495 PDF objects out of 1000 (max. 8388607)
- 443 compressed objects within 5 object streams
- 80 named destinations out of 1000 (max. 500000)
+ 531 PDF objects out of 1000 (max. 8388607)
+ 475 compressed objects within 5 object streams
+ 85 named destinations out of 1000 (max. 500000)
  47717 words of extra memory for PDF output out of 51595 (max. 10000000)
 

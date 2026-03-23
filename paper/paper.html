@@ -443,8 +443,17 @@ func.func @main (%x: tensor&lt;2x2xf32&gt;, %y: tensor&lt;2x2xf32&gt;) -&gt;  {
 <h4 class="anchored" data-anchor-id="evaluation-procedures-and-the-chain-rule">Evaluation Procedures and the Chain Rule</h4>
 <p>AD exploits the fact that every computer program, no matter how complex, executes a sequence of elementary operations whose derivatives are known. Following <span class="citation" data-cites="ref-griewank2008evaluating">Griewank and Walther (<a href="#ref-ref-griewank2008evaluating" role="doc-biblioref">2008</a>)</span>, consider a function <span class="math inline">\(F : \R^n \to \R^m\)</span> that is evaluated by a computer program. Any such evaluation can be decomposed into a sequence of elementary operations (called <em>elemental functions</em>) <span class="math inline">\(\varphi_i\)</span> such as addition, multiplication, <span class="math inline">\(\sin\)</span>, <span class="math inline">\(\exp\)</span>, etc. The evaluation produces a sequence of intermediate variables</p>
 <p><span class="math display">\[v_i = \varphi_i(v_j)_{j \prec i}, \qquad i = 1, \ldots, l\]</span></p>
-<p>where <span class="math inline">\(v_{1-n}, \ldots, v_0\)</span> are the input variables (i.e., <span class="math inline">\(x\)</span>), <span class="math inline">\(v_1, \ldots, v_l\)</span> are the intermediate variables, and <span class="math inline">\(v_{l-m+1}, \ldots, v_l\)</span> are the output variables (i.e., <span class="math inline">\(y\)</span>). Here, the notation <span class="math inline">\(j \prec i\)</span> indicates that <span class="math inline">\(v_j\)</span> is a direct argument of <span class="math inline">\(\varphi_i\)</span>. This sequence of assignments is called an <em>evaluation procedure</em> and can be visualized as a directed acyclic graph (the <em>computational graph</em>), where each node corresponds to an intermediate variable and edges represent data dependencies.</p>
-<p>Since each elemental function <span class="math inline">\(\varphi_i\)</span> is differentiable, the chain rule can be applied systematically to compute derivatives of <span class="math inline">\(F\)</span>. The two main modes of AD differ in the <em>order</em> in which the chain rule is evaluated, leading to different computational trade-offs.</p>
+<p>where <span class="math inline">\(v_{1-n}, \ldots, v_0\)</span> are the input variables (i.e., <span class="math inline">\(x\)</span>), <span class="math inline">\(v_1, \ldots, v_l\)</span> are the intermediate variables, and <span class="math inline">\(v_{l-m+1}, \ldots, v_l\)</span> are the output variables (i.e., <span class="math inline">\(y\)</span>). Here, the notation <span class="math inline">\(j \prec i\)</span> indicates that <span class="math inline">\(v_j\)</span> is a direct argument of <span class="math inline">\(\varphi_i\)</span>. This sequence of assignments is called an <em>evaluation procedure</em> and can be represented as a directed acyclic graph (DAG) <span class="math inline">\(G = (V, E)\)</span>, where the vertex set <span class="math inline">\(V = \{v_{1-n}, \ldots, v_l\}\)</span> contains all input, intermediate, and output variables, and the edge set <span class="math inline">\(E = \{(v_j, v_i) : j \prec i\}\)</span> encodes the data dependencies. The relation <span class="math inline">\(\prec\)</span> thus defines a partial order on the vertices, and any topological ordering of <span class="math inline">\(G\)</span> yields a valid evaluation sequence. We refer to <span class="math inline">\(G\)</span> as the <em>computational graph</em> of <span class="math inline">\(F\)</span>.</p>
+<p>Since each elemental function <span class="math inline">\(\varphi_i\)</span> is differentiable, the chain rule can be applied systematically to compute derivatives of <span class="math inline">\(F\)</span>.</p>
+</section>
+<section id="jacobian-vector-products-and-vector-jacobian-products" class="level4">
+<h4 class="anchored" data-anchor-id="jacobian-vector-products-and-vector-jacobian-products">Jacobian-Vector Products and Vector-Jacobian Products</h4>
+<p>The Jacobian of <span class="math inline">\(F\)</span> at a point <span class="math inline">\(x\)</span> is the matrix <span class="math inline">\(J_F(x) \in \R^{m \times n}\)</span> of all first-order partial derivatives, with entries <span class="math inline">\((J_F)_{ij} = \fp{F_i}{x_j}\)</span>. While computing the full Jacobian is often too expensive, two linear maps derived from it are central to AD:</p>
+<ul>
+<li>The <em>Jacobian-vector product</em> (JVP): given a tangent vector <span class="math inline">\(\dot{x} \in \R^n\)</span>, the JVP computes <span class="math inline">\(J_F(x) \dot{x} \in \R^m\)</span>. This is a directional derivative, describing how the output changes when the input is perturbed in the direction <span class="math inline">\(\dot{x}\)</span>.</li>
+<li>The <em>vector-Jacobian product</em> (VJP): given an adjoint (or cotangent) vector <span class="math inline">\(\bar{y} \in \R^m\)</span>, the VJP computes <span class="math inline">\(\bar{y}^\top J_F(x) \in \R^n\)</span>. This describes how a linear functional of the output depends on each input.</li>
+</ul>
+<p>A single JVP evaluation costs roughly the same as evaluating <span class="math inline">\(F\)</span> itself, but yields only one column’s worth of information about <span class="math inline">\(J_F\)</span>. Similarly, a single VJP evaluation yields one row’s worth. The two main modes of AD differ in which of these products they compute, and therefore in the <em>order</em> in which the chain rule is evaluated, leading to different computational trade-offs.</p>
 </section>
 <section id="forward-mode" class="level4">
 <h4 class="anchored" data-anchor-id="forward-mode">Forward Mode</h4>
@@ -460,6 +469,14 @@ func.func @main (%x: tensor&lt;2x2xf32&gt;, %y: tensor&lt;2x2xf32&gt;) -&gt;  {
 <p>The key advantage of reverse mode is that for a scalar-valued function (<span class="math inline">\(m = 1\)</span>), setting <span class="math inline">\(\bar{y} = 1\)</span> yields the full gradient <span class="math inline">\(\nabla F(x) \in \R^n\)</span> in a <em>single</em> reverse sweep, regardless of <span class="math inline">\(n\)</span>. This result is sometimes referred to as the “cheap gradient principle”: the computational cost of evaluating the gradient is bounded by a small constant multiple (typically 2–5) of the cost of evaluating <span class="math inline">\(F\)</span> itself (<span class="citation" data-cites="ref-griewank2008evaluating">Griewank and Walther (<a href="#ref-ref-griewank2008evaluating" role="doc-biblioref">2008</a>)</span>, Chapter 3). This makes reverse mode dramatically more efficient than forward mode for the common case of gradient-based optimization, where one differentiates a scalar loss with respect to potentially many parameters.</p>
 <p>The trade-off is that reverse mode requires access to the intermediate values <span class="math inline">\(v_i\)</span> from the forward evaluation during the backward sweep, since they are needed to evaluate the local partial derivatives <span class="math inline">\(\fp{v_k}{v_i}\)</span>. This introduces additional memory overhead that scales with the depth of the computation.</p>
 <p>In , we implement backward-mode AD as a graph-to-graph transformation, as described in the next section. Each primitive operation stores its own local VJP rule, and the transformation walks the computational graph in reverse topological order to accumulate gradients.</p>
+</section>
+<section id="non-differentiable-functions" class="level4">
+<h4 class="anchored" data-anchor-id="non-differentiable-functions">Non-Differentiable Functions</h4>
+<!-- TODO: Discuss functions with non-differentiable points (e.g. ReLU, abs) and how AD handles them in practice (e.g. subgradients, conventions for the derivative at non-differentiable points). -->
+</section>
+<section id="functions-with-restricted-domains" class="level4">
+<h4 class="anchored" data-anchor-id="functions-with-restricted-domains">Functions with Restricted Domains</h4>
+<!-- TODO: Discuss functions that are only defined on a subset of $\R^n$ (e.g. Cholesky decomposition requiring positive definite input, log requiring positive input) and the special treatment they require for AD. -->
 </section>
 </section>
 </section>
@@ -530,7 +547,7 @@ func.func @main (%x: tensor&lt;2x2xf32&gt;, %y: tensor&lt;2x2xf32&gt;) -&gt;  {
     grad &lt;- grads[[1L]]
     list(if (.required[[1L]]) grad, if (.required[[2L]]) grad)
 }
-&lt;bytecode: 0x11690efa8&gt;
+&lt;bytecode: 0x104fe52f0&gt;
 &lt;environment: namespace:anvil&gt;</code></pre>
 </div>
 </div>
