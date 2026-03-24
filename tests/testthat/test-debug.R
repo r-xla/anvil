@@ -1,30 +1,30 @@
 test_that("create debug box", {
   box <- debug_box("f32", c(2, 2))
-  expect_equal(box$aval, AbstractTensor("f32", c(2, 2), FALSE))
+  expect_equal(box$aval, AbstractArray("f32", c(2, 2), FALSE))
 })
 
 test_that("printer for debug box", {
   expect_snapshot(
-    DebugBox(AbstractTensor("f32", c(2, 2), TRUE))
+    DebugBox(AbstractArray("f32", c(2, 2), TRUE))
   )
   expect_snapshot(
-    DebugBox(AbstractTensor("f32", c(2, 2), FALSE))
+    DebugBox(AbstractArray("f32", c(2, 2), FALSE))
   )
   expect_snapshot(
-    DebugBox(AbstractTensor("f32", c(), FALSE))
+    DebugBox(AbstractArray("f32", c(), FALSE))
   )
   expect_snapshot(
-    DebugBox(LiteralTensor(1, shape = c(2, 3), ambiguous = TRUE))
+    DebugBox(LiteralArray(1, shape = c(2, 3), ambiguous = TRUE))
   )
   expect_snapshot(
-    DebugBox(LiteralTensor(1, shape = c(2, 3), ambiguous = FALSE))
+    DebugBox(LiteralArray(1, shape = c(2, 3), ambiguous = FALSE))
   )
   expect_snapshot(
-    DebugBox(LiteralTensor(1, shape = c(), ambiguous = FALSE))
+    DebugBox(LiteralArray(1, shape = c(), ambiguous = FALSE))
   )
   skip_if(!is_cpu())
   expect_snapshot(
-    DebugBox(ConcreteTensor(nv_tensor(1:4, dtype = "f32", shape = c(2, 2))))
+    DebugBox(ConcreteArray(nv_array(1:4, dtype = "f32", shape = c(2, 2))))
   )
 })
 
@@ -35,8 +35,8 @@ test_that("basic primitive", {
   expect_class(out, "DebugBox")
   expect_equal(out$aval, box$aval)
 
-  # with tensor
-  x <- nv_tensor(1:4, dtype = "f32", shape = c(2, 2))
+  # with array
+  x <- nv_array(1:4, dtype = "f32", shape = c(2, 2))
   out <- nv_add(x, x)
   expect_class(out, "DebugBox")
   expect_equal(out$aval, nv_aten("f32", c(2, 2)))
@@ -59,8 +59,8 @@ test_that("can debug value_and_gradient", {
   ain <- debug_box("f32", 2)
   g <- value_and_gradient(f)
   g(ain)
-  out <- g(nv_tensor(1:2, dtype = "f32"))
-  # In debug mode, returns AbstractTensors
+  out <- g(nv_array(1:2, dtype = "f32"))
+  # In debug mode, returns AbstractArrays
   expect_equal(shape(out$value), integer())
   #expect_equal(shape(out$grad$x), 2L)
 })
@@ -86,12 +86,12 @@ test_that("if", {
 
 test_that("group generics", {
   ain <- debug_box("f32", c(2, 2))
-  scalar_aval <- AbstractTensor("f32", integer(), FALSE)
+  scalar_aval <- AbstractArray("f32", integer(), FALSE)
 
   # Ops: arithmetic
   expect_equal((ain + ain)$aval, ain$aval)
   # Ops: comparison
-  expect_equal((ain > ain)$aval, AbstractTensor("bool", c(2, 2), FALSE))
+  expect_equal((ain > ain)$aval, AbstractArray("bool", c(2, 2), FALSE))
   # matrixOps
   expect_equal((ain %*% ain)$aval, ain$aval)
   # Math
@@ -104,14 +104,14 @@ test_that("group generics", {
   expect_equal(mean(ain)$aval, scalar_aval)
   # transpose
   ain2 <- debug_box("f32", c(2, 3))
-  expect_equal(t(ain2)$aval, AbstractTensor("f32", c(3, 2), FALSE))
+  expect_equal(t(ain2)$aval, AbstractArray("f32", c(3, 2), FALSE))
 })
 
 
-test_that("can't debug with abstract tensors", {
+test_that("can't debug with abstract arrays", {
   # We can't allow this, because `==` (and other generics)
-  # do not call into nvl_eq for AbstractTensors, but actually checks for type equality
-  # For non-generics, abstract tensors would work, but it would be confusing if it suddenly
+  # do not call into nvl_eq for AbstractArrays, but actually checks for type equality
+  # For non-generics, abstract arrays would work, but it would be confusing if it suddenly
   # does not work for generics
   expect_error(
     nv_add(nv_aten("f32", c(2, 2)), nv_aten("f32", c(2, 2))),

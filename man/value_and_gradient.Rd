@@ -8,15 +8,15 @@ value_and_gradient(f, wrt = NULL)
 }
 \arguments{
 \item{f}{(\code{function})\cr
-Function to differentiate. Arguments can be tensorish (\code{\link{AnvilTensor}}) or
-static (non-tensor) values. Must return a single scalar float tensor.}
+Function to differentiate. Arguments can be arrayish (\code{\link{AnvilArray}}) or
+static (non-array) values. Must return a single scalar float array.}
 
 \item{wrt}{(\code{character} or \code{NULL})\cr
 Names of the arguments to compute the gradient with respect to.
-Only tensorish (float tensor) arguments can be included; static arguments
+Only arrayish (float array) arguments can be included; static arguments
 must not appear in \code{wrt}.
 If \code{NULL} (the default), the gradient is computed with respect to all
-arguments (which must all be tensorish in that case).}
+arguments (which must all be arrayish in that case).}
 }
 \value{
 A function with the same formals as \code{f} that returns
@@ -32,7 +32,7 @@ the \code{wrt} subset).
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 loss_fn <- function(x) sum(x^2L)
 vg <- jit(value_and_gradient(loss_fn))
-result <- vg(nv_tensor(c(3, 4), dtype = "f32"))
+result <- vg(nv_array(c(3, 4), dtype = "f32"))
 result$value
 result$grad
 \dontshow{\}) # examplesIf}

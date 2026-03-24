@@ -1,20 +1,20 @@
-# This is the user-facing API containing the exported tensor operations.
+# This is the user-facing API containing the exported array operations.
 #' @include primitives.R
 
-# Special tensor creators
+# Special array creators
 
 #' @title Fill Constant
 #' @description
-#' Creates a tensor filled with a scalar value. More memory-efficient than
-#' `nv_tensor(value, shape = shape)` for large tensors.
+#' Creates an array filled with a scalar value. More memory-efficient than
+#' `nv_array(value, shape = shape)` for large arrays.
 #' @param value (`numeric(1)`)\cr
-#'   Scalar value to fill the tensor with.
+#'   Scalar value to fill the array with.
 #' @param shape (`integer()`)\cr
-#'   Shape of the output tensor.
+#'   Shape of the output array.
 #' @param dtype (`character(1)` | `NULL`)\cr
 #'   Data type. If `NULL` (default), inferred from `value`.
 #' @template param_ambiguous
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the given `shape` and `dtype`.
 #' @seealso [nvl_fill()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -66,15 +66,15 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
 
 #' @title Broadcast Scalars to Common Shape
 #' @description
-#' Broadcast scalar tensors to match the shape of non-scalar tensors.
-#' All non-scalar tensors must have the same shape.
-#' @param ... ([`tensorish`][tensorish])\cr
-#'   Tensors to broadcast. Scalars will be broadcast to the common non-scalar shape.
-#' @return (`list()` of [`tensorish`])\cr
-#'   List of broadcasted tensors.
+#' Broadcast scalar arrays to match the shape of non-scalar arrays.
+#' All non-scalar arrays must have the same shape.
+#' @param ... ([`arrayish`][arrayish])\cr
+#'   Arrays to broadcast. Scalars will be broadcast to the common non-scalar shape.
+#' @return (`list()` of [`arrayish`])\cr
+#'   List of broadcasted arrays.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
+#'   x <- nv_array(c(1, 2, 3))
 #'   # scalar 1 is broadcast to shape [3]
 #'   nv_broadcast_scalars(x, 1)
 #' })
@@ -92,7 +92,7 @@ nv_broadcast_scalars <- function(...) {
   if (!all(vapply(non_scalar_shapes, identical, logical(1L), target_shape))) {
     shapes <- paste0(sapply(shapes, shape2string), sep = ", ")
     cli_abort(
-      "All non-scalar tensors must have the same shape, but got {shapes}. Use {.fn nv_broadcast_tensors} for general broadcasting." # nolint
+      "All non-scalar arrays must have the same shape, but got {shapes}. Use {.fn nv_broadcast_arrays} for general broadcasting." # nolint
     )
   }
 
@@ -105,16 +105,16 @@ nv_broadcast_scalars <- function(...) {
   })
 }
 
-#' @title Promote Tensors to a Common Dtype
+#' @title Promote Arrays to a Common Dtype
 #' @description
-#' Promote tensors to a common data type, see [`common_dtype`] for more details.
-#' @param ... ([`tensorish`])\cr
-#'   Tensors to promote.
-#' @return (`list()` of [`tensorish`])
+#' Promote arrays to a common data type, see [`common_dtype`] for more details.
+#' @param ... ([`arrayish`])\cr
+#'   Arrays to promote.
+#' @return (`list()` of [`arrayish`])
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(1L)
-#'   y <- nv_tensor(1.5)
+#'   x <- nv_array(1L)
+#'   y <- nv_array(1.5)
 #'   # integer is promoted to float
 #'   nv_promote_to_common(x, y)
 #' })
@@ -135,29 +135,29 @@ nv_promote_to_common <- function(...) {
   return(out)
 }
 
-#' @title Broadcast Tensors to a Common Shape
+#' @title Broadcast Arrays to a Common Shape
 #' @description
-#' Broadcasts tensors to a common shape using NumPy-style broadcasting rules.
+#' Broadcasts arrays to a common shape using NumPy-style broadcasting rules.
 #'
 #' @section Broadcasting Rules:
-#' 1. If the tensors have different numbers of dimensions, prepend size-1
+#' 1. If the arrays have different numbers of dimensions, prepend size-1
 #'    dimensions to the shorter shape.
 #' 2. For each dimension: if the sizes match, keep them; if one is 1, expand
 #'    it to the other's size; otherwise raise an error.
 #'
-#' @param ... ([`tensorish`])\cr
-#'   Tensors to broadcast.
-#' @return (`list()` of [`tensorish`])\cr
-#'   List of tensors, all with the same shape.
+#' @param ... ([`arrayish`])\cr
+#'   Arrays to broadcast.
+#' @return (`list()` of [`arrayish`])\cr
+#'   List of arrays, all with the same shape.
 #' @seealso [nv_broadcast_scalars()], [nv_broadcast_to()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
-#'   y <- nv_tensor(c(10, 20, 30))
-#'   nv_broadcast_tensors(x, y)
+#'   x <- nv_array(matrix(1:6, nrow = 2))
+#'   y <- nv_array(c(10, 20, 30))
+#'   nv_broadcast_arrays(x, y)
 #' })
 #' @export
-nv_broadcast_tensors <- function(...) {
+nv_broadcast_arrays <- function(...) {
   args <- list(...)
   shape <- Reduce(broadcast_shapes, lapply(args, shape_abstract))
   lapply(args, nv_broadcast_to, shape = shape)
@@ -165,17 +165,17 @@ nv_broadcast_tensors <- function(...) {
 
 #' @title Broadcast to Shape
 #' @description
-#' Broadcasts a tensor to a target shape using NumPy-style broadcasting rules.
+#' Broadcasts an array to a target shape using NumPy-style broadcasting rules.
 #' @template param_operand
 #' @param shape (`integer()`)\cr
 #'   Target shape. Each existing dimension must either match or be 1.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the given `shape` and the same data type as `operand`.
-#' @seealso [nv_broadcast_tensors()], [nv_broadcast_scalars()],
+#' @seealso [nv_broadcast_arrays()], [nv_broadcast_scalars()],
 #'   [nvl_broadcast_in_dim()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
+#'   x <- nv_array(c(1, 2, 3))
 #'   nv_broadcast_to(x, shape = c(2, 3))
 #' })
 #' @export
@@ -191,16 +191,16 @@ nv_broadcast_to <- function(operand, shape) {
 
 #' @title Convert Data Type
 #' @description
-#' Converts the elements of a tensor to a different data type.
+#' Converts the elements of an array to a different data type.
 #' Returns the input unchanged if it already has the target type.
 #' @template param_operand
 #' @template param_dtype
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the given `dtype` and the same shape as `operand`.
 #' @seealso [nvl_convert()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1L, 2L, 3L))
+#'   x <- nv_array(c(1L, 2L, 3L))
 #'   nv_convert(x, dtype = "f32")
 #' })
 #' @export
@@ -222,19 +222,19 @@ nv_transpose <- function(x, permutation = NULL) {
 
 #' @title Reshape
 #' @description
-#' Reshapes a tensor to a new shape without changing the underlying data.
+#' Reshapes an array to a new shape without changing the underlying data.
 #' Returns the input unchanged if it already has the target shape.
 #' @details
 #' Note that row-major order is used, which differs from R's column-major order.
 #' @template param_operand
 #' @param shape (`integer()`)\cr
 #'   Target shape. Must have the same number of elements as `operand`.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the given `shape` and the same data type as `operand`.
 #' @seealso [nvl_reshape()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(1:6)
+#'   x <- nv_array(1:6)
 #'   nv_reshape(x, c(2, 3))
 #' })
 #' @export
@@ -248,21 +248,21 @@ nv_reshape <- function(operand, shape) {
 
 #' @title Concatenate
 #' @description
-#' Concatenates tensors along a dimension. Operands are promoted to a common
+#' Concatenates arrays along a dimension. Operands are promoted to a common
 #' data type and scalars are broadcast before concatenation.
-#' @param ... ([`tensorish`])\cr
-#'   Tensors to concatenate. Must have the same shape except along `dimension`.
+#' @param ... ([`arrayish`])\cr
+#'   Arrays to concatenate. Must have the same shape except along `dimension`.
 #' @param dimension (`integer(1)` | `NULL`)\cr
 #'   Dimension along which to concatenate.
 #'   If `NULL` (default), assumes all inputs are at most 1-D and concatenates along dimension 1.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the common data type and a shape matching the inputs in all
 #'   dimensions except `dimension`, which is the sum of input sizes.
 #' @seealso [nvl_concatenate()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(4, 5, 6))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(4, 5, 6))
 #'   nv_concatenate(x, y)
 #' })
 #' @export
@@ -281,7 +281,7 @@ nv_concatenate <- function(..., dimension = NULL) {
   })
   if (length(non_scalar_shapes) && length(unique(non_scalar_shapes_without_dim)) != 1L) {
     cli_abort(c(
-      "All non-scalar tensors must have the same shape (except for the concatenation dimension)",
+      "All non-scalar arrays must have the same shape (except for the concatenation dimension)",
       x = "Got shapes {shapes2string(shapes)} and dimension {dimension}"
     ))
   }
@@ -307,7 +307,7 @@ nv_concatenate <- function(..., dimension = NULL) {
 
 #' @title Static Slice
 #' @description
-#' Extracts a slice from a tensor using static (compile-time) indices.
+#' Extracts a slice from an array using static (compile-time) indices.
 #' For dynamic indexing, use [nv_subset()] instead.
 #' @template param_operand
 #' @param start_indices (`integer()`)\cr
@@ -316,28 +316,28 @@ nv_concatenate <- function(..., dimension = NULL) {
 #'   End indices (inclusive), one per dimension.
 #' @param strides (`integer()`)\cr
 #'   Step sizes, one per dimension. A stride of 1 selects every element.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type as `operand`.
 #' @seealso [nv_subset()], [nvl_static_slice()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(1:10)
+#'   x <- nv_array(1:10)
 #'   nv_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 #' })
 #' @export
 nv_static_slice <- nvl_static_slice
 
-#' @title Print Tensor
+#' @title Print Array
 #' @description
-#' Prints a tensor value to the console during JIT execution and returns the
+#' Prints an array value to the console during JIT execution and returns the
 #' input unchanged. Useful for debugging.
 #' @template param_operand
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Returns `operand` unchanged.
 #' @seealso [nvl_print()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
+#'   x <- nv_array(c(1, 2, 3))
 #'   nv_print(x)
 #' })
 #' @export
@@ -347,20 +347,20 @@ nv_print <- nvl_print
 #' @description
 #' Selects elements from `true_value` or `false_value` based on `pred`,
 #' analogous to R's [ifelse()].
-#' @param pred ([`tensorish`] of boolean type)\cr
-#'   Predicate tensor. Must be scalar or the same shape as `true_value`.
-#' @param true_value ([`tensorish`])\cr
+#' @param pred ([`arrayish`] of boolean type)\cr
+#'   Predicate array. Must be scalar or the same shape as `true_value`.
+#' @param true_value ([`arrayish`])\cr
 #'   Values to return where `pred` is `TRUE`.
-#' @param false_value ([`tensorish`])\cr
+#' @param false_value ([`arrayish`])\cr
 #'   Values to return where `pred` is `FALSE`.
 #'   Must have the same shape and data type as `true_value`.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same shape and data type as `true_value`.
 #' @seealso [nvl_ifelse()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   pred <- nv_tensor(c(TRUE, FALSE, TRUE))
-#'   nv_ifelse(pred, nv_tensor(c(1, 2, 3)), nv_tensor(c(4, 5, 6)))
+#'   pred <- nv_array(c(TRUE, FALSE, TRUE))
+#'   nv_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 #' })
 #' @export
 nv_ifelse <- nvl_ifelse
@@ -377,14 +377,14 @@ make_do_binary <- function(f) {
 
 #' @title Addition
 #' @description
-#' Adds two tensors element-wise. You can also use the `+` operator.
+#' Adds two arrays element-wise. You can also use the `+` operator.
 #' @template params_lhs_rhs
 #' @template return_binary
 #' @seealso [nvl_add()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(4, 5, 6))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(4, 5, 6))
 #'   x + y
 #' })
 #' @export
@@ -392,14 +392,14 @@ nv_add <- make_do_binary(nvl_add)
 
 #' @title Multiplication
 #' @description
-#' Multiplies two tensors element-wise. You can also use the `*` operator.
+#' Multiplies two arrays element-wise. You can also use the `*` operator.
 #' @template params_lhs_rhs
 #' @template return_binary
 #' @seealso [nvl_mul()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(4, 5, 6))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(4, 5, 6))
 #'   x * y
 #' })
 #' @export
@@ -407,14 +407,14 @@ nv_mul <- make_do_binary(nvl_mul)
 
 #' @title Subtraction
 #' @description
-#' Subtracts two tensors element-wise. You can also use the `-` operator.
+#' Subtracts two arrays element-wise. You can also use the `-` operator.
 #' @template params_lhs_rhs
 #' @template return_binary
 #' @seealso [nvl_sub()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(4, 5, 6))
-#'   y <- nv_tensor(c(1, 2, 3))
+#'   x <- nv_array(c(4, 5, 6))
+#'   y <- nv_array(c(1, 2, 3))
 #'   x - y
 #' })
 #' @export
@@ -422,14 +422,14 @@ nv_sub <- make_do_binary(nvl_sub)
 
 #' @title Division
 #' @description
-#' Divides two tensors element-wise. You can also use the `/` operator.
+#' Divides two arrays element-wise. You can also use the `/` operator.
 #' @template params_lhs_rhs
 #' @template return_binary
 #' @seealso [nvl_div()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(10, 20, 30))
-#'   y <- nv_tensor(c(2, 5, 10))
+#'   x <- nv_array(c(10, 20, 30))
+#'   y <- nv_array(c(2, 5, 10))
 #'   x / y
 #' })
 #' @export
@@ -443,8 +443,8 @@ nv_div <- make_do_binary(nvl_div)
 #' @seealso [nvl_pow()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(2, 3, 4))
-#'   y <- nv_tensor(c(3, 2, 1))
+#'   x <- nv_array(c(2, 3, 4))
+#'   y <- nv_array(c(3, 2, 1))
 #'   x ^ y
 #' })
 #' @export
@@ -458,8 +458,8 @@ nv_pow <- make_do_binary(nvl_pow)
 #' @seealso [nvl_eq()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(1, 3, 2))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(1, 3, 2))
 #'   x == y
 #' })
 #' @export
@@ -473,8 +473,8 @@ nv_eq <- make_do_binary(nvl_eq)
 #' @seealso [nvl_ne()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(1, 3, 2))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(1, 3, 2))
 #'   x != y
 #' })
 #' @export
@@ -488,8 +488,8 @@ nv_ne <- make_do_binary(nvl_ne)
 #' @seealso [nvl_gt()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(3, 2, 1))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(3, 2, 1))
 #'   x > y
 #' })
 #' @export
@@ -503,8 +503,8 @@ nv_gt <- make_do_binary(nvl_gt)
 #' @seealso [nvl_ge()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(3, 2, 1))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(3, 2, 1))
 #'   x >= y
 #' })
 #' @export
@@ -518,8 +518,8 @@ nv_ge <- make_do_binary(nvl_ge)
 #' @seealso [nvl_lt()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(3, 2, 1))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(3, 2, 1))
 #'   x < y
 #' })
 #' @export
@@ -533,8 +533,8 @@ nv_lt <- make_do_binary(nvl_lt)
 #' @seealso [nvl_le()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(3, 2, 1))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(3, 2, 1))
 #'   x <= y
 #' })
 #' @export
@@ -542,14 +542,14 @@ nv_le <- make_do_binary(nvl_le)
 
 #' @title Maximum
 #' @description
-#' Element-wise maximum of two tensors.
+#' Element-wise maximum of two arrays.
 #' @template params_lhs_rhs
 #' @template return_binary
 #' @seealso [nvl_max()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 5, 3))
-#'   y <- nv_tensor(c(4, 2, 6))
+#'   x <- nv_array(c(1, 5, 3))
+#'   y <- nv_array(c(4, 2, 6))
 #'   nv_max(x, y)
 #' })
 #' @export
@@ -557,14 +557,14 @@ nv_max <- make_do_binary(nvl_max)
 
 #' @title Minimum
 #' @description
-#' Element-wise minimum of two tensors.
+#' Element-wise minimum of two arrays.
 #' @template params_lhs_rhs
 #' @template return_binary
 #' @seealso [nvl_min()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 5, 3))
-#'   y <- nv_tensor(c(4, 2, 6))
+#'   x <- nv_array(c(1, 5, 3))
+#'   y <- nv_array(c(4, 2, 6))
 #'   nv_min(x, y)
 #' })
 #' @export
@@ -578,8 +578,8 @@ nv_min <- make_do_binary(nvl_min)
 #' @seealso [nvl_remainder()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(7, 8, 9))
-#'   y <- nv_tensor(c(3, 3, 4))
+#'   x <- nv_array(c(7, 8, 9))
+#'   y <- nv_array(c(3, 3, 4))
 #'   x %% y
 #' })
 #' @export
@@ -593,8 +593,8 @@ nv_remainder <- make_do_binary(nvl_remainder)
 #' @seealso [nvl_and()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(TRUE, FALSE, TRUE))
-#'   y <- nv_tensor(c(TRUE, TRUE, FALSE))
+#'   x <- nv_array(c(TRUE, FALSE, TRUE))
+#'   y <- nv_array(c(TRUE, TRUE, FALSE))
 #'   x & y
 #' })
 #' @export
@@ -608,8 +608,8 @@ nv_and <- make_do_binary(nvl_and)
 #' @seealso [nvl_or()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(TRUE, FALSE, TRUE))
-#'   y <- nv_tensor(c(TRUE, TRUE, FALSE))
+#'   x <- nv_array(c(TRUE, FALSE, TRUE))
+#'   y <- nv_array(c(TRUE, TRUE, FALSE))
 #'   x | y
 #' })
 #' @export
@@ -623,8 +623,8 @@ nv_or <- make_do_binary(nvl_or)
 #' @seealso [nvl_xor()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(TRUE, FALSE, TRUE))
-#'   y <- nv_tensor(c(TRUE, TRUE, FALSE))
+#'   x <- nv_array(c(TRUE, FALSE, TRUE))
+#'   y <- nv_array(c(TRUE, TRUE, FALSE))
 #'   nv_xor(x, y)
 #' })
 #' @export
@@ -638,8 +638,8 @@ nv_xor <- make_do_binary(nvl_xor)
 #' @seealso [nvl_shift_left()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1L, 2L, 4L))
-#'   y <- nv_tensor(c(1L, 2L, 1L))
+#'   x <- nv_array(c(1L, 2L, 4L))
+#'   y <- nv_array(c(1L, 2L, 1L))
 #'   nv_shift_left(x, y)
 #' })
 #' @export
@@ -653,8 +653,8 @@ nv_shift_left <- make_do_binary(nvl_shift_left)
 #' @seealso [nvl_shift_right_logical()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(8L, 16L, 32L))
-#'   y <- nv_tensor(c(1L, 2L, 3L))
+#'   x <- nv_array(c(8L, 16L, 32L))
+#'   y <- nv_array(c(1L, 2L, 3L))
 #'   nv_shift_right_logical(x, y)
 #' })
 #' @export
@@ -668,8 +668,8 @@ nv_shift_right_logical <- make_do_binary(nvl_shift_right_logical)
 #' @seealso [nvl_shift_right_arithmetic()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(8L, -16L, 32L))
-#'   y <- nv_tensor(c(1L, 2L, 3L))
+#'   x <- nv_array(c(8L, -16L, 32L))
+#'   y <- nv_array(c(1L, 2L, 3L))
 #'   nv_shift_right_arithmetic(x, y)
 #' })
 #' @export
@@ -684,8 +684,8 @@ nv_shift_right_arithmetic <- make_do_binary(nvl_shift_right_arithmetic)
 #' @seealso [nvl_atan2()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   y <- nv_tensor(c(1, 0, -1))
-#'   x <- nv_tensor(c(0, 1, 0))
+#'   y <- nv_array(c(1, 0, -1))
+#'   x <- nv_array(c(0, 1, 0))
 #'   nv_atan2(y, x)
 #' })
 #' @export
@@ -695,19 +695,19 @@ nv_atan2 <- make_do_binary(nvl_atan2)
 #' @title Bitcast Conversion
 #' @name nv_bitcast_convert
 #' @description
-#' Reinterprets the bits of a tensor as a different data type without modifying
+#' Reinterprets the bits of an array as a different data type without modifying
 #' the underlying data. If the target type is narrower, an extra trailing
 #' dimension is added; if wider, the last dimension is consumed.
 #' @template param_operand
-#' @param dtype (`character(1)` | [`TensorDataType`])\cr
+#' @param dtype (`character(1)` | [`DataType`])\cr
 #'   Target data type.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the given `dtype`.
 #' @seealso [nvl_bitcast_convert()] for the underlying primitive, [nv_convert()]
 #'   for value-preserving type conversion.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(1L)
+#'   x <- nv_array(1L)
 #'   nvl_bitcast_convert(x, dtype = "i8")
 #' })
 #' @export
@@ -717,13 +717,13 @@ nv_bitcast_convert <- nvl_bitcast_convert
 
 #' @title Negation
 #' @description
-#' Negates a tensor element-wise. You can also use the unary `-` operator.
+#' Negates an array element-wise. You can also use the unary `-` operator.
 #' @template param_operand
 #' @template return_unary
 #' @seealso [nvl_negate()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, -2, 3))
+#'   x <- nv_array(c(1, -2, 3))
 #'   -x
 #' })
 #' @export
@@ -737,7 +737,7 @@ nv_negate <- nvl_negate
 #' @seealso [nvl_not()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(TRUE, FALSE, TRUE))
+#'   x <- nv_array(c(TRUE, FALSE, TRUE))
 #'   !x
 #' })
 #' @export
@@ -751,7 +751,7 @@ nv_not <- nvl_not
 #' @seealso [nvl_abs()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(-1, 2, -3))
+#'   x <- nv_array(c(-1, 2, -3))
 #'   abs(x)
 #' })
 #' @export
@@ -765,7 +765,7 @@ nv_abs <- nvl_abs
 #' @seealso [nvl_sqrt()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 4, 9))
+#'   x <- nv_array(c(1, 4, 9))
 #'   sqrt(x)
 #' })
 #' @export
@@ -779,7 +779,7 @@ nv_sqrt <- nvl_sqrt
 #' @seealso [nvl_rsqrt()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 4, 9))
+#'   x <- nv_array(c(1, 4, 9))
 #'   nv_rsqrt(x)
 #' })
 #' @export
@@ -793,7 +793,7 @@ nv_rsqrt <- nvl_rsqrt
 #' @seealso [nvl_log()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2.718, 7.389))
+#'   x <- nv_array(c(1, 2.718, 7.389))
 #'   log(x)
 #' })
 #' @export
@@ -807,7 +807,7 @@ nv_log <- nvl_log
 #' @seealso [nvl_tanh()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(-1, 0, 1))
+#'   x <- nv_array(c(-1, 0, 1))
 #'   tanh(x)
 #' })
 #' @export
@@ -821,7 +821,7 @@ nv_tanh <- nvl_tanh
 #' @seealso [nvl_tan()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(0, 0.5, 1))
+#'   x <- nv_array(c(0, 0.5, 1))
 #'   tan(x)
 #' })
 #' @export
@@ -835,7 +835,7 @@ nv_tan <- nvl_tan
 #' @seealso [nvl_sine()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(0, pi / 2, pi))
+#'   x <- nv_array(c(0, pi / 2, pi))
 #'   sin(x)
 #' })
 #' @export
@@ -849,7 +849,7 @@ nv_sine <- nvl_sine
 #' @seealso [nvl_cosine()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(0, pi / 2, pi))
+#'   x <- nv_array(c(0, pi / 2, pi))
 #'   cos(x)
 #' })
 #' @export
@@ -863,7 +863,7 @@ nv_cosine <- nvl_cosine
 #' @seealso [nvl_floor()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1.2, 2.7, -1.5))
+#'   x <- nv_array(c(1.2, 2.7, -1.5))
 #'   floor(x)
 #' })
 #' @export
@@ -877,7 +877,7 @@ nv_floor <- nvl_floor
 #' @seealso [nvl_ceil()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1.2, 2.7, -1.5))
+#'   x <- nv_array(c(1.2, 2.7, -1.5))
 #'   ceiling(x)
 #' })
 #' @export
@@ -891,7 +891,7 @@ nv_ceil <- nvl_ceil
 #' @seealso [nvl_sign()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(-3, 0, 5))
+#'   x <- nv_array(c(-3, 0, 5))
 #'   sign(x)
 #' })
 #' @export
@@ -905,7 +905,7 @@ nv_sign <- nvl_sign
 #' @seealso [nvl_exp()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(0, 1, 2))
+#'   x <- nv_array(c(0, 1, 2))
 #'   exp(x)
 #' })
 #' @export
@@ -919,7 +919,7 @@ nv_exp <- nvl_exp
 #' @seealso [nvl_expm1()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(0, 0.001, 1))
+#'   x <- nv_array(c(0, 0.001, 1))
 #'   nv_expm1(x)
 #' })
 #' @export
@@ -933,7 +933,7 @@ nv_expm1 <- nvl_expm1
 #' @seealso [nvl_log1p()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(0, 0.001, 1))
+#'   x <- nv_array(c(0, 0.001, 1))
 #'   nv_log1p(x)
 #' })
 #' @export
@@ -947,7 +947,7 @@ nv_log1p <- nvl_log1p
 #' @seealso [nvl_cbrt()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 8, 27))
+#'   x <- nv_array(c(1, 8, 27))
 #'   nv_cbrt(x)
 #' })
 #' @export
@@ -961,7 +961,7 @@ nv_cbrt <- nvl_cbrt
 #' @seealso [nvl_logistic()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(-2, 0, 2))
+#'   x <- nv_array(c(-2, 0, 2))
 #'   nv_logistic(x)
 #' })
 #' @export
@@ -975,7 +975,7 @@ nv_logistic <- nvl_logistic
 #' @seealso [nvl_is_finite()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, Inf, NaN, -Inf, 0))
+#'   x <- nv_array(c(1, Inf, NaN, -Inf, 0))
 #'   nv_is_finite(x)
 #' })
 #' @export
@@ -989,7 +989,7 @@ nv_is_finite <- nvl_is_finite
 #' @seealso [nvl_popcnt()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(7L, 3L, 15L))
+#'   x <- nv_array(c(7L, 3L, 15L))
 #'   nv_popcnt(x)
 #' })
 #' @export
@@ -1001,14 +1001,14 @@ nv_popcnt <- nvl_popcnt
 #' Converts `min_val` and `max_val` to the data type of `operand`.
 #' @details
 #' The underlying stableHLO function already broadcasts scalars, so no need to broadcast manually.
-#' @param min_val,max_val ([`tensorish`])\cr
+#' @param min_val,max_val ([`arrayish`])\cr
 #'   Minimum and maximum values (scalar or same shape as `operand`).
 #' @template param_operand
 #' @template return_unary
 #' @seealso [nvl_clamp()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(-1, 0.5, 2))
+#'   x <- nv_array(c(-1, 0.5, 2))
 #'   nv_clamp(nv_scalar(0), x, nv_scalar(1))
 #' })
 #' @export
@@ -1025,12 +1025,12 @@ nv_clamp <- function(min_val, operand, max_val) {
 #' @template param_operand
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reverse.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same shape and data type as `operand`.
 #' @seealso [nvl_reverse()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3, 4, 5))
+#'   x <- nv_array(c(1, 2, 3, 4, 5))
 #'   nv_reverse(x, dims = 1L)
 #' })
 #' @export
@@ -1038,7 +1038,7 @@ nv_reverse <- nvl_reverse
 
 #' @title Iota
 #' @description
-#' Creates a tensor with values increasing along the specified dimension,
+#' Creates an array with values increasing along the specified dimension,
 #' starting from `start`.
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which values increase.
@@ -1047,7 +1047,7 @@ nv_reverse <- nvl_reverse
 #' @param start (`integer(1)`)\cr
 #'   Starting value (default 1).
 #' @template param_ambiguous
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the given `dtype` and `shape`.
 #' @seealso [nv_seq()] for a simpler 1-D sequence, [nvl_iota()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -1057,14 +1057,14 @@ nv_iota <- nvl_iota
 
 #' @title Sequence
 #' @description
-#' Creates a 1-D tensor with integer values from `start` to `end` (inclusive),
+#' Creates a 1-D array with integer values from `start` to `end` (inclusive),
 #' analogous to R's `seq(start, end)`.
 #' @param start,end (`integer(1)`)\cr
 #'   Start and end values. Must satisfy `start <= end`.
 #' @template param_dtype
 #' @template param_ambiguous
-#' @return [`tensorish`]\cr
-#'   1-D tensor of length `end - start + 1`.
+#' @return [`arrayish`]\cr
+#'   1-D array of length `end - start + 1`.
 #' @seealso [nv_iota()] for multi-dimensional sequences.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval(nv_seq(3, 7))
@@ -1078,9 +1078,9 @@ nv_seq <- function(start, end, dtype = "i32", ambiguous = FALSE) {
 
 #' @title Pad
 #' @description
-#' Pads a tensor with a given value at the edges and optionally between elements.
+#' Pads an array with a given value at the edges and optionally between elements.
 #' @template param_operand
-#' @param padding_value ([`tensorish`])\cr
+#' @param padding_value ([`arrayish`])\cr
 #'   Scalar value to use for padding. Must have the same dtype as `operand`.
 #' @param edge_padding_low (`integer()`)\cr
 #'   Amount of padding to add at the start of each dimension.
@@ -1089,12 +1089,12 @@ nv_seq <- function(start, end, dtype = "i32", ambiguous = FALSE) {
 #' @param interior_padding (`integer()` | `NULL`)\cr
 #'   Amount of padding to add between elements in each dimension.
 #'   If `NULL` (default), no interior padding is applied.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type as `operand`.
 #' @seealso [nvl_pad()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
+#'   x <- nv_array(c(1, 2, 3))
 #'   nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
 #' })
 #' @export
@@ -1117,7 +1117,7 @@ nv_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, 
 #' @seealso [nvl_round()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1.4, 2.5, 3.6))
+#'   x <- nv_array(c(1.4, 2.5, 3.6))
 #'   round(x)
 #' })
 #' @export
@@ -1127,21 +1127,21 @@ nv_round <- nvl_round
 
 #' @title Matrix Multiplication
 #' @description
-#' Matrix multiplication of two tensors. You can also use the `%*%` operator.
+#' Matrix multiplication of two arrays. You can also use the `%*%` operator.
 #' Supports batched matrix multiplication when inputs have more than 2 dimensions.
 #' @section Shapes:
 #' - `lhs`: `(b1, ..., bk, m, n)`
 #' - `rhs`: `(b1, ..., bk, n, p)`
 #' - output: `(b1, ..., bk, m, p)`
-#' @param lhs,rhs ([`tensorish`])\cr
-#'   Tensors with at least 2 dimensions.
+#' @param lhs,rhs ([`arrayish`])\cr
+#'   Arrays with at least 2 dimensions.
 #'   Operands are [promoted to a common data type][nv_promote_to_common()].
-#' @return [`tensorish`]
+#' @return [`arrayish`]
 #' @seealso [nvl_dot_general()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
-#'   y <- nv_tensor(matrix(1:6, nrow = 3))
+#'   x <- nv_array(matrix(1:6, nrow = 2))
+#'   y <- nv_array(matrix(1:6, nrow = 3))
 #'   x %*% y
 #' })
 #' @export
@@ -1168,7 +1168,7 @@ nv_matmul <- function(lhs, rhs) {
 #' @description
 #' Computes the Cholesky decomposition of a symmetric positive-definite matrix.
 #' Supports batched inputs: dimensions before the last two are batch dimensions.
-#' @param a ([`tensorish`])\cr
+#' @param a ([`arrayish`])\cr
 #'   Symmetric positive-definite matrix with at least 2 dimensions.
 #'   The last two dimensions form the square matrix; any leading dimensions
 #'   are batch dimensions.
@@ -1176,12 +1176,12 @@ nv_matmul <- function(lhs, rhs) {
 #'   If `TRUE` (default), compute the lower triangular factor `L` such that
 #'   `a = L %*% t(L)`. If `FALSE`, compute the upper triangular factor `U`
 #'   such that `a = t(U) %*% U`.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Triangular matrix with the same shape and data type as the input.
 #' @seealso [nv_solve()], [nvl_cholesky()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   a <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+#'   a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
 #'   nv_cholesky(a)
 #' })
 #' @export
@@ -1202,18 +1202,18 @@ nv_cholesky <- function(a, lower = TRUE) {
 #'
 #' where `...` are zero or more batch dimensions that must match between
 #' `a` and `b`.
-#' @param a ([`tensorish`])\cr
+#' @param a ([`arrayish`])\cr
 #'   Symmetric positive-definite matrix.
-#' @param b ([`tensorish`])\cr
+#' @param b ([`arrayish`])\cr
 #'   Right-hand side matrix or vector. Must have the same data type and batch
 #'   dimensions as `a`.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   The solution `x` such that `a %*% x = b`.
 #' @seealso [nv_cholesky()], [nvl_cholesky()], [nvl_triangular_solve()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   a <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-#'   b <- nv_tensor(matrix(c(1, 2), nrow = 2), dtype = "f32")
+#'   a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+#'   b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
 #'   nv_solve(a, b)
 #' })
 #' @export
@@ -1227,14 +1227,14 @@ nv_solve <- function(a, b) {
 
 #' @title Diagonal Matrix
 #' @description
-#' Creates a diagonal matrix from a 1-D tensor.
-#' @param x ([`tensorish`])\cr
-#'   A 1-D tensor of length `n` whose elements become the diagonal entries.
-#' @return [`tensorish`]\cr
+#' Creates a diagonal matrix from a 1-D array.
+#' @param x ([`arrayish`])\cr
+#'   A 1-D array of length `n` whose elements become the diagonal entries.
+#' @return [`arrayish`]\cr
 #'   An `n x n` matrix with `x` on the diagonal and zeros elsewhere.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   nv_diag(nv_tensor(c(1, 2, 3)))
+#'   nv_diag(nv_array(c(1, 2, 3)))
 #' })
 #' @export
 nv_diag <- function(x) {
@@ -1262,7 +1262,7 @@ nv_diag <- function(x) {
 #' @param n (`integer(1)`)\cr
 #'   Size of the identity matrix.
 #' @template param_dtype
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   An `n x n` identity matrix.
 #' @seealso [nv_diag()] for general diagonal matrices.
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -1274,14 +1274,14 @@ nv_eye <- function(n, dtype = "f32") {
 
 #' @title Sum Reduction
 #' @description
-#' Sums tensor elements along the specified dimensions.
+#' Sums array elements along the specified dimensions.
 #' @template param_operand
 #' @template params_reduce
 #' @template return_reduce
 #' @seealso [nvl_reduce_sum()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
+#'   x <- nv_array(matrix(1:6, nrow = 2))
 #'   nv_reduce_sum(x, dims = 1L)
 #' })
 #' @export
@@ -1299,7 +1299,7 @@ nv_reduce_sum <- nvl_reduce_sum
 #' @seealso [nv_reduce_sum()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
+#'   x <- nv_array(matrix(1:6, nrow = 2))
 #'   nv_reduce_mean(x, dims = 1L)
 #' })
 #' @export
@@ -1311,14 +1311,14 @@ nv_reduce_mean <- function(operand, dims, drop = TRUE) {
 
 #' @title Product Reduction
 #' @description
-#' Multiplies tensor elements along the specified dimensions.
+#' Multiplies array elements along the specified dimensions.
 #' @template param_operand
 #' @template params_reduce
 #' @template return_reduce
 #' @seealso [nvl_reduce_prod()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
+#'   x <- nv_array(matrix(1:6, nrow = 2))
 #'   nv_reduce_prod(x, dims = 1L)
 #' })
 #' @export
@@ -1326,14 +1326,14 @@ nv_reduce_prod <- nvl_reduce_prod
 
 #' @title Max Reduction
 #' @description
-#' Finds the maximum of tensor elements along the specified dimensions.
+#' Finds the maximum of array elements along the specified dimensions.
 #' @template param_operand
 #' @template params_reduce
 #' @template return_reduce
 #' @seealso [nvl_reduce_max()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
+#'   x <- nv_array(matrix(1:6, nrow = 2))
 #'   nv_reduce_max(x, dims = 1L)
 #' })
 #' @export
@@ -1341,14 +1341,14 @@ nv_reduce_max <- nvl_reduce_max
 
 #' @title Min Reduction
 #' @description
-#' Finds the minimum of tensor elements along the specified dimensions.
+#' Finds the minimum of array elements along the specified dimensions.
 #' @template param_operand
 #' @template params_reduce
 #' @template return_reduce
 #' @seealso [nvl_reduce_min()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
+#'   x <- nv_array(matrix(1:6, nrow = 2))
 #'   nv_reduce_min(x, dims = 1L)
 #' })
 #' @export
@@ -1364,7 +1364,7 @@ nv_reduce_min <- nvl_reduce_min
 #' @seealso [nvl_reduce_any()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#'   x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
 #'   nv_reduce_any(x, dims = 1L)
 #' })
 #' @export
@@ -1380,7 +1380,7 @@ nv_reduce_any <- nvl_reduce_any
 #' @seealso [nvl_reduce_all()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#'   x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
 #'   nv_reduce_all(x, dims = 1L)
 #' })
 #' @export
@@ -1392,7 +1392,7 @@ nv_reduce_all <- nvl_reduce_all
 #' Conditional execution of two branches.
 #' Unlike [nv_ifelse()], which selects elements, this executes only one
 #' of the two branches depending on a scalar predicate.
-#' @param pred ([`tensorish`] of boolean type, scalar)\cr
+#' @param pred ([`arrayish`] of boolean type, scalar)\cr
 #'   Predicate.
 #' @param true (`expression`)\cr
 #'   Expression for the true branch (non-standard evaluation).

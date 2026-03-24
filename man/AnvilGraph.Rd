@@ -21,15 +21,15 @@ The primitive calls that make up the graph.
 This can also be another call into a graph when the primitive is a \code{p_call}.}
 
 \item{in_tree}{(\code{NULL | Node})\cr
-The tree of inputs. May contain leaves for both tensor inputs and static
-(non-tensor) arguments. Only the tensor leaves correspond to entries in
+The tree of inputs. May contain leaves for both array inputs and static
+(non-array) arguments. Only the array leaves correspond to entries in
 \code{inputs}; use \code{is_static_flat} to distinguish them.}
 
 \item{out_tree}{(\code{NULL | Node})\cr
 The tree of outputs.}
 
 \item{inputs}{(\code{list(GraphValue)})\cr
-The inputs to the graph (tensor arguments only).}
+The inputs to the graph (array arguments only).}
 
 \item{outputs}{(\code{list(GraphValue)})\cr
 The outputs of the graph.}
@@ -38,8 +38,8 @@ The outputs of the graph.}
 The constants of the graph.}
 
 \item{is_static_flat}{(\code{NULL | logical()})\cr
-Boolean mask indicating which flat positions in \code{in_tree} are static (non-tensor) args.
-\code{NULL} when all args are tensor inputs.}
+Boolean mask indicating which flat positions in \code{in_tree} are static (non-array) args.
+\code{NULL} when all args are array inputs.}
 
 \item{static_args_flat}{(\code{NULL | list()})\cr
 Flattened traced values for the static arguments indicated by \code{is_static_flat}.}

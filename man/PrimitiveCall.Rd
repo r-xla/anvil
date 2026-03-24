@@ -11,13 +11,13 @@ PrimitiveCall(primitive, inputs, params, outputs)
 The function.}
 
 \item{inputs}{(\code{list(GraphValue)})\cr
-The (tensor) inputs to the primitive.}
+The (array) inputs to the primitive.}
 
 \item{params}{(\verb{list(<any>)})\cr
 The (static) parameters of the function call.}
 
 \item{outputs}{(\code{list(GraphValue)})\cr
-The (tensor) outputs of the primitive.}
+The (array) outputs of the primitive.}
 }
 \value{
 (\code{PrimitiveCall})

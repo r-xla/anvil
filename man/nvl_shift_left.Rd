@@ -7,12 +7,12 @@
 nvl_shift_left(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Tensorish values of data type boolean, integer, or unsigned integer.
+\item{lhs, rhs}{(\code{\link{arrayish}})\cr
+Arrayish values of data type boolean, integer, or unsigned integer.
 Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the inputs.
 It is ambiguous if both inputs are ambiguous.
 }
@@ -35,8 +35,8 @@ Lowers to \code{\link[stablehlo:hlo_shift_left]{stablehlo::hlo_shift_left()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1L, 2L, 4L))
-  y <- nv_tensor(c(1L, 2L, 1L))
+  x <- nv_array(c(1L, 2L, 4L))
+  y <- nv_array(c(1L, 2L, 1L))
   nvl_shift_left(x, y)
 })
 \dontshow{\}) # examplesIf}

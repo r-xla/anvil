@@ -7,7 +7,7 @@
 GraphValue(aval)
 }
 \arguments{
-\item{aval}{(\code{\link{AbstractTensor}})\cr
+\item{aval}{(\code{\link{AbstractArray}})\cr
 The abstract value of the variable.}
 }
 \value{

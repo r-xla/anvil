@@ -7,12 +7,12 @@
 nvl_or(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Tensorish values of data type boolean, integer, or unsigned integer.
+\item{lhs, rhs}{(\code{\link{arrayish}})\cr
+Arrayish values of data type boolean, integer, or unsigned integer.
 Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the inputs.
 It is ambiguous if both inputs are ambiguous.
 }
@@ -36,8 +36,8 @@ Lowers to \code{\link[stablehlo:hlo_or]{stablehlo::hlo_or()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(TRUE, FALSE, TRUE))
-  y <- nv_tensor(c(TRUE, TRUE, FALSE))
+  x <- nv_array(c(TRUE, FALSE, TRUE))
+  y <- nv_array(c(TRUE, TRUE, FALSE))
   nvl_or(x, y)
 })
 \dontshow{\}) # examplesIf}

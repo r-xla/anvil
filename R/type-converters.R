@@ -1,22 +1,22 @@
-#' Convert AbstractTensor to ValueType
+#' Convert AbstractArray to ValueType
 #' @description
-#' Convert an `AbstractTensor` to a `ValueType`.
-#' @param x (`AbstractTensor`)
+#' Convert an `AbstractArray` to a `ValueType`.
+#' @param x (`AbstractArray`)
 #' @return (`ValueType`)
 #' @export
 at2vt <- function(x) {
-  stopifnot(inherits(x, "AbstractTensor"))
+  stopifnot(inherits(x, "AbstractArray"))
   stablehlo::ValueType(stablehlo::TensorType(x$dtype, x$shape))
 }
 
-#' Convert ValueType to AbstractTensor
+#' Convert ValueType to AbstractArray
 #' @description
-#' Convert a `ValueType` to an `AbstractTensor`.
+#' Convert a `ValueType` to an `AbstractArray`.
 #' @param x (`ValueType`)
-#' @return (`AbstractTensor`)
+#' @return (`AbstractArray`)
 #' @export
 vt2at <- function(x) {
   stopifnot(inherits(x, "ValueType"))
   stopifnot(inherits(x$type, "TensorType"))
-  AbstractTensor(x$type$dtype, x$type$shape)
+  AbstractArray(x$type$dtype, x$type$shape)
 }

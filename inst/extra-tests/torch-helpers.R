@@ -48,7 +48,7 @@ generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
 }
 
 make_nv <- function(x, dtype) {
-  if (!length(dim(x))) nv_scalar(x, dtype = dtype) else nv_tensor(x, dtype = dtype)
+  if (!length(dim(x))) nv_scalar(x, dtype = dtype) else nv_array(x, dtype = dtype)
 }
 
 make_torch <- function(x, dtype) {

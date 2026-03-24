@@ -7,15 +7,15 @@
 nv_solve(a, b)
 }
 \arguments{
-\item{a}{(\code{\link{tensorish}})\cr
+\item{a}{(\code{\link{arrayish}})\cr
 Symmetric positive-definite matrix.}
 
-\item{b}{(\code{\link{tensorish}})\cr
+\item{b}{(\code{\link{arrayish}})\cr
 Right-hand side matrix or vector. Must have the same data type and batch
 dimensions as \code{a}.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 The solution \code{x} such that \code{a \%*\% x = b}.
 }
 \description{
@@ -39,8 +39,8 @@ where \code{...} are zero or more batch dimensions that must match between
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  a <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-  b <- nv_tensor(matrix(c(1, 2), nrow = 2), dtype = "f32")
+  a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+  b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
   nv_solve(a, b)
 })
 \dontshow{\}) # examplesIf}

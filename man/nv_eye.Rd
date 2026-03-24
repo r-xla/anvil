@@ -10,11 +10,11 @@ nv_eye(n, dtype = "f32")
 \item{n}{(\code{integer(1)})\cr
 Size of the identity matrix.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Data type.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 An \verb{n x n} identity matrix.
 }
 \description{

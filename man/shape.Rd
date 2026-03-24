@@ -2,13 +2,13 @@
 % Please edit documentation in R/reexports.R
 \name{shape}
 \alias{shape}
-\title{Get the shape of a tensor}
+\title{Get the shape of an array}
 \usage{
 shape(x, ...)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-A tensor-like object.}
+\item{x}{(\code{\link{arrayish}})\cr
+An array-like object.}
 
 \item{...}{Additional arguments passed to methods (unused).}
 }
@@ -16,14 +16,14 @@ A tensor-like object.}
 \code{integer()}
 }
 \description{
-Returns the shape of a tensor as an \code{integer()} vector.
+Returns the shape of an array as an \code{integer()} vector.
 }
 \details{
 This is implemented via the generic \code{\link[tengen:shape]{tengen::shape()}}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(1:4, dtype = "f32")
+x <- nv_array(1:4, dtype = "f32")
 shape(x)
 \dontshow{\}) # examplesIf}
 }

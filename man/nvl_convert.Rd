@@ -7,10 +7,10 @@
 nvl_convert(operand, dtype, ambiguous = FALSE)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of any data type.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of any data type.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Target data type.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
@@ -19,12 +19,12 @@ Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and 
 See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the given \code{dtype} and the same shape as \code{operand}.
 Ambiguity is controlled by the \code{ambiguous} parameter.
 }
 \description{
-Converts the elements of a tensor to a different data type.
+Converts the elements of an array to a different data type.
 }
 \section{Implemented Rules}{
 
@@ -43,7 +43,7 @@ Lowers to \code{\link[stablehlo:hlo_convert]{stablehlo::hlo_convert()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1L, 2L, 3L))
+  x <- nv_array(c(1L, 2L, 3L))
   nvl_convert(x, dtype = "f32")
 })
 \dontshow{\}) # examplesIf}

@@ -7,28 +7,28 @@
 nv_broadcast_to(operand, shape)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
 \item{shape}{(\code{integer()})\cr
 Target shape. Each existing dimension must either match or be 1.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the given \code{shape} and the same data type as \code{operand}.
 }
 \description{
-Broadcasts a tensor to a target shape using NumPy-style broadcasting rules.
+Broadcasts an array to a target shape using NumPy-style broadcasting rules.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
+  x <- nv_array(c(1, 2, 3))
   nv_broadcast_to(x, shape = c(2, 3))
 })
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_broadcast_tensors]{nv_broadcast_tensors()}}, \code{\link[=nv_broadcast_scalars]{nv_broadcast_scalars()}},
+\code{\link[=nv_broadcast_arrays]{nv_broadcast_arrays()}}, \code{\link[=nv_broadcast_scalars]{nv_broadcast_scalars()}},
 \code{\link[=nvl_broadcast_in_dim]{nvl_broadcast_in_dim()}} for the underlying primitive.
 }

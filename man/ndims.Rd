@@ -2,24 +2,24 @@
 % Please edit documentation in R/reexports.R
 \name{ndims}
 \alias{ndims}
-\title{Get the number of dimensions of a tensor}
+\title{Get the number of dimensions of an array}
 \usage{
 ndims(x)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-A tensor-like object.}
+\item{x}{(\code{\link{arrayish}})\cr
+An array-like object.}
 }
 \value{
 \code{integer(1)}
 }
 \description{
-Returns the number of dimensions (sometimes also refered to as rank) of a tensor.
+Returns the number of dimensions (sometimes also refered to as rank) of an array.
 Equivalent to \code{length(shape(x))}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(1:4, dtype = "f32")
+x <- nv_array(1:4, dtype = "f32")
 ndims(x)
 \dontshow{\}) # examplesIf}
 }

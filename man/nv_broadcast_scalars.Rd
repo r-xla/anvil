@@ -7,21 +7,21 @@
 nv_broadcast_scalars(...)
 }
 \arguments{
-\item{...}{(\code{\link{tensorish}})\cr
-Tensors to broadcast. Scalars will be broadcast to the common non-scalar shape.}
+\item{...}{(\code{\link{arrayish}})\cr
+Arrays to broadcast. Scalars will be broadcast to the common non-scalar shape.}
 }
 \value{
-(\code{list()} of \code{\link{tensorish}})\cr
-List of broadcasted tensors.
+(\code{list()} of \code{\link{arrayish}})\cr
+List of broadcasted arrays.
 }
 \description{
-Broadcast scalar tensors to match the shape of non-scalar tensors.
-All non-scalar tensors must have the same shape.
+Broadcast scalar arrays to match the shape of non-scalar arrays.
+All non-scalar arrays must have the same shape.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
+  x <- nv_array(c(1, 2, 3))
   # scalar 1 is broadcast to shape [3]
   nv_broadcast_scalars(x, 1)
 })

@@ -7,11 +7,11 @@
 nvl_is_finite(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of data type floating-point.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of data type floating-point.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape as the input and boolean data type.
 It is ambiguous if the input is ambiguous.
 }
@@ -34,7 +34,7 @@ Lowers to \code{\link[stablehlo:hlo_is_finite]{stablehlo::hlo_is_finite()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, Inf, NaN, -Inf, 0))
+  x <- nv_array(c(1, Inf, NaN, -Inf, 0))
   nvl_is_finite(x)
 })
 \dontshow{\}) # examplesIf}

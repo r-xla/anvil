@@ -95,7 +95,7 @@ test_that("graph_to_quickr_function ignores static args when flattening nested i
   skip_if_no_quickr_or_pjrt()
 
   # Regression test: when tracing with nested list inputs and an extra static arg,
-  # graph$inputs contains only the tensor leaves but wrapper flattening sees both.
+  # graph$inputs contains only the array leaves but wrapper flattening sees both.
   graph <- trace_fn(
     function(x, flag) {
       if (flag) {
@@ -268,7 +268,7 @@ test_that("graph_to_quickr_function preserves 1D output dims", {
     function(x) {
       x + 1
     },
-    list(x = nv_tensor(array(0, dim = 3L), dtype = "f64", shape = 3L)),
+    list(x = nv_array(array(0, dim = 3L), dtype = "f64", shape = 3L)),
     desc = local_descriptor(backend = "quickr")
   )
 
@@ -283,7 +283,7 @@ test_that("graph_to_quickr_function preserves empty 1D output dims without wrapp
     function(x) {
       x
     },
-    list(x = nv_tensor(array(0, dim = 0L), dtype = "f64", shape = 0L))
+    list(x = nv_array(array(0, dim = 0L), dtype = "f64", shape = 0L))
   )
 
   x <- array(numeric(), dim = 0L)
@@ -305,7 +305,7 @@ test_that("graph_to_quickr_function preserves rank-1 dims for direct quickr outp
     function(x) {
       nv_expm1(x)
     },
-    list(x = nv_tensor(array(0, dim = 3L), dtype = "f64", shape = 3L))
+    list(x = nv_array(array(0, dim = 3L), dtype = "f64", shape = 3L))
   )
 
   x <- array(c(0.1, 0.2, 0.3), dim = 3L)
@@ -332,7 +332,7 @@ test_that("graph_to_quickr_function uses a specialized rank-1 wrapper", {
     function(x) {
       nv_expm1(x)
     },
-    list(x = nv_tensor(array(0, dim = 3L), dtype = "f64", shape = 3L))
+    list(x = nv_array(array(0, dim = 3L), dtype = "f64", shape = 3L))
   )
 
   f_quick <- graph_to_quickr_function(graph)
@@ -355,7 +355,7 @@ test_that("graph_to_quickr_function preserves rank-1 dims for wrapped quickr out
       }
     },
     list(
-      x = nv_tensor(array(0, dim = 3L), dtype = "f64", shape = 3L),
+      x = nv_array(array(0, dim = 3L), dtype = "f64", shape = 3L),
       flag = TRUE
     )
   )

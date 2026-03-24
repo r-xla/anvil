@@ -29,7 +29,7 @@ operations.}
 A \code{list} of length 2:
 \itemize{
 \item the \code{\link[stablehlo:Func]{stablehlo::Func}}
-\item The list of \code{\link{GraphValue}}s holding \code{\link{ConcreteTensor}}s.
+\item The list of \code{\link{GraphValue}}s holding \code{\link{ConcreteArray}}s.
 }
 }
 \description{
@@ -44,7 +44,7 @@ This is a low-level function; most users should use \code{\link[=jit]{jit()}} or
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(c(1, 2))
+x <- nv_array(c(1, 2))
 graph <- trace_fn(function(y) y + x, list(y = nv_aten("f32", shape = c())))
 graph
 stablehlo(graph)

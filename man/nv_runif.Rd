@@ -10,17 +10,17 @@ nv_runif(shape, initial_state, dtype = "f32", lower = 0, upper = 1)
 \item{shape}{(\code{integer()})\cr
 Shape.}
 
-\item{initial_state}{(\code{\link{tensorish}})\cr
+\item{initial_state}{(\code{\link{arrayish}})\cr
 RNG state (\code{ui64[2]}).}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Data type.}
 
 \item{lower, upper}{(\code{numeric(1)})\cr
 Lower and upper bound.}
 }
 \value{
-(\code{list()} of \code{\link{tensorish}})\cr
+(\code{list()} of \code{\link{arrayish}})\cr
 List of two elements: the updated RNG state and the sampled values.
 }
 \description{

@@ -2,9 +2,9 @@ compile_graph_pjrt <- function(graph) {
   testthat::skip_if_not_installed("pjrt")
   testthat::skip_if_not_installed("stablehlo")
 
-  unwrap_if_tensor_for_test <- function(x) {
-    if (inherits(x, "AnvilTensor")) {
-      x$tensor
+  unwrap_if_array_for_test <- function(x) {
+    if (inherits(x, "AnvilArray")) {
+      x$data
     } else {
       x
     }
@@ -25,11 +25,11 @@ compile_graph_pjrt <- function(graph) {
   func <- out[[1L]]
   constants <- out[[2L]]
 
-  const_tensors <- lapply(constants, function(const) {
+  const_arrays <- lapply(constants, function(const) {
     if (!is_concrete_tensor(const$aval)) {
       cli::cli_abort("Internal error: non-concrete constant in graph")
     }
-    unwrap_if_tensor_for_test(const$aval$data)
+    unwrap_if_array_for_test(const$aval$data)
   })
 
   src <- stablehlo::repr(func)
@@ -40,7 +40,7 @@ compile_graph_pjrt <- function(graph) {
   out_tree <- graph$out_tree
 
   as_r <- function(x) {
-    if (inherits(x, "AnvilTensor")) {
+    if (inherits(x, "AnvilArray")) {
       return(as_array(x))
     }
     if (is.list(x)) {
@@ -57,7 +57,7 @@ compile_graph_pjrt <- function(graph) {
 
     args_nv <- Map(
       function(x, gval) {
-        if (inherits(x, "AnvilTensor")) {
+        if (inherits(x, "AnvilArray")) {
           return(x)
         }
         expected_shape <- gval$aval$shape$dims
@@ -71,16 +71,16 @@ compile_graph_pjrt <- function(graph) {
           }
           nv_scalar(x, dtype = expected_dtype)
         } else {
-          nv_tensor(x, dtype = expected_dtype, shape = expected_shape)
+          nv_array(x, dtype = expected_dtype, shape = expected_shape)
         }
       },
       args,
       input_nodes
     )
 
-    args_unwrapped <- lapply(args_nv, unwrap_if_tensor_for_test)
-    out_vals <- rlang::exec(pjrt::pjrt_execute, exec, !!!const_tensors, !!!args_unwrapped, simplify = FALSE)
-    out_vals <- lapply(out_vals, nv_tensor)
+    args_unwrapped <- lapply(args_nv, unwrap_if_array_for_test)
+    out_vals <- rlang::exec(pjrt::pjrt_execute, exec, !!!const_arrays, !!!args_unwrapped, simplify = FALSE)
+    out_vals <- lapply(out_vals, nv_array)
     out_nv <- unflatten(out_tree, out_vals)
     as_r(out_nv)
   }

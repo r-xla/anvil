@@ -7,11 +7,11 @@
 nv_log1p(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the input.
 }
 \description{
@@ -20,7 +20,7 @@ Element-wise \code{log(1 + x)}, more accurate for small \code{x}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(0, 0.001, 1))
+  x <- nv_array(c(0, 0.001, 1))
   nv_log1p(x)
 })
 \dontshow{\}) # examplesIf}

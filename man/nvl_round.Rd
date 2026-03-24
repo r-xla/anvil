@@ -7,20 +7,20 @@
 nvl_round(operand, method = "nearest_even")
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of data type floating-point.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of data type floating-point.}
 
 \item{method}{(\code{character(1)})\cr
 Rounding method. \code{"nearest_even"} (default) rounds to the nearest even
 integer on a tie, \code{"afz"} rounds away from zero on a tie.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same dtype and shape as \code{operand}.
 It is ambiguous if the input is ambiguous.
 }
 \description{
-Rounds the elements of a tensor to the nearest integer.
+Rounds the elements of an array to the nearest integer.
 }
 \section{Implemented Rules}{
 
@@ -39,7 +39,7 @@ Lowers to \code{\link[stablehlo:hlo_round_nearest_even]{stablehlo::hlo_round_nea
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1.4, 2.5, 3.6))
+  x <- nv_array(c(1.4, 2.5, 3.6))
   nvl_round(x)
 })
 \dontshow{\}) # examplesIf}

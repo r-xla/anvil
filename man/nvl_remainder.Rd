@@ -7,12 +7,12 @@
 nvl_remainder(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Tensorish values of data type integer, unsigned integer, or floating-point.
+\item{lhs, rhs}{(\code{\link{arrayish}})\cr
+Arrayish values of data type integer, unsigned integer, or floating-point.
 Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the inputs.
 It is ambiguous if both inputs are ambiguous.
 }
@@ -35,8 +35,8 @@ Lowers to \code{\link[stablehlo:hlo_remainder]{stablehlo::hlo_remainder()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(7, 10, 15))
-  y <- nv_tensor(c(3, 4, 6))
+  x <- nv_array(c(7, 10, 15))
+  y <- nv_array(c(3, 4, 6))
   nvl_remainder(x, y)
 })
 \dontshow{\}) # examplesIf}

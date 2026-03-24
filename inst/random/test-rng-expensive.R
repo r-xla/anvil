@@ -8,7 +8,7 @@ test_rnorm_statistical <- function() {
 
   # Test normality with large sample
   f <- function() {
-    nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f64", shape = c(200L, 300L, 400L))
+    nv_rnorm(nv_array(c(1, 2), dtype = "ui64"), dtype = "f64", shape = c(200L, 300L, 400L))
   }
   g <- jit(f)
   out <- g()
@@ -32,7 +32,7 @@ test_rnorm_mean_sd <- function() {
 
   f <- function() {
     nv_rnorm(
-      nv_tensor(c(3, 83), dtype = "ui64"),
+      nv_array(c(3, 83), dtype = "ui64"),
       dtype = "f64",
       shape = c(10L, 10L, 10L, 10L, 10L),
       mu = 10,
@@ -60,7 +60,7 @@ test_runif_statistical <- function() {
 
   f <- function() {
     nv_runif(
-      nv_tensor(c(1, 2), dtype = "ui64"),
+      nv_array(c(1, 2), dtype = "ui64"),
       dtype = "f32",
       shape = c(10, 20, 30, 40, 50),
       lower = -1,
@@ -94,7 +94,7 @@ test_rbinom_statistical <- function() {
   cat("  Testing Bernoulli (n=1)...\n")
   f <- function() {
     nv_rbinom(
-      nv_tensor(c(1, 2), dtype = "ui64"),
+      nv_array(c(1, 2), dtype = "ui64"),
       dtype = "i32",
       shape = c(100L, 100L, 100L)
     )
@@ -119,7 +119,7 @@ test_rbinom_statistical <- function() {
   cat("  Testing Binomial (n=20, prob=0.5)...\n")
   f2 <- function() {
     nv_rbinom(
-      nv_tensor(c(3, 4), dtype = "ui64"),
+      nv_array(c(3, 4), dtype = "ui64"),
       n = 20L,
       dtype = "i32",
       shape = c(100L, 100L, 100L)
@@ -145,7 +145,7 @@ test_rbinom_statistical <- function() {
   cat("  Testing Binomial (n=10, prob=0.3)...\n")
   f3 <- function() {
     nv_rbinom(
-      nv_tensor(c(5, 6), dtype = "ui64"),
+      nv_array(c(5, 6), dtype = "ui64"),
       n = 10L,
       prob = 0.3,
       dtype = "i32",
@@ -172,7 +172,7 @@ test_rbinom_statistical <- function() {
   cat("  Testing Bernoulli (prob=0.7)...\n")
   f4 <- function() {
     nv_rbinom(
-      nv_tensor(c(7, 8), dtype = "ui64"),
+      nv_array(c(7, 8), dtype = "ui64"),
       prob = 0.7,
       dtype = "i32",
       shape = c(100L, 100L, 100L)
@@ -204,7 +204,7 @@ test_rdunif_statistical <- function() {
     nv_rdunif(
       n = 6L,
       shape = 60000L,
-      initial_state = nv_tensor(c(1, 2), dtype = "ui64")
+      initial_state = nv_array(c(1, 2), dtype = "ui64")
     )
   }
   g1 <- jit(f1)

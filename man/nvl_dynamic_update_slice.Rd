@@ -7,28 +7,28 @@
 nvl_dynamic_update_slice(operand, update, ...)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of any data type.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of any data type.}
 
-\item{update}{(\code{\link{tensorish}})\cr
+\item{update}{(\code{\link{arrayish}})\cr
 The values to write at the specified position. Must have the same
 data type and number of dimensions as \code{operand}, with
 \code{nv_shape(update) <= nv_shape(operand)} per dimension.}
 
-\item{...}{(\code{\link{tensorish}} of integer type)\cr
+\item{...}{(\code{\link{arrayish}} of integer type)\cr
 Scalar start indices, one per dimension of \code{operand}.
-Each must be a scalar tensor.}
+Each must be a scalar array.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same data type and shape as \code{operand}.
 It is ambiguous if the input is ambiguous.
 }
 \description{
 Returns a copy of \code{operand} with a slice replaced by \code{update} at a
 runtime-determined position. This is the write counterpart of
-\code{\link[=nvl_dynamic_slice]{nvl_dynamic_slice()}}: dynamic slice reads a block from a tensor,
-while dynamic update slice writes a block into a tensor.
+\code{\link[=nvl_dynamic_slice]{nvl_dynamic_slice()}}: dynamic slice reads a block from an array,
+while dynamic update slice writes a block into an array.
 }
 \section{Implemented Rules}{
 
@@ -56,16 +56,16 @@ the effective start position may differ from the requested one.
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 # 1-D: overwrite two elements starting at position 2
 jit_eval({
-  x <- nv_tensor(1:5)
-  update <- nv_tensor(c(10L, 20L))
+  x <- nv_array(1:5)
+  update <- nv_array(c(10L, 20L))
   start <- nv_scalar(2L)
   nvl_dynamic_update_slice(x, update, start)
 })
 
 # 2-D: write a 2x2 block into a 3x4 matrix
 jit_eval({
-  x <- nv_tensor(matrix(0L, nrow = 3, ncol = 4))
-  update <- nv_tensor(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
+  x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
+  update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
   row_start <- nv_scalar(2L)
   col_start <- nv_scalar(3L)
   nvl_dynamic_update_slice(x, update, row_start, col_start)

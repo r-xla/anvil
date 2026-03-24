@@ -10,7 +10,7 @@ nv_rbinom(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32")
 \item{shape}{(\code{integer()})\cr
 Shape.}
 
-\item{initial_state}{(\code{\link{tensorish}})\cr
+\item{initial_state}{(\code{\link{arrayish}})\cr
 RNG state (\code{ui64[2]}).}
 
 \item{n}{(\code{integer(1)})\cr
@@ -19,11 +19,11 @@ Number of trials.}
 \item{prob}{(\code{numeric(1)})\cr
 Probability of success on each trial.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Data type.}
 }
 \value{
-(\code{list()} of \code{\link{tensorish}})\cr
+(\code{list()} of \code{\link{arrayish}})\cr
 List of two elements: the updated RNG state and the sampled values.
 }
 \description{

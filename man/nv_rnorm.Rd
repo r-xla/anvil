@@ -10,20 +10,20 @@ nv_rnorm(shape, initial_state, dtype = "f32", mu = 0, sigma = 1)
 \item{shape}{(\code{integer()})\cr
 Shape.}
 
-\item{initial_state}{(\code{\link{tensorish}})\cr
+\item{initial_state}{(\code{\link{arrayish}})\cr
 RNG state (\code{ui64[2]}).}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Data type.}
 
-\item{mu}{(\code{\link{tensorish}})\cr
+\item{mu}{(\code{\link{arrayish}})\cr
 Mean.}
 
-\item{sigma}{(\code{\link{tensorish}})\cr
+\item{sigma}{(\code{\link{arrayish}})\cr
 Standard deviation. Must be positive, otherwise results are invalid.}
 }
 \value{
-(\code{list()} of \code{\link{tensorish}})\cr
+(\code{list()} of \code{\link{arrayish}})\cr
 List of two elements: the updated RNG state and the sampled values.
 }
 \description{

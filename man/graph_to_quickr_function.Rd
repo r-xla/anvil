@@ -19,7 +19,7 @@ compiles it with \code{quickr::quick()}.
 }
 \details{
 The returned function expects plain R scalars/vectors/arrays (not
-\code{\link{AnvilTensor}}) and returns plain R values/arrays.
+\code{\link{AnvilArray}}) and returns plain R values/arrays.
 
 If the graph returns multiple outputs (e.g. a nested list), the compiled
 function returns the same structure by rebuilding the output tree in R.
@@ -27,8 +27,8 @@ function returns the same structure by rebuilding the output tree in R.
 For a list of supported primitives see \code{vignette("primitives")}.
 
 Supported dtypes are \code{f64}, \code{i32}, and \code{pred}.
-The code generator currently supports tensors up to rank 5. Some primitives
-are more restricted (e.g. \code{transpose} currently only handles rank-2 tensors).
+The code generator currently supports arrays up to rank 5. Some primitives
+are more restricted (e.g. \code{transpose} currently only handles rank-2 arrays).
 
 Most users will prefer \code{\link[=jit]{jit()}} with \code{backend = "quickr"}. This function is
 the lower-level graph API.

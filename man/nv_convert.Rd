@@ -7,24 +7,24 @@
 nv_convert(operand, dtype)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Data type.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the given \code{dtype} and the same shape as \code{operand}.
 }
 \description{
-Converts the elements of a tensor to a different data type.
+Converts the elements of an array to a different data type.
 Returns the input unchanged if it already has the target type.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1L, 2L, 3L))
+  x <- nv_array(c(1L, 2L, 3L))
   nv_convert(x, dtype = "f32")
 })
 \dontshow{\}) # examplesIf}

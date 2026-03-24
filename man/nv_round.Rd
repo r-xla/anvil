@@ -7,7 +7,7 @@
 nv_round(operand, method = "nearest_even")
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
 \item{method}{(\code{character(1)})\cr
@@ -15,7 +15,7 @@ Rounding method.
 Either \code{"nearest_even"} (default) or \code{"afz"} (away from zero).}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the input.
 }
 \description{
@@ -24,7 +24,7 @@ Element-wise rounding. You can also use the \code{round()} generic.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1.4, 2.5, 3.6))
+  x <- nv_array(c(1.4, 2.5, 3.6))
   round(x)
 })
 \dontshow{\}) # examplesIf}

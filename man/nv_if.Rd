@@ -7,7 +7,7 @@
 nv_if(pred, true, false)
 }
 \arguments{
-\item{pred}{(\code{\link{tensorish}} of boolean type, scalar)\cr
+\item{pred}{(\code{\link{arrayish}} of boolean type, scalar)\cr
 Predicate.}
 
 \item{true}{(\code{expression})\cr

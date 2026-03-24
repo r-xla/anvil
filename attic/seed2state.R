@@ -1,7 +1,7 @@
 #' @title Make initial state
 #' @name nv_seed2state
 #' @description
-#' converts a random seed into a initial state tensor
+#' converts a random seed into a initial state array
 #' @param dtype output dtype either "ui32" or "ui64"
 #' @param shape output shape
 #' @param random_seed explicitly provide the random seed of a R session. auto-detects if not provided.
@@ -49,8 +49,8 @@ nv_seed2state <- function(
     )
   }
 
-  # tensor of type i8 of shape (shape, 4/8)
-  raw8 <- nv_tensor(
+  # array of type i8 of shape (shape, 4/8)
+  raw8 <- nv_array(
     as.integer(hash_bytes[seq_len(bytes_needed)]),
     shape = c(shape, bytes_per_value),
     dtype = "i8"
@@ -80,8 +80,8 @@ test_that("seed2state", {
 
   expect_true(identical(as_array(out1), as_array(out2)))
   expect_equal(shape(out2), c(3, 2))
-  expect_true(inherits(dtype.AnvilTensor(out1), UnsignedType))
-  expect_equal(dtype.AnvilTensor(out1)@value, 64L)
+  expect_true(inherits(dtype.AnvilArray(out1), UnsignedType))
+  expect_equal(dtype.AnvilArray(out1)@value, 64L)
 
   # test ui32
   set.seed(1)
@@ -91,6 +91,6 @@ test_that("seed2state", {
   g <- jit(f)
   out3 <- g()
   expect_equal(shape(out3), 2)
-  expect_true(inherits(dtype.AnvilTensor(out3), UnsignedType))
-  expect_equal(dtype.AnvilTensor(out3)@value, 32L)
+  expect_true(inherits(dtype.AnvilArray(out3), UnsignedType))
+  expect_equal(dtype.AnvilArray(out3)@value, 32L)
 })

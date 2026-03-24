@@ -7,11 +7,11 @@
 nv_logistic(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the input.
 }
 \description{
@@ -20,7 +20,7 @@ Element-wise logistic sigmoid: \code{1 / (1 + exp(-x))}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(-2, 0, 2))
+  x <- nv_array(c(-2, 0, 2))
   nv_logistic(x)
 })
 \dontshow{\}) # examplesIf}

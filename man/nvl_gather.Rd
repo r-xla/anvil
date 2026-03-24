@@ -19,11 +19,11 @@ nvl_gather(
 )
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of any data type.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of any data type.}
 
-\item{start_indices}{(\code{\link{tensorish}} of integer type)\cr
-Tensor of starting indices. Contains index vectors that map to
+\item{start_indices}{(\code{\link{arrayish}} of integer type)\cr
+Array of starting indices. Contains index vectors that map to
 positions in \code{operand} via \code{start_index_map}. The dimension
 specified by \code{index_vector_dim} holds the index vectors.}
 
@@ -70,21 +70,21 @@ Setting to \code{TRUE} may improve performance but produces undefined
 behavior if the indices are not actually unique. Default \code{FALSE}.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same data type as \code{operand}. The output shape is composed
 of the offset dimensions (from the slice) and the remaining
 dimensions from \code{start_indices}. See the underluing stableHLO function
 for more details.
 }
 \description{
-Gathers slices from the \code{operand} tensor at positions specified by
+Gathers slices from the \code{operand} array at positions specified by
 \code{start_indices}. Each index vector in \code{start_indices} identifies a
 starting position in \code{operand}, and a slice of size \code{slice_sizes} is
 extracted from that position. The gathered slices are assembled into
-the output tensor.
+the output array.
 
 This is the inverse of \code{\link[=nvl_scatter]{nvl_scatter()}}: gather reads slices from a
-tensor at given indices, while scatter writes slices into a tensor at
+array at given indices, while scatter writes slices into an array at
 given indices.
 }
 \section{Out Of Bounds Behavior}{
@@ -113,8 +113,8 @@ Lowers to \code{\link[stablehlo:hlo_gather]{stablehlo::hlo_gather()}}.
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 # Gather rows 1 and 3 from a 3x3 matrix
 jit_eval({
-  operand <- nv_tensor(matrix(1:9, nrow = 3))
-  indices <- nv_tensor(matrix(c(1L, 3L), ncol = 1))
+  operand <- nv_array(matrix(1:9, nrow = 3))
+  indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
   nvl_gather(
     operand, indices,
     slice_sizes = c(1L, 3L),

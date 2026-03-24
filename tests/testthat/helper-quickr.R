@@ -17,7 +17,7 @@ normalize_quickr_output <- function(x, ref) {
 }
 
 quickr_eval_graph_pjrt <- function(graph, ...) {
-  # PJRT graphs accept only the traced tensor leaves; static args are not inputs.
+  # PJRT graphs accept only the traced array leaves; static args are not inputs.
   args_flat <- flatten(list(...))
   is_static_flat <- graph$is_static_flat
   if (!is.null(is_static_flat)) {

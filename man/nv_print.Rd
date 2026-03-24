@@ -2,26 +2,26 @@
 % Please edit documentation in R/api.R
 \name{nv_print}
 \alias{nv_print}
-\title{Print Tensor}
+\title{Print Array}
 \usage{
 nv_print(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Returns \code{operand} unchanged.
 }
 \description{
-Prints a tensor value to the console during JIT execution and returns the
+Prints an array value to the console during JIT execution and returns the
 input unchanged. Useful for debugging.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
+  x <- nv_array(c(1, 2, 3))
   nv_print(x)
 })
 \dontshow{\}) # examplesIf}

@@ -7,22 +7,22 @@
 nvl_rng_bit_generator(initial_state, rng_algorithm = "THREE_FRY", dtype, shape)
 }
 \arguments{
-\item{initial_state}{(\code{\link{tensorish}})\cr
+\item{initial_state}{(\code{\link{arrayish}})\cr
 RNG state (\code{ui64[2]}).}
 
 \item{rng_algorithm}{(\code{character(1)})\cr
 RNG algorithm name. Default is \code{"THREE_FRY"}.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Data type of the generated random values.}
 
 \item{shape}{(\code{integer()})\cr
 Shape.}
 }
 \value{
-\code{list} of two \code{\link{tensorish}} values:\cr
+\code{list} of two \code{\link{arrayish}} values:\cr
 The first element is the updated RNG state with the same dtype and shape
-as \code{initial_state}. The second element is a tensor of random values with
+as \code{initial_state}. The second element is an array of random values with
 the given \code{dtype} and \code{shape}.
 }
 \description{
@@ -44,7 +44,7 @@ Lowers to \code{\link[stablehlo:hlo_rng_bit_generator]{stablehlo::hlo_rng_bit_ge
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  state <- nv_tensor(c(0L, 0L), dtype = "ui64")
+  state <- nv_array(c(0L, 0L), dtype = "ui64")
   nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
 })
 \dontshow{\}) # examplesIf}

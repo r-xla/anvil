@@ -7,13 +7,13 @@
 nv_or(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+\item{lhs, rhs}{(\code{\link{arrayish}})\cr
 Left and right operand.
 Operands are \link[=nv_promote_to_common]{promoted to a common data type}.
 Scalars are \link[=nv_broadcast_scalars]{broadcast} to the shape of the other operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and the promoted common data type of the inputs.
 }
 \description{
@@ -22,8 +22,8 @@ Element-wise logical OR. You can also use the \code{|} operator.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(TRUE, FALSE, TRUE))
-  y <- nv_tensor(c(TRUE, TRUE, FALSE))
+  x <- nv_array(c(TRUE, FALSE, TRUE))
+  y <- nv_array(c(TRUE, TRUE, FALSE))
   x | y
 })
 \dontshow{\}) # examplesIf}

@@ -40,24 +40,24 @@ test_that("jit basic test", {
   f_jit <- jit(f)
 
   expect_equal(
-    f_jit(nv_tensor(1), nv_tensor(2)),
-    nv_tensor(3)
+    f_jit(nv_array(1), nv_array(2)),
+    nv_array(3)
   )
   # cache hit:
   expect_equal(
-    f_jit(nv_tensor(1), nv_tensor(2)),
-    nv_tensor(3)
+    f_jit(nv_array(1), nv_array(2)),
+    nv_array(3)
   )
 })
 
-test_that("can return single tensor", {
+test_that("can return single array", {
   f <- jit(nvl_add)
   expect_equal(
     f(
-      nv_tensor(1.0),
-      nv_tensor(-2.0)
+      nv_array(1.0),
+      nv_array(-2.0)
     ),
-    nv_tensor(-1.0)
+    nv_array(-1.0)
   )
 })
 
@@ -65,8 +65,8 @@ test_that("can return nested list", {
   f <- jit(\(x, y) {
     list(x, list(a = y))
   })
-  x <- nv_tensor(1)
-  y <- nv_tensor(2)
+  x <- nv_array(1)
+  y <- nv_array(2)
   expect_equal(
     f(x, y),
     list(x, list(a = y))
@@ -77,7 +77,7 @@ test_that("can take in nested list", {
   f <- jit(\(x) {
     x$a
   })
-  x <- nv_tensor(1)
+  x <- nv_array(1)
   expect_equal(
     f(list(a = x)),
     x
@@ -103,16 +103,16 @@ test_that("multiple returns", {
   })
 
   out <- f(
-    nv_tensor(1.0),
-    nv_tensor(2.0)
+    nv_array(1.0),
+    nv_array(2.0)
   )
   expect_equal(
     out[[1]],
-    nv_tensor(3.0)
+    nv_array(3.0)
   )
   expect_equal(
     out[[2]],
-    nv_tensor(2.0)
+    nv_array(2.0)
   )
 })
 
@@ -123,7 +123,7 @@ test_that("jitted function has class JitFunction", {
 
 test_that("calling jit on jit errors", {
   f_jit <- jit(function(x) x)
-  expect_error(jit(f_jit)(nv_tensor(1)), "must not be a jitted function")
+  expect_error(jit(f_jit)(nv_array(1)), "must not be a jitted function")
 })
 
 test_that("keeps argument names", {
@@ -135,13 +135,13 @@ test_that("keeps argument names", {
     formals(f1_jit),
     formals(f1)
   )
-  f1_jit(nv_tensor(1), nv_tensor(2))
+  f1_jit(nv_array(1), nv_array(2))
 
   expect_equal(
-    f1_jit(nv_tensor(1), nv_tensor(2)),
-    nv_tensor(3)
+    f1_jit(nv_array(1), nv_array(2)),
+    nv_array(3)
   )
-  f2 <- function(x, y = nv_tensor(1)) {
+  f2 <- function(x, y = nv_array(1)) {
     x + y
   }
   f2_jit <- jit(f2)
@@ -150,8 +150,8 @@ test_that("keeps argument names", {
     formals(f2)
   )
   expect_equal(
-    f2_jit(nv_tensor(1), nv_tensor(2)),
-    nv_tensor(3)
+    f2_jit(nv_array(1), nv_array(2)),
+    nv_array(3)
   )
   f3 <- function(a, ...) {
     Reduce(`+`, list(...)) * a
@@ -162,8 +162,8 @@ test_that("keeps argument names", {
     formals(f3)
   )
   expect_equal(
-    f3_jit(nv_tensor(2), nv_tensor(3), nv_tensor(4)),
-    nv_tensor(14)
+    f3_jit(nv_array(2), nv_array(3), nv_array(4)),
+    nv_array(14)
   )
 })
 
@@ -171,7 +171,7 @@ test_that("can mark arguments as static ", {
   f <- jit(
     function(x, add_one) {
       if (add_one) {
-        x + nv_tensor(1)
+        x + nv_array(1)
       } else {
         x
       }
@@ -179,12 +179,12 @@ test_that("can mark arguments as static ", {
     static = "add_one"
     # TODO: Better error message ...
   )
-  expect_equal(f(nv_tensor(1), TRUE), nv_tensor(2))
-  expect_equal(f(nv_tensor(1), FALSE), nv_tensor(1))
+  expect_equal(f(nv_array(1), TRUE), nv_array(2))
+  expect_equal(f(nv_array(1), FALSE), nv_array(1))
 })
 
 
-test_that("jit: tensor return value is not wrapped in list", {
+test_that("jit: array return value is not wrapped in list", {
   f <- jit(nvl_add)
   out <- f(nv_scalar(1.2), nv_scalar(-0.7))
   expect_equal(as_array(out), 1.2 + (-0.7), tolerance = 1e-6)
@@ -193,14 +193,14 @@ test_that("jit: tensor return value is not wrapped in list", {
 test_that("error message when using different platforms", {
   skip_if(!is_cuda())
   f <- jit(\(x, y) x + y)
-  x <- nv_tensor(1, device = "cpu")
-  y <- nv_tensor(1, device = "cuda")
+  x <- nv_array(1, device = "cpu")
+  y <- nv_array(1, device = "cuda")
   expect_error(f(x, y), "Inputs live on different platforms")
 })
 
 test_that("constants can be part of the program", {
   f <- jit(function(x) x + nv_scalar(1))
-  expect_equal(f(nv_tensor(1)), nv_tensor(2))
+  expect_equal(f(nv_array(1)), nv_array(2))
 })
 
 test_that("Only constants in group generics", {
@@ -222,14 +222,14 @@ test_that("donate: cannot also be static", {
 test_that("donate: no aliasing with type mismatch", {
   skip_if(!is_cpu()) # might get a segfault on other platforms
   f <- jit(function(x) x, donate = "x")
-  x <- nv_tensor(1)
+  x <- nv_array(1)
   out <- f(x)
   expect_error(capture.output(x), "called on deleted or donated buffer")
 })
 
 test_that("... works (#19)", {
   expect_equal(
-    jit(sum)(nv_tensor(1:10)),
+    jit(sum)(nv_array(1:10)),
     nv_scalar(55L, dtype = "i32")
   )
 
@@ -237,13 +237,13 @@ test_that("... works (#19)", {
     a + sum(...)
   }
   expect_equal(
-    jit(f)(a = nv_scalar(1L), nv_tensor(1:10)),
+    jit(f)(a = nv_scalar(1L), nv_array(1:10)),
     nv_scalar(56L, dtype = "i32")
   )
 })
 
-test_that("good error message when passing AbstractTensors", {
-  expect_error(jit(nv_negate)(nv_aten("f32", c(2, 2))), "Expected AnvilTensor")
+test_that("good error message when passing AbstractArrays", {
+  expect_error(jit(nv_negate)(nv_aten("f32", c(2, 2))), "Expected AnvilArray")
 })
 
 test_that("jit: respects device argument", {
@@ -258,17 +258,17 @@ test_that("jit: with_backend overrides the configured default backend for traced
   })
 })
 
-test_that("literals are not converted to scalar tensors", {
+test_that("literals are not converted to scalar arrays", {
   f <- jit(nv_sine)
-  expect_error(f(1), "Expected AnvilTensor")
+  expect_error(f(1), "Expected AnvilArray")
 })
 
 test_that("jit_eval does not modify calling environment", {
-  x <- nv_tensor(1:2)
+  x <- nv_array(1:2)
   jit_eval({
-    x <- nv_tensor(3:4)
+    x <- nv_array(3:4)
   })
-  expect_equal(x, nv_tensor(1:2))
+  expect_equal(x, nv_array(1:2))
 })
 
 test_that("xla: basic test", {

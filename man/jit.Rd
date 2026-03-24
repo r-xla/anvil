@@ -14,11 +14,11 @@ jit(
 }
 \arguments{
 \item{f}{(\code{function})\cr
-Function to compile. Must accept and return \code{\link{AnvilTensor}}s (and/or
+Function to compile. Must accept and return \code{\link{AnvilArray}}s (and/or
 static arguments).}
 
 \item{static}{(\code{character()})\cr
-Names of parameters of \code{f} that are \emph{not} tensors. Static values are
+Names of parameters of \code{f} that are \emph{not} arrays. Static values are
 embedded as constants in the compiled program; a new compilation is triggered whenever
 a static value changes. For example useful when you want R control flow in your function.}
 
@@ -38,7 +38,7 @@ Defaults to \code{"cpu"}. Only supported for the \code{"xla"} backend.}
 \value{
 A \code{JitFunction} with the same formals as \code{f}.
 For the \code{"xla"} backend, the returned wrapper expects and returns
-\code{\link{AnvilTensor}} values. For the \code{"quickr"} backend, the returned wrapper
+\code{\link{AnvilArray}} values. For the \code{"quickr"} backend, the returned wrapper
 expects plain R numeric/integer/logical scalars, vectors, and arrays and
 returns plain R values.
 
@@ -56,14 +56,14 @@ which defaults to \code{"xla"}. Use \code{with_backend()} to temporarily overrid
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 f <- jit(function(x, y) x + y)
-f(nv_tensor(1), nv_tensor(2))
+f(nv_array(1), nv_array(2))
 
 # Static arguments enable data-dependent control flow
 g <- jit(function(x, flag) {
   if (flag) x + 1 else x * 2
 }, static = "flag")
-g(nv_tensor(3), TRUE)
-g(nv_tensor(3), FALSE)
+g(nv_array(3), TRUE)
+g(nv_array(3), FALSE)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

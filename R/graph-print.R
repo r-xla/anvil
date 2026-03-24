@@ -13,7 +13,7 @@ format_node_id <- function(node, node_ids) {
 
 format_literal <- function(node) {
   val <- node$aval$data
-  if (is_anvil_tensor(val)) {
+  if (is_anvil_array(val)) {
     val <- as_array(val)
   }
   dt <- repr(dtype(node$aval))

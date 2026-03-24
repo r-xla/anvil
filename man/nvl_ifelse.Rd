@@ -7,15 +7,15 @@
 nvl_ifelse(pred, true_value, false_value)
 }
 \arguments{
-\item{pred}{(\code{\link{tensorish}} of boolean type)\cr
-Predicate tensor. Must be scalar or have the same shape as
+\item{pred}{(\code{\link{arrayish}} of boolean type)\cr
+Predicate array. Must be scalar or have the same shape as
 \code{true_value}.}
 
-\item{true_value, false_value}{(\code{\link{tensorish}})\cr
+\item{true_value, false_value}{(\code{\link{arrayish}})\cr
 Values to select from. Must have the same dtype and shape.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same dtype and shape as \code{true_value}.
 It is ambiguous if both \code{true_value} and \code{false_value} are ambiguous.
 }
@@ -41,8 +41,8 @@ Lowers to \code{\link[stablehlo:hlo_select]{stablehlo::hlo_select()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  pred <- nv_tensor(c(TRUE, FALSE, TRUE))
-  nvl_ifelse(pred, nv_tensor(c(1, 2, 3)), nv_tensor(c(4, 5, 6)))
+  pred <- nv_array(c(TRUE, FALSE, TRUE))
+  nvl_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 })
 \dontshow{\}) # examplesIf}
 }

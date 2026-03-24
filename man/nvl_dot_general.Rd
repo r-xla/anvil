@@ -7,7 +7,7 @@
 nvl_dot_general(lhs, rhs, contracting_dims, batching_dims)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+\item{lhs, rhs}{(\code{\link{arrayish}})\cr
 Left and right operand.
 Operands are \link[=nv_promote_to_common]{promoted to a common data type}.
 Scalars are \link[=nv_broadcast_scalars]{broadcast} to the shape of the other operand.}
@@ -21,12 +21,12 @@ A list of two integer vectors specifying which dimensions of \code{lhs} and
 \code{rhs} are batch dimensions. These must have matching sizes.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 The output shape is the batch dimensions followed by the remaining
 (non-contracted, non-batched) dimensions of \code{lhs}, then \code{rhs}.
 }
 \description{
-General dot product of two tensors, supporting contraction over arbitrary
+General dot product of two arrays, supporting contraction over arbitrary
 dimensions and batching.
 }
 \section{Implemented Rules}{
@@ -46,8 +46,8 @@ Lowers to \code{\link[stablehlo:hlo_dot_general]{stablehlo::hlo_dot_general()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(matrix(1:6, nrow = 2))
-  y <- nv_tensor(matrix(1:6, nrow = 3))
+  x <- nv_array(matrix(1:6, nrow = 2))
+  y <- nv_array(matrix(1:6, nrow = 3))
   nvl_dot_general(x, y,
     contracting_dims = list(2L, 1L),
     batching_dims = list(integer(0), integer(0))

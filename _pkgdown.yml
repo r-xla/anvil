@@ -58,12 +58,12 @@ navbar:
         href: articles/contributing.html
 
 reference:
-  - title: Tensor Creation
-    desc: Functions for creating and initializing tensors
+  - title: Array Creation
+    desc: Functions for creating and initializing arrays
     contents:
-      - AnvilTensor
-      - tensorish
-      - nv_tensor
+      - AnvilArray
+      - arrayish
+      - nv_array
       - nv_scalar
       - nv_empty
       - nv_fill
@@ -72,8 +72,8 @@ reference:
       - nv_diag
       - nv_eye
 
-  - title: Tensor attributes and converters
-    desc: Functions for querying tensor attributes and converting them
+  - title: Array attributes and converters
+    desc: Functions for querying array attributes and converting them
     contents:
       - ambiguous
       - dtype
@@ -87,8 +87,8 @@ reference:
       - as_dtype
       - is_dtype
 
-  - title: Tensor Serialization
-    desc: Functions for serializing and deserializing tensors
+  - title: Array Serialization
+    desc: Functions for serializing and deserializing arrays
     contents:
       - nv_save
       - nv_read
@@ -102,12 +102,12 @@ reference:
       - nv_bitcast_convert
       - nv_promote_to_common
       - nv_broadcast_scalars
-      - nv_broadcast_tensors
+      - nv_broadcast_arrays
       - nv_broadcast_to
       - common_dtype
 
-  - title: Tensor manipulation
-    desc: Functions for reshaping and rearranging tensors
+  - title: Array manipulation
+    desc: Functions for reshaping and rearranging arrays
     contents:
       - nv_reshape
       - nv_transpose
@@ -119,7 +119,7 @@ reference:
       - nv_subset_assign
 
   - title: Arithmetic operations
-    desc: Basic arithmetic operations on tensors
+    desc: Basic arithmetic operations on arrays
     contents:
       - nv_add
       - nv_sub
@@ -163,7 +163,7 @@ reference:
       - nv_is_finite
 
   - title: Reduction operations
-    desc: Operations that reduce tensor dimensions
+    desc: Operations that reduce array dimensions
     contents:
       - nv_reduce_sum
       - nv_reduce_mean
@@ -181,7 +181,7 @@ reference:
       - nv_solve
 
   - title: Logical and bitwise operations
-    desc: Logical and bitwise operations on tensors
+    desc: Logical and bitwise operations on arrays
     contents:
       - nv_and
       - nv_or
@@ -193,7 +193,7 @@ reference:
       - nv_popcnt
 
   - title: Element-wise operations
-    desc: Other element-wise tensor operations
+    desc: Other element-wise array operations
     contents:
       - nv_min
       - nv_max
@@ -260,15 +260,15 @@ reference:
       - PrimitiveCall
       - register_primitive
       - nv_aten
-      - AbstractTensor
-      - ConcreteTensor
-      - LiteralTensor
-      - IotaTensor
+      - AbstractArray
+      - ConcreteArray
+      - LiteralArray
+      - IotaArray
       - eq_type
       - neq_type
       - at2vt
       - vt2at
-      - is_tensorish
+      - is_arrayish
       - Shape
 
   - title: Tree utilities

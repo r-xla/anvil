@@ -8,10 +8,10 @@ xla(f, args, donate = character(), device = NULL)
 }
 \arguments{
 \item{f}{(\code{function})\cr
-Function to compile. Must accept and return \code{\link{AnvilTensor}}s.}
+Function to compile. Must accept and return \code{\link{AnvilArray}}s.}
 
 \item{args}{(\code{list})\cr
-List of abstract tensor specifications (e.g. from \code{\link[=nv_aten]{nv_aten()}}) describing the
+List of abstract array specifications (e.g. from \code{\link[=nv_aten]{nv_aten()}}) describing the
 expected shapes and dtypes of \code{f}'s arguments.}
 
 \item{donate}{(\code{character()})\cr
@@ -22,8 +22,8 @@ Target device such as \code{"cpu"} (default) or \code{"cuda"}.}
 }
 \value{
 (\code{function})\cr
-A function that accepts \code{\link{AnvilTensor}} arguments (matching the flat inputs)
-and returns the result as \code{\link{AnvilTensor}}s.
+A function that accepts \code{\link{AnvilArray}} arguments (matching the flat inputs)
+and returns the result as \code{\link{AnvilArray}}s.
 }
 \description{
 Compiles a function to an XLA executable via tracing.
@@ -31,7 +31,7 @@ Compiles a function to an XLA executable via tracing.
 Returns a callable R function that executes the compiled binary.
 Unlike \code{\link[=jit]{jit()}}, compilation happens eagerly at
 definition time rather than on first call, so the input shapes and dtypes must be
-specified upfront via abstract tensors (see \code{\link[=nv_aten]{nv_aten()}}).
+specified upfront via abstract arrays (see \code{\link[=nv_aten]{nv_aten()}}).
 }
 \details{
 Traces \code{f} with the given abstract \code{args} (via \code{\link[=trace_fn]{trace_fn()}}), lowers the resulting graph
@@ -43,8 +43,8 @@ and compiles it to an XLA executable immediately.
 f_compiled <- xla(function(x, y) x + y,
   args = list(x = nv_aten("f32", c(2, 2)), y = nv_aten("f32", c(2, 2)))
 )
-a <- nv_tensor(array(1:4, c(2, 2)), dtype = "f32")
-b <- nv_tensor(array(5:8, c(2, 2)), dtype = "f32")
+a <- nv_array(array(1:4, c(2, 2)), dtype = "f32")
+b <- nv_array(array(5:8, c(2, 2)), dtype = "f32")
 f_compiled(a, b)
 \dontshow{\}) # examplesIf}
 }

@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 
 ## Type Promotion Rules
 
-When combining tensors of different types (e.g., adding an `f32` to an `i32`), {anvil} needs to determine a common type.
+When combining arrays of different types (e.g., adding an `f32` to an `i32`), {anvil} needs to determine a common type.
 For example, below we are adding an `f32` to an `f64`, where the former is promoted to the latter's type, because it's more expressive.
 
 ```{r}
@@ -103,7 +103,7 @@ knitr::kable(tbl, format = "html", caption = "Promotion rules: ambiguous (row) Ã
 
 ## Creating Tensors with Different Ambiguity
 
-Both `nv_scalar()` and `nv_tensor()` create **non-ambiguous** tensors by default.
+Both `nv_scalar()` and `nv_array()` create **non-ambiguous** arrays by default.
 You can explicitly control ambiguity using the `ambiguous` parameter:
 
 ```{r}
@@ -113,10 +113,10 @@ ambiguous(s1)
 s2 <- nv_scalar(1.0, ambiguous = TRUE)
 ambiguous(s2)
 
-t1 <- nv_tensor(c(1.0, 2.0, 3.0))
+t1 <- nv_array(c(1.0, 2.0, 3.0))
 ambiguous(t1)
 
-t2 <- nv_tensor(c(1.0, 2.0, 3.0), ambiguous = TRUE)
+t2 <- nv_array(c(1.0, 2.0, 3.0), ambiguous = TRUE)
 ambiguous(t2)
 ```
 

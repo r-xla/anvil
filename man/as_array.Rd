@@ -2,13 +2,13 @@
 % Please edit documentation in R/reexports.R
 \name{as_array}
 \alias{as_array}
-\title{Convert a tensor to an R array}
+\title{Convert to an R array}
 \usage{
 as_array(x, ...)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-A tensor-like object.}
+\item{x}{(\code{\link{arrayish}})\cr
+An array-like object.}
 
 \item{...}{Additional arguments passed to methods (unused).}
 }
@@ -16,7 +16,7 @@ A tensor-like object.}
 An R \code{\link{array}} or \code{vector} of length 1.
 }
 \description{
-Transfers tensor data to R and returns it as an R \code{\link{array}}.
+Transfers array data to R and returns it as an R \code{\link{array}}.
 Only in the case of scalars is the result a vector of length 1, as R \code{arrays} cannot have 0 dimensions.
 }
 \details{
@@ -24,7 +24,7 @@ This is implemented via the generic \code{\link[tengen:as_array]{tengen::as_arra
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(1:4, dtype = "f32")
+x <- nv_array(1:4, dtype = "f32")
 as_array(x)
 y <- nv_scalar(1L)
 # R arrays can't have 0 dimensions:

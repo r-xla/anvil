@@ -2,13 +2,13 @@
 % Please edit documentation in R/serialize.R
 \name{nv_serialize}
 \alias{nv_serialize}
-\title{Serialize tensors to raw bytes}
+\title{Serialize arrays to raw bytes}
 \usage{
-nv_serialize(tensors, con = NULL)
+nv_serialize(arrays, con = NULL)
 }
 \arguments{
-\item{tensors}{(named \code{list} of \code{\link{AnvilTensor}})\cr
-Named list of tensors to serialize. Names must be unique.}
+\item{arrays}{(named \code{list} of \code{\link{AnvilArray}})\cr
+Named list of arrays to serialize. Names must be unique.}
 
 \item{con}{(\code{NULL} | connection)\cr
 An optional connection to write to.
@@ -18,15 +18,15 @@ If \code{NULL} (default), a raw vector is returned.}
 A \code{\link{raw}} vector if \code{con} is \code{NULL}, otherwise \code{NULL} (invisibly).
 }
 \description{
-Serializes a named list of tensors into the
+Serializes a named list of arrays into the
 \href{https://huggingface.co/docs/safetensors/index}{safetensors} format.
 }
 \details{
-The ambiguity of the tensors is stored in the metadata and preserved in write-read roundtrips.
+The ambiguity of the arrays is stored in the metadata and preserved in write-read roundtrips.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded("cpu")) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(array(1:6, dim = c(2, 3)))
+x <- nv_array(array(1:6, dim = c(2, 3)))
 x
 raw_data <- nv_serialize(list(x = x))
 raw_data

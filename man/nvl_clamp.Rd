@@ -7,17 +7,17 @@
 nvl_clamp(min_val, operand, max_val)
 }
 \arguments{
-\item{min_val}{(\code{\link{tensorish}})\cr
+\item{min_val}{(\code{\link{arrayish}})\cr
 Minimum value. Must be scalar or the same shape as \code{operand}.}
 
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of any data type.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of any data type.}
 
-\item{max_val}{(\code{\link{tensorish}})\cr
+\item{max_val}{(\code{\link{arrayish}})\cr
 Maximum value. Must be scalar or the same shape as \code{operand}.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same data type and shape as \code{operand}.
 It is ambiguous if the input is ambiguous.
 }
@@ -41,7 +41,7 @@ Lowers to \code{\link[stablehlo:hlo_clamp]{stablehlo::hlo_clamp()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(-1, 0.5, 2))
+  x <- nv_array(c(-1, 0.5, 2))
   nvl_clamp(nv_scalar(0), x, nv_scalar(1))
 })
 \dontshow{\}) # examplesIf}

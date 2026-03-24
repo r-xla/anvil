@@ -7,12 +7,12 @@
 nvl_le(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Tensorish values of any data type.
+\item{lhs, rhs}{(\code{\link{arrayish}})\cr
+Arrayish values of any data type.
 Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape as the inputs and boolean data type.
 It is ambiguous if both inputs are ambiguous.
 }
@@ -36,8 +36,8 @@ Lowers to \code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} with \co
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
-  y <- nv_tensor(c(3, 2, 1))
+  x <- nv_array(c(1, 2, 3))
+  y <- nv_array(c(3, 2, 1))
   nvl_le(x, y)
 })
 \dontshow{\}) # examplesIf}

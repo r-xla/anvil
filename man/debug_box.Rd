@@ -7,7 +7,7 @@
 debug_box(dtype, shape, ambiguous = FALSE)
 }
 \arguments{
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Data type.}
 
 \item{shape}{(\code{integer()})\cr
@@ -23,11 +23,11 @@ See the \code{vignette("type-promotion")} for more details.}
 }
 \description{
 Convenience constructor that creates a \code{\link{DebugBox}} from a data type and shape,
-without having to manually construct an \code{\link{AbstractTensor}} first.
+without having to manually construct an \code{\link{AbstractArray}} first.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-# Create a debug box representing a 2x3 f32 tensor
+# Create a debug box representing a 2x3 f32 array
 db <- debug_box("f32", c(2L, 3L))
 db
 dtype(db)
@@ -35,5 +35,5 @@ shape(db)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\link{DebugBox}, \link{AbstractTensor}, \code{\link[=trace_fn]{trace_fn()}}
+\link{DebugBox}, \link{AbstractArray}, \code{\link[=trace_fn]{trace_fn()}}
 }

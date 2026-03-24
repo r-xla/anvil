@@ -2,13 +2,13 @@
 % Please edit documentation in R/serialize.R
 \name{nv_save}
 \alias{nv_save}
-\title{Save tensors to a file}
+\title{Save arrays to a file}
 \usage{
-nv_save(tensors, path)
+nv_save(arrays, path)
 }
 \arguments{
-\item{tensors}{(named \code{list} of \code{\link{AnvilTensor}})\cr
-Named list of tensors to save. Names must be unique.}
+\item{arrays}{(named \code{list} of \code{\link{AnvilArray}})\cr
+Named list of arrays to save. Names must be unique.}
 
 \item{path}{(\code{character(1)})\cr
 File path to write to.}
@@ -17,7 +17,7 @@ File path to write to.}
 \code{NULL} (invisibly).
 }
 \description{
-Saves a named list of tensors to a file in the
+Saves a named list of arrays to a file in the
 \href{https://huggingface.co/docs/safetensors/index}{safetensors} format.
 }
 \details{
@@ -26,7 +26,7 @@ a file connection.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded("cpu")) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(array(1:6, dim = c(2, 3)))
+x <- nv_array(array(1:6, dim = c(2, 3)))
 x
 path <- tempfile(fileext = ".safetensors")
 nv_save(list(x = x), path)

@@ -7,14 +7,14 @@
 DebugBox(aval)
 }
 \arguments{
-\item{aval}{(\code{\link{AbstractTensor}})\cr
-The abstract tensor representing the value.}
+\item{aval}{(\code{\link{AbstractArray}})\cr
+The abstract array representing the value.}
 }
 \value{
 (\code{DebugBox})
 }
 \description{
-\code{\link{AnvilBox}} subclass that wraps an \code{\link{AbstractTensor}} for use in debug mode.
+\code{\link{AnvilBox}} subclass that wraps an \code{\link{AbstractArray}} for use in debug mode.
 When anvil operations (e.g. \code{\link[=nv_add]{nv_add()}}) are called outside of \code{\link[=jit]{jit()}},
 they return \code{DebugBox} objects instead of actual computed results.
 This allows checking the types and shapes of intermediate values
@@ -34,8 +34,8 @@ The convenience constructor \code{\link[=debug_box]{debug_box()}} creates a \cod
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(1:4)
-y <- nv_tensor(5:8)
+x <- nv_array(1:4)
+y <- nv_array(5:8)
 result <- nv_add(x, y)
 result
 dtype(result)
@@ -48,5 +48,5 @@ nv_reduce_sum(db, dims = 2L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\link{AnvilBox}, \link{GraphBox}, \code{\link[=debug_box]{debug_box()}}, \link{AbstractTensor}
+\link{AnvilBox}, \link{GraphBox}, \code{\link[=debug_box]{debug_box()}}, \link{AbstractArray}
 }

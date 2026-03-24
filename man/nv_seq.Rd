@@ -10,7 +10,7 @@ nv_seq(start, end, dtype = "i32", ambiguous = FALSE)
 \item{start, end}{(\code{integer(1)})\cr
 Start and end values. Must satisfy \code{start <= end}.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Data type.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
@@ -19,11 +19,11 @@ Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and 
 See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
-\code{\link{tensorish}}\cr
-1-D tensor of length \code{end - start + 1}.
+\code{\link{arrayish}}\cr
+1-D array of length \code{end - start + 1}.
 }
 \description{
-Creates a 1-D tensor with integer values from \code{start} to \code{end} (inclusive),
+Creates a 1-D array with integer values from \code{start} to \code{end} (inclusive),
 analogous to R's \code{seq(start, end)}.
 }
 \examples{
