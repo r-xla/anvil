@@ -125,9 +125,9 @@ test_that("ambiguous() generic works for AnvilArray and AbstractArray", {
   expect_false(ambiguous(x_anvil_nonamb))
 
   # AbstractArray
-  aval_amb <- nv_aten("f32", c(2, 3), ambiguous = TRUE)
+  aval_amb <- nv_abstract("f32", c(2, 3), ambiguous = TRUE)
   expect_true(ambiguous(aval_amb))
 
-  aval_nonamb <- nv_aten("f32", c(2, 3), ambiguous = FALSE)
+  aval_nonamb <- nv_abstract("f32", c(2, 3), ambiguous = FALSE)
   expect_false(ambiguous(aval_nonamb))
 })

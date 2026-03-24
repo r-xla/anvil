@@ -51,7 +51,7 @@ prepare_gradient_args <- function(args, wrt) {
 #' @seealso [`gradient()`], [`value_and_gradient()`]
 #' @export
 #' @examples
-#' graph <- trace_fn(nvl_mul, list(nv_aten("f32", c()), nv_aten("f32", c())))
+#' graph <- trace_fn(nvl_mul, list(nv_abstract("f32", c()), nv_abstract("f32", c())))
 #' graph
 #' transform_gradient(graph, "lhs")
 transform_gradient <- function(graph, wrt) {

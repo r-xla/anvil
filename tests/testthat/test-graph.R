@@ -150,11 +150,11 @@ test_that("GraphLiteral", {
   expect_snapshot(gl)
 })
 
-test_that("trace_fn works with nv_aten inputs", {
+test_that("trace_fn works with nv_abstract inputs", {
   f <- function(x, y) {
     nvl_add(x, y)
   }
-  in_type <- nv_aten("f32", c(2, 2))
+  in_type <- nv_abstract("f32", c(2, 2))
   graph <- trace_fn(f, list(x = in_type, y = in_type))
   expect_true(is_graph(graph))
   expect_equal(graph$inputs[[1L]]$aval, in_type)
@@ -175,7 +175,7 @@ test_that("can pass abstract arrays to trace_fn", {
   f <- function(x, y) {
     nvl_add(x, y)
   }
-  in_type <- nv_aten("f32", c(2, 2))
+  in_type <- nv_abstract("f32", c(2, 2))
   graph <- trace_fn(f, list(x = in_type, y = in_type))
   expect_true(is_graph(graph))
   expect_equal(graph$inputs[[1L]]$aval, in_type)

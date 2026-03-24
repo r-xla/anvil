@@ -39,7 +39,7 @@ test_that("basic primitive", {
   x <- nv_array(1:4, dtype = "f32", shape = c(2, 2))
   out <- nv_add(x, x)
   expect_class(out, "DebugBox")
-  expect_equal(out$aval, nv_aten("f32", c(2, 2)))
+  expect_equal(out$aval, nv_abstract("f32", c(2, 2)))
 })
 
 test_that("gradient", {
@@ -114,7 +114,7 @@ test_that("can't debug with abstract arrays", {
   # For non-generics, abstract arrays would work, but it would be confusing if it suddenly
   # does not work for generics
   expect_error(
-    nv_add(nv_aten("f32", c(2, 2)), nv_aten("f32", c(2, 2))),
+    nv_add(nv_abstract("f32", c(2, 2)), nv_abstract("f32", c(2, 2))),
     "Don't use AbtractTensors as inputs"
   )
 })

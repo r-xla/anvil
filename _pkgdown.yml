@@ -259,7 +259,7 @@ reference:
       - AnvilPrimitive
       - PrimitiveCall
       - register_primitive
-      - nv_aten
+      - nv_abstract
       - AbstractArray
       - ConcreteArray
       - LiteralArray

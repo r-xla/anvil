@@ -28,7 +28,7 @@ This is the building block used by \code{\link[=gradient]{gradient()}} and \code
 those higher-level wrappers unless you need to operate on graphs directly.
 }
 \examples{
-graph <- trace_fn(nvl_mul, list(nv_aten("f32", c()), nv_aten("f32", c())))
+graph <- trace_fn(nvl_mul, list(nv_abstract("f32", c()), nv_abstract("f32", c())))
 graph
 transform_gradient(graph, "lhs")
 }
