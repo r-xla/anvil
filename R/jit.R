@@ -5,6 +5,9 @@
 #' skip recompilation. Unlike [`xla()`], the compiled executable is not created
 #' eagerly but lazily on the first invocation.
 #'
+#' The compilation backend is determined by the global `anvil.backend` option,
+#' which defaults to `"xla"`. Use `with_backend()` to temporarily override it.
+#'
 #' @param f (`function`)\cr
 #'   Function to compile. Must accept and return [`AnvilArray`]s (and/or
 #'   static arguments).
@@ -21,14 +24,10 @@
 #'   An argument cannot appear in both `donate` and `static`.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
 #'   The device to use if it cannot be inferred from the inputs or constants.
-#'   Defaults to `"cpu"`. Only supported for `backend = "xla"`.
-#' @param backend (`character(1)`)\cr
-#'   Compilation backend. `"xla"` (default) uses PJRT/XLA.
-#'   `"quickr"` uses `quickr::quick()`. If omitted, the default comes from
-#'   `getOption("anvil.default_backend", "xla")`.
+#'   Defaults to `"cpu"`. Only supported for the `"xla"` backend.
 #' @return A `JitFunction` with the same formals as `f`.
-#'   For `backend = "xla"`, the returned wrapper expects and returns
-#'   [`AnvilArray`] values. For `backend = "quickr"`, the returned wrapper
+#'   For the `"xla"` backend, the returned wrapper expects and returns
+#'   [`AnvilArray`] values. For the `"quickr"` backend, the returned wrapper
 #'   expects plain R numeric/integer/logical scalars, vectors, and arrays and
 #'   returns plain R values.
 #' @seealso [`xla()`] for ahead-of-time compilation, [`jit_eval()`] for evaluating an expression once.
@@ -53,11 +52,10 @@ jit <- function(
   static = character(),
   cache_size = 100L,
   donate = character(),
-  device = NULL,
-  backend = getOption("anvil.default_backend", "xla")
+  device = NULL
 ) {
   cache <- xlamisc::LRUCache$new(cache_size)
-  backend <- jit_normalize_backend(backend)
+  backend <- globals$backend
   jit_validate_args(f, static, donate, device, backend)
 
   f_jit <- if (backend == "xla") {
@@ -68,10 +66,6 @@ jit <- function(
   formals(f_jit) <- formals2(f)
   class(f_jit) <- "JitFunction"
   f_jit
-}
-
-jit_normalize_backend <- function(backend) {
-  normalize_backend(backend)
 }
 
 jit_validate_args <- function(f, static, donate, device, backend) {
@@ -227,7 +221,14 @@ quickr_jit_aval <- function(x) {
     )
   }
 
-  nv_aten(default_dtype(x, backend = "quickr"), quickr_jit_shape(x), ambiguous = FALSE)
+  dt <- if (is.double(x)) {
+    FloatType(64)
+  } else if (is.integer(x)) {
+    IntegerType(32)
+  } else {
+    BooleanType()
+  }
+  nv_aten(dt, quickr_jit_shape(x), ambiguous = FALSE)
 }
 
 jit_quickr_inputs <- function(args_flat, is_static_flat) {

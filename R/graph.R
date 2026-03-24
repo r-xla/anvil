@@ -220,7 +220,7 @@ GraphDescriptor <- function(
   env$is_static_flat <- is_static_flat
   env$static_args_flat <- static_args_flat
   env$devices <- devices
-  env$backend <- current_backend(backend)
+  env$backend <- if (!is.null(backend)) normalize_backend(backend) else current_backend()
 
   structure(env, class = "GraphDescriptor")
 }
