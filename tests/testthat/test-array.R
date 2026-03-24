@@ -133,13 +133,13 @@ test_that("AbstractArray can be created with any ambiguous dtype", {
   expect_true(ambiguous(AbstractArray("i16", integer(), TRUE)))
 })
 
-test_that("nv_aten creates AbstractArray", {
+test_that("nv_abstract creates AbstractArray", {
   expect_equal(
-    nv_aten("f32", c()),
+    nv_abstract("f32", c()),
     AbstractArray("f32", Shape(integer()), FALSE)
   )
   expect_equal(
-    nv_aten(as_dtype("i32"), 1:2),
+    nv_abstract(as_dtype("i32"), 1:2),
     AbstractArray("i32", Shape(1:2), FALSE)
   )
 })

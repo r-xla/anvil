@@ -43,7 +43,7 @@ is_arrayish(1.5)
 # Non-scalar vectors are not arrayish
 is_arrayish(1:4)
 
-is_arrayish(DebugBox(nv_aten("f32", c(2L, 3L))))
+is_arrayish(DebugBox(nv_abstract("f32", c(2L, 3L))))
 
 # Disable literal promotion
 is_arrayish(1.5, literal = FALSE)

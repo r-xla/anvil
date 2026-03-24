@@ -243,7 +243,7 @@ test_that("... works (#19)", {
 })
 
 test_that("good error message when passing AbstractArrays", {
-  expect_error(jit(nv_negate)(nv_aten("f32", c(2, 2))), "Expected AnvilArray")
+  expect_error(jit(nv_negate)(nv_abstract("f32", c(2, 2))), "Expected AnvilArray")
 })
 
 test_that("jit: respects device argument", {
@@ -273,7 +273,7 @@ test_that("jit_eval does not modify calling environment", {
 
 test_that("xla: basic test", {
   f_add <- function(x, y) x + y
-  args <- list(x = nv_aten("f32", c()), y = nv_aten("f32", c()))
+  args <- list(x = nv_abstract("f32", c()), y = nv_abstract("f32", c()))
   f_compiled <- xla(f_add, args = args)
   result <- f_compiled(nv_scalar(1, dtype = "f32"), nv_scalar(2, dtype = "f32"))
   expect_equal(result, nv_scalar(3, dtype = "f32"))

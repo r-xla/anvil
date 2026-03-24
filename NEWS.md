@@ -4,6 +4,7 @@
 
 * `AnvilTensor`/`nv_tensor` were renamed to `AnvilArray` and `nv_array` to be
   more in line with R's `array()`.
+  Also, `nv_aten()` was renamed to `nv_abstract()`.
 
 ## New Features
 

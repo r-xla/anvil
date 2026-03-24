@@ -28,20 +28,20 @@ If \code{FALSE}, only dtype and shape are compared.}
 Compare two abstract arrays for type equality.
 }
 \examples{
-a <- nv_aten("f32", c(2L, 3L))
-b <- nv_aten("f32", c(2L, 3L))
+a <- nv_abstract("f32", c(2L, 3L))
+b <- nv_abstract("f32", c(2L, 3L))
 
 # Same dtype and shape
 eq_type(a, b, ambiguity = FALSE)
 
 # Different dtype
-eq_type(a, nv_aten("i32", c(2L, 3L)), ambiguity = FALSE)
+eq_type(a, nv_abstract("i32", c(2L, 3L)), ambiguity = FALSE)
 
 # Different shape
-eq_type(a, nv_aten("f32", c(3L, 2L)), ambiguity = FALSE)
+eq_type(a, nv_abstract("f32", c(3L, 2L)), ambiguity = FALSE)
 
 # ambiguity parameter controls whether ambiguous field is compared
-c <- nv_aten("f32", c(2L, 3L), ambiguous = TRUE)
+c <- nv_abstract("f32", c(2L, 3L), ambiguous = TRUE)
 eq_type(a, c, ambiguity = FALSE)
 eq_type(a, c, ambiguity = TRUE)
 

@@ -45,7 +45,7 @@ This is a low-level function; most users should use \code{\link[=jit]{jit()}} or
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2))
-graph <- trace_fn(function(y) y + x, list(y = nv_aten("f32", shape = c())))
+graph <- trace_fn(function(y) y + x, list(y = nv_abstract("f32", shape = c())))
 graph
 stablehlo(graph)
 \dontshow{\}) # examplesIf}
