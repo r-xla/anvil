@@ -14,13 +14,13 @@
   * `nvl_cholesky()` to compute the Cholesky decomposition of a matrix.
   * `nvl_triangular_solve()` to solve a system of linear equations with a triangular matrix.
 * New API functions:
-  * `nv_diag()` to create a diagonal matrix from a 1-D array.
+  * `nv_diag()` to create a diagonal matrix from a 1-D tensor.
   * `nv_eye()` to create an identity matrix.
   * `nv_solve()` to solve a system of linear equations.
   * `nv_cholesky()` to compute the Cholesky decomposition of a matrix.
 * Improved semantics:
   * `nvl_cholesky()` now zeros out the upper/lower triangle of the output.
-* Printing arrays via `nv_print()` now also works on GPUs.
+* Printing tensors via `nv_print()` now also works on GPUs.
 
 ## Performance
 
