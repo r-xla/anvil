@@ -7,7 +7,7 @@ Returns a callable R function that executes the compiled binary. Unlike
 compilation happens eagerly at definition time rather than on first
 call, so the input shapes and dtypes must be specified upfront via
 abstract arrays (see
-[`nv_aten()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)).
+[`nv_abstract()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)).
 
 ## Usage
 
@@ -27,7 +27,7 @@ xla(f, args, donate = character(), device = NULL)
 
   (`list`)  
   List of abstract array specifications (e.g. from
-  [`nv_aten()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md))
+  [`nv_abstract()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md))
   describing the expected shapes and dtypes of `f`'s arguments.
 
 - donate:
@@ -69,7 +69,7 @@ for the lower-level API.
 
 ``` r
 f_compiled <- xla(function(x, y) x + y,
-  args = list(x = nv_aten("f32", c(2, 2)), y = nv_aten("f32", c(2, 2)))
+  args = list(x = nv_abstract("f32", c(2, 2)), y = nv_abstract("f32", c(2, 2)))
 )
 a <- nv_array(array(1:4, c(2, 2)), dtype = "f32")
 b <- nv_array(array(5:8, c(2, 2)), dtype = "f32")

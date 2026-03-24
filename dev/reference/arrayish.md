@@ -64,7 +64,7 @@ is_arrayish(1.5)
 is_arrayish(1:4)
 #> [1] FALSE
 
-is_arrayish(DebugBox(nv_aten("f32", c(2L, 3L))))
+is_arrayish(DebugBox(nv_abstract("f32", c(2L, 3L))))
 #> [1] TRUE
 
 # Disable literal promotion

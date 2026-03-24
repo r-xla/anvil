@@ -9,11 +9,11 @@
 Returns a callable R function that executes the compiled binary.
 Unlike jit(), compilation happens eagerly at
 definition time rather than on first call, so the input shapes and dtypes must be
-specified upfront via abstract arrays (see nv_aten())."><meta property="og:description" content="Compiles a function to an XLA executable via tracing.
+specified upfront via abstract arrays (see nv_abstract())."><meta property="og:description" content="Compiles a function to an XLA executable via tracing.
 Returns a callable R function that executes the compiled binary.
 Unlike jit(), compilation happens eagerly at
 definition time rather than on first call, so the input shapes and dtypes must be
-specified upfront via abstract arrays (see nv_aten())."><meta name="robots" content="noindex"></head><body>
+specified upfront via abstract arrays (see nv_abstract())."><meta name="robots" content="noindex"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -81,7 +81,7 @@ specified upfront via abstract arrays (see nv_aten())."><meta name="robots" cont
 <p>Returns a callable R function that executes the compiled binary.
 Unlike <code><a href="jit.html">jit()</a></code>, compilation happens eagerly at
 definition time rather than on first call, so the input shapes and dtypes must be
-specified upfront via abstract arrays (see <code><a href="AbstractArray.html">nv_aten()</a></code>).</p>
+specified upfront via abstract arrays (see <code><a href="AbstractArray.html">nv_abstract()</a></code>).</p>
     </div>
 
     <div class="section level2">
@@ -100,7 +100,7 @@ Function to compile. Must accept and return <code><a href="AnvilArray.html">Anvi
 
 <dt id="arg-args">args<a class="anchor" aria-label="anchor" href="#arg-args"></a></dt>
 <dd><p>(<code>list</code>)<br>
-List of abstract array specifications (e.g. from <code><a href="AbstractArray.html">nv_aten()</a></code>) describing the
+List of abstract array specifications (e.g. from <code><a href="AbstractArray.html">nv_abstract()</a></code>) describing the
 expected shapes and dtypes of <code>f</code>'s arguments.</p></dd>
 
 
@@ -134,7 +134,7 @@ and compiles it to an XLA executable immediately.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">f_compiled</span> <span class="op">&lt;-</span> <span class="fu">xla</span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="va">y</span>,</span></span>
-<span class="r-in"><span>  args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="AbstractArray.html">nv_aten</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="AbstractArray.html">nv_aten</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="AbstractArray.html">nv_abstract</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="AbstractArray.html">nv_abstract</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">5</span><span class="op">:</span><span class="fl">8</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></span>

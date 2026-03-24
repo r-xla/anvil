@@ -350,7 +350,7 @@ Internal data structures and functions
   : Primitive Call
 - [`register_primitive()`](https://r-xla.github.io/anvil/dev/reference/register_primitive.md)
   : Register a Primitive
-- [`nv_aten()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
+- [`nv_abstract()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
   [`AbstractArray()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
   : Abstract Array Class
 - [`ConcreteArray()`](https://r-xla.github.io/anvil/dev/reference/ConcreteArray.md)

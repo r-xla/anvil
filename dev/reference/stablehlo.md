@@ -74,7 +74,7 @@ A `list` of length 2:
 
 ``` r
 x <- nv_array(c(1, 2))
-graph <- trace_fn(function(y) y + x, list(y = nv_aten("f32", shape = c())))
+graph <- trace_fn(function(y) y + x, list(y = nv_abstract("f32", shape = c())))
 graph
 #> <AnvilGraph>
 #>   Inputs:

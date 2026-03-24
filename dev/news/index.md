@@ -6,7 +6,9 @@
 
 - `AnvilTensor`/`nv_tensor` were renamed to `AnvilArray` and `nv_array`
   to be more in line with R’s
-  [`array()`](https://rdrr.io/r/base/array.html).
+  [`array()`](https://rdrr.io/r/base/array.html). Also, `nv_aten()` was
+  renamed to
+  [`nv_abstract()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md).
 
 ### New Features
 
