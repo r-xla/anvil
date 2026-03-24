@@ -17,8 +17,8 @@ dtype_abstract(x)
 ambiguous_abstract(x)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr}
+\item{x}{(\code{\link{arrayish}})\cr}
 }
 \description{
-Calls the extractor after converting the input to an \code{\link{AbstractTensor}}.
+Calls the extractor after converting the input to an \code{\link{AbstractArray}}.
 }

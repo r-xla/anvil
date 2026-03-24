@@ -7,13 +7,13 @@
 nv_remainder(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+\item{lhs, rhs}{(\code{\link{arrayish}})\cr
 Left and right operand.
 Operands are \link[=nv_promote_to_common]{promoted to a common data type}.
 Scalars are \link[=nv_broadcast_scalars]{broadcast} to the shape of the other operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and the promoted common data type of the inputs.
 }
 \description{
@@ -22,8 +22,8 @@ Element-wise remainder of division. You can also use the \code{\%\%} operator.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(7, 8, 9))
-  y <- nv_tensor(c(3, 3, 4))
+  x <- nv_array(c(7, 8, 9))
+  y <- nv_array(c(3, 3, 4))
   x \%\% y
 })
 \dontshow{\}) # examplesIf}

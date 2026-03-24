@@ -26,7 +26,7 @@ describe("nv_subset and nv_subset_assign", {
 
     value_shape <- subset_spec_to_shape(spec)
 
-    x <- nv_tensor(arr)
+    x <- nv_array(arr)
 
     # test nv_subset
     r_subset_result <- do.call(`[`, c(list(arr), args, list(drop = FALSE)))
@@ -50,7 +50,7 @@ describe("nv_subset and nv_subset_assign", {
     }
     r_assign_result <- do.call(`[<-`, c(list(arr), args, list(value = value)))
 
-    v <- nv_tensor(value, shape = value_shape)
+    v <- nv_array(value, shape = value_shape)
 
     static_assign <- as_array(jit(function(x, v) {
       rlang::inject(nv_subset_assign(x, !!!quos, value = v))
@@ -196,7 +196,7 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("subset errors on R vector of length > 1", {
-    x <- nv_tensor(1:10)
+    x <- nv_array(1:10)
     expect_error(
       jit_eval(x[c(1, 2)]),
       "Vectors of length > 1 are not allowed"
@@ -206,19 +206,19 @@ describe("nv_subset and nv_subset_assign", {
   it("subset_assign broadcasts scalar rhs", {
     expect_jit_equal(
       {
-        x <- nv_tensor(1:3)
+        x <- nv_array(1:3)
         x[1:3] <- -1L
         x
       },
-      nv_tensor(c(-1L, -1L, -1L))
+      nv_array(c(-1L, -1L, -1L))
     )
   })
 
   it("subset_assign errors when update shape doesn't match", {
     expect_error(
       jit_eval({
-        x <- nv_tensor(matrix(1:6, nrow = 2))
-        x[1:2, 1:2] <- nv_tensor(1:2)
+        x <- nv_array(matrix(1:6, nrow = 2))
+        x[1:2, 1:2] <- nv_array(1:2)
         x
       }),
       "Update shape does not match subset shape"
@@ -226,47 +226,47 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("errors on out-of-bounds range (start < 1)", {
-    x <- nv_tensor(1:10)
+    x <- nv_array(1:10)
     expect_error(jit_eval(x[0:5]), "out of bounds")
   })
 
   it("errors on out-of-bounds range (end > dim_size)", {
-    x <- nv_tensor(1:10)
+    x <- nv_array(1:10)
     expect_error(jit_eval(x[5:11]), "out of bounds")
   })
 
   it("errors on out-of-bounds single index (< 1)", {
-    x <- nv_tensor(1:10)
+    x <- nv_array(1:10)
     expect_error(jit_eval(x[0L]), "out of bounds")
   })
 
   it("errors on out-of-bounds single index (> dim_size)", {
-    x <- nv_tensor(1:10)
+    x <- nv_array(1:10)
     expect_error(jit_eval(x[11L]), "out of bounds")
   })
 
   it("errors on out-of-bounds list() index", {
-    x <- nv_tensor(1:10)
+    x <- nv_array(1:10)
     expect_error(jit_eval(x[list(1, 11)]), "out of bounds")
     expect_error(jit_eval(x[list(0, 5)]), "out of bounds")
   })
 
-  it("works with nv_tensors just like with R indices", {
+  it("works with nv_arrays just like with R indices", {
     x <- jit_eval({
-      x <- nv_tensor(1:24, shape = c(2, 3, 4))
+      x <- nv_array(1:24, shape = c(2, 3, 4))
       x1 <- x[1:2, list(1, 3), 1]
-      x2 <- x[nv_tensor(c(1L, 2L)), list(1L, 3L), nv_scalar(1L)]
+      x2 <- x[nv_array(c(1L, 2L)), list(1L, 3L), nv_scalar(1L)]
       list(x1, x2)
     })
     expect_equal(x[[1]], x[[2]])
 
     y <- jit_eval({
-      x <- nv_tensor(1:24, shape = c(2, 3, 4))
+      x <- nv_array(1:24, shape = c(2, 3, 4))
       x1 <- x
       x2 <- x
-      update <- nv_tensor(1:4, shape = c(2, 2))
+      update <- nv_array(1:4, shape = c(2, 2))
       x1[1:2, list(1, 3), 1] <- update
-      x2[nv_tensor(c(1L, 2L)), list(1L, 3L), nv_scalar(1L)] <- update
+      x2[nv_array(c(1L, 2L)), list(1L, 3L), nv_scalar(1L)] <- update
       list(x1, x2)
     })
     expect_equal(y[[1]], y[[2]])
@@ -274,10 +274,10 @@ describe("nv_subset and nv_subset_assign", {
 
   it("works with nv_seq", {
     x <- jit_eval({
-      x <- nv_tensor(1:10)
+      x <- nv_array(1:10)
       x[nv_seq(2, 5)]
     })
-    expect_equal(x, nv_tensor(2:5))
+    expect_equal(x, nv_array(2:5))
   })
 })
 
@@ -354,13 +354,13 @@ describe("subset_specs_start_indices", {
 
   it("works with empty subset", {
     x <- jit_eval({
-      nv_tensor(1:10)[]
+      nv_array(1:10)[]
     })
-    expect_equal(x, nv_tensor(1:10))
+    expect_equal(x, nv_array(1:10))
     x <- jit_eval({
-      x <- nv_tensor(1:10)
-      x[] <- nv_tensor(2:11)
+      x <- nv_array(1:10)
+      x[] <- nv_array(2:11)
     })
-    expect_equal(x, nv_tensor(2:11))
+    expect_equal(x, nv_array(2:11))
   })
 })

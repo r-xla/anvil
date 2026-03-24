@@ -10,23 +10,23 @@ nv_transpose(x, permutation = NULL)
 \method{t}{AnvilBox}(x)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-Tensor to transpose.}
+\item{x}{(\code{\link{arrayish}})\cr
+Array to transpose.}
 
 \item{permutation}{(\code{integer()} | \code{NULL})\cr
 New ordering of dimensions. If \code{NULL} (default), reverses the dimensions.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same data type as \code{x} and shape \code{nv_shape(x)[permutation]}.
 }
 \description{
-Permutes the dimensions of a tensor. You can also use \code{t()} for matrices.
+Permutes the dimensions of an array. You can also use \code{t()} for matrices.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(matrix(1:6, nrow = 2))
+  x <- nv_array(matrix(1:6, nrow = 2))
   t(x)
 })
 \dontshow{\}) # examplesIf}

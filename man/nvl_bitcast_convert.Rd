@@ -7,20 +7,20 @@
 nvl_bitcast_convert(operand, dtype)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of any data type.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of any data type.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Target data type. If it has the same bit width as the input, the output
 shape is unchanged. If narrower, an extra trailing dimension is added.
 If wider, the last dimension is consumed.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the given \code{dtype}.
 }
 \description{
-Reinterprets the bits of a tensor as a different data type without
+Reinterprets the bits of an array as a different data type without
 modifying the underlying data.
 }
 \section{Implemented Rules}{
@@ -39,11 +39,11 @@ Lowers to \code{\link[stablehlo:hlo_bitcast_convert]{stablehlo::hlo_bitcast_conv
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(1L)
+  x <- nv_array(1L)
   nvl_bitcast_convert(x, dtype = "i8")
 })
 jit_eval({
-  x <- nv_tensor(rep(1L, 4), dtype = "i8")
+  x <- nv_array(rep(1L, 4), dtype = "i8")
   nvl_bitcast_convert(x, dtype = "i32")
 })
 \dontshow{\}) # examplesIf}

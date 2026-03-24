@@ -7,8 +7,8 @@
 nvl_reduce_any(operand, dims, drop = TRUE)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of boolean data type.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of boolean data type.}
 
 \item{dims}{(\code{integer()})\cr
 Dimensions to reduce over.}
@@ -19,8 +19,8 @@ If \code{TRUE}, the reduced dimensions are removed.
 If \code{FALSE}, the reduced dimensions are set to 1.}
 }
 \value{
-\code{\link{tensorish}}\cr
-Boolean tensor. Never ambiguous.
+\code{\link{arrayish}}\cr
+Boolean array. Never ambiguous.
 When \code{drop = TRUE}, the shape is that of \code{operand} with \code{dims} removed.
 When \code{drop = FALSE}, the shape is that of \code{operand} with \code{dims} set to 1.
 }
@@ -44,7 +44,7 @@ Lowers to \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+  x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
   nvl_reduce_any(x, dims = 1L)
 })
 \dontshow{\}) # examplesIf}

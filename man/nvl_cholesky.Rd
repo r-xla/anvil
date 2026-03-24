@@ -7,8 +7,8 @@
 nvl_cholesky(operand, lower)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of data type floating-point with at least 2 dimensions.
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of data type floating-point with at least 2 dimensions.
 The last two dimensions must be equal (square matrix); any leading
 dimensions are batch dimensions.}
 
@@ -18,7 +18,7 @@ If \code{TRUE}, compute the lower triangular factor \code{L} such that
 factor \code{U} such that \code{operand = t(U) \%*\% U}.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the input.
 The values in the triangle not specified by \code{lower} are implementation-defined.
 It is ambiguous if the input is ambiguous.
@@ -44,7 +44,7 @@ Lowers to \code{\link[stablehlo:hlo_cholesky]{stablehlo::hlo_cholesky()}}.
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   # Create a positive-definite matrix
-  x <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+  x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
   nvl_cholesky(x, lower = TRUE)
 })
 \dontshow{\}) # examplesIf}

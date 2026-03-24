@@ -1,15 +1,15 @@
-#' @include tensor.R
+#' @include array.R
 #' @include box.R
 
 #' @title Graph Value
 #' @description
 #' Value in an [`AnvilGraph`]. This is a mutable class.
-#' @param aval ([`AbstractTensor`])\cr
+#' @param aval ([`AbstractArray`])\cr
 #'   The abstract value of the variable.
 #' @return (`GraphValue`)
 #' @export
 GraphValue <- function(aval) {
-  checkmate::assert_class(aval, "AbstractTensor")
+  checkmate::assert_class(aval, "AbstractArray")
 
   # Use an environment for reference semantics (mutable)
   env <- new.env(parent = emptyenv())
@@ -21,12 +21,12 @@ GraphValue <- function(aval) {
 #' @title Graph Literal
 #' @description
 #' Literal in an [`AnvilGraph`]. This is a mutable class.
-#' @param aval ([`LiteralTensor`])\cr
+#' @param aval ([`LiteralArray`])\cr
 #'   The value of the literal.
 #' @return (`GraphLiteral`)
 #' @export
 GraphLiteral <- function(aval) {
-  checkmate::assert_class(aval, "LiteralTensor")
+  checkmate::assert_class(aval, "LiteralArray")
 
   # Use an environment for reference semantics (mutable)
   env <- new.env(parent = emptyenv())
@@ -55,7 +55,7 @@ print.GraphValue <- function(x, ...) {
 format.GraphLiteral <- function(x, ...) {
   # otherwise there might be conversion issues, so we directly use the pjrt printer
   # instead of converting via as_array(), which loses precision
-  val <- if (is_anvil_tensor(x$aval$data)) {
+  val <- if (is_anvil_array(x$aval$data)) {
     trimws(capture.output(print(x$aval$data))[2L])
   } else {
     as.character(x$aval$data)
@@ -84,11 +84,11 @@ NULL
 #' @param primitive (`AnvilPrimitive`)\cr
 #'   The function.
 #' @param inputs (`list(GraphValue)`)\cr
-#'   The (tensor) inputs to the primitive.
+#'   The (array) inputs to the primitive.
 #' @param params (`list(<any>)`)\cr
 #'   The (static) parameters of the function call.
 #' @param outputs (`list(GraphValue)`)\cr
-#'   The (tensor) outputs of the primitive.
+#'   The (array) outputs of the primitive.
 #' @return (`PrimitiveCall`)
 #' @export
 PrimitiveCall <- function(primitive, inputs, params, outputs) {
@@ -118,20 +118,20 @@ PrimitiveCall <- function(primitive, inputs, params, outputs) {
 #'   The primitive calls that make up the graph.
 #'   This can also be another call into a graph when the primitive is a `p_call`.
 #' @param in_tree (`NULL | Node`)\cr
-#'   The tree of inputs. May contain leaves for both tensor inputs and static
-#'   (non-tensor) arguments. Only the tensor leaves correspond to entries in
+#'   The tree of inputs. May contain leaves for both array inputs and static
+#'   (non-array) arguments. Only the array leaves correspond to entries in
 #'   `inputs`; use `is_static_flat` to distinguish them.
 #' @param out_tree (`NULL | Node`)\cr
 #'   The tree of outputs.
 #' @param inputs (`list(GraphValue)`)\cr
-#'   The inputs to the graph (tensor arguments only).
+#'   The inputs to the graph (array arguments only).
 #' @param outputs (`list(GraphValue)`)\cr
 #'   The outputs of the graph.
 #' @param constants (`list(GraphValue)`)\cr
 #'   The constants of the graph.
 #' @param is_static_flat (`NULL | logical()`)\cr
-#'   Boolean mask indicating which flat positions in `in_tree` are static (non-tensor) args.
-#'   `NULL` when all args are tensor inputs.
+#'   Boolean mask indicating which flat positions in `in_tree` are static (non-array) args.
+#'   `NULL` when all args are array inputs.
 #' @param static_args_flat (`NULL | list()`)\cr
 #'   Flattened traced values for the static arguments indicated by `is_static_flat`.
 #' @return (`AnvilGraph`)
@@ -166,29 +166,29 @@ AnvilGraph <- function(
 #' @param calls (`list(PrimitiveCall)`)\cr
 #'   The primitive calls that make up the graph.
 #' @param tensor_to_gval (`hashtab`)\cr
-#'   Mapping: `AnvilTensor` -> `GraphValue`
+#'   Mapping: `AnvilArray` -> `GraphValue`
 #' @param gval_to_box (`hashtab`)\cr
 #'   Mapping: `GraphValue` -> `GraphBox`
 #' @param constants (`list(GraphValue)`)\cr
 #'   The constants of the graph.
 #' @param in_tree (`NULL | Node`)\cr
-#'   The tree of inputs. May contain leaves for both tensor inputs and static
-#'   (non-tensor) arguments. Only the tensor leaves correspond to entries in
+#'   The tree of inputs. May contain leaves for both array inputs and static
+#'   (non-array) arguments. Only the array leaves correspond to entries in
 #'   `inputs`; use `is_static_flat` to distinguish them.
 #' @param out_tree (`NULL | Node`)\cr
 #'   The tree of outputs.
 #' @param inputs (`list(GraphValue)`)\cr
-#'   The inputs to the graph (tensor arguments only).
+#'   The inputs to the graph (array arguments only).
 #' @param outputs (`list(GraphValue)`)\cr
 #'   The outputs of the graph.
 #' @param is_static_flat (`NULL | logical()`)\cr
-#'   Boolean mask indicating which flat positions in `in_tree` are static (non-tensor) args.
-#'   `NULL` when all args are tensor inputs.
+#'   Boolean mask indicating which flat positions in `in_tree` are static (non-array) args.
+#'   `NULL` when all args are array inputs.
 #' @param static_args_flat (`NULL | list()`)\cr
 #'   Flattened traced values for the static arguments indicated by `is_static_flat`.
 #' @param devices (`character()`)\cr
 #'   Device platforms encountered during tracing (e.g. `"cpu"`, `"cuda"`).
-#'   Populated automatically as tensors are registered.
+#'   Populated automatically as arrays are registered.
 #' @param backend (`NULL` | `"xla"` | `"quickr"`)\cr
 #'   Backend associated with this graph descriptor.
 #' @return (`GraphDescriptor`)
@@ -210,7 +210,7 @@ GraphDescriptor <- function(
   # Use an environment for reference semantics (mutable)
   env <- new.env(parent = emptyenv())
   env$calls <- calls
-  env$tensor_to_gval <- tensor_to_gval %||% hashtab()
+  env$data_to_gval <- tensor_to_gval %||% hashtab()
   env$gval_to_box <- gval_to_box %||% hashtab()
   env$constants <- constants
   env$in_tree <- in_tree
@@ -270,7 +270,7 @@ descriptor_to_graph <- function(descriptor) {
 #' @title Graph Box
 #' @description
 #' An [`AnvilBox`] subclass that wraps a [`GraphNode`] during graph construction (tracing).
-#' When a function is traced via [`trace_fn()`], each intermediate tensor
+#' When a function is traced via [`trace_fn()`], each intermediate array
 #' value is represented as a `GraphBox`.
 #' It also contains an associated [`GraphDescriptor`] in which the node "lives".
 #'
@@ -328,7 +328,7 @@ format.GraphBox <- function(x, ...) {
   sprintf("GraphBox(%s)", format(x$gnode))
 }
 
-maybe_box_tensorish <- function(x) {
+maybe_box_arrayish <- function(x) {
   current_desc <- .current_descriptor()
   if (is_graph_box(x)) {
     if (identical(x$desc, current_desc)) {
@@ -336,7 +336,7 @@ maybe_box_tensorish <- function(x) {
     }
     gval <- x$gnode
     get_box_or_register_const(current_desc, gval)
-  } else if (is_anvil_tensor(x) || is_lit(x)) {
+  } else if (is_anvil_array(x) || is_lit(x)) {
     get_box_or_register_const(current_desc, x)
   } else if (is_debug_box(x)) {
     # We want debug mode to emulate standard tracing, so each primitive initializes it's own
@@ -346,17 +346,17 @@ maybe_box_tensorish <- function(x) {
   } else if (is_abstract_tensor(x)) {
     cli_abort("Don't use AbtractTensors as inputs; For debugging, use `debug_box()`")
   } else {
-    cli_abort("Expected tensorish value, but got {.cls {class(x)[1]}}")
+    cli_abort("Expected arrayish value, but got {.cls {class(x)[1]}}")
   }
 }
 
 # this function is on the inputs of trace_fn()
-maybe_box_input <- function(x, desc, toplevel, lit_to_tensor) {
-  if (lit_to_tensor && test_scalar(x)) {
+maybe_box_input <- function(x, desc, toplevel, lit_to_array) {
+  if (lit_to_array && test_scalar(x)) {
     # so we can accept literals as inputs to higher-order primitives like if and while
     ambiguous <- !is.logical(x)
     gval <- GraphValue(
-      aval = AbstractTensor(
+      aval = AbstractArray(
         dtype = default_dtype(x),
         shape = integer(),
         ambiguous = ambiguous
@@ -364,18 +364,18 @@ maybe_box_input <- function(x, desc, toplevel, lit_to_tensor) {
     )
     return(register_input(desc, gval))
   }
-  if (is_anvil_tensor(x)) {
+  if (is_anvil_array(x)) {
     # cases:
     # 1. top-level trace_fn call
     # 2. a constant is passed to a nested trace_fn call
     #    this constant can be a closed-over constant or defined in the environment of the nested trace_fn call
-    # For the first scenario, it would be sufficient to create a AbstractTensor,
+    # For the first scenario, it would be sufficient to create a AbstractArray,
     # because the input will be provided by the user
     # For the second scenario, we will inline the descriptor into the parent descriptor,
     # but it the input to the nested trace_fn call does not become an input to the parent graph,
     # but is simply an existing value, that is a value from the parent graph
     # however, if the value does not exist in the parent graph, we need to add it as a constant
-    # for that, we need to keep the value of the actual tensor, so we can later register it
+    # for that, we need to keep the value of the actual array, so we can later register it
     # see test: "can pass constant to nested trace_fn call if it ..." in test-graph.R
     desc$devices <- c(desc$devices, device(x))
     gval <- if (toplevel) {
@@ -383,13 +383,13 @@ maybe_box_input <- function(x, desc, toplevel, lit_to_tensor) {
       GraphValue(aval = to_abstract(x, pure = TRUE))
     } else {
       # nested trace_fn call might receive known constants from the parent graph as input
-      GraphValue(aval = ConcreteTensor(x))
+      GraphValue(aval = ConcreteArray(x))
     }
     register_input(desc, gval)
   } else if (is_debug_box(x)) {
     # User provided abstract input
-    # This is useful for debugging and in jit() we anyway verify that the inputs are AnvilTensors
-    # so we don't accidentally box abstract tensors there
+    # This is useful for debugging and in jit() we anyway verify that the inputs are AnvilArrays
+    # so we don't accidentally box abstract arrays there
     gval <- GraphValue(aval = x$aval)
     register_input(desc, gval)
   } else if (is_graph_box(x)) {
@@ -398,12 +398,12 @@ maybe_box_input <- function(x, desc, toplevel, lit_to_tensor) {
     # the same GraphValue, because this will make the inlining straightforward.
     register_input(desc, x$gnode)
   } else if (is_abstract_tensor(x)) {
-    # Needed to be able to pass abstract tensors to trace_fn()
+    # Needed to be able to pass abstract arrays to trace_fn()
     gval <- GraphValue(aval = x)
     register_input(desc, gval)
   } else {
-    if (lit_to_tensor) {
-      cli_abort("Expected only tensorish values, but got {.cls {class(x)[1]}}")
+    if (lit_to_array) {
+      cli_abort("Expected only arrayish values, but got {.cls {class(x)[1]}}")
     }
     # parameter
     x
@@ -444,14 +444,14 @@ get_box_or_register_const <- function(desc, x) {
   if (!is_graph_descriptor(desc)) {
     cli_abort("Internal error: trying to register a constant in a non-graph descriptor")
   }
-  if (is_anvil_tensor(x)) {
+  if (is_anvil_array(x)) {
     desc$devices <- c(desc$devices, device(x))
-    gval <- desc$tensor_to_gval[[x]]
+    gval <- desc$data_to_gval[[x]]
     if (!is.null(gval)) {
       return(desc$gval_to_box[[gval]])
     }
-    gval <- GraphValue(aval = ConcreteTensor(x))
-    desc$tensor_to_gval[[x]] <- gval
+    gval <- GraphValue(aval = ConcreteArray(x))
+    desc$data_to_gval[[x]] <- gval
     desc$constants <- c(desc$constants, list(gval))
     box <- GraphBox(gval, desc)
     desc$gval_to_box[[gval]] <- box
@@ -459,7 +459,7 @@ get_box_or_register_const <- function(desc, x) {
   }
   if (test_scalar(x)) {
     ambiguous <- !is.logical(x)
-    gval <- GraphLiteral(LiteralTensor(x, shape = integer(), ambiguous = ambiguous))
+    gval <- GraphLiteral(LiteralArray(x, shape = integer(), ambiguous = ambiguous))
     box <- desc$gval_to_box[[gval]] <- GraphBox(gval, desc)
     return(box)
   }
@@ -471,8 +471,8 @@ get_box_or_register_const <- function(desc, x) {
     cli_abort("Internal error: trying to register an invalid constant")
   }
   # gval$aval can either be a
-  # * ConcreteTensor: AnvilTensor that is captured from the parent environment
-  # * AbstractTensor: Output of a computation in a parent graph
+  # * ConcreteArray: AnvilArray that is captured from the parent environment
+  # * AbstractArray: Output of a computation in a parent graph
   # In either case, we first check whether the value is already registered in the current graph
   # and if so, return it:
   box <- desc$gval_to_box[[x]]
@@ -484,7 +484,7 @@ get_box_or_register_const <- function(desc, x) {
   new_box <- GraphBox(x, desc)
 
   if (is_concrete_tensor(x$aval)) {
-    desc$tensor_to_gval[[x$aval$data]] <- x
+    desc$data_to_gval[[x$aval$data]] <- x
   }
   desc$gval_to_box[[x]] <- new_box
   desc$constants <- c(desc$constants, list(x))
@@ -528,7 +528,7 @@ match_args_to_formals <- function(f, args) {
 
 #' @title Trace an R function into a Graph
 #' @description
-#' Executes `f` with abstract tensor arguments and records every primitive operation into
+#' Executes `f` with abstract array arguments and records every primitive operation into
 #' an [`AnvilGraph`].
 #'
 #' The resulting graph can be lowered to StableHLO (via [`stablehlo()`]) or transformed
@@ -536,16 +536,16 @@ match_args_to_formals <- function(f, args) {
 #'
 #' @param f (`function`)\cr
 #'   The function to trace. Must not be a `JitFunction` (i.e. already jitted).
-#' @param args (`list` of ([`AnvilTensor`] | [`AbstractTensor`]))\cr
+#' @param args (`list` of ([`AnvilArray`] | [`AbstractArray`]))\cr
 #'   The (unflattened) arguments to the function. Mutually exclusive with the
 #'   `args_flat`/`in_tree` pair.
 #' @param desc (`NULL` | `GraphDescriptor`)\cr
 #'   Optional descriptor. When `NULL` (default), a new descriptor is created.
 #' @param toplevel (`logical(1)`)\cr
-#'   If `TRUE`, concrete [`AnvilTensor`] inputs are treated as unknown (traced) values.
+#'   If `TRUE`, concrete [`AnvilArray`] inputs are treated as unknown (traced) values.
 #'   If `FALSE` (default), they are treated as known constants.
-#' @param lit_to_tensor (`logical(1)`)\cr
-#'   Whether to convert literal inputs to tensors. Used internally by higher-order
+#' @param lit_to_array (`logical(1)`)\cr
+#'   Whether to convert literal inputs to arrays. Used internally by higher-order
 #'   primitives such as `nv_if` and `nv_while`.
 #' @param args_flat (`list`)\cr
 #'   Flattened arguments. Must be accompanied by `in_tree`.
@@ -557,7 +557,7 @@ match_args_to_formals <- function(f, args) {
 #' @export
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' graph <- trace_fn(function(x, y) x + y,
-#'   args = list(x = nv_tensor(1, dtype = "f32"), y = nv_tensor(2, dtype = "f32"))
+#'   args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32"))
 #' )
 #' graph
 trace_fn <- function(
@@ -565,7 +565,7 @@ trace_fn <- function(
   args = NULL,
   desc = NULL,
   toplevel = FALSE,
-  lit_to_tensor = FALSE,
+  lit_to_array = FALSE,
   args_flat = NULL,
   in_tree = NULL
 ) {
@@ -592,15 +592,15 @@ trace_fn <- function(
     desc$in_tree <- in_tree
   }
 
-  # box tensors and add them as inputs to the current graph
-  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc, toplevel = toplevel, lit_to_tensor = lit_to_tensor)
-  # Track which flat args are static (non-tensor) values vs. graph inputs
+  # box arrays and add them as inputs to the current graph
+  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc, toplevel = toplevel, lit_to_array = lit_to_array)
+  # Track which flat args are static (non-array) values vs. graph inputs
   desc$is_static_flat <- vapply(inputs_flat, Negate(is_graph_box), logical(1L))
   output <- do.call(f_flat, inputs_flat)
 
   out_tree <- output[[1L]]
   # function() x; -> output can be an closed-over constant
-  outputs_flat <- lapply(output[[2L]], maybe_box_tensorish)
+  outputs_flat <- lapply(output[[2L]], maybe_box_arrayish)
 
   desc$out_tree <- out_tree
   desc$outputs <- lapply(outputs_flat, \(x) x$gnode)
@@ -715,7 +715,7 @@ is_graph_box <- function(x) {
 #'   The parameters to the primitive.
 #' @param infer_fn (`function`)\cr
 #'   The inference function to use.
-#'   Must output a list of [`AbstractTensor`]s.
+#'   Must output a list of [`AbstractArray`]s.
 #' @param desc ([`GraphDescriptor`] | `NULL`)\cr
 #'   The graph descriptor to add the primitive call to.
 #'   Uses the [current descriptor][.current_descriptor] if `NULL`.
@@ -732,7 +732,7 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, d
     desc <- local_descriptor()
   }
 
-  boxes_in <- lapply(args, maybe_box_tensorish)
+  boxes_in <- lapply(args, maybe_box_arrayish)
   gnodes_in <- unname(lapply(boxes_in, \(box) box$gnode))
   avals_in <- lapply(boxes_in, \(box) box$gnode$aval)
   ats_out <- tryCatch(

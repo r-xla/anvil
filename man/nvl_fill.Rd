@@ -8,12 +8,12 @@ nvl_fill(value, shape, dtype, ambiguous = FALSE)
 }
 \arguments{
 \item{value}{(\code{numeric(1)})\cr
-Scalar value to fill the tensor with.}
+Scalar value to fill the array with.}
 
 \item{shape}{(\code{integer()})\cr
-Shape of the output tensor.}
+Shape of the output array.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Data type.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
@@ -22,13 +22,13 @@ Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and 
 See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the given \code{shape} and \code{dtype}.
 }
 \description{
-Creates a tensor of a given shape and data type, filled with a scalar value.
+Creates an array of a given shape and data type, filled with a scalar value.
 The advantage of using this function instead of e.g. doing
-\code{nv_tensor(1, shape = c(100, 100))} is that lowering of \code{\link[=nvl_fill]{nvl_fill()}} is
+\code{nv_array(1, shape = c(100, 100))} is that lowering of \code{\link[=nvl_fill]{nvl_fill()}} is
 efficiently represented in the compiled program, while the latter uses
 100 * 100 * 4 bytes of memory.
 }

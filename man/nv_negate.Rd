@@ -7,20 +7,20 @@
 nv_negate(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the input.
 }
 \description{
-Negates a tensor element-wise. You can also use the unary \code{-} operator.
+Negates an array element-wise. You can also use the unary \code{-} operator.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, -2, 3))
+  x <- nv_array(c(1, -2, 3))
   -x
 })
 \dontshow{\}) # examplesIf}

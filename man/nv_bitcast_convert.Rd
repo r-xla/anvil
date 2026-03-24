@@ -7,25 +7,25 @@
 nv_bitcast_convert(operand, dtype)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Target data type.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the given \code{dtype}.
 }
 \description{
-Reinterprets the bits of a tensor as a different data type without modifying
+Reinterprets the bits of an array as a different data type without modifying
 the underlying data. If the target type is narrower, an extra trailing
 dimension is added; if wider, the last dimension is consumed.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(1L)
+  x <- nv_array(1L)
   nvl_bitcast_convert(x, dtype = "i8")
 })
 \dontshow{\}) # examplesIf}

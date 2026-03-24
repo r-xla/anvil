@@ -7,11 +7,11 @@
 nv_log(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the input.
 }
 \description{
@@ -20,7 +20,7 @@ Element-wise natural logarithm. You can also use \code{log()}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2.718, 7.389))
+  x <- nv_array(c(1, 2.718, 7.389))
   log(x)
 })
 \dontshow{\}) # examplesIf}

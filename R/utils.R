@@ -149,8 +149,8 @@ ones_like <- function(x, ambiguous = FALSE) {
 #' @title Abstract Properties
 #' @name abstract_properties
 #' @description
-#' Calls the extractor after converting the input to an [`AbstractTensor`].
-#' @param x ([`tensorish`])\cr
+#' Calls the extractor after converting the input to an [`AbstractArray`].
+#' @param x ([`arrayish`])\cr
 #' @export
 shape_abstract <- function(x) {
   shape(to_abstract(x))
@@ -218,7 +218,7 @@ gather_clamp_indices <- function(
   }
 
   if (index_vector_dim <= length(indices_shape)) {
-    # Explicit index vector dimension - build bounds tensors
+    # Explicit index vector dimension - build bounds arrays
     bounds_shape <- rep(1L, length(indices_shape))
     bounds_shape[index_vector_dim] <- n_index_coords
 
@@ -230,7 +230,7 @@ gather_clamp_indices <- function(
 
     # The max bound is the same for a given slice along the index_vector_dim
     max_tensor_vals <- nvl_reshape(
-      nv_convert(nv_tensor(max_bounds, dtype = "i64"), dtype = dtype(start_indices)),
+      nv_convert(nv_array(max_bounds, dtype = "i64"), dtype = dtype(start_indices)),
       bounds_shape
     )
     max_tensor <- nv_broadcast_to(max_tensor_vals, indices_shape)

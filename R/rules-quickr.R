@@ -39,7 +39,7 @@ quickr_aval_type_call <- function(aval) {
   ctor <- quickr_dtype_to_r_ctor(dt_chr)
   sh <- shape(aval)
   if (length(sh) > 5L) {
-    cli_abort("quickr lowering currently supports tensors up to rank 5")
+    cli_abort("quickr lowering currently supports arrays up to rank 5")
   }
   dims <- if (!length(sh)) 1L else sh
   as.call(c(list(as.name(ctor)), as.list(dims)))
@@ -79,7 +79,7 @@ quickr_emit_full_like <- function(out_sym, value_expr, shape_out, out_aval) {
     return(quickr_emit_assign(out_sym, value_expr))
   }
   if (length(shape_out) > 5L) {
-    cli_abort("constant/broadcast: only tensors up to rank 5 are currently supported")
+    cli_abort("constant/broadcast: only arrays up to rank 5 are currently supported")
   }
 
   quickr_emit_assign(
@@ -341,7 +341,7 @@ quickr_emit_iota <- function(out_sym, dim, start, shape_out, out_aval) {
   dt_chr <- as.character(dtype(out_aval))
 
   if (!rank || rank > 5L) {
-    cli_abort("iota: only tensors of rank 1..5 are supported by quickr lowering")
+    cli_abort("iota: only arrays of rank 1..5 are supported by quickr lowering")
   }
   if (dim < 1L || dim > rank) {
     cli_abort("iota: invalid {.arg dim}: {dim}")
@@ -414,7 +414,7 @@ quickr_emit_reverse <- function(out_sym, operand_expr, shape_in, dims, out_aval)
     cli_abort("reverse: scalar operands are not supported by quickr lowering") # nocov
   }
   if (rank > 5L) {
-    cli_abort("reverse: only tensors up to rank 5 are supported")
+    cli_abort("reverse: only arrays up to rank 5 are supported")
   }
   if (length(dims) && (min(dims) < 1L || max(dims) > rank)) {
     cli_abort("reverse: invalid {.arg dims}: {dims}")
@@ -438,7 +438,7 @@ quickr_emit_concatenate <- function(out_sym, operands_expr, operands_shape, dime
   dimension <- as.integer(dimension)
   rank <- length(shape(out_aval))
   if (!rank || rank > 5L) {
-    cli_abort("concatenate: only tensors of rank 1..5 are supported by quickr lowering")
+    cli_abort("concatenate: only arrays of rank 1..5 are supported by quickr lowering")
   }
   if (dimension < 1L || dimension > rank) {
     cli_abort("concatenate: invalid {.arg dimension}: {dimension}")
@@ -506,7 +506,7 @@ quickr_emit_static_slice <- function(
 
   rank <- length(shape_out)
   if (rank > 5L) {
-    cli_abort("static_slice: only tensors up to rank 5 are supported")
+    cli_abort("static_slice: only arrays up to rank 5 are supported")
   }
   stopifnot(length(start_indices) == rank)
   stopifnot(length(limit_indices) == rank)
@@ -563,7 +563,7 @@ quickr_emit_dynamic_slice <- function(out_sym, operand_expr, start_indices_expr,
     return(quickr_emit_assign(out_sym, operand_expr))
   }
   if (rank > 5L) {
-    cli_abort("dynamic_slice: only tensors up to rank 5 are supported")
+    cli_abort("dynamic_slice: only arrays up to rank 5 are supported")
   }
   stopifnot(length(start_indices_expr) == rank)
   stopifnot(length(slice_sizes) == rank)
@@ -597,7 +597,7 @@ quickr_emit_dyn_update_slice <- function(
     return(quickr_emit_assign(out_sym, update_expr))
   }
   if (rank > 5L) {
-    cli_abort("dynamic_update_slice: only tensors up to rank 5 are supported")
+    cli_abort("dynamic_update_slice: only arrays up to rank 5 are supported")
   }
   stopifnot(length(start_indices_expr) == rank)
   stopifnot(length(shape_update) == rank)
@@ -637,7 +637,7 @@ quickr_emit_pad <- function(
     return(quickr_emit_assign(out_sym, operand_expr))
   }
   if (rank > 5L) {
-    cli_abort("pad: only tensors up to rank 5 are supported")
+    cli_abort("pad: only arrays up to rank 5 are supported")
   }
   stopifnot(length(edge_padding_low) == rank)
   stopifnot(length(edge_padding_high) == rank)
@@ -754,7 +754,7 @@ quickr_emit_gather <- function(
     cli_abort("gather: scalar operands are not supported by quickr lowering")
   }
   if (op_rank > 5L || si_rank > 5L || out_rank > 5L) {
-    cli_abort("gather: only tensors up to rank 5 are supported")
+    cli_abort("gather: only arrays up to rank 5 are supported")
   }
   if (length(operand_batching_dims) || length(start_indices_batching_dims)) {
     cli_abort("gather: batching dims are not supported by quickr lowering")
@@ -888,7 +888,7 @@ quickr_emit_dot_general <- function(
   out_rank <- length(out_shape)
 
   if (lhs_rank > 5L || rhs_rank > 5L || out_rank > 5L) {
-    cli_abort("dot_general: only tensors up to rank 5 are supported")
+    cli_abort("dot_general: only arrays up to rank 5 are supported")
   }
 
   cd_lhs <- as.integer(contracting_dims[[1L]])
@@ -975,7 +975,7 @@ quickr_emit_dot_general <- function(
 
 quickr_emit_transpose <- function(out_sym, operand_expr, permutation, out_shape, out_aval) {
   if (length(out_shape) != 2L || length(permutation) != 2L) {
-    cli_abort("transpose: only rank-2 tensors are supported")
+    cli_abort("transpose: only rank-2 arrays are supported")
   }
   if (identical(permutation, c(1L, 2L))) {
     return(quickr_emit_assign(out_sym, operand_expr))
@@ -998,7 +998,7 @@ quickr_emit_broadcast_in_dim <- function(out_sym, operand_expr, shape_in, shape_
   }
 
   if (rank_in > 5L || rank_out > 5L) {
-    cli_abort("broadcast_in_dim: only tensors up to rank 5 are supported")
+    cli_abort("broadcast_in_dim: only arrays up to rank 5 are supported")
   }
   aligned_shape <- rep.int(1L, rank_out)
   for (d_in in seq_len(rank_in)) {
@@ -1147,7 +1147,7 @@ quickr_emit_reduce <- function(kind, out_sym, operand_expr, shape_in, dims, drop
       return(quickr_emit_assign(out_sym, operand_expr))
     }
     if (!identical(dims, 1L)) {
-      cli_abort("{kind}: unsupported reduction dims for rank-1 tensor")
+      cli_abort("{kind}: unsupported reduction dims for rank-1 array")
     }
     if (kind == "prod" && dt_out == "i32") {
       return(quickr_emit_truncating_i32(out_sym, rlang::call2("prod", operand_expr), shape(out_aval)))
@@ -1227,7 +1227,7 @@ quickr_emit_reduce <- function(kind, out_sym, operand_expr, shape_in, dims, drop
       return(quickr_emit_reduce2_axis_loop(out_sym, m, n, 1L, drop, alloc, init_acc_expr, inner_start, update))
     }
 
-    cli_abort("{kind}: unsupported reduction dims for rank-2 tensor")
+    cli_abort("{kind}: unsupported reduction dims for rank-2 array")
   }
 
   if (!length(dims)) {
@@ -1276,7 +1276,7 @@ quickr_emit_reduce_boolean <- function(kind, out_sym, operand_expr, shape_in, di
 
   if (rank == 1L) {
     if (!identical(dims, 1L)) {
-      cli_abort("{kind}: unsupported reduction dims for rank-1 tensor")
+      cli_abort("{kind}: unsupported reduction dims for rank-1 array")
     }
 
     reduced <- reduce_call(operand_expr)
@@ -1331,7 +1331,7 @@ quickr_emit_reduce_boolean <- function(kind, out_sym, operand_expr, shape_in, di
       return(c(alloc, list(as.call(list(as.name("for"), jj, rlang::call2("seq_len", n), inner)))))
     }
 
-    cli_abort("{kind}: unsupported reduction dims for rank-2 tensor")
+    cli_abort("{kind}: unsupported reduction dims for rank-2 array")
   }
 
   if (!identical(dims, seq_len(rank))) {
@@ -1350,7 +1350,7 @@ quickr_emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_
   shape_out <- as.integer(shape_out)
 
   if (length(shape_in) > 5L || length(shape_out) > 5L) {
-    cli_abort("reshape: only tensors up to rank 5 are supported")
+    cli_abort("reshape: only arrays up to rank 5 are supported")
   }
 
   nflat <- Reduce(`*`, shape_in, init = 1L)
@@ -2282,7 +2282,7 @@ graph_to_quickr_r_fun_impl <- function(graph, include_declare = TRUE) {
       cli_abort("quickr lowering: graph constants must be GraphValue nodes") # nocov
     }
     if (!is_concrete_tensor(const_node$aval)) {
-      cli_abort("quickr lowering: graph constants must be concrete tensors")
+      cli_abort("quickr lowering: graph constants must be concrete arrays")
     }
     node_expr[[const_node]] <- as.name(const_arg_names[[i]])
   }

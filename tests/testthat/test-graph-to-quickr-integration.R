@@ -39,10 +39,10 @@ test_that("integration: MNIST-shaped classifier training from rank-5 image batch
   graph <- expect_no_warning(trace_fn(
     loss_and_grad,
     list(
-      X = nv_tensor(X, dtype = "f64", shape = dim(X)),
-      Y = nv_tensor(Y, dtype = "f64", shape = dim(Y)),
-      W = nv_tensor(W, dtype = "f64", shape = dim(W)),
-      b = nv_tensor(b, dtype = "f64", shape = c(k))
+      X = nv_array(X, dtype = "f64", shape = dim(X)),
+      Y = nv_array(Y, dtype = "f64", shape = dim(Y)),
+      W = nv_array(W, dtype = "f64", shape = dim(W)),
+      b = nv_array(b, dtype = "f64", shape = c(k))
     )
   ))
 
@@ -80,8 +80,8 @@ test_that("integration: tfp/greta-like log_prob + grad workflow via quickr", {
   x <- as.numeric(scale(seq_len(n)))
   y <- 1.5 * x - 0.3 + rnorm(n, sd = 0.15)
 
-  x_nv <- nv_tensor(x, dtype = "f64", shape = c(n))
-  y_nv <- nv_tensor(y, dtype = "f64", shape = c(n))
+  x_nv <- nv_array(x, dtype = "f64", shape = c(n))
+  y_nv <- nv_array(y, dtype = "f64", shape = c(n))
 
   half <- nv_scalar(0.5, dtype = "f64")
 

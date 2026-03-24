@@ -8,15 +8,15 @@ gradient(f, wrt = NULL)
 }
 \arguments{
 \item{f}{(\code{function})\cr
-Function to differentiate. Arguments can be tensorish (\code{\link{AnvilTensor}}) or
-static (non-tensor) values. Must return a single scalar float tensor.}
+Function to differentiate. Arguments can be arrayish (\code{\link{AnvilArray}}) or
+static (non-array) values. Must return a single scalar float array.}
 
 \item{wrt}{(\code{character} or \code{NULL})\cr
 Names of the arguments to compute the gradient with respect to.
-Only tensorish (float tensor) arguments can be included; static arguments
+Only arrayish (float array) arguments can be included; static arguments
 must not appear in \code{wrt}.
 If \code{NULL} (the default), the gradient is computed with respect to all
-arguments (which must all be tensorish in that case).}
+arguments (which must all be arrayish in that case).}
 }
 \value{
 \code{function}
@@ -31,16 +31,16 @@ same signature as \code{f} and returns the gradients in the same structure as th
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 f <- function(x, y) sum(x * y)
 g <- jit(gradient(f))
-g(nv_tensor(c(1, 2), dtype = "f32"), nv_tensor(c(3, 4), dtype = "f32"))
+g(nv_array(c(1, 2), dtype = "f32"), nv_array(c(3, 4), dtype = "f32"))
 
 # Differentiate with respect to a single argument
 g_x <- jit(gradient(f, wrt = "x"))
-g_x(nv_tensor(c(1, 2), dtype = "f32"), nv_tensor(c(3, 4), dtype = "f32"))
+g_x(nv_array(c(1, 2), dtype = "f32"), nv_array(c(3, 4), dtype = "f32"))
 
-# Static (non-tensor) arguments are passed through but cannot be in wrt
+# Static (non-array) arguments are passed through but cannot be in wrt
 f2 <- function(x, power) sum(x^power)
 g2 <- jit(gradient(f2, wrt = "x"), static = "power")
-g2(nv_tensor(c(1, 2, 3), dtype = "f32"), power = 2L)
+g2(nv_array(c(1, 2, 3), dtype = "f32"), power = 2L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

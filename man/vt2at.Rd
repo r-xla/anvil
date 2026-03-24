@@ -2,7 +2,7 @@
 % Please edit documentation in R/type-converters.R
 \name{vt2at}
 \alias{vt2at}
-\title{Convert ValueType to AbstractTensor}
+\title{Convert ValueType to AbstractArray}
 \usage{
 vt2at(x)
 }
@@ -10,8 +10,8 @@ vt2at(x)
 \item{x}{(\code{ValueType})}
 }
 \value{
-(\code{AbstractTensor})
+(\code{AbstractArray})
 }
 \description{
-Convert a \code{ValueType} to an \code{AbstractTensor}.
+Convert a \code{ValueType} to an \code{AbstractArray}.
 }

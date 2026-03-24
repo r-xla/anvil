@@ -7,13 +7,13 @@
 nvl_triangular_solve(a, b, left_side, lower, unit_diagonal, transpose_a)
 }
 \arguments{
-\item{a}{(\code{\link{tensorish}})\cr
+\item{a}{(\code{\link{arrayish}})\cr
 Triangular coefficient matrix of data type floating-point with at least 2
 dimensions. The last two dimensions must be equal (square matrix); any
 leading dimensions are batch dimensions.}
 
-\item{b}{(\code{\link{tensorish}})\cr
-Right-hand side tensor. Must have the same data type, rank, and batch
+\item{b}{(\code{\link{arrayish}})\cr
+Right-hand side array. Must have the same data type, rank, and batch
 dimensions as \code{a}.}
 
 \item{left_side}{(\code{logical(1)})\cr
@@ -29,7 +29,7 @@ If \code{TRUE}, assume diagonal elements of \code{a} are 1.}
 One of \code{"NO_TRANSPOSE"}, \code{"TRANSPOSE"}, or \code{"ADJOINT"}.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as \code{b}.
 It is ambiguous if both \code{a} and \code{b} are ambiguous.
 }
@@ -58,8 +58,8 @@ Lowers to \code{\link[stablehlo:hlo_triangular_solve]{stablehlo::hlo_triangular_
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   # Solve L \%*\% x = b where L is lower triangular
-  L <- nv_tensor(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
-  b <- nv_tensor(matrix(c(4, 3), nrow = 2), dtype = "f32")
+  L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
+  b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
   nvl_triangular_solve(L, b,
     left_side = TRUE, lower = TRUE,
     unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"

@@ -1,16 +1,16 @@
 # We interprete jitting directly as a transformation and not as a higher order primitive
 # because this seems simpler for now.
 
-# S3 methods for stablehlo functions to handle AnvilTensor
+# S3 methods for stablehlo functions to handle AnvilArray
 
 #' @export
-hlo_scalar.AnvilTensor <- function(value, ..., func = NULL) {
-  stablehlo::hlo_scalar(value$tensor, ..., func = func)
+hlo_scalar.AnvilArray <- function(value, ..., func = NULL) {
+  stablehlo::hlo_scalar(value$data, ..., func = func)
 }
 
 #' @export
-hlo_tensor.AnvilTensor <- function(value, ..., func = NULL) {
-  stablehlo::hlo_tensor(value$tensor, ..., func = func)
+hlo_tensor.AnvilArray <- function(value, ..., func = NULL) {
+  stablehlo::hlo_tensor(value$data, ..., func = func)
 }
 
 #' @title HloEnv
@@ -79,11 +79,11 @@ env_get <- function(env, gval) {
 #'   operations.
 #' @return A `list` of length 2:
 #'   - the [`stablehlo::Func`]
-#'   - The list of [`GraphValue`]s holding [`ConcreteTensor`]s.
+#'   - The list of [`GraphValue`]s holding [`ConcreteArray`]s.
 #' @seealso [`trace_fn()`], [`jit()`], [`xla()`]
 #' @export
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' x <- nv_tensor(c(1, 2))
+#' x <- nv_array(c(1, 2))
 #' graph <- trace_fn(function(y) y + x, list(y = nv_aten("f32", shape = c())))
 #' graph
 #' stablehlo(graph)
@@ -164,7 +164,7 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
       if (is_graph_literal(x)) {
         # need to add a literal to the program
         fval <- hlo_tensor(
-          value = unwrap_if_tensor(x$aval$data),
+          value = unwrap_if_array(x$aval$data),
           dtype = x$aval$dtype,
           shape = x$aval$shape$dims,
           func = func

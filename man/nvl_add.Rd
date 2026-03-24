@@ -7,17 +7,17 @@
 nvl_add(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Tensorish values of any data type.
+\item{lhs, rhs}{(\code{\link{arrayish}})\cr
+Arrayish values of any data type.
 Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the inputs.
 It is ambiguous if both inputs are ambiguous.
 }
 \description{
-Adds two tensors element-wise.
+Adds two arrays element-wise.
 }
 \section{Implemented Rules}{
 
@@ -36,8 +36,8 @@ Lowers to \code{\link[stablehlo:hlo_add]{stablehlo::hlo_add()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
-  y <- nv_tensor(c(4, 5, 6))
+  x <- nv_array(c(1, 2, 3))
+  y <- nv_array(c(4, 5, 6))
   nvl_add(x, y)
 })
 \dontshow{\}) # examplesIf}

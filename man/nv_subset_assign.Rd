@@ -2,39 +2,39 @@
 % Please edit documentation in R/api-generics.R, R/api-subset.R
 \name{[<-.AnvilBox}
 \alias{[<-.AnvilBox}
-\alias{[<-.AnvilTensor}
+\alias{[<-.AnvilArray}
 \alias{nv_subset_assign}
 \title{Update Subset}
 \usage{
 \method{[}{AnvilBox}(x, ...) <- value
 
-\method{[}{AnvilTensor}(x, ...) <- value
+\method{[}{AnvilArray}(x, ...) <- value
 
 nv_subset_assign(x, ..., value)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-Tensor to update.}
+\item{x}{(\code{\link{arrayish}})\cr
+Array to update.}
 
 \item{...}{Subset specifications, one per dimension. See
 \code{vignette("subsetting")} for details.}
 
-\item{value}{(\code{\link{tensorish}})\cr
+\item{value}{(\code{\link{arrayish}})\cr
 Replacement values. Scalars are broadcast to the subset shape.
 Non-scalar values must match the subset shape.}
 }
 \value{
-\code{\link{tensorish}}\cr
-A new tensor with the same shape as \code{x} and the subset replaced.
+\code{\link{arrayish}}\cr
+A new array with the same shape as \code{x} and the subset replaced.
 }
 \description{
-Updates elements of a tensor at specified positions, returning a new tensor.
+Updates elements of an array at specified positions, returning a new array.
 You can also use the \verb{[<-} operator.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(matrix(1:12, nrow = 3))
+  x <- nv_array(matrix(1:12, nrow = 3))
   # Set row 1 to zeros
   x[1, ] <- 0L
   x

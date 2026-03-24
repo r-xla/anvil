@@ -1,4 +1,4 @@
-test_that("nv_scalar returns non-ambiguous tensor by default", {
+test_that("nv_scalar returns non-ambiguous array by default", {
   # Numeric scalars without explicit dtype should be non-ambiguous
   x_f32 <- nv_scalar(1.0)
   expect_false(ambiguous(x_f32))
@@ -15,7 +15,7 @@ test_that("nv_scalar returns non-ambiguous tensor by default", {
   expect_equal(dtype(x_pred), as_dtype("bool"))
 })
 
-test_that("nv_scalar returns non-ambiguous tensor when dtype is specified", {
+test_that("nv_scalar returns non-ambiguous array when dtype is specified", {
   x_f32 <- nv_scalar(1.0, dtype = "f32")
   expect_false(ambiguous(x_f32))
   expect_equal(dtype(x_f32), as_dtype("f32"))
@@ -29,12 +29,12 @@ test_that("nv_scalar returns non-ambiguous tensor when dtype is specified", {
   expect_equal(dtype(x_f64), as_dtype("f64"))
 })
 
-test_that("nv_tensor returns non-ambiguous tensor", {
-  # nv_tensor always creates non-ambiguous tensors
-  x <- nv_tensor(1:4)
+test_that("nv_array returns non-ambiguous array", {
+  # nv_array always creates non-ambiguous arrays
+  x <- nv_array(1:4)
   expect_false(ambiguous(x))
 
-  y <- nv_tensor(c(1.0, 2.0, 3.0))
+  y <- nv_array(c(1.0, 2.0, 3.0))
   expect_false(ambiguous(y))
 })
 
@@ -97,7 +97,7 @@ test_that("JIT handles constants with ambiguity", {
   expect_equal(result2, nv_scalar(11.0, dtype = "f32"))
 })
 
-test_that("format.AnvilTensor shows ambiguity with ?", {
+test_that("format.AnvilArray shows ambiguity with ?", {
   x_amb <- nv_scalar(1.0, ambiguous = TRUE)
   expect_match(format(x_amb), "f32\\?")
 
@@ -110,21 +110,21 @@ test_that("boolean reductions never produce ambiguous output", {
   f_all <- jit(function(x) nvl_reduce_all(x, dims = 1L))
 
   # Even with ambiguous input, output is never ambiguous
-  x_amb <- nv_tensor(c(TRUE, FALSE), ambiguous = TRUE)
+  x_amb <- nv_array(c(TRUE, FALSE), ambiguous = TRUE)
   expect_true(ambiguous(x_amb))
   expect_false(ambiguous(f_any(x_amb)))
   expect_false(ambiguous(f_all(x_amb)))
 })
 
-test_that("ambiguous() generic works for AnvilTensor and AbstractTensor", {
-  # AnvilTensor
+test_that("ambiguous() generic works for AnvilArray and AbstractArray", {
+  # AnvilArray
   x_anvil_amb <- nv_scalar(1.0, ambiguous = TRUE)
   expect_true(ambiguous(x_anvil_amb))
 
-  x_anvil_nonamb <- nv_tensor(1.0)
+  x_anvil_nonamb <- nv_array(1.0)
   expect_false(ambiguous(x_anvil_nonamb))
 
-  # AbstractTensor
+  # AbstractArray
   aval_amb <- nv_aten("f32", c(2, 3), ambiguous = TRUE)
   expect_true(ambiguous(aval_amb))
 

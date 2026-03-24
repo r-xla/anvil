@@ -7,14 +7,14 @@
 nv_clamp(min_val, operand, max_val)
 }
 \arguments{
-\item{min_val, max_val}{(\code{\link{tensorish}})\cr
+\item{min_val, max_val}{(\code{\link{arrayish}})\cr
 Minimum and maximum values (scalar or same shape as \code{operand}).}
 
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the input.
 }
 \description{
@@ -27,7 +27,7 @@ The underlying stableHLO function already broadcasts scalars, so no need to broa
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(-1, 0.5, 2))
+  x <- nv_array(c(-1, 0.5, 2))
   nv_clamp(nv_scalar(0), x, nv_scalar(1))
 })
 \dontshow{\}) # examplesIf}

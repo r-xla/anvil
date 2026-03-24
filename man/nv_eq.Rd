@@ -7,13 +7,13 @@
 nv_eq(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+\item{lhs, rhs}{(\code{\link{arrayish}})\cr
 Left and right operand.
 Operands are \link[=nv_promote_to_common]{promoted to a common data type}.
 Scalars are \link[=nv_broadcast_scalars]{broadcast} to the shape of the other operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape as the inputs and boolean data type.
 }
 \description{
@@ -22,8 +22,8 @@ Element-wise equality comparison. You can also use the \code{==} operator.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
-  y <- nv_tensor(c(1, 3, 2))
+  x <- nv_array(c(1, 2, 3))
+  y <- nv_array(c(1, 3, 2))
   x == y
 })
 \dontshow{\}) # examplesIf}

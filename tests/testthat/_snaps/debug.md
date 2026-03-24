@@ -1,51 +1,51 @@
 # printer for debug box
 
     Code
-      DebugBox(AbstractTensor("f32", c(2, 2), TRUE))
+      DebugBox(AbstractArray("f32", c(2, 2), TRUE))
     Output
       f32?{2,2}
 
 ---
 
     Code
-      DebugBox(AbstractTensor("f32", c(2, 2), FALSE))
+      DebugBox(AbstractArray("f32", c(2, 2), FALSE))
     Output
       f32{2,2}
 
 ---
 
     Code
-      DebugBox(AbstractTensor("f32", c(), FALSE))
+      DebugBox(AbstractArray("f32", c(), FALSE))
     Output
       f32{}
 
 ---
 
     Code
-      DebugBox(LiteralTensor(1, shape = c(2, 3), ambiguous = TRUE))
+      DebugBox(LiteralArray(1, shape = c(2, 3), ambiguous = TRUE))
     Output
       1:f32?{2,3}
 
 ---
 
     Code
-      DebugBox(LiteralTensor(1, shape = c(2, 3), ambiguous = FALSE))
+      DebugBox(LiteralArray(1, shape = c(2, 3), ambiguous = FALSE))
     Output
       1:f32{2,3}
 
 ---
 
     Code
-      DebugBox(LiteralTensor(1, shape = c(), ambiguous = FALSE))
+      DebugBox(LiteralArray(1, shape = c(), ambiguous = FALSE))
     Output
       1:f32{}
 
 ---
 
     Code
-      DebugBox(ConcreteTensor(nv_tensor(1:4, dtype = "f32", shape = c(2, 2))))
+      DebugBox(ConcreteArray(nv_array(1:4, dtype = "f32", shape = c(2, 2))))
     Output
-      DebugBox(ConcreteTensor)
+      DebugBox(ConcreteArray)
        1 3
        2 4
       [ CPUf32{2,2} ] 

@@ -7,20 +7,20 @@
 nvl_transpose(operand, permutation)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of any data type.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of any data type.}
 
 \item{permutation}{(\code{integer()})\cr
 Specifies the new ordering of dimensions. Must be a permutation of
 \code{seq_len(ndims)} where \code{ndims} is the number of dimensions of \code{operand}.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same data type as the input and shape \code{nv_shape(operand)[permutation]}.
 It is ambiguous if the input is ambiguous.
 }
 \description{
-Permutes the dimensions of a tensor.
+Permutes the dimensions of an array.
 }
 \section{Implemented Rules}{
 
@@ -39,7 +39,7 @@ Lowers to \code{\link[stablehlo:hlo_transpose]{stablehlo::hlo_transpose()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(matrix(1:6, nrow = 2))
+  x <- nv_array(matrix(1:6, nrow = 2))
   nvl_transpose(x, permutation = c(2L, 1L))
 })
 \dontshow{\}) # examplesIf}

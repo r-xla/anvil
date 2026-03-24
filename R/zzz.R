@@ -71,5 +71,5 @@ register_namespace_callback <- function(pkgname, namespace, callback) {
   )
 
   # Register compare_proxy for waldo/testthat
-  register_s3_method("waldo", "compare_proxy", "AnvilTensor")
+  register_s3_method("waldo", "compare_proxy", "AnvilArray")
 }

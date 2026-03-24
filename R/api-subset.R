@@ -67,9 +67,9 @@ subset_start_positions <- function(subsets) {
   lapply(subsets, subset_start_position)
 }
 
-# Inputs: list of 1-D tensors, each of shape [n_i].
+# Inputs: list of 1-D arrays, each of shape [n_i].
 # Non-multi-index dims have n_i = 1, multi-index dims have n_i > 1.
-# Returns a tensor of shape [rank] or [gather_shape..., rank].
+# Returns an array of shape [rank] or [gather_shape..., rank].
 dynamic_start_indices <- function(starts) {
   rank <- length(starts)
   sizes <- vapply(starts, function(s) shape_abstract(s)[1L], integer(1L))
@@ -82,9 +82,9 @@ dynamic_start_indices <- function(starts) {
 
   # consider s_1, ..., s_n
   # where some s_i are multi-index, some are not
-  # We wan't to create a  tensor S of shape [size(s_i1), ..., size(s_im), n]
+  # We wan't to create a  array S of shape [size(s_i1), ..., size(s_im), n]
   # where i1, ..., im are the multi-index dimensions.
-  # We can look at this as j tensors of shape [size(s_i1), ..., size(s_im), 1] (S[.., j]) that we create
+  # We can look at this as j arrays of shape [size(s_i1), ..., size(s_im), 1] (S[.., j]) that we create
   # for j that are not in {i1, ..., im} we simply broadcast the singular start index.
   # The other J slices (S[.., j]) for j \in {i1, ..., im} form
   # a cartesian product of the multi-index dimensions.
@@ -116,24 +116,24 @@ dynamic_start_indices <- function(starts) {
 )
 
 static_start_indices <- function(starts) {
-  starts <- lapply(starts, nv_tensor, dtype = "i32")
+  starts <- lapply(starts, nv_array, dtype = "i32")
   do.call(.static_start_indices, starts)
 }
 
 
-#' Build a tensor of start indices (aka scatter_indices) from subset specs
+#' Build an array of start indices (aka scatter_indices) from subset specs
 #'
-#' For each subset spec, extracts the start index and combines them into a tensor.
+#' For each subset spec, extracts the start index and combines them into an array.
 #' The dtype is determined automatically: i32 for static R ints, or the maximum
-#' integer type present among dynamic tensor indices. Conversion is only performed
+#' integer type present among dynamic array indices. Conversion is only performed
 #' when at least one subset is dynamic.
 #'
-#' - Without multi_index_dims: returns a 1D tensor of shape `(rank)` (all starts are scalar).
-#' - With multi_index_dims: returns a tensor of shape `(gather_shape..., rank)` where the
+#' - Without multi_index_dims: returns a 1D array of shape `(rank)` (all starts are scalar).
+#' - With multi_index_dims: returns an array of shape `(gather_shape..., rank)` where the
 #'   gather dimensions' indices are broadcast across the cartesian product.
 #'
 #' @param subsets List of SubsetSpec objects (from parse_subset_specs)
-#' @return A tensor of start indices
+#' @return An array of start indices
 #' @noRd
 subset_specs_start_indices <- function(subsets) {
   starts <- subset_start_positions(subsets)
@@ -141,10 +141,10 @@ subset_specs_start_indices <- function(subsets) {
   if (all_static) {
     static_start_indices(starts)
   } else {
-    # Convert R integers to 1D tensors, reshape 0D tensors to 1D
+    # Convert R integers to 1D arrays, reshape 0D arrays to 1D
     starts <- lapply(starts, function(s) {
       if (is.numeric(s)) {
-        nv_tensor(s, dtype = "i32")
+        nv_array(s, dtype = "i32")
       } else if (ndims_abstract(s) == 0L) {
         nv_reshape(s, 1L)
       } else {
@@ -159,7 +159,7 @@ subset_specs_start_indices <- function(subsets) {
 #'
 #' @param subsets List of SubsetSpec objects (from parse_subset_specs)
 #' @return A list with all parameters needed for nvl_gather:
-#'   - start_indices: tensor of start indices (shape `(gather_shape..., rank)` or `(1, rank)`)
+#'   - start_indices: array of start indices (shape `(gather_shape..., rank)` or `(1, rank)`)
 #'   - slice_sizes: integer vector
 #'   - offset_dims: integer vector
 #'   - collapsed_slice_dims: integer vector
@@ -233,14 +233,14 @@ subset_specs_to_gather <- function(subsets) {
 #'
 #' @param subsets List of SubsetSpec objects (from parse_subset_specs)
 #' @return A list with all parameters needed for nvl_scatter:
-#'   - scatter_indices: tensor of scatter indices
+#'   - scatter_indices: array of scatter indices
 #'   - update_window_dims: integer vector
 #'   - inserted_window_dims: integer vector
 #'   - scatter_dims_to_operand_dims: integer vector
 #'   - index_vector_dim: integer
 #'   - indices_are_sorted: logical
 #'   - unique_indices: logical
-#'   - update_shape: integer vector (expected shape of the update tensor)
+#'   - update_shape: integer vector (expected shape of the update array)
 #' @noRd
 subset_specs_to_scatter <- function(subsets) {
   rank <- length(subsets)
@@ -310,7 +310,7 @@ subset_specs_to_scatter <- function(subsets) {
 
 #' Parse subset specifications and fill unspecified dimensions
 #' @param quos List of quosures (from enquos)
-#' @param operand_shape Shape of the operand tensor
+#' @param operand_shape Shape of the operand array
 #' @return List of SubsetSpec objects
 #' @noRd
 parse_subset_specs <- function(quos, operand_shape) {
@@ -389,7 +389,7 @@ parse_subset_spec <- function(quo, dim_size) {
     ))
   }
 
-  # list() - preserves dimensions (keep as R integer vector, convert to tensor later)
+  # list() - preserves dimensions (keep as R integer vector, convert to array later)
   if (is.list(e) && !is.object(e)) {
     if (length(e) == 0L) {
       cli_abort("Empty list() indices are not allowed")
@@ -408,24 +408,24 @@ parse_subset_spec <- function(quo, dim_size) {
   }
 
   # AnvilRange (dynamic range) - not supported
-  if (inherits(e, "IotaTensor")) {
+  if (inherits(e, "IotaArray")) {
     if (length(shape) != 1L) {
-      cli_abort("IotaTensor must be 1D, but got {length(shape)}D")
+      cli_abort("IotaArray must be 1D, but got {length(shape)}D")
     }
     return(SubsetRange(e$start, e$end))
   }
 
-  # Tensor indices (AnvilTensor or GraphBox)
-  if (is_tensorish(e) && !is.atomic(e)) {
+  # Array indices (AnvilArray or GraphBox)
+  if (is_arrayish(e) && !is.atomic(e)) {
     dt <- dtype_abstract(e)
     if (!(inherits(dt, "IntegerType") || inherits(dt, "UIntegerType"))) {
       cli_abort("Dynamic indices must be integers, but got {.cls {class(dt)[1]}}")
     }
     nd <- ndims_abstract(e)
     if (nd > 1L) {
-      cli_abort("Dynamic indices must be at most 1D, but got {nd}D tensor")
+      cli_abort("Dynamic indices must be at most 1D, but got {nd}D array")
     }
-    # Scalar tensor drops dimension, 1D tensor preserves
+    # Scalar array drops dimension, 1D array preserves
     if (nd == 0L) {
       return(SubsetIndex(e))
     }
@@ -435,36 +435,36 @@ parse_subset_spec <- function(quo, dim_size) {
   cli_abort("Invalid subset expression")
 }
 
-#' @title Subset a Tensor
+#' @title Subset an Array
 #' @description
-#' Extracts a subset from a tensor. You can also use the `[` operator.
+#' Extracts a subset from an array. You can also use the `[` operator.
 #' Supports R-style indexing including scalar indices (which drop dimensions),
 #' ranges (`a:b`), and `list()` for selecting multiple elements along a
 #' dimension.
-#' @param x ([`tensorish`])\cr
-#'   Tensor to subset.
+#' @param x ([`arrayish`])\cr
+#'   Array to subset.
 #' @param ... Subset specifications, one per dimension. Omitted trailing
 #'   dimensions select all elements. See `vignette("subsetting")` for details.
-#' @return [`tensorish`]
+#' @return [`arrayish`]
 #' @seealso [nv_subset_assign()] for updating subsets, `vignette("subsetting")`
 #'   for a comprehensive guide.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:12, nrow = 3))
+#'   x <- nv_array(matrix(1:12, nrow = 3))
 #'   # Select row 2
 #'   x[2, ]
 #' })
 #'
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:12, nrow = 3))
+#'   x <- nv_array(matrix(1:12, nrow = 3))
 #'   # Select rows 1 to 2, all columns
 #'   x[1:2, ]
 #' })
 #' @export
 nv_subset <- function(x, ...) {
-  if (!is_tensorish(x)) {
+  if (!is_arrayish(x)) {
     cli_abort(c(
-      "Argument x must be tensorish",
+      "Argument x must be arrayish",
       "x" = "Got {.cls {class(x)[1]}}"
     ))
   }
@@ -493,32 +493,32 @@ nv_subset <- function(x, ...) {
 
 #' @title Update Subset
 #' @description
-#' Updates elements of a tensor at specified positions, returning a new tensor.
+#' Updates elements of an array at specified positions, returning a new array.
 #' You can also use the `[<-` operator.
-#' @param x ([`tensorish`])\cr
-#'   Tensor to update.
+#' @param x ([`arrayish`])\cr
+#'   Array to update.
 #' @param ... Subset specifications, one per dimension. See
 #'   `vignette("subsetting")` for details.
-#' @param value ([`tensorish`])\cr
+#' @param value ([`arrayish`])\cr
 #'   Replacement values. Scalars are broadcast to the subset shape.
 #'   Non-scalar values must match the subset shape.
-#' @return [`tensorish`]\cr
-#'   A new tensor with the same shape as `x` and the subset replaced.
+#' @return [`arrayish`]\cr
+#'   A new array with the same shape as `x` and the subset replaced.
 #' @seealso [nv_subset()], `vignette("subsetting")` for a comprehensive guide.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:12, nrow = 3))
+#'   x <- nv_array(matrix(1:12, nrow = 3))
 #'   # Set row 1 to zeros
 #'   x[1, ] <- 0L
 #'   x
 #' })
 #' @export
 nv_subset_assign <- function(x, ..., value) {
-  if (!is_tensorish(x)) {
-    cli_abort("Expected tensorish `x`, but got {.cls {class(x)[1]}}")
+  if (!is_arrayish(x)) {
+    cli_abort("Expected arrayish `x`, but got {.cls {class(x)[1]}}")
   }
-  if (!is_tensorish(value)) {
-    cli_abort("Expected tensorish `value`, but got {.cls {class(value)[1]}}")
+  if (!is_arrayish(value)) {
+    cli_abort("Expected arrayish `value`, but got {.cls {class(value)[1]}}")
   }
   if (dtype_abstract(x) != dtype_abstract(value)) {
     dt_x <- dtype_abstract(x)

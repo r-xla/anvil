@@ -10,11 +10,11 @@ nvl_iota(dim, dtype, shape, start = 1L, ambiguous = FALSE)
 \item{dim}{(\code{integer(1)})\cr
 Dimension along which values increase (1-indexed).}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Data type.}
 
 \item{shape}{(\code{integer()})\cr
-Shape of the output tensor.}
+Shape of the output array.}
 
 \item{start}{(\code{integer(1)})\cr
 Starting value.}
@@ -25,11 +25,11 @@ Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and 
 See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the given \code{dtype} and \code{shape}.
 }
 \description{
-Creates a tensor with values increasing along the specified dimension.
+Creates an array with values increasing along the specified dimension.
 }
 \section{Implemented Rules}{
 

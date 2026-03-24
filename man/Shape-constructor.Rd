@@ -13,7 +13,7 @@ Shape(dims = integer())
 A \code{Shape} object.
 }
 \description{
-Constructs a \code{Shape} representing tensor dimensions.
+Constructs a \code{Shape} representing array dimensions.
 }
 \examples{
 Shape(c(2L, 3L))

@@ -1,2 +1,2 @@
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of boolean data type.
+#' @param operand ([`arrayish`])\cr
+#'   Arrayish value of boolean data type.

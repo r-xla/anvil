@@ -27,12 +27,12 @@ test_that("MLP forward and backward", {
   W2_data <- array(rnorm(12), dim = c(2L, 6L))
   b2_data <- array(rnorm(2), dim = c(2L, 1L))
 
-  x_nv <- nv_tensor(x_data, dtype = "f32")
-  y_nv <- nv_tensor(y_data, dtype = "f32")
-  W1_nv <- nv_tensor(W1_data, dtype = "f32")
-  b1_nv <- nv_tensor(b1_data, dtype = "f32")
-  W2_nv <- nv_tensor(W2_data, dtype = "f32")
-  b2_nv <- nv_tensor(b2_data, dtype = "f32")
+  x_nv <- nv_array(x_data, dtype = "f32")
+  y_nv <- nv_array(y_data, dtype = "f32")
+  W1_nv <- nv_array(W1_data, dtype = "f32")
+  b1_nv <- nv_array(b1_data, dtype = "f32")
+  W2_nv <- nv_array(W2_data, dtype = "f32")
+  b2_nv <- nv_array(b2_data, dtype = "f32")
 
   x_torch <- torch::torch_tensor(x_data, dtype = torch::torch_float32(), requires_grad = TRUE)
   y_torch <- torch::torch_tensor(y_data, dtype = torch::torch_float32())
@@ -69,7 +69,7 @@ test_that("polynomial forward and backward", {
   }
 
   x_data <- array(rnorm(8, mean = 1, sd = 0.5), dim = 8L)
-  x_nv <- nv_tensor(x_data, dtype = "f32")
+  x_nv <- nv_array(x_data, dtype = "f32")
   x_torch <- torch::torch_tensor(x_data, dtype = torch::torch_float32(), requires_grad = TRUE)
 
   # Forward and backward pass with value_and_gradient

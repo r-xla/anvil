@@ -7,12 +7,12 @@
 nvl_dynamic_slice(operand, ..., slice_sizes)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of any data type.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of any data type.}
 
-\item{...}{(\code{\link{tensorish}} of integer type)\cr
+\item{...}{(\code{\link{arrayish}} of integer type)\cr
 Scalar start indices, one per dimension. Each must be a
-scalar tensor. Pass one scalar per dimension of \code{operand}.}
+scalar array. Pass one scalar per dimension of \code{operand}.}
 
 \item{slice_sizes}{(\code{integer()})\cr
 Size of the slice in each dimension. Must have length equal to
@@ -20,13 +20,13 @@ Size of the slice in each dimension. Must have length equal to
 per dimension.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same data type as the input and shape \code{slice_sizes}.
 It is ambiguous if the input is ambiguous.
 }
 \description{
-Extracts a slice from a tensor whose start position is determined at
-runtime via tensor-valued indices. The slice shape (\code{slice_sizes}) is
+Extracts a slice from an array whose start position is determined at
+runtime via array-valued indices. The slice shape (\code{slice_sizes}) is
 a fixed R integer vector.
 
 Use \code{\link[=nvl_static_slice]{nvl_static_slice()}} instead when all indices are known at compile
@@ -58,14 +58,14 @@ Lowers to \code{\link[stablehlo:hlo_dynamic_slice]{stablehlo::hlo_dynamic_slice(
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 # 1-D: extract 3 elements starting at position 3
 jit_eval({
-  x <- nv_tensor(1:10)
+  x <- nv_array(1:10)
   start <- nv_scalar(3L)
   nvl_dynamic_slice(x, start, slice_sizes = 3L)
 })
 
 # 2-D: extract a 2x2 block from a matrix
 jit_eval({
-  x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4))
+  x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
   row_start <- nv_scalar(2L)
   col_start <- nv_scalar(1L)
   nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))

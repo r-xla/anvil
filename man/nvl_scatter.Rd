@@ -20,16 +20,16 @@ nvl_scatter(
 )
 }
 \arguments{
-\item{input}{(\code{\link{tensorish}})\cr
-Tensorish value of any data type. The base tensor to scatter into.}
+\item{input}{(\code{\link{arrayish}})\cr
+Arrayish value of any data type. The base array to scatter into.}
 
-\item{scatter_indices}{(\code{\link{tensorish}} of integer type)\cr
-Tensor of indices. Contains index vectors that map to positions in
+\item{scatter_indices}{(\code{\link{arrayish}} of integer type)\cr
+Array of indices. Contains index vectors that map to positions in
 \code{input} via \code{scatter_dims_to_operand_dims}. The dimension specified
 by \code{index_vector_dim} holds the index vectors.}
 
-\item{update}{(\code{\link{tensorish}})\cr
-Update values tensor. Must have the same data type as \code{input}.}
+\item{update}{(\code{\link{arrayish}})\cr
+Update values array. Must have the same data type as \code{input}.}
 
 \item{update_window_dims}{(\code{integer()})\cr
 Dimensions of \code{update} that are window dimensions, i.e. they
@@ -75,19 +75,19 @@ Binary function \code{f(old, new)} that combines the existing value in
 \code{function(old, new) new}, which replaces the old value.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same data type and shape as \code{input}.
 It is ambiguous if \code{input} is ambiguous.
 }
 \description{
-Produces a result tensor identical to \code{input} except that slices at
+Produces a result array identical to \code{input} except that slices at
 positions specified by \code{scatter_indices} are updated with values from
-the \code{update} tensor. When multiple indices point to the same location,
+the \code{update} array. When multiple indices point to the same location,
 the \code{update_computation} function determines how to combine the values
 (by default the new value replaces the old one).
 
-This is the inverse of \code{\link[=nvl_gather]{nvl_gather()}}: gather reads slices from a tensor
-at given indices, while scatter writes slices into a tensor at given
+This is the inverse of \code{\link[=nvl_gather]{nvl_gather()}}: gather reads slices from an array
+at given indices, while scatter writes slices into an array at given
 indices.
 }
 \section{Out Of Bounds Behavior}{
@@ -121,9 +121,9 @@ Lowers to \code{\link[stablehlo:hlo_scatter]{stablehlo::hlo_scatter()}}.
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 # Scatter values 10 and 30 into positions 1 and 3 of a zero vector
 jit_eval({
-  input <- nv_tensor(c(0, 0, 0, 0, 0))
-  indices <- nv_tensor(matrix(c(1L, 3L), ncol = 1))
-  updates <- nv_tensor(c(10, 30))
+  input <- nv_array(c(0, 0, 0, 0, 0))
+  indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
+  updates <- nv_array(c(10, 30))
   nvl_scatter(
     input, indices, updates,
     update_window_dims = integer(0),

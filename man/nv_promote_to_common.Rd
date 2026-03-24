@@ -2,25 +2,25 @@
 % Please edit documentation in R/api.R
 \name{nv_promote_to_common}
 \alias{nv_promote_to_common}
-\title{Promote Tensors to a Common Dtype}
+\title{Promote Arrays to a Common Dtype}
 \usage{
 nv_promote_to_common(...)
 }
 \arguments{
-\item{...}{(\code{\link{tensorish}})\cr
-Tensors to promote.}
+\item{...}{(\code{\link{arrayish}})\cr
+Arrays to promote.}
 }
 \value{
-(\code{list()} of \code{\link{tensorish}})
+(\code{list()} of \code{\link{arrayish}})
 }
 \description{
-Promote tensors to a common data type, see \code{\link{common_dtype}} for more details.
+Promote arrays to a common data type, see \code{\link{common_dtype}} for more details.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(1L)
-  y <- nv_tensor(1.5)
+  x <- nv_array(1L)
+  y <- nv_array(1.5)
   # integer is promoted to float
   nv_promote_to_common(x, y)
 })

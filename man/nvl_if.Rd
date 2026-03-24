@@ -7,7 +7,7 @@
 nvl_if(pred, true, false)
 }
 \arguments{
-\item{pred}{(\code{\link{tensorish}})\cr
+\item{pred}{(\code{\link{arrayish}})\cr
 Scalar boolean predicate that determines which branch to execute.}
 
 \item{true, false}{(NSE)\cr

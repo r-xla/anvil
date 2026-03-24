@@ -7,12 +7,12 @@
 nvl_atan2(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
-Tensorish values of data type floating-point.
+\item{lhs, rhs}{(\code{\link{arrayish}})\cr
+Arrayish values of data type floating-point.
 Must have the same shape.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the inputs.
 It is ambiguous if both inputs are ambiguous.
 }
@@ -35,8 +35,8 @@ Lowers to \code{\link[stablehlo:hlo_atan2]{stablehlo::hlo_atan2()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  y <- nv_tensor(c(1, 0, -1))
-  x <- nv_tensor(c(0, 1, 0))
+  y <- nv_array(c(1, 0, -1))
+  x <- nv_array(c(0, 1, 0))
   nvl_atan2(y, x)
 })
 \dontshow{\}) # examplesIf}

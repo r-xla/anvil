@@ -35,7 +35,7 @@ vignette for detailed instructions.
 
 Below, we create a standard R function. We cannot directly call this
 function, but first need to wrap it in a `jit()` call. If the resulting
-function is then called on `AnvilTensor`s – the primary data type in
+function is then called on `AnvilArray`s – the primary data type in
 {anvil} – it will be JIT compiled and subsequently executed.
 
 ``` r
@@ -50,7 +50,7 @@ b <- nv_scalar(-2.0, "f32")
 x <- nv_scalar(3.0, "f32")
 
 f_jit(a, b, x)
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #> [ CPUf32{} ]
 ```
@@ -62,12 +62,12 @@ the above function.
 g_jit <- jit(gradient(f, wrt = c("a", "b")))
 g_jit(a, b, x)
 #> $a
-#> AnvilTensor
+#> AnvilArray
 #>  3
 #> [ CPUf32{} ] 
 #> 
 #> $b
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #> [ CPUf32{} ]
 ```

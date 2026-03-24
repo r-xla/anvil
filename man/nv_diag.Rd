@@ -7,20 +7,20 @@
 nv_diag(x)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-A 1-D tensor of length \code{n} whose elements become the diagonal entries.}
+\item{x}{(\code{\link{arrayish}})\cr
+A 1-D array of length \code{n} whose elements become the diagonal entries.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 An \verb{n x n} matrix with \code{x} on the diagonal and zeros elsewhere.
 }
 \description{
-Creates a diagonal matrix from a 1-D tensor.
+Creates a diagonal matrix from a 1-D array.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  nv_diag(nv_tensor(c(1, 2, 3)))
+  nv_diag(nv_array(c(1, 2, 3)))
 })
 \dontshow{\}) # examplesIf}
 }

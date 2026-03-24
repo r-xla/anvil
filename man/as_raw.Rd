@@ -2,13 +2,13 @@
 % Please edit documentation in R/reexports.R
 \name{as_raw}
 \alias{as_raw}
-\title{Convert a tensor to a raw vector}
+\title{Convert an array to a raw vector}
 \usage{
 as_raw(x, ...)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-A tensor-like object.}
+\item{x}{(\code{\link{arrayish}})\cr
+An array-like object.}
 
 \item{...}{Additional arguments passed to method:
 \itemize{
@@ -20,14 +20,14 @@ Whether to write the bytes in row-major order.
 A \code{\link{raw}} vector.
 }
 \description{
-Returns the underlying bytes of a tensor as a \link{raw} vector.
+Returns the underlying bytes of an array as a \link{raw} vector.
 }
 \details{
 This is implemented via the generic \code{\link[tengen:as_raw]{tengen::as_raw()}}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(1:4, shape = c(2, 2), dtype = "f32")
+x <- nv_array(1:4, shape = c(2, 2), dtype = "f32")
 as_raw(x, row_major = TRUE)
 as_raw(x, row_major = FALSE)
 \dontshow{\}) # examplesIf}
