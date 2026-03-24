@@ -83,7 +83,7 @@ starting position in \code{operand}, and a slice of size \code{slice_sizes} is
 extracted from that position. The gathered slices are assembled into
 the output array.
 
-This is the inverse of \code{\link[=nvl_scatter]{nvl_scatter()}}: gather reads slices from an
+This is the inverse of \code{\link[=nvl_scatter]{nvl_scatter()}}: gather reads slices from a
 array at given indices, while scatter writes slices into an array at
 given indices.
 }

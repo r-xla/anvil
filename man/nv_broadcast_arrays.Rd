@@ -2,13 +2,13 @@
 % Please edit documentation in R/api.R
 \name{nv_broadcast_arrays}
 \alias{nv_broadcast_arrays}
-\title{Broadcast Tensors to a Common Shape}
+\title{Broadcast Arrays to a Common Shape}
 \usage{
 nv_broadcast_arrays(...)
 }
 \arguments{
 \item{...}{(\code{\link{arrayish}})\cr
-Tensors to broadcast.}
+Arrays to broadcast.}
 }
 \value{
 (\code{list()} of \code{\link{arrayish}})\cr
