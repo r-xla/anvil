@@ -19,10 +19,10 @@ compilation) suitable for \code{quickr::quick()}. The returned function expects
 plain R scalars/vectors/arrays and returns plain R values/arrays.
 }
 \details{
-Most users will prefer \code{\link[=jit]{jit()}} with \code{backend = "quickr"}. This function is
+Most users will prefer \code{\link[=jit]{jit()}} with \code{options(anvil.backend = "quickr")}. This function is
 the lower-level graph API.
 }
 \seealso{
-\code{\link[=jit]{jit()}} with \code{backend = "quickr"} for tracing and compiling a
+\code{\link[=jit]{jit()}} with \code{options(anvil.backend = "quickr")} for tracing and compiling a
 regular R function in one step.
 }

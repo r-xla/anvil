@@ -65,10 +65,6 @@ g <- jit(function(x, flag) {
 g(nv_array(3), TRUE)
 g(nv_array(3), FALSE)
 \dontshow{\}) # examplesIf}
-\dontshow{if (requireNamespace("quickr", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-h <- jit(function(x, y) x + y)
-h(1, 2)
-\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=xla]{xla()}} for ahead-of-time compilation, \code{\link[=jit_eval]{jit_eval()}} for evaluating an expression once.

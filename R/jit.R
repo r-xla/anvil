@@ -43,10 +43,6 @@
 #' }, static = "flag")
 #' g(nv_array(3), TRUE)
 #' g(nv_array(3), FALSE)
-#'
-#' @examplesIf requireNamespace("quickr", quietly = TRUE)
-#' h <- jit(function(x, y) x + y, backend = "quickr")
-#' h(1, 2)
 jit <- function(
   f,
   static = character(),

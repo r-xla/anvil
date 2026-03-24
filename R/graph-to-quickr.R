@@ -194,13 +194,13 @@ quickr_make_rank1_wrapper <- function(r_fun, inner_fun, out_shape) {
 #' compilation) suitable for `quickr::quick()`. The returned function expects
 #' plain R scalars/vectors/arrays and returns plain R values/arrays.
 #'
-#' Most users will prefer [`jit()`] with `backend = "quickr"`. This function is
+#' Most users will prefer [`jit()`] with `options(anvil.backend = "quickr")`. This function is
 #' the lower-level graph API.
 #'
 #' @param graph ([`AnvilGraph`])\cr
 #'   Graph to convert.
 #' @return (`function`)
-#' @seealso [`jit()`] with `backend = "quickr"` for tracing and compiling a
+#' @seealso [`jit()`] with `options(anvil.backend = "quickr")` for tracing and compiling a
 #'   regular R function in one step.
 #' @export
 graph_to_r_function <- function(graph) {
