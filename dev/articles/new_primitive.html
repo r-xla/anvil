@@ -157,11 +157,11 @@ well documented, so you need to dig into the source code.</p>
 <h2 id="adding-a-primitive-practical-example">Adding a Primitive: Practical Example<a class="anchor" aria-label="anchor" href="#adding-a-primitive-practical-example"></a>
 </h2>
 <p>Let’s add a new primitive step by step. We’ll implement
-<code>nvl_repeat_along</code> – a primitive that repeats a tensor
+<code>nvl_repeat_along</code> – a primitive that repeats an array
 multiple times along a specified dimension.</p>
 <p>For example, repeating <code>c(1, 2, 3)</code> twice along dimension
 1 gives <code>c(1, 2, 3, 1, 2, 3)</code>.</p>
-<p>This primitive has a <em>dynamic</em> input (a tensor) and two
+<p>This primitive has a <em>dynamic</em> input (an array) and two
 <em>static</em> parameters (how many times to repeat and which
 dimension).</p>
 <div class="section level3">
@@ -196,7 +196,7 @@ current <code>GraphDescriptor</code>.</li>
 <span>    <span class="op">}</span></span>
 <span>    <span class="va">new_shape</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape.html">shape</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span></span>
 <span>    <span class="va">new_shape</span><span class="op">[</span><span class="va">dim</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">new_shape</span><span class="op">[</span><span class="va">dim</span><span class="op">]</span> <span class="op">*</span> <span class="va">times</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="../reference/AbstractTensor.html">AbstractTensor</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="../reference/AbstractArray.html">AbstractArray</a></span><span class="op">(</span></span>
 <span>      dtype <span class="op">=</span> <span class="fu"><a href="../reference/dtype.html">dtype</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span>,</span>
 <span>      shape <span class="op">=</span> <span class="fu"><a href="../reference/Shape-constructor.html">Shape</a></span><span class="op">(</span><span class="va">new_shape</span><span class="op">)</span>,</span>
 <span>      ambiguous <span class="op">=</span> <span class="va">operand</span><span class="op">$</span><span class="va">ambiguous</span></span>
@@ -205,7 +205,7 @@ current <code>GraphDescriptor</code>.</li>
 <span></span>
 <span>  <span class="fu"><a href="../reference/graph_desc_add.html">graph_desc_add</a></span><span class="op">(</span></span>
 <span>    <span class="va">p_repeat_along</span>,             <span class="co"># The primitive</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>operand <span class="op">=</span> <span class="va">operand</span><span class="op">)</span>,    <span class="co"># Dynamic inputs (tensors)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>operand <span class="op">=</span> <span class="va">operand</span><span class="op">)</span>,    <span class="co"># Dynamic inputs (arrays)</span></span>
 <span>    params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>              <span class="co"># Static parameters</span></span>
 <span>      times <span class="op">=</span> <span class="va">times</span>,</span>
 <span>      dim <span class="op">=</span> <span class="va">dim</span></span>
@@ -215,7 +215,7 @@ current <code>GraphDescriptor</code>.</li>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Key points:</p>
 <ul>
-<li>The inference function receives abstract tensors (types, not values)
+<li>The inference function receives abstract arrays (types, not values)
 for dynamic inputs, and actual values for static parameters. It must
 verify that the arguments to the function are valid. Also, it should
 throw clear error messages if the arguments are invalid, as {anvil}
@@ -232,11 +232,11 @@ possible to use the corresponding inference function from the stablehlo
 package (such as <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_concatenate.html" class="external-link">stablehlo::infer_types_concatenate</a></code>). When
 doing so, you need to:</p>
 <ol style="list-style-type: decimal">
-<li>Convert the abstract tensors to stablehlo <code>ValueType</code>s
+<li>Convert the abstract arrays to stablehlo <code>ValueType</code>s
 using <code><a href="../reference/at2vt.html">at2vt()</a></code>.</li>
 <li>Call the stablehlo inference function and obtain a list of
 <code>ValueType</code>s.</li>
-<li>Convert the <code>ValueType</code>s back to abstract tensors using
+<li>Convert the <code>ValueType</code>s back to abstract arrays using
 <code><a href="../reference/vt2at.html">vt2at()</a></code>.</li>
 <li>Set the <code>ambiguous</code> flag of the output depending on the
 inputs (<code>ambiguity</code> is strictly an {anvil} concept, not a
@@ -341,9 +341,9 @@ An example is <code>nvl_add</code> vs <code>nv_add</code>, where the
 latter calls into the former after optionally broadcasting (scalar)
 inputs:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/nv_add.html">nv_add</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/nv_add.html">nv_add</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; i32{2}</span></span>
-<span><span class="fu"><a href="../reference/nvl_add.html">nvl_add</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/nvl_add.html">nvl_add</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `nvl_add()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `lhs` and `rhs` must have the same tensor type.</span></span>
 <span><span class="co">#&gt; <span style="color: #BB0000;">✖</span> Got <span style="color: #0000BB;">tensor&lt;i32&gt;</span> and <span style="color: #0000BB;">tensor&lt;2xi32&gt;</span>.</span></span></code></pre></div>
@@ -354,7 +354,7 @@ function:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nv_repeat_along</span> <span class="op">&lt;-</span> <span class="va">nvl_repeat_along</span></span></code></pre></div>
 <p>Note that in the <code>nv_*</code> wrapper function, you can only
-access certain properties of the input tensorish values via:</p>
+access certain properties of the input arrayish values via:</p>
 <ul>
 <li><code><a href="../reference/abstract_properties.html">shape_abstract()</a></code></li>
 <li><code><a href="../reference/abstract_properties.html">ndims_abstract()</a></code></li>
@@ -364,7 +364,7 @@ access certain properties of the input tensorish values via:</p>
 <p>If you, for example, use <code><a href="../reference/shape.html">shape()</a></code> instead of
 <code><a href="../reference/abstract_properties.html">shape_abstract()</a></code>, your function won’t work with R literals.
 I.e., <code>&lt;extract&gt;_abstract()</code> first converts the input
-to an <code>AbstractTensor</code> (if possible) and then extracts the
+to an <code>AbstractArray</code> (if possible) and then extracts the
 property.</p>
 </div>
 <div class="section level3">
@@ -372,10 +372,10 @@ property.</p>
 </h3>
 <p>You can now use the primitive:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">nvl_repeat_along</span><span class="op">(</span><span class="va">x</span>, times <span class="op">=</span> <span class="fl">2L</span>, dim <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span><span class="va">result</span></span>
-<span><span class="co">#&gt; AnvilTensor</span></span>
+<span><span class="co">#&gt; AnvilArray</span></span>
 <span><span class="co">#&gt;  1 1</span></span>
 <span><span class="co">#&gt;  2 2</span></span>
 <span><span class="co">#&gt;  3 3</span></span>
@@ -389,7 +389,7 @@ property.</p>
 <span></span>
 <span><span class="va">grad_f</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="fu"><a href="../reference/gradient.html">gradient</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">grad_f</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[[</span><span class="fl">1L</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; AnvilTensor</span></span>
+<span><span class="co">#&gt; AnvilArray</span></span>
 <span><span class="co">#&gt;  2</span></span>
 <span><span class="co">#&gt;  2</span></span>
 <span><span class="co">#&gt;  2</span></span>

@@ -54,8 +54,8 @@ The log-density of the banana distribution (up to a constant) is:
 \\\log p(\theta_1, \theta_2) = -\frac{\theta_1^2}{200} -
 \frac{\bigl(\theta_2 - b\theta_1^2 + 100b\bigr)^2}{2}\\
 
-We implement this in {anvil} and convert the parameter to an `f64`
-tensor for maximal precision.
+We implement this in {anvil} and convert the parameter to an `f64` array
+for maximal precision.
 
 ``` r
 b_t <- nv_scalar(b_param, dtype = "f64")
@@ -123,7 +123,7 @@ n_samples <- 20000L
 n_warmup <- 5000L
 thin <- nv_scalar(200L)
 
-theta <- nv_tensor(c(0, 0), dtype = "f64")
+theta <- nv_array(c(0, 0), dtype = "f64")
 rng_state <- nv_rng_state(seed = 42L)
 proposal_sd <- nv_scalar(3, dtype = "f64")
 

@@ -62,7 +62,7 @@ A `list` of length 2:
 - The list of
   [`GraphValue`](https://r-xla.github.io/anvil/dev/reference/GraphValue.md)s
   holding
-  [`ConcreteTensor`](https://r-xla.github.io/anvil/dev/reference/ConcreteTensor.md)s.
+  [`ConcreteArray`](https://r-xla.github.io/anvil/dev/reference/ConcreteArray.md)s.
 
 ## See also
 
@@ -73,7 +73,7 @@ A `list` of length 2:
 ## Examples
 
 ``` r
-x <- nv_tensor(c(1, 2))
+x <- nv_array(c(1, 2))
 graph <- trace_fn(function(y) y + x, list(y = nv_aten("f32", shape = c())))
 graph
 #> <AnvilGraph>
@@ -98,7 +98,7 @@ stablehlo(graph)
 #> 
 #> [[2]]
 #> [[2]][[1]]
-#> GraphValue(ConcreteTensor(f32, (2))) 
+#> GraphValue(ConcreteArray(f32, (2))) 
 #> 
 #> 
 ```

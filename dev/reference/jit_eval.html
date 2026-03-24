@@ -98,7 +98,7 @@ Expression to compile and evaluate.</p></dd>
 <dt id="arg-device">device<a class="anchor" aria-label="anchor" href="#arg-device"></a></dt>
 <dd><p>(<code>NULL</code> | <code>character(1)</code> | <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_device.html" class="external-link">PJRTDevice</a></code>)<br>
 The device to use. By default (<code>NULL</code>), the device is inferred from
-the tensors encountered during tracing, falling back to <code>"cpu"</code>.
+the arrays encountered during tracing, falling back to <code>"cpu"</code>.
 or <code>"cpu"</code>.</p></dd>
 
 </dl></div>
@@ -110,9 +110,9 @@ Result of the compiled and evaluated expression.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">jit_eval</span><span class="op">(</span><span class="va">x</span> <span class="op">+</span> <span class="va">x</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  6</span>

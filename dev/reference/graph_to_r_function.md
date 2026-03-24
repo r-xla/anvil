@@ -27,10 +27,11 @@ graph_to_r_function(graph)
 
 Most users will prefer
 [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) with
-`backend = "quickr"`. This function is the lower-level graph API.
+`options(anvil.backend = "quickr")`. This function is the lower-level
+graph API.
 
 ## See also
 
 [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) with
-`backend = "quickr"` for tracing and compiling a regular R function in
-one step.
+`options(anvil.backend = "quickr")` for tracing and compiling a regular
+R function in one step.

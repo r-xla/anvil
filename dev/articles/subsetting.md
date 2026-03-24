@@ -1,12 +1,12 @@
 # Subsetting
 
-In this vignette, you will learn how to subset tensors in {anvil} and
-how to update subsets. Because tensor shapes in {anvil} programs are
-static, only certain subsetting operations are supported and they come
-with some surprises.
+In this vignette, you will learn how to subset arrays in {anvil} and how
+to update subsets. Because array shapes in {anvil} programs are static,
+only certain subsetting operations are supported and they come with some
+surprises.
 
 We start by listing possible subsets and whether they support dynamic
-values (tensors that are specified during runtime) or only static values
+values (arrays that are specified during runtime) or only static values
 (e.g., R literals).
 
 | Subset           | Dynamic | Static |
@@ -20,7 +20,7 @@ Ranges cannot have dynamic values, because then the size of the subset
 would be unknown (what’s the size of `a:b` where `a` and `b` are
 unknown?). Boolean masks are not supported, because the output shape
 depends on the data, which is not known at compile time. If you want to
-modify tensors based on a mask, see
+modify arrays based on a mask, see
 [`nv_ifelse()`](https://r-xla.github.io/anvil/dev/reference/nv_ifelse.md).
 Negative indexing (e.g., `x[-1]` to exclude elements) is currently also
 not supported. For static values, this will throw an error, for dynamic
@@ -31,19 +31,19 @@ We will start with subsetting and then move on to subset-assignment.
 
 ## Subsetting
 
-### Subsetting 1D tensors
+### Subsetting 1D arrays
 
 Let’s start with some simple examples of selecting individual elements
-from a 1-dimension tensor. The index can be either static or dynamic and
+from a 1-dimension array. The index can be either static or dynamic and
 we can drop or keep the dimension:
 
 ``` r
 library(anvil)
-x <- nv_tensor(1:10)
+x <- nv_array(1:10)
 x
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##   1
     ##   2
     ##   3
@@ -64,7 +64,7 @@ x
   })
   ```
 
-      ## AnvilTensor
+      ## AnvilArray
       ##  2
       ## [ CPUi32{} ]
 
@@ -76,7 +76,7 @@ x
   })
   ```
 
-      ## AnvilTensor
+      ## AnvilArray
       ##  2
       ## [ CPUi32{1} ]
 
@@ -88,14 +88,14 @@ x
   })
   ```
 
-      ## AnvilTensor
+      ## AnvilArray
       ##  2
       ## [ CPUi32{} ]
 
 - Dynamic & Keep:
 
-  Below, we almost perform the same operation as above, only do we use a
-  tensor of shape `(1)` instead of a scalar with shape `()`. The
+  Below, we almost perform the same operation as above, only do we use
+  an array of shape `(1)` instead of a scalar with shape `()`. The
   difference is that subsetting with the former will preserve the
   dimension, while the latter will drop it, as we have seen above. This
   ensures that the dimensionality of the result is the same for any 1D
@@ -103,11 +103,11 @@ x
 
   ``` r
   jit_eval({
-    x[nv_tensor(2L)]
+    x[nv_array(2L)]
   })
   ```
 
-      ## AnvilTensor
+      ## AnvilArray
       ##  2
       ## [ CPUi32{1} ]
 
@@ -122,7 +122,7 @@ between static and dynamic indices.
   })
   ```
 
-      ## AnvilTensor
+      ## AnvilArray
       ##  2
       ##  4
       ##  6
@@ -132,11 +132,11 @@ between static and dynamic indices.
 
   ``` r
   jit_eval({
-    x[nv_tensor(c(2L, 4L, 6L))]
+    x[nv_array(c(2L, 4L, 6L))]
   })
   ```
 
-      ## AnvilTensor
+      ## AnvilArray
       ##  2
       ##  4
       ##  6
@@ -157,7 +157,7 @@ jit_eval({
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  2
     ##  3
     ##  4
@@ -170,7 +170,7 @@ jit_eval({
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  2
     ##  3
     ##  4
@@ -190,7 +190,7 @@ jit_eval({
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##   1
     ##   2
     ##   3
@@ -203,16 +203,16 @@ jit_eval({
     ##  10
     ## [ CPUi32{10} ]
 
-### Subsetting higher-dimensional tensors
+### Subsetting higher-dimensional arrays
 
-We start by creating a 2-dimensional tensor.
+We start by creating a 2-dimensional array.
 
 ``` r
-x <- nv_tensor(matrix(1:12, nrow = 3, byrow = TRUE))
+x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
 x
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##   1  2  3  4
     ##   5  6  7  8
     ##   9 10 11 12
@@ -226,7 +226,7 @@ jit_eval({
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  1
     ##  2
     ##  3
@@ -239,7 +239,7 @@ jit_eval({
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  2
     ## [ CPUi32{} ]
 
@@ -249,7 +249,7 @@ jit_eval({
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  2 3
     ## [ CPUi32{1,2} ]
 
@@ -259,7 +259,7 @@ jit_eval({
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##   2  3
     ##  10 11
     ## [ CPUi32{2,2} ]
@@ -270,7 +270,7 @@ jit_eval({
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  2 3
     ##  6 7
     ## [ CPUi32{2,2} ]
@@ -281,7 +281,7 @@ jit_eval({
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  2
     ##  3
     ## [ CPUi32{2} ]
@@ -292,7 +292,7 @@ jit_eval({
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  5 6 7 8
     ##  5 6 7 8
     ## [ CPUi32{2,4} ]
@@ -303,7 +303,7 @@ jit_eval({
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  5 6 7 8
     ##  5 6 7 8
     ## [ CPUi32{2,4} ]
@@ -317,21 +317,21 @@ out-of-bounds indices, but instead clamps them to the valid range:
 
 ``` r
 jit_eval({
-  x[nv_tensor(-1L), nv_tensor(100L)]
+  x[nv_array(-1L), nv_array(100L)]
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  4
     ## [ CPUi32{1,1} ]
 
 ``` r
 jit_eval({
-  x[nv_tensor(1L), nv_tensor(4L)]
+  x[nv_array(1L), nv_array(4L)]
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  4
     ## [ CPUi32{1,1} ]
 
@@ -347,7 +347,7 @@ write must either have the shape of the subset, or be a scalar.
 x
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##   1  2  3  4
     ##   5  6  7  8
     ##   9 10 11 12
@@ -355,12 +355,12 @@ x
 
 ``` r
 jit_eval({
-  x[, 3] <- nv_tensor(-(1:3))
+  x[, 3] <- nv_array(-(1:3))
   x
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##   1  2 -1  4
     ##   5  6 -2  8
     ##   9 10 -3 12
@@ -373,18 +373,18 @@ jit_eval({
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##    1   2 -99   4
     ##    5   6 -99   8
     ##    9  10 -99  12
     ## [ CPUi32{3,4} ]
 
 Also, it must have a data type that is convertible to the data type of
-the tensor.
+the array.
 
 ``` r
 jit_eval({
-  x[, 3] <- nv_tensor(c(1.5, 2.5, 3.5))
+  x[, 3] <- nv_array(c(1.5, 2.5, 3.5))
   x
 })
 ```
@@ -399,14 +399,14 @@ static values. For dynamic indices, out-of-bounds writes are simply
 ignored:
 
 ``` r
-x <- nv_tensor(1:5)
+x <- nv_array(1:5)
 jit_eval({
-  x[nv_tensor(c(1L, 100L, 3L))] <- nv_tensor(c(-1L, -2L, -3L))
+  x[nv_array(c(1L, 100L, 3L))] <- nv_array(c(-1L, -2L, -3L))
   x
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  -1
     ##   2
     ##  -3
@@ -424,14 +424,14 @@ which value will be written. Specifically, this might differ between
 backends (CPU vs. GPU).
 
 ``` r
-x <- nv_tensor(1:5)
+x <- nv_array(1:5)
 jit_eval({
-  x[list(1, 1, 1)] <- nv_tensor(c(10L, 20L, 30L))
+  x[list(1, 1, 1)] <- nv_array(c(10L, 20L, 30L))
   x
 })
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  30
     ##   2
     ##   3

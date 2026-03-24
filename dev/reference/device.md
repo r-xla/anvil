@@ -1,6 +1,6 @@
-# Get the device of a tensor
+# Get the device of an array
 
-Returns the device on which a tensor is allocated.
+Returns the device on which an array is allocated.
 
 ## Usage
 
@@ -12,8 +12,8 @@ device(x, ...)
 
 - x:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  A tensor-like object.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  An array-like object.
 
 - ...:
 
@@ -31,7 +31,7 @@ This is implemented via the generic
 ## Examples
 
 ``` r
-x <- nv_tensor(1:4, dtype = "f32")
+x <- nv_array(1:4, dtype = "f32")
 device(x)
 #> <CpuDevice(id=0)>
 ```

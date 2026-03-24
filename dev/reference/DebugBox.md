@@ -2,7 +2,7 @@
 
 [`AnvilBox`](https://r-xla.github.io/anvil/dev/reference/AnvilBox.md)
 subclass that wraps an
-[`AbstractTensor`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md)
+[`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
 for use in debug mode. When anvil operations (e.g.
 [`nv_add()`](https://r-xla.github.io/anvil/dev/reference/nv_add.md)) are
 called outside of
@@ -27,8 +27,8 @@ DebugBox(aval)
 
 - aval:
 
-  ([`AbstractTensor`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md))  
-  The abstract tensor representing the value.
+  ([`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md))  
+  The abstract array representing the value.
 
 ## Value
 
@@ -49,13 +49,13 @@ DebugBox(aval)
 [AnvilBox](https://r-xla.github.io/anvil/dev/reference/AnvilBox.md),
 [GraphBox](https://r-xla.github.io/anvil/dev/reference/GraphBox.md),
 [`debug_box()`](https://r-xla.github.io/anvil/dev/reference/debug_box.md),
-[AbstractTensor](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md)
+[AbstractArray](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
 
 ## Examples
 
 ``` r
-x <- nv_tensor(1:4)
-y <- nv_tensor(5:8)
+x <- nv_array(1:4)
+y <- nv_array(5:8)
 result <- nv_add(x, y)
 result
 #> i32{4}

@@ -1,6 +1,6 @@
-# Print Tensor
+# Print Array
 
-Prints a tensor value to the console during JIT execution and returns
+Prints an array value to the console during JIT execution and returns
 the input unchanged. Useful for debugging.
 
 ## Usage
@@ -13,12 +13,12 @@ nv_print(operand)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Returns `operand` unchanged.
 
 ## See also
@@ -30,15 +30,15 @@ for the underlying primitive.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
+  x <- nv_array(c(1, 2, 3))
   nv_print(x)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  2
 #>  3
 #> [ f32{3} ]
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  2
 #>  3

@@ -2,7 +2,7 @@
 
 ## Type Promotion Rules
 
-When combining tensors of different types (e.g., adding an `f32` to an
+When combining arrays of different types (e.g., adding an `f32` to an
 `i32`), {anvil} needs to determine a common type. For example, below we
 are adding an `f32` to an `f64`, where the former is promoted to the
 latter’s type, because it’s more expressive.
@@ -15,7 +15,7 @@ jit(nv_add)(
 )
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  2
     ## [ CPUf64{} ]
 
@@ -75,17 +75,17 @@ jit(\() list(1L, 1.0, TRUE))()
 ```
 
     ## [[1]]
-    ## AnvilTensor
+    ## AnvilArray
     ##  1
     ## [ CPUi32?{} ] 
     ## 
     ## [[2]]
-    ## AnvilTensor
+    ## AnvilArray
     ##  1
     ## [ CPUf32?{} ] 
     ## 
     ## [[3]]
-    ## AnvilTensor
+    ## AnvilArray
     ##  1
     ## [ CPUbool{} ]
 
@@ -157,10 +157,10 @@ Promotion rules: ambiguous (row) × known (column)
 ## Creating Tensors with Different Ambiguity
 
 Both
-[`nv_scalar()`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)
+[`nv_scalar()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
 and
-[`nv_tensor()`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)
-create **non-ambiguous** tensors by default. You can explicitly control
+[`nv_array()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+create **non-ambiguous** arrays by default. You can explicitly control
 ambiguity using the `ambiguous` parameter:
 
 ``` r
@@ -178,14 +178,14 @@ ambiguous(s2)
     ## [1] TRUE
 
 ``` r
-t1 <- nv_tensor(c(1.0, 2.0, 3.0))
+t1 <- nv_array(c(1.0, 2.0, 3.0))
 ambiguous(t1)
 ```
 
     ## [1] FALSE
 
 ``` r
-t2 <- nv_tensor(c(1.0, 2.0, 3.0), ambiguous = TRUE)
+t2 <- nv_array(c(1.0, 2.0, 3.0), ambiguous = TRUE)
 ambiguous(t2)
 ```
 
@@ -204,7 +204,7 @@ f <- jit(function(x, y) {
 f(nv_scalar(TRUE), nv_scalar(2L, dtype = "i16"))
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  4
     ## [ CPUi16{} ]
 

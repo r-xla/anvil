@@ -66,11 +66,11 @@ summary(titanic)
 
 The general survival rate was 32.30%.
 
-Now we convert the data to `AnvilTensor`s.
+Now we convert the data to `AnvilArray`s.
 
 ``` r
-X_tensor <- nv_tensor(X, dtype = "f32")
-y_tensor <- nv_tensor(y, dtype = "f32", shape = c(n, 1L))
+X_tensor <- nv_array(X, dtype = "f32")
+y_tensor <- nv_array(y, dtype = "f32", shape = c(n, 1L))
 ```
 
 ## Model
@@ -149,7 +149,7 @@ We initialize the parameters and train the model with a single function
 call.
 
 ``` r
-beta_init <- nv_tensor(rnorm(p), dtype = "f32", shape = c(p, 1L))
+beta_init <- nv_array(rnorm(p), dtype = "f32", shape = c(p, 1L))
 alpha_init <- nv_scalar(0, dtype = "f32")
 
 result <- fit_logreg(
@@ -163,7 +163,7 @@ result
 ```
 
     ## $beta
-    ## AnvilTensor
+    ## AnvilArray
     ##  -0.3419
     ##  -0.8300
     ##  -0.4206
@@ -172,7 +172,7 @@ result
     ## [ CPUf32{5,1} ] 
     ## 
     ## $alpha
-    ## AnvilTensor
+    ## AnvilArray
     ##  -0.8538
     ## [ CPUf32{} ]
 

@@ -1,6 +1,6 @@
-# Promote Tensors to a Common Dtype
+# Promote Arrays to a Common Dtype
 
-Promote tensors to a common data type, see
+Promote arrays to a common data type, see
 [`common_dtype`](https://r-xla.github.io/anvil/dev/reference/common_dtype.md)
 for more details.
 
@@ -14,30 +14,30 @@ nv_promote_to_common(...)
 
 - ...:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensors to promote.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrays to promote.
 
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))
 
 ## Examples
 
 ``` r
 jit_eval({
-  x <- nv_tensor(1L)
-  y <- nv_tensor(1.5)
+  x <- nv_array(1L)
+  y <- nv_array(1.5)
   # integer is promoted to float
   nv_promote_to_common(x, y)
 })
 #> [[1]]
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #> [ CPUf32{1} ] 
 #> 
 #> [[2]]
-#> AnvilTensor
+#> AnvilArray
 #>  1.5000
 #> [ CPUf32{1} ] 
 #> 

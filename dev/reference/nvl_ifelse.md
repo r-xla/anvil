@@ -15,19 +15,19 @@ nvl_ifelse(pred, true_value, false_value)
 
 - pred:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
   of boolean type)  
-  Predicate tensor. Must be scalar or have the same shape as
+  Predicate array. Must be scalar or have the same shape as
   `true_value`.
 
 - true_value, false_value:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Values to select from. Must have the same dtype and shape.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same dtype and shape as `true_value`. It is ambiguous if both
 `true_value` and `false_value` are ambiguous.
 
@@ -52,10 +52,10 @@ Lowers to
 
 ``` r
 jit_eval({
-  pred <- nv_tensor(c(TRUE, FALSE, TRUE))
-  nvl_ifelse(pred, nv_tensor(c(1, 2, 3)), nv_tensor(c(4, 5, 6)))
+  pred <- nv_array(c(TRUE, FALSE, TRUE))
+  nvl_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  5
 #>  3

@@ -1,6 +1,6 @@
-# Check if an object is a TensorDataType
+# Check if an object is a DataType
 
-Tests whether `x` is a `TensorDataType` object.
+Tests whether `x` is a `DataType` object.
 
 ## Usage
 

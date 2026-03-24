@@ -104,13 +104,13 @@ which defaults to <code>"xla"</code>. Use <code><a href="with_backend.html">with
 
 <dl><dt id="arg-f">f<a class="anchor" aria-label="anchor" href="#arg-f"></a></dt>
 <dd><p>(<code>function</code>)<br>
-Function to compile. Must accept and return <code><a href="AnvilTensor.html">AnvilTensor</a></code>s (and/or
+Function to compile. Must accept and return <code><a href="AnvilArray.html">AnvilArray</a></code>s (and/or
 static arguments).</p></dd>
 
 
 <dt id="arg-static">static<a class="anchor" aria-label="anchor" href="#arg-static"></a></dt>
 <dd><p>(<code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code>)<br>
-Names of parameters of <code>f</code> that are <em>not</em> tensors. Static values are
+Names of parameters of <code>f</code> that are <em>not</em> arrays. Static values are
 embedded as constants in the compiled program; a new compilation is triggered whenever
 a static value changes. For example useful when you want R control flow in your function.</p></dd>
 
@@ -138,7 +138,7 @@ Defaults to <code>"cpu"</code>. Only supported for the <code>"xla"</code> backen
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>JitFunction</code> with the same formals as <code>f</code>.
 For the <code>"xla"</code> backend, the returned wrapper expects and returns
-<code><a href="AnvilTensor.html">AnvilTensor</a></code> values. For the <code>"quickr"</code> backend, the returned wrapper
+<code><a href="AnvilArray.html">AnvilArray</a></code> values. For the <code>"quickr"</code> backend, the returned wrapper
 expects plain R numeric/integer/logical scalars, vectors, and arrays and
 returns plain R values.</p>
 <p>(<code>function</code>)</p>
@@ -151,8 +151,8 @@ returns plain R values.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu">jit</span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="va">y</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">f</span><span class="op">(</span><span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-in"><span><span class="fu">f</span><span class="op">(</span><span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{1} ] </span>
 <span class="r-in"><span></span></span>
@@ -160,12 +160,12 @@ returns plain R values.</p>
 <span class="r-in"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu">jit</span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">flag</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="kw">if</span> <span class="op">(</span><span class="va">flag</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="fl">1</span> <span class="kw">else</span> <span class="va">x</span> <span class="op">*</span> <span class="fl">2</span></span></span>
 <span class="r-in"><span><span class="op">}</span>, static <span class="op">=</span> <span class="st">"flag"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">g</span><span class="op">(</span><span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>, <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-in"><span><span class="fu">g</span><span class="op">(</span><span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>, <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{1} ] </span>
-<span class="r-in"><span><span class="fu">g</span><span class="op">(</span><span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>, <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-in"><span><span class="fu">g</span><span class="op">(</span><span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>, <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  6</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{1} ] </span>
 </code></pre></div>

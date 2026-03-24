@@ -1,6 +1,6 @@
 # Primitive Bitcast Convert
 
-Reinterprets the bits of a tensor as a different data type without
+Reinterprets the bits of an array as a different data type without
 modifying the underlying data.
 
 ## Usage
@@ -13,20 +13,20 @@ nvl_bitcast_convert(operand, dtype)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of any data type.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of any data type.
 
 - dtype:
 
   (`character(1)` \|
-  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  [`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   Target data type. If it has the same bit width as the input, the
   output shape is unchanged. If narrower, an extra trailing dimension is
   added. If wider, the last dimension is consumed.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the given `dtype`.
 
 ## Implemented Rules
@@ -48,17 +48,17 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(1L)
+  x <- nv_array(1L)
   nvl_bitcast_convert(x, dtype = "i8")
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1 0 0 0
 #> [ CPUi8{1,4} ] 
 jit_eval({
-  x <- nv_tensor(rep(1L, 4), dtype = "i8")
+  x <- nv_array(rep(1L, 4), dtype = "i8")
   nvl_bitcast_convert(x, dtype = "i32")
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1.6843e+07
 #> [ CPUi32{} ] 
 ```

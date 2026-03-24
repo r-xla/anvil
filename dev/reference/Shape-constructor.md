@@ -1,6 +1,6 @@
 # Create a Shape object
 
-Constructs a `Shape` representing tensor dimensions.
+Constructs a `Shape` representing array dimensions.
 
 ## Usage
 

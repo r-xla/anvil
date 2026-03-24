@@ -1,21 +1,21 @@
-# Serialize tensors to raw bytes
+# Serialize arrays to raw bytes
 
-Serializes a named list of tensors into the
+Serializes a named list of arrays into the
 [safetensors](https://huggingface.co/docs/safetensors/index) format.
 
 ## Usage
 
 ``` r
-nv_serialize(tensors, con = NULL)
+nv_serialize(arrays, con = NULL)
 ```
 
 ## Arguments
 
-- tensors:
+- arrays:
 
   (named `list` of
-  [`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md))  
-  Named list of tensors to serialize. Names must be unique.
+  [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))  
+  Named list of arrays to serialize. Names must be unique.
 
 - con:
 
@@ -30,7 +30,7 @@ otherwise `NULL` (invisibly).
 
 ## Details
 
-The ambiguity of the tensors is stored in the metadata and preserved in
+The ambiguity of the arrays is stored in the metadata and preserved in
 write-read roundtrips.
 
 ## See also
@@ -42,9 +42,9 @@ write-read roundtrips.
 ## Examples
 
 ``` r
-x <- nv_tensor(array(1:6, dim = c(2, 3)))
+x <- nv_array(array(1:6, dim = c(2, 3)))
 x
-#> AnvilTensor
+#> AnvilArray
 #>  1 3 5
 #>  2 4 6
 #> [ CPUi32{2,3} ] 
@@ -64,7 +64,7 @@ raw_data
 #> [276] 7d 01 00 00 00 03 00 00 00 05 00 00 00 02 00 00 00 04 00 00 00 06 00 00 00
 nv_unserialize(raw_data)
 #> $x
-#> AnvilTensor
+#> AnvilArray
 #>  1 3 5
 #>  2 4 6
 #> [ CPUi32{2,3} ] 

@@ -6,8 +6,8 @@ Returns a callable R function that executes the compiled binary. Unlike
 [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md),
 compilation happens eagerly at definition time rather than on first
 call, so the input shapes and dtypes must be specified upfront via
-abstract tensors (see
-[`nv_aten()`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md)).
+abstract arrays (see
+[`nv_aten()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)).
 
 ## Usage
 
@@ -21,13 +21,13 @@ xla(f, args, donate = character(), device = NULL)
 
   (`function`)  
   Function to compile. Must accept and return
-  [`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)s.
+  [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)s.
 
 - args:
 
   (`list`)  
-  List of abstract tensor specifications (e.g. from
-  [`nv_aten()`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md))
+  List of abstract array specifications (e.g. from
+  [`nv_aten()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md))
   describing the expected shapes and dtypes of `f`'s arguments.
 
 - donate:
@@ -44,9 +44,9 @@ xla(f, args, donate = character(), device = NULL)
 
 (`function`)  
 A function that accepts
-[`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)
+[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
 arguments (matching the flat inputs) and returns the result as
-[`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)s.
+[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)s.
 
 ## Details
 
@@ -71,10 +71,10 @@ for the lower-level API.
 f_compiled <- xla(function(x, y) x + y,
   args = list(x = nv_aten("f32", c(2, 2)), y = nv_aten("f32", c(2, 2)))
 )
-a <- nv_tensor(array(1:4, c(2, 2)), dtype = "f32")
-b <- nv_tensor(array(5:8, c(2, 2)), dtype = "f32")
+a <- nv_array(array(1:4, c(2, 2)), dtype = "f32")
+b <- nv_array(array(5:8, c(2, 2)), dtype = "f32")
 f_compiled(a, b)
-#> AnvilTensor
+#> AnvilArray
 #>   6 10
 #>   8 12
 #> [ CPUf32{2,2} ] 

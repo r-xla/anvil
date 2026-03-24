@@ -67,9 +67,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="tensor-creation">Tensor Creation<a class="anchor" aria-label="anchor" href="#tensor-creation"></a></h2>
+      <h2 id="array-creation">Array Creation<a class="anchor" aria-label="anchor" href="#array-creation"></a></h2>
 
-      <div class="section-desc"><p>Functions for creating and initializing tensors</p></div>
+      <div class="section-desc"><p>Functions for creating and initializing arrays</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -78,17 +78,17 @@
 
       <dl><dt>
 
-          <code><a href="AnvilTensor.html">nv_tensor()</a></code> <code><a href="AnvilTensor.html">nv_scalar()</a></code> <code><a href="AnvilTensor.html">nv_empty()</a></code>
+          <code><a href="AnvilArray.html">nv_array()</a></code> <code><a href="AnvilArray.html">nv_scalar()</a></code> <code><a href="AnvilArray.html">nv_empty()</a></code>
 
         </dt>
-        <dd>AnvilTensor</dd>
+        <dd>AnvilArray</dd>
 
         <dt>
 
-          <code><a href="tensorish.html">is_tensorish()</a></code>
+          <code><a href="arrayish.html">is_arrayish()</a></code>
 
         </dt>
-        <dd>Tensor-like Objects</dd>
+        <dd>Array-like Objects</dd>
 
         <dt>
 
@@ -125,9 +125,9 @@
         </dt>
         <dd>Identity Matrix</dd>
       </dl></div><div class="section level2">
-      <h2 id="tensor-attributes-and-converters">Tensor attributes and converters<a class="anchor" aria-label="anchor" href="#tensor-attributes-and-converters"></a></h2>
+      <h2 id="array-attributes-and-converters">Array attributes and converters<a class="anchor" aria-label="anchor" href="#array-attributes-and-converters"></a></h2>
 
-      <div class="section-desc"><p>Functions for querying tensor attributes and converting them</p></div>
+      <div class="section-desc"><p>Functions for querying array attributes and converting them</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -139,81 +139,81 @@
           <code><a href="ambiguous.html">ambiguous()</a></code>
 
         </dt>
-        <dd>Get Ambiguity of a Tensor</dd>
+        <dd>Get Ambiguity of an Array</dd>
 
         <dt>
 
           <code><a href="dtype.html">dtype()</a></code>
 
         </dt>
-        <dd>Get the data type of a tensor</dd>
+        <dd>Get the data type of an array</dd>
 
         <dt>
 
           <code><a href="shape.html">shape()</a></code>
 
         </dt>
-        <dd>Get the shape of a tensor</dd>
+        <dd>Get the shape of an array</dd>
 
         <dt>
 
           <code><a href="ndims.html">ndims()</a></code>
 
         </dt>
-        <dd>Get the number of dimensions of a tensor</dd>
+        <dd>Get the number of dimensions of an array</dd>
 
         <dt>
 
           <code><a href="device.html">device()</a></code>
 
         </dt>
-        <dd>Get the device of a tensor</dd>
+        <dd>Get the device of an array</dd>
 
         <dt>
 
-          <code><a href="platform.AbstractTensor.html">platform(<i>&lt;AbstractTensor&gt;</i>)</a></code>
+          <code><a href="platform.AbstractArray.html">platform(<i>&lt;AbstractArray&gt;</i>)</a></code>
 
         </dt>
-        <dd>Platform for AbstractTensor</dd>
+        <dd>Platform for AbstractArray</dd>
 
         <dt>
 
           <code><a href="platform.html">platform()</a></code>
 
         </dt>
-        <dd>Get the platform of a tensor or buffer</dd>
+        <dd>Get the platform of an array or buffer</dd>
 
         <dt>
 
           <code><a href="as_array.html">as_array()</a></code>
 
         </dt>
-        <dd>Convert a tensor to an R array</dd>
+        <dd>Convert to an R array</dd>
 
         <dt>
 
           <code><a href="as_raw.html">as_raw()</a></code>
 
         </dt>
-        <dd>Convert a tensor to a raw vector</dd>
+        <dd>Convert an array to a raw vector</dd>
 
         <dt>
 
           <code><a href="as_dtype.html">as_dtype()</a></code>
 
         </dt>
-        <dd>Convert to a TensorDataType</dd>
+        <dd>Convert to a DataType</dd>
 
         <dt>
 
           <code><a href="is_dtype.html">is_dtype()</a></code>
 
         </dt>
-        <dd>Check if an object is a TensorDataType</dd>
+        <dd>Check if an object is a DataType</dd>
       </dl></div><div class="section level2">
-      <h2 id="tensor-serialization">Tensor Serialization<a class="anchor" aria-label="anchor" href="#tensor-serialization"></a></h2>
+      <h2 id="array-serialization">Array Serialization<a class="anchor" aria-label="anchor" href="#array-serialization"></a></h2>
 
-      <div class="section-desc"><p>Functions for serializing and deserializing tensors</p></div>
+      <div class="section-desc"><p>Functions for serializing and deserializing arrays</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -225,28 +225,28 @@
           <code><a href="nv_save.html">nv_save()</a></code>
 
         </dt>
-        <dd>Save tensors to a file</dd>
+        <dd>Save arrays to a file</dd>
 
         <dt>
 
           <code><a href="nv_read.html">nv_read()</a></code>
 
         </dt>
-        <dd>Read tensors from a file</dd>
+        <dd>Read arrays from a file</dd>
 
         <dt>
 
           <code><a href="nv_serialize.html">nv_serialize()</a></code>
 
         </dt>
-        <dd>Serialize tensors to raw bytes</dd>
+        <dd>Serialize arrays to raw bytes</dd>
 
         <dt>
 
           <code><a href="nv_unserialize.html">nv_unserialize()</a></code>
 
         </dt>
-        <dd>Deserialize tensors from raw bytes</dd>
+        <dd>Deserialize arrays from raw bytes</dd>
       </dl></div><div class="section level2">
       <h2 id="type-conversion-and-promotion">Type conversion and promotion<a class="anchor" aria-label="anchor" href="#type-conversion-and-promotion"></a></h2>
 
@@ -276,7 +276,7 @@
           <code><a href="nv_promote_to_common.html">nv_promote_to_common()</a></code>
 
         </dt>
-        <dd>Promote Tensors to a Common Dtype</dd>
+        <dd>Promote Arrays to a Common Dtype</dd>
 
         <dt>
 
@@ -287,10 +287,10 @@
 
         <dt>
 
-          <code><a href="nv_broadcast_tensors.html">nv_broadcast_tensors()</a></code>
+          <code><a href="nv_broadcast_arrays.html">nv_broadcast_arrays()</a></code>
 
         </dt>
-        <dd>Broadcast Tensors to a Common Shape</dd>
+        <dd>Broadcast Arrays to a Common Shape</dd>
 
         <dt>
 
@@ -306,9 +306,9 @@
         </dt>
         <dd>Type Promotion Rules</dd>
       </dl></div><div class="section level2">
-      <h2 id="tensor-manipulation">Tensor manipulation<a class="anchor" aria-label="anchor" href="#tensor-manipulation"></a></h2>
+      <h2 id="array-manipulation">Array manipulation<a class="anchor" aria-label="anchor" href="#array-manipulation"></a></h2>
 
-      <div class="section-desc"><p>Functions for reshaping and rearranging tensors</p></div>
+      <div class="section-desc"><p>Functions for reshaping and rearranging arrays</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -359,21 +359,21 @@
 
         <dt>
 
-          <code><a href="nv_subset.html">`[`(<i>&lt;AnvilBox&gt;</i>)</a></code> <code><a href="nv_subset.html">`[`(<i>&lt;AnvilTensor&gt;</i>)</a></code> <code><a href="nv_subset.html">nv_subset()</a></code>
+          <code><a href="nv_subset.html">`[`(<i>&lt;AnvilBox&gt;</i>)</a></code> <code><a href="nv_subset.html">`[`(<i>&lt;AnvilArray&gt;</i>)</a></code> <code><a href="nv_subset.html">nv_subset()</a></code>
 
         </dt>
-        <dd>Subset a Tensor</dd>
+        <dd>Subset an Array</dd>
 
         <dt>
 
-          <code><a href="nv_subset_assign.html">`[&lt;-`(<i>&lt;AnvilBox&gt;</i>)</a></code> <code><a href="nv_subset_assign.html">`[&lt;-`(<i>&lt;AnvilTensor&gt;</i>)</a></code> <code><a href="nv_subset_assign.html">nv_subset_assign()</a></code>
+          <code><a href="nv_subset_assign.html">`[&lt;-`(<i>&lt;AnvilBox&gt;</i>)</a></code> <code><a href="nv_subset_assign.html">`[&lt;-`(<i>&lt;AnvilArray&gt;</i>)</a></code> <code><a href="nv_subset_assign.html">nv_subset_assign()</a></code>
 
         </dt>
         <dd>Update Subset</dd>
       </dl></div><div class="section level2">
       <h2 id="arithmetic-operations">Arithmetic operations<a class="anchor" aria-label="anchor" href="#arithmetic-operations"></a></h2>
 
-      <div class="section-desc"><p>Basic arithmetic operations on tensors</p></div>
+      <div class="section-desc"><p>Basic arithmetic operations on arrays</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -624,7 +624,7 @@
       </dl></div><div class="section level2">
       <h2 id="reduction-operations">Reduction operations<a class="anchor" aria-label="anchor" href="#reduction-operations"></a></h2>
 
-      <div class="section-desc"><p>Operations that reduce tensor dimensions</p></div>
+      <div class="section-desc"><p>Operations that reduce array dimensions</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -712,7 +712,7 @@
       </dl></div><div class="section level2">
       <h2 id="logical-and-bitwise-operations">Logical and bitwise operations<a class="anchor" aria-label="anchor" href="#logical-and-bitwise-operations"></a></h2>
 
-      <div class="section-desc"><p>Logical and bitwise operations on tensors</p></div>
+      <div class="section-desc"><p>Logical and bitwise operations on arrays</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -777,7 +777,7 @@
       </dl></div><div class="section level2">
       <h2 id="element-wise-operations">Element-wise operations<a class="anchor" aria-label="anchor" href="#element-wise-operations"></a></h2>
 
-      <div class="section-desc"><p>Other element-wise tensor operations</p></div>
+      <div class="section-desc"><p>Other element-wise array operations</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -979,7 +979,7 @@
           <code><a href="nv_print.html">nv_print()</a></code>
 
         </dt>
-        <dd>Print Tensor</dd>
+        <dd>Print Array</dd>
 
         <dt>
 
@@ -1009,7 +1009,7 @@
           <code><a href="to_abstract.html">to_abstract()</a></code>
 
         </dt>
-        <dd>Convert to Abstract Tensor</dd>
+        <dd>Convert to Abstract Array</dd>
 
         <dt>
 
@@ -1118,59 +1118,59 @@
 
         <dt>
 
-          <code><a href="AbstractTensor.html">nv_aten()</a></code> <code><a href="AbstractTensor.html">AbstractTensor()</a></code>
+          <code><a href="AbstractArray.html">nv_aten()</a></code> <code><a href="AbstractArray.html">AbstractArray()</a></code>
 
         </dt>
-        <dd>Abstract Tensor Class</dd>
+        <dd>Abstract Array Class</dd>
 
         <dt>
 
-          <code><a href="ConcreteTensor.html">ConcreteTensor()</a></code>
+          <code><a href="ConcreteArray.html">ConcreteArray()</a></code>
 
         </dt>
-        <dd>Concrete Tensor Class</dd>
+        <dd>Concrete Array Class</dd>
 
         <dt>
 
-          <code><a href="LiteralTensor.html">LiteralTensor()</a></code>
+          <code><a href="LiteralArray.html">LiteralArray()</a></code>
 
         </dt>
-        <dd>Literal Tensor Class</dd>
+        <dd>Literal Array Class</dd>
 
         <dt>
 
-          <code><a href="IotaTensor.html">IotaTensor()</a></code>
+          <code><a href="IotaArray.html">IotaArray()</a></code>
 
         </dt>
-        <dd>Iota Tensor Class</dd>
+        <dd>Iota Array Class</dd>
 
         <dt>
 
           <code><a href="eq_type.html">eq_type()</a></code> <code><a href="eq_type.html">neq_type()</a></code>
 
         </dt>
-        <dd>Compare AbstractTensor Types</dd>
+        <dd>Compare AbstractArray Types</dd>
 
         <dt>
 
           <code><a href="at2vt.html">at2vt()</a></code>
 
         </dt>
-        <dd>Convert AbstractTensor to ValueType</dd>
+        <dd>Convert AbstractArray to ValueType</dd>
 
         <dt>
 
           <code><a href="vt2at.html">vt2at()</a></code>
 
         </dt>
-        <dd>Convert ValueType to AbstractTensor</dd>
+        <dd>Convert ValueType to AbstractArray</dd>
 
         <dt>
 
-          <code><a href="tensorish.html">is_tensorish()</a></code>
+          <code><a href="arrayish.html">is_arrayish()</a></code>
 
         </dt>
-        <dd>Tensor-like Objects</dd>
+        <dd>Array-like Objects</dd>
 
         <dt>
 

@@ -50,12 +50,12 @@ jit_eval({
   )
 })
 #> $i
-#> AnvilTensor
+#> AnvilArray
 #>  5
 #> [ CPUi32{} ] 
 #> 
 #> $total
-#> AnvilTensor
+#> AnvilArray
 #>  10
 #> [ CPUi32{} ] 
 #> 

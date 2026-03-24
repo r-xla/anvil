@@ -111,7 +111,7 @@ with the same structure as <code>init</code>.</p></dd>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="fu">nv_while</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    init <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>i <span class="op">=</span> <span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span>, total <span class="op">=</span> <span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    init <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>i <span class="op">=</span> <span class="fu"><a href="AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span>, total <span class="op">=</span> <span class="fu"><a href="AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    cond <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">i</span>, <span class="va">total</span><span class="op">)</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="fl">5L</span>,</span></span>
 <span class="r-in"><span>    body <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">i</span>, <span class="va">total</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>      i <span class="op">=</span> <span class="va">i</span> <span class="op">+</span> <span class="fl">1L</span>,</span></span>
@@ -120,12 +120,12 @@ with the same structure as <code>init</code>.</p></dd>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $i</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{} ] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $total</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  10</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{} ] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>

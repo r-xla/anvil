@@ -120,7 +120,7 @@ indexing, but `anvil` uses 1-based indexing.
 
 API functions are prefixed by `nv_` and are defined in files like api.R
 or api-rng.R. Often, they wrap primitives, but make them more convenient
-to use. When accessing properties from `tensorish` values, use
+to use. When accessing properties from `arrayish` values, use
 `shape_abstract`, `ndims_abstract`, and `dtype_abstract`. Other
 accessors are currently not available.
 
@@ -128,7 +128,7 @@ accessors are currently not available.
 
 Whenever we are combining non-standard evaluation (NSE) with tracing of
 sub-graphs, we need to [`force()`](https://rdrr.io/r/base/force.html)
-the tensorish inputs, so they are not accidentally embedded into the
+the arrayish inputs, so they are not accidentally embedded into the
 sub-graphdescriptor. This can happen in R, because the evaluation of
 promises in function calls is delayed until they are actually needed,
 which causes hard-to-debug errors.

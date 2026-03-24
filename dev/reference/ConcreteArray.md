@@ -1,23 +1,23 @@
-# Concrete Tensor Class
+# Concrete Array Class
 
 An
-[`AbstractTensor`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md)
-that also holds a reference to the actual tensor data. Usually
-represents a closed-over constant in a program. Inherits from
-[`AbstractTensor`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md).
+[`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
+that also holds a reference to the actual array data. Usually represents
+a closed-over constant in a program. Inherits from
+[`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md).
 
 ## Usage
 
 ``` r
-ConcreteTensor(data)
+ConcreteArray(data)
 ```
 
 ## Arguments
 
 - data:
 
-  ([`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md))  
-  The actual tensor data.
+  ([`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))  
+  The actual array data.
 
 ## Lowering
 
@@ -28,10 +28,10 @@ compilation time and bloating the size of the executable.
 ## Examples
 
 ``` r
-y <- nv_tensor(c(0.5, 0.6))
-x <- ConcreteTensor(y)
+y <- nv_array(c(0.5, 0.6))
+x <- ConcreteArray(y)
 x
-#> ConcreteTensor
+#> ConcreteArray
 #>  0.5000
 #>  0.6000
 #> [ CPUf32{2} ] 
@@ -55,7 +55,7 @@ graph
 #>   Outputs:
 #>     %c1: f32[2] 
 graph$outputs[[1]]$aval
-#> ConcreteTensor
+#> ConcreteArray
 #>  0.5000
 #>  0.6000
 #> [ CPUf32{2} ] 

@@ -30,13 +30,13 @@ jit(
 
   (`function`)  
   Function to compile. Must accept and return
-  [`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)s
+  [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)s
   (and/or static arguments).
 
 - static:
 
   ([`character()`](https://rdrr.io/r/base/character.html))  
-  Names of parameters of `f` that are *not* tensors. Static values are
+  Names of parameters of `f` that are *not* arrays. Static values are
   embedded as constants in the compiled program; a new compilation is
   triggered whenever a static value changes. For example useful when you
   want R control flow in your function.
@@ -66,7 +66,7 @@ jit(
 
 A `JitFunction` with the same formals as `f`. For the `"xla"` backend,
 the returned wrapper expects and returns
-[`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)
+[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
 values. For the `"quickr"` backend, the returned wrapper expects plain R
 numeric/integer/logical scalars, vectors, and arrays and returns plain R
 values.
@@ -84,8 +84,8 @@ for evaluating an expression once.
 
 ``` r
 f <- jit(function(x, y) x + y)
-f(nv_tensor(1), nv_tensor(2))
-#> AnvilTensor
+f(nv_array(1), nv_array(2))
+#> AnvilArray
 #>  3
 #> [ CPUf32{1} ] 
 
@@ -93,12 +93,12 @@ f(nv_tensor(1), nv_tensor(2))
 g <- jit(function(x, flag) {
   if (flag) x + 1 else x * 2
 }, static = "flag")
-g(nv_tensor(3), TRUE)
-#> AnvilTensor
+g(nv_array(3), TRUE)
+#> AnvilArray
 #>  4
 #> [ CPUf32{1} ] 
-g(nv_tensor(3), FALSE)
-#> AnvilTensor
+g(nv_array(3), FALSE)
+#> AnvilArray
 #>  6
 #> [ CPUf32{1} ] 
 ```

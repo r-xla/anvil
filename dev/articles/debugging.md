@@ -15,11 +15,11 @@ cover different ways to print values during execution.
 When {anvil} functions are executed without being wrapped in
 [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md), they will
 run in debug mode and output a `DebugBox` object, which essentially
-represents the type of the output tensor.
+represents the type of the output array.
 
 ``` r
 library(anvil)
-y <- nv_scalar(1) + nv_tensor(1:4, shape = c(2, 2))
+y <- nv_scalar(1) + nv_array(1:4, shape = c(2, 2))
 y
 ```
 
@@ -31,8 +31,7 @@ mean(y)
 
     ## f32{}
 
-To use debug mode, you can pass `AnvilTensor` and literals (`1L`,
-`1.0`).
+To use debug mode, you can pass `AnvilArray` and literals (`1L`, `1.0`).
 
 ``` r
 1 + nv_scalar(1)
@@ -85,14 +84,14 @@ f(1)
 
 However, if we wrap it in
 [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md), this
-throws an error, because 1 is not an `AnvilTensor`.
+throws an error, because 1 is not an `AnvilArray`.
 
 ``` r
 jit(f)(1)
 ```
 
     ## Error:
-    ## ! Expected AnvilTensor, but got <numeric>
+    ## ! Expected AnvilArray, but got <numeric>
 
 This is, because debug mode emulates what would happen if the function
 call was within the `jit`-compiled function:
@@ -101,14 +100,14 @@ call was within the `jit`-compiled function:
 jit(\() f(1))()
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  -1
     ## [ CPUf32?{} ]
 
 Note that in {anvil}, we only allow the conversion of R literals to
-`AnvilTensor`s when being passed to primitive functions, but not for
+`AnvilArray`s when being passed to primitive functions, but not for
 input arguments to `jit`-compiled functions, as this would blur the
-distinction between literals and 0-dimensional `AnvilTensor`s.
+distinction between literals and 0-dimensional `AnvilArray`s.
 
 However, even if a program is valid and can be compiled, it might not
 work as expected, e.g. because of logical bugs or invalid
@@ -136,12 +135,12 @@ but some `GraphBox` object. This `GraphBox` object is passed around
 `AnvilGraph` that is subsequently compiled.
 
 ``` r
-f_jit(nv_tensor(1:4, shape = c(2, 2)))
+f_jit(nv_array(1:4, shape = c(2, 2)))
 ```
 
-    ## GraphBox(GraphValue(AbstractTensor(dtype=f32?, shape=2x2)))
+    ## GraphBox(GraphValue(AbstractArray(dtype=f32?, shape=2x2)))
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  15
     ## [ CPUf32?{} ]
 
@@ -149,10 +148,10 @@ Furthermore, if we call the function with identical input types, it
 won’t be printed because the executable is retrieved from the cache.
 
 ``` r
-f_jit(nv_tensor(0:3, shape = c(2, 2)))
+f_jit(nv_array(0:3, shape = c(2, 2)))
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  7
     ## [ CPUf32?{} ]
 
@@ -186,34 +185,34 @@ for (i in 1:10) {
 }
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  1
     ## [ CPUi32{} ] 
-    ## AnvilTensor
+    ## AnvilArray
     ##  2
     ## [ CPUi32{} ] 
-    ## AnvilTensor
+    ## AnvilArray
     ##  3
     ## [ CPUi32{} ] 
-    ## AnvilTensor
+    ## AnvilArray
     ##  4
     ## [ CPUi32{} ] 
-    ## AnvilTensor
+    ## AnvilArray
     ##  5
     ## [ CPUi32{} ] 
-    ## AnvilTensor
+    ## AnvilArray
     ##  6
     ## [ CPUi32{} ] 
-    ## AnvilTensor
+    ## AnvilArray
     ##  7
     ## [ CPUi32{} ] 
-    ## AnvilTensor
+    ## AnvilArray
     ##  8
     ## [ CPUi32{} ] 
-    ## AnvilTensor
+    ## AnvilArray
     ##  9
     ## [ CPUi32{} ] 
-    ## AnvilTensor
+    ## AnvilArray
     ##  10
     ## [ CPUi32{} ]
 
@@ -233,39 +232,39 @@ jit(\() {
 }, device = "cpu")()
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  1
     ## [ i32{} ]
-    ## AnvilTensor
+    ## AnvilArray
     ##  2
     ## [ i32{} ]
-    ## AnvilTensor
+    ## AnvilArray
     ##  3
     ## [ i32{} ]
-    ## AnvilTensor
+    ## AnvilArray
     ##  4
     ## [ i32{} ]
-    ## AnvilTensor
+    ## AnvilArray
     ##  5
     ## [ i32{} ]
-    ## AnvilTensor
+    ## AnvilArray
     ##  6
     ## [ i32{} ]
-    ## AnvilTensor
+    ## AnvilArray
     ##  7
     ## [ i32{} ]
-    ## AnvilTensor
+    ## AnvilArray
     ##  8
     ## [ i32{} ]
-    ## AnvilTensor
+    ## AnvilArray
     ##  9
     ## [ i32{} ]
-    ## AnvilTensor
+    ## AnvilArray
     ##  10
     ## [ i32{} ]
 
     ## $x
-    ## AnvilTensor
+    ## AnvilArray
     ##  11
     ## [ CPUi32{} ]
 

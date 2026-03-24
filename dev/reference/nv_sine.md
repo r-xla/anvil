@@ -13,12 +13,12 @@ nv_sine(operand)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same shape and data type as the input.
 
 ## See also
@@ -30,10 +30,10 @@ for the underlying primitive.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(0, pi / 2, pi))
+  x <- nv_array(c(0, pi / 2, pi))
   sin(x)
 })
-#> AnvilTensor
+#> AnvilArray
 #>   0.0000e+00
 #>   1.0000e+00
 #>  -8.7423e-08

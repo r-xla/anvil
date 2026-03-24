@@ -1,15 +1,15 @@
 # Primitive Scatter
 
-Produces a result tensor identical to `input` except that slices at
+Produces a result array identical to `input` except that slices at
 positions specified by `scatter_indices` are updated with values from
-the `update` tensor. When multiple indices point to the same location,
+the `update` array. When multiple indices point to the same location,
 the `update_computation` function determines how to combine the values
 (by default the new value replaces the old one).
 
 This is the inverse of
 [`nvl_gather()`](https://r-xla.github.io/anvil/dev/reference/nvl_gather.md):
-gather reads slices from a tensor at given indices, while scatter writes
-slices into a tensor at given indices.
+gather reads slices from an array at given indices, while scatter writes
+slices into an array at given indices.
 
 ## Usage
 
@@ -34,21 +34,21 @@ nvl_scatter(
 
 - input:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of any data type. The base tensor to scatter into.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of any data type. The base array to scatter into.
 
 - scatter_indices:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
   of integer type)  
-  Tensor of indices. Contains index vectors that map to positions in
+  Array of indices. Contains index vectors that map to positions in
   `input` via `scatter_dims_to_operand_dims`. The dimension specified by
   `index_vector_dim` holds the index vectors.
 
 - update:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Update values tensor. Must have the same data type as `input`.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Update values array. Must have the same data type as `input`.
 
 - update_window_dims:
 
@@ -113,7 +113,7 @@ nvl_scatter(
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same data type and shape as `input`. It is ambiguous if `input`
 is ambiguous.
 
@@ -153,9 +153,9 @@ Lowers to
 ``` r
 # Scatter values 10 and 30 into positions 1 and 3 of a zero vector
 jit_eval({
-  input <- nv_tensor(c(0, 0, 0, 0, 0))
-  indices <- nv_tensor(matrix(c(1L, 3L), ncol = 1))
-  updates <- nv_tensor(c(10, 30))
+  input <- nv_array(c(0, 0, 0, 0, 0))
+  indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
+  updates <- nv_array(c(10, 30))
   nvl_scatter(
     input, indices, updates,
     update_window_dims = integer(0),
@@ -166,7 +166,7 @@ jit_eval({
     index_vector_dim = 2L
   )
 })
-#> AnvilTensor
+#> AnvilArray
 #>  10
 #>   0
 #>  30

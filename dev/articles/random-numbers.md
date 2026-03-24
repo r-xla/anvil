@@ -36,7 +36,7 @@ R seed into a state using
 library(anvil)
 state <- nv_rng_state(seed = 42L)
 state
-#> AnvilTensor
+#> AnvilArray
 #>  42
 #>   0
 #> [ CPUui64{2} ]
@@ -63,12 +63,12 @@ f <- jit(function(state) {
 
 result <- f(state)
 result[[1]]  # new state
-#> AnvilTensor
+#> AnvilArray
 #>  42
 #>   3
 #> [ CPUui64{2} ]
 result[[2]]  # random numbers
-#> AnvilTensor
+#> AnvilArray
 #>  0.8690 0.1506 0.5203
 #>  0.3103 0.9928 0.1065
 #> [ CPUf32{2,3} ]
@@ -83,7 +83,7 @@ g <- jit(function(state) {
 
 result <- g(state)
 result[[2]]
-#> AnvilTensor
+#> AnvilArray
 #>  -0.0675  0.9489  1.9457
 #>  -0.5255  1.2002  0.0008
 #> [ CPUf32{2,3} ]
@@ -101,14 +101,14 @@ h <- jit(function(state) {
 
 h(state)
 #> $first
-#> AnvilTensor
+#> AnvilArray
 #>  0.8690
 #>  0.3103
 #>  0.1506
 #> [ CPUf32{3} ] 
 #> 
 #> $second
-#> AnvilTensor
+#> AnvilArray
 #>  0.8690
 #>  0.3103
 #>  0.1506
@@ -130,14 +130,14 @@ proper_rng <- jit(function(state) {
 
 proper_rng(state)
 #> $first
-#> AnvilTensor
+#> AnvilArray
 #>  0.8690
 #>  0.3103
 #>  0.1506
 #> [ CPUf32{3} ] 
 #> 
 #> $second
-#> AnvilTensor
+#> AnvilArray
 #>  0.5203
 #>  0.1065
 #>  0.2499

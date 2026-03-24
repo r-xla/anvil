@@ -1,6 +1,6 @@
 # Primitive Iota
 
-Creates a tensor with values increasing along the specified dimension.
+Creates an array with values increasing along the specified dimension.
 
 ## Usage
 
@@ -18,13 +18,13 @@ nvl_iota(dim, dtype, shape, start = 1L, ambiguous = FALSE)
 - dtype:
 
   (`character(1)` \|
-  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  [`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   Data type.
 
 - shape:
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Shape of the output tensor.
+  Shape of the output array.
 
 - start:
 
@@ -42,7 +42,7 @@ nvl_iota(dim, dtype, shape, start = 1L, ambiguous = FALSE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the given `dtype` and `shape`.
 
 ## Implemented Rules
@@ -64,7 +64,7 @@ Lowers to
 
 ``` r
 jit_eval(nvl_iota(dim = 1L, dtype = "i32", shape = 5L))
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  2
 #>  3

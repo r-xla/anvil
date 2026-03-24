@@ -18,12 +18,12 @@ nv_eye(n, dtype = "f32")
 - dtype:
 
   (`character(1)` \|
-  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  [`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   Data type.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 An `n x n` identity matrix.
 
 ## See also
@@ -35,7 +35,7 @@ for general diagonal matrices.
 
 ``` r
 jit_eval(nv_eye(3L))
-#> AnvilTensor
+#> AnvilArray
 #>  1 0 0
 #>  0 1 0
 #>  0 0 1

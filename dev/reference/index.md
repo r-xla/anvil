@@ -1,15 +1,15 @@
 # Package index
 
-## Tensor Creation
+## Array Creation
 
-Functions for creating and initializing tensors
+Functions for creating and initializing arrays
 
-- [`nv_tensor()`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)
-  [`nv_scalar()`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)
-  [`nv_empty()`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)
-  : AnvilTensor
-- [`is_tensorish()`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)
-  : Tensor-like Objects
+- [`nv_array()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  [`nv_scalar()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  [`nv_empty()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  : AnvilArray
+- [`is_arrayish()`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
+  : Array-like Objects
 - [`nv_fill()`](https://r-xla.github.io/anvil/dev/reference/nv_fill.md)
   : Fill Constant
 - [`nv_iota()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md)
@@ -21,45 +21,45 @@ Functions for creating and initializing tensors
 - [`nv_eye()`](https://r-xla.github.io/anvil/dev/reference/nv_eye.md) :
   Identity Matrix
 
-## Tensor attributes and converters
+## Array attributes and converters
 
-Functions for querying tensor attributes and converting them
+Functions for querying array attributes and converting them
 
 - [`ambiguous()`](https://r-xla.github.io/anvil/dev/reference/ambiguous.md)
-  : Get Ambiguity of a Tensor
+  : Get Ambiguity of an Array
 - [`dtype()`](https://r-xla.github.io/anvil/dev/reference/dtype.md) :
-  Get the data type of a tensor
+  Get the data type of an array
 - [`shape()`](https://r-xla.github.io/anvil/dev/reference/shape.md) :
-  Get the shape of a tensor
+  Get the shape of an array
 - [`ndims()`](https://r-xla.github.io/anvil/dev/reference/ndims.md) :
-  Get the number of dimensions of a tensor
+  Get the number of dimensions of an array
 - [`device()`](https://r-xla.github.io/anvil/dev/reference/device.md) :
-  Get the device of a tensor
-- [`platform(`*`<AbstractTensor>`*`)`](https://r-xla.github.io/anvil/dev/reference/platform.AbstractTensor.md)
-  : Platform for AbstractTensor
+  Get the device of an array
+- [`platform(`*`<AbstractArray>`*`)`](https://r-xla.github.io/anvil/dev/reference/platform.AbstractArray.md)
+  : Platform for AbstractArray
 - [`platform()`](https://r-xla.github.io/anvil/dev/reference/platform.md)
-  : Get the platform of a tensor or buffer
+  : Get the platform of an array or buffer
 - [`as_array()`](https://r-xla.github.io/anvil/dev/reference/as_array.md)
-  : Convert a tensor to an R array
+  : Convert to an R array
 - [`as_raw()`](https://r-xla.github.io/anvil/dev/reference/as_raw.md) :
-  Convert a tensor to a raw vector
+  Convert an array to a raw vector
 - [`as_dtype()`](https://r-xla.github.io/anvil/dev/reference/as_dtype.md)
-  : Convert to a TensorDataType
+  : Convert to a DataType
 - [`is_dtype()`](https://r-xla.github.io/anvil/dev/reference/is_dtype.md)
-  : Check if an object is a TensorDataType
+  : Check if an object is a DataType
 
-## Tensor Serialization
+## Array Serialization
 
-Functions for serializing and deserializing tensors
+Functions for serializing and deserializing arrays
 
 - [`nv_save()`](https://r-xla.github.io/anvil/dev/reference/nv_save.md)
-  : Save tensors to a file
+  : Save arrays to a file
 - [`nv_read()`](https://r-xla.github.io/anvil/dev/reference/nv_read.md)
-  : Read tensors from a file
+  : Read arrays from a file
 - [`nv_serialize()`](https://r-xla.github.io/anvil/dev/reference/nv_serialize.md)
-  : Serialize tensors to raw bytes
+  : Serialize arrays to raw bytes
 - [`nv_unserialize()`](https://r-xla.github.io/anvil/dev/reference/nv_unserialize.md)
-  : Deserialize tensors from raw bytes
+  : Deserialize arrays from raw bytes
 
 ## Type conversion and promotion
 
@@ -70,19 +70,19 @@ Functions for type conversion and promotion
 - [`nv_bitcast_convert()`](https://r-xla.github.io/anvil/dev/reference/nv_bitcast_convert.md)
   : Bitcast Conversion
 - [`nv_promote_to_common()`](https://r-xla.github.io/anvil/dev/reference/nv_promote_to_common.md)
-  : Promote Tensors to a Common Dtype
+  : Promote Arrays to a Common Dtype
 - [`nv_broadcast_scalars()`](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_scalars.md)
   : Broadcast Scalars to Common Shape
-- [`nv_broadcast_tensors()`](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_tensors.md)
-  : Broadcast Tensors to a Common Shape
+- [`nv_broadcast_arrays()`](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_arrays.md)
+  : Broadcast Arrays to a Common Shape
 - [`nv_broadcast_to()`](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_to.md)
   : Broadcast to Shape
 - [`common_dtype()`](https://r-xla.github.io/anvil/dev/reference/common_dtype.md)
   : Type Promotion Rules
 
-## Tensor manipulation
+## Array manipulation
 
-Functions for reshaping and rearranging tensors
+Functions for reshaping and rearranging arrays
 
 - [`nv_reshape()`](https://r-xla.github.io/anvil/dev/reference/nv_reshape.md)
   : Reshape
@@ -98,17 +98,17 @@ Functions for reshaping and rearranging tensors
 - [`nv_reverse()`](https://r-xla.github.io/anvil/dev/reference/nv_reverse.md)
   : Reverse
 - [`` `[`( ``*`<AnvilBox>`*`)`](https://r-xla.github.io/anvil/dev/reference/nv_subset.md)
-  [`` `[`( ``*`<AnvilTensor>`*`)`](https://r-xla.github.io/anvil/dev/reference/nv_subset.md)
+  [`` `[`( ``*`<AnvilArray>`*`)`](https://r-xla.github.io/anvil/dev/reference/nv_subset.md)
   [`nv_subset()`](https://r-xla.github.io/anvil/dev/reference/nv_subset.md)
-  : Subset a Tensor
+  : Subset an Array
 - [`` `[<-`( ``*`<AnvilBox>`*`)`](https://r-xla.github.io/anvil/dev/reference/nv_subset_assign.md)
-  [`` `[<-`( ``*`<AnvilTensor>`*`)`](https://r-xla.github.io/anvil/dev/reference/nv_subset_assign.md)
+  [`` `[<-`( ``*`<AnvilArray>`*`)`](https://r-xla.github.io/anvil/dev/reference/nv_subset_assign.md)
   [`nv_subset_assign()`](https://r-xla.github.io/anvil/dev/reference/nv_subset_assign.md)
   : Update Subset
 
 ## Arithmetic operations
 
-Basic arithmetic operations on tensors
+Basic arithmetic operations on arrays
 
 - [`nv_add()`](https://r-xla.github.io/anvil/dev/reference/nv_add.md) :
   Addition
@@ -187,7 +187,7 @@ Mathematical and trigonometric functions
 
 ## Reduction operations
 
-Operations that reduce tensor dimensions
+Operations that reduce array dimensions
 
 - [`nv_reduce_sum()`](https://r-xla.github.io/anvil/dev/reference/nv_reduce_sum.md)
   : Sum Reduction
@@ -217,7 +217,7 @@ Linear algebra operations
 
 ## Logical and bitwise operations
 
-Logical and bitwise operations on tensors
+Logical and bitwise operations on arrays
 
 - [`nv_and()`](https://r-xla.github.io/anvil/dev/reference/nv_and.md) :
   Logical And
@@ -238,7 +238,7 @@ Logical and bitwise operations on tensors
 
 ## Element-wise operations
 
-Other element-wise tensor operations
+Other element-wise array operations
 
 - [`nv_min()`](https://r-xla.github.io/anvil/dev/reference/nv_min.md) :
   Minimum
@@ -305,7 +305,7 @@ Debugging utilities and tools
 - [`debug_box()`](https://r-xla.github.io/anvil/dev/reference/debug_box.md)
   : Create a Debug Box
 - [`nv_print()`](https://r-xla.github.io/anvil/dev/reference/nv_print.md)
-  : Print Tensor
+  : Print Array
 - [`DebugBox()`](https://r-xla.github.io/anvil/dev/reference/DebugBox.md)
   : Debug Box Class
 
@@ -319,7 +319,7 @@ Internal data structures and functions
   [`ambiguous_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
   : Abstract Properties
 - [`to_abstract()`](https://r-xla.github.io/anvil/dev/reference/to_abstract.md)
-  : Convert to Abstract Tensor
+  : Convert to Abstract Array
 - [`GraphDescriptor()`](https://r-xla.github.io/anvil/dev/reference/GraphDescriptor.md)
   : Graph Descriptor
 - [`GraphValue()`](https://r-xla.github.io/anvil/dev/reference/GraphValue.md)
@@ -350,24 +350,24 @@ Internal data structures and functions
   : Primitive Call
 - [`register_primitive()`](https://r-xla.github.io/anvil/dev/reference/register_primitive.md)
   : Register a Primitive
-- [`nv_aten()`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md)
-  [`AbstractTensor()`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md)
-  : Abstract Tensor Class
-- [`ConcreteTensor()`](https://r-xla.github.io/anvil/dev/reference/ConcreteTensor.md)
-  : Concrete Tensor Class
-- [`LiteralTensor()`](https://r-xla.github.io/anvil/dev/reference/LiteralTensor.md)
-  : Literal Tensor Class
-- [`IotaTensor()`](https://r-xla.github.io/anvil/dev/reference/IotaTensor.md)
-  : Iota Tensor Class
+- [`nv_aten()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
+  [`AbstractArray()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
+  : Abstract Array Class
+- [`ConcreteArray()`](https://r-xla.github.io/anvil/dev/reference/ConcreteArray.md)
+  : Concrete Array Class
+- [`LiteralArray()`](https://r-xla.github.io/anvil/dev/reference/LiteralArray.md)
+  : Literal Array Class
+- [`IotaArray()`](https://r-xla.github.io/anvil/dev/reference/IotaArray.md)
+  : Iota Array Class
 - [`eq_type()`](https://r-xla.github.io/anvil/dev/reference/eq_type.md)
   [`neq_type()`](https://r-xla.github.io/anvil/dev/reference/eq_type.md)
-  : Compare AbstractTensor Types
+  : Compare AbstractArray Types
 - [`at2vt()`](https://r-xla.github.io/anvil/dev/reference/at2vt.md) :
-  Convert AbstractTensor to ValueType
+  Convert AbstractArray to ValueType
 - [`vt2at()`](https://r-xla.github.io/anvil/dev/reference/vt2at.md) :
-  Convert ValueType to AbstractTensor
-- [`is_tensorish()`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)
-  : Tensor-like Objects
+  Convert ValueType to AbstractArray
+- [`is_arrayish()`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
+  : Array-like Objects
 - [`Shape()`](https://r-xla.github.io/anvil/dev/reference/Shape-constructor.md)
   : Create a Shape object
 

@@ -1,6 +1,6 @@
 # Broadcast to Shape
 
-Broadcasts a tensor to a target shape using NumPy-style broadcasting
+Broadcasts an array to a target shape using NumPy-style broadcasting
 rules.
 
 ## Usage
@@ -13,7 +13,7 @@ nv_broadcast_to(operand, shape)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Operand.
 
 - shape:
@@ -23,12 +23,12 @@ nv_broadcast_to(operand, shape)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the given `shape` and the same data type as `operand`.
 
 ## See also
 
-[`nv_broadcast_tensors()`](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_tensors.md),
+[`nv_broadcast_arrays()`](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_arrays.md),
 [`nv_broadcast_scalars()`](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_scalars.md),
 [`nvl_broadcast_in_dim()`](https://r-xla.github.io/anvil/dev/reference/nvl_broadcast_in_dim.md)
 for the underlying primitive.
@@ -37,10 +37,10 @@ for the underlying primitive.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
+  x <- nv_array(c(1, 2, 3))
   nv_broadcast_to(x, shape = c(2, 3))
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1 2 3
 #>  1 2 3
 #> [ CPUf32{2,3} ] 

@@ -13,7 +13,7 @@ nv_reduce_all(operand, dims, drop = TRUE)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Operand.
 
 - dims:
@@ -28,8 +28,8 @@ nv_reduce_all(operand, dims, drop = TRUE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
-Boolean tensor. When `drop = TRUE`, the reduced dimensions are removed.
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+Boolean array. When `drop = TRUE`, the reduced dimensions are removed.
 When `drop = FALSE`, the reduced dimensions are set to 1.
 
 ## See also
@@ -41,10 +41,10 @@ for the underlying primitive.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+  x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
   nv_reduce_all(x, dims = 1L)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  0
 #>  1
 #> [ CPUbool{2} ] 

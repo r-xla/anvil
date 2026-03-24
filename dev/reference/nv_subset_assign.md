@@ -1,7 +1,7 @@
 # Update Subset
 
-Updates elements of a tensor at specified positions, returning a new
-tensor. You can also use the `[<-` operator.
+Updates elements of an array at specified positions, returning a new
+array. You can also use the `[<-` operator.
 
 ## Usage
 
@@ -9,7 +9,7 @@ tensor. You can also use the `[<-` operator.
 # S3 method for class 'AnvilBox'
 x[...] <- value
 
-# S3 method for class 'AnvilTensor'
+# S3 method for class 'AnvilArray'
 x[...] <- value
 
 nv_subset_assign(x, ..., value)
@@ -19,8 +19,8 @@ nv_subset_assign(x, ..., value)
 
 - x:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensor to update.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Array to update.
 
 - ...:
 
@@ -30,14 +30,14 @@ nv_subset_assign(x, ..., value)
 
 - value:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Replacement values. Scalars are broadcast to the subset shape.
   Non-scalar values must match the subset shape.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
-A new tensor with the same shape as `x` and the subset replaced.
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+A new array with the same shape as `x` and the subset replaced.
 
 ## See also
 
@@ -49,12 +49,12 @@ for a comprehensive guide.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(matrix(1:12, nrow = 3))
+  x <- nv_array(matrix(1:12, nrow = 3))
   # Set row 1 to zeros
   x[1, ] <- 0L
   x
 })
-#> AnvilTensor
+#> AnvilArray
 #>   0  0  0  0
 #>   2  5  8 11
 #>   3  6  9 12

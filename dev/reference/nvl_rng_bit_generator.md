@@ -13,7 +13,7 @@ nvl_rng_bit_generator(initial_state, rng_algorithm = "THREE_FRY", dtype, shape)
 
 - initial_state:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   RNG state (`ui64[2]`).
 
 - rng_algorithm:
@@ -24,7 +24,7 @@ nvl_rng_bit_generator(initial_state, rng_algorithm = "THREE_FRY", dtype, shape)
 - dtype:
 
   (`character(1)` \|
-  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  [`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   Data type of the generated random values.
 
 - shape:
@@ -35,10 +35,10 @@ nvl_rng_bit_generator(initial_state, rng_algorithm = "THREE_FRY", dtype, shape)
 ## Value
 
 `list` of two
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
 values:  
 The first element is the updated RNG state with the same dtype and shape
-as `initial_state`. The second element is a tensor of random values with
+as `initial_state`. The second element is an array of random values with
 the given `dtype` and `shape`.
 
 ## Implemented Rules
@@ -59,17 +59,17 @@ Lowers to
 
 ``` r
 jit_eval({
-  state <- nv_tensor(c(0L, 0L), dtype = "ui64")
+  state <- nv_array(c(0L, 0L), dtype = "ui64")
   nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
 })
 #> [[1]]
-#> AnvilTensor
+#> AnvilArray
 #>  0
 #>  3
 #> [ CPUui64{2} ] 
 #> 
 #> [[2]]
-#> AnvilTensor
+#> AnvilArray
 #>  1.7973e+09 2.5791e+09
 #>  1.3515e+09 3.2358e+09
 #>  1.6886e+09 4.2293e+09

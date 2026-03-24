@@ -14,7 +14,7 @@ GraphValue(aval)
 
 - aval:
 
-  ([`AbstractTensor`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md))  
+  ([`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md))  
   The abstract value of the variable.
 
 ## Value

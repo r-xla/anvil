@@ -21,12 +21,12 @@ common_dtype(
 
 - lhs_dtype:
 
-  ([`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  ([`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   The left-hand side type.
 
 - rhs_dtype:
 
-  ([`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  ([`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   The right-hand side type.
 
 - lhs_ambiguous:
@@ -41,4 +41,4 @@ common_dtype(
 
 ## Value
 
-(`list(dtype = [`tengen::TensorDataType`], ambiguous = `logical(1)\`)  
+(`list(dtype = [`tengen::DataType`], ambiguous = `logical(1)\`)  

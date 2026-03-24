@@ -70,6 +70,11 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="anvil-development-version">anvil (development version)<a class="anchor" aria-label="anchor" href="#anvil-development-version"></a></h2>
 <div class="section level3">
+<h3 id="breaking-changes-development-version">Breaking Changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
+<ul><li>
+<code>AnvilTensor</code>/<code>nv_tensor</code> were renamed to <code>AnvilArray</code> and <code>nv_array</code> to be more in line with R’s <code><a href="https://rdrr.io/r/base/array.html" class="external-link">array()</a></code>.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
 <ul><li>An experimental <a href="https://github.com/t-kalinowski/quickr" class="external-link">{quickr}</a> backend is now available. It only runs on CPU for now and supports a subset of available operations. You can enable it globally via the <code>anvil.backend</code> option.</li>
 <li>New primitives:

@@ -82,14 +82,14 @@
 
 
 <dl><dt id="arg-lhs-rhs">lhs, rhs<a class="anchor" aria-label="anchor" href="#arg-lhs-rhs"></a></dt>
-<dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
-Tensorish values of data type floating-point.
+<dd><p>(<code><a href="arrayish.html">arrayish</a></code>)<br>
+Arrayish values of data type floating-point.
 Must have the same shape.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code><a href="tensorish.html">tensorish</a></code><br>
+    <p><code><a href="arrayish.html">arrayish</a></code><br>
 Has the same shape and data type as the inputs.
 It is ambiguous if both inputs are ambiguous.</p>
     </div>
@@ -114,11 +114,11 @@ It is ambiguous if both inputs are ambiguous.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">nvl_atan2</span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1.5708</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   0.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  -1.5708</span>

@@ -29,8 +29,8 @@ AnvilGraph(
 - in_tree:
 
   (`NULL | Node`)  
-  The tree of inputs. May contain leaves for both tensor inputs and
-  static (non-tensor) arguments. Only the tensor leaves correspond to
+  The tree of inputs. May contain leaves for both array inputs and
+  static (non-array) arguments. Only the array leaves correspond to
   entries in `inputs`; use `is_static_flat` to distinguish them.
 
 - out_tree:
@@ -41,7 +41,7 @@ AnvilGraph(
 - inputs:
 
   (`list(GraphValue)`)  
-  The inputs to the graph (tensor arguments only).
+  The inputs to the graph (array arguments only).
 
 - outputs:
 
@@ -57,7 +57,7 @@ AnvilGraph(
 
   (`NULL | logical()`)  
   Boolean mask indicating which flat positions in `in_tree` are static
-  (non-tensor) args. `NULL` when all args are tensor inputs.
+  (non-array) args. `NULL` when all args are array inputs.
 
 - static_args_flat:
 

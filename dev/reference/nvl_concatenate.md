@@ -1,6 +1,6 @@
 # Primitive Concatenate
 
-Concatenates tensors along a dimension.
+Concatenates arrays along a dimension.
 
 ## Usage
 
@@ -12,8 +12,8 @@ nvl_concatenate(..., dimension)
 
 - ...:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensors to concatenate. Must all have the same data type, ndims, and
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrays to concatenate. Must all have the same data type, ndims, and
   shape except along `dimension`.
 
 - dimension:
@@ -23,7 +23,7 @@ nvl_concatenate(..., dimension)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same data type as the inputs. The output shape matches the
 inputs in all dimensions except `dimension`, which is the sum of the
 input sizes along that dimension. It is ambiguous if all inputs are
@@ -50,11 +50,11 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
-  y <- nv_tensor(c(4, 5, 6))
+  x <- nv_array(c(1, 2, 3))
+  y <- nv_array(c(4, 5, 6))
   nvl_concatenate(x, y, dimension = 1L)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  2
 #>  3

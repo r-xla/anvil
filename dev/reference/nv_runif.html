@@ -87,12 +87,12 @@ Shape.</p></dd>
 
 
 <dt id="arg-initial-state">initial_state<a class="anchor" aria-label="anchor" href="#arg-initial-state"></a></dt>
-<dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
+<dd><p>(<code><a href="arrayish.html">arrayish</a></code>)<br>
 RNG state (<code>ui64[2]</code>).</p></dd>
 
 
 <dt id="arg-dtype">dtype<a class="anchor" aria-label="anchor" href="#arg-dtype"></a></dt>
-<dd><p>(<code>character(1)</code> | <code><a href="https://r-xla.github.io/tengen/reference/TensorDataType.html" class="external-link">tengen::TensorDataType</a></code>)<br>
+<dd><p>(<code>character(1)</code> | <code><a href="https://r-xla.github.io/tengen/reference/DataType.html" class="external-link">tengen::DataType</a></code>)<br>
 Data type.</p></dd>
 
 
@@ -103,7 +103,7 @@ Lower and upper bound.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>(<code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> of <code><a href="tensorish.html">tensorish</a></code>)<br>
+    <p>(<code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> of <code><a href="arrayish.html">arrayish</a></code>)<br>
 List of two elements: the updated RNG state and the sampled values.</p>
     </div>
     <div class="section level2">
@@ -122,7 +122,7 @@ List of two elements: the updated RNG state and the sampled values.</p>
 <span class="r-in"><span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">nv_runif</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, <span class="va">state</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="va">result</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  0.8690 0.1506 0.5203</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  0.3103 0.9928 0.1065</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{2,3} ] </span>

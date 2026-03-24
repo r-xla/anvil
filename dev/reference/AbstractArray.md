@@ -1,6 +1,6 @@
-# Abstract Tensor Class
+# Abstract Array Class
 
-Representation of an abstract tensor type. During tracing, it is wrapped
+Representation of an abstract array type. During tracing, it is wrapped
 in a
 [`GraphNode`](https://r-xla.github.io/anvil/dev/reference/GraphNode.md)
 held by a
@@ -15,17 +15,17 @@ The base class represents an *unknown* value, but child classes exist
 for:
 
 - closed-over constants:
-  [`ConcreteTensor`](https://r-xla.github.io/anvil/dev/reference/ConcreteTensor.md)
+  [`ConcreteArray`](https://r-xla.github.io/anvil/dev/reference/ConcreteArray.md)
 
-- scalar tensors arising from R literals:
-  [`LiteralTensor`](https://r-xla.github.io/anvil/dev/reference/LiteralTensor.md)
+- scalar arrays arising from R literals:
+  [`LiteralArray`](https://r-xla.github.io/anvil/dev/reference/LiteralArray.md)
 
 - sequence patterns:
-  [`IotaTensor`](https://r-xla.github.io/anvil/dev/reference/IotaTensor.md)
+  [`IotaArray`](https://r-xla.github.io/anvil/dev/reference/IotaArray.md)
 
 To convert a
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)
-value to an abstract tensor, use
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
+value to an abstract array, use
 [`to_abstract()`](https://r-xla.github.io/anvil/dev/reference/to_abstract.md).
 
 ## Usage
@@ -33,22 +33,22 @@ value to an abstract tensor, use
 ``` r
 nv_aten(dtype, shape, ambiguous = FALSE)
 
-AbstractTensor(dtype, shape, ambiguous = FALSE)
+AbstractArray(dtype, shape, ambiguous = FALSE)
 ```
 
 ## Arguments
 
 - dtype:
 
-  ([`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html)
+  ([`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html)
   \| `character(1)`)  
-  The data type of the tensor.
+  The data type of the array.
 
 - shape:
 
   ([`stablehlo::Shape`](https://r-xla.github.io/stablehlo/reference/Shape.html)
   \| [`integer()`](https://rdrr.io/r/base/integer.html))  
-  The shape of the tensor. Can be provided as an integer vector.
+  The shape of the array. Can be provided as an integer vector.
 
 - ambiguous:
 
@@ -61,13 +61,13 @@ AbstractTensor(dtype, shape, ambiguous = FALSE)
 
 ## Extractors
 
-The following extractors are available on `AbstractTensor` objects:
+The following extractors are available on `AbstractArray` objects:
 
 - [`dtype()`](https://r-xla.github.io/tengen/reference/dtype.html): Get
-  the data type of the tensor.
+  the data type of the array.
 
 - [`shape()`](https://r-xla.github.io/tengen/reference/shape.html): Get
-  the shape (dimensions) of the tensor.
+  the shape (dimensions) of the array.
 
 - [`ambiguous()`](https://r-xla.github.io/anvil/dev/reference/ambiguous.md):
   Get whether the dtype is ambiguous.
@@ -77,9 +77,9 @@ The following extractors are available on `AbstractTensor` objects:
 
 ## See also
 
-[LiteralTensor](https://r-xla.github.io/anvil/dev/reference/LiteralTensor.md),
-[ConcreteTensor](https://r-xla.github.io/anvil/dev/reference/ConcreteTensor.md),
-[IotaTensor](https://r-xla.github.io/anvil/dev/reference/IotaTensor.md),
+[LiteralArray](https://r-xla.github.io/anvil/dev/reference/LiteralArray.md),
+[ConcreteArray](https://r-xla.github.io/anvil/dev/reference/ConcreteArray.md),
+[IotaArray](https://r-xla.github.io/anvil/dev/reference/IotaArray.md),
 [GraphValue](https://r-xla.github.io/anvil/dev/reference/GraphValue.md),
 [`to_abstract()`](https://r-xla.github.io/anvil/dev/reference/to_abstract.md),
 [GraphBox](https://r-xla.github.io/anvil/dev/reference/GraphBox.md)
@@ -87,10 +87,10 @@ The following extractors are available on `AbstractTensor` objects:
 ## Examples
 
 ``` r
-# -- Creating abstract tensors --
-a <- AbstractTensor("f32", c(2L, 3L))
+# -- Creating abstract arrays --
+a <- AbstractArray("f32", c(2L, 3L))
 a
-#> AbstractTensor(dtype=f32, shape=2x3) 
+#> AbstractArray(dtype=f32, shape=2x3) 
 dtype(a)
 #> <f32>
 shape(a)
@@ -100,9 +100,9 @@ ambiguous(a)
 
 # Shorthand
 nv_aten("f32", c(2L, 3L))
-#> AbstractTensor(dtype=f32, shape=2x3) 
+#> AbstractArray(dtype=f32, shape=2x3) 
 
-# How AbstractTensors appear in an AnvilGraph
+# How AbstractArrays appear in an AnvilGraph
 graph <- trace_fn(function(x) x + 1, list(x = nv_aten("i32", 4L)))
 graph
 #> <AnvilGraph>
@@ -115,5 +115,5 @@ graph
 #>   Outputs:
 #>     %3: f32?[4] 
 graph$inputs[[1]]$aval
-#> AbstractTensor(dtype=i32, shape=4) 
+#> AbstractArray(dtype=i32, shape=4) 
 ```

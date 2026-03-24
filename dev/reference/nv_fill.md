@@ -1,7 +1,7 @@
 # Fill Constant
 
-Creates a tensor filled with a scalar value. More memory-efficient than
-`nv_tensor(value, shape = shape)` for large tensors.
+Creates an array filled with a scalar value. More memory-efficient than
+`nv_array(value, shape = shape)` for large arrays.
 
 ## Usage
 
@@ -14,12 +14,12 @@ nv_fill(value, shape, dtype = NULL, ambiguous = FALSE)
 - value:
 
   (`numeric(1)`)  
-  Scalar value to fill the tensor with.
+  Scalar value to fill the array with.
 
 - shape:
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Shape of the output tensor.
+  Shape of the output array.
 
 - dtype:
 
@@ -37,7 +37,7 @@ nv_fill(value, shape, dtype = NULL, ambiguous = FALSE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the given `shape` and `dtype`.
 
 ## See also
@@ -49,7 +49,7 @@ for the underlying primitive.
 
 ``` r
 jit_eval(nv_fill(0, shape = c(2, 3)))
-#> AnvilTensor
+#> AnvilArray
 #>  0 0 0
 #>  0 0 0
 #> [ CPUf32{2,3} ] 

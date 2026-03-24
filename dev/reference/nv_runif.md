@@ -18,13 +18,13 @@ nv_runif(shape, initial_state, dtype = "f32", lower = 0, upper = 1)
 
 - initial_state:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   RNG state (`ui64[2]`).
 
 - dtype:
 
   (`character(1)` \|
-  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  [`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   Data type.
 
 - lower, upper:
@@ -35,7 +35,7 @@ nv_runif(shape, initial_state, dtype = "f32", lower = 0, upper = 1)
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
 List of two elements: the updated RNG state and the sampled values.
 
 ## See also
@@ -54,7 +54,7 @@ jit_eval({
   result <- nv_runif(c(2, 3), state)
   result[[2]]
 })
-#> AnvilTensor
+#> AnvilArray
 #>  0.8690 0.1506 0.5203
 #>  0.3103 0.9928 0.1065
 #> [ CPUf32{2,3} ] 

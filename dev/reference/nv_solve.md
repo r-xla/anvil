@@ -15,18 +15,18 @@ nv_solve(a, b)
 
 - a:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Symmetric positive-definite matrix.
 
 - b:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Right-hand side matrix or vector. Must have the same data type and
   batch dimensions as `a`.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 The solution `x` such that `a %*% x = b`.
 
 ## Shapes
@@ -50,11 +50,11 @@ where `...` are zero or more batch dimensions that must match between
 
 ``` r
 jit_eval({
-  a <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-  b <- nv_tensor(matrix(c(1, 2), nrow = 2), dtype = "f32")
+  a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+  b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
   nv_solve(a, b)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  -0.1250
 #>   0.7500
 #> [ CPUf32{2,1} ] 

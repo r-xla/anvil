@@ -1,7 +1,7 @@
-# Get the number of dimensions of a tensor
+# Get the number of dimensions of an array
 
 Returns the number of dimensions (sometimes also refered to as rank) of
-a tensor. Equivalent to `length(shape(x))`.
+an array. Equivalent to `length(shape(x))`.
 
 ## Usage
 
@@ -13,8 +13,8 @@ ndims(x)
 
 - x:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  A tensor-like object.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  An array-like object.
 
 ## Value
 
@@ -27,7 +27,7 @@ ndims(x)
 ## Examples
 
 ``` r
-x <- nv_tensor(1:4, dtype = "f32")
+x <- nv_array(1:4, dtype = "f32")
 ndims(x)
 #> [1] 1
 ```

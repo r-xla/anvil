@@ -1,6 +1,6 @@
-# Deserialize tensors from raw bytes
+# Deserialize arrays from raw bytes
 
-Deserializes tensors from the
+Deserializes arrays from the
 [safetensors](https://huggingface.co/docs/safetensors/index) format.
 
 ## Usage
@@ -20,20 +20,20 @@ nv_unserialize(con, device = NULL)
 
   (`NULL` \| `character(1)` \|
   [`PJRTDevice`](https://r-xla.github.io/pjrt/reference/pjrt_device.html))  
-  The device on which to place the loaded tensors (`"cpu"`, `"cuda"`,
+  The device on which to place the loaded arrays (`"cpu"`, `"cuda"`,
   ...). Default is to use the CPU.
 
 ## Value
 
 Named `list` of
-[`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)
+[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
 objects.
 
 ## Details
 
 The data type, shape, and
 [ambiguity](https://r-xla.github.io/anvil/dev/reference/ambiguous.md) of
-each tensor are restored from the serialized data.
+each array are restored from the serialized data.
 
 ## See also
 
@@ -44,9 +44,9 @@ each tensor are restored from the serialized data.
 ## Examples
 
 ``` r
-x <- nv_tensor(array(1:6, dim = c(2, 3)))
+x <- nv_array(array(1:6, dim = c(2, 3)))
 x
-#> AnvilTensor
+#> AnvilArray
 #>  1 3 5
 #>  2 4 6
 #> [ CPUi32{2,3} ] 
@@ -66,7 +66,7 @@ raw_data
 #> [276] 7d 01 00 00 00 03 00 00 00 05 00 00 00 02 00 00 00 04 00 00 00 06 00 00 00
 nv_unserialize(raw_data)
 #> $x
-#> AnvilTensor
+#> AnvilArray
 #>  1 3 5
 #>  2 4 6
 #> [ CPUi32{2,3} ] 

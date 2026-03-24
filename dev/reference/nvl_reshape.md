@@ -1,6 +1,6 @@
 # Primitive Reshape
 
-Reshapes a tensor to a new shape without changing the underlying data.
+Reshapes an array to a new shape without changing the underlying data.
 Note that row-major order is used, which differs from R's column-major
 order.
 
@@ -14,8 +14,8 @@ nvl_reshape(operand, shape)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of any data type.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of any data type.
 
 - shape:
 
@@ -24,7 +24,7 @@ nvl_reshape(operand, shape)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same data type as the input and the given `shape`. It is
 ambiguous if the input is ambiguous.
 
@@ -49,10 +49,10 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(1:6)
+  x <- nv_array(1:6)
   nvl_reshape(x, shape = c(2, 3))
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1 2 3
 #>  4 5 6
 #> [ CPUi32{2,3} ] 

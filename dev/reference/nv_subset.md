@@ -1,6 +1,6 @@
-# Subset a Tensor
+# Subset an Array
 
-Extracts a subset from a tensor. You can also use the `[` operator.
+Extracts a subset from an array. You can also use the `[` operator.
 Supports R-style indexing including scalar indices (which drop
 dimensions), ranges (`a:b`), and
 [`list()`](https://rdrr.io/r/base/list.html) for selecting multiple
@@ -12,7 +12,7 @@ elements along a dimension.
 # S3 method for class 'AnvilBox'
 x[...]
 
-# S3 method for class 'AnvilTensor'
+# S3 method for class 'AnvilArray'
 x[...]
 
 nv_subset(x, ...)
@@ -22,8 +22,8 @@ nv_subset(x, ...)
 
 - x:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensor to subset.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Array to subset.
 
 - ...:
 
@@ -34,7 +34,7 @@ nv_subset(x, ...)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
 
 ## See also
 
@@ -47,11 +47,11 @@ for a comprehensive guide.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(matrix(1:12, nrow = 3))
+  x <- nv_array(matrix(1:12, nrow = 3))
   # Select row 2
   x[2, ]
 })
-#> AnvilTensor
+#> AnvilArray
 #>   2
 #>   5
 #>   8
@@ -59,11 +59,11 @@ jit_eval({
 #> [ CPUi32{4} ] 
 
 jit_eval({
-  x <- nv_tensor(matrix(1:12, nrow = 3))
+  x <- nv_array(matrix(1:12, nrow = 3))
   # Select rows 1 to 2, all columns
   x[1:2, ]
 })
-#> AnvilTensor
+#> AnvilArray
 #>   1  4  7 10
 #>   2  5  8 11
 #> [ CPUi32{2,4} ] 

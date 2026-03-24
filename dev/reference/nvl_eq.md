@@ -12,12 +12,12 @@ nvl_eq(lhs, rhs)
 
 - lhs, rhs:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish values of any data type. Must have the same shape.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish values of any data type. Must have the same shape.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same shape as the inputs and boolean data type. It is ambiguous
 if both inputs are ambiguous.
 
@@ -43,11 +43,11 @@ with `comparison_direction = "EQ"`.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
-  y <- nv_tensor(c(1, 3, 2))
+  x <- nv_array(c(1, 2, 3))
+  y <- nv_array(c(1, 3, 2))
   nvl_eq(x, y)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  0
 #>  0

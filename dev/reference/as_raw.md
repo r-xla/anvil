@@ -1,6 +1,6 @@
-# Convert a tensor to a raw vector
+# Convert an array to a raw vector
 
-Returns the underlying bytes of a tensor as a
+Returns the underlying bytes of an array as a
 [raw](https://rdrr.io/r/base/raw.html) vector.
 
 ## Usage
@@ -13,8 +13,8 @@ as_raw(x, ...)
 
 - x:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  A tensor-like object.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  An array-like object.
 
 - ...:
 
@@ -35,7 +35,7 @@ This is implemented via the generic
 ## Examples
 
 ``` r
-x <- nv_tensor(1:4, shape = c(2, 2), dtype = "f32")
+x <- nv_array(1:4, shape = c(2, 2), dtype = "f32")
 as_raw(x, row_major = TRUE)
 #>  [1] 00 00 80 3f 00 00 40 40 00 00 00 40 00 00 80 40
 as_raw(x, row_major = FALSE)

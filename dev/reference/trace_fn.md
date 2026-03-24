@@ -1,6 +1,6 @@
 # Trace an R function into a Graph
 
-Executes `f` with abstract tensor arguments and records every primitive
+Executes `f` with abstract array arguments and records every primitive
 operation into an
 [`AnvilGraph`](https://r-xla.github.io/anvil/dev/reference/AnvilGraph.md).
 
@@ -17,7 +17,7 @@ trace_fn(
   args = NULL,
   desc = NULL,
   toplevel = FALSE,
-  lit_to_tensor = FALSE,
+  lit_to_array = FALSE,
   args_flat = NULL,
   in_tree = NULL
 )
@@ -34,9 +34,9 @@ trace_fn(
 - args:
 
   (`list` of
-  ([`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)
+  ([`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
   \|
-  [`AbstractTensor`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md)))  
+  [`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)))  
   The (unflattened) arguments to the function. Mutually exclusive with
   the `args_flat`/`in_tree` pair.
 
@@ -50,14 +50,14 @@ trace_fn(
 
   (`logical(1)`)  
   If `TRUE`, concrete
-  [`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)
+  [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
   inputs are treated as unknown (traced) values. If `FALSE` (default),
   they are treated as known constants.
 
-- lit_to_tensor:
+- lit_to_array:
 
   (`logical(1)`)  
-  Whether to convert literal inputs to tensors. Used internally by
+  Whether to convert literal inputs to arrays. Used internally by
   higher-order primitives such as `nv_if` and `nv_while`.
 
 - args_flat:
@@ -89,7 +89,7 @@ end-to-end compilation.
 
 ``` r
 graph <- trace_fn(function(x, y) x + y,
-  args = list(x = nv_tensor(1, dtype = "f32"), y = nv_tensor(2, dtype = "f32"))
+  args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32"))
 )
 graph
 #> <AnvilGraph>

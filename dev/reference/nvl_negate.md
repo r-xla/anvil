@@ -1,6 +1,6 @@
 # Primitive Negation
 
-Negates a tensor element-wise.
+Negates an array element-wise.
 
 ## Usage
 
@@ -12,12 +12,12 @@ nvl_negate(operand)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of data type integer or floating-point.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of data type integer or floating-point.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same shape and data type as the input. It is ambiguous if the
 input is ambiguous.
 
@@ -43,10 +43,10 @@ unary `-`
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1, -2, 3))
+  x <- nv_array(c(1, -2, 3))
   nvl_negate(x)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  -1
 #>   2
 #>  -3

@@ -125,7 +125,7 @@ operations.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>list</code> of length 2:</p><ul><li><p>the <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code></p></li>
-<li><p>The list of <code><a href="GraphValue.html">GraphValue</a></code>s holding <code><a href="ConcreteTensor.html">ConcreteTensor</a></code>s.</p></li>
+<li><p>The list of <code><a href="GraphValue.html">GraphValue</a></code>s holding <code><a href="ConcreteArray.html">ConcreteArray</a></code>s.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -134,8 +134,8 @@ operations.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="va">y</span> <span class="op">+</span> <span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fu"><a href="AbstractTensor.html">nv_aten</a></span><span class="op">(</span><span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="va">y</span> <span class="op">+</span> <span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fu"><a href="AbstractArray.html">nv_aten</a></span><span class="op">(</span><span class="st">"f32"</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">graph</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;AnvilGraph&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Inputs:</span>
@@ -159,7 +159,7 @@ operations.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[2]][[1]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GraphValue(ConcreteTensor(f32, (2))) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GraphValue(ConcreteArray(f32, (2))) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>

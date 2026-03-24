@@ -1,8 +1,8 @@
-# Convert to a TensorDataType
+# Convert to a DataType
 
-Coerces a value to a `TensorDataType`. Accepts data type strings (e.g.
-`"f32"`, `"i64"`, `"bool"`) or existing `TensorDataType` objects (they
-are returned unchanged).
+Coerces a value to a `DataType`. Accepts data type strings (e.g.
+`"f32"`, `"i64"`, `"bool"`) or existing `DataType` objects (they are
+returned unchanged).
 
 ## Usage
 
@@ -14,11 +14,11 @@ as_dtype(x)
 
 - x:
 
-  A character string or `TensorDataType` to convert.
+  A character string or `DataType` to convert.
 
 ## Value
 
-A `TensorDataType` object.
+A `DataType` object.
 
 ## Details
 
@@ -29,7 +29,7 @@ This is implemented via the generic
 
 [`is_dtype()`](https://r-xla.github.io/anvil/dev/reference/is_dtype.md),
 [`tengen::as_dtype()`](https://r-xla.github.io/tengen/reference/as_dtype.html),
-[`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html)
+[`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html)
 
 ## Examples
 

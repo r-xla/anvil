@@ -13,10 +13,10 @@ nvl_cholesky(operand, lower)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of data type floating-point with at least 2
-  dimensions. The last two dimensions must be equal (square matrix); any
-  leading dimensions are batch dimensions.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of data type floating-point with at least 2 dimensions.
+  The last two dimensions must be equal (square matrix); any leading
+  dimensions are batch dimensions.
 
 - lower:
 
@@ -27,7 +27,7 @@ nvl_cholesky(operand, lower)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same shape and data type as the input. The values in the
 triangle not specified by `lower` are implementation-defined. It is
 ambiguous if the input is ambiguous.
@@ -62,10 +62,10 @@ Mathematisch-Naturwissenschaftliche Fakult"at II.
 ``` r
 jit_eval({
   # Create a positive-definite matrix
-  x <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+  x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
   nvl_cholesky(x, lower = TRUE)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  2.0000 0.0000
 #>  1.0000 1.4142
 #> [ CPUf32{2,2} ] 

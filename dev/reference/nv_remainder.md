@@ -12,7 +12,7 @@ nv_remainder(lhs, rhs)
 
 - lhs, rhs:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Left and right operand. Operands are [promoted to a common data
   type](https://r-xla.github.io/anvil/dev/reference/nv_promote_to_common.md).
   Scalars are
@@ -21,7 +21,7 @@ nv_remainder(lhs, rhs)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same shape and the promoted common data type of the inputs.
 
 ## See also
@@ -33,11 +33,11 @@ for the underlying primitive.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(7, 8, 9))
-  y <- nv_tensor(c(3, 3, 4))
+  x <- nv_array(c(7, 8, 9))
+  y <- nv_array(c(3, 3, 4))
   x %% y
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  2
 #>  1

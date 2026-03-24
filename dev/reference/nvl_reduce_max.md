@@ -1,6 +1,6 @@
 # Primitive Max Reduction
 
-Finds the maximum of tensor elements along the specified dimensions.
+Finds the maximum of array elements along the specified dimensions.
 
 ## Usage
 
@@ -12,8 +12,8 @@ nvl_reduce_max(operand, dims, drop = TRUE)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of any data type.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of any data type.
 
 - dims:
 
@@ -29,7 +29,7 @@ nvl_reduce_max(operand, dims, drop = TRUE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same data type as the input. When `drop = TRUE`, the shape is
 that of `operand` with `dims` removed. When `drop = FALSE`, the shape is
 that of `operand` with `dims` set to 1. It is ambiguous if the input is
@@ -59,10 +59,10 @@ as the reducer.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(matrix(1:6, nrow = 2))
+  x <- nv_array(matrix(1:6, nrow = 2))
   nvl_reduce_max(x, dims = 1L)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  2
 #>  4
 #>  6

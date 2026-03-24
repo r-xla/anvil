@@ -17,18 +17,17 @@ gradient(f, wrt = NULL)
 - f:
 
   (`function`)  
-  Function to differentiate. Arguments can be tensorish
-  ([`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md))
-  or static (non-tensor) values. Must return a single scalar float
-  tensor.
+  Function to differentiate. Arguments can be arrayish
+  ([`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))
+  or static (non-array) values. Must return a single scalar float array.
 
 - wrt:
 
   (`character` or `NULL`)  
   Names of the arguments to compute the gradient with respect to. Only
-  tensorish (float tensor) arguments can be included; static arguments
+  arrayish (float array) arguments can be included; static arguments
   must not appear in `wrt`. If `NULL` (the default), the gradient is
-  computed with respect to all arguments (which must all be tensorish in
+  computed with respect to all arguments (which must all be arrayish in
   that case).
 
 ## Value
@@ -47,15 +46,15 @@ for the low-level graph transformation.
 ``` r
 f <- function(x, y) sum(x * y)
 g <- jit(gradient(f))
-g(nv_tensor(c(1, 2), dtype = "f32"), nv_tensor(c(3, 4), dtype = "f32"))
+g(nv_array(c(1, 2), dtype = "f32"), nv_array(c(3, 4), dtype = "f32"))
 #> $x
-#> AnvilTensor
+#> AnvilArray
 #>  3
 #>  4
 #> [ CPUf32{2} ] 
 #> 
 #> $y
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  2
 #> [ CPUf32{2} ] 
@@ -63,20 +62,20 @@ g(nv_tensor(c(1, 2), dtype = "f32"), nv_tensor(c(3, 4), dtype = "f32"))
 
 # Differentiate with respect to a single argument
 g_x <- jit(gradient(f, wrt = "x"))
-g_x(nv_tensor(c(1, 2), dtype = "f32"), nv_tensor(c(3, 4), dtype = "f32"))
+g_x(nv_array(c(1, 2), dtype = "f32"), nv_array(c(3, 4), dtype = "f32"))
 #> $x
-#> AnvilTensor
+#> AnvilArray
 #>  3
 #>  4
 #> [ CPUf32{2} ] 
 #> 
 
-# Static (non-tensor) arguments are passed through but cannot be in wrt
+# Static (non-array) arguments are passed through but cannot be in wrt
 f2 <- function(x, power) sum(x^power)
 g2 <- jit(gradient(f2, wrt = "x"), static = "power")
-g2(nv_tensor(c(1, 2, 3), dtype = "f32"), power = 2L)
+g2(nv_array(c(1, 2, 3), dtype = "f32"), power = 2L)
 #> $x
-#> AnvilTensor
+#> AnvilArray
 #>  2
 #>  4
 #>  6

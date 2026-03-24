@@ -12,8 +12,8 @@ nvl_reverse(operand, dims)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of any data type.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of any data type.
 
 - dims:
 
@@ -22,7 +22,7 @@ nvl_reverse(operand, dims)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same data type and shape as `operand`. It is ambiguous if the
 input is ambiguous.
 
@@ -47,10 +47,10 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3, 4, 5))
+  x <- nv_array(c(1, 2, 3, 4, 5))
   nvl_reverse(x, dims = 1L)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  5
 #>  4
 #>  3

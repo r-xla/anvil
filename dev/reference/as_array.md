@@ -1,6 +1,6 @@
-# Convert a tensor to an R array
+# Convert to an R array
 
-Transfers tensor data to R and returns it as an R
+Transfers array data to R and returns it as an R
 [`array`](https://rdrr.io/r/base/array.html). Only in the case of
 scalars is the result a vector of length 1, as R `arrays` cannot have 0
 dimensions.
@@ -15,8 +15,8 @@ as_array(x, ...)
 
 - x:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  A tensor-like object.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  An array-like object.
 
 - ...:
 
@@ -35,7 +35,7 @@ This is implemented via the generic
 ## Examples
 
 ``` r
-x <- nv_tensor(1:4, dtype = "f32")
+x <- nv_array(1:4, dtype = "f32")
 as_array(x)
 #> [1] 1 2 3 4
 y <- nv_scalar(1L)

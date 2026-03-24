@@ -87,13 +87,13 @@ Size of the identity matrix.</p></dd>
 
 
 <dt id="arg-dtype">dtype<a class="anchor" aria-label="anchor" href="#arg-dtype"></a></dt>
-<dd><p>(<code>character(1)</code> | <code><a href="https://r-xla.github.io/tengen/reference/TensorDataType.html" class="external-link">tengen::TensorDataType</a></code>)<br>
+<dd><p>(<code>character(1)</code> | <code><a href="https://r-xla.github.io/tengen/reference/DataType.html" class="external-link">tengen::DataType</a></code>)<br>
 Data type.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code><a href="tensorish.html">tensorish</a></code><br>
+    <p><code><a href="arrayish.html">arrayish</a></code><br>
 An <code>n x n</code> identity matrix.</p>
     </div>
     <div class="section level2">
@@ -104,7 +104,7 @@ An <code>n x n</code> identity matrix.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="fu">nv_eye</span><span class="op">(</span><span class="fl">3L</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1 0 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  0 1 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  0 0 1</span>

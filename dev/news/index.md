@@ -2,6 +2,12 @@
 
 ## anvil (development version)
 
+### Breaking Changes
+
+- `AnvilTensor`/`nv_tensor` were renamed to `AnvilArray` and `nv_array`
+  to be more in line with R’s
+  [`array()`](https://rdrr.io/r/base/array.html).
+
 ### New Features
 
 - An experimental [{quickr}](https://github.com/t-kalinowski/quickr)

@@ -88,19 +88,19 @@ For each element, returns the corresponding element from <code>true_value</code>
 
 
 <dl><dt id="arg-pred">pred<a class="anchor" aria-label="anchor" href="#arg-pred"></a></dt>
-<dd><p>(<code><a href="tensorish.html">tensorish</a></code> of boolean type)<br>
-Predicate tensor. Must be scalar or have the same shape as
+<dd><p>(<code><a href="arrayish.html">arrayish</a></code> of boolean type)<br>
+Predicate array. Must be scalar or have the same shape as
 <code>true_value</code>.</p></dd>
 
 
 <dt id="arg-true-value-false-value">true_value, false_value<a class="anchor" aria-label="anchor" href="#arg-true-value-false-value"></a></dt>
-<dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
+<dd><p>(<code><a href="arrayish.html">arrayish</a></code>)<br>
 Values to select from. Must have the same dtype and shape.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code><a href="tensorish.html">tensorish</a></code><br>
+    <p><code><a href="arrayish.html">arrayish</a></code><br>
 Has the same dtype and shape as <code>true_value</code>.
 It is ambiguous if both <code>true_value</code> and <code>false_value</code> are ambiguous.</p>
     </div>
@@ -126,10 +126,10 @@ It is ambiguous if both <code>true_value</code> and <code>false_value</code> are
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="fu">nvl_ifelse</span><span class="op">(</span><span class="va">pred</span>, <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">5</span>, <span class="fl">6</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">nvl_ifelse</span><span class="op">(</span><span class="va">pred</span>, <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">5</span>, <span class="fl">6</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  3</span>

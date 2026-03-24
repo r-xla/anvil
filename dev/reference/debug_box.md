@@ -3,7 +3,7 @@
 Convenience constructor that creates a
 [`DebugBox`](https://r-xla.github.io/anvil/dev/reference/DebugBox.md)
 from a data type and shape, without having to manually construct an
-[`AbstractTensor`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md)
+[`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
 first.
 
 ## Usage
@@ -17,7 +17,7 @@ debug_box(dtype, shape, ambiguous = FALSE)
 - dtype:
 
   (`character(1)` \|
-  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  [`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   Data type.
 
 - shape:
@@ -41,13 +41,13 @@ debug_box(dtype, shape, ambiguous = FALSE)
 ## See also
 
 [DebugBox](https://r-xla.github.io/anvil/dev/reference/DebugBox.md),
-[AbstractTensor](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md),
+[AbstractArray](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md),
 [`trace_fn()`](https://r-xla.github.io/anvil/dev/reference/trace_fn.md)
 
 ## Examples
 
 ``` r
-# Create a debug box representing a 2x3 f32 tensor
+# Create a debug box representing a 2x3 f32 array
 db <- debug_box("f32", c(2L, 3L))
 db
 #> f32{2,3}

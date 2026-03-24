@@ -1,15 +1,15 @@
 # Primitive Gather
 
-Gathers slices from the `operand` tensor at positions specified by
+Gathers slices from the `operand` array at positions specified by
 `start_indices`. Each index vector in `start_indices` identifies a
 starting position in `operand`, and a slice of size `slice_sizes` is
 extracted from that position. The gathered slices are assembled into the
-output tensor.
+output array.
 
 This is the inverse of
 [`nvl_scatter()`](https://r-xla.github.io/anvil/dev/reference/nvl_scatter.md):
-gather reads slices from a tensor at given indices, while scatter writes
-slices into a tensor at given indices.
+gather reads slices from a array at given indices, while scatter writes
+slices into an array at given indices.
 
 ## Usage
 
@@ -33,14 +33,14 @@ nvl_gather(
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of any data type.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of any data type.
 
 - start_indices:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
   of integer type)  
-  Tensor of starting indices. Contains index vectors that map to
+  Array of starting indices. Contains index vectors that map to
   positions in `operand` via `start_index_map`. The dimension specified
   by `index_vector_dim` holds the index vectors.
 
@@ -106,7 +106,7 @@ nvl_gather(
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same data type as `operand`. The output shape is composed of the
 offset dimensions (from the slice) and the remaining dimensions from
 `start_indices`. See the underluing stableHLO function for more details.
@@ -143,8 +143,8 @@ Lowers to
 ``` r
 # Gather rows 1 and 3 from a 3x3 matrix
 jit_eval({
-  operand <- nv_tensor(matrix(1:9, nrow = 3))
-  indices <- nv_tensor(matrix(c(1L, 3L), ncol = 1))
+  operand <- nv_array(matrix(1:9, nrow = 3))
+  indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
   nvl_gather(
     operand, indices,
     slice_sizes = c(1L, 3L),
@@ -156,7 +156,7 @@ jit_eval({
     index_vector_dim = 2L
   )
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1 4 7
 #>  3 6 9
 #> [ CPUi32{2,3} ] 

@@ -1,6 +1,6 @@
-# Compare AbstractTensor Types
+# Compare AbstractArray Types
 
-Compare two AbstractTensors for type equality.
+Compare two abstract arrays for type equality.
 
 ## Usage
 
@@ -14,24 +14,24 @@ neq_type(e1, e2, ambiguity)
 
 - e1:
 
-  ([`AbstractTensor`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md))  
-  First tensor to compare.
+  ([`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md))  
+  First array to compare.
 
 - e2:
 
-  ([`AbstractTensor`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md))  
-  Second tensor to compare.
+  ([`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md))  
+  Second array to compare.
 
 - ambiguity:
 
   (`logical(1)`)  
   Whether to consider the ambiguous field when comparing. If `TRUE`,
-  tensors with different ambiguity are not equal. If `FALSE`, only dtype
+  arrays with different ambiguity are not equal. If `FALSE`, only dtype
   and shape are compared.
 
 ## Value
 
-`logical(1)` - `TRUE` if the tensors are equal, `FALSE` otherwise.
+`logical(1)` - `TRUE` if the arrays are equal, `FALSE` otherwise.
 
 ## Examples
 

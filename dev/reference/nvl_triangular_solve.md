@@ -17,15 +17,15 @@ nvl_triangular_solve(a, b, left_side, lower, unit_diagonal, transpose_a)
 
 - a:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Triangular coefficient matrix of data type floating-point with at
   least 2 dimensions. The last two dimensions must be equal (square
   matrix); any leading dimensions are batch dimensions.
 
 - b:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Right-hand side tensor. Must have the same data type, rank, and batch
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Right-hand side array. Must have the same data type, rank, and batch
   dimensions as `a`.
 
 - left_side:
@@ -52,7 +52,7 @@ nvl_triangular_solve(a, b, left_side, lower, unit_diagonal, transpose_a)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same shape and data type as `b`. It is ambiguous if both `a` and
 `b` are ambiguous.
 
@@ -82,14 +82,14 @@ University Computing Laboratory.
 ``` r
 jit_eval({
   # Solve L %*% x = b where L is lower triangular
-  L <- nv_tensor(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
-  b <- nv_tensor(matrix(c(4, 3), nrow = 2), dtype = "f32")
+  L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
+  b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
   nvl_triangular_solve(L, b,
     left_side = TRUE, lower = TRUE,
     unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"
   )
 })
-#> AnvilTensor
+#> AnvilArray
 #>  2
 #>  1
 #> [ CPUf32{2,1} ] 

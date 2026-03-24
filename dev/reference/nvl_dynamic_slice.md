@@ -1,7 +1,7 @@
 # Primitive Dynamic Slice
 
-Extracts a slice from a tensor whose start position is determined at
-runtime via tensor-valued indices. The slice shape (`slice_sizes`) is a
+Extracts a slice from an array whose start position is determined at
+runtime via array-valued indices. The slice shape (`slice_sizes`) is a
 fixed R integer vector.
 
 Use
@@ -19,14 +19,14 @@ nvl_dynamic_slice(operand, ..., slice_sizes)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of any data type.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of any data type.
 
 - ...:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
   of integer type)  
-  Scalar start indices, one per dimension. Each must be a scalar tensor.
+  Scalar start indices, one per dimension. Each must be a scalar array.
   Pass one scalar per dimension of `operand`.
 
 - slice_sizes:
@@ -38,7 +38,7 @@ nvl_dynamic_slice(operand, ..., slice_sizes)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same data type as the input and shape `slice_sizes`. It is
 ambiguous if the input is ambiguous.
 
@@ -76,11 +76,11 @@ Lowers to
 ``` r
 # 1-D: extract 3 elements starting at position 3
 jit_eval({
-  x <- nv_tensor(1:10)
+  x <- nv_array(1:10)
   start <- nv_scalar(3L)
   nvl_dynamic_slice(x, start, slice_sizes = 3L)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  3
 #>  4
 #>  5
@@ -88,12 +88,12 @@ jit_eval({
 
 # 2-D: extract a 2x2 block from a matrix
 jit_eval({
-  x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4))
+  x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
   row_start <- nv_scalar(2L)
   col_start <- nv_scalar(1L)
   nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
 })
-#> AnvilTensor
+#> AnvilArray
 #>  2 5
 #>  3 6
 #> [ CPUi32{2,2} ] 

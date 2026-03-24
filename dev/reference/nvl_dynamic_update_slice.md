@@ -3,8 +3,8 @@
 Returns a copy of `operand` with a slice replaced by `update` at a
 runtime-determined position. This is the write counterpart of
 [`nvl_dynamic_slice()`](https://r-xla.github.io/anvil/dev/reference/nvl_dynamic_slice.md):
-dynamic slice reads a block from a tensor, while dynamic update slice
-writes a block into a tensor.
+dynamic slice reads a block from an array, while dynamic update slice
+writes a block into an array.
 
 ## Usage
 
@@ -16,26 +16,26 @@ nvl_dynamic_update_slice(operand, update, ...)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of any data type.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of any data type.
 
 - update:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   The values to write at the specified position. Must have the same data
   type and number of dimensions as `operand`, with
   `nv_shape(update) <= nv_shape(operand)` per dimension.
 
 - ...:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
   of integer type)  
   Scalar start indices, one per dimension of `operand`. Each must be a
-  scalar tensor.
+  scalar array.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same data type and shape as `operand`. It is ambiguous if the
 input is ambiguous.
 
@@ -72,12 +72,12 @@ effective start position may differ from the requested one.
 ``` r
 # 1-D: overwrite two elements starting at position 2
 jit_eval({
-  x <- nv_tensor(1:5)
-  update <- nv_tensor(c(10L, 20L))
+  x <- nv_array(1:5)
+  update <- nv_array(c(10L, 20L))
   start <- nv_scalar(2L)
   nvl_dynamic_update_slice(x, update, start)
 })
-#> AnvilTensor
+#> AnvilArray
 #>   1
 #>  10
 #>  20
@@ -87,13 +87,13 @@ jit_eval({
 
 # 2-D: write a 2x2 block into a 3x4 matrix
 jit_eval({
-  x <- nv_tensor(matrix(0L, nrow = 3, ncol = 4))
-  update <- nv_tensor(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
+  x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
+  update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
   row_start <- nv_scalar(2L)
   col_start <- nv_scalar(3L)
   nvl_dynamic_update_slice(x, update, row_start, col_start)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  0 0 0 0
 #>  0 0 1 3
 #>  0 0 2 4

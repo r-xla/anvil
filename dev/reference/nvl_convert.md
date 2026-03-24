@@ -1,6 +1,6 @@
 # Primitive Convert
 
-Converts the elements of a tensor to a different data type.
+Converts the elements of an array to a different data type.
 
 ## Usage
 
@@ -12,13 +12,13 @@ nvl_convert(operand, dtype, ambiguous = FALSE)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of any data type.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of any data type.
 
 - dtype:
 
   (`character(1)` \|
-  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  [`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   Target data type.
 
 - ambiguous:
@@ -32,7 +32,7 @@ nvl_convert(operand, dtype, ambiguous = FALSE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the given `dtype` and the same shape as `operand`. Ambiguity is
 controlled by the `ambiguous` parameter.
 
@@ -57,10 +57,10 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1L, 2L, 3L))
+  x <- nv_array(c(1L, 2L, 3L))
   nvl_convert(x, dtype = "f32")
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  2
 #>  3

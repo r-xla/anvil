@@ -1,6 +1,6 @@
 # Primitive Transpose
 
-Permutes the dimensions of a tensor.
+Permutes the dimensions of an array.
 
 ## Usage
 
@@ -12,8 +12,8 @@ nvl_transpose(operand, permutation)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of any data type.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of any data type.
 
 - permutation:
 
@@ -24,7 +24,7 @@ nvl_transpose(operand, permutation)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same data type as the input and shape
 `nv_shape(operand)[permutation]`. It is ambiguous if the input is
 ambiguous.
@@ -51,10 +51,10 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(matrix(1:6, nrow = 2))
+  x <- nv_array(matrix(1:6, nrow = 2))
   nvl_transpose(x, permutation = c(2L, 1L))
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1 2
 #>  3 4
 #>  5 6

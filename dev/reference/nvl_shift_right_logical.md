@@ -12,13 +12,13 @@ nvl_shift_right_logical(lhs, rhs)
 
 - lhs, rhs:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish values of data type boolean, integer, or unsigned integer.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish values of data type boolean, integer, or unsigned integer.
   Must have the same shape.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same shape and data type as the inputs. It is ambiguous if both
 inputs are ambiguous.
 
@@ -41,11 +41,11 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(8L, 16L, 32L))
-  y <- nv_tensor(c(1L, 2L, 3L))
+  x <- nv_array(c(8L, 16L, 32L))
+  y <- nv_array(c(1L, 2L, 3L))
   nvl_shift_right_logical(x, y)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  4
 #>  4
 #>  4

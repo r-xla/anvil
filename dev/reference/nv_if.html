@@ -88,7 +88,7 @@ of the two branches depending on a scalar predicate.</p>
 
 
 <dl><dt id="arg-pred">pred<a class="anchor" aria-label="anchor" href="#arg-pred"></a></dt>
-<dd><p>(<code><a href="tensorish.html">tensorish</a></code> of boolean type, scalar)<br>
+<dd><p>(<code><a href="arrayish.html">arrayish</a></code> of boolean type, scalar)<br>
 Predicate.</p></dd>
 
 
@@ -115,8 +115,8 @@ element-wise selection.</p></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="fu">nv_if</span><span class="op">(</span><span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span>, <span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="fu">nv_if</span><span class="op">(</span><span class="fu"><a href="AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span>, <span class="fu"><a href="AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{} ] </span>
 </code></pre></div>

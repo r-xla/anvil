@@ -5,8 +5,8 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Sequence — nv_seq"><meta name="description" content="Creates a 1-D tensor with integer values from start to end (inclusive),
-analogous to R's seq(start, end)."><meta property="og:description" content="Creates a 1-D tensor with integer values from start to end (inclusive),
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Sequence — nv_seq"><meta name="description" content="Creates a 1-D array with integer values from start to end (inclusive),
+analogous to R's seq(start, end)."><meta property="og:description" content="Creates a 1-D array with integer values from start to end (inclusive),
 analogous to R's seq(start, end)."><meta name="robots" content="noindex"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -71,7 +71,7 @@ analogous to R's seq(start, end)."><meta name="robots" content="noindex"></head>
     </div>
 
     <div class="ref-description section level2">
-    <p>Creates a 1-D tensor with integer values from <code>start</code> to <code>end</code> (inclusive),
+    <p>Creates a 1-D array with integer values from <code>start</code> to <code>end</code> (inclusive),
 analogous to R's <code>seq(start, end)</code>.</p>
     </div>
 
@@ -90,7 +90,7 @@ Start and end values. Must satisfy <code>start &lt;= end</code>.</p></dd>
 
 
 <dt id="arg-dtype">dtype<a class="anchor" aria-label="anchor" href="#arg-dtype"></a></dt>
-<dd><p>(<code>character(1)</code> | <code><a href="https://r-xla.github.io/tengen/reference/TensorDataType.html" class="external-link">tengen::TensorDataType</a></code>)<br>
+<dd><p>(<code>character(1)</code> | <code><a href="https://r-xla.github.io/tengen/reference/DataType.html" class="external-link">tengen::DataType</a></code>)<br>
 Data type.</p></dd>
 
 
@@ -103,8 +103,8 @@ See the <code><a href="../articles/type-promotion.html">vignette("type-promotion
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code><a href="tensorish.html">tensorish</a></code><br>
-1-D tensor of length <code>end - start + 1</code>.</p>
+    <p><code><a href="arrayish.html">arrayish</a></code><br>
+1-D array of length <code>end - start + 1</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -114,7 +114,7 @@ See the <code><a href="../articles/type-promotion.html">vignette("type-promotion
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="fu">nv_seq</span><span class="op">(</span><span class="fl">3</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  5</span>

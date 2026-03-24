@@ -1,6 +1,6 @@
 # Primitive Minimum
 
-Element-wise minimum of two tensors.
+Element-wise minimum of two arrays.
 
 ## Usage
 
@@ -12,12 +12,12 @@ nvl_min(lhs, rhs)
 
 - lhs, rhs:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish values of any data type. Must have the same shape.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish values of any data type. Must have the same shape.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same shape and data type as the inputs. It is ambiguous if both
 inputs are ambiguous.
 
@@ -42,11 +42,11 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1, 5, 3))
-  y <- nv_tensor(c(4, 2, 6))
+  x <- nv_array(c(1, 5, 3))
+  y <- nv_array(c(4, 2, 6))
   nvl_min(x, y)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  2
 #>  3

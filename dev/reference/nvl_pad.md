@@ -1,6 +1,6 @@
 # Primitive Pad
 
-Pads a tensor with a given padding value.
+Pads an array with a given padding value.
 
 ## Usage
 
@@ -18,12 +18,12 @@ nvl_pad(
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of any data type.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of any data type.
 
 - padding_value:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Scalar value to use for padding. Must have the same dtype as
   `operand`.
 
@@ -44,7 +44,7 @@ nvl_pad(
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same data type as `operand`. For the output shape see the
 underlying stablehlo documentation
 ([`stablehlo::hlo_pad()`](https://r-xla.github.io/stablehlo/reference/hlo_pad.html)).
@@ -67,12 +67,12 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
+  x <- nv_array(c(1, 2, 3))
   nvl_pad(x, nv_scalar(0),
     edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
   )
 })
-#> AnvilTensor
+#> AnvilArray
 #>  0
 #>  0
 #>  1

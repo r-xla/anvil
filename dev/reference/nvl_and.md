@@ -12,13 +12,13 @@ nvl_and(lhs, rhs)
 
 - lhs, rhs:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish values of data type boolean, integer, or unsigned integer.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish values of data type boolean, integer, or unsigned integer.
   Must have the same shape.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same shape and data type as the inputs. It is ambiguous if both
 inputs are ambiguous.
 
@@ -43,11 +43,11 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(TRUE, FALSE, TRUE))
-  y <- nv_tensor(c(TRUE, TRUE, FALSE))
+  x <- nv_array(c(TRUE, FALSE, TRUE))
+  y <- nv_array(c(TRUE, TRUE, FALSE))
   nvl_and(x, y)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  0
 #>  0

@@ -14,7 +14,7 @@ GraphLiteral(aval)
 
 - aval:
 
-  ([`LiteralTensor`](https://r-xla.github.io/anvil/dev/reference/LiteralTensor.md))  
+  ([`LiteralArray`](https://r-xla.github.io/anvil/dev/reference/LiteralArray.md))  
   The value of the literal.
 
 ## Value

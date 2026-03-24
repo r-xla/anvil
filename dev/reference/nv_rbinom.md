@@ -19,7 +19,7 @@ nv_rbinom(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32")
 
 - initial_state:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   RNG state (`ui64[2]`).
 
 - n:
@@ -35,13 +35,13 @@ nv_rbinom(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32")
 - dtype:
 
   (`character(1)` \|
-  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  [`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   Data type.
 
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
 List of two elements: the updated RNG state and the sampled values.
 
 ## See also
@@ -61,7 +61,7 @@ jit_eval({
   result <- nv_rbinom(c(2, 3), state)
   result[[2]]
 })
-#> AnvilTensor
+#> AnvilArray
 #>  0 0 1
 #>  0 1 1
 #> [ CPUi32{2,3} ] 

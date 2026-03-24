@@ -37,7 +37,7 @@ graph_desc_add(
 
   (`function`)  
   The inference function to use. Must output a list of
-  [`AbstractTensor`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md)s.
+  [`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)s.
 
 - desc:
 

@@ -24,7 +24,7 @@ jit_eval(expr, device = NULL)
   (`NULL` \| `character(1)` \|
   [`PJRTDevice`](https://r-xla.github.io/pjrt/reference/pjrt_device.html))  
   The device to use. By default (`NULL`), the device is inferred from
-  the tensors encountered during tracing, falling back to `"cpu"`. or
+  the arrays encountered during tracing, falling back to `"cpu"`. or
   `"cpu"`.
 
 ## Value
@@ -35,9 +35,9 @@ Result of the compiled and evaluated expression.
 ## Examples
 
 ``` r
-x <- nv_tensor(c(1, 2, 3), dtype = "f32")
+x <- nv_array(c(1, 2, 3), dtype = "f32")
 jit_eval(x + x)
-#> AnvilTensor
+#> AnvilArray
 #>  2
 #>  4
 #>  6

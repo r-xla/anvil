@@ -13,7 +13,7 @@ nv_le(lhs, rhs)
 
 - lhs, rhs:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Left and right operand. Operands are [promoted to a common data
   type](https://r-xla.github.io/anvil/dev/reference/nv_promote_to_common.md).
   Scalars are
@@ -22,7 +22,7 @@ nv_le(lhs, rhs)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same shape as the inputs and boolean data type.
 
 ## See also
@@ -34,11 +34,11 @@ the underlying primitive.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
-  y <- nv_tensor(c(3, 2, 1))
+  x <- nv_array(c(1, 2, 3))
+  y <- nv_array(c(3, 2, 1))
   x <= y
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  1
 #>  0

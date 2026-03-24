@@ -137,14 +137,14 @@ sets of points:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># X1: (n, d) tensor</span></span>
-<span><span class="co"># X2: (m, d) tensor</span></span>
-<span><span class="co"># lengthscale, signal_var: () tensor</span></span>
+<span><span class="co"># X1: (n, d) array</span></span>
+<span><span class="co"># X2: (m, d) array</span></span>
+<span><span class="co"># lengthscale, signal_var: () array</span></span>
 <span><span class="va">rbf_kernel_matrix</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">X1</span>, <span class="va">X2</span>, <span class="va">lengthscale</span>, <span class="va">signal_var</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape.html">shape</a></span><span class="op">(</span><span class="va">X1</span><span class="op">)</span><span class="op">[</span><span class="fl">1L</span><span class="op">]</span></span>
 <span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape.html">shape</a></span><span class="op">(</span><span class="va">X2</span><span class="op">)</span><span class="op">[</span><span class="fl">1L</span><span class="op">]</span></span>
 <span>  <span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape.html">shape</a></span><span class="op">(</span><span class="va">X1</span><span class="op">)</span><span class="op">[</span><span class="fl">2L</span><span class="op">]</span></span>
-<span>  <span class="va">diff</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_broadcast_tensors.html">nv_broadcast_tensors</a></span><span class="op">(</span></span>
+<span>  <span class="va">diff</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_broadcast_arrays.html">nv_broadcast_arrays</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="../reference/nv_reshape.html">nv_reshape</a></span><span class="op">(</span><span class="va">X1</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1L</span>, <span class="va">d</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    <span class="fu"><a href="../reference/nv_reshape.html">nv_reshape</a></span><span class="op">(</span><span class="va">X2</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="va">m</span>, <span class="va">d</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
@@ -258,15 +258,15 @@ rather than explicitly inverting the kernel matrix.</p>
 <p>We apply this with <span class="math inline">\(\ell = 0.5\)</span>,
 <span class="math inline">\(\sigma_f^2 = 2\)</span>, and <span class="math inline">\(\sigma^2 = 0.04\)</span>:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">X_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">X_train</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">y_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">y_train</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">X_test_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">X_test</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">X_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">X_train</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">y_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">y_train</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">X_test_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">X_test</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu">predict_gp</span><span class="op">(</span></span>
 <span>  <span class="va">rbf_kernel_matrix</span>, <span class="va">X_t</span>, <span class="va">y_t</span>, <span class="va">X_test_t</span>,</span>
-<span>  lengthscale <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.5</span><span class="op">)</span>,</span>
-<span>  signal_var <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span>,</span>
-<span>  noise_var <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.04</span><span class="op">)</span></span>
+<span>  lengthscale <span class="op">=</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.5</span><span class="op">)</span>,</span>
+<span>  signal_var <span class="op">=</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span>,</span>
+<span>  noise_var <span class="op">=</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.04</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="gaussian-process_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="672"></p>
 <p>Next, we will focus on learning these parameters by maximizing the
@@ -380,26 +380,26 @@ training loop is JIT-compiled with <code>nv_while</code>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">train_gp</span><span class="op">(</span></span>
 <span>  <span class="va">X_t</span>, <span class="va">y_t</span>,</span>
-<span>  lengthscale <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>,</span>
-<span>  signal_var <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>,</span>
-<span>  noise_var <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  n_steps <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">500L</span><span class="op">)</span>,</span>
-<span>  learning_rate <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.01</span><span class="op">)</span></span>
+<span>  lengthscale <span class="op">=</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>,</span>
+<span>  signal_var <span class="op">=</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>,</span>
+<span>  noise_var <span class="op">=</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  n_steps <span class="op">=</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">500L</span><span class="op">)</span>,</span>
+<span>  learning_rate <span class="op">=</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.01</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">result</span></span></code></pre></div>
 <pre><code><span><span class="co">## $lengthscale</span></span>
-<span><span class="co">## AnvilTensor</span></span>
+<span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  1.0904</span></span>
 <span><span class="co">## [ CPUf32{} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $signal_var</span></span>
-<span><span class="co">## AnvilTensor</span></span>
+<span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  1.2431</span></span>
 <span><span class="co">## [ CPUf32{} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $noise_var</span></span>
-<span><span class="co">## AnvilTensor</span></span>
+<span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  0.0303</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 </div>

@@ -82,7 +82,7 @@
 
 
 <dl><dt id="arg-operand">operand<a class="anchor" aria-label="anchor" href="#arg-operand"></a></dt>
-<dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
+<dd><p>(<code><a href="arrayish.html">arrayish</a></code>)<br>
 Operand.</p></dd>
 
 
@@ -98,7 +98,7 @@ Whether to drop reduced dimensions.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code><a href="tensorish.html">tensorish</a></code><br>
+    <p><code><a href="arrayish.html">arrayish</a></code><br>
 Has the same data type as the input.
 When <code>drop = TRUE</code>, the reduced dimensions are removed.
 When <code>drop = FALSE</code>, the reduced dimensions are set to 1.</p>
@@ -116,10 +116,10 @@ product of the reduced dimension sizes.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">nv_reduce_mean</span><span class="op">(</span><span class="va">x</span>, dims <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1.5000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  3.5000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  5.5000</span>

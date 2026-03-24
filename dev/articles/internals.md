@@ -10,7 +10,7 @@ for reshaping code. We refer to such a rewriting of code as a
     complicated to handle, so the first step in {anvil} is always to
     convert them into a computational `anvil::Graph` object via
     **tracing**. Such a `AnvilGraph` is similar to `JAXExpr` objects in
-    `JAX`. It operates only on `AnvilTensor` objects and applies
+    `JAX`. It operates only on `AnvilArray` objects and applies
     `anvil::Primitive` operations to them.
 2.  `AnvilGraph` \\\rightarrow\\ `AnvilGraph`: It is possible to
     transform `AnvilGraph`s into other `AnvilGraph`s. Their purpose is
@@ -57,15 +57,15 @@ f <- function(x, y, op) {
 
 To do this, we use
 [`anvil::trace_fn()`](https://r-xla.github.io/anvil/dev/reference/trace_fn.md),
-which takes in an `R` function and a list of `AbstractTensor` inputs
-that specify the types of the inputs.
+which takes in an `R` function and a list of `AbstractArray` inputs that
+specify the types of the inputs.
 
 ``` r
 aten <- nv_aten("f32", c())
 aten
 ```
 
-    ## AbstractTensor(dtype=f32, shape=)
+    ## AbstractArray(dtype=f32, shape=)
 
 ``` r
 graph <- trace_fn(f, list(x = aten, y = aten, op = "mul"))
@@ -111,7 +111,7 @@ between two cases:
 The evaluation of the `if` statement is an example for the first
 category. Because we set `op = "mul"`, only the second branch is
 executed. Then, we are calling `nv_mul`, which attaches a
-`PrimitiveCall` that represents the multiplication of the two tensors to
+`PrimitiveCall` that represents the multiplication of the two arrays to
 the `$calls` of the `GraphDescriptor`. Note that the `nv_mul` is itself
 not primitive, but performs some type promotion and broadcasting if
 needed, before calling into the primitive
@@ -121,7 +121,7 @@ A `PrimitiveCall` object consists of the following fields:
 
 - `primitive`: The primitive function that was called.
 - `inputs`: The inputs to the primitive function.
-- `params`: The parameters (non-tensors) to the primitive function.
+- `params`: The parameters (non-arrays) to the primitive function.
 - `outputs`: The outputs of the primitive function.
 
 When the evaluation of `f` is complete, the `$outputs` field of the
@@ -157,7 +157,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x555de4ee0cf8>
+    ## <bytecode: 0x55a40e099eb8>
     ## <environment: namespace:anvil>
 
 The
@@ -208,7 +208,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x555de4ee3eb0>
+    ## <bytecode: 0x55a40e09d070>
     ## <environment: namespace:anvil>
 
 The
@@ -237,13 +237,13 @@ exec <- pjrt::pjrt_compile(program)
 ```
 
 To run the function, we need to extract the underlying buffers from the
-tensors before passing them to the executable, which will output a
-`PJRTBuffer` that we can easily convert to an `AnvilTensor`.
+arrays before passing them to the executable, which will output a
+`PJRTBuffer` that we can easily convert to an `AnvilArray`.
 
 ``` r
 x <- nv_scalar(3, "f32")
 y <- nv_scalar(4, "f32")
-out <- pjrt::pjrt_execute(exec, x$tensor, y$tensor)
+out <- pjrt::pjrt_execute(exec, x$data, y$data)
 out
 ```
 
@@ -252,10 +252,10 @@ out
     ## [ CPUf32{} ]
 
 ``` r
-nv_tensor(out)
+nv_array(out)
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  12
     ## [ CPUf32{} ]
 
@@ -269,8 +269,8 @@ convenient and follows the `JAX` interface.
 
 The [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)
 function allows to convert a regular `R` function into a Just-In-Time
-compiled function that can be executed on `AnvilTensor`s. We apply it to
-our simple example function, where we mark the non-tensor parameter `op`
+compiled function that can be executed on `AnvilArray`s. We apply it to
+our simple example function, where we mark the non-array parameter `op`
 as “static”. This means that the value of this parameter needs to be
 known at compile time.
 
@@ -279,7 +279,7 @@ f_jit <-  jit(f, static = "op")
 f_jit(x, y, "add")
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  7
     ## [ CPUf32{} ]
 
@@ -298,11 +298,11 @@ compiling takes some time. Therefore, the function `f_jit` also contains
 a cache (implemented as an
 [`xlamisc::LRUCache`](https://rdrr.io/pkg/xlamisc/man/LRUCache.html)),
 which will check whether there is already a compiled executable for the
-given inputs. For this, the types of all `AnvilTensor`s need to match
+given inputs. For this, the types of all `AnvilArray`s need to match
 exactly (data type and shape) and all static arguments need to be
-identical. For example, if we run the function with `AnvilTensor`s of
-the same type, but different values, the function won’t be recompiled,
-which we can see by checking the size of the cache, which is already 1,
+identical. For example, if we run the function with `AnvilArray`s of the
+same type, but different values, the function won’t be recompiled, which
+we can see by checking the size of the cache, which is already 1,
 because we have called it on `x` and `y` above.
 
 ``` r
@@ -312,14 +312,14 @@ cache_size(f_jit)
 
     ## [1] 1
 
-After calling it with tensors of the same types and identical static
+After calling it with arrays of the same types and identical static
 argument values, the size of the cache remains 1:
 
 ``` r
 f_jit(nv_scalar(-99, "f32"), nv_scalar(2, "f32"), "add")
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  -97
     ## [ CPUf32{} ]
 
@@ -329,14 +329,14 @@ cache_size(f_jit)
 
     ## [1] 1
 
-When we execute the function with tensors of different `dtype` or
+When we execute the function with arrays of different `dtype` or
 `shape`, the function will be recompiled:
 
 ``` r
 f_jit(nv_scalar(1, "i32"), nv_scalar(2, "i32"), "add")
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  3
     ## [ CPUi32{} ]
 
@@ -353,7 +353,7 @@ will be recompiled:
 f_jit(nv_scalar(1, "f32"), nv_scalar(2, "f32"), "mul")
 ```
 
-    ## AnvilTensor
+    ## AnvilArray
     ##  2
     ## [ CPUf32{} ]
 
@@ -374,7 +374,7 @@ it, once the inputs are provided.
 g <- gradient(f, wrt = c("x", "y"))
 ```
 
-Calling `g()` on `AnvilTensor`s will not actually compute the gradient,
+Calling `g()` on `AnvilArray`s will not actually compute the gradient,
 but instead just output the output types, c.f. the [debugging
 vignette](https://r-xla.github.io/anvil/dev/articles/debugging.md) for
 more.
@@ -384,12 +384,12 @@ g(x, y, "add")
 ```
 
     ## $x
-    ## DebugBox(ConcreteTensor)
+    ## DebugBox(ConcreteArray)
     ##  1
     ## [ CPUf32{} ] 
     ## 
     ## $y
-    ## DebugBox(ConcreteTensor)
+    ## DebugBox(ConcreteArray)
     ##  1
     ## [ CPUf32{} ]
 
@@ -402,12 +402,12 @@ g_jit(x, y, "add")
 ```
 
     ## $x
-    ## AnvilTensor
+    ## AnvilArray
     ##  1
     ## [ CPUf32{} ] 
     ## 
     ## $y
-    ## AnvilTensor
+    ## AnvilArray
     ##  1
     ## [ CPUf32{} ]
 
@@ -423,12 +423,12 @@ h_jit(x, y)
 ```
 
     ## $x
-    ## AnvilTensor
+    ## AnvilArray
     ##  3
     ## [ CPUf32{} ] 
     ## 
     ## $y
-    ## AnvilTensor
+    ## AnvilArray
     ##  7
     ## [ CPUf32{} ]
 
@@ -442,7 +442,7 @@ added to the descriptor, after which it will be converted into a
 `AnvilGraph`. This `AnvilGraph` will then be inlined into the parent
 `GraphDescriptor` (representing the whole function `h`), which is then
 converted into the main `AnvilGraph`. We can look at this graph below,
-where `trace_fn` internally converts the `AnvilTensor`s `x` and `y` into
+where `trace_fn` internally converts the `AnvilArray`s `x` and `y` into
 their abstract representation.
 
 ``` r
@@ -481,7 +481,7 @@ primitive initializes its own `GraphDescriptor` that is thrown away
 after the primitive returns `DebugBox` objects. These `DebugBox` objects
 are only for user-interaction and have a nice printer. Whenever a
 primitive is evaluated, this `DebugBox` is converted to a `GraphBox`
-object that is used for the actual evaluation via `maybe_box_tensorish`.
+object that is used for the actual evaluation via `maybe_box_arrayish`.
 This ensures that we don’t have to duplicate any evaluation logic as the
 graph-building functions only have to work with `GraphBox` objects.
 
@@ -500,7 +500,7 @@ for now it seems to work.
 Constants are handled specially in {anvil}. Consider the program below:
 
 ``` r
-y <- nv_tensor(rnorm(1000000L))
+y <- nv_array(rnorm(1000000L))
 graph <- trace_fn(function(x) {
   x + y + 1
 }, list(x = nv_scalar(1L)))
@@ -529,7 +529,7 @@ graph$constants
 ```
 
     ## [[1]]
-    ## GraphValue(ConcreteTensor(f32, (1000000)))
+    ## GraphValue(ConcreteArray(f32, (1000000)))
 
 When compiling such a program to stableHLO, constants are treated
 differently depending on their shape (we follow JAX’s approach here).
@@ -565,7 +565,7 @@ out[[2L]]
 ```
 
     ## [[1]]
-    ## GraphValue(ConcreteTensor(f32, (1000000)))
+    ## GraphValue(ConcreteArray(f32, (1000000)))
 
 Also, before compiling, we remove unused constants. Captured constants
 can become unused when we apply code transformations like below, where
@@ -586,7 +586,7 @@ Further note that:
 
 1.  R Literals are immediately embedded as literals into the program.
 2.  Currently, constants with the same value (that refer to different
-    `AnvilTensor`s) are not deduplicated, which we might change in the
+    `AnvilArray`s) are not deduplicated, which we might change in the
     future.
 
 ### Nested Inputs and Outputs
@@ -598,7 +598,7 @@ TODO
 ### Literal handling
 
 It is appealing to support the conversion of R literals (`1L`, `1.0`
-`TRUE`, etc.) to `AnvilTensor`s when calling into `jit`-ted functions,
+`TRUE`, etc.) to `AnvilArray`s when calling into `jit`-ted functions,
 i.e. allow the following:
 
 ``` r
@@ -606,7 +606,7 @@ jit(nv_add, static = character())(1, 2)
 ```
 
 In `jit`(), we could in principle do this, because we know which
-arguments are static and which are expected to be `AnvilTensor`s.
+arguments are static and which are expected to be `AnvilArray`s.
 However, in
 [`gradient()`](https://r-xla.github.io/anvil/dev/reference/gradient.md),
 we don’t know which arguments are static and which are not. For example,
@@ -624,7 +624,6 @@ Furthermore, auto-converting literals passed as non-static arguments to
 debug-mode and jit-mode, as the former has no top-level hook for this
 conversion. Finally, requiring the user to think about the input data
 types should also be advantageous; we want to prioritize clarity over
-minor convenience. Note that for primitive calls like `nv_tensor(1)^2`
-we do auto-convert literals, because we know which arguments are
-expected to be `AnvilTensor`s and otherwise code just becomes much
-harder to read.
+minor convenience. Note that for primitive calls like `nv_array(1)^2` we
+do auto-convert literals, because we know which arguments are expected
+to be `AnvilArray`s and otherwise code just becomes much harder to read.

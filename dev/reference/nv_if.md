@@ -15,7 +15,7 @@ nv_if(pred, true, false)
 
 - pred:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
   of boolean type, scalar)  
   Predicate.
 
@@ -45,7 +45,7 @@ for element-wise selection.
 
 ``` r
 jit_eval(nv_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #> [ CPUf32{} ] 
 ```

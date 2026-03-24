@@ -12,8 +12,8 @@ nvl_reduce_any(operand, dims, drop = TRUE)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of boolean data type.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of boolean data type.
 
 - dims:
 
@@ -29,10 +29,10 @@ nvl_reduce_any(operand, dims, drop = TRUE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
-Boolean tensor. Never ambiguous. When `drop = TRUE`, the shape is that
-of `operand` with `dims` removed. When `drop = FALSE`, the shape is that
-of `operand` with `dims` set to 1.
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+Boolean array. Never ambiguous. When `drop = TRUE`, the shape is that of
+`operand` with `dims` removed. When `drop = FALSE`, the shape is that of
+`operand` with `dims` set to 1.
 
 ## Implemented Rules
 
@@ -58,10 +58,10 @@ as the reducer.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+  x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
   nvl_reduce_any(x, dims = 1L)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  1
 #> [ CPUbool{2} ] 

@@ -117,7 +117,7 @@ complicated to handle, so the first step in {anvil} is always to convert
 them into a computational <code>anvil::Graph</code> object via
 <strong>tracing</strong>. Such a <code>AnvilGraph</code> is similar to
 <code>JAXExpr</code> objects in <code>JAX</code>. It operates only on
-<code>AnvilTensor</code> objects and applies
+<code>AnvilArray</code> objects and applies
 <code>anvil::Primitive</code> operations to them.</li>
 <li>
 <code>AnvilGraph</code> <span class="math inline">\(\rightarrow\)</span> <code>AnvilGraph</code>: It
@@ -165,12 +165,12 @@ depending on the value of <code>op</code>.</p>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>To do this, we use <code><a href="../reference/trace_fn.html">anvil::trace_fn()</a></code>, which takes in an
-<code>R</code> function and a list of <code>AbstractTensor</code> inputs
+<code>R</code> function and a list of <code>AbstractArray</code> inputs
 that specify the types of the inputs.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">aten</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AbstractTensor.html">nv_aten</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">aten</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AbstractArray.html">nv_aten</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">aten</span></span></code></pre></div>
-<pre><code><span><span class="co">## AbstractTensor(dtype=f32, shape=)</span></span></code></pre>
+<pre><code><span><span class="co">## AbstractArray(dtype=f32, shape=)</span></span></code></pre>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">f</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">aten</span>, y <span class="op">=</span> <span class="va">aten</span>, op <span class="op">=</span> <span class="st">"mul"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">graph</span></span></code></pre></div>
@@ -217,7 +217,7 @@ underlies the function is recorded in the
 first category. Because we set <code>op = "mul"</code>, only the second
 branch is executed. Then, we are calling <code>nv_mul</code>, which
 attaches a <code>PrimitiveCall</code> that represents the multiplication
-of the two tensors to the <code>$calls</code> of the
+of the two arrays to the <code>$calls</code> of the
 <code>GraphDescriptor</code>. Note that the <code>nv_mul</code> is
 itself not primitive, but performs some type promotion and broadcasting
 if needed, before calling into the primitive <code><a href="../reference/nvl_mul.html">nvl_mul()</a></code>.</p>
@@ -229,7 +229,7 @@ fields:</p>
 <li>
 <code>inputs</code>: The inputs to the primitive function.</li>
 <li>
-<code>params</code>: The parameters (non-tensors) to the primitive
+<code>params</code>: The parameters (non-arrays) to the primitive
 function.</li>
 <li>
 <code>outputs</code>: The outputs of the primitive function.</li>
@@ -267,7 +267,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x555de4ee0cf8&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55a40e099eb8&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -310,7 +310,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x555de4ee3eb0&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55a40e09d070&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
@@ -328,20 +328,20 @@ primitives.</p>
 <span><span class="va">program</span> <span class="op">&lt;-</span> <span class="fu">pjrt</span><span class="fu">::</span><span class="fu"><a href="https://r-xla.github.io/pjrt/reference/pjrt_program.html" class="external-link">pjrt_program</a></span><span class="op">(</span>src <span class="op">=</span> <span class="va">hlo_str</span>, format <span class="op">=</span> <span class="st">"mlir"</span><span class="op">)</span></span>
 <span><span class="va">exec</span> <span class="op">&lt;-</span> <span class="fu">pjrt</span><span class="fu">::</span><span class="fu"><a href="https://r-xla.github.io/pjrt/reference/pjrt_compile.html" class="external-link">pjrt_compile</a></span><span class="op">(</span><span class="va">program</span><span class="op">)</span></span></code></pre></div>
 <p>To run the function, we need to extract the underlying buffers from
-the tensors before passing them to the executable, which will output a
+the arrays before passing them to the executable, which will output a
 <code>PJRTBuffer</code> that we can easily convert to an
-<code>AnvilTensor</code>.</p>
+<code>AnvilArray</code>.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">3</span>, <span class="st">"f32"</span><span class="op">)</span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">4</span>, <span class="st">"f32"</span><span class="op">)</span></span>
-<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">pjrt</span><span class="fu">::</span><span class="fu"><a href="https://r-xla.github.io/pjrt/reference/pjrt_execute.html" class="external-link">pjrt_execute</a></span><span class="op">(</span><span class="va">exec</span>, <span class="va">x</span><span class="op">$</span><span class="va">tensor</span>, <span class="va">y</span><span class="op">$</span><span class="va">tensor</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">3</span>, <span class="st">"f32"</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">4</span>, <span class="st">"f32"</span><span class="op">)</span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">pjrt</span><span class="fu">::</span><span class="fu"><a href="https://r-xla.github.io/pjrt/reference/pjrt_execute.html" class="external-link">pjrt_execute</a></span><span class="op">(</span><span class="va">exec</span>, <span class="va">x</span><span class="op">$</span><span class="va">data</span>, <span class="va">y</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="va">out</span></span></code></pre></div>
 <pre><code><span><span class="co">## PJRTBuffer </span></span>
 <span><span class="co">##  12</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilTensor</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  12</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 </div>
@@ -358,14 +358,14 @@ convenient and follows the <code>JAX</code> interface.</p>
 </h3>
 <p>The <code><a href="../reference/jit.html">jit()</a></code> function allows to convert a regular
 <code>R</code> function into a Just-In-Time compiled function that can
-be executed on <code>AnvilTensor</code>s. We apply it to our simple
-example function, where we mark the non-tensor parameter <code>op</code>
+be executed on <code>AnvilArray</code>s. We apply it to our simple
+example function, where we mark the non-array parameter <code>op</code>
 as “static”. This means that the value of this parameter needs to be
 known at compile time.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f_jit</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">f</span>, static <span class="op">=</span> <span class="st">"op"</span><span class="op">)</span></span>
 <span><span class="fu">f_jit</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="st">"add"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilTensor</span></span>
+<pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  7</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <p>One might think that <code><a href="../reference/jit.html">jit()</a></code> first calls
@@ -379,9 +379,9 @@ because tracing and compiling takes some time. Therefore, the function
 <code>f_jit</code> also contains a cache (implemented as an
 <code><a href="https://rdrr.io/pkg/xlamisc/man/LRUCache.html" class="external-link">xlamisc::LRUCache</a></code>), which will check whether there is
 already a compiled executable for the given inputs. For this, the types
-of all <code>AnvilTensor</code>s need to match exactly (data type and
+of all <code>AnvilArray</code>s need to match exactly (data type and
 shape) and all static arguments need to be identical. For example, if we
-run the function with <code>AnvilTensor</code>s of the same type, but
+run the function with <code>AnvilArray</code>s of the same type, but
 different values, the function won’t be recompiled, which we can see by
 checking the size of the cache, which is already 1, because we have
 called it on <code>x</code> and <code>y</code> above.</p>
@@ -389,22 +389,22 @@ called it on <code>x</code> and <code>y</code> above.</p>
 <code class="sourceCode R"><span><span class="va">cache_size</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">f</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">environment</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span><span class="op">$</span><span class="va">cache</span><span class="op">$</span><span class="va">size</span></span>
 <span><span class="fu">cache_size</span><span class="op">(</span><span class="va">f_jit</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 1</span></span></code></pre>
-<p>After calling it with tensors of the same types and identical static
+<p>After calling it with arrays of the same types and identical static
 argument values, the size of the cache remains 1:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="op">-</span><span class="fl">99</span>, <span class="st">"f32"</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span>, <span class="st">"f32"</span><span class="op">)</span>, <span class="st">"add"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilTensor</span></span>
+<code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="op">-</span><span class="fl">99</span>, <span class="st">"f32"</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span>, <span class="st">"f32"</span><span class="op">)</span>, <span class="st">"add"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  -97</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">cache_size</span><span class="op">(</span><span class="va">f_jit</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 1</span></span></code></pre>
-<p>When we execute the function with tensors of different
+<p>When we execute the function with arrays of different
 <code>dtype</code> or <code>shape</code>, the function will be
 recompiled:</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, <span class="st">"i32"</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span>, <span class="st">"i32"</span><span class="op">)</span>, <span class="st">"add"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilTensor</span></span>
+<code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, <span class="st">"i32"</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span>, <span class="st">"i32"</span><span class="op">)</span>, <span class="st">"add"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  3</span></span>
 <span><span class="co">## [ CPUi32{} ]</span></span></code></pre>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
@@ -413,8 +413,8 @@ recompiled:</p>
 <p>Also, if we provide different values for static arguments, the
 function will be recompiled:</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, <span class="st">"f32"</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span>, <span class="st">"f32"</span><span class="op">)</span>, <span class="st">"mul"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilTensor</span></span>
+<code class="sourceCode R"><span><span class="fu">f_jit</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, <span class="st">"f32"</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span>, <span class="st">"f32"</span><span class="op">)</span>, <span class="st">"mul"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  2</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
@@ -430,18 +430,18 @@ function that will lazily create the graph and transform it, once the
 inputs are provided.</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gradient.html">gradient</a></span><span class="op">(</span><span class="va">f</span>, wrt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Calling <code>g()</code> on <code>AnvilTensor</code>s will not
+<p>Calling <code>g()</code> on <code>AnvilArray</code>s will not
 actually compute the gradient, but instead just output the output types,
 c.f. the <a href="debugging.html">debugging vignette</a> for more.</p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">g</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="st">"add"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $x</span></span>
-<span><span class="co">## DebugBox(ConcreteTensor)</span></span>
+<span><span class="co">## DebugBox(ConcreteArray)</span></span>
 <span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUf32{} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $y</span></span>
-<span><span class="co">## DebugBox(ConcreteTensor)</span></span>
+<span><span class="co">## DebugBox(ConcreteArray)</span></span>
 <span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <p>If we want to actually compute the gradient, we need to wrap it in
@@ -450,12 +450,12 @@ c.f. the <a href="debugging.html">debugging vignette</a> for more.</p>
 <code class="sourceCode R"><span><span class="va">g_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">g</span>, static <span class="op">=</span> <span class="st">"op"</span><span class="op">)</span></span>
 <span><span class="fu">g_jit</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="st">"add"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $x</span></span>
-<span><span class="co">## AnvilTensor</span></span>
+<span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUf32{} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $y</span></span>
-<span><span class="co">## AnvilTensor</span></span>
+<span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <p>Moreover, we can also use <code>g</code> in another function:</p>
@@ -467,12 +467,12 @@ c.f. the <a href="debugging.html">debugging vignette</a> for more.</p>
 <span><span class="va">h_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">h</span><span class="op">)</span></span>
 <span><span class="fu">h_jit</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $x</span></span>
-<span><span class="co">## AnvilTensor</span></span>
+<span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  3</span></span>
 <span><span class="co">## [ CPUf32{} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $y</span></span>
-<span><span class="co">## AnvilTensor</span></span>
+<span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  7</span></span>
 <span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
 <p>So, what is happening here? Once the inputs <code>x</code> and
@@ -489,7 +489,7 @@ be converted into a <code>AnvilGraph</code>. This
 <code>GraphDescriptor</code> (representing the whole function
 <code>h</code>), which is then converted into the main
 <code>AnvilGraph</code>. We can look at this graph below, where
-<code>trace_fn</code> internally converts the <code>AnvilTensor</code>s
+<code>trace_fn</code> internally converts the <code>AnvilArray</code>s
 <code>x</code> and <code>y</code> into their abstract
 representation.</p>
 <div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
@@ -529,7 +529,7 @@ returns <code>DebugBox</code> objects. These <code>DebugBox</code>
 objects are only for user-interaction and have a nice printer. Whenever
 a primitive is evaluated, this <code>DebugBox</code> is converted to a
 <code>GraphBox</code> object that is used for the actual evaluation via
-<code>maybe_box_tensorish</code>. This ensures that we don’t have to
+<code>maybe_box_arrayish</code>. This ensures that we don’t have to
 duplicate any evaluation logic as the graph-building functions only have
 to work with <code>GraphBox</code> objects.</p>
 <p>What gets lost in debug mode is identity of values, because the
@@ -546,10 +546,10 @@ we can improve this in the future, but for now it seems to work.</p>
 <p>Constants are handled specially in {anvil}. Consider the program
 below:</p>
 <div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1000000L</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1000000L</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">x</span> <span class="op">+</span> <span class="va">y</span> <span class="op">+</span> <span class="fl">1</span></span>
-<span><span class="op">}</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1L</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1L</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">graph</span></span></code></pre></div>
 <pre><code><span><span class="co">## &lt;AnvilGraph&gt;</span></span>
 <span><span class="co">##   Inputs:</span></span>
@@ -570,7 +570,7 @@ the <code>$constants</code> field of the graph, just like the literal
 <div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">graph</span><span class="op">$</span><span class="va">constants</span></span></code></pre></div>
 <pre><code><span><span class="co">## [[1]]</span></span>
-<span><span class="co">## GraphValue(ConcreteTensor(f32, (1000000)))</span></span></code></pre>
+<span><span class="co">## GraphValue(ConcreteArray(f32, (1000000)))</span></span></code></pre>
 <p>When compiling such a program to stableHLO, constants are treated
 differently depending on their shape (we follow JAX’s approach here).
 That is, constants with 1 element are <strong>inlined</strong> into the
@@ -599,7 +599,7 @@ would be unable to do constant folding.</p>
 <div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span><span class="op">[[</span><span class="fl">2L</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## [[1]]</span></span>
-<span><span class="co">## GraphValue(ConcreteTensor(f32, (1000000)))</span></span></code></pre>
+<span><span class="co">## GraphValue(ConcreteArray(f32, (1000000)))</span></span></code></pre>
 <p>Also, before compiling, we remove unused constants. Captured
 constants can become unused when we apply code transformations like
 below, where the gradient of the function w.r.t. <code>x</code> does not
@@ -608,7 +608,7 @@ depend on the captured <code>y</code>:</p>
 <code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span><span class="va">x</span> <span class="op">+</span> <span class="va">y</span></span>
 <span><span class="op">}</span></span>
-<span><span class="fu"><a href="../reference/transform_gradient.html">transform_gradient</a></span><span class="op">(</span><span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">f</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/transform_gradient.html">transform_gradient</a></span><span class="op">(</span><span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">f</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>In principle, the compiler is able to do this itself, but because we
 pass constants as inputs to the program, we need to handle it
 ourselves.</p>
@@ -617,8 +617,8 @@ ourselves.</p>
 <li>R Literals are immediately embedded as literals into the
 program.</li>
 <li>Currently, constants with the same value (that refer to different
-<code>AnvilTensor</code>s) are not deduplicated, which we might change
-in the future.</li>
+<code>AnvilArray</code>s) are not deduplicated, which we might change in
+the future.</li>
 </ol>
 </div>
 <div class="section level3">
@@ -635,13 +635,13 @@ in the future.</li>
 </h3>
 <p>It is appealing to support the conversion of R literals
 (<code>1L</code>, <code>1.0</code> <code>TRUE</code>, etc.) to
-<code>AnvilTensor</code>s when calling into <code>jit</code>-ted
+<code>AnvilArray</code>s when calling into <code>jit</code>-ted
 functions, i.e. allow the following:</p>
 <div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">nv_add</span>, static <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p>In <code>jit</code>(), we could in principle do this, because we know
 which arguments are static and which are expected to be
-<code>AnvilTensor</code>s. However, in <code><a href="../reference/gradient.html">gradient()</a></code>, we don’t
+<code>AnvilArray</code>s. However, in <code><a href="../reference/gradient.html">gradient()</a></code>, we don’t
 know which arguments are static and which are not. For example, we can’t
 make the following work:</p>
 <div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
@@ -655,8 +655,8 @@ differences between debug-mode and jit-mode, as the former has no
 top-level hook for this conversion. Finally, requiring the user to think
 about the input data types should also be advantageous; we want to
 prioritize clarity over minor convenience. Note that for primitive calls
-like <code>nv_tensor(1)^2</code> we do auto-convert literals, because we
-know which arguments are expected to be <code>AnvilTensor</code>s and
+like <code>nv_array(1)^2</code> we do auto-convert literals, because we
+know which arguments are expected to be <code>AnvilArray</code>s and
 otherwise code just becomes much harder to read.</p>
 </div>
 </div>

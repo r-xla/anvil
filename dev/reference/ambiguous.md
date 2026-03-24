@@ -1,6 +1,6 @@
-# Get Ambiguity of a Tensor
+# Get Ambiguity of an Array
 
-Returns whether the tensor's dtype is ambiguous.
+Returns whether the array's dtype is ambiguous.
 
 ## Usage
 
@@ -12,7 +12,7 @@ ambiguous(x, ...)
 
 - x:
 
-  A tensor object
+  An array object
 
 - ...:
 

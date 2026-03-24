@@ -1,19 +1,19 @@
-# Iota Tensor Class
+# Iota Array Class
 
 An
-[`AbstractTensor`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md)
+[`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
 representing an integer sequence. Usually created by
 [`nv_iota()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md) /
 [`nv_seq()`](https://r-xla.github.io/anvil/dev/reference/nv_seq.md),
 which both call
 [`nvl_iota()`](https://r-xla.github.io/anvil/dev/reference/nvl_iota.md)
 internally. Inherits from
-[`AbstractTensor`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md).
+[`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md).
 
 ## Usage
 
 ``` r
-IotaTensor(shape, dtype, dimension, start = 1L, ambiguous = FALSE)
+IotaArray(shape, dtype, dimension, start = 1L, ambiguous = FALSE)
 ```
 
 ## Arguments
@@ -22,11 +22,11 @@ IotaTensor(shape, dtype, dimension, start = 1L, ambiguous = FALSE)
 
   ([`stablehlo::Shape`](https://r-xla.github.io/stablehlo/reference/Shape.html)
   \| [`integer()`](https://rdrr.io/r/base/integer.html))  
-  The shape of the tensor.
+  The shape of the array.
 
 - dtype:
 
-  ([`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  ([`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   The data type.
 
 - dimension:
@@ -60,9 +60,9 @@ optionally shifting the starting value via
 ## Examples
 
 ``` r
-x <- IotaTensor(shape = 4L, dtype = "i32", dimension = 1L)
+x <- IotaArray(shape = 4L, dtype = "i32", dimension = 1L)
 x
-#> IotaTensor(shape=(4), dtype=i32, dimension=1, start=1) 
+#> IotaArray(shape=(4), dtype=i32, dimension=1, start=1) 
 ambiguous(x)
 #> [1] FALSE
 shape(x)
@@ -81,5 +81,5 @@ graph
 #>   Outputs:
 #>     %1: i32[4] 
 graph$outputs[[1]]$aval
-#> IotaTensor(shape=(4), dtype=i32, dimension=1, start=1) 
+#> IotaArray(shape=(4), dtype=i32, dimension=1, start=1) 
 ```

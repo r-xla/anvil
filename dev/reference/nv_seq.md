@@ -1,6 +1,6 @@
 # Sequence
 
-Creates a 1-D tensor with integer values from `start` to `end`
+Creates a 1-D array with integer values from `start` to `end`
 (inclusive), analogous to R's `seq(start, end)`.
 
 ## Usage
@@ -19,7 +19,7 @@ nv_seq(start, end, dtype = "i32", ambiguous = FALSE)
 - dtype:
 
   (`character(1)` \|
-  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  [`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   Data type.
 
 - ambiguous:
@@ -33,8 +33,8 @@ nv_seq(start, end, dtype = "i32", ambiguous = FALSE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
-1-D tensor of length `end - start + 1`.
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+1-D array of length `end - start + 1`.
 
 ## See also
 
@@ -45,7 +45,7 @@ for multi-dimensional sequences.
 
 ``` r
 jit_eval(nv_seq(3, 7))
-#> AnvilTensor
+#> AnvilArray
 #>  3
 #>  4
 #>  5

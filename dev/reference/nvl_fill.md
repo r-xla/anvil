@@ -1,8 +1,8 @@
 # Primitive Fill
 
-Creates a tensor of a given shape and data type, filled with a scalar
+Creates an array of a given shape and data type, filled with a scalar
 value. The advantage of using this function instead of e.g. doing
-`nv_tensor(1, shape = c(100, 100))` is that lowering of `nvl_fill()` is
+`nv_array(1, shape = c(100, 100))` is that lowering of `nvl_fill()` is
 efficiently represented in the compiled program, while the latter uses
 100 \* 100 \* 4 bytes of memory.
 
@@ -17,17 +17,17 @@ nvl_fill(value, shape, dtype, ambiguous = FALSE)
 - value:
 
   (`numeric(1)`)  
-  Scalar value to fill the tensor with.
+  Scalar value to fill the array with.
 
 - shape:
 
   ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Shape of the output tensor.
+  Shape of the output array.
 
 - dtype:
 
   (`character(1)` \|
-  [`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  [`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   Data type.
 
 - ambiguous:
@@ -41,7 +41,7 @@ nvl_fill(value, shape, dtype, ambiguous = FALSE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the given `shape` and `dtype`.
 
 ## Implemented Rules
@@ -63,7 +63,7 @@ Lowers to
 
 ``` r
 jit_eval(nvl_fill(3.14, shape = c(2, 3), dtype = "f32"))
-#> AnvilTensor
+#> AnvilArray
 #>  3.1400 3.1400 3.1400
 #>  3.1400 3.1400 3.1400
 #> [ CPUf32{2,3} ] 

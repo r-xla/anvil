@@ -12,12 +12,12 @@ nvl_tan(operand)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of data type floating-point.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of data type floating-point.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same shape and data type as the input. It is ambiguous if the
 input is ambiguous.
 
@@ -43,10 +43,10 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(0, 0.5, 1))
+  x <- nv_array(c(0, 0.5, 1))
   nvl_tan(x)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  0.0000
 #>  0.5463
 #>  1.5574

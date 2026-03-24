@@ -1,6 +1,6 @@
 # Primitive Division
 
-Divides two tensors element-wise.
+Divides two arrays element-wise.
 
 ## Usage
 
@@ -12,13 +12,13 @@ nvl_div(lhs, rhs)
 
 - lhs, rhs:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish values of data type integer, unsigned integer, or
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish values of data type integer, unsigned integer, or
   floating-point. Must have the same shape.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same shape and data type as the inputs. It is ambiguous if both
 inputs are ambiguous.
 
@@ -43,11 +43,11 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(10, 20, 30))
-  y <- nv_tensor(c(2, 5, 10))
+  x <- nv_array(c(10, 20, 30))
+  y <- nv_array(c(2, 5, 10))
   nvl_div(x, y)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  5
 #>  4
 #>  3

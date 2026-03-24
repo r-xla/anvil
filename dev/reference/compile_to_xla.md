@@ -36,7 +36,7 @@ compile_to_xla(f, args_flat, in_tree, donate = character(), device = NULL)
 
   (`NULL` \| `character(1)`)  
   Target device (e.g. `"cpu"`, `"cuda"`). If `NULL`, inferred from
-  traced tensors.
+  traced arrays.
 
 ## Value
 
@@ -46,7 +46,7 @@ A `list` with elements:
 
 - `out_tree`: The output tree structure.
 
-- `const_tensors`: Constants needed at execution time.
+- `const_arrays`: Constants needed at execution time.
 
 - `ambiguous_out`: Logical vector indicating which outputs are ambiguous
   (`NULL` if none are).

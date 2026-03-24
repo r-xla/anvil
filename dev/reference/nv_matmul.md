@@ -1,6 +1,6 @@
 # Matrix Multiplication
 
-Matrix multiplication of two tensors. You can also use the `%*%`
+Matrix multiplication of two arrays. You can also use the `%*%`
 operator. Supports batched matrix multiplication when inputs have more
 than 2 dimensions.
 
@@ -14,14 +14,14 @@ nv_matmul(lhs, rhs)
 
 - lhs, rhs:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensors with at least 2 dimensions. Operands are [promoted to a common
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrays with at least 2 dimensions. Operands are [promoted to a common
   data
   type](https://r-xla.github.io/anvil/dev/reference/nv_promote_to_common.md).
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
 
 ## Shapes
 
@@ -40,11 +40,11 @@ for the underlying primitive.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(matrix(1:6, nrow = 2))
-  y <- nv_tensor(matrix(1:6, nrow = 3))
+  x <- nv_array(matrix(1:6, nrow = 2))
+  y <- nv_array(matrix(1:6, nrow = 3))
   x %*% y
 })
-#> AnvilTensor
+#> AnvilArray
 #>  22 49
 #>  28 64
 #> [ CPUi32{2,2} ] 

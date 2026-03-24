@@ -97,15 +97,15 @@ Here <code>op</code> is <code>A</code> or <code>A^T</code> depending on <code>tr
 
 
 <dl><dt id="arg-a">a<a class="anchor" aria-label="anchor" href="#arg-a"></a></dt>
-<dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
+<dd><p>(<code><a href="arrayish.html">arrayish</a></code>)<br>
 Triangular coefficient matrix of data type floating-point with at least 2
 dimensions. The last two dimensions must be equal (square matrix); any
 leading dimensions are batch dimensions.</p></dd>
 
 
 <dt id="arg-b">b<a class="anchor" aria-label="anchor" href="#arg-b"></a></dt>
-<dd><p>(<code><a href="tensorish.html">tensorish</a></code>)<br>
-Right-hand side tensor. Must have the same data type, rank, and batch
+<dd><p>(<code><a href="arrayish.html">arrayish</a></code>)<br>
+Right-hand side array. Must have the same data type, rank, and batch
 dimensions as <code>a</code>.</p></dd>
 
 
@@ -131,7 +131,7 @@ One of <code>"NO_TRANSPOSE"</code>, <code>"TRANSPOSE"</code>, or <code>"ADJOINT"
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code><a href="tensorish.html">tensorish</a></code><br>
+    <p><code><a href="arrayish.html">arrayish</a></code><br>
 Has the same shape and data type as <code>b</code>.
 It is ambiguous if both <code>a</code> and <code>b</code> are ambiguous.</p>
     </div>
@@ -163,14 +163,14 @@ Oxford University Computing Laboratory.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="co"># Solve L %*% x = b where L is lower triangular</span></span></span>
-<span class="r-in"><span>  <span class="va">L</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">3</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">L</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">3</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">nvl_triangular_solve</span><span class="op">(</span><span class="va">L</span>, <span class="va">b</span>,</span></span>
 <span class="r-in"><span>    left_side <span class="op">=</span> <span class="cn">TRUE</span>, lower <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>    unit_diagonal <span class="op">=</span> <span class="cn">FALSE</span>, transpose_a <span class="op">=</span> <span class="st">"NO_TRANSPOSE"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilTensor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{2,1} ] </span>

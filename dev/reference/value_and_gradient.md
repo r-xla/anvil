@@ -16,18 +16,17 @@ value_and_gradient(f, wrt = NULL)
 - f:
 
   (`function`)  
-  Function to differentiate. Arguments can be tensorish
-  ([`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md))
-  or static (non-tensor) values. Must return a single scalar float
-  tensor.
+  Function to differentiate. Arguments can be arrayish
+  ([`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))
+  or static (non-array) values. Must return a single scalar float array.
 
 - wrt:
 
   (`character` or `NULL`)  
   Names of the arguments to compute the gradient with respect to. Only
-  tensorish (float tensor) arguments can be included; static arguments
+  arrayish (float array) arguments can be included; static arguments
   must not appear in `wrt`. If `NULL` (the default), the gradient is
-  computed with respect to all arguments (which must all be tensorish in
+  computed with respect to all arguments (which must all be arrayish in
   that case).
 
 ## Value
@@ -44,14 +43,14 @@ A function with the same formals as `f` that returns
 ``` r
 loss_fn <- function(x) sum(x^2L)
 vg <- jit(value_and_gradient(loss_fn))
-result <- vg(nv_tensor(c(3, 4), dtype = "f32"))
+result <- vg(nv_array(c(3, 4), dtype = "f32"))
 result$value
-#> AnvilTensor
+#> AnvilArray
 #>  25
 #> [ CPUf32{} ] 
 result$grad
 #> $x
-#> AnvilTensor
+#> AnvilArray
 #>  6
 #>  8
 #> [ CPUf32{2} ] 

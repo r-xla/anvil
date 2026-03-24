@@ -50,13 +50,13 @@ are various sceanrios:
 ## Adding a Primitive: Practical Example
 
 Let’s add a new primitive step by step. We’ll implement
-`nvl_repeat_along` – a primitive that repeats a tensor multiple times
+`nvl_repeat_along` – a primitive that repeats an array multiple times
 along a specified dimension.
 
 For example, repeating `c(1, 2, 3)` twice along dimension 1 gives
 `c(1, 2, 3, 1, 2, 3)`.
 
-This primitive has a *dynamic* input (a tensor) and two *static*
+This primitive has a *dynamic* input (an array) and two *static*
 parameters (how many times to repeat and which dimension).
 
 ### Step 1: Create the AnvilPrimitive Object
@@ -92,7 +92,7 @@ nvl_repeat_along <- function(operand, times, dim) {
     }
     new_shape <- shape(operand)
     new_shape[dim] <- new_shape[dim] * times
-    list(AbstractTensor(
+    list(AbstractArray(
       dtype = dtype(operand),
       shape = Shape(new_shape),
       ambiguous = operand$ambiguous
@@ -101,7 +101,7 @@ nvl_repeat_along <- function(operand, times, dim) {
 
   graph_desc_add(
     p_repeat_along,             # The primitive
-    list(operand = operand),    # Dynamic inputs (tensors)
+    list(operand = operand),    # Dynamic inputs (arrays)
     params = list(              # Static parameters
       times = times,
       dim = dim
@@ -113,7 +113,7 @@ nvl_repeat_along <- function(operand, times, dim) {
 
 Key points:
 
-- The inference function receives abstract tensors (types, not values)
+- The inference function receives abstract arrays (types, not values)
   for dynamic inputs, and actual values for static parameters. It must
   verify that the arguments to the function are valid. Also, it should
   throw clear error messages if the arguments are invalid, as {anvil}
@@ -130,11 +130,11 @@ package (such as
 [`stablehlo::infer_types_concatenate`](https://r-xla.github.io/stablehlo/reference/hlo_concatenate.html)).
 When doing so, you need to:
 
-1.  Convert the abstract tensors to stablehlo `ValueType`s using
+1.  Convert the abstract arrays to stablehlo `ValueType`s using
     [`at2vt()`](https://r-xla.github.io/anvil/dev/reference/at2vt.md).
 2.  Call the stablehlo inference function and obtain a list of
     `ValueType`s.
-3.  Convert the `ValueType`s back to abstract tensors using
+3.  Convert the `ValueType`s back to abstract arrays using
     [`vt2at()`](https://r-xla.github.io/anvil/dev/reference/vt2at.md).
 4.  Set the `ambiguous` flag of the output depending on the inputs
     (`ambiguity` is strictly an {anvil} concept, not a stablehlo
@@ -237,9 +237,9 @@ example is `nvl_add` vs `nv_add`, where the latter calls into the former
 after optionally broadcasting (scalar) inputs:
 
 ``` r
-nv_add(1L, nv_tensor(2:3))
+nv_add(1L, nv_array(2:3))
 #> i32{2}
-nvl_add(1L, nv_tensor(2:3))
+nvl_add(1L, nv_array(2:3))
 #> Error in `nvl_add()`:
 #> ! `lhs` and `rhs` must have the same tensor type.
 #> ✖ Got tensor<i32> and tensor<2xi32>.
@@ -254,7 +254,7 @@ nv_repeat_along <- nvl_repeat_along
 ```
 
 Note that in the `nv_*` wrapper function, you can only access certain
-properties of the input tensorish values via:
+properties of the input arrayish values via:
 
 - [`shape_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
 - [`ndims_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
@@ -266,7 +266,7 @@ If you, for example, use
 instead of
 [`shape_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md),
 your function won’t work with R literals. I.e., `<extract>_abstract()`
-first converts the input to an `AbstractTensor` (if possible) and then
+first converts the input to an `AbstractArray` (if possible) and then
 extracts the property.
 
 ### Using Your Primitive
@@ -274,10 +274,10 @@ extracts the property.
 You can now use the primitive:
 
 ``` r
-x <- nv_tensor(c(1, 2, 3), shape = c(3, 1))
+x <- nv_array(c(1, 2, 3), shape = c(3, 1))
 result <- jit(function(x) nvl_repeat_along(x, times = 2L, dim = 2L))(x)
 result
-#> AnvilTensor
+#> AnvilArray
 #>  1 1
 #>  2 2
 #>  3 3
@@ -294,7 +294,7 @@ f <- function(x) {
 
 grad_f <- jit(gradient(f))
 grad_f(x)[[1L]]
-#> AnvilTensor
+#> AnvilArray
 #>  2
 #>  2
 #>  2

@@ -109,14 +109,14 @@ Names of the arguments whose buffers should be donated.</p></dd>
 
 <dt id="arg-device">device<a class="anchor" aria-label="anchor" href="#arg-device"></a></dt>
 <dd><p>(<code>NULL</code> | <code>character(1)</code>)<br>
-Target device (e.g. <code>"cpu"</code>, <code>"cuda"</code>). If <code>NULL</code>, inferred from traced tensors.</p></dd>
+Target device (e.g. <code>"cpu"</code>, <code>"cuda"</code>). If <code>NULL</code>, inferred from traced arrays.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>list</code> with elements:</p><ul><li><p><code>exec</code>: The compiled PJRT executable.</p></li>
 <li><p><code>out_tree</code>: The output tree structure.</p></li>
-<li><p><code>const_tensors</code>: Constants needed at execution time.</p></li>
+<li><p><code>const_arrays</code>: Constants needed at execution time.</p></li>
 <li><p><code>ambiguous_out</code>: Logical vector indicating which outputs are ambiguous (<code>NULL</code> if none are).</p></li>
 </ul></div>
 

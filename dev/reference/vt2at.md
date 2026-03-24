@@ -1,6 +1,6 @@
-# Convert ValueType to AbstractTensor
+# Convert ValueType to AbstractArray
 
-Convert a `ValueType` to an `AbstractTensor`.
+Convert a `ValueType` to an `AbstractArray`.
 
 ## Usage
 
@@ -16,4 +16,4 @@ vt2at(x)
 
 ## Value
 
-(`AbstractTensor`)
+(`AbstractArray`)

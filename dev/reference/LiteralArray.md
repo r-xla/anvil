@@ -1,7 +1,7 @@
-# Literal Tensor Class
+# Literal Array Class
 
 An
-[`AbstractTensor`](https://r-xla.github.io/anvil/dev/reference/AbstractTensor.md)
+[`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
 where all elements have the same constant value. This either arises when
 using literals in traced code (e.g. `x + 1`) or when using
 [`nv_fill()`](https://r-xla.github.io/anvil/dev/reference/nv_fill.md) to
@@ -10,7 +10,7 @@ create a constant.
 ## Usage
 
 ``` r
-LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
+LiteralArray(data, shape, dtype = default_dtype(data), ambiguous)
 ```
 
 ## Arguments
@@ -18,18 +18,18 @@ LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
 - data:
 
   (`double(1)` \| `integer(1)` \| `logical(1)` \|
-  [`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md))  
-  The scalar value or scalarish AnvilTensor (contains 1 element).
+  [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))  
+  The scalar value or scalarish AnvilArray (contains 1 element).
 
 - shape:
 
   ([`stablehlo::Shape`](https://r-xla.github.io/stablehlo/reference/Shape.html)
   \| [`integer()`](https://rdrr.io/r/base/integer.html))  
-  The shape of the tensor.
+  The shape of the array.
 
 - dtype:
 
-  ([`tengen::TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html))  
+  ([`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
   The data type. Defaults to the current backend's default floating
   dtype, `i32` for integer, and `bool` for logical.
 
@@ -44,23 +44,23 @@ LiteralTensor(data, shape, dtype = default_dtype(data), ambiguous)
 
 ## Type Ambiguity
 
-When arising from R literals, the resulting `LiteralTensor` is ambiguous
+When arising from R literals, the resulting `LiteralArray` is ambiguous
 because no type information was available. See the
 [`vignette("type-promotion")`](https://r-xla.github.io/anvil/dev/articles/type-promotion.md)
 for more details.
 
 ## Lowering
 
-`LiteralTensor`s become constants inlined into the stableHLO program.
+`LiteralArray`s become constants inlined into the stableHLO program.
 I.e., they lower to
 [`stablehlo::hlo_tensor()`](https://r-xla.github.io/stablehlo/reference/hlo_constant.html).
 
 ## Examples
 
 ``` r
-x <- LiteralTensor(1L, shape = integer(), ambiguous = TRUE)
+x <- LiteralArray(1L, shape = integer(), ambiguous = TRUE)
 x
-#> LiteralTensor(1, i32?, ()) 
+#> LiteralArray(1, i32?, ()) 
 ambiguous(x)
 #> [1] TRUE
 shape(x)
@@ -79,7 +79,7 @@ graph
 #>   Outputs:
 #>     1:f32? 
 graph$outputs[[1]]$aval
-#> LiteralTensor(1, f32?, ()) 
+#> LiteralArray(1, f32?, ()) 
 # 2. via nv_fill()
 graph <- trace_fn(function() nv_fill(2L, shape = c(2, 2)), list())
 graph
@@ -90,5 +90,5 @@ graph
 #>   Outputs:
 #>     %1: i32[2, 2] 
 graph$outputs[[1]]$aval
-#> AbstractTensor(dtype=i32, shape=2x2) 
+#> AbstractArray(dtype=i32, shape=2x2) 
 ```

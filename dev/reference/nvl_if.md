@@ -15,7 +15,7 @@ nvl_if(pred, true, false)
 
 - pred:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Scalar boolean predicate that determines which branch to execute.
 
 - true, false:
@@ -51,7 +51,7 @@ Lowers to
 
 ``` r
 jit_eval(nvl_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #> [ CPUf32{} ] 
 ```

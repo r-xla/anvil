@@ -21,7 +21,7 @@ PrimitiveCall(primitive, inputs, params, outputs)
 - inputs:
 
   (`list(GraphValue)`)  
-  The (tensor) inputs to the primitive.
+  The (array) inputs to the primitive.
 
 - params:
 
@@ -31,7 +31,7 @@ PrimitiveCall(primitive, inputs, params, outputs)
 - outputs:
 
   (`list(GraphValue)`)  
-  The (tensor) outputs of the primitive.
+  The (array) outputs of the primitive.
 
 ## Value
 

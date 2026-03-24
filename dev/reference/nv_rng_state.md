@@ -18,7 +18,7 @@ nv_rng_state(seed)
 
 ## Value
 
-[`nv_tensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)
+[`nv_array`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
 of dtype `ui64` and shape `(2)`.
 
 ## See also
@@ -36,7 +36,7 @@ jit_eval({
   state <- nv_rng_state(42L)
   state
 })
-#> AnvilTensor
+#> AnvilArray
 #>  42
 #>   0
 #> [ CPUui64{2} ] 

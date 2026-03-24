@@ -1,6 +1,6 @@
-# Read tensors from a file
+# Read arrays from a file
 
-Loads tensors from a file in the
+Loads arrays from a file in the
 [safetensors](https://huggingface.co/docs/safetensors/index) format.
 
 ## Usage
@@ -20,13 +20,13 @@ nv_read(path, device = NULL)
 
   (`NULL` \| `character(1)` \|
   [`PJRTDevice`](https://r-xla.github.io/pjrt/reference/pjrt_device.html))  
-  The device on which to place the loaded tensors (`"cpu"`, `"cuda"`,
+  The device on which to place the loaded arrays (`"cpu"`, `"cuda"`,
   ...). Default is to use the CPU.
 
 ## Value
 
 Named `list` of
-[`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md)
+[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
 objects.
 
 ## Details
@@ -44,9 +44,9 @@ that opens and closes a file connection.
 ## Examples
 
 ``` r
-x <- nv_tensor(array(1:6, dim = c(2, 3)))
+x <- nv_array(array(1:6, dim = c(2, 3)))
 x
-#> AnvilTensor
+#> AnvilArray
 #>  1 3 5
 #>  2 4 6
 #> [ CPUi32{2,3} ] 
@@ -54,7 +54,7 @@ path <- tempfile(fileext = ".safetensors")
 nv_save(list(x = x), path)
 nv_read(path)
 #> $x
-#> AnvilTensor
+#> AnvilArray
 #>  1 3 5
 #>  2 4 6
 #> [ CPUi32{2,3} ] 

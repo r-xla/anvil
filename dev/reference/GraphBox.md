@@ -5,7 +5,7 @@ subclass that wraps a
 [`GraphNode`](https://r-xla.github.io/anvil/dev/reference/GraphNode.md)
 during graph construction (tracing). When a function is traced via
 [`trace_fn()`](https://r-xla.github.io/anvil/dev/reference/trace_fn.md),
-each intermediate tensor value is represented as a `GraphBox`. It also
+each intermediate array value is represented as a `GraphBox`. It also
 contains an associated
 [`GraphDescriptor`](https://r-xla.github.io/anvil/dev/reference/GraphDescriptor.md)
 in which the node "lives".

@@ -1,30 +1,30 @@
-# Broadcast Tensors to a Common Shape
+# Broadcast Arrays to a Common Shape
 
-Broadcasts tensors to a common shape using NumPy-style broadcasting
+Broadcasts arrays to a common shape using NumPy-style broadcasting
 rules.
 
 ## Usage
 
 ``` r
-nv_broadcast_tensors(...)
+nv_broadcast_arrays(...)
 ```
 
 ## Arguments
 
 - ...:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensors to broadcast.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrays to broadcast.
 
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-List of tensors, all with the same shape.
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+List of arrays, all with the same shape.
 
 ## Broadcasting Rules
 
-1.  If the tensors have different numbers of dimensions, prepend size-1
+1.  If the arrays have different numbers of dimensions, prepend size-1
     dimensions to the shorter shape.
 
 2.  For each dimension: if the sizes match, keep them; if one is 1,
@@ -39,18 +39,18 @@ List of tensors, all with the same shape.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(matrix(1:6, nrow = 2))
-  y <- nv_tensor(c(10, 20, 30))
-  nv_broadcast_tensors(x, y)
+  x <- nv_array(matrix(1:6, nrow = 2))
+  y <- nv_array(c(10, 20, 30))
+  nv_broadcast_arrays(x, y)
 })
 #> [[1]]
-#> AnvilTensor
+#> AnvilArray
 #>  1 3 5
 #>  2 4 6
 #> [ CPUi32{2,3} ] 
 #> 
 #> [[2]]
-#> AnvilTensor
+#> AnvilArray
 #>  10 20 30
 #>  10 20 30
 #> [ CPUf32{2,3} ] 

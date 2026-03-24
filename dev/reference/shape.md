@@ -1,6 +1,6 @@
-# Get the shape of a tensor
+# Get the shape of an array
 
-Returns the shape of a tensor as an
+Returns the shape of an array as an
 [`integer()`](https://rdrr.io/r/base/integer.html) vector.
 
 ## Usage
@@ -13,8 +13,8 @@ shape(x, ...)
 
 - x:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  A tensor-like object.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  An array-like object.
 
 - ...:
 
@@ -32,7 +32,7 @@ This is implemented via the generic
 ## Examples
 
 ``` r
-x <- nv_tensor(1:4, dtype = "f32")
+x <- nv_array(1:4, dtype = "f32")
 shape(x)
 #> [1] 4
 ```

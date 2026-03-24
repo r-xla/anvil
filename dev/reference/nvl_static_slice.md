@@ -1,12 +1,12 @@
 # Primitive Static Slice
 
-Extracts a slice from a tensor using static (compile-time) indices. All
+Extracts a slice from an array using static (compile-time) indices. All
 indices, limits, and strides are fixed R integers.
 
 Use
 [`nvl_dynamic_slice()`](https://r-xla.github.io/anvil/dev/reference/nvl_dynamic_slice.md)
 instead when the start position must be computed at runtime (e.g.
-depends on tensor values).
+depends on array values).
 
 ## Usage
 
@@ -18,8 +18,8 @@ nvl_static_slice(operand, start_indices, limit_indices, strides)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of any data type.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of any data type.
 
 - start_indices:
 
@@ -41,7 +41,7 @@ nvl_static_slice(operand, start_indices, limit_indices, strides)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same data type as the input and shape
 `ceiling((limit_indices - start_indices + 1) / strides)`. It is
 ambiguous if the input is ambiguous.
@@ -72,10 +72,10 @@ Lowers to
 ``` r
 # 1-D: extract elements 2 through 4 (limit is exclusive)
 jit_eval({
-  x <- nv_tensor(1:10)
+  x <- nv_array(1:10)
   nvl_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  2
 #>  3
 #>  4
@@ -84,10 +84,10 @@ jit_eval({
 
 # 1-D: every other element using strides
 jit_eval({
-  x <- nv_tensor(1:10)
+  x <- nv_array(1:10)
   nvl_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  3
 #>  5
@@ -97,14 +97,14 @@ jit_eval({
 
 # 2-D: extract a submatrix (rows 1-2, columns 2-3)
 jit_eval({
-  x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4))
+  x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
   nvl_static_slice(x,
     start_indices = c(1L, 2L),
     limit_indices = c(3L, 4L),
     strides       = c(1L, 1L)
   )
 })
-#> AnvilTensor
+#> AnvilArray
 #>   4  7 10
 #>   5  8 11
 #>   6  9 12

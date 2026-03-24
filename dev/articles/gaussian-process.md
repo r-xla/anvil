@@ -38,14 +38,14 @@ points:
 ``` r
 library(anvil)
 
-# X1: (n, d) tensor
-# X2: (m, d) tensor
-# lengthscale, signal_var: () tensor
+# X1: (n, d) array
+# X2: (m, d) array
+# lengthscale, signal_var: () array
 rbf_kernel_matrix <- function(X1, X2, lengthscale, signal_var) {
   n <- shape(X1)[1L]
   m <- shape(X2)[1L]
   d <- shape(X1)[2L]
-  diff <- nv_broadcast_tensors(
+  diff <- nv_broadcast_arrays(
     nv_reshape(X1, c(n, 1L, d)),
     nv_reshape(X2, c(1L, m, d))
   )
@@ -166,9 +166,9 @@ We apply this with \\\ell = 0.5\\, \\\sigma_f^2 = 2\\, and \\\sigma^2 =
 0.04\\:
 
 ``` r
-X_t <- nv_tensor(matrix(X_train, ncol = 1))
-y_t <- nv_tensor(matrix(y_train, ncol = 1))
-X_test_t <- nv_tensor(matrix(X_test, ncol = 1))
+X_t <- nv_array(matrix(X_train, ncol = 1))
+y_t <- nv_array(matrix(y_train, ncol = 1))
+X_test_t <- nv_array(matrix(X_test, ncol = 1))
 
 pred <- predict_gp(
   rbf_kernel_matrix, X_t, y_t, X_test_t,
@@ -307,17 +307,17 @@ result
 ```
 
     ## $lengthscale
-    ## AnvilTensor
+    ## AnvilArray
     ##  1.0904
     ## [ CPUf32{} ] 
     ## 
     ## $signal_var
-    ## AnvilTensor
+    ## AnvilArray
     ##  1.2431
     ## [ CPUf32{} ] 
     ## 
     ## $noise_var
-    ## AnvilTensor
+    ## AnvilArray
     ##  0.0303
     ## [ CPUf32{} ]
 

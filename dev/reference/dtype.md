@@ -1,6 +1,6 @@
-# Get the data type of a tensor
+# Get the data type of an array
 
-Returns the data type of a tensor (e.g. `f32`, `i64`).
+Returns the data type of an array (e.g. `f32`, `i64`).
 
 ## Usage
 
@@ -12,8 +12,8 @@ dtype(x, ...)
 
 - x:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  A tensor-like object.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  An array-like object.
 
 - ...:
 
@@ -21,8 +21,7 @@ dtype(x, ...)
 
 ## Value
 
-A
-[`TensorDataType`](https://r-xla.github.io/tengen/reference/TensorDataType.html).
+A [`DataType`](https://r-xla.github.io/tengen/reference/DataType.html).
 
 ## Details
 
@@ -36,7 +35,7 @@ This is implemented via the generic
 ## Examples
 
 ``` r
-x <- nv_tensor(1:4, dtype = "f32")
+x <- nv_array(1:4, dtype = "f32")
 dtype(x)
 #> <f32>
 ```

@@ -1,6 +1,6 @@
 # Primitive Round
 
-Rounds the elements of a tensor to the nearest integer.
+Rounds the elements of an array to the nearest integer.
 
 ## Usage
 
@@ -12,8 +12,8 @@ nvl_round(operand, method = "nearest_even")
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
-  Tensorish value of data type floating-point.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Arrayish value of data type floating-point.
 
 - method:
 
@@ -23,7 +23,7 @@ nvl_round(operand, method = "nearest_even")
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same dtype and shape as `operand`. It is ambiguous if the input
 is ambiguous.
 
@@ -49,10 +49,10 @@ depending on the `method` parameter.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1.4, 2.5, 3.6))
+  x <- nv_array(c(1.4, 2.5, 3.6))
   nvl_round(x)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  2
 #>  4

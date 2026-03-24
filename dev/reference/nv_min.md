@@ -1,6 +1,6 @@
 # Minimum
 
-Element-wise minimum of two tensors.
+Element-wise minimum of two arrays.
 
 ## Usage
 
@@ -12,7 +12,7 @@ nv_min(lhs, rhs)
 
 - lhs, rhs:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Left and right operand. Operands are [promoted to a common data
   type](https://r-xla.github.io/anvil/dev/reference/nv_promote_to_common.md).
   Scalars are
@@ -21,7 +21,7 @@ nv_min(lhs, rhs)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 Has the same shape and the promoted common data type of the inputs.
 
 ## See also
@@ -33,11 +33,11 @@ for the underlying primitive.
 
 ``` r
 jit_eval({
-  x <- nv_tensor(c(1, 5, 3))
-  y <- nv_tensor(c(4, 2, 6))
+  x <- nv_array(c(1, 5, 3))
+  y <- nv_array(c(4, 2, 6))
   nv_min(x, y)
 })
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  2
 #>  3

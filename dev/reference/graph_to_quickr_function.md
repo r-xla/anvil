@@ -24,7 +24,7 @@ graph_to_quickr_function(graph)
 ## Details
 
 The returned function expects plain R scalars/vectors/arrays (not
-[`AnvilTensor`](https://r-xla.github.io/anvil/dev/reference/AnvilTensor.md))
+[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))
 and returns plain R values/arrays.
 
 If the graph returns multiple outputs (e.g. a nested list), the compiled
@@ -34,8 +34,8 @@ For a list of supported primitives see
 [`vignette("primitives")`](https://r-xla.github.io/anvil/dev/articles/primitives.md).
 
 Supported dtypes are `f64`, `i32`, and `pred`. The code generator
-currently supports tensors up to rank 5. Some primitives are more
-restricted (e.g. `transpose` currently only handles rank-2 tensors).
+currently supports arrays up to rank 5. Some primitives are more
+restricted (e.g. `transpose` currently only handles rank-2 arrays).
 
 Most users will prefer
 [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) with

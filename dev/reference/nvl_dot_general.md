@@ -1,7 +1,7 @@
 # Primitive Dot General
 
-General dot product of two tensors, supporting contraction over
-arbitrary dimensions and batching.
+General dot product of two arrays, supporting contraction over arbitrary
+dimensions and batching.
 
 ## Usage
 
@@ -13,7 +13,7 @@ nvl_dot_general(lhs, rhs, contracting_dims, batching_dims)
 
 - lhs, rhs:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Left and right operand. Operands are [promoted to a common data
   type](https://r-xla.github.io/anvil/dev/reference/nv_promote_to_common.md).
   Scalars are
@@ -35,7 +35,7 @@ nvl_dot_general(lhs, rhs, contracting_dims, batching_dims)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/dev/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 The output shape is the batch dimensions followed by the remaining
 (non-contracted, non-batched) dimensions of `lhs`, then `rhs`.
 
@@ -61,14 +61,14 @@ Lowers to
 
 ``` r
 jit_eval({
-  x <- nv_tensor(matrix(1:6, nrow = 2))
-  y <- nv_tensor(matrix(1:6, nrow = 3))
+  x <- nv_array(matrix(1:6, nrow = 2))
+  y <- nv_array(matrix(1:6, nrow = 3))
   nvl_dot_general(x, y,
     contracting_dims = list(2L, 1L),
     batching_dims = list(integer(0), integer(0))
   )
 })
-#> AnvilTensor
+#> AnvilArray
 #>  22 49
 #>  28 64
 #> [ CPUi32{2,2} ] 

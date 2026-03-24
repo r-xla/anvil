@@ -1,12 +1,12 @@
-# Platform for AbstractTensor
+# Platform for AbstractArray
 
-Get the platform of an AbstractTensor. Always errors since platform is
+Get the platform of an AbstractArray. Always errors since platform is
 not accessible during tracing.
 
 ## Usage
 
 ``` r
-# S3 method for class 'AbstractTensor'
+# S3 method for class 'AbstractArray'
 platform(x, ...)
 ```
 
@@ -14,7 +14,7 @@ platform(x, ...)
 
 - x:
 
-  An AbstractTensor.
+  An AbstractArray.
 
 - ...:
 
