@@ -1,7 +1,7 @@
-# All the backward rules are only operating on GraphValues
+# All the reverse rules are only operating on GraphValues
 
 # length(grads) == length(outputs)
-p_add[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_add[["reverse"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
     if (.required[[1L]]) grad,
@@ -9,7 +9,7 @@ p_add[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_mul[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_mul[["reverse"]] <- function(inputs, outputs, grads, .required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
   grad <- grads[[1L]]
@@ -19,7 +19,7 @@ p_mul[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_sub[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_sub[["reverse"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
     if (.required[[1L]]) grad,
@@ -27,14 +27,14 @@ p_sub[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_negate[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_negate[["reverse"]] <- function(inputs, outputs, grads, .required) {
   grad <- grads[[1L]]
   list(
     if (.required[[1L]]) nvl_negate(grad)
   )
 }
 
-p_div[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_div[["reverse"]] <- function(inputs, outputs, grads, .required) {
   rhs <- inputs[[2L]]
   y <- outputs[[1L]]
   grad <- grads[[1L]]
@@ -44,7 +44,7 @@ p_div[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_remainder[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_remainder[["reverse"]] <- function(inputs, outputs, grads, .required) {
   # we follow pytorch here and ignore non-differentiable parts
   # the function is locally linear, i.e., y = lhs - k * rhs, where k = floor(lhs / rhs)
   # so the gradient is 1 for lhs and -k for rhs
@@ -57,7 +57,7 @@ p_remainder[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_pow[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_pow[["reverse"]] <- function(inputs, outputs, grads, .required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
   y <- outputs[[1L]]
@@ -73,7 +73,7 @@ p_pow[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_log[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_log[["reverse"]] <- function(inputs, outputs, grads, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -81,7 +81,7 @@ p_log[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_exp[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_exp[["reverse"]] <- function(inputs, outputs, grads, .required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -89,7 +89,7 @@ p_exp[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_sqrt[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_sqrt[["reverse"]] <- function(inputs, outputs, grads, .required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -101,7 +101,7 @@ p_sqrt[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_rsqrt[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_rsqrt[["reverse"]] <- function(inputs, outputs, grads, .required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -113,7 +113,7 @@ p_rsqrt[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_tanh[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_tanh[["reverse"]] <- function(inputs, outputs, grads, .required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -125,7 +125,7 @@ p_tanh[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_tan[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_tan[["reverse"]] <- function(inputs, outputs, grads, .required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -137,7 +137,7 @@ p_tan[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_sine[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_sine[["reverse"]] <- function(inputs, outputs, grads, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -146,7 +146,7 @@ p_sine[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_cosine[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_cosine[["reverse"]] <- function(inputs, outputs, grads, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -155,7 +155,7 @@ p_cosine[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_abs[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_abs[["reverse"]] <- function(inputs, outputs, grads, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -164,7 +164,7 @@ p_abs[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_max[["backward"]] <- p_min[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_max[["reverse"]] <- p_min[["reverse"]] <- function(inputs, outputs, grads, .required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
   grad <- grads[[1L]]
@@ -182,7 +182,7 @@ p_max[["backward"]] <- p_min[["backward"]] <- function(inputs, outputs, grads, .
   )
 }
 
-p_dot_general[["backward"]] <- function(inputs, outputs, grads, contracting_dims, batching_dims, .required) {
+p_dot_general[["reverse"]] <- function(inputs, outputs, grads, contracting_dims, batching_dims, .required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
   grad <- grads[[1L]]
@@ -244,7 +244,7 @@ p_dot_general[["backward"]] <- function(inputs, outputs, grads, contracting_dims
   )
 }
 
-p_transpose[["backward"]] <- function(inputs, outputs, grads, permutation, .required) {
+p_transpose[["reverse"]] <- function(inputs, outputs, grads, permutation, .required) {
   grad <- grads[[1L]]
   inv <- integer(length(permutation))
   for (i in seq_along(permutation)) {
@@ -255,7 +255,7 @@ p_transpose[["backward"]] <- function(inputs, outputs, grads, permutation, .requ
   )
 }
 
-p_reshape[["backward"]] <- function(inputs, outputs, grads, shape, .required) {
+p_reshape[["reverse"]] <- function(inputs, outputs, grads, shape, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -263,7 +263,7 @@ p_reshape[["backward"]] <- function(inputs, outputs, grads, shape, .required) {
   )
 }
 
-p_reduce_sum[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+p_reduce_sum[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -278,7 +278,7 @@ p_reduce_sum[["backward"]] <- function(inputs, outputs, grads, dims, drop, .requ
   )
 }
 
-p_reduce_max[["backward"]] <- p_reduce_min[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+p_reduce_max[["reverse"]] <- p_reduce_min[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
 
@@ -305,7 +305,7 @@ p_reduce_max[["backward"]] <- p_reduce_min[["backward"]] <- function(inputs, out
   )
 }
 
-p_broadcast_in_dim[["backward"]] <- function(inputs, outputs, grads, shape, broadcast_dimensions, .required) {
+p_broadcast_in_dim[["reverse"]] <- function(inputs, outputs, grads, shape, broadcast_dimensions, .required) {
   operand <- inputs[[1L]]
   y <- outputs[[1L]]
   grad <- grads[[1L]]
@@ -336,9 +336,9 @@ p_broadcast_in_dim[["backward"]] <- function(inputs, outputs, grads, shape, broa
   )
 }
 
-# control flow backward ---------------------------------------------------------
+# control flow reverse ---------------------------------------------------------
 
-p_select[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_select[["reverse"]] <- function(inputs, outputs, grads, .required) {
   pred <- inputs[[1L]]
   true_value <- inputs[[2L]]
   grad <- grads[[1L]]
@@ -353,13 +353,13 @@ p_select[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_if[["backward"]] <- function(inputs, outputs, grads, true, false, node_map, .required) {
+p_if[["reverse"]] <- function(inputs, outputs, grads, true, false, node_map, .required) {
   cli_abort("Not yet implemented")
 }
 
-# convert backward -----------------
+# convert reverse -----------------
 
-p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .required) {
+p_convert[["reverse"]] <- function(inputs, outputs, grads, dtype, ambiguous, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   # the ambiguity is determined by the input, not the `ambiguous` parameter
@@ -376,7 +376,7 @@ p_convert[["backward"]] <- function(inputs, outputs, grads, dtype, ambiguous, .r
 # so it's okay if the dtype of the gradient does not match the operand type
 # Instead, we just return ambiguous zeros, that will be promoted to any dtype required
 
-backward_zero_bin <- function(inputs, outputs, grads, .required) {
+reverse_zero_bin <- function(inputs, outputs, grads, .required) {
   operand <- inputs[[1L]]
   grad_in <- if (.required[[1]] || .required[[2L]]) {
     grad_in <- nv_fill(0L, dtype = dtype(operand), shape = shape(operand))
@@ -388,16 +388,16 @@ backward_zero_bin <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_eq[["backward"]] <- backward_zero_bin
-p_ne[["backward"]] <- backward_zero_bin
-p_gt[["backward"]] <- backward_zero_bin
-p_ge[["backward"]] <- backward_zero_bin
-p_lt[["backward"]] <- backward_zero_bin
-p_le[["backward"]] <- backward_zero_bin
+p_eq[["reverse"]] <- reverse_zero_bin
+p_ne[["reverse"]] <- reverse_zero_bin
+p_gt[["reverse"]] <- reverse_zero_bin
+p_ge[["reverse"]] <- reverse_zero_bin
+p_lt[["reverse"]] <- reverse_zero_bin
+p_le[["reverse"]] <- reverse_zero_bin
 
 # zero-grads (ignores the non-differentiable points)
 
-backward_zero_uni <- function(inputs, outputs, grads, .required) {
+reverse_zero_uni <- function(inputs, outputs, grads, .required) {
   operand <- inputs[[1L]]
   list(
     if (.required[[1L]]) nvl_fill(0L, dtype = dtype(operand), shape = shape(operand))
@@ -405,14 +405,14 @@ backward_zero_uni <- function(inputs, outputs, grads, .required) {
 }
 
 
-p_floor[["backward"]] <- backward_zero_uni
-p_ceil[["backward"]] <- backward_zero_uni
-p_sign[["backward"]] <- backward_zero_uni
-p_round[["backward"]] <- function(inputs, outputs, grads, method, .required) {
-  backward_zero_uni(inputs, outputs, grads, .required)
+p_floor[["reverse"]] <- reverse_zero_uni
+p_ceil[["reverse"]] <- reverse_zero_uni
+p_sign[["reverse"]] <- reverse_zero_uni
+p_round[["reverse"]] <- function(inputs, outputs, grads, method, .required) {
+  reverse_zero_uni(inputs, outputs, grads, .required)
 }
 
-p_cbrt[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_cbrt[["reverse"]] <- function(inputs, outputs, grads, .required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -424,7 +424,7 @@ p_cbrt[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_expm1[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_expm1[["reverse"]] <- function(inputs, outputs, grads, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -433,7 +433,7 @@ p_expm1[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_log1p[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_log1p[["reverse"]] <- function(inputs, outputs, grads, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -445,7 +445,7 @@ p_log1p[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_logistic[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_logistic[["reverse"]] <- function(inputs, outputs, grads, .required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -457,7 +457,7 @@ p_logistic[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_clamp[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_clamp[["reverse"]] <- function(inputs, outputs, grads, .required) {
   min_val <- inputs[[1L]]
   operand <- inputs[[2L]]
   max_val <- inputs[[3L]]
@@ -485,7 +485,7 @@ p_clamp[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-p_reverse[["backward"]] <- function(inputs, outputs, grads, dims, .required) {
+p_reverse[["reverse"]] <- function(inputs, outputs, grads, dims, .required) {
   grad <- grads[[1L]]
   list(
     # Reverse the gradient along the same dimensions
@@ -493,7 +493,7 @@ p_reverse[["backward"]] <- function(inputs, outputs, grads, dims, .required) {
   )
 }
 
-p_pad[["backward"]] <- function(
+p_pad[["reverse"]] <- function(
   inputs,
   outputs,
   grads,
@@ -522,35 +522,35 @@ p_pad[["backward"]] <- function(
 # (Floats might be converted to integers that are then fed into these operations, but we then
 # propagate back to the floats, which requires the existence of these rules)
 
-p_and[["backward"]] <- backward_zero_bin
-p_or[["backward"]] <- backward_zero_bin
-p_xor[["backward"]] <- backward_zero_bin
-p_not[["backward"]] <- backward_zero_uni
+p_and[["reverse"]] <- reverse_zero_bin
+p_or[["reverse"]] <- reverse_zero_bin
+p_xor[["reverse"]] <- reverse_zero_bin
+p_not[["reverse"]] <- reverse_zero_uni
 
-p_shift_left[["backward"]] <- backward_zero_bin
-p_shift_right_arithmetic[["backward"]] <- backward_zero_bin
-p_shift_right_logical[["backward"]] <- backward_zero_bin
+p_shift_left[["reverse"]] <- reverse_zero_bin
+p_shift_right_arithmetic[["reverse"]] <- reverse_zero_bin
+p_shift_right_logical[["reverse"]] <- reverse_zero_bin
 
-p_is_finite[["backward"]] <- backward_zero_uni
-p_popcnt[["backward"]] <- backward_zero_uni
+p_is_finite[["reverse"]] <- reverse_zero_uni
+p_popcnt[["reverse"]] <- reverse_zero_uni
 
-p_reduce_all[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+p_reduce_all[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .required) {
   operand <- inputs[[1L]]
   list(
     if (.required[[1L]]) nvl_fill(FALSE, dtype = dtype(operand), shape = shape(operand))
   )
 }
 
-p_reduce_any[["backward"]] <- p_reduce_all[["backward"]]
+p_reduce_any[["reverse"]] <- p_reduce_all[["reverse"]]
 
-p_bitcast_convert[["backward"]] <- function(inputs, outputs, grads, dtype, .required) {
+p_bitcast_convert[["reverse"]] <- function(inputs, outputs, grads, dtype, .required) {
   operand <- inputs[[1L]]
   list(
     if (.required[[1L]]) nvl_fill(0L, dtype = dtype(operand), shape = shape(operand))
   )
 }
 
-p_atan2[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_atan2[["reverse"]] <- function(inputs, outputs, grads, .required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
   grad <- grads[[1L]]
@@ -563,8 +563,8 @@ p_atan2[["backward"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-# concatenate backward: split the gradient back along the concatenation dimension
-p_concatenate[["backward"]] <- function(inputs, outputs, grads, dimension, .required) {
+# concatenate reverse: split the gradient back along the concatenation dimension
+p_concatenate[["reverse"]] <- function(inputs, outputs, grads, dimension, .required) {
   grad <- grads[[1L]]
   n_inputs <- length(inputs)
   input_grads <- vector("list", n_inputs)
@@ -587,7 +587,7 @@ p_concatenate[["backward"]] <- function(inputs, outputs, grads, dimension, .requ
 }
 
 
-p_reduce_prod[["backward"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+p_reduce_prod[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .required) {
   operand <- inputs[[1L]]
   y <- outputs[[1L]]
   grad <- grads[[1L]]
@@ -605,8 +605,8 @@ p_reduce_prod[["backward"]] <- function(inputs, outputs, grads, dims, drop, .req
     }
   )
 }
-# slice backward: pad with zeros
-p_static_slice[["backward"]] <- function(inputs, outputs, grads, start_indices, limit_indices, strides, .required) {
+# slice reverse: pad with zeros
+p_static_slice[["reverse"]] <- function(inputs, outputs, grads, start_indices, limit_indices, strides, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -627,7 +627,7 @@ p_static_slice[["backward"]] <- function(inputs, outputs, grads, start_indices, 
   )
 }
 
-p_dynamic_slice[["backward"]] <- function(inputs, outputs, grads, slice_sizes, .required) {
+p_dynamic_slice[["reverse"]] <- function(inputs, outputs, grads, slice_sizes, .required) {
   operand <- inputs[[1L]]
   start_indices <- inputs[-1L]
   grad <- grads[[1L]]
@@ -644,7 +644,7 @@ p_dynamic_slice[["backward"]] <- function(inputs, outputs, grads, slice_sizes, .
   result
 }
 
-p_dynamic_update_slice[["backward"]] <- function(inputs, outputs, grads, .required) {
+p_dynamic_update_slice[["reverse"]] <- function(inputs, outputs, grads, .required) {
   update <- inputs[[2L]]
   start_indices <- inputs[-(1:2)]
   grad <- grads[[1L]]
@@ -665,7 +665,7 @@ p_dynamic_update_slice[["backward"]] <- function(inputs, outputs, grads, .requir
   result
 }
 
-p_gather[["backward"]] <- function(
+p_gather[["reverse"]] <- function(
   inputs,
   outputs,
   grads,
@@ -729,7 +729,7 @@ p_gather[["backward"]] <- function(
 }
 
 
-p_scatter[["backward"]] <- function(
+p_scatter[["reverse"]] <- function(
   inputs,
   outputs,
   grads,
@@ -750,10 +750,10 @@ p_scatter[["backward"]] <- function(
   grad <- grads[[1L]]
 
   if (!identical(update_computation_graph$outputs[[1L]], update_computation_graph$inputs[[2L]])) {
-    cli_abort("Scatter backward only supports simple replacement (update_computation = function(old, new) new)")
+    cli_abort("Scatter reverse only supports simple replacement (update_computation = function(old, new) new)")
   }
 
-  # Generally, the backward of scatter is:
+  # Generally, the reverse of scatter is:
   # - for the update: gather from the gradient
   # - for the input: zero out the positions that were overwritten
 
@@ -912,7 +912,7 @@ triangular_mask <- function(n, dt, lower, unit_diagonal) {
 #' @rdname nvl_cholesky
 #' @references
 #' `r xlamisc::format_bib("murray2016differentiation", "walter2012structured")`
-p_cholesky[["backward"]] <- function(inputs, outputs, grads, lower, .required) {
+p_cholesky[["reverse"]] <- function(inputs, outputs, grads, lower, .required) {
   if (!.required[[1L]]) {
     return(list(NULL))
   }
@@ -973,7 +973,7 @@ p_cholesky[["backward"]] <- function(inputs, outputs, grads, lower, .required) {
 #' @rdname nvl_triangular_solve
 #' @references
 #' `r xlamisc::format_bib("giles2008extended")`
-p_triangular_solve[["backward"]] <- function(
+p_triangular_solve[["reverse"]] <- function(
   inputs,
   outputs,
   grads,

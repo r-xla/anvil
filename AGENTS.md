@@ -31,8 +31,8 @@ testthat::test_file("tests/testthat/test-constant.R")
 ### Testing Guidelines
 
 Each rule of each primitive should be tested.
-Many tests can be implemented by comparing with the corresponding torch function (inst/extra-tests/test-primitives-stablehlo-torch.R and inst/extra-tests/test-primitives-backward-torch.R, ...).
-These are sourced in test-primitives-stablehlo.R and test-primitives-backward.R, etc..
+Many tests can be implemented by comparing with the corresponding torch function (inst/extra-tests/test-primitives-stablehlo-torch.R and inst/extra-tests/test-primitives-reverse-torch.R, ...).
+These are sourced in test-primitives-stablehlo.R and test-primitives-reverse.R, etc..
 Implement the test by comparing with torch, if possible and necessary.
 If the test is very simple, or the functionality not covered by torch, implement the test manually.
 Implement either the torch test OR the manual test, but not both.

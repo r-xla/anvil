@@ -24,7 +24,7 @@ Divides two arrays element-wise.
 \itemize{
 \item \code{stablehlo}
 \item \code{quickr}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 

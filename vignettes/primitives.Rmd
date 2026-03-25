@@ -23,13 +23,13 @@ prims <- prim()
 primitives_list <- lapply(prims, function(p) {
   has_stablehlo <- !is.null(p$rules[["stablehlo"]])
   has_quickr <- !is.null(p$rules[["quickr"]])
-  has_backward <- !is.null(p$rules[["backward"]])
+  has_reverse <- !is.null(p$rules[["reverse"]])
 
   data.frame(
     Name = p$name,
     StableHLO = if (has_stablehlo) "\u2713" else "\u2717",
     Quickr = if (has_quickr) "\u2713" else "\u2717",
-    Backward = if (has_backward) "\u2713" else "\u2717"
+    Reverse = if (has_reverse) "\u2713" else "\u2717"
   )
 })
 

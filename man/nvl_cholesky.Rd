@@ -31,7 +31,7 @@ Dimensions before the last two are batch dimensions.
 
 \itemize{
 \item \code{stablehlo}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 
