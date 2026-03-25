@@ -53,7 +53,7 @@ f <- function(x, y, op) {
 To do this, we use `anvil::trace_fn()`, which takes in an `R` function and a list of `AbstractArray` inputs that specify the types of the inputs.
 
 ```{r}
-aten <- nv_aten("f32", c())
+aten <- nv_abstract("f32", c())
 aten
 graph <- trace_fn(f, list(x = aten, y = aten, op = "mul"))
 graph

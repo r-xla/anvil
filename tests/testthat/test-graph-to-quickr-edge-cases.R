@@ -72,7 +72,7 @@ test_that("graph_to_quickr_function errors on unsupported ranks", {
 test_that("graph_to_quickr_function rejects unsupported dtypes", {
   testthat::skip_if_not_installed("quickr")
 
-  graph <- trace_fn(function(x) x + x, list(x = nv_aten("i64", c())))
+  graph <- trace_fn(function(x) x + x, list(x = nv_abstract("i64", c())))
   testthat::expect_error(graph_to_quickr_function(graph), "Unsupported dtype.*i64", fixed = FALSE)
 })
 
@@ -111,7 +111,7 @@ test_that("graph_to_quickr_function rejects broadcast_in_dim ranks > 5", {
 test_that("graph_to_quickr_function rejects reductions over empty dimensions", {
   skip_if_not_installed("quickr")
 
-  templ <- list(x = nv_aten("f64", c(2L, 0L)))
+  templ <- list(x = nv_abstract("f64", c(2L, 0L)))
   graph <- trace_fn(function(x) nvl_reduce_max(x, dims = 2L, drop = TRUE), templ)
   expect_error(graph_to_quickr_function(graph), "empty dimensions", fixed = FALSE)
 })
@@ -149,7 +149,7 @@ test_that("throws error for unsupported dtype", {
 
   graph <- trace_fn(
     function(x) x,
-    list(x = nv_aten("f32", 1L))
+    list(x = nv_abstract("f32", 1L))
   )
 
   expect_error(graph_to_quickr_function(graph), "Unsupported dtype.*f32")

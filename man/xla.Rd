@@ -11,7 +11,7 @@ xla(f, args, donate = character(), device = NULL)
 Function to compile. Must accept and return \code{\link{AnvilArray}}s.}
 
 \item{args}{(\code{list})\cr
-List of abstract array specifications (e.g. from \code{\link[=nv_aten]{nv_aten()}}) describing the
+List of abstract array specifications (e.g. from \code{\link[=nv_abstract]{nv_abstract()}}) describing the
 expected shapes and dtypes of \code{f}'s arguments.}
 
 \item{donate}{(\code{character()})\cr
@@ -31,7 +31,7 @@ Compiles a function to an XLA executable via tracing.
 Returns a callable R function that executes the compiled binary.
 Unlike \code{\link[=jit]{jit()}}, compilation happens eagerly at
 definition time rather than on first call, so the input shapes and dtypes must be
-specified upfront via abstract arrays (see \code{\link[=nv_aten]{nv_aten()}}).
+specified upfront via abstract arrays (see \code{\link[=nv_abstract]{nv_abstract()}}).
 }
 \details{
 Traces \code{f} with the given abstract \code{args} (via \code{\link[=trace_fn]{trace_fn()}}), lowers the resulting graph
@@ -41,7 +41,7 @@ and compiles it to an XLA executable immediately.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 f_compiled <- xla(function(x, y) x + y,
-  args = list(x = nv_aten("f32", c(2, 2)), y = nv_aten("f32", c(2, 2)))
+  args = list(x = nv_abstract("f32", c(2, 2)), y = nv_abstract("f32", c(2, 2)))
 )
 a <- nv_array(array(1:4, c(2, 2)), dtype = "f32")
 b <- nv_array(array(5:8, c(2, 2)), dtype = "f32")
