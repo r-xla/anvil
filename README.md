@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# anvil
+# anvil <img src="man/figures/logo.png" align="right" width = "120" />
 
 Package website: [release](https://r-xla.github.io/anvil/) \|
 [dev](https://r-xla.github.io/anvil/dev/)
