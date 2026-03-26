@@ -7,8 +7,8 @@
 nv_rng_state(seed)
 }
 \arguments{
-\item{seed}{(\code{integer(1)})\cr
-Seed value.}
+\item{seed}{(\code{\link{arrayish}})\cr
+Scalar \code{i32} seed value.}
 }
 \value{
 \code{\link{nv_array}} of dtype \code{ui64} and shape \code{(2)}.
@@ -16,12 +16,11 @@ Seed value.}
 \description{
 Creates an initial RNG state from a seed. This state is required by all
 random sampling functions and is updated after each call.
-Must be called inside a \code{\link[=jit]{jit()}} or \code{\link[=jit_eval]{jit_eval()}} context.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  state <- nv_rng_state(42L)
+  state <- nv_rng_state(nv_scalar(42L))
   state
 })
 \dontshow{\}) # examplesIf}

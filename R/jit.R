@@ -24,7 +24,8 @@
 #'   Defaults to `"cpu"`. Only supported for `backend = "xla"`.
 #' @param backend (`character(1)`)\cr
 #'   Compilation backend. `"xla"` (default) uses PJRT/XLA.
-#'   `"quickr"` uses `quickr::quick()`.
+#'   `"quickr"` uses `quickr::quick()`. If omitted, the default comes from
+#'   `getOption("anvil.default_backend", "xla")`.
 #' @return A `JitFunction` with the same formals as `f`.
 #'   For `backend = "xla"`, the returned wrapper expects and returns
 #'   [`AnvilArray`] values. For `backend = "quickr"`, the returned wrapper
@@ -53,7 +54,7 @@ jit <- function(
   cache_size = 100L,
   donate = character(),
   device = NULL,
-  backend = "xla"
+  backend = getOption("anvil.default_backend", "xla")
 ) {
   cache <- xlamisc::LRUCache$new(cache_size)
   backend <- normalize_backend(backend)

@@ -10,7 +10,7 @@ jit(
   cache_size = 100L,
   donate = character(),
   device = NULL,
-  backend = "xla"
+  backend = getOption("anvil.default_backend", "xla")
 )
 }
 \arguments{
@@ -38,7 +38,8 @@ Defaults to \code{"cpu"}. Only supported for \code{backend = "xla"}.}
 
 \item{backend}{(\code{character(1)})\cr
 Compilation backend. \code{"xla"} (default) uses PJRT/XLA.
-\code{"quickr"} uses \code{quickr::quick()}.}
+\code{"quickr"} uses \code{quickr::quick()}. If omitted, the default comes from
+\code{getOption("anvil.default_backend", "xla")}.}
 }
 \value{
 A \code{JitFunction} with the same formals as \code{f}.
