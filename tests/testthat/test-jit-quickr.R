@@ -1,7 +1,7 @@
 test_that("jit: quickr backend compiles simple function", {
   skip_if_not_installed("quickr")
 
-  f <- with_backend("quickr", jit(function(x, y) x + y))
+  f <- jit(function(x, y) x + y, backend = "quickr")
 
   expect_equal(f(1, 2), 3)
 })
@@ -9,16 +9,14 @@ test_that("jit: quickr backend compiles simple function", {
 test_that("jit: quickr backend preserves nested multi-output shapes and types", {
   skip_if_not_installed("quickr")
 
-  f <- with_backend(
-    "quickr",
-    jit(
-      function(x) {
-        list(
-          flags = x > 1L,
-          payload = list(shifted = x + 1L)
-        )
-      }
-    )
+  f <- jit(
+    function(x) {
+      list(
+        flags = x > 1L,
+        payload = list(shifted = x + 1L)
+      )
+    },
+    backend = "quickr"
   )
 
   out <- f(1:3)
@@ -31,27 +29,17 @@ test_that("jit: quickr backend preserves nested multi-output shapes and types", 
   expect_identical(out$payload$shifted, array(2:4, dim = 3L))
 })
 
-test_that("jit: default backend can be configured via with_backend", {
-  skip_if_not_installed("quickr")
-
-  f <- with_backend("quickr", jit(function(x, y) x + y))
-
-  expect_equal(f(1, 2), 3)
-})
-
 test_that("jit: quickr backend does not support donate or device", {
-  with_backend("quickr", {
-    expect_error(
-      jit(function(x) x, donate = "x"),
-      "donate",
-      fixed = TRUE
-    )
-    expect_error(
-      jit(function(x) x, device = "cpu"),
-      "device",
-      fixed = TRUE
-    )
-  })
+  expect_error(
+    jit(function(x) x, donate = "x", backend = "quickr"),
+    "donate",
+    fixed = TRUE
+  )
+  expect_error(
+    jit(function(x) x, device = "cpu", backend = "quickr"),
+    "device",
+    fixed = TRUE
+  )
 })
 
 test_that("jit: quickr backend traces floating literals as f64", {

@@ -108,15 +108,9 @@ dynamic_start_indices <- function(starts) {
   out
 }
 
-.static_start_indices <- jit(
-  function(...) {
-    dynamic_start_indices(list(...))
-  }
-)
-
 static_start_indices <- function(starts) {
   starts <- lapply(starts, nv_array, dtype = "i32")
-  do.call(.static_start_indices, starts)
+  dynamic_start_indices(starts)
 }
 
 

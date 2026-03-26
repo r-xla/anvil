@@ -23,8 +23,6 @@ globals$nv_types <- "AnvilArray"
 globals$interpretation_rules <- c("stablehlo", "quickr", "backward")
 globals[["DESCRIPTOR_STASH"]] <- list()
 globals[["CURRENT_DESCRIPTOR"]] <- NULL
-globals$backend <- "xla"
-
 utils::globalVariables(c("globals"))
 
 normalize_backend <- function(backend) {
@@ -39,20 +37,5 @@ current_backend <- function() {
   if (!is.null(desc) && !is.null(desc$backend)) {
     return(desc$backend)
   }
-  globals$backend
-}
-
-#' Temporarily override the active backend
-#'
-#' @param backend (`character(1)`)\cr
-#'   Backend to use (`"xla"` or `"quickr"`).
-#' @param code Expression to evaluate with the overridden backend.
-#' @return The result of evaluating `code`.
-#' @keywords internal
-with_backend <- function(backend, code) {
-  backend <- normalize_backend(backend)
-  old <- globals$backend
-  globals$backend <- backend
-  on.exit(globals$backend <- old, add = TRUE)
-  force(code)
+  normalize_backend(getOption("anvil.default_backend", "xla"))
 }

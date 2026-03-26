@@ -3,25 +3,17 @@
 #' @description
 #' Creates an initial RNG state from a seed. This state is required by all
 #' random sampling functions and is updated after each call.
-#' @param seed (`integer(1)`)\cr
-#'   Seed value.
+#' @param seed ([`arrayish`])\cr
+#'   Scalar `i32` seed value.
 #' @return [`nv_array`] of dtype `ui64` and shape `(2)`.
 #' @family rng
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   state <- nv_rng_state(42L)
+#'   state <- nv_rng_state(nv_scalar(42L))
 #'   state
 #' })
 #' @export
 nv_rng_state <- function(seed) {
-  checkmate::assert_int(seed)
-  .nv_rng_state(nv_scalar(seed, dtype = "i32"))
+  state <- nv_bitcast_convert(seed, dtype = "ui16")
+  nv_convert(state, "ui64")
 }
-
-#' @include jit.R
-.nv_rng_state <- jit(
-  function(state) {
-    state <- nv_bitcast_convert(state, dtype = "ui16")
-    nv_convert(state, "ui64")
-  }
-)

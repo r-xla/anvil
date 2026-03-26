@@ -169,13 +169,10 @@ test_that("stablehlo dtype is printed", {
 })
 
 test_that("default floating dtype follows the configured backend", {
-  with_backend("xla", {
-    expect_equal(dtype(nv_array(1.0)), as_dtype("f32"))
-    expect_equal(dtype(nv_scalar(1.0)), as_dtype("f32"))
-  })
+  expect_equal(dtype(nv_array(1.0)), as_dtype("f32"))
+  expect_equal(dtype(nv_scalar(1.0)), as_dtype("f32"))
 
-  with_backend("quickr", {
-    expect_equal(dtype(nv_array(1.0)), as_dtype("f64"))
-    expect_equal(dtype(nv_scalar(1.0)), as_dtype("f64"))
-  })
+  withr::local_options(anvil.default_backend = "quickr")
+  expect_equal(dtype(nv_array(1.0)), as_dtype("f64"))
+  expect_equal(dtype(nv_scalar(1.0)), as_dtype("f64"))
 })
