@@ -93,8 +93,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Internals</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>Internals</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/internals.Rmd" class="external-link"><code>vignettes/internals.Rmd</code></a></small>
@@ -267,7 +266,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x563a395b0890&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55ec26d34d20&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -310,7 +309,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x563a395b58f8&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55ec26d37ed8&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
@@ -320,7 +319,7 @@ primitives.</p>
 <span><span class="va">func</span></span></code></pre></div>
 <pre><code><span><span class="co">## func.func @main (%0: tensor&lt;f32&gt;, %1: tensor&lt;f32&gt;) -&gt; tensor&lt;f32&gt; {</span></span>
 <span><span class="co">## %2 = stablehlo.multiply %0, %1 : tensor&lt;f32&gt;</span></span>
-<span><span class="co">## "func.return"(%2): (tensor&lt;f32&gt;) -&gt; ()</span></span>
+<span><span class="co">## return %2 : tensor&lt;f32&gt;</span></span>
 <span><span class="co">## }</span></span></code></pre>
 <p>Now, we can compile the function via <code>pjrt_compile()</code>.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
@@ -594,7 +593,7 @@ would be unable to do constant folding.</p>
 <span><span class="co">## broadcast_dimensions = array&lt;i64&gt;</span></span>
 <span><span class="co">## }: (tensor&lt;f32&gt;) -&gt; (tensor&lt;1000000xf32&gt;)</span></span>
 <span><span class="co">## %7 = stablehlo.add %4, %6 : tensor&lt;1000000xf32&gt;</span></span>
-<span><span class="co">## "func.return"(%7): (tensor&lt;1000000xf32&gt;) -&gt; ()</span></span>
+<span><span class="co">## return %7 : tensor&lt;1000000xf32&gt;</span></span>
 <span><span class="co">## }</span></span></code></pre>
 <div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span><span class="op">[[</span><span class="fl">2L</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>

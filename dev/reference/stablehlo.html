@@ -15,7 +15,7 @@ Each graph operation is translated to its corresponding StableHLO op. The result
 be serialized to MLIR text via stablehlo::repr() and subsequently compiled to an
 XLA executable with pjrt::pjrt_compile().
 The rules for translating to stablehlo are stored in $rules[["stablehlo"]] of the primitives.
-This is a low-level function; most users should use jit() or xla() instead.'><meta name="robots" content="noindex"></head><body>
+This is a low-level function; most users should use jit() or xla() instead.'><meta property="og:image" content="https://r-xla.github.io/anvil/logo.svg"><meta name="robots" content="noindex"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -72,8 +72,7 @@ This is a low-level function; most users should use jit() or xla() instead.'><me
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Lower a graph to StableHLO</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>Lower a graph to StableHLO</h1>
       <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/R/stablehlo.R" class="external-link"><code>R/stablehlo.R</code></a></small>
       <div class="d-none name"><code>stablehlo.Rd</code></div>
     </div>
@@ -154,7 +153,7 @@ operations.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> broadcast_dimensions = array&lt;i64&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }: (tensor&lt;f32&gt;) -&gt; (tensor&lt;2xf32&gt;)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> %3 = stablehlo.add %2, %0 : tensor&lt;2xf32&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> "func.return"(%3): (tensor&lt;2xf32&gt;) -&gt; ()</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> return %3 : tensor&lt;2xf32&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>

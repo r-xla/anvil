@@ -157,7 +157,7 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x563a395b0890>
+    ## <bytecode: 0x55ec26d34d20>
     ## <environment: namespace:anvil>
 
 The
@@ -208,7 +208,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x563a395b58f8>
+    ## <bytecode: 0x55ec26d37ed8>
     ## <environment: namespace:anvil>
 
 The
@@ -225,7 +225,7 @@ func
 
     ## func.func @main (%0: tensor<f32>, %1: tensor<f32>) -> tensor<f32> {
     ## %2 = stablehlo.multiply %0, %1 : tensor<f32>
-    ## "func.return"(%2): (tensor<f32>) -> ()
+    ## return %2 : tensor<f32>
     ## }
 
 Now, we can compile the function via `pjrt_compile()`.
@@ -557,7 +557,7 @@ out[[1L]]
     ## broadcast_dimensions = array<i64>
     ## }: (tensor<f32>) -> (tensor<1000000xf32>)
     ## %7 = stablehlo.add %4, %6 : tensor<1000000xf32>
-    ## "func.return"(%7): (tensor<1000000xf32>) -> ()
+    ## return %7 : tensor<1000000xf32>
     ## }
 
 ``` r
