@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.1)  19 MAR 2026 14:52
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.1)  24 MAR 2026 11:59
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -830,7 +830,7 @@ Overfull \hbox (79.32874pt too wide) in paragraph at lines 147--147
 
 
 [4{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}]
-Overfull \hbox (4.53189pt too wide) in paragraph at lines 235--235
+Overfull \hbox (4.53189pt too wide) in paragraph at lines 236--236
 []\T1/zi4/m/n/10 #> func.func @main (%x: tensor<2x2xf32>, %y: tensor<2x2xf32>) -> tensor<2x2xf32> {[] 
  []
 
@@ -841,20 +841,20 @@ Overfull \hbox (4.53189pt too wide) in paragraph at lines 235--235
 [6]
 
 [7]
-LaTeX Font Info:    Trying to load font information for U+dsrom on input line 429.
+LaTeX Font Info:    Trying to load font information for U+dsrom on input line 439.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/doublestroke/Udsrom.fd
 File: Udsrom.fd 1995/08/01 v0.1 Double stroke roman font definitions
 )
 Package microtype Info: Fixing zero \fontdimen 6 for font `U/dsrom/m/n/10'
-(microtype)             (new value: 10.0pt) on input line 429.
+(microtype)             (new value: 10.0pt) on input line 439.
 Package microtype Info: Fixing zero \fontdimen 6 for font `U/dsrom/m/n/7.6'
-(microtype)             (new value: 7.6pt) on input line 429.
+(microtype)             (new value: 7.6pt) on input line 439.
 Package microtype Info: Fixing zero \fontdimen 6 for font `U/dsrom/m/n/6'
-(microtype)             (new value: 6.0pt) on input line 429.
+(microtype)             (new value: 6.0pt) on input line 439.
 
 
 [8]
-LaTeX Font Info:    Trying to load font information for TS1+ppl on input line 459.
+LaTeX Font Info:    Trying to load font information for TS1+ppl on input line 469.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/ts1ppl.fd
 File: ts1ppl.fd 2001/06/04 font definitions for TS1/ppl.
 )
@@ -862,25 +862,25 @@ File: ts1ppl.fd 2001/06/04 font definitions for TS1/ppl.
 [9]
 
 [10]
-Overfull \hbox (18.12848pt too wide) in paragraph at lines 593--593
-[]\T1/zi4/m/n/10 graph <- trace_fn(multiply_r, list(x = nv_scalar(1, "f32"), y = nv_scalar(5, "f32")))[] 
+Overfull \hbox (130.32895pt too wide) in paragraph at lines 605--605
+[]\T1/zi4/m/n/10 graph <- trace_fn(multiply_r, list(x = nv_abstract("f32", integer(0)), y = nv_abstract("f32", integer(0))))[] 
  []
 
 
 
 [11]
-LaTeX Font Info:    Trying to load font information for U+fplmbb on input line 662.
+
+[12]
+LaTeX Font Info:    Font shape `T1/zi4/b/n' will be
+(Font)              scaled to size 10.20004pt on input line 678.
+LaTeX Font Info:    Trying to load font information for U+fplmbb on input line 681.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/ufplmbb.fd
 File: ufplmbb.fd 2003/10/30 Fontinst v1.914 font definitions for U/fplmbb.
 )
-
-[12]
-Overfull \hbox (431.19899pt too wide) in paragraph at lines 705--705
+Overfull \hbox (431.19899pt too wide) in paragraph at lines 724--724
 []\T1/zi4/m/n/10 #> [1] "func.func @main (%0: tensor<f32>, %1: tensor<f32>) -> tensor<f32> {\n%2 = stablehlo.multiply %0, %1 : tensor<f32>\n\"func.return\"(%2): (tensor<f32>) -> ()\n}\n"[] 
  []
 
-LaTeX Font Info:    Font shape `T1/zi4/b/n' will be
-(Font)              scaled to size 10.20004pt on input line 725.
 
 
 [13]
@@ -901,66 +901,68 @@ LaTeX Font Info:    Font shape `T1/zi4/b/n' will be
 
 [21]
 
-[22] (./RJwrapper.bbl (./RJwrapper.brf)
+[22]
+
+[23] (./RJwrapper.bbl (./RJwrapper.brf)
 \tf@brf=\write6
 \openout6 = `RJwrapper.brf'.
 
 
 
-[23])
+[24]
+
+[25])
 
 LaTeX Font Warning: Font shape `T1/zi4/m/it' undefined
-(Font)              using `T1/zi4/m/n' instead on input line 1340.
+(Font)              using `T1/zi4/m/n' instead on input line 1401.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1350--1351
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1350--1351
+Underfull \hbox (badness 10000) in paragraph at lines 1411--1412
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1360--1361
+Underfull \hbox (badness 10000) in paragraph at lines 1411--1412
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1360--1361
+Underfull \hbox (badness 10000) in paragraph at lines 1421--1422
 
  []
 
 
-
-[24]
-Underfull \hbox (badness 10000) in paragraph at lines 1370--1371
+Underfull \hbox (badness 10000) in paragraph at lines 1421--1422
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1370--1371
+Underfull \hbox (badness 10000) in paragraph at lines 1431--1432
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1380--1381
+Underfull \hbox (badness 10000) in paragraph at lines 1431--1432
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1380--1381
+Underfull \hbox (badness 10000) in paragraph at lines 1441--1442
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1441--1442
 
  []
 
 )
-Underfull \hbox (badness 10000) in paragraph at lines 1390--67
+Underfull \hbox (badness 10000) in paragraph at lines 1451--67
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1390--67
+Underfull \hbox (badness 10000) in paragraph at lines 1451--67
 
  []
 
@@ -969,7 +971,7 @@ Package natbib Warning: There were undefined citations.
 
 
 
-[25] (./RJwrapper.aux)
+[26] (./RJwrapper.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -981,21 +983,21 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 Package rerunfilecheck Info: File `RJwrapper.out' has not changed.
 (rerunfilecheck)             Checksum: E1797AA03545266C9F795D795158CA56;1525.
 Package rerunfilecheck Info: File `RJwrapper.brf' has not changed.
-(rerunfilecheck)             Checksum: 63D3B2E944A1B6CFD9C06043463387A0;1737.
+(rerunfilecheck)             Checksum: FCA3F00B0FF7CFBCB4BF7C57BA6D4689;1737.
  ) 
 Here is how much of TeX's memory you used:
- 27642 strings out of 473190
- 498855 string characters out of 5715801
- 914174 words of memory out of 5000000
- 49986 multiletter control sequences out of 15000+600000
- 601568 words of font info for 300 fonts, out of 8000000 for 9000
+ 27647 strings out of 473190
+ 498954 string characters out of 5715801
+ 916322 words of memory out of 5000000
+ 49990 multiletter control sequences out of 15000+600000
+ 601638 words of font info for 300 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 117i,12n,131p,1042b,963s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 117i,12n,131p,1042b,971s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4b.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4r.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/doublestroke/dsrom10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/mathpazo/fplmbb.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/mathpazo/fplmr.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/mathpazo/fplmri.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/palatino/uplb8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/palatino/uplr8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb>
-Output written on RJwrapper.pdf (25 pages, 243691 bytes).
+Output written on RJwrapper.pdf (26 pages, 248064 bytes).
 PDF statistics:
- 531 PDF objects out of 1000 (max. 8388607)
- 475 compressed objects within 5 object streams
- 85 named destinations out of 1000 (max. 500000)
+ 536 PDF objects out of 1000 (max. 8388607)
+ 479 compressed objects within 5 object streams
+ 86 named destinations out of 1000 (max. 500000)
  47717 words of extra memory for PDF output out of 51595 (max. 10000000)
 

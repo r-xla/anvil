@@ -27,7 +27,11 @@ program <- pjrt_program(src = hlo_string, format = "mlir")
 
 ## -----------------------------------------------------------------------------
 client <- pjrt_client("cpu")
-executable <- pjrt_compile(program, client = client)
+client
+
+
+## -----------------------------------------------------------------------------
+executable <- pjrt_compile(program, device = pjrt_device("cpu"))
 executable
 
 
@@ -85,7 +89,7 @@ multiply_r <- function(x, y) {
 
 
 ## -----------------------------------------------------------------------------
-graph <- trace_fn(multiply_r, list(x = nv_scalar(1, "f32"), y = nv_scalar(5, "f32")))
+graph <- trace_fn(multiply_r, list(x = nv_abstract("f32", integer(0)), y = nv_abstract("f32", integer(0))))
 graph
 
 
@@ -104,9 +108,18 @@ out[[2]]
 
 
 ## -----------------------------------------------------------------------------
+a <- nv_array(1:3, "f32", shape = c(1, 3L))
+b <- nv_array(1, "f32", shape = 1L)
+# This would fail: nvl_add(a, b)
+# Instead, broadcast explicitly:
+b_broadcast <- nv_broadcast_to(b, c(1, 3L))
+nv_add(a, b_broadcast)
+
+
+## -----------------------------------------------------------------------------
 x <- nv_scalar(1, "f32")
 x
-y <- nv_tensor(1:4, "f32")
+y <- nv_array(1:4, "f32")
 y
 
 
@@ -204,8 +217,8 @@ X <- scale(model.matrix(~ Class + Sex + Age, data = titanic)[, -1])
 y <- as.integer(titanic$Survived == "Yes")
 n <- nrow(X); p <- ncol(X)
 
-X_tensor <- nv_tensor(X, dtype = "f32")
-y_tensor <- nv_tensor(y, dtype = "f32", shape = c(n, 1L))
+X_tensor <- nv_array(X, dtype = "f32")
+y_tensor <- nv_array(y, dtype = "f32", shape = c(n, 1L))
 
 
 ## -----------------------------------------------------------------------------
@@ -241,7 +254,7 @@ fit_logreg <- jit(function(X, y, beta, alpha, n_epochs, lr) {
 
 
 ## -----------------------------------------------------------------------------
-beta_init <- nv_tensor(rnorm(p), dtype = "f32", shape = c(p, 1L))
+beta_init <- nv_array(rnorm(p), dtype = "f32", shape = c(p, 1L))
 alpha_init <- nv_scalar(0, dtype = "f32")
 
 result <- fit_logreg(

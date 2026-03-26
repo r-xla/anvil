@@ -4,15 +4,15 @@ date: "2025-12-09"
 abstract: > # max 250 words
   The \CRANpkg{anvil} package offers a composable code transformation framework that
   allows users to express numerical algorithms efficiently in pure R.
-  All code transformations are based on first tracing R code into a computational graph (an
-  intermediate representation) via abstract evaluation.
+  All code transformations are based on first tracing R code into an intermediate representation which
+  is a computational graph.
   This allows combining jit-compilable operations with standard R code, the
-  latter being "staged out" during compilation.
-  Code transformations are implemented as functions that transform a computational graph into
-  another computational graph.
-  Except for the backends, the package is primarily written in R.
-  Because of this and its modular design, \CRANpkg{anvil} is easy to extend and contribute to, e.g. for
-  adding new primitives or code transformations.
+  latter being "staged out" during tracing.
+  Reverse mode automatic differentiation, which is currently the only non-lowering code transformation,
+  is implemented as a rewriting of the computational graph into another computational graph.
+  The package comes with two backends for jit-compilation that transform the intermediate representation
+  into an executable: an OpenXLA backend with support for
+  accelerators such as GPUs, as well as an experimental Fortran backend based on the \CRANpkg{quickr} package.
 draft: true
 author:
   - name: Sebastian Fischer
@@ -54,6 +54,8 @@ output:
     self_contained: yes
     toc: no
 bibliography: references.bib
+filters:
+  - fix-macros.lua
 header-includes:
   - \input{preamble}
 
@@ -66,20 +68,22 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ## Introduction
 
 <!-- High-level Motivation -->
-All statistical and machine learning models fundamentally rely on some form of vector or tensor operations.
-Even though R as an interpreted language has performance limitations, relying on optimized matrix operations can often be fast enough for many use cases.
+All statistical and machine learning methods fundamentally rely on some form of vector or array operations.
+Even though R as an interpreted language has performance limitations, relying on vectorized operations can often be fast.
 However, there are cases where the performance is not sufficient and one needs to resort to compiled languages such as C++.
+For example, pure R implementations might be too slow for large datasets or when no vectorized operation is available, resorting to R loops can be prohibitively slow.
 Furthermore, one might additionally want to have access to GPU acceleration or automatic differentiation (AD) for gradient-based optimization.
 
 <!-- Contribution -->
+**Contribution**\
 To address this, we introduce \CRANpkg{anvil}, which is a composable code transformation framework for the R language.
 Its primary goal is to offer a set of primitive operations that can be jit-compiled, differentiated, and executed on different hardware backends.
 It therefore allows users to implement numerical algorithms efficiently in pure R.
-Two different execution backends are supported: an OpenXLA ("Open Accelerated Linear Algebra") backend and an experimental Fortran backend.
+Two different execution backends are supported: an OpenXLA ("Open Accelerated Linear Algebra") backend [@ref-openxla] and an experimental Fortran backend.
 The OpenXLA project is a compiler ecosystem used across different array computing frameworks.
-Part of this project are the StableHLO language, which is a strongly typed language for representing array programs, and the PJRT (Pluggable Jit RunTime) library, which provides a common runtime for executing compiled programs.
-Components of \CRANpkg{anvil} are the \CRANpkg{stablehlo} and \CRANpkg{pjrt} packages.
-The former allows users to easily create StableHLO programs in R, while the latter interfaces the PJRT C library and handles compilation, data allocation, and execution.
+Within the ecosystem there are the StableHLO language [@ref-stablehlo], which is a strongly typed language for representing array programs, and the PJRT (Pluggable Jit RunTime) library [@ref-pjrt], which is a standardized interface for array computing frameworks with a focus on cross-platform execution.
+Part of our contribution are the \CRANpkg{stablehlo} and \CRANpkg{pjrt} R packages.
+The former allows users to create StableHLO programs in R, while the latter interfaces the PJRT C library and handles compilation, data allocation, and execution.
 Besides the OpenXLA backend, there is also an alternative, experimental backend that transpiles R to Fortran code via the \CRANpkg{quickr} package.
 Because the \CRANpkg{anvil} package is primarily written in R, it is easy to extend and contribute to.
 
@@ -87,24 +91,40 @@ Because the \CRANpkg{anvil} package is primarily written in R, it is easy to ext
 
 <!-- Inspirations for design -->
 
-The closest related work is the JAX python library, from which various design elements are inspired or adopted [@ref-jax2018github].
+### Related work
+
+The closest related work is the JAX python library, from which various design elements are inspired or adopted [@ref-jax].
 Primarily, we are using a similar functional design and handle jit compilation via OpenXLA.
 Both JAX and \CRANpkg{anvil} translate code into a computational graph by recording an evaluation trace, an approach that is well established in the AD literature (@ref-griewank2008evaluating, Section 1).
-Also other design elements such as the handling of nested data structures or the type promotion rules are adopted from JAX.
+Other features such as the handling of nested data structures or the type promotion rules are adopted from JAX, as they design is well suited for combination with the XLA compiler.
 <!-- TODO: cite tagless final interpreters [@ref-types-tagless] and describe the relation -->
-We also want to highlight the Autodidax tutorial, which describes the core ideas underpinning JAX (todo: cite), as well as microjax, which is a minimalistic Python library demonstrating JAX's code transformation engine (todo: cite).
-For the design of the \CRANpkg{stablehlo} package and the tracing implementation in \CRANpkg{anvil}, we have followed the design from \CRANpkg{mlr3torch}, which offers a similar graph-building interface for creating neural networks.
-The API functions for the tensor operations are partly adopted from NumPy, which is a popular library for numerical computing in Python [@ref-harris2020array].
+We also want to highlight the Autodidax tutorial, which describes the core ideas underpinning JAX [@ref-autodidax], as well as microjax, which is a minimalistic Python library demonstrating JAX's code transformation engine [@ref-microjax].
+For the design of the \CRANpkg{stablehlo} package and the tracing implementation in \CRANpkg{anvil}, we have followed and adapted the design from \CRANpkg{mlr3torch}, which offers a similar graph-building interface for creating neural networks.
+The API functions for the array operations are partly adopted from NumPy, which is a popular library for numerical computing in Python [@ref-harris2020array].
 For the design of the \CRANpkg{pjrt} package, we have partly borrowed from the gopjrt library [@ref-gopjrt] which offers a go interface to PJRT.
+
+However, \CRANpkg{anvil} also deviates from JAX and NumPy in various ways.
+One important difference is that the broadcasting rules employed by \CRANpkg{anvil} are stricter and only broadcast scalars.
+This is intended to avoid subtle bugs and favor explicitness over seeming convenience from NumPy's automatic broadcasting behavior.
+Also, in contrast to JAX, \CRANpkg{anvil} does not offer a eager execution mode, but is primarily focused on jit-compilation.
+The idea behind this is that there is that for a given backend, there is a single execution model, thereby eliminating suble bugs that arise from switching between eager-mode and jit-mode.
+Instead, \CRANpkg{anvil} offers a debug mode that performs type checking and inference and can be used to track down errors.
+Besides these user facing differences, the internal implementation of the code transformation engine is different and arguably easier to understand.
+Specifically, when composing different transformations, they essentially operate independently of each other, whereas in JAX, the transformations are nested, which we consider to be more difficult to reason about.
+
+On the other side, \CRANpkg{anvil} is lacking behind in features.
+For example the array API is not as mature as one of the more mature array computing frameworks.
+Furthermore, it does not yet support forward mode AD, higher order derivatives, or batching transformations.
+As the project matures, we hope to close the feature gap but also anticipate more differences to emerge in order to adapt the project to the specific needs of the R community.
 
 <!-- OpenXLA, stablehlo, pjrt-->
 
 The OpenXLA project [@ref-openxla] is an open-source compiler ecosystem for machine learning, originally developed at Google as part of TensorFlow and later released as a standalone project.
 One of its goals is to decouple numerical computing frameworks (the frontends) from hardware-specific implementations (the backends) by defining two standardized interfaces.
-One of these is the StableHLO language [@ref-stablehlo], a portable intermediate representation for tensor programs.
+One of these is the StableHLO language [@ref-stablehlo], a portable intermediate representation for array programs.
 StableHLO is built on MLIR (Multi-Level Intermediate Representation), which is itself part of the LLVM compiler infrastructure.
 MLIR provides a framework for defining and transforming intermediate representations at multiple levels of abstraction that are transformed into each other via passes that e.g. optimize the program or lower the abstraction level.
-The second interface is PJRT (Pluggable JIT RunTime), which defines a common API for the essential operations of a JIT-compiled tensor computing framework such as buffer management, compilation, and execution.
+The second interface is PJRT (Pluggable JIT RunTime), which defines a common API for the essential operations of a JIT-compiled array computing framework such as buffer management, compilation, and execution.
 PJRT follows a plugin architecture, where each vendor can provide a shared library that implements the PJRT interface for their specific hardware.
 This means that any framework that emits StableHLO and uses PJRT for execution can automatically target any hardware for which a PJRT plugin exists, including CPUs, NVIDIA GPUs, and Google TPUs.
 Currently, the main compiler consuming StableHLO programs is the XLA compiler, but alternatives such as the IREE compiler [@ref-iree] also exist.
@@ -113,7 +133,7 @@ Currently, the main compiler consuming StableHLO programs is the XLA compiler, b
 
 The main motivation behind developing \CRANpkg{anvil} is to go beyond the limitations of the \CRANpkg{torch} package [@ref-rtorch], which is a deep learning framework for the R language.
 It is based on LibTorch, which is the C++ library underpinning PyTorch [@ref-pytorch].
-The \CRANpkg{torch} package offers a collection of highly optimized tensor operations, as well as various modules for building and training neural networks.
+The \CRANpkg{torch} package offers a collection of highly optimized array operations, as well as various modules for building and training neural networks.
 As such, it also has support for backward-mode automatic differentiation and can be run on different hardware backends, including CPU and GPU.
 Thus, its general capabilities are similar to those of \CRANpkg{anvil}, although it is more mature and contains more features.
 However, \CRANpkg{torch} is primarily designed around so-called "eager" execution.
@@ -131,10 +151,10 @@ These are \CRANpkg{tensorflow} and \CRANpkg{keras3}, two deep learning framework
 It is also possible to use Python's JAX library via \CRANpkg{reticulate} [@ref-jax].
 All of these packages also rely on OpenXLA for execution.
 While they provide access to more mature frameworks than \CRANpkg{anvil}, they require managing the Python dependency, as well as type conversions between R and Python.
-Furthermore, with \CRANpkg{anvil} our goal is to develop a tensor computing library that is and will be developed primarily with the needs of the R community in mind.
+Furthermore, with \CRANpkg{anvil} our goal is to develop an array computing library that is and will be developed primarily with the needs of the R community in mind.
 
 Beyond those popular deep learning libraries, other R packages exist that offer hardware acceleration, automatic differentiation, jit compilation, or a combination of these.
-We here primarily focus on those packages that are either available from standard repositories such as CRAN or Bioconductor, or which seem to be ready to be used.
+We primarily focus on those packages that are either available from standard repositories such as CRAN or Bioconductor, or which seem to be ready to be used.
 
 <!-- JIT compilation -->
 A recent package that enables JIT compilation in R is the \CRANpkg{quickr} package, which transpiles R code into Fortran code and then compiles it [@ref-quickr].
@@ -144,18 +164,22 @@ Besides, \CRANpkg{quickr} does not establish a new API, but instead aims to be a
 This works because it is implemented via a static analysis approach, so the package does not need control over the functions that can be compiled, as is the case for the tracing approach followed in \CRANpkg{anvil}.
 This also means that \CRANpkg{quickr} does not allow mixing "non-compilable" R code with compilable code, as is possible in \CRANpkg{anvil}, where the "non-compilable" code is staged out during tracing to the intermediate representation.
 The tracing approach is more flexible, but also requires the user to be more careful about the code that they are writing.
-One notable limitation of the tracing approach is that it does not support recursive function calls: since tracing works by executing the function once with abstract inputs and recording the resulting operations, a recursive call would lead to infinite unrolling during the trace, as the recursion depth is not known at trace time.
+One notable limitation of the tracing approach is that it does not support recursive function calls.
 There is also the ast2ast package, which translates a subset of R code into C++ [@ref-ast2ast].
 It is similar in spirit to \CRANpkg{quickr}, but also supports forward and backward-mode automatic differentiation.
+In contrast to \CRANpkg{anvil}, it does not support execution on accelerators like GPUs.
+
 Then, there are \CRANpkg{odin} and \CRANpkg{rxode2}, both of which focus on differential equations and compile a small subset of R code via translation to C, similar to \CRANpkg{quickr}.
 However, they do not support GPU acceleration and their set of supported operations is more limited than \CRANpkg{anvil}'s.
-There is another category of packages that offer special DSLs for statistical models which are compiled.
-For example, \CRANpkg{brms} [@ref-brms] allows users to define Bayesian models via the familiar formula interface and translates them into Stan models which are compiled [@ref-stan].
+
+Another category of packages offer special DSLs for statistical models which are compiled.
+There is the \CRANpkg{brms} package [@ref-brms] which allows users to define Bayesian models via the familiar formula interface and translates them into Stan models which are compiled [@ref-stan].
 Stan itself is a probabilistic programming language and also has GPU support via OpenCL [@ref-opencl].
 It is also possible to directly use Stan in R, e.g. via the \CRANpkg{rstan} package, but this requires writing the program itself in Stan.
 There also exists \CRANpkg{nimble}, which is primarily intended for fitting hierarchical statistical models and works by generating C++ code and compiling it.
 It also supports compiling custom R functions by generating C++ code, as well as forward and backward-mode automatic differentiation via CppAD [@ref-cppad].
 However, there is no support for GPU acceleration.
+
 Then, there is also the \CRANpkg{compiler} package of the R language itself [@ref-r].
 It is used by the R interpreter to compile arbitrary R code into byte-code that is executed by the R virtual machine.
 However, because it has to handle arbitrary R code, the possible optimizations are limited due to R's design [@ref-evaluating-r].
@@ -185,6 +209,12 @@ Afterwards, we will show how it is possible to extend the package.
 Then, we will include some small CPU runtime benchmarks to illustrate the performance of the package.
 Finally, we will conclude by discussing current limitations and directions for future work.
 
+<!-- Math papers with derivatives -->
+Besides other software projects, there is of course a considerable amount of mathematical literature on automatic differentiation.
+The literature is far to vast to cover appropriate here.
+One notable mention is the book by Griewank and Walther [@ref-griewank2008evaluating], which covers the topic in depth.
+Beyodn that, there are various papers that describe specific algorithms for more complex algorithms such as cholesky decomposition that we used for the implementation of the reverse mode AD rules TODO cite.
+
 ## Background
 
 ### The OpenXLA Compiler Ecosystem
@@ -194,7 +224,7 @@ One of the main goals of the OpenXLA project is to establish standardized interf
 This is achieved via the following two components:
 
 1. The "Pluggable Jit RunTime" (PJRT) which defines a common interface for execution engines.
-2. The StableHLO language, which is the intermediate representation produced by the frontend.
+2. The StableHLO language, which is the intermediate representation that produced by the framework and consumed by the backend.
 
 If a numerical computing framework produces StableHLO programs and handles the execution via PJRT, it can be run on any hardware for which a PJRT plugin exists.
 This turns an $n \times m$ problem ($n$ frontends need to implement their execution for $m$ different hardware backends) into a $n + m$ problem.
@@ -202,7 +232,7 @@ This turns an $n \times m$ problem ($n$ frontends need to implement their execut
 #### StableHLO
 
 An example for the StableHLO intermediate representation is given below.
-The main program takes in two `f32` tensors of shape `2x2`, multiplies them, and returns the result.
+The main program takes in two `f32` array of shape `2x2`, multiplies them, and returns the result.
 
 ```mlir
 func @main(%arg0: tensor<2x2xf32>, %arg1: tensor<2x2xf32>) -> tensor<2x2xf32> {
@@ -211,7 +241,7 @@ func @main(%arg0: tensor<2x2xf32>, %arg1: tensor<2x2xf32>) -> tensor<2x2xf32> {
 }
 ```
 
-It is expressed in MLIR (Multi-Level Intermediate Representation).
+It is expressed in MLIR (Multi-Level Intermediate Representation)t can be compiled .
 MLIR is part of the LLVM compiler infrastructure and provides a framework to define intermediate representations at multiple levels, also called dialects, that are transformed into each other via so-called passes.
 Such passes can e.g. perform optimizations or lower the abstraction level.
 It is in single static assignment (SSA) form, meaning that each variable is assigned to exactly once, and is fully functional.
@@ -222,15 +252,17 @@ For this purpose, we have created the \CRANpkg{stablehlo} package.
 The package essentially consists of four parts:
 
 1. An S3 class representation of the StableHLO language, which closely follows the specification.
-2. A `repr()` generic that converts the class representation into a string representation that can be compiled by the XLA compiler.
+2. A `repr()` generic that converts the class representation into a string representation that can be consumed by the XLA compiler.
 3. A set of type inference functions for the primitive operations.
-4. A builder API for easily building up StableHLO programs.
+4. A builder API for easily creating StableHLO programs.
 
 The package is implemented fully in R, instead of interfacing the C++ implementation, which makes it easy to install for end users.
 However, the \CRANpkg{stablehlo} package is only a partial implementation of the language and does not support all features.
-For example, there is no support for complex numbers, a few primitive operations are missing, and there is currently no support for shape dynamism (unknown dimensions).
+For example, there is no support for complex numbers, various primitive operations are missing, and there is currently no support for unknown dimensions, which is commonly referred to as shape dynamism.
+Nonetheless, the most important features and primitive operations are already supported.
 
-The example below illustrates how to use the builder API to re-create the StableHLO program from above.
+Next, we will illustrate how to use the builder API to create the StableHLO program from above.
+Below, we create a new stableHLO function with the name "main" and register two input parameters with the names "x" and "y" and specify their type.
 
 ```{r}
 library(stablehlo)
@@ -239,7 +271,19 @@ func
 x <- hlo_input("x", "f32", shape = c(2, 2), func = func)
 x
 y <- hlo_input("y", "f32", shape = c(2, 2), func = func)
-y
+```
+
+What happens in the background is that first, a new `Func` object is created with the name "main", which has reference semantics.
+Then, `hlo_input()` creates two `FuncInput` objects with the specified names and types, where the type consists of the shape and the data type.
+The two `FuncInput` objects are added to the `$inputs` field of the built-up `Func` object.
+The return values of `hlo_input()` themselves are `FuncValue` objects, which represent variables in the underlying StableHLO program that is being built up.
+Objects of type `FuncValue` represent a specific value in a StableHLO program and are the core data structure underpinning the builder API.
+Note that the R variable name `x` that is bound to the `FuncValue` does not need to coincide with the identifier "x" of the value in the StableHLO program.
+Further note that the `func` object here is passed explicitly, but this would not be necessary as the default is to use the function that was last created.
+
+Next, we multipy the two input values with each other, return the result and covnert the `Func` object into a string representation of the program.
+
+```{r}
 z <- hlo_multiply(x, y)
 z
 f <- hlo_return(z)
@@ -247,13 +291,6 @@ f
 hlo_string <- repr(f)
 ```
 
-What happens in the background is that first, a new `Func` object is created with the name "main", which has reference semantics.
-Then, `hlo_input()` creates two `FuncInput` objects with the names "x" and "y" and specifies their type.
-These are added to the `$inputs` field of the built-up `Func` object.
-The return values are `FuncValue` objects, which represent variables in the underlying StableHLO program that is being built up.
-Objects of type `FuncValue` represent a specific value in a StableHLO program and are the core data structure underpinning the builder API.
-Note that the R variable name `x` that is bound to the `FuncValue` does not need to coincide with the identifier "x" of the value in the StableHLO program.
-Further note that the `func` object here is passed explicitly, but this would not be necessary as the default is to use the function that was last created.
 When `x` and `y` are multiplied via `hlo_multiply()`, the corresponding type inference function `stablehlo::infer_types_multiply()` is called, which checks that the operation is valid for the given input types, computes the output type of the operation, registers the operation in the body of the underlying StableHLO program, and then
 returns a `FuncValue` object for the result.
 Then, `hlo_return()` sets the return values in the underlying `Func` object and returns the `Func` object itself, marking the end of the program creation.
@@ -283,22 +320,27 @@ program <- pjrt_program(src = hlo_string, format = "mlir")
 ```
 
 Then, this `PJRTProgram` can be compiled into a `PJRTLoadedExecutable` object.
-This requires specifying a `PJRTClient`, as well as some optional compile options.
-The `PJRTClient` contains a `PJRTPlugin`, which is a dynamic library that implements the PJRT interface for a specific hardware backend.
-It can be specified via a string identifier such as "cpu" or "cuda" or we can pass a `PJRTPlugin` object directly.
-Here, we choose the latter for demonstration purposes.
+For this, a specific `PJRTClient` object is needed, some optional compile options, as well as a device specification.
+The `PJRTClient` contains a `PJRTPlugin`, which is a dynamic librarWy that implements the PJRT interface for a specific hardware backend.
+We can create a `PJRTClient` object by passing a string identifier such as "cpu" or "cuda".
 
 ```{r}
 client <- pjrt_client("cpu")
-executable <- pjrt_compile(program, client = client)
-executable
+client
 ```
 
-In order to execute this program, `PJRTBuffer` objects need to be created that are multi-dimensional tensors.
-Below, we create two simple `f32` tensors of shape `2x2` and specify the device to be the CPU, which will use the buffer allocation implementation of the PJRT CPU plugin.
+To compile the program via `pjrt_compile()`, we don't specify a client, but instead pass a device specification.
 For CPU, the distinction between device and client is not so important as there is usually only one CPU, so there is a one-to-one correspondence.
 When working with GPUs, there might be multiple GPUs available and the device represents one of them (by default the first one), and it matters on which GPU the buffer will be allocated.
 However, multi-GPU setups are not properly supported in \CRANpkg{pjrt} yet, but this could be added in the future.
+
+```{r}
+executable <- pjrt_compile(program, device = pjrt_device("cpu"))
+executable
+```
+
+In order to execute this program, `PJRTBuffer` objects need to be created that are multi-dimensional arrays.
+Below, we create two simple `f32` arrays of shape `2x2` and specify the device to be the CPU, which will use the buffer allocation implementation of the PJRT CPU plugin.
 
 ```{r}
 x <- pjrt_buffer(1:4, shape = c(2, 2), dtype = "f32", device = "cpu")
@@ -343,7 +385,7 @@ reloaded$x
 The \CRANpkg{quickr} package serves as a second, experimental, backend for \CRANpkg{anvil} and was independently developed.
 It transpiles R code to Fortran code and compiles it.
 Below, we can recreate the StableHLO program from above.
-One semantic difference is that it uses data type `f64` instead of `f32` because \CRANpkg{quickr} operates directly on standard R objects as opposed to \CRANpkg{pjrt} which defines its own tensor type.
+One semantic difference is that it uses data type `f64` instead of `f32` because \CRANpkg{quickr} operates directly on standard R objects as opposed to \CRANpkg{pjrt} which defines its own array type.
 
 ```{r}
 library(quickr)
@@ -519,11 +561,11 @@ The `trace_fn` transformation uses these example inputs to obtain abstract `Grap
 Such a `GraphBox` is the core object that allows to build up the graph.
 It contains a `GraphNode`, which is either a `GraphValue` or a `GraphLiteral` and a `GraphDescriptor`, which is essentially a graph in the making.
 The `GraphNode` contains an `AbstractTensor` (or one of its subclasses) which consists primarily of a shape and data type.
-Below, `nv_aten` creates `AbstractTensor` objects.
+Below, `nv_abstract` creates `AbstractArray` objects.
 Internally, a new `GraphDescriptor` is initialized and `GraphValue` and `GraphBox` objects are created from the provided `AbstractTensor`.
 
 ```{r}
-graph <- trace_fn(multiply_r, list(x = nv_aten(1, "f32"), y = nv_aten(5, "f32")))
+graph <- trace_fn(multiply_r, list(x = nv_abstract("f32", integer(0)), y = nv_abstract("f32", integer(0))))
 graph
 ```
 
@@ -536,7 +578,7 @@ From the printed output of the graph we can see that a graph has:
 2. Constants: `GraphValue`s that are constants in the graph.
 3. Body: A list of `PrimitiveCall` objects, which represent the primitive operations that make up the graph.
 4. Outputs: `GraphValue`s that are the outputs of the graph.
-5. In-tree and Out-tree: Because `Graph`s only take in tensor values, but we want to support nested data strctures, the in-tree and out-tree define how to (un-)flatten the inputs and outputs of the graph.
+5. In-tree and Out-tree: Because `Graph`s only take in array values, but we want to support nested data strctures, the in-tree and out-tree define how to (un-)flatten the inputs and outputs of the graph.
 
 STATIC SHAPES!!!
 
@@ -566,7 +608,7 @@ Other transformations such as forward mode AD or batching transformations (simil
 
 At this point, one might ask why the primitive functions are not simply defined as S3 generics that dispatch on specific Box sub-classes.
 The problem with this approach is that S3 generics need inputs to dispatch on.
-However, some primitives such as `nvl_iota()` only take non-tensor arguments (standard R values) so this is where the abstraction breaks down unless one wants to explicitly add arguments to the S3 generics.
+However, some primitives such as `nvl_iota()` only take non-array arguments (standard R values) so this is where the abstraction breaks down unless one wants to explicitly add arguments to the S3 generics.
 
 ##### The `transform_gradient()` transformation
 
@@ -607,7 +649,7 @@ repr(out[[1]])
 out[[2]]
 ```
 
-While stablehlo allows to embed constants in the program, this can considerably increase the program size (think of big tensors) and slow down compile times.
+While stablehlo allows to embed constants in the program, this can considerably increase the program size (think of big arrays) and slow down compile times.
 For this reason, non-scalar (TODO) constants are not inlined into the stableHLO executable, but added as inputs to the program and need to be provided when executing the program.
 
 Next, we will describe how these transformations are wrapped in the main user interface.
@@ -617,15 +659,16 @@ Next, we will describe how these transformations are wrapped in the main user in
 Unlike NumPy or R's built-in recycling, \CRANpkg{anvil}'s primitive operations (`nvl_*`) do not automatically broadcast their inputs --- operands must have exactly matching shapes.
 This is a deliberate design choice: implicit broadcasting is a common source of subtle bugs, especially when shapes are dynamic or when operations are composed across multiple transformations.
 
-The API-level wrappers (`nv_add`, `nv_mul`, etc.) do perform *scalar* broadcasting --- if one operand is a scalar and the other is a tensor, the scalar is broadcast to match --- but they do not perform full NumPy-style broadcasting.
-For explicit shape manipulation, functions like `nv_broadcast_to()` and `nv_broadcast_tensors()` are provided:
+The API-level wrappers (`nv_add`, `nv_mul`, etc.) do perform *scalar* broadcasting --- if one operand is a scalar and the other is an array, the scalar is broadcast to match --- but they do not perform full NumPy-style broadcasting.
+For explicit shape manipulation, functions like `nv_broadcast_to()` and `nv_broadcast_arrays()` are provided:
 
 ```{r}
-a <- nv_tensor(1:3, "f32", shape = c(1, 3L))
-b <- nv_tensor(1, "f32", shape = 1L)
+a <- nv_array(1:3, "f32", shape = c(1, 3L))
+b <- nv_array(1, "f32", shape = 1L)
 # This would fail: nvl_add(a, b)
 # Instead, broadcast explicitly:
-nv_add(a, b)
+b_broadcast <- nv_broadcast_to(b, c(1, 3L))
+nv_add(a, b_broadcast)
 ```
 
 More generally, broadcasting could itself be implemented as a code transformation that wraps a function and automatically inserts the necessary broadcast operations before each primitive call, analogous to `broadcast(nv_add)`.
@@ -634,21 +677,24 @@ This is not currently implemented, but illustrates how the code transformation a
 ### Main User Interface
 
 The main user interface is centered around `jit()` and transformations functions like `gradient()` or `value_and_gradient()`.
-Furthermore, we can create tensors, which we will cover first.
+Furthermore, we can create arrays, which we will cover first.
 
-#### The `AnvilTensor`
+#### The `AnvilArray`
 
-In order to create data for our programs, we can use the `nv_tensor()`, `nv_scalar()` and `nv_empty()` functions.
+In order to create data for our programs, we can use the `nv_array()`, `nv_scalar()` and `nv_empty()` functions.
 These essentially wrap the `pjrt_buffer()` and `pjrt_scalar()` functions from the \CRANpkg{pjrt} package.
 
 ```{r}
 x <- nv_scalar(1, "f32")
 x
-y <- nv_tensor(1:4, "f32")
+y <- nv_array(1:4, "f32")
 y
 ```
 
-Just like the `PJRTBuffer` objects, `AnvilTensor` objects can be serialized and deserialized using the \CRANpkg{safetensors} package.
+Just like the `PJRTBuffer` objects, `AnvilArray` objects can be serialized and deserialized using the \CRANpkg{safetensors} package.
+
+* [ ] AnvilArray has value semantics, illustrate using `[.<-`.
+
 
 #### `jit()`
 
@@ -693,7 +739,7 @@ This will show the print message again.
 multiply_jit(nv_scalar(1, "i32"), nv_scalar(5, "i32"))
 ```
 
-We can also JIT-compile functions that take in lists of tensors and output lists of tensors.
+We can also JIT-compile functions that take in lists of arrays and output lists of arrays.
 
 ```{r}
 multiply_jit_nested <- jit(function(lst) {
@@ -702,7 +748,7 @@ multiply_jit_nested <- jit(function(lst) {
 multiply_jit_nested(list(x, y))
 ```
 
-This will use the `in_tree` and `out_tree` fields of the `Graph` to flatten and unflatten the list of tensors.
+This will use the `in_tree` and `out_tree` fields of the `Graph` to flatten and unflatten the list of arrays.
 
 The functions we JIT-compile can also take in so called "static" arguemnts, that can be standard R values.
 Below, we define a function that either multiplies or adds two values, depending on the value of the `op` argument.
@@ -795,7 +841,7 @@ However, this will mean that we don't execute the real function, but only perfor
 multiply_print_r(x, y)
 ```
 
-It is also possible to print intermediate tensors during program execution via `nv_print()`.
+It is also possible to print intermediate arrays during program execution via `nv_print()`.
 
 ```{r}
 multiply_print_jit <- jit(function(x, y) {
@@ -836,7 +882,7 @@ We demonstrate this with a simple logistic regression example that showcases `ji
 To illustrate how `jit()` and `gradient()` work together, we fit a logistic regression model via gradient descent using the Titanic survival dataset from base R.
 A more detailed version of this example is available as a package vignette.
 
-We first prepare the data by expanding the contingency table into a design matrix and converting it to `AnvilTensor`s.
+We first prepare the data by expanding the contingency table into a design matrix and converting it to `AnvilArray`s.
 
 ```{r}
 set.seed(42)
@@ -846,8 +892,8 @@ X <- scale(model.matrix(~ Class + Sex + Age, data = titanic)[, -1])
 y <- as.integer(titanic$Survived == "Yes")
 n <- nrow(X); p <- ncol(X)
 
-X_tensor <- nv_tensor(X, dtype = "f32")
-y_tensor <- nv_tensor(y, dtype = "f32", shape = c(n, 1L))
+X_array <- nv_array(X, dtype = "f32")
+y_array <- nv_array(y, dtype = "f32", shape = c(n, 1L))
 ```
 
 The model predicts survival probabilities and evaluates them with binary cross-entropy loss:
@@ -892,11 +938,11 @@ fit_logreg <- jit(function(X, y, beta, alpha, n_epochs, lr) {
 We initialize the parameters and train the model:
 
 ```{r}
-beta_init <- nv_tensor(rnorm(p), dtype = "f32", shape = c(p, 1L))
+beta_init <- nv_array(rnorm(p), dtype = "f32", shape = c(p, 1L))
 alpha_init <- nv_scalar(0, dtype = "f32")
 
 result <- fit_logreg(
-  X_tensor, y_tensor, beta_init, alpha_init,
+  X_array, y_array, beta_init, alpha_init,
   nv_scalar(50000L), nv_scalar(0.1)
 )
 ```
@@ -1014,7 +1060,7 @@ Ensuring correctness of both the forward evaluation and the gradient computation
 In \CRANpkg{anvil}, we bootstrap correctness by comparing against the \CRANpkg{torch} package wherever possible.
 
 For forward-pass testing, each primitive's JIT-compiled output is compared against the corresponding \CRANpkg{torch} function on randomly generated inputs.
-For example, to test `nvl_add`, we generate random tensors, compute the result using both `jit(nvl_add)(x, y)` and `torch::torch_add(x, y)`, and assert that the outputs match up to numerical tolerance.
+For example, to test `nvl_add`, we generate random arrays, compute the result using both `jit(nvl_add)(x, y)` and `torch::torch_add(x, y)`, and assert that the outputs match up to numerical tolerance.
 This is done using helper functions like `expect_jit_torch_binary()` and `expect_jit_torch_unary()`, which handle the data generation and comparison.
 
 For backward-pass testing, the same strategy is applied to gradient computation.

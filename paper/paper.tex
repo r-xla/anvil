@@ -151,6 +151,7 @@ MLIR is part of the LLVM compiler infrastructure and provides a framework to def
 Such passes can e.g.~perform optimizations or lower the abstraction level.
 It is in single static assignment (SSA) form, meaning that each variable is assigned to exactly once, and is fully functional.
 For a description of the language, see the \href{https://openxla.org/stablehlo/spec}{StableHLO specification}, which also contains a description of the around 100 supported primitive operations.
+To stay close to the language definition, the \CRANpkg{stablehlo} package uses 0-based indexing for dimensions and other indices.
 In order to use the StableHLO language in \CRANpkg{anvil}, it needs to be possible to translate R code into StableHLO programs.
 For this purpose, we have created the \CRANpkg{stablehlo} package.
 The package essentially consists of four parts:
@@ -274,14 +275,26 @@ program <- pjrt_program(src = hlo_string, format = "mlir")
 \end{verbatim}
 
 Then, this \texttt{PJRTProgram} can be compiled into a \texttt{PJRTLoadedExecutable} object.
-This requires specifying a \texttt{PJRTClient}, as well as some optional compile options.
-The \texttt{PJRTClient} contains a \texttt{PJRTPlugin}, which is a dynamic library that implements the PJRT interface for a specific hardware backend.
-It can be specified via a string identifier such as ``cpu'' or ``cuda'' or we can pass a \texttt{PJRTPlugin} object directly.
-Here, we choose the latter for demonstration purposes.
+For this, a specific \texttt{PJRTClient} object is needed, some optional compile options, as well as a device specification.
+The \texttt{PJRTClient} contains a \texttt{PJRTPlugin}, which is a dynamic librarWy that implements the PJRT interface for a specific hardware backend.
+We can create a \texttt{PJRTClient} object by passing a string identifier such as ``cpu'' or ``cuda''.
 
 \begin{verbatim}
 client <- pjrt_client("cpu")
-executable <- pjrt_compile(program, client = client)
+client
+\end{verbatim}
+
+\begin{verbatim}
+#> <PJRTClient:cpu>
+\end{verbatim}
+
+To compile the program via \texttt{pjrt\_compile()}, we don't specify a client, but instead pass a device specification.
+For CPU, the distinction between device and client is not so important as there is usually only one CPU, so there is a one-to-one correspondence.
+When working with GPUs, there might be multiple GPUs available and the device represents one of them (by default the first one), and it matters on which GPU the buffer will be allocated.
+However, multi-GPU setups are not properly supported in \CRANpkg{pjrt} yet, but this could be added in the future.
+
+\begin{verbatim}
+executable <- pjrt_compile(program, device = pjrt_device("cpu"))
 executable
 \end{verbatim}
 
@@ -291,9 +304,6 @@ executable
 
 In order to execute this program, \texttt{PJRTBuffer} objects need to be created that are multi-dimensional tensors.
 Below, we create two simple \texttt{f32} tensors of shape \texttt{2x2} and specify the device to be the CPU, which will use the buffer allocation implementation of the PJRT CPU plugin.
-For CPU, the distinction between device and client is not so important as there is usually only one CPU, so there is a one-to-one correspondence.
-When working with GPUs, there might be multiple GPUs available and the device represents one of them (by default the first one), and it matters on which GPU the buffer will be allocated.
-However, multi-GPU setups are not properly supported in \CRANpkg{pjrt} yet, but this could be added in the future.
 
 \begin{verbatim}
 x <- pjrt_buffer(1:4, shape = c(2, 2), dtype = "f32", device = "cpu")
@@ -528,9 +538,9 @@ This is the standard convention adopted by modern AD frameworks.
 
 \subsection{Package Design and Features}\label{package-design-and-features}
 
-Having coverved the underlying basics, we will now cover the main design of the \CRANpkg{anvil} frontend.
-The core idea of the package is centered around code transformations, an approach adopted from JAX \citep{ref-jax}.
-In general, there are three types of transformations:
+Having coverved the underlying basics, we will now describe the main design of the \CRANpkg{anvil} frontend.
+The core idea of the package is centered around code transformations, an approach adopted from JAX \citep{ref-jax}, but this is a general idea in
+In general, there are three types of transformations that are executed in sequence, with step 2 being executed an arbitrary number of times, possibly with different transformations (although we currently only support reverse mode AD).
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -548,8 +558,9 @@ Then, we explain how these transformations are wrapped in the main user interfac
 
 \subsubsection{Code transformations}\label{code-transformations}
 
-\paragraph{Tracing R code into a computational graph}\label{tracing-r-code-into-a-computational-graph}
+\paragraph{Creating a Computational Graph from R Code}\label{creating-a-computational-graph-from-r-code}
 
+The first step in the pipeline is to simplify the R code into a computational graph.
 When it comes to translating code into other code, there are in principle two approaches:
 
 \begin{enumerate}
@@ -563,15 +574,13 @@ When it comes to translating code into other code, there are in principle two ap
 
 In \CRANpkg{anvil}, we are following the latter approach, because it allows to seemlessly combine standard R code with jit-compilable operations.
 The function that takes in an R function and returns a computational graph is called \texttt{trace\_fn()}.
-In order for this to be useful, the function needs to call into \CRANpkg{anvil} primitive functions.
+In order for this to be useful, the function needs to (either directly or indirectly) call into \CRANpkg{anvil} primitive functions, i.e., \texttt{nvl\_\textless{}op\textgreater{}} function..
 These primitive functions are similar to the stableHLO operations like \texttt{hlo\_add} from earlier.
-
-In the \CRANpkg{anvil} package these are called \texttt{nvl\_\textless{}op\textgreater{}} functions.
-Howveer, they are not exported directly, but in thin wrappers like \texttt{nv\_add}, which perform some convenience transformations (like type casting) that make them more ergonomic to use.
-These thin wrappers call into the primitive functions, however.
+In many cases, the primitive functions are not very ergonomic to use and we recommend using the thin wrappers like \texttt{nv\_add} instead that additionally perform scalar broadcasting and type casting.
+These thin wrappers call into other anvil primitive functions, however.
 The primitive functions are essentially graph building functions, also similar to the \texttt{hlo\_add} function from earlier.
 Below, we create an R function that takes in two values and multiplies them.
-Note that we could have also used the \texttt{*} infix operator, but we want to illustrate the use of the \texttt{nv\_multiply} function.
+Note that we could have equally used the overloaded \texttt{*} infix operator, but use \texttt{nv\_mul} for clarity.
 
 \begin{verbatim}
 library(anvil)
@@ -584,11 +593,14 @@ We can now trace this function into a computational graph.
 At the beginning, this will create a \texttt{anvil::GraphDescriptor} that primitive functions can attach to to build up the graph.
 The types for the inputs are inferred from the example arguments.
 The \texttt{trace\_fn} transformation uses these example inputs to obtain abstract \texttt{GraphBox} objects, which are passed around during the evaluation of the function.
-They essentially define the type (shape and data type), and uniquely identify a specific \texttt{GraphValue} within a specific \texttt{GraphDescriptor}.
-Note that \texttt{trace\_fn} also takes in non-tensor values, which are evaluated like normal R code.
+Such a \texttt{GraphBox} is the core object that allows to build up the graph.
+It contains a \texttt{GraphNode}, which is either a \texttt{GraphValue} or a \texttt{GraphLiteral} and a \texttt{GraphDescriptor}, which is essentially a graph in the making.
+The \texttt{GraphNode} contains an \texttt{AbstractTensor} (or one of its subclasses) which consists primarily of a shape and data type.
+Below, \texttt{nv\_abstract} creates \texttt{AbstractArray} objects.
+Internally, a new \texttt{GraphDescriptor} is initialized and \texttt{GraphValue} and \texttt{GraphBox} objects are created from the provided \texttt{AbstractTensor}.
 
 \begin{verbatim}
-graph <- trace_fn(multiply_r, list(x = nv_scalar(1, "f32"), y = nv_scalar(5, "f32")))
+graph <- trace_fn(multiply_r, list(x = nv_abstract("f32", integer(0)), y = nv_abstract("f32", integer(0))))
 graph
 \end{verbatim}
 
@@ -636,7 +648,7 @@ gradient_graph <- transform_gradient(graph, wrt = c("x", "y"))
 \end{verbatim}
 
 The \CRANpkg{anvil} package does not put any restrictions on \emph{how} such a transformation is implemented.
-Usually, however, such a transformation needs to store information for how to transform each primitiveF.
+Usually, however, such a transformation needs to store information for how to transform each primitive.
 For this reason, the \texttt{anvil::Primitive} objects have a \texttt{@rules} field that can be populated.
 For example, the backward rule for the addition primitive is implemented as follows:
 
@@ -650,15 +662,22 @@ prim("add")[["backward"]]
 #>     grad <- grads[[1L]]
 #>     list(if (.required[[1L]]) grad, if (.required[[2L]]) grad)
 #> }
-#> <bytecode: 0x1079b6cf8>
+#> <bytecode: 0x107075d58>
 #> <environment: namespace:anvil>
 \end{verbatim}
 
-The transformation function \texttt{transform\_gradient} basically walks the graph backwards and applies the backward rules to each primitive, producing a \texttt{Graph} that contains the forward and backward pass.
+The transformation function \texttt{transform\_gradient} basically walks the graph
+backwards and applies the backward rules to each primitive, producing a \texttt{Graph} that contains the forward and backward pass.
 
-\paragraph{Automatic Differentiation}\label{automatic-differentiation-1}
+Other transformations such as forward mode AD or batching transformations (similar to R's \texttt{Vectorize}) could be implemented similarly.
 
-The \texttt{transform\_gradient()} function implements backward-mode automatic differentiation (also known as reverse-mode AD).
+At this point, one might ask why the primitive functions are not simply defined as S3 generics that dispatch on specific Box sub-classes.
+The problem with this approach is that S3 generics need inputs to dispatch on.
+However, some primitives such as \texttt{nvl\_iota()} only take non-tensor arguments (standard R values) so this is where the abstraction breaks down unless one wants to explicitly add arguments to the S3 generics.
+
+\subparagraph{\texorpdfstring{The \texttt{transform\_gradient()} transformation}{The transform\_gradient() transformation}}\label{the-transform_gradient-transformation}
+
+The \texttt{transform\_gradient()} function implements reverse-mode AD.
 Given a \texttt{Graph} representing a function \(f : \mathbb{R}^n \to \mathbb{R}\), it produces a new \texttt{Graph} that computes both the original output and the gradients of the output with respect to specified inputs.
 
 More concretely, consider a computational graph as a sequence of primitive operations \(v_k = g_k(v_{\text{pa}(k)})\), where \(v_{\text{pa}(k)}\) denotes the parent values (inputs) of operation \(k\).
@@ -717,6 +736,30 @@ For this reason, non-scalar (TODO) constants are not inlined into the stableHLO 
 
 Next, we will describe how these transformations are wrapped in the main user interface.
 
+\paragraph{Broadcasting}\label{broadcasting}
+
+Unlike NumPy or R's built-in recycling, \CRANpkg{anvil}'s primitive operations (\texttt{nvl\_*}) do not automatically broadcast their inputs --- operands must have exactly matching shapes.
+This is a deliberate design choice: implicit broadcasting is a common source of subtle bugs, especially when shapes are dynamic or when operations are composed across multiple transformations.
+
+The API-level wrappers (\texttt{nv\_add}, \texttt{nv\_mul}, etc.) do perform \emph{scalar} broadcasting --- if one operand is a scalar and the other is a tensor, the scalar is broadcast to match --- but they do not perform full NumPy-style broadcasting.
+For explicit shape manipulation, functions like \texttt{nv\_broadcast\_to()} and \texttt{nv\_broadcast\_tensors()} are provided:
+
+\begin{verbatim}
+a <- nv_array(1:3, "f32", shape = c(1, 3L))
+b <- nv_array(1, "f32", shape = 1L)
+# This would fail: nvl_add(a, b)
+# Instead, broadcast explicitly:
+b_broadcast <- nv_broadcast_to(b, c(1, 3L))
+nv_add(a, b_broadcast)
+\end{verbatim}
+
+\begin{verbatim}
+#> f32{1,3}
+\end{verbatim}
+
+More generally, broadcasting could itself be implemented as a code transformation that wraps a function and automatically inserts the necessary broadcast operations before each primitive call, analogous to \texttt{broadcast(nv\_add)}.
+This is not currently implemented, but illustrates how the code transformation approach naturally extends to concerns beyond differentiation and compilation.
+
 \subsubsection{Main User Interface}\label{main-user-interface}
 
 The main user interface is centered around \texttt{jit()} and transformations functions like \texttt{gradient()} or \texttt{value\_and\_gradient()}.
@@ -724,7 +767,7 @@ Furthermore, we can create tensors, which we will cover first.
 
 \paragraph{\texorpdfstring{The \texttt{AnvilTensor}}{The AnvilTensor}}\label{the-anviltensor}
 
-In order to create data for our programs, we can use the \texttt{nv\_tensor()}, \texttt{nv\_scalar()} and \texttt{nv\_empty()} functions.
+In order to create data for our programs, we can use the \texttt{nv\_array()}, \texttt{nv\_scalar()} and \texttt{nv\_empty()} functions.
 These essentially wrap the \texttt{pjrt\_buffer()} and \texttt{pjrt\_scalar()} functions from the \CRANpkg{pjrt} package.
 
 \begin{verbatim}
@@ -733,18 +776,18 @@ x
 \end{verbatim}
 
 \begin{verbatim}
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #> [ CPUf32{} ]
 \end{verbatim}
 
 \begin{verbatim}
-y <- nv_tensor(1:4, "f32")
+y <- nv_array(1:4, "f32")
 y
 \end{verbatim}
 
 \begin{verbatim}
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  2
 #>  3
@@ -752,7 +795,7 @@ y
 #> [ CPUf32{4} ]
 \end{verbatim}
 
-Just like the \texttt{PJRTBuffer} objects, \texttt{AnvilTensor} objects can be serialized to a string and deserialized using the \CRANpkg{safetensors} R package.
+Just like the \texttt{PJRTBuffer} objects, \texttt{AnvilTensor} objects can be serialized and deserialized using the \CRANpkg{safetensors} package.
 
 \paragraph{\texorpdfstring{\texttt{jit()}}{jit()}}\label{jit}
 
@@ -779,7 +822,7 @@ multiply_jit(x, y)
 \end{verbatim}
 
 \begin{verbatim}
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #> [ CPUf32{} ]
 \end{verbatim}
@@ -794,7 +837,7 @@ multiply_jit(x, y)
 \end{verbatim}
 
 \begin{verbatim}
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #> [ CPUf32{} ]
 \end{verbatim}
@@ -810,7 +853,7 @@ multiply_jit(nv_scalar(2, "f32"), nv_scalar(3, "f32"))
 \end{verbatim}
 
 \begin{verbatim}
-#> AnvilTensor
+#> AnvilArray
 #>  4
 #> [ CPUf32{} ]
 \end{verbatim}
@@ -828,7 +871,7 @@ multiply_jit(nv_scalar(1, "i32"), nv_scalar(5, "i32"))
 \end{verbatim}
 
 \begin{verbatim}
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #> [ CPUi32{} ]
 \end{verbatim}
@@ -844,7 +887,7 @@ multiply_jit_nested(list(x, y))
 
 \begin{verbatim}
 #> [[1]]
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  2
 #>  3
@@ -875,7 +918,7 @@ add_or_multiply(x, y, "add")
 \end{verbatim}
 
 \begin{verbatim}
-#> AnvilTensor
+#> AnvilArray
 #>  2
 #>  3
 #>  4
@@ -888,7 +931,7 @@ add_or_multiply(x, y, "multiply")
 \end{verbatim}
 
 \begin{verbatim}
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #>  2
 #>  3
@@ -957,15 +1000,30 @@ f_jit(x, y)
 
 \begin{verbatim}
 #> $x
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #> [ CPUf32{} ] 
 #> 
 #> $y
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #> [ CPUf32{} ]
 \end{verbatim}
+
+\paragraph{Nested Transformations}\label{nested-transformations}
+
+A key feature of the code transformation approach is that transformations can be nested.
+For example, a gradient function can be called inside a jit-compiled function, or a gradient can be taken of a function that itself computes a gradient (to obtain second-order derivatives).
+
+The mechanism that makes this possible is \emph{graph inlining}.
+Consider a function that first computes \texttt{nv\_mul(x,\ x)} and then calls a gradient transformation on \texttt{nv\_add}.
+When the outer function is traced (e.g.~inside \texttt{jit()}), the outer \texttt{GraphDescriptor} first records the multiplication.
+When the gradient call is encountered, a new inner \texttt{GraphDescriptor} is created to trace \texttt{nv\_add} independently.
+This inner graph is then transformed by applying the backward rules, producing a gradient graph.
+The resulting gradient graph is then inlined into the outer \texttt{GraphDescriptor} --- its operations become part of the outer graph, connected to the existing values.
+From the perspective of the outer graph, the inlined operations are indistinguishable from operations that were added directly.
+
+This means that composing transformations does not require any special handling: each transformation operates on a self-contained graph, and the result is spliced back into the parent context.
 
 \paragraph{Debugging}\label{debugging}
 
@@ -998,13 +1056,13 @@ multiply_print_jit(x, y)
 \end{verbatim}
 
 \begin{verbatim}
-#> AnvilTensor
+#> AnvilArray
 #>  5
 #> [ f32{} ]
 \end{verbatim}
 
 \begin{verbatim}
-#> AnvilTensor
+#> AnvilArray
 #>  5
 #> [ CPUf32{} ]
 \end{verbatim}
@@ -1049,8 +1107,8 @@ X <- scale(model.matrix(~ Class + Sex + Age, data = titanic)[, -1])
 y <- as.integer(titanic$Survived == "Yes")
 n <- nrow(X); p <- ncol(X)
 
-X_tensor <- nv_tensor(X, dtype = "f32")
-y_tensor <- nv_tensor(y, dtype = "f32", shape = c(n, 1L))
+X_tensor <- nv_array(X, dtype = "f32")
+y_tensor <- nv_array(y, dtype = "f32", shape = c(n, 1L))
 \end{verbatim}
 
 The model predicts survival probabilities and evaluates them with binary cross-entropy loss:
@@ -1095,7 +1153,7 @@ fit_logreg <- jit(function(X, y, beta, alpha, n_epochs, lr) {
 We initialize the parameters and train the model:
 
 \begin{verbatim}
-beta_init <- nv_tensor(rnorm(p), dtype = "f32", shape = c(p, 1L))
+beta_init <- nv_array(rnorm(p), dtype = "f32", shape = c(p, 1L))
 alpha_init <- nv_scalar(0, dtype = "f32")
 
 result <- fit_logreg(
@@ -1272,6 +1330,9 @@ Also, other code transformations such as higher-order derivatives, forward-mode 
 
 Finally, one package that might be useful is to build a small modeling library on top of \CRANpkg{anvil}, which is aimed at optimizing models via gradient-based optimization methods, e.g.~for training deep learning models.
 
+Useability of the package would also benefit from streamlining the installation.
+In order to use GPUs with the XLA backend, manual effort is required to install the specific dependencies (CUDA, cuDNN, nvshmem), which should be simplified.
+
 \begin{itemize}
 \tightlist
 \item
@@ -1325,7 +1386,7 @@ This is precisely the principle that makes reverse-mode AD efficient for gradien
 \subsubsection{AI Usage}\label{ai-usage}
 
 AI coding agents were used for the development of the software.
-However, all AI-generated code was reviewed by the authors.
+All generated code was carefully checked by the authors.
 
 \bibliography{references.bib}
 

@@ -419,6 +419,7 @@ INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmex10.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/mathpazo/fplmr.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/adobe/palatino/pplr8t.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/adobe/palatino/pplr8t.tfm
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/inconsolata/t1-zi4b-0.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/ufplmbb.fd
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/ufplmbb.fd
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/ufplmbb.fd
@@ -426,7 +427,6 @@ INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/mathpazo/fplmbb.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/mathpazo/fplmbb.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/mathpazo/fplmbb.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/vf/adobe/palatino/pplr8t.vf
-INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/inconsolata/t1-zi4b-0.tfm
 INPUT ./RJwrapper.bbl
 INPUT ./RJwrapper.bbl
 INPUT RJwrapper.bbl

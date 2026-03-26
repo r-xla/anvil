@@ -1326,3 +1326,15 @@ nv_if <- nvl_if
 #' })
 #' @export
 nv_while <- nvl_while
+
+
+# raw string
+x <- r"( func @main(%arg0: tensor<2x2xf32>, %arg1: tensor<2x2xf32>) -> tensor<2x2xf32> {
+  %0 = "stablehlo.multiply"(%arg0, %arg1) :
+    (tensor<2x2xf32>, tensor<2x2xf32>) -> tensor<2x2xf32>
+  return %0 : tensor<2x2xf32>
+}
+)"
+
+library(pjrt)
+prog <- pjrt_program(src = x, format = "mlir")
