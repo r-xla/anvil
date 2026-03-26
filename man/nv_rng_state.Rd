@@ -16,6 +16,7 @@ Seed value.}
 \description{
 Creates an initial RNG state from a seed. This state is required by all
 random sampling functions and is updated after each call.
+Must be called inside a \code{\link[=jit]{jit()}} or \code{\link[=jit_eval]{jit_eval()}} context.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}

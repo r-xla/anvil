@@ -251,9 +251,9 @@ test_that("jit: respects device argument", {
   expect_equal(f(), nv_scalar(1, device = "cpu", ambiguous = TRUE))
 })
 
-test_that("jit: with_backend overrides the configured default backend for traced float constants", {
+test_that("jit: backend argument overrides configured default for traced float constants", {
   with_backend("quickr", {
-    f <- with_backend("xla", jit(function() nv_fill(1.0, shape = 1L)))
+    f <- jit(function() nv_fill(1.0, shape = 1L), backend = "xla")
     expect_equal(dtype(f()), as_dtype("f32"))
   })
 })

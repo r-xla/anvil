@@ -5,9 +5,6 @@
 #' skip recompilation. Unlike [`xla()`], the compiled executable is not created
 #' eagerly but lazily on the first invocation.
 #'
-#' The compilation backend is determined by the global `anvil.backend` option,
-#' which defaults to `"xla"`. Use `with_backend()` to temporarily override it.
-#'
 #' @param f (`function`)\cr
 #'   Function to compile. Must accept and return [`AnvilArray`]s (and/or
 #'   static arguments).
@@ -24,10 +21,13 @@
 #'   An argument cannot appear in both `donate` and `static`.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
 #'   The device to use if it cannot be inferred from the inputs or constants.
-#'   Defaults to `"cpu"`. Only supported for the `"xla"` backend.
+#'   Defaults to `"cpu"`. Only supported for `backend = "xla"`.
+#' @param backend (`character(1)`)\cr
+#'   Compilation backend. `"xla"` (default) uses PJRT/XLA.
+#'   `"quickr"` uses `quickr::quick()`.
 #' @return A `JitFunction` with the same formals as `f`.
-#'   For the `"xla"` backend, the returned wrapper expects and returns
-#'   [`AnvilArray`] values. For the `"quickr"` backend, the returned wrapper
+#'   For `backend = "xla"`, the returned wrapper expects and returns
+#'   [`AnvilArray`] values. For `backend = "quickr"`, the returned wrapper
 #'   expects plain R numeric/integer/logical scalars, vectors, and arrays and
 #'   returns plain R values.
 #' @seealso [`xla()`] for ahead-of-time compilation, [`jit_eval()`] for evaluating an expression once.
@@ -43,15 +43,20 @@
 #' }, static = "flag")
 #' g(nv_array(3), TRUE)
 #' g(nv_array(3), FALSE)
+#'
+#' @examplesIf requireNamespace("quickr", quietly = TRUE)
+#' h <- jit(function(x, y) x + y, backend = "quickr")
+#' h(1, 2)
 jit <- function(
   f,
   static = character(),
   cache_size = 100L,
   donate = character(),
-  device = NULL
+  device = NULL,
+  backend = "xla"
 ) {
   cache <- xlamisc::LRUCache$new(cache_size)
-  backend <- globals$backend
+  backend <- normalize_backend(backend)
   jit_validate_args(f, static, donate, device, backend)
 
   f_jit <- if (backend == "xla") {
