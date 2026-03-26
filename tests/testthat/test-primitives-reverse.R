@@ -246,7 +246,7 @@ test_that("p_if", {
   #expect_equal(out[[2L]], nv_scalar(1))
 })
 
-test_that("p_log backward", {
+test_that("p_log reverse", {
   f <- jit(gradient(function(x) {
     nv_log(x)
   }))
@@ -268,7 +268,7 @@ test_that("p_exp", {
   expect_equal(as_array(grad), exp(2))
 })
 
-test_that("p_reduce_max backward", {
+test_that("p_reduce_max reverse", {
   f <- jit(gradient(function(x) {
     rows_max <- nvl_reduce_max(x, dims = 2L, drop = TRUE)
     nv_reduce_sum(rows_max, dims = 1L, drop = TRUE)
@@ -292,7 +292,7 @@ test_that("p_reduce_max backward", {
   )
 })
 
-test_that("p_reduce_min backward", {
+test_that("p_reduce_min reverse", {
   f <- jit(gradient(function(x) {
     rows_min <- nvl_reduce_min(x, dims = 2L, drop = TRUE)
     nv_reduce_sum(rows_min, dims = 1L, drop = TRUE)
@@ -345,7 +345,7 @@ test_that("p_min", {
   expect_equal(as_array(grads$y), array(c(0, 0.5, 1), dim = 3))
 })
 
-test_that("p_convert backward converts gradients to the input dtype", {
+test_that("p_convert reverse converts gradients to the input dtype", {
   x_arr <- array(1:6, c(2, 3))
   x <- nv_array(x_arr, dtype = "f32")
   f <- jit(gradient(function(x) {
@@ -398,7 +398,7 @@ test_that("p_eq, p_ne, p_gt, p_ge, p_lt, p_le", {
   }
 })
 
-test_that("p_pad backward with interior padding", {
+test_that("p_pad reverse with interior padding", {
   # Interior padding adds padding between elements
   # For input [a, b, c] with interior_padding=1, output is [a, 0, b, 0, c]
   # Gradient flows only to original positions [a, b, c]
@@ -443,7 +443,7 @@ test_that("p_pad backward with interior padding", {
   expect_equal(g4[[1L]], nv_array(matrix(rep(1, 6), 2, 3), dtype = "f64"))
 })
 
-test_that("p_dynamic_slice backward", {
+test_that("p_dynamic_slice reverse", {
   # Gradient should scatter the incoming gradient back to the operand position
   f <- jit(gradient(
     function(x, start_i) {
@@ -478,7 +478,7 @@ test_that("p_dynamic_slice backward", {
   expect_equal(grad2d, nv_array(c(0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0), dtype = "f64", shape = c(3, 4)))
 })
 
-test_that("p_dynamic_slice backward with out-of-bounds", {
+test_that("p_dynamic_slice reverse with out-of-bounds", {
   # Test that gradient works correctly when indices are clamped
   f <- jit(gradient(
     function(x, start_i) {
@@ -497,7 +497,7 @@ test_that("p_dynamic_slice backward with out-of-bounds", {
   expect_equal(grad, nv_array(c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1), dtype = "f64", shape = 10L))
 })
 
-test_that("p_dynamic_update_slice backward", {
+test_that("p_dynamic_update_slice reverse", {
   # Test gradient for operand (zero out the updated region)
   f_operand <- jit(gradient(
     function(x, update, start_i) {
@@ -530,7 +530,7 @@ test_that("p_dynamic_update_slice backward", {
   expect_equal(grad_update, nv_array(c(1, 1, 1), dtype = "f64", shape = 3L))
 })
 
-test_that("p_dynamic_update_slice backward with out-of-bounds", {
+test_that("p_dynamic_update_slice reverse with out-of-bounds", {
   # Test that gradient works correctly when indices are clamped
   f_operand <- jit(gradient(
     function(x, update, start_i) {
@@ -673,7 +673,7 @@ describe("p_gather", {
 
   it("clamps out-of-range indices for gradient (matches forward clamping)", {
     # Index 10 on a size-4 array is clamped to 4 on forward pass.
-    # The backward gradient should flow to the clamped position (4), not 10.
+    # The gradient should flow to the clamped position (4), not 10.
     f <- jit(gradient(function(x) {
       idx <- nv_scalar(10L, dtype = "i32")
       nv_subset(x, idx)
@@ -725,7 +725,7 @@ describe("p_scatter", {
   })
 })
 
-describe("gather/scatter backward via subset operators", {
+describe("gather/scatter reverse via subset operators", {
   check <- function(shape, ...) {
     quos <- rlang::enquos(...)
 
@@ -821,5 +821,5 @@ describe("gather/scatter backward via subset operators", {
 })
 
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"))
+  source(system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvil"))
 }

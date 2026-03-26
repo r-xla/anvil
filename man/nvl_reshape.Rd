@@ -27,7 +27,7 @@ Note that row-major order is used, which differs from R's column-major order.
 \itemize{
 \item \code{stablehlo}
 \item \code{quickr}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 

@@ -22,7 +22,7 @@ Element-wise cube root.
 
 \itemize{
 \item \code{stablehlo}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 

@@ -23,7 +23,7 @@ Element-wise atan2 operation.
 
 \itemize{
 \item \code{stablehlo}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 

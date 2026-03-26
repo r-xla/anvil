@@ -18,7 +18,7 @@ test_that("ambiguity is propagated by unary ops", {
   )
 })
 
-test_that("p_convert backward", {
+test_that("p_convert reverse", {
   out <- jit(function(x) {
     z <- x * 1L
     a <- gradient(\(y) {

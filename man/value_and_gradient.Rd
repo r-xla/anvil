@@ -24,7 +24,7 @@ A function with the same formals as \code{f} that returns
 }
 \description{
 Returns a new function that computes both the output of \code{f} and its gradient in a
-single forward+backward pass. The result is a named list with elements \code{value} (the
+single forward+reverse pass. The result is a named list with elements \code{value} (the
 original return value of \code{f}) and \code{grad} (the gradients, structured like the inputs or
 the \code{wrt} subset).
 }

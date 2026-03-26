@@ -29,7 +29,7 @@ i.e. \code{max(min_val, min(operand, max_val))}.
 
 \itemize{
 \item \code{stablehlo}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 
