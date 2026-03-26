@@ -28,7 +28,7 @@ inputs are ambiguous.
 
 - `quickr`
 
-- `backward`
+- `reverse`
 
 ## StableHLO
 

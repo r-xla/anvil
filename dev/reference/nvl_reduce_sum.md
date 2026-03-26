@@ -41,7 +41,7 @@ ambiguous.
 
 - `quickr`
 
-- `backward`
+- `reverse`
 
 ## StableHLO
 

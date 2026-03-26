@@ -5,7 +5,7 @@ Package website: [release](https://r-xla.github.io/anvil/) \|
 
 Composable code transformation framework for R, allowing you to run
 numerical programs at the speed of light. It currently implements JIT
-compilation for very fast execution and backward-mode automatic
+compilation for very fast execution and reverse-mode automatic
 differentiation. Programs can run on various hardware backends,
 including CPU and GPU.
 

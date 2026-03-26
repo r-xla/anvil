@@ -1,14 +1,12 @@
 # Transform a graph to its gradient
 
-Low-level graph transformation that appends the backward pass to a
-traced
+Low-level graph transformation that appends the reverse pass to a traced
 [`AnvilGraph`](https://r-xla.github.io/anvil/dev/reference/AnvilGraph.md).
 The function `f` represented by `graph` must return a single float
 scalar. The resulting graph computes the gradients of that scalar with
 respect to the inputs specified by `wrt`.
 
-The backward rules are stored in `$rules[["backward"]]` of the
-primitives.
+The reverse rules are stored in `$rules[["reverse"]]` of the primitives.
 
 This is the building block used by
 [`gradient()`](https://r-xla.github.io/anvil/dev/reference/gradient.md)

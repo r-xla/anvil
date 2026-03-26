@@ -33,7 +33,7 @@ Has the given `dtype`.
 
 - `stablehlo`
 
-- `backward`
+- `reverse`
 
 ## StableHLO
 

@@ -42,7 +42,7 @@ controlled by the `ambiguous` parameter.
 
 - `quickr`
 
-- `backward`
+- `reverse`
 
 ## StableHLO
 

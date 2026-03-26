@@ -1,7 +1,7 @@
 # Value and Gradient
 
 Returns a new function that computes both the output of `f` and its
-gradient in a single forward+backward pass. The result is a named list
+gradient in a single forward+reverse pass. The result is a named list
 with elements `value` (the original return value of `f`) and `grad` (the
 gradients, structured like the inputs or the `wrt` subset).
 

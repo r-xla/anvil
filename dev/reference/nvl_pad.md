@@ -56,7 +56,7 @@ It is ambiguous if the input is ambiguous.
 
 - `quickr`
 
-- `backward`
+- `reverse`
 
 ## StableHLO
 

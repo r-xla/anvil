@@ -32,7 +32,7 @@ input is ambiguous.
 
 - `quickr`
 
-- `backward`
+- `reverse`
 
 ## StableHLO
 

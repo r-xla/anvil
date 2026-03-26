@@ -123,7 +123,7 @@ them into a computational <code>anvil::Graph</code> object via
 is possible to transform <code>AnvilGraph</code>s into other
 <code>AnvilGraph</code>s. Their purpose is to change the functionality
 of the code. At the time of writing, there is essentially only one such
-transformation, namely backward-mode automatic differentiation via
+transformation, namely reverse-mode automatic differentiation via
 <code><a href="../reference/gradient.html">gradient()</a></code>.</li>
 <li>
 <code>AnvilGraph</code> <span class="math inline">\(\rightarrow\)</span> <code>Executable</code>: In
@@ -253,11 +253,11 @@ however, we need to store some information for each {anvil} primitive
 function. In the case of the gradient, we need to store the derivative
 rules. For this, <code>anvil::Primitive</code> objects have a
 <code>$rules</code> field that can be populated. The derivative rules
-are stored as functions under the <code>"backward"</code> name. We can
+are stored as functions under the <code>"reverse"</code> name. We can
 access a primitive by it’s name via the <code><a href="../reference/prim.html">prim()</a></code>
 function:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/prim.html">prim</a></span><span class="op">(</span><span class="st">"mul"</span><span class="op">)</span><span class="op">$</span><span class="va">rules</span><span class="op">[[</span><span class="st">"backward"</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/prim.html">prim</a></span><span class="op">(</span><span class="st">"mul"</span><span class="op">)</span><span class="op">$</span><span class="va">rules</span><span class="op">[[</span><span class="st">"reverse"</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## function (inputs, outputs, grads, .required) </span></span>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     lhs &lt;- inputs[[1L]]</span></span>
@@ -266,12 +266,12 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x55ec26d34d20&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55667c15b478&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
 we are walking the graph backwards and apply the derivative rules, which
-will append the “backward pass” to the graph. Besides the forward graph,
+will append the “reverse pass” to the graph. Besides the forward graph,
 the transformation takes in the <code>wrt</code> argument, which
 specifies with respect to which arguments to compute the gradient.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -309,7 +309,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x55ec26d37ed8&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55667c15e630&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
@@ -482,15 +482,14 @@ Then, the addition of <code>x</code> and <code>y</code> is recorded in
 the <code>GraphDescriptor</code>. The call into <code>g()</code> is a
 bit more involved. First, a new <code>GraphDescriptor</code> is created
 and the forward computation of <code>g</code> is recorded. Subsequently,
-the backward pass will be added to the descriptor, after which it will
-be converted into a <code>AnvilGraph</code>. This
-<code>AnvilGraph</code> will then be inlined into the parent
-<code>GraphDescriptor</code> (representing the whole function
-<code>h</code>), which is then converted into the main
-<code>AnvilGraph</code>. We can look at this graph below, where
-<code>trace_fn</code> internally converts the <code>AnvilArray</code>s
-<code>x</code> and <code>y</code> into their abstract
-representation.</p>
+the reverse pass will be added to the descriptor, after which it will be
+converted into a <code>AnvilGraph</code>. This <code>AnvilGraph</code>
+will then be inlined into the parent <code>GraphDescriptor</code>
+(representing the whole function <code>h</code>), which is then
+converted into the main <code>AnvilGraph</code>. We can look at this
+graph below, where <code>trace_fn</code> internally converts the
+<code>AnvilArray</code>s <code>x</code> and <code>y</code> into their
+abstract representation.</p>
 <div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">h_graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">h</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">h_graph</span></span></code></pre></div>

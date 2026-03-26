@@ -26,7 +26,7 @@ inputs are ambiguous.
 
 - `stablehlo`
 
-- `backward`
+- `reverse`
 
 ## StableHLO
 

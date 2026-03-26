@@ -16,7 +16,7 @@ for reshaping code. We refer to such a rewriting of code as a
     transform `AnvilGraph`s into other `AnvilGraph`s. Their purpose is
     to change the functionality of the code. At the time of writing,
     there is essentially only one such transformation, namely
-    backward-mode automatic differentiation via
+    reverse-mode automatic differentiation via
     [`gradient()`](https://r-xla.github.io/anvil/dev/reference/gradient.md).
 3.  `AnvilGraph` \\\rightarrow\\ `Executable`: In order to perform the
     actual computation, the `AnvilGraph` needs to be converted into an
@@ -140,13 +140,13 @@ For most interesting transformations, however, we need to store some
 information for each {anvil} primitive function. In the case of the
 gradient, we need to store the derivative rules. For this,
 `anvil::Primitive` objects have a `$rules` field that can be populated.
-The derivative rules are stored as functions under the `"backward"`
-name. We can access a primitive by it’s name via the
+The derivative rules are stored as functions under the `"reverse"` name.
+We can access a primitive by it’s name via the
 [`prim()`](https://r-xla.github.io/anvil/dev/reference/prim.md)
 function:
 
 ``` r
-prim("mul")$rules[["backward"]]
+prim("mul")$rules[["reverse"]]
 ```
 
     ## function (inputs, outputs, grads, .required) 
@@ -157,14 +157,14 @@ prim("mul")$rules[["backward"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x55ec26d34d20>
+    ## <bytecode: 0x55667c15b478>
     ## <environment: namespace:anvil>
 
 The
 [`anvil::transform_gradient`](https://r-xla.github.io/anvil/dev/reference/transform_gradient.md)
 function uses these rules to compute the gradient of a function. For
 this specific transformation, we are walking the graph backwards and
-apply the derivative rules, which will append the “backward pass” to the
+apply the derivative rules, which will append the “reverse pass” to the
 graph. Besides the forward graph, the transformation takes in the `wrt`
 argument, which specifies with respect to which arguments to compute the
 gradient.
@@ -208,7 +208,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x55ec26d37ed8>
+    ## <bytecode: 0x55667c15e630>
     ## <environment: namespace:anvil>
 
 The
@@ -437,7 +437,7 @@ So, what is happening here? Once the inputs `x` and `y` are provided to
 are converted into `GraphBox` objects. Then, the addition of `x` and `y`
 is recorded in the `GraphDescriptor`. The call into `g()` is a bit more
 involved. First, a new `GraphDescriptor` is created and the forward
-computation of `g` is recorded. Subsequently, the backward pass will be
+computation of `g` is recorded. Subsequently, the reverse pass will be
 added to the descriptor, after which it will be converted into a
 `AnvilGraph`. This `AnvilGraph` will then be inlined into the parent
 `GraphDescriptor` (representing the whole function `h`), which is then

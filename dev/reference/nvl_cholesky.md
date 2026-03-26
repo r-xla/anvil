@@ -36,7 +36,7 @@ ambiguous if the input is ambiguous.
 
 - `stablehlo`
 
-- `backward`
+- `reverse`
 
 ## StableHLO
 

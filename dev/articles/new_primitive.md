@@ -171,10 +171,10 @@ Also note that in
 we are converting the error messages from stablehlo to our 1-based
 indexing, so you do not have to worry about that here.
 
-### Step 4: Add the Backward Rule
+### Step 4: Add the Reverse Rule
 
-If the operation should support automatic differentiation, add a
-backward rule. The idea here is the following, where we assume the input
+If the operation should support automatic differentiation, add a reverse
+rule. The idea here is the following, where we assume the input
 `operand` has shape `(s_1, ..., s_n)`, which means that the output (and
 therefore it’s gradient) has shape
 `(s_1, ..., s_{dim-1}, s_dim * times, s_{dim+1}, ..., s_n)`.
@@ -184,7 +184,7 @@ therefore it’s gradient) has shape
 2.  Sum over the `times` dimension and drop the `times` dimension.
 
 ``` r
-p_repeat_along[["backward"]] <- function(inputs, outputs, grads, dim, times, .required) {
+p_repeat_along[["reverse"]] <- function(inputs, outputs, grads, dim, times, .required) {
   if (!.required[[1L]]) {
     return(list(NULL))
   }
@@ -205,7 +205,7 @@ p_repeat_along[["backward"]] <- function(inputs, outputs, grads, dim, times, .re
 }
 ```
 
-The backward rule receives:
+The reverse rule receives:
 
 - `inputs`: Input `GraphValue`s from the forward pass
 - `outputs`: Output `GraphValue`s from the forward pass
@@ -311,7 +311,7 @@ additional things to be aware of.
 - **`R/primitives.R`**: Define `AnvilPrimitive` object and `nvl_*`
   function
 - **`R/rules-stablehlo.R`**: Add the StableHLO lowering rule
-- **`R/rules-backward.R`**: Add the backward rule (if differentiable)
+- **`R/rules-reverse.R`**: Add the reverse rule (if differentiable)
 - **`R/api.R`**: Add the `nv_*` wrapper function (or possibly in another
   **api** file).
 
@@ -331,7 +331,7 @@ Since no torch counterpart exists for `nvl_repeat_along`, we would add
 manual tests in:
 
 - `tests/testthat/test-primitives-stablehlo.R`
-- `tests/testthat/test-primitives-backward.R`
+- `tests/testthat/test-primitives-reverse.R`
 
 Also, ensure that no linter errors are present, `devtools::check()`
 passes, and format the code using `make format`.
@@ -344,5 +344,5 @@ are generally much more complex to handle, so we don’t cover them here
 in detail (for now). The general idea, however, is that the primitive
 `nvl_*` function needs to trace the provided function using
 [`trace_fn()`](https://r-xla.github.io/anvil/dev/reference/trace_fn.md)
-and then forward this graph to the stablehlo lowering rule and backward
+and then forward this graph to the stablehlo lowering rule and reverse
 rule.

@@ -60,7 +60,7 @@ Has the same shape and data type as `b`. It is ambiguous if both `a` and
 
 - `stablehlo`
 
-- `backward`
+- `reverse`
 
 ## StableHLO
 

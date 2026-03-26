@@ -40,7 +40,7 @@ Boolean array. Never ambiguous. When `drop = TRUE`, the shape is that of
 
 - `quickr`
 
-- `backward`
+- `reverse`
 
 ## StableHLO
 
