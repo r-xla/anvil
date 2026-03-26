@@ -81,19 +81,19 @@ test_that("p_remainder", {
 })
 
 test_that("p_and", {
-  expect_jit_torch_binary(nvl_and, torch::torch_logical_and, c(2, 3), c(2, 3), dtype = "pred")
+  expect_jit_torch_binary(nvl_and, torch::torch_logical_and, c(2, 3), c(2, 3), dtype = "bool")
 })
 
 test_that("p_not", {
-  expect_jit_torch_unary(nvl_not, \(x) !x, c(2, 3), dtype = "pred")
+  expect_jit_torch_unary(nvl_not, \(x) !x, c(2, 3), dtype = "bool")
 })
 
 test_that("p_or", {
-  expect_jit_torch_binary(nvl_or, torch::torch_logical_or, c(2, 3), c(2, 3), dtype = "pred")
+  expect_jit_torch_binary(nvl_or, torch::torch_logical_or, c(2, 3), c(2, 3), dtype = "bool")
 })
 
 test_that("p_xor", {
-  expect_jit_torch_binary(nvl_xor, torch::torch_logical_xor, c(2, 3), c(2, 3), dtype = "pred")
+  expect_jit_torch_binary(nvl_xor, torch::torch_logical_xor, c(2, 3), c(2, 3), dtype = "bool")
 })
 
 
@@ -180,15 +180,15 @@ test_that("p_broadcast_in_dim", {
   bdims <- c(2L, 3L)
   x <- generate_test_data(input_shape, dtype = "f32")
   f <- jit(function(a) nvl_broadcast_in_dim(a, target_shape, bdims))
-  out_nv <- f(nv_tensor(x))
+  out_nv <- f(nv_array(x))
   out_th <- torch::torch_tensor(x)$unsqueeze(1)$expand(target_shape)
   testthat::expect_equal(sum(as_array(out_nv)), as.numeric(torch::as_array(out_th$sum())), tolerance = 1e-5)
 })
 
 test_that("p_select", {
-  p <- nv_tensor(c(TRUE, FALSE, TRUE, FALSE), dtype = "pred")
-  a <- nv_tensor(as.integer(c(1, 2, 3, 4)), dtype = "i32")
-  b <- nv_tensor(as.integer(c(10, 20, 30, 40)), dtype = "i32")
+  p <- nv_array(c(TRUE, FALSE, TRUE, FALSE), dtype = "bool")
+  a <- nv_array(as.integer(c(1, 2, 3, 4)), dtype = "i32")
+  b <- nv_array(as.integer(c(10, 20, 30, 40)), dtype = "i32")
   out <- jit(nvl_ifelse)(p, a, b)
   pt <- torch::torch_tensor(as_array(p), dtype = torch::torch_bool())
   at <- torch::torch_tensor(as_array(a), dtype = torch::torch_int32())
@@ -198,8 +198,8 @@ test_that("p_select", {
 
 test_that("p_dot_general", {
   # vector dot
-  x <- nv_tensor(rnorm(4), dtype = "f32")
-  y <- nv_tensor(rnorm(4), dtype = "f32")
+  x <- nv_array(rnorm(4), dtype = "f32")
+  y <- nv_array(rnorm(4), dtype = "f32")
   out <- jit(function(a, b) {
     nvl_dot_general(a, b, contracting_dims = list(1L, 1L), batching_dims = list(integer(), integer()))
   })(x, y)
@@ -208,8 +208,8 @@ test_that("p_dot_general", {
   expect_equal(as_array(out), as.numeric(torch::torch_sum(tx * ty)), tolerance = 1e-5)
 
   # matrix-vector -> vector
-  A <- nv_tensor(matrix(rnorm(6), 3, 2), dtype = "f32")
-  v <- nv_tensor(rnorm(2), dtype = "f32")
+  A <- nv_array(matrix(rnorm(6), 3, 2), dtype = "f32")
+  v <- nv_array(rnorm(2), dtype = "f32")
   out2 <- jit(function(a, b) {
     nvl_dot_general(a, b, contracting_dims = list(2L, 1L), batching_dims = list(integer(), integer()))
   })(A, v)
@@ -218,8 +218,8 @@ test_that("p_dot_general", {
   expect_equal(as_array(out2), as_array_torch(tA$matmul(tv)), tolerance = 1e-5)
 
   # batched matmul
-  X <- nv_tensor(array(rnorm(2 * 3 * 4), c(2, 3, 4)), dtype = "f32")
-  Y <- nv_tensor(array(rnorm(2 * 4 * 5), c(2, 4, 5)), dtype = "f32")
+  X <- nv_array(array(rnorm(2 * 3 * 4), c(2, 3, 4)), dtype = "f32")
+  Y <- nv_array(array(rnorm(2 * 4 * 5), c(2, 4, 5)), dtype = "f32")
   out3 <- jit(function(a, b) {
     nvl_dot_general(a, b, contracting_dims = list(3L, 2L), batching_dims = list(1L, 1L))
   })(X, Y)
@@ -254,9 +254,57 @@ test_that("p_logistic", {
   expect_jit_torch_unary(nvl_logistic, torch::torch_sigmoid, c(2, 3))
 })
 
+describe("p_cholesky", {
+  it("lower = TRUE", {
+    A <- crossprod(matrix(rnorm(9), 3, 3)) + diag(3)
+    out_nv <- as_array(jit(function(a) nvl_cholesky(a, lower = TRUE))(nv_array(A, dtype = "f64")))
+    out_th <- as_array_torch(torch::linalg_cholesky(torch::torch_tensor(A, dtype = torch::torch_float64())))
+    expect_equal(out_nv, out_th, tolerance = 1e-6)
+  })
+
+  it("lower = FALSE", {
+    A <- crossprod(matrix(rnorm(9), 3, 3)) + diag(3)
+    out_nv <- as_array(jit(function(a) nvl_cholesky(a, lower = FALSE))(nv_array(A, dtype = "f64")))
+    out_th <- as_array_torch(torch::linalg_cholesky(torch::torch_tensor(A, dtype = torch::torch_float64()))$t())
+    expect_equal(out_nv, out_th, tolerance = 1e-6)
+  })
+})
+
+describe("p_triangular_solve", {
+  it("left_side, lower", {
+    L <- matrix(c(3, 1, 0, 2), nrow = 2)
+    b <- matrix(c(6, 5), nrow = 2)
+    out_nv <- as_array(jit(function(a, b) {
+      nvl_triangular_solve(a, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+    })(nv_array(L, dtype = "f64"), nv_array(b, dtype = "f64")))
+    out_th <- as_array_torch(torch::linalg_solve_triangular(
+      torch::torch_tensor(L, dtype = torch::torch_float64()),
+      torch::torch_tensor(b, dtype = torch::torch_float64()),
+      upper = FALSE,
+      left = TRUE
+    ))
+    expect_equal(out_nv, out_th, tolerance = 1e-6)
+  })
+
+  it("right_side, upper", {
+    U <- matrix(c(3, 0, 1, 2), nrow = 2)
+    b <- matrix(c(6, 5, 4, 3), nrow = 2)
+    out_nv <- as_array(jit(function(a, b) {
+      nvl_triangular_solve(a, b, left_side = FALSE, lower = FALSE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+    })(nv_array(U, dtype = "f64"), nv_array(b, dtype = "f64")))
+    out_th <- as_array_torch(torch::linalg_solve_triangular(
+      torch::torch_tensor(U, dtype = torch::torch_float64()),
+      torch::torch_tensor(b, dtype = torch::torch_float64()),
+      upper = TRUE,
+      left = FALSE
+    ))
+    expect_equal(out_nv, out_th, tolerance = 1e-6)
+  })
+})
+
 test_that("p_pad", {
   x_arr <- array(1:6, c(2, 3))
-  x_nv <- nv_tensor(x_arr, dtype = "f32")
+  x_nv <- nv_array(x_arr, dtype = "f32")
   x_th <- torch::torch_tensor(x_arr, dtype = torch::torch_float32())
 
   # Simple edge padding

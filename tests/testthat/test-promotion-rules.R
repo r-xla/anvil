@@ -1,10 +1,10 @@
 test_that("common_type_info: single argument", {
-  s1 <- AbstractTensor(as_dtype("i32"), Shape(c(1, 2)), FALSE)
+  s1 <- AbstractArray(as_dtype("i32"), Shape(c(1, 2)), FALSE)
   result <- common_type_info(s1)
   expect_equal(result[[1L]], as_dtype("i32"))
   expect_equal(result[[2L]], FALSE)
 
-  s2 <- AbstractTensor(as_dtype("f32"), Shape(c(2, 3)), TRUE)
+  s2 <- AbstractArray(as_dtype("f32"), Shape(c(2, 3)), TRUE)
   result <- common_type_info(s2)
   expect_equal(result[[1L]], as_dtype("f32"))
   expect_equal(result[[2L]], TRUE)
@@ -12,8 +12,8 @@ test_that("common_type_info: single argument", {
 
 test_that("common_type_info: two arguments", {
   check <- function(dt1, dt2, a1, a2, expected_dt, expected_ambiguous) {
-    s1 <- AbstractTensor(dt1, Shape(c(1, 2)), a1)
-    s2 <- AbstractTensor(dt2, Shape(c(2, 1)), a2)
+    s1 <- AbstractArray(dt1, Shape(c(1, 2)), a1)
+    s2 <- AbstractArray(dt2, Shape(c(2, 1)), a2)
     result <- common_type_info(s1, s2)
     expect_equal(result[[1L]], expected_dt)
     expect_equal(result[[2L]], expected_ambiguous)
@@ -43,9 +43,9 @@ test_that("common_type_info: two arguments", {
 })
 
 test_that("common_type_info: multiple arguments", {
-  i32 <- AbstractTensor(as_dtype("i32"), Shape(1), FALSE)
-  f32 <- AbstractTensor(as_dtype("f32"), Shape(2), FALSE)
-  f64 <- AbstractTensor(as_dtype("f64"), Shape(3), FALSE)
+  i32 <- AbstractArray(as_dtype("i32"), Shape(1), FALSE)
+  f32 <- AbstractArray(as_dtype("f32"), Shape(2), FALSE)
+  f64 <- AbstractArray(as_dtype("f64"), Shape(3), FALSE)
 
   result <- common_type_info(i32, f32, f64)
   expect_equal(result[[1L]], as_dtype("f64"))
@@ -60,8 +60,8 @@ test_that("common_type_info: multiple arguments", {
   expect_equal(result[[2L]], FALSE)
 
   # With ambiguous types
-  i32_amb <- AbstractTensor(as_dtype("i32"), Shape(1), TRUE)
-  i64_known <- AbstractTensor(as_dtype("i64"), Shape(2), FALSE)
+  i32_amb <- AbstractArray(as_dtype("i32"), Shape(1), TRUE)
+  i64_known <- AbstractArray(as_dtype("i64"), Shape(2), FALSE)
 
   result <- common_type_info(i32_amb, i64_known)
   expect_equal(result[[1L]], as_dtype("i64"))
@@ -86,19 +86,19 @@ test_that("promote_dt_known", {
 
   check("f64", "f64", "f64")
   check("i32", "i32", "i32")
-  check("i1", "i1", "i1")
+  check("bool", "bool", "bool")
 
   # floats dominate
   check("f64", "f32", "f64")
   check("f64", "i32", "f64")
   check("f32", "i32", "f32")
-  check("f32", "i1", "f32")
+  check("f32", "bool", "f32")
 
   # signed ints
   check("i32", "i16", "i32")
   check("i64", "i32", "i64")
   check("i64", "i16", "i64")
-  check("i64", "i1", "i64")
+  check("i64", "bool", "i64")
   # against unsigned ints
   check("i32", "ui8", "i32")
   check("i32", "ui32", "i64")
@@ -120,11 +120,11 @@ test_that("promote_dt_ambiguous", {
   }
   check("i32", "i32", "i32")
   check("f32", "f32", "f32")
-  check("i1", "i1", "i1")
+  check("bool", "bool", "bool")
 
   check("i32", "f32", "f32")
-  check("i1", "f32", "f32")
-  check("i1", "i32", "i32")
+  check("bool", "f32", "f32")
+  check("bool", "i32", "i32")
 })
 
 test_that("promote_dt_ambiguous_to_known", {
@@ -135,19 +135,19 @@ test_that("promote_dt_ambiguous_to_known", {
     )
   }
   check("i32", "i32", "i32")
-  check("i1", "i1", "i1")
+  check("bool", "bool", "bool")
   check("f32", "f32", "f32")
   # ambiguous can only be i32 or f32
 
   check("i32", "i8", "i8")
   check("i32", "i64", "i64")
-  check("i32", "i1", "i32")
+  check("i32", "bool", "i32")
   check("i64", "f32", "f32")
 
   check("f32", "f64", "f64")
   check("f64", "f32", "f32")
   check("f32", "i32", "f32")
 
-  check("i1", "f32", "f32")
-  check("i1", "i32", "i32")
+  check("bool", "f32", "f32")
+  check("bool", "i32", "i32")
 })

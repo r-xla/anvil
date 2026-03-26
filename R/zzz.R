@@ -52,6 +52,10 @@ register_namespace_callback <- function(pkgname, namespace, callback) {
 }
 
 .onLoad <- function(libname, pkgname) {
+  globals$backend <- normalize_backend(
+    getOption("anvil.backend", "xla")
+  )
+
   ns <- asNamespace(pkgname)
   for (name in ls(ns, pattern = "^p_")) {
     primitive <- get(name, envir = ns)
@@ -71,5 +75,5 @@ register_namespace_callback <- function(pkgname, namespace, callback) {
   )
 
   # Register compare_proxy for waldo/testthat
-  register_s3_method("waldo", "compare_proxy", "AnvilTensor")
+  register_s3_method("waldo", "compare_proxy", "AnvilArray")
 }

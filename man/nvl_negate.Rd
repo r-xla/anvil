@@ -7,22 +7,23 @@
 nvl_negate(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of data type integer or floating-point.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of data type integer or floating-point.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the input.
 It is ambiguous if the input is ambiguous.
 }
 \description{
-Negates a tensor element-wise.
+Negates an array element-wise.
 }
 \section{Implemented Rules}{
 
 \itemize{
 \item \code{stablehlo}
-\item \code{backward}
+\item \code{quickr}
+\item \code{reverse}
 }
 }
 
@@ -34,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_negate]{stablehlo::hlo_negate()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, -2, 3))
+  x <- nv_array(c(1, -2, 3))
   nvl_negate(x)
 })
 \dontshow{\}) # examplesIf}

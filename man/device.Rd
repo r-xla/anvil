@@ -2,13 +2,13 @@
 % Please edit documentation in R/reexports.R
 \name{device}
 \alias{device}
-\title{Get the device of a tensor}
+\title{Get the device of an array}
 \usage{
 device(x, ...)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-A tensor-like object.}
+\item{x}{(\code{\link{arrayish}})\cr
+An array-like object.}
 
 \item{...}{Additional arguments passed to methods (unused).}
 }
@@ -16,14 +16,14 @@ A tensor-like object.}
 \code{\link[pjrt:pjrt_device]{PJRTDevice}}
 }
 \description{
-Returns the device on which a tensor is allocated.
+Returns the device on which an array is allocated.
 }
 \details{
 This is implemented via the generic \code{\link[tengen:device]{tengen::device()}}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(1:4, dtype = "f32")
+x <- nv_array(1:4, dtype = "f32")
 device(x)
 \dontshow{\}) # examplesIf}
 }

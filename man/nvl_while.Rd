@@ -33,6 +33,7 @@ Otherwise, no state is maintained between iterations.
 
 \itemize{
 \item \code{stablehlo}
+\item \code{quickr}
 }
 }
 

@@ -7,18 +7,18 @@
 nv_ifelse(pred, true_value, false_value)
 }
 \arguments{
-\item{pred}{(\code{\link{tensorish}} of boolean type)\cr
-Predicate tensor. Must be scalar or the same shape as \code{true_value}.}
+\item{pred}{(\code{\link{arrayish}} of boolean type)\cr
+Predicate array. Must be scalar or the same shape as \code{true_value}.}
 
-\item{true_value}{(\code{\link{tensorish}})\cr
+\item{true_value}{(\code{\link{arrayish}})\cr
 Values to return where \code{pred} is \code{TRUE}.}
 
-\item{false_value}{(\code{\link{tensorish}})\cr
+\item{false_value}{(\code{\link{arrayish}})\cr
 Values to return where \code{pred} is \code{FALSE}.
 Must have the same shape and data type as \code{true_value}.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as \code{true_value}.
 }
 \description{
@@ -28,8 +28,8 @@ analogous to R's \code{\link[=ifelse]{ifelse()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  pred <- nv_tensor(c(TRUE, FALSE, TRUE))
-  nv_ifelse(pred, nv_tensor(c(1, 2, 3)), nv_tensor(c(4, 5, 6)))
+  pred <- nv_array(c(TRUE, FALSE, TRUE))
+  nv_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 })
 \dontshow{\}) # examplesIf}
 }

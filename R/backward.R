@@ -1,15 +1,15 @@
-check_wrt_tensorish <- function(args_flat, is_wrt_flat) {
+check_wrt_arrayish <- function(args_flat, is_wrt_flat) {
   for (i in seq_along(args_flat)) {
-    if (is_wrt_flat[[i]] && !is_tensorish(args_flat[[i]], literal = FALSE)) {
-      if (!is_tensorish(args_flat[[i]], literal = TRUE)) {
+    if (is_wrt_flat[[i]] && !is_arrayish(args_flat[[i]], literal = FALSE)) {
+      if (!is_arrayish(args_flat[[i]], literal = TRUE)) {
         cli_abort(c(
-          "Cannot compute gradient with respect to non-tensor argument.",
+          "Cannot compute gradient with respect to non-array argument.",
           x = "Got {.cls {class(args_flat[[i]])}}"
         ))
       }
       if (!inherits(dtype_abstract(args_flat[[i]]), "FloatType")) {
         cli_abort(c(
-          "Can only compute gradient with respect to float tensors.",
+          "Can only compute gradient with respect to float arrays.",
           x = "Got {repr(dtype_abstract(args_flat[[i]]))}"
         ))
       }
@@ -28,18 +28,18 @@ prepare_gradient_args <- function(args, wrt) {
     in_tree <- build_tree(args)
     is_wrt_flat <- rep(TRUE, length(args_flat))
   }
-  check_wrt_tensorish(args_flat, is_wrt_flat)
+  check_wrt_arrayish(args_flat, is_wrt_flat)
   list(args_flat = args_flat, in_tree = in_tree)
 }
 
 #' @title Transform a graph to its gradient
 #' @description
-#' Low-level graph transformation that appends the backward pass to a
+#' Low-level graph transformation that appends the reverse pass to a
 #' traced [`AnvilGraph`]. The function `f` represented by `graph` must return a single
 #' float scalar. The resulting graph computes the gradients of that scalar with respect
 #' to the inputs specified by `wrt`.
 #'
-#' The backward rules are stored in `$rules[["backward"]]` of the primitives.
+#' The reverse rules are stored in `$rules[["reverse"]]` of the primitives.
 #'
 #' This is the building block used by [`gradient()`] and [`value_and_gradient()`]; prefer
 #' those higher-level wrappers unless you need to operate on graphs directly.
@@ -51,7 +51,7 @@ prepare_gradient_args <- function(args, wrt) {
 #' @seealso [`gradient()`], [`value_and_gradient()`]
 #' @export
 #' @examples
-#' graph <- trace_fn(nvl_mul, list(nv_aten("f32", c()), nv_aten("f32", c())))
+#' graph <- trace_fn(nvl_mul, list(nv_abstract("f32", c()), nv_abstract("f32", c())))
 #' graph
 #' transform_gradient(graph, "lhs")
 transform_gradient <- function(graph, wrt) {
@@ -78,7 +78,7 @@ transform_gradient <- function(graph, wrt) {
   requires_grad_all <- flat_mask_from_names(graph$in_tree, wrt)
   # Filter mask to only include entries for non-static inputs
   # Note that in `gradient()` we already check that non of the wrts can be static.
-  # since in_tree may include static (non-tensor) args not present in graph$inputs.
+  # since in_tree may include static (non-array) args not present in graph$inputs.
   is_static <- graph$is_static_flat
   requires_grad <- if (is.null(is_static)) {
     requires_grad_all
@@ -124,14 +124,14 @@ transform_gradient <- function(graph, wrt) {
 
   # We need to initialize the descriptor with the forward graph's structure,
   # including the forward calls, so that intermediate values are available
-  # for the backward rules.
+  # for the reverse rules.
   init_desc_from_graph(desc, graph, outputs = FALSE)
   grad_env[[out]] <- get_box_or_register_const(
     desc,
     nv_scalar(1L, dtype = out$aval$dtype, ambiguous = out$aval$ambiguous)
   )
 
-  # Backward pass
+  # Reverse pass
   for (call in rev(graph$calls)) {
     # Check if any input requires grad - if not, skip this call
     input_required <- vapply(
@@ -156,12 +156,12 @@ transform_gradient <- function(graph, wrt) {
       }
     })
 
-    # Convert gvals to boxes for the backward pass
+    # Convert gvals to boxes for the reverse pass
     input_boxes <- lapply(call$inputs, \(x) desc$gval_to_box[[x]])
     output_boxes <- lapply(call$outputs, \(x) desc$gval_to_box[[x]])
 
     input_grads <- rlang::exec(
-      call$primitive[["backward"]],
+      call$primitive[["reverse"]],
       input_boxes,
       output_boxes,
       output_grads,
@@ -221,14 +221,14 @@ transform_gradient <- function(graph, wrt) {
 #' same signature as `f` and returns the gradients in the same structure as the inputs
 #' (or the subset selected by `wrt`).
 #' @param f (`function`)\cr
-#'   Function to differentiate. Arguments can be tensorish ([`AnvilTensor`]) or
-#'   static (non-tensor) values. Must return a single scalar float tensor.
+#'   Function to differentiate. Arguments can be arrayish ([`AnvilArray`]) or
+#'   static (non-array) values. Must return a single scalar float array.
 #' @param wrt (`character` or `NULL`)\cr
 #'   Names of the arguments to compute the gradient with respect to.
-#'   Only tensorish (float tensor) arguments can be included; static arguments
+#'   Only arrayish (float array) arguments can be included; static arguments
 #'   must not appear in `wrt`.
 #'   If `NULL` (the default), the gradient is computed with respect to all
-#'   arguments (which must all be tensorish in that case).
+#'   arguments (which must all be arrayish in that case).
 #' @return `function`
 #' @seealso [`value_and_gradient()`] to get both the output and gradients,
 #'   [`transform_gradient()`] for the low-level graph transformation.
@@ -236,16 +236,16 @@ transform_gradient <- function(graph, wrt) {
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' f <- function(x, y) sum(x * y)
 #' g <- jit(gradient(f))
-#' g(nv_tensor(c(1, 2), dtype = "f32"), nv_tensor(c(3, 4), dtype = "f32"))
+#' g(nv_array(c(1, 2), dtype = "f32"), nv_array(c(3, 4), dtype = "f32"))
 #'
 #' # Differentiate with respect to a single argument
 #' g_x <- jit(gradient(f, wrt = "x"))
-#' g_x(nv_tensor(c(1, 2), dtype = "f32"), nv_tensor(c(3, 4), dtype = "f32"))
+#' g_x(nv_array(c(1, 2), dtype = "f32"), nv_array(c(3, 4), dtype = "f32"))
 #'
-#' # Static (non-tensor) arguments are passed through but cannot be in wrt
+#' # Static (non-array) arguments are passed through but cannot be in wrt
 #' f2 <- function(x, power) sum(x^power)
 #' g2 <- jit(gradient(f2, wrt = "x"), static = "power")
-#' g2(nv_tensor(c(1, 2, 3), dtype = "f32"), power = 2L)
+#' g2(nv_array(c(1, 2, 3), dtype = "f32"), power = 2L)
 gradient <- function(f, wrt = NULL) {
   if (!is.null(wrt) && !all(wrt %in% formalArgs(f))) {
     cli_abort("wrt must be a subset of the formal arguments of f")
@@ -275,7 +275,7 @@ gradient <- function(f, wrt = NULL) {
 #' @title Value and Gradient
 #' @description
 #' Returns a new function that computes both the output of `f` and its gradient in a
-#' single forward+backward pass. The result is a named list with elements `value` (the
+#' single forward+reverse pass. The result is a named list with elements `value` (the
 #' original return value of `f`) and `grad` (the gradients, structured like the inputs or
 #' the `wrt` subset).
 #' @inheritParams gradient
@@ -286,7 +286,7 @@ gradient <- function(f, wrt = NULL) {
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' loss_fn <- function(x) sum(x^2L)
 #' vg <- jit(value_and_gradient(loss_fn))
-#' result <- vg(nv_tensor(c(3, 4), dtype = "f32"))
+#' result <- vg(nv_array(c(3, 4), dtype = "f32"))
 #' result$value
 #' result$grad
 value_and_gradient <- function(f, wrt = NULL) {

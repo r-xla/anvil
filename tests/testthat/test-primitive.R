@@ -13,15 +13,41 @@ test_that("prim", {
   expect_list(prim(), types = "AnvilPrimitive")
 })
 
+test_that("quickr rules are exposed through primitives", {
+  expect_true(is.function(prim("add")[["quickr"]]))
+  expect_null(prim("print")[["quickr"]])
+})
+
+documented_primitive_ids <- function() {
+  primitives_path <- testthat::test_path("..", "..", "R", "primitives.R")
+  if (!file.exists(primitives_path)) {
+    testthat::skip("R/primitives.R is only available when testing from package source")
+  }
+
+  primitive_lines <- readLines(primitives_path)
+  sub(
+    "^#' @templateVar primitive_id ",
+    "",
+    grep("^#' @templateVar primitive_id ", primitive_lines, value = TRUE)
+  )
+}
+
+test_that("documented primitive ids resolve to registered primitives", {
+  primitive_ids <- documented_primitive_ids()
+
+  missing <- primitive_ids[vapply(primitive_ids, function(id) is.null(prim(id)), logical(1))]
+  expect_identical(missing, character())
+})
+
 describe("subgraphs", {
   it("extracts subgraphs from higher-order primitives", {
     true_graph <- trace_fn(function() nv_scalar(1), list())
     false_graph <- trace_fn(function() nv_scalar(2), list())
     call <- PrimitiveCall(
       primitive = p_if,
-      inputs = list(GraphValue(aval = nv_aten("pred", integer()))),
+      inputs = list(GraphValue(aval = nv_abstract("bool", integer()))),
       params = list(true_graph = true_graph, false_graph = false_graph),
-      outputs = list(GraphValue(aval = nv_aten("f32", integer())))
+      outputs = list(GraphValue(aval = nv_abstract("f32", integer())))
     )
 
     subgraphs_list <- subgraphs(call)
@@ -33,9 +59,9 @@ describe("subgraphs", {
   it("returns empty list for non-higher-order primitives", {
     call <- PrimitiveCall(
       primitive = p_add,
-      inputs = list(GraphValue(aval = nv_aten("f32", integer())), GraphValue(aval = nv_aten("f32", integer()))),
+      inputs = list(GraphValue(aval = nv_abstract("f32", integer())), GraphValue(aval = nv_abstract("f32", integer()))),
       params = list(),
-      outputs = list(GraphValue(aval = nv_aten("f32", integer())))
+      outputs = list(GraphValue(aval = nv_abstract("f32", integer())))
     )
     expect_length(subgraphs(call), 0L)
   })

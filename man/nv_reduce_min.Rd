@@ -7,7 +7,7 @@
 nv_reduce_min(operand, dims, drop = TRUE)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
 \item{dims}{(\code{integer()})\cr
@@ -17,18 +17,18 @@ Dimensions to reduce.}
 Whether to drop reduced dimensions.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same data type as the input.
 When \code{drop = TRUE}, the reduced dimensions are removed.
 When \code{drop = FALSE}, the reduced dimensions are set to 1.
 }
 \description{
-Finds the minimum of tensor elements along the specified dimensions.
+Finds the minimum of array elements along the specified dimensions.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(matrix(1:6, nrow = 2))
+  x <- nv_array(matrix(1:6, nrow = 2))
   nv_reduce_min(x, dims = 1L)
 })
 \dontshow{\}) # examplesIf}

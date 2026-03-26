@@ -2,13 +2,13 @@
 % Please edit documentation in R/reexports.R
 \name{platform}
 \alias{platform}
-\title{Get the platform of a tensor or buffer}
+\title{Get the platform of an array or buffer}
 \usage{
 platform(x, ...)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-A tensor-like object.}
+\item{x}{(\code{\link{arrayish}})\cr
+An array-like object.}
 
 \item{...}{Additional arguments passed to methods (unused).}
 }
@@ -24,7 +24,7 @@ Implemented via the generic \code{\link[pjrt:platform]{pjrt::platform()}}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(1:4, dtype = "f32")
+x <- nv_array(1:4, dtype = "f32")
 platform(x)
 \dontshow{\}) # examplesIf}
 }

@@ -76,6 +76,9 @@ p_dynamic_slice[["stablehlo"]] <- function(operand, ..., slice_sizes) {
 
 p_dynamic_update_slice[["stablehlo"]] <- function(operand, update, ...) {
   start_indices <- list(...)
+  if (!length(start_indices)) {
+    return(list(update))
+  }
   # Convert start indices from 1-based to 0-based by subtracting 1
   start_indices_0based <- lapply(start_indices, function(idx) {
     one <- stablehlo::hlo_scalar(1L, dtype = dtype(idx), func = idx$func)
@@ -161,7 +164,7 @@ p_reduce_all[["stablehlo"]] <- function(operand, dims, drop) {
     "FLOAT"
   } else if (inherits(dt, "IntegerType")) {
     "SIGNED"
-  } else if (inherits(dt, "UnsignedType") || inherits(dt, "BooleanType")) {
+  } else if (inherits(dt, "UIntegerType") || inherits(dt, "BooleanType")) {
     "UNSIGNED"
   } else {
     cli_abort("Unsupported dtype for compare")
@@ -358,7 +361,7 @@ p_rng_bit_generator[["stablehlo"]] <- function(initial_state, rng_algorithm, dty
 
 p_print[["stablehlo"]] <- function(operand, footer) {
   backend_config <- stablehlo::CustomOpBackendConfig(list(
-    stablehlo::StringAttr(name = "print_header", value = "AnvilTensor"),
+    stablehlo::StringAttr(name = "print_header", value = "AnvilArray"),
     stablehlo::StringAttr(name = "print_footer", value = footer)
   ))
 
@@ -465,4 +468,36 @@ p_gather[["stablehlo"]] <- function(
   )
 
   list(result)
+}
+
+p_cholesky[["stablehlo"]] <- function(operand, lower) {
+  L <- stablehlo::hlo_cholesky(operand, lower = lower)
+  # The non-triangular part of the output is implementation-defined.
+  # Zero it out so downstream code (including reverse rules) never sees garbage.
+  op_shape <- shape(operand$value_type)
+  n <- op_shape[length(op_shape)]
+  mat_shape <- c(n, n)
+  rows <- stablehlo::hlo_iota(iota_dimension = 0L, dtype = "i32", shape = mat_shape, func = operand$func)
+  cols <- stablehlo::hlo_iota(iota_dimension = 1L, dtype = "i32", shape = mat_shape, func = operand$func)
+  mask <- if (lower) {
+    stablehlo::hlo_compare(rows, cols, comparison_direction = "GE", compare_type = "SIGNED")
+  } else {
+    stablehlo::hlo_compare(rows, cols, comparison_direction = "LE", compare_type = "SIGNED")
+  }
+  if (length(op_shape) > 2L) {
+    mask <- stablehlo::hlo_broadcast_in_dim(mask, (length(op_shape) - 2L):(length(op_shape) - 1L), op_shape)
+  }
+  zero <- stablehlo::hlo_tensor(0L, dtype = dtype(operand), shape = op_shape)
+  list(stablehlo::hlo_select(mask, L, zero))
+}
+
+p_triangular_solve[["stablehlo"]] <- function(a, b, left_side, lower, unit_diagonal, transpose_a) {
+  list(stablehlo::hlo_triangular_solve(
+    a,
+    b,
+    left_side = left_side,
+    lower = lower,
+    unit_diagonal = unit_diagonal,
+    transpose_a = transpose_a
+  ))
 }

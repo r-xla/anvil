@@ -3,9 +3,9 @@ NULL
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom stablehlo repr BooleanType IntegerType FloatType Shape FuncId Func as_dtype FuncValue
+#' @importFrom stablehlo repr Shape FuncId Func FuncValue
 #' @importFrom stablehlo local_func hlo_input hlo_return hlo_tensor hlo_scalar
-#' @importFrom stablehlo UnsignedType TensorType
+#' @importFrom stablehlo TensorType
 #' @import checkmate
 #' @import tengen
 #' @importFrom pjrt pjrt_buffer pjrt_scalar pjrt_execute pjrt_compile pjrt_program elt_type
@@ -19,9 +19,40 @@ NULL
 NULL
 
 globals <- new.env()
-globals$nv_types <- "AnvilTensor"
-globals$interpretation_rules <- c("stablehlo", "backward")
+globals$nv_types <- "AnvilArray"
+globals$interpretation_rules <- c("stablehlo", "quickr", "reverse")
 globals[["DESCRIPTOR_STASH"]] <- list()
 globals[["CURRENT_DESCRIPTOR"]] <- NULL
+globals$backend <- "xla"
 
 utils::globalVariables(c("globals"))
+
+normalize_backend <- function(backend) {
+  assert_string(backend)
+  backend <- tolower(backend)
+  assert_choice(backend, c("xla", "quickr"))
+  backend
+}
+
+current_backend <- function() {
+  desc <- .current_descriptor(silent = TRUE)
+  if (!is.null(desc) && !is.null(desc$backend)) {
+    return(desc$backend)
+  }
+  globals$backend
+}
+
+#' Temporarily override the active backend
+#'
+#' @param backend (`character(1)`)\cr
+#'   Backend to use (`"xla"` or `"quickr"`).
+#' @param code Expression to evaluate with the overridden backend.
+#' @return The result of evaluating `code`.
+#' @keywords internal
+with_backend <- function(backend, code) {
+  backend <- normalize_backend(backend)
+  old <- globals$backend
+  globals$backend <- backend
+  on.exit(globals$backend <- old, add = TRUE)
+  force(code)
+}

@@ -11,7 +11,7 @@ nv_rng_state(seed)
 Seed value.}
 }
 \value{
-\code{\link{nv_tensor}} of dtype \code{ui64} and shape \code{(2)}.
+\code{\link{nv_array}} of dtype \code{ui64} and shape \code{(2)}.
 }
 \description{
 Creates an initial RNG state from a seed. This state is required by all

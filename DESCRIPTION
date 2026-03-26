@@ -11,7 +11,7 @@ Authors@R: c(
   )
 Description: Code transformation framework for R.
 License: MIT + file LICENSE
-URL: https://r-xla.github.io/anvil/, https://github.com/r-xla/anvild
+URL: https://r-xla.github.io/anvil/, https://github.com/r-xla/anvil
 BugReports: https://github.com/r-xla/anvil/issues
 Depends:
     R (>= 4.2.0)
@@ -30,12 +30,14 @@ Suggests:
     knitr,
     quarto,
     rmarkdown,
+    quickr (>= 0.2.1.9000),
     testthat (>= 3.0.0)
 Remotes:
     r-xla/stablehlo,
-    r-xla/tengen@*release,
-    r-xla/xlamisc@*release,
-    r-xla/pjrt
+    r-xla/tengen,
+    r-xla/xlamisc,
+    r-xla/pjrt,
+    t-kalinowski/quickr
 Additional_repositories:
     https://r-xla.r-universe.dev
 VignetteBuilder:
@@ -56,16 +58,20 @@ Collate:
     'jit.R'
     'api-subset.R'
     'api-utilities.R'
+    'array.R'
     'asserts.R'
     'backward.R'
+    'bibentries.R'
     'box.R'
-    'tensor.R'
     'debug.R'
     'flatten.R'
     'graph-passes.R'
     'graph.R'
     'graph-print.R'
+    'rules-quickr.R'
+    'graph-to-quickr.R'
     'promotion.R'
+    'quickr.R'
     'reexports.R'
     'rules-backward.R'
     'rules-stablehlo.R'

@@ -1,3 +1,5 @@
+@../claude-config/AGENTS.md
+
 ## Package Overview
 
 `anvil` is a code transformation framework similar to jax for R.
@@ -31,8 +33,8 @@ testthat::test_file("tests/testthat/test-constant.R")
 ### Testing Guidelines
 
 Each rule of each primitive should be tested.
-Many tests can be implemented by comparing with the corresponding torch function (inst/extra-tests/test-primitives-stablehlo-torch.R and inst/extra-tests/test-primitives-backward-torch.R, ...).
-These are sourced in test-primitives-stablehlo.R and test-primitives-backward.R, etc..
+Many tests can be implemented by comparing with the corresponding torch function (inst/extra-tests/test-primitives-stablehlo-torch.R and inst/extra-tests/test-primitives-reverse-torch.R, ...).
+These are sourced in test-primitives-stablehlo.R and test-primitives-reverse.R, etc..
 Implement the test by comparing with torch, if possible and necessary.
 If the test is very simple, or the functionality not covered by torch, implement the test manually.
 Implement either the torch test OR the manual test, but not both.
@@ -93,12 +95,12 @@ Pay attention that stablehlo uses 0-based indexing, but `anvil` uses 1-based ind
 
 API functions are prefixed by `nv_` and are defined in files like api.R or api-rng.R.
 Often, they wrap primitives, but make them more convenient to use.
-When accessing properties from `tensorish` values, use `shape_abstract`, `ndims_abstract`, and `dtype_abstract`.
+When accessing properties from `arrayish` values, use `shape_abstract`, `ndims_abstract`, and `dtype_abstract`.
 Other accessors are currently not available.
 
 ## NSE and Tracing
 
-Whenever we are combining non-standard evaluation (NSE) with tracing of sub-graphs, we need to `force()` the tensorish inputs, so they are not accidentally embedded into the sub-graphdescriptor.
+Whenever we are combining non-standard evaluation (NSE) with tracing of sub-graphs, we need to `force()` the arrayish inputs, so they are not accidentally embedded into the sub-graphdescriptor.
 This can happen in R, because the evaluation of promises in function calls is delayed until they are actually needed, which causes hard-to-debug errors.
 
 ## Pkgdown

@@ -7,11 +7,11 @@
 nvl_tanh(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of data type floating-point.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of data type floating-point.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the input.
 It is ambiguous if the input is ambiguous.
 }
@@ -22,7 +22,8 @@ Element-wise hyperbolic tangent.
 
 \itemize{
 \item \code{stablehlo}
-\item \code{backward}
+\item \code{quickr}
+\item \code{reverse}
 }
 }
 
@@ -34,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_tanh]{stablehlo::hlo_tanh()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(-1, 0, 1))
+  x <- nv_array(c(-1, 0, 1))
   nvl_tanh(x)
 })
 \dontshow{\}) # examplesIf}

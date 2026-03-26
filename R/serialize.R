@@ -1,15 +1,15 @@
-#' @title Save tensors to a file
+#' @title Save arrays to a file
 #'
 #' @description
-#' Saves a named list of tensors to a file in the
+#' Saves a named list of arrays to a file in the
 #' [safetensors](https://huggingface.co/docs/safetensors/index) format.
 #'
 #' @details
 #' This is a convenience wrapper around [`nv_serialize()`] that opens and closes
 #' a file connection.
 #'
-#' @param tensors (named `list` of [`AnvilTensor`])\cr
-#'   Named list of tensors to save. Names must be unique.
+#' @param arrays (named `list` of [`AnvilArray`])\cr
+#'   Named list of arrays to save. Names must be unique.
 #' @param path (`character(1)`)\cr
 #'   File path to write to.
 #'
@@ -17,25 +17,25 @@
 #' @seealso [nv_read()], [nv_serialize()], [nv_unserialize()]
 #' @export
 #' @examplesIf pjrt::plugin_is_downloaded("cpu")
-#' x <- nv_tensor(array(1:6, dim = c(2, 3)))
+#' x <- nv_array(array(1:6, dim = c(2, 3)))
 #' x
 #' path <- tempfile(fileext = ".safetensors")
 #' nv_save(list(x = x), path)
 #' nv_read(path)
-nv_save <- function(tensors, path) {
-  checkmate::assert_list(tensors, names = "unique", types = "AnvilTensor")
+nv_save <- function(arrays, path) {
+  checkmate::assert_list(arrays, names = "unique", types = "AnvilArray")
   checkmate::assert_string(path)
 
   con <- file(path, "wb")
   on.exit(close(con), add = TRUE)
-  nv_serialize(tensors, con = con)
+  nv_serialize(arrays, con = con)
   invisible(NULL)
 }
 
-#' @title Read tensors from a file
+#' @title Read arrays from a file
 #'
 #' @description
-#' Loads tensors from a file in the
+#' Loads arrays from a file in the
 #' [safetensors](https://huggingface.co/docs/safetensors/index) format.
 #'
 #' @details
@@ -45,14 +45,14 @@ nv_save <- function(tensors, path) {
 #' @param path (`character(1)`)\cr
 #'   Path to the safetensors file.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
-#'   The device on which to place the loaded tensors (`"cpu"`, `"cuda"`, ...).
+#'   The device on which to place the loaded arrays (`"cpu"`, `"cuda"`, ...).
 #'   Default is to use the CPU.
 #'
-#' @returns Named `list` of [`AnvilTensor`] objects.
+#' @returns Named `list` of [`AnvilArray`] objects.
 #' @seealso [nv_save()], [nv_serialize()], [nv_unserialize()]
 #' @export
 #' @examplesIf pjrt::plugin_is_downloaded("cpu")
-#' x <- nv_tensor(array(1:6, dim = c(2, 3)))
+#' x <- nv_array(array(1:6, dim = c(2, 3)))
 #' x
 #' path <- tempfile(fileext = ".safetensors")
 #' nv_save(list(x = x), path)
@@ -65,17 +65,17 @@ nv_read <- function(path, device = NULL) {
   nv_unserialize(con, device = device)
 }
 
-#' @title Serialize tensors to raw bytes
+#' @title Serialize arrays to raw bytes
 #'
 #' @description
-#' Serializes a named list of tensors into the
+#' Serializes a named list of arrays into the
 #' [safetensors](https://huggingface.co/docs/safetensors/index) format.
 #'
 #' @details
-#' The ambiguity of the tensors is stored in the metadata and preserved in write-read roundtrips.
+#' The ambiguity of the arrays is stored in the metadata and preserved in write-read roundtrips.
 #'
-#' @param tensors (named `list` of [`AnvilTensor`])\cr
-#'   Named list of tensors to serialize. Names must be unique.
+#' @param arrays (named `list` of [`AnvilArray`])\cr
+#'   Named list of arrays to serialize. Names must be unique.
 #' @param con (`NULL` | connection)\cr
 #'   An optional connection to write to.
 #'   If `NULL` (default), a raw vector is returned.
@@ -84,54 +84,54 @@ nv_read <- function(path, device = NULL) {
 #' @seealso [nv_unserialize()], [nv_save()], [nv_read()]
 #' @export
 #' @examplesIf pjrt::plugin_is_downloaded("cpu")
-#' x <- nv_tensor(array(1:6, dim = c(2, 3)))
+#' x <- nv_array(array(1:6, dim = c(2, 3)))
 #' x
 #' raw_data <- nv_serialize(list(x = x))
 #' raw_data
 #' nv_unserialize(raw_data)
-nv_serialize <- function(tensors, con = NULL) {
-  checkmate::assert_list(tensors, names = "unique", types = "AnvilTensor")
+nv_serialize <- function(arrays, con = NULL) {
+  checkmate::assert_list(arrays, names = "unique", types = "AnvilArray")
 
   # Extract ambiguity information to store in metadata
-  ambiguity_info <- lapply(tensors, function(t) if (ambiguous(t)) TRUE else FALSE)
-  names(ambiguity_info) <- names(tensors)
+  ambiguity_info <- lapply(arrays, function(t) if (ambiguous(t)) TRUE else FALSE)
+  names(ambiguity_info) <- names(arrays)
 
   # Serialize using base R serialize() as raw bytes, encoded as hex string
   raw_bytes <- serialize(ambiguity_info, connection = NULL)
   hex_string <- paste(sprintf("%02x", as.integer(raw_bytes)), collapse = "")
   metadata <- list(`__ambiguity_info__` = hex_string)
 
-  # Unwrap AnvilTensors to get underlying PJRTBuffers for safetensors
-  tensors_unwrapped <- lapply(tensors, unwrap_if_tensor)
+  # Unwrap AnvilArrays to get underlying PJRTBuffers for safetensors
+  arrays_unwrapped <- lapply(arrays, unwrap_if_array)
 
   if (is.null(con)) {
-    safetensors::safe_serialize(tensors_unwrapped, metadata = metadata)
+    safetensors::safe_serialize(arrays_unwrapped, metadata = metadata)
   } else {
-    safetensors::safe_save_file(tensors_unwrapped, con, metadata = metadata)
+    safetensors::safe_save_file(arrays_unwrapped, con, metadata = metadata)
   }
 }
 
-#' @title Deserialize tensors from raw bytes
+#' @title Deserialize arrays from raw bytes
 #'
 #' @description
-#' Deserializes tensors from the
+#' Deserializes arrays from the
 #' [safetensors](https://huggingface.co/docs/safetensors/index) format.
 #'
 #' @details
-#' The data type, shape, and [ambiguity][ambiguous()] of each tensor are
+#' The data type, shape, and [ambiguity][ambiguous()] of each array are
 #' restored from the serialized data.
 #'
 #' @param con (connection | [`raw`])\cr
 #'   A connection or raw vector to read from.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
-#'   The device on which to place the loaded tensors (`"cpu"`, `"cuda"`, ...).
+#'   The device on which to place the loaded arrays (`"cpu"`, `"cuda"`, ...).
 #'   Default is to use the CPU.
 #'
-#' @returns Named `list` of [`AnvilTensor`] objects.
+#' @returns Named `list` of [`AnvilArray`] objects.
 #' @seealso [nv_serialize()], [nv_save()], [nv_read()]
 #' @export
 #' @examplesIf pjrt::plugin_is_downloaded("cpu")
-#' x <- nv_tensor(array(1:6, dim = c(2, 3)))
+#' x <- nv_array(array(1:6, dim = c(2, 3)))
 #' x
 #' raw_data <- nv_serialize(list(x = x))
 #' raw_data
@@ -155,16 +155,16 @@ nv_unserialize <- function(con, device = NULL) {
     NULL
   }
 
-  # Wrap each tensor with correct ambiguity
+  # Wrap each array with correct ambiguity
   result_wrapped <- lapply(names(result), function(name) {
-    tensor <- result[[name]]
-    # Check if there's ambiguity metadata for this tensor
+    buf <- result[[name]]
+    # Check if there's ambiguity metadata for this array
     is_ambiguous <- if (!is.null(ambiguity_info) && !is.null(ambiguity_info[[name]])) {
       isTRUE(ambiguity_info[[name]])
     } else {
       FALSE
     }
-    ensure_nv_tensor(tensor, ambiguous = is_ambiguous)
+    ensure_nv_array(buf, ambiguous = is_ambiguous)
   })
   names(result_wrapped) <- names(result)
   result_wrapped

@@ -2,7 +2,7 @@
 % Please edit documentation in R/reexports.R
 \name{is_dtype}
 \alias{is_dtype}
-\title{Check if an object is a TensorDataType}
+\title{Check if an object is a DataType}
 \usage{
 is_dtype(x)
 }
@@ -13,12 +13,12 @@ is_dtype(x)
 \code{TRUE} or \code{FALSE}.
 }
 \description{
-Tests whether \code{x} is a \code{TensorDataType} object.
+Tests whether \code{x} is a \code{DataType} object.
 }
 \examples{
 is_dtype("f32")
 is_dtype(as_dtype("f32"))
 }
 \seealso{
-\code{\link[=as_dtype]{as_dtype()}}, \code{\link[stablehlo:is_dtype]{stablehlo::is_dtype()}}
+\code{\link[=as_dtype]{as_dtype()}}, \code{\link[tengen:is_dtype]{tengen::is_dtype()}}
 }

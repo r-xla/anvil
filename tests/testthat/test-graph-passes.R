@@ -32,11 +32,11 @@ describe("inline_scalarish_constants", {
       out <- stablehlo(graph)
       func <- out[[1L]]
       consts <- out[[2L]]
-      const_tensors <- lapply(consts, \(c) c$aval$data$tensor)
+      const_arrays <- lapply(consts, \(c) c$aval$data$data)
       program <- pjrt::pjrt_program(src = stablehlo::repr(func), format = "mlir")
       exec <- pjrt::pjrt_compile(program)
-      inputs_flat <- lapply(flatten(args), \(a) a$tensor)
-      do.call(pjrt::pjrt_execute, c(list(exec), const_tensors, inputs_flat, list(simplify = FALSE)))
+      inputs_flat <- lapply(flatten(args), \(a) a$data)
+      do.call(pjrt::pjrt_execute, c(list(exec), const_arrays, inputs_flat, list(simplify = FALSE)))
     }
 
     expect_equal(run(graph), run(new_graph))
@@ -75,7 +75,7 @@ describe("inline_scalarish_constants", {
   })
 
   it("replaces scalarish constant", {
-    const_scalar <- nv_tensor(5, shape = c(1, 1, 1))
+    const_scalar <- nv_array(5, shape = c(1, 1, 1))
     f <- function(x) {
       x + const_scalar
     }
@@ -250,7 +250,7 @@ describe("inline_scalarish_constants", {
   })
 
   it("does not inline non-scalarish constants", {
-    y <- nv_tensor(1:2)
+    y <- nv_array(1:2)
     f <- function() y
     graph <- trace_fn(f, list())
     new_graph <- inline_scalarish_constants(graph)

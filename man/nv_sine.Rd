@@ -7,11 +7,11 @@
 nv_sine(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as the input.
 }
 \description{
@@ -20,7 +20,7 @@ Element-wise sine. You can also use \code{sin()}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(0, pi / 2, pi))
+  x <- nv_array(c(0, pi / 2, pi))
   sin(x)
 })
 \dontshow{\}) # examplesIf}

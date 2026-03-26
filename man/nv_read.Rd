@@ -2,7 +2,7 @@
 % Please edit documentation in R/serialize.R
 \name{nv_read}
 \alias{nv_read}
-\title{Read tensors from a file}
+\title{Read arrays from a file}
 \usage{
 nv_read(path, device = NULL)
 }
@@ -11,14 +11,14 @@ nv_read(path, device = NULL)
 Path to the safetensors file.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
-The device on which to place the loaded tensors (\code{"cpu"}, \code{"cuda"}, ...).
+The device on which to place the loaded arrays (\code{"cpu"}, \code{"cuda"}, ...).
 Default is to use the CPU.}
 }
 \value{
-Named \code{list} of \code{\link{AnvilTensor}} objects.
+Named \code{list} of \code{\link{AnvilArray}} objects.
 }
 \description{
-Loads tensors from a file in the
+Loads arrays from a file in the
 \href{https://huggingface.co/docs/safetensors/index}{safetensors} format.
 }
 \details{
@@ -27,7 +27,7 @@ closes a file connection.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded("cpu")) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(array(1:6, dim = c(2, 3)))
+x <- nv_array(array(1:6, dim = c(2, 3)))
 x
 path <- tempfile(fileext = ".safetensors")
 nv_save(list(x = x), path)

@@ -1,2 +1,2 @@
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same shape as the input and boolean data type.

@@ -19,7 +19,7 @@ expect_jit_unary <- function(nv_fun, rfun, x, scalar = !is.array(x)) {
   out <- if (scalar) {
     f(nv_scalar(x))
   } else {
-    f(nv_tensor(x))
+    f(nv_array(x))
   }
   testthat::expect_equal(as_array(out), rfun(x), tolerance = 1e-6)
 }
@@ -31,7 +31,7 @@ expect_jit_binary <- function(nv_fun, rfun, x, y, scalar = TRUE) {
   out <- if (scalar) {
     f(nv_scalar(x), nv_scalar(y))
   } else {
-    f(nv_tensor(x), nv_tensor(y))
+    f(nv_array(x), nv_array(y))
   }
   testthat::expect_equal(as_array(out), rfun(x, y), tolerance = 1e-6)
 }
@@ -67,7 +67,7 @@ is_cpu <- function() {
 }
 
 generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
-  data <- if (dtype == "pred") {
+  data <- if (dtype == "bool") {
     sample(c(TRUE, FALSE), size = prod(dimension), replace = TRUE)
   } else if (dtype %in% c("ui8", "ui16", "ui32", "ui64")) {
     sample(0:20, size = prod(dimension), replace = TRUE)
@@ -104,7 +104,7 @@ verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
   }
   grads <- jit(gradient(f))(x)
   shp <- shape(x)
-  expected <- nv_tensor(0, shape = shp, dtype = dtype(x), ambiguous = ambiguous(x))
+  expected <- nv_array(0, shape = shp, dtype = dtype(x), ambiguous = ambiguous(x))
   testthat::expect_equal(grads[[1L]], expected)
 }
 
@@ -116,8 +116,8 @@ verify_zero_grad_binary <- function(nvl_fn, x, y) {
   }
   grads <- jit(gradient(f))(x, y)
   shp <- shape(x)
-  expected1 <- nv_tensor(0, shape = shp, dtype = dtype(x), ambiguous = ambiguous(x))
-  expected2 <- nv_tensor(0, shape = shp, dtype = dtype(y), ambiguous = ambiguous(y))
+  expected1 <- nv_array(0, shape = shp, dtype = dtype(x), ambiguous = ambiguous(x))
+  expected2 <- nv_array(0, shape = shp, dtype = dtype(y), ambiguous = ambiguous(y))
   testthat::expect_equal(grads[[1L]], expected1)
   testthat::expect_equal(grads[[2L]], expected2)
 }

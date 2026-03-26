@@ -1,7 +1,7 @@
 # the main tests are in {pjrt}, hence we keep them minimal here
 
-test_that("nv_serialize and nv_unserialize work for single tensor", {
-  x <- nv_tensor(array(rnorm(12), dim = c(3, 4)))
+test_that("nv_serialize and nv_unserialize work for single array", {
+  x <- nv_array(array(rnorm(12), dim = c(3, 4)))
   lst <- list(x = x)
   raw_data <- nv_serialize(lst)
   expect_type(raw_data, "raw")
@@ -9,8 +9,8 @@ test_that("nv_serialize and nv_unserialize work for single tensor", {
   expect_equal(lst, reloaded)
 })
 
-test_that("nv_save and nv_read works for a single tensor", {
-  x <- nv_tensor(array(rnorm(12), dim = c(3, 4)))
+test_that("nv_save and nv_read works for a single array", {
+  x <- nv_array(array(rnorm(12), dim = c(3, 4)))
   lst <- list(x = x)
   tmp <- tempfile(fileext = ".safetensors")
   nv_save(lst, tmp)
@@ -19,9 +19,9 @@ test_that("nv_save and nv_read works for a single tensor", {
 })
 
 test_that("serialization preserves ambiguity", {
-  # Create tensors with different ambiguity
+  # Create arrays with different ambiguity
   ambiguous_tensor <- nv_scalar(1.0, ambiguous = TRUE) # ambiguous
-  non_ambiguous_tensor <- nv_tensor(1.0, dtype = "f32") # non-ambiguous
+  non_ambiguous_tensor <- nv_array(1.0, dtype = "f32") # non-ambiguous
 
   lst <- list(
     ambiguous = ambiguous_tensor,

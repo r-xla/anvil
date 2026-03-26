@@ -3,7 +3,7 @@
     Code
       out <<- f(x)
     Output
-      AnvilTensor
+      AnvilArray
        1
        2
        3

@@ -5,7 +5,7 @@
 #' random sampling functions and is updated after each call.
 #' @param seed (`integer(1)`)\cr
 #'   Seed value.
-#' @return [`nv_tensor`] of dtype `ui64` and shape `(2)`.
+#' @return [`nv_array`] of dtype `ui64` and shape `(2)`.
 #' @family rng
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
@@ -19,7 +19,9 @@ nv_rng_state <- function(seed) {
 }
 
 #' @include jit.R
-.nv_rng_state <- jit(function(state) {
-  state <- nv_bitcast_convert(state, dtype = "ui16")
-  nv_convert(state, "ui64")
-})
+.nv_rng_state <- jit(
+  function(state) {
+    state <- nv_bitcast_convert(state, dtype = "ui16")
+    nv_convert(state, "ui64")
+  }
+)

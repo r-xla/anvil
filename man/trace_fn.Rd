@@ -9,7 +9,7 @@ trace_fn(
   args = NULL,
   desc = NULL,
   toplevel = FALSE,
-  lit_to_tensor = FALSE,
+  lit_to_array = FALSE,
   args_flat = NULL,
   in_tree = NULL
 )
@@ -18,7 +18,7 @@ trace_fn(
 \item{f}{(\code{function})\cr
 The function to trace. Must not be a \code{JitFunction} (i.e. already jitted).}
 
-\item{args}{(\code{list} of (\code{\link{AnvilTensor}} | \code{\link{AbstractTensor}}))\cr
+\item{args}{(\code{list} of (\code{\link{AnvilArray}} | \code{\link{AbstractArray}}))\cr
 The (unflattened) arguments to the function. Mutually exclusive with the
 \code{args_flat}/\code{in_tree} pair.}
 
@@ -26,11 +26,11 @@ The (unflattened) arguments to the function. Mutually exclusive with the
 Optional descriptor. When \code{NULL} (default), a new descriptor is created.}
 
 \item{toplevel}{(\code{logical(1)})\cr
-If \code{TRUE}, concrete \code{\link{AnvilTensor}} inputs are treated as unknown (traced) values.
+If \code{TRUE}, concrete \code{\link{AnvilArray}} inputs are treated as unknown (traced) values.
 If \code{FALSE} (default), they are treated as known constants.}
 
-\item{lit_to_tensor}{(\code{logical(1)})\cr
-Whether to convert literal inputs to tensors. Used internally by higher-order
+\item{lit_to_array}{(\code{logical(1)})\cr
+Whether to convert literal inputs to arrays. Used internally by higher-order
 primitives such as \code{nv_if} and \code{nv_while}.}
 
 \item{args_flat}{(\code{list})\cr
@@ -43,7 +43,7 @@ Tree structure describing how \code{args_flat} maps back to \code{f}'s arguments
 An \code{\link{AnvilGraph}} containing the traced operations.
 }
 \description{
-Executes \code{f} with abstract tensor arguments and records every primitive operation into
+Executes \code{f} with abstract array arguments and records every primitive operation into
 an \code{\link{AnvilGraph}}.
 
 The resulting graph can be lowered to StableHLO (via \code{\link[=stablehlo]{stablehlo()}}) or transformed
@@ -52,7 +52,7 @@ The resulting graph can be lowered to StableHLO (via \code{\link[=stablehlo]{sta
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 graph <- trace_fn(function(x, y) x + y,
-  args = list(x = nv_tensor(1, dtype = "f32"), y = nv_tensor(2, dtype = "f32"))
+  args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32"))
 )
 graph
 \dontshow{\}) # examplesIf}

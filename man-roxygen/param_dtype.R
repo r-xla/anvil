@@ -1,2 +1,2 @@
-#' @param dtype (`character(1)` | [`TensorDataType`])\cr
+#' @param dtype (`character(1)` | [`DataType`])\cr
 #'   Data type.

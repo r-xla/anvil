@@ -1,7 +1,7 @@
 test_that("nv_rnorm", {
   # statistical validity checks are in inst/random
   f <- function() {
-    nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape = c(2, 3))
+    nv_rnorm(nv_array(c(1, 2), dtype = "ui64"), dtype = "f32", shape = c(2, 3))
   }
   g <- jit(f)
   out <- g()
@@ -11,7 +11,7 @@ test_that("nv_rnorm", {
 
   # test with uneven total number of RVs
   f <- function() {
-    nv_rnorm(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape = c(3, 3))
+    nv_rnorm(nv_array(c(1, 2), dtype = "ui64"), dtype = "f32", shape = c(3, 3))
   }
   g <- jit(f)
   out <- g()
@@ -21,7 +21,7 @@ test_that("nv_rnorm", {
   # test mu/sigma parameters with small sample
   f <- function() {
     nv_rnorm(
-      nv_tensor(c(3, 83), dtype = "ui64"),
+      nv_array(c(3, 83), dtype = "ui64"),
       dtype = "f64",
       shape = c(2L, 3L),
       mu = 10,
@@ -40,7 +40,7 @@ test_that("nv_runif", {
   # statistical validity checks are in inst/random
   f <- function() {
     nv_runif(
-      nv_tensor(c(1, 2), dtype = "ui64"),
+      nv_array(c(1, 2), dtype = "ui64"),
       dtype = "f32",
       shape = c(3, 4),
       lower = -1,
@@ -59,7 +59,7 @@ test_that("nv_runif", {
 test_that("nv_rbinom", {
   # statistical validity checks are in inst/random
   f <- function() {
-    nv_rbinom(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "i32", shape = c(2, 5))
+    nv_rbinom(nv_array(c(1, 2), dtype = "ui64"), dtype = "i32", shape = c(2, 5))
   }
   g <- jit(f)
   out <- g()
@@ -74,7 +74,7 @@ test_that("nv_rbinom", {
 
   # Test with different dtype
   f2 <- function() {
-    nv_rbinom(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "f32", shape = 10L)
+    nv_rbinom(nv_array(c(1, 2), dtype = "ui64"), dtype = "f32", shape = 10L)
   }
   g2 <- jit(f2)
   out2 <- g2()
@@ -83,7 +83,7 @@ test_that("nv_rbinom", {
 
   # Test with non-multiple-of-8 shape (tests slicing)
   f3 <- function() {
-    nv_rbinom(nv_tensor(c(1, 2), dtype = "ui64"), dtype = "i32", shape = c(3, 3))
+    nv_rbinom(nv_array(c(1, 2), dtype = "ui64"), dtype = "i32", shape = c(3, 3))
   }
   g3 <- jit(f3)
   out3 <- g3()
@@ -95,7 +95,7 @@ test_that("nv_rdunif", {
 
   # Test with equal probabilities
   f1 <- function() {
-    nv_rdunif(n = 6L, shape = 10L, initial_state = nv_tensor(c(1, 2), dtype = "ui64"))
+    nv_rdunif(n = 6L, shape = 10L, initial_state = nv_array(c(1, 2), dtype = "ui64"))
   }
   g1 <- jit(f1)
   out1 <- g1()
@@ -110,7 +110,7 @@ test_that("nv_rdunif", {
 
   # Test 2D output shape
   f3 <- function() {
-    nv_rdunif(n = 4L, shape = c(2L, 3L), initial_state = nv_tensor(c(1, 2), dtype = "ui64"))
+    nv_rdunif(n = 4L, shape = c(2L, 3L), initial_state = nv_array(c(1, 2), dtype = "ui64"))
   }
   g3 <- jit(f3)
   out3 <- g3()

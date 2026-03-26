@@ -54,3 +54,6 @@ inst/doc
 README.html
 TODO.md
 .Rprofile
+
+# Local coverage snapshots
+covr-*.rds

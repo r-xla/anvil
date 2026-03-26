@@ -29,7 +29,7 @@ Ops.AnvilBox <- function(e1, e2) {
 }
 
 #' @export
-Ops.AnvilTensor <- Ops.AnvilBox
+Ops.AnvilArray <- Ops.AnvilBox
 
 #' @export
 matrixOps.AnvilBox <- function(x, y) {
@@ -40,7 +40,7 @@ matrixOps.AnvilBox <- function(x, y) {
 }
 
 #' @export
-matrixOps.AnvilTensor <- matrixOps.AnvilBox
+matrixOps.AnvilArray <- matrixOps.AnvilBox
 
 #' @export
 Math.AnvilBox <- function(x, ...) {
@@ -67,7 +67,7 @@ Math.AnvilBox <- function(x, ...) {
 }
 
 #' @export
-Math.AnvilTensor <- Math.AnvilBox
+Math.AnvilArray <- Math.AnvilBox
 
 #' @export
 Math2.AnvilBox <- function(x, digits, ...) {
@@ -85,7 +85,7 @@ Math2.AnvilBox <- function(x, digits, ...) {
 }
 
 #' @export
-Math2.AnvilTensor <- Math2.AnvilBox
+Math2.AnvilArray <- Math2.AnvilBox
 
 
 #' @export
@@ -109,7 +109,7 @@ Summary.AnvilBox <- function(..., na.rm) {
 }
 
 #' @export
-Summary.AnvilTensor <- Summary.AnvilBox
+Summary.AnvilArray <- Summary.AnvilBox
 
 #' @export
 mean.AnvilBox <- function(x, ...) {
@@ -117,24 +117,24 @@ mean.AnvilBox <- function(x, ...) {
 }
 
 #' @export
-mean.AnvilTensor <- mean.AnvilBox
+mean.AnvilArray <- mean.AnvilBox
 
 # if we don't give it the name nv_transpose, pkgdown thinks t.anvil is a package
 
 #' @title Transpose
 #' @name nv_transpose
 #' @description
-#' Permutes the dimensions of a tensor. You can also use `t()` for matrices.
-#' @param x ([`tensorish`])\cr
-#'   Tensor to transpose.
+#' Permutes the dimensions of an array. You can also use `t()` for matrices.
+#' @param x ([`arrayish`])\cr
+#'   Array to transpose.
 #' @param permutation (`integer()` | `NULL`)\cr
 #'   New ordering of dimensions. If `NULL` (default), reverses the dimensions.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
 #' @seealso [nvl_transpose()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
+#'   x <- nv_array(matrix(1:6, nrow = 2))
 #'   t(x)
 #' })
 #' @export
@@ -143,7 +143,7 @@ t.AnvilBox <- function(x) {
 }
 
 #' @export
-t.AnvilTensor <- t.AnvilBox
+t.AnvilArray <- t.AnvilBox
 
 #' @rdname nv_subset
 #' @export
@@ -154,7 +154,7 @@ t.AnvilTensor <- t.AnvilBox
 
 #' @rdname nv_subset
 #' @export
-`[.AnvilTensor` <- `[.AnvilBox`
+`[.AnvilArray` <- `[.AnvilBox`
 
 #' @rdname nv_subset_assign
 #' @export
@@ -165,4 +165,4 @@ t.AnvilTensor <- t.AnvilBox
 
 #' @rdname nv_subset_assign
 #' @export
-`[<-.AnvilTensor` <- `[<-.AnvilBox`
+`[<-.AnvilArray` <- `[<-.AnvilBox`

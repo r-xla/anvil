@@ -7,27 +7,27 @@
 nv_concatenate(..., dimension = NULL)
 }
 \arguments{
-\item{...}{(\code{\link{tensorish}})\cr
-Tensors to concatenate. Must have the same shape except along \code{dimension}.}
+\item{...}{(\code{\link{arrayish}})\cr
+Arrays to concatenate. Must have the same shape except along \code{dimension}.}
 
 \item{dimension}{(\code{integer(1)} | \code{NULL})\cr
 Dimension along which to concatenate.
 If \code{NULL} (default), assumes all inputs are at most 1-D and concatenates along dimension 1.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the common data type and a shape matching the inputs in all
 dimensions except \code{dimension}, which is the sum of input sizes.
 }
 \description{
-Concatenates tensors along a dimension. Operands are promoted to a common
+Concatenates arrays along a dimension. Operands are promoted to a common
 data type and scalars are broadcast before concatenation.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
-  y <- nv_tensor(c(4, 5, 6))
+  x <- nv_array(c(1, 2, 3))
+  y <- nv_array(c(4, 5, 6))
   nv_concatenate(x, y)
 })
 \dontshow{\}) # examplesIf}
