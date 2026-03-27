@@ -1,3 +1,5 @@
+@../claude-config/CLAUDE.md
+
 ## Package Overview
 
 `anvil` is a code transformation framework similar to jax for R.
