@@ -8,6 +8,3 @@ name: Lint R Code
 jobs:
   r-linter:
     uses: r-xla/actions/.github/workflows/r-linter.yaml@main
-    with:
-      extra-repositories: 'https://r-xla.r-universe.dev https://t-kalinowski.r-universe.dev'
-      exclusions: '"inst/extra-tests", "R/RcppExports.R"'
