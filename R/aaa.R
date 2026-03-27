@@ -53,6 +53,11 @@ with_backend <- function(backend, code) {
   backend <- normalize_backend(backend)
   old <- globals$backend
   globals$backend <- backend
-  on.exit(globals$backend <- old, add = TRUE)
+  on.exit(
+    {
+      globals$backend <- old
+    },
+    add = TRUE
+  )
   force(code)
 }

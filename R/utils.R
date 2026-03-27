@@ -1,29 +1,6 @@
-# set utils
-set <- function() {
-  hashtab()
-}
-
-set_has <- function(set, key) {
-  !identical(gethash(set, key, NA), NA)
-}
-
-set_add <- function(set, key) {
-  set[[key]] <- NULL
-}
-
 dtype_from_buffer <- function(x) {
   d <- as.character(dtype(x))
   as_dtype(d)
-}
-
-hashkeys <- function(h) {
-  val <- vector("list", numhash(h))
-  idx <- 0
-  maphash(h, function(k, v) {
-    idx <<- idx + 1
-    val[[idx]] <<- k
-  })
-  val
 }
 
 hashvalues <- function(h) {
@@ -34,22 +11,6 @@ hashvalues <- function(h) {
     val[[idx]] <<- v
   })
   val
-}
-
-is_nv_type <- function(x) {
-  any(sapply(globals$nv_types, function(type, x) inherits(x, type), x))
-}
-
-
-transpose_list <- function(.l) {
-  if (length(.l) == 0L) {
-    return(list())
-  }
-  res <- .mapply(list, .l, list())
-  if (length(res) == length(.l[[1L]])) {
-    names(res) <- names(.l[[1L]])
-  }
-  res
 }
 
 # these functions also work with primitives etc.
@@ -108,10 +69,6 @@ without <- function(x, indices) {
   } else {
     x
   }
-}
-
-zero_env <- function() {
-  new.env(size = 0L, parent = emptyenv())
 }
 
 shape2string <- function(x, parenthesize = TRUE) {
