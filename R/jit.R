@@ -160,6 +160,11 @@ jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat,
 
 jit_xla_impl <- function(f, static, cache, donate, device) {
   function() {
+    if (!is.null(.current_descriptor(silent = TRUE))) {
+      args <- as.list(match.call())[-1L]
+      args <- lapply(args, eval, envir = parent.frame())
+      return(do.call(f, args))
+    }
     prep <- jit_prepare_call(match.call(), parent.frame(), static)
     inputs <- jit_xla_inputs(prep$args_flat, prep$is_static_flat, device)
 
@@ -244,6 +249,11 @@ jit_quickr_inputs <- function(args_flat, is_static_flat) {
 
 jit_quickr_impl <- function(f, static, cache) {
   function() {
+    if (!is.null(.current_descriptor(silent = TRUE))) {
+      args <- as.list(match.call())[-1L]
+      args <- lapply(args, eval, envir = parent.frame())
+      return(do.call(f, args))
+    }
     prep <- jit_prepare_call(match.call(), parent.frame(), static)
     inputs <- jit_quickr_inputs(prep$args_flat, prep$is_static_flat)
 
