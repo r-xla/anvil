@@ -27,7 +27,7 @@ Permutes the dimensions of an array.
 \itemize{
 \item \code{stablehlo}
 \item \code{quickr}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 

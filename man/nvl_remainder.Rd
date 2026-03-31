@@ -23,7 +23,7 @@ Element-wise remainder of division.
 
 \itemize{
 \item \code{stablehlo}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 

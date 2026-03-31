@@ -32,7 +32,7 @@ Performs logical AND along the specified dimensions.
 \itemize{
 \item \code{stablehlo}
 \item \code{quickr}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 

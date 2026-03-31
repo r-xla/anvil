@@ -1,6 +1,6 @@
 source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
 
-test_that("MLP forward and backward", {
+test_that("MLP forward and reverse", {
   relu <- function(x) (x + abs(x)) / 2
 
   mlp <- function(x, W1, b1, W2, b2, matmul) {
@@ -41,7 +41,7 @@ test_that("MLP forward and backward", {
   W2_torch <- torch::torch_tensor(W2_data, dtype = torch::torch_float32(), requires_grad = TRUE)
   b2_torch <- torch::torch_tensor(b2_data, dtype = torch::torch_float32(), requires_grad = TRUE)
 
-  # Forward and backward pass with value_and_gradient
+  # Forward and reverse pass with value_and_gradient
   mlp_loss_nv <- function(x, y, W1, b1, W2, b2) mlp_loss(x, y, W1, b1, W2, b2, matmul_nv)
   result <- jit(value_and_gradient(mlp_loss_nv))(x_nv, y_nv, W1_nv, b1_nv, W2_nv, b2_nv)
 
@@ -51,7 +51,7 @@ test_that("MLP forward and backward", {
   # Check forward pass (loss value)
   expect_equal(as_array(result$value), as_array_torch(loss_torch), tolerance = 1e-5)
 
-  # Check backward pass (gradients for x, y, W1, b1, W2, b2)
+  # Check reverse pass (gradients for x, y, W1, b1, W2, b2)
   expect_equal(as_array(result$grad[[1L]]), as_array_torch(x_torch$grad), tolerance = 1e-5)
   expect_equal(as_array(result$grad[[3L]]), as_array_torch(W1_torch$grad), tolerance = 1e-5)
   expect_equal(as_array(result$grad[[4L]]), as_array_torch(b1_torch$grad), tolerance = 1e-5)
@@ -59,7 +59,7 @@ test_that("MLP forward and backward", {
   expect_equal(as_array(result$grad[[6L]]), as_array_torch(b2_torch$grad), tolerance = 1e-5)
 })
 
-test_that("polynomial forward and backward", {
+test_that("polynomial forward and reverse", {
   poly <- function(x) {
     x2 <- x * x
     x3 <- x2 * x
@@ -72,7 +72,7 @@ test_that("polynomial forward and backward", {
   x_nv <- nv_array(x_data, dtype = "f32")
   x_torch <- torch::torch_tensor(x_data, dtype = torch::torch_float32(), requires_grad = TRUE)
 
-  # Forward and backward pass with value_and_gradient
+  # Forward and reverse pass with value_and_gradient
   result <- jit(value_and_gradient(poly))(x_nv)
 
   loss_torch <- poly(x_torch)
@@ -81,6 +81,6 @@ test_that("polynomial forward and backward", {
   # Check forward pass
   expect_equal(as_array(result$value), as_array_torch(loss_torch), tolerance = 1e-5)
 
-  # Check backward pass
+  # Check reverse pass
   expect_equal(as_array(result$grad[[1L]]), as_array_torch(x_torch$grad), tolerance = 1e-4)
 })

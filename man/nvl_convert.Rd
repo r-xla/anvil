@@ -31,7 +31,7 @@ Converts the elements of an array to a different data type.
 \itemize{
 \item \code{stablehlo}
 \item \code{quickr}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 

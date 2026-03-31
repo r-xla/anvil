@@ -40,7 +40,7 @@ computed at runtime (e.g. depends on array values).
 \itemize{
 \item \code{stablehlo}
 \item \code{quickr}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 

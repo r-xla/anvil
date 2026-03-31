@@ -23,25 +23,25 @@ test_that("stablehlo rule is tested", {
 })
 
 
-test_that("backward rule is tested", {
+test_that("reverse rule is tested", {
   nms <- names(asNamespace("anvil"))
   primitive_names <- nms[grepl("^p_", nms)]
 
   primitive_names <- Filter(
     function(nm) {
-      !is.null(getFromNamespace(nm, "anvil")$rules[["backward"]])
+      !is.null(getFromNamespace(nm, "anvil")$rules[["reverse"]])
     },
     primitive_names
   )
 
   candidate_files <- c(
-    system.file("extra-tests", "test-primitives-backward-torch.R", package = "anvil"),
-    file.path(testthat::test_path(), "test-primitives-backward.R")
+    system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvil"),
+    file.path(testthat::test_path(), "test-primitives-reverse.R")
   )
 
   content <- do.call(c, lapply(candidate_files, readLines))
   content <- content[grepl("(test_that|describe|it)\\(", content)]
   missing <- Filter(function(nm) !any(grepl(nm, content, fixed = TRUE)), primitive_names)
 
-  expect_true(length(missing) == 0L, info = paste(missing, collapse = ", "), label = "Backward rule is tested")
+  expect_true(length(missing) == 0L, info = paste(missing, collapse = ", "), label = "Reverse rule is tested")
 })

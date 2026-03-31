@@ -23,7 +23,7 @@ Element-wise left bit shift.
 
 \itemize{
 \item \code{stablehlo}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 

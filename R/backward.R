@@ -34,12 +34,12 @@ prepare_gradient_args <- function(args, wrt) {
 
 #' @title Transform a graph to its gradient
 #' @description
-#' Low-level graph transformation that appends the backward pass to a
+#' Low-level graph transformation that appends the reverse pass to a
 #' traced [`AnvilGraph`]. The function `f` represented by `graph` must return a single
 #' float scalar. The resulting graph computes the gradients of that scalar with respect
 #' to the inputs specified by `wrt`.
 #'
-#' The backward rules are stored in `$rules[["backward"]]` of the primitives.
+#' The reverse rules are stored in `$rules[["reverse"]]` of the primitives.
 #'
 #' This is the building block used by [`gradient()`] and [`value_and_gradient()`]; prefer
 #' those higher-level wrappers unless you need to operate on graphs directly.
@@ -124,14 +124,14 @@ transform_gradient <- function(graph, wrt) {
 
   # We need to initialize the descriptor with the forward graph's structure,
   # including the forward calls, so that intermediate values are available
-  # for the backward rules.
+  # for the reverse rules.
   init_desc_from_graph(desc, graph, outputs = FALSE)
   grad_env[[out]] <- get_box_or_register_const(
     desc,
     nv_scalar(1L, dtype = out$aval$dtype, ambiguous = out$aval$ambiguous)
   )
 
-  # Backward pass
+  # Reverse pass
   for (call in rev(graph$calls)) {
     # Check if any input requires grad - if not, skip this call
     input_required <- vapply(
@@ -156,12 +156,12 @@ transform_gradient <- function(graph, wrt) {
       }
     })
 
-    # Convert gvals to boxes for the backward pass
+    # Convert gvals to boxes for the reverse pass
     input_boxes <- lapply(call$inputs, \(x) desc$gval_to_box[[x]])
     output_boxes <- lapply(call$outputs, \(x) desc$gval_to_box[[x]])
 
     input_grads <- rlang::exec(
-      call$primitive[["backward"]],
+      call$primitive[["reverse"]],
       input_boxes,
       output_boxes,
       output_grads,
@@ -275,7 +275,7 @@ gradient <- function(f, wrt = NULL) {
 #' @title Value and Gradient
 #' @description
 #' Returns a new function that computes both the output of `f` and its gradient in a
-#' single forward+backward pass. The result is a named list with elements `value` (the
+#' single forward+reverse pass. The result is a named list with elements `value` (the
 #' original return value of `f`) and `grad` (the gradients, structured like the inputs or
 #' the `wrt` subset).
 #' @inheritParams gradient

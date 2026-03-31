@@ -24,7 +24,7 @@ Element-wise less than or equal comparison.
 \itemize{
 \item \code{stablehlo}
 \item \code{quickr}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 

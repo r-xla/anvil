@@ -473,7 +473,7 @@ p_gather[["stablehlo"]] <- function(
 p_cholesky[["stablehlo"]] <- function(operand, lower) {
   L <- stablehlo::hlo_cholesky(operand, lower = lower)
   # The non-triangular part of the output is implementation-defined.
-  # Zero it out so downstream code (including backward rules) never sees garbage.
+  # Zero it out so downstream code (including reverse rules) never sees garbage.
   op_shape <- shape(operand$value_type)
   n <- op_shape[length(op_shape)]
   mat_shape <- c(n, n)

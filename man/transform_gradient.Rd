@@ -17,12 +17,12 @@ Names of the graph inputs to differentiate with respect to.}
 An \code{\link{AnvilGraph}} whose outputs are the requested gradients.
 }
 \description{
-Low-level graph transformation that appends the backward pass to a
+Low-level graph transformation that appends the reverse pass to a
 traced \code{\link{AnvilGraph}}. The function \code{f} represented by \code{graph} must return a single
 float scalar. The resulting graph computes the gradients of that scalar with respect
 to the inputs specified by \code{wrt}.
 
-The backward rules are stored in \verb{$rules[["backward"]]} of the primitives.
+The reverse rules are stored in \verb{$rules[["reverse"]]} of the primitives.
 
 This is the building block used by \code{\link[=gradient]{gradient()}} and \code{\link[=value_and_gradient]{value_and_gradient()}}; prefer
 those higher-level wrappers unless you need to operate on graphs directly.

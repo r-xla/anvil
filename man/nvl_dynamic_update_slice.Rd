@@ -35,7 +35,7 @@ while dynamic update slice writes a block into an array.
 \itemize{
 \item \code{stablehlo}
 \item \code{quickr}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 

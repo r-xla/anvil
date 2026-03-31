@@ -45,7 +45,7 @@ Here \code{op} is \code{A} or \code{A^T} depending on \code{transpose_a}.
 
 \itemize{
 \item \code{stablehlo}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 

@@ -26,7 +26,7 @@ Reverses the order of elements along specified dimensions.
 \itemize{
 \item \code{stablehlo}
 \item \code{quickr}
-\item \code{backward}
+\item \code{reverse}
 }
 }
 
