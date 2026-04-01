@@ -60,6 +60,10 @@ g_jit(a, b, x)
 #> [ CPUf32{} ]
 ```
 
+For more complex examples, see the package website, where we, e.g., show
+[how to implement a Gaussian
+Process](https://r-xla.github.io/anvil/dev/articles/gaussian-process.html).
+
 ## Main Features
 
 - Automatic Differentiation:
