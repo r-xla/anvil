@@ -124,11 +124,7 @@ default_dtype <- function(x) {
   if (is.integer(x)) {
     IntegerType(32)
   } else if (is.double(x)) {
-    if (current_backend() == "quickr") {
-      FloatType(64)
-    } else {
-      FloatType(32)
-    }
+    FloatType(32)
   } else if (is.logical(x)) {
     BooleanType()
   } else {

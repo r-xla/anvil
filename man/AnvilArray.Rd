@@ -7,9 +7,16 @@
 \alias{nv_empty}
 \title{AnvilArray}
 \usage{
-nv_array(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL)
+nv_array(
+  data,
+  dtype = NULL,
+  device = NULL,
+  shape = NULL,
+  ambiguous = NULL,
+  backend = NULL
+)
 
-nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL)
+nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL)
 
 nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
 }

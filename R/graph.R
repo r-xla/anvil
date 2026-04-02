@@ -377,7 +377,9 @@ maybe_box_input <- function(x, desc, toplevel, lit_to_array) {
     # however, if the value does not exist in the parent graph, we need to add it as a constant
     # for that, we need to keep the value of the actual array, so we can later register it
     # see test: "can pass constant to nested trace_fn call if it ..." in test-graph.R
-    desc$devices <- c(desc$devices, device(x))
+    if (backend(x) != "plain") {
+      desc$devices <- c(desc$devices, device(x))
+    }
     gval <- if (toplevel) {
       # user-provided inputs are simply unknown
       GraphValue(aval = to_abstract(x, pure = TRUE))
@@ -445,7 +447,9 @@ get_box_or_register_const <- function(desc, x) {
     cli_abort("Internal error: trying to register a constant in a non-graph descriptor")
   }
   if (is_anvil_array(x)) {
-    desc$devices <- c(desc$devices, device(x))
+    if (backend(x) != "plain") {
+      desc$devices <- c(desc$devices, device(x))
+    }
     gval <- desc$data_to_gval[[x]]
     if (!is.null(gval)) {
       return(desc$gval_to_box[[gval]])

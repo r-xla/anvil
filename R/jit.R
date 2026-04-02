@@ -121,11 +121,14 @@ jit_xla_inputs <- function(args_flat, is_static_flat, device) {
       if (is_static) {
         return(x)
       }
-      if (is_anvil_array(x)) {
-        platforms <<- c(platforms, platform(x))
-        return(nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x)))
+      if (!is_anvil_array(x)) {
+        cli_abort("Expected AnvilArray, but got {.cls {class(x)[1]}}")
       }
-      cli_abort("Expected AnvilArray, but got {.cls {class(x)[1]}}")
+      if (backend(x) != "xla") {
+        cli_abort("Expected {.val xla} backend, but got {.val {backend(x)}} backend.")
+      }
+      platforms <<- c(platforms, platform(x))
+      nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x))
     },
     args_flat,
     is_static_flat
@@ -157,9 +160,9 @@ jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat,
     simplify = FALSE
   )
   if (!is.null(ambiguous_out)) {
-    out_vals <- Map(function(val, amb) nv_array(val, ambiguous = amb), out_vals, ambiguous_out)
+    out_vals <- Map(function(val, amb) ensure_nv_array(val, ambiguous = amb), out_vals, ambiguous_out)
   } else {
-    out_vals <- lapply(out_vals, nv_array)
+    out_vals <- lapply(out_vals, ensure_nv_array)
   }
   unflatten(out_node, out_vals)
 }
@@ -217,20 +220,13 @@ quickr_jit_shape <- function(x) {
 }
 
 quickr_jit_aval <- function(x) {
-  if (!is.numeric(x) && !is.logical(x)) {
-    cli_abort(
-      "{.val quickr} backend expects plain R numeric, integer, or logical inputs, got {.cls {class(x)[1]}}."
-    )
+  if (!is_anvil_array(x)) {
+    cli_abort("Expected AnvilArray, but got {.cls {class(x)[1]}}")
   }
-
-  dt <- if (is.double(x)) {
-    FloatType(64)
-  } else if (is.integer(x)) {
-    IntegerType(32)
-  } else {
-    BooleanType()
+  if (backend(x) != "quickr") {
+    cli_abort("Expected {.val quickr} backend, but got {.val {backend(x)}} backend.")
   }
-  nv_abstract(dt, quickr_jit_shape(x), ambiguous = FALSE)
+  nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x))
 }
 
 jit_quickr_inputs <- function(args_flat, is_static_flat) {
@@ -254,14 +250,17 @@ jit_quickr_impl <- function(f, static, cache) {
     inputs <- jit_quickr_inputs(prep$args_flat, prep$is_static_flat)
 
     cache_key <- list(prep$in_tree, inputs$avals_in, inputs$platform)
+    r_args <- lapply(unname(prep$args), function(a) {
+      if (is_anvil_array(a)) as_array(a) else a
+    })
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
-      return(do.call(cache_hit[[1]], unname(prep$args)))
+      return(do.call(cache_hit[[1]], r_args))
     }
 
     compiled <- compile_to_quickr(f, args_flat = inputs$avals_in, in_tree = prep$in_tree)
     cache$set(cache_key, list(compiled$fun))
-    do.call(compiled$fun, unname(prep$args))
+    do.call(compiled$fun, r_args)
   }
 }
 
@@ -323,7 +322,13 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
     if (!is_concrete_tensor(const$aval)) {
       cli_abort("Internal error: Not all constants are concrete arrays")
     }
-    unwrap_if_array(const$aval$data)
+    arr <- const$aval$data
+    if (backend(arr) == "plain") {
+      pjrt_buffer(as_array(arr), as.character(dtype(arr)), device = device,
+                  shape = shape(arr))
+    } else {
+      unwrap_if_array(arr)
+    }
   })
 
   out_tree <- graph$out_tree
