@@ -64,7 +64,7 @@ nv_unif_rand <- function(
 #' @family rng
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   state <- nv_rng_state(42L)
+#'   state <- nv_rng_state(nv_scalar(42L))
 #'   result <- nv_runif(c(2, 3), state)
 #'   result[[2]]
 #' })
@@ -137,7 +137,7 @@ nv_runif <- function(
 #' @family rng
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   state <- nv_rng_state(42L)
+#'   state <- nv_rng_state(nv_scalar(42L))
 #'   result <- nv_rnorm(c(2, 3), state)
 #'   result[[2]]
 #' })
@@ -221,7 +221,7 @@ nv_rnorm <- function(shape, initial_state, dtype = "f32", mu = 0, sigma = 1) {
 #' @family rng
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   state <- nv_rng_state(42L)
+#'   state <- nv_rng_state(nv_scalar(42L))
 #'   # Bernoulli samples
 #'   result <- nv_rbinom(c(2, 3), state)
 #'   result[[2]]
@@ -268,7 +268,7 @@ nv_rbinom <- function(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32") {
 #' @family rng
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   state <- nv_rng_state(42L)
+#'   state <- nv_rng_state(nv_scalar(42L))
 #'   # Roll 6 dice
 #'   result <- nv_rdunif(6, state, n = 6L)
 #'   result[[2]]

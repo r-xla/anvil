@@ -29,7 +29,12 @@ compile_graph_pjrt <- function(graph) {
     if (!is_concrete_tensor(const$aval)) {
       cli::cli_abort("Internal error: non-concrete constant in graph")
     }
-    unwrap_if_array_for_test(const$aval$data)
+    arr <- const$aval$data
+    if (backend(arr) == "plain") {
+      pjrt::pjrt_buffer(as_array(arr), as.character(dtype(arr)), shape = shape(arr))
+    } else {
+      unwrap_if_array_for_test(arr)
+    }
   })
 
   src <- stablehlo::repr(func)
@@ -69,9 +74,9 @@ compile_graph_pjrt <- function(graph) {
           if (length(x) != 1L) {
             cli::cli_abort("Expected scalar input")
           }
-          nv_scalar(x, dtype = expected_dtype)
+          nv_scalar(x, dtype = expected_dtype, backend = "xla")
         } else {
-          nv_array(x, dtype = expected_dtype, shape = expected_shape)
+          nv_array(x, dtype = expected_dtype, shape = expected_shape, backend = "xla")
         }
       },
       args,
@@ -80,7 +85,7 @@ compile_graph_pjrt <- function(graph) {
 
     args_unwrapped <- lapply(args_nv, unwrap_if_array_for_test)
     out_vals <- rlang::exec(pjrt::pjrt_execute, exec, !!!const_arrays, !!!args_unwrapped, simplify = FALSE)
-    out_vals <- lapply(out_vals, nv_array)
+    out_vals <- lapply(out_vals, ensure_nv_array)
     out_nv <- unflatten(out_tree, out_vals)
     as_r(out_nv)
   }

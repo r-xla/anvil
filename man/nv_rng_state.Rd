@@ -7,8 +7,8 @@
 nv_rng_state(seed)
 }
 \arguments{
-\item{seed}{(\code{integer(1)})\cr
-Seed value.}
+\item{seed}{(\code{\link{arrayish}})\cr
+Scalar \code{i32} seed value.}
 }
 \value{
 \code{\link{nv_array}} of dtype \code{ui64} and shape \code{(2)}.
@@ -20,7 +20,7 @@ random sampling functions and is updated after each call.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  state <- nv_rng_state(42L)
+  state <- nv_rng_state(nv_scalar(42L))
   state
 })
 \dontshow{\}) # examplesIf}

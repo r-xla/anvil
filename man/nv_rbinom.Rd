@@ -33,7 +33,7 @@ When \code{n = 1} (the default), this is a Bernoulli distribution.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  state <- nv_rng_state(42L)
+  state <- nv_rng_state(nv_scalar(42L))
   # Bernoulli samples
   result <- nv_rbinom(c(2, 3), state)
   result[[2]]

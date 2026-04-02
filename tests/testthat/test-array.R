@@ -168,14 +168,11 @@ test_that("stablehlo dtype is printed", {
   expect_snapshot(nv_array(TRUE))
 })
 
-test_that("default floating dtype follows the configured backend", {
-  with_backend("xla", {
-    expect_equal(dtype(nv_array(1.0)), as_dtype("f32"))
-    expect_equal(dtype(nv_scalar(1.0)), as_dtype("f32"))
-  })
+test_that("default floating dtype is f32 regardless of backend", {
+  expect_equal(dtype(nv_array(1.0)), as_dtype("f32"))
+  expect_equal(dtype(nv_scalar(1.0)), as_dtype("f32"))
 
-  with_backend("quickr", {
-    expect_equal(dtype(nv_array(1.0)), as_dtype("f64"))
-    expect_equal(dtype(nv_scalar(1.0)), as_dtype("f64"))
-  })
+  local_backend("quickr")
+  expect_equal(dtype(nv_array(1.0)), as_dtype("f32"))
+  expect_equal(dtype(nv_scalar(1.0)), as_dtype("f32"))
 })

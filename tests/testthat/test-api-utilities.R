@@ -1,7 +1,7 @@
 test_that("nv_rng_state", {
   f <- function() {
     nv_runif(
-      initial_state = nv_rng_state(1),
+      initial_state = nv_rng_state(nv_scalar(1L)),
       dtype = "f64",
       shape = c(10, 5)
     )
@@ -11,7 +11,7 @@ test_that("nv_rng_state", {
 
   f <- function() {
     nv_runif(
-      initial_state = nv_rng_state(1),
+      initial_state = nv_rng_state(nv_scalar(1L)),
       dtype = "f64",
       shape = c(10, 5)
     )

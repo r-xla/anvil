@@ -2,29 +2,30 @@ test_that("quickr pipeline matches PJRT: core math + comparisons + reductions", 
   skip_if_no_quickr_or_pjrt()
 
   core_ops <- function(x_f64, y_f64, x_i32, y_i32, p, q) {
+    f64 <- function(x) nv_scalar(x, dtype = "f64")
     a <- x_f64 + y_f64
     b <- x_f64 - y_f64
     c <- x_f64 * y_f64
-    d <- x_f64 / (y_f64 + 1)
+    d <- x_f64 / (y_f64 + 1L)
     e <- nv_negate(x_f64)
 
     ax <- nv_abs(x_f64)
-    sq <- nv_sqrt(ax + 0.1)
-    lg <- nv_log(ax + 1.1)
+    sq <- nv_sqrt(ax + f64(0.1))
+    lg <- nv_log(ax + f64(1.1))
     ex <- nv_exp(x_f64)
     em1 <- nv_expm1(x_f64)
-    l1p <- nv_log1p(ax * 0.1)
+    l1p <- nv_log1p(ax * f64(0.1))
     lo <- nv_logistic(x_f64)
     si <- nv_sine(x_f64)
     co <- nv_cosine(x_f64)
-    ta <- nv_tan(x_f64 * 0.1)
+    ta <- nv_tan(x_f64 * f64(0.1))
     th <- nv_tanh(x_f64)
     fl <- nv_floor(x_f64)
     ce <- nv_ceil(x_f64)
 
     mx <- nv_max(x_f64, y_f64)
     mn <- nv_min(x_f64, y_f64)
-    pw <- nv_pow(ax + 0.1, nv_abs(y_f64) + 0.1)
+    pw <- nv_pow(ax + f64(0.1), nv_abs(y_f64) + f64(0.1))
 
     eq <- nv_eq(x_i32, y_i32)
     ne <- nv_ne(x_i32, y_i32)
@@ -43,7 +44,7 @@ test_that("quickr pipeline matches PJRT: core math + comparisons + reductions", 
     sm <- sum(x_f64)
     rs1 <- nv_reduce_sum(x_f64, dims = 1L, drop = TRUE)
     rs2 <- nv_reduce_sum(x_f64, dims = 2L, drop = FALSE)
-    rp <- nv_reduce_prod(ax + 1.0, dims = 2L, drop = TRUE)
+    rp <- nv_reduce_prod(ax + f64(1.0), dims = 2L, drop = TRUE)
     ra <- nv_reduce_any(eq, dims = 1L, drop = TRUE)
     rall <- nv_reduce_all(eq, dims = c(1L, 2L), drop = TRUE)
 

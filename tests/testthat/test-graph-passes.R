@@ -32,7 +32,14 @@ describe("inline_scalarish_constants", {
       out <- stablehlo(graph)
       func <- out[[1L]]
       consts <- out[[2L]]
-      const_arrays <- lapply(consts, \(c) c$aval$data$data)
+      const_arrays <- lapply(consts, \(c) {
+        arr <- c$aval$data
+        if (backend(arr) == "plain") {
+          pjrt::pjrt_buffer(as_array(arr), as.character(dtype(arr)), shape = shape(arr))
+        } else {
+          arr$data
+        }
+      })
       program <- pjrt::pjrt_program(src = stablehlo::repr(func), format = "mlir")
       exec <- pjrt::pjrt_compile(program)
       inputs_flat <- lapply(flatten(args), \(a) a$data)
