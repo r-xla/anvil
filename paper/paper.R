@@ -5,19 +5,18 @@
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 
-## -----------------------------------------------------------------------------
+## ----results='hide'-----------------------------------------------------------
 library(stablehlo)
 func <- local_func("main")
-func
-x <- hlo_input("x", "f32", shape = c(2, 2), func = func)
-x
-y <- hlo_input("y", "f32", shape = c(2, 2), func = func)
-y
-z <- hlo_multiply(x, y)
-z
-f <- hlo_return(z)
-f
+arg1 <- hlo_input("x", "f32", shape = c(2, 2), func = func)
+arg2 <- hlo_input("y", "f32", shape = c(2, 2), func = func)
+out <- hlo_multiply(arg1, arg2)
+f <- hlo_return(out)
 hlo_string <- repr(f)
+
+
+## -----------------------------------------------------------------------------
+cat(hlo_string)
 
 
 ## -----------------------------------------------------------------------------
@@ -43,25 +42,8 @@ y
 
 
 ## -----------------------------------------------------------------------------
-shape(x)
-device(x)
-
-
-## -----------------------------------------------------------------------------
 out <- pjrt_execute(executable, x, y)
-out
-
-
-## -----------------------------------------------------------------------------
 as_array(out)
-
-
-## -----------------------------------------------------------------------------
-library(safetensors)
-tmp <- tempfile(fileext = ".safetensors")
-safetensors::safe_save_file(list(x = out), tmp, framework = "pjrt")
-reloaded <- safetensors::safe_load_file(tmp, framework = "pjrt")
-reloaded$x
 
 
 ## -----------------------------------------------------------------------------
@@ -98,13 +80,12 @@ gradient_graph <- transform_gradient(graph, wrt = c("x", "y"))
 
 
 ## -----------------------------------------------------------------------------
-prim("add")[["backward"]]
+prim("add")[["reverse"]]
 
 
 ## -----------------------------------------------------------------------------
 out <- stablehlo(graph)
-repr(out[[1]])
-out[[2]]
+cat(repr(out[[1]]))
 
 
 ## -----------------------------------------------------------------------------
@@ -123,28 +104,19 @@ y <- nv_array(1:4, "f32")
 y
 
 
+## ----eval = FALSE-------------------------------------------------------------
+# update_fn <- jit(function(params, grads) {
+#   list(params = params - 0.01 * grads)
+# }, donate = "params")
+
+
 ## -----------------------------------------------------------------------------
 multiply_print_r <- function(x, y) {
   print("Hello useR!")
-  nv_mul(x, x)
+  nv_mul(x, y)
 }
 multiply_jit <- jit(multiply_print_r)
-
-
-## -----------------------------------------------------------------------------
 multiply_jit(x, y)
-
-
-## -----------------------------------------------------------------------------
-multiply_jit(x, y)
-
-
-## -----------------------------------------------------------------------------
-multiply_jit(nv_scalar(2, "f32"), nv_scalar(3, "f32"))
-
-
-## -----------------------------------------------------------------------------
-multiply_jit(nv_scalar(1, "i32"), nv_scalar(5, "i32"))
 
 
 ## -----------------------------------------------------------------------------
@@ -166,7 +138,6 @@ add_or_multiply <- jit(function(x, y, op) {
 
 ## -----------------------------------------------------------------------------
 add_or_multiply(x, y, "add")
-add_or_multiply(x, y, "multiply")
 
 
 ## -----------------------------------------------------------------------------
@@ -210,6 +181,26 @@ multiply_print_jit(x, y)
 
 
 ## -----------------------------------------------------------------------------
+# Compute x = x * 2 until x > 100
+result <- jit(function(x) {
+  out <- nv_while(
+    list(x = x),
+    \(x) x <= nv_scalar(100, "f32"),
+    \(x) list(x = nv_mul(x, nv_scalar(2, "f32")))
+  )
+  out$x
+})
+result(nv_scalar(1, "f32"))
+
+
+## ----eval = FALSE-------------------------------------------------------------
+# state <- nv_rng_state(seed = 42L)
+# result1 <- nv_runif(state, shape = c(3L), dtype = "f32")
+# state2 <- result1[[1L]]
+# samples <- result1[[2L]]
+
+
+## -----------------------------------------------------------------------------
 set.seed(42)
 titanic_df <- as.data.frame(Titanic)
 titanic <- titanic_df[rep(seq_len(nrow(titanic_df)), titanic_df$Freq), 1:4]
@@ -217,8 +208,8 @@ X <- scale(model.matrix(~ Class + Sex + Age, data = titanic)[, -1])
 y <- as.integer(titanic$Survived == "Yes")
 n <- nrow(X); p <- ncol(X)
 
-X_tensor <- nv_array(X, dtype = "f32")
-y_tensor <- nv_array(y, dtype = "f32", shape = c(n, 1L))
+X_array <- nv_array(X, dtype = "f32")
+y_array <- nv_array(y, dtype = "f32", shape = c(n, 1L))
 
 
 ## -----------------------------------------------------------------------------
@@ -258,7 +249,7 @@ beta_init <- nv_array(rnorm(p), dtype = "f32", shape = c(p, 1L))
 alpha_init <- nv_scalar(0, dtype = "f32")
 
 result <- fit_logreg(
-  X_tensor, y_tensor, beta_init, alpha_init,
+  X_array, y_array, beta_init, alpha_init,
   nv_scalar(50000L), nv_scalar(0.1)
 )
 
@@ -275,27 +266,57 @@ comparison
 
 
 ## -----------------------------------------------------------------------------
-p_mul_custom <- AnvilPrimitive("mul_custom")
+p_repeat_along <- AnvilPrimitive("repeat_along")
 
 
 ## -----------------------------------------------------------------------------
-nvl_mul_custom <- function(x, y) {
-  graph_desc_add(p_mul_custom, list(x, y), infer_fn = infer_binary)[[1L]]
-}
-
-
-## ----out.width = "100%"-------------------------------------------------------
-p_mul_custom[["stablehlo"]] <- function(lhs, rhs) {
-  list(stablehlo::hlo_multiply(lhs, rhs))
+nvl_repeat_along <- function(operand, times, dim) {
+  infer_fn <- function(operand, times, dim) {
+    if (!checkmate::test_integerish(dim, lower = 1, upper = ndims(operand), len = 1L)) {
+      cli::cli_abort("{.arg dim} must be between 1 and {ndims(operand)}, but is {.val dim}")
+    }
+    if (!checkmate::test_integerish(times, lower = 1, len = 1L)) {
+      cli::cli_abort("times must be a positive integer, but is {times}")
+    }
+    new_shape <- shape(operand)
+    new_shape[dim] <- new_shape[dim] * times
+    list(AbstractArray(
+      dtype = dtype(operand), shape = Shape(new_shape),
+      ambiguous = operand$ambiguous
+    ))
+  }
+  graph_desc_add(p_repeat_along, list(operand = operand),
+    params = list(times = times, dim = dim), infer_fn = infer_fn)[[1L]]
 }
 
 
 ## -----------------------------------------------------------------------------
-p_mul_custom[["backward"]] <- function(inputs, outputs, grads, required) {
+p_repeat_along[["stablehlo"]] <- function(operand, times, dim) {
+  operands <- rep(list(operand), times)
+  list(rlang::exec(stablehlo::hlo_concatenate, !!!operands, dimension = dim - 1L))
+}
+
+
+## -----------------------------------------------------------------------------
+p_repeat_along[["reverse"]] <- function(inputs, outputs, grads, dim, times, .required) {
+  if (!.required[[1L]]) return(list(NULL))
   grad <- grads[[1L]]
-  list(
-    if (required[[1L]]) nvl_mul(grad, rhs),
-    if (required[[2L]]) nvl_mul(grad, lhs)
-  )
+  operand <- inputs[[1L]]
+  old_shape <- shape(operand)
+  new_shape <- shape(grad)
+  new_shape[dim] <- old_shape[dim]
+  new_shape <- append(new_shape, times, after = dim - 1L)
+  grad_reshaped <- nvl_reshape(grad, new_shape)
+  list(nvl_reduce_sum(grad_reshaped, dims = dim, drop = TRUE))
 }
+
+
+## -----------------------------------------------------------------------------
+register_primitive("repeat_along", p_repeat_along)
+
+
+## -----------------------------------------------------------------------------
+x <- nv_array(c(1, 2, 3), shape = c(3, 1))
+jit(function(x) nvl_repeat_along(x, times = 2L, dim = 2L))(x)
+jit(gradient(function(x) sum(nvl_repeat_along(x, times = 2L, dim = 2L))))(x)[[1L]]
 
