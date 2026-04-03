@@ -8,6 +8,8 @@
 
 ## New Features
 
+* Better composability:
+  `jit()`ted functions can now be traced when used within `jit()`.
 * An experimental [{quickr}](https://github.com/t-kalinowski/quickr) backend is now available.
   It only runs on CPU for now and supports a subset of available operations.
   You can enable it globally via the `anvil.backend` option.
@@ -44,6 +46,9 @@
 
 * To construct booleans, we now support `pjrt_buffer(..., dtype = "bool")`.
   Also `bool` is used in the printer (instead of `i1`).
+* To use the CUDA backend, it is now possible to install the `cuda12.8`
+  package (see installation guide), which only requires a compatible CUDA
+  driver.
 
 # anvil 0.1.0
 
