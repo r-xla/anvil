@@ -118,11 +118,7 @@ install it via r-universe or from GitHub.</p>
 <code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"r-xla/anvil@*release"</span><span class="op">)</span></span></code></pre></div>
 <p>You can install the latest release from r-universe via:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  rxla <span class="op">=</span> <span class="st">"https://r-xla.r-universe.dev"</span>,</span>
-<span>  CRAN <span class="op">=</span> <span class="st">"https://cloud.r-project.org/"</span></span>
-<span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"anvil"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"anvil"</span>, repos <span class="op">=</span> <span class="st">"https://r-xla.r-universe.dev"</span><span class="op">)</span></span></code></pre></div>
 <p>To confirm that your CPU installation is working, run:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
@@ -138,25 +134,38 @@ install it via r-universe or from GitHub.</p>
 <div class="section level2">
 <h2 id="gpu-support">GPU Support<a class="anchor" aria-label="anchor" href="#gpu-support"></a>
 </h2>
-<p>Running {anvil} with GPU support only works on Linux or via WSL2 on
-Windows. In principle, MPS support on macOS is available but many
-features are missing and the PJRT plugin is heavily outdated. To use
-{anvil} with GPU support, you need to have CUDA installed. The PJRT CUDA
-plugin was built with the following versions:</p>
-<ul>
-<li>CUDA 12.8.1</li>
-<li>CUDNN 9.8.0</li>
-<li>NVSHMEM 3.2.5</li>
-</ul>
-<p>Besides, there is <a href="https://github.com/r-xla/docker/blob/main/cuda-base/Dockerfile" class="external-link">this
-dockerfile</a> which is used in the GitHub Actions CI, and the versions
-used therein should also work.</p>
-<p>To confirm that your GPU installation is working, run:</p>
+<p>Running {anvil} with GPU support only works on Linux (amd64/x86-64)
+or via WSL2 on Windows. In principle, MPS support on macOS is available
+but many features are missing and the PJRT plugin provided by Apple is
+heavily outdated.</p>
+<div class="section level3">
+<h3 id="cuda">CUDA<a class="anchor" aria-label="anchor" href="#cuda"></a>
+</h3>
+<p>To use the CUDA backend on Linux install the {cuda12.8} R package
+which provides the required CUDA runtime libraries and you only need to
+have a compatible CUDA driver.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, device <span class="op">=</span> <span class="st">"cuda"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"mlverse/cudatoolkit/cuda12.8"</span><span class="op">)</span></span></code></pre></div>
+<p>Alternatively, install from <a href="https://mlverse.r-universe.dev/" class="external-link">r-universe</a>.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"cuda12.8"</span>, repos <span class="op">=</span> <span class="st">"https://mlverse.r-universe.dev"</span><span class="op">)</span></span></code></pre></div>
+<p>When the {cuda12.8} package is not installed, the correct runtime
+libraries need to be installed on the system and discoberable via
+<code>LD_LIBRARY_PATH</code>. This can be difficult to set up. The
+specific versions of the CUDA runtime libraries provided with {cuda12.8}
+are provided <a href="https://github.com/mlverse/cudatoolkit/blob/main/cuda12.8/inst/components.tsv" class="external-link">here</a>.</p>
+<p><strong>Troubleshooting</strong></p>
+<p>To trouble-shoot the CUDA installation, run the following in a new R
+session for maximum debug output.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>PJRT_DEBUG <span class="op">=</span> <span class="st">"1"</span>, TF_CPP_MIN_LOG_LEVEL <span class="op">=</span> <span class="st">"0"</span><span class="op">)</span></span>
+<span><span class="fu">anvil</span><span class="fu">::</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, device <span class="op">=</span> <span class="st">"cuda"</span><span class="op">)</span></span></code></pre></div>
+<p>Note that if another package is using a different cudatoolkit package
+(e.g. when using {torch}), there might be some issues, so in this case
+it’s best to run separate R processes.</p>
 <p>If you are working on a server, you can also use the prebuilt Docker
 images, see the next section.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="docker">Docker<a class="anchor" aria-label="anchor" href="#docker"></a>
@@ -167,10 +176,6 @@ CUDA and CPU build for amd64/x86-64 architecture:</p>
 <h3 id="available-images">Available Images<a class="anchor" aria-label="anchor" href="#available-images"></a>
 </h3>
 <table class="table">
-<colgroup>
-<col width="35%">
-<col width="65%">
-</colgroup>
 <thead><tr class="header">
 <th>Image</th>
 <th>Description</th>
@@ -184,11 +189,6 @@ CUDA and CPU build for amd64/x86-64 architecture:</p>
 <tr class="even">
 <td><code>anvil-cuda</code></td>
 <td>GPU support with CUDA 12.8</td>
-</tr>
-<tr class="odd">
-<td><code>anvil-cuda-base</code></td>
-<td>Base image for <code>anvil-cuda</code> without <code>anvil</code>
-installed</td>
 </tr>
 </tbody>
 </table>

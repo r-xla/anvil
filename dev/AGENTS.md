@@ -7,32 +7,7 @@
 `anvil` is a code transformation framework similar to jax for R. It
 currently has support for jit compilation and automatic differentiation.
 
-## Development Commands
-
-### Build and Install
-
-``` r
-# Load the package for development
-devtools::load_all()
-
-# Install the package
-devtools::install()
-
-# Build the package (creates tar.gz file)
-devtools::build()
-```
-
-### Testing
-
-``` r
-# Run all tests
-devtools::test()
-
-# Run a specific test file
-testthat::test_file("tests/testthat/test-constant.R")
-```
-
-### Testing Guidelines
+## Testing Guidelines
 
 Each rule of each primitive should be tested. Many tests can be
 implemented by comparing with the corresponding torch function
@@ -44,12 +19,7 @@ If the test is very simple, or the functionality not covered by torch,
 implement the test manually. Implement either the torch test OR the
 manual test, but not both.
 
-### Documentation
-
-``` r
-# Generate documentation from roxygen comments
-devtools::document()
-```
+## Documentation
 
 When writing roxygen2 documentation for primitives or API functions:
 
@@ -72,13 +42,6 @@ When writing roxygen2 documentation for primitives or API functions:
 - Use `@rdname` or `@inheritParams` to inherit documentation from
   related functions where possible, avoiding duplication across `nvl_*`
   and `nv_*` variants.
-
-### Check
-
-``` r
-# Run checks for CRAN compliance
-devtools::check()
-```
 
 ## Development Practices
 
@@ -106,25 +69,6 @@ Only add comments if the code is not self-explanatory.
 - For length-1 vectors, don’t use
   [`c()`](https://rdrr.io/r/base/c.html). For example, use `1L` instead
   of `c(1L)`.
-
-### Adding new Features
-
-## Adding a Primitive
-
-The functions prefixed with `nvl_` are the primitives and defined in
-primitives.R. When implementing a primitive, make sure that the
-inference function propagates the ambiguity of the inputs to the output.
-Also, check whether the stablehlo package has a corresponding inference
-function that can be wrapped. Pay attention that stablehlo uses 0-based
-indexing, but `anvil` uses 1-based indexing.
-
-## Adding an API function
-
-API functions are prefixed by `nv_` and are defined in files like api.R
-or api-rng.R. Often, they wrap primitives, but make them more convenient
-to use. When accessing properties from `arrayish` values, use
-`shape_abstract`, `ndims_abstract`, and `dtype_abstract`. Other
-accessors are currently not available.
 
 ## NSE and Tracing
 

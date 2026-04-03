@@ -217,7 +217,7 @@ The reverse rule receives:
 It returns a list with one gradient per input (or `NULL` if not
 required).
 
-## Step 5: Register the Primitive
+### Step 5: Register the Primitive
 
 To not pollute the global namespace, the primitive objects
 (`p_repeat_along` in our case) are not exported. Instead, they can be

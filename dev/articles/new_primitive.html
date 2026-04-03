@@ -320,10 +320,9 @@ gradients are needed</li>
 <p>It returns a list with one gradient per input (or <code>NULL</code>
 if not required).</p>
 </div>
-</div>
-<div class="section level2">
-<h2 id="step-5-register-the-primitive">Step 5: Register the Primitive<a class="anchor" aria-label="anchor" href="#step-5-register-the-primitive"></a>
-</h2>
+<div class="section level3">
+<h3 id="step-5-register-the-primitive">Step 5: Register the Primitive<a class="anchor" aria-label="anchor" href="#step-5-register-the-primitive"></a>
+</h3>
 <p>To not pollute the global namespace, the primitive objects
 (<code>p_repeat_along</code> in our case) are not exported. Instead,
 they can be retrieved via <code>prim("repeat_along")</code>. To make
@@ -332,6 +331,7 @@ this work, you need to register the primitive object:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/register_primitive.html">register_primitive</a></span><span class="op">(</span><span class="st">"repeat_along"</span>, <span class="va">p_repeat_along</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/prim.html">prim</a></span><span class="op">(</span><span class="st">"repeat_along"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;AnvilPrimitive:repeat_along&gt;</span></span></code></pre></div>
+</div>
 <div class="section level3">
 <h3 id="step-6-add-an-nv_-api-function">Step 6: Add an <code>nv_</code> API Function<a class="anchor" aria-label="anchor" href="#step-6-add-an-nv_-api-function"></a>
 </h3>

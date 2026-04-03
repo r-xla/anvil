@@ -73,37 +73,11 @@
 <p><code>anvil</code> is a code transformation framework similar to jax for R. It currently has support for jit compilation and automatic differentiation.</p>
 </div>
 <div class="section level2">
-<h2 id="development-commands">Development Commands<a class="anchor" aria-label="anchor" href="#development-commands"></a></h2>
-<div class="section level3">
-<h3 id="build-and-install">Build and Install<a class="anchor" aria-label="anchor" href="#build-and-install"></a></h3>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Load the package for development</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">load_all</span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Install the package</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install</span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Build the package (creates tar.gz file)</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">build</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="testing">Testing<a class="anchor" aria-label="anchor" href="#testing"></a></h3>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Run all tests</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">test</span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Run a specific test file</span></span>
-<span><span class="fu">testthat</span><span class="fu">::</span><span class="fu"><a href="https://testthat.r-lib.org/reference/test_file.html" class="external-link">test_file</a></span><span class="op">(</span><span class="st">"tests/testthat/test-constant.R"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="testing-guidelines">Testing Guidelines<a class="anchor" aria-label="anchor" href="#testing-guidelines"></a></h3>
+<h2 id="testing-guidelines">Testing Guidelines<a class="anchor" aria-label="anchor" href="#testing-guidelines"></a></h2>
 <p>Each rule of each primitive should be tested. Many tests can be implemented by comparing with the corresponding torch function (inst/extra-tests/test-primitives-stablehlo-torch.R and inst/extra-tests/test-primitives-reverse-torch.R, …). These are sourced in test-primitives-stablehlo.R and test-primitives-reverse.R, etc.. Implement the test by comparing with torch, if possible and necessary. If the test is very simple, or the functionality not covered by torch, implement the test manually. Implement either the torch test OR the manual test, but not both.</p>
 </div>
-<div class="section level3">
-<h3 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a></h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Generate documentation from roxygen comments</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">document</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a></h2>
 <p>When writing roxygen2 documentation for primitives or API functions:</p>
 <ul><li><p>Do not mention “1-based” indexing in documentation. Since this is an R package, 1-based indexing is the default and stating it is redundant.</p></li>
 <li><p>Check the <code>man-roxygen/</code> directory for existing templates (e.g. <code>param_operand.R</code>, <code>param_shape.R</code>, <code>param_dtype.R</code>, <code>param_ambiguous.R</code>, <code>params_lhs_rhs.R</code>, <code>section_rules.R</code>, <code>section_shapes_binary.R</code>, etc.). Use <code>@template</code> to avoid duplicating common parameter descriptions.</p></li>
@@ -111,13 +85,6 @@
 <li><p>Use <code>@templateVar primitive_id &lt;name&gt;</code> with <code>@template section_rules</code> to auto-generate the “Implemented Rules” section.</p></li>
 <li><p>Use <code>@rdname</code> or <code>@inheritParams</code> to inherit documentation from related functions where possible, avoiding duplication across <code>nvl_*</code> and <code>nv_*</code> variants.</p></li>
 </ul></div>
-<div class="section level3">
-<h3 id="check">Check<a class="anchor" aria-label="anchor" href="#check"></a></h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Run checks for CRAN compliance</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">check</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
 <div class="section level2">
 <h2 id="development-practices">Development Practices<a class="anchor" aria-label="anchor" href="#development-practices"></a></h2>
 <ol style="list-style-type: decimal"><li>Use S3 (object-oriented system) for defining types and classes.</li>
@@ -137,18 +104,7 @@
 <h2 id="comments">Comments<a class="anchor" aria-label="anchor" href="#comments"></a></h2>
 <p>Only add comments if the code is not self-explanatory.</p>
 <ul><li>For length-1 vectors, don’t use <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>. For example, use <code>1L</code> instead of <code>c(1L)</code>.</li>
-</ul><div class="section level3">
-<h3 id="adding-new-features">Adding new Features<a class="anchor" aria-label="anchor" href="#adding-new-features"></a></h3>
-</div>
-</div>
-<div class="section level2">
-<h2 id="adding-a-primitive">Adding a Primitive<a class="anchor" aria-label="anchor" href="#adding-a-primitive"></a></h2>
-<p>The functions prefixed with <code>nvl_</code> are the primitives and defined in primitives.R. When implementing a primitive, make sure that the inference function propagates the ambiguity of the inputs to the output. Also, check whether the stablehlo package has a corresponding inference function that can be wrapped. Pay attention that stablehlo uses 0-based indexing, but <code>anvil</code> uses 1-based indexing.</p>
-</div>
-<div class="section level2">
-<h2 id="adding-an-api-function">Adding an API function<a class="anchor" aria-label="anchor" href="#adding-an-api-function"></a></h2>
-<p>API functions are prefixed by <code>nv_</code> and are defined in files like api.R or api-rng.R. Often, they wrap primitives, but make them more convenient to use. When accessing properties from <code>arrayish</code> values, use <code>shape_abstract</code>, <code>ndims_abstract</code>, and <code>dtype_abstract</code>. Other accessors are currently not available.</p>
-</div>
+</ul></div>
 <div class="section level2">
 <h2 id="nse-and-tracing">NSE and Tracing<a class="anchor" aria-label="anchor" href="#nse-and-tracing"></a></h2>
 <p>Whenever we are combining non-standard evaluation (NSE) with tracing of sub-graphs, we need to <code><a href="https://rdrr.io/r/base/force.html" class="external-link">force()</a></code> the arrayish inputs, so they are not accidentally embedded into the sub-graphdescriptor. This can happen in R, because the evaluation of promises in function calls is delayed until they are actually needed, which causes hard-to-debug errors.</p>

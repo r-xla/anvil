@@ -75,7 +75,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
-<ul><li>An experimental <a href="https://github.com/t-kalinowski/quickr" class="external-link">{quickr}</a> backend is now available. It only runs on CPU for now and supports a subset of available operations. You can enable it globally via the <code>anvil.backend</code> option.</li>
+<ul><li>Better composability: <code><a href="../reference/jit.html">jit()</a></code>ted functions can now be traced when used within <code><a href="../reference/jit.html">jit()</a></code>.</li>
+<li>An experimental <a href="https://github.com/t-kalinowski/quickr" class="external-link">{quickr}</a> backend is now available. It only runs on CPU for now and supports a subset of available operations. You can enable it globally via the <code>anvil.backend</code> option.</li>
 <li>New primitives:
 <ul><li>
 <code><a href="../reference/nvl_cholesky.html">nvl_cholesky()</a></code> to compute the Cholesky decomposition of a matrix.</li>
@@ -116,6 +117,7 @@
 <div class="section level3">
 <h3 id="other-development-version">Other<a class="anchor" aria-label="anchor" href="#other-development-version"></a></h3>
 <ul><li>To construct booleans, we now support <code>pjrt_buffer(..., dtype = "bool")</code>. Also <code>bool</code> is used in the printer (instead of <code>i1</code>).</li>
+<li>To use the CUDA backend, it is now possible to install the <code>cuda12.8</code> package (see installation guide), which only requires a compatible CUDA driver.</li>
 </ul></div>
 </div>
     <div class="section level2">

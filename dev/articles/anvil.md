@@ -275,6 +275,36 @@ linear_model4(list(X, beta, alpha))
     ##  -1.1904
     ## [ CPUf32{2,1} ]
 
+### Composability
+
+Jit-compiled functions can be called inside other
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) calls.
+When this happens, the inner function is not compiled and executed
+separately – instead, its operations are traced and inlined into the
+outer computation graph, as if you had called the original R function
+directly.
+
+``` r
+add_jit <- jit(function(x, y) x + y)
+mul_jit <- jit(function(x, y) x * y)
+
+combined <- jit(function(a, b) {
+  s <- add_jit(a, b)
+  mul_jit(s, a)
+})
+
+combined(nv_scalar(3L), nv_scalar(4L))
+```
+
+    ## AnvilArray
+    ##  21
+    ## [ CPUi32{} ]
+
+This means you can build complex programs by composing smaller jitted
+building blocks. Each piece can be used standalone (where it is compiled
+and executed normally) or as part of a larger jitted function (where its
+operations are folded into the outer compilation).
+
 So far, we have only implemented the prediction step for the linear
 model. One of the core applications of {anvil} is to implement learning
 algorithms, for which we often need gradients, as well as control flow.
@@ -306,7 +336,7 @@ y <- X %*% beta + alpha + rnorm(100, sd = 0.5)
 plot(X, y)
 ```
 
-![](anvil_files/figure-html/unnamed-chunk-17-1.png)
+![](anvil_files/figure-html/unnamed-chunk-18-1.png)
 
 ``` r
 X <- nv_array(X)
@@ -321,8 +351,11 @@ alpha_hat <- nv_scalar(rnorm(1), dtype = "f32")
 ```
 
 We can now define a function that does the prediction and calculates the
-loss. Note that we are calling into the original R function that does
-the prediction and not its jit-compiled version.
+loss. Note that we could also call the jit-compiled `linear_model` here
+instead of `linear_model_r` – as discussed in the composability section,
+jitted functions called within
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) are
+transparently inlined.
 
 ``` r
 model_loss <- function(X, beta, alpha, y) {
@@ -366,7 +399,7 @@ for (i in 1:100) {
 }
 ```
 
-![](anvil_files/figure-html/unnamed-chunk-23-1.png)
+![](anvil_files/figure-html/unnamed-chunk-24-1.png)
 
 While this might seem like a reasonable solution, it continuously
 switches between the R interpreter and the XLA runtime. Moreover, we
