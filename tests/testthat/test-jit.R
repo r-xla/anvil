@@ -121,9 +121,10 @@ test_that("jitted function has class JitFunction", {
   expect_s3_class(f_jit, "JitFunction")
 })
 
-test_that("calling jit on jit errors", {
-  f_jit <- jit(function(x) x)
-  expect_error(jit(f_jit)(nv_array(1)), "must not be a jitted function")
+test_that("jit(jit(f)) works (#220)", {
+  f_jit <- jit(function(x) x + nv_scalar(1L))
+  f_jit2 <- jit(f_jit)
+  expect_equal(f_jit2(nv_array(3L)), nv_array(4L))
 })
 
 test_that("keeps argument names", {
@@ -277,6 +278,13 @@ test_that("xla: basic test", {
   f_compiled <- xla(f_add, args = args)
   result <- f_compiled(nv_scalar(1, dtype = "f32"), nv_scalar(2, dtype = "f32"))
   expect_equal(result, nv_scalar(3, dtype = "f32"))
+})
+
+test_that("nested jit: jitted function can be called inside jit (#220)", {
+  inner <- jit(function(x, y) x + y)
+  outer <- jit(function(a, b) inner(a, b) * nv_scalar(2L))
+  result <- outer(nv_array(3L), nv_array(4L))
+  expect_equal(result, nv_array(14L))
 })
 
 test_that("hash for cache depends on in_tree (#122)", {
