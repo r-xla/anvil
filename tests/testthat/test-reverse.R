@@ -1,4 +1,4 @@
-test_that("basic pullback test", {
+test_that("basic reverse test", {
   f <- function(x, y) {
     nvl_add(x, y)
   }
@@ -143,7 +143,7 @@ test_that("partial gradient simple", {
 #})
 #
 
-#test_that("pullback", {
+#test_that("reverse", {
 #  fbwd <- jit(pullback(nv_add, lhs = nv_scalar(1.0), rhs = nv_scalar(2.0), wrt = "lhs"))
 #  expect_equal(fbwd(nv_scalar(10.0)), list(lhs = nv_scalar(10.0)))
 #})
