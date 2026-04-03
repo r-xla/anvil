@@ -87,8 +87,7 @@ NULL
 
 #' @rdname AnvilArray
 #' @export
-nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL,
-                     backend = NULL) {
+nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL, backend = NULL) {
   if (is_anvil_array(data)) {
     if (!is.null(device) && device(data) != pjrt::as_pjrt_device(device)) {
       cli_abort("Cannot change device of existing AnvilArray from {.val {platform(data)}} to {.val {device}}")
@@ -159,10 +158,8 @@ ensure_nv_array <- function(x, ambiguous = FALSE) {
 
 #' @rdname AnvilArray
 #' @export
-nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL,
-                      backend = NULL) {
-  nv_array(data, dtype = dtype, device = device, shape = integer(), ambiguous = ambiguous,
-           backend = backend)
+nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL) {
+  nv_array(data, dtype = dtype, device = device, shape = integer(), ambiguous = ambiguous, backend = backend)
 }
 
 #' @rdname AnvilArray

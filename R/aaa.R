@@ -24,8 +24,15 @@ globals$interpretation_rules <- c("stablehlo", "quickr", "reverse")
 globals[["DESCRIPTOR_STASH"]] <- list()
 globals[["CURRENT_DESCRIPTOR"]] <- NULL
 backend_config_fields <- c(
-  "constructor", "dtype", "shape", "ambiguous",
-  "as_array", "as_raw", "platform", "device", "print_data"
+  "constructor",
+  "dtype",
+  "shape",
+  "ambiguous",
+  "as_array",
+  "as_raw",
+  "platform",
+  "device",
+  "print_data"
 )
 
 #' Create a backend configuration
@@ -46,6 +53,32 @@ BackendConfig <- function(...) {
     cli_abort("Backend config has unknown fields: {.val {extra}}")
   }
   structure(config, class = "BackendConfig")
+}
+
+QuickrDeviceCpu <- function() {
+  structure("cpu", class = "QuickrDeviceCpu")
+}
+
+#' @export
+format.QuickrDeviceCpu <- function(x, ...) "QuickrDeviceCpu"
+
+#' @export
+print.QuickrDeviceCpu <- function(x, ...) {
+  cat(format(x), "\n")
+  invisible(x)
+}
+
+PlainDeviceCpu <- function() {
+  structure("cpu", class = "PlainDeviceCpu")
+}
+
+#' @export
+format.PlainDeviceCpu <- function(x, ...) "PlainDeviceCpu"
+
+#' @export
+print.PlainDeviceCpu <- function(x, ...) {
+  cat(format(x), "\n")
+  invisible(x)
 }
 
 globals$backends <- list(
@@ -86,16 +119,19 @@ globals$backends <- list(
           as.integer(length(data))
         }
       }
-      data <- switch(substr(dtype, 1, 1),
+      data <- switch(
+        substr(dtype, 1, 1),
         "f" = as.double(data),
-        "i" = , "u" = as.integer(data),
+        "i" = ,
+        "u" = as.integer(data),
         "b" = as.logical(data),
         as.double(data)
       )
-      if (length(shape) >= 1L) dim(data) <- shape
+      if (length(shape) >= 1L) {
+        dim(data) <- shape
+      }
       structure(
-        list(data = data, dtype = as_dtype(dtype), shape = shape,
-             ambiguous = ambiguous, backend = "quickr"),
+        list(data = data, dtype = as_dtype(dtype), shape = shape, ambiguous = ambiguous, backend = "quickr"),
         class = "AnvilArray"
       )
     },
@@ -105,8 +141,11 @@ globals$backends <- list(
     as_array = function(x) x$data,
     as_raw = function(x, row_major) as.raw(x$data),
     platform = function(x) "cpu",
-    device = function(x) "QuickrDeviceCpu",
-    print_data = function(x, footer) { print(x$data); cat(footer, "\n") }
+    device = function(x) QuickrDeviceCpu(),
+    print_data = function(x, footer) {
+      print(x$data)
+      cat(footer, "\n")
+    }
   ),
   plain = BackendConfig(
     constructor = function(data, dtype, shape, device, ambiguous) {
@@ -122,9 +161,16 @@ globals$backends <- list(
           as.integer(length(data))
         }
       }
+      data <- switch(
+        substr(dtype, 1, 1),
+        "f" = as.double(data),
+        "i" = ,
+        "u" = as.integer(data),
+        "b" = as.logical(data),
+        as.double(data)
+      )
       structure(
-        list(data = data, dtype = as_dtype(dtype), shape = shape,
-             ambiguous = ambiguous, backend = "plain"),
+        list(data = data, dtype = as_dtype(dtype), shape = shape, ambiguous = ambiguous, backend = "plain"),
         class = "AnvilArray"
       )
     },
@@ -134,8 +180,11 @@ globals$backends <- list(
     as_array = function(x) x$data,
     as_raw = function(x, row_major) cli_abort("as_raw not supported for plain backend"),
     platform = function(x) "cpu",
-    device = function(x) "plain",
-    print_data = function(x, footer) { print(x$data); cat(footer, "\n") }
+    device = function(x) PlainDeviceCpu(),
+    print_data = function(x, footer) {
+      print(x$data)
+      cat(footer, "\n")
+    }
   )
 )
 utils::globalVariables(c("globals"))

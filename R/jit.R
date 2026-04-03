@@ -208,17 +208,6 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
   }
 }
 
-quickr_jit_shape <- function(x) {
-  dims <- dim(x)
-  if (!is.null(dims)) {
-    return(as.integer(dims))
-  }
-  if (length(x) == 1L) {
-    return(integer())
-  }
-  as.integer(length(x))
-}
-
 quickr_jit_aval <- function(x) {
   if (!is_anvil_array(x)) {
     cli_abort("Expected AnvilArray, but got {.cls {class(x)[1]}}")
@@ -324,8 +313,7 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
     }
     arr <- const$aval$data
     if (backend(arr) == "plain") {
-      pjrt_buffer(as_array(arr), as.character(dtype(arr)), device = device,
-                  shape = shape(arr))
+      pjrt_buffer(as_array(arr), as.character(dtype(arr)), device = device, shape = shape(arr))
     } else {
       unwrap_if_array(arr)
     }

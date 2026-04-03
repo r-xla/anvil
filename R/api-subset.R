@@ -108,9 +108,38 @@ dynamic_start_indices <- function(starts) {
   out
 }
 
+# Plain-R reimplementation of dynamic_start_indices for static (R numeric) inputs.
+# Returns an i32 array of shape [rank] (all scalar) or [gather_shape..., rank].
 static_start_indices <- function(starts) {
-  starts <- lapply(starts, nv_array, dtype = "i32")
-  dynamic_start_indices(starts)
+  rank <- length(starts)
+  sizes <- lengths(starts)
+  multi_index_dims <- which(sizes > 1L)
+
+  if (length(multi_index_dims) == 0L) {
+    return(nv_array(as.integer(starts), dtype = "i32"))
+  }
+
+  multi_index_sizes <- sizes[multi_index_dims]
+  n_gather <- length(multi_index_dims)
+  n_total <- prod(multi_index_sizes)
+
+  # expand.grid varies first arg fastest → matches R's column-major order
+  grid <- expand.grid(lapply(multi_index_sizes, seq_len))
+
+  result <- matrix(0L, nrow = n_total, ncol = rank)
+  mi_i <- 1L
+  for (d in seq_len(rank)) {
+    s <- as.integer(starts[[d]])
+    if (length(s) == 1L) {
+      result[, d] <- s
+    } else {
+      result[, d] <- s[grid[[mi_i]]]
+      mi_i <- mi_i + 1L
+    }
+  }
+
+  dim(result) <- c(multi_index_sizes, rank)
+  nv_array(result, dtype = "i32")
 }
 
 

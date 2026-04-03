@@ -84,6 +84,8 @@ reference:
       - starts_with("platform")
       - as_array
       - as_raw
+      - backend
+      - local_backend
       - as_dtype
       - is_dtype
 

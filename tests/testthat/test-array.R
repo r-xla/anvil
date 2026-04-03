@@ -168,6 +168,77 @@ test_that("stablehlo dtype is printed", {
   expect_snapshot(nv_array(TRUE))
 })
 
+test_that("QuickrDeviceCpu is a classed object", {
+  dev <- QuickrDeviceCpu()
+  expect_s3_class(dev, "QuickrDeviceCpu")
+  expect_equal(format(dev), "QuickrDeviceCpu")
+  expect_equal(as.character(dev), "cpu")
+})
+
+test_that("PlainDeviceCpu is a classed object", {
+  dev <- PlainDeviceCpu()
+  expect_s3_class(dev, "PlainDeviceCpu")
+  expect_equal(format(dev), "PlainDeviceCpu")
+  expect_equal(as.character(dev), "cpu")
+})
+
+test_that("device returns QuickrDeviceCpu for quickr arrays", {
+  local_backend("quickr")
+  x <- nv_array(1)
+  dev <- device(x)
+  expect_s3_class(dev, "QuickrDeviceCpu")
+})
+
+test_that("device returns PlainDeviceCpu for plain arrays", {
+  x <- globals$backends[["plain"]]$constructor(1, "f32", 1L, NULL, FALSE)
+  dev <- device(x)
+  expect_s3_class(dev, "PlainDeviceCpu")
+})
+
+test_that("platform returns 'cpu' for quickr backend", {
+  local_backend("quickr")
+  expect_equal(platform(nv_array(1)), "cpu")
+})
+
+test_that("platform returns 'cpu' for plain backend", {
+  x <- globals$backends[["plain"]]$constructor(1, "f32", 1L, NULL, FALSE)
+  expect_equal(platform(x), "cpu")
+})
+
+test_that("backend() returns the backend name", {
+  x <- nv_array(1)
+  expect_equal(backend(x), "xla")
+
+  local_backend("quickr")
+  y <- nv_array(1)
+  expect_equal(backend(y), "quickr")
+})
+
+test_that("local_backend sets and restores the default backend", {
+  old <- getOption("anvil.default_backend")
+  local_backend("quickr")
+  expect_equal(getOption("anvil.default_backend"), "quickr")
+  expect_equal(backend(nv_array(1)), "quickr")
+  # auto-restores when scope exits (but we're still in the test scope)
+})
+
+test_that("local_backend rejects 'auto'", {
+  expect_error(local_backend("auto"), "auto")
+})
+
+test_that("nv_array respects backend argument", {
+  local_backend("quickr")
+  x <- nv_array(1, backend = "xla")
+  expect_equal(backend(x), "xla")
+})
+
+test_that("nv_array errors when backend specified inside jit", {
+  expect_error(
+    jit(function() nv_array(1, backend = "xla"))(),
+    "must not be specified"
+  )
+})
+
 test_that("default floating dtype is f32 regardless of backend", {
   expect_equal(dtype(nv_array(1.0)), as_dtype("f32"))
   expect_equal(dtype(nv_scalar(1.0)), as_dtype("f32"))
