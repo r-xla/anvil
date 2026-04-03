@@ -67,9 +67,11 @@ subset_start_positions <- function(subsets) {
   lapply(subsets, subset_start_position)
 }
 
-# Inputs: list of 1-D arrays, each of shape [n_i].
-# Non-multi-index dims have n_i = 1, multi-index dims have n_i > 1.
-# Returns an array of shape [rank] or [gather_shape..., rank].
+# Takes a list of 1-D start arrays (one per dim). Scalar dims have length 1,
+# multi-index dims have length > 1.
+# Returns an array where each row is one index tuple into the original array,
+# covering all combinations of the multi-index dims (cartesian product).
+# Shape [rank] if all scalar, or [multi_index_sizes..., rank] otherwise.
 dynamic_start_indices <- function(starts) {
   rank <- length(starts)
   sizes <- vapply(starts, function(s) shape_abstract(s)[1L], integer(1L))
@@ -80,16 +82,9 @@ dynamic_start_indices <- function(starts) {
     return(start)
   }
 
-  # consider s_1, ..., s_n
-  # where some s_i are multi-index, some are not
-  # We wan't to create a  array S of shape [size(s_i1), ..., size(s_im), n]
-  # where i1, ..., im are the multi-index dimensions.
-  # We can look at this as j arrays of shape [size(s_i1), ..., size(s_im), 1] (S[.., j]) that we create
-  # for j that are not in {i1, ..., im} we simply broadcast the singular start index.
-  # The other J slices (S[.., j]) for j \in {i1, ..., im} form
-  # a cartesian product of the multi-index dimensions.
-  # But we compute each layer S[.., j] individually, where for j = s_i1, the indices are constant
-  # across every of the m dimensions except for the one corresponding to i1
+  # Each "row" (last axis) is an index tuple [d1, d2, ..., d_rank].
+  # Scalar dims contribute the same value to every row.
+  # Multi-index dims vary across their own axis, forming the cartesian product.
 
   multi_index_sizes <- sizes[multi_index_dims]
   n_gather <- length(multi_index_dims)
@@ -108,38 +103,15 @@ dynamic_start_indices <- function(starts) {
   out
 }
 
-# Plain-R reimplementation of dynamic_start_indices for static (R numeric) inputs.
-# Returns an i32 array of shape [rank] (all scalar) or [gather_shape..., rank].
 static_start_indices <- function(starts) {
-  rank <- length(starts)
   sizes <- lengths(starts)
   multi_index_dims <- which(sizes > 1L)
-
   if (length(multi_index_dims) == 0L) {
-    return(nv_array(as.integer(starts), dtype = "i32"))
+    return(nv_array(unlist(starts), dtype = "i32"))
   }
-
-  multi_index_sizes <- sizes[multi_index_dims]
-  n_gather <- length(multi_index_dims)
-  n_total <- prod(multi_index_sizes)
-
-  # expand.grid varies first arg fastest → matches R's column-major order
-  grid <- expand.grid(lapply(multi_index_sizes, seq_len))
-
-  result <- matrix(0L, nrow = n_total, ncol = rank)
-  mi_i <- 1L
-  for (d in seq_len(rank)) {
-    s <- as.integer(starts[[d]])
-    if (length(s) == 1L) {
-      result[, d] <- s
-    } else {
-      result[, d] <- s[grid[[mi_i]]]
-      mi_i <- mi_i + 1L
-    }
-  }
-
-  dim(result) <- c(multi_index_sizes, rank)
-  nv_array(result, dtype = "i32")
+  grid <- as.matrix(do.call(expand.grid, starts))
+  out <- array(grid, dim = c(sizes[multi_index_dims], length(starts)))
+  nv_array(out, dtype = "i32")
 }
 
 

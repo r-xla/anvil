@@ -27,4 +27,4 @@ anvil.Rproj
 ^\.claude$
 ^primitives\.md$
 ^\.git
-^jarl.toml$
+^jarl\.toml$

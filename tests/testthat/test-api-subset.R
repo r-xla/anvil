@@ -131,6 +131,10 @@ describe("nv_subset and nv_subset_assign", {
     check(c(3L, 4L, 2L), , , )
   })
 
+  it("3D: gather in two dims, scalar in third", {
+    check(c(4L, 5L, 6L), list(1, 3), list(2, 5), 1L)
+  })
+
   it("3D: gather in first two dims, range in third", {
     check(c(4L, 5L, 6L), list(1, 3), list(2, 4, 5), 2:4)
   })
