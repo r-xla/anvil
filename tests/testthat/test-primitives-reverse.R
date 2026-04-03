@@ -1,4 +1,4 @@
-# most pullback tests are in extra-tests for comparison with torch
+# most reverse tests are in extra-tests for comparison with torch
 # Just a few selected ones that don't use torch are here
 
 test_that("p_dot_general: vector dot product gradient", {

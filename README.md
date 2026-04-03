@@ -15,6 +15,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 status](https://www.r-pkg.org/badges/version/anvil)](https://CRAN.R-project.org/package=anvil)
 [![codecov](https://codecov.io/gh/r-xla/anvil/branch/main/graph/badge.svg)](https://codecov.io/gh/r-xla/anvil)
 [![r-universe](https://r-xla.r-universe.dev/badges/anvil)](https://r-xla.r-universe.dev/anvil)
+![CUDA 12.8](https://img.shields.io/badge/CUDA-12.8-green.svg)
 <!-- badges: end -->
 
 Composable code transformation framework for R, allowing you to run
@@ -71,6 +72,10 @@ g_jit(a, b, x)
 #>  1
 #> [ CPUf32{} ]
 ```
+
+For more complex examples, see the package website, where we, e.g., show
+[how to implement a Gaussian
+Process](https://r-xla.github.io/anvil/dev/articles/gaussian-process.html).
 
 ## Main Features
 

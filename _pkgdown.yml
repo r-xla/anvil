@@ -55,7 +55,7 @@ navbar:
         href: articles/primitives.html
       - text: Extending
       - text: Adding a Primitive
-        href: articles/contributing.html
+        href: articles/new_primitive.html
 
 reference:
   - title: Array Creation
