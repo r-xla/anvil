@@ -50,7 +50,7 @@ In principle, MPS support on macOS is available but many features are missing an
 ### CUDA
 
 ```{r, include = FALSE}
-cuda_pkg <- pjrt:::cuda_r_package()
+cuda_pkg <- getFromNamespace("cuda_r_package", "pjrt")()
 ```
 
 To use the CUDA backend on Linux install the  {`r cuda_pkg`} R package which provides the required CUDA runtime libraries and you only need to have a compatible CUDA driver.
