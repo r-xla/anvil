@@ -189,8 +189,6 @@ AnvilGraph <- function(
 #' @param devices (`character()`)\cr
 #'   Device platforms encountered during tracing (e.g. `"cpu"`, `"cuda"`).
 #'   Populated automatically as arrays are registered.
-#' @param backend (`NULL` | `"xla"` | `"quickr"`)\cr
-#'   Backend associated with this graph descriptor.
 #' @return (`GraphDescriptor`)
 #' @export
 GraphDescriptor <- function(
@@ -204,8 +202,7 @@ GraphDescriptor <- function(
   outputs = list(),
   is_static_flat = NULL,
   static_args_flat = NULL,
-  devices = character(),
-  backend = NULL
+  devices = character()
 ) {
   # Use an environment for reference semantics (mutable)
   env <- new.env(parent = emptyenv())
@@ -220,7 +217,6 @@ GraphDescriptor <- function(
   env$is_static_flat <- is_static_flat
   env$static_args_flat <- static_args_flat
   env$devices <- devices
-  env$backend <- if (!is.null(backend)) normalize_backend(backend) else current_backend()
 
   structure(env, class = "GraphDescriptor")
 }

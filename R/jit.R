@@ -27,10 +27,9 @@
 #'   `"quickr"` uses `quickr::quick()`. If omitted, the default comes from
 #'   `getOption("anvil.default_backend", "xla")`.
 #' @return A `JitFunction` with the same formals as `f`.
-#'   For `backend = "xla"`, the returned wrapper expects and returns
-#'   [`AnvilArray`] values. For `backend = "quickr"`, the returned wrapper
-#'   expects plain R numeric/integer/logical scalars, vectors, and arrays and
-#'   returns plain R values.
+#'   The returned wrapper expects [`AnvilArray`] inputs and returns
+#'   [`AnvilArray`] values (for `backend = "xla"`) or plain R values
+#'   (for `backend = "quickr"`).
 #' @seealso [`xla()`] for ahead-of-time compilation, [`jit_eval()`] for evaluating an expression once.
 #' @return (`function`)
 #' @export
@@ -46,8 +45,9 @@
 #' g(nv_array(3), FALSE)
 #'
 #' @examplesIf requireNamespace("quickr", quietly = TRUE)
-#' h <- jit(function(x, y) x + y, backend = "quickr")
-#' h(1, 2)
+#' local_backend("quickr")
+#' h <- jit(function(x, y) x + y)
+#' h(nv_array(1), nv_array(2))
 jit <- function(
   f,
   static = character(),
@@ -285,7 +285,7 @@ jit_quickr_impl <- function(f, static, cache) {
 #'   - `ambiguous_out`: Logical vector indicating which outputs are ambiguous (`NULL` if none are).
 #' @keywords internal
 compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device = NULL) {
-  desc <- local_descriptor(backend = "xla")
+  desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
 
   # FIXME: This should also respect the devices of args_flat
@@ -344,7 +344,7 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
 }
 
 compile_to_quickr <- function(f, args_flat, in_tree) {
-  desc <- local_descriptor(backend = "quickr")
+  desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
   list(fun = graph_to_quickr_function(graph))
 }

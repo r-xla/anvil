@@ -87,7 +87,11 @@ globals$backends <- list(
       if (is.null(dtype) && !inherits(data, "PJRTBuffer")) {
         dtype <- as.character(default_dtype(data))
       }
-      buf <- pjrt_buffer(data, dtype, device = device, shape = shape)
+      buf <- if (is.raw(data)) {
+        pjrt_buffer(data, dtype = dtype, device = device, shape = shape, row_major = FALSE)
+      } else {
+        pjrt_buffer(data, dtype = dtype, device = device, shape = shape)
+      }
       structure(
         list(data = buf, ambiguous = ambiguous, backend = "xla"),
         class = "AnvilArray"
@@ -105,7 +109,7 @@ globals$backends <- list(
   quickr = BackendConfig(
     constructor = function(data, dtype, shape, device, ambiguous) {
       if (is.null(dtype)) {
-        dtype <- default_dtype(data)
+        dtype <- if (is.double(data)) FloatType(64) else default_dtype(data)
       }
       if (is_dtype(dtype)) {
         dtype <- as.character(dtype)
@@ -197,10 +201,6 @@ normalize_backend <- function(backend) {
 }
 
 current_backend <- function() {
-  desc <- .current_descriptor(silent = TRUE)
-  if (!is.null(desc) && !is.null(desc$backend)) {
-    return(desc$backend)
-  }
   normalize_backend(getOption("anvil.default_backend", "xla"))
 }
 

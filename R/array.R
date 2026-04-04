@@ -29,8 +29,7 @@
 #' @seealso [nv_fill], [nv_iota], [nv_seq], [as_array], [nv_serialize]
 #'
 #' @param data (any)\cr
-#'   Object convertible to a [`PJRTBuffer`][pjrt::pjrt_buffer].
-#'   Includes `integer()`, `double()`, `logical()` vectors and arrays.
+#'   `integer()`, `double()`, or `logical()` scalar, vector, or array.
 #' @param dtype (`NULL` | `character(1)` | [`DataType`])\cr
 #'   One of `r stablehlo:::roxy_dtypes()` or a [`tengen::DataType`].
 #'   The default (`NULL`) uses the current backend's default dtype:
@@ -48,6 +47,10 @@
 #' @param ambiguous (`NULL` | `logical(1)`)\cr
 #'   Whether the dtype should be marked as ambiguous.
 #'   Defaults to `FALSE` for new arrays.
+#' @param backend (`NULL` | `character(1)`)\cr
+#'   Backend to use (`"xla"` or `"quickr"`).
+#'   Defaults to `getOption("anvil.default_backend", "xla")`.
+#'   Must not be specified inside [`jit()`].
 #' @return ([`AnvilArray`])
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' # A 1-d array (vector) with shape (4). Default type for integers is `i32`

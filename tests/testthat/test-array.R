@@ -239,11 +239,11 @@ test_that("nv_array errors when backend specified inside jit", {
   )
 })
 
-test_that("default floating dtype is f32 regardless of backend", {
+test_that("default floating dtype is f32 for xla, f64 for quickr", {
   expect_equal(dtype(nv_array(1.0)), as_dtype("f32"))
   expect_equal(dtype(nv_scalar(1.0)), as_dtype("f32"))
 
   local_backend("quickr")
-  expect_equal(dtype(nv_array(1.0)), as_dtype("f32"))
-  expect_equal(dtype(nv_scalar(1.0)), as_dtype("f32"))
+  expect_equal(dtype(nv_array(1.0)), as_dtype("f64"))
+  expect_equal(dtype(nv_scalar(1.0)), as_dtype("f64"))
 })

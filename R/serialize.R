@@ -47,6 +47,9 @@ nv_save <- function(arrays, path) {
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
 #'   The device on which to place the loaded arrays (`"cpu"`, `"cuda"`, ...).
 #'   Default is to use the CPU.
+#' @param backend (`character(1)`)\cr
+#'   Backend for the loaded arrays.
+#'   Defaults to `getOption("anvil.default_backend", "xla")`.
 #'
 #' @returns Named `list` of [`AnvilArray`] objects.
 #' @seealso [nv_save()], [nv_serialize()], [nv_unserialize()]
@@ -57,12 +60,12 @@ nv_save <- function(arrays, path) {
 #' path <- tempfile(fileext = ".safetensors")
 #' nv_save(list(x = x), path)
 #' nv_read(path)
-nv_read <- function(path, device = NULL) {
+nv_read <- function(path, device = NULL, backend = getOption("anvil.default_backend", "xla")) {
   checkmate::assert_string(path)
   checkmate::assert_file_exists(path)
   con <- file(path, "rb")
   on.exit(close(con), add = TRUE)
-  nv_unserialize(con, device = device)
+  nv_unserialize(con, device = device, backend = backend)
 }
 
 #' @title Serialize arrays to raw bytes
@@ -101,8 +104,12 @@ nv_serialize <- function(arrays, con = NULL) {
   hex_string <- paste(sprintf("%02x", as.integer(raw_bytes)), collapse = "")
   metadata <- list(`__ambiguity_info__` = hex_string)
 
-  # Unwrap AnvilArrays to get underlying PJRTBuffers for safetensors
-  arrays_unwrapped <- lapply(arrays, unwrap_if_array)
+  # Convert all arrays to PJRTBuffers for safetensors serialization
+  arrays_unwrapped <- lapply(arrays, function(x) {
+    buf <- unwrap_if_array(x)
+    if (inherits(buf, "PJRTBuffer")) return(buf)
+    pjrt_buffer(buf, dtype = as.character(dtype(x)), shape = shape(x))
+  })
 
   if (is.null(con)) {
     safetensors::safe_serialize(arrays_unwrapped, metadata = metadata)
@@ -126,6 +133,9 @@ nv_serialize <- function(arrays, con = NULL) {
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
 #'   The device on which to place the loaded arrays (`"cpu"`, `"cuda"`, ...).
 #'   Default is to use the CPU.
+#' @param backend (`character(1)`)\cr
+#'   Backend for the loaded arrays.
+#'   Defaults to `getOption("anvil.default_backend", "xla")`.
 #'
 #' @returns Named `list` of [`AnvilArray`] objects.
 #' @seealso [nv_serialize()], [nv_save()], [nv_read()]
@@ -136,7 +146,7 @@ nv_serialize <- function(arrays, con = NULL) {
 #' raw_data <- nv_serialize(list(x = x))
 #' raw_data
 #' nv_unserialize(raw_data)
-nv_unserialize <- function(con, device = NULL) {
+nv_unserialize <- function(con, device = NULL, backend = getOption("anvil.default_backend", "xla")) {
   result <- safetensors::safe_load_file(con, framework = "pjrt", device = device)
 
   # Extract metadata to restore ambiguity information
@@ -155,16 +165,20 @@ nv_unserialize <- function(con, device = NULL) {
     NULL
   }
 
-  # Wrap each array with correct ambiguity
+  backend <- normalize_backend(backend)
   result_wrapped <- lapply(names(result), function(name) {
     buf <- result[[name]]
-    # Check if there's ambiguity metadata for this array
     is_ambiguous <- if (!is.null(ambiguity_info) && !is.null(ambiguity_info[[name]])) {
       isTRUE(ambiguity_info[[name]])
     } else {
       FALSE
     }
-    ensure_nv_array(buf, ambiguous = is_ambiguous)
+    if (backend == "xla") {
+      ensure_nv_array(buf, ambiguous = is_ambiguous)
+    } else {
+      nv_array(tengen::as_array(buf), dtype = as.character(pjrt::elt_type(buf)),
+        shape = tengen::shape(buf), ambiguous = is_ambiguous, backend = backend)
+    }
   })
   names(result_wrapped) <- names(result)
   result_wrapped

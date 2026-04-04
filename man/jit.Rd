@@ -43,10 +43,9 @@ Compilation backend. \code{"xla"} (default) uses PJRT/XLA.
 }
 \value{
 A \code{JitFunction} with the same formals as \code{f}.
-For \code{backend = "xla"}, the returned wrapper expects and returns
-\code{\link{AnvilArray}} values. For \code{backend = "quickr"}, the returned wrapper
-expects plain R numeric/integer/logical scalars, vectors, and arrays and
-returns plain R values.
+The returned wrapper expects \code{\link{AnvilArray}} inputs and returns
+\code{\link{AnvilArray}} values (for \code{backend = "xla"}) or plain R values
+(for \code{backend = "quickr"}).
 
 (\code{function})
 }
@@ -69,8 +68,9 @@ g(nv_array(3), TRUE)
 g(nv_array(3), FALSE)
 \dontshow{\}) # examplesIf}
 \dontshow{if (requireNamespace("quickr", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-h <- jit(function(x, y) x + y, backend = "quickr")
-h(1, 2)
+local_backend("quickr")
+h <- jit(function(x, y) x + y)
+h(nv_array(1), nv_array(2))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

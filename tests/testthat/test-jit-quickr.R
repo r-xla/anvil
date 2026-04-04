@@ -49,7 +49,7 @@ test_that("jit: quickr backend traces floating literals as f32", {
   graph <- trace_fn(
     function() 1.0,
     list(),
-    desc = local_descriptor(backend = "quickr")
+    desc = local_descriptor()
   )
 
   expect_equal(dtype(graph$outputs[[1L]]$aval), as_dtype("f32"))
@@ -62,7 +62,7 @@ test_that("graph_to_r_function lowers a graph to a plain R function", {
   graph <- trace_fn(
     function(x) x + 1L,
     list(x = nv_scalar(1.0, dtype = "f64")),
-    desc = local_descriptor(backend = "quickr")
+    desc = local_descriptor()
   )
 
   f <- graph_to_r_function(graph)
