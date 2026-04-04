@@ -45,7 +45,6 @@ Beyond what the vignette covers:
 
 - Build gradient expressions using `nvl_*` primitives — never use R arithmetic directly.
 - For non-differentiable points (e.g. `abs` at 0, `floor` everywhere), follow PyTorch conventions (subgradients, zero gradients, etc.). Read existing rules in `R/rules-reverse.R` for examples.
-- If the operation is not differentiable at all (e.g. comparisons, boolean ops), still add a reverse rule that returns zeros.
 
 ## API Wrapper (`nv_*`)
 
