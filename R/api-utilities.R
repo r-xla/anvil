@@ -9,7 +9,7 @@
 #' @family rng
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   state <- nv_rng_state(nv_scalar(42L))
+#'   state <- nv_rng_state(42L)
 #'   state
 #' })
 #' @export
