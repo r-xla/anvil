@@ -11,7 +11,8 @@ Read `vignettes/new_primitive.Rmd` first — it is the primary guide with a comp
 ## Before Starting: Check StableHLO Support
 
 1. Check `../stablehlo/R/` for an `op-<name>.R` file (e.g. `op-add.R`).
-2. Check that `stablehlo::hlo_<name>()` and `stablehlo::infer_types_<name>()` are exported in `../stablehlo/NAMESPACE`.
+2. Check that the operation can be expressed in StableHLO
+   I.e., either it exists as `stablehlo::hlo_<name>()` or it can be expressed as a combination of existing StableHLO operations.
 3. If the op doesn't exist in stablehlo, stop and tell the user — it must be added there first.
 4. Read the StableHLO SPEC (`../stablehlo/SPEC.md`) for the operation's semantics and constraints.
 
@@ -67,7 +68,7 @@ Choose one approach, not both.
 
 Use `describe()` / `it()` blocks. Cover:
 - Different shapes (scalar, vector, matrix, 3D)
-- Boundary values (zeros, ones, negative, very large/small)
+- Boundary values (depends on the specific operation)
 - dtype variations where relevant
 - Parameter variations (e.g. different `dims`, `permutation` values)
 - Non-differentiable points: include those values in the test inputs and verify anvil's gradient matches torch's gradient at those points.
@@ -150,7 +151,7 @@ devtools::test()  # or run specific test files
 
 ## Checklist
 
-- [ ] StableHLO op exists (`../stablehlo/R/op-<name>.R`)
+- [ ] Can be expressed in StableHLO
 - [ ] Primitive registered: `p_<name> <- AnvilPrimitive("<name>")`
 - [ ] Primitive implemented: `nvl_<name>` with roxygen docs and `@export`
 - [ ] StableHLO rule: `p_<name>[["stablehlo"]]` in `R/rules-stablehlo.R`

@@ -6,7 +6,8 @@ user_invocable: true
 
 # Add an API Function (`nv_*`) to anvil
 
-You are adding a user-facing API function to the anvil package. API functions (`nv_*`) wrap one or more primitives (`nvl_*`) to provide a convenient, R-idiomatic interface.
+You are adding a user-facing API function to the anvil package.
+API functions (`nv_*`) wrap one or more primitives (`nvl_*`) to provide a convenient, R-idiomatic interface.
 
 ## Design Principles
 
@@ -58,6 +59,7 @@ For ops needing custom logic, write a function. Use `shape_abstract()`, `ndims_a
 ## Roxygen2 Documentation
 
 API functions use a consistent documentation pattern. Use templates from `man-roxygen/` where applicable.
+If no proper template for a parameter or the return value exist, write the documentation inline.
 
 ### Structure
 
