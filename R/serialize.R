@@ -49,7 +49,7 @@ nv_save <- function(arrays, path) {
 #'   Default is to use the CPU.
 #' @param backend (`character(1)`)\cr
 #'   Backend for the loaded arrays.
-#'   Defaults to `getOption("anvil.default_backend", "xla")`.
+#'   Defaults to `default_backend()`.
 #'
 #' @returns Named `list` of [`AnvilArray`] objects.
 #' @seealso [nv_save()], [nv_serialize()], [nv_unserialize()]
@@ -60,7 +60,7 @@ nv_save <- function(arrays, path) {
 #' path <- tempfile(fileext = ".safetensors")
 #' nv_save(list(x = x), path)
 #' nv_read(path)
-nv_read <- function(path, device = NULL, backend = getOption("anvil.default_backend", "xla")) {
+nv_read <- function(path, device = NULL, backend = default_backend()) {
   checkmate::assert_string(path)
   checkmate::assert_file_exists(path)
   con <- file(path, "rb")
@@ -108,7 +108,11 @@ nv_serialize <- function(arrays, con = NULL) {
   arrays_unwrapped <- lapply(arrays, function(x) {
     buf <- unwrap_if_array(x)
     if (inherits(buf, "PJRTBuffer")) return(buf)
-    pjrt_buffer(buf, dtype = as.character(dtype(x)), shape = shape(x))
+    if (is.raw(buf)) {
+      pjrt_buffer(buf, dtype = as.character(dtype(x)), shape = shape(x), row_major = FALSE)
+    } else {
+      pjrt_buffer(buf, dtype = as.character(dtype(x)), shape = shape(x))
+    }
   })
 
   if (is.null(con)) {
@@ -135,7 +139,7 @@ nv_serialize <- function(arrays, con = NULL) {
 #'   Default is to use the CPU.
 #' @param backend (`character(1)`)\cr
 #'   Backend for the loaded arrays.
-#'   Defaults to `getOption("anvil.default_backend", "xla")`.
+#'   Defaults to `default_backend()`.
 #'
 #' @returns Named `list` of [`AnvilArray`] objects.
 #' @seealso [nv_serialize()], [nv_save()], [nv_read()]
@@ -146,7 +150,7 @@ nv_serialize <- function(arrays, con = NULL) {
 #' raw_data <- nv_serialize(list(x = x))
 #' raw_data
 #' nv_unserialize(raw_data)
-nv_unserialize <- function(con, device = NULL, backend = getOption("anvil.default_backend", "xla")) {
+nv_unserialize <- function(con, device = NULL, backend = default_backend()) {
   result <- safetensors::safe_load_file(con, framework = "pjrt", device = device)
 
   # Extract metadata to restore ambiguity information

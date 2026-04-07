@@ -196,7 +196,7 @@ test_that("error message when using different platforms", {
   f <- jit(\(x, y) x + y)
   x <- nv_array(1, device = "cpu")
   y <- nv_array(1, device = "cuda")
-  expect_error(f(x, y), "Inputs live on different platforms")
+  expect_error(f(x, y), "Inputs live on different devices")
 })
 
 test_that("constants can be part of the program", {

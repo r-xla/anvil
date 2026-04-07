@@ -25,11 +25,10 @@
 #' @param backend (`character(1)`)\cr
 #'   Compilation backend. `"xla"` (default) uses PJRT/XLA.
 #'   `"quickr"` uses `quickr::quick()`. If omitted, the default comes from
-#'   `getOption("anvil.default_backend", "xla")`.
+#'   `default_backend()`.
 #' @return A `JitFunction` with the same formals as `f`.
 #'   The returned wrapper expects [`AnvilArray`] inputs and returns
-#'   [`AnvilArray`] values (for `backend = "xla"`) or plain R values
-#'   (for `backend = "quickr"`).
+#'   [`AnvilArray`] values.
 #' @seealso [`xla()`] for ahead-of-time compilation, [`jit_eval()`] for evaluating an expression once.
 #' @return (`function`)
 #' @export
@@ -54,20 +53,22 @@ jit <- function(
   cache_size = 100L,
   donate = character(),
   device = NULL,
-  backend = getOption("anvil.default_backend", "xla")
+  backend = default_backend()
 ) {
   cache <- xlamisc::LRUCache$new(cache_size)
   backend <- normalize_backend(backend)
   jit_validate_args(f, static, donate, device, backend)
 
-  f_jit <- if (backend == "xla") {
-    jit_xla_impl(f, static, cache, donate, device)
-  } else {
-    jit_quickr_impl(f, static, cache)
-  }
+  f_jit <- globals$backends[[backend]]$jit(f, static, cache, donate, device)
   formals(f_jit) <- formals2(f)
   class(f_jit) <- "JitFunction"
+  attr(f_jit, "backend") <- backend
   f_jit
+}
+
+#' @export
+backend.JitFunction <- function(x, ...) {
+  attr(x, "backend")
 }
 
 jit_validate_args <- function(f, static, donate, device, backend) {
@@ -115,7 +116,8 @@ jit_prepare_call <- function(call, eval_env, static) {
 }
 
 jit_xla_inputs <- function(args_flat, is_static_flat, device) {
-  platforms <- character()
+  device_strs <- character()
+  first_device <- NULL
   avals_in <- Map(
     function(x, is_static) {
       if (is_static) {
@@ -127,26 +129,29 @@ jit_xla_inputs <- function(args_flat, is_static_flat, device) {
       if (backend(x) != "xla") {
         cli_abort("Expected {.val xla} backend, but got {.val {backend(x)}} backend.")
       }
-      platforms <<- c(platforms, platform(x))
+      dev <- device(x)
+      device_strs <<- c(device_strs, as.character(dev))
+      if (is.null(first_device)) first_device <<- dev
       nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x))
     },
     args_flat,
     is_static_flat
   )
 
-  if (length(unique(platforms)) > 1) {
-    cli_abort("Inputs live on different platforms: {.val {unique(platforms)}}.")
+  unique_strs <- unique(device_strs)
+  if (length(unique_strs) > 1) {
+    cli_abort("Inputs live on different devices: {.val {unique_strs}}.")
   }
 
-  platform <- if (length(platforms) > 0) {
-    platforms[1]
+  inferred_device <- if (!is.null(first_device)) {
+    first_device
   } else if (!is.null(device)) {
     device
   } else {
     NULL
   }
 
-  list(avals_in = avals_in, platform = platform)
+  list(avals_in = avals_in, device = inferred_device)
 }
 
 jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat, ambiguous_out = NULL) {
@@ -177,7 +182,8 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
     prep <- jit_prepare_call(match.call(), parent.frame(), static)
     inputs <- jit_xla_inputs(prep$args_flat, prep$is_static_flat, device)
 
-    cache_key <- list(prep$in_tree, inputs$avals_in, inputs$platform)
+    device_key <- if (!is.null(inputs$device)) as.character(inputs$device) else NULL
+    cache_key <- list(prep$in_tree, inputs$avals_in, device_key)
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
       return(jit_call_xla(
@@ -195,7 +201,7 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
       args_flat = inputs$avals_in,
       in_tree = prep$in_tree,
       donate = donate,
-      device = inputs$platform
+      device = inputs$device
     )
     cache$set(
       cache_key,
@@ -235,7 +241,7 @@ jit_quickr_inputs <- function(args_flat, is_static_flat) {
     is_static_flat
   )
 
-  list(avals_in = avals_in, platform = NULL)
+  list(avals_in = avals_in, device = NULL)
 }
 
 jit_quickr_impl <- function(f, static, cache) {
@@ -248,18 +254,26 @@ jit_quickr_impl <- function(f, static, cache) {
     prep <- jit_prepare_call(match.call(), parent.frame(), static)
     inputs <- jit_quickr_inputs(prep$args_flat, prep$is_static_flat)
 
-    cache_key <- list(prep$in_tree, inputs$avals_in, inputs$platform)
+    cache_key <- list(prep$in_tree, inputs$avals_in, inputs$device)
     r_args <- lapply(unname(prep$args), function(a) {
       if (is_anvil_array(a)) as_array(a) else a
     })
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
-      return(do.call(cache_hit[[1]], r_args))
+      return(quickr_wrap_output(do.call(cache_hit[[1]], r_args)))
     }
 
     compiled <- compile_to_quickr(f, args_flat = inputs$avals_in, in_tree = prep$in_tree)
     cache$set(cache_key, list(compiled$fun))
-    do.call(compiled$fun, r_args)
+    quickr_wrap_output(do.call(compiled$fun, r_args))
+  }
+}
+
+quickr_wrap_output <- function(x) {
+  if (is.list(x)) {
+    lapply(x, quickr_wrap_output)
+  } else {
+    globals$backends[["quickr"]]$data_constructor(x, dtype = NULL, shape = NULL, device = NULL, ambiguous = FALSE)
   }
 }
 
@@ -323,7 +337,12 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
     }
     arr <- const$aval$data
     if (backend(arr) == "plain") {
-      pjrt_buffer(as_array(arr), as.character(dtype(arr)), device = device, shape = shape(arr))
+      buf_data <- as_array(arr)
+      if (is.raw(buf_data)) {
+        pjrt_buffer(buf_data, dtype = as.character(dtype(arr)), device = device, shape = shape(arr), row_major = FALSE)
+      } else {
+        pjrt_buffer(buf_data, as.character(dtype(arr)), device = device, shape = shape(arr))
+      }
     } else {
       unwrap_if_array(arr)
     }

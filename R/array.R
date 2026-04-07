@@ -16,7 +16,7 @@
 #' - [`shape()`][tengen::shape]: Get the shape (dimensions) of the array.
 #' - [`ndims()`][tengen::ndims]: Get the number of dimensions.
 #' - [`device()`][tengen::device]: Get the device of the array.
-#' - [`platform()`][pjrt::platform]: Get the platform (e.g. `"cpu"`, `"cuda"`).
+#' - [`platform()`]: Get the platform (e.g. `"cpu"`, `"cuda"`).
 #' - [`ambiguous()`]: Get whether the dtype is ambiguous.
 #'
 #' @section Serialization:
@@ -49,7 +49,7 @@
 #'   Defaults to `FALSE` for new arrays.
 #' @param backend (`NULL` | `character(1)`)\cr
 #'   Backend to use (`"xla"` or `"quickr"`).
-#'   Defaults to `getOption("anvil.default_backend", "xla")`.
+#'   Defaults to `default_backend()`.
 #'   Must not be specified inside [`jit()`].
 #' @return ([`AnvilArray`])
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -93,7 +93,7 @@ NULL
 nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL, backend = NULL) {
   if (is_anvil_array(data)) {
     if (!is.null(device) && device(data) != pjrt::as_pjrt_device(device)) {
-      cli_abort("Cannot change device of existing AnvilArray from {.val {platform(data)}} to {.val {device}}")
+      cli_abort("Cannot change device of existing AnvilArray from {.val {device(data)}} to {.val {device}}")
     }
     if (!is.null(shape) && !identical(shape(data), as.integer(shape))) {
       cli_abort("Cannot change shape of existing AnvilArray")
@@ -117,16 +117,15 @@ nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous 
   if (!is.null(shape)) {
     shape <- as.integer(shape)
   }
-  dtype_chr <- if (!is.null(dtype)) as.character(dtype) else NULL
   desc <- .current_descriptor(silent = TRUE)
   if (!is.null(desc)) {
     if (!is.null(backend)) {
       cli_abort("{.arg backend} must not be specified when calling {.fn nv_array} inside {.fn jit}.")
     }
-    return(globals$backends[["plain"]]$constructor(data, dtype_chr, shape, device, ambiguous))
+    return(globals$backends[["plain"]]$data_constructor(data, dtype, shape, device, ambiguous))
   }
-  backend <- backend %||% getOption("anvil.default_backend", "xla")
-  globals$backends[[backend]]$constructor(data, dtype_chr, shape, device, ambiguous)
+  backend <- backend %||% default_backend()
+  globals$backends[[backend]]$data_constructor(data, dtype, shape, device, ambiguous)
 }
 
 is_anvil_array <- function(x) {
@@ -145,7 +144,7 @@ unwrap_if_array <- function(x) {
   }
 }
 
-ensure_nv_array <- function(x, ambiguous = FALSE) {
+ensure_nv_array <- function(x, ambiguous = FALSE, backend = "xla") {
   if (inherits(x, "AnvilArray")) {
     if (ambiguous != x$ambiguous) {
       x$ambiguous <- ambiguous
@@ -154,7 +153,7 @@ ensure_nv_array <- function(x, ambiguous = FALSE) {
   }
   assert_class(x, "PJRTBuffer")
   structure(
-    list(data = x, ambiguous = ambiguous, backend = "xla"),
+    list(data = x, ambiguous = ambiguous, backend = backend),
     class = "AnvilArray"
   )
 }
@@ -228,6 +227,17 @@ ndims.AnvilArray <- function(x, ...) {
   length(shape(x))
 }
 
+#' @title Get the platform
+#' @description Returns the platform name (e.g. `"cpu"`, `"cuda"`).
+#' @param x An array object.
+#' @param ... Additional arguments (unused).
+#' @return `character(1)`
+#' @name platform
+#' @importFrom pjrt platform
+#' @export
+NULL
+
+#' @rdname platform
 #' @export
 platform.AnvilArray <- function(x, ...) {
   globals$backends[[x$backend]]$platform(x)
@@ -315,19 +325,6 @@ is_abstract_tensor <- function(x) {
 
 is_concrete_tensor <- function(x) {
   inherits(x, "ConcreteArray")
-}
-
-#' @title Platform for AbstractArray
-#' @description
-#' Get the platform of an AbstractArray. Always errors since platform
-#' is not accessible during tracing.
-#' @param x An AbstractArray.
-#' @param ... Additional arguments (unused).
-#' @return Never returns; always errors.
-#' @method platform AbstractArray
-#' @export
-platform.AbstractArray <- function(x, ...) {
-  cli_abort("platform is not accessible during tracing")
 }
 
 #' @method dtype AbstractArray
@@ -521,11 +518,6 @@ print.IotaArray <- function(x, ...) {
 
 is_literal_tensor <- function(x) {
   inherits(x, "LiteralArray")
-}
-
-#' @exportS3Method platform ConcreteArray
-platform.ConcreteArray <- function(x, ...) {
-  platform(x$data)
 }
 
 #' @export

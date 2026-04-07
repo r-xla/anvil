@@ -4,7 +4,7 @@
 \alias{nv_read}
 \title{Read arrays from a file}
 \usage{
-nv_read(path, device = NULL, backend = getOption("anvil.default_backend", "xla"))
+nv_read(path, device = NULL, backend = default_backend())
 }
 \arguments{
 \item{path}{(\code{character(1)})\cr
@@ -16,7 +16,7 @@ Default is to use the CPU.}
 
 \item{backend}{(\code{character(1)})\cr
 Backend for the loaded arrays.
-Defaults to \code{getOption("anvil.default_backend", "xla")}.}
+Defaults to \code{default_backend()}.}
 }
 \value{
 Named \code{list} of \code{\link{AnvilArray}} objects.

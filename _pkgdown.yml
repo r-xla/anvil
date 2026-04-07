@@ -81,10 +81,11 @@ reference:
       - ndims
       - ambiguous
       - device
-      - starts_with("platform")
+      - platform
       - as_array
       - as_raw
       - backend
+      - default_backend
       - local_backend
       - as_dtype
       - is_dtype

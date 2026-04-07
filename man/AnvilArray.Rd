@@ -47,7 +47,7 @@ Defaults to \code{FALSE} for new arrays.}
 
 \item{backend}{(\code{NULL} | \code{character(1)})\cr
 Backend to use (\code{"xla"} or \code{"quickr"}).
-Defaults to \code{getOption("anvil.default_backend", "xla")}.
+Defaults to \code{default_backend()}.
 Must not be specified inside \code{\link[=jit]{jit()}}.}
 }
 \value{
@@ -72,7 +72,7 @@ The following generic functions can be used to extract information from an \code
 \item \code{\link[tengen:shape]{shape()}}: Get the shape (dimensions) of the array.
 \item \code{\link[tengen:ndims]{ndims()}}: Get the number of dimensions.
 \item \code{\link[tengen:device]{device()}}: Get the device of the array.
-\item \code{\link[pjrt:platform]{platform()}}: Get the platform (e.g. \code{"cpu"}, \code{"cuda"}).
+\item \code{\link[=platform]{platform()}}: Get the platform (e.g. \code{"cpu"}, \code{"cuda"}).
 \item \code{\link[=ambiguous]{ambiguous()}}: Get whether the dtype is ambiguous.
 }
 }
