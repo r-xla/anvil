@@ -70,49 +70,54 @@
 <p>@../claude-config/CLAUDE.md</p>
 <div class="section level2">
 <h2 id="package-overview">Package Overview<a class="anchor" aria-label="anchor" href="#package-overview"></a></h2>
-<p><code>anvil</code> is a code transformation framework similar to jax for R. It currently has support for jit compilation and automatic differentiation.</p>
+<p><code>anvil</code> is a code transformation framework for R, similar to JAX. It provides JIT compilation (<code><a href="reference/jit.html">jit()</a></code>, <code><a href="reference/xla.html">xla()</a></code>) and automatic differentiation (<code><a href="reference/gradient.html">gradient()</a></code>, <code><a href="reference/value_and_gradient.html">value_and_gradient()</a></code>).</p>
 </div>
 <div class="section level2">
-<h2 id="testing-guidelines">Testing Guidelines<a class="anchor" aria-label="anchor" href="#testing-guidelines"></a></h2>
-<p>Each rule of each primitive should be tested. Many tests can be implemented by comparing with the corresponding torch function (inst/extra-tests/test-primitives-stablehlo-torch.R and inst/extra-tests/test-primitives-reverse-torch.R, …). These are sourced in test-primitives-stablehlo.R and test-primitives-reverse.R, etc.. Implement the test by comparing with torch, if possible and necessary. If the test is very simple, or the functionality not covered by torch, implement the test manually. Implement either the torch test OR the manual test, but not both.</p>
+<h2 id="two-layer-api">Two-Layer API<a class="anchor" aria-label="anchor" href="#two-layer-api"></a></h2>
+<ul><li>
+<strong><code>nv_*</code> functions</strong> (e.g. <code><a href="reference/nv_fill.html">nv_fill()</a></code>, <code><a href="reference/nv_matmul.html">nv_matmul()</a></code>) – user-facing API in <code>R/api.R</code> and <code>R/api-*.R</code>. These handle broadcasting, type promotion, default arguments, and then delegate to <code>nvl_*</code> primitives.</li>
+<li>
+<strong><code>nvl_*</code> functions</strong> (e.g. <code><a href="reference/nvl_fill.html">nvl_fill()</a></code>, <code><a href="reference/nvl_mul.html">nvl_mul()</a></code>) – low-level primitives in <code>R/primitives.R</code>. These record operations into the computation graph during tracing.</li>
+</ul><p>When adding new functionality, decide which layer it belongs to. Most new operations need both: an <code>nvl_*</code> primitive with rules, and an <code>nv_*</code> wrapper with R-idiomatic semantics.</p>
+</div>
+<div class="section level2">
+<h2 id="primitive-system">Primitive System<a class="anchor" aria-label="anchor" href="#primitive-system"></a></h2>
+<p>Primitives are <code>AnvilPrimitive</code> objects (defined in <code>R/primitive.R</code>), stored by convention as <code>p_&lt;name&gt;</code> variables. Each primitive has interpretation rules accessed via <code>p_&lt;name&gt;[["&lt;rule_type&gt;"]]</code>:</p>
+<ul><li>
+<strong><code>stablehlo</code></strong> – JIT lowering rules in <code>R/rules-stablehlo.R</code>. These convert traced operations into StableHLO IR. Since stablehlo uses 0-based indexing, convert indices by subtracting 1.</li>
+<li>
+<strong><code>reverse</code></strong> – Autodiff rules in <code>R/rules-reverse.R</code>. Signature: <code>function(inputs, outputs, grads, .required)</code>. <code>grads</code> contains the upstream gradients (one per output). Return a list of gradients w.r.t. each input, using <code>NULL</code> (via <code>if (.required[[i]])</code>) for inputs that don’t need gradients.</li>
+<li>
+<strong><code>quickr</code></strong> – R-native lowering rules in <code>R/rules-quickr.R</code> for the quickr backend.</li>
+</ul></div>
+<div class="section level2">
+<h2 id="graph-tracing">Graph Tracing<a class="anchor" aria-label="anchor" href="#graph-tracing"></a></h2>
+<p>When a function is JIT-compiled, anvil traces it by executing with <code>GraphValue</code> objects instead of real data. Operations record themselves into an <code>AnvilGraph</code> (see <code>R/graph.R</code>). The graph is then lowered to StableHLO IR or quickr code for compilation.</p>
+<p>Key types: <code>GraphValue</code> (traced variable), <code>GraphLiteral</code> (embedded constant), <code>AbstractArray</code> (shape + dtype metadata), <code>AnvilGraph</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="nse-and-tracing">NSE and Tracing<a class="anchor" aria-label="anchor" href="#nse-and-tracing"></a></h2>
+<p>When combining non-standard evaluation (NSE) with sub-graph tracing, <code><a href="https://rdrr.io/r/base/force.html" class="external-link">force()</a></code> all arrayish inputs so they are not accidentally captured as unevaluated promises in the sub-graph descriptor. R’s lazy evaluation of function arguments causes hard-to-debug errors otherwise.</p>
+</div>
+<div class="section level2">
+<h2 id="testing">Testing<a class="anchor" aria-label="anchor" href="#testing"></a></h2>
+<p>Each rule of each primitive should be tested. Tests are organized as:</p>
+<ul><li>
+<code>tests/testthat/test-primitives-stablehlo.R</code> – sources <code>inst/extra-tests/test-primitives-stablehlo-torch.R</code>
+</li>
+<li>
+<code>tests/testthat/test-primitives-reverse.R</code> – sources <code>inst/extra-tests/test-primitives-reverse-torch.R</code>
+</li>
+</ul><p>Prefer testing by comparing with the corresponding torch function. If the test is trivial or the functionality is not covered by torch, test manually instead. Write one or the other, not both.</p>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a></h2>
 <p>When writing roxygen2 documentation for primitives or API functions:</p>
-<ul><li><p>Do not mention “1-based” indexing in documentation. Since this is an R package, 1-based indexing is the default and stating it is redundant.</p></li>
-<li><p>Check the <code>man-roxygen/</code> directory for existing templates (e.g. <code>param_operand.R</code>, <code>param_shape.R</code>, <code>param_dtype.R</code>, <code>param_ambiguous.R</code>, <code>params_lhs_rhs.R</code>, <code>section_rules.R</code>, <code>section_shapes_binary.R</code>, etc.). Use <code>@template</code> to avoid duplicating common parameter descriptions.</p></li>
-<li><p>Where the template is too generic for a specific primitive (e.g. the operand has specific dtype constraints), write the <code>@param</code> inline instead of using the template.</p></li>
-<li><p>Use <code>@templateVar primitive_id &lt;name&gt;</code> with <code>@template section_rules</code> to auto-generate the “Implemented Rules” section.</p></li>
-<li><p>Use <code>@rdname</code> or <code>@inheritParams</code> to inherit documentation from related functions where possible, avoiding duplication across <code>nvl_*</code> and <code>nv_*</code> variants.</p></li>
+<ul><li>Do not mention “1-based” indexing. Since this is an R package, 1-based indexing is the default.</li>
+<li>Use <code>@templateVar primitive_id &lt;name&gt;</code> with <code>@template section_rules</code> to auto-generate the “Implemented Rules” section.</li>
+<li>Use <code>@rdname</code> or <code>@inheritParams</code> to share documentation between <code>nvl_*</code> and <code>nv_*</code> variants.</li>
+<li>Where a <code>man-roxygen/</code> template is too generic for a specific primitive (e.g. the operand has specific dtype constraints), write the <code>@param</code> inline instead.</li>
 </ul></div>
-<div class="section level2">
-<h2 id="development-practices">Development Practices<a class="anchor" aria-label="anchor" href="#development-practices"></a></h2>
-<ol style="list-style-type: decimal"><li>Use S3 (object-oriented system) for defining types and classes.</li>
-<li>Follow the established pattern for adding new operations and types</li>
-<li>Add tests in <code>tests/testthat/</code>
-</li>
-<li>Document functions with roxygen2 comments</li>
-</ol></div>
-<div class="section level2">
-<h2 id="project-information">Project Information<a class="anchor" aria-label="anchor" href="#project-information"></a></h2>
-<ol style="list-style-type: decimal"><li>
-<code>stablehlo</code> (the jit interpretation rules) uses 0-based indexing, but <code>anvil</code> uses 1-based indexing. When implementing a jit interpretation rule, convert indices by subtracting 1.</li>
-<li>The <code>rules-pullback.R</code> file contains the differentiation rules for the primitive operations. There, <code>grad</code> is the gradient of the terminal output with respect to the function’s output and the function should return the gradient of the terminal output with respect to the inputs. The tests are in the file <code>insts/extra-tests/test-primitives-pullback-torch.R</code>
-</li>
-</ol></div>
-<div class="section level2">
-<h2 id="comments">Comments<a class="anchor" aria-label="anchor" href="#comments"></a></h2>
-<p>Only add comments if the code is not self-explanatory.</p>
-<ul><li>For length-1 vectors, don’t use <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>. For example, use <code>1L</code> instead of <code>c(1L)</code>.</li>
-</ul></div>
-<div class="section level2">
-<h2 id="nse-and-tracing">NSE and Tracing<a class="anchor" aria-label="anchor" href="#nse-and-tracing"></a></h2>
-<p>Whenever we are combining non-standard evaluation (NSE) with tracing of sub-graphs, we need to <code><a href="https://rdrr.io/r/base/force.html" class="external-link">force()</a></code> the arrayish inputs, so they are not accidentally embedded into the sub-graphdescriptor. This can happen in R, because the evaluation of promises in function calls is delayed until they are actually needed, which causes hard-to-debug errors.</p>
-</div>
-<div class="section level2">
-<h2 id="pkgdown">Pkgdown<a class="anchor" aria-label="anchor" href="#pkgdown"></a></h2>
-<p>When adding a new exported function, ensure it’s in <code>_pkgdown.yml</code> file.</p>
-</div>
 
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
