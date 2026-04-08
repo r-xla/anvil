@@ -228,3 +228,18 @@ local_backend <- function(backend, envir = parent.frame()) {
   backend <- normalize_backend(backend)
   withr::local_options(anvil.default_backend = backend, .local_envir = envir)
 }
+
+#' Run code with a specific backend
+#'
+#' Sets the `anvil.default_backend` option for the duration of the
+#' expression. This affects `nv_array()`, `nv_scalar()`, and `jit()`.
+#'
+#' @param backend (`character(1)`)\cr
+#'   Backend to use (`"xla"` or `"quickr"`).
+#' @param code An expression to evaluate with the given backend.
+#' @return The result of evaluating `code`.
+#' @export
+with_backend <- function(backend, code) {
+  backend <- normalize_backend(backend)
+  withr::with_options(list(anvil.default_backend = backend), code)
+}

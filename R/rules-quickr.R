@@ -14,7 +14,7 @@ quickr_user_arg_names <- function(n) {
 quickr_dtype_info <- function(dt_chr) {
   dt_chr <- as.character(dt_chr)
 
-  if (dt_chr == "f64") {
+  if (dt_chr %in% c("f64", "f32")) { # FIXME: hack
     return(list(ctor = "double", zero = 0.0, scalar_cast = as.double))
   }
   if (dt_chr == "i32") {

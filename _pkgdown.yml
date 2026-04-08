@@ -242,6 +242,7 @@ reference:
       - backend
       - default_backend
       - local_backend
+      - with_backend
 
 
   - title: Internal Data Structures and Functions
