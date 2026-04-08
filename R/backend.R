@@ -1,6 +1,8 @@
 #' Create a backend
 #'
 #' @param data_constructor (`function`)\cr Constructs an AnvilArray from R data.
+#' This should be a `structure()` with at least a `$data` field that contains the actual
+#' underlying data (`PJRTBuffer` for `"xla"` backend, `array()` for `"quickr"` backend).
 #' @param dtype (`function`)\cr Extracts the dtype from an AnvilArray.
 #' @param shape (`function`)\cr Extracts the shape from an AnvilArray.
 #' @param ambiguous (`function`)\cr Extracts the ambiguous flag from an AnvilArray.
@@ -77,11 +79,7 @@ globals$backends <- list(
       if (is_dtype(dtype)) {
         dtype <- as.character(dtype)
       }
-      buf <- if (is.raw(data)) {
-        pjrt_buffer(data, dtype = dtype, device = device, shape = shape, row_major = FALSE)
-      } else {
-        pjrt_buffer(data, dtype = dtype, device = device, shape = shape)
-      }
+      buf <- pjrt_buffer(data, dtype = dtype, device = device, shape = shape)
       structure(
         list(data = buf, ambiguous = ambiguous, backend = "xla"),
         class = "AnvilArray"
@@ -148,6 +146,8 @@ globals$backends <- list(
       jit_quickr_impl(f, static, cache)
     }
   ),
+  # The plain backend is merely for capturing constants during jitting in a backend-agnostic way.
+  # Otherwise it is unused
   plain = AnvilBackend(
     data_constructor = function(data, dtype, shape, device, ambiguous) {
       if (is.null(dtype)) {
@@ -207,11 +207,8 @@ default_backend <- function() {
   getOption("anvil.default_backend", "xla")
 }
 
-normalize_backend <- function(backend) {
-  assert_string(backend)
-  backend <- tolower(backend)
+assert_backend <- function(backend) {
   assert_choice(backend, names(globals$backends))
-  backend
 }
 
 #' Temporarily set the default backend
@@ -225,14 +222,14 @@ normalize_backend <- function(backend) {
 #' @return The previous value of the option (invisibly).
 #' @export
 local_backend <- function(backend, envir = parent.frame()) {
-  backend <- normalize_backend(backend)
+  backend <- assert_backend(backend)
   withr::local_options(anvil.default_backend = backend, .local_envir = envir)
 }
 
 #' Run code with a specific backend
 #'
 #' Sets the `anvil.default_backend` option for the duration of the
-#' expression. This affects `nv_array()`, `nv_scalar()`, and `jit()`.
+#' expression. This affects [`jit()`] and data construction (e.g. via [`nv_array`]).
 #'
 #' @param backend (`character(1)`)\cr
 #'   Backend to use (`"xla"` or `"quickr"`).
@@ -240,6 +237,6 @@ local_backend <- function(backend, envir = parent.frame()) {
 #' @return The result of evaluating `code`.
 #' @export
 with_backend <- function(backend, code) {
-  backend <- normalize_backend(backend)
+  backend <- assert_backend(backend)
   withr::with_options(list(anvil.default_backend = backend), code)
 }

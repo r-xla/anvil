@@ -192,3 +192,28 @@ NULL
 #' @importFrom stablehlo Shape
 #' @export
 stablehlo::Shape
+
+#' @title Get the platform of an array or buffer
+#'
+#' @description
+#' Returns the platform name (e.g. `"cpu"`, `"cuda"`) identifying
+#' the compute backend.
+#'
+#' @details
+#' Implemented via the generic [`pjrt::platform()`].
+#'
+#' @param x ([`arrayish`])\cr
+#'   An array-like object.
+#' @param ... Additional arguments passed to methods (unused).
+#' @returns `character(1)`
+#' @seealso [pjrt::platform()]
+#' @name platform
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' x <- nv_array(1:4, dtype = "f32")
+#' platform(x)
+NULL
+
+#' @rdname platform
+#' @importFrom pjrt platform
+#' @export
+pjrt::platform

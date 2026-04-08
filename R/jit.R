@@ -56,7 +56,7 @@ jit <- function(
   backend = default_backend()
 ) {
   cache <- xlamisc::LRUCache$new(cache_size)
-  backend <- normalize_backend(backend)
+  backend <- assert_backend(backend)
   jit_validate_args(f, static, donate, device, backend)
 
   f_jit <- globals$backends[[backend]]$jit(f, static, cache, donate, device)
@@ -167,9 +167,9 @@ jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat,
     simplify = FALSE
   )
   if (!is.null(ambiguous_out)) {
-    out_vals <- Map(function(val, amb) ensure_nv_array(val, ambiguous = amb), out_vals, ambiguous_out)
+    out_vals <- Map(function(val, amb) nv_array(val, ambiguous = amb, backend = "xla"), out_vals, ambiguous_out)
   } else {
-    out_vals <- lapply(out_vals, ensure_nv_array)
+    out_vals <- lapply(out_vals, nv_array, backend = "xla")
   }
   unflatten(out_node, out_vals)
 }
@@ -331,12 +331,7 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
     }
     arr <- const$aval$data
     if (backend(arr) == "plain") {
-      buf_data <- as_array(arr)
-      if (is.raw(buf_data)) {
-        pjrt_buffer(buf_data, dtype = as.character(dtype(arr)), device = device, shape = shape(arr), row_major = FALSE)
-      } else {
-        pjrt_buffer(buf_data, as.character(dtype(arr)), device = device, shape = shape(arr))
-      }
+      pjrt_buffer(as_array(arr), dtype = as.character(dtype(arr)), device = device, shape = shape(arr))
     } else {
       unwrap_if_array(arr)
     }

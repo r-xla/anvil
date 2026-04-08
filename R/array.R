@@ -145,20 +145,6 @@ unwrap_if_array <- function(x) {
   }
 }
 
-ensure_nv_array <- function(x, ambiguous = FALSE, backend = "xla") {
-  if (inherits(x, "AnvilArray")) {
-    if (ambiguous != x$ambiguous) {
-      x$ambiguous <- ambiguous
-    }
-    return(x)
-  }
-  assert_class(x, "PJRTBuffer")
-  structure(
-    list(data = x, ambiguous = ambiguous, backend = backend),
-    class = "AnvilArray"
-  )
-}
-
 #' @rdname AnvilArray
 #' @export
 nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL) {
@@ -168,11 +154,17 @@ nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL, backe
 #' @rdname AnvilArray
 #' @export
 nv_empty <- function(dtype, shape, device = NULL, ambiguous = FALSE) {
-  if (is_dtype(dtype)) {
-    dtype <- as.character(dtype)
-  }
-  x <- pjrt::pjrt_empty(dtype, shape, device = device)
-  ensure_nv_array(x, ambiguous = ambiguous)
+  shape <- as.integer(shape)
+  storage_mode <- switch(
+    substr(as.character(if (is_dtype(dtype)) dtype else as_dtype(dtype)), 1L, 1L),
+    "f" = "double",
+    "i" = ,
+    "u" = "integer",
+    "b" = "logical",
+    "double"
+  )
+  data <- array(vector(storage_mode, prod(shape)), dim = shape)
+  nv_array(data, dtype = dtype, device = device, shape = shape, ambiguous = ambiguous)
 }
 
 #' @rdname AbstractArray
@@ -221,22 +213,6 @@ as_array.AnvilArray <- function(x, ...) {
 as_raw.AnvilArray <- function(x, row_major = FALSE, ...) {
   globals$backends[[x$backend]]$as_raw(x, row_major)
 }
-
-#' @method ndims AnvilArray
-#' @export
-ndims.AnvilArray <- function(x, ...) {
-  length(shape(x))
-}
-
-#' @title Get the platform
-#' @description Returns the platform name (e.g. `"cpu"`, `"cuda"`).
-#' @param x An array object.
-#' @param ... Additional arguments (unused).
-#' @return `character(1)`
-#' @name platform
-#' @importFrom pjrt platform
-#' @export
-NULL
 
 #' @rdname platform
 #' @export
@@ -338,12 +314,6 @@ dtype.AbstractArray <- function(x, ...) {
 #' @export
 shape.AbstractArray <- function(x, ...) {
   x$shape$dims
-}
-
-#' @method ndims AbstractArray
-#' @export
-ndims.AbstractArray <- function(x, ...) {
-  length(x$shape$dims)
 }
 
 #' @title Concrete Array Class

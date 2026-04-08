@@ -18,7 +18,9 @@ AnvilBackend(
 )
 }
 \arguments{
-\item{data_constructor}{(\code{function})\cr Constructs an AnvilArray from R data.}
+\item{data_constructor}{(\code{function})\cr Constructs an AnvilArray from R data.
+This should be a \code{structure()} with at least a \verb{$data} field that contains the actual
+underlying data (\code{PJRTBuffer} for \code{"xla"} backend, \code{array()} for \code{"quickr"} backend).}
 
 \item{dtype}{(\code{function})\cr Extracts the dtype from an AnvilArray.}
 

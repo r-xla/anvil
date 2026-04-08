@@ -17,5 +17,5 @@ The result of evaluating \code{code}.
 }
 \description{
 Sets the \code{anvil.default_backend} option for the duration of the
-expression. This affects \code{nv_array()}, \code{nv_scalar()}, and \code{jit()}.
+expression. This affects \code{\link[=jit]{jit()}} and data construction (e.g. via \code{\link{nv_array}}).
 }

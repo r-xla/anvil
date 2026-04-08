@@ -303,12 +303,6 @@ dtype.GraphBox <- function(x, ...) {
 }
 
 #' @export
-#' @method ndims GraphBox
-ndims.GraphBox <- function(x, ...) {
-  ndims(x$gnode)
-}
-
-#' @export
 ambiguous.GraphBox <- function(x, ...) {
   ambiguous(x$gnode)
 }

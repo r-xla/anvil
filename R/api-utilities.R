@@ -14,6 +14,7 @@
 #' })
 #' @export
 nv_rng_state <- function(seed) {
+  seed <- nv_array(seed, dtype = as_dtype("i32"), shape = integer())
   state <- nv_bitcast_convert(seed, dtype = "ui16")
   nv_convert(state, "ui64")
 }

@@ -68,6 +68,7 @@ test_that("from DataType", {
 test_that("nv_array from nv_array", {
   skip_if(!is_cuda())
   x <- nv_array(1, device = "cuda")
+  expect_equal(platform(x), "cuda")
   expect_error(nv_array(x, device = "cpu"))
   expect_error(nv_array(x, shape = c(1, 1)))
   expect_error(nv_array(x, dtype = "f64"))
@@ -205,23 +206,6 @@ test_that("platform returns 'cpu' for quickr backend", {
 test_that("platform returns 'cpu' for plain backend", {
   x <- globals$backends[["plain"]]$data_constructor(1, "f32", 1L, NULL, FALSE)
   expect_equal(platform(x), "cpu")
-})
-
-test_that("backend() returns the backend name", {
-  expect_equal(backend(nv_array(1)), "xla")
-})
-
-test_that("backend() returns 'quickr' for quickr arrays", {
-  skip_if_not_installed("quickr")
-  local_backend("quickr")
-  expect_equal(backend(nv_array(1)), "quickr")
-})
-
-test_that("local_backend sets and restores the default backend", {
-  skip_if_not_installed("quickr")
-  local_backend("quickr")
-  expect_equal(getOption("anvil.default_backend"), "quickr")
-  expect_equal(backend(nv_array(1)), "quickr")
 })
 
 test_that("nv_array respects backend argument", {

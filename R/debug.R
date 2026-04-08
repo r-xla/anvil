@@ -59,12 +59,6 @@ ambiguous.DebugBox <- function(x, ...) {
 }
 
 #' @export
-#' @method ndims DebugBox
-ndims.DebugBox <- function(x, ...) {
-  ndims(x$aval)
-}
-
-#' @export
 print.DebugBox <- function(x, ...) {
   aval <- x$aval
   if (is_concrete_tensor(aval)) {
