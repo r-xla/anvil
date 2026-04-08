@@ -149,8 +149,8 @@ test_that("throws error for unsupported dtype", {
 
   graph <- trace_fn(
     function(x) x,
-    list(x = nv_abstract("f32", 1L))
+    list(x = nv_abstract("i8", 1L))
   )
 
-  expect_error(graph_to_quickr_function(graph), "Unsupported dtype.*f32")
+  expect_error(graph_to_quickr_function(graph), "Unsupported dtype.*i8")
 })

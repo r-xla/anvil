@@ -61,7 +61,6 @@ Collate:
     'array.R'
     'asserts.R'
     'backend.R'
-    'backward.R'
     'bibentries.R'
     'box.R'
     'debug.R'

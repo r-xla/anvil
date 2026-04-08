@@ -262,20 +262,12 @@ jit_quickr_impl <- function(f, static, cache) {
     })
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
-      return(quickr_wrap_output(do.call(cache_hit[[1]], r_args)))
+      return(do.call(cache_hit[[1]], r_args))
     }
 
     compiled <- compile_to_quickr(f, args_flat = inputs$avals_in, in_tree = prep$in_tree)
     cache$set(cache_key, list(compiled$fun))
-    quickr_wrap_output(do.call(compiled$fun, r_args))
-  }
-}
-
-quickr_wrap_output <- function(x) {
-  if (is.list(x)) {
-    lapply(x, quickr_wrap_output)
-  } else {
-    globals$backends[["quickr"]]$data_constructor(x, dtype = NULL, shape = NULL, device = NULL, ambiguous = FALSE)
+    do.call(compiled$fun, r_args)
   }
 }
 
