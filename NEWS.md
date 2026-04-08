@@ -42,6 +42,10 @@
 * New vignette on implementing Metropolis-Hastings sampling.
 * A installation guide was added.
 
+## Platform Support
+
+* Linux on ARM is now supported (CPU only).
+
 ## Other
 
 * To construct booleans, we now support `pjrt_buffer(..., dtype = "bool")`.
