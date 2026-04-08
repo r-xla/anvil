@@ -84,9 +84,6 @@ reference:
       - platform
       - as_array
       - as_raw
-      - backend
-      - default_backend
-      - local_backend
       - as_dtype
       - is_dtype
 
@@ -238,6 +235,14 @@ reference:
       - debug_box
       - nv_print
       - DebugBox
+      
+  - title: Backend selection
+    desc: Functions for selecting and managing the backend
+    contents:
+      - backend
+      - default_backend
+      - local_backend
+
 
   - title: Internal Data Structures and Functions
     desc: Internal data structures and functions

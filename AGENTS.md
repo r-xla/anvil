@@ -14,6 +14,9 @@ Implement the test by comparing with torch, if possible and necessary.
 If the test is very simple, or the functionality not covered by torch, implement the test manually.
 Implement either the torch test OR the manual test, but not both.
 
+Tests that use the quickr backend must call `skip_if_not_installed("quickr")` at the top of the test body.
+To test a different backend, use `local_backend()` (not `withr::local_options()` directly).
+
 ## Documentation
 
 When writing roxygen2 documentation for primitives or API functions:

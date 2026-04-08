@@ -104,15 +104,13 @@ nv_serialize <- function(arrays, con = NULL) {
   hex_string <- paste(sprintf("%02x", as.integer(raw_bytes)), collapse = "")
   metadata <- list(`__ambiguity_info__` = hex_string)
 
-  # Convert all arrays to PJRTBuffers for safetensors serialization
+  # TODO(hack): do this properly
   arrays_unwrapped <- lapply(arrays, function(x) {
     buf <- unwrap_if_array(x)
-    if (inherits(buf, "PJRTBuffer")) return(buf)
-    if (is.raw(buf)) {
-      pjrt_buffer(buf, dtype = as.character(dtype(x)), shape = shape(x), row_major = FALSE)
-    } else {
-      pjrt_buffer(buf, dtype = as.character(dtype(x)), shape = shape(x))
+    if (inherits(buf, "PJRTBuffer")) {
+      return(buf)
     }
+    pjrt_buffer(buf, dtype = as.character(dtype(x)), shape = shape(x))
   })
 
   if (is.null(con)) {
@@ -151,6 +149,7 @@ nv_serialize <- function(arrays, con = NULL) {
 #' raw_data
 #' nv_unserialize(raw_data)
 nv_unserialize <- function(con, device = NULL, backend = default_backend()) {
+  # TODO: don't convert to pjrt first
   result <- safetensors::safe_load_file(con, framework = "pjrt", device = device)
 
   # Extract metadata to restore ambiguity information
@@ -180,8 +179,13 @@ nv_unserialize <- function(con, device = NULL, backend = default_backend()) {
     if (backend == "xla") {
       ensure_nv_array(buf, ambiguous = is_ambiguous)
     } else {
-      nv_array(tengen::as_array(buf), dtype = as.character(pjrt::elt_type(buf)),
-        shape = tengen::shape(buf), ambiguous = is_ambiguous, backend = backend)
+      nv_array(
+        tengen::as_array(buf),
+        dtype = as.character(pjrt::elt_type(buf)),
+        shape = tengen::shape(buf),
+        ambiguous = is_ambiguous,
+        backend = backend
+      )
     }
   })
   names(result_wrapped) <- names(result)

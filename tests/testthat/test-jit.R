@@ -253,7 +253,7 @@ test_that("jit: respects device argument", {
 })
 
 test_that("jit: backend argument overrides configured default for traced float constants", {
-  withr::local_options(anvil.default_backend = "quickr")
+  local_backend("quickr")
   f <- jit(function() nv_fill(1.0, shape = 1L), backend = "xla")
   expect_equal(dtype(f()), as_dtype("f32"))
 })

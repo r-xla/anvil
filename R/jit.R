@@ -131,7 +131,9 @@ jit_xla_inputs <- function(args_flat, is_static_flat, device) {
       }
       dev <- device(x)
       device_strs <<- c(device_strs, as.character(dev))
-      if (is.null(first_device)) first_device <<- dev
+      if (is.null(first_device)) {
+        first_device <<- dev
+      }
       nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x))
     },
     args_flat,

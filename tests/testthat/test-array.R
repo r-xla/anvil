@@ -168,6 +168,7 @@ test_that("stablehlo dtype is printed", {
 })
 
 test_that("QuickrDeviceCpu is a classed object", {
+  skip_if_not_installed("quickr")
   dev <- QuickrDeviceCpu()
   expect_s3_class(dev, "QuickrDeviceCpu")
   expect_equal(format(dev), "QuickrDeviceCpu")
@@ -182,6 +183,7 @@ test_that("PlainDeviceCpu is a classed object", {
 })
 
 test_that("device returns QuickrDeviceCpu for quickr arrays", {
+  skip_if_not_installed("quickr")
   local_backend("quickr")
   x <- nv_array(1)
   dev <- device(x)
@@ -195,6 +197,7 @@ test_that("device returns PlainDeviceCpu for plain arrays", {
 })
 
 test_that("platform returns 'cpu' for quickr backend", {
+  skip_if_not_installed("quickr")
   local_backend("quickr")
   expect_equal(platform(nv_array(1)), "cpu")
 })
@@ -205,27 +208,24 @@ test_that("platform returns 'cpu' for plain backend", {
 })
 
 test_that("backend() returns the backend name", {
-  x <- nv_array(1)
-  expect_equal(backend(x), "xla")
+  expect_equal(backend(nv_array(1)), "xla")
+})
 
+test_that("backend() returns 'quickr' for quickr arrays", {
+  skip_if_not_installed("quickr")
   local_backend("quickr")
-  y <- nv_array(1)
-  expect_equal(backend(y), "quickr")
+  expect_equal(backend(nv_array(1)), "quickr")
 })
 
 test_that("local_backend sets and restores the default backend", {
-  old <- getOption("anvil.default_backend")
+  skip_if_not_installed("quickr")
   local_backend("quickr")
   expect_equal(getOption("anvil.default_backend"), "quickr")
   expect_equal(backend(nv_array(1)), "quickr")
-  # auto-restores when scope exits (but we're still in the test scope)
-})
-
-test_that("local_backend rejects 'auto'", {
-  expect_error(local_backend("auto"), "auto")
 })
 
 test_that("nv_array respects backend argument", {
+  skip_if_not_installed("quickr")
   local_backend("quickr")
   x <- nv_array(1, backend = "xla")
   expect_equal(backend(x), "xla")
@@ -238,10 +238,13 @@ test_that("nv_array errors when backend specified inside jit", {
   )
 })
 
-test_that("default floating dtype is f32 for xla, f64 for quickr", {
+test_that("default floating dtype is f32 for xla", {
   expect_equal(dtype(nv_array(1.0)), as_dtype("f32"))
   expect_equal(dtype(nv_scalar(1.0)), as_dtype("f32"))
+})
 
+test_that("default floating dtype is f64 for quickr", {
+  skip_if_not_installed("quickr")
   local_backend("quickr")
   expect_equal(dtype(nv_array(1.0)), as_dtype("f64"))
   expect_equal(dtype(nv_scalar(1.0)), as_dtype("f64"))

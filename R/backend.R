@@ -12,8 +12,19 @@
 #' @param jit (`function`)\cr Creates a JIT-compiled function implementation.
 #' @return An `AnvilBackend` object.
 #' @keywords internal
-AnvilBackend <- function(data_constructor, dtype, shape, ambiguous, as_array,
-                         as_raw, platform, device, print_data, jit) {
+#' @export
+AnvilBackend <- function(
+  data_constructor,
+  dtype,
+  shape,
+  ambiguous,
+  as_array,
+  as_raw,
+  platform,
+  device,
+  print_data,
+  jit
+) {
   structure(
     list(
       data_constructor = data_constructor,
@@ -63,7 +74,9 @@ globals$backends <- list(
       if (is.null(dtype) && !inherits(data, "PJRTBuffer")) {
         dtype <- default_dtype(data)
       }
-      if (is_dtype(dtype)) dtype <- as.character(dtype)
+      if (is_dtype(dtype)) {
+        dtype <- as.character(dtype)
+      }
       buf <- if (is.raw(data)) {
         pjrt_buffer(data, dtype = dtype, device = device, shape = shape, row_major = FALSE)
       } else {
@@ -91,7 +104,9 @@ globals$backends <- list(
       if (is.null(dtype)) {
         dtype <- if (is.double(data)) FloatType(64) else default_dtype(data)
       }
-      if (!is_dtype(dtype)) dtype <- as_dtype(dtype)
+      if (!is_dtype(dtype)) {
+        dtype <- as_dtype(dtype)
+      }
       if (is.null(shape)) {
         shape <- if (!is.null(dim(data))) {
           as.integer(dim(data))
@@ -138,7 +153,9 @@ globals$backends <- list(
       if (is.null(dtype)) {
         dtype <- default_dtype(data)
       }
-      if (!is_dtype(dtype)) dtype <- as_dtype(dtype)
+      if (!is_dtype(dtype)) {
+        dtype <- as_dtype(dtype)
+      }
       if (is.null(shape)) {
         shape <- if (!is.null(dim(data))) {
           as.integer(dim(data))
