@@ -103,7 +103,7 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>{anvil} can be installed from GitHub or <a href="https://r-xla.r-universe.dev/builds" class="external-link">r-universe</a>. Prebuilt <a href="https://github.com/r-xla/docker" class="external-link">Docker images</a> are also available. See the <a href="https://r-xla.github.io/anvil/articles/installation.html">Installation</a> vignette for detailed instructions.</p>
+<p>{anvil} can be installed from GitHub or <a href="https://r-xla.r-universe.dev/builds" class="external-link">r-universe</a>. Prebuilt <a href="https://github.com/r-xla/docker" class="external-link">Docker images</a> are also available. See the <em>Installation</em> vignette on the package website for detailed instructions.</p>
 </div>
 <div class="section level2">
 <h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
@@ -137,7 +137,7 @@
 <span><span class="co">#&gt; AnvilArray</span></span>
 <span><span class="co">#&gt;  1</span></span>
 <span><span class="co">#&gt; [ CPUf32{} ]</span></span></code></pre></div>
-<p>For more complex examples, see the package website, where we, e.g., show <a href="https://r-xla.github.io/anvil/dev/articles/gaussian-process.html">how to implement a Gaussian Process</a>.</p>
+<p>For more complex examples, such as implementing a Gaussian Process, see the package website.</p>
 </div>
 <div class="section level2">
 <h2 id="main-features">Main Features<a class="anchor" aria-label="anchor" href="#main-features"></a>
@@ -171,19 +171,28 @@
 <div class="section level2">
 <h2 id="when-to-use-this-package">When to use this package?<a class="anchor" aria-label="anchor" href="#when-to-use-this-package"></a>
 </h2>
-<p>While {anvil} allows to run certain types of programs extremely fast, it only applies to a certain category of problems. Specifically, it is suitable for numerical algorithms, such as optimizing bayesian models, training neural networks or more generally numerical optimization. Another restriction is that {anvil} needs to re-compile the code for each new unique input shape. This has the advantage, that the compiler can make memory optimizations, but the compilation overhead might be a problem for fast running programs.</p>
+<p>While {anvil} allows to run certain types of programs extremely fast, it only applies to a certain category of problems. Specifically, it is suitable for numerical algorithms, such as fitting bayesian models, training neural networks or more generally numerical optimization. Another restriction is that {anvil} needs to re-compile the code for each new unique input shape. This has the advantage, that the compiler can make memory optimizations, but the compilation overhead might be a problem when inputs shapes are varying often and the programs run quickly.</p>
 </div>
 <div class="section level2">
 <h2 id="platform-support">Platform Support<a class="anchor" aria-label="anchor" href="#platform-support"></a>
 </h2>
 <ul>
 <li>
-<strong>Linux</strong>
+<strong>Linux (x86_64)</strong>
 <ul>
 <li>
 <span class="emoji" data-emoji="white_check_mark">✅</span> CPU backend is fully supported.</li>
 <li>
 <span class="emoji" data-emoji="white_check_mark">✅</span> CUDA (NVIDIA GPU) backend is fully supported.</li>
+</ul>
+</li>
+<li>
+<strong>Linux (ARM)</strong>
+<ul>
+<li>
+<span class="emoji" data-emoji="white_check_mark">✅</span> CPU backend is fully supported.</li>
+<li>
+<span class="emoji" data-emoji="x">❌</span> GPU is not supported.</li>
 </ul>
 </li>
 <li>

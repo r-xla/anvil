@@ -14,8 +14,8 @@ including CPU and GPU.
 {anvil} can be installed from GitHub or
 [r-universe](https://r-xla.r-universe.dev/builds). Prebuilt [Docker
 images](https://github.com/r-xla/docker) are also available. See the
-[Installation](https://r-xla.github.io/anvil/articles/installation.html)
-vignette for detailed instructions.
+*Installation* vignette on the package website for detailed
+instructions.
 
 ## Quick Start
 
@@ -60,9 +60,8 @@ g_jit(a, b, x)
 #> [ CPUf32{} ]
 ```
 
-For more complex examples, see the package website, where we, e.g., show
-[how to implement a Gaussian
-Process](https://r-xla.github.io/anvil/dev/articles/gaussian-process.html).
+For more complex examples, such as implementing a Gaussian Process, see
+the package website.
 
 ## Main Features
 
@@ -85,18 +84,22 @@ Process](https://r-xla.github.io/anvil/dev/articles/gaussian-process.html).
 
 While {anvil} allows to run certain types of programs extremely fast, it
 only applies to a certain category of problems. Specifically, it is
-suitable for numerical algorithms, such as optimizing bayesian models,
+suitable for numerical algorithms, such as fitting bayesian models,
 training neural networks or more generally numerical optimization.
 Another restriction is that {anvil} needs to re-compile the code for
 each new unique input shape. This has the advantage, that the compiler
 can make memory optimizations, but the compilation overhead might be a
-problem for fast running programs.
+problem when inputs shapes are varying often and the programs run
+quickly.
 
 ## Platform Support
 
-- **Linux**
+- **Linux (x86_64)**
   - ✅ CPU backend is fully supported.
   - ✅ CUDA (NVIDIA GPU) backend is fully supported.
+- **Linux (ARM)**
+  - ✅ CPU backend is fully supported.
+  - ❌ GPU is not supported.
 - **Windows**
   - ✅ CPU backend is fully supported.
   - ⚠️ GPU is only supported via Windows Subsystem for Linux (WSL2).
