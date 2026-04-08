@@ -116,70 +116,13 @@ problem for fast running programs.
 
 # Package index
 
-## Array Creation
+## API Functions
 
-Functions for creating and initializing arrays
+User-facing `nv_*` functions for array operations
 
-- [`nv_array()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
-  [`nv_scalar()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
-  [`nv_empty()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
-  : AnvilArray
-- [`is_arrayish()`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
-  : Array-like Objects
-- [`nv_fill()`](https://r-xla.github.io/anvil/dev/reference/nv_fill.md)
-  : Fill Constant
-- [`nv_iota()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md)
-  : Iota
-- [`nv_seq()`](https://r-xla.github.io/anvil/dev/reference/nv_seq.md) :
-  Sequence
-- [`nv_diag()`](https://r-xla.github.io/anvil/dev/reference/nv_diag.md)
-  : Diagonal Matrix
-- [`nv_eye()`](https://r-xla.github.io/anvil/dev/reference/nv_eye.md) :
-  Identity Matrix
+### Type Conversion and Broadcasting
 
-## Array attributes and converters
-
-Functions for querying array attributes and converting them
-
-- [`ambiguous()`](https://r-xla.github.io/anvil/dev/reference/ambiguous.md)
-  : Get Ambiguity of an Array
-- [`dtype()`](https://r-xla.github.io/anvil/dev/reference/dtype.md) :
-  Get the data type of an array
-- [`shape()`](https://r-xla.github.io/anvil/dev/reference/shape.md) :
-  Get the shape of an array
-- [`ndims()`](https://r-xla.github.io/anvil/dev/reference/ndims.md) :
-  Get the number of dimensions of an array
-- [`device()`](https://r-xla.github.io/anvil/dev/reference/device.md) :
-  Get the device of an array
-- [`platform(`*`<AbstractArray>`*`)`](https://r-xla.github.io/anvil/dev/reference/platform.AbstractArray.md)
-  : Platform for AbstractArray
-- [`platform()`](https://r-xla.github.io/anvil/dev/reference/platform.md)
-  : Get the platform of an array or buffer
-- [`as_array()`](https://r-xla.github.io/anvil/dev/reference/as_array.md)
-  : Convert to an R array
-- [`as_raw()`](https://r-xla.github.io/anvil/dev/reference/as_raw.md) :
-  Convert an array to a raw vector
-- [`as_dtype()`](https://r-xla.github.io/anvil/dev/reference/as_dtype.md)
-  : Convert to a DataType
-- [`is_dtype()`](https://r-xla.github.io/anvil/dev/reference/is_dtype.md)
-  : Check if an object is a DataType
-
-## Array Serialization
-
-Functions for serializing and deserializing arrays
-
-- [`nv_save()`](https://r-xla.github.io/anvil/dev/reference/nv_save.md)
-  : Save arrays to a file
-- [`nv_read()`](https://r-xla.github.io/anvil/dev/reference/nv_read.md)
-  : Read arrays from a file
-- [`nv_serialize()`](https://r-xla.github.io/anvil/dev/reference/nv_serialize.md)
-  : Serialize arrays to raw bytes
-- [`nv_unserialize()`](https://r-xla.github.io/anvil/dev/reference/nv_unserialize.md)
-  : Deserialize arrays from raw bytes
-
-## Type conversion and promotion
-
-Functions for type conversion and promotion
+Functions for type conversion, promotion, and broadcasting
 
 - [`nv_convert()`](https://r-xla.github.io/anvil/dev/reference/nv_convert.md)
   : Convert Data Type
@@ -196,7 +139,7 @@ Functions for type conversion and promotion
 - [`common_dtype()`](https://r-xla.github.io/anvil/dev/reference/common_dtype.md)
   : Type Promotion Rules
 
-## Array manipulation
+### Array Manipulation
 
 Functions for reshaping and rearranging arrays
 
@@ -222,7 +165,7 @@ Functions for reshaping and rearranging arrays
   [`nv_subset_assign()`](https://r-xla.github.io/anvil/dev/reference/nv_subset_assign.md)
   : Update Subset
 
-## Arithmetic operations
+### Arithmetic Operations
 
 Basic arithmetic operations on arrays
 
@@ -241,7 +184,7 @@ Basic arithmetic operations on arrays
 - [`nv_remainder()`](https://r-xla.github.io/anvil/dev/reference/nv_remainder.md)
   : Remainder
 
-## Comparison operations
+### Comparison Operations
 
 Element-wise comparison operations
 
@@ -258,7 +201,7 @@ Element-wise comparison operations
 - [`nv_le()`](https://r-xla.github.io/anvil/dev/reference/nv_le.md) :
   Less Than or Equal
 
-## Mathematical functions
+### Mathematical Functions
 
 Mathematical and trigonometric functions
 
@@ -301,7 +244,7 @@ Mathematical and trigonometric functions
 - [`nv_is_finite()`](https://r-xla.github.io/anvil/dev/reference/nv_is_finite.md)
   : Is Finite
 
-## Reduction operations
+### Reduction Operations
 
 Operations that reduce array dimensions
 
@@ -320,7 +263,7 @@ Operations that reduce array dimensions
 - [`nv_reduce_all()`](https://r-xla.github.io/anvil/dev/reference/nv_reduce_all.md)
   : All Reduction
 
-## Linear algebra
+### Linear Algebra
 
 Linear algebra operations
 
@@ -331,7 +274,7 @@ Linear algebra operations
 - [`nv_solve()`](https://r-xla.github.io/anvil/dev/reference/nv_solve.md)
   : Solve Linear System
 
-## Logical and bitwise operations
+### Logical and Bitwise Operations
 
 Logical and bitwise operations on arrays
 
@@ -352,7 +295,7 @@ Logical and bitwise operations on arrays
 - [`nv_popcnt()`](https://r-xla.github.io/anvil/dev/reference/nv_popcnt.md)
   : Population Count
 
-## Element-wise operations
+### Element-wise Operations
 
 Other element-wise array operations
 
@@ -363,7 +306,7 @@ Other element-wise array operations
 - [`nv_clamp()`](https://r-xla.github.io/anvil/dev/reference/nv_clamp.md)
   : Clamp
 
-## Control flow
+### Control Flow
 
 Control flow operations
 
@@ -374,7 +317,7 @@ Control flow operations
 - [`nv_ifelse()`](https://r-xla.github.io/anvil/dev/reference/nv_ifelse.md)
   : Conditional Element Selection
 
-## Random number generation
+### Random Number Generation
 
 Functions for generating random numbers
 
@@ -389,30 +332,86 @@ Functions for generating random numbers
 - [`nv_rng_state()`](https://r-xla.github.io/anvil/dev/reference/nv_rng_state.md)
   : Generate RNG State
 
+## Arrays
+
+Array construction, attributes, conversion, and serialization
+
+### Construction
+
+Functions for creating and initializing arrays
+
+- [`nv_array()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  [`nv_scalar()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  [`nv_empty()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  : AnvilArray
+- [`is_arrayish()`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
+  : Array-like Objects
+- [`nv_fill()`](https://r-xla.github.io/anvil/dev/reference/nv_fill.md)
+  : Fill Constant
+- [`nv_iota()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md)
+  : Iota
+- [`nv_seq()`](https://r-xla.github.io/anvil/dev/reference/nv_seq.md) :
+  Sequence
+- [`nv_diag()`](https://r-xla.github.io/anvil/dev/reference/nv_diag.md)
+  : Diagonal Matrix
+- [`nv_eye()`](https://r-xla.github.io/anvil/dev/reference/nv_eye.md) :
+  Identity Matrix
+
+### Attributes
+
+Functions for querying array properties
+
+- [`ambiguous()`](https://r-xla.github.io/anvil/dev/reference/ambiguous.md)
+  : Get Ambiguity of an Array
+- [`dtype()`](https://r-xla.github.io/anvil/dev/reference/dtype.md) :
+  Get the data type of an array
+- [`shape()`](https://r-xla.github.io/anvil/dev/reference/shape.md) :
+  Get the shape of an array
+- [`ndims()`](https://r-xla.github.io/anvil/dev/reference/ndims.md) :
+  Get the number of dimensions of an array
+- [`device()`](https://r-xla.github.io/anvil/dev/reference/device.md) :
+  Get the device of an array
+- [`platform(`*`<AbstractArray>`*`)`](https://r-xla.github.io/anvil/dev/reference/platform.AbstractArray.md)
+  : Platform for AbstractArray
+- [`platform()`](https://r-xla.github.io/anvil/dev/reference/platform.md)
+  : Get the platform of an array or buffer
+
+### Converters
+
+Functions for converting arrays
+
+- [`as_array()`](https://r-xla.github.io/anvil/dev/reference/as_array.md)
+  : Convert to an R array
+- [`as_raw()`](https://r-xla.github.io/anvil/dev/reference/as_raw.md) :
+  Convert an array to a raw vector
+- [`as_dtype()`](https://r-xla.github.io/anvil/dev/reference/as_dtype.md)
+  : Convert to a DataType
+- [`is_dtype()`](https://r-xla.github.io/anvil/dev/reference/is_dtype.md)
+  : Check if an object is a DataType
+
+### Serialization
+
+Functions for serializing and deserializing arrays
+
+- [`nv_save()`](https://r-xla.github.io/anvil/dev/reference/nv_save.md)
+  : Save arrays to a file
+- [`nv_read()`](https://r-xla.github.io/anvil/dev/reference/nv_read.md)
+  : Read arrays from a file
+- [`nv_serialize()`](https://r-xla.github.io/anvil/dev/reference/nv_serialize.md)
+  : Serialize arrays to raw bytes
+- [`nv_unserialize()`](https://r-xla.github.io/anvil/dev/reference/nv_unserialize.md)
+  : Deserialize arrays from raw bytes
+
 ## Transformations
 
 Code transformations
 
-- [`trace_fn()`](https://r-xla.github.io/anvil/dev/reference/trace_fn.md)
-  : Trace an R function into a Graph
+- [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) : JIT
+  compile a function
 - [`gradient()`](https://r-xla.github.io/anvil/dev/reference/gradient.md)
   : Gradient
 - [`value_and_gradient()`](https://r-xla.github.io/anvil/dev/reference/value_and_gradient.md)
   : Value and Gradient
-- [`transform_gradient()`](https://r-xla.github.io/anvil/dev/reference/transform_gradient.md)
-  : Transform a graph to its gradient
-- [`graph_to_r_function()`](https://r-xla.github.io/anvil/dev/reference/graph_to_r_function.md)
-  : Convert an AnvilGraph to a plain R function
-- [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) : JIT
-  compile a function
-- [`xla()`](https://r-xla.github.io/anvil/dev/reference/xla.md) :
-  Ahead-of-time compile a function to XLA
-- [`jit_eval()`](https://r-xla.github.io/anvil/dev/reference/jit_eval.md)
-  : JIT-compile and evaluate an expression
-- [`compile_to_xla()`](https://r-xla.github.io/anvil/dev/reference/compile_to_xla.md)
-  : Trace, lower, and compile a function to an XLA executable
-- [`stablehlo()`](https://r-xla.github.io/anvil/dev/reference/stablehlo.md)
-  : Lower a graph to StableHLO
 
 ## Debugging
 
@@ -425,31 +424,26 @@ Debugging utilities and tools
 - [`DebugBox()`](https://r-xla.github.io/anvil/dev/reference/DebugBox.md)
   : Debug Box Class
 
-## Internal Data Structures and Functions
+## Internals
 
 Internal data structures and functions
 
-- [`shape_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
-  [`ndims_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
-  [`dtype_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
-  [`ambiguous_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
-  : Abstract Properties
-- [`to_abstract()`](https://r-xla.github.io/anvil/dev/reference/to_abstract.md)
-  : Convert to Abstract Array
-- [`GraphDescriptor()`](https://r-xla.github.io/anvil/dev/reference/GraphDescriptor.md)
-  : Graph Descriptor
-- [`GraphValue()`](https://r-xla.github.io/anvil/dev/reference/GraphValue.md)
-  : Graph Value
-- [`AnvilBox`](https://r-xla.github.io/anvil/dev/reference/AnvilBox.md)
-  : AnvilBox
+### Graph
+
 - [`AnvilGraph()`](https://r-xla.github.io/anvil/dev/reference/AnvilGraph.md)
   : Graph of Primitive Calls
+- [`GraphDescriptor()`](https://r-xla.github.io/anvil/dev/reference/GraphDescriptor.md)
+  : Graph Descriptor
 - [`GraphNode`](https://r-xla.github.io/anvil/dev/reference/GraphNode.md)
   : Graph Node
+- [`GraphValue()`](https://r-xla.github.io/anvil/dev/reference/GraphValue.md)
+  : Graph Value
 - [`GraphBox()`](https://r-xla.github.io/anvil/dev/reference/GraphBox.md)
   : Graph Box
 - [`GraphLiteral()`](https://r-xla.github.io/anvil/dev/reference/GraphLiteral.md)
   : Graph Literal
+- [`AnvilBox`](https://r-xla.github.io/anvil/dev/reference/AnvilBox.md)
+  : AnvilBox
 - [`graph_desc_add()`](https://r-xla.github.io/anvil/dev/reference/graph_desc_add.md)
   : Add a Primitive Call to a Graph Descriptor
 - [`local_descriptor()`](https://r-xla.github.io/anvil/dev/reference/local_descriptor.md)
@@ -458,6 +452,9 @@ Internal data structures and functions
   : Get the current graph
 - [`subgraphs()`](https://r-xla.github.io/anvil/dev/reference/subgraphs.md)
   : Get Subgraphs from Higher-Order Primitive
+
+### Primitives
+
 - [`prim()`](https://r-xla.github.io/anvil/dev/reference/prim.md) : Get
   a Primitive
 - [`AnvilPrimitive()`](https://r-xla.github.io/anvil/dev/reference/AnvilPrimitive.md)
@@ -466,6 +463,9 @@ Internal data structures and functions
   : Primitive Call
 - [`register_primitive()`](https://r-xla.github.io/anvil/dev/reference/register_primitive.md)
   : Register a Primitive
+
+### Abstract Types
+
 - [`nv_abstract()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
   [`AbstractArray()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
   : Abstract Array Class
@@ -475,6 +475,33 @@ Internal data structures and functions
   : Literal Array Class
 - [`IotaArray()`](https://r-xla.github.io/anvil/dev/reference/IotaArray.md)
   : Iota Array Class
+- [`shape_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
+  [`ndims_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
+  [`dtype_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
+  [`ambiguous_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
+  : Abstract Properties
+- [`to_abstract()`](https://r-xla.github.io/anvil/dev/reference/to_abstract.md)
+  : Convert to Abstract Array
+
+### Transformations
+
+- [`xla()`](https://r-xla.github.io/anvil/dev/reference/xla.md) :
+  Ahead-of-time compile a function to XLA
+- [`trace_fn()`](https://r-xla.github.io/anvil/dev/reference/trace_fn.md)
+  : Trace an R function into a Graph
+- [`transform_gradient()`](https://r-xla.github.io/anvil/dev/reference/transform_gradient.md)
+  : Transform a graph to its gradient
+- [`graph_to_r_function()`](https://r-xla.github.io/anvil/dev/reference/graph_to_r_function.md)
+  : Convert an AnvilGraph to a plain R function
+- [`jit_eval()`](https://r-xla.github.io/anvil/dev/reference/jit_eval.md)
+  : JIT-compile and evaluate an expression
+- [`compile_to_xla()`](https://r-xla.github.io/anvil/dev/reference/compile_to_xla.md)
+  : Trace, lower, and compile a function to an XLA executable
+- [`stablehlo()`](https://r-xla.github.io/anvil/dev/reference/stablehlo.md)
+  : Lower a graph to StableHLO
+
+### Miscellaneous
+
 - [`eq_type()`](https://r-xla.github.io/anvil/dev/reference/eq_type.md)
   [`neq_type()`](https://r-xla.github.io/anvil/dev/reference/eq_type.md)
   : Compare AbstractArray Types
