@@ -12,7 +12,8 @@
   `jit()`ted functions can now be traced when used within `jit()`.
 * An experimental [{quickr}](https://github.com/t-kalinowski/quickr) backend is now available.
   It only runs on CPU for now and supports a subset of available operations.
-  You can enable it globally via the `anvil.backend` option.
+  You can enable it globally via the `backend` argument in `jit()` and
+  `nv_array()` or via the `anvil.default_backend` option.
 * New primitives:
   * `nvl_cholesky()` to compute the Cholesky decomposition of a matrix.
   * `nvl_triangular_solve()` to solve a system of linear equations with a triangular matrix.
@@ -40,19 +41,16 @@
 
 * New vignette on implementing Gaussian Processes.
 * New vignette on implementing Metropolis-Hastings sampling.
-* A installation guide was added.
+* An installation guide was added.
 
-## Platform Support
+## Miscellaneous
 
 * Linux on ARM is now supported (CPU only).
-
-## Other
-
-* To construct booleans, we now support `pjrt_buffer(..., dtype = "bool")`.
-  Also `bool` is used in the printer (instead of `i1`).
 * To use the CUDA backend, it is now possible to install the `cuda12.8`
   package (see installation guide), which only requires a compatible CUDA
   driver.
+
+
 
 # anvil 0.1.0
 
