@@ -1721,14 +1721,14 @@ nv_trace <- function(operand) {
 #'   include diagonals above, negative values exclude diagonals below.
 #' @return [`arrayish`]\cr
 #'   Has the same shape and data type as `operand`.
-#' @seealso [nv_lower_tri()]
+#' @seealso [nv_triu()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_fill(1, c(3, 3))
-#'   nv_lower_tri(x)
+#'   nv_tril(x)
 #' })
 #' @export
-nv_lower_tri <- function(operand, diagonal = 0L) {
+nv_tril <- function(operand, diagonal = 0L) {
   if (ndims_abstract(operand) != 2L) {
     cli_abort("operand must be a 2-D array")
   }
@@ -1750,14 +1750,14 @@ nv_lower_tri <- function(operand, diagonal = 0L) {
 #'   exclude diagonals above, negative values include diagonals below.
 #' @return [`arrayish`]\cr
 #'   Has the same shape and data type as `operand`.
-#' @seealso [nv_lower_tri()]
+#' @seealso [nv_tril()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   x <- nv_fill(1, c(3, 3))
-#'   nv_lower_tri(x)
+#'   nv_triu(x)
 #' })
 #' @export
-nv_lower_tri <- function(operand, diagonal = 0L) {
+nv_triu <- function(operand, diagonal = 0L) {
   if (ndims_abstract(operand) != 2L) {
     cli_abort("operand must be a 2-D array")
   }

@@ -158,8 +158,8 @@ reference:
       - nv_outer
       - nv_trace
       - nv_extract_diag
-      - nv_lower_trie
-      - nv_upper_tri
+      - nv_tril
+      - nv_triu
 
   - subtitle: Logical and Bitwise Operations
     desc: Logical and bitwise operations on arrays
