@@ -394,37 +394,37 @@ describe("nv_trace", {
   })
 })
 
-describe("nv_tril", {
+describe("nv_lower_tri", {
   it("returns lower triangular part", {
-    result <- jit_eval(nv_tril(nv_fill(1, c(3, 3))))
+    result <- jit_eval(nv_lower_tri(nv_fill(1, c(3, 3))))
     expected <- matrix(c(1, 1, 1, 0, 1, 1, 0, 0, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
   it("supports positive diagonal offset", {
-    result <- jit_eval(nv_tril(nv_fill(1, c(3, 3)), diagonal = 1L))
+    result <- jit_eval(nv_lower_tri(nv_fill(1, c(3, 3)), diagonal = 1L))
     expected <- matrix(c(1, 1, 1, 1, 1, 1, 0, 1, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
   it("supports negative diagonal offset", {
-    result <- jit_eval(nv_tril(nv_fill(1, c(3, 3)), diagonal = -1L))
+    result <- jit_eval(nv_lower_tri(nv_fill(1, c(3, 3)), diagonal = -1L))
     expected <- matrix(c(0, 1, 1, 0, 0, 1, 0, 0, 0), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
 })
 
-describe("nv_triu", {
+describe("nv_lower_tri", {
   it("returns upper triangular part", {
-    result <- jit_eval(nv_triu(nv_fill(1, c(3, 3))))
+    result <- jit_eval(nv_lower_tri(nv_fill(1, c(3, 3))))
     expected <- matrix(c(1, 0, 0, 1, 1, 0, 1, 1, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
   it("supports positive diagonal offset", {
-    result <- jit_eval(nv_triu(nv_fill(1, c(3, 3)), diagonal = 1L))
+    result <- jit_eval(nv_lower_tri(nv_fill(1, c(3, 3)), diagonal = 1L))
     expected <- matrix(c(0, 0, 0, 1, 0, 0, 1, 1, 0), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
   it("supports negative diagonal offset", {
-    result <- jit_eval(nv_triu(nv_fill(1, c(3, 3)), diagonal = -1L))
+    result <- jit_eval(nv_lower_tri(nv_fill(1, c(3, 3)), diagonal = -1L))
     expected <- matrix(c(1, 1, 0, 1, 1, 1, 1, 1, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
