@@ -19,7 +19,6 @@ Has the same shape as the input and boolean data type.
 }
 \description{
 Element-wise check if values are NaN. You can also use \code{is.nan()}.
-Uses the property that \code{NaN != NaN}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}

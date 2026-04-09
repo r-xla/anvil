@@ -1057,23 +1057,40 @@ nv_iota <- nvl_iota
 
 #' @title Sequence
 #' @description
-#' Creates a 1-D tensor with integer values from `start` to `end` (inclusive),
-#' analogous to R's `seq(start, end)`.
-#' @param start,end (`integer(1)`)\cr
-#'   Start and end values. Must satisfy `start <= end`.
-#' @template param_dtype
+#' Creates a 1-D tensor with values from `start` to `end` (inclusive).
+#'
+#' Without `steps`, behaves like R's `seq(start, end)` producing integer values.
+#' With `steps`, produces `steps` evenly spaced values (like `seq(start, end, length.out = steps)`).
+#' @param start,end (`numeric(1)`)\cr
+#'   Start and end values. When `steps` is `NULL`, must satisfy `start <= end`.
+#' @param steps (`integer(1)` or `NULL`)\cr
+#'   Number of evenly spaced values to generate. Must be at least 1.
+#'   When `NULL` (default), generates consecutive integer values from `start` to `end`.
+#' @param dtype (`character(1)`)\cr
+#'   Data type. Default `"i32"` when `steps` is `NULL`, `"f32"` when `steps` is given.
 #' @template param_ambiguous
 #' @return [`tensorish`]\cr
-#'   1-D tensor of length `end - start + 1`.
+#'   1-D tensor.
 #' @seealso [nv_iota()] for multi-dimensional sequences.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval(nv_seq(3, 7))
+#' jit_eval(nv_seq(0, 1, steps = 5L))
 #' @export
-nv_seq <- function(start, end, dtype = "i32", ambiguous = FALSE) {
-  assert_int(start)
-  assert_int(end)
-  assert(start <= end)
-  nv_iota(shape = end - start + 1, dtype = dtype, ambiguous = ambiguous, dim = 1L, start = start)
+nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE) {
+  if (is.null(steps)) {
+    dtype <- dtype %||% "i32"
+    assert_int(start)
+    assert_int(end)
+    assert(start <= end)
+    return(nv_iota(shape = end - start + 1, dtype = dtype, ambiguous = ambiguous, dim = 1L, start = start))
+  }
+  dtype <- dtype %||% "f32"
+  assert_int(steps, lower = 1L)
+  if (steps == 1L) {
+    return(nv_fill(start, 1L, dtype = dtype))
+  }
+  indices <- nv_iota(dim = 1L, shape = steps, dtype = dtype, start = 0L)
+  indices * ((end - start) / (steps - 1L)) + start
 }
 
 #' @title Pad
@@ -1471,7 +1488,6 @@ nv_log10 <- function(operand) {
 #' @title Is NaN
 #' @description
 #' Element-wise check if values are NaN. You can also use `is.nan()`.
-#' Uses the property that `NaN != NaN`.
 #' @template param_operand
 #' @template return_unary_boolean
 #' @seealso [nv_is_finite()], [nv_is_infinite()]
@@ -1523,6 +1539,7 @@ nv_is_infinite <- function(operand) {
 #' })
 #' @export
 nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
+  assert_int(correction)
   nelts <- prod(shape_abstract(operand)[dims])
   mean_bc <- nv_broadcast_to(
     nv_reduce_mean(operand, dims, drop = FALSE),
@@ -1576,6 +1593,7 @@ nv_squeeze <- function(operand, dims = NULL) {
   if (is.null(dims)) {
     new_shape <- shp[shp != 1L]
   } else {
+    assert_integerish(dims, lower = 1L, upper = length(shp))
     for (d in dims) {
       if (shp[d] != 1L) {
         cli_abort("Cannot squeeze dimension {d} with size {shp[d]} (must be 1)")
@@ -1583,7 +1601,9 @@ nv_squeeze <- function(operand, dims = NULL) {
     }
     new_shape <- shp[-dims]
   }
-  if (length(new_shape) == 0L) new_shape <- integer(0)
+  if (length(new_shape) == 0L) {
+    new_shape <- integer(0)
+  }
   nv_reshape(operand, new_shape)
 }
 
@@ -1609,69 +1629,6 @@ nv_unsqueeze <- function(operand, dim) {
   nv_reshape(operand, new_shape)
 }
 
-#' @title Expand
-#' @description
-#' Broadcasts a tensor to a target shape, expanding dimensions of size 1.
-#' This is an alias for [nv_broadcast_to()].
-#' @template param_operand
-#' @param shape (`integer()`)\cr
-#'   Target shape.
-#' @return [`tensorish`]\cr
-#'   Has the given `shape` and the same data type as `operand`.
-#' @seealso [nv_broadcast_to()], [nv_broadcast_tensors()]
-#' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   nv_expand(x, shape = c(2, 3))
-#' })
-#' @export
-nv_expand <- nv_broadcast_to
-
-#' @title Flip
-#' @description
-#' Reverses the order of elements along specified dimensions.
-#' This is an alias for [nv_reverse()].
-#' @template param_operand
-#' @param dims (`integer()`)\cr
-#'   Dimensions to reverse.
-#' @return [`tensorish`]\cr
-#'   Has the same shape and data type as `operand`.
-#' @seealso [nv_reverse()]
-#' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3, 4, 5))
-#'   nv_flip(x, dims = 1L)
-#' })
-#' @export
-nv_flip <- nv_reverse
-
-#' @title Linspace
-#' @description
-#' Creates a 1-D tensor with `steps` evenly spaced values from `start` to `end`
-#' (inclusive), analogous to [seq()] with `length.out`.
-#' @param start (`numeric(1)`)\cr
-#'   Start value.
-#' @param end (`numeric(1)`)\cr
-#'   End value.
-#' @param steps (`integer(1)`)\cr
-#'   Number of values to generate. Must be at least 1.
-#' @param dtype (`character(1)`)\cr
-#'   Data type. Default `"f32"`.
-#' @return [`tensorish`]\cr
-#'   1-D tensor of length `steps`.
-#' @seealso [nv_seq()], [nv_iota()]
-#' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval(nv_linspace(0, 1, steps = 5L))
-#' @export
-nv_linspace <- function(start, end, steps, dtype = "f32") {
-  assert_int(steps, lower = 1L)
-  if (steps == 1L) {
-    return(nv_fill(start, 1L, dtype = dtype))
-  }
-  indices <- nv_iota(dim = 1L, shape = steps, dtype = dtype, start = 0L)
-  indices * ((end - start) / (steps - 1L)) + start
-}
-
 ## Linear algebra --------------------------------------------------------------
 
 #' @title Outer Product
@@ -1689,6 +1646,12 @@ nv_linspace <- function(start, end, steps, dtype = "f32") {
 #' })
 #' @export
 nv_outer <- function(x, y) {
+  if (ndims_abstract(x) != 1L) {
+    cli_abort("x must be a 1-D tensor")
+  }
+  if (ndims_abstract(y) != 1L) {
+    cli_abort("y must be a 1-D tensor")
+  }
   args <- nv_promote_to_common(x, y)
   x <- args[[1L]]
   y <- args[[2L]]
@@ -1713,6 +1676,9 @@ nv_outer <- function(x, y) {
 #' })
 #' @export
 nv_extract_diag <- function(x) {
+  if (ndims_abstract(x) != 2L) {
+    cli_abort("x must be a 2-D tensor")
+  }
   shp <- shape_abstract(x)
   n <- min(shp)
   idx <- nvl_reshape(nv_iota(dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
@@ -1768,6 +1734,10 @@ nv_trace <- function(x) {
 #' })
 #' @export
 nv_tril <- function(x, diagonal = 0L) {
+  if (ndims_abstract(x) != 2L) {
+    cli_abort("x must be a 2-D tensor")
+  }
+  assert_int(diagonal)
   shp <- shape_abstract(x)
   rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32")
   cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32")
@@ -1794,6 +1764,10 @@ nv_tril <- function(x, diagonal = 0L) {
 #' })
 #' @export
 nv_triu <- function(x, diagonal = 0L) {
+  if (ndims_abstract(x) != 2L) {
+    cli_abort("x must be a 2-D tensor")
+  }
+  assert_int(diagonal)
   shp <- shape_abstract(x)
   rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32")
   cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32")
@@ -1817,7 +1791,9 @@ nv_triu <- function(x, diagonal = 0L) {
 #' })
 #' @export
 nv_crossprod <- function(x, y = NULL) {
-  if (is.null(y)) y <- x
+  if (is.null(y)) {
+    y <- x
+  }
   nv_matmul(nv_transpose(x), y)
 }
 
@@ -1837,6 +1813,8 @@ nv_crossprod <- function(x, y = NULL) {
 #' })
 #' @export
 nv_tcrossprod <- function(x, y = NULL) {
-  if (is.null(y)) y <- x
+  if (is.null(y)) {
+    y <- x
+  }
   nv_matmul(x, nv_transpose(y))
 }

@@ -19,7 +19,7 @@ Number of trials.}
 \item{prob}{(\code{numeric(1)})\cr
 Probability of success on each trial.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link{TensorDataType}})\cr
 Data type.}
 }
 \value{

@@ -7,7 +7,7 @@
 debug_box(dtype, shape, ambiguous = FALSE)
 }
 \arguments{
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{dtype}{(\code{character(1)} | \code{\link{TensorDataType}})\cr
 Data type.}
 
 \item{shape}{(\code{integer()})\cr

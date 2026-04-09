@@ -69,7 +69,6 @@ reference:
       - nv_fill
       - nv_iota
       - nv_seq
-      - nv_linspace
       - nv_diag
       - nv_eye
 
@@ -116,10 +115,8 @@ reference:
       - nv_static_slice
       - nv_pad
       - nv_reverse
-      - nv_flip
       - nv_squeeze
       - nv_unsqueeze
-      - nv_expand
       - nv_subset
       - nv_subset_assign
 
