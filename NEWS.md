@@ -22,8 +22,7 @@
   * `nv_eye()` to create an identity matrix.
   * `nv_solve()` to solve a system of linear equations.
   * `nv_cholesky()` to compute the Cholesky decomposition of a matrix.
-* Improved semantics:
-  * `nvl_cholesky()` now zeros out the upper/lower triangle of the output.
+* New S3 methods `dim()`, `nrow()`, `ncol()`, and `length()` for anvil arrays.
 * Printing tensors via `nv_print()` now also works on GPUs.
 
 ## Performance

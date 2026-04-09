@@ -120,3 +120,40 @@ describe("[<-", {
     )
   })
 })
+
+describe("length", {
+  it("works with 1D array", {
+    expect_equal(length(nv_array(1:3)), 3L)
+  })
+  it("works with scalar", {
+    expect_equal(length(nv_scalar(0L)), 1L)
+  })
+  it("works with 2D array", {
+    expect_equal(length(nv_array(1L, shape = c(2L, 3L))), 6L)
+  })
+})
+
+describe("nrow", {
+  it("works with >= 2D array", {
+    expect_equal(nrow(nv_array(1:6, shape = c(3L, 2L))), 3L)
+  })
+  it("returns NULL for < 2D array", {
+    expect_equal(nrow(nv_array(1:2)), 2L)
+  })
+})
+
+describe("ncol", {
+  it("works with >= 2D array", {
+    expect_equal(ncol(nv_array(1:6, shape = c(3L, 2L))), 2L)
+  })
+  it("returns NULL for < 2D array", {
+    expect_true(is.na(ncol(nv_array(1L))))
+  })
+})
+
+describe("dim", {
+  it("returns shape", {
+    x <- nv_array(array(1:24, dim = c(2, 3, 4)))
+    expect_equal(dim(x), shape(x))
+  })
+})
