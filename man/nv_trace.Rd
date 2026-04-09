@@ -4,23 +4,23 @@
 \alias{nv_trace}
 \title{Matrix Trace}
 \usage{
-nv_trace(x)
+nv_trace(operand)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-A 2-D tensor (matrix).}
+\item{operand}{(\code{\link{arrayish}})\cr
+Operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
-A scalar tensor with the same data type as \code{x}.
+\code{\link{arrayish}}\cr
+A scalar with the same data type as \code{operand}.
 }
 \description{
-Computes the trace (sum of diagonal elements) of a 2-D tensor.
+Computes the trace (sum of diagonal elements) of a 2-D array.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))
+  x <- nv_array(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))
   nv_trace(x)
 })
 \dontshow{\}) # examplesIf}

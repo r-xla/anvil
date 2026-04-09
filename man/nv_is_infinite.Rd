@@ -12,6 +12,8 @@ nv_is_infinite(operand)
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
+
+\item{x}{(\code{\link{arrayish}})\cr Operand.}
 }
 \value{
 \code{\link{arrayish}}\cr
@@ -24,7 +26,7 @@ You can also use \code{is.infinite()}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, NaN, Inf, -Inf, 0))
+  x <- nv_array(c(1, NaN, Inf, -Inf, 0))
   nv_is_infinite(x)
 })
 \dontshow{\}) # examplesIf}

@@ -7,21 +7,21 @@
 nv_outer(x, y)
 }
 \arguments{
-\item{x, y}{(\code{\link{tensorish}})\cr
-1-D tensors.}
+\item{x, y}{(\code{\link{arrayish}})\cr
+1-D arrays.}
 }
 \value{
-\code{\link{tensorish}}\cr
-A 2-D tensor of shape \verb{(length(x), length(y))}.
+\code{\link{arrayish}}\cr
+A 2-D array of shape \verb{(length(x), length(y))}.
 }
 \description{
-Computes the outer product of two 1-D tensors.
+Computes the outer product of two 1-D arrays.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
-  y <- nv_tensor(c(4, 5))
+  x <- nv_array(c(1, 2, 3))
+  y <- nv_array(c(4, 5))
   nv_outer(x, y)
 })
 \dontshow{\}) # examplesIf}

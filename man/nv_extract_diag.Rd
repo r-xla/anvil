@@ -4,23 +4,23 @@
 \alias{nv_extract_diag}
 \title{Extract Diagonal}
 \usage{
-nv_extract_diag(x)
+nv_extract_diag(operand)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-A 2-D tensor (matrix).}
+\item{operand}{(\code{\link{arrayish}})\cr
+Operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
-A 1-D tensor of length \code{min(nrow, ncol)} containing the diagonal elements.
+\code{\link{arrayish}}\cr
+A 1-D array of length \code{min(nrow, ncol)} containing the diagonal elements.
 }
 \description{
-Extracts the diagonal elements from a 2-D tensor.
+Extracts the diagonal elements from a 2-D array.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(1:9, shape = c(3, 3))
+  x <- nv_array(1:9, shape = c(3, 3))
   nv_extract_diag(x)
 })
 \dontshow{\}) # examplesIf}

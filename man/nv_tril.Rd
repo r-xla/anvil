@@ -4,22 +4,22 @@
 \alias{nv_tril}
 \title{Lower Triangular Matrix}
 \usage{
-nv_tril(x, diagonal = 0L)
+nv_tril(operand, diagonal = 0L)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-A 2-D tensor (matrix).}
+\item{operand}{(\code{\link{arrayish}})\cr
+Operand.}
 
 \item{diagonal}{(\code{integer(1)})\cr
 Diagonal offset. \code{0} (default) is the main diagonal, positive values
 include diagonals above, negative values exclude diagonals below.}
 }
 \value{
-\code{\link{tensorish}}\cr
-Has the same shape and data type as \code{x}.
+\code{\link{arrayish}}\cr
+Has the same shape and data type as \code{operand}.
 }
 \description{
-Returns the lower triangular part of a 2-D tensor, setting elements above
+Returns the lower triangular part of a 2-D array, setting elements above
 the specified diagonal to zero.
 }
 \examples{

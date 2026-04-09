@@ -12,6 +12,8 @@ nv_is_finite(operand)
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
+
+\item{x}{(\code{\link{arrayish}})\cr Operand.}
 }
 \value{
 \code{\link{arrayish}}\cr

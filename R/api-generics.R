@@ -120,37 +120,40 @@ mean.AnvilBox <- function(x, ...) {
 mean.AnvilArray <- mean.AnvilBox
 
 #' @rdname nv_is_nan
+#' @param x ([`arrayish`])\cr Operand.
 #' @method is.nan AnvilBox
 #' @export
 is.nan.AnvilBox <- function(x) {
   nv_is_nan(x)
 }
 
-#' @method is.nan AnvilTensor
+#' @method is.nan AnvilArray
 #' @export
-is.nan.AnvilTensor <- is.nan.AnvilBox
+is.nan.AnvilArray <- is.nan.AnvilBox
 
 #' @rdname nv_is_infinite
+#' @param x ([`arrayish`])\cr Operand.
 #' @method is.infinite AnvilBox
 #' @export
 is.infinite.AnvilBox <- function(x) {
   nv_is_infinite(x)
 }
 
-#' @method is.infinite AnvilTensor
+#' @method is.infinite AnvilArray
 #' @export
-is.infinite.AnvilTensor <- is.infinite.AnvilBox
+is.infinite.AnvilArray <- is.infinite.AnvilBox
 
 #' @rdname nv_is_finite
+#' @param x ([`arrayish`])\cr Operand.
 #' @method is.finite AnvilBox
 #' @export
 is.finite.AnvilBox <- function(x) {
   nv_is_finite(x)
 }
 
-#' @method is.finite AnvilTensor
+#' @method is.finite AnvilArray
 #' @export
-is.finite.AnvilTensor <- is.finite.AnvilBox
+is.finite.AnvilArray <- is.finite.AnvilBox
 
 # if we don't give it the name nv_transpose, pkgdown thinks t.anvil is a package
 
@@ -207,9 +210,9 @@ crossprod.AnvilBox <- function(x, y = NULL, ...) {
   nv_crossprod(x, y)
 }
 
-#' @method crossprod AnvilTensor
+#' @method crossprod AnvilArray
 #' @export
-crossprod.AnvilTensor <- crossprod.AnvilBox
+crossprod.AnvilArray <- crossprod.AnvilBox
 
 #' @rdname nv_tcrossprod
 #' @method tcrossprod AnvilBox
@@ -218,6 +221,6 @@ tcrossprod.AnvilBox <- function(x, y = NULL, ...) {
   nv_tcrossprod(x, y)
 }
 
-#' @method tcrossprod AnvilTensor
+#' @method tcrossprod AnvilArray
 #' @export
-tcrossprod.AnvilTensor <- tcrossprod.AnvilBox
+tcrossprod.AnvilArray <- tcrossprod.AnvilBox

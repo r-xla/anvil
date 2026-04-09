@@ -35,7 +35,7 @@ Set \code{correction = 0} for population standard deviation.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3, 4, 5))
+  x <- nv_array(c(1, 2, 3, 4, 5))
   nv_sd(x, dims = 1L)
 })
 \dontshow{\}) # examplesIf}

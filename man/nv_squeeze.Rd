@@ -14,16 +14,16 @@ Operand.}
 Dimensions to squeeze. If \code{NULL} (default), all dimensions of size 1 are removed.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same data type as \code{operand} with the specified dimensions removed.
 }
 \description{
-Removes dimensions of size 1 from a tensor.
+Removes dimensions of size 1 from an array.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(1:6, shape = c(1, 6, 1))
+  x <- nv_array(1:6, shape = c(1, 6, 1))
   nv_squeeze(x)
 })
 \dontshow{\}) # examplesIf}

@@ -10,14 +10,16 @@ nv_tcrossprod(x, y = NULL)
 \method{tcrossprod}{AnvilBox}(x, y = NULL, ...)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-A tensor with at least 2 dimensions.}
+\item{x}{(\code{\link{arrayish}})\cr
+An array with at least 2 dimensions.}
 
-\item{y}{(\code{\link{tensorish}} | \code{NULL})\cr
-Optional second tensor. If \code{NULL}, uses \code{x}.}
+\item{y}{(\code{\link{arrayish}} | \code{NULL})\cr
+Optional second array. If \code{NULL}, uses \code{x}.}
+
+\item{...}{Unused.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{arrayish}}
 }
 \description{
 Computes \code{x \%*\% t(y)}. If \code{y} is missing, computes \code{x \%*\% t(x)}.
@@ -25,7 +27,7 @@ Computes \code{x \%*\% t(y)}. If \code{y} is missing, computes \code{x \%*\% t(x
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(matrix(1:6, nrow = 2), dtype = "f32")
+  x <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
   nv_tcrossprod(x)
 })
 \dontshow{\}) # examplesIf}

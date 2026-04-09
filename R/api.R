@@ -1071,6 +1071,9 @@ nv_iota <- nvl_iota
 #' @template param_ambiguous
 #' @return [`arrayish`]\cr
 #'   1-D array of length `end - start + 1`.
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval(nv_seq(3, 7))
+#' @export
 nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE) {
   if (is.null(steps)) {
     dtype <- dtype %||% "i32"
@@ -1456,7 +1459,7 @@ nv_while <- nvl_while
 #' @seealso [nv_log()], [nv_log10()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 4, 8))
+#'   x <- nv_array(c(1, 2, 4, 8))
 #'   nv_log2(x)
 #' })
 #' @export
@@ -1472,7 +1475,7 @@ nv_log2 <- function(operand) {
 #' @seealso [nv_log()], [nv_log2()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 10, 100, 1000))
+#'   x <- nv_array(c(1, 10, 100, 1000))
 #'   nv_log10(x)
 #' })
 #' @export
@@ -1488,7 +1491,7 @@ nv_log10 <- function(operand) {
 #' @seealso [nv_is_finite()], [nv_is_infinite()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, NaN, Inf, -Inf, 0))
+#'   x <- nv_array(c(1, NaN, Inf, -Inf, 0))
 #'   nv_is_nan(x)
 #' })
 #' @export
@@ -1505,7 +1508,7 @@ nv_is_nan <- function(operand) {
 #' @seealso [nv_is_finite()], [nv_is_nan()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, NaN, Inf, -Inf, 0))
+#'   x <- nv_array(c(1, NaN, Inf, -Inf, 0))
 #'   nv_is_infinite(x)
 #' })
 #' @export
@@ -1529,7 +1532,7 @@ nv_is_infinite <- function(operand) {
 #' @seealso [nv_sd()], [nv_reduce_mean()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3, 4, 5))
+#'   x <- nv_array(c(1, 2, 3, 4, 5))
 #'   nv_var(x, dims = 1L)
 #' })
 #' @export
@@ -1558,7 +1561,7 @@ nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
 #' @seealso [nv_var()], [nv_reduce_mean()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3, 4, 5))
+#'   x <- nv_array(c(1, 2, 3, 4, 5))
 #'   nv_sd(x, dims = 1L)
 #' })
 #' @export
@@ -1579,7 +1582,7 @@ nv_sd <- function(operand, dims, drop = TRUE, correction = 1L) {
 #' @seealso [nv_unsqueeze()], [nv_reshape()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(1:6, shape = c(1, 6, 1))
+#'   x <- nv_array(1:6, shape = c(1, 6, 1))
 #'   nv_squeeze(x)
 #' })
 #' @export
@@ -1613,7 +1616,7 @@ nv_squeeze <- function(operand, dims = NULL) {
 #' @seealso [nv_squeeze()], [nv_reshape()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
+#'   x <- nv_array(c(1, 2, 3))
 #'   nv_unsqueeze(x, dim = 1L)
 #' })
 #' @export
@@ -1635,8 +1638,8 @@ nv_unsqueeze <- function(operand, dim) {
 #'   A 2-D array of shape `(length(x), length(y))`.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(4, 5))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(4, 5))
 #'   nv_outer(x, y)
 #' })
 #' @export
@@ -1652,34 +1655,33 @@ nv_outer <- function(x, y) {
   y <- args[[2L]]
   x_exp <- nv_unsqueeze(x, dim = 2L)
   y_exp <- nv_unsqueeze(y, dim = 1L)
-  bcast <- nv_broadcast_tensors(x_exp, y_exp)
+  bcast <- nv_broadcast_arrays(x_exp, y_exp)
   nvl_mul(bcast[[1L]], bcast[[2L]])
 }
 
 #' @title Extract Diagonal
 #' @description
 #' Extracts the diagonal elements from a 2-D array.
-#' @param x ([`arrayish`])\cr
-#'   A 2-D array (matrix).
+#' @template param_operand
 #' @return [`arrayish`]\cr
 #'   A 1-D array of length `min(nrow, ncol)` containing the diagonal elements.
 #' @seealso [nv_diag()] for creating a diagonal matrix, [nv_trace()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(1:9, shape = c(3, 3))
+#'   x <- nv_array(1:9, shape = c(3, 3))
 #'   nv_extract_diag(x)
 #' })
 #' @export
-nv_extract_diag <- function(x) {
-  if (ndims_abstract(x) != 2L) {
-    cli_abort("x must be a 2-D array")
+nv_extract_diag <- function(operand) {
+  if (ndims_abstract(operand) != 2L) {
+    cli_abort("operand must be a 2-D array")
   }
-  shp <- shape_abstract(x)
+  shp <- shape_abstract(operand)
   n <- min(shp)
   idx <- nvl_reshape(nv_iota(dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
   indices <- nv_concatenate(idx, idx, dimension = 2L)
   nvl_gather(
-    x,
+    operand,
     start_indices = indices,
     offset_dims = integer(0),
     collapsed_slice_dims = c(1L, 2L),
@@ -1694,19 +1696,18 @@ nv_extract_diag <- function(x) {
 #' @title Matrix Trace
 #' @description
 #' Computes the trace (sum of diagonal elements) of a 2-D array.
-#' @param x ([`arrayish`])\cr
-#'   A 2-D array (matrix).
+#' @template param_operand
 #' @return [`arrayish`]\cr
-#'   A scalar with the same data type as `x`.
+#'   A scalar with the same data type as `operand`.
 #' @seealso [nv_extract_diag()], [nv_diag()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))
+#'   x <- nv_array(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))
 #'   nv_trace(x)
 #' })
 #' @export
-nv_trace <- function(x) {
-  diag_vals <- nv_extract_diag(x)
+nv_trace <- function(operand) {
+  diag_vals <- nv_extract_diag(operand)
   nv_reduce_sum(diag_vals, dims = 1L, drop = TRUE)
 }
 
@@ -1714,13 +1715,12 @@ nv_trace <- function(x) {
 #' @description
 #' Returns the lower triangular part of a 2-D array, setting elements above
 #' the specified diagonal to zero.
-#' @param x ([`arrayish`])\cr
-#'   A 2-D array (matrix).
+#' @template param_operand
 #' @param diagonal (`integer(1)`)\cr
 #'   Diagonal offset. `0` (default) is the main diagonal, positive values
 #'   include diagonals above, negative values exclude diagonals below.
 #' @return [`arrayish`]\cr
-#'   Has the same shape and data type as `x`.
+#'   Has the same shape and data type as `operand`.
 #' @seealso [nv_triu()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
@@ -1728,29 +1728,28 @@ nv_trace <- function(x) {
 #'   nv_tril(x)
 #' })
 #' @export
-nv_tril <- function(x, diagonal = 0L) {
-  if (ndims_abstract(x) != 2L) {
-    cli_abort("x must be a 2-D array")
+nv_tril <- function(operand, diagonal = 0L) {
+  if (ndims_abstract(operand) != 2L) {
+    cli_abort("operand must be a 2-D array")
   }
   assert_int(diagonal)
-  shp <- shape_abstract(x)
+  shp <- shape_abstract(operand)
   rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32")
   cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32")
   mask <- rows >= cols - as.integer(diagonal)
-  nv_ifelse(mask, x, nv_fill(0, shp, dtype = dtype_abstract(x)))
+  nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand)))
 }
 
 #' @title Upper Triangular Matrix
 #' @description
 #' Returns the upper triangular part of a 2-D array, setting elements below
 #' the specified diagonal to zero.
-#' @param x ([`arrayish`])\cr
-#'   A 2-D array (matrix).
+#' @template param_operand
 #' @param diagonal (`integer(1)`)\cr
 #'   Diagonal offset. `0` (default) is the main diagonal, positive values
 #'   exclude diagonals above, negative values include diagonals below.
 #' @return [`arrayish`]\cr
-#'   Has the same shape and data type as `x`.
+#'   Has the same shape and data type as `operand`.
 #' @seealso [nv_tril()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
@@ -1758,16 +1757,16 @@ nv_tril <- function(x, diagonal = 0L) {
 #'   nv_triu(x)
 #' })
 #' @export
-nv_triu <- function(x, diagonal = 0L) {
-  if (ndims_abstract(x) != 2L) {
-    cli_abort("x must be a 2-D array")
+nv_triu <- function(operand, diagonal = 0L) {
+  if (ndims_abstract(operand) != 2L) {
+    cli_abort("operand must be a 2-D array")
   }
   assert_int(diagonal)
-  shp <- shape_abstract(x)
+  shp <- shape_abstract(operand)
   rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32")
   cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32")
   mask <- rows <= cols - as.integer(diagonal)
-  nv_ifelse(mask, x, nv_fill(0, shp, dtype = dtype_abstract(x)))
+  nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand)))
 }
 
 #' @title Cross Product (Matrix)
@@ -1777,11 +1776,12 @@ nv_triu <- function(x, diagonal = 0L) {
 #'   An array with at least 2 dimensions.
 #' @param y ([`arrayish`] | `NULL`)\cr
 #'   Optional second array. If `NULL`, uses `x`.
+#' @param ... Unused.
 #' @return [`arrayish`]
 #' @seealso [nv_tcrossprod()], [nv_matmul()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 3), dtype = "f32")
+#'   x <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
 #'   nv_crossprod(x)
 #' })
 #' @export
@@ -1799,11 +1799,12 @@ nv_crossprod <- function(x, y = NULL) {
 #'   An array with at least 2 dimensions.
 #' @param y ([`arrayish`] | `NULL`)\cr
 #'   Optional second array. If `NULL`, uses `x`.
+#' @param ... Unused.
 #' @return [`arrayish`]
 #' @seealso [nv_crossprod()], [nv_matmul()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2), dtype = "f32")
+#'   x <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
 #'   nv_tcrossprod(x)
 #' })
 #' @export
