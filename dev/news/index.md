@@ -19,7 +19,10 @@
 - An experimental [{quickr}](https://github.com/t-kalinowski/quickr)
   backend is now available. It only runs on CPU for now and supports a
   subset of available operations. You can enable it globally via the
-  `anvil.backend` option.
+  `backend` argument in
+  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) and
+  [`nv_array()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  or via the `anvil.default_backend` option.
 - New primitives:
   - [`nvl_cholesky()`](https://r-xla.github.io/anvil/dev/reference/nvl_cholesky.md)
     to compute the Cholesky decomposition of a matrix.
@@ -60,17 +63,11 @@
 
 - New vignette on implementing Gaussian Processes.
 - New vignette on implementing Metropolis-Hastings sampling.
-- A installation guide was added.
+- An installation guide was added.
 
-### Platform Support
+### Miscellaneous
 
 - Linux on ARM is now supported (CPU only).
-
-### Other
-
-- To construct booleans, we now support
-  `pjrt_buffer(..., dtype = "bool")`. Also `bool` is used in the printer
-  (instead of `i1`).
 - To use the CUDA backend, it is now possible to install the `cuda12.8`
   package (see installation guide), which only requires a compatible
   CUDA driver.
