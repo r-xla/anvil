@@ -4,14 +4,18 @@
 \alias{nv_seq}
 \title{Sequence}
 \usage{
-nv_seq(start, end, dtype = "i32", ambiguous = FALSE)
+nv_seq(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE)
 }
 \arguments{
-\item{start, end}{(\code{integer(1)})\cr
-Start and end values. Must satisfy \code{start <= end}.}
+\item{start, end}{(\code{numeric(1)})\cr
+Start and end values. When \code{steps} is \code{NULL}, must satisfy \code{start <= end}.}
 
-\item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
-Data type.}
+\item{steps}{(\code{integer(1)} or \code{NULL})\cr
+Number of evenly spaced values to generate. Must be at least 1.
+When \code{NULL} (default), generates consecutive integer values from \code{start} to \code{end}.}
+
+\item{dtype}{(\code{character(1)})\cr
+Data type. Default \code{"i32"} when \code{steps} is \code{NULL}, \code{"f32"} when \code{steps} is given.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.
@@ -23,14 +27,13 @@ See the \code{vignette("type-promotion")} for more details.}
 1-D array of length \code{end - start + 1}.
 }
 \description{
-Creates a 1-D array with integer values from \code{start} to \code{end} (inclusive),
-analogous to R's \code{seq(start, end)}.
+Creates a 1-D array with values from \code{start} to \code{end} (inclusive).
+
+Without \code{steps}, behaves like R's \code{seq(start, end)} producing integer values.
+With \code{steps}, produces \code{steps} evenly spaced values (like \code{seq(start, end, length.out = steps)}).
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval(nv_seq(3, 7))
 \dontshow{\}) # examplesIf}
-}
-\seealso{
-\code{\link[=nv_iota]{nv_iota()}} for multi-dimensional sequences.
 }

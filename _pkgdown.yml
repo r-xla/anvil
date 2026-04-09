@@ -81,6 +81,8 @@ reference:
       - nv_static_slice
       - nv_pad
       - nv_reverse
+      - nv_squeeze
+      - nv_unsqueeze
       - nv_subset
       - nv_subset_assign
 
@@ -116,6 +118,8 @@ reference:
       - nv_expm1
       - nv_log
       - nv_log1p
+      - nv_log2
+      - nv_log10
       - nv_sine
       - nv_cosine
       - nv_tan
@@ -127,6 +131,8 @@ reference:
       - nv_round
       - nv_logistic
       - nv_is_finite
+      - nv_is_nan
+      - nv_is_infinite
 
   - subtitle: Reduction Operations
     desc: Operations that reduce array dimensions
@@ -138,6 +144,8 @@ reference:
       - nv_reduce_min
       - nv_reduce_any
       - nv_reduce_all
+      - nv_var
+      - nv_sd
 
   - subtitle: Linear Algebra
     desc: Linear algebra operations
@@ -145,6 +153,13 @@ reference:
       - nv_matmul
       - nv_cholesky
       - nv_solve
+      - nv_crossprod
+      - nv_tcrossprod
+      - nv_outer
+      - nv_trace
+      - nv_extract_diag
+      - nv_tril
+      - nv_triu
 
   - subtitle: Logical and Bitwise Operations
     desc: Logical and bitwise operations on arrays
