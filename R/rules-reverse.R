@@ -1054,3 +1054,5 @@ p_triangular_solve[["reverse"]] <- function(
 
   list(grad_a, grad_b)
 }
+
+p_qr[["reverse"]] <- rule_not_yet_implemented("qr", "reverse")

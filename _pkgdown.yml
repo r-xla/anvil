@@ -152,6 +152,7 @@ reference:
     contents:
       - nv_matmul
       - nv_cholesky
+      - nv_qr
       - nv_solve
       - nv_crossprod
       - nv_tcrossprod

@@ -501,3 +501,32 @@ p_triangular_solve[["stablehlo"]] <- function(a, b, left_side, lower, unit_diago
     transpose_a = transpose_a
   ))
 }
+
+# Column-major layout for a tensor with `ndim` dimensions (minor-to-major).
+# For 2D: c(0L, 1L) means dim 0 varies fastest = Fortran/LAPACK order.
+col_major_layout <- function(ndim) {
+  as.integer(seq.int(0L, ndim - 1L))
+}
+
+p_qr[["stablehlo"]] <- function(operand) {
+  vt <- operand$value_type
+  tt <- vt$type
+  dt <- tt$dtype
+  dims <- as.integer(tt$shape$dims)
+  m <- dims[1L]
+  n <- dims[2L]
+  k <- min(m, n)
+
+  q_type <- stablehlo::ValueType(stablehlo::TensorType(dt, Shape(c(m, k))))
+  r_type <- stablehlo::ValueType(stablehlo::TensorType(dt, Shape(c(k, n))))
+
+  stablehlo::hlo_custom_call(
+    operand,
+    call_target_name = "anvil_qr",
+    api_version = 4L,
+    has_side_effect = FALSE,
+    output_types = list(q_type, r_type),
+    operand_layouts = list(col_major_layout(2L)),
+    result_layouts = list(col_major_layout(2L), col_major_layout(2L))
+  )
+}

@@ -1,3 +1,13 @@
+rule_not_yet_implemented <- function(primitive_name, rule_name) {
+  f <- function(...) {
+    cli_abort(c(
+      "The {.field {rule_name}} rule for primitive {.field {primitive_name}} is not yet implemented.",
+      "i" = "Contributions are welcome! See {.vignette [Adding a New Primitive](anvil::new_primitive)} or open an issue at {.url https://github.com/r-xla/anvil/issues}."
+    ))
+  }
+  structure(f, class = "rule_not_yet_implemented")
+}
+
 dtype_from_buffer <- function(x) {
   d <- as.character(dtype(x))
   as_dtype(d)

@@ -29,7 +29,8 @@ test_that("reverse rule is tested", {
 
   primitive_names <- Filter(
     function(nm) {
-      !is.null(getFromNamespace(nm, "anvil")$rules[["reverse"]])
+      rule <- getFromNamespace(nm, "anvil")$rules[["reverse"]]
+      !is.null(rule) && !inherits(rule, "rule_not_yet_implemented")
     },
     primitive_names
   )

@@ -1240,6 +1240,33 @@ nv_solve <- function(a, b) {
   nvl_triangular_solve(L, y, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
 }
 
+#' @title QR Decomposition
+#' @description
+#' Computes the reduced QR decomposition of a matrix.
+#' Factors a matrix `a` of shape `(m, n)` into an orthogonal matrix `Q`
+#' of shape `(m, k)` and an upper triangular matrix `R` of shape `(k, n)`,
+#' where `k = min(m, n)`, such that `a = Q %*% R`.
+#'
+#' Uses a LAPACK-based custom call via the XLA FFI.
+#' @param a ([`arrayish`])\cr
+#'   Matrix of data type floating-point with exactly 2 dimensions.
+#' @return Named `list` with elements `Q` and `R`:\cr
+#'   `Q` has shape `(m, k)` and `R` has shape `(k, n)`, where `k = min(m, n)`.
+#'   Both have the same data type as the input.
+#' @seealso [nvl_qr()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_array(matrix(c(1, 2, 3, 4, 5, 6), nrow = 3), dtype = "f32")
+#'   result <- nv_qr(x)
+#'   result$Q
+#'   result$R
+#' })
+#' @export
+nv_qr <- function(a) {
+  qr <- nvl_qr(a)
+  list(Q = qr[[1L]], R = qr[[2L]])
+}
+
 #' @title Diagonal Matrix
 #' @description
 #' Creates a diagonal matrix from a 1-D array.

@@ -41,4 +41,11 @@ register_s3_method <- function(pkg, generic, class, fun = NULL) {
 
   # Register compare_proxy for waldo/testthat
   register_s3_method("waldo", "compare_proxy", "AnvilArray")
+
+  # Register FFI handlers with PJRT
+  pjrt::pjrt_register_custom_call(
+    "anvil_qr",
+    list(host = get_qr_handler()),
+    .package = "anvil"
+  )
 }

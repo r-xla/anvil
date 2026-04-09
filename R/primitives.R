@@ -2625,3 +2625,47 @@ nvl_triangular_solve <- function(a, b, left_side, lower, unit_diagonal, transpos
     infer_fn = infer_fn
   )[[1L]]
 }
+
+p_qr <- AnvilPrimitive("qr")
+#' @title Primitive QR Decomposition
+#' @description
+#' Computes the reduced QR decomposition of a matrix.
+#' Factors a matrix `operand` of shape `(m, n)` into an orthogonal matrix `Q`
+#' of shape `(m, k)` and an upper triangular matrix `R` of shape `(k, n)`,
+#' where `k = min(m, n)`, such that `operand = Q %*% R`.
+#' @param operand ([`arrayish`])\cr
+#'   Matrix of data type floating-point with exactly 2 dimensions.
+#' @return `list` of two [`arrayish`] values:\cr
+#'   The first element is `Q` with shape `(m, k)` and the second element is
+#'   `R` with shape `(k, n)`, where `k = min(m, n)`. Both have the same
+#'   data type as the input.
+#' @templateVar primitive_id qr
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_custom_call()] with target `"anvil_qr"`.
+#' @seealso [nv_qr()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_array(matrix(1:6, nrow = 3, ncol = 2), dtype = "f32")
+#'   nvl_qr(x)
+#' })
+#' @export
+nvl_qr <- function(operand) {
+  infer_fn <- function(operand) {
+    dt <- dtype(operand)
+    s <- as.integer(shape(operand))
+    m <- s[1L]
+    n <- s[2L]
+    k <- min(m, n)
+    list(
+      AbstractArray(dtype = dt, shape = Shape(c(m, k))),
+      AbstractArray(dtype = dt, shape = Shape(c(k, n)))
+    )
+  }
+  graph_desc_add(
+    p_qr,
+    list(operand = operand),
+    params = list(),
+    infer_fn = infer_fn
+  )
+}

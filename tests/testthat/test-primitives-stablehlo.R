@@ -604,6 +604,57 @@ test_that("p_print", {
   expect_equal(x, out)
 })
 
+test_that("p_qr", {
+  # 3x2 matrix (m > n)
+  A <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 3)
+  result <- jit_eval({
+    x <- nv_array(A, dtype = "f32")
+    nvl_qr(x)
+  })
+  Q <- as_array(result[[1L]])
+  R <- as_array(result[[2L]])
+
+  expect_equal(dim(Q), c(3L, 2L))
+  expect_equal(dim(R), c(2L, 2L))
+
+  # Q %*% R reconstructs original
+  expect_equal(Q %*% R, A, tolerance = 1e-5)
+
+  # Q is orthonormal: Q^T Q = I
+  expect_equal(t(Q) %*% Q, diag(2), tolerance = 1e-5)
+
+  # R is upper triangular
+  expect_equal(R[2, 1], 0, tolerance = 1e-7)
+})
+
+test_that("p_qr f64", {
+  A <- matrix(c(12, -51, 4, 6, 167, -68, -4, 24, -41), nrow = 3)
+  result <- jit_eval({
+    x <- nv_array(A, dtype = "f64")
+    nvl_qr(x)
+  })
+  Q <- as_array(result[[1L]])
+  R <- as_array(result[[2L]])
+
+  expect_equal(Q %*% R, A, tolerance = 1e-12)
+  expect_equal(t(Q) %*% Q, diag(3), tolerance = 1e-12)
+})
+
+test_that("p_qr wide matrix (m < n)", {
+  A <- matrix(1:6, nrow = 2, ncol = 3)
+  result <- jit_eval({
+    x <- nv_array(A, dtype = "f32")
+    nvl_qr(x)
+  })
+  Q <- as_array(result[[1L]])
+  R <- as_array(result[[2L]])
+
+  expect_equal(dim(Q), c(2L, 2L))
+  expect_equal(dim(R), c(2L, 3L))
+  expect_equal(Q %*% R, A, tolerance = 1e-5)
+  expect_equal(t(Q) %*% Q, diag(2), tolerance = 1e-5)
+})
+
 # we don't want to include torch in Suggests just for the tests, as it's a relatively
 # heavy dependency
 # We have a CI job that installs torch, so it's at least tested once
