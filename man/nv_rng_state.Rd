@@ -7,8 +7,8 @@
 nv_rng_state(seed)
 }
 \arguments{
-\item{seed}{(\code{integer(1)})\cr
-Seed value.}
+\item{seed}{(\code{\link{arrayish}})\cr
+Scalar \code{i32} seed value.}
 }
 \value{
 \code{\link{nv_array}} of dtype \code{ui64} and shape \code{(2)}.

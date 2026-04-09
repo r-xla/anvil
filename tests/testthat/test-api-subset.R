@@ -255,6 +255,16 @@ describe("nv_subset and nv_subset_assign", {
     expect_error(jit_eval(x[list(0, 5)]), "out of bounds")
   })
 
+  it("works with all-static indices via [", {
+    r_arr <- array(1:24, dim = c(2, 3, 4))
+    x <- nv_array(r_arr)
+    result <- jit(function(x) x[2L, 1L, 3L])(x)
+    expect_equal(as_array(result), r_arr[2, 1, 3])
+
+    result2 <- jit(function(x) x[list(1, 1), list(2, 3), list(2, 1)])(x)
+    expect_equal(as_array(result2), r_arr[c(1, 1), c(2, 3), c(2, 1)])
+  })
+
   it("works with nv_arrays just like with R indices", {
     x <- jit_eval({
       x <- nv_array(1:24, shape = c(2, 3, 4))

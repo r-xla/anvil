@@ -5,9 +5,6 @@
 #' skip recompilation. Unlike [`xla()`], the compiled executable is not created
 #' eagerly but lazily on the first invocation.
 #'
-#' The compilation backend is determined by the global `anvil.backend` option,
-#' which defaults to `"xla"`. Use `with_backend()` to temporarily override it.
-#'
 #' @param f (`function`)\cr
 #'   Function to compile. Must accept and return [`AnvilArray`]s (and/or
 #'   static arguments).
@@ -24,12 +21,14 @@
 #'   An argument cannot appear in both `donate` and `static`.
 #' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
 #'   The device to use if it cannot be inferred from the inputs or constants.
-#'   Defaults to `"cpu"`. Only supported for the `"xla"` backend.
+#'   Defaults to `"cpu"`. Only supported for `backend = "xla"`.
+#' @param backend (`character(1)`)\cr
+#'   Compilation backend. `"xla"` (default) uses PJRT/XLA.
+#'   `"quickr"` uses `quickr::quick()`. If omitted, the default comes from
+#'   `default_backend()`.
 #' @return A `JitFunction` with the same formals as `f`.
-#'   For the `"xla"` backend, the returned wrapper expects and returns
-#'   [`AnvilArray`] values. For the `"quickr"` backend, the returned wrapper
-#'   expects plain R numeric/integer/logical scalars, vectors, and arrays and
-#'   returns plain R values.
+#'   The returned wrapper expects [`AnvilArray`] inputs and returns
+#'   [`AnvilArray`] values.
 #' @seealso [`xla()`] for ahead-of-time compilation, [`jit_eval()`] for evaluating an expression once.
 #' @return (`function`)
 #' @export
@@ -43,25 +42,33 @@
 #' }, static = "flag")
 #' g(nv_array(3), TRUE)
 #' g(nv_array(3), FALSE)
+#'
+#' @examplesIf requireNamespace("quickr", quietly = TRUE)
+#' local_backend("quickr")
+#' h <- jit(function(x, y) x + y)
+#' h(nv_array(1), nv_array(2))
 jit <- function(
   f,
   static = character(),
   cache_size = 100L,
   donate = character(),
-  device = NULL
+  device = NULL,
+  backend = default_backend()
 ) {
   cache <- xlamisc::LRUCache$new(cache_size)
-  backend <- globals$backend
+  backend <- assert_backend(backend)
   jit_validate_args(f, static, donate, device, backend)
 
-  f_jit <- if (backend == "xla") {
-    jit_xla_impl(f, static, cache, donate, device)
-  } else {
-    jit_quickr_impl(f, static, cache)
-  }
+  f_jit <- globals$backends[[backend]]$jit(f, static, cache, donate, device)
   formals(f_jit) <- formals2(f)
   class(f_jit) <- "JitFunction"
+  attr(f_jit, "backend") <- backend
   f_jit
+}
+
+#' @export
+backend.JitFunction <- function(x, ...) {
+  attr(x, "backend")
 }
 
 jit_validate_args <- function(f, static, donate, device, backend) {
@@ -109,35 +116,44 @@ jit_prepare_call <- function(call, eval_env, static) {
 }
 
 jit_xla_inputs <- function(args_flat, is_static_flat, device) {
-  platforms <- character()
+  device_strs <- character()
+  first_device <- NULL
   avals_in <- Map(
     function(x, is_static) {
       if (is_static) {
         return(x)
       }
-      if (is_anvil_array(x)) {
-        platforms <<- c(platforms, platform(x))
-        return(nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x)))
+      if (!is_anvil_array(x)) {
+        cli_abort("Expected AnvilArray, but got {.cls {class(x)[1]}}")
       }
-      cli_abort("Expected AnvilArray, but got {.cls {class(x)[1]}}")
+      if (backend(x) != "xla") {
+        cli_abort("Expected {.val xla} backend, but got {.val {backend(x)}} backend.")
+      }
+      dev <- device(x)
+      device_strs <<- c(device_strs, as.character(dev))
+      if (is.null(first_device)) {
+        first_device <<- dev
+      }
+      nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x))
     },
     args_flat,
     is_static_flat
   )
 
-  if (length(unique(platforms)) > 1) {
-    cli_abort("Inputs live on different platforms: {.val {unique(platforms)}}.")
+  unique_strs <- unique(device_strs)
+  if (length(unique_strs) > 1) {
+    cli_abort("Inputs live on different devices: {.val {unique_strs}}.")
   }
 
-  platform <- if (length(platforms) > 0) {
-    platforms[1]
+  inferred_device <- if (!is.null(first_device)) {
+    first_device
   } else if (!is.null(device)) {
     device
   } else {
     NULL
   }
 
-  list(avals_in = avals_in, platform = platform)
+  list(avals_in = avals_in, device = inferred_device)
 }
 
 jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat, ambiguous_out = NULL) {
@@ -151,9 +167,9 @@ jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat,
     simplify = FALSE
   )
   if (!is.null(ambiguous_out)) {
-    out_vals <- Map(function(val, amb) nv_array(val, ambiguous = amb), out_vals, ambiguous_out)
+    out_vals <- Map(function(val, amb) nv_array(val, ambiguous = amb, backend = "xla"), out_vals, ambiguous_out)
   } else {
-    out_vals <- lapply(out_vals, nv_array)
+    out_vals <- lapply(out_vals, nv_array, backend = "xla")
   }
   unflatten(out_node, out_vals)
 }
@@ -168,7 +184,8 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
     prep <- jit_prepare_call(match.call(), parent.frame(), static)
     inputs <- jit_xla_inputs(prep$args_flat, prep$is_static_flat, device)
 
-    cache_key <- list(prep$in_tree, inputs$avals_in, inputs$platform)
+    device_key <- if (!is.null(inputs$device)) as.character(inputs$device) else NULL
+    cache_key <- list(prep$in_tree, inputs$avals_in, device_key)
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
       return(jit_call_xla(
@@ -186,7 +203,7 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
       args_flat = inputs$avals_in,
       in_tree = prep$in_tree,
       donate = donate,
-      device = inputs$platform
+      device = inputs$device
     )
     cache$set(
       cache_key,
@@ -204,32 +221,14 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
   }
 }
 
-quickr_jit_shape <- function(x) {
-  dims <- dim(x)
-  if (!is.null(dims)) {
-    return(as.integer(dims))
-  }
-  if (length(x) == 1L) {
-    return(integer())
-  }
-  as.integer(length(x))
-}
-
 quickr_jit_aval <- function(x) {
-  if (!is.numeric(x) && !is.logical(x)) {
-    cli_abort(
-      "{.val quickr} backend expects plain R numeric, integer, or logical inputs, got {.cls {class(x)[1]}}."
-    )
+  if (!is_anvil_array(x)) {
+    cli_abort("Expected AnvilArray, but got {.cls {class(x)[1]}}")
   }
-
-  dt <- if (is.double(x)) {
-    FloatType(64)
-  } else if (is.integer(x)) {
-    IntegerType(32)
-  } else {
-    BooleanType()
+  if (backend(x) != "quickr") {
+    cli_abort("Expected {.val quickr} backend, but got {.val {backend(x)}} backend.")
   }
-  nv_abstract(dt, quickr_jit_shape(x), ambiguous = FALSE)
+  nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x))
 }
 
 jit_quickr_inputs <- function(args_flat, is_static_flat) {
@@ -244,7 +243,7 @@ jit_quickr_inputs <- function(args_flat, is_static_flat) {
     is_static_flat
   )
 
-  list(avals_in = avals_in, platform = NULL)
+  list(avals_in = avals_in, device = NULL)
 }
 
 jit_quickr_impl <- function(f, static, cache) {
@@ -257,15 +256,18 @@ jit_quickr_impl <- function(f, static, cache) {
     prep <- jit_prepare_call(match.call(), parent.frame(), static)
     inputs <- jit_quickr_inputs(prep$args_flat, prep$is_static_flat)
 
-    cache_key <- list(prep$in_tree, inputs$avals_in, inputs$platform)
+    cache_key <- list(prep$in_tree, inputs$avals_in, inputs$device)
+    r_args <- lapply(unname(prep$args), function(a) {
+      if (is_anvil_array(a)) as_array(a) else a
+    })
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
-      return(do.call(cache_hit[[1]], unname(prep$args)))
+      return(do.call(cache_hit[[1]], r_args))
     }
 
     compiled <- compile_to_quickr(f, args_flat = inputs$avals_in, in_tree = prep$in_tree)
     cache$set(cache_key, list(compiled$fun))
-    do.call(compiled$fun, unname(prep$args))
+    do.call(compiled$fun, r_args)
   }
 }
 
@@ -291,7 +293,7 @@ jit_quickr_impl <- function(f, static, cache) {
 #'   - `ambiguous_out`: Logical vector indicating which outputs are ambiguous (`NULL` if none are).
 #' @keywords internal
 compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device = NULL) {
-  desc <- local_descriptor(backend = "xla")
+  desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
 
   # FIXME: This should also respect the devices of args_flat
@@ -327,7 +329,12 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
     if (!is_concrete_tensor(const$aval)) {
       cli_abort("Internal error: Not all constants are concrete arrays")
     }
-    unwrap_if_array(const$aval$data)
+    arr <- const$aval$data
+    if (backend(arr) == "plain") {
+      pjrt_buffer(as_array(arr), dtype = as.character(dtype(arr)), device = device, shape = shape(arr))
+    } else {
+      unwrap_if_array(arr)
+    }
   })
 
   out_tree <- graph$out_tree
@@ -345,7 +352,7 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
 }
 
 compile_to_quickr <- function(f, args_flat, in_tree) {
-  desc <- local_descriptor(backend = "quickr")
+  desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
   list(fun = graph_to_quickr_function(graph))
 }

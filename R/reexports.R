@@ -175,6 +175,24 @@ NULL
 #' @export
 tengen::as_dtype
 
+#' @title Create a Shape object
+#'
+#' @description Constructs a `Shape` representing array dimensions.
+#'
+#' @param dims An `integer()` vector of dimension sizes (>= 0).
+#' @returns A `Shape` object.
+#' @seealso [shape()], [stablehlo::Shape()]
+#' @name Shape
+#' @rdname Shape-constructor
+#' @examples
+#' Shape(c(2L, 3L))
+NULL
+
+#' @rdname Shape-constructor
+#' @importFrom stablehlo Shape
+#' @export
+stablehlo::Shape
+
 #' @title Get the platform of an array or buffer
 #'
 #' @description
@@ -199,21 +217,3 @@ NULL
 #' @importFrom pjrt platform
 #' @export
 pjrt::platform
-
-#' @title Create a Shape object
-#'
-#' @description Constructs a `Shape` representing array dimensions.
-#'
-#' @param dims An `integer()` vector of dimension sizes (>= 0).
-#' @returns A `Shape` object.
-#' @seealso [shape()], [stablehlo::Shape()]
-#' @name Shape
-#' @rdname Shape-constructor
-#' @examples
-#' Shape(c(2L, 3L))
-NULL
-
-#' @rdname Shape-constructor
-#' @importFrom stablehlo Shape
-#' @export
-stablehlo::Shape

@@ -5,7 +5,7 @@ test_that("quickr pipeline matches PJRT: core math + comparisons + reductions", 
     a <- x_f64 + y_f64
     b <- x_f64 - y_f64
     c <- x_f64 * y_f64
-    d <- x_f64 / (y_f64 + 1)
+    d <- x_f64 / (y_f64 + 1L)
     e <- nv_negate(x_f64)
 
     ax <- nv_abs(x_f64)

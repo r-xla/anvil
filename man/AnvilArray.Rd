@@ -7,16 +7,22 @@
 \alias{nv_empty}
 \title{AnvilArray}
 \usage{
-nv_array(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL)
+nv_array(
+  data,
+  dtype = NULL,
+  device = NULL,
+  shape = NULL,
+  ambiguous = NULL,
+  backend = NULL
+)
 
-nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL)
+nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL)
 
 nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
 }
 \arguments{
 \item{data}{(any)\cr
-Object convertible to a \code{\link[pjrt:pjrt_buffer]{PJRTBuffer}}.
-Includes \code{integer()}, \code{double()}, \code{logical()} vectors and arrays.}
+\code{integer()}, \code{double()}, or \code{logical()} scalar, vector, or array.}
 
 \item{dtype}{(\code{NULL} | \code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 One of bool, i8, i16, i32, i64, ui8, ui16, ui32, ui64, f32, f64 or a \code{\link[tengen:DataType]{tengen::DataType}}.
@@ -38,6 +44,11 @@ To create a "scalar" with dimension \verb{()}, use \code{\link{nv_scalar}} or ex
 \item{ambiguous}{(\code{NULL} | \code{logical(1)})\cr
 Whether the dtype should be marked as ambiguous.
 Defaults to \code{FALSE} for new arrays.}
+
+\item{backend}{(\code{NULL} | \code{character(1)})\cr
+Backend to use (\code{"xla"} or \code{"quickr"}).
+Defaults to \code{default_backend()}.
+Must not be specified inside \code{\link[=jit]{jit()}}.}
 }
 \value{
 (\code{\link{AnvilArray}})
@@ -61,7 +72,7 @@ The following generic functions can be used to extract information from an \code
 \item \code{\link[tengen:shape]{shape()}}: Get the shape (dimensions) of the array.
 \item \code{\link[tengen:ndims]{ndims()}}: Get the number of dimensions.
 \item \code{\link[tengen:device]{device()}}: Get the device of the array.
-\item \code{\link[pjrt:platform]{platform()}}: Get the platform (e.g. \code{"cpu"}, \code{"cuda"}).
+\item \code{\link[=platform]{platform()}}: Get the platform (e.g. \code{"cpu"}, \code{"cuda"}).
 \item \code{\link[=ambiguous]{ambiguous()}}: Get whether the dtype is ambiguous.
 }
 }

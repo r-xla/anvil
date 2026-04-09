@@ -129,7 +129,7 @@ n_warmup <- 5000L
 thin <- nv_scalar(200L)
 
 theta <- nv_array(c(0, 0), dtype = "f64")
-rng_state <- nv_rng_state(seed = 42L)
+rng_state <- jit_eval(nv_rng_state(42L))
 proposal_sd <- nv_scalar(3, dtype = "f64")
 
 result <- mh_sample(theta, rng_state, b_t, proposal_sd, thin)

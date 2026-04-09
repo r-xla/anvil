@@ -196,7 +196,7 @@ test_that("error message when using different platforms", {
   f <- jit(\(x, y) x + y)
   x <- nv_array(1, device = "cpu")
   y <- nv_array(1, device = "cuda")
-  expect_error(f(x, y), "Inputs live on different platforms")
+  expect_error(f(x, y), "Inputs live on different devices")
 })
 
 test_that("constants can be part of the program", {
@@ -250,13 +250,6 @@ test_that("good error message when passing AbstractArrays", {
 test_that("jit: respects device argument", {
   f <- jit(function() 1, device = "cpu")
   expect_equal(f(), nv_scalar(1, device = "cpu", ambiguous = TRUE))
-})
-
-test_that("jit: with_backend overrides the configured default backend for traced float constants", {
-  with_backend("quickr", {
-    f <- with_backend("xla", jit(function() nv_fill(1.0, shape = 1L)))
-    expect_equal(dtype(f()), as_dtype("f32"))
-  })
 })
 
 test_that("literals are not converted to scalar arrays", {

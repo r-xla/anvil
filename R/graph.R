@@ -189,8 +189,6 @@ AnvilGraph <- function(
 #' @param devices (`character()`)\cr
 #'   Device platforms encountered during tracing (e.g. `"cpu"`, `"cuda"`).
 #'   Populated automatically as arrays are registered.
-#' @param backend (`NULL` | `"xla"` | `"quickr"`)\cr
-#'   Backend associated with this graph descriptor.
 #' @return (`GraphDescriptor`)
 #' @export
 GraphDescriptor <- function(
@@ -204,8 +202,7 @@ GraphDescriptor <- function(
   outputs = list(),
   is_static_flat = NULL,
   static_args_flat = NULL,
-  devices = character(),
-  backend = NULL
+  devices = character()
 ) {
   # Use an environment for reference semantics (mutable)
   env <- new.env(parent = emptyenv())
@@ -220,7 +217,6 @@ GraphDescriptor <- function(
   env$is_static_flat <- is_static_flat
   env$static_args_flat <- static_args_flat
   env$devices <- devices
-  env$backend <- if (!is.null(backend)) normalize_backend(backend) else current_backend()
 
   structure(env, class = "GraphDescriptor")
 }
@@ -307,12 +303,6 @@ dtype.GraphBox <- function(x, ...) {
 }
 
 #' @export
-#' @method ndims GraphBox
-ndims.GraphBox <- function(x, ...) {
-  ndims(x$gnode)
-}
-
-#' @export
 ambiguous.GraphBox <- function(x, ...) {
   ambiguous(x$gnode)
 }
@@ -377,7 +367,9 @@ maybe_box_input <- function(x, desc, toplevel, lit_to_array) {
     # however, if the value does not exist in the parent graph, we need to add it as a constant
     # for that, we need to keep the value of the actual array, so we can later register it
     # see test: "can pass constant to nested trace_fn call if it ..." in test-graph.R
-    desc$devices <- c(desc$devices, device(x))
+    if (backend(x) != "plain") {
+      desc$devices <- c(desc$devices, device(x))
+    }
     gval <- if (toplevel) {
       # user-provided inputs are simply unknown
       GraphValue(aval = to_abstract(x, pure = TRUE))
@@ -445,7 +437,9 @@ get_box_or_register_const <- function(desc, x) {
     cli_abort("Internal error: trying to register a constant in a non-graph descriptor")
   }
   if (is_anvil_array(x)) {
-    desc$devices <- c(desc$devices, device(x))
+    if (backend(x) != "plain") {
+      desc$devices <- c(desc$devices, device(x))
+    }
     gval <- desc$data_to_gval[[x]]
     if (!is.null(gval)) {
       return(desc$gval_to_box[[gval]])

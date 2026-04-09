@@ -68,7 +68,7 @@ test_that("from DataType", {
 test_that("nv_array from nv_array", {
   skip_if(!is_cuda())
   x <- nv_array(1, device = "cuda")
-  expect_equal(platform(nv_array(x)), "cuda")
+  expect_equal(platform(x), "cuda")
   expect_error(nv_array(x, device = "cpu"))
   expect_error(nv_array(x, shape = c(1, 1)))
   expect_error(nv_array(x, dtype = "f64"))
@@ -168,14 +168,68 @@ test_that("stablehlo dtype is printed", {
   expect_snapshot(nv_array(TRUE))
 })
 
-test_that("default floating dtype follows the configured backend", {
-  with_backend("xla", {
-    expect_equal(dtype(nv_array(1.0)), as_dtype("f32"))
-    expect_equal(dtype(nv_scalar(1.0)), as_dtype("f32"))
-  })
+test_that("QuickrDeviceCpu is a classed object", {
+  skip_if_not_installed("quickr")
+  dev <- QuickrDeviceCpu()
+  expect_s3_class(dev, "QuickrDeviceCpu")
+  expect_equal(format(dev), "QuickrDeviceCpu")
+  expect_equal(as.character(dev), "cpu")
+})
 
-  with_backend("quickr", {
-    expect_equal(dtype(nv_array(1.0)), as_dtype("f64"))
-    expect_equal(dtype(nv_scalar(1.0)), as_dtype("f64"))
-  })
+test_that("PlainDeviceCpu is a classed object", {
+  dev <- PlainDeviceCpu()
+  expect_s3_class(dev, "PlainDeviceCpu")
+  expect_equal(format(dev), "PlainDeviceCpu")
+  expect_equal(as.character(dev), "cpu")
+})
+
+test_that("device returns QuickrDeviceCpu for quickr arrays", {
+  skip_if_not_installed("quickr")
+  local_backend("quickr")
+  x <- nv_array(1)
+  dev <- device(x)
+  expect_s3_class(dev, "QuickrDeviceCpu")
+})
+
+test_that("device returns PlainDeviceCpu for plain arrays", {
+  x <- globals$backends[["plain"]]$data_constructor(1, "f32", 1L, NULL, FALSE)
+  dev <- device(x)
+  expect_s3_class(dev, "PlainDeviceCpu")
+})
+
+test_that("platform returns 'cpu' for quickr backend", {
+  skip_if_not_installed("quickr")
+  local_backend("quickr")
+  expect_equal(platform(nv_array(1)), "cpu")
+})
+
+test_that("platform returns 'cpu' for plain backend", {
+  x <- globals$backends[["plain"]]$data_constructor(1, "f32", 1L, NULL, FALSE)
+  expect_equal(platform(x), "cpu")
+})
+
+test_that("nv_array respects backend argument", {
+  skip_if_not_installed("quickr")
+  local_backend("quickr")
+  x <- nv_array(1, backend = "xla")
+  expect_equal(backend(x), "xla")
+})
+
+test_that("nv_array errors when backend specified inside jit", {
+  expect_error(
+    jit(function() nv_array(1, backend = "xla"))(),
+    "must not be specified"
+  )
+})
+
+test_that("default floating dtype is f32 for xla", {
+  expect_equal(dtype(nv_array(1.0)), as_dtype("f32"))
+  expect_equal(dtype(nv_scalar(1.0)), as_dtype("f32"))
+})
+
+test_that("default floating dtype is f64 for quickr", {
+  skip_if_not_installed("quickr")
+  local_backend("quickr")
+  expect_equal(dtype(nv_array(1.0)), as_dtype("f64"))
+  expect_equal(dtype(nv_scalar(1.0)), as_dtype("f64"))
 })

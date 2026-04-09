@@ -1,27 +1,26 @@
 test_that("jit: quickr backend compiles simple function", {
   skip_if_not_installed("quickr")
+  local_backend("quickr")
 
-  f <- with_backend("quickr", jit(function(x, y) x + y))
+  f <- jit(function(x, y) x + y)
 
-  expect_equal(f(1, 2), 3)
+  expect_equal(f(nv_scalar(1L), nv_scalar(2L)), 3)
 })
 
 test_that("jit: quickr backend preserves nested multi-output shapes and types", {
   skip_if_not_installed("quickr")
+  local_backend("quickr")
 
-  f <- with_backend(
-    "quickr",
-    jit(
-      function(x) {
-        list(
-          flags = x > 1L,
-          payload = list(shifted = x + 1L)
-        )
-      }
-    )
+  f <- jit(
+    function(x) {
+      list(
+        flags = x > 1L,
+        payload = list(shifted = x + 1L)
+      )
+    }
   )
 
-  out <- f(1:3)
+  out <- f(nv_array(1:3))
 
   expect_identical(typeof(out$flags), "logical")
   expect_identical(typeof(out$payload$shifted), "integer")
@@ -31,46 +30,39 @@ test_that("jit: quickr backend preserves nested multi-output shapes and types", 
   expect_identical(out$payload$shifted, array(2:4, dim = 3L))
 })
 
-test_that("jit: default backend can be configured via with_backend", {
-  skip_if_not_installed("quickr")
-
-  f <- with_backend("quickr", jit(function(x, y) x + y))
-
-  expect_equal(f(1, 2), 3)
-})
-
 test_that("jit: quickr backend does not support donate or device", {
-  with_backend("quickr", {
-    expect_error(
-      jit(function(x) x, donate = "x"),
-      "donate",
-      fixed = TRUE
-    )
-    expect_error(
-      jit(function(x) x, device = "cpu"),
-      "device",
-      fixed = TRUE
-    )
-  })
+  local_backend("quickr")
+
+  expect_error(
+    jit(function(x) x, donate = "x"),
+    "donate",
+    fixed = TRUE
+  )
+  expect_error(
+    jit(function(x) x, device = "cpu"),
+    "device",
+    fixed = TRUE
+  )
 })
 
-test_that("jit: quickr backend traces floating literals as f64", {
+test_that("jit: quickr backend traces floating literals as f32", {
   graph <- trace_fn(
     function() 1.0,
     list(),
-    desc = local_descriptor(backend = "quickr")
+    desc = local_descriptor()
   )
 
-  expect_equal(dtype(graph$outputs[[1L]]$aval), as_dtype("f64"))
+  expect_equal(dtype(graph$outputs[[1L]]$aval), as_dtype("f32"))
 })
 
 test_that("graph_to_r_function lowers a graph to a plain R function", {
   skip_if_not_installed("quickr")
+  local_backend("quickr")
 
   graph <- trace_fn(
-    function(x) x + 1,
+    function(x) x + 1L,
     list(x = nv_scalar(1.0, dtype = "f64")),
-    desc = local_descriptor(backend = "quickr")
+    desc = local_descriptor()
   )
 
   f <- graph_to_r_function(graph)

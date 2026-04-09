@@ -48,7 +48,13 @@ nv_minval <- function(dtype, device) {
   } else if (dtype == "bool") {
     nv_scalar(FALSE, dtype = "bool", device = device)
   } else {
-    nv_scalar(globals$ranges_raw[[dtype]]$min, dtype = dtype, device = device)
+    nv_scalar(pjrt_buffer(
+      globals$ranges_raw[[dtype]]$min,
+      dtype = dtype,
+      device = device,
+      row_major = TRUE,
+      shape = integer()
+    ))
   }
 }
 
@@ -59,7 +65,13 @@ nv_maxval <- function(dtype, device) {
   } else if (dtype == "bool") {
     nv_scalar(TRUE, dtype = "bool", device = device)
   } else {
-    nv_scalar(globals$ranges_raw[[dtype]]$max, dtype = dtype, device = device)
+    nv_scalar(pjrt_buffer(
+      globals$ranges_raw[[dtype]]$max,
+      dtype = dtype,
+      device = device,
+      row_major = TRUE,
+      shape = integer()
+    ))
   }
 }
 

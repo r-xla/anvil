@@ -21,10 +21,6 @@ register_s3_method <- function(pkg, generic, class, fun = NULL) {
 }
 
 .onLoad <- function(libname, pkgname) {
-  globals$backend <- normalize_backend(
-    getOption("anvil.backend", "xla")
-  )
-
   ns <- asNamespace(pkgname)
   for (name in ls(ns, pattern = "^p_")) {
     primitive <- get(name, envir = ns)

@@ -16,7 +16,7 @@
 #' - [`shape()`][tengen::shape]: Get the shape (dimensions) of the array.
 #' - [`ndims()`][tengen::ndims]: Get the number of dimensions.
 #' - [`device()`][tengen::device]: Get the device of the array.
-#' - [`platform()`][pjrt::platform]: Get the platform (e.g. `"cpu"`, `"cuda"`).
+#' - [`platform()`]: Get the platform (e.g. `"cpu"`, `"cuda"`).
 #' - [`ambiguous()`]: Get whether the dtype is ambiguous.
 #'
 #' @section Serialization:
@@ -29,8 +29,7 @@
 #' @seealso [nv_fill], [nv_iota], [nv_seq], [as_array], [nv_serialize]
 #'
 #' @param data (any)\cr
-#'   Object convertible to a [`PJRTBuffer`][pjrt::pjrt_buffer].
-#'   Includes `integer()`, `double()`, `logical()` vectors and arrays.
+#'   `integer()`, `double()`, or `logical()` scalar, vector, or array.
 #' @param dtype (`NULL` | `character(1)` | [`DataType`])\cr
 #'   One of `r stablehlo:::roxy_dtypes()` or a [`tengen::DataType`].
 #'   The default (`NULL`) uses the current backend's default dtype:
@@ -48,6 +47,10 @@
 #' @param ambiguous (`NULL` | `logical(1)`)\cr
 #'   Whether the dtype should be marked as ambiguous.
 #'   Defaults to `FALSE` for new arrays.
+#' @param backend (`NULL` | `character(1)`)\cr
+#'   Backend to use (`"xla"` or `"quickr"`).
+#'   Defaults to `default_backend()`.
+#'   Must not be specified inside [`jit()`].
 #' @return ([`AnvilArray`])
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' # A 1-d array (vector) with shape (4). Default type for integers is `i32`
@@ -87,10 +90,10 @@ NULL
 
 #' @rdname AnvilArray
 #' @export
-nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL) {
+nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL, backend = NULL) {
   if (is_anvil_array(data)) {
     if (!is.null(device) && device(data) != pjrt::as_pjrt_device(device)) {
-      cli_abort("Cannot change device of existing AnvilArray from {.val {platform(data)}} to {.val {device}}")
+      cli_abort("Cannot change device of existing AnvilArray from {.val {device(data)}} to {.val {device}}")
     }
     if (!is.null(shape) && !identical(shape(data), as.integer(shape))) {
       cli_abort("Cannot change shape of existing AnvilArray")
@@ -108,14 +111,22 @@ nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous 
   if (is.null(ambiguous)) {
     ambiguous <- FALSE
   }
-  if (is.null(dtype) && !inherits(data, "PJRTBuffer")) {
-    dtype <- default_dtype(data)
+  if (!is.null(dtype)) {
+    dtype <- as_dtype(dtype)
   }
-  if (is_dtype(dtype)) {
-    dtype <- as.character(dtype)
+  if (!is.null(shape)) {
+    shape <- as.integer(shape)
   }
-  x <- pjrt_buffer(data, dtype, device = device, shape = shape)
-  ensure_nv_array(x, ambiguous = ambiguous)
+  desc <- .current_descriptor(silent = TRUE)
+  if (!is.null(desc)) {
+    # The functions we jit should be backend-agnostic
+    if (!is.null(backend)) {
+      cli_abort("{.arg backend} must not be specified when calling {.fn nv_array} inside {.fn jit}.")
+    }
+    return(globals$backends[["plain"]]$data_constructor(data, dtype, shape, device, ambiguous))
+  }
+  backend <- backend %||% default_backend()
+  globals$backends[[backend]]$data_constructor(data, dtype, shape, device, ambiguous)
 }
 
 is_anvil_array <- function(x) {
@@ -134,44 +145,26 @@ unwrap_if_array <- function(x) {
   }
 }
 
-ensure_nv_array <- function(x, ambiguous = FALSE) {
-  if (inherits(x, "AnvilArray")) {
-    if (ambiguous != x$ambiguous) {
-      x$ambiguous <- ambiguous
-    }
-    return(x)
-  }
-  assert_class(x, "PJRTBuffer")
-  structure(
-    list(data = x, ambiguous = ambiguous),
-    class = "AnvilArray"
-  )
-}
-
 #' @rdname AnvilArray
 #' @export
-nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL) {
-  if (is.null(ambiguous)) {
-    ambiguous <- FALSE
-  }
-  if (is.null(dtype)) {
-    dtype <- default_dtype(data)
-  }
-  if (is_dtype(dtype)) {
-    dtype <- as.character(dtype)
-  }
-  x <- pjrt_scalar(data, dtype = dtype, device = device)
-  ensure_nv_array(x, ambiguous = ambiguous)
+nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL) {
+  nv_array(data, dtype = dtype, device = device, shape = integer(), ambiguous = ambiguous, backend = backend)
 }
 
 #' @rdname AnvilArray
 #' @export
 nv_empty <- function(dtype, shape, device = NULL, ambiguous = FALSE) {
-  if (is_dtype(dtype)) {
-    dtype <- as.character(dtype)
-  }
-  x <- pjrt::pjrt_empty(dtype, shape, device = device)
-  ensure_nv_array(x, ambiguous = ambiguous)
+  shape <- as.integer(shape)
+  storage_mode <- switch(
+    substr(as.character(if (is_dtype(dtype)) dtype else as_dtype(dtype)), 1L, 1L),
+    "f" = "double",
+    "i" = ,
+    "u" = "integer",
+    "b" = "logical",
+    "double"
+  )
+  data <- array(vector(storage_mode, prod(shape)), dim = shape)
+  nv_array(data, dtype = dtype, device = device, shape = shape, ambiguous = ambiguous)
 }
 
 #' @rdname AbstractArray
@@ -182,7 +175,7 @@ nv_abstract <- function(dtype, shape, ambiguous = FALSE) {
 
 #' @export
 dtype.AnvilArray <- function(x, ...) {
-  as_dtype(as.character(pjrt::elt_type(x$data)))
+  globals$backends[[x$backend]]$dtype(x)
 }
 
 #' @title Get Ambiguity of an Array
@@ -198,7 +191,7 @@ ambiguous <- function(x, ...) {
 
 #' @export
 ambiguous.AnvilArray <- function(x, ...) {
-  x$ambiguous
+  globals$backends[[x$backend]]$ambiguous(x)
 }
 
 #' @export
@@ -208,33 +201,42 @@ ambiguous.AbstractArray <- function(x, ...) {
 
 #' @export
 shape.AnvilArray <- function(x, ...) {
-  tengen::shape(x$data)
+  globals$backends[[x$backend]]$shape(x)
 }
 
 #' @export
 as_array.AnvilArray <- function(x, ...) {
-  tengen::as_array(x$data)
+  globals$backends[[x$backend]]$as_array(x)
 }
 
 #' @export
 as_raw.AnvilArray <- function(x, row_major = FALSE, ...) {
-  tengen::as_raw(x$data, row_major = row_major)
+  globals$backends[[x$backend]]$as_raw(x, row_major)
 }
 
-#' @method ndims AnvilArray
-#' @export
-ndims.AnvilArray <- function(x, ...) {
-  tengen::ndims(x$data)
-}
-
+#' @rdname platform
 #' @export
 platform.AnvilArray <- function(x, ...) {
-  pjrt::platform(x$data)
+  globals$backends[[x$backend]]$platform(x)
 }
 
 #' @export
 device.AnvilArray <- function(x, ...) {
-  device(x$data)
+  globals$backends[[x$backend]]$device(x)
+}
+
+#' @title Get Backend of an Array
+#' @param x An array object
+#' @param ... Additional arguments (unused)
+#' @return `character(1)` - the backend name
+#' @export
+backend <- function(x, ...) {
+  UseMethod("backend")
+}
+
+#' @export
+backend.AnvilArray <- function(x, ...) {
+  x$backend
 }
 
 #' @title Abstract Array Class
@@ -302,19 +304,6 @@ is_concrete_tensor <- function(x) {
   inherits(x, "ConcreteArray")
 }
 
-#' @title Platform for AbstractArray
-#' @description
-#' Get the platform of an AbstractArray. Always errors since platform
-#' is not accessible during tracing.
-#' @param x An AbstractArray.
-#' @param ... Additional arguments (unused).
-#' @return Never returns; always errors.
-#' @method platform AbstractArray
-#' @export
-platform.AbstractArray <- function(x, ...) {
-  cli_abort("platform is not accessible during tracing")
-}
-
 #' @method dtype AbstractArray
 #' @export
 dtype.AbstractArray <- function(x, ...) {
@@ -325,12 +314,6 @@ dtype.AbstractArray <- function(x, ...) {
 #' @export
 shape.AbstractArray <- function(x, ...) {
   x$shape$dims
-}
-
-#' @method ndims AbstractArray
-#' @export
-ndims.AbstractArray <- function(x, ...) {
-  length(x$shape$dims)
 }
 
 #' @title Concrete Array Class
@@ -508,11 +491,6 @@ is_literal_tensor <- function(x) {
   inherits(x, "LiteralArray")
 }
 
-#' @exportS3Method platform ConcreteArray
-platform.ConcreteArray <- function(x, ...) {
-  platform(x$data)
-}
-
 #' @export
 `==.AbstractArray` <- function(e1, e2) {
   cli_abort("Use {.fn eq_type} instead of {.code ==} for comparing AbstractArrays")
@@ -619,7 +597,7 @@ print.ConcreteArray <- function(x, ...) {
 
 #' @export
 format.AnvilArray <- function(x, ...) {
-  dtype_str <- if (x$ambiguous) paste0(repr(dtype(x)), "?") else repr(dtype(x))
+  dtype_str <- if (ambiguous(x)) paste0(repr(dtype(x)), "?") else repr(dtype(x))
   sprintf("AnvilArray(dtype=%s, shape=%s)", dtype_str, paste(shape(x), collapse = "x"))
 }
 
@@ -628,10 +606,9 @@ print.AnvilArray <- function(x, header = TRUE, ...) {
   if (header) {
     cat("AnvilArray\n")
   }
-  dtype_str <- paste0(as.character(dtype(x)), if (x$ambiguous) "?")
+  dtype_str <- paste0(as.character(dtype(x)), if (ambiguous(x)) "?")
   footer <- sprintf("[ %s%s{%s} ]", toupper(platform(x)), dtype_str, paste0(shape(x), collapse = ","))
-
-  print(x$data, header = FALSE, footer = footer)
+  globals$backends[[x$backend]]$print_data(x, footer)
   invisible(x)
 }
 

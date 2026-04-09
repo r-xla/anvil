@@ -39,6 +39,9 @@ Each rule of each primitive should be tested. Tests are organized as:
 
 Prefer testing by comparing with the corresponding torch function. If the test is trivial or the functionality is not covered by torch, test manually instead. Write one or the other, not both.
 
+Tests that use the quickr backend must call `skip_if_not_installed("quickr")` at the top of the test body.
+To test a different backend, use `local_backend()` (not `withr::local_options()` directly).
+
 ## Documentation
 
 When writing roxygen2 documentation for primitives or API functions:

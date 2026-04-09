@@ -181,8 +181,8 @@ reference:
       - nv_rdunif
       - nv_rng_state
 
-  - title: Arrays
-    desc: Array construction, attributes, conversion, and serialization
+  - title: AnvilArray
+    desc: Constructing and working with AnvilArrays
 
   - subtitle: Construction
     desc: Functions for creating and initializing arrays
@@ -201,6 +201,7 @@ reference:
   - subtitle: Attributes
     desc: Functions for querying array properties
     contents:
+      - backend
       - ambiguous
       - dtype
       - shape
@@ -237,6 +238,15 @@ reference:
       - debug_box
       - nv_print
       - DebugBox
+      
+  - title: Backend selection
+    desc: Functions for selecting and managing the backend
+    contents:
+      - backend
+      - default_backend
+      - local_backend
+      - with_backend
+
 
   - title: Internals
     desc: Internal data structures and functions
