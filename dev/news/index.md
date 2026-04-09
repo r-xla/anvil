@@ -37,9 +37,10 @@
     to solve a system of linear equations.
   - [`nv_cholesky()`](https://r-xla.github.io/anvil/dev/reference/nv_cholesky.md)
     to compute the Cholesky decomposition of a matrix.
-- Improved semantics:
-  - [`nvl_cholesky()`](https://r-xla.github.io/anvil/dev/reference/nvl_cholesky.md)
-    now zeros out the upper/lower triangle of the output.
+- New S3 methods [`dim()`](https://rdrr.io/r/base/dim.html),
+  [`nrow()`](https://rdrr.io/r/base/nrow.html),
+  [`ncol()`](https://rdrr.io/r/base/nrow.html), and
+  [`length()`](https://rdrr.io/r/base/length.html) for anvil arrays.
 - Printing tensors via
   [`nv_print()`](https://r-xla.github.io/anvil/dev/reference/nv_print.md)
   now also works on GPUs.
