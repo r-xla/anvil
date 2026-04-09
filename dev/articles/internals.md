@@ -157,7 +157,7 @@ prim("mul")$rules[["reverse"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x55d9af3b3048>
+    ## <bytecode: 0x5632d29b95e0>
     ## <environment: namespace:anvil>
 
 The
@@ -208,7 +208,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x55d9af3b80b0>
+    ## <bytecode: 0x5632d29b8968>
     ## <environment: namespace:anvil>
 
 The
@@ -385,12 +385,12 @@ g(x, y, "add")
 
     ## $x
     ## DebugBox(ConcreteArray)
-    ##  1
+    ## [1] 1
     ## [ CPUf32{} ] 
     ## 
     ## $y
     ## DebugBox(ConcreteArray)
-    ##  1
+    ## [1] 1
     ## [ CPUf32{} ]
 
 If we want to actually compute the gradient, we need to wrap it in

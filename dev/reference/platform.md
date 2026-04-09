@@ -6,6 +6,9 @@ compute backend.
 ## Usage
 
 ``` r
+# S3 method for class 'AnvilArray'
+platform(x, ...)
+
 platform(x, ...)
 ```
 

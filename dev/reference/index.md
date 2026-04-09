@@ -216,9 +216,9 @@ Functions for generating random numbers
 - [`nv_rng_state()`](https://r-xla.github.io/anvil/dev/reference/nv_rng_state.md)
   : Generate RNG State
 
-## Arrays
+## AnvilArray
 
-Array construction, attributes, conversion, and serialization
+Constructing and working with AnvilArrays
 
 ### Construction
 
@@ -245,6 +245,8 @@ Functions for creating and initializing arrays
 
 Functions for querying array properties
 
+- [`backend()`](https://r-xla.github.io/anvil/dev/reference/backend.md)
+  : Get Backend of an Array
 - [`ambiguous()`](https://r-xla.github.io/anvil/dev/reference/ambiguous.md)
   : Get Ambiguity of an Array
 - [`dtype()`](https://r-xla.github.io/anvil/dev/reference/dtype.md) :
@@ -255,8 +257,6 @@ Functions for querying array properties
   Get the number of dimensions of an array
 - [`device()`](https://r-xla.github.io/anvil/dev/reference/device.md) :
   Get the device of an array
-- [`platform(`*`<AbstractArray>`*`)`](https://r-xla.github.io/anvil/dev/reference/platform.AbstractArray.md)
-  : Platform for AbstractArray
 - [`platform()`](https://r-xla.github.io/anvil/dev/reference/platform.md)
   : Get the platform of an array or buffer
 
@@ -307,6 +307,19 @@ Debugging utilities and tools
   : Print Array
 - [`DebugBox()`](https://r-xla.github.io/anvil/dev/reference/DebugBox.md)
   : Debug Box Class
+
+## Backend selection
+
+Functions for selecting and managing the backend
+
+- [`backend()`](https://r-xla.github.io/anvil/dev/reference/backend.md)
+  : Get Backend of an Array
+- [`default_backend()`](https://r-xla.github.io/anvil/dev/reference/default_backend.md)
+  : Get the default backend
+- [`local_backend()`](https://r-xla.github.io/anvil/dev/reference/local_backend.md)
+  : Temporarily set the default backend
+- [`with_backend()`](https://r-xla.github.io/anvil/dev/reference/with_backend.md)
+  : Run code with a specific backend
 
 ## Internals
 

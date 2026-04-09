@@ -109,6 +109,7 @@
 <code>tests/testthat/test-primitives-reverse.R</code> – sources <code>inst/extra-tests/test-primitives-reverse-torch.R</code>
 </li>
 </ul><p>Prefer testing by comparing with the corresponding torch function. If the test is trivial or the functionality is not covered by torch, test manually instead. Write one or the other, not both.</p>
+<p>Tests that use the quickr backend must call <code>skip_if_not_installed("quickr")</code> at the top of the test body. To test a different backend, use <code><a href="reference/local_backend.html">local_backend()</a></code> (not <code><a href="https://withr.r-lib.org/reference/with_options.html" class="external-link">withr::local_options()</a></code> directly).</p>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a></h2>

@@ -22,6 +22,7 @@
 <url><loc>https://r-xla.github.io/anvil/dev/news/index.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/AbstractArray.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilArray.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilBackend.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilBox.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilGraph.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilPrimitive.html</loc></url>
@@ -45,10 +46,12 @@
 <url><loc>https://r-xla.github.io/anvil/dev/reference/as_raw.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/assert_shapevec.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/at2vt.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/backend.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/build_tree.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/common_dtype.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/compile_to_xla.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/debug_box.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/default_backend.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/device.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/dot-current_descriptor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/dtype.html</loc></url>
@@ -63,6 +66,7 @@
 <url><loc>https://r-xla.github.io/anvil/dev/reference/is_dtype.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/jit.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/jit_eval.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/local_backend.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/local_descriptor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/ndims.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/nv_abs.html</loc></url>
@@ -222,7 +226,6 @@
 <url><loc>https://r-xla.github.io/anvil/dev/reference/nvl_triangular_solve.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/nvl_while.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/nvl_xor.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/dev/reference/platform.AbstractArray.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/platform.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/prim.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/register_primitive.html</loc></url>

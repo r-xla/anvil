@@ -13,8 +13,8 @@ nv_rng_state(seed)
 
 - seed:
 
-  (`integer(1)`)  
-  Seed value.
+  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  Scalar `i32` seed value.
 
 ## Value
 

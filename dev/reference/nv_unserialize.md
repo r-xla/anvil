@@ -6,7 +6,7 @@ Deserializes arrays from the
 ## Usage
 
 ``` r
-nv_unserialize(con, device = NULL)
+nv_unserialize(con, device = NULL, backend = default_backend())
 ```
 
 ## Arguments
@@ -22,6 +22,12 @@ nv_unserialize(con, device = NULL)
   [`PJRTDevice`](https://r-xla.github.io/pjrt/reference/pjrt_device.html))  
   The device on which to place the loaded arrays (`"cpu"`, `"cuda"`,
   ...). Default is to use the CPU.
+
+- backend:
+
+  (`character(1)`)  
+  Backend for the loaded arrays. Defaults to
+  [`default_backend()`](https://r-xla.github.io/anvil/dev/reference/default_backend.md).
 
 ## Value
 

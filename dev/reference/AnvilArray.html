@@ -91,9 +91,16 @@ see <code><a href="../articles/debugging.html">vignette("debugging")</a></code> 
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nv_array</span><span class="op">(</span><span class="va">data</span>, dtype <span class="op">=</span> <span class="cn">NULL</span>, device <span class="op">=</span> <span class="cn">NULL</span>, shape <span class="op">=</span> <span class="cn">NULL</span>, ambiguous <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nv_array</span><span class="op">(</span></span>
+<span>  <span class="va">data</span>,</span>
+<span>  dtype <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  device <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  shape <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ambiguous <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  backend <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">nv_scalar</span><span class="op">(</span><span class="va">data</span>, dtype <span class="op">=</span> <span class="cn">NULL</span>, device <span class="op">=</span> <span class="cn">NULL</span>, ambiguous <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span><span class="fu">nv_scalar</span><span class="op">(</span><span class="va">data</span>, dtype <span class="op">=</span> <span class="cn">NULL</span>, device <span class="op">=</span> <span class="cn">NULL</span>, ambiguous <span class="op">=</span> <span class="cn">NULL</span>, backend <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">nv_empty</span><span class="op">(</span><span class="va">dtype</span>, <span class="va">shape</span>, device <span class="op">=</span> <span class="cn">NULL</span>, ambiguous <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -103,9 +110,7 @@ see <code><a href="../articles/debugging.html">vignette("debugging")</a></code> 
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>(any)<br>
-Object convertible to a <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_buffer.html" class="external-link">PJRTBuffer</a></code>.
-Includes <code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>, <code><a href="https://rdrr.io/r/base/double.html" class="external-link">double()</a></code>, <code><a href="https://rdrr.io/r/base/logical.html" class="external-link">logical()</a></code> vectors and arrays.</p></dd>
+<dd><p>(any)<br><code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>, <code><a href="https://rdrr.io/r/base/double.html" class="external-link">double()</a></code>, or <code><a href="https://rdrr.io/r/base/logical.html" class="external-link">logical()</a></code> scalar, vector, or array.</p></dd>
 
 
 <dt id="arg-dtype">dtype<a class="anchor" aria-label="anchor" href="#arg-dtype"></a></dt>
@@ -136,6 +141,13 @@ To create a "scalar" with dimension <code>()</code>, use <code>nv_scalar</code> 
 Whether the dtype should be marked as ambiguous.
 Defaults to <code>FALSE</code> for new arrays.</p></dd>
 
+
+<dt id="arg-backend">backend<a class="anchor" aria-label="anchor" href="#arg-backend"></a></dt>
+<dd><p>(<code>NULL</code> | <code>character(1)</code>)<br>
+Backend to use (<code>"xla"</code> or <code>"quickr"</code>).
+Defaults to <code><a href="default_backend.html">default_backend()</a></code>.
+Must not be specified inside <code><a href="jit.html">jit()</a></code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -149,7 +161,7 @@ Defaults to <code>FALSE</code> for new arrays.</p></dd>
 <li><p><code><a href="https://r-xla.github.io/tengen/reference/shape.html" class="external-link">shape()</a></code>: Get the shape (dimensions) of the array.</p></li>
 <li><p><code><a href="https://r-xla.github.io/tengen/reference/ndims.html" class="external-link">ndims()</a></code>: Get the number of dimensions.</p></li>
 <li><p><code><a href="https://r-xla.github.io/tengen/reference/device.html" class="external-link">device()</a></code>: Get the device of the array.</p></li>
-<li><p><code><a href="https://r-xla.github.io/pjrt/reference/platform.html" class="external-link">platform()</a></code>: Get the platform (e.g. <code>"cpu"</code>, <code>"cuda"</code>).</p></li>
+<li><p><code><a href="platform.html">platform()</a></code>: Get the platform (e.g. <code>"cpu"</code>, <code>"cuda"</code>).</p></li>
 <li><p><code><a href="ambiguous.html">ambiguous()</a></code>: Get whether the dtype is ambiguous.</p></li>
 </ul></div>
     <div class="section level2">

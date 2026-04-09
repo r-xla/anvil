@@ -702,9 +702,9 @@
         </dt>
         <dd>Generate RNG State</dd>
       </dl></div><div class="section level2">
-      <h2 id="arrays">Arrays<a class="anchor" aria-label="anchor" href="#arrays"></a></h2>
+      <h2 id="anvilarray">AnvilArray<a class="anchor" aria-label="anchor" href="#anvilarray"></a></h2>
 
-      <div class="section-desc"><p>Array construction, attributes, conversion, and serialization</p></div>
+      <div class="section-desc"><p>Constructing and working with AnvilArrays</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -776,6 +776,13 @@
 
       <dl><dt>
 
+          <code><a href="backend.html">backend()</a></code>
+
+        </dt>
+        <dd>Get Backend of an Array</dd>
+
+        <dt>
+
           <code><a href="ambiguous.html">ambiguous()</a></code>
 
         </dt>
@@ -808,13 +815,6 @@
 
         </dt>
         <dd>Get the device of an array</dd>
-
-        <dt>
-
-          <code><a href="platform.AbstractArray.html">platform(<i>&lt;AbstractArray&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Platform for AbstractArray</dd>
 
         <dt>
 
@@ -956,6 +956,43 @@
 
         </dt>
         <dd>Debug Box Class</dd>
+      </dl></div><div class="section level2">
+      <h2 id="backend-selection">Backend selection<a class="anchor" aria-label="anchor" href="#backend-selection"></a></h2>
+
+      <div class="section-desc"><p>Functions for selecting and managing the backend</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="backend.html">backend()</a></code>
+
+        </dt>
+        <dd>Get Backend of an Array</dd>
+
+        <dt>
+
+          <code><a href="default_backend.html">default_backend()</a></code>
+
+        </dt>
+        <dd>Get the default backend</dd>
+
+        <dt>
+
+          <code><a href="local_backend.html">local_backend()</a></code>
+
+        </dt>
+        <dd>Temporarily set the default backend</dd>
+
+        <dt>
+
+          <code><a href="with_backend.html">with_backend()</a></code>
+
+        </dt>
+        <dd>Run code with a specific backend</dd>
       </dl></div><div class="section level2">
       <h2 id="internals">Internals<a class="anchor" aria-label="anchor" href="#internals"></a></h2>
 

@@ -28,13 +28,13 @@ future to provide a more R-like experience, but for now you need to
 manage the state yourself.
 
 To generate random numbers, you first need to create an initial RNG
-state, which is simply a `ui64[2]`. For convenience, you can convert an
-R seed into a state using
+state, which is simply a `ui64[2]`. You can convert a seed into a state
+using
 [`nv_rng_state()`](https://r-xla.github.io/anvil/dev/reference/nv_rng_state.md):
 
 ``` r
 library(anvil)
-state <- nv_rng_state(seed = 42L)
+state <- jit_eval(nv_rng_state(42L))
 state
 #> AnvilArray
 #>  42

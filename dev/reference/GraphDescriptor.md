@@ -18,8 +18,7 @@ GraphDescriptor(
   outputs = list(),
   is_static_flat = NULL,
   static_args_flat = NULL,
-  devices = character(),
-  backend = NULL
+  devices = character()
 )
 ```
 
@@ -84,11 +83,6 @@ GraphDescriptor(
   ([`character()`](https://rdrr.io/r/base/character.html))  
   Device platforms encountered during tracing (e.g. `"cpu"`, `"cuda"`).
   Populated automatically as arrays are registered.
-
-- backend:
-
-  (`NULL` \| `"xla"` \| `"quickr"`)  
-  Backend associated with this graph descriptor.
 
 ## Value
 

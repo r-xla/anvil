@@ -18,9 +18,16 @@ To compare whether two abstract arrays are equal, use
 ## Usage
 
 ``` r
-nv_array(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL)
+nv_array(
+  data,
+  dtype = NULL,
+  device = NULL,
+  shape = NULL,
+  ambiguous = NULL,
+  backend = NULL
+)
 
-nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL)
+nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL)
 
 nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
 ```
@@ -30,11 +37,10 @@ nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
 - data:
 
   (any)  
-  Object convertible to a
-  [`PJRTBuffer`](https://r-xla.github.io/pjrt/reference/pjrt_buffer.html).
-  Includes [`integer()`](https://rdrr.io/r/base/integer.html),
-  [`double()`](https://rdrr.io/r/base/double.html),
-  [`logical()`](https://rdrr.io/r/base/logical.html) vectors and arrays.
+  [`integer()`](https://rdrr.io/r/base/integer.html),
+  [`double()`](https://rdrr.io/r/base/double.html), or
+  [`logical()`](https://rdrr.io/r/base/logical.html) scalar, vector, or
+  array.
 
 - dtype:
 
@@ -68,6 +74,14 @@ nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
   Whether the dtype should be marked as ambiguous. Defaults to `FALSE`
   for new arrays.
 
+- backend:
+
+  (`NULL` \| `character(1)`)  
+  Backend to use (`"xla"` or `"quickr"`). Defaults to
+  [`default_backend()`](https://r-xla.github.io/anvil/dev/reference/default_backend.md).
+  Must not be specified inside
+  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md).
+
 ## Value
 
 (`AnvilArray`)
@@ -89,7 +103,7 @@ an `AnvilArray`:
 - [`device()`](https://r-xla.github.io/tengen/reference/device.html):
   Get the device of the array.
 
-- [`platform()`](https://r-xla.github.io/pjrt/reference/platform.html):
+- [`platform()`](https://r-xla.github.io/anvil/dev/reference/platform.md):
   Get the platform (e.g. `"cpu"`, `"cuda"`).
 
 - [`ambiguous()`](https://r-xla.github.io/anvil/dev/reference/ambiguous.md):

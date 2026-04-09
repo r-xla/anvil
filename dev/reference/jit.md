@@ -7,11 +7,6 @@ an LRU cache and skip recompilation. Unlike
 compiled executable is not created eagerly but lazily on the first
 invocation.
 
-The compilation backend is determined by the global `anvil.backend`
-option, which defaults to `"xla"`. Use
-[`with_backend()`](https://r-xla.github.io/anvil/dev/reference/with_backend.md)
-to temporarily override it.
-
 ## Usage
 
 ``` r
@@ -20,7 +15,8 @@ jit(
   static = character(),
   cache_size = 100L,
   donate = character(),
-  device = NULL
+  device = NULL,
+  backend = default_backend()
 )
 ```
 
@@ -59,16 +55,23 @@ jit(
   (`NULL` \| `character(1)` \|
   [`PJRTDevice`](https://r-xla.github.io/pjrt/reference/pjrt_device.html))  
   The device to use if it cannot be inferred from the inputs or
-  constants. Defaults to `"cpu"`. Only supported for the `"xla"`
-  backend.
+  constants. Defaults to `"cpu"`. Only supported for `backend = "xla"`.
+
+- backend:
+
+  (`character(1)`)  
+  Compilation backend. `"xla"` (default) uses PJRT/XLA. `"quickr"` uses
+  [`quickr::quick()`](https://rdrr.io/pkg/quickr/man/quick.html). If
+  omitted, the default comes from
+  [`default_backend()`](https://r-xla.github.io/anvil/dev/reference/default_backend.md).
 
 ## Value
 
-A `JitFunction` with the same formals as `f`. For the `"xla"` backend,
-the returned wrapper expects and returns
+A `JitFunction` with the same formals as `f`. The returned wrapper
+expects
 [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
-values. For the `"quickr"` backend, the returned wrapper expects plain R
-numeric/integer/logical scalars, vectors, and arrays and returns plain R
+inputs and returns
+[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
 values.
 
 (`function`)
@@ -100,5 +103,11 @@ g(nv_array(3), TRUE)
 g(nv_array(3), FALSE)
 #> AnvilArray
 #>  6
+#> [ CPUf32{1} ] 
+local_backend("quickr")
+h <- jit(function(x, y) x + y)
+h(nv_array(1), nv_array(2))
+#> AnvilArray
+#>  3
 #> [ CPUf32{1} ] 
 ```

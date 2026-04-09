@@ -1,6 +1,10 @@
-# Temporarily override the active backend
+# Run code with a specific backend
 
-Temporarily override the active backend
+Sets the `anvil.default_backend` option for the duration of the
+expression. This affects
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) and data
+construction (e.g. via
+[`nv_array`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)).
 
 ## Usage
 
@@ -17,7 +21,7 @@ with_backend(backend, code)
 
 - code:
 
-  Expression to evaluate with the overridden backend.
+  An expression to evaluate with the given backend.
 
 ## Value
 

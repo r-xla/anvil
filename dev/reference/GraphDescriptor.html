@@ -84,8 +84,7 @@
 <span>  outputs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  is_static_flat <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  static_args_flat <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  devices <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  backend <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  devices <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -150,11 +149,6 @@ Flattened traced values for the static arguments indicated by <code>is_static_fl
 <dd><p>(<code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code>)<br>
 Device platforms encountered during tracing (e.g. <code>"cpu"</code>, <code>"cuda"</code>).
 Populated automatically as arrays are registered.</p></dd>
-
-
-<dt id="arg-backend">backend<a class="anchor" aria-label="anchor" href="#arg-backend"></a></dt>
-<dd><p>(<code>NULL</code> | <code>"xla"</code> | <code>"quickr"</code>)<br>
-Backend associated with this graph descriptor.</p></dd>
 
 </dl></div>
     <div class="section level2">
