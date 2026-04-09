@@ -40,6 +40,10 @@ Functions for reshaping and rearranging arrays
   Pad
 - [`nv_reverse()`](https://r-xla.github.io/anvil/dev/reference/nv_reverse.md)
   : Reverse
+- [`nv_squeeze()`](https://r-xla.github.io/anvil/dev/reference/nv_squeeze.md)
+  : Squeeze
+- [`nv_unsqueeze()`](https://r-xla.github.io/anvil/dev/reference/nv_unsqueeze.md)
+  : Unsqueeze
 - [`` `[`( ``*`<AnvilBox>`*`)`](https://r-xla.github.io/anvil/dev/reference/nv_subset.md)
   [`` `[`( ``*`<AnvilArray>`*`)`](https://r-xla.github.io/anvil/dev/reference/nv_subset.md)
   [`nv_subset()`](https://r-xla.github.io/anvil/dev/reference/nv_subset.md)
@@ -105,6 +109,10 @@ Mathematical and trigonometric functions
   Natural Logarithm
 - [`nv_log1p()`](https://r-xla.github.io/anvil/dev/reference/nv_log1p.md)
   : Log Plus One
+- [`nv_log2()`](https://r-xla.github.io/anvil/dev/reference/nv_log2.md)
+  : Base-2 Logarithm
+- [`nv_log10()`](https://r-xla.github.io/anvil/dev/reference/nv_log10.md)
+  : Base-10 Logarithm
 - [`nv_sine()`](https://r-xla.github.io/anvil/dev/reference/nv_sine.md)
   : Sine
 - [`nv_cosine()`](https://r-xla.github.io/anvil/dev/reference/nv_cosine.md)
@@ -126,7 +134,14 @@ Mathematical and trigonometric functions
 - [`nv_logistic()`](https://r-xla.github.io/anvil/dev/reference/nv_logistic.md)
   : Logistic (Sigmoid)
 - [`nv_is_finite()`](https://r-xla.github.io/anvil/dev/reference/nv_is_finite.md)
+  [`is.finite(`*`<AnvilBox>`*`)`](https://r-xla.github.io/anvil/dev/reference/nv_is_finite.md)
   : Is Finite
+- [`nv_is_nan()`](https://r-xla.github.io/anvil/dev/reference/nv_is_nan.md)
+  [`is.nan(`*`<AnvilBox>`*`)`](https://r-xla.github.io/anvil/dev/reference/nv_is_nan.md)
+  : Is NaN
+- [`nv_is_infinite()`](https://r-xla.github.io/anvil/dev/reference/nv_is_infinite.md)
+  [`is.infinite(`*`<AnvilBox>`*`)`](https://r-xla.github.io/anvil/dev/reference/nv_is_infinite.md)
+  : Is Infinite
 
 ### Reduction Operations
 
@@ -146,6 +161,10 @@ Operations that reduce array dimensions
   : Any Reduction
 - [`nv_reduce_all()`](https://r-xla.github.io/anvil/dev/reference/nv_reduce_all.md)
   : All Reduction
+- [`nv_var()`](https://r-xla.github.io/anvil/dev/reference/nv_var.md) :
+  Variance Reduction
+- [`nv_sd()`](https://r-xla.github.io/anvil/dev/reference/nv_sd.md) :
+  Standard Deviation Reduction
 
 ### Linear Algebra
 
@@ -157,6 +176,22 @@ Linear algebra operations
   : Cholesky Decomposition
 - [`nv_solve()`](https://r-xla.github.io/anvil/dev/reference/nv_solve.md)
   : Solve Linear System
+- [`nv_crossprod()`](https://r-xla.github.io/anvil/dev/reference/nv_crossprod.md)
+  [`crossprod(`*`<AnvilBox>`*`)`](https://r-xla.github.io/anvil/dev/reference/nv_crossprod.md)
+  : Cross Product (Matrix)
+- [`nv_tcrossprod()`](https://r-xla.github.io/anvil/dev/reference/nv_tcrossprod.md)
+  [`tcrossprod(`*`<AnvilBox>`*`)`](https://r-xla.github.io/anvil/dev/reference/nv_tcrossprod.md)
+  : Transpose Cross Product (Matrix)
+- [`nv_outer()`](https://r-xla.github.io/anvil/dev/reference/nv_outer.md)
+  : Outer Product
+- [`nv_trace()`](https://r-xla.github.io/anvil/dev/reference/nv_trace.md)
+  : Matrix Trace
+- [`nv_extract_diag()`](https://r-xla.github.io/anvil/dev/reference/nv_extract_diag.md)
+  : Extract Diagonal
+- [`nv_tril()`](https://r-xla.github.io/anvil/dev/reference/nv_tril.md)
+  : Lower Triangular Matrix
+- [`nv_triu()`](https://r-xla.github.io/anvil/dev/reference/nv_triu.md)
+  : Upper Triangular Matrix
 
 ### Logical and Bitwise Operations
 

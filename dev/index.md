@@ -103,9 +103,11 @@ quickly.
 - **Windows**
   - ✅ CPU backend is fully supported.
   - ⚠️ GPU is only supported via Windows Subsystem for Linux (WSL2).
-- **macOS**
+- **macOS (ARM)**
   - ✅ CPU backend is supported.
   - ⚠️ Metal (Apple GPU) backend is available but not fully functional.
+- **macOS (x86_64)**
+  - ❌ Not supported.
 
 ## Acknowledgments
 

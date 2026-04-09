@@ -1,14 +1,15 @@
-# Is Finite
+# Is NaN
 
-Element-wise check if values are finite (not `Inf`, `-Inf`, or `NaN`).
+Element-wise check if values are NaN. You can also use
+[`is.nan()`](https://rdrr.io/r/base/is.finite.html).
 
 ## Usage
 
 ``` r
-nv_is_finite(operand)
+nv_is_nan(operand)
 
 # S3 method for class 'AnvilBox'
-is.finite(x)
+is.nan(x)
 ```
 
 ## Arguments
@@ -30,21 +31,21 @@ Has the same shape as the input and boolean data type.
 
 ## See also
 
-[`nvl_is_finite()`](https://r-xla.github.io/anvil/dev/reference/nvl_is_finite.md)
-for the underlying primitive.
+[`nv_is_finite()`](https://r-xla.github.io/anvil/dev/reference/nv_is_finite.md),
+[`nv_is_infinite()`](https://r-xla.github.io/anvil/dev/reference/nv_is_infinite.md)
 
 ## Examples
 
 ``` r
 jit_eval({
-  x <- nv_array(c(1, Inf, NaN, -Inf, 0))
-  nv_is_finite(x)
+  x <- nv_array(c(1, NaN, Inf, -Inf, 0))
+  nv_is_nan(x)
 })
 #> AnvilArray
-#>  1
-#>  0
-#>  0
 #>  0
 #>  1
+#>  0
+#>  0
+#>  0
 #> [ CPUbool{5} ] 
 ```

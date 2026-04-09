@@ -1,26 +1,37 @@
 # Sequence
 
-Creates a 1-D array with integer values from `start` to `end`
-(inclusive), analogous to R's `seq(start, end)`.
+Creates a 1-D array with values from `start` to `end` (inclusive).
+
+Without `steps`, behaves like R's `seq(start, end)` producing integer
+values. With `steps`, produces `steps` evenly spaced values (like
+`seq(start, end, length.out = steps)`).
 
 ## Usage
 
 ``` r
-nv_seq(start, end, dtype = "i32", ambiguous = FALSE)
+nv_seq(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE)
 ```
 
 ## Arguments
 
 - start, end:
 
-  (`integer(1)`)  
-  Start and end values. Must satisfy `start <= end`.
+  (`numeric(1)`)  
+  Start and end values. When `steps` is `NULL`, must satisfy
+  `start <= end`.
+
+- steps:
+
+  (`integer(1)` or `NULL`)  
+  Number of evenly spaced values to generate. Must be at least 1. When
+  `NULL` (default), generates consecutive integer values from `start` to
+  `end`.
 
 - dtype:
 
-  (`character(1)` \|
-  [`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html))  
-  Data type.
+  (`character(1)`)  
+  Data type. Default `"i32"` when `steps` is `NULL`, `"f32"` when
+  `steps` is given.
 
 - ambiguous:
 
@@ -35,11 +46,6 @@ nv_seq(start, end, dtype = "i32", ambiguous = FALSE)
 
 [`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
 1-D array of length `end - start + 1`.
-
-## See also
-
-[`nv_iota()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md)
-for multi-dimensional sequences.
 
 ## Examples
 
