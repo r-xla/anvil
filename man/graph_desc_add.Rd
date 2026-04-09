@@ -25,7 +25,7 @@ The parameters to the primitive.}
 
 \item{infer_fn}{(\code{function})\cr
 The inference function to use.
-Must output a list of \code{\link{AbstractTensor}}s.}
+Must output a list of \code{\link{AbstractArray}}s.}
 
 \item{desc}{(\code{\link{GraphDescriptor}} | \code{NULL})\cr
 The graph descriptor to add the primitive call to.

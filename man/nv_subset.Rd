@@ -2,28 +2,28 @@
 % Please edit documentation in R/api-generics.R, R/api-subset.R
 \name{[.AnvilBox}
 \alias{[.AnvilBox}
-\alias{[.AnvilTensor}
+\alias{[.AnvilArray}
 \alias{nv_subset}
-\title{Subset a Tensor}
+\title{Subset an Array}
 \usage{
 \method{[}{AnvilBox}(x, ...)
 
-\method{[}{AnvilTensor}(x, ...)
+\method{[}{AnvilArray}(x, ...)
 
 nv_subset(x, ...)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-Tensor to subset.}
+\item{x}{(\code{\link{arrayish}})\cr
+Array to subset.}
 
 \item{...}{Subset specifications, one per dimension. Omitted trailing
 dimensions select all elements. See \code{vignette("subsetting")} for details.}
 }
 \value{
-\code{\link{tensorish}}
+\code{\link{arrayish}}
 }
 \description{
-Extracts a subset from a tensor. You can also use the \code{[} operator.
+Extracts a subset from an array. You can also use the \code{[} operator.
 Supports R-style indexing including scalar indices (which drop dimensions),
 ranges (\code{a:b}), and \code{list()} for selecting multiple elements along a
 dimension.
@@ -31,13 +31,13 @@ dimension.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(matrix(1:12, nrow = 3))
+  x <- nv_array(matrix(1:12, nrow = 3))
   # Select row 2
   x[2, ]
 })
 
 jit_eval({
-  x <- nv_tensor(matrix(1:12, nrow = 3))
+  x <- nv_array(matrix(1:12, nrow = 3))
   # Select rows 1 to 2, all columns
   x[1:2, ]
 })

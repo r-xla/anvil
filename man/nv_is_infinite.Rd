@@ -10,11 +10,11 @@ nv_is_infinite(operand)
 \method{is.infinite}{AnvilBox}(x)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape as the input and boolean data type.
 }
 \description{

@@ -194,13 +194,13 @@ quickr_make_rank1_wrapper <- function(r_fun, inner_fun, out_shape) {
 #' compilation) suitable for `quickr::quick()`. The returned function expects
 #' plain R scalars/vectors/arrays and returns plain R values/arrays.
 #'
-#' Most users will prefer [`jit()`] with `backend = "quickr"`. This function is
+#' Most users will prefer [`jit()`] with `options(anvil.backend = "quickr")`. This function is
 #' the lower-level graph API.
 #'
 #' @param graph ([`AnvilGraph`])\cr
 #'   Graph to convert.
 #' @return (`function`)
-#' @seealso [`jit()`] with `backend = "quickr"` for tracing and compiling a
+#' @seealso [`jit()`] with `options(anvil.backend = "quickr")` for tracing and compiling a
 #'   regular R function in one step.
 #' @export
 graph_to_r_function <- function(graph) {
@@ -238,7 +238,7 @@ graph_to_quickr_r_function <- graph_to_r_function
 #' compiles it with `quickr::quick()`.
 #'
 #' The returned function expects plain R scalars/vectors/arrays (not
-#' [`AnvilTensor`]) and returns plain R values/arrays.
+#' [`AnvilArray`]) and returns plain R values/arrays.
 #'
 #' If the graph returns multiple outputs (e.g. a nested list), the compiled
 #' function returns the same structure by rebuilding the output tree in R.
@@ -246,8 +246,8 @@ graph_to_quickr_r_function <- graph_to_r_function
 #' For a list of supported primitives see `vignette("primitives")`.
 #'
 #' Supported dtypes are `f64`, `i32`, and `pred`.
-#' The code generator currently supports tensors up to rank 5. Some primitives
-#' are more restricted (e.g. `transpose` currently only handles rank-2 tensors).
+#' The code generator currently supports arrays up to rank 5. Some primitives
+#' are more restricted (e.g. `transpose` currently only handles rank-2 arrays).
 #'
 #' Most users will prefer [`jit()`] with `backend = "quickr"`. This function is
 #' the lower-level graph API.

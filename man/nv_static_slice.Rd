@@ -7,7 +7,7 @@
 nv_static_slice(operand, start_indices, limit_indices, strides)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
 \item{start_indices}{(\code{integer()})\cr
@@ -20,17 +20,17 @@ End indices (inclusive), one per dimension.}
 Step sizes, one per dimension. A stride of 1 selects every element.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same data type as \code{operand}.
 }
 \description{
-Extracts a slice from a tensor using static (compile-time) indices.
+Extracts a slice from an array using static (compile-time) indices.
 For dynamic indexing, use \code{\link[=nv_subset]{nv_subset()}} instead.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(1:10)
+  x <- nv_array(1:10)
   nv_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 })
 \dontshow{\}) # examplesIf}

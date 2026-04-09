@@ -7,7 +7,7 @@
 nv_squeeze(operand, dims = NULL)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
 \item{dims}{(\code{integer()} | \code{NULL})\cr

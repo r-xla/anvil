@@ -59,7 +59,7 @@ nv_unif_rand <- function(
 #' @template param_dtype
 #' @param lower,upper (`numeric(1)`)\cr
 #'   Lower and upper bound.
-#' @return (`list()` of [`tensorish`])\cr
+#' @return (`list()` of [`arrayish`])\cr
 #'   List of two elements: the updated RNG state and the sampled values.
 #' @family rng
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -126,11 +126,11 @@ nv_runif <- function(
 #' @template param_shape
 #' @template param_initial_state
 #' @template param_dtype
-#' @param mu ([`tensorish`])\cr
+#' @param mu ([`arrayish`])\cr
 #'   Mean.
-#' @param sigma ([`tensorish`])\cr
+#' @param sigma ([`arrayish`])\cr
 #'   Standard deviation. Must be positive, otherwise results are invalid.
-#' @return (`list()` of [`tensorish`])\cr
+#' @return (`list()` of [`arrayish`])\cr
 #'   List of two elements: the updated RNG state and the sampled values.
 #' @section Covariance:
 #' To implement a covariance structure use Cholesky decomposition.
@@ -216,7 +216,7 @@ nv_rnorm <- function(shape, initial_state, dtype = "f32", mu = 0, sigma = 1) {
 #' @param prob (`numeric(1)`)\cr
 #'   Probability of success on each trial.
 #' @template param_dtype
-#' @return (`list()` of [`tensorish`])\cr
+#' @return (`list()` of [`arrayish`])\cr
 #'   List of two elements: the updated RNG state and the sampled values.
 #' @family rng
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -263,7 +263,7 @@ nv_rbinom <- function(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32") {
 #' @param n (`integer(1)`)\cr
 #'   Number of categories (samples integers `1` to `n`).
 #' @template param_dtype
-#' @return (`list()` of [`tensorish`])\cr
+#' @return (`list()` of [`arrayish`])\cr
 #'   List of two elements: the updated RNG state and the sampled integers.
 #' @family rng
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -292,7 +292,7 @@ nv_rdunif <- function(shape, initial_state, n, dtype = "i32") {
 
   u_col <- nv_reshape(u, c(n_sample, 1L))
   cp_row <- nv_reshape(cp, c(1L, n))
-  bc <- nv_broadcast_tensors(u_col, cp_row) # (n_sample, n)
+  bc <- nv_broadcast_arrays(u_col, cp_row) # (n_sample, n)
   lt_matrix <- nv_convert(nv_lt(bc[[2L]], bc[[1L]]), dtype = "i32")
   samples <- nv_add(nv_reduce_sum(lt_matrix, dims = 2L), 1L)
 

@@ -2,19 +2,19 @@
 % Please edit documentation in R/reexports.R
 \name{as_dtype}
 \alias{as_dtype}
-\title{Convert to a TensorDataType}
+\title{Convert to a DataType}
 \usage{
 as_dtype(x)
 }
 \arguments{
-\item{x}{A character string or \code{TensorDataType} to convert.}
+\item{x}{A character string or \code{DataType} to convert.}
 }
 \value{
-A \code{TensorDataType} object.
+A \code{DataType} object.
 }
 \description{
-Coerces a value to a \code{TensorDataType}. Accepts data type strings
-(e.g. \code{"f32"}, \code{"i64"}, \code{"bool"}) or existing \code{TensorDataType} objects (they are returned unchanged).
+Coerces a value to a \code{DataType}. Accepts data type strings
+(e.g. \code{"f32"}, \code{"i64"}, \code{"bool"}) or existing \code{DataType} objects (they are returned unchanged).
 }
 \details{
 This is implemented via the generic \code{\link[tengen:as_dtype]{tengen::as_dtype()}}.
@@ -26,5 +26,5 @@ as_dtype("i32")
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=is_dtype]{is_dtype()}}, \code{\link[tengen:as_dtype]{tengen::as_dtype()}}, \code{\link[tengen:TensorDataType]{tengen::TensorDataType}}
+\code{\link[=is_dtype]{is_dtype()}}, \code{\link[tengen:as_dtype]{tengen::as_dtype()}}, \code{\link[tengen:DataType]{tengen::DataType}}
 }

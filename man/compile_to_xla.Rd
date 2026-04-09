@@ -20,14 +20,14 @@ Tree structure of the inputs.}
 Names of the arguments whose buffers should be donated.}
 
 \item{device}{(\code{NULL} | \code{character(1)})\cr
-Target device (e.g. \code{"cpu"}, \code{"cuda"}). If \code{NULL}, inferred from traced tensors.}
+Target device (e.g. \code{"cpu"}, \code{"cuda"}). If \code{NULL}, inferred from traced arrays.}
 }
 \value{
 A \code{list} with elements:
 \itemize{
 \item \code{exec}: The compiled PJRT executable.
 \item \code{out_tree}: The output tree structure.
-\item \code{const_tensors}: Constants needed at execution time.
+\item \code{const_arrays}: Constants needed at execution time.
 \item \code{ambiguous_out}: Logical vector indicating which outputs are ambiguous (\code{NULL} if none are).
 }
 }

@@ -7,13 +7,13 @@
 nv_shift_right_logical(lhs, rhs)
 }
 \arguments{
-\item{lhs, rhs}{(\code{\link{tensorish}})\cr
+\item{lhs, rhs}{(\code{\link{arrayish}})\cr
 Left and right operand.
 Operands are \link[=nv_promote_to_common]{promoted to a common data type}.
 Scalars are \link[=nv_broadcast_scalars]{broadcast} to the shape of the other operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and the promoted common data type of the inputs.
 }
 \description{
@@ -22,8 +22,8 @@ Element-wise logical right bit shift.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(8L, 16L, 32L))
-  y <- nv_tensor(c(1L, 2L, 3L))
+  x <- nv_array(c(8L, 16L, 32L))
+  y <- nv_array(c(1L, 2L, 3L))
   nv_shift_right_logical(x, y)
 })
 \dontshow{\}) # examplesIf}

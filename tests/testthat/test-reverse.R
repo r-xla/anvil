@@ -1,4 +1,4 @@
-test_that("basic pullback test", {
+test_that("basic reverse test", {
   f <- function(x, y) {
     nvl_add(x, y)
   }
@@ -143,15 +143,15 @@ test_that("partial gradient simple", {
 #})
 #
 
-#test_that("pullback", {
+#test_that("reverse", {
 #  fbwd <- jit(pullback(nv_add, lhs = nv_scalar(1.0), rhs = nv_scalar(2.0), wrt = "lhs"))
 #  expect_equal(fbwd(nv_scalar(10.0)), list(lhs = nv_scalar(10.0)))
 #})
 #
 #test_that("pullback: non-scalar", {
-#  fbwd <- jit(pullback(nv_mul, lhs = nv_tensor(1:10), rhs = nv_tensor(2:11), wrt = "lhs"))
-#  x <- nv_tensor(1:10)
-#  expect_equal(fbwd(x), list(lhs = jit(nv_mul)(x, nv_tensor(2:11))))
+#  fbwd <- jit(pullback(nv_mul, lhs = nv_array(1:10), rhs = nv_array(2:11), wrt = "lhs"))
+#  x <- nv_array(1:10)
+#  expect_equal(fbwd(x), list(lhs = jit(nv_mul)(x, nv_array(2:11))))
 #})
 
 test_that("gradients are present even if they don't influence the output", {
@@ -201,21 +201,21 @@ test_that("gradient: does not depend on input", {
   expect_equal(out[[2L]], nv_scalar(1.0))
 })
 
-test_that("wrt for non-tensor input: gradient", {
+test_that("wrt for non-array input: gradient", {
   expect_snapshot(error = TRUE, {
     g <- gradient(nv_round, wrt = "method")
     g(nv_scalar(1), method = "nearest_even")
   })
 })
 
-test_that("wrt for non-tensor input: value_and_gradient", {
+test_that("wrt for non-array input: value_and_gradient", {
   expect_snapshot(error = TRUE, {
     g <- value_and_gradient(nv_round, wrt = "method")
     g(nv_scalar(1), method = "nearest_even")
   })
 })
 
-test_that("wrt for nested non-tensor input: gradient", {
+test_that("wrt for nested non-array input: gradient", {
   f <- function(x) {
     nvl_mul(x[[1]], x[[2]])
   }
@@ -225,7 +225,7 @@ test_that("wrt for nested non-tensor input: gradient", {
   })
 })
 
-test_that("wrt for nested non-tensor input: value_and_gradient", {
+test_that("wrt for nested non-array input: value_and_gradient", {
   f <- function(x) {
     nvl_mul(x[[1]], x[[2]])
   }
@@ -235,7 +235,7 @@ test_that("wrt for nested non-tensor input: value_and_gradient", {
   })
 })
 
-test_that("can only compute gradient w.r.t. float tensors", {
+test_that("can only compute gradient w.r.t. float arrays", {
   expect_snapshot(error = TRUE, {
     gradient(nv_floor, wrt = "operand")(nv_scalar(1L))
   })
@@ -250,12 +250,12 @@ test_that("can differentiate through integer/bool functions", {
   }
   g <- jit(gradient(f))
   expect_equal(
-    g(nv_tensor(c(1, 2))),
-    list(x = nv_tensor(c(0, 0)))
+    g(nv_array(c(1, 2))),
+    list(x = nv_array(c(0, 0)))
   )
 })
 
-test_that("gradient with static (non-tensor) argument", {
+test_that("gradient with static (non-array) argument", {
   f <- function(x, y) {
     if (x) y * y else y * 7
   }
@@ -270,7 +270,7 @@ test_that("gradient with static (non-tensor) argument", {
   expect_equal(out_false[[1L]], nv_scalar(7.0))
 })
 
-test_that("value_and_gradient with static (non-tensor) argument", {
+test_that("value_and_gradient with static (non-array) argument", {
   f <- function(x, y) {
     if (x) y * y else y * 7
   }
@@ -300,7 +300,7 @@ test_that("Can propagate ambiguous float32 through integer/bool functions", {
 })
 
 test_that("trace_fn matches args with formals", {
-  graph1 <- trace_fn(nvl_add, list(nv_aten("f32", c()), nv_aten("f32", c())))
-  graph2 <- trace_fn(nvl_add, list(lhs = nv_aten("f32", c()), rhs = nv_aten("f32", c())))
+  graph1 <- trace_fn(nvl_add, list(nv_abstract("f32", c()), nv_abstract("f32", c())))
+  graph2 <- trace_fn(nvl_add, list(lhs = nv_abstract("f32", c()), rhs = nv_abstract("f32", c())))
   expect_equal(graph1$in_tree, graph2$in_tree)
 })

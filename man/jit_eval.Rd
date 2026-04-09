@@ -12,7 +12,7 @@ Expression to compile and evaluate.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
 The device to use. By default (\code{NULL}), the device is inferred from
-the tensors encountered during tracing, falling back to \code{"cpu"}.
+the arrays encountered during tracing, falling back to \code{"cpu"}.
 or \code{"cpu"}.}
 }
 \value{
@@ -27,7 +27,7 @@ Useful if you want to evaluate an expression once.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(c(1, 2, 3), dtype = "f32")
+x <- nv_array(c(1, 2, 3), dtype = "f32")
 jit_eval(x + x)
 \dontshow{\}) # examplesIf}
 }

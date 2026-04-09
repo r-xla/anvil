@@ -7,7 +7,7 @@
 GraphLiteral(aval)
 }
 \arguments{
-\item{aval}{(\code{\link{LiteralTensor}})\cr
+\item{aval}{(\code{\link{LiteralArray}})\cr
 The value of the literal.}
 }
 \value{

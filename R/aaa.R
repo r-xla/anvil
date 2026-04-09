@@ -19,29 +19,8 @@ NULL
 NULL
 
 globals <- new.env()
-globals$nv_types <- "AnvilTensor"
-globals$interpretation_rules <- c("stablehlo", "quickr", "backward")
+globals$nv_types <- "AnvilArray"
+globals$interpretation_rules <- c("stablehlo", "quickr", "reverse")
 globals[["DESCRIPTOR_STASH"]] <- list()
 globals[["CURRENT_DESCRIPTOR"]] <- NULL
-
 utils::globalVariables(c("globals"))
-
-normalize_backend <- function(backend) {
-  assert_string(backend)
-  backend <- tolower(backend)
-  assert_choice(backend, c("xla", "quickr"))
-  backend
-}
-
-current_backend <- function(backend = NULL) {
-  if (!is.null(backend)) {
-    return(normalize_backend(backend))
-  }
-
-  desc <- .current_descriptor(silent = TRUE)
-  if (!is.null(desc) && !is.null(desc$backend)) {
-    return(normalize_backend(desc$backend))
-  }
-
-  normalize_backend(getOption("anvil.default_backend", "xla"))
-}

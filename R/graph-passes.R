@@ -49,7 +49,7 @@ inline_scalarish_constants <- function(graph, map = NULL) {
   }
 
   scalarish_to_lit <- function(gval) {
-    GraphLiteral(LiteralTensor(
+    GraphLiteral(LiteralArray(
       gval$aval$data,
       shape = shape(gval$aval),
       dtype = dtype(gval$aval),

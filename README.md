@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# anvil
+# anvil <img src="man/figures/logo.png" align="right" width = "120" />
 
 Package website: [release](https://r-xla.github.io/anvil/) \|
 [dev](https://r-xla.github.io/anvil/dev/)
@@ -15,11 +15,12 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 status](https://www.r-pkg.org/badges/version/anvil)](https://CRAN.R-project.org/package=anvil)
 [![codecov](https://codecov.io/gh/r-xla/anvil/branch/main/graph/badge.svg)](https://codecov.io/gh/r-xla/anvil)
 [![r-universe](https://r-xla.r-universe.dev/badges/anvil)](https://r-xla.r-universe.dev/anvil)
+![CUDA 12.8](https://img.shields.io/badge/CUDA-12.8-green.svg)
 <!-- badges: end -->
 
 Composable code transformation framework for R, allowing you to run
 numerical programs at the speed of light. It currently implements JIT
-compilation for very fast execution and backward-mode automatic
+compilation for very fast execution and reverse-mode automatic
 differentiation. Programs can run on various hardware backends,
 including CPU and GPU.
 
@@ -28,14 +29,14 @@ including CPU and GPU.
 {anvil} can be installed from GitHub or
 [r-universe](https://r-xla.r-universe.dev/builds). Prebuilt [Docker
 images](https://github.com/r-xla/docker) are also available. See the
-[Installation](https://r-xla.github.io/anvil/articles/installation.html)
-vignette for detailed instructions.
+*Installation* vignette on the package website for detailed
+instructions.
 
 ## Quick Start
 
 Below, we create a standard R function. We cannot directly call this
 function, but first need to wrap it in a `jit()` call. If the resulting
-function is then called on `AnvilTensor`s – the primary data type in
+function is then called on `AnvilArray`s – the primary data type in
 {anvil} – it will be JIT compiled and subsequently executed.
 
 ``` r
@@ -50,7 +51,7 @@ b <- nv_scalar(-2.0, "f32")
 x <- nv_scalar(3.0, "f32")
 
 f_jit(a, b, x)
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #> [ CPUf32{} ]
 ```
@@ -62,15 +63,18 @@ the above function.
 g_jit <- jit(gradient(f, wrt = c("a", "b")))
 g_jit(a, b, x)
 #> $a
-#> AnvilTensor
+#> AnvilArray
 #>  3
 #> [ CPUf32{} ] 
 #> 
 #> $b
-#> AnvilTensor
+#> AnvilArray
 #>  1
 #> [ CPUf32{} ]
 ```
+
+For more complex examples, such as implementing a Gaussian Process, see
+the package website.
 
 ## Main Features
 
@@ -93,18 +97,22 @@ g_jit(a, b, x)
 
 While {anvil} allows to run certain types of programs extremely fast, it
 only applies to a certain category of problems. Specifically, it is
-suitable for numerical algorithms, such as optimizing bayesian models,
+suitable for numerical algorithms, such as fitting bayesian models,
 training neural networks or more generally numerical optimization.
 Another restriction is that {anvil} needs to re-compile the code for
 each new unique input shape. This has the advantage, that the compiler
 can make memory optimizations, but the compilation overhead might be a
-problem for fast running programs.
+problem when inputs shapes are varying often and the programs run
+quickly.
 
 ## Platform Support
 
-- **Linux**
+- **Linux (x86_64)**
   - :white_check_mark: CPU backend is fully supported.
   - :white_check_mark: CUDA (NVIDIA GPU) backend is fully supported.
+- **Linux (ARM)**
+  - :white_check_mark: CPU backend is fully supported.
+  - :x: GPU is not supported.
 - **Windows**
   - :white_check_mark: CPU backend is fully supported.
   - :warning: GPU is only supported via Windows Subsystem for Linux

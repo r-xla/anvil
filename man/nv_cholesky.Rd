@@ -7,7 +7,7 @@
 nv_cholesky(a, lower = TRUE)
 }
 \arguments{
-\item{a}{(\code{\link{tensorish}})\cr
+\item{a}{(\code{\link{arrayish}})\cr
 Symmetric positive-definite matrix with at least 2 dimensions.
 The last two dimensions form the square matrix; any leading dimensions
 are batch dimensions.}
@@ -18,7 +18,7 @@ If \code{TRUE} (default), compute the lower triangular factor \code{L} such that
 such that \code{a = t(U) \%*\% U}.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Triangular matrix with the same shape and data type as the input.
 }
 \description{
@@ -28,7 +28,7 @@ Supports batched inputs: dimensions before the last two are batch dimensions.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  a <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+  a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
   nv_cholesky(a)
 })
 \dontshow{\}) # examplesIf}

@@ -55,59 +55,25 @@ navbar:
         href: articles/primitives.html
       - text: Extending
       - text: Adding a Primitive
-        href: articles/contributing.html
+        href: articles/new_primitive.html
 
 reference:
-  - title: Tensor Creation
-    desc: Functions for creating and initializing tensors
-    contents:
-      - AnvilTensor
-      - tensorish
-      - nv_tensor
-      - nv_scalar
-      - nv_empty
-      - nv_fill
-      - nv_iota
-      - nv_seq
-      - nv_diag
-      - nv_eye
+  - title: API Functions
+    desc: User-facing `nv_*` functions for array operations
 
-  - title: Tensor attributes and converters
-    desc: Functions for querying tensor attributes and converting them
-    contents:
-      - ambiguous
-      - dtype
-      - shape
-      - ndims
-      - ambiguous
-      - device
-      - starts_with("platform")
-      - as_array
-      - as_raw
-      - as_dtype
-      - is_dtype
-
-  - title: Tensor Serialization
-    desc: Functions for serializing and deserializing tensors
-    contents:
-      - nv_save
-      - nv_read
-      - nv_serialize
-      - nv_unserialize
-
-  - title: Type conversion and promotion
-    desc: Functions for type conversion and promotion
+  - subtitle: Type Conversion and Broadcasting
+    desc: Functions for type conversion, promotion, and broadcasting
     contents:
       - nv_convert
       - nv_bitcast_convert
       - nv_promote_to_common
       - nv_broadcast_scalars
-      - nv_broadcast_tensors
+      - nv_broadcast_arrays
       - nv_broadcast_to
       - common_dtype
 
-  - title: Tensor manipulation
-    desc: Functions for reshaping and rearranging tensors
+  - subtitle: Array Manipulation
+    desc: Functions for reshaping and rearranging arrays
     contents:
       - nv_reshape
       - nv_transpose
@@ -120,8 +86,8 @@ reference:
       - nv_subset
       - nv_subset_assign
 
-  - title: Arithmetic operations
-    desc: Basic arithmetic operations on tensors
+  - subtitle: Arithmetic Operations
+    desc: Basic arithmetic operations on arrays
     contents:
       - nv_add
       - nv_sub
@@ -131,7 +97,7 @@ reference:
       - nv_negate
       - nv_remainder
 
-  - title: Comparison operations
+  - subtitle: Comparison Operations
     desc: Element-wise comparison operations
     contents:
       - nv_eq
@@ -141,7 +107,7 @@ reference:
       - nv_lt
       - nv_le
 
-  - title: Mathematical functions
+  - subtitle: Mathematical Functions
     desc: Mathematical and trigonometric functions
     contents:
       - nv_abs
@@ -168,8 +134,8 @@ reference:
       - nv_is_nan
       - nv_is_infinite
 
-  - title: Reduction operations
-    desc: Operations that reduce tensor dimensions
+  - subtitle: Reduction Operations
+    desc: Operations that reduce array dimensions
     contents:
       - nv_reduce_sum
       - nv_reduce_mean
@@ -181,7 +147,7 @@ reference:
       - nv_var
       - nv_sd
 
-  - title: Linear algebra
+  - subtitle: Linear Algebra
     desc: Linear algebra operations
     contents:
       - nv_matmul
@@ -195,8 +161,8 @@ reference:
       - nv_tril
       - nv_triu
 
-  - title: Logical and bitwise operations
-    desc: Logical and bitwise operations on tensors
+  - subtitle: Logical and Bitwise Operations
+    desc: Logical and bitwise operations on arrays
     contents:
       - nv_and
       - nv_or
@@ -207,21 +173,21 @@ reference:
       - nv_shift_right_arithmetic
       - nv_popcnt
 
-  - title: Element-wise operations
-    desc: Other element-wise tensor operations
+  - subtitle: Element-wise Operations
+    desc: Other element-wise array operations
     contents:
       - nv_min
       - nv_max
       - nv_clamp
 
-  - title: Control flow
+  - subtitle: Control Flow
     desc: Control flow operations
     contents:
       - nv_if
       - nv_while
       - nv_ifelse
 
-  - title: Random number generation
+  - subtitle: Random Number Generation
     desc: Functions for generating random numbers
     contents:
       - nv_runif
@@ -230,19 +196,56 @@ reference:
       - nv_rdunif
       - nv_rng_state
 
+  - title: AnvilArray
+    desc: Constructing and working with AnvilArrays
+
+  - subtitle: Construction
+    desc: Functions for creating and initializing arrays
+    contents:
+      - AnvilArray
+      - arrayish
+      - nv_array
+      - nv_scalar
+      - nv_empty
+      - nv_fill
+      - nv_iota
+      - nv_seq
+      - nv_diag
+      - nv_eye
+
+  - subtitle: Attributes
+    desc: Functions for querying array properties
+    contents:
+      - backend
+      - ambiguous
+      - dtype
+      - shape
+      - ndims
+      - device
+      - starts_with("platform")
+
+  - subtitle: Converters
+    desc: Functions for converting arrays
+    contents:
+      - as_array
+      - as_raw
+      - as_dtype
+      - is_dtype
+
+  - subtitle: Serialization
+    desc: Functions for serializing and deserializing arrays
+    contents:
+      - nv_save
+      - nv_read
+      - nv_serialize
+      - nv_unserialize
+
   - title: Transformations
     desc: Code transformations
     contents:
-      - trace_fn
+      - jit
       - gradient
       - value_and_gradient
-      - transform_gradient
-      - graph_to_r_function
-      - jit
-      - xla
-      - jit_eval
-      - compile_to_xla
-      - stablehlo
 
   - title: Debugging
     desc: Debugging utilities and tools
@@ -250,40 +253,70 @@ reference:
       - debug_box
       - nv_print
       - DebugBox
-
-  - title: Internal Data Structures and Functions
-    desc: Internal data structures and functions
+      
+  - title: Backend selection
+    desc: Functions for selecting and managing the backend
     contents:
+      - backend
+      - default_backend
+      - local_backend
+      - with_backend
+
+
+  - title: Internals
+    desc: Internal data structures and functions
+
+  - subtitle: Graph
+    contents:
+      - AnvilGraph
+      - GraphDescriptor
+      - GraphNode
+      - GraphValue
+      - GraphBox
+      - GraphLiteral
+      - AnvilBox
+      - graph_desc_add
+      - local_descriptor
+      - .current_descriptor
+      - subgraphs
+
+  - subtitle: Primitives
+    contents:
+      - prim
+      - AnvilPrimitive
+      - PrimitiveCall
+      - register_primitive
+
+  - subtitle: Abstract Types
+    contents:
+      - nv_abstract
+      - AbstractArray
+      - ConcreteArray
+      - LiteralArray
+      - IotaArray
       - dtype_abstract
       - shape_abstract
       - ndims_abstract
       - ambiguous_abstract
       - to_abstract
-      - GraphDescriptor
-      - GraphValue
-      - AnvilBox
-      - AnvilGraph
-      - GraphNode
-      - GraphBox
-      - GraphLiteral
-      - graph_desc_add
-      - local_descriptor
-      - .current_descriptor
-      - subgraphs
-      - prim
-      - AnvilPrimitive
-      - PrimitiveCall
-      - register_primitive
-      - nv_aten
-      - AbstractTensor
-      - ConcreteTensor
-      - LiteralTensor
-      - IotaTensor
+
+  - subtitle: Transformations
+    contents:
+      - xla
+      - trace_fn
+      - transform_gradient
+      - graph_to_r_function
+      - jit_eval
+      - compile_to_xla
+      - stablehlo
+
+  - subtitle: Miscellaneous
+    contents:
       - eq_type
       - neq_type
       - at2vt
       - vt2at
-      - is_tensorish
+      - is_arrayish
       - Shape
 
   - title: Tree utilities

@@ -12,10 +12,10 @@ common_dtype(
 )
 }
 \arguments{
-\item{lhs_dtype}{(\code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{lhs_dtype}{(\code{\link[tengen:DataType]{tengen::DataType}})\cr
 The left-hand side type.}
 
-\item{rhs_dtype}{(\code{\link[tengen:TensorDataType]{tengen::TensorDataType}})\cr
+\item{rhs_dtype}{(\code{\link[tengen:DataType]{tengen::DataType}})\cr
 The right-hand side type.}
 
 \item{lhs_ambiguous}{(\code{logical(1)})\cr
@@ -25,7 +25,7 @@ Whether the left-hand side type is ambiguous.}
 Whether the right-hand side type is ambiguous.}
 }
 \value{
-(\verb{list(dtype = [}tengen::TensorDataType\verb{], ambiguous = }logical(1)`)\cr
+(\verb{list(dtype = [}tengen::DataType\verb{], ambiguous = }logical(1)`)\cr
 }
 \description{
 Computes the common dtype for a set of abstract types, respecting whether a type is ambiguous or not.

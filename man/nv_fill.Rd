@@ -8,10 +8,10 @@ nv_fill(value, shape, dtype = NULL, ambiguous = FALSE)
 }
 \arguments{
 \item{value}{(\code{numeric(1)})\cr
-Scalar value to fill the tensor with.}
+Scalar value to fill the array with.}
 
 \item{shape}{(\code{integer()})\cr
-Shape of the output tensor.}
+Shape of the output array.}
 
 \item{dtype}{(\code{character(1)} | \code{NULL})\cr
 Data type. If \code{NULL} (default), inferred from \code{value}.}
@@ -22,12 +22,12 @@ Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and 
 See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the given \code{shape} and \code{dtype}.
 }
 \description{
-Creates a tensor filled with a scalar value. More memory-efficient than
-\code{nv_tensor(value, shape = shape)} for large tensors.
+Creates an array filled with a scalar value. More memory-efficient than
+\code{nv_array(value, shape = shape)} for large arrays.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}

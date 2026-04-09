@@ -17,7 +17,7 @@ normalize_quickr_output <- function(x, ref) {
 }
 
 quickr_eval_graph_pjrt <- function(graph, ...) {
-  # PJRT graphs accept only the traced tensor leaves; static args are not inputs.
+  # PJRT graphs accept only the traced array leaves; static args are not inputs.
   args_flat <- flatten(list(...))
   is_static_flat <- graph$is_static_flat
   if (!is.null(is_static_flat)) {
@@ -51,7 +51,7 @@ expect_quickr_matches_pjrt_fn <- function(
   runs,
   tolerance = 1e-12
 ) {
-  graph <- trace_fn(fn, templates, desc = local_descriptor(backend = "quickr"))
+  graph <- trace_fn(fn, templates)
   f_r <- graph_to_quickr_r_function(graph)
   f_quick <- graph_to_quickr_function(graph)
   run_pjrt <- compile_graph_pjrt(graph) # nolint

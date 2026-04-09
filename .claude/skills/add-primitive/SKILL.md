@@ -1,0 +1,162 @@
+---
+name: add-primitive
+description: Add a new primitive operation to anvil (nvl_* function with stablehlo, reverse rules, and tests)
+user_invocable: true
+---
+
+# Add a New Primitive to anvil
+
+Read `vignettes/new_primitive.Rmd` first — it is the primary guide with a complete walkthrough (primitive creation, nvl_* function, stablehlo rule, reverse rule, registration, nv_* API, file organization). This skill covers additional details not in the vignette.
+
+## Before Starting: Check StableHLO Support
+
+1. Check `../stablehlo/R/` for an `op-<name>.R` file (e.g. `op-add.R`).
+2. Check that the operation can be expressed in StableHLO
+   I.e., either it exists as `stablehlo::hlo_<name>()` or it can be expressed as a combination of existing StableHLO operations.
+3. If the op doesn't exist in stablehlo, stop and tell the user — it must be added there first.
+4. Read the StableHLO SPEC (`../stablehlo/SPEC.md`) for the operation's semantics and constraints.
+
+## Roxygen Documentation
+
+Use templates from `man-roxygen/` where applicable:
+
+- **Unary ops:** `@template param_prim_operand_any` (or `_float`, `_signed_numeric`)
+- **Binary ops:** `@template params_prim_lhs_rhs_any` (or `_numeric`, `_float`)
+- **Return:** `@template return_prim_unary`, `return_prim_binary`, `return_prim_compare`, `return_prim_reduce`
+- **Rules section:** `@templateVar primitive_id <name>` + `@template section_rules`
+- **StableHLO link:** `@section StableHLO:\n Lowers to [stablehlo::hlo_<name>()].`
+- Do NOT mention "1-based indexing" — it's the R default.
+- Add `@export` to the roxygen block.
+
+## Shortcuts for Simple Ops
+
+The vignette shows the manual `graph_desc_add()` approach. For simple ops without extra parameters, use these shortcuts instead:
+
+```r
+# Simple unary (e.g. nvl_abs, nvl_negate):
+nvl_<name> <- make_unary_op(p_<name>, stablehlo::infer_types_<name>)
+
+# Simple binary (e.g. nvl_add, nvl_mul):
+nvl_<name> <- make_binary_op(p_<name>, stablehlo::infer_types_<name>)
+```
+
+## Reverse Rule: Additional Guidance
+
+Beyond what the vignette covers:
+
+- Build gradient expressions using `nvl_*` primitives — never use R arithmetic directly.
+- For non-differentiable points (e.g. `abs` at 0, `floor` everywhere), follow PyTorch conventions (subgradients, zero gradients, etc.). Read existing rules in `R/rules-reverse.R` for examples.
+
+## API Wrapper (`nv_*`)
+
+Follow the `/add-api-function` skill for this step — it covers design principles (R naming, semantics, generics), implementation, documentation, `_pkgdown.yml` placement, and testing.
+
+`nvl_*` primitives are auto-included under the "Primitives" section in `_pkgdown.yml` via `starts_with("nvl_")`.
+
+## Testing
+
+The vignette covers file organization and the torch-vs-manual decision. This section adds concrete patterns.
+
+### Decision: Torch comparison vs. manual R tests
+
+- **Use torch comparison** (`inst/extra-tests/`) when the operation has a torch equivalent and the reverse rule is non-trivial.
+- **Use manual R tests** (`tests/testthat/test-primitives-stablehlo.R` and `tests/testthat/test-primitives-reverse.R`) when no torch equivalent exists or the expected output can be stated analytically.
+
+Choose one approach, not both.
+
+### Test structure: property-based with edge cases
+
+Use `describe()` / `it()` blocks. Cover:
+- Different shapes (scalar, vector, matrix, 3D)
+- Boundary values (depends on the specific operation)
+- dtype variations where relevant
+- Parameter variations (e.g. different `dims`, `permutation` values)
+- Non-differentiable points: include those values in the test inputs and verify anvil's gradient matches torch's gradient at those points.
+
+### Forward test example (torch comparison in `inst/extra-tests/test-primitives-stablehlo-torch.R`)
+
+```r
+describe("p_foo", {
+  gen_foo <- function(shp, dtype) {
+    n <- if (!length(shp)) 1L else prod(shp)
+    vals <- c(0, -1, 1, 0.5, -0.5, 100, -100, sample(rnorm(100), n - 7L))
+    vals <- vals[seq_len(n)]
+    if (!length(shp)) vals else array(vals, shp)
+  }
+
+  it("works for scalars", {
+    expect_jit_torch_unary(nvl_foo, torch::torch_foo, integer(), gen = gen_foo)
+  })
+
+  it("works for vectors", {
+    expect_jit_torch_unary(nvl_foo, torch::torch_foo, 10L, gen = gen_foo)
+  })
+
+  it("works for matrices", {
+    expect_jit_torch_unary(nvl_foo, torch::torch_foo, c(3, 4), gen = gen_foo)
+  })
+})
+```
+
+For binary ops, use `expect_jit_torch_binary` with `gen_x` / `gen_y`.
+
+### Reverse test example (torch comparison in `inst/extra-tests/test-primitives-reverse-torch.R`)
+
+```r
+describe("p_foo", {
+  gen_foo <- function(shp, dtype) {
+    n <- if (!length(shp)) 1L else prod(shp)
+    vals <- c(0.5, -0.5, 1, -1, 2, -2, sample(rnorm(100), max(0, n - 6)))
+    vals <- vals[seq_len(n)]
+    if (!length(shp)) vals else array(vals, shp)
+  }
+
+  it("scalar gradient", {
+    verify_grad_uni(nvl_foo, torch::torch_foo, gen = gen_foo)
+  })
+
+  it("tensor gradient", {
+    verify_grad_uni_tensor(nvl_foo, torch::torch_foo, shape = c(3, 4), gen = gen_foo)
+  })
+})
+```
+
+For binary reverse tests, use `verify_grad_biv` / `verify_grad_biv_tensor` with `gen_lhs` / `gen_rhs`.
+
+### Key testing helpers
+
+| Helper | File | Purpose |
+|--------|------|---------|
+| `expect_jit_torch_unary` | `inst/extra-tests/torch-helpers.R` | Compare unary forward with torch |
+| `expect_jit_torch_binary` | `inst/extra-tests/torch-helpers.R` | Compare binary forward with torch |
+| `verify_grad_uni` | `inst/extra-tests/test-primitives-reverse-torch.R` | Compare unary gradient (scalar + tensor) |
+| `verify_grad_uni_tensor` | `inst/extra-tests/test-primitives-reverse-torch.R` | Compare unary gradient (tensor only) |
+| `verify_grad_biv` | `inst/extra-tests/test-primitives-reverse-torch.R` | Compare binary gradient (scalar + tensor) |
+| `verify_grad_biv_tensor` | `inst/extra-tests/test-primitives-reverse-torch.R` | Compare binary gradient (tensor only) |
+| `generate_test_data` | `inst/extra-tests/torch-helpers.R` | Random input sampling by dtype |
+
+Custom generators (`gen`, `gen_x`, `gen_y`, `gen_lhs`, `gen_rhs`) have signature `function(shp, dtype)` and return an R array (or scalar for `integer()` shape).
+
+### Meta-test coverage
+
+`tests/testthat/test-primitives-meta.R` automatically checks that every `p_*` primitive has corresponding stablehlo and reverse tests. Your new primitive will be flagged if tests are missing.
+
+## Verify
+
+```r
+devtools::document()
+devtools::load_all()
+devtools::test()  # or run specific test files
+```
+
+## Checklist
+
+- [ ] Can be expressed in StableHLO
+- [ ] Primitive registered: `p_<name> <- AnvilPrimitive("<name>")`
+- [ ] Primitive implemented: `nvl_<name>` with roxygen docs and `@export`
+- [ ] StableHLO rule: `p_<name>[["stablehlo"]]` in `R/rules-stablehlo.R`
+- [ ] Reverse rule: `p_<name>[["reverse"]]` in `R/rules-reverse.R`
+- [ ] API wrapper: `nv_<name>` added via `/add-api-function` skill
+- [ ] Tests: primitive forward + reverse, property-based with edge cases
+- [ ] `devtools::document()` run
+- [ ] `devtools::test()` passes

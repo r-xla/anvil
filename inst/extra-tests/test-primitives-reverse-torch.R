@@ -124,7 +124,7 @@ verify_grad_uni_tensor <- function(
     operand <- gen(shp, dtype)
   }
 
-  operand_anvil <- nv_tensor(operand, dtype = dtype)
+  operand_anvil <- nv_array(operand, dtype = dtype)
 
   operand_torch <- torch::torch_tensor(
     operand,
@@ -257,8 +257,8 @@ verify_grad_biv_tensor <- function(
     rhs <- gen_rhs(shp, dtype)
   }
 
-  lhs_anvil <- nv_tensor(lhs)
-  rhs_anvil <- nv_tensor(rhs)
+  lhs_anvil <- nv_array(lhs)
+  rhs_anvil <- nv_array(rhs)
 
   lhs_torch <- torch::torch_tensor(lhs, requires_grad = TRUE)
   rhs_torch <- torch::torch_tensor(rhs, requires_grad = TRUE)
@@ -402,7 +402,7 @@ test_that("p_pow", {
 
 test_that("p_reduce_sum", {
   x_arr <- array(1:6, c(2, 3))
-  x <- nv_tensor(x_arr, dtype = "f32")
+  x <- nv_array(x_arr, dtype = "f32")
   f <- function(a) {
     y <- nvl_reduce_sum(a, dims = 2L, drop = TRUE)
     nvl_reduce_sum(y, dims = 1L, drop = TRUE)
@@ -453,13 +453,13 @@ test_that("p_broadcast_in_dim", {
 test_that("p_select", {
   shp <- c(2L, 3L)
   x_arr <- generate_test_data(shp, dtype = "bool")
-  x_anvil <- nv_tensor(x_arr, dtype = "bool")
+  x_anvil <- nv_array(x_arr, dtype = "bool")
   x_torch <- torch::torch_tensor(x_arr, dtype = torch::torch_bool())
 
   a_arr <- generate_test_data(shp, dtype = "f32")
   b_arr <- generate_test_data(shp, dtype = "f32")
-  a_anvil <- nv_tensor(a_arr, dtype = "f32")
-  b_anvil <- nv_tensor(b_arr, dtype = "f32")
+  a_anvil <- nv_array(a_arr, dtype = "f32")
+  b_anvil <- nv_array(b_arr, dtype = "f32")
   a_torch <- torch::torch_tensor(a_arr, requires_grad = TRUE, dtype = torch::torch_float32())
   b_torch <- torch::torch_tensor(b_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
@@ -593,7 +593,7 @@ test_that("p_clamp", {
   dtype <- "f32"
 
   x_arr <- array(sample(c(-0.6, -0.5, -0.1, 0.0, 0.1, 0.5, 0.6), prod(shp), replace = TRUE), shp)
-  x_nv <- nv_tensor(x_arr, dtype = dtype)
+  x_nv <- nv_array(x_arr, dtype = dtype)
   x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
   min_val <- -0.5
@@ -659,7 +659,7 @@ test_that("p_concatenate", {
   verify_grad_concatenate <- function(shapes, dimension = 2L, dtype = "f32", tol = 1e-5) {
     n <- length(shapes)
     arrs <- lapply(shapes, function(shp) generate_test_data(shp, dtype = dtype))
-    nvs <- lapply(arrs, function(arr) nv_tensor(arr, dtype = dtype))
+    nvs <- lapply(arrs, function(arr) nv_array(arr, dtype = dtype))
     ths <- lapply(arrs, function(arr) torch::torch_tensor(arr, requires_grad = TRUE))
 
     f_nv <- function(...) {
@@ -703,7 +703,7 @@ test_that("p_reduce_prod", {
   dtype <- "f32"
 
   x_arr <- gen_nonzero(shp, dtype)
-  x_nv <- nv_tensor(x_arr, dtype = dtype)
+  x_nv <- nv_array(x_arr, dtype = dtype)
   x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
   # Test reduce along one dimension
@@ -724,7 +724,7 @@ describe("p_static_slice", {
   verify_slice_grad <- function(shp, start_indices, limit_indices, strides, torch_slice_fn) {
     dtype <- "f32"
     x_arr <- generate_test_data(shp, dtype = dtype)
-    x_nv <- nv_tensor(x_arr, dtype = dtype)
+    x_nv <- nv_array(x_arr, dtype = dtype)
     x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
     f_nv <- function(x) {
@@ -807,7 +807,7 @@ describe("p_cholesky", {
     n <- sample(2:4, 1L)
     A_r <- gen_spd_matrix(n)
 
-    A_anvil <- nv_tensor(A_r, dtype = "f64")
+    A_anvil <- nv_array(A_r, dtype = "f64")
     A_torch <- torch::torch_tensor(A_r, requires_grad = TRUE, dtype = torch::torch_float64())
 
     f_anvil <- function(A) {
@@ -837,8 +837,8 @@ describe("p_triangular_solve", {
     a_r <- gen_tri_matrix(n, lower, unit_diagonal)
     b_r <- if (left_side) array(rnorm(n * m), c(n, m)) else array(rnorm(m * n), c(m, n))
 
-    a_anvil <- nv_tensor(a_r, dtype = "f64")
-    b_anvil <- nv_tensor(b_r, dtype = "f64")
+    a_anvil <- nv_array(a_r, dtype = "f64")
+    b_anvil <- nv_array(b_r, dtype = "f64")
 
     a_torch <- torch::torch_tensor(a_r, requires_grad = TRUE, dtype = torch::torch_float64())
     b_torch <- torch::torch_tensor(b_r, requires_grad = TRUE, dtype = torch::torch_float64())
@@ -933,8 +933,8 @@ describe("p_triangular_solve", {
     diag(a_r) <- n + seq_len(n)
     b_r <- matrix(rnorm(n * 2L), n, 2L)
 
-    a <- nv_tensor(a_r, dtype = "f64")
-    b <- nv_tensor(b_r, dtype = "f64")
+    a <- nv_array(a_r, dtype = "f64")
+    b <- nv_array(b_r, dtype = "f64")
 
     f <- function(a, b) {
       x <- nvl_triangular_solve(

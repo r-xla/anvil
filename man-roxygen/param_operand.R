@@ -1,2 +1,2 @@
-#' @param operand ([`tensorish`])\cr
+#' @param operand ([`arrayish`])\cr
 #'   Operand.

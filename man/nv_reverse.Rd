@@ -7,14 +7,14 @@
 nv_reverse(operand, dims)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
 \item{dims}{(\code{integer()})\cr
 Dimensions to reverse.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape and data type as \code{operand}.
 }
 \description{
@@ -23,7 +23,7 @@ Reverses the order of elements along specified dimensions.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3, 4, 5))
+  x <- nv_array(c(1, 2, 3, 4, 5))
   nv_reverse(x, dims = 1L)
 })
 \dontshow{\}) # examplesIf}

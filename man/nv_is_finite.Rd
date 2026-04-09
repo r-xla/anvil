@@ -10,11 +10,11 @@ nv_is_finite(operand)
 \method{is.finite}{AnvilBox}(x)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same shape as the input and boolean data type.
 }
 \description{
@@ -23,7 +23,7 @@ Element-wise check if values are finite (not \code{Inf}, \code{-Inf}, or \code{N
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, Inf, NaN, -Inf, 0))
+  x <- nv_array(c(1, Inf, NaN, -Inf, 0))
   nv_is_finite(x)
 })
 \dontshow{\}) # examplesIf}

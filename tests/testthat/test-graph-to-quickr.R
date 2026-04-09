@@ -42,10 +42,10 @@ test_that("graph_to_quickr_function handles GraphLiteral inputs (R scalar litera
 
   graph <- trace_fn(
     function(x) {
-      x + 1
+      x + 1L
     },
     list(x = nv_scalar(0.0, dtype = "f64")),
-    desc = local_descriptor(backend = "quickr")
+    desc = local_descriptor()
   )
 
   expect_quickr_matches_pjrt(graph, 2.5)
@@ -95,7 +95,7 @@ test_that("graph_to_quickr_function ignores static args when flattening nested i
   skip_if_no_quickr_or_pjrt()
 
   # Regression test: when tracing with nested list inputs and an extra static arg,
-  # graph$inputs contains only the tensor leaves but wrapper flattening sees both.
+  # graph$inputs contains only the array leaves but wrapper flattening sees both.
   graph <- trace_fn(
     function(x, flag) {
       if (flag) {
@@ -125,9 +125,9 @@ test_that("graph_to_quickr_function accepts flat static args (no nested inputs)"
 
   fn <- function(x, flag) {
     if (flag) {
-      x + 1
+      x + 1L
     } else {
-      x - 1
+      x - 1L
     }
   }
 
@@ -137,7 +137,7 @@ test_that("graph_to_quickr_function accepts flat static args (no nested inputs)"
       x = nv_scalar(0.0, dtype = "f64"),
       flag = TRUE
     ),
-    desc = local_descriptor(backend = "quickr")
+    desc = local_descriptor()
   )
 
   f_quick <- graph_to_quickr_function(graph)
@@ -155,16 +155,16 @@ test_that("graph_to_quickr wrappers reject mismatched runtime static args", {
   flat_graph <- trace_fn(
     function(x, flag) {
       if (flag) {
-        x + 1
+        x + 1L
       } else {
-        x - 1
+        x - 1L
       }
     },
     list(
       x = nv_scalar(0.0, dtype = "f64"),
       flag = TRUE
     ),
-    desc = local_descriptor(backend = "quickr")
+    desc = local_descriptor()
   )
 
   flat_r <- graph_to_quickr_r_function(flat_graph)
@@ -266,10 +266,10 @@ test_that("graph_to_quickr_function preserves 1D output dims", {
 
   graph <- trace_fn(
     function(x) {
-      x + 1
+      x + 1L
     },
-    list(x = nv_tensor(array(0, dim = 3L), dtype = "f64", shape = 3L)),
-    desc = local_descriptor(backend = "quickr")
+    list(x = nv_array(array(0, dim = 3L), dtype = "f64", shape = 3L)),
+    desc = local_descriptor()
   )
 
   out <- expect_quickr_matches_pjrt(graph, c(0.5, 1.5, 2.5))
@@ -283,7 +283,7 @@ test_that("graph_to_quickr_function preserves empty 1D output dims without wrapp
     function(x) {
       x
     },
-    list(x = nv_tensor(array(0, dim = 0L), dtype = "f64", shape = 0L))
+    list(x = nv_array(array(0, dim = 0L), dtype = "f64", shape = 0L))
   )
 
   x <- array(numeric(), dim = 0L)
@@ -305,7 +305,7 @@ test_that("graph_to_quickr_function preserves rank-1 dims for direct quickr outp
     function(x) {
       nv_expm1(x)
     },
-    list(x = nv_tensor(array(0, dim = 3L), dtype = "f64", shape = 3L))
+    list(x = nv_array(array(0, dim = 3L), dtype = "f64", shape = 3L))
   )
 
   x <- array(c(0.1, 0.2, 0.3), dim = 3L)
@@ -332,7 +332,7 @@ test_that("graph_to_quickr_function uses a specialized rank-1 wrapper", {
     function(x) {
       nv_expm1(x)
     },
-    list(x = nv_tensor(array(0, dim = 3L), dtype = "f64", shape = 3L))
+    list(x = nv_array(array(0, dim = 3L), dtype = "f64", shape = 3L))
   )
 
   f_quick <- graph_to_quickr_function(graph)
@@ -355,7 +355,7 @@ test_that("graph_to_quickr_function preserves rank-1 dims for wrapped quickr out
       }
     },
     list(
-      x = nv_tensor(array(0, dim = 3L), dtype = "f64", shape = 3L),
+      x = nv_array(array(0, dim = 3L), dtype = "f64", shape = 3L),
       flag = TRUE
     )
   )
@@ -377,10 +377,10 @@ test_that("graph_to_quickr_function preserves pred leaves in multiple outputs", 
 
   graph <- trace_fn(
     function(x) {
-      list(p = x > 0, v = x + 1)
+      list(p = x > 0L, v = x + 1L)
     },
     list(x = nv_scalar(0.0, dtype = "f64")),
-    desc = local_descriptor(backend = "quickr")
+    desc = local_descriptor()
   )
 
   out <- expect_quickr_matches_pjrt(graph, -0.5)

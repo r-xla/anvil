@@ -18,7 +18,7 @@ The descriptor of the graph being built.}
 }
 \description{
 An \code{\link{AnvilBox}} subclass that wraps a \code{\link{GraphNode}} during graph construction (tracing).
-When a function is traced via \code{\link[=trace_fn]{trace_fn()}}, each intermediate tensor
+When a function is traced via \code{\link[=trace_fn]{trace_fn()}}, each intermediate array
 value is represented as a \code{GraphBox}.
 It also contains an associated \code{\link{GraphDescriptor}} in which the node "lives".
 }

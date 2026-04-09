@@ -7,7 +7,7 @@
 nv_reduce_any(operand, dims, drop = TRUE)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
 \item{dims}{(\code{integer()})\cr
@@ -17,8 +17,8 @@ Dimensions to reduce.}
 Whether to drop reduced dimensions.}
 }
 \value{
-\code{\link{tensorish}}\cr
-Boolean tensor.
+\code{\link{arrayish}}\cr
+Boolean array.
 When \code{drop = TRUE}, the reduced dimensions are removed.
 When \code{drop = FALSE}, the reduced dimensions are set to 1.
 }
@@ -29,7 +29,7 @@ Returns \code{TRUE} if any element is \code{TRUE}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+  x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
   nv_reduce_any(x, dims = 1L)
 })
 \dontshow{\}) # examplesIf}

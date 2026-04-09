@@ -23,21 +23,12 @@ Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and 
 See the \code{vignette("type-promotion")} for more details.}
 }
 \value{
-\code{\link{tensorish}}\cr
-1-D tensor.
+\code{\link{arrayish}}\cr
+1-D array of length \code{end - start + 1}.
 }
 \description{
-Creates a 1-D tensor with values from \code{start} to \code{end} (inclusive).
+Creates a 1-D array with values from \code{start} to \code{end} (inclusive).
 
 Without \code{steps}, behaves like R's \code{seq(start, end)} producing integer values.
 With \code{steps}, produces \code{steps} evenly spaced values (like \code{seq(start, end, length.out = steps)}).
-}
-\examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval(nv_seq(3, 7))
-jit_eval(nv_seq(0, 1, steps = 5L))
-\dontshow{\}) # examplesIf}
-}
-\seealso{
-\code{\link[=nv_iota]{nv_iota()}} for multi-dimensional sequences.
 }

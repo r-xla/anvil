@@ -38,7 +38,7 @@ infer_reduce <- function(operand, dims, drop) {
     new_shape <- old_shape
     new_shape[dims] <- 1L
   }
-  list(AbstractTensor(
+  list(AbstractArray(
     dtype = dtype(operand),
     shape = Shape(new_shape),
     ambiguous = operand$ambiguous
@@ -53,7 +53,7 @@ infer_reduce_boolean <- function(operand, dims, drop) {
     new_shape <- old_shape
     new_shape[dims] <- 1L
   }
-  list(AbstractTensor(
+  list(AbstractArray(
     dtype = "bool",
     shape = Shape(new_shape),
     ambiguous = FALSE
@@ -63,18 +63,18 @@ infer_reduce_boolean <- function(operand, dims, drop) {
 p_fill <- AnvilPrimitive("fill")
 #' @title Primitive Fill
 #' @description
-#' Creates a tensor of a given shape and data type, filled with a scalar value.
+#' Creates an array of a given shape and data type, filled with a scalar value.
 #' The advantage of using this function instead of e.g. doing
-#' `nv_tensor(1, shape = c(100, 100))` is that lowering of [nvl_fill()] is
+#' `nv_array(1, shape = c(100, 100))` is that lowering of [nvl_fill()] is
 #' efficiently represented in the compiled program, while the latter uses
 #' 100 * 100 * 4 bytes of memory.
 #' @param value (`numeric(1)`)\cr
-#'   Scalar value to fill the tensor with.
+#'   Scalar value to fill the array with.
 #' @param shape (`integer()`)\cr
-#'   Shape of the output tensor.
+#'   Shape of the output array.
 #' @template param_dtype
 #' @template param_ambiguous
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the given `shape` and `dtype`.
 #' @templateVar primitive_id fill
 #' @template section_rules
@@ -86,7 +86,7 @@ p_fill <- AnvilPrimitive("fill")
 #' @export
 nvl_fill <- function(value, shape, dtype, ambiguous = FALSE) {
   infer_fill <- function(value, shape, dtype, ambiguous) {
-    list(AbstractTensor(dtype = as_dtype(dtype), shape = shape, ambiguous = ambiguous))
+    list(AbstractArray(dtype = as_dtype(dtype), shape = shape, ambiguous = ambiguous))
   }
   graph_desc_add(
     p_fill,
@@ -99,7 +99,7 @@ nvl_fill <- function(value, shape, dtype, ambiguous = FALSE) {
 p_add <- AnvilPrimitive("add")
 #' @title Primitive Addition
 #' @description
-#' Adds two tensors element-wise.
+#' Adds two arrays element-wise.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_binary
 #' @templateVar primitive_id add
@@ -109,8 +109,8 @@ p_add <- AnvilPrimitive("add")
 #' @seealso [nv_add()], `+`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(4, 5, 6))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(4, 5, 6))
 #'   nvl_add(x, y)
 #' })
 #' @export
@@ -119,7 +119,7 @@ nvl_add <- make_binary_op(p_add, stablehlo::infer_types_add)
 p_mul <- AnvilPrimitive("mul")
 #' @title Primitive Multiplication
 #' @description
-#' Multiplies two tensors element-wise.
+#' Multiplies two arrays element-wise.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_binary
 #' @templateVar primitive_id mul
@@ -129,8 +129,8 @@ p_mul <- AnvilPrimitive("mul")
 #' @seealso [nv_mul()], `*`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(4, 5, 6))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(4, 5, 6))
 #'   nvl_mul(x, y)
 #' })
 #' @export
@@ -139,7 +139,7 @@ nvl_mul <- make_binary_op(p_mul, stablehlo::infer_types_multiply)
 p_sub <- AnvilPrimitive("sub")
 #' @title Primitive Subtraction
 #' @description
-#' Subtracts two tensors element-wise.
+#' Subtracts two arrays element-wise.
 #' @template params_prim_lhs_rhs_numeric
 #' @template return_prim_binary
 #' @templateVar primitive_id sub
@@ -149,8 +149,8 @@ p_sub <- AnvilPrimitive("sub")
 #' @seealso [nv_sub()], `-`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(4, 5, 6))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(4, 5, 6))
 #'   nvl_sub(x, y)
 #' })
 #' @export
@@ -159,9 +159,9 @@ nvl_sub <- make_binary_op(p_sub, stablehlo::infer_types_subtract)
 p_negate <- AnvilPrimitive("negate")
 #' @title Primitive Negation
 #' @description
-#' Negates a tensor element-wise.
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type integer or floating-point.
+#' Negates an array element-wise.
+#' @param operand ([`arrayish`])\cr
+#'   Arrayish value of data type integer or floating-point.
 #' @template return_prim_unary
 #' @templateVar primitive_id negate
 #' @template section_rules
@@ -170,7 +170,7 @@ p_negate <- AnvilPrimitive("negate")
 #' @seealso [nv_negate()], unary `-`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, -2, 3))
+#'   x <- nv_array(c(1, -2, 3))
 #'   nvl_negate(x)
 #' })
 #' @export
@@ -179,7 +179,7 @@ nvl_negate <- make_unary_op(p_negate, stablehlo::infer_types_negate)
 p_div <- AnvilPrimitive("divide")
 #' @title Primitive Division
 #' @description
-#' Divides two tensors element-wise.
+#' Divides two arrays element-wise.
 #' @template params_prim_lhs_rhs_numeric
 #' @template return_prim_binary
 #' @templateVar primitive_id div
@@ -189,8 +189,8 @@ p_div <- AnvilPrimitive("divide")
 #' @seealso [nv_div()], `/`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(10, 20, 30))
-#'   y <- nv_tensor(c(2, 5, 10))
+#'   x <- nv_array(c(10, 20, 30))
+#'   y <- nv_array(c(2, 5, 10))
 #'   nvl_div(x, y)
 #' })
 #' @export
@@ -209,8 +209,8 @@ p_pow <- AnvilPrimitive("power")
 #' @seealso [nv_pow()], `^`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(2, 3, 4))
-#'   y <- nv_tensor(c(3, 2, 1))
+#'   x <- nv_array(c(2, 3, 4))
+#'   y <- nv_array(c(3, 2, 1))
 #'   nvl_pow(x, y)
 #' })
 #' @export
@@ -219,7 +219,7 @@ nvl_pow <- make_binary_op(p_pow, stablehlo::infer_types_power)
 p_broadcast_in_dim <- AnvilPrimitive("broadcast_in_dim")
 #' @title Primitive Broadcast
 #' @description
-#' Broadcasts a tensor to a new shape by replicating the data along new or size-1 dimensions.
+#' Broadcasts an array to a new shape by replicating the data along new or size-1 dimensions.
 #' @template param_prim_operand_any
 #' @param shape (`integer()`)\cr
 #'   Target shape. Each mapped dimension must either match the corresponding
@@ -227,7 +227,7 @@ p_broadcast_in_dim <- AnvilPrimitive("broadcast_in_dim")
 #' @param broadcast_dimensions (`integer()`)\cr
 #'   Maps each dimension of `operand` to a dimension of the output.
 #'   Must have length equal to the number of dimensions of `operand`.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type as the input and the given `shape`.
 #'   It is ambiguous if the input is ambiguous.
 #' @importFrom stablehlo r_to_constant
@@ -238,7 +238,7 @@ p_broadcast_in_dim <- AnvilPrimitive("broadcast_in_dim")
 #' @seealso [nv_broadcast_to()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
+#'   x <- nv_array(c(1, 2, 3))
 #'   nvl_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
 #' })
 #' @export
@@ -272,7 +272,7 @@ nvl_broadcast_in_dim <- function(operand, shape, broadcast_dimensions) {
 p_dot_general <- AnvilPrimitive("dot_general")
 #' @title Primitive Dot General
 #' @description
-#' General dot product of two tensors, supporting contraction over arbitrary
+#' General dot product of two arrays, supporting contraction over arbitrary
 #' dimensions and batching.
 #' @template params_lhs_rhs
 #' @param contracting_dims (`list(integer(), integer())`)\cr
@@ -281,7 +281,7 @@ p_dot_general <- AnvilPrimitive("dot_general")
 #' @param batching_dims (`list(integer(), integer())`)\cr
 #'   A list of two integer vectors specifying which dimensions of `lhs` and
 #'   `rhs` are batch dimensions. These must have matching sizes.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   The output shape is the batch dimensions followed by the remaining
 #'   (non-contracted, non-batched) dimensions of `lhs`, then `rhs`.
 #' @templateVar primitive_id dot_general
@@ -291,8 +291,8 @@ p_dot_general <- AnvilPrimitive("dot_general")
 #' @seealso [nv_matmul()], `%*%`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
-#'   y <- nv_tensor(matrix(1:6, nrow = 3))
+#'   x <- nv_array(matrix(1:6, nrow = 2))
+#'   y <- nv_array(matrix(1:6, nrow = 3))
 #'   nvl_dot_general(x, y,
 #'     contracting_dims = list(2L, 1L),
 #'     batching_dims = list(integer(0), integer(0))
@@ -319,12 +319,12 @@ nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
 p_transpose <- AnvilPrimitive("transpose")
 #' @title Primitive Transpose
 #' @description
-#' Permutes the dimensions of a tensor.
+#' Permutes the dimensions of an array.
 #' @template param_prim_operand_any
 #' @param permutation (`integer()`)\cr
 #'   Specifies the new ordering of dimensions. Must be a permutation of
 #'   `seq_len(ndims)` where `ndims` is the number of dimensions of `operand`.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type as the input and shape `nv_shape(operand)[permutation]`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id transpose
@@ -334,7 +334,7 @@ p_transpose <- AnvilPrimitive("transpose")
 #' @seealso [nv_transpose()], [t()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
+#'   x <- nv_array(matrix(1:6, nrow = 2))
 #'   nvl_transpose(x, permutation = c(2L, 1L))
 #' })
 #' @export
@@ -361,12 +361,12 @@ nvl_transpose <- function(operand, permutation) {
 p_reshape <- AnvilPrimitive("reshape")
 #' @title Primitive Reshape
 #' @description
-#' Reshapes a tensor to a new shape without changing the underlying data.
+#' Reshapes an array to a new shape without changing the underlying data.
 #' Note that row-major order is used, which differs from R's column-major order.
 #' @template param_prim_operand_any
 #' @param shape (`integer()`)\cr
 #'   Target shape. Must have the same number of elements as `operand`.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type as the input and the given `shape`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id reshape
@@ -376,7 +376,7 @@ p_reshape <- AnvilPrimitive("reshape")
 #' @seealso [nv_reshape()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(1:6)
+#'   x <- nv_array(1:6)
 #'   nvl_reshape(x, shape = c(2, 3))
 #' })
 #' @export
@@ -398,13 +398,13 @@ nvl_reshape <- function(operand, shape) {
 p_concatenate <- AnvilPrimitive("concatenate")
 #' @title Primitive Concatenate
 #' @description
-#' Concatenates tensors along a dimension.
-#' @param ... ([`tensorish`])\cr
-#'   Tensors to concatenate. Must all have the same data type, ndims,
+#' Concatenates arrays along a dimension.
+#' @param ... ([`arrayish`])\cr
+#'   Arrays to concatenate. Must all have the same data type, ndims,
 #'   and shape except along `dimension`.
 #' @param dimension (`integer(1)`)\cr
 #'   Dimension along which to concatenate (1-indexed).
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type as the inputs.
 #'   The output shape matches the inputs in all dimensions except `dimension`,
 #'   which is the sum of the input sizes along that dimension.
@@ -416,8 +416,8 @@ p_concatenate <- AnvilPrimitive("concatenate")
 #' @seealso [nv_concatenate()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(4, 5, 6))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(4, 5, 6))
 #'   nvl_concatenate(x, y, dimension = 1L)
 #' })
 #' @export
@@ -449,11 +449,11 @@ nvl_concatenate <- function(..., dimension) {
 p_static_slice <- AnvilPrimitive("static_slice")
 #' @title Primitive Static Slice
 #' @description
-#' Extracts a slice from a tensor using static (compile-time) indices.
+#' Extracts a slice from an array using static (compile-time) indices.
 #' All indices, limits, and strides are fixed R integers.
 #'
 #' Use [nvl_dynamic_slice()] instead when the start position must be
-#' computed at runtime (e.g. depends on tensor values).
+#' computed at runtime (e.g. depends on array values).
 #' @template param_prim_operand_any
 #' @param start_indices (`integer()`)\cr
 #'   Start indices (inclusive), one per dimension. Must satisfy
@@ -464,7 +464,7 @@ p_static_slice <- AnvilPrimitive("static_slice")
 #' @param strides (`integer()`)\cr
 #'   Step sizes, one per dimension. Must be `>= 1`. A stride of `1`
 #'   selects every element; a stride of `2` selects every other element, etc.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type as the input and shape
 #'   `ceiling((limit_indices - start_indices + 1) / strides)`.
 #'   It is ambiguous if the input is ambiguous.
@@ -476,19 +476,19 @@ p_static_slice <- AnvilPrimitive("static_slice")
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' # 1-D: extract elements 2 through 4 (limit is exclusive)
 #' jit_eval({
-#'   x <- nv_tensor(1:10)
+#'   x <- nv_array(1:10)
 #'   nvl_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 #' })
 #'
 #' # 1-D: every other element using strides
 #' jit_eval({
-#'   x <- nv_tensor(1:10)
+#'   x <- nv_array(1:10)
 #'   nvl_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
 #' })
 #'
 #' # 2-D: extract a submatrix (rows 1-2, columns 2-3)
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4))
+#'   x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
 #'   nvl_static_slice(x,
 #'     start_indices = c(1L, 2L),
 #'     limit_indices = c(3L, 4L),
@@ -523,16 +523,16 @@ nvl_static_slice <- function(operand, start_indices, limit_indices, strides) {
 p_dynamic_slice <- AnvilPrimitive("dynamic_slice")
 #' @title Primitive Dynamic Slice
 #' @description
-#' Extracts a slice from a tensor whose start position is determined at
-#' runtime via tensor-valued indices. The slice shape (`slice_sizes`) is
+#' Extracts a slice from an array whose start position is determined at
+#' runtime via array-valued indices. The slice shape (`slice_sizes`) is
 #' a fixed R integer vector.
 #'
 #' Use [nvl_static_slice()] instead when all indices are known at compile
 #' time and you need stride support.
 #' @template param_prim_operand_any
-#' @param ... ([`tensorish`] of integer type)\cr
+#' @param ... ([`arrayish`] of integer type)\cr
 #'   Scalar start indices, one per dimension. Each must be a
-#'   scalar tensor. Pass one scalar per dimension of `operand`.
+#'   scalar array. Pass one scalar per dimension of `operand`.
 #' @param slice_sizes (`integer()`)\cr
 #'   Size of the slice in each dimension. Must have length equal to
 #'   `ndims(operand)` and satisfy `1 <= slice_sizes <= nv_shape(operand)`
@@ -542,7 +542,7 @@ p_dynamic_slice <- AnvilPrimitive("dynamic_slice")
 #' `adjusted_start_indices = clamp(1, start_indices, nv_shape(operand) - slice_sizes + 1)`.
 #' This means that out-of-bounds indices will not cause an error, but
 #' the effective start position may differ from the requested one.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type as the input and shape `slice_sizes`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id dynamic_slice
@@ -553,14 +553,14 @@ p_dynamic_slice <- AnvilPrimitive("dynamic_slice")
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' # 1-D: extract 3 elements starting at position 3
 #' jit_eval({
-#'   x <- nv_tensor(1:10)
+#'   x <- nv_array(1:10)
 #'   start <- nv_scalar(3L)
 #'   nvl_dynamic_slice(x, start, slice_sizes = 3L)
 #' })
 #'
 #' # 2-D: extract a 2x2 block from a matrix
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:12, nrow = 3, ncol = 4))
+#'   x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
 #'   row_start <- nv_scalar(2L)
 #'   col_start <- nv_scalar(1L)
 #'   nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
@@ -576,7 +576,7 @@ nvl_dynamic_slice <- function(operand, ..., slice_sizes) {
         cli_abort("Start index {i} must be a scalar, but has shape {shape(aval)}")
       }
     }
-    out <- AbstractTensor(dtype = operand$dtype, shape = slice_sizes, ambiguous = operand$ambiguous)
+    out <- AbstractArray(dtype = operand$dtype, shape = slice_sizes, ambiguous = operand$ambiguous)
     list(out)
   }
   graph_desc_add(
@@ -592,18 +592,18 @@ p_dynamic_update_slice <- AnvilPrimitive("dynamic_update_slice")
 #' @description
 #' Returns a copy of `operand` with a slice replaced by `update` at a
 #' runtime-determined position. This is the write counterpart of
-#' [nvl_dynamic_slice()]: dynamic slice reads a block from a tensor,
-#' while dynamic update slice writes a block into a tensor.
+#' [nvl_dynamic_slice()]: dynamic slice reads a block from an array,
+#' while dynamic update slice writes a block into an array.
 #' @template param_prim_operand_any
-#' @param update ([`tensorish`])\cr
+#' @param update ([`arrayish`])\cr
 #'   The values to write at the specified position. Must have the same
 #'   data type and number of dimensions as `operand`, with
 #'   `nv_shape(update) <= nv_shape(operand)` per dimension.
-#' @param ... ([`tensorish`] of integer type)\cr
+#' @param ... ([`arrayish`] of integer type)\cr
 #'   Scalar start indices, one per dimension of `operand`.
-#'   Each must be a scalar tensor.
+#'   Each must be a scalar array.
 #' @inheritSection nvl_dynamic_slice Out Of Bounds Behavior
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type and shape as `operand`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id dynamic_update_slice
@@ -614,16 +614,16 @@ p_dynamic_update_slice <- AnvilPrimitive("dynamic_update_slice")
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' # 1-D: overwrite two elements starting at position 2
 #' jit_eval({
-#'   x <- nv_tensor(1:5)
-#'   update <- nv_tensor(c(10L, 20L))
+#'   x <- nv_array(1:5)
+#'   update <- nv_array(c(10L, 20L))
 #'   start <- nv_scalar(2L)
 #'   nvl_dynamic_update_slice(x, update, start)
 #' })
 #'
 #' # 2-D: write a 2x2 block into a 3x4 matrix
 #' jit_eval({
-#'   x <- nv_tensor(matrix(0L, nrow = 3, ncol = 4))
-#'   update <- nv_tensor(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
+#'   x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
+#'   update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
 #'   row_start <- nv_scalar(2L)
 #'   col_start <- nv_scalar(3L)
 #'   nvl_dynamic_update_slice(x, update, row_start, col_start)
@@ -639,7 +639,7 @@ nvl_dynamic_update_slice <- function(operand, update, ...) {
         cli_abort("Start index {i} must be a scalar, but has shape {shape(aval)}")
       }
     }
-    out <- AbstractTensor(dtype = operand$dtype, shape = shape(operand), ambiguous = operand$ambiguous)
+    out <- AbstractArray(dtype = operand$dtype, shape = shape(operand), ambiguous = operand$ambiguous)
     list(out)
   }
   graph_desc_add(
@@ -667,7 +667,7 @@ make_reduce_op <- function(prim, infer_fn = infer_reduce) {
 p_reduce_sum <- AnvilPrimitive("reduce_sum")
 #' @title Primitive Sum Reduction
 #' @description
-#' Sums tensor elements along the specified dimensions.
+#' Sums array elements along the specified dimensions.
 #' @template param_prim_operand_any
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reduce over.
@@ -683,7 +683,7 @@ p_reduce_sum <- AnvilPrimitive("reduce_sum")
 #' @seealso [nv_reduce_sum()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
+#'   x <- nv_array(matrix(1:6, nrow = 2))
 #'   nvl_reduce_sum(x, dims = 1L)
 #' })
 #' @export
@@ -692,7 +692,7 @@ nvl_reduce_sum <- make_reduce_op(p_reduce_sum)
 p_reduce_prod <- AnvilPrimitive("reduce_prod")
 #' @title Primitive Product Reduction
 #' @description
-#' Multiplies tensor elements along the specified dimensions.
+#' Multiplies array elements along the specified dimensions.
 #' @template param_prim_operand_any
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reduce over.
@@ -708,7 +708,7 @@ p_reduce_prod <- AnvilPrimitive("reduce_prod")
 #' @seealso [nv_reduce_prod()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
+#'   x <- nv_array(matrix(1:6, nrow = 2))
 #'   nvl_reduce_prod(x, dims = 1L)
 #' })
 #' @export
@@ -717,7 +717,7 @@ nvl_reduce_prod <- make_reduce_op(p_reduce_prod)
 p_reduce_max <- AnvilPrimitive("reduce_max")
 #' @title Primitive Max Reduction
 #' @description
-#' Finds the maximum of tensor elements along the specified dimensions.
+#' Finds the maximum of array elements along the specified dimensions.
 #' @template param_prim_operand_any
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reduce over.
@@ -733,7 +733,7 @@ p_reduce_max <- AnvilPrimitive("reduce_max")
 #' @seealso [nv_reduce_max()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
+#'   x <- nv_array(matrix(1:6, nrow = 2))
 #'   nvl_reduce_max(x, dims = 1L)
 #' })
 #' @export
@@ -742,7 +742,7 @@ nvl_reduce_max <- make_reduce_op(p_reduce_max)
 p_reduce_min <- AnvilPrimitive("reduce_min")
 #' @title Primitive Min Reduction
 #' @description
-#' Finds the minimum of tensor elements along the specified dimensions.
+#' Finds the minimum of array elements along the specified dimensions.
 #' @template param_prim_operand_any
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reduce over.
@@ -758,7 +758,7 @@ p_reduce_min <- AnvilPrimitive("reduce_min")
 #' @seealso [nv_reduce_min()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(1:6, nrow = 2))
+#'   x <- nv_array(matrix(1:6, nrow = 2))
 #'   nvl_reduce_min(x, dims = 1L)
 #' })
 #' @export
@@ -783,7 +783,7 @@ p_reduce_any <- AnvilPrimitive("reduce_any")
 #' @seealso [nv_reduce_any()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#'   x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
 #'   nvl_reduce_any(x, dims = 1L)
 #' })
 #' @export
@@ -808,7 +808,7 @@ p_reduce_all <- AnvilPrimitive("reduce_all")
 #' @seealso [nv_reduce_all()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#'   x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
 #'   nvl_reduce_all(x, dims = 1L)
 #' })
 #' @export
@@ -851,8 +851,8 @@ p_eq <- AnvilPrimitive("equal")
 #' @seealso [nv_eq()], `==`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(1, 3, 2))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(1, 3, 2))
 #'   nvl_eq(x, y)
 #' })
 #' @export
@@ -871,8 +871,8 @@ p_ne <- AnvilPrimitive("not_equal")
 #' @seealso [nv_ne()], `!=`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(1, 3, 2))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(1, 3, 2))
 #'   nvl_ne(x, y)
 #' })
 #' @export
@@ -891,8 +891,8 @@ p_gt <- AnvilPrimitive("greater")
 #' @seealso [nv_gt()], `>`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(3, 2, 1))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(3, 2, 1))
 #'   nvl_gt(x, y)
 #' })
 #' @export
@@ -911,8 +911,8 @@ p_ge <- AnvilPrimitive("greater_equal")
 #' @seealso [nv_ge()], `>=`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(3, 2, 1))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(3, 2, 1))
 #'   nvl_ge(x, y)
 #' })
 #' @export
@@ -931,8 +931,8 @@ p_lt <- AnvilPrimitive("less")
 #' @seealso [nv_lt()], `<`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(3, 2, 1))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(3, 2, 1))
 #'   nvl_lt(x, y)
 #' })
 #' @export
@@ -951,8 +951,8 @@ p_le <- AnvilPrimitive("less_equal")
 #' @seealso [nv_le()], `<=`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
-#'   y <- nv_tensor(c(3, 2, 1))
+#'   x <- nv_array(c(1, 2, 3))
+#'   y <- nv_array(c(3, 2, 1))
 #'   nvl_le(x, y)
 #' })
 #' @export
@@ -963,7 +963,7 @@ nvl_le <- make_compare_op(p_le, "LE")
 p_max <- AnvilPrimitive("maximum")
 #' @title Primitive Maximum
 #' @description
-#' Element-wise maximum of two tensors.
+#' Element-wise maximum of two arrays.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_binary
 #' @templateVar primitive_id max
@@ -973,8 +973,8 @@ p_max <- AnvilPrimitive("maximum")
 #' @seealso [nv_max()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 5, 3))
-#'   y <- nv_tensor(c(4, 2, 6))
+#'   x <- nv_array(c(1, 5, 3))
+#'   y <- nv_array(c(4, 2, 6))
 #'   nvl_max(x, y)
 #' })
 #' @export
@@ -983,7 +983,7 @@ nvl_max <- make_binary_op(p_max, stablehlo::infer_types_maximum)
 p_min <- AnvilPrimitive("minimum")
 #' @title Primitive Minimum
 #' @description
-#' Element-wise minimum of two tensors.
+#' Element-wise minimum of two arrays.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_binary
 #' @templateVar primitive_id min
@@ -993,8 +993,8 @@ p_min <- AnvilPrimitive("minimum")
 #' @seealso [nv_min()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 5, 3))
-#'   y <- nv_tensor(c(4, 2, 6))
+#'   x <- nv_array(c(1, 5, 3))
+#'   y <- nv_array(c(4, 2, 6))
 #'   nvl_min(x, y)
 #' })
 #' @export
@@ -1013,8 +1013,8 @@ p_remainder <- AnvilPrimitive("remainder")
 #' @seealso [nv_remainder()], `%%`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(7, 10, 15))
-#'   y <- nv_tensor(c(3, 4, 6))
+#'   x <- nv_array(c(7, 10, 15))
+#'   y <- nv_array(c(3, 4, 6))
 #'   nvl_remainder(x, y)
 #' })
 #' @export
@@ -1033,8 +1033,8 @@ p_and <- AnvilPrimitive("and")
 #' @seealso [nv_and()], `&`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(TRUE, FALSE, TRUE))
-#'   y <- nv_tensor(c(TRUE, TRUE, FALSE))
+#'   x <- nv_array(c(TRUE, FALSE, TRUE))
+#'   y <- nv_array(c(TRUE, TRUE, FALSE))
 #'   nvl_and(x, y)
 #' })
 #' @export
@@ -1044,8 +1044,8 @@ p_not <- AnvilPrimitive("not")
 #' @title Primitive Not
 #' @description
 #' Element-wise logical NOT.
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type boolean, integer, or unsigned integer.
+#' @param operand ([`arrayish`])\cr
+#'   Arrayish value of data type boolean, integer, or unsigned integer.
 #' @template return_prim_unary
 #' @templateVar primitive_id not
 #' @template section_rules
@@ -1054,7 +1054,7 @@ p_not <- AnvilPrimitive("not")
 #' @seealso [nv_not()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(TRUE, FALSE, TRUE))
+#'   x <- nv_array(c(TRUE, FALSE, TRUE))
 #'   nvl_not(x)
 #' })
 #' @export
@@ -1073,8 +1073,8 @@ p_or <- AnvilPrimitive("or")
 #' @seealso [nv_or()], `|`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(TRUE, FALSE, TRUE))
-#'   y <- nv_tensor(c(TRUE, TRUE, FALSE))
+#'   x <- nv_array(c(TRUE, FALSE, TRUE))
+#'   y <- nv_array(c(TRUE, TRUE, FALSE))
 #'   nvl_or(x, y)
 #' })
 #' @export
@@ -1093,8 +1093,8 @@ p_xor <- AnvilPrimitive("xor")
 #' @seealso [nv_xor()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(TRUE, FALSE, TRUE))
-#'   y <- nv_tensor(c(TRUE, TRUE, FALSE))
+#'   x <- nv_array(c(TRUE, FALSE, TRUE))
+#'   y <- nv_array(c(TRUE, TRUE, FALSE))
 #'   nvl_xor(x, y)
 #' })
 #' @export
@@ -1121,8 +1121,8 @@ p_shift_left <- AnvilPrimitive("shift_left")
 #' @seealso [nv_shift_left()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1L, 2L, 4L))
-#'   y <- nv_tensor(c(1L, 2L, 1L))
+#'   x <- nv_array(c(1L, 2L, 4L))
+#'   y <- nv_array(c(1L, 2L, 1L))
 #'   nvl_shift_left(x, y)
 #' })
 #' @export
@@ -1144,8 +1144,8 @@ p_shift_right_logical <- AnvilPrimitive("shift_right_logical")
 #' @seealso [nv_shift_right_logical()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(8L, 16L, 32L))
-#'   y <- nv_tensor(c(1L, 2L, 3L))
+#'   x <- nv_array(c(8L, 16L, 32L))
+#'   y <- nv_array(c(1L, 2L, 3L))
 #'   nvl_shift_right_logical(x, y)
 #' })
 #' @export
@@ -1167,8 +1167,8 @@ p_shift_right_arithmetic <- AnvilPrimitive("shift_right_arithmetic")
 #' @seealso [nv_shift_right_arithmetic()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(8L, -16L, 32L))
-#'   y <- nv_tensor(c(1L, 2L, 3L))
+#'   x <- nv_array(c(8L, -16L, 32L))
+#'   y <- nv_array(c(1L, 2L, 3L))
 #'   nvl_shift_right_arithmetic(x, y)
 #' })
 #' @export
@@ -1190,8 +1190,8 @@ p_atan2 <- AnvilPrimitive("atan2")
 #' @seealso [nv_atan2()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   y <- nv_tensor(c(1, 0, -1))
-#'   x <- nv_tensor(c(0, 1, 0))
+#'   y <- nv_array(c(1, 0, -1))
+#'   x <- nv_array(c(0, 1, 0))
 #'   nvl_atan2(y, x)
 #' })
 #' @export
@@ -1200,14 +1200,14 @@ nvl_atan2 <- make_binary_op(p_atan2, stablehlo::infer_types_atan2)
 p_bitcast_convert <- AnvilPrimitive("bitcast_convert")
 #' @title Primitive Bitcast Convert
 #' @description
-#' Reinterprets the bits of a tensor as a different data type without
+#' Reinterprets the bits of an array as a different data type without
 #' modifying the underlying data.
 #' @template param_prim_operand_any
-#' @param dtype (`character(1)` | [`TensorDataType`])\cr
+#' @param dtype (`character(1)` | [`DataType`])\cr
 #'   Target data type. If it has the same bit width as the input, the output
 #'   shape is unchanged. If narrower, an extra trailing dimension is added.
 #'   If wider, the last dimension is consumed.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the given `dtype`.
 #' @templateVar primitive_id bitcast_convert
 #' @template section_rules
@@ -1216,11 +1216,11 @@ p_bitcast_convert <- AnvilPrimitive("bitcast_convert")
 #' @seealso [nv_bitcast_convert()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(1L)
+#'   x <- nv_array(1L)
 #'   nvl_bitcast_convert(x, dtype = "i8")
 #' })
 #' jit_eval({
-#'   x <- nv_tensor(rep(1L, 4), dtype = "i8")
+#'   x <- nv_array(rep(1L, 4), dtype = "i8")
 #'   nvl_bitcast_convert(x, dtype = "i32")
 #' })
 #' @export
@@ -1246,7 +1246,7 @@ p_abs <- AnvilPrimitive("abs")
 #' @seealso [nv_abs()], [abs()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(-1, 2, -3))
+#'   x <- nv_array(c(-1, 2, -3))
 #'   nvl_abs(x)
 #' })
 #' @export
@@ -1265,7 +1265,7 @@ p_sqrt <- AnvilPrimitive("sqrt")
 #' @seealso [nv_sqrt()], [sqrt()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 4, 9))
+#'   x <- nv_array(c(1, 4, 9))
 #'   nvl_sqrt(x)
 #' })
 #' @export
@@ -1284,7 +1284,7 @@ p_rsqrt <- AnvilPrimitive("rsqrt")
 #' @seealso [nv_rsqrt()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 4, 9))
+#'   x <- nv_array(c(1, 4, 9))
 #'   nvl_rsqrt(x)
 #' })
 #' @export
@@ -1303,7 +1303,7 @@ p_log <- AnvilPrimitive("log")
 #' @seealso [nv_log()], [log()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2.718, 7.389))
+#'   x <- nv_array(c(1, 2.718, 7.389))
 #'   nvl_log(x)
 #' })
 #' @export
@@ -1322,7 +1322,7 @@ p_tanh <- AnvilPrimitive("tanh")
 #' @seealso [nv_tanh()], [tanh()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(-1, 0, 1))
+#'   x <- nv_array(c(-1, 0, 1))
 #'   nvl_tanh(x)
 #' })
 #' @export
@@ -1341,7 +1341,7 @@ p_tan <- AnvilPrimitive("tan")
 #' @seealso [nv_tan()], [tan()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(0, 0.5, 1))
+#'   x <- nv_array(c(0, 0.5, 1))
 #'   nvl_tan(x)
 #' })
 #' @export
@@ -1360,7 +1360,7 @@ p_sine <- AnvilPrimitive("sine")
 #' @seealso [nv_sine()], [sin()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(0, pi / 2, pi))
+#'   x <- nv_array(c(0, pi / 2, pi))
 #'   nvl_sine(x)
 #' })
 #' @export
@@ -1379,7 +1379,7 @@ p_cosine <- AnvilPrimitive("cosine")
 #' @seealso [nv_cosine()], [cos()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(0, pi / 2, pi))
+#'   x <- nv_array(c(0, pi / 2, pi))
 #'   nvl_cosine(x)
 #' })
 #' @export
@@ -1398,7 +1398,7 @@ p_floor <- AnvilPrimitive("floor")
 #' @seealso [nv_floor()], [floor()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1.2, 2.7, -1.5))
+#'   x <- nv_array(c(1.2, 2.7, -1.5))
 #'   nvl_floor(x)
 #' })
 #' @export
@@ -1417,7 +1417,7 @@ p_ceil <- AnvilPrimitive("ceil")
 #' @seealso [nv_ceil()], [ceiling()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1.2, 2.7, -1.5))
+#'   x <- nv_array(c(1.2, 2.7, -1.5))
 #'   nvl_ceil(x)
 #' })
 #' @export
@@ -1436,7 +1436,7 @@ p_sign <- AnvilPrimitive("sign")
 #' @seealso [nv_sign()], [sign()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(-3, 0, 5))
+#'   x <- nv_array(c(-3, 0, 5))
 #'   nvl_sign(x)
 #' })
 #' @export
@@ -1455,7 +1455,7 @@ p_exp <- AnvilPrimitive("exp")
 #' @seealso [nv_exp()], [exp()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(0, 1, 2))
+#'   x <- nv_array(c(0, 1, 2))
 #'   nvl_exp(x)
 #' })
 #' @export
@@ -1474,7 +1474,7 @@ p_expm1 <- AnvilPrimitive("expm1")
 #' @seealso [nv_expm1()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(0, 0.001, 1))
+#'   x <- nv_array(c(0, 0.001, 1))
 #'   nvl_expm1(x)
 #' })
 #' @export
@@ -1493,7 +1493,7 @@ p_log1p <- AnvilPrimitive("log1p")
 #' @seealso [nv_log1p()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(0, 0.001, 1))
+#'   x <- nv_array(c(0, 0.001, 1))
 #'   nvl_log1p(x)
 #' })
 #' @export
@@ -1512,7 +1512,7 @@ p_cbrt <- AnvilPrimitive("cbrt")
 #' @seealso [nv_cbrt()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 8, 27))
+#'   x <- nv_array(c(1, 8, 27))
 #'   nvl_cbrt(x)
 #' })
 #' @export
@@ -1531,7 +1531,7 @@ p_logistic <- AnvilPrimitive("logistic")
 #' @seealso [nv_logistic()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(-2, 0, 2))
+#'   x <- nv_array(c(-2, 0, 2))
 #'   nvl_logistic(x)
 #' })
 #' @export
@@ -1542,7 +1542,7 @@ p_is_finite <- AnvilPrimitive("is_finite")
 #' @description
 #' Element-wise check if values are finite (not Inf, -Inf, or NaN).
 #' @template param_prim_operand_float
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same shape as the input and boolean data type.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id is_finite
@@ -1552,7 +1552,7 @@ p_is_finite <- AnvilPrimitive("is_finite")
 #' @seealso [nv_is_finite()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, Inf, NaN, -Inf, 0))
+#'   x <- nv_array(c(1, Inf, NaN, -Inf, 0))
 #'   nvl_is_finite(x)
 #' })
 #' @export
@@ -1568,8 +1568,8 @@ p_popcnt <- AnvilPrimitive("popcnt")
 #' @title Primitive Population Count
 #' @description
 #' Element-wise population count (number of set bits).
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type integer or unsigned integer.
+#' @param operand ([`arrayish`])\cr
+#'   Arrayish value of data type integer or unsigned integer.
 #' @template return_prim_unary
 #' @templateVar primitive_id popcnt
 #' @template section_rules
@@ -1578,7 +1578,7 @@ p_popcnt <- AnvilPrimitive("popcnt")
 #' @seealso [nv_popcnt()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(7L, 3L, 15L))
+#'   x <- nv_array(c(7L, 3L, 15L))
 #'   nvl_popcnt(x)
 #' })
 #' @export
@@ -1597,12 +1597,12 @@ p_clamp <- AnvilPrimitive("clamp")
 #' @description
 #' Clamps every element of `operand` to the range `[min_val, max_val]`,
 #' i.e. `max(min_val, min(operand, max_val))`.
-#' @param min_val ([`tensorish`])\cr
+#' @param min_val ([`arrayish`])\cr
 #'   Minimum value. Must be scalar or the same shape as `operand`.
 #' @template param_prim_operand_any
-#' @param max_val ([`tensorish`])\cr
+#' @param max_val ([`arrayish`])\cr
 #'   Maximum value. Must be scalar or the same shape as `operand`.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type and shape as `operand`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id clamp
@@ -1612,7 +1612,7 @@ p_clamp <- AnvilPrimitive("clamp")
 #' @seealso [nv_clamp()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(-1, 0.5, 2))
+#'   x <- nv_array(c(-1, 0.5, 2))
 #'   nvl_clamp(nv_scalar(0), x, nv_scalar(1))
 #' })
 #' @export
@@ -1635,7 +1635,7 @@ p_reverse <- AnvilPrimitive("reverse")
 #' @template param_prim_operand_any
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reverse (1-indexed).
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type and shape as `operand`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id reverse
@@ -1645,7 +1645,7 @@ p_reverse <- AnvilPrimitive("reverse")
 #' @seealso [nv_reverse()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3, 4, 5))
+#'   x <- nv_array(c(1, 2, 3, 4, 5))
 #'   nvl_reverse(x, dims = 1L)
 #' })
 #' @export
@@ -1664,16 +1664,16 @@ nvl_reverse <- function(operand, dims) {
 p_iota <- AnvilPrimitive("iota")
 #' @title Primitive Iota
 #' @description
-#' Creates a tensor with values increasing along the specified dimension.
+#' Creates an array with values increasing along the specified dimension.
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which values increase (1-indexed).
 #' @template param_dtype
 #' @param shape (`integer()`)\cr
-#'   Shape of the output tensor.
+#'   Shape of the output array.
 #' @param start (`integer(1)`)\cr
 #'   Starting value.
 #' @template param_ambiguous
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the given `dtype` and `shape`.
 #' @templateVar primitive_id iota
 #' @template section_rules
@@ -1695,7 +1695,7 @@ nvl_iota <- function(dim, dtype, shape, start = 1L, ambiguous = FALSE) {
     # Just for the checks
     stablehlo::infer_types_iota(iota_dimension = iota_dim_const, dtype = dtype, shape = shape)[[1L]]
 
-    list(IotaTensor(shape = shape, dtype = dtype, dimension = dim, start = start, ambiguous = ambiguous))
+    list(IotaArray(shape = shape, dtype = dtype, dimension = dim, start = start, ambiguous = ambiguous))
   }
   result <- graph_desc_add(
     p_iota,
@@ -1710,9 +1710,9 @@ nvl_iota <- function(dim, dtype, shape, start = 1L, ambiguous = FALSE) {
 p_pad <- AnvilPrimitive("pad")
 #' @title Primitive Pad
 #' @description
-#' Pads a tensor with a given padding value.
+#' Pads an array with a given padding value.
 #' @template param_prim_operand_any
-#' @param padding_value ([`tensorish`])\cr
+#' @param padding_value ([`arrayish`])\cr
 #'   Scalar value to use for padding. Must have the same dtype as `operand`.
 #' @param edge_padding_low (`integer()`)\cr
 #'   Amount of padding to add at the start of each dimension.
@@ -1720,7 +1720,7 @@ p_pad <- AnvilPrimitive("pad")
 #'   Amount of padding to add at the end of each dimension.
 #' @param interior_padding (`integer()`)\cr
 #'   Amount of padding to add between elements in each dimension.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type as `operand`.
 #'   For the output shape see the underlying stablehlo documentation ([stablehlo::hlo_pad()]).
 #'   It is ambiguous if the input is ambiguous.
@@ -1730,7 +1730,7 @@ p_pad <- AnvilPrimitive("pad")
 #' Lowers to [stablehlo::hlo_pad()].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
+#'   x <- nv_array(c(1, 2, 3))
 #'   nvl_pad(x, nv_scalar(0),
 #'     edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
 #'   )
@@ -1769,12 +1769,12 @@ nvl_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high,
 p_round <- AnvilPrimitive("round")
 #' @title Primitive Round
 #' @description
-#' Rounds the elements of a tensor to the nearest integer.
+#' Rounds the elements of an array to the nearest integer.
 #' @template param_prim_operand_float
 #' @param method (`character(1)`)\cr
 #'   Rounding method. `"nearest_even"` (default) rounds to the nearest even
 #'   integer on a tie, `"afz"` rounds away from zero on a tie.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same dtype and shape as `operand`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id round
@@ -1785,7 +1785,7 @@ p_round <- AnvilPrimitive("round")
 #' @seealso [nv_round()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1.4, 2.5, 3.6))
+#'   x <- nv_array(c(1.4, 2.5, 3.6))
 #'   nvl_round(x)
 #' })
 #' @export
@@ -1809,12 +1809,12 @@ nvl_round <- function(operand, method = "nearest_even") {
 p_convert <- AnvilPrimitive("convert")
 #' @title Primitive Convert
 #' @description
-#' Converts the elements of a tensor to a different data type.
+#' Converts the elements of an array to a different data type.
 #' @template param_prim_operand_any
-#' @param dtype (`character(1)` | [`TensorDataType`])\cr
+#' @param dtype (`character(1)` | [`DataType`])\cr
 #'   Target data type.
 #' @template param_ambiguous
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the given `dtype` and the same shape as `operand`.
 #'   Ambiguity is controlled by the `ambiguous` parameter.
 #' @templateVar primitive_id convert
@@ -1824,14 +1824,14 @@ p_convert <- AnvilPrimitive("convert")
 #' @seealso [nv_convert()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1L, 2L, 3L))
+#'   x <- nv_array(c(1L, 2L, 3L))
 #'   nvl_convert(x, dtype = "f32")
 #' })
 #' @export
 nvl_convert <- function(operand, dtype, ambiguous = FALSE) {
   dtype <- as_dtype(dtype)
   infer_fn <- function(operand, dtype, ambiguous) {
-    list(AbstractTensor(
+    list(AbstractArray(
       dtype = dtype,
       shape = Shape(shape(operand)),
       ambiguous = ambiguous
@@ -1852,12 +1852,12 @@ p_select <- AnvilPrimitive("select")
 #' Element-wise selection based on a boolean predicate, like R's [ifelse()].
 #' For each element, returns the corresponding element from `true_value` where
 #' `pred` is `TRUE` and from `false_value` where `pred` is `FALSE`.
-#' @param pred ([`tensorish`] of boolean type)\cr
-#'   Predicate tensor. Must be scalar or have the same shape as
+#' @param pred ([`arrayish`] of boolean type)\cr
+#'   Predicate array. Must be scalar or have the same shape as
 #'   `true_value`.
-#' @param true_value,false_value ([`tensorish`])\cr
+#' @param true_value,false_value ([`arrayish`])\cr
 #'   Values to select from. Must have the same dtype and shape.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same dtype and shape as `true_value`.
 #'   It is ambiguous if both `true_value` and `false_value` are ambiguous.
 #' @templateVar primitive_id select
@@ -1867,8 +1867,8 @@ p_select <- AnvilPrimitive("select")
 #' @seealso [nv_ifelse()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   pred <- nv_tensor(c(TRUE, FALSE, TRUE))
-#'   nvl_ifelse(pred, nv_tensor(c(1, 2, 3)), nv_tensor(c(4, 5, 6)))
+#'   pred <- nv_array(c(TRUE, FALSE, TRUE))
+#'   nvl_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 #' })
 #' @export
 nvl_ifelse <- function(pred, true_value, false_value) {
@@ -1896,7 +1896,7 @@ p_if <- AnvilPrimitive("if", subgraphs = c("true_graph", "false_graph"))
 #' Conditional execution of one of two branches based on a scalar boolean
 #' predicate. Unlike [nvl_ifelse()] which operates element-wise, this
 #' evaluates only the selected branch.
-#' @param pred ([`tensorish`])\cr
+#' @param pred ([`arrayish`])\cr
 #'   Scalar boolean predicate that determines which branch to execute.
 #' @param true,false (NSE)\cr
 #'   Expressions for the true and false branches. Both must return outputs
@@ -1929,13 +1929,13 @@ nvl_if <- function(pred, true, false) {
   }
 
   desc_true <- local_descriptor()
-  true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true, lit_to_tensor = TRUE)
+  true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true, lit_to_array = TRUE)
   desc_false <- local_descriptor()
 
   for (const in desc_true$constants) {
     get_box_or_register_const(desc_false, const)
   }
-  false_graph <- trace_fn(function() rlang::eval_tidy(false_expr), list(), desc = desc_false, lit_to_tensor = TRUE)
+  false_graph <- trace_fn(function() rlang::eval_tidy(false_expr), list(), desc = desc_false, lit_to_array = TRUE)
 
   for (const in desc_false$constants) {
     get_box_or_register_const(current_desc, const)
@@ -2032,7 +2032,7 @@ nvl_while <- function(init, cond, body) {
 
   desc_cond <- local_descriptor()
 
-  cond_graph <- trace_fn(cond, init, desc = desc_cond, lit_to_tensor = TRUE)
+  cond_graph <- trace_fn(cond, init, desc = desc_cond, lit_to_array = TRUE)
 
   desc_body <- local_descriptor()
 
@@ -2041,7 +2041,7 @@ nvl_while <- function(init, cond, body) {
   for (const in desc_cond$constants) {
     get_box_or_register_const(desc_body, const)
   }
-  body_graph <- trace_fn(body, init, desc_body, lit_to_tensor = TRUE)
+  body_graph <- trace_fn(body, init, desc_body, lit_to_array = TRUE)
 
   if (!identical(cond_graph$in_tree, body_graph$in_tree)) {
     cli_abort("cond and body must have the same input structure")
@@ -2073,7 +2073,7 @@ nvl_while <- function(init, cond, body) {
 
   out <- graph_desc_add(
     p_while,
-    args = lapply(flatten(init), maybe_box_tensorish),
+    args = lapply(flatten(init), maybe_box_arrayish),
     params = list(cond_graph = cond_graph, body_graph = body_graph),
     infer_fn = infer_fn,
     desc = current_desc,
@@ -2087,10 +2087,10 @@ nvl_while <- function(init, cond, body) {
 p_print <- AnvilPrimitive("print")
 #' @title Primitive Print
 #' @description
-#' Prints a tensor value to the console during execution and returns the
+#' Prints an array value to the console during execution and returns the
 #' input unchanged. This is useful for debugging JIT-compiled code.
 #' @template param_prim_operand_any
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Returns `operand` as-is.
 #' @templateVar primitive_id print
 #' @template section_rules
@@ -2099,7 +2099,7 @@ p_print <- AnvilPrimitive("print")
 #' @seealso [nv_print()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   x <- nv_tensor(c(1, 2, 3))
+#'   x <- nv_array(c(1, 2, 3))
 #'   nvl_print(x)
 #' })
 #' @export
@@ -2124,12 +2124,12 @@ p_rng_bit_generator <- AnvilPrimitive("rng_bit_generator")
 #' @template param_initial_state
 #' @param rng_algorithm (`character(1)`)\cr
 #'   RNG algorithm name. Default is `"THREE_FRY"`.
-#' @param dtype (`character(1)` | [`TensorDataType`])\cr
+#' @param dtype (`character(1)` | [`DataType`])\cr
 #'   Data type of the generated random values.
 #' @template param_shape
-#' @return `list` of two [`tensorish`] values:\cr
+#' @return `list` of two [`arrayish`] values:\cr
 #'   The first element is the updated RNG state with the same dtype and shape
-#'   as `initial_state`. The second element is a tensor of random values with
+#'   as `initial_state`. The second element is an array of random values with
 #'   the given `dtype` and `shape`.
 #' @templateVar primitive_id rng_bit_generator
 #' @template section_rules
@@ -2138,7 +2138,7 @@ p_rng_bit_generator <- AnvilPrimitive("rng_bit_generator")
 #' @seealso [nv_runif()], [nv_rnorm()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
-#'   state <- nv_tensor(c(0L, 0L), dtype = "ui64")
+#'   state <- nv_array(c(0L, 0L), dtype = "ui64")
 #'   nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
 #' })
 #' @export
@@ -2157,23 +2157,23 @@ nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dt
 p_scatter <- AnvilPrimitive("scatter", subgraphs = "update_computation_graph")
 #' @title Primitive Scatter
 #' @description
-#' Produces a result tensor identical to `input` except that slices at
+#' Produces a result array identical to `input` except that slices at
 #' positions specified by `scatter_indices` are updated with values from
-#' the `update` tensor. When multiple indices point to the same location,
+#' the `update` array. When multiple indices point to the same location,
 #' the `update_computation` function determines how to combine the values
 #' (by default the new value replaces the old one).
 #'
-#' This is the inverse of [nvl_gather()]: gather reads slices from a tensor
-#' at given indices, while scatter writes slices into a tensor at given
+#' This is the inverse of [nvl_gather()]: gather reads slices from an array
+#' at given indices, while scatter writes slices into an array at given
 #' indices.
-#' @param input ([`tensorish`])\cr
-#'   Tensorish value of any data type. The base tensor to scatter into.
-#' @param scatter_indices ([`tensorish`] of integer type)\cr
-#'   Tensor of indices. Contains index vectors that map to positions in
+#' @param input ([`arrayish`])\cr
+#'   Arrayish value of any data type. The base array to scatter into.
+#' @param scatter_indices ([`arrayish`] of integer type)\cr
+#'   Array of indices. Contains index vectors that map to positions in
 #'   `input` via `scatter_dims_to_operand_dims`. The dimension specified
 #'   by `index_vector_dim` holds the index vectors.
-#' @param update ([`tensorish`])\cr
-#'   Update values tensor. Must have the same data type as `input`.
+#' @param update ([`arrayish`])\cr
+#'   Update values array. Must have the same data type as `input`.
 #' @param update_window_dims (`integer()`)\cr
 #'   Dimensions of `update` that are window dimensions, i.e. they
 #'   correspond to the slice being written into `input`.
@@ -2208,7 +2208,7 @@ p_scatter <- AnvilPrimitive("scatter", subgraphs = "update_computation_graph")
 #'   Binary function `f(old, new)` that combines the existing value in
 #'   `input` with the value from `update`. The default (`NULL`) uses
 #'   `function(old, new) new`, which replaces the old value.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type and shape as `input`.
 #'   It is ambiguous if `input` is ambiguous.
 #' @section Out Of Bounds Behavior:
@@ -2226,9 +2226,9 @@ p_scatter <- AnvilPrimitive("scatter", subgraphs = "update_computation_graph")
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' # Scatter values 10 and 30 into positions 1 and 3 of a zero vector
 #' jit_eval({
-#'   input <- nv_tensor(c(0, 0, 0, 0, 0))
-#'   indices <- nv_tensor(matrix(c(1L, 3L), ncol = 1))
-#'   updates <- nv_tensor(c(10, 30))
+#'   input <- nv_array(c(0, 0, 0, 0, 0))
+#'   indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
+#'   updates <- nv_array(c(10, 30))
 #'   nvl_scatter(
 #'     input, indices, updates,
 #'     update_window_dims = integer(0),
@@ -2282,8 +2282,8 @@ nvl_scatter <- function(
   }
 
   dummy_args <- list(
-    AbstractTensor(dtype = input_dtype, shape = Shape(integer()), ambiguous = ambiguous_abstract(input)),
-    AbstractTensor(dtype = input_dtype, shape = Shape(integer()), ambiguous = ambiguous_abstract(update))
+    AbstractArray(dtype = input_dtype, shape = Shape(integer()), ambiguous = ambiguous_abstract(input)),
+    AbstractArray(dtype = input_dtype, shape = Shape(integer()), ambiguous = ambiguous_abstract(update))
   )
 
   update_computation_graph <- trace_fn(update_computation, dummy_args, desc = desc_update)
@@ -2360,18 +2360,18 @@ nvl_scatter <- function(
 p_gather <- AnvilPrimitive("gather")
 #' @title Primitive Gather
 #' @description
-#' Gathers slices from the `operand` tensor at positions specified by
+#' Gathers slices from the `operand` array at positions specified by
 #' `start_indices`. Each index vector in `start_indices` identifies a
 #' starting position in `operand`, and a slice of size `slice_sizes` is
 #' extracted from that position. The gathered slices are assembled into
-#' the output tensor.
+#' the output array.
 #'
 #' This is the inverse of [nvl_scatter()]: gather reads slices from a
-#' tensor at given indices, while scatter writes slices into a tensor at
+#' array at given indices, while scatter writes slices into an array at
 #' given indices.
 #' @template param_prim_operand_any
-#' @param start_indices ([`tensorish`] of integer type)\cr
-#'   Tensor of starting indices. Contains index vectors that map to
+#' @param start_indices ([`arrayish`] of integer type)\cr
+#'   Array of starting indices. Contains index vectors that map to
 #'   positions in `operand` via `start_index_map`. The dimension
 #'   specified by `index_vector_dim` holds the index vectors.
 #' @param slice_sizes (`integer()`)\cr
@@ -2407,7 +2407,7 @@ p_gather <- AnvilPrimitive("gather")
 #'   Whether indices are guaranteed to be unique (no duplicates).
 #'   Setting to `TRUE` may improve performance but produces undefined
 #'   behavior if the indices are not actually unique. Default `FALSE`.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same data type as `operand`. The output shape is composed
 #'   of the offset dimensions (from the slice) and the remaining
 #'   dimensions from `start_indices`. See the underluing stableHLO function
@@ -2425,8 +2425,8 @@ p_gather <- AnvilPrimitive("gather")
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' # Gather rows 1 and 3 from a 3x3 matrix
 #' jit_eval({
-#'   operand <- nv_tensor(matrix(1:9, nrow = 3))
-#'   indices <- nv_tensor(matrix(c(1L, 3L), ncol = 1))
+#'   operand <- nv_array(matrix(1:9, nrow = 3))
+#'   indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
 #'   nvl_gather(
 #'     operand, indices,
 #'     slice_sizes = c(1L, 3L),
@@ -2512,15 +2512,15 @@ p_cholesky <- AnvilPrimitive("cholesky")
 #' @description
 #' Computes the Cholesky decomposition of a symmetric positive-definite matrix.
 #' Dimensions before the last two are batch dimensions.
-#' @param operand ([`tensorish`])\cr
-#'   Tensorish value of data type floating-point with at least 2 dimensions.
+#' @param operand ([`arrayish`])\cr
+#'   Arrayish value of data type floating-point with at least 2 dimensions.
 #'   The last two dimensions must be equal (square matrix); any leading
 #'   dimensions are batch dimensions.
 #' @param lower (`logical(1)`)\cr
 #'   If `TRUE`, compute the lower triangular factor `L` such that
 #'   `operand = L %*% t(L)`. If `FALSE`, compute the upper triangular
 #'   factor `U` such that `operand = t(U) %*% U`.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same shape and data type as the input.
 #'   The values in the triangle not specified by `lower` are implementation-defined.
 #'   It is ambiguous if the input is ambiguous.
@@ -2532,14 +2532,14 @@ p_cholesky <- AnvilPrimitive("cholesky")
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   # Create a positive-definite matrix
-#'   x <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+#'   x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
 #'   nvl_cholesky(x, lower = TRUE)
 #' })
 #' @export
 nvl_cholesky <- function(operand, lower) {
   infer_fn <- function(operand, lower) {
     # Output has same shape and dtype as input (square matrix)
-    list(AbstractTensor(
+    list(AbstractArray(
       dtype = dtype(operand),
       shape = Shape(shape(operand)),
       ambiguous = operand$ambiguous
@@ -2562,12 +2562,12 @@ p_triangular_solve <- AnvilPrimitive("triangular_solve")
 #' Dimensions before the last two are batch dimensions and must match
 #' between `a` and `b` (no broadcasting).
 #' Here `op` is `A` or `A^T` depending on `transpose_a`.
-#' @param a ([`tensorish`])\cr
+#' @param a ([`arrayish`])\cr
 #'   Triangular coefficient matrix of data type floating-point with at least 2
 #'   dimensions. The last two dimensions must be equal (square matrix); any
 #'   leading dimensions are batch dimensions.
-#' @param b ([`tensorish`])\cr
-#'   Right-hand side tensor. Must have the same data type, rank, and batch
+#' @param b ([`arrayish`])\cr
+#'   Right-hand side array. Must have the same data type, rank, and batch
 #'   dimensions as `a`.
 #' @param left_side (`logical(1)`)\cr
 #'   If `TRUE`, solve `op(a) %*% x = b`. If `FALSE`, solve `x %*% op(a) = b`.
@@ -2577,7 +2577,7 @@ p_triangular_solve <- AnvilPrimitive("triangular_solve")
 #'   If `TRUE`, assume diagonal elements of `a` are 1.
 #' @param transpose_a (`character(1)`)\cr
 #'   One of `"NO_TRANSPOSE"`, `"TRANSPOSE"`, or `"ADJOINT"`.
-#' @return [`tensorish`]\cr
+#' @return [`arrayish`]\cr
 #'   Has the same shape and data type as `b`.
 #'   It is ambiguous if both `a` and `b` are ambiguous.
 #' @templateVar primitive_id triangular_solve
@@ -2588,8 +2588,8 @@ p_triangular_solve <- AnvilPrimitive("triangular_solve")
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   # Solve L %*% x = b where L is lower triangular
-#'   L <- nv_tensor(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
-#'   b <- nv_tensor(matrix(c(4, 3), nrow = 2), dtype = "f32")
+#'   L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
+#'   b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
 #'   nvl_triangular_solve(L, b,
 #'     left_side = TRUE, lower = TRUE,
 #'     unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"

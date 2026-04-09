@@ -106,7 +106,7 @@ test_that(".current_descriptor errors when no graph exists", {
   expect_error(.current_descriptor(), "No graph is currently being built")
 })
 
-test_that("constants: same tensor is constant and input at the same time", {
+test_that("constants: same array is constant and input at the same time", {
   # Not sure what we want to happen here.
   f <- jit(function(x) {
     h <- function(x) x * y
@@ -144,17 +144,17 @@ test_that("can pass constant to nested trace_fn call if it is defined in the par
 })
 
 test_that("GraphLiteral", {
-  gl <- GraphLiteral(LiteralTensor(1L, integer(), ambiguous = TRUE))
+  gl <- GraphLiteral(LiteralArray(1L, integer(), ambiguous = TRUE))
   expect_equal(dtype(gl), as_dtype("i32"))
   expect_equal(shape(gl), integer())
   expect_snapshot(gl)
 })
 
-test_that("trace_fn works with nv_aten inputs", {
+test_that("trace_fn works with nv_abstract inputs", {
   f <- function(x, y) {
     nvl_add(x, y)
   }
-  in_type <- nv_aten("f32", c(2, 2))
+  in_type <- nv_abstract("f32", c(2, 2))
   graph <- trace_fn(f, list(x = in_type, y = in_type))
   expect_true(is_graph(graph))
   expect_equal(graph$inputs[[1L]]$aval, in_type)
@@ -169,13 +169,13 @@ test_that("local_descriptor errors when run in the global environment", {
   expect_error(eval(quote(local_descriptor()), globalenv()), "Don't run local_descriptor in the global environment")
 })
 
-test_that("can pass abstract tensors to trace_fn", {
-  # Here, its fine because we call into maybe_box_input, which will convert the abstract tensor
+test_that("can pass abstract arrays to trace_fn", {
+  # Here, its fine because we call into maybe_box_input, which will convert the abstract array
   # into a GraphValue/Box before any infix op can be called
   f <- function(x, y) {
     nvl_add(x, y)
   }
-  in_type <- nv_aten("f32", c(2, 2))
+  in_type <- nv_abstract("f32", c(2, 2))
   graph <- trace_fn(f, list(x = in_type, y = in_type))
   expect_true(is_graph(graph))
   expect_equal(graph$inputs[[1L]]$aval, in_type)
@@ -184,13 +184,13 @@ test_that("can pass abstract tensors to trace_fn", {
 })
 
 test_that("error handling", {
-  expect_snapshot(error = TRUE, jit(nvl_ceil)(nv_tensor(1:4)))
+  expect_snapshot(error = TRUE, jit(nvl_ceil)(nv_array(1:4)))
   expect_snapshot(
     error = TRUE,
-    jit(nvl_transpose, static = "permutation")(nv_tensor(1:4, shape = c(2, 2)), permutation = c(2, 2))
+    jit(nvl_transpose, static = "permutation")(nv_array(1:4, shape = c(2, 2)), permutation = c(2, 2))
   )
 })
 
-test_that("can print GraphLiteral if it holds scalar tensor", {
-  expect_snapshot(GraphLiteral(LiteralTensor(nv_scalar(1L), dtype = "i32", shape = integer(), ambiguous = TRUE)))
+test_that("can print GraphLiteral if it holds scalar array", {
+  expect_snapshot(GraphLiteral(LiteralArray(nv_scalar(1L), dtype = "i32", shape = integer(), ambiguous = TRUE)))
 })

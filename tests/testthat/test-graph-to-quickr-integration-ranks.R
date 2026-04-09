@@ -1,4 +1,4 @@
-test_that("integration: `%*%` matches PJRT for tensor ranks 1..5", {
+test_that("integration: `%*%` matches PJRT for array ranks 1..5", {
   skip_if_no_quickr_or_pjrt()
 
   withr::local_seed(4)
@@ -47,7 +47,7 @@ test_that("integration: `%*%` matches PJRT for tensor ranks 1..5", {
     if (is.null(shp)) {
       shp <- c(length(x))
     }
-    nv_tensor(x, dtype = "f64", shape = shp)
+    nv_array(x, dtype = "f64", shape = shp)
   }
 
   make_input <- function(rank, side) {

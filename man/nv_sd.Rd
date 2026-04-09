@@ -7,7 +7,7 @@
 nv_sd(operand, dims, drop = TRUE, correction = 1L)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
 \item{dims}{(\code{integer()})\cr
@@ -20,7 +20,7 @@ Whether to drop reduced dimensions.}
 Degrees of freedom correction. Default is \code{1} (Bessel's correction).}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Has the same data type as the input.
 When \code{drop = TRUE}, the reduced dimensions are removed.
 When \code{drop = FALSE}, the reduced dimensions are set to 1.

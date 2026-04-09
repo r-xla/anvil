@@ -5,15 +5,15 @@
 #' to an ambiguous type.
 #' Promoting to an ambiguous type can happen in scenarios like `x + 1.2`, where `x` is a bool or an int.
 #'
-#' @param lhs_dtype ([`tengen::TensorDataType`])\cr
+#' @param lhs_dtype ([`tengen::DataType`])\cr
 #'   The left-hand side type.
-#' @param rhs_dtype ([`tengen::TensorDataType`])\cr
+#' @param rhs_dtype ([`tengen::DataType`])\cr
 #'   The right-hand side type.
 #' @param lhs_ambiguous (`logical(1)`)\cr
 #'   Whether the left-hand side type is ambiguous.
 #' @param rhs_ambiguous (`logical(1)`)\cr
 #'   Whether the right-hand side type is ambiguous.
-#' @return (`list(dtype = [`tengen::TensorDataType`], ambiguous = `logical(1)`)\cr
+#' @return (`list(dtype = [`tengen::DataType`], ambiguous = `logical(1)`)\cr
 #' @export
 common_dtype <- function(lhs_dtype, rhs_dtype, lhs_ambiguous = FALSE, rhs_ambiguous = FALSE) {
   lhs_dtype <- as_dtype(lhs_dtype)
@@ -120,15 +120,11 @@ promote_dt_known <- function(dt1, dt2) {
   UIntegerType(max(dt1$value, dt2$value))
 }
 
-default_dtype <- function(x, backend = NULL) {
+default_dtype <- function(x) {
   if (is.integer(x)) {
     IntegerType(32)
   } else if (is.double(x)) {
-    if (current_backend(backend) == "quickr") {
-      FloatType(64)
-    } else {
-      FloatType(32)
-    }
+    FloatType(32)
   } else if (is.logical(x)) {
     BooleanType()
   } else {

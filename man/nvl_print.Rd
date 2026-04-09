@@ -7,15 +7,15 @@
 nvl_print(operand)
 }
 \arguments{
-\item{operand}{(\code{\link{tensorish}})\cr
-Tensorish value of any data type.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Arrayish value of any data type.}
 }
 \value{
-\code{\link{tensorish}}\cr
+\code{\link{arrayish}}\cr
 Returns \code{operand} as-is.
 }
 \description{
-Prints a tensor value to the console during execution and returns the
+Prints an array value to the console during execution and returns the
 input unchanged. This is useful for debugging JIT-compiled code.
 }
 \section{Implemented Rules}{
@@ -33,7 +33,7 @@ Lowers to \code{\link[stablehlo:hlo_custom_call]{stablehlo::hlo_custom_call()}}.
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
+  x <- nv_array(c(1, 2, 3))
   nvl_print(x)
 })
 \dontshow{\}) # examplesIf}

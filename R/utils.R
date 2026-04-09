@@ -1,29 +1,6 @@
-# set utils
-set <- function() {
-  hashtab()
-}
-
-set_has <- function(set, key) {
-  !identical(gethash(set, key, NA), NA)
-}
-
-set_add <- function(set, key) {
-  set[[key]] <- NULL
-}
-
 dtype_from_buffer <- function(x) {
   d <- as.character(dtype(x))
   as_dtype(d)
-}
-
-hashkeys <- function(h) {
-  val <- vector("list", numhash(h))
-  idx <- 0
-  maphash(h, function(k, v) {
-    idx <<- idx + 1
-    val[[idx]] <<- k
-  })
-  val
 }
 
 hashvalues <- function(h) {
@@ -34,22 +11,6 @@ hashvalues <- function(h) {
     val[[idx]] <<- v
   })
   val
-}
-
-is_nv_type <- function(x) {
-  any(sapply(globals$nv_types, function(type, x) inherits(x, type), x))
-}
-
-
-transpose_list <- function(.l) {
-  if (length(.l) == 0L) {
-    return(list())
-  }
-  res <- .mapply(list, .l, list())
-  if (length(res) == length(.l[[1L]])) {
-    names(res) <- names(.l[[1L]])
-  }
-  res
 }
 
 # these functions also work with primitives etc.
@@ -87,7 +48,13 @@ nv_minval <- function(dtype, device) {
   } else if (dtype == "bool") {
     nv_scalar(FALSE, dtype = "bool", device = device)
   } else {
-    nv_scalar(globals$ranges_raw[[dtype]]$min, dtype = dtype, device = device)
+    nv_scalar(pjrt_buffer(
+      globals$ranges_raw[[dtype]]$min,
+      dtype = dtype,
+      device = device,
+      row_major = TRUE,
+      shape = integer()
+    ))
   }
 }
 
@@ -98,7 +65,13 @@ nv_maxval <- function(dtype, device) {
   } else if (dtype == "bool") {
     nv_scalar(TRUE, dtype = "bool", device = device)
   } else {
-    nv_scalar(globals$ranges_raw[[dtype]]$max, dtype = dtype, device = device)
+    nv_scalar(pjrt_buffer(
+      globals$ranges_raw[[dtype]]$max,
+      dtype = dtype,
+      device = device,
+      row_major = TRUE,
+      shape = integer()
+    ))
   }
 }
 
@@ -108,10 +81,6 @@ without <- function(x, indices) {
   } else {
     x
   }
-}
-
-zero_env <- function() {
-  new.env(size = 0L, parent = emptyenv())
 }
 
 shape2string <- function(x, parenthesize = TRUE) {
@@ -149,8 +118,8 @@ ones_like <- function(x, ambiguous = FALSE) {
 #' @title Abstract Properties
 #' @name abstract_properties
 #' @description
-#' Calls the extractor after converting the input to an [`AbstractTensor`].
-#' @param x ([`tensorish`])\cr
+#' Calls the extractor after converting the input to an [`AbstractArray`].
+#' @param x ([`arrayish`])\cr
 #' @export
 shape_abstract <- function(x) {
   shape(to_abstract(x))
@@ -218,7 +187,7 @@ gather_clamp_indices <- function(
   }
 
   if (index_vector_dim <= length(indices_shape)) {
-    # Explicit index vector dimension - build bounds tensors
+    # Explicit index vector dimension - build bounds arrays
     bounds_shape <- rep(1L, length(indices_shape))
     bounds_shape[index_vector_dim] <- n_index_coords
 
@@ -230,7 +199,7 @@ gather_clamp_indices <- function(
 
     # The max bound is the same for a given slice along the index_vector_dim
     max_tensor_vals <- nvl_reshape(
-      nv_convert(nv_tensor(max_bounds, dtype = "i64"), dtype = dtype(start_indices)),
+      nv_convert(nv_array(max_bounds, dtype = "i64"), dtype = dtype(start_indices)),
       bounds_shape
     )
     max_tensor <- nv_broadcast_to(max_tensor_vals, indices_shape)

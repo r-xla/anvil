@@ -2,28 +2,28 @@
 % Please edit documentation in R/reexports.R
 \name{dtype}
 \alias{dtype}
-\title{Get the data type of a tensor}
+\title{Get the data type of an array}
 \usage{
 dtype(x, ...)
 }
 \arguments{
-\item{x}{(\code{\link{tensorish}})\cr
-A tensor-like object.}
+\item{x}{(\code{\link{arrayish}})\cr
+An array-like object.}
 
 \item{...}{Additional arguments passed to methods (unused).}
 }
 \value{
-A \code{\link[tengen:TensorDataType]{TensorDataType}}.
+A \code{\link[tengen:DataType]{DataType}}.
 }
 \description{
-Returns the data type of a tensor (e.g. \code{f32}, \code{i64}).
+Returns the data type of an array (e.g. \code{f32}, \code{i64}).
 }
 \details{
 This is implemented via the generic \code{\link[tengen:dtype]{tengen::dtype()}}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_tensor(1:4, dtype = "f32")
+x <- nv_array(1:4, dtype = "f32")
 dtype(x)
 \dontshow{\}) # examplesIf}
 }

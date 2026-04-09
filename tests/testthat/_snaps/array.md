@@ -1,9 +1,9 @@
-# tensor
+# array
 
     Code
       x
     Output
-      AnvilTensor
+      AnvilArray
        1
        2
        3
@@ -15,23 +15,23 @@
     Code
       x
     Output
-      AnvilTensor
+      AnvilArray
        1
       [ CPUf32{} ] 
 
-# AbstractTensor
+# AbstractArray
 
     Code
       x
     Output
-      AbstractTensor(dtype=f32, shape=2x3) 
+      AbstractArray(dtype=f32, shape=2x3) 
 
-# ConcreteTensor
+# ConcreteArray
 
     Code
       x
     Output
-      ConcreteTensor
+      ConcreteArray
        1 3 5
        2 4 6
       [ CPUf32{2,3} ] 
@@ -39,9 +39,9 @@
 # stablehlo dtype is printed
 
     Code
-      nv_tensor(TRUE)
+      nv_array(TRUE)
     Output
-      AnvilTensor
+      AnvilArray
        1
       [ CPUbool{1} ] 
 

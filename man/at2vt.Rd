@@ -2,16 +2,16 @@
 % Please edit documentation in R/type-converters.R
 \name{at2vt}
 \alias{at2vt}
-\title{Convert AbstractTensor to ValueType}
+\title{Convert AbstractArray to ValueType}
 \usage{
 at2vt(x)
 }
 \arguments{
-\item{x}{(\code{AbstractTensor})}
+\item{x}{(\code{AbstractArray})}
 }
 \value{
 (\code{ValueType})
 }
 \description{
-Convert an \code{AbstractTensor} to a \code{ValueType}.
+Convert an \code{AbstractArray} to a \code{ValueType}.
 }

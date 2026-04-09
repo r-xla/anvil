@@ -1,18 +1,18 @@
 test_that("p_sine", {
-  x <- nv_tensor(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
+  x <- nv_array(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
   out <- as_array(jit(nvl_sine)(x))
   expect_equal(c(out), c(0, 1, 0, -1), tolerance = 1e-15)
 })
 
 test_that("p_cosine", {
-  x <- nv_tensor(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
+  x <- nv_array(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
   out <- as_array(jit(nvl_cosine)(x))
   expect_equal(c(out), c(1, 0, -1, 0), tolerance = 1e-15)
 })
 
 test_that("p_rng_bit_generator", {
   f <- function() {
-    nvl_rng_bit_generator(nv_tensor(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
+    nvl_rng_bit_generator(nv_array(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
   }
   g <- jit(f)
   out <- g()
@@ -23,7 +23,7 @@ test_that("p_rng_bit_generator", {
 test_that("p_bitcast_convert", {
   f <- function() {
     nv_bitcast_convert(
-      nv_tensor(seq(-1, 1, length.out = 6), dtype = "f64", shape = c(2, 3)),
+      nv_array(seq(-1, 1, length.out = 6), dtype = "f64", shape = c(2, 3)),
       dtype = "i32"
     )
   }
@@ -36,7 +36,7 @@ test_that("p_bitcast_convert", {
 test_that("p_static_slice", {
   f <- function() {
     nv_static_slice(
-      nv_tensor(1:6, dtype = "ui64", shape = c(2, 3)),
+      nv_array(1:6, dtype = "ui64", shape = c(2, 3)),
       start_indices = c(1, 1),
       limit_indices = c(2, 2),
       strides = c(1, 1)
@@ -50,26 +50,26 @@ test_that("p_static_slice", {
 test_that("p_dynamic_slice", {
   # Basic dynamic slice with scalar indices
   f <- function(start_i, start_j) {
-    x <- nv_tensor(1:12, dtype = "i32", shape = c(3, 4))
+    x <- nv_array(1:12, dtype = "i32", shape = c(3, 4))
     nvl_dynamic_slice(x, start_i, start_j, slice_sizes = c(2L, 2L))
   }
   g <- jit(f)
   # Slice starting at (1, 1) should give [[1, 4], [2, 5]]
   out <- g(nv_scalar(1L, dtype = "i32"), nv_scalar(1L, dtype = "i32"))
-  expect_equal(out, nv_tensor(c(1L, 2L, 4L, 5L), dtype = "i32", shape = c(2, 2)))
+  expect_equal(out, nv_array(c(1L, 2L, 4L, 5L), dtype = "i32", shape = c(2, 2)))
 
   # Slice starting at (2, 2) should give [[5, 8], [6, 9]]
   out <- g(nv_scalar(2L, dtype = "i32"), nv_scalar(2L, dtype = "i32"))
-  expect_equal(out, nv_tensor(c(5L, 6L, 8L, 9L), dtype = "i32", shape = c(2, 2)))
+  expect_equal(out, nv_array(c(5L, 6L, 8L, 9L), dtype = "i32", shape = c(2, 2)))
 
   # 1D case
   f1d <- function(start_i) {
-    x <- nv_tensor(1:10, dtype = "i32", shape = c(10))
+    x <- nv_array(1:10, dtype = "i32", shape = c(10))
     nvl_dynamic_slice(x, start_i, slice_sizes = c(3L))
   }
   g1d <- jit(f1d)
   out <- g1d(nv_scalar(3L, dtype = "i32"))
-  expect_equal(out, nv_tensor(c(3L, 4L, 5L), dtype = "i32", shape = 3L))
+  expect_equal(out, nv_array(c(3L, 4L, 5L), dtype = "i32", shape = 3L))
 })
 
 test_that("p_dynamic_update_slice", {
@@ -83,8 +83,8 @@ test_that("p_dynamic_update_slice", {
 
   # Basic dynamic update slice with scalar indices
   f <- function(start_i, start_j) {
-    x <- nv_tensor(1:12, dtype = "i32", shape = c(3, 4))
-    update <- nv_tensor(c(100L, 200L, 300L, 400L), dtype = "i32", shape = c(2, 2))
+    x <- nv_array(1:12, dtype = "i32", shape = c(3, 4))
+    update <- nv_array(c(100L, 200L, 300L, 400L), dtype = "i32", shape = c(2, 2))
     nvl_dynamic_update_slice(x, update, start_i, start_j)
   }
   g <- jit(f)
@@ -93,32 +93,32 @@ test_that("p_dynamic_update_slice", {
   out <- g(nv_scalar(1L, dtype = "i32"), nv_scalar(1L, dtype = "i32"))
   expect_equal(
     out,
-    nv_tensor(c(100L, 200L, 3L, 300L, 400L, 6L, 7L, 8L, 9L, 10L, 11L, 12L), dtype = "i32", shape = c(3, 4))
+    nv_array(c(100L, 200L, 3L, 300L, 400L, 6L, 7L, 8L, 9L, 10L, 11L, 12L), dtype = "i32", shape = c(3, 4))
   )
 
   # Update at (2, 3) - bottom-right corner
   out <- g(nv_scalar(2L, dtype = "i32"), nv_scalar(3L, dtype = "i32"))
   expect_equal(
     out,
-    nv_tensor(c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 100L, 200L, 10L, 300L, 400L), dtype = "i32", shape = c(3, 4))
+    nv_array(c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 100L, 200L, 10L, 300L, 400L), dtype = "i32", shape = c(3, 4))
   )
 
   # 1D case
   f1d <- function(start_i) {
-    x <- nv_tensor(1:10, dtype = "i32", shape = c(10))
-    update <- nv_tensor(c(100L, 200L, 300L), dtype = "i32", shape = c(3))
+    x <- nv_array(1:10, dtype = "i32", shape = c(10))
+    update <- nv_array(c(100L, 200L, 300L), dtype = "i32", shape = c(3))
     nvl_dynamic_update_slice(x, update, start_i)
   }
   g1d <- jit(f1d)
   out <- g1d(nv_scalar(4L, dtype = "i32"))
-  expect_equal(out, nv_tensor(c(1L, 2L, 3L, 100L, 200L, 300L, 7L, 8L, 9L, 10L), dtype = "i32", shape = 10L))
+  expect_equal(out, nv_array(c(1L, 2L, 3L, 100L, 200L, 300L, 7L, 8L, 9L, 10L), dtype = "i32", shape = 10L))
 })
 
 test_that("p_concatenate", {
   f <- function() {
     nv_concatenate(
-      nv_tensor(c(1:6), dtype = "ui64", shape = c(2, 3)),
-      nv_tensor(c(7:10), dtype = "ui64", shape = c(2, 2)),
+      nv_array(c(1:6), dtype = "ui64", shape = c(2, 3)),
+      nv_array(c(7:10), dtype = "ui64", shape = c(2, 2)),
       dimension = 2L
     )
   }
@@ -128,8 +128,8 @@ test_that("p_concatenate", {
 })
 test_that("p_fill", {
   f <- jit(function(x) nv_fill(x, shape = c(2, 3), dtype = "f32"), static = "x")
-  expect_equal(f(1), nv_tensor(1, shape = c(2, 3), dtype = "f32"))
-  expect_equal(f(2), nv_tensor(2, shape = c(2, 3), dtype = "f32"))
+  expect_equal(f(1), nv_array(1, shape = c(2, 3), dtype = "f32"))
+  expect_equal(f(2), nv_array(2, shape = c(2, 3), dtype = "f32"))
 
   # scalars
   expect_equal(
@@ -142,34 +142,34 @@ test_that("p_fill", {
   )
   expect_equal(
     jit(\() nv_fill(1L, shape = 1L, dtype = "f32"))(),
-    nv_tensor(1, shape = 1L, dtype = "f32")
+    nv_array(1, shape = 1L, dtype = "f32")
   )
 })
 
 test_that("p_shift_left", {
-  x <- nv_tensor(as.integer(c(1L, 2L, 3L, 8L)), dtype = "i32")
-  y <- nv_tensor(as.integer(c(0L, 1L, 2L, 3L)), dtype = "i32")
+  x <- nv_array(as.integer(c(1L, 2L, 3L, 8L)), dtype = "i32")
+  y <- nv_array(as.integer(c(0L, 1L, 2L, 3L)), dtype = "i32")
   out <- as.integer(as_array(jit(nvl_shift_left)(x, y)))
   expect_equal(out, as.integer(c(1L, 4L, 12L, 64L)))
 })
 
 test_that("p_shift_right_logical", {
-  x <- nv_tensor(as.integer(c(16L, 8L, 7L, 1L)), dtype = "i32")
-  y <- nv_tensor(as.integer(c(0L, 1L, 2L, 0L)), dtype = "i32")
+  x <- nv_array(as.integer(c(16L, 8L, 7L, 1L)), dtype = "i32")
+  y <- nv_array(as.integer(c(0L, 1L, 2L, 0L)), dtype = "i32")
   out <- as.integer(as_array(jit(nvl_shift_right_logical)(x, y)))
   expect_equal(out, as.integer(c(16L, 4L, 1L, 1L)))
 })
 
 test_that("p_shift_right_arithmetic", {
-  x <- nv_tensor(as.integer(c(-8L, -1L, 8L, -17L)), dtype = "i32")
-  y <- nv_tensor(as.integer(c(1L, 3L, 2L, 4L)), dtype = "i32")
+  x <- nv_array(as.integer(c(-8L, -1L, 8L, -17L)), dtype = "i32")
+  y <- nv_array(as.integer(c(1L, 3L, 2L, 4L)), dtype = "i32")
   out <- as.integer(as_array(jit(nvl_shift_right_arithmetic)(x, y)))
   expect_equal(out, as.integer(c(-4L, -1L, 2L, -2L)))
 })
 
 test_that("p_rng_bit_generator", {
   f <- function() {
-    nvl_rng_bit_generator(nv_tensor(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
+    nvl_rng_bit_generator(nv_array(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
   }
   g <- jit(f)
   out <- g()
@@ -182,25 +182,25 @@ test_that("p_rng_bit_generator", {
 test_that("p_reduce_sum", {
   x <- array(1:6, c(2, 3))
   f <- jit(function(a) nvl_reduce_sum(a, dims = 2L, drop = TRUE))
-  out <- as_array(f(nv_tensor(x, dtype = "f32")))
+  out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(9, 12)))
 })
 
 test_that("p_reduce_prod", {
   x <- array(1:6, c(2, 3))
   f <- jit(function(a) nvl_reduce_prod(a, dims = 1L, drop = FALSE))
-  out <- as_array(f(nv_tensor(x, dtype = "f32")))
+  out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(2, 12, 30), c(1, 3)))
 })
 
 test_that("p_reduce_max", {
   x <- array(c(-1, 4, 0, 2), c(2, 2))
   f <- jit(function(a) nvl_reduce_max(a, dims = 2L, drop = TRUE))
-  out <- as_array(f(nv_tensor(x, dtype = "f32")))
+  out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(0, 4)))
   # f64
   x <- jit_eval({
-    nv_reduce_max(nv_tensor(c(1, 2, 3), dtype = "f64"), dims = 1L)
+    nv_reduce_max(nv_array(c(1, 2, 3), dtype = "f64"), dims = 1L)
   })
   expect_equal(x, nv_scalar(3, dtype = "f64"))
 })
@@ -208,18 +208,18 @@ test_that("p_reduce_max", {
 test_that("p_reduce_max drop = FALSE", {
   x <- array(c(-1, 4, 0, 2), c(2, 2))
   f <- jit(function(a) nvl_reduce_max(a, dims = 2L, drop = FALSE))
-  out <- as_array(f(nv_tensor(x, dtype = "f32")))
+  out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(0, 4), c(2, 1)))
 })
 
 test_that("p_reduce_min", {
   x <- array(c(-1, 4, 0, 2), c(2, 2))
   f <- jit(function(a) nvl_reduce_min(a, dims = 2L, drop = TRUE))
-  out <- as_array(f(nv_tensor(x, dtype = "f32")))
+  out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(-1, 2)))
   # f64
   x <- jit_eval({
-    nv_reduce_min(nv_tensor(c(1, 2, 3), dtype = "f64"), dims = 1L)
+    nv_reduce_min(nv_array(c(1, 2, 3), dtype = "f64"), dims = 1L)
   })
   expect_equal(x, nv_scalar(1, dtype = "f64"))
 })
@@ -227,21 +227,21 @@ test_that("p_reduce_min", {
 test_that("p_reduce_min drop = FALSE", {
   x <- array(c(-1, 4, 0, 2), c(2, 2))
   f <- jit(function(a) nvl_reduce_min(a, dims = 2L, drop = FALSE))
-  out <- as_array(f(nv_tensor(x, dtype = "f32")))
+  out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(-1, 2), c(2, 1)))
 })
 
 test_that("p_reduce_any", {
   x <- array(c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE), c(2, 3))
   f <- jit(function(a) nvl_reduce_any(a, dims = 2L, drop = TRUE))
-  out <- as_array(f(nv_tensor(x, dtype = "bool")))
+  out <- as_array(f(nv_array(x, dtype = "bool")))
   expect_equal(out, array(c(TRUE, FALSE)))
 })
 
 test_that("p_reduce_all", {
   x <- array(c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE), c(2, 3))
   f <- jit(function(a) nvl_reduce_all(a, dims = 1L, drop = FALSE))
-  out <- as_array(f(nv_tensor(x, dtype = "bool")))
+  out <- as_array(f(nv_array(x, dtype = "bool")))
   expect_equal(out, array(rep(FALSE, 3), c(1, 3)))
 })
 
@@ -250,7 +250,7 @@ test_that("p_broadcast_in_dim", {
   f <- jit(nvl_broadcast_in_dim, static = c("shape", "broadcast_dimensions"))
   expect_equal(
     f(nv_scalar(1L), c(1, 2), integer()),
-    nv_tensor(1L, shape = c(1, 2)),
+    nv_array(1L, shape = c(1, 2)),
     tolerance = 1e-5
   )
 })
@@ -259,8 +259,8 @@ test_that("p_reshape", {
   f <- jit(nvl_reshape, static = "shape")
   x <- array(1:6, c(3, 2))
   expect_equal(
-    f(nv_tensor(x), shape = 6),
-    nv_tensor(as.integer(c(1, 4, 2, 5, 3, 6)), "i32")
+    f(nv_array(x), shape = 6),
+    nv_array(as.integer(c(1, 4, 2, 5, 3, 6)), "i32")
   )
 })
 
@@ -269,7 +269,7 @@ test_that("p_transpose", {
   f <- jit(\(x) nvl_transpose(x, c(2, 1)))
   expect_equal(
     t(x),
-    as_array(f(nv_tensor(x)))
+    as_array(f(nv_array(x)))
   )
 })
 
@@ -452,7 +452,7 @@ describe("p_while", {
 })
 
 test_that("p_cholesky", {
-  A <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
+  A <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
   L <- as_array(jit(function(A) nvl_cholesky(A, lower = TRUE))(A))
   expect_equal(L[1, 1], 2)
   expect_equal(L[2, 1], 1)
@@ -462,7 +462,7 @@ test_that("p_cholesky", {
 })
 
 test_that("p_cholesky zeros out non-triangular part", {
-  A <- nv_tensor(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
+  A <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
   L <- as_array(jit(function(A) nvl_cholesky(A, lower = TRUE))(A))
   expect_equal(L[1, 2], 0)
 
@@ -472,8 +472,8 @@ test_that("p_cholesky zeros out non-triangular part", {
 
 test_that("p_triangular_solve", {
   # Solve L %*% x = b where L = [[3, 0], [1, 2]]
-  L <- nv_tensor(matrix(c(3, 1, 0, 2), nrow = 2), dtype = "f64")
-  b <- nv_tensor(matrix(c(6, 5), nrow = 2), dtype = "f64")
+  L <- nv_array(matrix(c(3, 1, 0, 2), nrow = 2), dtype = "f64")
+  b <- nv_array(matrix(c(6, 5), nrow = 2), dtype = "f64")
   x <- as_array(jit(function(L, b) {
     nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
   })(L, b))
@@ -501,8 +501,8 @@ test_that("error when multiplying lists in if-statement", {
 
 test_that("p_is_finite", {
   f <- jit(function(x) nvl_is_finite(x))
-  x <- nv_tensor(c(1.0, Inf, -Inf, NaN), dtype = "f32")
-  expect_equal(f(x), nv_tensor(c(TRUE, FALSE, FALSE, FALSE), dtype = "bool"))
+  x <- nv_array(c(1.0, Inf, -Inf, NaN), dtype = "f32")
+  expect_equal(f(x), nv_array(c(TRUE, FALSE, FALSE, FALSE), dtype = "bool"))
 })
 
 test_that("p_clamp", {
@@ -511,38 +511,38 @@ test_that("p_clamp", {
     max_val <- nv_broadcast_to(nv_scalar(1.0, "f32"), shape(x))
     nvl_clamp(min_val, x, max_val)
   })
-  x <- nv_tensor(c(-2.0, -0.5, 0.5, 2.0), dtype = "f32")
-  expect_equal(f(x), nv_tensor(c(-1.0, -0.5, 0.5, 1.0), dtype = "f32"))
+  x <- nv_array(c(-2.0, -0.5, 0.5, 2.0), dtype = "f32")
+  expect_equal(f(x), nv_array(c(-1.0, -0.5, 0.5, 1.0), dtype = "f32"))
 })
 
 test_that("p_reverse", {
   f <- jit(function(x) nvl_reverse(x, 1L))
-  x <- nv_tensor(1:5, dtype = "i32")
-  expect_equal(f(x), nv_tensor(5:1, dtype = "i32"))
+  x <- nv_array(1:5, dtype = "i32")
+  expect_equal(f(x), nv_array(5:1, dtype = "i32"))
 
   # 2D reverse
   f2 <- jit(function(x) nvl_reverse(x, 2L))
-  x2 <- nv_tensor(matrix(1:6, 2, 3), dtype = "i32")
-  expect_equal(f2(x2), nv_tensor(matrix(c(5L, 6L, 3L, 4L, 1L, 2L), 2, 3), dtype = "i32"))
+  x2 <- nv_array(matrix(1:6, 2, 3), dtype = "i32")
+  expect_equal(f2(x2), nv_array(matrix(c(5L, 6L, 3L, 4L, 1L, 2L), 2, 3), dtype = "i32"))
 })
 
 test_that("p_iota", {
   f <- jit(function() nvl_iota(1L, "i32", 5L, start = 0L))
-  expect_equal(f(), nv_tensor(0:4, dtype = "i32"))
+  expect_equal(f(), nv_array(0:4, dtype = "i32"))
 
   f <- jit(function() nvl_iota(1L, "i32", 5L, start = 1L))
-  expect_equal(f(), nv_tensor(1:5, dtype = "i32"))
+  expect_equal(f(), nv_array(1:5, dtype = "i32"))
 
   # 2D along first dimension (default start = 1)
   f2 <- jit(function() nvl_iota(1L, "i32", c(3L, 2L)))
   expected <- matrix(c(1L, 2L, 3L, 1L, 2L, 3L), 3, 2)
-  expect_equal(f2(), nv_tensor(expected, dtype = "i32"))
+  expect_equal(f2(), nv_array(expected, dtype = "i32"))
 })
 
 test_that("p_popcnt", {
   f <- jit(function(x) nvl_popcnt(x))
-  x <- nv_tensor(c(0L, 1L, 2L, 3L, 7L, 255L), dtype = "i32")
-  expect_equal(f(x), nv_tensor(c(0L, 1L, 1L, 2L, 3L, 8L), dtype = "i32"))
+  x <- nv_array(c(0L, 1L, 2L, 3L, 7L, 255L), dtype = "i32")
+  expect_equal(f(x), nv_array(c(0L, 1L, 1L, 2L, 3L, 8L), dtype = "i32"))
 })
 
 test_that("p_gather", {
@@ -563,10 +563,10 @@ test_that("p_gather", {
     )
   })
 
-  x <- nv_tensor(c(10L, 20L, 30L, 40L, 50L), dtype = "i32")
-  indices <- nv_tensor(c(1L, 3L, 5L), dtype = "i64", shape = c(3, 1))
+  x <- nv_array(c(10L, 20L, 30L, 40L, 50L), dtype = "i32")
+  indices <- nv_array(c(1L, 3L, 5L), dtype = "i64", shape = c(3, 1))
   out <- f(x, indices)
-  expect_equal(out, nv_tensor(c(10L, 30L, 50L), dtype = "i32"))
+  expect_equal(out, nv_array(c(10L, 30L, 50L), dtype = "i32"))
 })
 
 test_that("p_scatter", {
@@ -588,16 +588,16 @@ test_that("p_scatter", {
     )
   })
 
-  x <- nv_tensor(c(1L, 2L, 3L, 4L, 5L), dtype = "i32")
-  indices <- nv_tensor(c(1L, 3L, 5L), dtype = "i64", shape = c(3, 1))
-  updates <- nv_tensor(c(100L, 300L, 500L), dtype = "i32")
+  x <- nv_array(c(1L, 2L, 3L, 4L, 5L), dtype = "i32")
+  indices <- nv_array(c(1L, 3L, 5L), dtype = "i64", shape = c(3, 1))
+  updates <- nv_array(c(100L, 300L, 500L), dtype = "i32")
   out <- f(x, indices, updates)
-  expect_equal(out, nv_tensor(c(100L, 2L, 300L, 4L, 500L), dtype = "i32"))
+  expect_equal(out, nv_array(c(100L, 2L, 300L, 4L, 500L), dtype = "i32"))
 })
 
 test_that("p_print", {
   f <- jit(function(x) nvl_print(x))
-  x <- nv_tensor(c(1.0, 2.0, 3.0), dtype = "f32")
+  x <- nv_array(c(1.0, 2.0, 3.0), dtype = "f32")
   expect_snapshot({
     out <<- f(x)
   })

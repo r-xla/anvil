@@ -361,7 +361,7 @@ p_rng_bit_generator[["stablehlo"]] <- function(initial_state, rng_algorithm, dty
 
 p_print[["stablehlo"]] <- function(operand, footer) {
   backend_config <- stablehlo::CustomOpBackendConfig(list(
-    stablehlo::StringAttr(name = "print_header", value = "AnvilTensor"),
+    stablehlo::StringAttr(name = "print_header", value = "AnvilArray"),
     stablehlo::StringAttr(name = "print_footer", value = footer)
   ))
 
@@ -473,7 +473,7 @@ p_gather[["stablehlo"]] <- function(
 p_cholesky[["stablehlo"]] <- function(operand, lower) {
   L <- stablehlo::hlo_cholesky(operand, lower = lower)
   # The non-triangular part of the output is implementation-defined.
-  # Zero it out so downstream code (including backward rules) never sees garbage.
+  # Zero it out so downstream code (including reverse rules) never sees garbage.
   op_shape <- shape(operand$value_type)
   n <- op_shape[length(op_shape)]
   mat_shape <- c(n, n)

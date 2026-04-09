@@ -54,12 +54,12 @@ test_that("integration: indexing-heavy graph matches PJRT", {
   }
 
   templates <- list(
-    operand = nv_tensor(operand, dtype = "i32", shape = dim(operand)),
-    idx = nv_tensor(idx, dtype = "i32", shape = dim(idx)),
+    operand = nv_array(operand, dtype = "i32", shape = dim(operand)),
+    idx = nv_array(idx, dtype = "i32", shape = dim(idx)),
     padv = nv_scalar(0L, dtype = "i32"),
     s1 = nv_scalar(0L, dtype = "i32"),
     s2 = nv_scalar(0L, dtype = "i32"),
-    sc_idx = nv_tensor(sc_idx, dtype = "i32", shape = dim(sc_idx))
+    sc_idx = nv_array(sc_idx, dtype = "i32", shape = dim(sc_idx))
   )
 
   run <- list(
