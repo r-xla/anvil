@@ -245,6 +245,46 @@ test_that("p_reduce_all", {
   expect_equal(out, array(rep(FALSE, 3), c(1, 3)))
 })
 
+test_that("p_argmin", {
+  x <- array(c(3, 1, 2, 6, 4, 5), c(2, 3))
+  f <- jit(function(a) nvl_argmin(a, dim = 2L))
+  out <- as_array(f(nv_array(x, dtype = "f32")))
+  # row 1: values 3,2,4 -> min at col 2 (value 2)
+  # row 2: values 1,6,5 -> min at col 1 (value 1)
+  expect_equal(out, array(c(2L, 1L)))
+})
+
+test_that("p_argmin drop = FALSE", {
+  x <- array(c(3, 1, 2, 6, 4, 5), c(2, 3))
+  f <- jit(function(a) nvl_argmin(a, dim = 2L, drop = FALSE))
+  out <- as_array(f(nv_array(x, dtype = "f32")))
+  expect_equal(out, array(c(2L, 1L), c(2, 1)))
+})
+
+test_that("p_argmax", {
+  x <- array(c(3, 1, 2, 6, 4, 5), c(2, 3))
+  f <- jit(function(a) nvl_argmax(a, dim = 2L))
+  out <- as_array(f(nv_array(x, dtype = "f32")))
+  # row 1: values 3,2,4 -> max at col 3 (value 4)
+  # row 2: values 1,6,5 -> max at col 2 (value 6)
+  expect_equal(out, array(c(3L, 2L)))
+})
+
+test_that("p_argmax 1d", {
+  f <- jit(function(a) nvl_argmax(a, dim = 1L))
+  out <- as_array(f(nv_array(c(1, 5, 3), dtype = "f32")))
+  expect_equal(out, 2L)
+})
+
+test_that("p_reduce generic sum", {
+  x <- array(1:6, c(2, 3))
+  f <- jit(function(a) {
+    nvl_reduce(a, nv_scalar(0, dtype = "f32"), dims = 2L, body = function(acc, new) acc + new)
+  })
+  out <- as_array(f(nv_array(x, dtype = "f32")))
+  expect_equal(out, array(c(9, 12)))
+})
+
 test_that("p_broadcast_in_dim", {
   x <- 1L
   f <- jit(nvl_broadcast_in_dim, static = c("shape", "broadcast_dimensions"))

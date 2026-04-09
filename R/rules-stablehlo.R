@@ -156,6 +156,86 @@ p_reduce_all[["stablehlo"]] <- function(operand, dims, drop) {
   .stablehlo_apply_reduce(stablehlo::hlo_and, operand, init, dims, drop)
 }
 
+.stablehlo_argminmax <- function(direction) {
+  function(operand, dim, drop, index_dtype) {
+    val_dt <- as.character(dtype(operand))
+    idx_dt <- as.character(index_dtype)
+    op_shape <- shape(operand$value_type)
+
+    # Build comparator: (val_l, val_r, idx_l, idx_r) -> (sel_val, sel_idx)
+    local_func("")
+    val_l <- hlo_input("val_l", val_dt)
+    val_r <- hlo_input("val_r", val_dt)
+    idx_l <- hlo_input("idx_l", idx_dt)
+    idx_r <- hlo_input("idx_r", idx_dt)
+
+    ct <- if (inherits(operand$value_type$type$dtype, "FloatType")) {
+      "FLOAT"
+    } else if (inherits(operand$value_type$type$dtype, "IntegerType")) {
+      "SIGNED"
+    } else {
+      "UNSIGNED"
+    }
+    cmp <- stablehlo::hlo_compare(val_l, val_r, comparison_direction = direction, compare_type = ct)
+    sel_val <- stablehlo::hlo_select(cmp, val_l, val_r)
+    sel_idx <- stablehlo::hlo_select(cmp, idx_l, idx_r)
+    body <- hlo_return(sel_val, sel_idx)
+
+    # Init values
+    init_val <- if (direction == "LE") {
+      hlo_scalar(nv_maxval(val_dt, "cpu"))
+    } else {
+      hlo_scalar(nv_minval(val_dt, "cpu"))
+    }
+    init_idx <- hlo_scalar(0L, dtype = idx_dt, func = operand$func)
+
+    # Iota for 0-based indices along dim
+    indices <- stablehlo::hlo_iota(iota_dimension = dim - 1L, dtype = idx_dt, shape = op_shape)
+
+    results <- stablehlo::hlo_reduce(
+      list(operand, indices),
+      list(init_val, init_idx),
+      dim - 1L,
+      body
+    )
+
+    # Add 1 for 1-based indexing
+    idx_out <- results[[2L]]
+    one <- stablehlo::hlo_scalar(1L, dtype = idx_dt, func = operand$func)
+    one_bc <- stablehlo::hlo_broadcast_in_dim(one, integer(0), shape(idx_out$value_type))
+    idx_out <- stablehlo::hlo_add(idx_out, one_bc)
+
+    if (!drop) {
+      out_shape <- op_shape
+      out_shape[dim] <- 1L
+      idx_out <- stablehlo::hlo_reshape(idx_out, out_shape)
+    }
+    list(idx_out)
+  }
+}
+
+p_argmin[["stablehlo"]] <- .stablehlo_argminmax("LE")
+p_argmax[["stablehlo"]] <- .stablehlo_argminmax("GE")
+
+p_reduce[["stablehlo"]] <- function(operand, init_value, body, dims, drop) {
+  dt <- as.character(dtype(operand))
+
+  local_func("")
+  acc <- hlo_input("acc", dt)
+  new <- hlo_input("new", dt)
+  body_func <- hlo_return(body(acc, new))
+
+  out <- stablehlo::hlo_reduce(list(operand), list(init_value), dims - 1L, body_func)
+
+  if (drop) {
+    return(list(out))
+  }
+
+  shape_out <- shape(operand$value_type)
+  shape_out[dims] <- 1L
+  list(stablehlo::hlo_reshape(out, shape_out))
+}
+
 # comparison jit rules ----------------------------------------------------------
 
 .compare_type_for <- function(vt) {

@@ -814,6 +814,144 @@ p_reduce_all <- AnvilPrimitive("reduce_all")
 #' @export
 nvl_reduce_all <- make_reduce_op(p_reduce_all, infer_reduce_boolean)
 
+# argmin / argmax primitives ---------------------------------------------------
+
+infer_argminmax <- function(operand, dim, drop, index_dtype) {
+  old_shape <- shape(operand)
+  if (drop) {
+    new_shape <- old_shape[-dim]
+  } else {
+    new_shape <- old_shape
+    new_shape[dim] <- 1L
+  }
+  list(AbstractArray(
+    dtype = index_dtype,
+    shape = Shape(new_shape),
+    ambiguous = FALSE
+  ))
+}
+
+make_argminmax_op <- function(prim) {
+  function(operand, dim, drop = TRUE, index_dtype = "i32") {
+    infer_fn <- function(operand, dim, drop, index_dtype) {
+      infer_argminmax(operand, dim, drop, index_dtype)
+    }
+    graph_desc_add(
+      prim,
+      list(operand = operand),
+      params = list(dim = dim, drop = drop, index_dtype = index_dtype),
+      infer_fn = infer_fn
+    )[[1L]]
+  }
+}
+
+p_argmin <- AnvilPrimitive("argmin")
+#' @title Primitive Argmin
+#' @description
+#' Returns the indices of the minimum values along a dimension.
+#' @template param_prim_operand_any
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which to find the minimum.
+#' @param drop (`logical(1)`)\cr
+#'   Whether to drop the reduced dimension from the output shape.
+#'   If `TRUE`, the reduced dimension is removed.
+#'   If `FALSE`, the reduced dimension is set to 1.
+#' @param index_dtype (`character(1)`)\cr
+#'   Data type for the returned indices. Default `"i32"`.
+#' @return [`arrayish`]\cr
+#'   Integer array of indices (1-based). Has `index_dtype` and the shape of
+#'   `operand` with `dim` removed (when `drop = TRUE`) or set to 1
+#'   (when `drop = FALSE`).
+#' @templateVar primitive_id argmin
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_reduce()] with a comparator that tracks value-index
+#' pairs, combined with [stablehlo::hlo_iota()] for index generation.
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_array(c(3, 1, 2))
+#'   nvl_argmin(x, dim = 1L)
+#' })
+#' @export
+nvl_argmin <- make_argminmax_op(p_argmin)
+
+p_argmax <- AnvilPrimitive("argmax")
+#' @title Primitive Argmax
+#' @description
+#' Returns the indices of the maximum values along a dimension.
+#' @template param_prim_operand_any
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which to find the maximum.
+#' @param drop (`logical(1)`)\cr
+#'   Whether to drop the reduced dimension from the output shape.
+#'   If `TRUE`, the reduced dimension is removed.
+#'   If `FALSE`, the reduced dimension is set to 1.
+#' @param index_dtype (`character(1)`)\cr
+#'   Data type for the returned indices. Default `"i32"`.
+#' @return [`arrayish`]\cr
+#'   Integer array of indices (1-based). Has `index_dtype` and the shape of
+#'   `operand` with `dim` removed (when `drop = TRUE`) or set to 1
+#'   (when `drop = FALSE`).
+#' @templateVar primitive_id argmax
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_reduce()] with a comparator that tracks value-index
+#' pairs, combined with [stablehlo::hlo_iota()] for index generation.
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_array(c(1, 3, 2))
+#'   nvl_argmax(x, dim = 1L)
+#' })
+#' @export
+nvl_argmax <- make_argminmax_op(p_argmax)
+
+# generic reduce ---------------------------------------------------------------
+
+p_reduce <- AnvilPrimitive("reduce")
+#' @title Primitive Reduce
+#' @description
+#' General-purpose reduction that applies a user-supplied binary function
+#' along the specified dimensions. This is the most flexible reduce
+#' primitive; the specialized variants ([nvl_reduce_sum()], [nvl_reduce_max()],
+#' etc.) should be preferred when applicable.
+#' @template param_prim_operand_any
+#' @param init_value ([`arrayish`])\cr
+#'   Scalar initial value. Must have the same dtype as `operand`.
+#' @param dims (`integer()`)\cr
+#'   Dimensions to reduce over.
+#' @param body (`function`)\cr
+#'   Binary reduction function `f(accumulator, new_element)`.
+#'   Must return a scalar with the same dtype as `init_value`.
+#' @param drop (`logical(1)`)\cr
+#'   Whether to drop the reduced dimensions from the output shape.
+#'   If `TRUE`, the reduced dimensions are removed.
+#'   If `FALSE`, the reduced dimensions are set to 1.
+#' @template return_prim_reduce
+#' @templateVar primitive_id reduce
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_reduce()].
+#' @seealso [nvl_reduce_sum()], [nvl_reduce_max()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' # Sum reduction written manually:
+#' jit_eval({
+#'   x <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
+#'   nvl_reduce(x, nv_scalar(0, dtype = "f32"), dims = 1L,
+#'     body = function(acc, new) acc + new)
+#' })
+#' @export
+nvl_reduce <- function(operand, init_value, dims, body, drop = TRUE) {
+  infer_fn <- function(operand, init_value, body, dims, drop) {
+    infer_reduce(operand, dims, drop)
+  }
+  graph_desc_add(
+    p_reduce,
+    list(operand = operand, init_value = init_value),
+    params = list(body = body, dims = dims, drop = drop),
+    infer_fn = infer_fn
+  )[[1L]]
+}
+
 # comparison primitives --------------------------------------------------------
 
 infer_compare <- function(lhs, rhs, comparison_direction) {
