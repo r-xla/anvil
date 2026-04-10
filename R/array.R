@@ -3,10 +3,8 @@
 #' The main array object.
 #' Its type is determined by a data type and a shape.
 #'
-#' To transform arrays, apply [`jit()`]ted functions.
-#' Directly calling operations (e.g. `nv_add(x, y)`) on `AnvilArray` objects
-#' only performs type inference and returns an [`AbstractArray`] --
-#' see `vignette("debugging")` for details.
+#' Operations such as `nv_add(x, y)` can be called directly on `AnvilArray` objects (eager mode)
+#' or inside [`jit()`]-compiled functions for better performance.
 #'
 #' To compare whether two abstract arrays are equal, use [`eq_type()`].
 #'
@@ -81,8 +79,7 @@
 #' add_one <- jit(function(x) x + 1)
 #' add_one(nv_array(1:4))
 #'
-#' # --- Debug mode (calling operations directly) ---
-#' # Outside of jit, operations only perform type inference:
+#' # --- Eager mode (calling operations directly) ---
 #' nv_add(nv_array(1:3), nv_array(4:6))
 #'
 #' @name AnvilArray
@@ -656,8 +653,6 @@ to_abstract <- function(x, pure = FALSE) {
   } else if (is_graph_box(x)) {
     gnode <- x$gnode
     gnode$aval
-  } else if (is_debug_box(x)) {
-    x$aval
   } else {
     cli_abort("internal error: {.cls {class(x)}} is not an array-like object")
   }
@@ -715,8 +710,6 @@ is_shape <- function(x) {
 #'
 #' # Non-scalar vectors are not arrayish
 #' is_arrayish(1:4)
-#'
-#' is_arrayish(DebugBox(nv_abstract("f32", c(2L, 3L))))
 #'
 #' # Disable literal promotion
 #' is_arrayish(1.5, literal = FALSE)

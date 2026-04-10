@@ -1893,11 +1893,6 @@ nvl_if <- jit(
 
     current_desc <- .current_descriptor(silent = TRUE)
 
-    debug_mode <- is.null(current_desc)
-    if (debug_mode) {
-      current_desc <- local_descriptor()
-    }
-
     desc_true <- local_descriptor()
     true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true, lit_to_array = TRUE)
     desc_false <- local_descriptor()
@@ -1937,8 +1932,7 @@ nvl_if <- jit(
       list(pred = pred),
       params = list(true_graph = true_graph, false_graph = false_graph),
       infer_fn = infer_fn,
-      desc = current_desc,
-      debug_mode = debug_mode
+      desc = current_desc
     )
     unflatten(true_graph$out_tree, out)
   },
@@ -1997,10 +1991,6 @@ nvl_while <- jit(
     }
 
     current_desc <- .current_descriptor(silent = TRUE)
-    debug_mode <- is.null(current_desc)
-    if (debug_mode) {
-      current_desc <- local_descriptor()
-    }
 
     desc_cond <- local_descriptor()
 
@@ -2048,8 +2038,7 @@ nvl_while <- jit(
       args = lapply(flatten(init), maybe_box_arrayish),
       params = list(cond_graph = cond_graph, body_graph = body_graph),
       infer_fn = infer_fn,
-      desc = current_desc,
-      debug_mode = debug_mode
+      desc = current_desc
     )
 
     unflatten(body_graph$out_tree, out)
@@ -2242,10 +2231,6 @@ nvl_scatter <- jit(
     }
 
     current_desc <- .current_descriptor(silent = TRUE)
-    debug_mode <- is.null(current_desc)
-    if (debug_mode) {
-      current_desc <- local_descriptor()
-    }
 
     # Trace the update computation function
     # For scatter, the update computation takes 2 scalar arguments (current, update)
@@ -2327,8 +2312,7 @@ nvl_scatter <- jit(
         update_computation_graph = update_computation_graph
       ),
       infer_fn = infer_fn,
-      desc = current_desc,
-      debug_mode = debug_mode
+      desc = current_desc
     )
 
     out[[1L]]

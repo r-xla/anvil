@@ -33,5 +33,5 @@ It also contains an associated \code{\link{GraphDescriptor}} in which the node "
 }
 
 \seealso{
-\link{AnvilBox}, \link{DebugBox}, \code{\link[=trace_fn]{trace_fn()}}, \code{\link[=jit]{jit()}}
+\link{AnvilBox}, \code{\link[=trace_fn]{trace_fn()}}, \code{\link[=jit]{jit()}}
 }

@@ -50,24 +50,24 @@ Note that for 0-dimensional arrays, the result is an R vector of length 1, as R 
 as_array(y)
 ```
 
-At first, working with `AnvilArray`s may feel a bit cumbersome, because you cannot directly apply functions to them like you would with regular R arrays.
-
-```{r, error = TRUE}
-x + x
-```
-
-If we add the two anvil arrays, the output will be the type of the output instead of the actual result.
-Read more about this in the [debugging vignette](debugging.html).
+We can directly work with `AnvilArray`s using standard R operators and {anvil} functions:
 
 ```{r}
 y + y
+nv_sum(y)
 ```
 
-In order to actually perform the addition, we need to `jit`-compile the function, which we will cover in the next section.
+This works because {anvil}'s `nv_*` and `nvl_*` functions -- as well as the operators dispatched on `AnvilArray`s -- are themselves `jit()`-compiled.
+When called outside of a `jit()` context, each operation is compiled and executed immediately.
+This is called *eager mode*.
+
+These functions can also be used inside a `jit()` call, where their operations are inlined into the outer computation graph rather than being compiled separately (see the [Composability](#composability) section).
+
+While eager mode is convenient for interactive use, compiling a larger function with `jit()` is more efficient, as we will see next.
 
 ## JIT Compilation
 
-In order to work with `AnvilArray`s, you need to convert the function you want to apply to a jit-compiled version via `jit()`.
+When many operations are applied in sequence, it is more efficient to compile them together into a single executable using `jit()`, rather than compiling each operation individually as in eager mode.
 
 ```{r}
 plus_jit <- jit(`+`)

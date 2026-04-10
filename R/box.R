@@ -1,7 +1,7 @@
 #' @title AnvilBox
 #' @description
-#' Virtual S3 base class for [`GraphBox`] and [`DebugBox`].
-#' @seealso [DebugBox], [GraphBox], [debug_box()]
+#' Virtual S3 base class for [`GraphBox`].
+#' @seealso [GraphBox]
 #' @name AnvilBox
 NULL
 

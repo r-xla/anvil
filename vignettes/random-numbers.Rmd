@@ -35,7 +35,7 @@ You can convert a seed into a state using `nv_rng_state()`:
 
 ```{r}
 library(anvil)
-state <- jit_eval(nv_rng_state(42L))
+state <- nv_rng_state(42L)
 state
 ```
 

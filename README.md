@@ -34,10 +34,9 @@ instructions.
 
 ## Quick Start
 
-Below, we create a standard R function. We cannot directly call this
-function, but first need to wrap it in a `jit()` call. If the resulting
-function is then called on `AnvilArray`s – the primary data type in
-{anvil} – it will be JIT compiled and subsequently executed.
+Below, we create an R function and `jit()` it. Then, we call the
+resulting function on `AnvilArray`s, which will compile and subsequently
+execute it.
 
 ``` r
 library(anvil)
@@ -92,18 +91,6 @@ the package website.
 - Multi-backend:
   - The backend supports execution via XLA as well as an experimental
     {quickr}-based Fortran backend (CPU only).
-
-## When to use this package?
-
-While {anvil} allows to run certain types of programs extremely fast, it
-only applies to a certain category of problems. Specifically, it is
-suitable for numerical algorithms, such as fitting bayesian models,
-training neural networks or more generally numerical optimization.
-Another restriction is that {anvil} needs to re-compile the code for
-each new unique input shape. This has the advantage, that the compiler
-can make memory optimizations, but the compilation overhead might be a
-problem when inputs shapes are varying often and the programs run
-quickly.
 
 ## Platform Support
 

@@ -270,7 +270,11 @@ descriptor_to_graph <- function(descriptor) {
 #' value is represented as a `GraphBox`.
 #' It also contains an associated [`GraphDescriptor`] in which the node "lives".
 #'
-#' @inheritSection DebugBox Extractors
+#' @section Extractors:
+#' - [`dtype()`][tengen::dtype]
+#' - [`shape()`][tengen::shape]
+#' - [`ndims()`][tengen::ndims]
+#' - [`ambiguous()`]
 #'
 #' @param gnode ([`GraphNode`])\cr
 #'   The graph node -- either a [`GraphValue`] or a [`GraphLiteral`].
@@ -278,7 +282,7 @@ descriptor_to_graph <- function(descriptor) {
 #'   The descriptor of the graph being built.
 #' @return (`GraphBox`)
 #'
-#' @seealso [AnvilBox], [DebugBox], [trace_fn()], [jit()]
+#' @seealso [AnvilBox], [trace_fn()], [jit()]
 #' @export
 GraphBox <- function(gnode, desc) {
   if (!is_graph_node(gnode)) {
@@ -328,13 +332,8 @@ maybe_box_arrayish <- function(x) {
     get_box_or_register_const(current_desc, gval)
   } else if (is_anvil_array(x) || is_lit(x)) {
     get_box_or_register_const(current_desc, x)
-  } else if (is_debug_box(x)) {
-    # We want debug mode to emulate standard tracing, so each primitive initializes it's own
-    # GraphDescriptor during debug mode and we evaluate with GraphBox objects
-    # before returning to the user, the GraphBox is converted to a DebugBox again
-    GraphBox(GraphValue(aval = x$aval), current_desc)
   } else if (is_abstract_tensor(x)) {
-    cli_abort("Don't use AbtractTensors as inputs; For debugging, use `debug_box()`")
+    cli_abort("Expected arrayish value, but got {.cls {class(x)[1]}}")
   } else {
     cli_abort("Expected arrayish value, but got {.cls {class(x)[1]}}")
   }
@@ -377,12 +376,6 @@ maybe_box_input <- function(x, desc, toplevel, lit_to_array) {
       # nested trace_fn call might receive known constants from the parent graph as input
       GraphValue(aval = ConcreteArray(x))
     }
-    register_input(desc, gval)
-  } else if (is_debug_box(x)) {
-    # User provided abstract input
-    # This is useful for debugging and in jit() we anyway verify that the inputs are AnvilArrays
-    # so we don't accidentally box abstract arrays there
-    gval <- GraphValue(aval = x$aval)
     register_input(desc, gval)
   } else if (is_graph_box(x)) {
     # Nested trace_fn call
@@ -665,7 +658,7 @@ maybe_restore_previous_desc <- function(desc = NULL) {
 #' @export
 local_descriptor <- function(..., envir = parent.frame()) {
   if (identical(envir, globalenv())) {
-    # lingering global descriptors mess with our debug mode
+    # lingering global descriptors interfere with graph tracing
     cli_abort("Don't run local_descriptor in the global environment")
   }
 
@@ -710,18 +703,10 @@ is_graph_box <- function(x) {
 #' @param desc ([`GraphDescriptor`] | `NULL`)\cr
 #'   The graph descriptor to add the primitive call to.
 #'   Uses the [current descriptor][.current_descriptor] if `NULL`.
-#' @param debug_mode (`logical(1)`)\cr
-#'   Whether to just perform abstract evaluation for debugging.
-#' @return (`list` of `Box`)\cr
-#'   Either `GraphBox` objects or `DebugBox` objects, depending on `debug_mode`.
+#' @return (`list` of [`GraphBox`])
 #' @export
-graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, debug_mode = NULL) {
+graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL) {
   desc <- desc %??% .current_descriptor(silent = TRUE)
-
-  debug_mode <- debug_mode %??% is.null(desc)
-  if (debug_mode && is.null(desc)) {
-    desc <- local_descriptor()
-  }
 
   boxes_in <- lapply(args, maybe_box_arrayish)
   gnodes_in <- unname(lapply(boxes_in, \(box) box$gnode))
@@ -739,11 +724,7 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, d
   gvals_out <- lapply(ats_out, GraphValue)
   call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)
   desc$calls <- c(desc$calls, list(call))
-  boxes_out <- lapply(gvals_out, register_gval, desc = desc)
-  if (debug_mode) {
-    return(lapply(boxes_out, \(x) DebugBox(to_abstract(x))))
-  }
-  return(boxes_out)
+  lapply(gvals_out, register_gval, desc = desc)
 }
 
 print_call_repr <- function(prim) {
