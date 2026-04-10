@@ -262,13 +262,24 @@ jit_quickr_impl <- function(f, static, cache) {
     })
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
-      return(do.call(cache_hit[[1]], r_args))
+      return(jit_call_quickr(cache_hit[[1L]], cache_hit[[2L]], cache_hit[[3L]], r_args))
     }
 
     compiled <- compile_to_quickr(f, args_flat = inputs$avals_in, in_tree = prep$in_tree)
-    cache$set(cache_key, list(compiled$fun))
-    do.call(compiled$fun, r_args)
+    cache$set(cache_key, list(compiled$fun, compiled$out_tree, compiled$ambiguous_out))
+    jit_call_quickr(compiled$fun, compiled$out_tree, compiled$ambiguous_out, r_args)
   }
+}
+
+jit_call_quickr <- function(fun, out_tree, ambiguous_out, r_args) {
+  out_vals <- do.call(fun, r_args)
+  out_flat <- flatten(out_vals)
+  if (!is.null(ambiguous_out)) {
+    out_flat <- Map(function(val, amb) nv_array(val, ambiguous = amb, backend = "quickr"), out_flat, ambiguous_out)
+  } else {
+    out_flat <- lapply(out_flat, nv_array, backend = "quickr")
+  }
+  unflatten(out_tree, out_flat)
 }
 
 #' @title Trace, lower, and compile a function to an XLA executable
@@ -354,7 +365,15 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
 compile_to_quickr <- function(f, args_flat, in_tree) {
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
-  list(fun = graph_to_quickr_function(graph))
+  ambiguous_out <- vapply(graph$outputs, \(x) x$aval$ambiguous, logical(1))
+  if (!any(ambiguous_out)) {
+    ambiguous_out <- NULL
+  }
+  list(
+    fun = graph_to_quickr_function(graph),
+    out_tree = graph$out_tree,
+    ambiguous_out = ambiguous_out
+  )
 }
 
 #' @title Ahead-of-time compile a function to XLA
