@@ -18,21 +18,24 @@ quickr_restore_leaf <- function(value, shape) {
   value
 }
 
-quickr_restore_output <- function(value, out_tree, out_infos) {
+quickr_restore_output_flat <- function(value, out_tree, out_infos) {
   if (inherits(out_tree, "LeafNode") && length(out_infos) == 1L) {
-    return(quickr_restore_leaf(value, out_infos[[1L]]$shape))
+    return(list(quickr_restore_leaf(value, out_infos[[1L]]$shape)))
   }
 
   if (!is.list(value) || length(value) != length(out_infos)) {
     cli_abort("Internal error: expected {length(out_infos)} quickr outputs, got {length(value)}")
   }
 
-  leaves <- .mapply(
+  .mapply(
     function(x, info) quickr_restore_leaf(x, info$shape),
     list(value, out_infos),
     NULL
   )
-  unflatten(out_tree, leaves)
+}
+
+quickr_restore_output <- function(value, out_tree, out_infos) {
+  unflatten(out_tree, quickr_restore_output_flat(value, out_tree, out_infos))
 }
 
 graph_to_quickr_prepare <- function(graph) {
@@ -280,11 +283,15 @@ graph_to_quickr_function <- function(graph) {
     return(inner_quick)
   }
 
-  graph_to_quickr_make_wrapper(
+  fun <- graph_to_quickr_make_wrapper(
     graph = graph,
     r_fun = prep$r_fun,
     inner_fun = inner_quick,
     out_infos = prep$out_infos,
     needs_flatten = prep$needs_flatten
   )
+  # Return flat output (shape-fixed leaves, no tree rebuilding) — the caller
+  # (jit_call_quickr) wraps each leaf in nv_array and unflattens once.
+  environment(fun)$restore_output <- quickr_restore_output_flat
+  fun
 }

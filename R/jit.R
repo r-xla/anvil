@@ -156,6 +156,15 @@ jit_xla_inputs <- function(args_flat, is_static_flat, device) {
   list(avals_in = avals_in, device = inferred_device)
 }
 
+jit_wrap_outputs <- function(out_flat, out_tree, ambiguous_out, backend) {
+  if (!is.null(ambiguous_out)) {
+    out_flat <- Map(function(val, amb) nv_array(val, ambiguous = amb, backend = backend), out_flat, ambiguous_out)
+  } else {
+    out_flat <- lapply(out_flat, nv_array, backend = backend)
+  }
+  unflatten(out_tree, out_flat)
+}
+
 jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat, ambiguous_out = NULL) {
   args_nonstatic <- args_flat[!is_static_flat]
   args_unwrapped <- lapply(args_nonstatic, \(a) a$data)
@@ -166,12 +175,7 @@ jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat,
     !!!args_unwrapped,
     simplify = FALSE
   )
-  if (!is.null(ambiguous_out)) {
-    out_vals <- Map(function(val, amb) nv_array(val, ambiguous = amb, backend = "xla"), out_vals, ambiguous_out)
-  } else {
-    out_vals <- lapply(out_vals, nv_array, backend = "xla")
-  }
-  unflatten(out_node, out_vals)
+  jit_wrap_outputs(out_vals, out_node, ambiguous_out, "xla")
 }
 
 jit_xla_impl <- function(f, static, cache, donate, device) {
@@ -272,14 +276,8 @@ jit_quickr_impl <- function(f, static, cache) {
 }
 
 jit_call_quickr <- function(fun, out_tree, ambiguous_out, r_args) {
-  out_vals <- do.call(fun, r_args)
-  out_flat <- flatten(out_vals)
-  if (!is.null(ambiguous_out)) {
-    out_flat <- Map(function(val, amb) nv_array(val, ambiguous = amb, backend = "quickr"), out_flat, ambiguous_out)
-  } else {
-    out_flat <- lapply(out_flat, nv_array, backend = "quickr")
-  }
-  unflatten(out_tree, out_flat)
+  out_flat <- flatten(do.call(fun, r_args))
+  jit_wrap_outputs(out_flat, out_tree, ambiguous_out, "quickr")
 }
 
 #' @title Trace, lower, and compile a function to an XLA executable
@@ -432,12 +430,7 @@ xla <- function(f, args, donate = character(), device = NULL) {
       !!!args_unwrapped,
       simplify = FALSE
     )
-    if (!is.null(ambiguous_out)) {
-      out_vals <- Map(function(val, amb) nv_array(val, ambiguous = amb), out_vals, ambiguous_out)
-    } else {
-      out_vals <- lapply(out_vals, nv_array)
-    }
-    unflatten(out_tree, out_vals)
+    jit_wrap_outputs(out_vals, out_tree, ambiguous_out, "xla")
   }
   formals(f_xla) <- formals2(f)
   f_xla
