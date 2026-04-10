@@ -5,3 +5,7 @@ get_qr_handler <- function() {
     .Call(`_anvil_get_qr_handler`)
 }
 
+get_qr_handler_cuda <- function() {
+    .Call(`_anvil_get_qr_handler_cuda`)
+}
+

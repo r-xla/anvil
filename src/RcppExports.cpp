@@ -20,9 +20,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// get_qr_handler_cuda
+SEXP get_qr_handler_cuda();
+RcppExport SEXP _anvil_get_qr_handler_cuda() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(get_qr_handler_cuda());
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_anvil_get_qr_handler", (DL_FUNC) &_anvil_get_qr_handler, 0},
+    {"_anvil_get_qr_handler_cuda", (DL_FUNC) &_anvil_get_qr_handler_cuda, 0},
     {NULL, NULL, 0}
 };
 
