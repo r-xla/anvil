@@ -42,11 +42,9 @@ Lowers to \code{\link[stablehlo:hlo_cholesky]{stablehlo::hlo_cholesky()}}.
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  # Create a positive-definite matrix
-  x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-  nvl_cholesky(x, lower = TRUE)
-})
+# Create a positive-definite matrix
+x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+nvl_cholesky(x, lower = TRUE)
 \dontshow{\}) # examplesIf}
 }
 \references{

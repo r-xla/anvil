@@ -8,8 +8,8 @@
 #' @param f (`function`)\cr
 #'   Function to compile. Must accept and return [`AnvilArray`]s (and/or
 #'   static arguments).
-#' @param static (`character()`)\cr
-#'   Names of parameters of `f` that are *not* arrays. Static values are
+#' @param static (`character()` | `integer()`)\cr
+#'   Names or positions of parameters of `f` that are *not* arrays. Static values are
 #'   embedded as constants in the compiled program; a new compilation is triggered whenever
 #'   a static value changes. For example useful when you want R control flow in your function.
 #' @param cache_size (`integer(1)`)\cr
@@ -29,7 +29,7 @@
 #' @return A `JitFunction` with the same formals as `f`.
 #'   The returned wrapper expects [`AnvilArray`] inputs and returns
 #'   [`AnvilArray`] values.
-#' @seealso [`xla()`] for ahead-of-time compilation, [`jit_eval()`] for evaluating an expression once.
+#' @seealso [`xla()`] for ahead-of-time compilation.
 #' @return (`function`)
 #' @export
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -55,6 +55,10 @@ jit <- function(
   device = NULL,
   backend = default_backend()
 ) {
+  static <- resolve_static(f, static)
+  if (backend == "auto") {
+    return(jit_auto(f, static, cache_size))
+  }
   cache <- xlamisc::LRUCache$new(cache_size)
   backend <- assert_backend(backend)
   jit_validate_args(f, static, donate, device, backend)
@@ -66,9 +70,56 @@ jit <- function(
   f_jit
 }
 
+resolve_static <- function(f, static) {
+  if (is.integer(static)) {
+    nms <- formalArgs2(f)
+    if (any(static < 1L | static > length(nms))) {
+      cli_abort("{.arg static} index out of range.")
+    }
+    return(nms[static])
+  }
+  static
+}
+
 #' @export
 backend.JitFunction <- function(x, ...) {
   attr(x, "backend")
+}
+
+jit_auto <- function(f, static, cache_size) {
+  # Lazily create per-backend jit functions
+  jit_fns <- list()
+
+  wrapper <- function() {
+    # Inside tracing: pass through to unwrapped function
+    if (!is.null(.current_descriptor(silent = TRUE))) {
+      args <- as.list(match.call())[-1L]
+      args <- lapply(args, eval, envir = parent.frame())
+      return(do.call(f, args))
+    }
+    # Determine backend from input arrays
+    prep <- jit_prepare_call(match.call(), parent.frame(), static)
+    be <- jit_auto_detect_backend(prep$args_flat, prep$is_static_flat)
+    if (is.null(jit_fns[[be]])) {
+      jit_fns[[be]] <<- jit(f, static = static, cache_size = cache_size, backend = be)
+    }
+    cl <- match.call()
+    cl[[1L]] <- jit_fns[[be]]
+    eval.parent(cl)
+  }
+  formals(wrapper) <- formals2(f)
+  class(wrapper) <- "JitFunction"
+  attr(wrapper, "backend") <- "auto"
+  wrapper
+}
+
+jit_auto_detect_backend <- function(args_flat, is_static_flat) {
+  for (i in seq_along(args_flat)) {
+    if (!is_static_flat[[i]] && is_anvil_array(args_flat[[i]])) {
+      return(backend(args_flat[[i]]))
+    }
+  }
+  default_backend()
 }
 
 jit_validate_args <- function(f, static, donate, device, backend) {
@@ -262,13 +313,24 @@ jit_quickr_impl <- function(f, static, cache) {
     })
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
-      return(do.call(cache_hit[[1]], r_args))
+      return(jit_call_quickr(cache_hit[[1L]], cache_hit[[2L]], cache_hit[[3L]], r_args))
     }
 
     compiled <- compile_to_quickr(f, args_flat = inputs$avals_in, in_tree = prep$in_tree)
-    cache$set(cache_key, list(compiled$fun))
-    do.call(compiled$fun, r_args)
+    cache$set(cache_key, list(compiled$fun, compiled$out_tree, compiled$ambiguous_out))
+    jit_call_quickr(compiled$fun, compiled$out_tree, compiled$ambiguous_out, r_args)
   }
+}
+
+jit_call_quickr <- function(fun, out_tree, ambiguous_out, r_args) {
+  out_vals <- do.call(fun, r_args)
+  out_flat <- flatten(out_vals)
+  if (!is.null(ambiguous_out)) {
+    out_flat <- Map(function(val, amb) nv_array(val, ambiguous = amb, backend = "quickr"), out_flat, ambiguous_out)
+  } else {
+    out_flat <- lapply(out_flat, nv_array, backend = "quickr")
+  }
+  unflatten(out_tree, out_flat)
 }
 
 #' @title Trace, lower, and compile a function to an XLA executable
@@ -354,7 +416,15 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
 compile_to_quickr <- function(f, args_flat, in_tree) {
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
-  list(fun = graph_to_quickr_function(graph))
+  ambiguous_out <- vapply(graph$outputs, \(x) x$aval$ambiguous, logical(1))
+  if (!any(ambiguous_out)) {
+    ambiguous_out <- NULL
+  }
+  list(
+    fun = graph_to_quickr_function(graph),
+    out_tree = graph$out_tree,
+    ambiguous_out = ambiguous_out
+  )
 }
 
 #' @title Ahead-of-time compile a function to XLA
@@ -422,28 +492,4 @@ xla <- function(f, args, donate = character(), device = NULL) {
   }
   formals(f_xla) <- formals2(f)
   f_xla
-}
-
-#' @title JIT-compile and evaluate an expression
-#' @description
-#' Convenience wrapper that JIT-compiles and immediately evaluates a single expression.
-#' Equivalent to wrapping `expr` in an anonymous function, calling [`jit()`] on it, and
-#' invoking the result.
-#' Useful if you want to evaluate an expression once.
-#' @param expr (NSE)\cr
-#'   Expression to compile and evaluate.
-#' @param device (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device])\cr
-#'   The device to use. By default (`NULL`), the device is inferred from
-#'   the arrays encountered during tracing, falling back to `"cpu"`.
-#'   or `"cpu"`.
-#' @return (`any`)\cr
-#'   Result of the compiled and evaluated expression.
-#' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
-#' x <- nv_array(c(1, 2, 3), dtype = "f32")
-#' jit_eval(x + x)
-jit_eval <- function(expr, device = NULL) {
-  expr <- substitute(expr)
-  eval_env <- new.env(parent = parent.frame())
-  jit(\() eval(expr, envir = eval_env), device = device)()
 }

@@ -8,13 +8,15 @@
 #' @return [`nv_array`] of dtype `ui64` and shape `(2)`.
 #' @family rng
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   state <- nv_rng_state(42L)
-#'   state
-#' })
+#' state <- nv_rng_state(42L)
+#' state
 #' @export
-nv_rng_state <- function(seed) {
-  seed <- nv_array(seed, dtype = as_dtype("i32"), shape = integer())
-  state <- nv_bitcast_convert(seed, dtype = "ui16")
-  nv_convert(state, "ui64")
-}
+nv_rng_state <- jit(
+  function(seed) {
+    seed <- nv_array(seed, dtype = as_dtype("i32"), shape = integer())
+    state <- nv_bitcast_convert(seed, dtype = "ui16")
+    nv_convert(state, "ui64")
+  },
+  static = 1L,
+  backend = "auto"
+)

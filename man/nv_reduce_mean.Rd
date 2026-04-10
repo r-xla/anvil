@@ -31,10 +31,8 @@ product of the reduced dimension sizes.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(matrix(1:6, nrow = 2))
-  nv_reduce_mean(x, dims = 1L)
-})
+x <- nv_array(matrix(1:6, nrow = 2))
+nv_reduce_mean(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

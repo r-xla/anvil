@@ -22,10 +22,8 @@ Broadcasts an array to a target shape using NumPy-style broadcasting rules.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  nv_broadcast_to(x, shape = c(2, 3))
-})
+x <- nv_array(c(1, 2, 3))
+nv_broadcast_to(x, shape = c(2, 3))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

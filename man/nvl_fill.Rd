@@ -47,7 +47,7 @@ Lowers to \code{\link[stablehlo:hlo_constant]{stablehlo::hlo_tensor()}}.
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval(nvl_fill(3.14, shape = c(2, 3), dtype = "f32"))
+nvl_fill(3.14, shape = c(2, 3), dtype = "f32")
 \dontshow{\}) # examplesIf}
 }
 \seealso{

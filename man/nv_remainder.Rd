@@ -21,11 +21,9 @@ Element-wise remainder of division. You can also use the \code{\%\%} operator.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(7, 8, 9))
-  y <- nv_array(c(3, 3, 4))
-  x \%\% y
-})
+x <- nv_array(c(7, 8, 9))
+y <- nv_array(c(3, 3, 4))
+x \%\% y
 \dontshow{\}) # examplesIf}
 }
 \seealso{

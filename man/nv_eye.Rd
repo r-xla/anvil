@@ -22,7 +22,7 @@ Creates an \verb{n x n} identity matrix.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval(nv_eye(3L))
+nv_eye(3L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

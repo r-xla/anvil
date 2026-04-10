@@ -22,10 +22,8 @@ Inserts a dimension of size 1 at the specified position.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  nv_unsqueeze(x, dim = 1L)
-})
+x <- nv_array(c(1, 2, 3))
+nv_unsqueeze(x, dim = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

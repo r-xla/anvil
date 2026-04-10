@@ -257,14 +257,6 @@ test_that("literals are not converted to scalar arrays", {
   expect_error(f(1), "Expected AnvilArray")
 })
 
-test_that("jit_eval does not modify calling environment", {
-  x <- nv_array(1:2)
-  jit_eval({
-    x <- nv_array(3:4)
-  })
-  expect_equal(x, nv_array(1:2))
-})
-
 test_that("xla: basic test", {
   f_add <- function(x, y) x + y
   args <- list(x = nv_abstract("f32", c()), y = nv_abstract("f32", c()))

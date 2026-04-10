@@ -19,10 +19,8 @@ Element-wise logical NOT. You can also use the \code{!} operator.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(TRUE, FALSE, TRUE))
-  !x
-})
+x <- nv_array(c(TRUE, FALSE, TRUE))
+!x
 \dontshow{\}) # examplesIf}
 }
 \seealso{

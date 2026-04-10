@@ -34,11 +34,9 @@ Lowers to \code{\link[stablehlo:hlo_shift_left]{stablehlo::hlo_shift_left()}}.
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1L, 2L, 4L))
-  y <- nv_array(c(1L, 2L, 1L))
-  nvl_shift_left(x, y)
-})
+x <- nv_array(c(1L, 2L, 4L))
+y <- nv_array(c(1L, 2L, 1L))
+nvl_shift_left(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -20,10 +20,8 @@ input unchanged. Useful for debugging.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  nv_print(x)
-})
+x <- nv_array(c(1, 2, 3))
+nv_print(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

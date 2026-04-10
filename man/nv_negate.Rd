@@ -19,10 +19,8 @@ Negates an array element-wise. You can also use the unary \code{-} operator.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, -2, 3))
-  -x
-})
+x <- nv_array(c(1, -2, 3))
+-x
 \dontshow{\}) # examplesIf}
 }
 \seealso{

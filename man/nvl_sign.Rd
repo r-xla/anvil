@@ -33,10 +33,8 @@ Lowers to \code{\link[stablehlo:hlo_sign]{stablehlo::hlo_sign()}}.
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(-3, 0, 5))
-  nvl_sign(x)
-})
+x <- nv_array(c(-3, 0, 5))
+nvl_sign(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

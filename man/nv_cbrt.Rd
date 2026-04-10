@@ -19,10 +19,8 @@ Element-wise cube root.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 8, 27))
-  nv_cbrt(x)
-})
+x <- nv_array(c(1, 8, 27))
+nv_cbrt(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

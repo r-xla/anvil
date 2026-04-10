@@ -19,10 +19,8 @@ Extracts the diagonal elements from a 2-D array.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(1:9, shape = c(3, 3))
-  nv_extract_diag(x)
-})
+x <- nv_array(1:9, shape = c(3, 3))
+nv_extract_diag(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

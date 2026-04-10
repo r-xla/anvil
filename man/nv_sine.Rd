@@ -19,10 +19,8 @@ Element-wise sine. You can also use \code{sin()}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(0, pi / 2, pi))
-  sin(x)
-})
+x <- nv_array(c(0, pi / 2, pi))
+sin(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

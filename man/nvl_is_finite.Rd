@@ -33,10 +33,8 @@ Lowers to \code{\link[stablehlo:hlo_is_finite]{stablehlo::hlo_is_finite()}}.
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, Inf, NaN, -Inf, 0))
-  nvl_is_finite(x)
-})
+x <- nv_array(c(1, Inf, NaN, -Inf, 0))
+nvl_is_finite(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

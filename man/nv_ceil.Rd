@@ -19,10 +19,8 @@ Element-wise ceiling (round toward positive infinity). You can also use \code{ce
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1.2, 2.7, -1.5))
-  ceiling(x)
-})
+x <- nv_array(c(1.2, 2.7, -1.5))
+ceiling(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

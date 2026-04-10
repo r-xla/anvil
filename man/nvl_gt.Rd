@@ -35,11 +35,9 @@ Lowers to \code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} with \co
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  y <- nv_array(c(3, 2, 1))
-  nvl_gt(x, y)
-})
+x <- nv_array(c(1, 2, 3))
+y <- nv_array(c(3, 2, 1))
+nvl_gt(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

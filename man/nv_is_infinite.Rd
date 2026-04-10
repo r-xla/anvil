@@ -25,10 +25,8 @@ You can also use \code{is.infinite()}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, NaN, Inf, -Inf, 0))
-  nv_is_infinite(x)
-})
+x <- nv_array(c(1, NaN, Inf, -Inf, 0))
+nv_is_infinite(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

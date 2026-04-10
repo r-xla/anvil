@@ -1,6 +1,7 @@
 #' @include utils.R
 #' @include type-converters.R
 #' @include primitive.R
+#' @include jit.R
 
 make_binary_op <- function(prim, stablehlo_infer) {
   force(stablehlo_infer)
@@ -11,9 +12,12 @@ make_binary_op <- function(prim, stablehlo_infer) {
     out$ambiguous <- both_ambiguous
     list(out)
   }
-  function(lhs, rhs) {
-    graph_desc_add(prim, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
-  }
+  jit(
+    function(lhs, rhs) {
+      graph_desc_add(prim, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
+    },
+    backend = "auto"
+  )
 }
 
 make_unary_op <- function(prim, stablehlo_infer) {
@@ -24,9 +28,12 @@ make_unary_op <- function(prim, stablehlo_infer) {
     out$ambiguous <- operand$ambiguous
     list(out)
   }
-  function(operand) {
-    graph_desc_add(prim, list(operand = operand), infer_fn = infer_fn)[[1L]]
-  }
+  jit(
+    function(operand) {
+      graph_desc_add(prim, list(operand = operand), infer_fn = infer_fn)[[1L]]
+    },
+    backend = "auto"
+  )
 }
 
 
@@ -82,19 +89,23 @@ p_fill <- AnvilPrimitive("fill")
 #' Lowers to [stablehlo::hlo_tensor()].
 #' @seealso [nv_fill()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval(nvl_fill(3.14, shape = c(2, 3), dtype = "f32"))
+#' nvl_fill(3.14, shape = c(2, 3), dtype = "f32")
 #' @export
-nvl_fill <- function(value, shape, dtype, ambiguous = FALSE) {
-  infer_fill <- function(value, shape, dtype, ambiguous) {
-    list(AbstractArray(dtype = as_dtype(dtype), shape = shape, ambiguous = ambiguous))
-  }
-  graph_desc_add(
-    p_fill,
-    list(),
-    params = list(value = value, dtype = dtype, shape = shape, ambiguous = ambiguous),
-    infer_fn = infer_fill
-  )[[1L]]
-}
+nvl_fill <- jit(
+  function(value, shape, dtype, ambiguous = FALSE) {
+    infer_fill <- function(value, shape, dtype, ambiguous) {
+      list(AbstractArray(dtype = as_dtype(dtype), shape = shape, ambiguous = ambiguous))
+    }
+    graph_desc_add(
+      p_fill,
+      list(),
+      params = list(value = value, dtype = dtype, shape = shape, ambiguous = ambiguous),
+      infer_fn = infer_fill
+    )[[1L]]
+  },
+  static = 1:4,
+  backend = "auto"
+)
 
 p_add <- AnvilPrimitive("add")
 #' @title Primitive Addition
@@ -108,11 +119,9 @@ p_add <- AnvilPrimitive("add")
 #' Lowers to [stablehlo::hlo_add()].
 #' @seealso [nv_add()], `+`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(4, 5, 6))
-#'   nvl_add(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(4, 5, 6))
+#' nvl_add(x, y)
 #' @export
 nvl_add <- make_binary_op(p_add, stablehlo::infer_types_add)
 
@@ -128,11 +137,9 @@ p_mul <- AnvilPrimitive("mul")
 #' Lowers to [stablehlo::hlo_multiply()].
 #' @seealso [nv_mul()], `*`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(4, 5, 6))
-#'   nvl_mul(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(4, 5, 6))
+#' nvl_mul(x, y)
 #' @export
 nvl_mul <- make_binary_op(p_mul, stablehlo::infer_types_multiply)
 
@@ -148,11 +155,9 @@ p_sub <- AnvilPrimitive("sub")
 #' Lowers to [stablehlo::hlo_subtract()].
 #' @seealso [nv_sub()], `-`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(4, 5, 6))
-#'   nvl_sub(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(4, 5, 6))
+#' nvl_sub(x, y)
 #' @export
 nvl_sub <- make_binary_op(p_sub, stablehlo::infer_types_subtract)
 
@@ -169,10 +174,8 @@ p_negate <- AnvilPrimitive("negate")
 #' Lowers to [stablehlo::hlo_negate()].
 #' @seealso [nv_negate()], unary `-`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, -2, 3))
-#'   nvl_negate(x)
-#' })
+#' x <- nv_array(c(1, -2, 3))
+#' nvl_negate(x)
 #' @export
 nvl_negate <- make_unary_op(p_negate, stablehlo::infer_types_negate)
 
@@ -188,11 +191,9 @@ p_div <- AnvilPrimitive("divide")
 #' Lowers to [stablehlo::hlo_divide()].
 #' @seealso [nv_div()], `/`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(10, 20, 30))
-#'   y <- nv_array(c(2, 5, 10))
-#'   nvl_div(x, y)
-#' })
+#' x <- nv_array(c(10, 20, 30))
+#' y <- nv_array(c(2, 5, 10))
+#' nvl_div(x, y)
 #' @export
 nvl_div <- make_binary_op(p_div, stablehlo::infer_types_divide)
 
@@ -208,11 +209,9 @@ p_pow <- AnvilPrimitive("power")
 #' Lowers to [stablehlo::hlo_power()].
 #' @seealso [nv_pow()], `^`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(2, 3, 4))
-#'   y <- nv_array(c(3, 2, 1))
-#'   nvl_pow(x, y)
-#' })
+#' x <- nv_array(c(2, 3, 4))
+#' y <- nv_array(c(3, 2, 1))
+#' nvl_pow(x, y)
 #' @export
 nvl_pow <- make_binary_op(p_pow, stablehlo::infer_types_power)
 
@@ -237,37 +236,39 @@ p_broadcast_in_dim <- AnvilPrimitive("broadcast_in_dim")
 #' Lowers to [stablehlo::hlo_broadcast_in_dim()].
 #' @seealso [nv_broadcast_to()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   nvl_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' nvl_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
 #' @export
-nvl_broadcast_in_dim <- function(operand, shape, broadcast_dimensions) {
-  infer_fn <- function(operand, shape, broadcast_dimensions) {
-    bd_attr <- r_to_constant(
-      as.integer(broadcast_dimensions - 1L),
-      dtype = "i64",
-      shape = length(broadcast_dimensions)
-    )
-    out <- stablehlo::infer_types_broadcast_in_dim(
-      at2vt(operand),
-      broadcast_dimensions = bd_attr,
-      shape = shape
+nvl_broadcast_in_dim <- jit(
+  function(operand, shape, broadcast_dimensions) {
+    infer_fn <- function(operand, shape, broadcast_dimensions) {
+      bd_attr <- r_to_constant(
+        as.integer(broadcast_dimensions - 1L),
+        dtype = "i64",
+        shape = length(broadcast_dimensions)
+      )
+      out <- stablehlo::infer_types_broadcast_in_dim(
+        at2vt(operand),
+        broadcast_dimensions = bd_attr,
+        shape = shape
+      )[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- operand$ambiguous
+      list(out)
+    }
+    graph_desc_add(
+      p_broadcast_in_dim,
+      list(operand = operand),
+      params = list(
+        shape = shape,
+        broadcast_dimensions = broadcast_dimensions
+      ),
+      infer_fn = infer_fn
     )[[1L]]
-    out <- vt2at(out)
-    out$ambiguous <- operand$ambiguous
-    list(out)
-  }
-  graph_desc_add(
-    p_broadcast_in_dim,
-    list(operand = operand),
-    params = list(
-      shape = shape,
-      broadcast_dimensions = broadcast_dimensions
-    ),
-    infer_fn = infer_fn
-  )[[1L]]
-}
+  },
+  static = 2:3,
+  backend = "auto"
+)
 
 p_dot_general <- AnvilPrimitive("dot_general")
 #' @title Primitive Dot General
@@ -290,31 +291,33 @@ p_dot_general <- AnvilPrimitive("dot_general")
 #' Lowers to [stablehlo::hlo_dot_general()].
 #' @seealso [nv_matmul()], `%*%`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   y <- nv_array(matrix(1:6, nrow = 3))
-#'   nvl_dot_general(x, y,
-#'     contracting_dims = list(2L, 1L),
-#'     batching_dims = list(integer(0), integer(0))
-#'   )
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' y <- nv_array(matrix(1:6, nrow = 3))
+#' nvl_dot_general(x, y,
+#'   contracting_dims = list(2L, 1L),
+#'   batching_dims = list(integer(0), integer(0))
+#' )
 #' @export
-nvl_dot_general <- function(lhs, rhs, contracting_dims, batching_dims) {
-  infer_fn <- function(lhs, rhs, contracting_dims, batching_dims) {
-    ddn <- stablehlo::DotDimensionNumbers(
-      contracting_dims = lapply(contracting_dims, \(x) x - 1L),
-      batching_dims = lapply(batching_dims, \(x) x - 1L)
-    )
-    out <- stablehlo::infer_types_dot_general(at2vt(lhs), at2vt(rhs), dot_dimension_numbers = ddn)[[1L]]
-    list(vt2at(out))
-  }
-  graph_desc_add(
-    p_dot_general,
-    list(lhs = lhs, rhs = rhs),
-    list(contracting_dims = contracting_dims, batching_dims = batching_dims),
-    infer_fn = infer_fn
-  )[[1L]]
-}
+nvl_dot_general <- jit(
+  function(lhs, rhs, contracting_dims, batching_dims) {
+    infer_fn <- function(lhs, rhs, contracting_dims, batching_dims) {
+      ddn <- stablehlo::DotDimensionNumbers(
+        contracting_dims = lapply(contracting_dims, \(x) x - 1L),
+        batching_dims = lapply(batching_dims, \(x) x - 1L)
+      )
+      out <- stablehlo::infer_types_dot_general(at2vt(lhs), at2vt(rhs), dot_dimension_numbers = ddn)[[1L]]
+      list(vt2at(out))
+    }
+    graph_desc_add(
+      p_dot_general,
+      list(lhs = lhs, rhs = rhs),
+      list(contracting_dims = contracting_dims, batching_dims = batching_dims),
+      infer_fn = infer_fn
+    )[[1L]]
+  },
+  static = 3:4,
+  backend = "auto"
+)
 
 p_transpose <- AnvilPrimitive("transpose")
 #' @title Primitive Transpose
@@ -333,30 +336,32 @@ p_transpose <- AnvilPrimitive("transpose")
 #' Lowers to [stablehlo::hlo_transpose()].
 #' @seealso [nv_transpose()], [t()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nvl_transpose(x, permutation = c(2L, 1L))
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nvl_transpose(x, permutation = c(2L, 1L))
 #' @export
-nvl_transpose <- function(operand, permutation) {
-  infer_fn <- function(operand, permutation) {
-    perm_attr <- r_to_constant(
-      as.integer(permutation - 1L),
-      dtype = "i64",
-      shape = length(permutation)
-    )
-    out <- stablehlo::infer_types_transpose(at2vt(operand), permutation = perm_attr)[[1L]]
-    out <- vt2at(out)
-    out$ambiguous <- operand$ambiguous
-    list(out)
-  }
-  graph_desc_add(
-    p_transpose,
-    list(operand = operand),
-    list(permutation = permutation),
-    infer_fn = infer_fn
-  )[[1L]]
-}
+nvl_transpose <- jit(
+  function(operand, permutation) {
+    infer_fn <- function(operand, permutation) {
+      perm_attr <- r_to_constant(
+        as.integer(permutation - 1L),
+        dtype = "i64",
+        shape = length(permutation)
+      )
+      out <- stablehlo::infer_types_transpose(at2vt(operand), permutation = perm_attr)[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- operand$ambiguous
+      list(out)
+    }
+    graph_desc_add(
+      p_transpose,
+      list(operand = operand),
+      list(permutation = permutation),
+      infer_fn = infer_fn
+    )[[1L]]
+  },
+  static = 2L,
+  backend = "auto"
+)
 
 p_reshape <- AnvilPrimitive("reshape")
 #' @title Primitive Reshape
@@ -375,25 +380,27 @@ p_reshape <- AnvilPrimitive("reshape")
 #' Lowers to [stablehlo::hlo_reshape()].
 #' @seealso [nv_reshape()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(1:6)
-#'   nvl_reshape(x, shape = c(2, 3))
-#' })
+#' x <- nv_array(1:6)
+#' nvl_reshape(x, shape = c(2, 3))
 #' @export
-nvl_reshape <- function(operand, shape) {
-  infer_fn <- function(operand, shape) {
-    out <- stablehlo::infer_types_reshape(at2vt(operand), shape = shape)[[1L]]
-    out <- vt2at(out)
-    out$ambiguous <- operand$ambiguous
-    list(out)
-  }
-  graph_desc_add(
-    p_reshape,
-    list(operand = operand),
-    params = list(shape = shape),
-    infer_fn = infer_fn
-  )[[1L]]
-}
+nvl_reshape <- jit(
+  function(operand, shape) {
+    infer_fn <- function(operand, shape) {
+      out <- stablehlo::infer_types_reshape(at2vt(operand), shape = shape)[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- operand$ambiguous
+      list(out)
+    }
+    graph_desc_add(
+      p_reshape,
+      list(operand = operand),
+      params = list(shape = shape),
+      infer_fn = infer_fn
+    )[[1L]]
+  },
+  static = 2L,
+  backend = "auto"
+)
 
 p_concatenate <- AnvilPrimitive("concatenate")
 #' @title Primitive Concatenate
@@ -415,36 +422,38 @@ p_concatenate <- AnvilPrimitive("concatenate")
 #' Lowers to [stablehlo::hlo_concatenate()].
 #' @seealso [nv_concatenate()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(4, 5, 6))
-#'   nvl_concatenate(x, y, dimension = 1L)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(4, 5, 6))
+#' nvl_concatenate(x, y, dimension = 1L)
 #' @export
-nvl_concatenate <- function(..., dimension) {
-  dots <- list(...)
-  infer_fn <- function(..., dimension) {
-    operands <- list(...)
-    all_ambiguous <- all(vapply(operands, \(x) x$ambiguous, logical(1L)))
-    vts <- lapply(operands, at2vt)
-    # Convert dimension to Constant as required by stablehlo
-    dim_const <- stablehlo::r_to_constant(
-      as.integer(dimension - 1L),
-      dtype = "i64",
-      shape = integer(0)
-    )
-    out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dim_const)[[1L]]
-    out <- vt2at(out)
-    out$ambiguous <- all_ambiguous
-    list(out)
-  }
-  graph_desc_add(
-    p_concatenate,
-    args = dots,
-    params = list(dimension = dimension),
-    infer_fn = infer_fn
-  )[[1L]]
-}
+nvl_concatenate <- jit(
+  function(..., dimension) {
+    dots <- list(...)
+    infer_fn <- function(..., dimension) {
+      operands <- list(...)
+      all_ambiguous <- all(vapply(operands, \(x) x$ambiguous, logical(1L)))
+      vts <- lapply(operands, at2vt)
+      # Convert dimension to Constant as required by stablehlo
+      dim_const <- stablehlo::r_to_constant(
+        as.integer(dimension - 1L),
+        dtype = "i64",
+        shape = integer(0)
+      )
+      out <- rlang::exec(stablehlo::infer_types_concatenate, !!!vts, dimension = dim_const)[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- all_ambiguous
+      list(out)
+    }
+    graph_desc_add(
+      p_concatenate,
+      args = dots,
+      params = list(dimension = dimension),
+      infer_fn = infer_fn
+    )[[1L]]
+  },
+  static = "dimension",
+  backend = "auto"
+)
 
 p_static_slice <- AnvilPrimitive("static_slice")
 #' @title Primitive Static Slice
@@ -475,50 +484,48 @@ p_static_slice <- AnvilPrimitive("static_slice")
 #' @seealso [nvl_dynamic_slice()], [nvl_scatter()], [nvl_gather()], [nv_subset()], `[`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' # 1-D: extract elements 2 through 4 (limit is exclusive)
-#' jit_eval({
-#'   x <- nv_array(1:10)
-#'   nvl_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
-#' })
+#' x <- nv_array(1:10)
+#' nvl_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 #'
 #' # 1-D: every other element using strides
-#' jit_eval({
-#'   x <- nv_array(1:10)
-#'   nvl_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
-#' })
+#' x <- nv_array(1:10)
+#' nvl_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
 #'
 #' # 2-D: extract a submatrix (rows 1-2, columns 2-3)
-#' jit_eval({
-#'   x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
-#'   nvl_static_slice(x,
-#'     start_indices = c(1L, 2L),
-#'     limit_indices = c(3L, 4L),
-#'     strides       = c(1L, 1L)
-#'   )
-#' })
+#' x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
+#' nvl_static_slice(x,
+#'   start_indices = c(1L, 2L),
+#'   limit_indices = c(3L, 4L),
+#'   strides       = c(1L, 1L)
+#' )
 #' @export
-nvl_static_slice <- function(operand, start_indices, limit_indices, strides) {
-  infer_fn <- function(operand, start_indices, limit_indices, strides) {
-    start_attr <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
-    limit_attr <- r_to_constant(limit_indices, dtype = "i64", shape = length(limit_indices))
-    strides_attr <- r_to_constant(strides, dtype = "i64", shape = length(strides))
-    out <- stablehlo::infer_types_slice(at2vt(operand), start_attr, limit_attr, strides_attr)[[1L]]
-    out <- vt2at(out)
-    out$ambiguous <- operand$ambiguous
-    list(out)
-  }
-  graph_desc_add(
-    p_static_slice,
-    args = list(
-      operand = operand
-    ),
-    params = list(
-      start_indices = start_indices,
-      limit_indices = limit_indices,
-      strides = strides
-    ),
-    infer_fn = infer_fn
-  )[[1L]]
-}
+nvl_static_slice <- jit(
+  function(operand, start_indices, limit_indices, strides) {
+    infer_fn <- function(operand, start_indices, limit_indices, strides) {
+      start_attr <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
+      limit_attr <- r_to_constant(limit_indices, dtype = "i64", shape = length(limit_indices))
+      strides_attr <- r_to_constant(strides, dtype = "i64", shape = length(strides))
+      out <- stablehlo::infer_types_slice(at2vt(operand), start_attr, limit_attr, strides_attr)[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- operand$ambiguous
+      list(out)
+    }
+    graph_desc_add(
+      p_static_slice,
+      args = list(
+        operand = operand
+      ),
+      params = list(
+        start_indices = start_indices,
+        limit_indices = limit_indices,
+        strides = strides
+      ),
+      infer_fn = infer_fn
+    )[[1L]]
+  },
+  static = 2:4,
+  backend = "auto"
+)
 
 p_dynamic_slice <- AnvilPrimitive("dynamic_slice")
 #' @title Primitive Dynamic Slice
@@ -552,40 +559,40 @@ p_dynamic_slice <- AnvilPrimitive("dynamic_slice")
 #' @seealso [nvl_static_slice()], [nvl_dynamic_update_slice()], [nvl_scatter()], [nvl_gather()], [nv_subset()], `[`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' # 1-D: extract 3 elements starting at position 3
-#' jit_eval({
-#'   x <- nv_array(1:10)
-#'   start <- nv_scalar(3L)
-#'   nvl_dynamic_slice(x, start, slice_sizes = 3L)
-#' })
+#' x <- nv_array(1:10)
+#' start <- nv_scalar(3L)
+#' nvl_dynamic_slice(x, start, slice_sizes = 3L)
 #'
 #' # 2-D: extract a 2x2 block from a matrix
-#' jit_eval({
-#'   x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
-#'   row_start <- nv_scalar(2L)
-#'   col_start <- nv_scalar(1L)
-#'   nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
-#' })
+#' x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
+#' row_start <- nv_scalar(2L)
+#' col_start <- nv_scalar(1L)
+#' nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
 #' @export
-nvl_dynamic_slice <- function(operand, ..., slice_sizes) {
-  start_indices <- list(...)
-  infer_fn <- function(operand, ..., slice_sizes) {
-    start_indices_avals <- list(...)
-    for (i in seq_along(start_indices_avals)) {
-      aval <- start_indices_avals[[i]]
-      if (length(shape(aval)) != 0L) {
-        cli_abort("Start index {i} must be a scalar, but has shape {shape(aval)}")
+nvl_dynamic_slice <- jit(
+  function(operand, ..., slice_sizes) {
+    start_indices <- list(...)
+    infer_fn <- function(operand, ..., slice_sizes) {
+      start_indices_avals <- list(...)
+      for (i in seq_along(start_indices_avals)) {
+        aval <- start_indices_avals[[i]]
+        if (length(shape(aval)) != 0L) {
+          cli_abort("Start index {i} must be a scalar, but has shape {shape(aval)}")
+        }
       }
+      out <- AbstractArray(dtype = operand$dtype, shape = slice_sizes, ambiguous = operand$ambiguous)
+      list(out)
     }
-    out <- AbstractArray(dtype = operand$dtype, shape = slice_sizes, ambiguous = operand$ambiguous)
-    list(out)
-  }
-  graph_desc_add(
-    p_dynamic_slice,
-    args = c(list(operand = operand), start_indices),
-    params = list(slice_sizes = slice_sizes),
-    infer_fn = infer_fn
-  )[[1L]]
-}
+    graph_desc_add(
+      p_dynamic_slice,
+      args = c(list(operand = operand), start_indices),
+      params = list(slice_sizes = slice_sizes),
+      infer_fn = infer_fn
+    )[[1L]]
+  },
+  static = "slice_sizes",
+  backend = "auto"
+)
 
 p_dynamic_update_slice <- AnvilPrimitive("dynamic_update_slice")
 #' @title Primitive Dynamic Update Slice
@@ -613,55 +620,58 @@ p_dynamic_update_slice <- AnvilPrimitive("dynamic_update_slice")
 #' @seealso [nvl_dynamic_slice()], [nvl_scatter()], [nvl_gather()], [nv_subset_assign()], `[<-`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' # 1-D: overwrite two elements starting at position 2
-#' jit_eval({
-#'   x <- nv_array(1:5)
-#'   update <- nv_array(c(10L, 20L))
-#'   start <- nv_scalar(2L)
-#'   nvl_dynamic_update_slice(x, update, start)
-#' })
+#' x <- nv_array(1:5)
+#' update <- nv_array(c(10L, 20L))
+#' start <- nv_scalar(2L)
+#' nvl_dynamic_update_slice(x, update, start)
 #'
 #' # 2-D: write a 2x2 block into a 3x4 matrix
-#' jit_eval({
-#'   x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
-#'   update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
-#'   row_start <- nv_scalar(2L)
-#'   col_start <- nv_scalar(3L)
-#'   nvl_dynamic_update_slice(x, update, row_start, col_start)
-#' })
+#' x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
+#' update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
+#' row_start <- nv_scalar(2L)
+#' col_start <- nv_scalar(3L)
+#' nvl_dynamic_update_slice(x, update, row_start, col_start)
 #' @export
-nvl_dynamic_update_slice <- function(operand, update, ...) {
-  start_indices <- list(...)
-  infer_fn <- function(operand, update, ...) {
-    start_indices_avals <- list(...)
-    for (i in seq_along(start_indices_avals)) {
-      aval <- start_indices_avals[[i]]
-      if (length(shape(aval)) != 0L) {
-        cli_abort("Start index {i} must be a scalar, but has shape {shape(aval)}")
+nvl_dynamic_update_slice <- jit(
+  function(operand, update, ...) {
+    start_indices <- list(...)
+    infer_fn <- function(operand, update, ...) {
+      start_indices_avals <- list(...)
+      for (i in seq_along(start_indices_avals)) {
+        aval <- start_indices_avals[[i]]
+        if (length(shape(aval)) != 0L) {
+          cli_abort("Start index {i} must be a scalar, but has shape {shape(aval)}")
+        }
       }
+      out <- AbstractArray(dtype = operand$dtype, shape = shape(operand), ambiguous = operand$ambiguous)
+      list(out)
     }
-    out <- AbstractArray(dtype = operand$dtype, shape = shape(operand), ambiguous = operand$ambiguous)
-    list(out)
-  }
-  graph_desc_add(
-    p_dynamic_update_slice,
-    args = c(list(operand = operand, update = update), start_indices),
-    params = list(),
-    infer_fn = infer_fn
-  )[[1L]]
-}
+    graph_desc_add(
+      p_dynamic_update_slice,
+      args = c(list(operand = operand, update = update), start_indices),
+      params = list(),
+      infer_fn = infer_fn
+    )[[1L]]
+  },
+  backend = "auto"
+)
 
 
 # reduction operators
 
 make_reduce_op <- function(prim, infer_fn = infer_reduce) {
-  function(operand, dims, drop = TRUE) {
-    graph_desc_add(
-      prim,
-      list(operand = operand),
-      params = list(dims = dims, drop = drop),
-      infer_fn = infer_fn
-    )[[1L]]
-  }
+  jit(
+    function(operand, dims, drop = TRUE) {
+      graph_desc_add(
+        prim,
+        list(operand = operand),
+        params = list(dims = dims, drop = drop),
+        infer_fn = infer_fn
+      )[[1L]]
+    },
+    static = 2:3,
+    backend = "auto"
+  )
 }
 
 p_reduce_sum <- AnvilPrimitive("reduce_sum")
@@ -682,10 +692,8 @@ p_reduce_sum <- AnvilPrimitive("reduce_sum")
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_add()] as the reducer.
 #' @seealso [nv_reduce_sum()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nvl_reduce_sum(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nvl_reduce_sum(x, dims = 1L)
 #' @export
 nvl_reduce_sum <- make_reduce_op(p_reduce_sum)
 
@@ -707,10 +715,8 @@ p_reduce_prod <- AnvilPrimitive("reduce_prod")
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_multiply()] as the reducer.
 #' @seealso [nv_reduce_prod()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nvl_reduce_prod(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nvl_reduce_prod(x, dims = 1L)
 #' @export
 nvl_reduce_prod <- make_reduce_op(p_reduce_prod)
 
@@ -732,10 +738,8 @@ p_reduce_max <- AnvilPrimitive("reduce_max")
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_maximum()] as the reducer.
 #' @seealso [nv_reduce_max()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nvl_reduce_max(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nvl_reduce_max(x, dims = 1L)
 #' @export
 nvl_reduce_max <- make_reduce_op(p_reduce_max)
 
@@ -757,10 +761,8 @@ p_reduce_min <- AnvilPrimitive("reduce_min")
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_minimum()] as the reducer.
 #' @seealso [nv_reduce_min()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nvl_reduce_min(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nvl_reduce_min(x, dims = 1L)
 #' @export
 nvl_reduce_min <- make_reduce_op(p_reduce_min)
 
@@ -782,10 +784,8 @@ p_reduce_any <- AnvilPrimitive("reduce_any")
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_or()] as the reducer.
 #' @seealso [nv_reduce_any()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-#'   nvl_reduce_any(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#' nvl_reduce_any(x, dims = 1L)
 #' @export
 nvl_reduce_any <- make_reduce_op(p_reduce_any, infer_reduce_boolean)
 
@@ -807,10 +807,8 @@ p_reduce_all <- AnvilPrimitive("reduce_all")
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_and()] as the reducer.
 #' @seealso [nv_reduce_all()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-#'   nvl_reduce_all(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#' nvl_reduce_all(x, dims = 1L)
 #' @export
 nvl_reduce_all <- make_reduce_op(p_reduce_all, infer_reduce_boolean)
 
@@ -833,9 +831,12 @@ infer_compare <- function(lhs, rhs, comparison_direction) {
 
 make_compare_op <- function(prim, direction) {
   infer_fn <- function(lhs, rhs) infer_compare(lhs, rhs, direction)
-  function(lhs, rhs) {
-    graph_desc_add(prim, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
-  }
+  jit(
+    function(lhs, rhs) {
+      graph_desc_add(prim, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
+    },
+    backend = "auto"
+  )
 }
 
 p_eq <- AnvilPrimitive("equal")
@@ -850,11 +851,9 @@ p_eq <- AnvilPrimitive("equal")
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "EQ"`.
 #' @seealso [nv_eq()], `==`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(1, 3, 2))
-#'   nvl_eq(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(1, 3, 2))
+#' nvl_eq(x, y)
 #' @export
 nvl_eq <- make_compare_op(p_eq, "EQ")
 
@@ -870,11 +869,9 @@ p_ne <- AnvilPrimitive("not_equal")
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "NE"`.
 #' @seealso [nv_ne()], `!=`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(1, 3, 2))
-#'   nvl_ne(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(1, 3, 2))
+#' nvl_ne(x, y)
 #' @export
 nvl_ne <- make_compare_op(p_ne, "NE")
 
@@ -890,11 +887,9 @@ p_gt <- AnvilPrimitive("greater")
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "GT"`.
 #' @seealso [nv_gt()], `>`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(3, 2, 1))
-#'   nvl_gt(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(3, 2, 1))
+#' nvl_gt(x, y)
 #' @export
 nvl_gt <- make_compare_op(p_gt, "GT")
 
@@ -910,11 +905,9 @@ p_ge <- AnvilPrimitive("greater_equal")
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "GE"`.
 #' @seealso [nv_ge()], `>=`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(3, 2, 1))
-#'   nvl_ge(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(3, 2, 1))
+#' nvl_ge(x, y)
 #' @export
 nvl_ge <- make_compare_op(p_ge, "GE")
 
@@ -930,11 +923,9 @@ p_lt <- AnvilPrimitive("less")
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "LT"`.
 #' @seealso [nv_lt()], `<`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(3, 2, 1))
-#'   nvl_lt(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(3, 2, 1))
+#' nvl_lt(x, y)
 #' @export
 nvl_lt <- make_compare_op(p_lt, "LT")
 
@@ -950,11 +941,9 @@ p_le <- AnvilPrimitive("less_equal")
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "LE"`.
 #' @seealso [nv_le()], `<=`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(3, 2, 1))
-#'   nvl_le(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(3, 2, 1))
+#' nvl_le(x, y)
 #' @export
 nvl_le <- make_compare_op(p_le, "LE")
 
@@ -972,11 +961,9 @@ p_max <- AnvilPrimitive("maximum")
 #' Lowers to [stablehlo::hlo_maximum()].
 #' @seealso [nv_max()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 5, 3))
-#'   y <- nv_array(c(4, 2, 6))
-#'   nvl_max(x, y)
-#' })
+#' x <- nv_array(c(1, 5, 3))
+#' y <- nv_array(c(4, 2, 6))
+#' nvl_max(x, y)
 #' @export
 nvl_max <- make_binary_op(p_max, stablehlo::infer_types_maximum)
 
@@ -992,11 +979,9 @@ p_min <- AnvilPrimitive("minimum")
 #' Lowers to [stablehlo::hlo_minimum()].
 #' @seealso [nv_min()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 5, 3))
-#'   y <- nv_array(c(4, 2, 6))
-#'   nvl_min(x, y)
-#' })
+#' x <- nv_array(c(1, 5, 3))
+#' y <- nv_array(c(4, 2, 6))
+#' nvl_min(x, y)
 #' @export
 nvl_min <- make_binary_op(p_min, stablehlo::infer_types_minimum)
 
@@ -1012,11 +997,9 @@ p_remainder <- AnvilPrimitive("remainder")
 #' Lowers to [stablehlo::hlo_remainder()].
 #' @seealso [nv_remainder()], `%%`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(7, 10, 15))
-#'   y <- nv_array(c(3, 4, 6))
-#'   nvl_remainder(x, y)
-#' })
+#' x <- nv_array(c(7, 10, 15))
+#' y <- nv_array(c(3, 4, 6))
+#' nvl_remainder(x, y)
 #' @export
 nvl_remainder <- make_binary_op(p_remainder, stablehlo::infer_types_remainder)
 
@@ -1032,11 +1015,9 @@ p_and <- AnvilPrimitive("and")
 #' Lowers to [stablehlo::hlo_and()].
 #' @seealso [nv_and()], `&`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(TRUE, FALSE, TRUE))
-#'   y <- nv_array(c(TRUE, TRUE, FALSE))
-#'   nvl_and(x, y)
-#' })
+#' x <- nv_array(c(TRUE, FALSE, TRUE))
+#' y <- nv_array(c(TRUE, TRUE, FALSE))
+#' nvl_and(x, y)
 #' @export
 nvl_and <- make_binary_op(p_and, stablehlo::infer_types_and)
 
@@ -1053,10 +1034,8 @@ p_not <- AnvilPrimitive("not")
 #' Lowers to [stablehlo::hlo_not()].
 #' @seealso [nv_not()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(TRUE, FALSE, TRUE))
-#'   nvl_not(x)
-#' })
+#' x <- nv_array(c(TRUE, FALSE, TRUE))
+#' nvl_not(x)
 #' @export
 nvl_not <- make_unary_op(p_not, stablehlo::infer_types_not)
 
@@ -1072,11 +1051,9 @@ p_or <- AnvilPrimitive("or")
 #' Lowers to [stablehlo::hlo_or()].
 #' @seealso [nv_or()], `|`
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(TRUE, FALSE, TRUE))
-#'   y <- nv_array(c(TRUE, TRUE, FALSE))
-#'   nvl_or(x, y)
-#' })
+#' x <- nv_array(c(TRUE, FALSE, TRUE))
+#' y <- nv_array(c(TRUE, TRUE, FALSE))
+#' nvl_or(x, y)
 #' @export
 nvl_or <- make_binary_op(p_or, stablehlo::infer_types_or)
 
@@ -1092,11 +1069,9 @@ p_xor <- AnvilPrimitive("xor")
 #' Lowers to [stablehlo::hlo_xor()].
 #' @seealso [nv_xor()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(TRUE, FALSE, TRUE))
-#'   y <- nv_array(c(TRUE, TRUE, FALSE))
-#'   nvl_xor(x, y)
-#' })
+#' x <- nv_array(c(TRUE, FALSE, TRUE))
+#' y <- nv_array(c(TRUE, TRUE, FALSE))
+#' nvl_xor(x, y)
 #' @export
 nvl_xor <- make_binary_op(p_xor, stablehlo::infer_types_xor)
 
@@ -1120,16 +1095,17 @@ p_shift_left <- AnvilPrimitive("shift_left")
 #' Lowers to [stablehlo::hlo_shift_left()].
 #' @seealso [nv_shift_left()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1L, 2L, 4L))
-#'   y <- nv_array(c(1L, 2L, 1L))
-#'   nvl_shift_left(x, y)
-#' })
+#' x <- nv_array(c(1L, 2L, 4L))
+#' y <- nv_array(c(1L, 2L, 1L))
+#' nvl_shift_left(x, y)
 #' @export
-nvl_shift_left <- function(lhs, rhs) {
-  infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_left)
-  graph_desc_add(p_shift_left, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
-}
+nvl_shift_left <- jit(
+  function(lhs, rhs) {
+    infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_left)
+    graph_desc_add(p_shift_left, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
+  },
+  backend = "auto"
+)
 
 p_shift_right_logical <- AnvilPrimitive("shift_right_logical")
 #' @title Primitive Logical Shift Right
@@ -1143,16 +1119,17 @@ p_shift_right_logical <- AnvilPrimitive("shift_right_logical")
 #' Lowers to [stablehlo::hlo_shift_right_logical()].
 #' @seealso [nv_shift_right_logical()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(8L, 16L, 32L))
-#'   y <- nv_array(c(1L, 2L, 3L))
-#'   nvl_shift_right_logical(x, y)
-#' })
+#' x <- nv_array(c(8L, 16L, 32L))
+#' y <- nv_array(c(1L, 2L, 3L))
+#' nvl_shift_right_logical(x, y)
 #' @export
-nvl_shift_right_logical <- function(lhs, rhs) {
-  infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_logical)
-  graph_desc_add(p_shift_right_logical, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
-}
+nvl_shift_right_logical <- jit(
+  function(lhs, rhs) {
+    infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_logical)
+    graph_desc_add(p_shift_right_logical, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
+  },
+  backend = "auto"
+)
 
 p_shift_right_arithmetic <- AnvilPrimitive("shift_right_arithmetic")
 #' @title Primitive Arithmetic Shift Right
@@ -1166,16 +1143,17 @@ p_shift_right_arithmetic <- AnvilPrimitive("shift_right_arithmetic")
 #' Lowers to [stablehlo::hlo_shift_right_arithmetic()].
 #' @seealso [nv_shift_right_arithmetic()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(8L, -16L, 32L))
-#'   y <- nv_array(c(1L, 2L, 3L))
-#'   nvl_shift_right_arithmetic(x, y)
-#' })
+#' x <- nv_array(c(8L, -16L, 32L))
+#' y <- nv_array(c(1L, 2L, 3L))
+#' nvl_shift_right_arithmetic(x, y)
 #' @export
-nvl_shift_right_arithmetic <- function(lhs, rhs) {
-  infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_arithmetic)
-  graph_desc_add(p_shift_right_arithmetic, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
-}
+nvl_shift_right_arithmetic <- jit(
+  function(lhs, rhs) {
+    infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_arithmetic)
+    graph_desc_add(p_shift_right_arithmetic, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
+  },
+  backend = "auto"
+)
 
 p_atan2 <- AnvilPrimitive("atan2")
 #' @title Primitive Atan2
@@ -1189,11 +1167,9 @@ p_atan2 <- AnvilPrimitive("atan2")
 #' Lowers to [stablehlo::hlo_atan2()].
 #' @seealso [nv_atan2()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   y <- nv_array(c(1, 0, -1))
-#'   x <- nv_array(c(0, 1, 0))
-#'   nvl_atan2(y, x)
-#' })
+#' y <- nv_array(c(1, 0, -1))
+#' x <- nv_array(c(0, 1, 0))
+#' nvl_atan2(y, x)
 #' @export
 nvl_atan2 <- make_binary_op(p_atan2, stablehlo::infer_types_atan2)
 
@@ -1215,21 +1191,21 @@ p_bitcast_convert <- AnvilPrimitive("bitcast_convert")
 #' Lowers to [stablehlo::hlo_bitcast_convert()].
 #' @seealso [nv_bitcast_convert()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(1L)
-#'   nvl_bitcast_convert(x, dtype = "i8")
-#' })
-#' jit_eval({
-#'   x <- nv_array(rep(1L, 4), dtype = "i8")
-#'   nvl_bitcast_convert(x, dtype = "i32")
-#' })
+#' x <- nv_array(1L)
+#' nvl_bitcast_convert(x, dtype = "i8")
+#' x <- nv_array(rep(1L, 4), dtype = "i8")
+#' nvl_bitcast_convert(x, dtype = "i32")
 #' @export
-nvl_bitcast_convert <- function(operand, dtype) {
-  infer_fn <- function(operand, dtype) {
-    lapply(stablehlo::infer_types_bitcast_convert(at2vt(operand), dtype), vt2at)
-  }
-  graph_desc_add(p_bitcast_convert, list(operand = operand), params = list(dtype = dtype), infer_fn = infer_fn)[[1L]]
-}
+nvl_bitcast_convert <- jit(
+  function(operand, dtype) {
+    infer_fn <- function(operand, dtype) {
+      lapply(stablehlo::infer_types_bitcast_convert(at2vt(operand), dtype), vt2at)
+    }
+    graph_desc_add(p_bitcast_convert, list(operand = operand), params = list(dtype = dtype), infer_fn = infer_fn)[[1L]]
+  },
+  static = 2L,
+  backend = "auto"
+)
 
 # unary math primitives ---------------------------------------------------------
 
@@ -1245,10 +1221,8 @@ p_abs <- AnvilPrimitive("abs")
 #' Lowers to [stablehlo::hlo_abs()].
 #' @seealso [nv_abs()], [abs()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-1, 2, -3))
-#'   nvl_abs(x)
-#' })
+#' x <- nv_array(c(-1, 2, -3))
+#' nvl_abs(x)
 #' @export
 nvl_abs <- make_unary_op(p_abs, stablehlo::infer_types_abs)
 
@@ -1264,10 +1238,8 @@ p_sqrt <- AnvilPrimitive("sqrt")
 #' Lowers to [stablehlo::hlo_sqrt()].
 #' @seealso [nv_sqrt()], [sqrt()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 4, 9))
-#'   nvl_sqrt(x)
-#' })
+#' x <- nv_array(c(1, 4, 9))
+#' nvl_sqrt(x)
 #' @export
 nvl_sqrt <- make_unary_op(p_sqrt, stablehlo::infer_types_sqrt)
 
@@ -1283,10 +1255,8 @@ p_rsqrt <- AnvilPrimitive("rsqrt")
 #' Lowers to [stablehlo::hlo_rsqrt()].
 #' @seealso [nv_rsqrt()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 4, 9))
-#'   nvl_rsqrt(x)
-#' })
+#' x <- nv_array(c(1, 4, 9))
+#' nvl_rsqrt(x)
 #' @export
 nvl_rsqrt <- make_unary_op(p_rsqrt, stablehlo::infer_types_rsqrt)
 
@@ -1302,10 +1272,8 @@ p_log <- AnvilPrimitive("log")
 #' Lowers to [stablehlo::hlo_log()].
 #' @seealso [nv_log()], [log()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2.718, 7.389))
-#'   nvl_log(x)
-#' })
+#' x <- nv_array(c(1, 2.718, 7.389))
+#' nvl_log(x)
 #' @export
 nvl_log <- make_unary_op(p_log, stablehlo::infer_types_log)
 
@@ -1321,10 +1289,8 @@ p_tanh <- AnvilPrimitive("tanh")
 #' Lowers to [stablehlo::hlo_tanh()].
 #' @seealso [nv_tanh()], [tanh()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-1, 0, 1))
-#'   nvl_tanh(x)
-#' })
+#' x <- nv_array(c(-1, 0, 1))
+#' nvl_tanh(x)
 #' @export
 nvl_tanh <- make_unary_op(p_tanh, stablehlo::infer_types_tanh)
 
@@ -1340,10 +1306,8 @@ p_tan <- AnvilPrimitive("tan")
 #' Lowers to [stablehlo::hlo_tan()].
 #' @seealso [nv_tan()], [tan()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, 0.5, 1))
-#'   nvl_tan(x)
-#' })
+#' x <- nv_array(c(0, 0.5, 1))
+#' nvl_tan(x)
 #' @export
 nvl_tan <- make_unary_op(p_tan, stablehlo::infer_types_tan)
 
@@ -1359,10 +1323,8 @@ p_sine <- AnvilPrimitive("sine")
 #' Lowers to [stablehlo::hlo_sine()].
 #' @seealso [nv_sine()], [sin()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, pi / 2, pi))
-#'   nvl_sine(x)
-#' })
+#' x <- nv_array(c(0, pi / 2, pi))
+#' nvl_sine(x)
 #' @export
 nvl_sine <- make_unary_op(p_sine, stablehlo::infer_types_sine)
 
@@ -1378,10 +1340,8 @@ p_cosine <- AnvilPrimitive("cosine")
 #' Lowers to [stablehlo::hlo_cosine()].
 #' @seealso [nv_cosine()], [cos()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, pi / 2, pi))
-#'   nvl_cosine(x)
-#' })
+#' x <- nv_array(c(0, pi / 2, pi))
+#' nvl_cosine(x)
 #' @export
 nvl_cosine <- make_unary_op(p_cosine, stablehlo::infer_types_cosine)
 
@@ -1397,10 +1357,8 @@ p_floor <- AnvilPrimitive("floor")
 #' Lowers to [stablehlo::hlo_floor()].
 #' @seealso [nv_floor()], [floor()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1.2, 2.7, -1.5))
-#'   nvl_floor(x)
-#' })
+#' x <- nv_array(c(1.2, 2.7, -1.5))
+#' nvl_floor(x)
 #' @export
 nvl_floor <- make_unary_op(p_floor, stablehlo::infer_types_floor)
 
@@ -1416,10 +1374,8 @@ p_ceil <- AnvilPrimitive("ceil")
 #' Lowers to [stablehlo::hlo_ceil()].
 #' @seealso [nv_ceil()], [ceiling()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1.2, 2.7, -1.5))
-#'   nvl_ceil(x)
-#' })
+#' x <- nv_array(c(1.2, 2.7, -1.5))
+#' nvl_ceil(x)
 #' @export
 nvl_ceil <- make_unary_op(p_ceil, stablehlo::infer_types_ceil)
 
@@ -1435,10 +1391,8 @@ p_sign <- AnvilPrimitive("sign")
 #' Lowers to [stablehlo::hlo_sign()].
 #' @seealso [nv_sign()], [sign()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-3, 0, 5))
-#'   nvl_sign(x)
-#' })
+#' x <- nv_array(c(-3, 0, 5))
+#' nvl_sign(x)
 #' @export
 nvl_sign <- make_unary_op(p_sign, stablehlo::infer_types_sign)
 
@@ -1454,10 +1408,8 @@ p_exp <- AnvilPrimitive("exp")
 #' Lowers to [stablehlo::hlo_exponential()].
 #' @seealso [nv_exp()], [exp()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, 1, 2))
-#'   nvl_exp(x)
-#' })
+#' x <- nv_array(c(0, 1, 2))
+#' nvl_exp(x)
 #' @export
 nvl_exp <- make_unary_op(p_exp, stablehlo::infer_types_exponential)
 
@@ -1473,10 +1425,8 @@ p_expm1 <- AnvilPrimitive("expm1")
 #' Lowers to [stablehlo::hlo_exponential_minus_one()].
 #' @seealso [nv_expm1()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, 0.001, 1))
-#'   nvl_expm1(x)
-#' })
+#' x <- nv_array(c(0, 0.001, 1))
+#' nvl_expm1(x)
 #' @export
 nvl_expm1 <- make_unary_op(p_expm1, stablehlo::infer_types_exponential_minus_one)
 
@@ -1492,10 +1442,8 @@ p_log1p <- AnvilPrimitive("log1p")
 #' Lowers to [stablehlo::hlo_log_plus_one()].
 #' @seealso [nv_log1p()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, 0.001, 1))
-#'   nvl_log1p(x)
-#' })
+#' x <- nv_array(c(0, 0.001, 1))
+#' nvl_log1p(x)
 #' @export
 nvl_log1p <- make_unary_op(p_log1p, stablehlo::infer_types_log_plus_one)
 
@@ -1511,10 +1459,8 @@ p_cbrt <- AnvilPrimitive("cbrt")
 #' Lowers to [stablehlo::hlo_cbrt()].
 #' @seealso [nv_cbrt()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 8, 27))
-#'   nvl_cbrt(x)
-#' })
+#' x <- nv_array(c(1, 8, 27))
+#' nvl_cbrt(x)
 #' @export
 nvl_cbrt <- make_unary_op(p_cbrt, stablehlo::infer_types_cbrt)
 
@@ -1530,10 +1476,8 @@ p_logistic <- AnvilPrimitive("logistic")
 #' Lowers to [stablehlo::hlo_logistic()].
 #' @seealso [nv_logistic()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-2, 0, 2))
-#'   nvl_logistic(x)
-#' })
+#' x <- nv_array(c(-2, 0, 2))
+#' nvl_logistic(x)
 #' @export
 nvl_logistic <- make_unary_op(p_logistic, stablehlo::infer_types_logistic)
 
@@ -1551,18 +1495,19 @@ p_is_finite <- AnvilPrimitive("is_finite")
 #' Lowers to [stablehlo::hlo_is_finite()].
 #' @seealso [nv_is_finite()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, Inf, NaN, -Inf, 0))
-#'   nvl_is_finite(x)
-#' })
+#' x <- nv_array(c(1, Inf, NaN, -Inf, 0))
+#' nvl_is_finite(x)
 #' @export
-nvl_is_finite <- function(operand) {
-  infer_fn <- function(operand) {
-    out <- stablehlo::infer_types_is_finite(at2vt(operand))[[1L]]
-    list(vt2at(out))
-  }
-  graph_desc_add(p_is_finite, list(operand = operand), list(), infer_fn = infer_fn)[[1L]]
-}
+nvl_is_finite <- jit(
+  function(operand) {
+    infer_fn <- function(operand) {
+      out <- stablehlo::infer_types_is_finite(at2vt(operand))[[1L]]
+      list(vt2at(out))
+    }
+    graph_desc_add(p_is_finite, list(operand = operand), list(), infer_fn = infer_fn)[[1L]]
+  },
+  backend = "auto"
+)
 
 p_popcnt <- AnvilPrimitive("popcnt")
 #' @title Primitive Population Count
@@ -1577,20 +1522,21 @@ p_popcnt <- AnvilPrimitive("popcnt")
 #' Lowers to [stablehlo::hlo_popcnt()].
 #' @seealso [nv_popcnt()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(7L, 3L, 15L))
-#'   nvl_popcnt(x)
-#' })
+#' x <- nv_array(c(7L, 3L, 15L))
+#' nvl_popcnt(x)
 #' @export
-nvl_popcnt <- function(operand) {
-  infer_fn <- function(operand) {
-    out <- stablehlo::infer_types_popcnt(at2vt(operand))[[1L]]
-    out <- vt2at(out)
-    out$ambiguous <- operand$ambiguous
-    list(out)
-  }
-  graph_desc_add(p_popcnt, list(operand = operand), list(), infer_fn = infer_fn)[[1L]]
-}
+nvl_popcnt <- jit(
+  function(operand) {
+    infer_fn <- function(operand) {
+      out <- stablehlo::infer_types_popcnt(at2vt(operand))[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- operand$ambiguous
+      list(out)
+    }
+    graph_desc_add(p_popcnt, list(operand = operand), list(), infer_fn = infer_fn)[[1L]]
+  },
+  backend = "auto"
+)
 
 p_clamp <- AnvilPrimitive("clamp")
 #' @title Primitive Clamp
@@ -1611,22 +1557,28 @@ p_clamp <- AnvilPrimitive("clamp")
 #' Lowers to [stablehlo::hlo_clamp()].
 #' @seealso [nv_clamp()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-1, 0.5, 2))
-#'   nvl_clamp(nv_scalar(0), x, nv_scalar(1))
-#' })
+#' x <- nv_array(c(-1, 0.5, 2))
+#' nvl_clamp(nv_scalar(0), x, nv_scalar(1))
 #' @export
-nvl_clamp <- function(min_val, operand, max_val) {
-  infer_fn <- function(min_val, operand, max_val) {
-    out <- stablehlo::infer_types_clamp(at2vt(min_val), at2vt(operand), at2vt(max_val))[[1L]]
-    out <- vt2at(out)
-    out$ambiguous <- operand$ambiguous
-    list(out)
-  }
-  graph_desc_add(p_clamp, list(min_val = min_val, operand = operand, max_val = max_val), list(), infer_fn = infer_fn)[[
-    1L
-  ]]
-}
+nvl_clamp <- jit(
+  function(min_val, operand, max_val) {
+    infer_fn <- function(min_val, operand, max_val) {
+      out <- stablehlo::infer_types_clamp(at2vt(min_val), at2vt(operand), at2vt(max_val))[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- operand$ambiguous
+      list(out)
+    }
+    graph_desc_add(
+      p_clamp,
+      list(min_val = min_val, operand = operand, max_val = max_val),
+      list(),
+      infer_fn = infer_fn
+    )[[
+      1L
+    ]]
+  },
+  backend = "auto"
+)
 
 p_reverse <- AnvilPrimitive("reverse")
 #' @title Primitive Reverse
@@ -1644,22 +1596,24 @@ p_reverse <- AnvilPrimitive("reverse")
 #' Lowers to [stablehlo::hlo_reverse()].
 #' @seealso [nv_reverse()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3, 4, 5))
-#'   nvl_reverse(x, dims = 1L)
-#' })
+#' x <- nv_array(c(1, 2, 3, 4, 5))
+#' nvl_reverse(x, dims = 1L)
 #' @export
-nvl_reverse <- function(operand, dims) {
-  infer_fn <- function(operand, dims) {
-    # stablehlo uses 0-based indexing
-    dims_attr <- r_to_constant(dims - 1L, dtype = "i64", shape = length(dims))
-    out <- stablehlo::infer_types_reverse(at2vt(operand), dimensions = dims_attr)[[1L]]
-    out <- vt2at(out)
-    out$ambiguous <- operand$ambiguous
-    list(out)
-  }
-  graph_desc_add(p_reverse, list(operand = operand), list(dims = dims), infer_fn = infer_fn)[[1L]]
-}
+nvl_reverse <- jit(
+  function(operand, dims) {
+    infer_fn <- function(operand, dims) {
+      # stablehlo uses 0-based indexing
+      dims_attr <- r_to_constant(dims - 1L, dtype = "i64", shape = length(dims))
+      out <- stablehlo::infer_types_reverse(at2vt(operand), dimensions = dims_attr)[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- operand$ambiguous
+      list(out)
+    }
+    graph_desc_add(p_reverse, list(operand = operand), list(dims = dims), infer_fn = infer_fn)[[1L]]
+  },
+  static = 2L,
+  backend = "auto"
+)
 
 p_iota <- AnvilPrimitive("iota")
 #' @title Primitive Iota
@@ -1681,31 +1635,35 @@ p_iota <- AnvilPrimitive("iota")
 #' Lowers to [stablehlo::hlo_iota()].
 #' @seealso [nv_iota()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval(nvl_iota(dim = 1L, dtype = "i32", shape = 5L))
+#' nvl_iota(dim = 1L, dtype = "i32", shape = 5L)
 #' @export
-nvl_iota <- function(dim, dtype, shape, start = 1L, ambiguous = FALSE) {
-  infer_fn <- function(dim, dtype, shape, start, ambiguous) {
-    # stablehlo uses 0-based indexing, anvil uses 1-based
-    # Convert dim to Constant as required by stablehlo
-    iota_dim_const <- stablehlo::r_to_constant(
-      as.integer(dim - 1L),
-      dtype = "i64",
-      shape = integer(0)
-    )
-    # Just for the checks
-    stablehlo::infer_types_iota(iota_dimension = iota_dim_const, dtype = dtype, shape = shape)[[1L]]
+nvl_iota <- jit(
+  function(dim, dtype, shape, start = 1L, ambiguous = FALSE) {
+    infer_fn <- function(dim, dtype, shape, start, ambiguous) {
+      # stablehlo uses 0-based indexing, anvil uses 1-based
+      # Convert dim to Constant as required by stablehlo
+      iota_dim_const <- stablehlo::r_to_constant(
+        as.integer(dim - 1L),
+        dtype = "i64",
+        shape = integer(0)
+      )
+      # Just for the checks
+      stablehlo::infer_types_iota(iota_dimension = iota_dim_const, dtype = dtype, shape = shape)[[1L]]
 
-    list(IotaArray(shape = shape, dtype = dtype, dimension = dim, start = start, ambiguous = ambiguous))
-  }
-  result <- graph_desc_add(
-    p_iota,
-    list(),
-    list(dim = dim, dtype = dtype, shape = shape, start = start, ambiguous = ambiguous),
-    infer_fn = infer_fn
-  )[[1L]]
+      list(IotaArray(shape = shape, dtype = dtype, dimension = dim, start = start, ambiguous = ambiguous))
+    }
+    result <- graph_desc_add(
+      p_iota,
+      list(),
+      list(dim = dim, dtype = dtype, shape = shape, start = start, ambiguous = ambiguous),
+      infer_fn = infer_fn
+    )[[1L]]
 
-  result
-}
+    result
+  },
+  static = 1:5,
+  backend = "auto"
+)
 
 p_pad <- AnvilPrimitive("pad")
 #' @title Primitive Pad
@@ -1729,42 +1687,44 @@ p_pad <- AnvilPrimitive("pad")
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_pad()].
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   nvl_pad(x, nv_scalar(0),
-#'     edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
-#'   )
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' nvl_pad(x, nv_scalar(0),
+#'   edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
+#' )
 #' @export
-nvl_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
-  infer_fn <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
-    rank <- ndims_abstract(operand)
-    low_attr <- r_to_constant(edge_padding_low, dtype = "i64", shape = rank)
-    high_attr <- r_to_constant(edge_padding_high, dtype = "i64", shape = rank)
-    interior_attr <- r_to_constant(interior_padding, dtype = "i64", shape = rank)
-    out <- stablehlo::infer_types_pad(
-      at2vt(operand),
-      at2vt(padding_value),
-      edge_padding_low = low_attr,
-      edge_padding_high = high_attr,
-      interior_padding = interior_attr
-    )[[1L]]
-    out <- vt2at(out)
-    out$ambiguous <- operand$ambiguous
-    list(out)
-  }
+nvl_pad <- jit(
+  function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
+    infer_fn <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
+      rank <- ndims_abstract(operand)
+      low_attr <- r_to_constant(edge_padding_low, dtype = "i64", shape = rank)
+      high_attr <- r_to_constant(edge_padding_high, dtype = "i64", shape = rank)
+      interior_attr <- r_to_constant(interior_padding, dtype = "i64", shape = rank)
+      out <- stablehlo::infer_types_pad(
+        at2vt(operand),
+        at2vt(padding_value),
+        edge_padding_low = low_attr,
+        edge_padding_high = high_attr,
+        interior_padding = interior_attr
+      )[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- operand$ambiguous
+      list(out)
+    }
 
-  graph_desc_add(
-    p_pad,
-    list(operand = operand, padding_value = padding_value),
-    list(
-      edge_padding_low = edge_padding_low,
-      edge_padding_high = edge_padding_high,
-      interior_padding = interior_padding
-    ),
-    infer_fn = infer_fn
-  )[[1L]]
-}
+    graph_desc_add(
+      p_pad,
+      list(operand = operand, padding_value = padding_value),
+      list(
+        edge_padding_low = edge_padding_low,
+        edge_padding_high = edge_padding_high,
+        interior_padding = interior_padding
+      ),
+      infer_fn = infer_fn
+    )[[1L]]
+  },
+  static = 3:5,
+  backend = "auto"
+)
 
 p_round <- AnvilPrimitive("round")
 #' @title Primitive Round
@@ -1784,25 +1744,27 @@ p_round <- AnvilPrimitive("round")
 #' [stablehlo::hlo_round_nearest_afz()] depending on the `method` parameter.
 #' @seealso [nv_round()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1.4, 2.5, 3.6))
-#'   nvl_round(x)
-#' })
+#' x <- nv_array(c(1.4, 2.5, 3.6))
+#' nvl_round(x)
 #' @export
-nvl_round <- function(operand, method = "nearest_even") {
-  if (!(method %in% c("nearest_even", "afz"))) {
-    cli_abort("method must be one of: 'nearest_even', 'afz', but is {method}")
-  }
-  infer_fn <- function(operand, method) {
-    # both rounding functions have the same inference, so just pick one:
-    stablehlo_infer <- stablehlo::infer_types_round_nearest_even
-    out <- stablehlo_infer(at2vt(operand))[[1L]]
-    out <- vt2at(out)
-    out$ambiguous <- operand$ambiguous
-    list(out)
-  }
-  graph_desc_add(p_round, list(operand = operand), list(method = method), infer_fn = infer_fn)[[1L]]
-}
+nvl_round <- jit(
+  function(operand, method = "nearest_even") {
+    if (!(method %in% c("nearest_even", "afz"))) {
+      cli_abort("method must be one of: 'nearest_even', 'afz', but is {method}")
+    }
+    infer_fn <- function(operand, method) {
+      # both rounding functions have the same inference, so just pick one:
+      stablehlo_infer <- stablehlo::infer_types_round_nearest_even
+      out <- stablehlo_infer(at2vt(operand))[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- operand$ambiguous
+      list(out)
+    }
+    graph_desc_add(p_round, list(operand = operand), list(method = method), infer_fn = infer_fn)[[1L]]
+  },
+  static = 2L,
+  backend = "auto"
+)
 
 # dtype conversion ----------------------------------------------------------------
 
@@ -1823,27 +1785,29 @@ p_convert <- AnvilPrimitive("convert")
 #' Lowers to [stablehlo::hlo_convert()].
 #' @seealso [nv_convert()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1L, 2L, 3L))
-#'   nvl_convert(x, dtype = "f32")
-#' })
+#' x <- nv_array(c(1L, 2L, 3L))
+#' nvl_convert(x, dtype = "f32")
 #' @export
-nvl_convert <- function(operand, dtype, ambiguous = FALSE) {
-  dtype <- as_dtype(dtype)
-  infer_fn <- function(operand, dtype, ambiguous) {
-    list(AbstractArray(
-      dtype = dtype,
-      shape = Shape(shape(operand)),
-      ambiguous = ambiguous
-    ))
-  }
-  graph_desc_add(
-    p_convert,
-    list(operand = operand),
-    params = list(dtype = dtype, ambiguous = ambiguous),
-    infer_fn = infer_fn
-  )[[1L]]
-}
+nvl_convert <- jit(
+  function(operand, dtype, ambiguous = FALSE) {
+    dtype <- as_dtype(dtype)
+    infer_fn <- function(operand, dtype, ambiguous) {
+      list(AbstractArray(
+        dtype = dtype,
+        shape = Shape(shape(operand)),
+        ambiguous = ambiguous
+      ))
+    }
+    graph_desc_add(
+      p_convert,
+      list(operand = operand),
+      params = list(dtype = dtype, ambiguous = ambiguous),
+      infer_fn = infer_fn
+    )[[1L]]
+  },
+  static = 2:3,
+  backend = "auto"
+)
 
 
 p_select <- AnvilPrimitive("select")
@@ -1866,27 +1830,32 @@ p_select <- AnvilPrimitive("select")
 #' Lowers to [stablehlo::hlo_select()].
 #' @seealso [nv_ifelse()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   pred <- nv_array(c(TRUE, FALSE, TRUE))
-#'   nvl_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
-#' })
+#' pred <- nv_array(c(TRUE, FALSE, TRUE))
+#' nvl_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 #' @export
-nvl_ifelse <- function(pred, true_value, false_value) {
-  infer_fn <- function(pred, true_value, false_value) {
-    both_ambiguous <- true_value$ambiguous && false_value$ambiguous
-    out <- stablehlo::infer_types_select(
-      at2vt(pred),
-      on_true = at2vt(true_value),
-      on_false = at2vt(false_value)
-    )[[1L]]
-    out <- vt2at(out)
-    out$ambiguous <- both_ambiguous
-    list(out)
-  }
-  graph_desc_add(p_select, list(pred = pred, true_value = true_value, false_value = false_value), infer_fn = infer_fn)[[
-    1L
-  ]]
-}
+nvl_ifelse <- jit(
+  function(pred, true_value, false_value) {
+    infer_fn <- function(pred, true_value, false_value) {
+      both_ambiguous <- true_value$ambiguous && false_value$ambiguous
+      out <- stablehlo::infer_types_select(
+        at2vt(pred),
+        on_true = at2vt(true_value),
+        on_false = at2vt(false_value)
+      )[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- both_ambiguous
+      list(out)
+    }
+    graph_desc_add(
+      p_select,
+      list(pred = pred, true_value = true_value, false_value = false_value),
+      infer_fn = infer_fn
+    )[[
+      1L
+    ]]
+  },
+  backend = "auto"
+)
 
 # Higher order primitives -------------------------------------------------------
 
@@ -1909,69 +1878,73 @@ p_if <- AnvilPrimitive("if", subgraphs = c("true_graph", "false_graph"))
 #' Lowers to [stablehlo::hlo_if()].
 #' @seealso [nv_if()], [nvl_ifelse()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval(nvl_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
+#' nvl_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2))
 #' @export
-nvl_if <- function(pred, true, false) {
-  # delayed promise evaluation can cause the value to be added to the wrong graph descriptor
-  force(pred)
-  true_expr <- rlang::enquo(true)
-  false_expr <- rlang::enquo(false)
+nvl_if <- jit(
+  function(pred, true, false) {
+    # delayed promise evaluation can cause the value to be added to the wrong graph descriptor
+    force(pred)
+    true_expr <- rlang::enquo(true)
+    false_expr <- rlang::enquo(false)
 
-  # Build sub-graphs for each branch (no inputs, just capture closed-over values)
-  # We need to ensure that constants that are captured in both branches receive the same
-  # GraphValue if they capture the same constant
+    # Build sub-graphs for each branch (no inputs, just capture closed-over values)
+    # We need to ensure that constants that are captured in both branches receive the same
+    # GraphValue if they capture the same constant
 
-  current_desc <- .current_descriptor(silent = TRUE)
+    current_desc <- .current_descriptor(silent = TRUE)
 
-  debug_mode <- is.null(current_desc)
-  if (debug_mode) {
-    current_desc <- local_descriptor()
-  }
+    debug_mode <- is.null(current_desc)
+    if (debug_mode) {
+      current_desc <- local_descriptor()
+    }
 
-  desc_true <- local_descriptor()
-  true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true, lit_to_array = TRUE)
-  desc_false <- local_descriptor()
+    desc_true <- local_descriptor()
+    true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true, lit_to_array = TRUE)
+    desc_false <- local_descriptor()
 
-  for (const in desc_true$constants) {
-    get_box_or_register_const(desc_false, const)
-  }
-  false_graph <- trace_fn(function() rlang::eval_tidy(false_expr), list(), desc = desc_false, lit_to_array = TRUE)
+    for (const in desc_true$constants) {
+      get_box_or_register_const(desc_false, const)
+    }
+    false_graph <- trace_fn(function() rlang::eval_tidy(false_expr), list(), desc = desc_false, lit_to_array = TRUE)
 
-  for (const in desc_false$constants) {
-    get_box_or_register_const(current_desc, const)
-  }
+    for (const in desc_false$constants) {
+      get_box_or_register_const(current_desc, const)
+    }
 
-  if (!identical(true_graph$out_tree, false_graph$out_tree)) {
-    cli_abort("true and false branches must have the same output structure")
-  }
+    if (!identical(true_graph$out_tree, false_graph$out_tree)) {
+      cli_abort("true and false branches must have the same output structure")
+    }
 
-  # TODO: Apply promotion rules to the outputs of the branches
+    # TODO: Apply promotion rules to the outputs of the branches
 
-  infer_fn <- function(pred, true_graph, false_graph) {
-    # The returned values might have different ambiguity, so we need to handle it.
-    # An output is ambiguous if its type is ambiguous in both branches.
-    lapply(seq_along(true_graph$outputs), function(i) {
-      aval_true <- true_graph$outputs[[i]]$aval
-      aval_false <- false_graph$outputs[[i]]$aval
-      if (aval_true$ambiguous && aval_false$ambiguous) {
+    infer_fn <- function(pred, true_graph, false_graph) {
+      # The returned values might have different ambiguity, so we need to handle it.
+      # An output is ambiguous if its type is ambiguous in both branches.
+      lapply(seq_along(true_graph$outputs), function(i) {
+        aval_true <- true_graph$outputs[[i]]$aval
+        aval_false <- false_graph$outputs[[i]]$aval
+        if (aval_true$ambiguous && aval_false$ambiguous) {
+          return(aval_true)
+        }
+
+        aval_true$ambiguous <- FALSE
         return(aval_true)
-      }
+      })
+    }
 
-      aval_true$ambiguous <- FALSE
-      return(aval_true)
-    })
-  }
-
-  out <- graph_desc_add(
-    p_if,
-    list(pred = pred),
-    params = list(true_graph = true_graph, false_graph = false_graph),
-    infer_fn = infer_fn,
-    desc = current_desc,
-    debug_mode = debug_mode
-  )
-  unflatten(true_graph$out_tree, out)
-}
+    out <- graph_desc_add(
+      p_if,
+      list(pred = pred),
+      params = list(true_graph = true_graph, false_graph = false_graph),
+      infer_fn = infer_fn,
+      desc = current_desc,
+      debug_mode = debug_mode
+    )
+    unflatten(true_graph$out_tree, out)
+  },
+  static = 2:3,
+  backend = "auto"
+)
 
 p_while <- AnvilPrimitive("while", subgraphs = c("cond_graph", "body_graph"))
 #' @title Primitive While Loop
@@ -1997,91 +1970,93 @@ p_while <- AnvilPrimitive("while", subgraphs = c("cond_graph", "body_graph"))
 #' Lowers to [stablehlo::hlo_while()].
 #' @seealso [nv_while()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   nvl_while(
-#'     init = list(i = 0L, total = 0L),
-#'     cond = function(i, total) i <= 5L,
-#'     body = function(i, total) list(
-#'       i = i + 1L,
-#'       total = total + i
-#'     )
+#' nvl_while(
+#'   init = list(i = 0L, total = 0L),
+#'   cond = function(i, total) i <= 5L,
+#'   body = function(i, total) list(
+#'     i = i + 1L,
+#'     total = total + i
 #'   )
-#' })
+#' )
 #' @export
-nvl_while <- function(init, cond, body) {
-  # delayed promise evaluation can cause the value to be added to the wrong graph descriptor
-  force(init)
-  if (!is.function(body)) {
-    cli_abort("body must be a function")
-  }
-  if (!is.function(cond)) {
-    cli_abort("cond must be a function")
-  }
-
-  state_names <- names(init)
-
-  if (any(state_names == "")) {
-    cli_abort("init must have only named arguments")
-  }
-
-  current_desc <- .current_descriptor(silent = TRUE)
-  debug_mode <- is.null(current_desc)
-  if (debug_mode) {
-    current_desc <- local_descriptor()
-  }
-
-  desc_cond <- local_descriptor()
-
-  cond_graph <- trace_fn(cond, init, desc = desc_cond, lit_to_array = TRUE)
-
-  desc_body <- local_descriptor()
-
-  # ensure that constant ids are the same between cond and body
-  # inputs don't matter, because we don't inline the sub-graphs into the parent graph
-  for (const in desc_cond$constants) {
-    get_box_or_register_const(desc_body, const)
-  }
-  body_graph <- trace_fn(body, init, desc_body, lit_to_array = TRUE)
-
-  if (!identical(cond_graph$in_tree, body_graph$in_tree)) {
-    cli_abort("cond and body must have the same input structure")
-  }
-
-  if (!identical(body_graph$in_tree, body_graph$out_tree)) {
-    cli_abort("body must have the same input and output structure")
-  }
-
-  # now we register the constants of both sub-graphs (body includes cond's constants) into the graph
-  for (const in body_graph$constants) {
-    get_box_or_register_const(current_desc, const)
-  }
-
-  infer_fn <- function(..., cond_graph, body_graph) {
-    outs <- list(...)
-    outs_body <- lapply(body_graph$outputs, \(out) out$aval)
-    inputs_body <- lapply(body_graph$inputs, \(inp) inp$aval)
-    # ignore ambiguity when comparing dtypes
-    if (!all(sapply(seq_along(outs), \(i) eq_type(outs[[i]], outs_body[[i]], ambiguity = FALSE)))) {
-      cli_abort("outs must be have same type as outs_body")
+nvl_while <- jit(
+  function(init, cond, body) {
+    # delayed promise evaluation can cause the value to be added to the wrong graph descriptor
+    force(init)
+    if (!is.function(body)) {
+      cli_abort("body must be a function")
     }
-    if (!all(sapply(seq_along(inputs_body), \(i) eq_type(inputs_body[[i]], outs_body[[i]], ambiguity = FALSE)))) {
-      cli_abort("inputs_body must be have same type as outs_body")
+    if (!is.function(cond)) {
+      cli_abort("cond must be a function")
     }
-    # function might change the ambiguity, so we return the body outputs and not the inputs
-    return(outs_body)
-  }
 
-  out <- graph_desc_add(
-    p_while,
-    args = lapply(flatten(init), maybe_box_arrayish),
-    params = list(cond_graph = cond_graph, body_graph = body_graph),
-    infer_fn = infer_fn,
-    desc = current_desc,
-    debug_mode = debug_mode
-  )
+    state_names <- names(init)
 
-  unflatten(body_graph$out_tree, out)
-}
+    if (any(state_names == "")) {
+      cli_abort("init must have only named arguments")
+    }
+
+    current_desc <- .current_descriptor(silent = TRUE)
+    debug_mode <- is.null(current_desc)
+    if (debug_mode) {
+      current_desc <- local_descriptor()
+    }
+
+    desc_cond <- local_descriptor()
+
+    cond_graph <- trace_fn(cond, init, desc = desc_cond, lit_to_array = TRUE)
+
+    desc_body <- local_descriptor()
+
+    # ensure that constant ids are the same between cond and body
+    # inputs don't matter, because we don't inline the sub-graphs into the parent graph
+    for (const in desc_cond$constants) {
+      get_box_or_register_const(desc_body, const)
+    }
+    body_graph <- trace_fn(body, init, desc_body, lit_to_array = TRUE)
+
+    if (!identical(cond_graph$in_tree, body_graph$in_tree)) {
+      cli_abort("cond and body must have the same input structure")
+    }
+
+    if (!identical(body_graph$in_tree, body_graph$out_tree)) {
+      cli_abort("body must have the same input and output structure")
+    }
+
+    # now we register the constants of both sub-graphs (body includes cond's constants) into the graph
+    for (const in body_graph$constants) {
+      get_box_or_register_const(current_desc, const)
+    }
+
+    infer_fn <- function(..., cond_graph, body_graph) {
+      outs <- list(...)
+      outs_body <- lapply(body_graph$outputs, \(out) out$aval)
+      inputs_body <- lapply(body_graph$inputs, \(inp) inp$aval)
+      # ignore ambiguity when comparing dtypes
+      if (!all(sapply(seq_along(outs), \(i) eq_type(outs[[i]], outs_body[[i]], ambiguity = FALSE)))) {
+        cli_abort("outs must be have same type as outs_body")
+      }
+      if (!all(sapply(seq_along(inputs_body), \(i) eq_type(inputs_body[[i]], outs_body[[i]], ambiguity = FALSE)))) {
+        cli_abort("inputs_body must be have same type as outs_body")
+      }
+      # function might change the ambiguity, so we return the body outputs and not the inputs
+      return(outs_body)
+    }
+
+    out <- graph_desc_add(
+      p_while,
+      args = lapply(flatten(init), maybe_box_arrayish),
+      params = list(cond_graph = cond_graph, body_graph = body_graph),
+      infer_fn = infer_fn,
+      desc = current_desc,
+      debug_mode = debug_mode
+    )
+
+    unflatten(body_graph$out_tree, out)
+  },
+  static = 2:3,
+  backend = "auto"
+)
 
 # Print primitive
 p_print <- AnvilPrimitive("print")
@@ -2098,22 +2073,23 @@ p_print <- AnvilPrimitive("print")
 #' Lowers to [stablehlo::hlo_custom_call()].
 #' @seealso [nv_print()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   nvl_print(x)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' nvl_print(x)
 #' @export
-nvl_print <- function(operand) {
-  # HACK: ambiguity is not available in stablehlo, so we need to pre-compute this
-  # and pass it as a "param", although it is not really one
-  # TODO: We should also include the platform/device, but it is currently not avilable in GraphDescriptor
-  dtype_str <- paste0(as.character(dtype(operand)), if (ambiguous_abstract(operand)) "?")
-  footer <- sprintf("[ %s{%s} ]", dtype_str, paste0(shape(operand), collapse = ","))
-  # slig
-  graph_desc_add(p_print, list(operand = operand), list(footer = footer), infer_fn = function(operand, ...) {
-    list(operand)
-  })[[1L]]
-}
+nvl_print <- jit(
+  function(operand) {
+    # HACK: ambiguity is not available in stablehlo, so we need to pre-compute this
+    # and pass it as a "param", although it is not really one
+    # TODO: We should also include the platform/device, but it is currently not avilable in GraphDescriptor
+    dtype_str <- paste0(as.character(dtype(operand)), if (ambiguous_abstract(operand)) "?")
+    footer <- sprintf("[ %s{%s} ]", dtype_str, paste0(shape(operand), collapse = ","))
+    # slig
+    graph_desc_add(p_print, list(operand = operand), list(footer = footer), infer_fn = function(operand, ...) {
+      list(operand)
+    })[[1L]]
+  },
+  backend = "auto"
+)
 
 # RNG primitives
 p_rng_bit_generator <- AnvilPrimitive("rng_bit_generator")
@@ -2137,22 +2113,24 @@ p_rng_bit_generator <- AnvilPrimitive("rng_bit_generator")
 #' Lowers to [stablehlo::hlo_rng_bit_generator()].
 #' @seealso [nv_runif()], [nv_rnorm()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   state <- nv_array(c(0L, 0L), dtype = "ui64")
-#'   nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
-#' })
+#' state <- nv_array(c(0L, 0L), dtype = "ui64")
+#' nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
 #' @export
-nvl_rng_bit_generator <- function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape) {
-  infer_fn <- function(initial_state, rng_algorithm, dtype, shape) {
-    lapply(stablehlo::infer_types_rng_bit_generator(at2vt(initial_state), rng_algorithm, dtype, shape), vt2at)
-  }
-  graph_desc_add(
-    p_rng_bit_generator,
-    list(initial_state = initial_state),
-    params = list(rng_algorithm = rng_algorithm, dtype = dtype, shape = shape),
-    infer_fn = infer_fn
-  )
-}
+nvl_rng_bit_generator <- jit(
+  function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape) {
+    infer_fn <- function(initial_state, rng_algorithm, dtype, shape) {
+      lapply(stablehlo::infer_types_rng_bit_generator(at2vt(initial_state), rng_algorithm, dtype, shape), vt2at)
+    }
+    graph_desc_add(
+      p_rng_bit_generator,
+      list(initial_state = initial_state),
+      params = list(rng_algorithm = rng_algorithm, dtype = dtype, shape = shape),
+      infer_fn = infer_fn
+    )
+  },
+  static = 2:4,
+  backend = "auto"
+)
 
 p_scatter <- AnvilPrimitive("scatter", subgraphs = "update_computation_graph")
 #' @title Primitive Scatter
@@ -2225,75 +2203,21 @@ p_scatter <- AnvilPrimitive("scatter", subgraphs = "update_computation_graph")
 #' @seealso [nvl_gather()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' # Scatter values 10 and 30 into positions 1 and 3 of a zero vector
-#' jit_eval({
-#'   input <- nv_array(c(0, 0, 0, 0, 0))
-#'   indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
-#'   updates <- nv_array(c(10, 30))
-#'   nvl_scatter(
-#'     input, indices, updates,
-#'     update_window_dims = integer(0),
-#'     inserted_window_dims = 1L,
-#'     input_batching_dims = integer(0),
-#'     scatter_indices_batching_dims = integer(0),
-#'     scatter_dims_to_operand_dims = 1L,
-#'     index_vector_dim = 2L
-#'   )
-#' })
+#' input <- nv_array(c(0, 0, 0, 0, 0))
+#' indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
+#' updates <- nv_array(c(10, 30))
+#' nvl_scatter(
+#'   input, indices, updates,
+#'   update_window_dims = integer(0),
+#'   inserted_window_dims = 1L,
+#'   input_batching_dims = integer(0),
+#'   scatter_indices_batching_dims = integer(0),
+#'   scatter_dims_to_operand_dims = 1L,
+#'   index_vector_dim = 2L
+#' )
 #' @export
-nvl_scatter <- function(
-  input,
-  scatter_indices,
-  update,
-  update_window_dims,
-  inserted_window_dims,
-  input_batching_dims,
-  scatter_indices_batching_dims,
-  scatter_dims_to_operand_dims,
-  index_vector_dim,
-  indices_are_sorted = FALSE,
-  unique_indices = FALSE,
-  update_computation = NULL
-) {
-  # otherwise, delayed promise evaluation means they might be added to the update_descriptor
-  force(input)
-  force(scatter_indices)
-  force(update)
-  if (is.null(update_computation)) {
-    update_computation <- function(old, new) new
-  } else if (!is.function(update_computation)) {
-    cli_abort("update_computation must be a function")
-  }
-
-  current_desc <- .current_descriptor(silent = TRUE)
-  debug_mode <- is.null(current_desc)
-  if (debug_mode) {
-    current_desc <- local_descriptor()
-  }
-
-  # Trace the update computation function
-  # For scatter, the update computation takes 2 scalar arguments (current, update)
-  desc_update <- local_descriptor()
-
-  # Create dummy arguments for tracing - use the input's dtype
-  input_dtype <- dtype_abstract(input)
-  update_dtype <- dtype_abstract(update)
-  if (input_dtype != update_dtype) {
-    cli_abort("input and update must have the same dtype")
-  }
-
-  dummy_args <- list(
-    AbstractArray(dtype = input_dtype, shape = Shape(integer()), ambiguous = ambiguous_abstract(input)),
-    AbstractArray(dtype = input_dtype, shape = Shape(integer()), ambiguous = ambiguous_abstract(update))
-  )
-
-  update_computation_graph <- trace_fn(update_computation, dummy_args, desc = desc_update)
-
-  # Register constants from the update computation graph
-  for (const in update_computation_graph$constants) {
-    get_box_or_register_const(current_desc, const)
-  }
-
-  infer_fn <- function(
+nvl_scatter <- jit(
+  function(
     input,
     scatter_indices,
     update,
@@ -2303,59 +2227,115 @@ nvl_scatter <- function(
     scatter_indices_batching_dims,
     scatter_dims_to_operand_dims,
     index_vector_dim,
-    indices_are_sorted,
-    unique_indices,
-    update_computation_graph
+    indices_are_sorted = FALSE,
+    unique_indices = FALSE,
+    update_computation = NULL
   ) {
-    # Convert 1-based dimension numbers to 0-based
-    scatter_dimension_numbers <- stablehlo::ScatterDimensionNumbers(
-      update_window_dims = update_window_dims - 1L,
-      inserted_window_dims = inserted_window_dims - 1L,
-      input_batching_dims = input_batching_dims - 1L,
-      scatter_indices_batching_dims = scatter_indices_batching_dims - 1L,
-      scatter_dims_to_operand_dims = scatter_dims_to_operand_dims - 1L,
-      index_vector_dim = index_vector_dim - 1L
+    # otherwise, delayed promise evaluation means they might be added to the update_descriptor
+    force(input)
+    force(scatter_indices)
+    force(update)
+    if (is.null(update_computation)) {
+      update_computation <- function(old, new) new
+    } else if (!is.function(update_computation)) {
+      cli_abort("update_computation must be a function")
+    }
+
+    current_desc <- .current_descriptor(silent = TRUE)
+    debug_mode <- is.null(current_desc)
+    if (debug_mode) {
+      current_desc <- local_descriptor()
+    }
+
+    # Trace the update computation function
+    # For scatter, the update computation takes 2 scalar arguments (current, update)
+    desc_update <- local_descriptor()
+
+    # Create dummy arguments for tracing - use the input's dtype
+    input_dtype <- dtype_abstract(input)
+    update_dtype <- dtype_abstract(update)
+    if (input_dtype != update_dtype) {
+      cli_abort("input and update must have the same dtype")
+    }
+
+    dummy_args <- list(
+      AbstractArray(dtype = input_dtype, shape = Shape(integer()), ambiguous = ambiguous_abstract(input)),
+      AbstractArray(dtype = input_dtype, shape = Shape(integer()), ambiguous = ambiguous_abstract(update))
     )
 
-    indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "bool", shape = integer())
-    unique_indices_attr <- r_to_constant(unique_indices, dtype = "bool", shape = integer())
+    update_computation_graph <- trace_fn(update_computation, dummy_args, desc = desc_update)
 
-    out <- stablehlo::infer_types_scatter(
-      inputs = list(at2vt(input)),
-      scatter_indices = at2vt(scatter_indices),
-      updates = list(at2vt(update)),
-      scatter_dimension_numbers = scatter_dimension_numbers,
-      indices_are_sorted = indices_sorted_attr,
-      unique_indices = unique_indices_attr,
-      update_computation = stablehlo(update_computation_graph, constants_as_inputs = FALSE)[[1L]]
-    )[[1L]]
+    # Register constants from the update computation graph
+    for (const in update_computation_graph$constants) {
+      get_box_or_register_const(current_desc, const)
+    }
 
-    out <- vt2at(out)
-    out$ambiguous <- input$ambiguous
-    list(out)
-  }
+    infer_fn <- function(
+      input,
+      scatter_indices,
+      update,
+      update_window_dims,
+      inserted_window_dims,
+      input_batching_dims,
+      scatter_indices_batching_dims,
+      scatter_dims_to_operand_dims,
+      index_vector_dim,
+      indices_are_sorted,
+      unique_indices,
+      update_computation_graph
+    ) {
+      # Convert 1-based dimension numbers to 0-based
+      scatter_dimension_numbers <- stablehlo::ScatterDimensionNumbers(
+        update_window_dims = update_window_dims - 1L,
+        inserted_window_dims = inserted_window_dims - 1L,
+        input_batching_dims = input_batching_dims - 1L,
+        scatter_indices_batching_dims = scatter_indices_batching_dims - 1L,
+        scatter_dims_to_operand_dims = scatter_dims_to_operand_dims - 1L,
+        index_vector_dim = index_vector_dim - 1L
+      )
 
-  out <- graph_desc_add(
-    p_scatter,
-    args = list(input = input, scatter_indices = scatter_indices, update = update),
-    params = list(
-      update_window_dims = update_window_dims,
-      inserted_window_dims = inserted_window_dims,
-      input_batching_dims = input_batching_dims,
-      scatter_indices_batching_dims = scatter_indices_batching_dims,
-      scatter_dims_to_operand_dims = scatter_dims_to_operand_dims,
-      index_vector_dim = index_vector_dim,
-      indices_are_sorted = indices_are_sorted,
-      unique_indices = unique_indices,
-      update_computation_graph = update_computation_graph
-    ),
-    infer_fn = infer_fn,
-    desc = current_desc,
-    debug_mode = debug_mode
-  )
+      indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "bool", shape = integer())
+      unique_indices_attr <- r_to_constant(unique_indices, dtype = "bool", shape = integer())
 
-  out[[1L]]
-}
+      out <- stablehlo::infer_types_scatter(
+        inputs = list(at2vt(input)),
+        scatter_indices = at2vt(scatter_indices),
+        updates = list(at2vt(update)),
+        scatter_dimension_numbers = scatter_dimension_numbers,
+        indices_are_sorted = indices_sorted_attr,
+        unique_indices = unique_indices_attr,
+        update_computation = stablehlo(update_computation_graph, constants_as_inputs = FALSE)[[1L]]
+      )[[1L]]
+
+      out <- vt2at(out)
+      out$ambiguous <- input$ambiguous
+      list(out)
+    }
+
+    out <- graph_desc_add(
+      p_scatter,
+      args = list(input = input, scatter_indices = scatter_indices, update = update),
+      params = list(
+        update_window_dims = update_window_dims,
+        inserted_window_dims = inserted_window_dims,
+        input_batching_dims = input_batching_dims,
+        scatter_indices_batching_dims = scatter_indices_batching_dims,
+        scatter_dims_to_operand_dims = scatter_dims_to_operand_dims,
+        index_vector_dim = index_vector_dim,
+        indices_are_sorted = indices_are_sorted,
+        unique_indices = unique_indices,
+        update_computation_graph = update_computation_graph
+      ),
+      infer_fn = infer_fn,
+      desc = current_desc,
+      debug_mode = debug_mode
+    )
+
+    out[[1L]]
+  },
+  static = 4:12,
+  backend = "auto"
+)
 
 p_gather <- AnvilPrimitive("gather")
 #' @title Primitive Gather
@@ -2424,35 +2404,21 @@ p_gather <- AnvilPrimitive("gather")
 #' @seealso [nvl_scatter()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' # Gather rows 1 and 3 from a 3x3 matrix
-#' jit_eval({
-#'   operand <- nv_array(matrix(1:9, nrow = 3))
-#'   indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
-#'   nvl_gather(
-#'     operand, indices,
-#'     slice_sizes = c(1L, 3L),
-#'     offset_dims = 2L,
-#'     collapsed_slice_dims = 1L,
-#'     operand_batching_dims = integer(0),
-#'     start_indices_batching_dims = integer(0),
-#'     start_index_map = 1L,
-#'     index_vector_dim = 2L
-#'   )
-#' })
+#' operand <- nv_array(matrix(1:9, nrow = 3))
+#' indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
+#' nvl_gather(
+#'   operand, indices,
+#'   slice_sizes = c(1L, 3L),
+#'   offset_dims = 2L,
+#'   collapsed_slice_dims = 1L,
+#'   operand_batching_dims = integer(0),
+#'   start_indices_batching_dims = integer(0),
+#'   start_index_map = 1L,
+#'   index_vector_dim = 2L
+#' )
 #' @export
-nvl_gather <- function(
-  operand,
-  start_indices,
-  slice_sizes,
-  offset_dims,
-  collapsed_slice_dims,
-  operand_batching_dims,
-  start_indices_batching_dims,
-  start_index_map,
-  index_vector_dim,
-  indices_are_sorted = FALSE,
-  unique_indices = FALSE
-) {
-  infer_fn <- function(
+nvl_gather <- jit(
+  function(
     operand,
     start_indices,
     slice_sizes,
@@ -2462,50 +2428,66 @@ nvl_gather <- function(
     start_indices_batching_dims,
     start_index_map,
     index_vector_dim,
-    indices_are_sorted,
-    unique_indices
+    indices_are_sorted = FALSE,
+    unique_indices = FALSE
   ) {
-    gather_dimension_numbers <- stablehlo::GatherDimensionNumbers(
-      offset_dims = offset_dims - 1L,
-      collapsed_slice_dims = collapsed_slice_dims - 1L,
-      operand_batching_dims = operand_batching_dims - 1L,
-      start_indices_batching_dims = start_indices_batching_dims - 1L,
-      start_index_map = start_index_map - 1L,
-      index_vector_dim = index_vector_dim - 1L
-    )
+    infer_fn <- function(
+      operand,
+      start_indices,
+      slice_sizes,
+      offset_dims,
+      collapsed_slice_dims,
+      operand_batching_dims,
+      start_indices_batching_dims,
+      start_index_map,
+      index_vector_dim,
+      indices_are_sorted,
+      unique_indices
+    ) {
+      gather_dimension_numbers <- stablehlo::GatherDimensionNumbers(
+        offset_dims = offset_dims - 1L,
+        collapsed_slice_dims = collapsed_slice_dims - 1L,
+        operand_batching_dims = operand_batching_dims - 1L,
+        start_indices_batching_dims = start_indices_batching_dims - 1L,
+        start_index_map = start_index_map - 1L,
+        index_vector_dim = index_vector_dim - 1L
+      )
 
-    slice_sizes_attr <- r_to_constant(slice_sizes, dtype = "i64", shape = length(slice_sizes))
-    indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "bool", shape = integer())
+      slice_sizes_attr <- r_to_constant(slice_sizes, dtype = "i64", shape = length(slice_sizes))
+      indices_sorted_attr <- r_to_constant(indices_are_sorted, dtype = "bool", shape = integer())
 
-    out <- stablehlo::infer_types_gather(
-      at2vt(operand),
-      at2vt(start_indices),
-      gather_dimension_numbers = gather_dimension_numbers,
-      slice_sizes = slice_sizes_attr,
-      indices_are_sorted = indices_sorted_attr
+      out <- stablehlo::infer_types_gather(
+        at2vt(operand),
+        at2vt(start_indices),
+        gather_dimension_numbers = gather_dimension_numbers,
+        slice_sizes = slice_sizes_attr,
+        indices_are_sorted = indices_sorted_attr
+      )[[1L]]
+
+      out <- vt2at(out)
+      out$ambiguous <- operand$ambiguous
+      list(out)
+    }
+    graph_desc_add(
+      p_gather,
+      args = list(operand = operand, start_indices = start_indices),
+      params = list(
+        slice_sizes = slice_sizes,
+        offset_dims = offset_dims,
+        collapsed_slice_dims = collapsed_slice_dims,
+        operand_batching_dims = operand_batching_dims,
+        start_indices_batching_dims = start_indices_batching_dims,
+        start_index_map = start_index_map,
+        index_vector_dim = index_vector_dim,
+        indices_are_sorted = indices_are_sorted,
+        unique_indices = unique_indices
+      ),
+      infer_fn = infer_fn
     )[[1L]]
-
-    out <- vt2at(out)
-    out$ambiguous <- operand$ambiguous
-    list(out)
-  }
-  graph_desc_add(
-    p_gather,
-    args = list(operand = operand, start_indices = start_indices),
-    params = list(
-      slice_sizes = slice_sizes,
-      offset_dims = offset_dims,
-      collapsed_slice_dims = collapsed_slice_dims,
-      operand_batching_dims = operand_batching_dims,
-      start_indices_batching_dims = start_indices_batching_dims,
-      start_index_map = start_index_map,
-      index_vector_dim = index_vector_dim,
-      indices_are_sorted = indices_are_sorted,
-      unique_indices = unique_indices
-    ),
-    infer_fn = infer_fn
-  )[[1L]]
-}
+  },
+  static = 3:11,
+  backend = "auto"
+)
 
 p_cholesky <- AnvilPrimitive("cholesky")
 #' @title Primitive Cholesky Decomposition
@@ -2530,28 +2512,30 @@ p_cholesky <- AnvilPrimitive("cholesky")
 #' Lowers to [stablehlo::hlo_cholesky()].
 #' @seealso [nv_solve()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   # Create a positive-definite matrix
-#'   x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-#'   nvl_cholesky(x, lower = TRUE)
-#' })
+#' # Create a positive-definite matrix
+#' x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+#' nvl_cholesky(x, lower = TRUE)
 #' @export
-nvl_cholesky <- function(operand, lower) {
-  infer_fn <- function(operand, lower) {
-    # Output has same shape and dtype as input (square matrix)
-    list(AbstractArray(
-      dtype = dtype(operand),
-      shape = Shape(shape(operand)),
-      ambiguous = operand$ambiguous
-    ))
-  }
-  graph_desc_add(
-    p_cholesky,
-    list(operand = operand),
-    list(lower = lower),
-    infer_fn = infer_fn
-  )[[1L]]
-}
+nvl_cholesky <- jit(
+  function(operand, lower) {
+    infer_fn <- function(operand, lower) {
+      # Output has same shape and dtype as input (square matrix)
+      list(AbstractArray(
+        dtype = dtype(operand),
+        shape = Shape(shape(operand)),
+        ambiguous = operand$ambiguous
+      ))
+    }
+    graph_desc_add(
+      p_cholesky,
+      list(operand = operand),
+      list(lower = lower),
+      infer_fn = infer_fn
+    )[[1L]]
+  },
+  static = 2L,
+  backend = "auto"
+)
 
 p_triangular_solve <- AnvilPrimitive("triangular_solve")
 #' @title Primitive Triangular Solve
@@ -2586,42 +2570,44 @@ p_triangular_solve <- AnvilPrimitive("triangular_solve")
 #' Lowers to [stablehlo::hlo_triangular_solve()].
 #' @seealso [nv_solve()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   # Solve L %*% x = b where L is lower triangular
-#'   L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
-#'   b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
-#'   nvl_triangular_solve(L, b,
-#'     left_side = TRUE, lower = TRUE,
-#'     unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"
-#'   )
-#' })
+#' # Solve L %*% x = b where L is lower triangular
+#' L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
+#' b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
+#' nvl_triangular_solve(L, b,
+#'   left_side = TRUE, lower = TRUE,
+#'   unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"
+#' )
 #' @export
-nvl_triangular_solve <- function(a, b, left_side, lower, unit_diagonal, transpose_a) {
-  infer_fn <- function(a, b, left_side, lower, unit_diagonal, transpose_a) {
-    left_side_attr <- r_to_constant(as.logical(left_side), dtype = "bool", shape = integer())
-    lower_attr <- r_to_constant(as.logical(lower), dtype = "bool", shape = integer())
-    unit_diagonal_attr <- r_to_constant(as.logical(unit_diagonal), dtype = "bool", shape = integer())
-    out <- stablehlo::infer_types_triangular_solve(
-      at2vt(a),
-      at2vt(b),
-      left_side = left_side_attr,
-      lower = lower_attr,
-      unit_diagonal = unit_diagonal_attr,
-      transpose_a = transpose_a
+nvl_triangular_solve <- jit(
+  function(a, b, left_side, lower, unit_diagonal, transpose_a) {
+    infer_fn <- function(a, b, left_side, lower, unit_diagonal, transpose_a) {
+      left_side_attr <- r_to_constant(as.logical(left_side), dtype = "bool", shape = integer())
+      lower_attr <- r_to_constant(as.logical(lower), dtype = "bool", shape = integer())
+      unit_diagonal_attr <- r_to_constant(as.logical(unit_diagonal), dtype = "bool", shape = integer())
+      out <- stablehlo::infer_types_triangular_solve(
+        at2vt(a),
+        at2vt(b),
+        left_side = left_side_attr,
+        lower = lower_attr,
+        unit_diagonal = unit_diagonal_attr,
+        transpose_a = transpose_a
+      )[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- a$ambiguous && b$ambiguous
+      list(out)
+    }
+    graph_desc_add(
+      p_triangular_solve,
+      list(a = a, b = b),
+      list(
+        left_side = left_side,
+        lower = lower,
+        unit_diagonal = unit_diagonal,
+        transpose_a = transpose_a
+      ),
+      infer_fn = infer_fn
     )[[1L]]
-    out <- vt2at(out)
-    out$ambiguous <- a$ambiguous && b$ambiguous
-    list(out)
-  }
-  graph_desc_add(
-    p_triangular_solve,
-    list(a = a, b = b),
-    list(
-      left_side = left_side,
-      lower = lower,
-      unit_diagonal = unit_diagonal,
-      transpose_a = transpose_a
-    ),
-    infer_fn = infer_fn
-  )[[1L]]
-}
+  },
+  static = 3:6,
+  backend = "auto"
+)

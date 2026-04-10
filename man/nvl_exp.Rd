@@ -34,10 +34,8 @@ Lowers to \code{\link[stablehlo:hlo_exponential]{stablehlo::hlo_exponential()}}.
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(0, 1, 2))
-  nvl_exp(x)
-})
+x <- nv_array(c(0, 1, 2))
+nvl_exp(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

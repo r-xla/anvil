@@ -31,7 +31,7 @@ Creates an array filled with a scalar value. More memory-efficient than
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval(nv_fill(0, shape = c(2, 3)))
+nv_fill(0, shape = c(2, 3))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

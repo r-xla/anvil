@@ -28,10 +28,8 @@ Returns \code{TRUE} only if all elements are \code{TRUE}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-  nv_reduce_all(x, dims = 1L)
-})
+x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+nv_reduce_all(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

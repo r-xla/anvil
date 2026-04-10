@@ -48,6 +48,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Collate:
     'aaa.R'
+    'jit.R'
     'primitive.R'
     'type-converters.R'
     'utils.R'
@@ -55,7 +56,6 @@ Collate:
     'api.R'
     'api-generics.R'
     'api-rng.R'
-    'jit.R'
     'api-subset.R'
     'api-utilities.R'
     'array.R'

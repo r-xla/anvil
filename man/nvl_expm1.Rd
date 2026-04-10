@@ -34,10 +34,8 @@ Lowers to \code{\link[stablehlo:hlo_exponential_minus_one]{stablehlo::hlo_expone
 
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(0, 0.001, 1))
-  nvl_expm1(x)
-})
+x <- nv_array(c(0, 0.001, 1))
+nvl_expm1(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

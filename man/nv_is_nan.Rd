@@ -24,10 +24,8 @@ Element-wise check if values are NaN. You can also use \code{is.nan()}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, NaN, Inf, -Inf, 0))
-  nv_is_nan(x)
-})
+x <- nv_array(c(1, NaN, Inf, -Inf, 0))
+nv_is_nan(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

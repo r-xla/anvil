@@ -19,10 +19,8 @@ Computes the outer product of two 1-D arrays.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  y <- nv_array(c(4, 5))
-  nv_outer(x, y)
-})
+x <- nv_array(c(1, 2, 3))
+y <- nv_array(c(4, 5))
+nv_outer(x, y)
 \dontshow{\}) # examplesIf}
 }

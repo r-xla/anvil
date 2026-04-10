@@ -20,10 +20,8 @@ All non-scalar arrays must have the same shape.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  # scalar 1 is broadcast to shape [3]
-  nv_broadcast_scalars(x, 1)
-})
+x <- nv_array(c(1, 2, 3))
+# scalar 1 is broadcast to shape [3]
+nv_broadcast_scalars(x, 1)
 \dontshow{\}) # examplesIf}
 }

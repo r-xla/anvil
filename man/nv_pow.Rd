@@ -21,11 +21,9 @@ Raises \code{lhs} to the power of \code{rhs} element-wise. You can also use the 
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(2, 3, 4))
-  y <- nv_array(c(3, 2, 1))
-  x ^ y
-})
+x <- nv_array(c(2, 3, 4))
+y <- nv_array(c(3, 2, 1))
+x ^ y
 \dontshow{\}) # examplesIf}
 }
 \seealso{

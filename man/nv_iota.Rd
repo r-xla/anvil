@@ -34,7 +34,7 @@ starting from \code{start}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval(nv_iota(dim = 1L, dtype = "i32", shape = 5L))
+nv_iota(dim = 1L, dtype = "i32", shape = 5L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -658,7 +658,7 @@ describe("boolean ops", {
 
 describe("p_gather", {
   it("out of bounds", {
-    out <- jit_eval({
+    out <- {
       x <- nv_array(1:4, "f32")
       g1 <- gradient(function(x) {
         mean(x[nv_array(5:7)]^2)
@@ -667,7 +667,7 @@ describe("p_gather", {
         mean(x[list(4, 4, 4, 4)]^2)
       })(x)
       list(g1[[1L]], g2[[1L]])
-    })
+    }
     expect_equal(out[[1]], out[[2]])
   })
 

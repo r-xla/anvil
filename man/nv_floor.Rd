@@ -19,10 +19,8 @@ Element-wise floor (round toward negative infinity). You can also use \code{floo
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1.2, 2.7, -1.5))
-  floor(x)
-})
+x <- nv_array(c(1.2, 2.7, -1.5))
+floor(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

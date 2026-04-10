@@ -34,6 +34,6 @@ With \code{steps}, produces \code{steps} evenly spaced values (like \code{seq(st
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval(nv_seq(3, 7))
+nv_seq(3, 7)
 \dontshow{\}) # examplesIf}
 }
