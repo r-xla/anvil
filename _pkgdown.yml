@@ -194,14 +194,13 @@ reference:
       - nv_rdunif
       - nv_rng_state
 
-  - title: AnvilArray
+  - title: Array
     desc: Constructing and working with AnvilArrays
 
   - subtitle: Construction
     desc: Functions for creating and initializing arrays
     contents:
       - AnvilArray
-      - arrayish
       - nv_array
       - nv_scalar
       - nv_empty
@@ -295,6 +294,7 @@ reference:
       - ndims_abstract
       - ambiguous_abstract
       - to_abstract
+      - arrayish
 
   - subtitle: Transformations
     contents:

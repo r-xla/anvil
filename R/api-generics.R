@@ -222,3 +222,23 @@ tcrossprod.AnvilBox <- function(x, y = NULL, ...) {
 #' @method tcrossprod AnvilArray
 #' @export
 tcrossprod.AnvilArray <- tcrossprod.AnvilBox
+
+#' @method dim AnvilBox
+#' @export
+dim.AnvilBox <- function(x) {
+  shape(x)
+}
+
+#' @method dim AnvilArray
+#' @export
+dim.AnvilArray <- dim.AnvilBox
+
+#' @method length AnvilBox
+#' @export
+length.AnvilBox <- function(x) {
+  prod(shape(x))
+}
+
+#' @method length AnvilArray
+#' @export
+length.AnvilArray <- length.AnvilBox
