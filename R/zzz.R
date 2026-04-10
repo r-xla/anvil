@@ -43,9 +43,10 @@ register_s3_method <- function(pkg, generic, class, fun = NULL) {
   register_s3_method("waldo", "compare_proxy", "AnvilArray")
 
   # Register FFI handlers with PJRT
-  pjrt::pjrt_register_custom_call(
-    "anvil_qr",
-    list(host = get_qr_handler()),
-    .package = "anvil"
-  )
+  handlers <- list(host = get_qr_handler())
+  cuda_handler <- get_qr_handler_cuda()
+  if (!is.null(cuda_handler)) {
+    handlers$cuda <- cuda_handler
+  }
+  pjrt::pjrt_register_custom_call("anvil_qr", handlers, .package = "anvil")
 }
