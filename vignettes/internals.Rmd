@@ -387,38 +387,3 @@ add_three <- function(x, dim) {
 ```
 
 This function can now unfortunately not be called with both backends and we therefore have to wrap it in `jit()` which means `nv_scalar()` an infer the correct backend from the jit context.
-
-
-```{r}
-add_one <- jit(function(x) {
-  n
-  n
-  one <- nv_const_like(x, )
-  nv_array(1, shape = shape(x))
-  nvl_add(x, one)
-}, backend = "auto")
-
-add_one(nv_array(1, backend = "quickr))
-```
-
-```{r}
-jit(\() {
-  x^2
-})
-jit(f)(x, 2)
-
-x[1, ]
-x[array(c(1, 2)),]
-
-jit(f, static = "...")
-
-f <- function(x, y, which) {
-  if (which) {
-    x * 2
-  } else {
-    y * 2
-  }
-}
-
-jit(gradient(f, wrt = c("x", "y")), static = "which")(nv_scalar(1), nv_scalar(2), TRUE)
-```

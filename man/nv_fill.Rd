@@ -20,6 +20,11 @@ Data type. If \code{NULL} (default), inferred from \code{value}.}
 Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
 See the \code{vignette("type-promotion")} for more details.}
+
+\item{backend}{(\code{character(1)})\cr
+Backend used to construct the array. \code{"auto"} (default) picks a backend
+based on the inputs (or \code{\link[=default_backend]{default_backend()}} when there are none).
+See \code{\link[=jit]{jit()}} for the list of available backends.}
 }
 \value{
 \code{\link{arrayish}}\cr

@@ -81,6 +81,7 @@ p_fill <- AnvilPrimitive("fill")
 #'   Shape of the output array.
 #' @template param_dtype
 #' @template param_ambiguous
+#' @template param_backend
 #' @return [`arrayish`]\cr
 #'   Has the given `shape` and `dtype`.
 #' @templateVar primitive_id fill
@@ -1627,6 +1628,7 @@ p_iota <- AnvilPrimitive("iota")
 #' @param start (`integer(1)`)\cr
 #'   Starting value.
 #' @template param_ambiguous
+#' @template param_backend
 #' @return [`arrayish`]\cr
 #'   Has the given `dtype` and `shape`.
 #' @templateVar primitive_id iota

@@ -14,6 +14,7 @@
 #' @param dtype (`character(1)` | `NULL`)\cr
 #'   Data type. If `NULL` (default), inferred from `value`.
 #' @template param_ambiguous
+#' @template param_backend
 #' @return [`arrayish`]\cr
 #'   Has the given `shape` and `dtype`.
 #' @seealso [nvl_fill()] for the underlying primitive.
@@ -941,6 +942,7 @@ nv_reverse <- nvl_reverse
 #' @param start (`integer(1)`)\cr
 #'   Starting value (default 1).
 #' @template param_ambiguous
+#' @template param_backend
 #' @return [`arrayish`]\cr
 #'   Has the given `dtype` and `shape`.
 #' @seealso [nv_seq()] for a simpler 1-D sequence, [nvl_iota()] for the underlying primitive.
@@ -963,6 +965,7 @@ nv_iota <- nvl_iota
 #' @param dtype (`character(1)`)\cr
 #'   Data type. Default `"i32"` when `steps` is `NULL`, `"f32"` when `steps` is given.
 #' @template param_ambiguous
+#' @template param_backend
 #' @return [`arrayish`]\cr
 #'   1-D array of length `end - start + 1`.
 #' @examplesIf pjrt::plugin_is_downloaded()
@@ -1166,6 +1169,7 @@ nv_diag <- function(x) {
 #' @param n (`integer(1)`)\cr
 #'   Size of the identity matrix.
 #' @template param_dtype
+#' @template param_backend
 #' @return [`arrayish`]\cr
 #'   An `n x n` identity matrix.
 #' @seealso [nv_diag()] for general diagonal matrices.
