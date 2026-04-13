@@ -26,7 +26,7 @@ cat(sprintf("Cold (mean of 60): %.4fs\n", mean(t_cold)))
 
 # Warm (repeat, same shape -> cache hit)
 p <- mk(c(32L, 32L))
-nvl_add(p[[1]], p[[2]])  # prime
+nvl_add(p[[1]], p[[2]]) # prime
 t_warm <- replicate(50, system.time(nvl_add(p[[1]], p[[2]]))[["elapsed"]])
 cat(sprintf("Warm (median of 50): %.4fs\n", median(t_warm)))
 
@@ -34,7 +34,9 @@ cat("\n=== Rprof on 80 cold calls ===\n")
 pairs2 <- lapply(lapply(seq_len(80), function(i) c(i + 100L, 5L)), mk)
 prof_file <- tempfile(fileext = ".Rprof")
 Rprof(prof_file, interval = 0.002, line.profiling = TRUE)
-for (p in pairs2) nvl_add(p[[1]], p[[2]])
+for (p in pairs2) {
+  nvl_add(p[[1]], p[[2]])
+}
 Rprof(NULL)
 s <- summaryRprof(prof_file)
 cat("\n--- by.total (top 30) ---\n")
