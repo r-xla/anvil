@@ -312,6 +312,11 @@ ambiguous.GraphBox <- function(x, ...) {
 }
 
 #' @export
+backend.GraphBox <- function(x, ...) {
+  "auto"
+}
+
+#' @export
 print.GraphBox <- function(x, ...) {
   cat(format(x), "\n")
   invisible(x)

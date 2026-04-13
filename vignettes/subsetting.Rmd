@@ -148,7 +148,7 @@ x
 
 ```{r}
 x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
-x[, 3] <- -99L
+x[, 3] <- nv_scalar(-99L)
 x
 ```
 

@@ -484,10 +484,6 @@ print.IotaArray <- function(x, ...) {
   invisible(x)
 }
 
-is_literal_tensor <- function(x) {
-  inherits(x, "LiteralArray")
-}
-
 #' @export
 `==.AbstractArray` <- function(e1, e2) {
   cli_abort("Use {.fn eq_type} instead of {.code ==} for comparing AbstractArrays")
@@ -725,4 +721,27 @@ is_arrayish <- function(x, literal = TRUE) {
     ok <- test_scalar(x) && (is.numeric(x) || is.logical(x))
   }
   return(ok)
+}
+
+detect_backend_from_args <- function(args) {
+  for (x in args) {
+    if (is_anvil_array(x) && backend(x) != "plain") {
+      return(backend(x))
+    }
+    if (is_box(x)) return("auto")
+  }
+  default_backend()
+}
+
+ensure_arrayish <- function(x, backend = "plain") {
+  if (is_anvil_array(x) || is_box(x)) {
+    return(x)
+  }
+  if (test_scalar(x) && (is.numeric(x) || is.logical(x))) {
+    if (!is.null(.current_descriptor(silent = TRUE))) {
+      return(x)
+    }
+    return(nv_scalar(x, backend = backend))
+  }
+  x
 }

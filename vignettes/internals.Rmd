@@ -323,3 +323,102 @@ jit(\() {
 This would be somewhat inconsistent and hard to to reason about.
 Finally, requiring the user to think about the input data types should also be advantageous; we want to prioritize clarity over minor convenience.
 Note that for primitive calls like `nv_array(1)^2` we do auto-convert literals, because we know which arguments are expected to be `AnvilArray`s and otherwise code just becomes much harder to read.
+
+## Dichotomy of anvil functions
+
+Here, we will dig deeper into the dichotomy of {anvil} functions such as `nvl_add`.
+In the *Getting Started* vignette, we have learned that these functions can either be called directly on `AnvilArray`s to transform data, or used within `jit()` blocks to build up programs.
+Here, we will explain what this actually does and why this is possible.
+
+The core problem this dichotomy solves is that it is a mental burden to always keep two versions os an {anvil} function: 
+
+1. The `jit()`ted version that can be used to transform arrays.
+2. The non-`jit()`ted one that can be used to build up programs.
+
+With our implementation, the following is possible:
+
+```{r}
+library(anvil)
+nvl_add(nv_scalar(1), nv_scalar(2))
+
+times_2 <- jit(function(x) {
+  nv_mul(x, 2)
+})
+
+times_4 <- jit(function(x) {
+  times_2(times_2(x))
+})
+
+times_2(nv_scalar(2))
+times_4(nv_scalar(2))
+```
+
+Otherwise, we would need the following:
+
+```{r}
+times_2_r <- function(x) {
+  nv_mul(x, 2)
+}
+times_2_jit <- jit(times_2_r)
+times_4 <- jit(function(x) {
+  times_2_r(times_2_r(x))
+})
+```
+
+This is rather cumbersome, as there are always two versions of a function and the first solution is preferable.
+Internally, we have implemented this by wrapping every `nvl_*` primitive function in `jit()` and making a `jit()`ted function behave differently depending on whether we are in another `jit()` call or not.
+
+If we are in a `jit()` call, and call into a function `jit(f)`, internally `f` is evaluated, and the function is re-traced.
+Otherwise, the standard jit path is followed.
+
+What makes this a little difficult is our multi-backend approach.
+Ideally we would just have to `jit()` all the primitives and any `nv_` API function just calls into primitives.
+However, this fails in the case, where we create constants in the `nv_` function because these contants assume the `default_backend()` unless specified otherwise.
+
+However, there are some issues.
+
+E.g., consider the following function:
+
+```{r}
+add_three <- function(x, dim) {
+  three <- nv_scalar(3, dtype = dtype(x))
+  nv_add(x, three)
+}
+```
+
+This function can now unfortunately not be called with both backends and we therefore have to wrap it in `jit()` which means `nv_scalar()` an infer the correct backend from the jit context.
+
+
+```{r}
+add_one <- jit(function(x) {
+  n
+  n
+  one <- nv_const_like(x, )
+  nv_array(1, shape = shape(x))
+  nvl_add(x, one)
+}, backend = "auto")
+
+add_one(nv_array(1, backend = "quickr))
+```
+
+```{r}
+jit(\() {
+  x^2
+})
+jit(f)(x, 2)
+
+x[1, ]
+x[array(c(1, 2)),]
+
+jit(f, static = "...")
+
+f <- function(x, y, which) {
+  if (which) {
+    x * 2
+  } else {
+    y * 2
+  }
+}
+
+jit(gradient(f, wrt = c("x", "y")), static = "which")(nv_scalar(1), nv_scalar(2), TRUE)
+```

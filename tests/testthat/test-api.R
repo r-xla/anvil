@@ -94,20 +94,20 @@ describe("nv_concatenate", {
   it("can concatenate literals", {
     # Pure literals produce ambiguous output
     expect_equal(
-      nv_concatenate(1L, 2L),
+      jit_eval(nv_concatenate(1L, 2L)),
       nv_array(1:2, ambiguous = TRUE)
     )
     expect_equal(
-      nv_concatenate(1L, 2L, dimension = 1L),
+      jit_eval(nv_concatenate(1L, 2L, dimension = 1L)),
       nv_array(1:2, ambiguous = TRUE)
     )
     # Mixed array + literal: non-ambiguous array determines output ambiguity
     expect_equal(
-      nv_concatenate(nv_array(1:2), 3L),
+      jit_eval(nv_concatenate(nv_array(1:2), 3L)),
       nv_array(1:3)
     )
     expect_equal(
-      nv_concatenate(nv_array(1L), 2L),
+      jit_eval(nv_concatenate(nv_array(1L), 2L)),
       nv_array(1:2)
     )
   })
@@ -426,6 +426,26 @@ describe("nv_triu", {
   it("supports negative diagonal offset", {
     result <- nv_triu(nv_fill(1, c(3, 3)), diagonal = -1L)
     expected <- matrix(c(1, 1, 0, 1, 1, 1, 1, 1, 1), nrow = 3, ncol = 3)
+    expect_equal(as_array(result), expected, tolerance = 1e-6)
+  })
+})
+
+describe("nv_tril with quickr backend", {
+  it("works when operand is quickr", {
+    skip_if_not_installed("quickr")
+    x <- nv_array(matrix(1, 3, 3), backend = "quickr")
+    result <- nv_tril(x)
+    expected <- matrix(c(1, 1, 1, 0, 1, 1, 0, 0, 1), nrow = 3, ncol = 3)
+    expect_equal(as_array(result), expected, tolerance = 1e-6)
+  })
+})
+
+describe("nv_triu with quickr backend", {
+  it("works when operand is quickr", {
+    skip_if_not_installed("quickr")
+    x <- nv_array(matrix(1, 3, 3), backend = "quickr")
+    result <- nv_triu(x)
+    expected <- matrix(c(1, 0, 0, 1, 1, 0, 1, 1, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
 })

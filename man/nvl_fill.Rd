@@ -4,7 +4,7 @@
 \alias{nvl_fill}
 \title{Primitive Fill}
 \usage{
-nvl_fill(value, shape, dtype, ambiguous = FALSE)
+nvl_fill(value, shape, dtype, ambiguous = FALSE, backend = "auto")
 }
 \arguments{
 \item{value}{(\code{numeric(1)})\cr

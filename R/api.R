@@ -20,18 +20,14 @@
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' nv_fill(0, shape = c(2, 3))
 #' @export
-nv_fill <- jit(
-  function(value, shape, dtype = NULL, ambiguous = FALSE) {
-    dtype <- if (is.null(dtype)) {
-      default_dtype(value)
-    } else {
-      as_dtype(dtype)
-    }
-    nvl_fill(value, shape, dtype, ambiguous)
-  },
-  static = 1:4,
-  backend = "auto"
-)
+nv_fill <- function(value, shape, dtype = NULL, ambiguous = FALSE, backend = "auto") {
+  dtype <- if (is.null(dtype)) {
+    default_dtype(value)
+  } else {
+    as_dtype(dtype)
+  }
+  nvl_fill(value, shape, dtype, ambiguous, backend = backend)
+}
 
 
 ## Conversion ------------------------------------------------------------------
@@ -79,36 +75,33 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' # scalar 1 is broadcast to shape [3]
-#' nv_broadcast_scalars(x, 1)
+#' nv_broadcast_scalars(x, nv_scalar(1))
 #' @export
-nv_broadcast_scalars <- jit(
-  function(...) {
-    args <- list(...)
-    shapes <- lapply(args, shape_abstract)
-    non_scalar_shapes <- Filter(\(s) length(s) > 0L, shapes)
+nv_broadcast_scalars <- function(...) {
+  args <- list(...)
+  shapes <- lapply(args, shape_abstract)
+  non_scalar_shapes <- Filter(\(s) length(s) > 0L, shapes)
 
-    if (length(non_scalar_shapes) == 0L) {
-      return(args)
+  if (length(non_scalar_shapes) == 0L) {
+    return(args)
+  }
+
+  target_shape <- non_scalar_shapes[[1L]]
+  if (!all(vapply(non_scalar_shapes, identical, logical(1L), target_shape))) {
+    shapes <- paste0(sapply(shapes, shape2string), sep = ", ")
+    cli_abort(
+      "All non-scalar arrays must have the same shape, but got {shapes}. Use {.fn nv_broadcast_arrays} for general broadcasting." # nolint
+    )
+  }
+
+  lapply(args, \(x) {
+    if (length(shape_abstract(x)) == 0L) {
+      nv_broadcast_to(x, target_shape)
+    } else {
+      x
     }
-
-    target_shape <- non_scalar_shapes[[1L]]
-    if (!all(vapply(non_scalar_shapes, identical, logical(1L), target_shape))) {
-      shapes <- paste0(sapply(shapes, shape2string), sep = ", ")
-      cli_abort(
-        "All non-scalar arrays must have the same shape, but got {shapes}. Use {.fn nv_broadcast_arrays} for general broadcasting." # nolint
-      )
-    }
-
-    lapply(args, \(x) {
-      if (length(shape_abstract(x)) == 0L) {
-        nv_broadcast_to(x, target_shape)
-      } else {
-        x
-      }
-    })
-  },
-  backend = "auto"
-)
+  })
+}
 
 #' @title Promote Arrays to a Common Dtype
 #' @description
@@ -122,24 +115,23 @@ nv_broadcast_scalars <- jit(
 #' # integer is promoted to float
 #' nv_promote_to_common(x, y)
 #' @export
-nv_promote_to_common <- jit(
-  function(...) {
-    args <- list(...)
-    avals <- lapply(args, to_abstract)
-    tmp <- do.call(common_type_info, avals)
-    cdt <- tmp[[1L]]
-    ambiguous <- tmp[[2L]]
-    out <- lapply(seq_along(args), \(i) {
-      if (cdt == dtype(avals[[i]])) {
-        args[[i]]
-      } else {
-        nvl_convert(args[[i]], dtype = cdt, ambiguous = ambiguous)
-      }
-    })
-    return(out)
-  },
-  backend = "auto"
-)
+nv_promote_to_common <- function(...) {
+  args <- list(...)
+  be <- detect_backend_from_args(args)
+  args <- lapply(args, ensure_arrayish, backend = be)
+  avals <- lapply(args, to_abstract)
+  tmp <- do.call(common_type_info, avals)
+  cdt <- tmp[[1L]]
+  ambiguous <- tmp[[2L]]
+  out <- lapply(seq_along(args), \(i) {
+    if (cdt == dtype(avals[[i]])) {
+      args[[i]]
+    } else {
+      nvl_convert(args[[i]], dtype = cdt, ambiguous = ambiguous)
+    }
+  })
+  return(out)
+}
 
 #' @title Broadcast Arrays to a Common Shape
 #' @description
@@ -161,14 +153,11 @@ nv_promote_to_common <- jit(
 #' y <- nv_array(c(10, 20, 30))
 #' nv_broadcast_arrays(x, y)
 #' @export
-nv_broadcast_arrays <- jit(
-  function(...) {
-    args <- list(...)
-    shape <- Reduce(broadcast_shapes, lapply(args, shape_abstract))
-    lapply(args, nv_broadcast_to, shape = shape)
-  },
-  backend = "auto"
-)
+nv_broadcast_arrays <- function(...) {
+  args <- list(...)
+  shape <- Reduce(broadcast_shapes, lapply(args, shape_abstract))
+  lapply(args, nv_broadcast_to, shape = shape)
+}
 
 #' @title Broadcast to Shape
 #' @description
@@ -184,19 +173,15 @@ nv_broadcast_arrays <- jit(
 #' x <- nv_array(c(1, 2, 3))
 #' nv_broadcast_to(x, shape = c(2, 3))
 #' @export
-nv_broadcast_to <- jit(
-  function(operand, shape) {
-    shape_op <- shape_abstract(operand)
-    if (!identical(shape_op, shape)) {
-      broadcast_dimensions <- make_broadcast_dimensions(shape_op, shape)
-      nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
-    } else {
-      operand
-    }
-  },
-  static = 2L,
-  backend = "auto"
-)
+nv_broadcast_to <- function(operand, shape) {
+  shape_op <- shape_abstract(operand)
+  if (!identical(shape_op, shape)) {
+    broadcast_dimensions <- make_broadcast_dimensions(shape_op, shape)
+    nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
+  } else {
+    operand
+  }
+}
 
 #' @title Convert Data Type
 #' @description
@@ -211,28 +196,20 @@ nv_broadcast_to <- jit(
 #' x <- nv_array(c(1L, 2L, 3L))
 #' nv_convert(x, dtype = "f32")
 #' @export
-nv_convert <- jit(
-  function(operand, dtype) {
-    if (dtype_abstract(operand) != as_dtype(dtype)) {
-      nvl_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
-    } else {
-      operand
-    }
-  },
-  static = 2L,
-  backend = "auto"
-)
+nv_convert <- function(operand, dtype) {
+  if (dtype_abstract(operand) != as_dtype(dtype)) {
+    nvl_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
+  } else {
+    operand
+  }
+}
 
 #' @rdname nv_transpose
 #' @export
-nv_transpose <- jit(
-  function(x, permutation = NULL) {
-    permutation <- permutation %??% rev(seq_len(ndims_abstract(x)))
-    nvl_transpose(x, permutation)
-  },
-  static = 2L,
-  backend = "auto"
-)
+nv_transpose <- function(x, permutation = NULL) {
+  permutation <- permutation %??% rev(seq_len(ndims_abstract(x)))
+  nvl_transpose(x, permutation)
+}
 
 
 #' @title Reshape
@@ -251,17 +228,13 @@ nv_transpose <- jit(
 #' x <- nv_array(1:6)
 #' nv_reshape(x, c(2, 3))
 #' @export
-nv_reshape <- jit(
-  function(operand, shape) {
-    if (!identical(shape_abstract(operand), shape)) {
-      nvl_reshape(operand, shape)
-    } else {
-      operand
-    }
-  },
-  static = 2L,
-  backend = "auto"
-)
+nv_reshape <- function(operand, shape) {
+  if (!identical(shape_abstract(operand), shape)) {
+    nvl_reshape(operand, shape)
+  } else {
+    operand
+  }
+}
 
 #' @title Concatenate
 #' @description
@@ -281,48 +254,44 @@ nv_reshape <- jit(
 #' y <- nv_array(c(4, 5, 6))
 #' nv_concatenate(x, y)
 #' @export
-nv_concatenate <- jit(
-  function(..., dimension = NULL) {
-    args <- list(...)
-    args <- do.call(nv_promote_to_common, args)
-    shapes <- lapply(args, shape_abstract)
-    ranks <- lengths(shapes)
-    non_scalar_shapes <- shapes[ranks > 0L]
-    n_scalars <- sum(ranks == 0L)
-    assert_int(dimension, lower = 1L, upper = max(max(ranks), 1L), null.ok = max(ranks) <= 1L)
-    dimension <- dimension %??% 1L
+nv_concatenate <- function(..., dimension = NULL) {
+  args <- list(...)
+  args <- do.call(nv_promote_to_common, args)
+  shapes <- lapply(args, shape_abstract)
+  ranks <- lengths(shapes)
+  non_scalar_shapes <- shapes[ranks > 0L]
+  n_scalars <- sum(ranks == 0L)
+  assert_int(dimension, lower = 1L, upper = max(max(ranks), 1L), null.ok = max(ranks) <= 1L)
+  dimension <- dimension %??% 1L
 
-    non_scalar_shapes_without_dim <- lapply(non_scalar_shapes, \(shape) {
-      shape[-dimension]
-    })
-    if (length(non_scalar_shapes) && length(unique(non_scalar_shapes_without_dim)) != 1L) {
-      cli_abort(c(
-        "All non-scalar arrays must have the same shape (except for the concatenation dimension)",
-        x = "Got shapes {shapes2string(shapes)} and dimension {dimension}"
-      ))
-    }
-    size_out_dimension <- n_scalars + sum(vapply(non_scalar_shapes, \(shape) shape[dimension], integer(1L)))
+  non_scalar_shapes_without_dim <- lapply(non_scalar_shapes, \(shape) {
+    shape[-dimension]
+  })
+  if (length(non_scalar_shapes) && length(unique(non_scalar_shapes_without_dim)) != 1L) {
+    cli_abort(c(
+      "All non-scalar arrays must have the same shape (except for the concatenation dimension)",
+      x = "Got shapes {shapes2string(shapes)} and dimension {dimension}"
+    ))
+  }
+  size_out_dimension <- n_scalars + sum(vapply(non_scalar_shapes, \(shape) shape[dimension], integer(1L)))
 
-    out_shape <- if (length(non_scalar_shapes)) {
-      x <- non_scalar_shapes[[1L]]
-      x[dimension] <- size_out_dimension
+  out_shape <- if (length(non_scalar_shapes)) {
+    x <- non_scalar_shapes[[1L]]
+    x[dimension] <- size_out_dimension
+  } else {
+    n_scalars
+  }
+  out_shape_dim_is_one <- out_shape
+  out_shape_dim_is_one[dimension] <- 1L
+  args <- lapply(args, \(arg) {
+    if (ndims_abstract(arg) == 0L) {
+      nv_broadcast_to(arg, out_shape_dim_is_one)
     } else {
-      n_scalars
+      arg
     }
-    out_shape_dim_is_one <- out_shape
-    out_shape_dim_is_one[dimension] <- 1L
-    args <- lapply(args, \(arg) {
-      if (ndims_abstract(arg) == 0L) {
-        nv_broadcast_to(arg, out_shape_dim_is_one)
-      } else {
-        arg
-      }
-    })
-    rlang::exec(nvl_concatenate, !!!args, dimension = dimension)
-  },
-  static = "dimension",
-  backend = "auto"
-)
+  })
+  rlang::exec(nvl_concatenate, !!!args, dimension = dimension)
+}
 
 #' @title Static Slice
 #' @description
@@ -381,14 +350,11 @@ nv_ifelse <- nvl_ifelse
 ## Binary ops ------------------------------------------------------------------
 
 make_do_binary <- function(f) {
-  jit(
-    function(lhs, rhs) {
-      args <- nv_promote_to_common(lhs, rhs)
-      args <- nv_broadcast_scalars(args[[1L]], args[[2L]])
-      do.call(f, args)
-    },
-    backend = "auto"
-  )
+  function(lhs, rhs) {
+    args <- nv_promote_to_common(lhs, rhs)
+    args <- nv_broadcast_scalars(args[[1L]], args[[2L]])
+    do.call(f, args)
+  }
 }
 
 #' @title Addition
@@ -942,15 +908,12 @@ nv_popcnt <- nvl_popcnt
 #' x <- nv_array(c(-1, 0.5, 2))
 #' nv_clamp(nv_scalar(0), x, nv_scalar(1))
 #' @export
-nv_clamp <- jit(
-  function(min_val, operand, max_val) {
-    op_dtype <- dtype_abstract(operand)
-    min_val <- nv_convert(min_val, op_dtype)
-    max_val <- nv_convert(max_val, op_dtype)
-    nvl_clamp(min_val, operand, max_val)
-  },
-  backend = "auto"
-)
+nv_clamp <- function(min_val, operand, max_val) {
+  op_dtype <- dtype_abstract(operand)
+  min_val <- nv_convert(min_val, op_dtype)
+  max_val <- nv_convert(max_val, op_dtype)
+  nvl_clamp(min_val, operand, max_val)
+}
 
 #' @title Reverse
 #' @description
@@ -1005,26 +968,29 @@ nv_iota <- nvl_iota
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' nv_seq(3, 7)
 #' @export
-nv_seq <- jit(
-  function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE) {
-    if (is.null(steps)) {
-      dtype <- dtype %||% "i32"
-      assert_int(start)
-      assert_int(end)
-      assert(start <= end)
-      return(nv_iota(shape = end - start + 1, dtype = dtype, ambiguous = ambiguous, dim = 1L, start = start))
-    }
-    dtype <- dtype %||% "f32"
-    assert_int(steps, lower = 1L)
-    if (steps == 1L) {
-      return(nv_fill(start, 1L, dtype = dtype))
-    }
-    indices <- nv_iota(dim = 1L, shape = steps, dtype = dtype, start = 0L)
-    indices * ((end - start) / (steps - 1L)) + start
-  },
-  static = 1:5,
-  backend = "auto"
-)
+nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE, backend = "auto") {
+  if (is.null(steps)) {
+    dtype <- dtype %||% "i32"
+    assert_int(start)
+    assert_int(end)
+    assert(start <= end)
+    return(nv_iota(
+      shape = end - start + 1,
+      dtype = dtype,
+      ambiguous = ambiguous,
+      dim = 1L,
+      start = start,
+      backend = backend
+    ))
+  }
+  dtype <- dtype %||% "f32"
+  assert_int(steps, lower = 1L)
+  if (steps == 1L) {
+    return(nv_fill(start, 1L, dtype = dtype, backend = backend))
+  }
+  indices <- nv_iota(dim = 1L, shape = steps, dtype = dtype, start = 0L, backend = backend)
+  indices * ((end - start) / (steps - 1L)) + start
+}
 
 #' @title Pad
 #' @description
@@ -1046,17 +1012,13 @@ nv_seq <- jit(
 #' x <- nv_array(c(1, 2, 3))
 #' nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
 #' @export
-nv_pad <- jit(
-  function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding = NULL) {
-    rank <- ndims_abstract(operand)
-    if (is.null(interior_padding)) {
-      interior_padding <- rep(0L, rank)
-    }
-    nvl_pad(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding)
-  },
-  static = 3:5,
-  backend = "auto"
-)
+nv_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding = NULL) {
+  rank <- ndims_abstract(operand)
+  if (is.null(interior_padding)) {
+    interior_padding <- rep(0L, rank)
+  }
+  nvl_pad(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding)
+}
 
 #' @title Round
 #' @description
@@ -1093,27 +1055,24 @@ nv_round <- nvl_round
 #' y <- nv_array(matrix(1:6, nrow = 3))
 #' x %*% y
 #' @export
-nv_matmul <- jit(
-  function(lhs, rhs) {
-    args <- nv_promote_to_common(lhs, rhs)
-    lhs <- args[[1L]]
-    rhs <- args[[2L]]
-    if (ndims_abstract(lhs) < 2L) {
-      cli_abort("lhs of matmul must have at least 2 dimensions")
-    }
-    if (ndims_abstract(rhs) < 2L) {
-      cli_abort("rhs of matmul must have at least 2 dimensions")
-    }
-    nbatch <- ndims_abstract(lhs) - 2L
-    nvl_dot_general(
-      lhs,
-      rhs,
-      contracting_dims = list(ndims_abstract(lhs), ndims_abstract(rhs) - 1L),
-      batching_dims = list(seq_len(nbatch), seq_len(nbatch))
-    )
-  },
-  backend = "auto"
-)
+nv_matmul <- function(lhs, rhs) {
+  args <- nv_promote_to_common(lhs, rhs)
+  lhs <- args[[1L]]
+  rhs <- args[[2L]]
+  if (ndims_abstract(lhs) < 2L) {
+    cli_abort("lhs of matmul must have at least 2 dimensions")
+  }
+  if (ndims_abstract(rhs) < 2L) {
+    cli_abort("rhs of matmul must have at least 2 dimensions")
+  }
+  nbatch <- ndims_abstract(lhs) - 2L
+  nvl_dot_general(
+    lhs,
+    rhs,
+    contracting_dims = list(ndims_abstract(lhs), ndims_abstract(rhs) - 1L),
+    batching_dims = list(seq_len(nbatch), seq_len(nbatch))
+  )
+}
 
 #' @title Cholesky Decomposition
 #' @description
@@ -1134,13 +1093,9 @@ nv_matmul <- jit(
 #' a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
 #' nv_cholesky(a)
 #' @export
-nv_cholesky <- jit(
-  function(a, lower = TRUE) {
-    nvl_cholesky(a, lower = lower)
-  },
-  static = 2L,
-  backend = "auto"
-)
+nv_cholesky <- function(a, lower = TRUE) {
+  nvl_cholesky(a, lower = lower)
+}
 
 #' @title Solve Linear System
 #' @description
@@ -1168,16 +1123,13 @@ nv_cholesky <- jit(
 #' b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
 #' nv_solve(a, b)
 #' @export
-nv_solve <- jit(
-  function(a, b) {
-    L <- nvl_cholesky(a, lower = TRUE)
-    # Solve L @ y = b
-    y <- nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
-    # Solve L^T @ x = y
-    nvl_triangular_solve(L, y, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
-  },
-  backend = "auto"
-)
+nv_solve <- function(a, b) {
+  L <- nvl_cholesky(a, lower = TRUE)
+  # Solve L @ y = b
+  y <- nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+  # Solve L^T @ x = y
+  nvl_triangular_solve(L, y, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
+}
 
 #' @title Diagonal Matrix
 #' @description
@@ -1189,27 +1141,24 @@ nv_solve <- jit(
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' nv_diag(nv_array(c(1, 2, 3)))
 #' @export
-nv_diag <- jit(
-  function(x) {
-    n <- shape_abstract(x)[1L]
-    zeros <- nv_fill(0, c(n, n), dtype = dtype_abstract(x))
-    idx <- nvl_reshape(nv_iota(dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
-    indices <- nv_concatenate(idx, idx, dimension = 2L)
-    nvl_scatter(
-      zeros,
-      indices,
-      x,
-      update_window_dims = integer(0),
-      inserted_window_dims = c(1L, 2L),
-      input_batching_dims = integer(0),
-      scatter_indices_batching_dims = integer(0),
-      scatter_dims_to_operand_dims = c(1L, 2L),
-      index_vector_dim = 2L,
-      unique_indices = TRUE
-    )
-  },
-  backend = "auto"
-)
+nv_diag <- function(x) {
+  n <- shape_abstract(x)[1L]
+  zeros <- nv_fill(0, c(n, n), dtype = dtype_abstract(x))
+  idx <- nvl_reshape(nv_iota(dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
+  indices <- nv_concatenate(idx, idx, dimension = 2L)
+  nvl_scatter(
+    zeros,
+    indices,
+    x,
+    update_window_dims = integer(0),
+    inserted_window_dims = c(1L, 2L),
+    input_batching_dims = integer(0),
+    scatter_indices_batching_dims = integer(0),
+    scatter_dims_to_operand_dims = c(1L, 2L),
+    index_vector_dim = 2L,
+    unique_indices = TRUE
+  )
+}
 
 #' @title Identity Matrix
 #' @description
@@ -1223,13 +1172,9 @@ nv_diag <- jit(
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' nv_eye(3L)
 #' @export
-nv_eye <- jit(
-  function(n, dtype = "f32") {
-    nv_diag(nv_fill(1, n, dtype = dtype))
-  },
-  static = 1:2,
-  backend = "auto"
-)
+nv_eye <- function(n, dtype = "f32", backend = "auto") {
+  nv_diag(nv_fill(1, n, dtype = dtype, backend = backend))
+}
 
 #' @title Sum Reduction
 #' @description
@@ -1258,15 +1203,11 @@ nv_reduce_sum <- nvl_reduce_sum
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' nv_reduce_mean(x, dims = 1L)
 #' @export
-nv_reduce_mean <- jit(
-  function(operand, dims, drop = TRUE) {
-    # TODO: division by zero?
-    nelts <- prod(shape_abstract(operand)[dims])
-    nv_reduce_sum(operand, dims, drop) / nelts
-  },
-  static = 2:3,
-  backend = "auto"
-)
+nv_reduce_mean <- function(operand, dims, drop = TRUE) {
+  # TODO: division by zero?
+  nelts <- prod(shape_abstract(operand)[dims])
+  nv_reduce_sum(operand, dims, drop) / nelts
+}
 
 #' @title Product Reduction
 #' @description
@@ -1343,16 +1284,16 @@ nv_reduce_all <- nvl_reduce_all
 #' of the two branches depending on a scalar predicate.
 #' @param pred ([`arrayish`] of boolean type, scalar)\cr
 #'   Predicate.
-#' @param true (`expression`)\cr
-#'   Expression for the true branch (non-standard evaluation).
-#' @param false (`expression`)\cr
-#'   Expression for the false branch (non-standard evaluation).
+#' @param true (`function()`)\cr
+#'   Zero-argument function for the true branch.
+#' @param false (`function()`)\cr
+#'   Zero-argument function for the false branch.
 #'   Must return outputs with the same shapes as the true branch.
 #' @return Result of the executed branch.
 #' @seealso [nvl_if()] for the underlying primitive, [nv_ifelse()] for
 #'   element-wise selection.
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' nv_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2))
+#' nv_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 #' @export
 nv_if <- nvl_if
 
@@ -1393,12 +1334,9 @@ nv_while <- nvl_while
 #' x <- nv_array(c(1, 2, 4, 8))
 #' nv_log2(x)
 #' @export
-nv_log2 <- jit(
-  function(operand) {
-    nv_log(operand) / log(2)
-  },
-  backend = "auto"
-)
+nv_log2 <- function(operand) {
+  nv_log(operand) / log(2)
+}
 
 #' @title Base-10 Logarithm
 #' @description
@@ -1410,12 +1348,9 @@ nv_log2 <- jit(
 #' x <- nv_array(c(1, 10, 100, 1000))
 #' nv_log10(x)
 #' @export
-nv_log10 <- jit(
-  function(operand) {
-    nv_log(operand) / log(10)
-  },
-  backend = "auto"
-)
+nv_log10 <- function(operand) {
+  nv_log(operand) / log(10)
+}
 
 #' @title Is NaN
 #' @description
@@ -1427,12 +1362,9 @@ nv_log10 <- jit(
 #' x <- nv_array(c(1, NaN, Inf, -Inf, 0))
 #' nv_is_nan(x)
 #' @export
-nv_is_nan <- jit(
-  function(operand) {
-    operand != operand
-  },
-  backend = "auto"
-)
+nv_is_nan <- function(operand) {
+  operand != operand
+}
 
 #' @title Is Infinite
 #' @description
@@ -1445,12 +1377,9 @@ nv_is_nan <- jit(
 #' x <- nv_array(c(1, NaN, Inf, -Inf, 0))
 #' nv_is_infinite(x)
 #' @export
-nv_is_infinite <- jit(
-  function(operand) {
-    !nv_is_finite(operand) & (operand == operand)
-  },
-  backend = "auto"
-)
+nv_is_infinite <- function(operand) {
+  !nv_is_finite(operand) & (operand == operand)
+}
 
 ## Reduction operations --------------------------------------------------------
 
@@ -1470,20 +1399,16 @@ nv_is_infinite <- jit(
 #' x <- nv_array(c(1, 2, 3, 4, 5))
 #' nv_var(x, dims = 1L)
 #' @export
-nv_var <- jit(
-  function(operand, dims, drop = TRUE, correction = 1L) {
-    assert_int(correction)
-    nelts <- prod(shape_abstract(operand)[dims])
-    mean_bc <- nv_broadcast_to(
-      nv_reduce_mean(operand, dims, drop = FALSE),
-      shape_abstract(operand)
-    )
-    diff <- operand - mean_bc
-    nv_reduce_sum(diff * diff, dims, drop) / (nelts - correction)
-  },
-  static = 2:4,
-  backend = "auto"
-)
+nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
+  assert_int(correction)
+  nelts <- prod(shape_abstract(operand)[dims])
+  mean_bc <- nv_broadcast_to(
+    nv_reduce_mean(operand, dims, drop = FALSE),
+    shape_abstract(operand)
+  )
+  diff <- operand - mean_bc
+  nv_reduce_sum(diff * diff, dims, drop) / (nelts - correction)
+}
 
 #' @title Standard Deviation Reduction
 #' @description
@@ -1501,13 +1426,9 @@ nv_var <- jit(
 #' x <- nv_array(c(1, 2, 3, 4, 5))
 #' nv_sd(x, dims = 1L)
 #' @export
-nv_sd <- jit(
-  function(operand, dims, drop = TRUE, correction = 1L) {
-    nv_sqrt(nv_var(operand, dims, drop, correction))
-  },
-  static = 2:4,
-  backend = "auto"
-)
+nv_sd <- function(operand, dims, drop = TRUE, correction = 1L) {
+  nv_sqrt(nv_var(operand, dims, drop, correction))
+}
 
 ## Array manipulation ----------------------------------------------------------
 
@@ -1524,28 +1445,24 @@ nv_sd <- jit(
 #' x <- nv_array(1:6, shape = c(1, 6, 1))
 #' nv_squeeze(x)
 #' @export
-nv_squeeze <- jit(
-  function(operand, dims = NULL) {
-    shp <- shape_abstract(operand)
-    if (is.null(dims)) {
-      new_shape <- shp[shp != 1L]
-    } else {
-      assert_integerish(dims, lower = 1L, upper = length(shp))
-      for (d in dims) {
-        if (shp[d] != 1L) {
-          cli_abort("Cannot squeeze dimension {d} with size {shp[d]} (must be 1)")
-        }
+nv_squeeze <- function(operand, dims = NULL) {
+  shp <- shape_abstract(operand)
+  if (is.null(dims)) {
+    new_shape <- shp[shp != 1L]
+  } else {
+    assert_integerish(dims, lower = 1L, upper = length(shp))
+    for (d in dims) {
+      if (shp[d] != 1L) {
+        cli_abort("Cannot squeeze dimension {d} with size {shp[d]} (must be 1)")
       }
-      new_shape <- shp[-dims]
     }
-    if (length(new_shape) == 0L) {
-      new_shape <- integer(0)
-    }
-    nv_reshape(operand, new_shape)
-  },
-  static = 2L,
-  backend = "auto"
-)
+    new_shape <- shp[-dims]
+  }
+  if (length(new_shape) == 0L) {
+    new_shape <- integer(0)
+  }
+  nv_reshape(operand, new_shape)
+}
 
 #' @title Unsqueeze
 #' @description
@@ -1560,16 +1477,12 @@ nv_squeeze <- jit(
 #' x <- nv_array(c(1, 2, 3))
 #' nv_unsqueeze(x, dim = 1L)
 #' @export
-nv_unsqueeze <- jit(
-  function(operand, dim) {
-    shp <- shape_abstract(operand)
-    assert_int(dim, lower = 1L, upper = length(shp) + 1L)
-    new_shape <- append(shp, 1L, after = dim - 1L)
-    nv_reshape(operand, new_shape)
-  },
-  static = 2L,
-  backend = "auto"
-)
+nv_unsqueeze <- function(operand, dim) {
+  shp <- shape_abstract(operand)
+  assert_int(dim, lower = 1L, upper = length(shp) + 1L)
+  new_shape <- append(shp, 1L, after = dim - 1L)
+  nv_reshape(operand, new_shape)
+}
 
 ## Linear algebra --------------------------------------------------------------
 
@@ -1585,24 +1498,21 @@ nv_unsqueeze <- jit(
 #' y <- nv_array(c(4, 5))
 #' nv_outer(x, y)
 #' @export
-nv_outer <- jit(
-  function(x, y) {
-    if (ndims_abstract(x) != 1L) {
-      cli_abort("x must be a 1-D array")
-    }
-    if (ndims_abstract(y) != 1L) {
-      cli_abort("y must be a 1-D array")
-    }
-    args <- nv_promote_to_common(x, y)
-    x <- args[[1L]]
-    y <- args[[2L]]
-    x_exp <- nv_unsqueeze(x, dim = 2L)
-    y_exp <- nv_unsqueeze(y, dim = 1L)
-    bcast <- nv_broadcast_arrays(x_exp, y_exp)
-    nvl_mul(bcast[[1L]], bcast[[2L]])
-  },
-  backend = "auto"
-)
+nv_outer <- function(x, y) {
+  if (ndims_abstract(x) != 1L) {
+    cli_abort("x must be a 1-D array")
+  }
+  if (ndims_abstract(y) != 1L) {
+    cli_abort("y must be a 1-D array")
+  }
+  args <- nv_promote_to_common(x, y)
+  x <- args[[1L]]
+  y <- args[[2L]]
+  x_exp <- nv_unsqueeze(x, dim = 2L)
+  y_exp <- nv_unsqueeze(y, dim = 1L)
+  bcast <- nv_broadcast_arrays(x_exp, y_exp)
+  nvl_mul(bcast[[1L]], bcast[[2L]])
+}
 
 #' @title Extract Diagonal
 #' @description
@@ -1615,29 +1525,26 @@ nv_outer <- jit(
 #' x <- nv_array(1:9, shape = c(3, 3))
 #' nv_extract_diag(x)
 #' @export
-nv_extract_diag <- jit(
-  function(operand) {
-    if (ndims_abstract(operand) != 2L) {
-      cli_abort("operand must be a 2-D array")
-    }
-    shp <- shape_abstract(operand)
-    n <- min(shp)
-    idx <- nvl_reshape(nv_iota(dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
-    indices <- nv_concatenate(idx, idx, dimension = 2L)
-    nvl_gather(
-      operand,
-      start_indices = indices,
-      offset_dims = integer(0),
-      collapsed_slice_dims = c(1L, 2L),
-      operand_batching_dims = integer(0),
-      start_indices_batching_dims = integer(0),
-      start_index_map = c(1L, 2L),
-      index_vector_dim = 2L,
-      slice_sizes = c(1L, 1L)
-    )
-  },
-  backend = "auto"
-)
+nv_extract_diag <- function(operand) {
+  if (ndims_abstract(operand) != 2L) {
+    cli_abort("operand must be a 2-D array")
+  }
+  shp <- shape_abstract(operand)
+  n <- min(shp)
+  idx <- nvl_reshape(nv_iota(dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
+  indices <- nv_concatenate(idx, idx, dimension = 2L)
+  nvl_gather(
+    operand,
+    start_indices = indices,
+    offset_dims = integer(0),
+    collapsed_slice_dims = c(1L, 2L),
+    operand_batching_dims = integer(0),
+    start_indices_batching_dims = integer(0),
+    start_index_map = c(1L, 2L),
+    index_vector_dim = 2L,
+    slice_sizes = c(1L, 1L)
+  )
+}
 
 #' @title Matrix Trace
 #' @description
@@ -1650,13 +1557,10 @@ nv_extract_diag <- jit(
 #' x <- nv_array(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))
 #' nv_trace(x)
 #' @export
-nv_trace <- jit(
-  function(operand) {
-    diag_vals <- nv_extract_diag(operand)
-    nv_reduce_sum(diag_vals, dims = 1L, drop = TRUE)
-  },
-  backend = "auto"
-)
+nv_trace <- function(operand) {
+  diag_vals <- nv_extract_diag(operand)
+  nv_reduce_sum(diag_vals, dims = 1L, drop = TRUE)
+}
 
 #' @title Lower Triangular Matrix
 #' @description
@@ -1673,21 +1577,18 @@ nv_trace <- jit(
 #' x <- nv_fill(1, c(3, 3))
 #' nv_tril(x)
 #' @export
-nv_tril <- jit(
-  function(operand, diagonal = 0L) {
-    if (ndims_abstract(operand) != 2L) {
-      cli_abort("operand must be a 2-D array")
-    }
-    assert_int(diagonal)
-    shp <- shape_abstract(operand)
-    rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32")
-    cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32")
-    mask <- rows >= cols - as.integer(diagonal)
-    nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand)))
-  },
-  static = 2L,
-  backend = "auto"
-)
+nv_tril <- function(operand, diagonal = 0L) {
+  if (ndims_abstract(operand) != 2L) {
+    cli_abort("operand must be a 2-D array")
+  }
+  assert_int(diagonal)
+  shp <- shape_abstract(operand)
+  be <- backend(operand)
+  rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32", backend = be)
+  cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32", backend = be)
+  mask <- rows >= cols - as.integer(diagonal)
+  nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand), backend = be))
+}
 
 #' @title Upper Triangular Matrix
 #' @description
@@ -1704,21 +1605,18 @@ nv_tril <- jit(
 #' x <- nv_fill(1, c(3, 3))
 #' nv_triu(x)
 #' @export
-nv_triu <- jit(
-  function(operand, diagonal = 0L) {
-    if (ndims_abstract(operand) != 2L) {
-      cli_abort("operand must be a 2-D array")
-    }
-    assert_int(diagonal)
-    shp <- shape_abstract(operand)
-    rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32")
-    cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32")
-    mask <- rows <= cols - as.integer(diagonal)
-    nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand)))
-  },
-  static = 2L,
-  backend = "auto"
-)
+nv_triu <- function(operand, diagonal = 0L) {
+  if (ndims_abstract(operand) != 2L) {
+    cli_abort("operand must be a 2-D array")
+  }
+  assert_int(diagonal)
+  shp <- shape_abstract(operand)
+  be <- backend(operand)
+  rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32", backend = be)
+  cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32", backend = be)
+  mask <- rows <= cols - as.integer(diagonal)
+  nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand), backend = be))
+}
 
 #' @title Cross Product (Matrix)
 #' @description
@@ -1734,15 +1632,12 @@ nv_triu <- jit(
 #' x <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
 #' nv_crossprod(x)
 #' @export
-nv_crossprod <- jit(
-  function(x, y = NULL) {
-    if (is.null(y)) {
-      y <- x
-    }
-    nv_matmul(nv_transpose(x), y)
-  },
-  backend = "auto"
-)
+nv_crossprod <- function(x, y = NULL) {
+  if (is.null(y)) {
+    y <- x
+  }
+  nv_matmul(nv_transpose(x), y)
+}
 
 #' @title Transpose Cross Product (Matrix)
 #' @description
@@ -1758,12 +1653,9 @@ nv_crossprod <- jit(
 #' x <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
 #' nv_tcrossprod(x)
 #' @export
-nv_tcrossprod <- jit(
-  function(x, y = NULL) {
-    if (is.null(y)) {
-      y <- x
-    }
-    nv_matmul(x, nv_transpose(y))
-  },
-  backend = "auto"
-)
+nv_tcrossprod <- function(x, y = NULL) {
+  if (is.null(y)) {
+    y <- x
+  }
+  nv_matmul(x, nv_transpose(y))
+}

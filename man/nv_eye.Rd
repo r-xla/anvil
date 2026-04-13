@@ -4,7 +4,7 @@
 \alias{nv_eye}
 \title{Identity Matrix}
 \usage{
-nv_eye(n, dtype = "f32")
+nv_eye(n, dtype = "f32", backend = "auto")
 }
 \arguments{
 \item{n}{(\code{integer(1)})\cr

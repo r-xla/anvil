@@ -4,7 +4,7 @@
 \alias{nv_fill}
 \title{Fill Constant}
 \usage{
-nv_fill(value, shape, dtype = NULL, ambiguous = FALSE)
+nv_fill(value, shape, dtype = NULL, ambiguous = FALSE, backend = "auto")
 }
 \arguments{
 \item{value}{(\code{numeric(1)})\cr

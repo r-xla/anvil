@@ -4,7 +4,14 @@
 \alias{nv_seq}
 \title{Sequence}
 \usage{
-nv_seq(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE)
+nv_seq(
+  start,
+  end,
+  steps = NULL,
+  dtype = NULL,
+  ambiguous = FALSE,
+  backend = "auto"
+)
 }
 \arguments{
 \item{start, end}{(\code{numeric(1)})\cr

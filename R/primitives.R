@@ -92,7 +92,7 @@ p_fill <- AnvilPrimitive("fill")
 #' nvl_fill(3.14, shape = c(2, 3), dtype = "f32")
 #' @export
 nvl_fill <- jit(
-  function(value, shape, dtype, ambiguous = FALSE) {
+  function(value, shape, dtype, ambiguous = FALSE, backend = "auto") {
     infer_fill <- function(value, shape, dtype, ambiguous) {
       list(AbstractArray(dtype = as_dtype(dtype), shape = shape, ambiguous = ambiguous))
     }
@@ -103,7 +103,7 @@ nvl_fill <- jit(
       infer_fn = infer_fill
     )[[1L]]
   },
-  static = 1:4,
+  static = 1:5,
   backend = "auto"
 )
 
@@ -1638,7 +1638,7 @@ p_iota <- AnvilPrimitive("iota")
 #' nvl_iota(dim = 1L, dtype = "i32", shape = 5L)
 #' @export
 nvl_iota <- jit(
-  function(dim, dtype, shape, start = 1L, ambiguous = FALSE) {
+  function(dim, dtype, shape, start = 1L, ambiguous = FALSE, backend = "auto") {
     infer_fn <- function(dim, dtype, shape, start, ambiguous) {
       # stablehlo uses 0-based indexing, anvil uses 1-based
       # Convert dim to Constant as required by stablehlo
@@ -1661,7 +1661,7 @@ nvl_iota <- jit(
 
     result
   },
-  static = 1:5,
+  static = 1:6,
   backend = "auto"
 )
 
@@ -1867,8 +1867,8 @@ p_if <- AnvilPrimitive("if", subgraphs = c("true_graph", "false_graph"))
 #' evaluates only the selected branch.
 #' @param pred ([`arrayish`])\cr
 #'   Scalar boolean predicate that determines which branch to execute.
-#' @param true,false (NSE)\cr
-#'   Expressions for the true and false branches. Both must return outputs
+#' @param true,false (`function()`)\cr
+#'   Zero-argument functions for the true and false branches. Both must return outputs
 #'   with the same structure, dtypes, and shapes.
 #' @return Result of the executed branch.\cr
 #'   An output is ambiguous if it is ambiguous in both branches.
@@ -1878,14 +1878,13 @@ p_if <- AnvilPrimitive("if", subgraphs = c("true_graph", "false_graph"))
 #' Lowers to [stablehlo::hlo_if()].
 #' @seealso [nv_if()], [nvl_ifelse()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' nvl_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2))
+#' nvl_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 #' @export
 nvl_if <- jit(
   function(pred, true, false) {
-    # delayed promise evaluation can cause the value to be added to the wrong graph descriptor
     force(pred)
-    true_expr <- rlang::enquo(true)
-    false_expr <- rlang::enquo(false)
+    force(true)
+    force(false)
 
     # Build sub-graphs for each branch (no inputs, just capture closed-over values)
     # We need to ensure that constants that are captured in both branches receive the same
@@ -1894,13 +1893,13 @@ nvl_if <- jit(
     current_desc <- .current_descriptor(silent = TRUE)
 
     desc_true <- local_descriptor()
-    true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true, lit_to_array = TRUE)
+    true_graph <- trace_fn(true, list(), desc = desc_true, lit_to_array = TRUE)
     desc_false <- local_descriptor()
 
     for (const in desc_true$constants) {
       get_box_or_register_const(desc_false, const)
     }
-    false_graph <- trace_fn(function() rlang::eval_tidy(false_expr), list(), desc = desc_false, lit_to_array = TRUE)
+    false_graph <- trace_fn(false, list(), desc = desc_false, lit_to_array = TRUE)
 
     for (const in desc_false$constants) {
       get_box_or_register_const(current_desc, const)
@@ -1965,7 +1964,7 @@ p_while <- AnvilPrimitive("while", subgraphs = c("cond_graph", "body_graph"))
 #' @seealso [nv_while()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' nvl_while(
-#'   init = list(i = 0L, total = 0L),
+#'   init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
 #'   cond = function(i, total) i <= 5L,
 #'   body = function(i, total) list(
 #'     i = i + 1L,

@@ -50,11 +50,11 @@ Note that for 0-dimensional arrays, the result is an R vector of length 1, as R 
 as_array(y)
 ```
 
-We can directly work with `AnvilArray`s using standard R operators and {anvil} functions:
+We can directly work with `AnvilArray`s using {anvil} functions and overloaded R operators:
 
 ```{r}
+nv_add(y, y)
 y + y
-nv_sum(y)
 ```
 
 This works because {anvil}'s `nv_*` and `nvl_*` functions -- as well as the operators dispatched on `AnvilArray`s -- are themselves `jit()`-compiled.

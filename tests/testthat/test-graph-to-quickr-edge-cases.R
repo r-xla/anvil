@@ -30,7 +30,7 @@ test_that("graph_to_quickr lowerers validate unsupported primitives in nested su
 
   graph <- trace_fn(
     function(p, x) {
-      nv_if(p, nv_popcnt(x), x)
+      nv_if(p, \() nv_popcnt(x), \() x)
     },
     list(
       p = nv_scalar(TRUE, dtype = "pred"),

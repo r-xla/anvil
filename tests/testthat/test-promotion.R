@@ -32,7 +32,7 @@ test_that("p_convert reverse", {
 test_that("p_if propagates ambiguity", {
   f <- function(pred, x) {
     x <- x * 2L
-    nv_if(pred, x, x * x) * nv_scalar(3L, dtype = "i16")
+    nv_if(pred, \() x, \() x * x) * nv_scalar(3L, dtype = "i16")
   }
   expect_equal(
     jit(f)(nv_scalar(TRUE), nv_scalar(TRUE)),
