@@ -169,7 +169,7 @@ compile_graph_to_xla <- function(graph, donate = character(), device = NULL) {
     }
     arr <- const$aval$data
     if (backend(arr) == "plain") {
-      pjrt_buffer(as_array(arr), dtype = as.character(dtype(arr)), device = device, shape = shape(arr))
+      pjrt_buffer(as_array(arr), dtype = dtype(arr), device = device, shape = shape(arr))
     } else {
       unwrap_if_array(arr)
     }
@@ -267,7 +267,7 @@ register_backend(
         class = "AnvilArray"
       )
     },
-    dtype = function(x) as_dtype(as.character(pjrt::elt_type(x$data))),
+    dtype = function(x) tengen::dtype(x$data),
     shape = function(x) tengen::shape(x$data),
     ambiguous = function(x) x$ambiguous,
     as_array = function(x) tengen::as_array(x$data),
@@ -276,12 +276,13 @@ register_backend(
     device = function(x) device(x$data),
     print_data = function(x, footer) print(x$data, header = FALSE, footer = footer),
     jit = function(f, static, cache, donate = character(), device = NULL) {
-      assert_subset(donate, formalArgs2(f))
+      fargs <- formalArgs2(f)
+      assert_subset(donate, fargs)
+      assert_subset(static, fargs)
       common <- intersect(donate, static)
       if (length(common)) {
         cli_abort("{.val {common}} cannot be both in {.arg donate} and {.arg static}.")
       }
-      assert_string(device, null.ok = TRUE)
       jit_xla_impl(f, static, cache, donate, device)
     }
   )

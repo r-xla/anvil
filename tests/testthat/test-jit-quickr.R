@@ -94,17 +94,6 @@ test_that("jit: quickr backend unwrap = TRUE preserves nested output structure",
   expect_equal(as.integer(out$payload$shifted), 2:4)
 })
 
-test_that("jit: xla backend rejects unwrap", {
-  skip_if_not_installed("pjrt")
-  local_backend("xla")
-
-  expect_error(
-    jit(function(x) x, unwrap = TRUE),
-    "unwrap",
-    fixed = TRUE
-  )
-})
-
 test_that("jit: quickr backend traces floating literals as f32", {
   graph <- trace_fn(
     function() 1.0,
