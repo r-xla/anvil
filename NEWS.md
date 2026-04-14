@@ -24,6 +24,8 @@
   * `nv_cholesky()` to compute the Cholesky decomposition of a matrix.
 * New S3 methods `dim()`, `nrow()`, `ncol()`, and `length()` for anvil arrays.
 * Printing tensors via `nv_print()` now also works on GPUs.
+* R vectors of length 1 and arrays are now auto-converted when being passed
+  to `jit`ted functions.
 
 ## Performance
 

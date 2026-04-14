@@ -8,6 +8,7 @@ test_that("jit: ambiguous autoconverted scalar + literal stays ambiguous", {
   f <- jit(\(x) x + 1)
   out <- f(1)
   expect_equal(dtype(out), as_dtype("f32"))
+  expect_equal(shape(out), integer())
   expect_true(ambiguous(out))
 })
 
@@ -40,6 +41,7 @@ test_that("jit: autoconverts higher-dim array via nv_array", {
   f <- jit(identity)
   a <- array(1:24, dim = c(2, 3, 4))
   out <- f(a)
+  expect_equal(dtype(out), as_dtype("i32"))
   expect_equal(shape(out), c(2L, 3L, 4L))
 })
 
@@ -56,6 +58,8 @@ test_that("jit: non-array/non-scalar leaves (e.g. character) error", {
 test_that("jit: nested list is flattened; leaves are autoconverted", {
   f <- jit(function(pair) pair[[1]] + pair[[2]])
   out <- f(list(1, 2))
+  expect_equal(dtype(out), as_dtype("f32"))
+  expect_equal(shape(out), integer())
   expect_equal(as_array(out), 3)
 })
 
@@ -80,6 +84,7 @@ test_that("xla: autoconverts scalar and matrix inputs", {
     args = list(x = nv_abstract("f32", c()), y = nv_abstract("f32", c(2, 2)))
   )
   out <- f_compiled(1, matrix(c(1, 2, 3, 4), 2, 2))
+  expect_equal(dtype(out), as_dtype("f32"))
   expect_equal(shape(out), c(2L, 2L))
 })
 
@@ -97,6 +102,7 @@ test_that("xla: accepts tree (nested list) inputs", {
     args = list(pair = list(nv_abstract("f32", c()), nv_abstract("f32", c())))
   )
   out <- f_compiled(list(1, nv_scalar(2, dtype = "f32")))
+  expect_equal(dtype(out), as_dtype("f32"))
   expect_equal(shape(out), integer())
   expect_equal(as_array(out), 3)
 })
@@ -118,8 +124,9 @@ test_that("quickr: autoconverts matrix input", {
   local_backend("quickr")
   f <- jit(identity)
   out <- f(matrix(1:4, 2, 2))
+  expect_equal(dtype(out), as_dtype("i32"))
   expect_equal(shape(out), c(2L, 2L))
-  expect_equal(as_array(out), matrix(1:4, 2, 2))
+  expect_equal(out, nv_array(matrix(1:4, 2, 2), ambiguous = TRUE))
 })
 
 test_that("quickr: nested input tree with mixed AnvilArray/scalar still works", {
@@ -127,7 +134,7 @@ test_that("quickr: nested input tree with mixed AnvilArray/scalar still works", 
   local_backend("quickr")
   f <- jit(function(pair) pair[[1]] + pair[[2]])
   out <- f(list(nv_scalar(1L), 2L))
-  expect_equal(as_array(out), 3L)
+  expect_equal(out, nv_scalar(3L))
 })
 
 test_that("quickr: bare vector errors", {
