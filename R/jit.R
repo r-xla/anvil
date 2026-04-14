@@ -70,7 +70,7 @@ backend.JitFunction <- function(x, ...) {
   attr(x, "backend")
 }
 
-jit_prepare_call <- function(call, eval_env, static) {
+jit_prepare_call <- function(call, eval_env, static, backend) {
   args <- as.list(call)[-1L]
   args <- lapply(args, eval, envir = eval_env)
 
@@ -80,12 +80,36 @@ jit_prepare_call <- function(call, eval_env, static) {
   in_tree$marked <- NULL
   class(in_tree) <- c("ListNode", "Node")
 
+  args_flat <- .mapply(
+    function(x, is_static) if (is_static) x else autoconvert_input(x, backend),
+    list(args_flat, is_static_flat),
+    NULL
+  )
+  args <- unflatten(in_tree, args_flat)
+
   list(
     args = args,
     args_flat = args_flat,
     is_static_flat = is_static_flat,
     in_tree = in_tree
   )
+}
+
+autoconvert_input <- function(x, backend) {
+  if (is_anvil_array(x)) {
+    return(x)
+  }
+  if ((is.numeric(x) || is.logical(x)) && length(x) == 1L && is.null(dim(x))) {
+    return(nv_scalar(x, ambiguous = TRUE, backend = backend))
+  }
+  if (is.array(x) && (is.numeric(x) || is.logical(x))) {
+    return(nv_array(x, ambiguous = TRUE, backend = backend))
+  }
+  cli_abort(c(
+    "Cannot autoconvert input to an {.cls AnvilArray}.",
+    i = "Expected an {.cls AnvilArray}, a length-1 atomic scalar, or an {.code is.array()} value.",
+    x = "Got {.cls {class(x)[1]}} of length {length(x)}."
+  ))
 }
 
 jit_wrap_outputs <- function(out_flat, out_tree, ambiguous_out, backend) {

@@ -39,10 +39,6 @@ jit_quickr_inputs <- function(args_flat, is_static_flat) {
   list(avals_in = avals_in, device = NULL)
 }
 
-jit_call_quickr <- function(fun, r_args) {
-  do.call(fun, r_args)
-}
-
 jit_quickr_impl <- function(f, static, cache, unwrap) {
   function() {
     # calling a jitted function within another jitted function --> re-trace the original closure
@@ -51,28 +47,41 @@ jit_quickr_impl <- function(f, static, cache, unwrap) {
       args <- lapply(args, eval, envir = parent.frame())
       return(do.call(f, args))
     }
-    prep <- jit_prepare_call(match.call(), parent.frame(), static)
+    prep <- jit_prepare_call(match.call(), parent.frame(), static, "quickr")
     inputs <- jit_quickr_inputs(prep$args_flat, prep$is_static_flat)
 
     cache_key <- list(prep$in_tree, inputs$avals_in, inputs$device)
-    r_args <- lapply(unname(prep$args), function(a) {
+    r_args_flat <- lapply(prep$args_flat, function(a) {
       if (is_anvil_array(a)) as_array(a) else a
     })
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
-      return(jit_call_quickr(cache_hit, r_args))
+      return(cache_hit(r_args_flat))
     }
 
     compiled <- compile_to_quickr(f, args_flat = inputs$avals_in, in_tree = prep$in_tree, unwrap = unwrap)
-    cache$set(cache_key, compiled$fun)
-    jit_call_quickr(compiled$fun, r_args)
+    cache$set(cache_key, compiled$fun_flat)
+    compiled$fun_flat(r_args_flat)
   }
 }
 
 compile_to_quickr <- function(f, args_flat, in_tree, unwrap = FALSE) {
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
-  list(fun = graph_to_quickr_function(graph, unwrap = unwrap))
+
+  assert_quickr_installed("{.fn compile_to_quickr}")
+  prep <- graph_to_quickr_prepare(graph)
+  inner_quick <- quickr_eager_compile(prep$r_fun)
+
+  out_infos <- prep$out_infos
+  if (!isTRUE(unwrap)) {
+    out_infos <- lapply(out_infos, function(info) {
+      info$backend <- "quickr"
+      info
+    })
+  }
+
+  list(fun_flat = graph_to_quickr_flat_caller(graph, prep$r_fun, inner_quick, out_infos))
 }
 
 #' Quickr backend

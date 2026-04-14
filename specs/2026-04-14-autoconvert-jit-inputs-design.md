@@ -20,8 +20,8 @@ Applied per non-static leaf of the input tree:
 | Input                                      | Action                                     |
 | ------------------------------------------ | ------------------------------------------ |
 | `is_anvil_array(x)`                        | Pass through                               |
-| atomic, `length(x) == 1`, `is.null(dim(x))` | `nv_scalar(x, backend = backend)` (shape `()`) |
-| `is.array(x)` (has `dim`)                  | `nv_array(x, backend = backend)` (shape from `dim`) |
+| atomic, `length(x) == 1`,                  | `nv_scalar(x, backend = backend, ambiguous = TRUE)` (shape `()`) |
+| `is.array(x)` (has `dim`)                  | `nv_array(x, backend = backend, ambiguous = TRUE)` (shape from `dim`) |
 | anything else                              | Error: must be an `AnvilArray`, scalar, or array |
 
 Notable consequences:
@@ -116,16 +116,21 @@ already an `AnvilArray` on the wrong backend.
 
 New tests (in `tests/testthat/test-jit.R` or a new `test-autoconvert.R`):
 
-1. `jit(\(x) x + 1)(1)` works; result is shape `()`.
-2. `jit(\(x) x)(matrix(1:4, 2, 2))` works; result is shape `(2, 2)`.
-3. `jit(\(x) x)(c(1, 2, 3))` errors.
-4. Static args are not converted:
+1. `jit(identity)(1)` returns shape `()`, dtype `f32`, ambiguous.
+2. `jit(\(x) x + 1)(1)` works; result is shape `()`, dtype `f32`,
+   ambiguous (autoconverted `x` is ambiguous, the literal `1` inside the
+   jit is also ambiguous, ambiguous + ambiguous → ambiguous).
+3. `jit(\(x, y) x + y)(1, nv_scalar(2, dtype = "f64"))` returns dtype
+   `f64`, not ambiguous (the non-ambiguous typed scalar wins promotion).
+4. `jit(\(x) x)(matrix(1:4, 2, 2))` works; result is shape `(2, 2)`.
+5. `jit(\(x) x)(c(1, 2, 3))` errors.
+6. Static args are not converted:
    `jit(\(x, flag) ..., static = "flag")(nv_array(1), TRUE)` behaves as
    before; passing a non-AnvilArray non-scalar as `flag` is still fine.
-5. `xla()` with a scalar and a matrix input works.
-6. Same cases repeated for the quickr backend (gated on
+7. `xla()` with a scalar and a matrix input works.
+8. Same cases repeated for the quickr backend (gated on
    `skip_if_not_installed("quickr")`).
-7. Quickr with a nested input tree (e.g. `f(list(x, y))`) still produces
+9. Quickr with a nested input tree (e.g. `f(list(x, y))`) still produces
    the correct result through the flat path. No-double-flatten is an
    internal invariant, not a public behaviour — it is covered by the
    existing quickr tests still passing.

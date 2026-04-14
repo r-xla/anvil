@@ -102,20 +102,14 @@ quickr_assert_static_args <- function(args_flat, is_static_flat, static_args_fla
   invisible(NULL)
 }
 
-graph_to_quickr_make_wrapper <- function(
-  graph,
-  r_fun,
-  inner_fun,
-  out_infos,
-  needs_flatten
-) {
+graph_to_quickr_flat_caller <- function(graph, r_fun, inner_fun, out_infos) {
   r_arg_names <- names(formals(r_fun)) %||% character()
   n_user <- length(graph$inputs)
   leaf_arg_names <- r_arg_names[seq_len(n_user)]
 
   is_static_flat <- graph$is_static_flat
-  has_static <- !is.null(is_static_flat) && isTRUE(any(is_static_flat))
-  use_in_tree_formals <- isTRUE(needs_flatten) || isTRUE(has_static)
+  static_args_flat <- graph$static_args_flat
+  out_tree <- graph$out_tree
 
   const_args <- list()
   if (length(graph$constants)) {
@@ -125,6 +119,49 @@ graph_to_quickr_make_wrapper <- function(
     })
     const_args <- stats::setNames(const_vals, const_arg_names)
   }
+
+  caller_env <- new.env(parent = environment(graph_to_quickr_function))
+  caller_env$inner <- inner_fun
+  caller_env$leaf_arg_names <- leaf_arg_names
+  caller_env$is_static_flat <- is_static_flat
+  caller_env$static_args_flat <- static_args_flat
+  caller_env$const_args <- const_args
+  caller_env$out_tree <- out_tree
+  caller_env$out_infos <- out_infos
+  caller_env$restore_output <- quickr_restore_output
+
+  caller <- function(args_flat) {
+    if (!is.null(is_static_flat)) {
+      if (length(args_flat) != length(is_static_flat)) {
+        cli_abort("Expected {length(is_static_flat)} flattened inputs, got {length(args_flat)}")
+      }
+      quickr_assert_static_args(args_flat, is_static_flat, static_args_flat)
+      args_flat <- args_flat[!is_static_flat]
+    }
+    args <- stats::setNames(args_flat, leaf_arg_names)
+    value <- do.call(inner, c(const_args, args))
+    restore_output(value, out_tree, out_infos)
+  }
+  environment(caller) <- caller_env
+  caller
+}
+
+graph_to_quickr_make_wrapper <- function(
+  graph,
+  r_fun,
+  inner_fun,
+  out_infos,
+  needs_flatten
+) {
+  flat_caller <- graph_to_quickr_flat_caller(graph, r_fun, inner_fun, out_infos)
+
+  r_arg_names <- names(formals(r_fun)) %||% character()
+  n_user <- length(graph$inputs)
+  leaf_arg_names <- r_arg_names[seq_len(n_user)]
+
+  is_static_flat <- graph$is_static_flat
+  has_static <- !is.null(is_static_flat) && isTRUE(any(is_static_flat))
+  use_in_tree_formals <- isTRUE(needs_flatten) || isTRUE(has_static)
 
   wrapper <- function() {}
   if (isTRUE(use_in_tree_formals)) {
@@ -143,39 +180,22 @@ graph_to_quickr_make_wrapper <- function(
     formals(wrapper) <- formals(r_fun)[seq_len(n_user)]
   }
 
-  # Don't retain the full call frame (graph, r_fun, etc.) via parent environments.
   wrapper_env <- new.env(parent = environment(graph_to_quickr_function))
-  wrapper_env$inner <- inner_fun
-  wrapper_env$out_tree <- graph$out_tree
-  wrapper_env$out_infos <- out_infos
+  wrapper_env$flat_caller <- flat_caller
   wrapper_env$leaf_arg_names <- leaf_arg_names
   wrapper_env$use_in_tree_formals <- use_in_tree_formals
   wrapper_env$top_names <- if (isTRUE(use_in_tree_formals)) top_names else NULL
-  wrapper_env$is_static_flat <- is_static_flat
-  wrapper_env$static_args_flat <- graph$static_args_flat
-  wrapper_env$const_args <- const_args
-  wrapper_env$restore_output <- quickr_restore_output
 
   body(wrapper) <- quote({
     if (isTRUE(use_in_tree_formals)) {
       args_top <- mget(top_names, envir = environment(), inherits = FALSE)
-      args <- flatten(args_top)
-      if (!is.null(is_static_flat)) {
-        if (length(args) != length(is_static_flat)) {
-          cli_abort("Expected {length(is_static_flat)} flattened inputs, got {length(args)}")
-        }
-        quickr_assert_static_args(args, is_static_flat, static_args_flat)
-        args <- args[!is_static_flat]
-      }
-      args <- stats::setNames(args, leaf_arg_names)
+      args_flat <- flatten(args_top)
     } else if (!length(leaf_arg_names)) {
-      args <- list()
+      args_flat <- list()
     } else {
-      args <- mget(leaf_arg_names, envir = environment(), inherits = FALSE)
+      args_flat <- mget(leaf_arg_names, envir = environment(), inherits = FALSE)
     }
-
-    value <- do.call(inner, c(const_args, args))
-    restore_output(value, out_tree, out_infos)
+    flat_caller(args_flat)
   })
 
   environment(wrapper) <- wrapper_env
