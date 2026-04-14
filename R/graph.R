@@ -646,6 +646,10 @@ maybe_restore_previous_desc <- function(desc = NULL) {
     cli_abort("No graph is currently being built. Did you forget to use `jit()`?")
 }
 
+currently_tracing <- function() {
+  !is.null(.current_descriptor(silent = TRUE))
+}
+
 #' @title Create a graph
 #' @description
 #' Creates a new [`GraphDescriptor`] which is afterwards accessible via [`.current_descriptor()`].

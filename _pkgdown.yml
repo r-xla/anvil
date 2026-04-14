@@ -249,13 +249,16 @@ reference:
     contents:
       - nv_print
 
-  - title: Backend selection
-    desc: Functions for selecting and managing the backend
+  - title: Backend
+    desc: Backend-related functionality and implementations
     contents:
       - backend
       - default_backend
       - local_backend
       - with_backend
+      - AnvilBackend
+      - AnvilBackendXla
+      - AnvilBackendQuickr
 
 
   - title: Internals

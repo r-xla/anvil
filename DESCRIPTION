@@ -61,6 +61,8 @@ Collate:
     'array.R'
     'asserts.R'
     'backend.R'
+    'backend-quickr.R'
+    'backend-xla.R'
     'bibentries.R'
     'box.R'
     'flatten.R'

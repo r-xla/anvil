@@ -4,15 +4,14 @@
 \alias{jit_eval}
 \title{JIT-compile and evaluate an expression}
 \usage{
-jit_eval(expr, device = NULL)
+jit_eval(expr, ...)
 }
 \arguments{
 \item{expr}{(NSE)\cr
 Expression to compile and evaluate.}
 
-\item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
-The device to use. By default (\code{NULL}), the device is inferred from
-the arrays encountered during tracing, falling back to \code{"cpu"}.}
+\item{...}{Backend-specific options forwarded to \code{\link[=jit]{jit()}} (e.g. \code{device}
+for the \code{"xla"} backend, \code{unwrap} for the \code{"quickr"} backend).}
 }
 \value{
 (\code{any})\cr

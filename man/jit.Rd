@@ -8,9 +8,8 @@ jit(
   f,
   static = character(),
   cache_size = 100L,
-  donate = character(),
-  device = NULL,
-  backend = default_backend()
+  backend = default_backend(),
+  ...
 )
 }
 \arguments{
@@ -26,25 +25,21 @@ a static value changes. For example useful when you want R control flow in your 
 \item{cache_size}{(\code{integer(1)})\cr
 Maximum number of compiled executables to keep in the LRU cache.}
 
-\item{donate}{(\code{character()})\cr
-Names of the arguments whose buffers should be donated.
-Donated buffers can be aliased with outputs of the same type,
-allowing in-place operations and reducing memory usage.
-An argument cannot appear in both \code{donate} and \code{static}.}
-
-\item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
-The device to use if it cannot be inferred from the inputs or constants.
-Defaults to \code{"cpu"}. Only supported for \code{backend = "xla"}.}
-
 \item{backend}{(\code{character(1)})\cr
 Compilation backend. \code{"xla"} (default) uses PJRT/XLA.
 \code{"quickr"} uses \code{quickr::quick()}. If omitted, the default comes from
 \code{default_backend()}.}
+
+\item{...}{Backend-specific options. Passing an option that is not supported
+by the selected backend raises an error. See the \strong{XLA JIT arguments} and
+\strong{Quickr JIT arguments} sections below for the options accepted by each
+backend.}
 }
 \value{
 A \code{JitFunction} with the same formals as \code{f}.
 The returned wrapper expects \code{\link{AnvilArray}} inputs and returns
 \code{\link{AnvilArray}} values.
+\code{"quickr"} backend).
 
 (\code{function})
 }
@@ -54,6 +49,31 @@ calls with the same input structure, shapes, and dtypes hit an LRU cache and
 skip recompilation. Unlike \code{\link[=xla]{xla()}}, the compiled executable is not created
 eagerly but lazily on the first invocation.
 }
+\section{XLA JIT arguments}{
+
+\itemize{
+\item \code{donate} (\code{character()}, default \code{character()}): names of arguments whose
+underlying buffers may be donated to (i.e., reused/consumed by) the
+compiled XLA executable. Donated buffers must not be used again by the
+caller after the call; this can reduce memory usage and copies for large
+inputs. Must not overlap with \code{static}.
+\item \code{device} (\code{NULL} | \code{character(1)} | \code{\link[pjrt:as_pjrt_device]{pjrt::PJRTDevice}},
+default \code{NULL}): target device (e.g. \code{"cpu"}, \code{"cuda"}) on which the
+function is compiled and executed. When \code{NULL}, the device is inferred
+from the inputs; if inputs live on different devices an error is raised.
+}
+}
+
+\section{Quickr JIT arguments}{
+
+\itemize{
+\item \code{unwrap} (\code{logical(1)}, default \code{FALSE}): if \code{TRUE}, the compiled function
+returns plain R arrays instead of \code{\link{AnvilArray}}s. Useful when the jitted
+function's output is consumed by non-anvil R code and the extra wrapping
+would only get stripped again.
+}
+}
+
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 f <- jit(function(x, y) x + y)
@@ -67,11 +87,12 @@ g(nv_array(3), TRUE)
 g(nv_array(3), FALSE)
 \dontshow{\}) # examplesIf}
 \dontshow{if (requireNamespace("quickr", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-local_backend("quickr")
-h <- jit(function(x, y) x + y)
-h(nv_array(1), nv_array(2))
+with_backend("quickr", {
+  h <- jit(function(x, y) x + y)
+  h(nv_array(1), nv_array(2))
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=xla]{xla()}} for ahead-of-time compilation.
+\code{\link[=xla]{xla()}} for ahead-of-time compilation, \code{\link[=jit_eval]{jit_eval()}} for evaluating an expression once.
 }
