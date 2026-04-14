@@ -4,7 +4,7 @@
 \alias{graph_to_quickr_function}
 \title{Convert an AnvilGraph to a quickr-compiled function}
 \usage{
-graph_to_quickr_function(graph, unwrap = FALSE)
+graph_to_quickr_function(graph, unwrap = FALSE, flat = FALSE)
 }
 \arguments{
 \item{graph}{(\code{\link{AnvilGraph}})\cr
@@ -14,6 +14,12 @@ Graph to convert.}
 If \code{FALSE} (default), each output leaf is wrapped in an \code{\link{AnvilArray}}
 with the \code{"quickr"} backend. If \code{TRUE}, outputs are returned as plain
 R values.}
+
+\item{flat}{(\code{logical(1)})\cr
+If \code{FALSE} (default), the returned function takes structured top-level
+arguments matching the formals of the traced function. If \code{TRUE}, it
+takes a single flat list of all leaves (including static slots).
+Used internally by \code{\link[=jit]{jit()}} to avoid re-flattening already-flat args.}
 }
 \value{
 (\code{function}) that returns \code{\link{AnvilArray}} outputs (or a tree of

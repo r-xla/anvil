@@ -139,8 +139,8 @@ graph_to_quickr_make_wrapper <- function(
   wrapper_env$restore_output <- quickr_restore_output
 
   if (isTRUE(flat)) {
-    wrapper <- function(args_flat) {}
-    body(wrapper) <- quote({
+    flat_wrapper <- function(args_flat) {}
+    body(flat_wrapper) <- quote({
       if (!is.null(is_static_flat)) {
         if (length(args_flat) != length(is_static_flat)) {
           cli_abort("Expected {length(is_static_flat)} flattened inputs, got {length(args_flat)}")
@@ -152,9 +152,9 @@ graph_to_quickr_make_wrapper <- function(
       value <- do.call(inner, c(const_args, args))
       restore_output(value, out_tree, out_infos)
     })
-    environment(wrapper) <- wrapper_env
-    compiler::cmpfun(wrapper)
-    return(wrapper)
+    environment(flat_wrapper) <- wrapper_env
+    compiler::cmpfun(flat_wrapper)
+    return(flat_wrapper)
   }
 
   wrapper <- function() {}
@@ -275,6 +275,10 @@ graph_to_quickr_r_function <- function(graph) {
 #'   If `FALSE` (default), each output leaf is wrapped in an [`AnvilArray`]
 #'   with the `"quickr"` backend. If `TRUE`, outputs are returned as plain
 #'   R values.
+#' @param flat (`logical(1)`)\cr
+#'   If `FALSE` (default), the returned function takes structured top-level
+#'   arguments matching the formals of the traced function. If `TRUE`, it
+#'   takes a single flat list of all leaves (including static slots).
 #' @return (`function`) that returns [`AnvilArray`] outputs (or a tree of
 #'   them), or plain R values when `unwrap = TRUE`.
 #' @seealso [`jit()`] with `backend = "quickr"` for tracing and compiling a
