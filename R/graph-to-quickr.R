@@ -107,9 +107,10 @@ graph_to_quickr_make_wrapper <- function(
   r_fun,
   inner_fun,
   out_infos,
-  needs_flatten
+  needs_flatten,
+  flat = FALSE
 ) {
-  r_arg_names <- names(formals(r_fun)) %||% character()
+  r_arg_names <- formalArgs2(r_fun)
   n_user <- length(graph$inputs)
   leaf_arg_names <- r_arg_names[seq_len(n_user)]
 
@@ -126,6 +127,36 @@ graph_to_quickr_make_wrapper <- function(
     const_args <- stats::setNames(const_vals, const_arg_names)
   }
 
+  # Don't retain the full call frame (graph, r_fun, etc.) via parent environments.
+  wrapper_env <- new.env(parent = environment(graph_to_quickr_function))
+  wrapper_env$inner <- inner_fun
+  wrapper_env$out_tree <- graph$out_tree
+  wrapper_env$out_infos <- out_infos
+  wrapper_env$leaf_arg_names <- leaf_arg_names
+  wrapper_env$is_static_flat <- is_static_flat
+  wrapper_env$static_args_flat <- graph$static_args_flat
+  wrapper_env$const_args <- const_args
+  wrapper_env$restore_output <- quickr_restore_output
+
+  if (isTRUE(flat)) {
+    wrapper <- function(args_flat) {}
+    body(wrapper) <- quote({
+      if (!is.null(is_static_flat)) {
+        if (length(args_flat) != length(is_static_flat)) {
+          cli_abort("Expected {length(is_static_flat)} flattened inputs, got {length(args_flat)}")
+        }
+        quickr_assert_static_args(args_flat, is_static_flat, static_args_flat)
+        args_flat <- args_flat[!is_static_flat]
+      }
+      args <- stats::setNames(args_flat, leaf_arg_names)
+      value <- do.call(inner, c(const_args, args))
+      restore_output(value, out_tree, out_infos)
+    })
+    environment(wrapper) <- wrapper_env
+    compiler::cmpfun(wrapper)
+    return(wrapper)
+  }
+
   wrapper <- function() {}
   if (isTRUE(use_in_tree_formals)) {
     in_tree <- graph$in_tree
@@ -139,22 +170,12 @@ graph_to_quickr_make_wrapper <- function(
     )
     top_names <- make.unique(make.names(top_names))
     formals(wrapper) <- as.pairlist(stats::setNames(rep(list(quote(expr = )), length(top_names)), top_names))
+    wrapper_env$top_names <- top_names
   } else {
     formals(wrapper) <- formals(r_fun)[seq_len(n_user)]
+    wrapper_env$top_names <- NULL
   }
-
-  # Don't retain the full call frame (graph, r_fun, etc.) via parent environments.
-  wrapper_env <- new.env(parent = environment(graph_to_quickr_function))
-  wrapper_env$inner <- inner_fun
-  wrapper_env$out_tree <- graph$out_tree
-  wrapper_env$out_infos <- out_infos
-  wrapper_env$leaf_arg_names <- leaf_arg_names
   wrapper_env$use_in_tree_formals <- use_in_tree_formals
-  wrapper_env$top_names <- if (isTRUE(use_in_tree_formals)) top_names else NULL
-  wrapper_env$is_static_flat <- is_static_flat
-  wrapper_env$static_args_flat <- graph$static_args_flat
-  wrapper_env$const_args <- const_args
-  wrapper_env$restore_output <- quickr_restore_output
 
   body(wrapper) <- quote({
     if (isTRUE(use_in_tree_formals)) {
@@ -179,6 +200,9 @@ graph_to_quickr_make_wrapper <- function(
   })
 
   environment(wrapper) <- wrapper_env
+  # bug in R: changing a function's environment disables byte-code compilation.
+  compiler::cmpfun(wrapper)
+
   wrapper
 }
 
@@ -256,13 +280,14 @@ graph_to_quickr_r_function <- function(graph) {
 #' @seealso [`jit()`] with `backend = "quickr"` for tracing and compiling a
 #'   regular R function in one step.
 #' @keywords internal
-graph_to_quickr_function <- function(graph, unwrap = FALSE) {
+graph_to_quickr_function <- function(graph, unwrap = FALSE, flat = FALSE) {
   if (!is_graph(graph)) {
     cli_abort("{.arg graph} must be a {.cls AnvilGraph}")
   }
 
   assert_quickr_installed("{.fn graph_to_quickr_function}")
   assert_flag(unwrap)
+  assert_flag(flat)
 
   prep <- graph_to_quickr_prepare(graph)
   inner_quick <- quickr_eager_compile(prep$r_fun)
@@ -281,6 +306,7 @@ graph_to_quickr_function <- function(graph, unwrap = FALSE) {
     r_fun = prep$r_fun,
     inner_fun = inner_quick,
     out_infos = out_infos,
-    needs_flatten = prep$needs_flatten
+    needs_flatten = prep$needs_flatten,
+    flat = flat
   )
 }

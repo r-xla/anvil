@@ -39,10 +39,6 @@ jit_quickr_inputs <- function(args_flat, is_static_flat) {
   list(avals_in = avals_in, device = NULL)
 }
 
-jit_call_quickr <- function(fun, r_args) {
-  do.call(fun, r_args)
-}
-
 jit_quickr_impl <- function(f, static, cache, unwrap) {
   function() {
     # calling a jitted function within another jitted function --> re-trace the original closure
@@ -58,22 +54,21 @@ jit_quickr_impl <- function(f, static, cache, unwrap) {
     r_args_flat <- lapply(prep$args_flat, function(a) {
       if (is_anvil_array(a)) as_array(a) else a
     })
-    r_args <- unname(unflatten(prep$in_tree, r_args_flat))
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
-      return(jit_call_quickr(cache_hit, r_args))
+      return(cache_hit(r_args_flat))
     }
 
-    compiled <- compile_to_quickr(f, args_flat = inputs$avals_in, in_tree = prep$in_tree, unwrap = unwrap)
+    compiled <- compile_to_quickr(f, args_flat = inputs$avals_in, in_tree = prep$in_tree, unwrap = unwrap, flat = TRUE)
     cache$set(cache_key, compiled$fun)
-    jit_call_quickr(compiled$fun, r_args)
+    compiled$fun(r_args_flat)
   }
 }
 
-compile_to_quickr <- function(f, args_flat, in_tree, unwrap = FALSE) {
+compile_to_quickr <- function(f, args_flat, in_tree, unwrap = FALSE, flat = FALSE) {
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
-  list(fun = graph_to_quickr_function(graph, unwrap = unwrap))
+  list(fun = graph_to_quickr_function(graph, unwrap = unwrap, flat = flat))
 }
 
 #' Quickr backend
