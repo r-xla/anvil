@@ -18,8 +18,7 @@ R values.}
 \item{flat}{(\code{logical(1)})\cr
 If \code{FALSE} (default), the returned function takes structured top-level
 arguments matching the formals of the traced function. If \code{TRUE}, it
-takes a single flat list of all leaves (including static slots).
-Used internally by \code{\link[=jit]{jit()}} to avoid re-flattening already-flat args.}
+takes a single flat list of all leaves (including static slots).}
 }
 \value{
 (\code{function}) that returns \code{\link{AnvilArray}} outputs (or a tree of
