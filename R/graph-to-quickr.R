@@ -1,18 +1,23 @@
 #' @include rules-quickr.R
 NULL
 
-quickr_restore_leaf <- function(value, shape) {
-  shape <- as.integer(shape)
-
-  if (!length(shape)) {
-    return(value)
-  }
+quickr_restore_leaf <- function(value, info) {
+  shape <- as.integer(info$shape)
 
   if (length(shape) == 1L) {
     value_dims <- dim(value)
     if (is.null(value_dims) || !identical(value_dims, shape)) {
-      return(array(value, dim = shape))
+      value <- array(value, dim = shape)
     }
+  }
+
+  if (!is.null(info$backend)) {
+    value <- nv_array(
+      value,
+      shape = shape,
+      ambiguous = info$ambiguous,
+      backend = info$backend
+    )
   }
 
   value
@@ -20,7 +25,7 @@ quickr_restore_leaf <- function(value, shape) {
 
 quickr_restore_output_flat <- function(value, out_tree, out_infos) {
   if (inherits(out_tree, "LeafNode") && length(out_infos) == 1L) {
-    return(list(quickr_restore_leaf(value, out_infos[[1L]]$shape)))
+    return(list(quickr_restore_leaf(value, out_infos[[1L]])))
   }
 
   if (!is.list(value) || length(value) != length(out_infos)) {
@@ -28,7 +33,7 @@ quickr_restore_output_flat <- function(value, out_tree, out_infos) {
   }
 
   .mapply(
-    function(x, info) quickr_restore_leaf(x, info$shape),
+    function(x, info) quickr_restore_leaf(x, info),
     list(value, out_infos),
     NULL
   )
@@ -44,7 +49,11 @@ graph_to_quickr_prepare <- function(graph) {
 
   needs_output_wrapper <- !(inherits(graph$out_tree, "LeafNode") && length(graph$outputs) == 1L)
   out_infos <- lapply(graph$outputs, function(node) {
-    list(dtype = as.character(dtype(node)), shape = shape(node))
+    list(
+      dtype = as.character(dtype(node)),
+      shape = shape(node),
+      ambiguous = node$aval$ambiguous
+    )
   })
   is_static_flat <- graph$is_static_flat
   has_static <- !is.null(is_static_flat) && isTRUE(any(is_static_flat))
@@ -173,24 +182,6 @@ graph_to_quickr_make_wrapper <- function(
   wrapper
 }
 
-quickr_make_rank1_wrapper <- function(r_fun, inner_fun, out_shape) {
-  stopifnot(length(out_shape) == 1L)
-
-  arg_names <- names(formals(r_fun)) %||% character()
-  inner_call <- as.call(c(list(as.name("inner")), lapply(arg_names, as.name)))
-  wrapper <- function() {}
-  formals(wrapper) <- formals(r_fun)
-
-  wrapper_env <- new.env(parent = environment(graph_to_quickr_function))
-  wrapper_env$inner <- inner_fun
-  wrapper_env$out_shape <- as.integer(out_shape)
-
-  body(wrapper) <- rlang::expr(array(!!inner_call, dim = out_shape))
-
-  environment(wrapper) <- wrapper_env
-  wrapper
-}
-
 #' Convert an AnvilGraph to a plain R function
 #'
 #' Lowers a supported subset of `AnvilGraph` objects to a plain R function (no
@@ -241,7 +232,8 @@ graph_to_quickr_r_function <- graph_to_r_function
 #' compiles it with `quickr::quick()`.
 #'
 #' The returned function expects plain R scalars/vectors/arrays (not
-#' [`AnvilArray`]) and returns plain R values/arrays.
+#' [`AnvilArray`]) and returns [`AnvilArray`] outputs by default, or plain R
+#' values when `unwrap = TRUE`.
 #'
 #' If the graph returns multiple outputs (e.g. a nested list), the compiled
 #' function returns the same structure by rebuilding the output tree in R.
@@ -257,41 +249,40 @@ graph_to_quickr_r_function <- graph_to_r_function
 #'
 #' @param graph ([`AnvilGraph`])\cr
 #'   Graph to convert.
-#' @return (`function`)
+#' @param unwrap (`logical(1)`)\cr
+#'   If `FALSE` (default), each output leaf is wrapped in an [`AnvilArray`]
+#'   with the `"quickr"` backend. If `TRUE`, outputs are returned as plain
+#'   R values.
+#' @return (`function`) that returns [`AnvilArray`] outputs (or a tree of
+#'   them), or plain R values when `unwrap = TRUE`.
 #' @seealso [`jit()`] with `backend = "quickr"` for tracing and compiling a
 #'   regular R function in one step.
 #' @keywords internal
-graph_to_quickr_function <- function(graph) {
+graph_to_quickr_function <- function(graph, unwrap = FALSE) {
   if (!is_graph(graph)) {
     cli_abort("{.arg graph} must be a {.cls AnvilGraph}")
   }
 
   assert_quickr_installed("{.fn graph_to_quickr_function}")
+  assert_flag(unwrap)
 
   prep <- graph_to_quickr_prepare(graph)
   inner_quick <- quickr_eager_compile(prep$r_fun)
 
-  if (!isTRUE(prep$needs_wrapper)) {
-    out_shape <- as.integer(prep$out_infos[[1L]]$shape)
-    if (length(out_shape) == 1L) {
-      return(quickr_make_rank1_wrapper(
-        r_fun = prep$r_fun,
-        inner_fun = inner_quick,
-        out_shape = out_shape
-      ))
-    }
-    return(inner_quick)
+  out_infos <- prep$out_infos
+  if (!isTRUE(unwrap)) {
+    # Tag out_infos so that quickr_restore_leaf wraps each leaf as an AnvilArray.
+    out_infos <- lapply(out_infos, function(info) {
+      info$backend <- "quickr"
+      info
+    })
   }
 
-  fun <- graph_to_quickr_make_wrapper(
+  graph_to_quickr_make_wrapper(
     graph = graph,
     r_fun = prep$r_fun,
     inner_fun = inner_quick,
-    out_infos = prep$out_infos,
+    out_infos = out_infos,
     needs_flatten = prep$needs_flatten
   )
-  # Return flat output (shape-fixed leaves, no tree rebuilding) — the caller
-  # (jit_call_quickr) wraps each leaf in nv_array and unflattens once.
-  environment(fun)$restore_output <- quickr_restore_output_flat
-  fun
 }

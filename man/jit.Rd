@@ -8,9 +8,8 @@ jit(
   f,
   static = character(),
   cache_size = 100L,
-  donate = character(),
-  device = NULL,
-  backend = default_backend()
+  backend = default_backend(),
+  ...
 )
 }
 \arguments{
@@ -26,25 +25,37 @@ a static value changes. For example useful when you want R control flow in your 
 \item{cache_size}{(\code{integer(1)})\cr
 Maximum number of compiled executables to keep in the LRU cache.}
 
-\item{donate}{(\code{character()})\cr
-Names of the arguments whose buffers should be donated.
-Donated buffers can be aliased with outputs of the same type,
-allowing in-place operations and reducing memory usage.
-An argument cannot appear in both \code{donate} and \code{static}.}
-
-\item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
-The device to use if it cannot be inferred from the inputs or constants.
-Defaults to \code{"cpu"}. Only supported for \code{backend = "xla"}.}
-
 \item{backend}{(\code{character(1)})\cr
 Compilation backend. \code{"xla"} (default) uses PJRT/XLA.
 \code{"quickr"} uses \code{quickr::quick()}. If omitted, the default comes from
 \code{default_backend()}.}
+
+\item{...}{Backend-specific options. Passing an option that is not supported
+by the selected backend raises an error.
+\itemize{
+\item \code{backend = "xla"} supports:
+\itemize{
+\item \code{donate} (\code{character()}): names of arguments whose buffers should be
+donated. Donated buffers can be aliased with outputs of the same type,
+allowing in-place operations and reducing memory usage. An argument
+cannot appear in both \code{donate} and \code{static}.
+\item \code{device} (\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}}):
+the device to use if it cannot be inferred from the inputs or
+constants. Defaults to \code{"cpu"}.
+}
+\item \code{backend = "quickr"} supports:
+\itemize{
+\item \code{unwrap} (\code{logical(1)}): if \code{TRUE}, the compiled function returns
+plain R values instead of wrapping outputs in \code{\link{AnvilArray}}s.
+Defaults to \code{FALSE}.
+}
+}}
 }
 \value{
 A \code{JitFunction} with the same formals as \code{f}.
 The returned wrapper expects \code{\link{AnvilArray}} inputs and returns
-\code{\link{AnvilArray}} values.
+\code{\link{AnvilArray}} values (unless \code{unwrap = TRUE} is passed to the
+\code{"quickr"} backend).
 
 (\code{function})
 }

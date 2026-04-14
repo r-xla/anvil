@@ -2,15 +2,8 @@ compile_graph_pjrt <- function(graph) {
   testthat::skip_if_not_installed("pjrt")
   testthat::skip_if_not_installed("stablehlo")
 
-  unwrap_if_array_for_test <- function(x) {
-    if (backend(x) == "plain") {
-      pjrt::pjrt_buffer(as_array(x), as.character(dtype(x)), shape = shape(x))
-    } else if (inherits(x, "AnvilArray")) {
-      x$data
-    } else {
-      x
-    }
-  }
+  compiled <- compile_graph_to_xla(graph)
+  input_nodes <- graph$inputs
 
   flatten_args_for_test <- function(x) {
     if (is.list(x)) {
@@ -22,25 +15,6 @@ compile_graph_pjrt <- function(graph) {
       list(x)
     }
   }
-
-  out <- stablehlo(graph)
-  func <- out[[1L]]
-  constants <- out[[2L]]
-
-  const_arrays <- lapply(constants, function(const) {
-    if (!is_concrete_tensor(const$aval)) {
-      cli::cli_abort("Internal error: non-concrete constant in graph")
-    }
-    arr <- const$aval$data
-    unwrap_if_array_for_test(arr)
-  })
-
-  src <- stablehlo::repr(func)
-  program <- pjrt::pjrt_program(src = src, format = "mlir")
-  exec <- pjrt::pjrt_compile(program)
-
-  input_nodes <- graph$inputs
-  out_tree <- graph$out_tree
 
   as_r <- function(x) {
     if (inherits(x, "AnvilArray")) {
@@ -81,10 +55,14 @@ compile_graph_pjrt <- function(graph) {
       input_nodes
     )
 
-    args_unwrapped <- lapply(args_nv, unwrap_if_array_for_test)
-    out_vals <- rlang::exec(pjrt::pjrt_execute, exec, !!!const_arrays, !!!args_unwrapped, simplify = FALSE)
-    out_vals <- lapply(out_vals, nv_array, backend = "xla")
-    out_nv <- unflatten(out_tree, out_vals)
+    out_nv <- jit_call_xla(
+      compiled$exec,
+      compiled$out_tree,
+      compiled$const_arrays,
+      args_nv,
+      rep(FALSE, length(args_nv)),
+      compiled$ambiguous_out
+    )
     as_r(out_nv)
   }
 }
