@@ -68,20 +68,7 @@ jit_quickr_impl <- function(f, static, cache, unwrap) {
 compile_to_quickr <- function(f, args_flat, in_tree, unwrap = FALSE) {
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
-
-  assert_quickr_installed("{.fn compile_to_quickr}")
-  prep <- graph_to_quickr_prepare(graph)
-  inner_quick <- quickr_eager_compile(prep$r_fun)
-
-  out_infos <- prep$out_infos
-  if (!isTRUE(unwrap)) {
-    out_infos <- lapply(out_infos, function(info) {
-      info$backend <- "quickr"
-      info
-    })
-  }
-
-  list(fun_flat = graph_to_quickr_flat_caller(graph, prep$r_fun, inner_quick, out_infos))
+  list(fun_flat = graph_to_quickr_function(graph, unwrap = unwrap, flat = TRUE))
 }
 
 #' Quickr backend

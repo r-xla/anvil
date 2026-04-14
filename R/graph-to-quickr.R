@@ -102,7 +102,14 @@ quickr_assert_static_args <- function(args_flat, is_static_flat, static_args_fla
   invisible(NULL)
 }
 
-graph_to_quickr_flat_caller <- function(graph, r_fun, inner_fun, out_infos) {
+graph_to_quickr_make_wrapper <- function(
+  graph,
+  r_fun,
+  inner_fun,
+  out_infos,
+  needs_flatten,
+  flat = FALSE
+) {
   r_arg_names <- names(formals(r_fun)) %||% character()
   n_user <- length(graph$inputs)
   leaf_arg_names <- r_arg_names[seq_len(n_user)]
@@ -120,46 +127,34 @@ graph_to_quickr_flat_caller <- function(graph, r_fun, inner_fun, out_infos) {
     const_args <- stats::setNames(const_vals, const_arg_names)
   }
 
-  caller_env <- new.env(parent = environment(graph_to_quickr_function))
-  caller_env$inner <- inner_fun
-  caller_env$leaf_arg_names <- leaf_arg_names
-  caller_env$is_static_flat <- is_static_flat
-  caller_env$static_args_flat <- static_args_flat
-  caller_env$const_args <- const_args
-  caller_env$out_tree <- out_tree
-  caller_env$out_infos <- out_infos
-  caller_env$restore_output <- quickr_restore_output
+  wrapper_env <- new.env(parent = environment(graph_to_quickr_function))
+  wrapper_env$inner <- inner_fun
+  wrapper_env$leaf_arg_names <- leaf_arg_names
+  wrapper_env$is_static_flat <- is_static_flat
+  wrapper_env$static_args_flat <- static_args_flat
+  wrapper_env$const_args <- const_args
+  wrapper_env$out_tree <- out_tree
+  wrapper_env$out_infos <- out_infos
+  wrapper_env$restore_output <- quickr_restore_output
 
-  caller <- function(args_flat) {
-    if (!is.null(is_static_flat)) {
-      if (length(args_flat) != length(is_static_flat)) {
-        cli_abort("Expected {length(is_static_flat)} flattened inputs, got {length(args_flat)}")
+  if (isTRUE(flat)) {
+    wrapper <- function(args_flat) {}
+    body(wrapper) <- quote({
+      if (!is.null(is_static_flat)) {
+        if (length(args_flat) != length(is_static_flat)) {
+          cli_abort("Expected {length(is_static_flat)} flattened inputs, got {length(args_flat)}")
+        }
+        quickr_assert_static_args(args_flat, is_static_flat, static_args_flat)
+        args_flat <- args_flat[!is_static_flat]
       }
-      quickr_assert_static_args(args_flat, is_static_flat, static_args_flat)
-      args_flat <- args_flat[!is_static_flat]
-    }
-    args <- stats::setNames(args_flat, leaf_arg_names)
-    value <- do.call(inner, c(const_args, args))
-    restore_output(value, out_tree, out_infos)
+      args <- stats::setNames(args_flat, leaf_arg_names)
+      value <- do.call(inner, c(const_args, args))
+      restore_output(value, out_tree, out_infos)
+    })
+    environment(wrapper) <- wrapper_env
+    return(wrapper)
   }
-  environment(caller) <- caller_env
-  caller
-}
 
-graph_to_quickr_make_wrapper <- function(
-  graph,
-  r_fun,
-  inner_fun,
-  out_infos,
-  needs_flatten
-) {
-  flat_caller <- graph_to_quickr_flat_caller(graph, r_fun, inner_fun, out_infos)
-
-  r_arg_names <- names(formals(r_fun)) %||% character()
-  n_user <- length(graph$inputs)
-  leaf_arg_names <- r_arg_names[seq_len(n_user)]
-
-  is_static_flat <- graph$is_static_flat
   has_static <- !is.null(is_static_flat) && isTRUE(any(is_static_flat))
   use_in_tree_formals <- isTRUE(needs_flatten) || isTRUE(has_static)
 
@@ -176,15 +171,12 @@ graph_to_quickr_make_wrapper <- function(
     )
     top_names <- make.unique(make.names(top_names))
     formals(wrapper) <- as.pairlist(stats::setNames(rep(list(quote(expr = )), length(top_names)), top_names))
+    wrapper_env$top_names <- top_names
   } else {
     formals(wrapper) <- formals(r_fun)[seq_len(n_user)]
+    wrapper_env$top_names <- NULL
   }
-
-  wrapper_env <- new.env(parent = environment(graph_to_quickr_function))
-  wrapper_env$flat_caller <- flat_caller
-  wrapper_env$leaf_arg_names <- leaf_arg_names
   wrapper_env$use_in_tree_formals <- use_in_tree_formals
-  wrapper_env$top_names <- if (isTRUE(use_in_tree_formals)) top_names else NULL
 
   body(wrapper) <- quote({
     if (isTRUE(use_in_tree_formals)) {
@@ -195,7 +187,16 @@ graph_to_quickr_make_wrapper <- function(
     } else {
       args_flat <- mget(leaf_arg_names, envir = environment(), inherits = FALSE)
     }
-    flat_caller(args_flat)
+    if (!is.null(is_static_flat)) {
+      if (length(args_flat) != length(is_static_flat)) {
+        cli_abort("Expected {length(is_static_flat)} flattened inputs, got {length(args_flat)}")
+      }
+      quickr_assert_static_args(args_flat, is_static_flat, static_args_flat)
+      args_flat <- args_flat[!is_static_flat]
+    }
+    args <- stats::setNames(args_flat, leaf_arg_names)
+    value <- do.call(inner, c(const_args, args))
+    restore_output(value, out_tree, out_infos)
   })
 
   environment(wrapper) <- wrapper_env
@@ -273,18 +274,25 @@ graph_to_quickr_r_function <- graph_to_r_function
 #'   If `FALSE` (default), each output leaf is wrapped in an [`AnvilArray`]
 #'   with the `"quickr"` backend. If `TRUE`, outputs are returned as plain
 #'   R values.
+#' @param flat (`logical(1)`)\cr
+#'   If `FALSE` (default), the returned function takes structured top-level
+#'   arguments matching the formals of the traced function. If `TRUE`, it
+#'   takes a single flat list of all leaves (including static slots) -- used
+#'   internally by [`jit()`] with `backend = "quickr"` to avoid re-flattening
+#'   args that have already been flattened by the jit dispatcher.
 #' @return (`function`) that returns [`AnvilArray`] outputs (or a tree of
 #'   them), or plain R values when `unwrap = TRUE`.
 #' @seealso [`jit()`] with `backend = "quickr"` for tracing and compiling a
 #'   regular R function in one step.
 #' @keywords internal
-graph_to_quickr_function <- function(graph, unwrap = FALSE) {
+graph_to_quickr_function <- function(graph, unwrap = FALSE, flat = FALSE) {
   if (!is_graph(graph)) {
     cli_abort("{.arg graph} must be a {.cls AnvilGraph}")
   }
 
   assert_quickr_installed("{.fn graph_to_quickr_function}")
   assert_flag(unwrap)
+  assert_flag(flat)
 
   prep <- graph_to_quickr_prepare(graph)
   inner_quick <- quickr_eager_compile(prep$r_fun)
@@ -303,6 +311,7 @@ graph_to_quickr_function <- function(graph, unwrap = FALSE) {
     r_fun = prep$r_fun,
     inner_fun = inner_quick,
     out_infos = out_infos,
-    needs_flatten = prep$needs_flatten
+    needs_flatten = prep$needs_flatten,
+    flat = flat
   )
 }
