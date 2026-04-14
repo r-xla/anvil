@@ -9,7 +9,7 @@ plain R values/arrays.
 ## Usage
 
 ``` r
-graph_to_r_function(graph)
+graph_to_quickr_r_function(graph)
 ```
 
 ## Arguments
@@ -27,8 +27,7 @@ graph_to_r_function(graph)
 
 Most users will prefer
 [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) with
-`options(anvil.backend = "quickr")`. This function is the lower-level
-graph API.
+`backend = "quickr"`. This function is the lower-level graph API.
 
 ## See also
 

@@ -266,7 +266,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x561d99a1dc88&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x560fa1d2d680&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -309,7 +309,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x561d99a20e40&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x560fa1d2ca08&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
@@ -623,39 +623,6 @@ the future.</li>
 <h3 id="nested-inputs-and-outputs">Nested Inputs and Outputs<a class="anchor" aria-label="anchor" href="#nested-inputs-and-outputs"></a>
 </h3>
 <p>TODO</p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="design-decisions">Design Decisions<a class="anchor" aria-label="anchor" href="#design-decisions"></a>
-</h2>
-<div class="section level3">
-<h3 id="literal-handling">Literal handling<a class="anchor" aria-label="anchor" href="#literal-handling"></a>
-</h3>
-<p>It is appealing to support the conversion of R literals
-(<code>1L</code>, <code>1.0</code> <code>TRUE</code>, etc.) to
-<code>AnvilArray</code>s when calling into <code>jit</code>-ted
-functions, i.e. allow the following:</p>
-<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">nv_add</span>, static <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<p>In <code>jit</code>(), we could in principle do this, because we know
-which arguments are static and which are expected to be
-<code>AnvilArray</code>s. However, in <code><a href="../reference/gradient.html">gradient()</a></code>, we don’t
-know which arguments are static and which are not. For example, we can’t
-make the following work:</p>
-<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/gradient.html">gradient</a></span><span class="op">(</span><span class="va">nv_add</span><span class="op">)</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<p>This would be somewhat inconsistent and hard to to reason about.
-Furthermore, auto-converting literals passed as non-static arguments to
-<code>jit</code>-ted functions would also entail various suble
-differences between debug-mode and jit-mode, as the former has no
-top-level hook for this conversion. Finally, requiring the user to think
-about the input data types should also be advantageous; we want to
-prioritize clarity over minor convenience. Note that for primitive calls
-like <code>nv_array(1)^2</code> we do auto-convert literals, because we
-know which arguments are expected to be <code>AnvilArray</code>s and
-otherwise code just becomes much harder to read.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -90,8 +90,9 @@ throws an error, because 1 is not an `AnvilArray`.
 jit(f)(1)
 ```
 
-    ## Error:
-    ## ! Expected AnvilArray, but got <numeric>
+    ## AnvilArray
+    ##  -1
+    ## [ CPUf32?{} ]
 
 This is, because debug mode emulates what would happen if the function
 call was within the `jit`-compiled function:

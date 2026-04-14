@@ -72,13 +72,13 @@ x
 
   ``` r
   jit_eval({
-    x[list(2)]
+    x[array(2L)]
   })
   ```
 
       ## AnvilArray
       ##  2
-      ## [ CPUi32{1} ]
+      ## [ CPUi32{} ]
 
 - Dynamic & Drop:
 
@@ -118,7 +118,7 @@ between static and dynamic indices.
 
   ``` r
   jit_eval({
-    x[list(2, 4, 6)]
+    x[array(c(2L, 4L, 6L))]
   })
   ```
 
@@ -142,10 +142,11 @@ between static and dynamic indices.
       ##  6
       ## [ CPUi32{3} ]
 
-We are using [`list()`](https://rdrr.io/r/base/list.html) instead of
-1-dimension vectors, because otherwise the case where we use a length-1
-vector would be ambiguous (do we drop or keep the dimension?). This
-allows us to do without a `drop` parameter.
+We use [`array()`](https://rdrr.io/r/base/array.html) (wrapping a
+length-1 or longer integer vector) instead of a bare R vector, because
+otherwise the case where we use a length-1 vector would be ambiguous (do
+we drop or keep the dimension?). This allows us to do without a `drop`
+parameter.
 
 We can also use a range that can be specified either canonically via
 `a:b` or using
@@ -245,17 +246,18 @@ jit_eval({
 
 ``` r
 jit_eval({
-  x[list(1), 2:3]
+  x[array(1L), 2:3]
 })
 ```
 
     ## AnvilArray
-    ##  2 3
-    ## [ CPUi32{1,2} ]
+    ##  2
+    ##  3
+    ## [ CPUi32{2} ]
 
 ``` r
 jit_eval({
-  x[list(1, 3), 2:3]
+  x[array(c(1L, 3L)), 2:3]
 })
 ```
 
@@ -288,7 +290,7 @@ jit_eval({
 
 ``` r
 jit_eval({
-  x[list(2, 2), ]
+  x[array(c(2L, 2L)), ]
 })
 ```
 
@@ -299,7 +301,7 @@ jit_eval({
 
 ``` r
 jit_eval({
-  x[list(2, 2)]
+  x[array(c(2L, 2L))]
 })
 ```
 
@@ -426,7 +428,7 @@ backends (CPU vs. GPU).
 ``` r
 x <- nv_array(1:5)
 jit_eval({
-  x[list(1, 1, 1)] <- nv_array(c(10L, 20L, 30L))
+  x[array(c(1L, 1L, 1L))] <- nv_array(c(10L, 20L, 30L))
   x
 })
 ```

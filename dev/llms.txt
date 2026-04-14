@@ -550,7 +550,7 @@ Internal data structures and functions
   : Trace an R function into a Graph
 - [`transform_gradient()`](https://r-xla.github.io/anvil/dev/reference/transform_gradient.md)
   : Transform a graph to its gradient
-- [`graph_to_r_function()`](https://r-xla.github.io/anvil/dev/reference/graph_to_r_function.md)
+- [`graph_to_quickr_r_function()`](https://r-xla.github.io/anvil/dev/reference/graph_to_quickr_r_function.md)
   : Convert an AnvilGraph to a plain R function
 - [`jit_eval()`](https://r-xla.github.io/anvil/dev/reference/jit_eval.md)
   : JIT-compile and evaluate an expression

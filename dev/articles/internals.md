@@ -157,7 +157,7 @@ prim("mul")$rules[["reverse"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x561d99a1dc88>
+    ## <bytecode: 0x560fa1d2d680>
     ## <environment: namespace:anvil>
 
 The
@@ -208,7 +208,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x561d99a20e40>
+    ## <bytecode: 0x560fa1d2ca08>
     ## <environment: namespace:anvil>
 
 The
@@ -592,38 +592,3 @@ Further note that:
 ### Nested Inputs and Outputs
 
 TODO
-
-## Design Decisions
-
-### Literal handling
-
-It is appealing to support the conversion of R literals (`1L`, `1.0`
-`TRUE`, etc.) to `AnvilArray`s when calling into `jit`-ted functions,
-i.e. allow the following:
-
-``` r
-jit(nv_add, static = character())(1, 2)
-```
-
-In `jit`(), we could in principle do this, because we know which
-arguments are static and which are expected to be `AnvilArray`s.
-However, in
-[`gradient()`](https://r-xla.github.io/anvil/dev/reference/gradient.md),
-we don’t know which arguments are static and which are not. For example,
-we can’t make the following work:
-
-``` r
-jit(\() {
-  gradient(nv_add)(1, 2)
-})
-```
-
-This would be somewhat inconsistent and hard to to reason about.
-Furthermore, auto-converting literals passed as non-static arguments to
-`jit`-ted functions would also entail various suble differences between
-debug-mode and jit-mode, as the former has no top-level hook for this
-conversion. Finally, requiring the user to think about the input data
-types should also be advantageous; we want to prioritize clarity over
-minor convenience. Note that for primitive calls like `nv_array(1)^2` we
-do auto-convert literals, because we know which arguments are expected
-to be `AnvilArray`s and otherwise code just becomes much harder to read.

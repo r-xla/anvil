@@ -2,8 +2,7 @@
 
 Extracts a subset from an array. You can also use the `[` operator.
 Supports R-style indexing including scalar indices (which drop
-dimensions), ranges (`a:b`), and
-[`list()`](https://rdrr.io/r/base/list.html) for selecting multiple
+dimensions), ranges (`a:b`), and `array(c(...))` for selecting multiple
 elements along a dimension.
 
 ## Usage

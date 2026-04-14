@@ -72,6 +72,7 @@
 <h3 id="breaking-changes-development-version">Breaking Changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
 <ul><li>
 <code>AnvilTensor</code>/<code>nv_tensor</code> were renamed to <code>AnvilArray</code> and <code>nv_array</code> to be more in line with R’s <code><a href="https://rdrr.io/r/base/array.html" class="external-link">array()</a></code>. Also, <code>nv_aten()</code> was renamed to <code><a href="../reference/AbstractArray.html">nv_abstract()</a></code>.</li>
+<li>Subsetting with <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> (e.g. <code>x[list(1, 3)]</code>) is no longer supported. Use <code><a href="https://rdrr.io/r/base/array.html" class="external-link">array()</a></code> to wrap the indices instead, e.g. <code>x[array(c(1L, 3L))]</code>. This mirrors the input convention used everywhere else in the package.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
@@ -95,6 +96,7 @@
 </ul></li>
 <li>New S3 methods <code><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim()</a></code>, <code><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow()</a></code>, <code><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol()</a></code>, and <code><a href="https://rdrr.io/r/base/length.html" class="external-link">length()</a></code> for anvil arrays.</li>
 <li>Printing tensors via <code><a href="../reference/nv_print.html">nv_print()</a></code> now also works on GPUs.</li>
+<li>R vectors of length 1 and arrays are now auto-converted when being passed to <code>jit</code>ted functions.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="performance-development-version">Performance<a class="anchor" aria-label="anchor" href="#performance-development-version"></a></h3>

@@ -7,7 +7,7 @@ and compiles it with
 ## Usage
 
 ``` r
-graph_to_quickr_function(graph, unwrap = FALSE)
+graph_to_quickr_function(graph, unwrap = FALSE, flat = FALSE)
 ```
 
 ## Arguments
@@ -24,6 +24,13 @@ graph_to_quickr_function(graph, unwrap = FALSE)
   [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
   with the `"quickr"` backend. If `TRUE`, outputs are returned as plain
   R values.
+
+- flat:
+
+  (`logical(1)`)  
+  If `FALSE` (default), the returned function takes structured top-level
+  arguments matching the formals of the traced function. If `TRUE`, it
+  takes a single flat list of all leaves (including static slots).
 
 ## Value
 

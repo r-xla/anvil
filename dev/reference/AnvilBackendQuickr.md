@@ -49,7 +49,9 @@ This backend is **experimental** and has a number of limitations:
   one-time compilation cost is amortized.
 
 - Only a subset of the primitives that the XLA backend supports are
-  currently lowered to quickr code.
+  currently lowered to quickr code. See
+  [`vignette("primitives")`](https://r-xla.github.io/anvil/dev/articles/primitives.md)
+  for an overview.
 
 - Only the data types `f64`, `i32`, and `bool` are supported.
 

@@ -162,8 +162,9 @@ expected type:</p>
 because 1 is not an <code>AnvilArray</code>.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
-<span><span class="co">## <span style="color: #BBBB00;">!</span> Expected AnvilArray, but got <span style="color: #0000BB;">&lt;numeric&gt;</span></span></span></code></pre>
+<pre><code><span><span class="co">## AnvilArray</span></span>
+<span><span class="co">##  -1</span></span>
+<span><span class="co">## [ CPUf32?{} ]</span></span></code></pre>
 <p>This is, because debug mode emulates what would happen if the
 function call was within the <code>jit</code>-compiled function:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
