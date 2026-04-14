@@ -31,25 +31,9 @@ Compilation backend. \code{"xla"} (default) uses PJRT/XLA.
 \code{default_backend()}.}
 
 \item{...}{Backend-specific options. Passing an option that is not supported
-by the selected backend raises an error.
-\itemize{
-\item \code{backend = "xla"} supports:
-\itemize{
-\item \code{donate} (\code{character()}): names of arguments whose buffers should be
-donated. Donated buffers can be aliased with outputs of the same type,
-allowing in-place operations and reducing memory usage. An argument
-cannot appear in both \code{donate} and \code{static}.
-\item \code{device} (\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}}):
-the device to use if it cannot be inferred from the inputs or
-constants. Defaults to \code{"cpu"}.
-}
-\item \code{backend = "quickr"} supports:
-\itemize{
-\item \code{unwrap} (\code{logical(1)}): if \code{TRUE}, the compiled function returns
-plain R values instead of wrapping outputs in \code{\link{AnvilArray}}s.
-Defaults to \code{FALSE}.
-}
-}}
+by the selected backend raises an error. See the \strong{XLA JIT arguments} and
+\strong{Quickr JIT arguments} sections below for the options accepted by each
+backend.}
 }
 \value{
 A \code{JitFunction} with the same formals as \code{f}.
@@ -65,6 +49,31 @@ calls with the same input structure, shapes, and dtypes hit an LRU cache and
 skip recompilation. Unlike \code{\link[=xla]{xla()}}, the compiled executable is not created
 eagerly but lazily on the first invocation.
 }
+\section{XLA JIT arguments}{
+
+\itemize{
+\item \code{donate} (\code{character()}, default \code{character()}): names of arguments whose
+underlying buffers may be donated to (i.e., reused/consumed by) the
+compiled XLA executable. Donated buffers must not be used again by the
+caller after the call; this can reduce memory usage and copies for large
+inputs. Must not overlap with \code{static}.
+\item \code{device} (\code{NULL} | \code{character(1)} | \code{\link[pjrt:as_pjrt_device]{pjrt::PJRTDevice}},
+default \code{NULL}): target device (e.g. \code{"cpu"}, \code{"cuda"}) on which the
+function is compiled and executed. When \code{NULL}, the device is inferred
+from the inputs; if inputs live on different devices an error is raised.
+}
+}
+
+\section{Quickr JIT arguments}{
+
+\itemize{
+\item \code{unwrap} (\code{logical(1)}, default \code{FALSE}): if \code{TRUE}, the compiled function
+returns plain R arrays instead of \code{\link{AnvilArray}}s. Useful when the jitted
+function's output is consumed by non-anvil R code and the extra wrapping
+would only get stripped again.
+}
+}
+
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 f <- jit(function(x, y) x + y)
@@ -78,9 +87,10 @@ g(nv_array(3), TRUE)
 g(nv_array(3), FALSE)
 \dontshow{\}) # examplesIf}
 \dontshow{if (requireNamespace("quickr", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-local_backend("quickr")
-h <- jit(function(x, y) x + y)
-h(nv_array(1), nv_array(2))
+with_backend("quickr", {
+  h <- jit(function(x, y) x + y)
+  h(nv_array(1), nv_array(2))
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

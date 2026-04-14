@@ -75,9 +75,50 @@ compile_to_quickr <- function(f, args_flat, in_tree, unwrap = FALSE) {
   list(fun = graph_to_quickr_function(graph, unwrap = unwrap))
 }
 
-register_backend(
-  "quickr",
-  AnvilBackend(
+#' Quickr backend
+#'
+#' Constructs the quickr backend, which stores array data as plain R arrays and
+#' compiles jitted functions to R code via the
+#' [quickr](https://CRAN.R-project.org/package=quickr) package.
+#'
+#' To use it, the `"quickr"` package needs to be installed.
+#'
+#' Registered automatically under the name `"quickr"` when the package is
+#' loaded; call [`local_backend("quickr")`][local_backend()] or
+#' [`with_backend("quickr", ...)`][with_backend()] to use it. Requires the
+#' quickr package to be installed.
+#'
+#' @section Data representation:
+#' An [`AnvilArray`] with `backend = "quickr"` is, under the hood, a plain R
+#' vector or array (`numeric`, `integer`, or `logical`) stored in the `$data`
+#' field. [`as_array()`] returns the underlying vector/array directly without
+#' copying, and [`nv_array()`] simply wraps an R vector/array. As a
+#' consequence, there is no separate notion of a device: data always lives in
+#' R's memory and computation always runs on the CPU.
+#'
+#' @section Status:
+#' This backend is **experimental** and has a number of limitations:
+#'
+#' * Compilation (tracing + quickr lowering) is somewhat slow, so it is best
+#'   suited to long-running or repeatedly-called functions where the one-time
+#'   compilation cost is amortized.
+#' * Only a subset of the primitives that the XLA backend supports are currently
+#'   lowered to quickr code.
+#' * Only the data types `f64`, `i32`, and `bool` are supported.
+#' * Only CPU execution is supported.
+#'
+#' @section Quickr JIT arguments:
+#'
+#' * `unwrap` (`logical(1)`, default `FALSE`): if `TRUE`, the compiled function
+#'   returns plain R arrays instead of [`AnvilArray`]s. Useful when the jitted
+#'   function's output is consumed by non-anvil R code and the extra wrapping
+#'   would only get stripped again.
+#'
+#' @return An [`AnvilBackend`] object with subclass `"AnvilBackendQuickr"`.
+#' @seealso [`AnvilBackend()`], [`AnvilBackendXla()`], [`local_backend()`], [`jit()`].
+#' @export
+AnvilBackendQuickr <- function() {
+  backend <- AnvilBackend(
     data_constructor = function(data, dtype, shape, device, ambiguous) {
       if (is.null(dtype)) {
         dtype <- if (is.double(data)) FloatType(64) else default_dtype(data)
@@ -127,4 +168,8 @@ register_backend(
       jit_quickr_impl(f, static, cache, unwrap)
     }
   )
-)
+  class(backend) <- c("AnvilBackendQuickr", class(backend))
+  backend
+}
+
+register_backend("quickr", AnvilBackendQuickr())

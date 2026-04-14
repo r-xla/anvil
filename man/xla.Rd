@@ -17,7 +17,7 @@ expected shapes and dtypes of \code{f}'s arguments.}
 \item{donate}{(\code{character()})\cr
 Names of the arguments whose buffers should be donated.}
 
-\item{device}{(\code{character(1)})\cr
+\item{device}{(\code{character(1)} | \code{PJRTDevice})\cr
 Target device such as \code{"cpu"} (default) or \code{"cuda"}.}
 }
 \value{
@@ -36,7 +36,6 @@ specified upfront via abstract arrays (see \code{\link[=nv_abstract]{nv_abstract
 \details{
 Traces \code{f} with the given abstract \code{args} (via \code{\link[=trace_fn]{trace_fn()}}), lowers the resulting graph
 via \code{\link[=stablehlo]{stablehlo()}} and then compiles it to an XLA executable via \code{\link[pjrt:pjrt_compile]{pjrt::pjrt_compile()}}.
-and compiles it to an XLA executable immediately.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}

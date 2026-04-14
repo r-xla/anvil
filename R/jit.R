@@ -19,20 +19,11 @@
 #'   `"quickr"` uses `quickr::quick()`. If omitted, the default comes from
 #'   `default_backend()`.
 #' @param ... Backend-specific options. Passing an option that is not supported
-#'   by the selected backend raises an error.
-#'
-#'   * `backend = "xla"` supports:
-#'     * `donate` (`character()`): names of arguments whose buffers should be
-#'       donated. Donated buffers can be aliased with outputs of the same type,
-#'       allowing in-place operations and reducing memory usage. An argument
-#'       cannot appear in both `donate` and `static`.
-#'     * `device` (`NULL` | `character(1)` | [`PJRTDevice`][pjrt::pjrt_device]):
-#'       the device to use if it cannot be inferred from the inputs or
-#'       constants. Defaults to `"cpu"`.
-#'   * `backend = "quickr"` supports:
-#'     * `unwrap` (`logical(1)`): if `TRUE`, the compiled function returns
-#'       plain R values instead of wrapping outputs in [`AnvilArray`]s.
-#'       Defaults to `FALSE`.
+#'   by the selected backend raises an error. See the **XLA JIT arguments** and
+#'   **Quickr JIT arguments** sections below for the options accepted by each
+#'   backend.
+#' @inheritSection AnvilBackendXla XLA JIT arguments
+#' @inheritSection AnvilBackendQuickr Quickr JIT arguments
 #' @return A `JitFunction` with the same formals as `f`.
 #'   The returned wrapper expects [`AnvilArray`] inputs and returns
 #'   [`AnvilArray`] values (unless `unwrap = TRUE` is passed to the
@@ -52,9 +43,10 @@
 #' g(nv_array(3), FALSE)
 #'
 #' @examplesIf requireNamespace("quickr", quietly = TRUE)
-#' local_backend("quickr")
-#' h <- jit(function(x, y) x + y)
-#' h(nv_array(1), nv_array(2))
+#' with_backend("quickr", {
+#'   h <- jit(function(x, y) x + y)
+#'   h(nv_array(1), nv_array(2))
+#' })
 jit <- function(
   f,
   static = character(),

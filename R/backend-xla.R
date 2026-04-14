@@ -70,12 +70,12 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
       return(jit_call_xla(
-        cache_hit[[1]],
-        cache_hit[[2]],
-        cache_hit[[3]],
+        cache_hit[[1]], # executable
+        cache_hit[[2]], # out tree
+        cache_hit[[3]], # constants
         prep$args_flat,
         prep$is_static_flat,
-        cache_hit[[4]]
+        cache_hit[[4]] # ambiguity
       ))
     }
 
@@ -200,7 +200,6 @@ compile_graph_to_xla <- function(graph, donate = character(), device = NULL) {
 #' @details
 #' Traces `f` with the given abstract `args` (via [`trace_fn()`]), lowers the resulting graph
 #' via [`stablehlo()`] and then compiles it to an XLA executable via [`pjrt::pjrt_compile()`].
-#' and compiles it to an XLA executable immediately.
 #'
 #' @param f (`function`)\cr
 #'   Function to compile. Must accept and return [`AnvilArray`]s.
@@ -209,7 +208,7 @@ compile_graph_to_xla <- function(graph, donate = character(), device = NULL) {
 #'   expected shapes and dtypes of `f`'s arguments.
 #' @param donate (`character()`)\cr
 #'   Names of the arguments whose buffers should be donated.
-#' @param device (`character(1)`)\cr
+#' @param device (`character(1)` | `PJRTDevice`)\cr
 #'   Target device such as `"cpu"` (default) or `"cuda"`.
 #' @return (`function`)\cr
 #'   A function that accepts [`AnvilArray`] arguments (matching the flat inputs)
@@ -251,16 +250,46 @@ xla <- function(f, args, donate = character(), device = NULL) {
   f_xla
 }
 
-register_backend(
-  "xla",
-  AnvilBackend(
+#' XLA backend
+#'
+#' Constructs the XLA backend, which stores array data in PJRT buffers (via
+#' [`pjrt::pjrt_buffer()`]) and compiles jitted functions to XLA executables
+#' via [`stablehlo()`] and [`pjrt::pjrt_compile()`]. This is the default
+#' backend.
+#'
+#' @section Data representation:
+#' An [`AnvilArray`] with `backend = "xla"` wraps a [`pjrt::pjrt_buffer()`]
+#' stored in the `$data` field. The buffer owns the memory holding the tensor
+#' values and may live on any device supported by PJRT (CPU, CUDA, Metal,
+#' ...). Calling [`as_array()`] transfers the buffer contents back to an R
+#' array; calling [`nv_array()`] on an R object uploads it to the requested
+#' device.
+#'
+#' Each `AnvilArray` therefore has an associated device, queryable via
+#' [`device()`]. A device is a [`pjrt::as_pjrt_device()`] object (e.g. the
+#' platform `"cpu"` or `"cuda"`, optionally with an index such as `"cuda:1"`).
+#' When `device` is `NULL` in [`nv_array()`] or the [`jit()`] wrapper, the
+#' device defaults to the `PJRT_PLATFORM` environment variable (falling back
+#' to `"cpu"`), or is inferred from the existing inputs of a jitted call.
+#' Operations require all inputs to live on the same device.
+#'
+#' @section XLA JIT arguments:
+#' * `donate` (`character()`, default `character()`): names of arguments whose
+#'   underlying buffers may be donated to (i.e., reused/consumed by) the
+#'   compiled XLA executable. Donated buffers must not be used again by the
+#'   caller after the call; this can reduce memory usage and copies for large
+#'   inputs. Must not overlap with `static`.
+#' * `device` (`NULL` | `character(1)` | [`pjrt::PJRTDevice`][pjrt::as_pjrt_device],
+#'   default `NULL`): target device (e.g. `"cpu"`, `"cuda"`) on which the
+#'   function is compiled and executed. When `NULL`, the device is inferred
+#'   from the inputs; if inputs live on different devices an error is raised.
+#'
+#' @return An [`AnvilBackend`] object with subclass `"AnvilBackendXla"`.
+#' @seealso [`AnvilBackend()`], [`AnvilBackendQuickr()`], [`local_backend()`], [`jit()`].
+#' @export
+AnvilBackendXla <- function() {
+  backend <- AnvilBackend(
     data_constructor = function(data, dtype, shape, device, ambiguous) {
-      if (is.null(dtype) && !inherits(data, "PJRTBuffer")) {
-        dtype <- default_dtype(data)
-      }
-      if (is_dtype(dtype)) {
-        dtype <- as.character(dtype)
-      }
       buf <- pjrt_buffer(data, dtype = dtype, device = device, shape = shape)
       structure(
         list(data = buf, ambiguous = ambiguous, backend = "xla"),
@@ -276,9 +305,8 @@ register_backend(
     device = function(x) device(x$data),
     print_data = function(x, footer) print(x$data, header = FALSE, footer = footer),
     jit = function(f, static, cache, donate = character(), device = NULL) {
-      fargs <- formalArgs2(f)
-      assert_subset(donate, fargs)
-      assert_subset(static, fargs)
+      assert_subset(donate, formalArgs2(f))
+      # static is checked in jit() itself
       common <- intersect(donate, static)
       if (length(common)) {
         cli_abort("{.val {common}} cannot be both in {.arg donate} and {.arg static}.")
@@ -286,4 +314,8 @@ register_backend(
       jit_xla_impl(f, static, cache, donate, device)
     }
   )
-)
+  class(backend) <- c("AnvilBackendXla", class(backend))
+  backend
+}
+
+register_backend("xla", AnvilBackendXla())
