@@ -37,7 +37,7 @@ xla(f, args, donate = character(), device = NULL)
 
 - device:
 
-  (`character(1)`)  
+  (`character(1)` \| `PJRTDevice`)  
   Target device such as `"cpu"` (default) or `"cuda"`.
 
 ## Value
@@ -56,7 +56,6 @@ lowers the resulting graph via
 [`stablehlo()`](https://r-xla.github.io/anvil/dev/reference/stablehlo.md)
 and then compiles it to an XLA executable via
 [`pjrt::pjrt_compile()`](https://r-xla.github.io/pjrt/reference/pjrt_compile.html).
-and compiles it to an XLA executable immediately.
 
 ## See also
 

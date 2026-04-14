@@ -9,7 +9,7 @@ expression once.
 ## Usage
 
 ``` r
-jit_eval(expr, device = NULL)
+jit_eval(expr, ...)
 ```
 
 ## Arguments
@@ -19,13 +19,12 @@ jit_eval(expr, device = NULL)
   (NSE)  
   Expression to compile and evaluate.
 
-- device:
+- ...:
 
-  (`NULL` \| `character(1)` \|
-  [`PJRTDevice`](https://r-xla.github.io/pjrt/reference/pjrt_device.html))  
-  The device to use. By default (`NULL`), the device is inferred from
-  the arrays encountered during tracing, falling back to `"cpu"`. or
-  `"cpu"`.
+  Backend-specific options forwarded to
+  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) (e.g.
+  `device` for the `"xla"` backend, `unwrap` for the `"quickr"`
+  backend).
 
 ## Value
 

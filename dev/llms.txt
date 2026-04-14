@@ -372,7 +372,7 @@ Functions for generating random numbers
 - [`nv_rng_state()`](https://r-xla.github.io/anvil/dev/reference/nv_rng_state.md)
   : Generate RNG State
 
-## AnvilArray
+## Array
 
 Constructing and working with AnvilArrays
 
@@ -384,8 +384,6 @@ Functions for creating and initializing arrays
   [`nv_scalar()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
   [`nv_empty()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
   : AnvilArray
-- [`is_arrayish()`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
-  : Array-like Objects
 - [`nv_fill()`](https://r-xla.github.io/anvil/dev/reference/nv_fill.md)
   : Fill Constant
 - [`nv_iota()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md)
@@ -464,9 +462,9 @@ Debugging utilities and tools
 - [`DebugBox()`](https://r-xla.github.io/anvil/dev/reference/DebugBox.md)
   : Debug Box Class
 
-## Backend selection
+## Backend
 
-Functions for selecting and managing the backend
+Backend-related functionality and implementations
 
 - [`backend()`](https://r-xla.github.io/anvil/dev/reference/backend.md)
   : Get Backend of an Array
@@ -476,6 +474,12 @@ Functions for selecting and managing the backend
   : Temporarily set the default backend
 - [`with_backend()`](https://r-xla.github.io/anvil/dev/reference/with_backend.md)
   : Run code with a specific backend
+- [`AnvilBackend()`](https://r-xla.github.io/anvil/dev/reference/AnvilBackend.md)
+  : Create a backend
+- [`AnvilBackendXla()`](https://r-xla.github.io/anvil/dev/reference/AnvilBackendXla.md)
+  : XLA backend
+- [`AnvilBackendQuickr()`](https://r-xla.github.io/anvil/dev/reference/AnvilBackendQuickr.md)
+  : Quickr backend
 
 ## Internals
 
@@ -535,6 +539,8 @@ Internal data structures and functions
   : Abstract Properties
 - [`to_abstract()`](https://r-xla.github.io/anvil/dev/reference/to_abstract.md)
   : Convert to Abstract Array
+- [`is_arrayish()`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
+  : Array-like Objects
 
 ### Transformations
 

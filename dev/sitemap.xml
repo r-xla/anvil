@@ -23,6 +23,8 @@
 <url><loc>https://r-xla.github.io/anvil/dev/reference/AbstractArray.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilArray.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilBackend.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilBackendQuickr.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilBackendXla.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilBox.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilGraph.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilPrimitive.html</loc></url>

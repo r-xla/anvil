@@ -71,7 +71,7 @@ specified upfront via abstract arrays (see nv_abstract())."><meta property="og:i
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Ahead-of-time compile a function to XLA</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/R/jit.R" class="external-link"><code>R/jit.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/R/backend-xla.R" class="external-link"><code>R/backend-xla.R</code></a></small>
       <div class="d-none name"><code>xla.Rd</code></div>
     </div>
 
@@ -109,7 +109,7 @@ Names of the arguments whose buffers should be donated.</p></dd>
 
 
 <dt id="arg-device">device<a class="anchor" aria-label="anchor" href="#arg-device"></a></dt>
-<dd><p>(<code>character(1)</code>)<br>
+<dd><p>(<code>character(1)</code> | <code>PJRTDevice</code>)<br>
 Target device such as <code>"cpu"</code> (default) or <code>"cuda"</code>.</p></dd>
 
 </dl></div>
@@ -122,8 +122,7 @@ and returns the result as <code><a href="AnvilArray.html">AnvilArray</a></code>s
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Traces <code>f</code> with the given abstract <code>args</code> (via <code><a href="trace_fn.html">trace_fn()</a></code>), lowers the resulting graph
-via <code><a href="stablehlo.html">stablehlo()</a></code> and then compiles it to an XLA executable via <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_compile.html" class="external-link">pjrt::pjrt_compile()</a></code>.
-and compiles it to an XLA executable immediately.</p>
+via <code><a href="stablehlo.html">stablehlo()</a></code> and then compiles it to an XLA executable via <code><a href="https://r-xla.github.io/pjrt/reference/pjrt_compile.html" class="external-link">pjrt::pjrt_compile()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

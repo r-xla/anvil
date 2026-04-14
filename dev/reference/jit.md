@@ -14,9 +14,8 @@ jit(
   f,
   static = character(),
   cache_size = 100L,
-  donate = character(),
-  device = NULL,
-  backend = default_backend()
+  backend = default_backend(),
+  ...
 )
 ```
 
@@ -42,21 +41,6 @@ jit(
   (`integer(1)`)  
   Maximum number of compiled executables to keep in the LRU cache.
 
-- donate:
-
-  ([`character()`](https://rdrr.io/r/base/character.html))  
-  Names of the arguments whose buffers should be donated. Donated
-  buffers can be aliased with outputs of the same type, allowing
-  in-place operations and reducing memory usage. An argument cannot
-  appear in both `donate` and `static`.
-
-- device:
-
-  (`NULL` \| `character(1)` \|
-  [`PJRTDevice`](https://r-xla.github.io/pjrt/reference/pjrt_device.html))  
-  The device to use if it cannot be inferred from the inputs or
-  constants. Defaults to `"cpu"`. Only supported for `backend = "xla"`.
-
 - backend:
 
   (`character(1)`)  
@@ -65,6 +49,13 @@ jit(
   omitted, the default comes from
   [`default_backend()`](https://r-xla.github.io/anvil/dev/reference/default_backend.md).
 
+- ...:
+
+  Backend-specific options. Passing an option that is not supported by
+  the selected backend raises an error. See the **XLA JIT arguments**
+  and **Quickr JIT arguments** sections below for the options accepted
+  by each backend.
+
 ## Value
 
 A `JitFunction` with the same formals as `f`. The returned wrapper
@@ -72,9 +63,33 @@ expects
 [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
 inputs and returns
 [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
-values.
+values (unless `unwrap = TRUE` is passed to the `"quickr"` backend).
 
 (`function`)
+
+## XLA JIT arguments
+
+- `donate` ([`character()`](https://rdrr.io/r/base/character.html),
+  default [`character()`](https://rdrr.io/r/base/character.html)): names
+  of arguments whose underlying buffers may be donated to (i.e.,
+  reused/consumed by) the compiled XLA executable. Donated buffers must
+  not be used again by the caller after the call; this can reduce memory
+  usage and copies for large inputs. Must not overlap with `static`.
+
+- `device` (`NULL` \| `character(1)` \|
+  [`pjrt::PJRTDevice`](https://r-xla.github.io/pjrt/reference/as_pjrt_device.html),
+  default `NULL`): target device (e.g. `"cpu"`, `"cuda"`) on which the
+  function is compiled and executed. When `NULL`, the device is inferred
+  from the inputs; if inputs live on different devices an error is
+  raised.
+
+## Quickr JIT arguments
+
+- `unwrap` (`logical(1)`, default `FALSE`): if `TRUE`, the compiled
+  function returns plain R arrays instead of
+  [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)s.
+  Useful when the jitted function's output is consumed by non-anvil R
+  code and the extra wrapping would only get stripped again.
 
 ## See also
 
@@ -104,10 +119,11 @@ g(nv_array(3), FALSE)
 #> AnvilArray
 #>  6
 #> [ CPUf32{1} ] 
-local_backend("quickr")
-h <- jit(function(x, y) x + y)
-h(nv_array(1), nv_array(2))
+with_backend("quickr", {
+  h <- jit(function(x, y) x + y)
+  h(nv_array(1), nv_array(2))
+})
 #> AnvilArray
-#>  3
-#> [ CPUf32{1} ] 
+#> [1] 3
+#> [ CPUf64{1} ] 
 ```

@@ -7,7 +7,7 @@ and compiles it with
 ## Usage
 
 ``` r
-graph_to_quickr_function(graph)
+graph_to_quickr_function(graph, unwrap = FALSE)
 ```
 
 ## Arguments
@@ -17,15 +17,27 @@ graph_to_quickr_function(graph)
   ([`AnvilGraph`](https://r-xla.github.io/anvil/dev/reference/AnvilGraph.md))  
   Graph to convert.
 
+- unwrap:
+
+  (`logical(1)`)  
+  If `FALSE` (default), each output leaf is wrapped in an
+  [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  with the `"quickr"` backend. If `TRUE`, outputs are returned as plain
+  R values.
+
 ## Value
 
-(`function`)
+(`function`) that returns
+[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+outputs (or a tree of them), or plain R values when `unwrap = TRUE`.
 
 ## Details
 
 The returned function expects plain R scalars/vectors/arrays (not
 [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))
-and returns plain R values/arrays.
+and returns
+[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+outputs by default, or plain R values when `unwrap = TRUE`.
 
 If the graph returns multiple outputs (e.g. a nested list), the compiled
 function returns the same structure by rebuilding the output tree in R.
