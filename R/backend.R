@@ -44,17 +44,8 @@ AnvilBackend <- function(
   )
 }
 
-QuickrDeviceCpu <- function() {
-  structure("cpu", class = "QuickrDeviceCpu")
-}
-
-#' @export
-format.QuickrDeviceCpu <- function(x, ...) "QuickrDeviceCpu"
-
-#' @export
-print.QuickrDeviceCpu <- function(x, ...) {
-  cat(format(x), "\n")
-  invisible(x)
+register_backend <- function(name, backend) {
+  globals$backends[[name]] <- backend
 }
 
 PlainDeviceCpu <- function() {
@@ -70,85 +61,13 @@ print.PlainDeviceCpu <- function(x, ...) {
   invisible(x)
 }
 
-globals$backends <- list(
-  xla = AnvilBackend(
-    data_constructor = function(data, dtype, shape, device, ambiguous) {
-      if (is.null(dtype) && !inherits(data, "PJRTBuffer")) {
-        dtype <- default_dtype(data)
-      }
-      if (is_dtype(dtype)) {
-        dtype <- as.character(dtype)
-      }
-      buf <- pjrt_buffer(data, dtype = dtype, device = device, shape = shape)
-      structure(
-        list(data = buf, ambiguous = ambiguous, backend = "xla"),
-        class = "AnvilArray"
-      )
-    },
-    dtype = function(x) as_dtype(as.character(pjrt::elt_type(x$data))),
-    shape = function(x) tengen::shape(x$data),
-    ambiguous = function(x) x$ambiguous,
-    as_array = function(x) tengen::as_array(x$data),
-    as_raw = function(x, row_major) tengen::as_raw(x$data, row_major = row_major),
-    platform = function(x) pjrt::platform(x$data),
-    device = function(x) device(x$data),
-    print_data = function(x, footer) print(x$data, header = FALSE, footer = footer),
-    jit = function(f, static, cache, donate, device) {
-      jit_xla_impl(f, static, cache, donate, device)
-    }
-  ),
-  quickr = AnvilBackend(
-    data_constructor = function(data, dtype, shape, device, ambiguous) {
-      if (is.null(dtype)) {
-        dtype <- if (is.double(data)) FloatType(64) else default_dtype(data)
-      }
-      if (!is_dtype(dtype)) {
-        dtype <- as_dtype(dtype)
-      }
-      if (is.null(shape)) {
-        shape <- if (!is.null(dim(data))) {
-          as.integer(dim(data))
-        } else if (length(data) == 1L) {
-          1L
-        } else {
-          as.integer(length(data))
-        }
-      }
-      dtype_chr <- as.character(dtype)
-      data <- switch(
-        substr(dtype_chr, 1, 1),
-        "f" = as.double(data),
-        "i" = ,
-        "u" = as.integer(data),
-        "b" = as.logical(data),
-        as.double(data)
-      )
-      if (length(shape) >= 1L) {
-        dim(data) <- shape
-      }
-      structure(
-        list(data = data, dtype = dtype, shape = shape, ambiguous = ambiguous, backend = "quickr"),
-        class = "AnvilArray"
-      )
-    },
-    dtype = function(x) x$dtype,
-    shape = function(x) x$shape,
-    ambiguous = function(x) x$ambiguous,
-    as_array = function(x) x$data,
-    as_raw = function(x, row_major) as.raw(x$data),
-    platform = function(x) "cpu",
-    device = function(x) QuickrDeviceCpu(),
-    print_data = function(x, footer) {
-      print(x$data)
-      cat(footer, "\n")
-    },
-    jit = function(f, static, cache, donate, device) {
-      jit_quickr_impl(f, static, cache)
-    }
-  ),
-  # The plain backend is merely for capturing constants during jitting in a backend-agnostic way.
-  # Otherwise it is unused
-  plain = AnvilBackend(
+globals$backends <- list()
+
+# The plain backend is merely for capturing constants during jitting in a backend-agnostic way.
+# Otherwise it is unused
+register_backend(
+  "plain",
+  AnvilBackend(
     data_constructor = function(data, dtype, shape, device, ambiguous) {
       if (is.null(dtype)) {
         dtype <- default_dtype(data)
@@ -190,7 +109,7 @@ globals$backends <- list(
       print(x$data)
       cat(footer, "\n")
     },
-    jit = function(f, static, cache, donate, device) {
+    jit = function(f, static, cache, ...) {
       cli_abort("JIT compilation is not supported for the {.val plain} backend.")
     }
   )

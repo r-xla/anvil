@@ -10,5 +10,5 @@ test_that("graph_to_quickr_function requires {quickr}", {
   }
 
   f <- graph_to_quickr_function(graph)
-  expect_equal(f(2), 4)
+  expect_equal(as_array(f(2)), 4)
 })
