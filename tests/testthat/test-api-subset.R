@@ -72,7 +72,7 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("1D: gather", {
-    check(c(10L), list(1, 4, 7))
+    check(c(10L), array(c(1L, 4L, 7L)))
   })
 
   it("2D: single element in both dims", {
@@ -100,23 +100,23 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("???", {
-    check(c(2, 3, 2), 1:2, list(1, 3), 1)
+    check(c(2, 3, 2), 1:2, array(c(1L, 3L)), 1)
   })
 
   it("2D: gather in first dim, full second", {
-    check(c(6L, 4L), list(1, 3, 5), )
+    check(c(6L, 4L), array(c(1L, 3L, 5L)), )
   })
 
   it("2D: gather in both dims", {
-    check(c(5L, 6L), list(1, 3, 5), list(2, 4))
+    check(c(5L, 6L), array(c(1L, 3L, 5L)), array(c(2L, 4L)))
   })
 
   it("2D: gather in one dim, single in the other", {
-    check(c(5L, 6L), list(2, 4), 3L)
+    check(c(5L, 6L), array(c(2L, 4L)), 3L)
   })
 
-  it("2D: single-element list preserves dim", {
-    check(c(4L, 3L), list(2), )
+  it("2D: single-element array preserves dim", {
+    check(c(4L, 3L), array(2L), )
   })
 
   it("2D: trailing dim unspecified (defaults to full)", {
@@ -132,27 +132,27 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("3D: gather in two dims, scalar in third", {
-    check(c(4L, 5L, 6L), list(1, 3), list(2, 5), 1L)
+    check(c(4L, 5L, 6L), array(c(1L, 3L)), array(c(2L, 5L)), 1L)
   })
 
   it("3D: gather in first two dims, range in third", {
-    check(c(4L, 5L, 6L), list(1, 3), list(2, 4, 5), 2:4)
+    check(c(4L, 5L, 6L), array(c(1L, 3L)), array(c(2L, 4L, 5L)), 2:4)
   })
 
   it("4D: 2 multi-index subsets", {
-    check(c(3, 4, 2, 4), 1:2, list(1, 2, 4), , list(3, 1))
+    check(c(3, 4, 2, 4), 1:2, array(c(1L, 2L, 4L)), , array(c(3L, 1L)))
   })
 
   it("5D: 3 multi-index subsets, no drop", {
-    check(c(3, 4, 2, 4, 3), 1:2, list(1, 2, 4), , list(3, 1), list(2, 2))
+    check(c(3, 4, 2, 4, 3), 1:2, array(c(1L, 2L, 4L)), , array(c(3L, 1L)), array(c(2L, 2L)))
   })
 
   it("5D: 3 multi-index subsets, 1 drop", {
-    check(c(3, 4, 2, 4, 3), 1, list(1, 2, 4), , list(3, 1), list(2, 2))
+    check(c(3, 4, 2, 4, 3), 1, array(c(1L, 2L, 4L)), , array(c(3L, 1L)), array(c(2L, 2L)))
   })
 
   it("5D: 3 multi-index subsets, 2 drops", {
-    check(c(3, 4, 2, 4, 3), 1, list(1, 2, 4), 2, list(3, 1), list(2, 2))
+    check(c(3, 4, 2, 4, 3), 1, array(c(1L, 2L, 4L)), 2, array(c(3L, 1L)), array(c(2L, 2L)))
   })
 
   it("1D: first element (boundary)", {
@@ -172,11 +172,11 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("1D: gather with non-ascending indices", {
-    check(c(10L), list(7, 3, 1))
+    check(c(10L), array(c(7L, 3L, 1L)))
   })
 
   it("1D: gather with duplicate indices", {
-    check(c(6L), list(2, 2, 4))
+    check(c(6L), array(c(2L, 2L, 4L)))
   })
 
   it("2D: dimension of size 1", {
@@ -192,7 +192,7 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("2D: gather with duplicates in both dims", {
-    check(c(4L, 5L), list(1, 1, 3), list(2, 2))
+    check(c(4L, 5L), array(c(1L, 1L, 3L)), array(c(2L, 2L)))
   })
 
   it("2D: boundary indices in both dims", {
@@ -249,10 +249,10 @@ describe("nv_subset and nv_subset_assign", {
     expect_error(jit_eval(x[11L]), "out of bounds")
   })
 
-  it("errors on out-of-bounds list() index", {
+  it("errors on out-of-bounds array() index", {
     x <- nv_array(1:10)
-    expect_error(jit_eval(x[list(1, 11)]), "out of bounds")
-    expect_error(jit_eval(x[list(0, 5)]), "out of bounds")
+    expect_error(jit_eval(x[array(c(1L, 11L))]), "out of bounds")
+    expect_error(jit_eval(x[array(c(0L, 5L))]), "out of bounds")
   })
 
   it("works with all-static indices via [", {
@@ -261,15 +261,15 @@ describe("nv_subset and nv_subset_assign", {
     result <- jit(function(x) x[2L, 1L, 3L])(x)
     expect_equal(as_array(result), r_arr[2, 1, 3])
 
-    result2 <- jit(function(x) x[list(1, 1), list(2, 3), list(2, 1)])(x)
+    result2 <- jit(function(x) x[array(c(1L, 1L)), array(c(2L, 3L)), array(c(2L, 1L))])(x)
     expect_equal(as_array(result2), r_arr[c(1, 1), c(2, 3), c(2, 1)])
   })
 
   it("works with nv_arrays just like with R indices", {
     x <- jit_eval({
       x <- nv_array(1:24, shape = c(2, 3, 4))
-      x1 <- x[1:2, list(1, 3), 1]
-      x2 <- x[nv_array(c(1L, 2L)), list(1L, 3L), nv_scalar(1L)]
+      x1 <- x[1:2, array(c(1L, 3L)), 1]
+      x2 <- x[nv_array(c(1L, 2L)), array(c(1L, 3L)), nv_scalar(1L)]
       list(x1, x2)
     })
     expect_equal(x[[1]], x[[2]])
@@ -279,8 +279,8 @@ describe("nv_subset and nv_subset_assign", {
       x1 <- x
       x2 <- x
       update <- nv_array(1:4, shape = c(2, 2))
-      x1[1:2, list(1, 3), 1] <- update
-      x2[nv_array(c(1L, 2L)), list(1L, 3L), nv_scalar(1L)] <- update
+      x1[1:2, array(c(1L, 3L)), 1] <- update
+      x2[nv_array(c(1L, 2L)), array(c(1L, 3L)), nv_scalar(1L)] <- update
       list(x1, x2)
     })
     expect_equal(y[[1]], y[[2]])

@@ -62,7 +62,7 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
       args <- lapply(args, eval, envir = parent.frame())
       return(do.call(f, args))
     }
-    prep <- jit_prepare_call(match.call(), parent.frame(), static)
+    prep <- jit_prepare_call(match.call(), parent.frame(), static, "xla")
     inputs <- jit_xla_inputs(prep$args_flat, prep$is_static_flat, device)
 
     device_key <- if (!is.null(inputs$device)) as.character(inputs$device) else NULL
@@ -236,7 +236,9 @@ xla <- function(f, args, donate = character(), device = NULL) {
   f_xla <- function() {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
-    args_unwrapped <- unname(lapply(args, \(a) a$data))
+    args_flat <- flatten(args)
+    args_flat <- lapply(args_flat, autoconvert_input, backend = "xla")
+    args_unwrapped <- lapply(args_flat, \(a) a$data)
     out_vals <- rlang::exec(
       pjrt::pjrt_execute,
       exec,

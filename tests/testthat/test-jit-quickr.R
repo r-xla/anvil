@@ -104,7 +104,7 @@ test_that("jit: quickr backend traces floating literals as f32", {
   expect_equal(dtype(graph$outputs[[1L]]$aval), as_dtype("f32"))
 })
 
-test_that("graph_to_r_function lowers a graph to a plain R function", {
+test_that("graph_to_quickr_r_function lowers a graph to a plain R function", {
   skip_if_not_installed("quickr")
   local_backend("quickr")
 
@@ -114,7 +114,7 @@ test_that("graph_to_r_function lowers a graph to a plain R function", {
     desc = local_descriptor()
   )
 
-  f <- graph_to_r_function(graph)
+  f <- graph_to_quickr_r_function(graph)
 
   expect_equal(f(2), 3)
 })

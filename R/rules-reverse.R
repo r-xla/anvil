@@ -693,7 +693,7 @@ p_gather[["reverse"]] <- function(
   #    But if we just do the reverse x[6] <- g, this gets lost
   #    (scatter can ignore out-of-bounds indices because the output shape is determined by the input shape)
   #    So we need to clamp the start_indices to what they actually were.
-  # 2. Multiple reads (x[list(1, 1), 2])
+  # 2. Multiple reads (x[array(c(1L, 1L)), 2])
   #    --> accumulate the gradients using update nvl_add
 
   list(

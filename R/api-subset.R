@@ -375,24 +375,20 @@ parse_subset_spec <- function(quo, dim_size) {
     return(SubsetIndex(idx))
   }
 
-  # R vectors of length > 1 - not allowed (use list() instead)
-  if (is.numeric(e) && length(e) > 1L) {
+  # R vectors of length > 1 without dim - not allowed (ambiguous shape)
+  if (is.numeric(e) && length(e) > 1L && is.null(dim(e))) {
     cli_abort(c(
       "Vectors of length > 1 are not allowed as subset indices.",
-      "i" = "Use {.code list()} to select multiple elements, e.g. {.code x[list(1, 3), ]}."
+      "i" = "Use {.code array()} to select multiple elements, e.g. {.code x[array(c(1L, 3L)), ]}."
     ))
   }
 
-  # list() - preserves dimensions (keep as R integer vector, convert to array later)
-  if (is.list(e) && !is.object(e)) {
-    if (length(e) == 0L) {
-      cli_abort("Empty list() indices are not allowed")
+  # Atomic numeric array - static indices (preserves dim)
+  if (is.array(e) && is.numeric(e)) {
+    if (length(dim(e)) != 1L) {
+      cli_abort("Array indices must be 1D, but got {length(dim(e))}D")
     }
-    if (!all(vapply(e, is_integerish, logical(1L)))) {
-      cli_abort("All list() elements must be scalar integers")
-    }
-
-    indices <- vapply(e, as.integer, integer(1L))
+    indices <- as.integer(e)
     oob <- indices < 1L | indices > dim_size
     if (any(oob)) {
       bad <- indices[oob][1L] # nolint
@@ -433,7 +429,7 @@ parse_subset_spec <- function(quo, dim_size) {
 #' @description
 #' Extracts a subset from an array. You can also use the `[` operator.
 #' Supports R-style indexing including scalar indices (which drop dimensions),
-#' ranges (`a:b`), and `list()` for selecting multiple elements along a
+#' ranges (`a:b`), and `array(c(...))` for selecting multiple elements along a
 #' dimension.
 #' @param x ([`arrayish`])\cr
 #'   Array to subset.

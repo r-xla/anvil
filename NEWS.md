@@ -5,6 +5,9 @@
 * `AnvilTensor`/`nv_tensor` were renamed to `AnvilArray` and `nv_array` to be
   more in line with R's `array()`.
   Also, `nv_aten()` was renamed to `nv_abstract()`.
+* Subsetting with `list()` (e.g. `x[list(1, 3)]`) is no longer supported.
+  Use `array()` to wrap the indices instead, e.g. `x[array(c(1L, 3L))]`.
+  This mirrors the input convention used everywhere else in the package.
 
 ## New Features
 
@@ -24,6 +27,8 @@
   * `nv_cholesky()` to compute the Cholesky decomposition of a matrix.
 * New S3 methods `dim()`, `nrow()`, `ncol()`, and `length()` for anvil arrays.
 * Printing tensors via `nv_print()` now also works on GPUs.
+* R vectors of length 1 and arrays are now auto-converted when being passed
+  to `jit`ted functions.
 
 ## Performance
 

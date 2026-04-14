@@ -28,3 +28,4 @@ anvil.Rproj
 ^primitives\.md$
 ^\.git
 ^jarl\.toml$
+^specs$
