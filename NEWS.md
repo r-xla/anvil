@@ -5,6 +5,11 @@
 * `AnvilTensor`/`nv_tensor` were renamed to `AnvilArray` and `nv_array` to be
   more in line with R's `array()`.
   Also, `nv_aten()` was renamed to `nv_abstract()`.
+* Subsetting with `list()` (e.g. `x[list(1, 3)]`) is no longer supported.
+  Use `array()` to wrap the indices instead, e.g. `x[array(c(1L, 3L))]`.
+  This mirrors the input convention used everywhere else in the package.
+* Removed *debug mode*.
+* The primitive branching operation no longer supports NSE
 
 ## New Features
 
@@ -14,6 +19,9 @@
   It only runs on CPU for now and supports a subset of available operations.
   You can enable it globally via the `backend` argument in `jit()` and
   `nv_array()` or via the `anvil.default_backend` option.
+* *Eager mode* was added:
+  This means, you can now do `nv_add(1, nv_array(1:2))` and it will
+  actually perform the computation and not only do type inference.
 * New primitives:
   * `nvl_cholesky()` to compute the Cholesky decomposition of a matrix.
   * `nvl_triangular_solve()` to solve a system of linear equations with a triangular matrix.
@@ -24,6 +32,8 @@
   * `nv_cholesky()` to compute the Cholesky decomposition of a matrix.
 * New S3 methods `dim()`, `nrow()`, `ncol()`, and `length()` for anvil arrays.
 * Printing tensors via `nv_print()` now also works on GPUs.
+* R vectors of length 1 and arrays are now auto-converted when being passed
+  to `jit`ted functions.
 
 ## Performance
 
@@ -32,8 +42,6 @@
 
 ## Bug Fixes
 
-* `jit(f, backend = "quickr")` now returns `AnvilArray` outputs instead of plain R arrays,
-  matching the behavior of the XLA backend.
 * +-Inf/NaN are correctly created for `f64` when inlined into the XLA exectuable (#182).
   This caused wrong results with e.g. `nv_reduce_max()` when working with `f64`.
 * Corrected argument checks in `nv_iota()`.

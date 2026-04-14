@@ -25,7 +25,7 @@ dimensions select all elements. See \code{vignette("subsetting")} for details.}
 \description{
 Extracts a subset from an array. You can also use the \code{[} operator.
 Supports R-style indexing including scalar indices (which drop dimensions),
-ranges (\code{a:b}), and \code{list()} for selecting multiple elements along a
+ranges (\code{a:b}), and \code{array(c(...))} for selecting multiple elements along a
 dimension.
 }
 \examples{

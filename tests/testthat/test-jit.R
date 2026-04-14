@@ -220,12 +220,7 @@ test_that("... works (#19)", {
 })
 
 test_that("good error message when passing AbstractArrays", {
-  expect_error(jit(nv_negate)(nv_abstract("f32", c(2, 2))), "Expected AnvilArray")
-})
-
-test_that("literals are not converted to scalar arrays", {
-  f <- jit(nv_sine)
-  expect_error(f(1), "Expected AnvilArray")
+  expect_error(jit(nv_negate)(nv_abstract("f32", c(2, 2))), "autoconvert")
 })
 
 test_that("jit_eval does not modify calling environment", {

@@ -298,39 +298,13 @@ Further note that:
 ### Nested Inputs and Outputs
 
 TODO
-
-
-## Design Decisions
-
-### Literal handling
-
-It is appealing to support the conversion of R literals (`1L`, `1.0` `TRUE`, etc.) to `AnvilArray`s when calling into `jit`-ted functions, i.e. allow the following:
-
-```{r, eval = FALSE}
-jit(nv_add, static = character())(1, 2)
-```
-
-In `jit`(), we could in principle do this, because we know which arguments are static and which are expected to be `AnvilArray`s.
-However, in `gradient()`, we don't know which arguments are static and which are not.
-For example, we can't make the following work:
-
-```{r, eval = FALSE}
-jit(\() {
-  gradient(nv_add)(1, 2)
-})
-```
-
-This would be somewhat inconsistent and hard to to reason about.
-Finally, requiring the user to think about the input data types should also be advantageous; we want to prioritize clarity over minor convenience.
-Note that for primitive calls like `nv_array(1)^2` we do auto-convert literals, because we know which arguments are expected to be `AnvilArray`s and otherwise code just becomes much harder to read.
-
 ## Dichotomy of anvil functions
 
 Here, we will dig deeper into the dichotomy of {anvil} functions such as `nvl_add`.
 In the *Getting Started* vignette, we have learned that these functions can either be called directly on `AnvilArray`s to transform data, or used within `jit()` blocks to build up programs.
 Here, we will explain what this actually does and why this is possible.
 
-The core problem this dichotomy solves is that it is a mental burden to always keep two versions os an {anvil} function: 
+The core problem this dichotomy solves is that it is a mental burden to always keep two versions os an {anvil} function:
 
 1. The `jit()`ted version that can be used to transform arrays.
 2. The non-`jit()`ted one that can be used to build up programs.

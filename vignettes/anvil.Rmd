@@ -63,7 +63,7 @@ This is called *eager mode*.
 
 These functions can also be used inside a `jit()` call, where their operations are inlined into the outer computation graph rather than being compiled separately (see the [Composability](#composability) section).
 
-While eager mode is convenient for interactive use, compiling a larger function with `jit()` is more efficient, as we will see next.
+While eager mode is convenient for interactive use, compiling a larger function with `jit()` will lead to a more efficient binary.
 
 ## JIT Compilation
 

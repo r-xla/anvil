@@ -97,24 +97,28 @@ jit_auto <- function(f, static, cache_size) {
       cl[[1L]] <- f
       return(eval.parent(cl))
     }
-    # Determine backend from input arrays
-    prep <- jit_prepare_call(match.call(), parent.frame(), static)
+    # Determine backend from input arrays. We avoid jit_prepare_call() here
+    # because that would autoconvert inputs against an unknown backend.
+    cl0 <- match.call()
+    args <- lapply(as.list(cl0)[-1L], eval, envir = parent.frame())
+    in_tree <- build_tree(mark_some(args, static))
+    args_flat <- flatten(args)
+    is_static_flat <- in_tree$marked
     be <- if (has_backend_formal) {
-      explicit <- prep$args[["backend"]]
+      explicit <- args[["backend"]]
       if (!is.null(explicit) && explicit != "auto") {
         explicit
       } else {
-        jit_auto_detect_backend(prep$args_flat, prep$is_static_flat)
+        jit_auto_detect_backend(args_flat, is_static_flat)
       }
     } else {
-      jit_auto_detect_backend(prep$args_flat, prep$is_static_flat)
+      jit_auto_detect_backend(args_flat, is_static_flat)
     }
     if (is.null(jit_fns[[be]])) {
       jit_fns[[be]] <<- jit(f, static = static, cache_size = cache_size, backend = be)
     }
-    cl <- match.call()
-    cl[[1L]] <- jit_fns[[be]]
-    eval.parent(cl)
+    cl0[[1L]] <- jit_fns[[be]]
+    eval.parent(cl0)
   }
   formals(wrapper) <- formals2(f)
   class(wrapper) <- "JitFunction"
@@ -131,7 +135,7 @@ jit_auto_detect_backend <- function(args_flat, is_static_flat) {
   default_backend()
 }
 
-jit_prepare_call <- function(call, eval_env, static) {
+jit_prepare_call <- function(call, eval_env, static, backend) {
   args <- as.list(call)[-1L]
   args <- lapply(args, eval, envir = eval_env)
 
@@ -141,12 +145,36 @@ jit_prepare_call <- function(call, eval_env, static) {
   in_tree$marked <- NULL
   class(in_tree) <- c("ListNode", "Node")
 
+  args_flat <- .mapply(
+    function(x, is_static) if (is_static) x else autoconvert_input(x, backend),
+    list(args_flat, is_static_flat),
+    NULL
+  )
+  args <- unflatten(in_tree, args_flat)
+
   list(
     args = args,
     args_flat = args_flat,
     is_static_flat = is_static_flat,
     in_tree = in_tree
   )
+}
+
+autoconvert_input <- function(x, backend) {
+  if (is_anvil_array(x)) {
+    return(x)
+  }
+  if ((is.numeric(x) || is.logical(x)) && length(x) == 1L && is.null(dim(x))) {
+    return(nv_scalar(x, ambiguous = TRUE, backend = backend))
+  }
+  if (is.array(x) && (is.numeric(x) || is.logical(x))) {
+    return(nv_array(x, ambiguous = TRUE, backend = backend))
+  }
+  cli_abort(c(
+    "Cannot autoconvert input to an {.cls AnvilArray}.",
+    i = "Expected an {.cls AnvilArray}, a length-1 atomic scalar, or an {.code is.array()} value.",
+    x = "Got {.cls {class(x)[1]}} of length {length(x)}."
+  ))
 }
 
 jit_wrap_outputs <- function(out_flat, out_tree, ambiguous_out, backend) {
