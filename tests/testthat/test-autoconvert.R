@@ -91,6 +91,16 @@ test_that("xla: bare vector errors", {
   expect_error(f_compiled(c(1, 2, 3)), "autoconvert")
 })
 
+test_that("xla: accepts tree (nested list) inputs", {
+  f_compiled <- xla(
+    function(pair) pair[[1]] + pair[[2]],
+    args = list(pair = list(nv_abstract("f32", c()), nv_abstract("f32", c())))
+  )
+  out <- f_compiled(list(1, nv_scalar(2, dtype = "f32")))
+  expect_equal(shape(out), integer())
+  expect_equal(as_array(out), 3)
+})
+
 test_that("jit_eval: scalar expression works unchanged", {
   expect_equal(as_array(jit_eval(nv_scalar(1) + nv_scalar(2))), 3)
 })

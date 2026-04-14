@@ -236,8 +236,9 @@ xla <- function(f, args, donate = character(), device = NULL) {
   f_xla <- function() {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
-    args <- lapply(args, autoconvert_input, backend = "xla")
-    args_unwrapped <- unname(lapply(args, \(a) a$data))
+    args_flat <- flatten(args)
+    args_flat <- lapply(args_flat, autoconvert_input, backend = "xla")
+    args_unwrapped <- lapply(args_flat, \(a) a$data)
     out_vals <- rlang::exec(
       pjrt::pjrt_execute,
       exec,
