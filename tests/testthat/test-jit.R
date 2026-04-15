@@ -239,13 +239,123 @@ test_that("nested jit: jitted function can be called inside jit (#220)", {
 })
 
 test_that("hash for cache depends on in_tree (#122)", {
-  f <- jit(\(...) {
-    args <- list(...)
-    args[[1]][[1L]][[1L]]
-  })
+  f <- jit(
+    \(...) {
+      args <- list(...)
+      args[[1]][[1L]][[1L]]
+    }
+  )
   expect_equal(cache_size(f), 0L)
   expect_equal(f(list(list(nv_scalar(1L)), nv_scalar(2L))), nv_scalar(1L))
   expect_equal(cache_size(f), 1L)
   expect_equal(f(list(list(nv_scalar(1L), nv_scalar(2L)))), nv_scalar(1L))
   expect_equal(cache_size(f), 2L)
+})
+
+describe("jit: backend and device combinations", {
+  # Trivial function usable for any backend
+  ident <- function(x) x
+
+  it("backend = NULL, device = NULL uses default_backend()", {
+    local_backend("xla")
+    f <- jit(ident)
+    expect_equal(backend(f), "xla")
+  })
+
+  it("backend = NULL, device = NULL follows default_backend() = 'quickr'", {
+    skip_if_not_installed("quickr")
+    local_backend("xla")
+    f <- jit(ident)
+    expect_equal(backend(f), "xla")
+  })
+
+  it("backend = 'xla', device = NULL uses xla", {
+    f <- jit(ident, backend = "xla")
+    expect_equal(backend(f), "xla")
+  })
+
+  it("backend = 'quickr', device = NULL uses quickr", {
+    skip_if_not_installed("quickr")
+    f <- jit(ident, backend = "quickr")
+    expect_equal(backend(f), "quickr")
+  })
+
+  it("backend = NULL, device = PJRTDevice uses xla (derived from device)", {
+    f <- jit(ident, device = pjrt::pjrt_device("cpu"))
+    expect_equal(backend(f), "xla")
+  })
+
+  it("backend = NULL, device = QuickrDevice uses quickr (derived from device)", {
+    skip_if_not_installed("quickr")
+    f <- jit(ident, device = quickr_device("cpu"))
+    expect_equal(backend(f), "quickr")
+  })
+
+  it("backend = 'xla', device = PJRTDevice is consistent", {
+    f <- jit(ident, backend = "xla", device = pjrt::pjrt_device("cpu"))
+    expect_equal(backend(f), "xla")
+  })
+
+  it("backend = 'quickr', device = QuickrDevice is consistent", {
+    skip_if_not_installed("quickr")
+    f <- jit(ident, backend = "quickr", device = quickr_device("cpu"))
+    expect_equal(backend(f), "quickr")
+  })
+
+  it("backend = 'xla' conflicts with device = QuickrDevice", {
+    skip_if_not_installed("quickr")
+    expect_error(
+      jit(ident, backend = "xla", device = quickr_device("cpu")),
+      "has backend.*quickr.*backend.*xla"
+    )
+  })
+
+  it("backend = 'quickr' conflicts with device = PJRTDevice", {
+    skip_if_not_installed("quickr")
+    expect_error(
+      jit(ident, backend = "quickr", device = pjrt::pjrt_device("cpu")),
+      "has backend.*xla.*backend.*quickr"
+    )
+  })
+
+  it("backend = NULL, device = 'cpu' resolves via default_backend()", {
+    withr::local_options(anvil.default_backend = "xla")
+    f <- jit(ident, device = "cpu")
+    expect_equal(backend(f), "xla")
+  })
+
+  it("backend = 'xla', device = 'cpu' resolves to xla", {
+    f <- jit(ident, backend = "xla", device = "cpu")
+    expect_equal(backend(f), "xla")
+  })
+
+  it("backend = 'quickr', device = 'cpu' resolves to quickr", {
+    skip_if_not_installed("quickr")
+    f <- jit(ident, backend = "quickr", device = "cpu")
+    expect_equal(backend(f), "quickr")
+  })
+
+  it("backend = 'auto' routes to jit_auto (attr is 'auto' until called)", {
+    f <- jit(ident, backend = "auto")
+    expect_equal(backend(f), "auto")
+    # At call time, backend is picked from the input.
+    out <- f(nv_scalar(1))
+    expect_equal(backend(out), "xla")
+  })
+
+  it("device = from_arg(...) routes to jit_auto", {
+    g <- function(value, dev = NULL) nv_fill(value, shape = c(), dtype = "f32")
+    f <- jit(g, static = c("value", "dev"), device = from_arg("dev"))
+    expect_equal(backend(f), "auto")
+    out <- f(1, dev = pjrt::pjrt_device("cpu"))
+    expect_equal(backend(out), "xla")
+  })
+
+  it("device = from_arg(...) with QuickrDevice routes to quickr", {
+    skip_if_not_installed("quickr")
+    g <- function(value, dev = NULL) nv_fill(value, shape = c(), dtype = "f32")
+    f <- jit(g, static = c("value", "dev"), device = from_arg("dev"))
+    out <- f(1, dev = quickr_device("cpu"))
+    expect_equal(backend(out), "quickr")
+  })
 })

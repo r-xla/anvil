@@ -56,6 +56,9 @@ jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat,
 }
 
 jit_xla_impl <- function(f, static, cache, donate, device) {
+  # device may be a fixed device object or a from_arg() marker
+  device_arg <- if (inherits(device, "AnvilBackendFromArg")) device$argname else NULL
+  fixed_device <- if (inherits(device, "AnvilBackendFromArg")) NULL else device
   function() {
     if (currently_tracing()) {
       args <- as.list(match.call())[-1L]
@@ -63,7 +66,8 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
       return(do.call(f, args))
     }
     prep <- jit_prepare_call(match.call(), parent.frame(), static, "xla")
-    inputs <- jit_xla_inputs(prep$args_flat, prep$is_static_flat, device)
+    effective_device <- if (!is.null(device_arg)) prep$args[[device_arg]] %||% fixed_device else fixed_device
+    inputs <- jit_xla_inputs(prep$args_flat, prep$is_static_flat, effective_device)
 
     device_key <- if (!is.null(inputs$device)) as.character(inputs$device) else NULL
     cache_key <- list(prep$in_tree, inputs$avals_in, device_key)

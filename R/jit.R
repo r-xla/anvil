@@ -1,3 +1,4 @@
+#' @include backend.R
 #' @title JIT compile a function
 #' @description
 #' Wraps a function so that it is traced and compiled on first call. Subsequent
@@ -14,10 +15,21 @@
 #'   a static value changes. For example useful when you want R control flow in your function.
 #' @param cache_size (`integer(1)`)\cr
 #'   Maximum number of compiled executables to keep in the LRU cache.
-#' @param backend (`character(1)`)\cr
-#'   Compilation backend. `"xla"` (default) uses PJRT/XLA.
-#'   `"quickr"` uses `quickr::quick()`. If omitted, the default comes from
-#'   `default_backend()`.
+#' @param backend (`NULL` |  `character(1)`)\cr
+#'   Compilation backend (e.g. `"xla"`, `"quickr"`).
+#'   The special value `"auto"` defers backend selection
+#'   to call time, picking the backend from the inputs (or [`default_backend()`]
+#'   when there are none).
+#'   If it is `NULL`, the [`default_backend()`] will be used unless the `device`
+#'   is determined dynamically (`from_arg()`) in which case the device's backend
+#'   will be used.
+#'
+#' @param device (`NULL` | `character(1)` | `PJRTDevice` | [`quickr_device()`] | `from_arg()`)\cr
+#'   Target device, forwarded to the backend-specific JIT.
+#'   The default (`NULL`) uses CPU device.
+#'
+#'   In order to enable runtime selection of the device (useful for constant creators such as
+#'   [nvl_fill()]), set to `from_arg("<device-arg>"")`.
 #' @param ... Backend-specific options. Passing an option that is not supported
 #'   by the selected backend raises an error. See the **XLA JIT arguments** and
 #'   **Quickr JIT arguments** sections below for the options accepted by each
@@ -26,8 +38,7 @@
 #' @inheritSection AnvilBackendQuickr Quickr JIT arguments
 #' @return A `JitFunction` with the same formals as `f`.
 #'   The returned wrapper expects [`AnvilArray`] inputs and returns
-#'   [`AnvilArray`] values (unless `unwrap = TRUE` is passed to the
-#'   `"quickr"` backend).
+#'   [`AnvilArray`] values.
 #' @seealso [`xla()`] for ahead-of-time compilation, [`jit_eval()`] for evaluating an expression once.
 #' @return (`function`)
 #' @export
@@ -51,9 +62,36 @@ jit <- function(
   f,
   static = character(),
   cache_size = 100L,
-  backend = default_backend(),
+  backend = NULL,
+  device = NULL,
   ...
 ) {
+  if (inherits(device, "AnvilBackendFromArg")) {
+    return(jit_auto(f, static, cache_size, device_arg = device$argname, ...))
+  }
+  backend_explicit <- !is.null(backend)
+  if (is.null(backend)) {
+    backend <- default_backend()
+  }
+  if (is.character(device)) {
+    device <- nv_device(device, backend = backend)
+  }
+  if (!is.null(device)) {
+    device_backend <- backend(device)
+    if (backend_explicit && backend != device_backend) {
+      cli_abort(
+        "{.arg device} has backend {.val {device_backend}}, but {.arg backend} is {.val {backend}}."
+      )
+    }
+    backend <- device_backend
+  }
+  if (backend == "auto") {
+    return(jit_auto(f, static, cache_size, ...))
+  }
+  jit_with_backend(f, static, cache_size, backend, device = device, ...)
+}
+
+jit_with_backend <- function(f, static, cache_size, backend, ...) {
   cache <- xlamisc::LRUCache$new(cache_size)
   backend <- assert_backend(backend)
   assert_subset(static, formalArgs2(f))
@@ -65,9 +103,88 @@ jit <- function(
   f_jit
 }
 
+#' @title Select JIT device from a function argument
+#' @description
+#' Pass the result to [`jit()`]'s `device` argument to indicate that the
+#' device should be read from a formal argument of the function being
+#' compiled. At call time, the value of that argument is used to derive the
+#' backend via [`backend()`] dispatch and is forwarded to the backend-specific
+#' JIT as the compilation device.
+#'
+#' This is intended for functions that have no dynamic array inputs from which
+#' the backend could otherwise be detected (e.g. array constructors like
+#' [nvl_fill()] or [nvl_iota()]). If the named argument is `NULL` at call
+#' time, the backend falls back to being detected from the inputs.
+#'
+#' @param argname (`character(1)`)\cr
+#'   Name of a formal argument of the function passed to [`jit()`].
+#' @return (`AnvilBackendFromArg`)\cr
+#'   An object recognized by [`jit()`].
+#' @seealso [`jit()`], [`backend()`]
+#' @export
+from_arg <- function(argname) {
+  assert_string(argname)
+  structure(list(argname = argname), class = "AnvilBackendFromArg")
+}
+
 #' @export
 backend.JitFunction <- function(x, ...) {
   attr(x, "backend")
+}
+
+jit_auto <- function(f, static, cache_size, device_arg = NULL, ...) {
+  # Lazily create per-backend jit functions
+  jit_fns <- list()
+  dots <- list(...)
+  if (!is.null(device_arg)) {
+    assert_subset(device_arg, formalArgs2(f))
+  }
+
+  wrapper <- function() {
+    # Inside tracing: pass through to unwrapped function
+    if (currently_tracing()) {
+      cl <- match.call()
+      cl[[1L]] <- f
+      return(eval.parent(cl))
+    }
+    # Determine backend from input arrays. We avoid jit_prepare_call() here
+    # because that would autoconvert inputs against an unknown backend.
+    cl0 <- match.call()
+    args <- lapply(as.list(cl0)[-1L], eval, envir = parent.frame())
+    in_tree <- build_tree(mark_some(args, static))
+    args_flat <- flatten(args)
+    is_static_flat <- in_tree$marked
+    be <- if (!is.null(device_arg) && !is.null(args[[device_arg]])) {
+      backend(args[[device_arg]])
+    } else {
+      jit_auto_detect_backend(args_flat, is_static_flat)
+    }
+    if (is.null(jit_fns[[be]])) {
+      jit_fns[[be]] <<- do.call(
+        jit_with_backend,
+        c(
+          list(f = f, static = static, cache_size = cache_size, backend = be),
+          if (!is.null(device_arg)) list(device = from_arg(device_arg)),
+          dots
+        )
+      )
+    }
+    cl0[[1L]] <- jit_fns[[be]]
+    eval.parent(cl0)
+  }
+  formals(wrapper) <- formals2(f)
+  class(wrapper) <- "JitFunction"
+  attr(wrapper, "backend") <- "auto"
+  wrapper
+}
+
+jit_auto_detect_backend <- function(args_flat, is_static_flat) {
+  for (i in seq_along(args_flat)) {
+    if (!is_static_flat[[i]] && is_anvil_array(args_flat[[i]]) && backend(args_flat[[i]]) != "plain") {
+      return(backend(args_flat[[i]]))
+    }
+  }
+  default_backend()
 }
 
 jit_prepare_call <- function(call, eval_env, static, backend) {
@@ -120,6 +237,7 @@ jit_wrap_outputs <- function(out_flat, out_tree, ambiguous_out, backend) {
   }
   unflatten(out_tree, out_flat)
 }
+
 
 #' @title JIT-compile and evaluate an expression
 #' @description

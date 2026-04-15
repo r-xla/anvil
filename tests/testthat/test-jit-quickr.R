@@ -44,17 +44,12 @@ test_that("jit: quickr backend preserves nested multi-output shapes and types", 
   expect_identical(as_array(out$payload$shifted), array(2:4, dim = 3L))
 })
 
-test_that("jit: quickr backend does not support donate or device", {
+test_that("jit: quickr backend does not support donate", {
+  skip_if_not_installed("quickr")
   local_backend("quickr")
-
   expect_error(
-    jit(function(x) x, donate = "x"),
+    jit(function(x) x, device = quickr_device("cpu"), donate = "x"),
     "donate",
-    fixed = TRUE
-  )
-  expect_error(
-    jit(function(x) x, device = "cpu"),
-    "device",
     fixed = TRUE
   )
 })

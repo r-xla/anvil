@@ -8,7 +8,8 @@ jit(
   f,
   static = character(),
   cache_size = 100L,
-  backend = default_backend(),
+  backend = NULL,
+  device = NULL,
   ...
 )
 }
@@ -25,10 +26,21 @@ a static value changes. For example useful when you want R control flow in your 
 \item{cache_size}{(\code{integer(1)})\cr
 Maximum number of compiled executables to keep in the LRU cache.}
 
-\item{backend}{(\code{character(1)})\cr
-Compilation backend. \code{"xla"} (default) uses PJRT/XLA.
-\code{"quickr"} uses \code{quickr::quick()}. If omitted, the default comes from
-\code{default_backend()}.}
+\item{backend}{(\code{NULL} |  \code{character(1)})\cr
+Compilation backend (e.g. \code{"xla"}, \code{"quickr"}).
+The special value \code{"auto"} defers backend selection
+to call time, picking the backend from the inputs (or \code{\link[=default_backend]{default_backend()}}
+when there are none).
+If it is \code{NULL}, the \code{\link[=default_backend]{default_backend()}} will be used unless the \code{device}
+is determined dynamically (\code{from_arg()}) in which case the device's backend
+will be used.}
+
+\item{device}{(\code{NULL} | \code{character(1)} | \code{PJRTDevice} | \code{\link[=quickr_device]{quickr_device()}} | \code{from_arg()})\cr
+Target device, forwarded to the backend-specific JIT.
+The default (\code{NULL}) uses CPU device.
+
+In order to enable runtime selection of the device (useful for constant creators such as
+\code{\link[=nvl_fill]{nvl_fill()}}), set to \verb{from_arg("<device-arg>"")}.}
 
 \item{...}{Backend-specific options. Passing an option that is not supported
 by the selected backend raises an error. See the \strong{XLA JIT arguments} and
@@ -38,8 +50,7 @@ backend.}
 \value{
 A \code{JitFunction} with the same formals as \code{f}.
 The returned wrapper expects \code{\link{AnvilArray}} inputs and returns
-\code{\link{AnvilArray}} values (unless \code{unwrap = TRUE} is passed to the
-\code{"quickr"} backend).
+\code{\link{AnvilArray}} values.
 
 (\code{function})
 }

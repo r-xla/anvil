@@ -173,7 +173,7 @@ AnvilBackendQuickr <- function() {
       print(x$data)
       cat(footer, "\n")
     },
-    jit = function(f, static, cache, unwrap = FALSE) {
+    jit = function(f, static, cache, unwrap = FALSE, device = NULL) {
       assert_flag(unwrap)
       jit_quickr_impl(f, static, cache, unwrap)
     }
