@@ -43,7 +43,7 @@
     Code
       gradient(nv_floor, wrt = "operand")(nv_scalar(1L))
     Condition
-      Error in `nvl_floor()`:
-      ! `operand` must have dtype FloatType.
-      x Got i32.
+      Error in `check_wrt_arrayish()`:
+      ! Can only compute gradient with respect to float arrays.
+      x Got i32
 

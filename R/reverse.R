@@ -1,12 +1,13 @@
 check_wrt_arrayish <- function(args_flat, is_wrt_flat) {
   for (i in seq_along(args_flat)) {
-    if (is_wrt_flat[[i]] && !is_arrayish(args_flat[[i]], literal = FALSE)) {
-      if (!is_arrayish(args_flat[[i]], literal = TRUE)) {
+    if (is_wrt_flat[[i]]) {
+      if (!is_arrayish(args_flat[[i]])) {
         cli_abort(c(
           "Cannot compute gradient with respect to non-array argument.",
           x = "Got {.cls {class(args_flat[[i]])}}"
         ))
       }
+
       if (!inherits(dtype_abstract(args_flat[[i]]), "FloatType")) {
         cli_abort(c(
           "Can only compute gradient with respect to float arrays.",

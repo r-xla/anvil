@@ -688,22 +688,22 @@ is_shape <- function(x) {
 
 #' @title Array-like Objects
 #' @description
-#' A `arrayish` value is any object that can be passed as an input to
-#' anvil primitive functions such as [`nvl_add`] or is an output of such a function.
+#' A `arrayish` value is any object that can be input to a primitive such as [`nvl_add`].
 #'
-#' During runtime, these are [`AnvilArray`] objects.
+#' During runtime of a JIT-compiled function, these are [`AnvilArray`] objects.
 #'
-#' The following types are arrayish (during compile-time):
+#' The following types are arrayish (during tracing / eager mode):
 #' * [`AnvilArray`]: a concrete array holding data on a device.
 #' * [`GraphBox`]: a boxed abstract array representing a value in a graph.
-#' * Literals: `numeric(1)`, `integer(1)`, `logical(1)`: promoted to scalar arrays.
+#' * Length-1 vectors: `numeric(1)` and `logical(1)`
+#' * R arrays of types: `numeric` and `logical`.
 #'
 #' Use [`is_arrayish()`] to check whether a value is arrayish.
 #'
 #' @param x (`any`)\cr
 #'   Object to check.
-#' @param literal (`logical(1)`)\cr
-#'   Whether to accept R literals as arrayish.
+#' @param convert_ok (`logical(1)`)\cr
+#'   Whether to accept `numeric(1)` and `logical(1)` and R arrays of type `numeric` and `logical`.
 #' @return `logical(1)`
 #' @name arrayish
 #' @seealso [AnvilArray], [GraphBox]
@@ -713,24 +713,31 @@ is_shape <- function(x) {
 #'
 #' # Scalar R literals are arrayish by default
 #' is_arrayish(1.5)
+#' # R arrays are arrayish by default
+#' is_arrayish(array(1.5))
 #'
-#' # Non-scalar vectors are not arrayish
-#' is_arrayish(1:4)
+#' # R arrays
+#' is_arrayish(array(1:4), convert_ok = TRUE)
+#' is_arrayish(array(1:4), convert_ok = FALSE)
 #'
-#' is_arrayish(DebugBox(nv_abstract("f32", c(2L, 3L))))
-#'
-#' # Disable literal promotion
-#' is_arrayish(1.5, literal = FALSE)
+#' # Length 1 vectors
+#' is_arrayish(1.5, convert_ok = FALSE)
+#' is_arrayish(1.5, convert_ok = TRUE)
 NULL
 
 #' @rdname arrayish
 #' @export
-is_arrayish <- function(x, literal = TRUE) {
+is_arrayish <- function(x, convert_ok = TRUE) {
   ok <- inherits(x, "AnvilArray") ||
     is_box(x)
 
-  if (!ok && literal) {
-    ok <- test_scalar(x) && (is.numeric(x) || is.logical(x))
+  if (ok) {
+    return(TRUE)
   }
-  return(ok)
+
+  if (!convert_ok) {
+    return(FALSE)
+  }
+  # length-1 vector or array of numeric or logical type
+  (is.numeric(x) || is.logical(x)) && (is.array(x) || (length(x) == 1L))
 }

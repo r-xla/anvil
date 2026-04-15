@@ -5,29 +5,29 @@
 \alias{is_arrayish}
 \title{Array-like Objects}
 \usage{
-is_arrayish(x, literal = TRUE)
+is_arrayish(x, convert_ok = TRUE)
 }
 \arguments{
 \item{x}{(\code{any})\cr
 Object to check.}
 
-\item{literal}{(\code{logical(1)})\cr
-Whether to accept R literals as arrayish.}
+\item{convert_ok}{(\code{logical(1)})\cr
+Whether to accept \code{numeric(1)} and \code{logical(1)} and R arrays of type \code{numeric} and \code{logical}.}
 }
 \value{
 \code{logical(1)}
 }
 \description{
-A \code{arrayish} value is any object that can be passed as an input to
-anvil primitive functions such as \code{\link{nvl_add}} or is an output of such a function.
+A \code{arrayish} value is any object that can be input to a primitive such as \code{\link{nvl_add}}.
 
-During runtime, these are \code{\link{AnvilArray}} objects.
+During runtime of a JIT-compiled function, these are \code{\link{AnvilArray}} objects.
 
-The following types are arrayish (during compile-time):
+The following types are arrayish (during tracing / eager mode):
 \itemize{
 \item \code{\link{AnvilArray}}: a concrete array holding data on a device.
 \item \code{\link{GraphBox}}: a boxed abstract array representing a value in a graph.
-\item Literals: \code{numeric(1)}, \code{integer(1)}, \code{logical(1)}: promoted to scalar arrays.
+\item Length-1 vectors: \code{numeric(1)} and \code{logical(1)}
+\item R arrays of types: \code{numeric} and \code{logical}.
 }
 
 Use \code{\link[=is_arrayish]{is_arrayish()}} to check whether a value is arrayish.
@@ -39,14 +39,16 @@ is_arrayish(nv_array(1:4))
 
 # Scalar R literals are arrayish by default
 is_arrayish(1.5)
+# R arrays are arrayish by default
+is_arrayish(array(1.5))
 
-# Non-scalar vectors are not arrayish
-is_arrayish(1:4)
+# R arrays
+is_arrayish(array(1:4), convert_ok = TRUE)
+is_arrayish(array(1:4), convert_ok = FALSE)
 
-is_arrayish(DebugBox(nv_abstract("f32", c(2L, 3L))))
-
-# Disable literal promotion
-is_arrayish(1.5, literal = FALSE)
+# Length 1 vectors
+is_arrayish(1.5, convert_ok = FALSE)
+is_arrayish(1.5, convert_ok = TRUE)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
