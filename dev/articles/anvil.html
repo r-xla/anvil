@@ -46,7 +46,6 @@
     <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
     <li><a class="dropdown-item" href="../articles/subsetting.html">Subsetting</a></li>
     <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
-    <li><a class="dropdown-item" href="../articles/debugging.html">Debugging</a></li>
   </ul>
 </li>
 <li class="nav-item dropdown">
@@ -157,19 +156,17 @@ dimensions.</p>
 <pre><code><span><span class="co">##      [,1] [,2] [,3]</span></span>
 <span><span class="co">## [1,]    1    3    5</span></span>
 <span><span class="co">## [2,]    2    4    6</span></span></code></pre>
-<p>At first, working with <code>AnvilArray</code>s may feel a bit
-cumbersome, because you cannot directly apply functions to them like you
-would with regular R arrays.</p>
+<p>Working with <code>AnvilArray</code>s differs from regular R arrays –
+you cannot directly apply functions to them.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">+</span> <span class="va">x</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3]</span></span>
 <span><span class="co">## [1,]    2    6   10</span></span>
 <span><span class="co">## [2,]    4    8   12</span></span></code></pre>
-<p>If we add the two anvil arrays, the output will be the type of the
-output instead of the actual result. Read more about this in the <a href="debugging.html">debugging vignette</a>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="op">+</span> <span class="va">y</span></span></code></pre></div>
-<pre><code><span><span class="co">## i32{2,3}</span></span></code></pre>
+<pre><code><span><span class="co">## <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `.current_descriptor()`:</span></span></span>
+<span><span class="co">## <span style="color: #BBBB00;">!</span> No graph is currently being built. Did you forget to use `jit()`?</span></span></code></pre>
 <p>In order to actually perform the addition, we need to
 <code>jit</code>-compile the function, which we will cover in the next
 section.</p>

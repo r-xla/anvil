@@ -7,7 +7,7 @@ During runtime of a JIT-compiled function, these are
 [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
 objects.
 
-The following types are arrayish (during tracing / eager mode):
+The following types are arrayish (during tracing):
 
 - [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md):
   a concrete array holding data on a device.

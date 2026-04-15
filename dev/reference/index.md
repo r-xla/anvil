@@ -334,12 +334,8 @@ Code transformations
 
 Debugging utilities and tools
 
-- [`debug_box()`](https://r-xla.github.io/anvil/dev/reference/debug_box.md)
-  : Create a Debug Box
 - [`nv_print()`](https://r-xla.github.io/anvil/dev/reference/nv_print.md)
   : Print Array
-- [`DebugBox()`](https://r-xla.github.io/anvil/dev/reference/DebugBox.md)
-  : Debug Box Class
 
 ## Backend
 

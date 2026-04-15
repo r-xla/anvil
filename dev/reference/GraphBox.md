@@ -48,6 +48,5 @@ GraphBox(gnode, desc)
 ## See also
 
 [AnvilBox](https://r-xla.github.io/anvil/dev/reference/AnvilBox.md),
-[DebugBox](https://r-xla.github.io/anvil/dev/reference/DebugBox.md),
 [`trace_fn()`](https://r-xla.github.io/anvil/dev/reference/trace_fn.md),
 [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)

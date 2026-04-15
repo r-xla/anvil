@@ -3,7 +3,6 @@
 ### All vignettes
 
 - [Get Started](https://r-xla.github.io/anvil/dev/articles/anvil.md):
-- [Debugging](https://r-xla.github.io/anvil/dev/articles/debugging.md):
 - [FAQ](https://r-xla.github.io/anvil/dev/articles/faq.md):
 - [Gaussian
   Process](https://r-xla.github.io/anvil/dev/articles/gaussian-process.md):

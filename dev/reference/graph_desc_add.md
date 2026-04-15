@@ -5,14 +5,7 @@ Add a primitive call to a graph descriptor.
 ## Usage
 
 ``` r
-graph_desc_add(
-  prim,
-  args,
-  params = list(),
-  infer_fn,
-  desc = NULL,
-  debug_mode = NULL
-)
+graph_desc_add(prim, args, params = list(), infer_fn, desc = NULL)
 ```
 
 ## Arguments
@@ -47,13 +40,7 @@ graph_desc_add(
   descriptor](https://r-xla.github.io/anvil/dev/reference/dot-current_descriptor.md)
   if `NULL`.
 
-- debug_mode:
-
-  (`logical(1)`)  
-  Whether to just perform abstract evaluation for debugging.
-
 ## Value
 
-(`list` of `Box`)  
-Either `GraphBox` objects or `DebugBox` objects, depending on
-`debug_mode`.
+(`list` of
+[`GraphBox`](https://r-xla.github.io/anvil/dev/reference/GraphBox.md))

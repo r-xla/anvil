@@ -5,12 +5,7 @@ shape.
 
 To transform arrays, apply
 [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)ted
-functions. Directly calling operations (e.g. `nv_add(x, y)`) on
-`AnvilArray` objects only performs type inference and returns an
-[`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
-– see
-[`vignette("debugging")`](https://r-xla.github.io/anvil/dev/articles/debugging.md)
-for details.
+functions.
 
 To compare whether two abstract arrays are equal, use
 [`eq_type()`](https://r-xla.github.io/anvil/dev/reference/eq_type.md).
@@ -194,9 +189,4 @@ add_one(nv_array(1:4))
 #>  4
 #>  5
 #> [ CPUf32?{4} ] 
-
-# --- Debug mode (calling operations directly) ---
-# Outside of jit, operations only perform type inference:
-nv_add(nv_array(1:3), nv_array(4:6))
-#> i32{3}
 ```

@@ -238,11 +238,11 @@ after optionally broadcasting (scalar) inputs:
 
 ``` r
 nv_add(1L, nv_array(2:3))
-#> i32{2}
+#> Error in `.current_descriptor()`:
+#> ! No graph is currently being built. Did you forget to use `jit()`?
 nvl_add(1L, nv_array(2:3))
-#> Error in `nvl_add()`:
-#> ! `lhs` and `rhs` must have the same tensor type.
-#> ✖ Got tensor<i32> and tensor<2xi32>.
+#> Error in `.current_descriptor()`:
+#> ! No graph is currently being built. Did you forget to use `jit()`?
 ```
 
 In our case, no such convenience is needed and the functionality is not

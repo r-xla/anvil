@@ -4,7 +4,6 @@
 <url><loc>https://r-xla.github.io/anvil/dev/LICENSE-text.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/LICENSE.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/articles/anvil.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/dev/articles/debugging.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/articles/faq.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/articles/gaussian-process.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/articles/index.html</loc></url>
@@ -29,7 +28,6 @@
 <url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilGraph.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/AnvilPrimitive.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/ConcreteArray.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/dev/reference/DebugBox.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/GraphBox.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/GraphDescriptor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/GraphLiteral.html</loc></url>
@@ -52,7 +50,6 @@
 <url><loc>https://r-xla.github.io/anvil/dev/reference/build_tree.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/common_dtype.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/compile_to_xla.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/dev/reference/debug_box.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/default_backend.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/device.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/dot-current_descriptor.html</loc></url>

@@ -70,9 +70,8 @@ as_array(y)
     ## [1,]    1    3    5
     ## [2,]    2    4    6
 
-At first, working with `AnvilArray`s may feel a bit cumbersome, because
-you cannot directly apply functions to them like you would with regular
-R arrays.
+Working with `AnvilArray`s differs from regular R arrays – you cannot
+directly apply functions to them.
 
 ``` r
 x + x
@@ -82,16 +81,12 @@ x + x
     ## [1,]    2    6   10
     ## [2,]    4    8   12
 
-If we add the two anvil arrays, the output will be the type of the
-output instead of the actual result. Read more about this in the
-[debugging
-vignette](https://r-xla.github.io/anvil/dev/articles/debugging.md).
-
 ``` r
 y + y
 ```
 
-    ## i32{2,3}
+    ## Error in `.current_descriptor()`:
+    ## ! No graph is currently being built. Did you forget to use `jit()`?
 
 In order to actually perform the addition, we need to `jit`-compile the
 function, which we will cover in the next section.
