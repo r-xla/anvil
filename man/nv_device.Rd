@@ -4,30 +4,25 @@
 \alias{nv_device}
 \title{Create a Device}
 \usage{
-nv_device(type, backend = default_backend())
+nv_device(x, backend = default_backend())
 }
 \arguments{
-\item{type}{(\code{character(1)})\cr
-Device type, e.g. \code{"cpu"} or \code{"cuda"}. Supported values depend on the
-selected backend.}
+\item{x}{(\code{character(1)})\cr
+Identifier for the device.
+E.g. \code{"cpu"}, \code{"cuda"}, or \code{"cuda:<n>"} (for the n-th GPU).}
 
 \item{backend}{(\code{character(1)})\cr
-Backend that produces the device. Defaults to \code{\link[=default_backend]{default_backend()}}.}
+The backend for which to create the device.}
 }
 \value{
 A backend-specific device object (e.g. \code{PJRTDevice} for \code{"xla"},
-\code{\link{QuickrDevice}} for \code{"quickr"}).
+\code{\link{quickr_device}} for \code{"quickr"}).
 }
 \description{
-Constructs a device object.
-There are different ways to specify this:
-\enumerate{
-\item ``
-Constructs a backend-specific device object for a given device type
-(e.g. \code{"cpu"}, `"cuda"`). The returned device can be passed to array
-constructors like \code{\link[=nv_fill]{nv_fill()}} or \code{\link[=nv_iota]{nv_iota()}} to control where the
-resulting array is allocated and which backend runs the operation.
-}
+Constructs a backend-specific device object.
+
+A device identifies a compute resources, such as CPU, or a specific GPU.
+It is relevant for data allocation (e.g. via \code{\link[=nv_array]{nv_array()}}) but also compilation (\link{jit}).
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}

@@ -41,7 +41,7 @@ Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
 See the \code{vignette("type-promotion")} for more details.}
 
-\item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{QuickrDevice}} | \code{NULL})\cr
+\item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{quickr_device}} | \code{NULL})\cr
 Device for data to live on.}
 
 \item{like}{(\code{\link{AnvilArray}})\cr

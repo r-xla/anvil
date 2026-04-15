@@ -24,7 +24,7 @@
 #'   is determined dynamically (`from_arg()`) in which case the device's backend
 #'   will be used.
 #'
-#' @param device (`NULL` | `character(1)` | `PJRTDevice` | [`QuickrDevice`] | `from_arg()`)\cr
+#' @param device (`NULL` | `character(1)` | `PJRTDevice` | [`quickr_device()`] | `from_arg()`)\cr
 #'   Target device, forwarded to the backend-specific JIT.
 #'   The default (`NULL`) uses CPU device.
 #'

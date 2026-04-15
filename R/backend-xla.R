@@ -309,7 +309,7 @@ AnvilBackendXla <- function() {
     as_raw = function(x, row_major) tengen::as_raw(x$data, row_major = row_major),
     platform = function(x) pjrt::platform(x$data),
     device = function(x) device(x$data),
-    new_device = function(type) pjrt::pjrt_device(type),
+    new_device = function(x) pjrt::pjrt_device(x),
     print_data = function(x, footer) print(x$data, header = FALSE, footer = footer),
     jit = function(f, static, cache, donate = character(), device = NULL) {
       assert_subset(donate, formalArgs2(f))

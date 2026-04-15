@@ -1,19 +1,17 @@
 #' @title Create a Device
 #' @description
-#' Constructs a device object.
-#' There are different ways to specify this:
-#' 1. ``
-#' Constructs a backend-specific device object for a given device type
-#' (e.g. `"cpu"`, `"cuda"`). The returned device can be passed to array
-#' constructors like [nv_fill()] or [nv_iota()] to control where the
-#' resulting array is allocated and which backend runs the operation.
-#' @param type (`character(1)`)\cr
-#'   Device type, e.g. `"cpu"` or `"cuda"`. Supported values depend on the
-#'   selected backend.
+#' Constructs a backend-specific device object.
+#'
+#' A device identifies a compute resources, such as CPU, or a specific GPU.
+#' It is relevant for data allocation (e.g. via [nv_array()]) but also compilation ([jit]).
+#'
+#' @param x (`character(1)`)\cr
+#'   Identifier for the device.
+#'   E.g. `"cpu"`, `"cuda"`, or `"cuda:<n>"` (for the n-th GPU).
 #' @param backend (`character(1)`)\cr
-#'   Backend that produces the device. Defaults to [`default_backend()`].
+#'   The backend for which to create the device.
 #' @return A backend-specific device object (e.g. `PJRTDevice` for `"xla"`,
-#'   [`QuickrDevice`] for `"quickr"`).
+#'   [`quickr_device`] for `"quickr"`).
 #' @seealso [`backend()`], [`AnvilBackend()`].
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' # Create CPU device for xla backend:
@@ -21,8 +19,7 @@
 #' # Create CPU device for quickr backend:
 #' nv_device("cpu", "quickr")
 #' @export
-nv_device <- function(type, backend = default_backend()) {
-  #TODO: This should probably be more like AnvilArray (?)
+nv_device <- function(x, backend = default_backend()) {
   backend <- assert_backend(backend)
-  globals$backends[[backend]]$new_device(type)
+  globals$backends[[backend]]$new_device(x)
 }

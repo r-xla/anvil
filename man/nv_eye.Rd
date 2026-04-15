@@ -13,7 +13,7 @@ Size of the identity matrix.}
 \item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Data type.}
 
-\item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{QuickrDevice}} | \code{NULL})\cr
+\item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{quickr_device}} | \code{NULL})\cr
 Device for data to live on.}
 }
 \value{

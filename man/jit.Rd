@@ -35,7 +35,7 @@ If it is \code{NULL}, the \code{\link[=default_backend]{default_backend()}} will
 is determined dynamically (\code{from_arg()}) in which case the device's backend
 will be used.}
 
-\item{device}{(\code{NULL} | \code{character(1)} | \code{PJRTDevice} | \code{\link{QuickrDevice}} | \code{from_arg()})\cr
+\item{device}{(\code{NULL} | \code{character(1)} | \code{PJRTDevice} | \code{\link[=quickr_device]{quickr_device()}} | \code{from_arg()})\cr
 Target device, forwarded to the backend-specific JIT.
 The default (\code{NULL}) uses CPU device.
 

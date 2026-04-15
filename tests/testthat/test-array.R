@@ -168,9 +168,9 @@ test_that("stablehlo dtype is printed", {
   expect_snapshot(nv_array(TRUE))
 })
 
-test_that("QuickrDevice is a classed object", {
+test_that("quickr_device is a classed object", {
   skip_if_not_installed("quickr")
-  dev <- QuickrDevice("cpu")
+  dev <- quickr_device("cpu")
   expect_s3_class(dev, "QuickrDevice")
   expect_equal(format(dev), "QuickrDevice(cpu)")
   expect_equal(as.character(dev), "cpu")
