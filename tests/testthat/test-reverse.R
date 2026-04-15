@@ -128,6 +128,25 @@ test_that("partial gradient simple", {
   expect_equal(out, nv_scalar(1.0))
 })
 
+test_that("gradient accepts integer positions for wrt", {
+  f <- function(lhs, rhs) {
+    nvl_add(lhs, rhs)
+  }
+  g <- jit(gradient(f, wrt = 1L))
+  out <- g(nv_scalar(1.0), nv_scalar(2.0))[[1L]]
+  expect_equal(out, nv_scalar(1.0))
+
+  # value_and_gradient also accepts integer positions.
+  vg <- jit(value_and_gradient(f, wrt = 2L))
+  res <- vg(nv_scalar(3.0), nv_scalar(4.0))
+  expect_equal(res$value, nv_scalar(7.0))
+  expect_equal(res$grad[[1L]], nv_scalar(1.0))
+
+  # Out-of-range indices are rejected.
+  expect_error(gradient(f, wrt = 3L), "out of range")
+  expect_error(value_and_gradient(f, wrt = 0L), "out of range")
+})
+
 #test_that("partial gradient: y = a * (x * b) wrt x", {
 #  f <- function(a, x, b) {
 #    a * (x * b)

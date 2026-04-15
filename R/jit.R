@@ -67,14 +67,20 @@ jit <- function(
 }
 
 resolve_static <- function(f, static) {
-  if (is.integer(static)) {
-    nms <- formalArgs2(f)
-    if (any(static < 1L | static > length(nms))) {
-      cli_abort("{.arg static} index out of range.")
-    }
-    return(nms[static])
+  resolve_arg_names(f, static, "static")
+}
+
+# Translate a character-or-integer argument selector into character names
+# of the formals of `f`. `arg` is used in error messages.
+resolve_arg_names <- function(f, x, arg) {
+  if (is.null(x) || !is.integer(x)) {
+    return(x)
   }
-  static
+  nms <- formalArgs2(f)
+  if (any(x < 1L | x > length(nms))) {
+    cli_abort("{.arg {arg}} index out of range.")
+  }
+  nms[x]
 }
 
 #' @export
