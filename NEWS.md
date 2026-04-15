@@ -10,6 +10,9 @@
   This mirrors the input convention used everywhere else in the package.
 * Remove NSE support for `nvl_if`. It now requires passing 0-argument
   closures as `true` and `false` arguments.
+* Remove debug mode. Calling primitives outside of `jit()` is no longer
+  supported. `DebugBox`, `debug_box()`, and the debugging vignette have
+  been removed.
 
 ## New Features
 

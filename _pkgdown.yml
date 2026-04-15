@@ -41,8 +41,6 @@ navbar:
         href: articles/subsetting.html
       - text: Random Number Generation
         href: articles/random-numbers.html
-      - text: Debugging
-        href: articles/debugging.html
     faq:
       text: FAQ
       href: articles/faq.html
@@ -249,9 +247,7 @@ reference:
   - title: Debugging
     desc: Debugging utilities and tools
     contents:
-      - debug_box
       - nv_print
-      - DebugBox
 
   - title: Backend
     desc: Backend-related functionality and implementations

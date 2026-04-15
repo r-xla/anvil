@@ -4,9 +4,6 @@
 #' Its type is determined by a data type and a shape.
 #'
 #' To transform arrays, apply [`jit()`]ted functions.
-#' Directly calling operations (e.g. `nv_add(x, y)`) on `AnvilArray` objects
-#' only performs type inference and returns an [`AbstractArray`] --
-#' see `vignette("debugging")` for details.
 #'
 #' To compare whether two abstract arrays are equal, use [`eq_type()`].
 #'
@@ -80,10 +77,6 @@
 #' # --- Transforming arrays with jit ---
 #' add_one <- jit(function(x) x + 1)
 #' add_one(nv_array(1:4))
-#'
-#' # --- Debug mode (calling operations directly) ---
-#' # Outside of jit, operations only perform type inference:
-#' nv_add(nv_array(1:3), nv_array(4:6))
 #'
 #' @name AnvilArray
 NULL
@@ -487,10 +480,6 @@ print.IotaArray <- function(x, ...) {
   invisible(x)
 }
 
-is_literal_tensor <- function(x) {
-  inherits(x, "LiteralArray")
-}
-
 #' @export
 `==.AbstractArray` <- function(e1, e2) {
   cli_abort("Use {.fn eq_type} instead of {.code ==} for comparing AbstractArrays")
@@ -657,8 +646,6 @@ to_abstract <- function(x, pure = FALSE) {
   } else if (is_graph_box(x)) {
     gnode <- x$gnode
     gnode$aval
-  } else if (is_debug_box(x)) {
-    x$aval
   } else {
     cli_abort("internal error: {.cls {class(x)}} is not an array-like object")
   }
@@ -692,7 +679,7 @@ is_shape <- function(x) {
 #'
 #' During runtime of a JIT-compiled function, these are [`AnvilArray`] objects.
 #'
-#' The following types are arrayish (during tracing / eager mode):
+#' The following types are arrayish (during tracing):
 #' * [`AnvilArray`]: a concrete array holding data on a device.
 #' * [`GraphBox`]: a boxed abstract array representing a value in a graph.
 #' * Length-1 vectors: `numeric(1)` and `logical(1)`

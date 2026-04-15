@@ -4,8 +4,8 @@
 \alias{AnvilBox}
 \title{AnvilBox}
 \description{
-Virtual S3 base class for \code{\link{GraphBox}} and \code{\link{DebugBox}}.
+Virtual S3 base class for \code{\link{GraphBox}}.
 }
 \seealso{
-\link{DebugBox}, \link{GraphBox}, \code{\link[=debug_box]{debug_box()}}
+\link{GraphBox}
 }
