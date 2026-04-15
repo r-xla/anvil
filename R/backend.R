@@ -1,6 +1,6 @@
 #' Create a backend
 #'
-#' @param data_constructor (`function`)\cr Constructs an AnvilArray from R data.
+#' @param new_data (`function`)\cr Constructs an AnvilArray from R data.
 #' This should be a `structure()` with at least a `$data` field that contains the actual
 #' underlying data (`PJRTBuffer` for `"xla"` backend, `array()` for `"quickr"` backend).
 #' @param dtype (`function`)\cr Extracts the dtype from an AnvilArray.
@@ -18,7 +18,7 @@
 #' @keywords internal
 #' @export
 AnvilBackend <- function(
-  data_constructor,
+  new_data,
   dtype,
   shape,
   ambiguous,
@@ -32,7 +32,7 @@ AnvilBackend <- function(
 ) {
   structure(
     list(
-      data_constructor = data_constructor,
+      new_data = new_data,
       dtype = dtype,
       shape = shape,
       ambiguous = ambiguous,
@@ -72,7 +72,7 @@ globals$backends <- list()
 register_backend(
   "plain",
   AnvilBackend(
-    data_constructor = function(data, dtype, shape, device, ambiguous) {
+    new_data = function(data, dtype, shape, device, ambiguous) {
       if (is.null(dtype)) {
         dtype <- default_dtype(data)
       }
