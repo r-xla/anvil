@@ -14,6 +14,7 @@ AnvilBackend(
   as_raw,
   platform,
   device,
+  new_device,
   print_data,
   jit
 )
@@ -63,7 +64,14 @@ AnvilBackend(
 - device:
 
   (`function`)  
-  Returns the device object.
+  Returns the device object for an AnvilArray.
+
+- new_device:
+
+  (`function`)  
+  Constructs a backend-specific device object from a device type string
+  (e.g. `"cpu"`). Called by
+  [`nv_device()`](https://r-xla.github.io/anvil/dev/reference/nv_device.md).
 
 - print_data:
 

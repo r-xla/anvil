@@ -81,6 +81,7 @@
 <span>  <span class="va">as_raw</span>,</span>
 <span>  <span class="va">platform</span>,</span>
 <span>  <span class="va">device</span>,</span>
+<span>  <span class="va">new_device</span>,</span>
 <span>  <span class="va">print_data</span>,</span>
 <span>  <span class="va">jit</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -121,7 +122,12 @@ underlying data (<code>PJRTBuffer</code> for <code>"xla"</code> backend, <code><
 
 
 <dt id="arg-device">device<a class="anchor" aria-label="anchor" href="#arg-device"></a></dt>
-<dd><p>(<code>function</code>)<br> Returns the device object.</p></dd>
+<dd><p>(<code>function</code>)<br> Returns the device object for an AnvilArray.</p></dd>
+
+
+<dt id="arg-new-device">new_device<a class="anchor" aria-label="anchor" href="#arg-new-device"></a></dt>
+<dd><p>(<code>function</code>)<br> Constructs a backend-specific device
+object from a device type string (e.g. <code>"cpu"</code>). Called by <code><a href="nv_device.html">nv_device()</a></code>.</p></dd>
 
 
 <dt id="arg-print-data">print_data<a class="anchor" aria-label="anchor" href="#arg-print-data"></a></dt>

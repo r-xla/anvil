@@ -84,6 +84,7 @@
 <url><loc>https://r-xla.github.io/anvil/dev/reference/nv_convert.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/nv_cosine.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/nv_crossprod.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/nv_device.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/nv_diag.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/nv_div.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/nv_eq.html</loc></url>
@@ -242,6 +243,7 @@
 <url><loc>https://r-xla.github.io/anvil/dev/reference/nvl_xor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/platform.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/prim.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/quickr_device.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/register_primitive.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/reindex_tree.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/shape.html</loc></url>

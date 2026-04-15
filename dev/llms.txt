@@ -470,6 +470,10 @@ Backend-related functionality and implementations
   : Temporarily set the default backend
 - [`with_backend()`](https://r-xla.github.io/anvil/dev/reference/with_backend.md)
   : Run code with a specific backend
+- [`nv_device()`](https://r-xla.github.io/anvil/dev/reference/nv_device.md)
+  : Create a Device
+- [`quickr_device()`](https://r-xla.github.io/anvil/dev/reference/quickr_device.md)
+  : Quickr device
 - [`AnvilBackend()`](https://r-xla.github.io/anvil/dev/reference/AnvilBackend.md)
   : Create a backend
 - [`AnvilBackendXla()`](https://r-xla.github.io/anvil/dev/reference/AnvilBackendXla.md)
