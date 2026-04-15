@@ -66,6 +66,9 @@
   when working with `f64`.
 - Corrected argument checks in
   [`nv_iota()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md).
+- Fix check that `wrt` arguments in
+  [`gradient()`](https://r-xla.github.io/anvil/dev/reference/gradient.md)
+  must be floats.
 
 ### Documentation
 

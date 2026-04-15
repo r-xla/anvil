@@ -106,6 +106,7 @@
 <h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li>+-Inf/NaN are correctly created for <code>f64</code> when inlined into the XLA exectuable (<a href="https://github.com/r-xla/anvil/issues/182" class="external-link">#182</a>). This caused wrong results with e.g. <code><a href="../reference/nv_reduce_max.html">nv_reduce_max()</a></code> when working with <code>f64</code>.</li>
 <li>Corrected argument checks in <code><a href="../reference/nv_iota.html">nv_iota()</a></code>.</li>
+<li>Fix check that <code>wrt</code> arguments in <code><a href="../reference/gradient.html">gradient()</a></code> must be floats.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="documentation-development-version">Documentation<a class="anchor" aria-label="anchor" href="#documentation-development-version"></a></h3>

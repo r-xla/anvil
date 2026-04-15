@@ -1,15 +1,13 @@
 # Array-like Objects
 
-A `arrayish` value is any object that can be passed as an input to anvil
-primitive functions such as
-[`nvl_add`](https://r-xla.github.io/anvil/dev/reference/nvl_add.md) or
-is an output of such a function.
+A `arrayish` value is any object that can be input to a primitive such
+as [`nvl_add`](https://r-xla.github.io/anvil/dev/reference/nvl_add.md).
 
-During runtime, these are
+During runtime of a JIT-compiled function, these are
 [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
 objects.
 
-The following types are arrayish (during compile-time):
+The following types are arrayish (during tracing / eager mode):
 
 - [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md):
   a concrete array holding data on a device.
@@ -17,15 +15,16 @@ The following types are arrayish (during compile-time):
 - [`GraphBox`](https://r-xla.github.io/anvil/dev/reference/GraphBox.md):
   a boxed abstract array representing a value in a graph.
 
-- Literals: `numeric(1)`, `integer(1)`, `logical(1)`: promoted to scalar
-  arrays.
+- Length-1 vectors: `numeric(1)` and `logical(1)`
+
+- R arrays of types: `numeric` and `logical`.
 
 Use `is_arrayish()` to check whether a value is arrayish.
 
 ## Usage
 
 ``` r
-is_arrayish(x, literal = TRUE)
+is_arrayish(x, convert_ok = TRUE)
 ```
 
 ## Arguments
@@ -35,10 +34,11 @@ is_arrayish(x, literal = TRUE)
   (`any`)  
   Object to check.
 
-- literal:
+- convert_ok:
 
   (`logical(1)`)  
-  Whether to accept R literals as arrayish.
+  Whether to accept `numeric(1)` and `logical(1)` and R arrays of type
+  `numeric` and `logical`.
 
 ## Value
 
@@ -59,15 +59,19 @@ is_arrayish(nv_array(1:4))
 # Scalar R literals are arrayish by default
 is_arrayish(1.5)
 #> [1] TRUE
-
-# Non-scalar vectors are not arrayish
-is_arrayish(1:4)
-#> [1] FALSE
-
-is_arrayish(DebugBox(nv_abstract("f32", c(2L, 3L))))
+# R arrays are arrayish by default
+is_arrayish(array(1.5))
 #> [1] TRUE
 
-# Disable literal promotion
-is_arrayish(1.5, literal = FALSE)
+# R arrays
+is_arrayish(array(1:4), convert_ok = TRUE)
+#> [1] TRUE
+is_arrayish(array(1:4), convert_ok = FALSE)
 #> [1] FALSE
+
+# Length 1 vectors
+is_arrayish(1.5, convert_ok = FALSE)
+#> [1] FALSE
+is_arrayish(1.5, convert_ok = TRUE)
+#> [1] TRUE
 ```
