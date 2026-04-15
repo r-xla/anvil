@@ -1,24 +1,27 @@
 # Installation
 
 Currently, {anvil} is not available on CRAN, so you either have to
-install it via r-universe or from GitHub.
+install it via [r-universe](https://r-xla.r-universe.dev/) or from
+[GitHub](https://github.com/r-xla/anvil).
 
 ## System Dependencies
 
-You need a C++20 compiler, `libprotobuf`, and the `protobuf-compiler`.
+The system library required during runtime is `libprotobuf`. Source
+installation requires a `C++20` compiler and `protoc` (protobuf
+compiler).
 
-## Installing the latest release from GitHub
+## CPU Installation
 
-You can install the latest GitHub release via:
+You can install the latest release from GitHub
 
 ``` r
 pak::pak("r-xla/anvil@*release")
 ```
 
-You can install the latest release from r-universe via:
+You can install the latest release from r-universe (prebuilt binary).
 
 ``` r
-install.packages("anvil", repos = "https://r-xla.r-universe.dev")
+install.packages("anvil",repos = c("https://cloud.r-project.org", "https://r-xla.r-universe.dev"))
 ```
 
 To confirm that your CPU installation is working, run:
@@ -28,43 +31,31 @@ library(anvil)
 nv_scalar(1, device = "cpu")
 ```
 
-## Installation the development version from GitHub
-
 The development version can be installed via:
 
 ``` r
 pak::pak("r-xla/anvil")
 ```
 
-## GPU Support
+## GPU Installation
 
-Running {anvil} with GPU support only works on Linux (amd64/x86-64) or
-via WSL2 on Windows. In principle, MPS support on macOS is available but
-many features are missing and the PJRT plugin provided by Apple is
-heavily outdated.
+Running {anvil} with GPU support currently only works on Linux
+(amd64/x86-64) or via WSL2 on Windows (experimental).
 
-### CUDA
-
-To use the CUDA backend on Linux install the {cuda12.8} R package which
-provides the required CUDA runtime libraries and you only need to have a
-compatible CUDA driver.
+The recommended way to use CUDA there is to install the {cuda12.8} R
+package, which only requires a compatible driver to be installed. You
+can install it from GitHub or r-universe:
 
 ``` r
 pak::pak("mlverse/cudatoolkit/cuda12.8")
-```
-
-Alternatively, install from
-[r-universe](https://mlverse.r-universe.dev/).
-
-``` r
+``````r
 install.packages("cuda12.8", repos = "https://mlverse.r-universe.dev")
 ```
 
 When the {cuda12.8} package is not installed, the correct runtime
-libraries need to be installed on the system and discoberable via
-`LD_LIBRARY_PATH`. This can be difficult to set up. The specific
-versions of the CUDA runtime libraries provided with {cuda12.8} are
-provided
+libraries need to be installed on the system and discoverable via
+`LD_LIBRARY_PATH`. The specific versions of the CUDA runtime libraries
+provided with {cuda12.8} are listed
 [here](https://github.com/mlverse/cudatoolkit/blob/main/cuda12.8/inst/components.tsv).
 
 **Troubleshooting**
@@ -78,11 +69,8 @@ anvil::nv_scalar(1, device = "cuda")
 ```
 
 Note that if another package is using a different cudatoolkit package
-(e.g. when using {torch}), there might be some issues, so in this case
-it’s best to run separate R processes.
-
-If you are working on a server, you can also use the prebuilt Docker
-images, see the next section.
+(e.g. when using {torch}), there might be some issues. In this case, use
+separate R processes, e.g. via {mirai}.
 
 ## Docker
 
