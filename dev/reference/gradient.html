@@ -95,8 +95,8 @@ static (non-array) values. Must return a single scalar float array.</p></dd>
 
 
 <dt id="arg-wrt">wrt<a class="anchor" aria-label="anchor" href="#arg-wrt"></a></dt>
-<dd><p>(<code>character</code> or <code>NULL</code>)<br>
-Names of the arguments to compute the gradient with respect to.
+<dd><p>(<code>character</code> | <code>integer</code> | <code>NULL</code>)<br>
+Names or positions of the arguments to compute the gradient with respect to.
 Only arrayish (float array) arguments can be included; static arguments
 must not appear in <code>wrt</code>.
 If <code>NULL</code> (the default), the gradient is computed with respect to all

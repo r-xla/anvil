@@ -22,12 +22,12 @@ value_and_gradient(f, wrt = NULL)
 
 - wrt:
 
-  (`character` or `NULL`)  
-  Names of the arguments to compute the gradient with respect to. Only
-  arrayish (float array) arguments can be included; static arguments
-  must not appear in `wrt`. If `NULL` (the default), the gradient is
-  computed with respect to all arguments (which must all be arrayish in
-  that case).
+  (`character` \| `integer` \| `NULL`)  
+  Names or positions of the arguments to compute the gradient with
+  respect to. Only arrayish (float array) arguments can be included;
+  static arguments must not appear in `wrt`. If `NULL` (the default),
+  the gradient is computed with respect to all arguments (which must all
+  be arrayish in that case).
 
 ## Value
 

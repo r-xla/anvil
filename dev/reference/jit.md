@@ -30,11 +30,12 @@ jit(
 
 - static:
 
-  ([`character()`](https://rdrr.io/r/base/character.html))  
-  Names of parameters of `f` that are *not* arrays. Static values are
-  embedded as constants in the compiled program; a new compilation is
-  triggered whenever a static value changes. For example useful when you
-  want R control flow in your function.
+  ([`character()`](https://rdrr.io/r/base/character.html) \|
+  [`integer()`](https://rdrr.io/r/base/integer.html))  
+  Names or positions of parameters of `f` that are *not* arrays. Static
+  values are embedded as constants in the compiled program; a new
+  compilation is triggered whenever a static value changes. For example
+  useful when you want R control flow in your function.
 
 - cache_size:
 
