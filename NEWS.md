@@ -9,7 +9,8 @@
   Use `array()` to wrap the indices instead, e.g. `x[array(c(1L, 3L))]`.
   This mirrors the input convention used everywhere else in the package.
 * Removed *debug mode*.
-* The primitive branching operation no longer supports NSE
+* Remove NSE support for `nvl_if`. It now requires passing 0-argument
+  closures as `true` and `false` arguments.
 
 ## New Features
 

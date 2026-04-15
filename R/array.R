@@ -717,7 +717,7 @@ is_shape <- function(x) {
 #'
 #' During runtime of a JIT-compiled function, these are [`AnvilArray`] objects.
 #'
-#' The following types are arrayish (during tracing / eager mode):
+#' The following types are arrayish (during tracing):
 #' * [`AnvilArray`]: a concrete array holding data on a device.
 #' * [`GraphBox`]: a boxed abstract array representing a value in a graph.
 #' * Length-1 vectors: `numeric(1)` and `logical(1)`
@@ -756,7 +756,9 @@ is_arrayish <- function(x, convert_ok = TRUE) {
   ok <- inherits(x, "AnvilArray") ||
     is_box(x)
 
-  if (ok) return(TRUE)
+  if (ok) {
+    return(TRUE)
+  }
 
   # length-1 vector or array of numeric or logical type if conver_ok
   convert_ok && (is.numeric(x) || is.logical(x)) && (is.array(x) || (length(x) == 1L))

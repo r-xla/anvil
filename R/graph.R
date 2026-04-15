@@ -338,8 +338,6 @@ maybe_box_arrayish <- function(x) {
     get_box_or_register_const(current_desc, gval)
   } else if (is_anvil_array(x) || is_lit(x)) {
     get_box_or_register_const(current_desc, x)
-  } else if (is_abstract_tensor(x)) {
-    cli_abort("Expected arrayish value, but got {.cls {class(x)[1]}}")
   } else {
     cli_abort("Expected arrayish value, but got {.cls {class(x)[1]}}")
   }

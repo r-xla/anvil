@@ -54,7 +54,6 @@ We can directly work with `AnvilArray`s using {anvil} functions and overloaded R
 
 ```{r}
 nv_add(y, y)
-y + y
 ```
 
 This works because {anvil}'s `nv_*` and `nvl_*` functions -- as well as the operators dispatched on `AnvilArray`s -- are themselves `jit()`-compiled.
