@@ -17,8 +17,8 @@ jit(
 Function to compile. Must accept and return \code{\link{AnvilArray}}s (and/or
 static arguments).}
 
-\item{static}{(\code{character()})\cr
-Names of parameters of \code{f} that are \emph{not} arrays. Static values are
+\item{static}{(\code{character()} | \code{integer()})\cr
+Names or positions of parameters of \code{f} that are \emph{not} arrays. Static values are
 embedded as constants in the compiled program; a new compilation is triggered whenever
 a static value changes. For example useful when you want R control flow in your function.}
 

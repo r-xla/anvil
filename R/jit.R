@@ -8,8 +8,8 @@
 #' @param f (`function`)\cr
 #'   Function to compile. Must accept and return [`AnvilArray`]s (and/or
 #'   static arguments).
-#' @param static (`character()`)\cr
-#'   Names of parameters of `f` that are *not* arrays. Static values are
+#' @param static (`character()` | `integer()`)\cr
+#'   Names or positions of parameters of `f` that are *not* arrays. Static values are
 #'   embedded as constants in the compiled program; a new compilation is triggered whenever
 #'   a static value changes. For example useful when you want R control flow in your function.
 #' @param cache_size (`integer(1)`)\cr
@@ -54,6 +54,7 @@ jit <- function(
   backend = default_backend(),
   ...
 ) {
+  static <- resolve_static(f, static)
   cache <- xlamisc::LRUCache$new(cache_size)
   backend <- assert_backend(backend)
   assert_subset(static, formalArgs2(f))
@@ -63,6 +64,17 @@ jit <- function(
   class(f_jit) <- "JitFunction"
   attr(f_jit, "backend") <- backend
   f_jit
+}
+
+resolve_static <- function(f, static) {
+  if (is.integer(static)) {
+    nms <- formalArgs2(f)
+    if (any(static < 1L | static > length(nms))) {
+      cli_abort("{.arg static} index out of range.")
+    }
+    return(nms[static])
+  }
+  static
 }
 
 #' @export
