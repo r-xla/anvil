@@ -78,7 +78,7 @@ test_that("while", {
 
 test_that("if", {
   f <- function(x) {
-    nv_if(nv_scalar(TRUE), x, x)
+    nv_if(nv_scalar(TRUE), \() x, \() x)
   }
   ain <- debug_box("f32", 1)
   expect_equal(f(ain)$aval, ain$aval)

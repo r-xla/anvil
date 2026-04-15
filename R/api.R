@@ -1409,16 +1409,16 @@ nv_reduce_all <- nvl_reduce_all
 #' of the two branches depending on a scalar predicate.
 #' @param pred ([`arrayish`] of boolean type, scalar)\cr
 #'   Predicate.
-#' @param true (`expression`)\cr
-#'   Expression for the true branch (non-standard evaluation).
-#' @param false (`expression`)\cr
-#'   Expression for the false branch (non-standard evaluation).
+#' @param true (`function()`)\cr
+#'   Zero-argument function for the true branch.
+#' @param false (`function()`)\cr
+#'   Zero-argument function for the false branch.
 #'   Must return outputs with the same shapes as the true branch.
 #' @return Result of the executed branch.
 #' @seealso [nvl_if()] for the underlying primitive, [nv_ifelse()] for
 #'   element-wise selection.
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval(nv_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
+#' jit_eval(nv_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2)))
 #' @export
 nv_if <- nvl_if
 

@@ -8,6 +8,8 @@
 * Subsetting with `list()` (e.g. `x[list(1, 3)]`) is no longer supported.
   Use `array()` to wrap the indices instead, e.g. `x[array(c(1L, 3L))]`.
   This mirrors the input convention used everywhere else in the package.
+* Remove NSE support for `nvl_if`. It now requires passing 0-argument
+  closures as `true` and `false` arguments.
 
 ## New Features
 

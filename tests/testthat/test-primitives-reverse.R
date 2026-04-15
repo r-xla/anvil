@@ -237,7 +237,7 @@ test_that("p_if", {
   # TODO:
   #f <- jit(gradient(
   #  function(pred, x) {
-  #    nvl_if(pred, x * nv_scalar(1), x * nv_scalar(2))
+  #    nvl_if(pred, \() x * nv_scalar(1), \() x * nv_scalar(2))
   #  },
   #  wrt = "x"
   #))

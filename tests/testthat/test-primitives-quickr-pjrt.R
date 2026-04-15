@@ -999,11 +999,11 @@ test_that("quickr pipeline matches PJRT: control flow (if/while)", {
   skip_if_no_quickr_or_pjrt()
 
   cf_ops <- function(p) {
-    if_s <- nv_if(p, 1L, 2L)
+    if_s <- nv_if(p, \() 1L, \() 2L)
     if_a <- nv_if(
       p,
-      nv_fill(1L, shape = c(2L, 2L), dtype = "i32"),
-      nv_fill(2L, shape = c(2L, 2L), dtype = "i32")
+      \() nv_fill(1L, shape = c(2L, 2L), dtype = "i32"),
+      \() nv_fill(2L, shape = c(2L, 2L), dtype = "i32")
     )
 
     w1 <- nv_while(
