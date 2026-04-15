@@ -1898,9 +1898,9 @@ p_if <- AnvilPrimitive("if", subgraphs = c("true_graph", "false_graph"))
 #' evaluates only the selected branch.
 #' @param pred ([`arrayish`])\cr
 #'   Scalar boolean predicate that determines which branch to execute.
-#' @param true,false (NSE)\cr
-#'   Expressions for the true and false branches. Both must return outputs
-#'   with the same structure, dtypes, and shapes.
+#' @param true,false (`function()`)\cr
+#'   Zero-argument functions for the true and false branches. Both must return
+#'   outputs with the same structure, dtypes, and shapes.
 #' @return Result of the executed branch.\cr
 #'   An output is ambiguous if it is ambiguous in both branches.
 #' @templateVar primitive_id if
@@ -1909,13 +1909,13 @@ p_if <- AnvilPrimitive("if", subgraphs = c("true_graph", "false_graph"))
 #' Lowers to [stablehlo::hlo_if()].
 #' @seealso [nv_if()], [nvl_ifelse()]
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval(nvl_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
+#' jit_eval(nvl_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2)))
 #' @export
 nvl_if <- function(pred, true, false) {
   # delayed promise evaluation can cause the value to be added to the wrong graph descriptor
   force(pred)
-  true_expr <- rlang::enquo(true)
-  false_expr <- rlang::enquo(false)
+  force(true)
+  force(false)
 
   # Build sub-graphs for each branch (no inputs, just capture closed-over values)
   # We need to ensure that constants that are captured in both branches receive the same
@@ -1929,13 +1929,13 @@ nvl_if <- function(pred, true, false) {
   }
 
   desc_true <- local_descriptor()
-  true_graph <- trace_fn(function() rlang::eval_tidy(true_expr), list(), desc = desc_true, lit_to_array = TRUE)
+  true_graph <- trace_fn(true, list(), desc = desc_true, lit_to_array = TRUE)
   desc_false <- local_descriptor()
 
   for (const in desc_true$constants) {
     get_box_or_register_const(desc_false, const)
   }
-  false_graph <- trace_fn(function() rlang::eval_tidy(false_expr), list(), desc = desc_false, lit_to_array = TRUE)
+  false_graph <- trace_fn(false, list(), desc = desc_false, lit_to_array = TRUE)
 
   for (const in desc_false$constants) {
     get_box_or_register_const(current_desc, const)

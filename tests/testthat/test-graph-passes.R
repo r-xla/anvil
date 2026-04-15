@@ -110,7 +110,7 @@ describe("inline_scalarish_constants", {
   it("can inline constant inputs to sub-graphs", {
     f <- function() {
       x <- nv_scalar(TRUE)
-      nv_if(x, nv_scalar(1), nv_scalar(2))
+      nv_if(x, \() nv_scalar(1), \() nv_scalar(2))
     }
     result <- check_inlining(
       graph_fun = f,
@@ -191,8 +191,8 @@ describe("inline_scalarish_constants", {
     f <- function(x, y) {
       nv_if(
         x,
-        nv_if(y, const_inner_true, const_inner_false),
-        nv_if(y, const_outer_true, const_outer_false)
+        \() nv_if(y, \() const_inner_true, \() const_inner_false),
+        \() nv_if(y, \() const_outer_true, \() const_outer_false)
       )
     }
 
@@ -245,7 +245,7 @@ describe("inline_scalarish_constants", {
     x <- nv_scalar(10)
     y <- nv_scalar(20)
     f <- function(pred) {
-      nv_if(pred, x, y)
+      nv_if(pred, \() x, \() y)
     }
     graph <- trace_fn(f, list(pred = nv_scalar(TRUE)))
     check_inlining(
