@@ -9,7 +9,9 @@
 #' @param as_array (`function`)\cr Converts an AnvilArray to an R array.
 #' @param as_raw (`function`)\cr Converts an AnvilArray to raw bytes.
 #' @param platform (`function`)\cr Returns the platform name (e.g. `"cpu"`).
-#' @param device (`function`)\cr Returns the device object.
+#' @param device (`function`)\cr Returns the device object for an AnvilArray.
+#' @param new_device (`function`)\cr Constructs a backend-specific device
+#'   object from a device type string (e.g. `"cpu"`). Called by [`nv_device()`].
 #' @param print_data (`function`)\cr Prints the array data with a footer.
 #' @param jit (`function`)\cr Creates a JIT-compiled function implementation.
 #' @return An `AnvilBackend` object.
@@ -24,6 +26,7 @@ AnvilBackend <- function(
   as_raw,
   platform,
   device,
+  new_device,
   print_data,
   jit
 ) {
@@ -37,6 +40,7 @@ AnvilBackend <- function(
       as_raw = as_raw,
       platform = platform,
       device = device,
+      new_device = new_device,
       print_data = print_data,
       jit = jit
     ),
@@ -105,6 +109,9 @@ register_backend(
     as_raw = function(x, row_major) cli_abort("as_raw not supported for plain backend"),
     platform = function(x) "cpu",
     device = function(x) PlainDeviceCpu(),
+    new_device = function(type) {
+      cli_abort("{.val plain} backend does not support creating devices.")
+    },
     print_data = function(x, footer) {
       print(x$data)
       cat(footer, "\n")

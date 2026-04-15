@@ -1,15 +1,28 @@
 #' @include backend.R
 NULL
 
-QuickrDeviceCpu <- function() {
-  structure("cpu", class = "QuickrDeviceCpu")
+#' @title Quickr device
+#' @description
+#' Device descriptor for the quickr backend. The only supported `type` is
+#' `"cpu"`.
+#' @param x (`character(1)`)\cr
+#'   Device type. Currently only supports `"cpu"`.
+#' @return A `QuickrDevice` object.
+#' @seealso [`nv_device()`], [`AnvilBackendQuickr()`].
+#' @export
+quickr_device <- function(x = "cpu") {
+  assert_choice(x, c("cpu"))
+  structure(list(device = x), class = "QuickrDevice")
 }
 
 #' @export
-format.QuickrDeviceCpu <- function(x, ...) "QuickrDeviceCpu"
+as.character.QuickrDevice <- function(x, ...) x$device
 
 #' @export
-print.QuickrDeviceCpu <- function(x, ...) {
+format.QuickrDevice <- function(x, ...) paste0("QuickrDevice(", x$device, ")")
+
+#' @export
+print.QuickrDevice <- function(x, ...) {
   cat(format(x), "\n")
   invisible(x)
 }
@@ -154,7 +167,8 @@ AnvilBackendQuickr <- function() {
     as_array = function(x) x$data,
     as_raw = function(x, row_major) as.raw(x$data),
     platform = function(x) "cpu",
-    device = function(x) QuickrDeviceCpu(),
+    device = function(x) quickr_device("cpu"),
+    new_device = function(x) quickr_device(x),
     print_data = function(x, footer) {
       print(x$data)
       cat(footer, "\n")

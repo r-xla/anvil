@@ -232,6 +232,16 @@ backend.AnvilArray <- function(x, ...) {
   x$backend
 }
 
+#' @export
+backend.PJRTDevice <- function(x, ...) {
+  "xla"
+}
+
+#' @export
+backend.QuickrDevice <- function(x, ...) {
+  "quickr"
+}
+
 #' @title Abstract Array Class
 #' @description
 #' Representation of an abstract array type.

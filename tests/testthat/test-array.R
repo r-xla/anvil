@@ -168,11 +168,11 @@ test_that("stablehlo dtype is printed", {
   expect_snapshot(nv_array(TRUE))
 })
 
-test_that("QuickrDeviceCpu is a classed object", {
+test_that("quickr_device is a classed object", {
   skip_if_not_installed("quickr")
-  dev <- QuickrDeviceCpu()
-  expect_s3_class(dev, "QuickrDeviceCpu")
-  expect_equal(format(dev), "QuickrDeviceCpu")
+  dev <- quickr_device("cpu")
+  expect_s3_class(dev, "QuickrDevice")
+  expect_equal(format(dev), "QuickrDevice(cpu)")
   expect_equal(as.character(dev), "cpu")
 })
 
@@ -183,12 +183,12 @@ test_that("PlainDeviceCpu is a classed object", {
   expect_equal(as.character(dev), "cpu")
 })
 
-test_that("device returns QuickrDeviceCpu for quickr arrays", {
+test_that("device returns quickr_device for quickr arrays", {
   skip_if_not_installed("quickr")
   local_backend("quickr")
   x <- nv_array(1)
   dev <- device(x)
-  expect_s3_class(dev, "QuickrDeviceCpu")
+  expect_s3_class(dev, "QuickrDevice")
 })
 
 test_that("device returns PlainDeviceCpu for plain arrays", {
