@@ -287,7 +287,7 @@ describe("jit: backend and device combinations", {
 
   it("backend = NULL, device = QuickrDevice uses quickr (derived from device)", {
     skip_if_not_installed("quickr")
-    f <- jit(ident, device = QuickrDevice("cpu"))
+    f <- jit(ident, device = quickr_device("cpu"))
     expect_equal(backend(f), "quickr")
   })
 
@@ -298,14 +298,14 @@ describe("jit: backend and device combinations", {
 
   it("backend = 'quickr', device = QuickrDevice is consistent", {
     skip_if_not_installed("quickr")
-    f <- jit(ident, backend = "quickr", device = QuickrDevice("cpu"))
+    f <- jit(ident, backend = "quickr", device = quickr_device("cpu"))
     expect_equal(backend(f), "quickr")
   })
 
   it("backend = 'xla' conflicts with device = QuickrDevice", {
     skip_if_not_installed("quickr")
     expect_error(
-      jit(ident, backend = "xla", device = QuickrDevice("cpu")),
+      jit(ident, backend = "xla", device = quickr_device("cpu")),
       "has backend.*quickr.*backend.*xla"
     )
   })
@@ -355,7 +355,7 @@ describe("jit: backend and device combinations", {
     skip_if_not_installed("quickr")
     g <- function(value, dev = NULL) nv_fill(value, shape = c(), dtype = "f32", device = dev)
     f <- jit(g, static = c("value", "dev"), device = from_arg("dev"))
-    out <- f(1, dev = QuickrDevice("cpu"))
+    out <- f(1, dev = quickr_device("cpu"))
     expect_equal(backend(out), "quickr")
   })
 })
