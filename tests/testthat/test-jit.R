@@ -198,6 +198,13 @@ test_that("static accepts integer positions", {
   expect_error(jit(body_fn, static = 0L), "out of range")
 })
 
+test_that("static cannot be '...'", {
+  f <- function(x, ...) x
+  expect_error(jit(f, static = "..."), "must not contain")
+  # Position pointing at `...` is also rejected.
+  expect_error(jit(f, static = 2L), "must not contain")
+})
+
 
 test_that("jit: array return value is not wrapped in list", {
   f <- jit(nvl_add)

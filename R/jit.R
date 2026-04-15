@@ -71,16 +71,24 @@ resolve_static <- function(f, static) {
 }
 
 # Translate a character-or-integer argument selector into character names
-# of the formals of `f`. `arg` is used in error messages.
+# of the formals of `f`. `arg` is used in error messages. Rejects `"..."`
+# (whether supplied by name or resolved from an integer position), since it
+# does not name a single argument.
 resolve_arg_names <- function(f, x, arg) {
-  if (is.null(x) || !is.integer(x)) {
+  if (is.null(x)) {
     return(x)
   }
-  nms <- formalArgs2(f)
-  if (any(x < 1L | x > length(nms))) {
-    cli_abort("{.arg {arg}} index out of range.")
+  if (is.integer(x)) {
+    nms <- formalArgs2(f)
+    if (any(x < 1L | x > length(nms))) {
+      cli_abort("{.arg {arg}} index out of range.")
+    }
+    x <- nms[x]
   }
-  nms[x]
+  if ("..." %in% x) {
+    cli_abort("{.arg {arg}} must not contain {.val ...}.")
+  }
+  x
 }
 
 #' @export
