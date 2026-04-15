@@ -13,6 +13,7 @@ AnvilBackend(
   as_raw,
   platform,
   device,
+  new_device,
   print_data,
   jit
 )
@@ -34,7 +35,10 @@ underlying data (\code{PJRTBuffer} for \code{"xla"} backend, \code{array()} for 
 
 \item{platform}{(\code{function})\cr Returns the platform name (e.g. \code{"cpu"}).}
 
-\item{device}{(\code{function})\cr Returns the device object.}
+\item{device}{(\code{function})\cr Returns the device object for an AnvilArray.}
+
+\item{new_device}{(\code{function})\cr Constructs a backend-specific device
+object from a device type string (e.g. \code{"cpu"}). Called by \code{\link[=nv_device]{nv_device()}}.}
 
 \item{print_data}{(\code{function})\cr Prints the array data with a footer.}
 
