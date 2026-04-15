@@ -14,8 +14,7 @@ Size of the identity matrix.}
 Data type.}
 
 \item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{QuickrDevice}} | \code{NULL})\cr
-Device on which to create the array.
-This is also used to infer the backend.}
+Device for data to live on.}
 }
 \value{
 \code{\link{arrayish}}\cr

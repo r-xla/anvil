@@ -758,9 +758,8 @@ is_arrayish <- function(x, convert_ok = TRUE) {
 
   if (ok) return(TRUE)
 
-  if (!convert_ok) return(FALSE)
-  # length-1 vector or array of numeric or logical type
-  (is.numeric(x) || is.logical(x)) && (is.array(x) || (length(x) == 1L))
+  # length-1 vector or array of numeric or logical type if conver_ok
+  convert_ok && (is.numeric(x) || is.logical(x)) && (is.array(x) || (length(x) == 1L))
 }
 
 detect_backend_from_args <- function(args) {

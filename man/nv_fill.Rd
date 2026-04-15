@@ -21,11 +21,10 @@ nv_fill_like(
 Scalar value to fill the array with.}
 
 \item{shape}{(\code{integer()})\cr
-Shape of the output array. For \code{nv_fill_like()}, defaults to \code{shape(like)}.}
+Shape of the output array.}
 
 \item{dtype}{(\code{character(1)} | \code{NULL})\cr
-Data type. For \code{nv_fill()}, \code{NULL} (default) infers from \code{value}.
-For \code{nv_fill_like()}, \code{NULL} uses \code{dtype(like)}.}
+Data type.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.
@@ -33,8 +32,7 @@ Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and 
 See the \code{vignette("type-promotion")} for more details.}
 
 \item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{QuickrDevice}} | \code{NULL})\cr
-Device on which to create the array.
-This is also used to infer the backend.}
+Device for data to live on.}
 
 \item{like}{(\code{\link{AnvilArray}})\cr
 Existing array whose attributes are used as defaults

@@ -42,8 +42,7 @@ Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and 
 See the \code{vignette("type-promotion")} for more details.}
 
 \item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{QuickrDevice}} | \code{NULL})\cr
-Device on which to create the array.
-This is also used to infer the backend.}
+Device for data to live on.}
 
 \item{like}{(\code{\link{AnvilArray}})\cr
 Existing array whose attributes are used as defaults

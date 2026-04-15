@@ -17,8 +17,7 @@ An object recognized by \code{\link[=jit]{jit()}}.
 \description{
 Pass the result to \code{\link[=jit]{jit()}}'s \code{device} argument to indicate that the
 device should be read from a formal argument of the function being
-compiled. At call time, the value of that argument (typically a device
-object such as a \code{PJRTDevice} or a \code{\link{QuickrDevice}}) is used to derive the
+compiled. At call time, the value of that argument is used to derive the
 backend via \code{\link[=backend]{backend()}} dispatch and is forwarded to the backend-specific
 JIT as the compilation device.
 

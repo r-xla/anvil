@@ -8,7 +8,7 @@ jit(
   f,
   static = character(),
   cache_size = 100L,
-  backend = default_backend(),
+  backend = NULL,
   device = NULL,
   ...
 )
@@ -26,23 +26,21 @@ a static value changes. For example useful when you want R control flow in your 
 \item{cache_size}{(\code{integer(1)})\cr
 Maximum number of compiled executables to keep in the LRU cache.}
 
-\item{backend}{(\code{character(1)})\cr
-Compilation backend (e.g. \code{"xla"}, \code{"quickr"}). Defaults to
-\code{\link[=default_backend]{default_backend()}}. The special value \code{"auto"} defers backend selection
+\item{backend}{(\code{NULL} |  \code{character(1)})\cr
+Compilation backend (e.g. \code{"xla"}, \code{"quickr"}).
+The special value \code{"auto"} defers backend selection
 to call time, picking the backend from the inputs (or \code{\link[=default_backend]{default_backend()}}
-when there are none).}
+when there are none).
+If it is \code{NULL}, the \code{\link[=default_backend]{default_backend()}} will be used unless the \code{device}
+is determined dynamically (\code{from_arg()}) in which case the device's backend
+will be used.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | \code{PJRTDevice} | \code{\link{QuickrDevice}} | \code{from_arg()})\cr
-Target device, forwarded to the backend-specific JIT. \code{NULL} (default)
-lets the backend pick a device. A character string (e.g. \code{"cpu"}) is
-resolved via \code{\link[=nv_device]{nv_device()}} against \code{backend}.
+Target device, forwarded to the backend-specific JIT.
+The default (\code{NULL}) uses CPU device.
 
-Alternatively, pass \code{\link[=from_arg]{from_arg()}} to name a formal argument of \code{f} whose
-value (typically a device object) determines the device at call time. The
-backend is then derived from that device via \code{\link[=backend]{backend()}} dispatch. This
-is intended for functions where no dynamic input is available to detect
-the backend from (e.g. array constructors like \code{\link[=nvl_fill]{nvl_fill()}} or
-\code{\link[=nvl_iota]{nvl_iota()}}).}
+In order to enable runtime selection of the device (useful for constant creators such as
+\code{\link[=nvl_fill]{nvl_fill()}}), set to \verb{from_arg("<device-arg>"")}.}
 
 \item{...}{Backend-specific options. Passing an option that is not supported
 by the selected backend raises an error. See the \strong{XLA JIT arguments} and

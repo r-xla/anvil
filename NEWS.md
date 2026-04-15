@@ -48,6 +48,7 @@
 * +-Inf/NaN are correctly created for `f64` when inlined into the XLA exectuable (#182).
   This caused wrong results with e.g. `nv_reduce_max()` when working with `f64`.
 * Corrected argument checks in `nv_iota()`.
+* Fix check that `wrt` arguments in `gradient()` must be floats.
 
 ## Documentation
 

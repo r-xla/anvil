@@ -40,6 +40,7 @@ For example, we might want to add an API function that adds three to a tensor an
 By setting the `backend` argument to `"auto"`, we can use it with both backends:
 
 ```{r}
+library(anvil)
 nv_add_three_good <- jit(\(x) x + 3, backend = "auto")
 nv_add_three_good(nv_scalar(1, backend = "xla"))
 nv_add_three_good(nv_scalar(1, backend = "quickr"))

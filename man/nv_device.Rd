@@ -31,9 +31,10 @@ resulting array is allocated and which backend runs the operation.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-# Create CPU device for XLA backend:
-nv_device("xla:cpu")
-nv_device("xla:1")
+# Create CPU device for xla backend:
+nv_device("cpu", "xla")
+# Create CPU device for quickr backend:
+nv_device("cpu", "quickr")
 \dontshow{\}) # examplesIf}
 }
 \seealso{

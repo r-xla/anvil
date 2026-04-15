@@ -16,9 +16,10 @@
 #'   [`QuickrDevice`] for `"quickr"`).
 #' @seealso [`backend()`], [`AnvilBackend()`].
 #' @examplesIf pjrt::plugin_is_downloaded()
-#' # Create CPU device for XLA backend:
-#' nv_device("xla:cpu")
-#' nv_device("xla:1")
+#' # Create CPU device for xla backend:
+#' nv_device("cpu", "xla")
+#' # Create CPU device for quickr backend:
+#' nv_device("cpu", "quickr")
 #' @export
 nv_device <- function(type, backend = default_backend()) {
   #TODO: This should probably be more like AnvilArray (?)
