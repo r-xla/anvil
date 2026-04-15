@@ -27,10 +27,25 @@ including CPU and GPU.
 ## Installation
 
 {anvil} can be installed from GitHub or
-[r-universe](https://r-xla.r-universe.dev/builds). Prebuilt [Docker
-images](https://github.com/r-xla/docker) are also available. See the
-*Installation* vignette on the package website for detailed
-instructions.
+[r-universe](https://r-xla.r-universe.dev/builds). During runtime, we
+require `libprotobuf`. Source installation requires a `C++20` compiler
+and `protoc` (protobuf compiler).
+
+``` r
+# Install release
+# from r-universe (prebuilt binary)
+install.packages("anvil", repos = c("https://cloud.r-project.org", "https://r-xla.r-universe.dev"))
+# from GitHub (installation from source)
+pak::pak("r-xla/anvil@*release")
+# Install dev version
+pak::pak("r-xla/anvil")
+# Install CUDA support (linux x86_64): only requires a compatible driver
+install.packages("cuda12.8", repos = "https://mlverse.r-universe.dev")
+```
+
+Prebuilt [Docker images](https://github.com/r-xla/docker) are also
+available. See the *Installation* vignette on the package website for
+more details.
 
 ## Quick Start
 
