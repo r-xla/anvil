@@ -1,15 +1,28 @@
 #' @include backend.R
 NULL
 
-QuickrDeviceCpu <- function() {
-  structure("cpu", class = "QuickrDeviceCpu")
+#' @title Quickr device
+#' @description
+#' Device descriptor for the quickr backend. The only supported `type` is
+#' `"cpu"`.
+#' @param type (`character(1)`)\cr
+#'   Device type. Must be `"cpu"`.
+#' @return A `QuickrDevice` object.
+#' @seealso [`nv_device()`], [`AnvilBackendQuickr()`].
+#' @export
+QuickrDevice <- function(type = "cpu") {
+  assert_choice(type, c("cpu"))
+  structure(list(type = type), class = "QuickrDevice")
 }
 
 #' @export
-format.QuickrDeviceCpu <- function(x, ...) "QuickrDeviceCpu"
+as.character.QuickrDevice <- function(x, ...) x$type
 
 #' @export
-print.QuickrDeviceCpu <- function(x, ...) {
+format.QuickrDevice <- function(x, ...) paste0("QuickrDevice(", x$type, ")")
+
+#' @export
+print.QuickrDevice <- function(x, ...) {
   cat(format(x), "\n")
   invisible(x)
 }
@@ -115,7 +128,7 @@ compile_to_quickr <- function(f, args_flat, in_tree, unwrap = FALSE, flat = FALS
 #' @export
 AnvilBackendQuickr <- function() {
   backend <- AnvilBackend(
-    data_constructor = function(data, dtype, shape, device, ambiguous) {
+    new_data = function(data, dtype, shape, device, ambiguous) {
       if (is.null(dtype)) {
         dtype <- if (is.double(data)) FloatType(64) else default_dtype(data)
       }
@@ -154,12 +167,13 @@ AnvilBackendQuickr <- function() {
     as_array = function(x) x$data,
     as_raw = function(x, row_major) as.raw(x$data),
     platform = function(x) "cpu",
-    device = function(x) QuickrDeviceCpu(),
+    device = function(x) QuickrDevice("cpu"),
+    new_device = function(type) QuickrDevice(type),
     print_data = function(x, footer) {
       print(x$data)
       cat(footer, "\n")
     },
-    jit = function(f, static, cache, unwrap = FALSE) {
+    jit = function(f, static, cache, unwrap = FALSE, device = NULL) {
       assert_flag(unwrap)
       jit_quickr_impl(f, static, cache, unwrap)
     }

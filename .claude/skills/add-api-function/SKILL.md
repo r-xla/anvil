@@ -56,6 +56,18 @@ nv_<name> <- nvl_<name>
 
 For ops needing custom logic, write a function. Use `shape_abstract()`, `ndims_abstract()`, and `dtype_abstract()` to access properties from arrayish values.
 
+### Propagating the backend for constant-creating calls
+
+When your API function internally calls functions that create constants from static values (`nv_fill()`, `nv_iota()`, `nv_array()`, `nv_scalar()`, etc.), pass the backend of the input operand through explicitly:
+
+```r
+be <- backend(operand)
+rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32", backend = be)
+zeros <- nv_fill(0, shp, dtype = dtype_abstract(operand), backend = be)
+```
+
+Without this, the constants are placed on the default backend instead of following the operand, which breaks multi-backend use. See `nv_tril()` / `nv_triu()` in `R/api.R` for reference.
+
 ## Roxygen2 Documentation
 
 API functions use a consistent documentation pattern. Use templates from `man-roxygen/` where applicable.
@@ -89,7 +101,7 @@ If no proper template for a parameter or the return value exist, write the docum
   - `params_reduce` — dims + drop params for reductions
 - **`@param`**: write inline for parameters not covered by templates
 - **`@seealso`**: always link to the underlying `nvl_*` primitive. Optionally link to related `nv_*` functions.
-- **`@examplesIf pjrt::plugin_is_downloaded()`**: wrap examples in this guard. Since all `nv_*` and `nvl_*` functions are auto-jitted, examples can call them directly.
+- **`@examplesIf pjrt::plugin_is_downloaded()`**: wrap examples in this guard. Since all `nvl_*` functions are auto-jitted and `nv_*` functions call into `nvl_*` functions, examples can call them directly.
 - **`@family`**: use for groups of related functions (e.g. `@family rng` for all RNG functions)
 
 ### S3 methods for R generics

@@ -4,7 +4,7 @@
 \alias{nv_eye}
 \title{Identity Matrix}
 \usage{
-nv_eye(n, dtype = "f32", backend = "auto")
+nv_eye(n, dtype = "f32", device = NULL)
 }
 \arguments{
 \item{n}{(\code{integer(1)})\cr
@@ -13,10 +13,9 @@ Size of the identity matrix.}
 \item{dtype}{(\code{character(1)} | \code{\link[tengen:DataType]{tengen::DataType}})\cr
 Data type.}
 
-\item{backend}{(\code{character(1)})\cr
-Backend used to construct the array. \code{"auto"} (default) picks a backend
-based on the inputs (or \code{\link[=default_backend]{default_backend()}} when there are none).
-See \code{\link[=jit]{jit()}} for the list of available backends.}
+\item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{QuickrDevice}} | \code{NULL})\cr
+Device on which to create the array.
+This is also used to infer the backend.}
 }
 \value{
 \code{\link{arrayish}}\cr

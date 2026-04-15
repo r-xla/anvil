@@ -7,27 +7,45 @@
 #' @description
 #' Creates an array filled with a scalar value. More memory-efficient than
 #' `nv_array(value, shape = shape)` for large arrays.
+#'
+#' `nv_fill_like()` is a variant where `dtype`, `shape`, `ambiguous`, and
+#' `device` default to those of `like`.
 #' @param value (`numeric(1)`)\cr
 #'   Scalar value to fill the array with.
 #' @param shape (`integer()`)\cr
 #'   Shape of the output array.
 #' @param dtype (`character(1)` | `NULL`)\cr
-#'   Data type. If `NULL` (default), inferred from `value`.
+#'   Data type.
+#' @param like ([`AnvilArray`])\cr
+#'   Existing array whose attributes are used as defaults
+#'   (only for `nv_fill_like()`).
 #' @template param_ambiguous
-#' @template param_backend
+#' @template param_device
 #' @return [`arrayish`]\cr
 #'   Has the given `shape` and `dtype`.
 #' @seealso [nvl_fill()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' nv_fill(0, shape = c(2, 3))
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nv_fill_like(x, 0)
 #' @export
-nv_fill <- function(value, shape, dtype = NULL, ambiguous = FALSE, backend = "auto") {
+nv_fill <- function(value, shape, dtype = NULL, ambiguous = FALSE, device = NULL) {
   dtype <- if (is.null(dtype)) {
     default_dtype(value)
   } else {
     as_dtype(dtype)
   }
-  nvl_fill(value, shape, dtype, ambiguous, backend = backend)
+  nvl_fill(value, shape, dtype, ambiguous, device = device)
+}
+
+#' @rdname nv_fill
+#' @export
+nv_fill_like <- function(like, value, shape = NULL, dtype = NULL, ambiguous = NULL, device = NULL) {
+  shape <- shape %||% shape(like)
+  dtype <- dtype %||% dtype(like)
+  device <- device %||% device(like)
+  ambiguous <- ambiguous %||% ambiguous(like)
+  nv_fill(value, shape = shape, dtype = dtype, ambiguous = ambiguous, device = device)
 }
 
 
@@ -935,21 +953,39 @@ nv_reverse <- nvl_reverse
 #' @description
 #' Creates an array with values increasing along the specified dimension,
 #' starting from `start`.
+#'
+#' `nv_iota_like()` is a variant where `dtype`, `shape`, `ambiguous`, and
+#' `device` default to those of `like`.
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which values increase.
+#' @param like ([`AnvilArray`])\cr
+#'   Existing array whose attributes are used as defaults
+#'   (only for `nv_iota_like()`).
 #' @template param_dtype
 #' @template param_shape
 #' @param start (`integer(1)`)\cr
 #'   Starting value (default 1).
 #' @template param_ambiguous
-#' @template param_backend
+#' @template param_device
 #' @return [`arrayish`]\cr
 #'   Has the given `dtype` and `shape`.
 #' @seealso [nv_seq()] for a simpler 1-D sequence, [nvl_iota()] for the underlying primitive.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' nv_iota(dim = 1L, dtype = "i32", shape = 5L)
+#' x <- nv_array(matrix(0L, nrow = 2, ncol = 3))
+#' nv_iota_like(x, dim = 1L)
 #' @export
 nv_iota <- nvl_iota
+
+#' @rdname nv_iota
+#' @export
+nv_iota_like <- function(like, dim, shape = NULL, start = 1L, dtype = NULL, ambiguous = NULL, device = NULL) {
+  shape <- shape %||% shape(like)
+  dtype <- dtype %||% dtype(like)
+  device <- device %||% device(like)
+  ambiguous <- ambiguous %||% ambiguous(like)
+  nv_iota(dim = dim, dtype = dtype, shape = shape, start = start, ambiguous = ambiguous, device = device)
+}
 
 #' @title Sequence
 #' @description
@@ -957,6 +993,9 @@ nv_iota <- nvl_iota
 #'
 #' Without `steps`, behaves like R's `seq(start, end)` producing integer values.
 #' With `steps`, produces `steps` evenly spaced values (like `seq(start, end, length.out = steps)`).
+#'
+#' `nv_seq_like()` is a variant where `dtype`, `ambiguous`, and `device`
+#' default to those of `like`.
 #' @param start,end (`numeric(1)`)\cr
 #'   Start and end values. When `steps` is `NULL`, must satisfy `start <= end`.
 #' @param steps (`integer(1)` or `NULL`)\cr
@@ -964,14 +1003,20 @@ nv_iota <- nvl_iota
 #'   When `NULL` (default), generates consecutive integer values from `start` to `end`.
 #' @param dtype (`character(1)`)\cr
 #'   Data type. Default `"i32"` when `steps` is `NULL`, `"f32"` when `steps` is given.
+#'   For `nv_seq_like()`, `NULL` uses `dtype(like)`.
+#' @param like ([`AnvilArray`])\cr
+#'   Existing array whose attributes are used as defaults
+#'   (only for `nv_seq_like()`).
 #' @template param_ambiguous
-#' @template param_backend
+#' @template param_device
 #' @return [`arrayish`]\cr
 #'   1-D array of length `end - start + 1`.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' nv_seq(3, 7)
+#' x <- nv_array(c(1, 2, 3), dtype = "f64")
+#' nv_seq_like(x, 1, 5)
 #' @export
-nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE, backend = "auto") {
+nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE, device = NULL) {
   if (is.null(steps)) {
     dtype <- dtype %||% "i32"
     assert_int(start)
@@ -983,16 +1028,25 @@ nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE, ba
       ambiguous = ambiguous,
       dim = 1L,
       start = start,
-      backend = backend
+      device = device
     ))
   }
   dtype <- dtype %||% "f32"
   assert_int(steps, lower = 1L)
   if (steps == 1L) {
-    return(nv_fill(start, 1L, dtype = dtype, backend = backend))
+    return(nv_fill(start, 1L, dtype = dtype, device = device))
   }
-  indices <- nv_iota(dim = 1L, shape = steps, dtype = dtype, start = 0L, backend = backend)
+  indices <- nv_iota(dim = 1L, shape = steps, dtype = dtype, start = 0L, device = device)
   indices * ((end - start) / (steps - 1L)) + start
+}
+
+#' @rdname nv_seq
+#' @export
+nv_seq_like <- function(like, start, end, steps = NULL, dtype = NULL, ambiguous = NULL, device = NULL) {
+  dtype <- dtype %||% dtype(like)
+  device <- device %||% device(like)
+  ambiguous <- ambiguous %||% ambiguous(like)
+  nv_seq(start, end, steps = steps, dtype = dtype, ambiguous = ambiguous, device = device)
 }
 
 #' @title Pad
@@ -1137,22 +1191,22 @@ nv_solve <- function(a, b) {
 #' @title Diagonal Matrix
 #' @description
 #' Creates a diagonal matrix from a 1-D array.
-#' @param x ([`arrayish`])\cr
+#' @param operand ([`arrayish`])\cr
 #'   A 1-D array of length `n` whose elements become the diagonal entries.
 #' @return [`arrayish`]\cr
 #'   An `n x n` matrix with `x` on the diagonal and zeros elsewhere.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' nv_diag(nv_array(c(1, 2, 3)))
 #' @export
-nv_diag <- function(x) {
-  n <- shape_abstract(x)[1L]
-  zeros <- nv_fill(0, c(n, n), dtype = dtype_abstract(x))
+nv_diag <- function(operand) {
+  n <- shape_abstract(operand)[1L]
+  zeros <- nv_fill(0, c(n, n), dtype = dtype_abstract(operand), device = device(operand))
   idx <- nvl_reshape(nv_iota(dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
   indices <- nv_concatenate(idx, idx, dimension = 2L)
   nvl_scatter(
     zeros,
     indices,
-    x,
+    operand,
     update_window_dims = integer(0),
     inserted_window_dims = c(1L, 2L),
     input_batching_dims = integer(0),
@@ -1169,15 +1223,15 @@ nv_diag <- function(x) {
 #' @param n (`integer(1)`)\cr
 #'   Size of the identity matrix.
 #' @template param_dtype
-#' @template param_backend
+#' @template param_device
 #' @return [`arrayish`]\cr
 #'   An `n x n` identity matrix.
 #' @seealso [nv_diag()] for general diagonal matrices.
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' nv_eye(3L)
 #' @export
-nv_eye <- function(n, dtype = "f32", backend = "auto") {
-  nv_diag(nv_fill(1, n, dtype = dtype, backend = backend))
+nv_eye <- function(n, dtype = "f32", device = NULL) {
+  nv_diag(nv_fill(1, n, dtype = dtype, device = device))
 }
 
 #' @title Sum Reduction
@@ -1587,11 +1641,11 @@ nv_tril <- function(operand, diagonal = 0L) {
   }
   assert_int(diagonal)
   shp <- shape_abstract(operand)
-  be <- backend(operand)
-  rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32", backend = be)
-  cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32", backend = be)
+  dev <- device(operand)
+  rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32", device = dev)
+  cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32", device = dev)
   mask <- rows >= cols - as.integer(diagonal)
-  nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand), backend = be))
+  nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand), device = dev))
 }
 
 #' @title Upper Triangular Matrix
@@ -1615,11 +1669,11 @@ nv_triu <- function(operand, diagonal = 0L) {
   }
   assert_int(diagonal)
   shp <- shape_abstract(operand)
-  be <- backend(operand)
-  rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32", backend = be)
-  cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32", backend = be)
+  dev <- device(operand)
+  rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32", device = dev)
+  cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32", device = dev)
   mask <- rows <= cols - as.integer(diagonal)
-  nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand), backend = be))
+  nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand), device = dev))
 }
 
 #' @title Cross Product (Matrix)

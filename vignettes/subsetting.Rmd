@@ -144,11 +144,8 @@ The value to write must either have the shape of the subset, or be a scalar.
 x
 x[, 3] <- nv_array(-(1:3))
 x
-```
-
-```{r}
 x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
-x[, 3] <- nv_scalar(-99L)
+x[, 3] <- -99L
 x
 ```
 
@@ -180,6 +177,6 @@ Specifically, this might differ between backends (CPU vs. GPU).
 
 ```{r}
 x <- nv_array(1:5)
-x[array(c(1, 1, 1))] <- nv_array(c(10L, 20L, 30L))
+x[array(c(1L, 1L, 1L))] <- nv_array(c(10L, 20L, 30L))
 x
 ```

@@ -3,7 +3,9 @@
 \name{AnvilArray}
 \alias{AnvilArray}
 \alias{nv_array}
+\alias{nv_array_like}
 \alias{nv_scalar}
+\alias{nv_scalar_like}
 \alias{nv_empty}
 \title{AnvilArray}
 \usage{
@@ -16,7 +18,26 @@ nv_array(
   backend = NULL
 )
 
+nv_array_like(
+  like,
+  data,
+  dtype = NULL,
+  device = NULL,
+  shape = NULL,
+  ambiguous = NULL,
+  backend = NULL
+)
+
 nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL)
+
+nv_scalar_like(
+  like,
+  data,
+  dtype = NULL,
+  device = NULL,
+  ambiguous = NULL,
+  backend = NULL
+)
 
 nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
 }
@@ -49,6 +70,10 @@ Defaults to \code{FALSE} for new arrays.}
 Backend to use (\code{"xla"} or \code{"quickr"}).
 Defaults to \code{default_backend()}.
 Must not be specified inside \code{\link[=jit]{jit()}}.}
+
+\item{like}{(\code{\link{AnvilArray}})\cr
+An existing array. Any of \code{dtype}, \code{device}, \code{shape}, \code{ambiguous}, and
+\code{backend} that are \code{NULL} (the default) are taken from \code{like}.}
 }
 \value{
 (\code{\link{AnvilArray}})

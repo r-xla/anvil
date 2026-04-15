@@ -2,29 +2,43 @@
 % Please edit documentation in R/api.R
 \name{nv_fill}
 \alias{nv_fill}
+\alias{nv_fill_like}
 \title{Fill Constant}
 \usage{
-nv_fill(value, shape, dtype = NULL, ambiguous = FALSE, backend = "auto")
+nv_fill(value, shape, dtype = NULL, ambiguous = FALSE, device = NULL)
+
+nv_fill_like(
+  like,
+  value,
+  shape = NULL,
+  dtype = NULL,
+  ambiguous = NULL,
+  device = NULL
+)
 }
 \arguments{
 \item{value}{(\code{numeric(1)})\cr
 Scalar value to fill the array with.}
 
 \item{shape}{(\code{integer()})\cr
-Shape of the output array.}
+Shape of the output array. For \code{nv_fill_like()}, defaults to \code{shape(like)}.}
 
 \item{dtype}{(\code{character(1)} | \code{NULL})\cr
-Data type. If \code{NULL} (default), inferred from \code{value}.}
+Data type. For \code{nv_fill()}, \code{NULL} (default) infers from \code{value}.
+For \code{nv_fill_like()}, \code{NULL} uses \code{dtype(like)}.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
 See the \code{vignette("type-promotion")} for more details.}
 
-\item{backend}{(\code{character(1)})\cr
-Backend used to construct the array. \code{"auto"} (default) picks a backend
-based on the inputs (or \code{\link[=default_backend]{default_backend()}} when there are none).
-See \code{\link[=jit]{jit()}} for the list of available backends.}
+\item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{QuickrDevice}} | \code{NULL})\cr
+Device on which to create the array.
+This is also used to infer the backend.}
+
+\item{like}{(\code{\link{AnvilArray}})\cr
+Existing array whose attributes are used as defaults
+(only for \code{nv_fill_like()}).}
 }
 \value{
 \code{\link{arrayish}}\cr
@@ -33,10 +47,15 @@ Has the given \code{shape} and \code{dtype}.
 \description{
 Creates an array filled with a scalar value. More memory-efficient than
 \code{nv_array(value, shape = shape)} for large arrays.
+
+\code{nv_fill_like()} is a variant where \code{dtype}, \code{shape}, \code{ambiguous}, and
+\code{device} default to those of \code{like}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 nv_fill(0, shape = c(2, 3))
+x <- nv_array(matrix(1:6, nrow = 2))
+nv_fill_like(x, 0)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

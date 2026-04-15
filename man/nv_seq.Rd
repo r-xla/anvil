@@ -2,6 +2,7 @@
 % Please edit documentation in R/api.R
 \name{nv_seq}
 \alias{nv_seq}
+\alias{nv_seq_like}
 \title{Sequence}
 \usage{
 nv_seq(
@@ -10,7 +11,17 @@ nv_seq(
   steps = NULL,
   dtype = NULL,
   ambiguous = FALSE,
-  backend = "auto"
+  device = NULL
+)
+
+nv_seq_like(
+  like,
+  start,
+  end,
+  steps = NULL,
+  dtype = NULL,
+  ambiguous = NULL,
+  device = NULL
 )
 }
 \arguments{
@@ -22,17 +33,21 @@ Number of evenly spaced values to generate. Must be at least 1.
 When \code{NULL} (default), generates consecutive integer values from \code{start} to \code{end}.}
 
 \item{dtype}{(\code{character(1)})\cr
-Data type. Default \code{"i32"} when \code{steps} is \code{NULL}, \code{"f32"} when \code{steps} is given.}
+Data type. Default \code{"i32"} when \code{steps} is \code{NULL}, \code{"f32"} when \code{steps} is given.
+For \code{nv_seq_like()}, \code{NULL} uses \code{dtype(like)}.}
 
 \item{ambiguous}{(\code{logical(1)})\cr
 Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
 See the \code{vignette("type-promotion")} for more details.}
 
-\item{backend}{(\code{character(1)})\cr
-Backend used to construct the array. \code{"auto"} (default) picks a backend
-based on the inputs (or \code{\link[=default_backend]{default_backend()}} when there are none).
-See \code{\link[=jit]{jit()}} for the list of available backends.}
+\item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{QuickrDevice}} | \code{NULL})\cr
+Device on which to create the array.
+This is also used to infer the backend.}
+
+\item{like}{(\code{\link{AnvilArray}})\cr
+Existing array whose attributes are used as defaults
+(only for \code{nv_seq_like()}).}
 }
 \value{
 \code{\link{arrayish}}\cr
@@ -43,9 +58,14 @@ Creates a 1-D array with values from \code{start} to \code{end} (inclusive).
 
 Without \code{steps}, behaves like R's \code{seq(start, end)} producing integer values.
 With \code{steps}, produces \code{steps} evenly spaced values (like \code{seq(start, end, length.out = steps)}).
+
+\code{nv_seq_like()} is a variant where \code{dtype}, \code{ambiguous}, and \code{device}
+default to those of \code{like}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 nv_seq(3, 7)
+x <- nv_array(c(1, 2, 3), dtype = "f64")
+nv_seq_like(x, 1, 5)
 \dontshow{\}) # examplesIf}
 }

@@ -48,6 +48,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Collate:
     'aaa.R'
+    'backend.R'
     'jit.R'
     'primitive.R'
     'type-converters.R'
@@ -60,11 +61,11 @@ Collate:
     'api-utilities.R'
     'array.R'
     'asserts.R'
-    'backend.R'
     'backend-quickr.R'
     'backend-xla.R'
     'bibentries.R'
     'box.R'
+    'device.R'
     'flatten.R'
     'graph-passes.R'
     'graph.R'

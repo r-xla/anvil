@@ -5,7 +5,7 @@
 \title{Create a backend}
 \usage{
 AnvilBackend(
-  data_constructor,
+  new_data,
   dtype,
   shape,
   ambiguous,
@@ -13,12 +13,13 @@ AnvilBackend(
   as_raw,
   platform,
   device,
+  new_device,
   print_data,
   jit
 )
 }
 \arguments{
-\item{data_constructor}{(\code{function})\cr Constructs an AnvilArray from R data.
+\item{new_data}{(\code{function})\cr Constructs an AnvilArray from R data.
 This should be a \code{structure()} with at least a \verb{$data} field that contains the actual
 underlying data (\code{PJRTBuffer} for \code{"xla"} backend, \code{array()} for \code{"quickr"} backend).}
 
@@ -34,7 +35,10 @@ underlying data (\code{PJRTBuffer} for \code{"xla"} backend, \code{array()} for 
 
 \item{platform}{(\code{function})\cr Returns the platform name (e.g. \code{"cpu"}).}
 
-\item{device}{(\code{function})\cr Returns the device object.}
+\item{device}{(\code{function})\cr Returns the device object for an AnvilArray.}
+
+\item{new_device}{(\code{function})\cr Constructs a backend-specific device
+object from a device type string (e.g. \code{"cpu"}). Called by \code{\link[=nv_device]{nv_device()}}.}
 
 \item{print_data}{(\code{function})\cr Prints the array data with a footer.}
 

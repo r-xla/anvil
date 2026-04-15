@@ -56,6 +56,9 @@ jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat,
 }
 
 jit_xla_impl <- function(f, static, cache, donate, device) {
+  # device may be a fixed device object or a from_arg() marker
+  device_arg <- if (inherits(device, "AnvilBackendFromArg")) device$argname else NULL
+  fixed_device <- if (inherits(device, "AnvilBackendFromArg")) NULL else device
   function() {
     if (currently_tracing()) {
       args <- as.list(match.call())[-1L]
@@ -63,7 +66,8 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
       return(do.call(f, args))
     }
     prep <- jit_prepare_call(match.call(), parent.frame(), static, "xla")
-    inputs <- jit_xla_inputs(prep$args_flat, prep$is_static_flat, device)
+    effective_device <- if (!is.null(device_arg)) prep$args[[device_arg]] %||% fixed_device else fixed_device
+    inputs <- jit_xla_inputs(prep$args_flat, prep$is_static_flat, effective_device)
 
     device_key <- if (!is.null(inputs$device)) as.character(inputs$device) else NULL
     cache_key <- list(prep$in_tree, inputs$avals_in, device_key)
@@ -291,7 +295,7 @@ xla <- function(f, args, donate = character(), device = NULL) {
 #' @export
 AnvilBackendXla <- function() {
   backend <- AnvilBackend(
-    data_constructor = function(data, dtype, shape, device, ambiguous) {
+    new_data = function(data, dtype, shape, device, ambiguous) {
       buf <- pjrt_buffer(data, dtype = dtype, device = device, shape = shape)
       structure(
         list(data = buf, ambiguous = ambiguous, backend = "xla"),
@@ -305,6 +309,7 @@ AnvilBackendXla <- function() {
     as_raw = function(x, row_major) tengen::as_raw(x$data, row_major = row_major),
     platform = function(x) pjrt::platform(x$data),
     device = function(x) device(x$data),
+    new_device = function(type) pjrt::pjrt_device(type),
     print_data = function(x, footer) print(x$data, header = FALSE, footer = footer),
     jit = function(f, static, cache, donate = character(), device = NULL) {
       assert_subset(donate, formalArgs2(f))

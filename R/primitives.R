@@ -81,7 +81,7 @@ p_fill <- AnvilPrimitive("fill")
 #'   Shape of the output array.
 #' @template param_dtype
 #' @template param_ambiguous
-#' @template param_backend
+#' @template param_device
 #' @return [`arrayish`]\cr
 #'   Has the given `shape` and `dtype`.
 #' @templateVar primitive_id fill
@@ -93,7 +93,7 @@ p_fill <- AnvilPrimitive("fill")
 #' nvl_fill(3.14, shape = c(2, 3), dtype = "f32")
 #' @export
 nvl_fill <- jit(
-  function(value, shape, dtype, ambiguous = FALSE, backend = "auto") {
+  function(value, shape, dtype, ambiguous = FALSE, device = NULL) {
     infer_fill <- function(value, shape, dtype, ambiguous) {
       list(AbstractArray(dtype = as_dtype(dtype), shape = shape, ambiguous = ambiguous))
     }
@@ -105,7 +105,7 @@ nvl_fill <- jit(
     )[[1L]]
   },
   static = 1:5,
-  backend = "auto"
+  device = from_arg("device")
 )
 
 p_add <- AnvilPrimitive("add")
@@ -1628,7 +1628,7 @@ p_iota <- AnvilPrimitive("iota")
 #' @param start (`integer(1)`)\cr
 #'   Starting value.
 #' @template param_ambiguous
-#' @template param_backend
+#' @template param_device
 #' @return [`arrayish`]\cr
 #'   Has the given `dtype` and `shape`.
 #' @templateVar primitive_id iota
@@ -1640,7 +1640,7 @@ p_iota <- AnvilPrimitive("iota")
 #' nvl_iota(dim = 1L, dtype = "i32", shape = 5L)
 #' @export
 nvl_iota <- jit(
-  function(dim, dtype, shape, start = 1L, ambiguous = FALSE, backend = "auto") {
+  function(dim, dtype, shape, start = 1L, ambiguous = FALSE, device = NULL) {
     infer_fn <- function(dim, dtype, shape, start, ambiguous) {
       # stablehlo uses 0-based indexing, anvil uses 1-based
       # Convert dim to Constant as required by stablehlo
@@ -1664,7 +1664,7 @@ nvl_iota <- jit(
     result
   },
   static = 1:6,
-  backend = "auto"
+  device = from_arg("device")
 )
 
 p_pad <- AnvilPrimitive("pad")

@@ -9,6 +9,7 @@ jit(
   static = character(),
   cache_size = 100L,
   backend = default_backend(),
+  device = NULL,
   ...
 )
 }
@@ -26,9 +27,22 @@ a static value changes. For example useful when you want R control flow in your 
 Maximum number of compiled executables to keep in the LRU cache.}
 
 \item{backend}{(\code{character(1)})\cr
-Compilation backend. \code{"xla"} (default) uses PJRT/XLA.
-\code{"quickr"} uses \code{quickr::quick()}. If omitted, the default comes from
-\code{default_backend()}.}
+Compilation backend (e.g. \code{"xla"}, \code{"quickr"}). Defaults to
+\code{\link[=default_backend]{default_backend()}}. The special value \code{"auto"} defers backend selection
+to call time, picking the backend from the inputs (or \code{\link[=default_backend]{default_backend()}}
+when there are none).}
+
+\item{device}{(\code{NULL} | \code{character(1)} | \code{PJRTDevice} | \code{\link{QuickrDevice}} | \code{from_arg()})\cr
+Target device, forwarded to the backend-specific JIT. \code{NULL} (default)
+lets the backend pick a device. A character string (e.g. \code{"cpu"}) is
+resolved via \code{\link[=nv_device]{nv_device()}} against \code{backend}.
+
+Alternatively, pass \code{\link[=from_arg]{from_arg()}} to name a formal argument of \code{f} whose
+value (typically a device object) determines the device at call time. The
+backend is then derived from that device via \code{\link[=backend]{backend()}} dispatch. This
+is intended for functions where no dynamic input is available to detect
+the backend from (e.g. array constructors like \code{\link[=nvl_fill]{nvl_fill()}} or
+\code{\link[=nvl_iota]{nvl_iota()}}).}
 
 \item{...}{Backend-specific options. Passing an option that is not supported
 by the selected backend raises an error. See the \strong{XLA JIT arguments} and
@@ -39,7 +53,6 @@ backend.}
 A \code{JitFunction} with the same formals as \code{f}.
 The returned wrapper expects \code{\link{AnvilArray}} inputs and returns
 \code{\link{AnvilArray}} values.
-\code{"quickr"} backend).
 
 (\code{function})
 }

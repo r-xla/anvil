@@ -1,6 +1,6 @@
 #' Create a backend
 #'
-#' @param data_constructor (`function`)\cr Constructs an AnvilArray from R data.
+#' @param new_data (`function`)\cr Constructs an AnvilArray from R data.
 #' This should be a `structure()` with at least a `$data` field that contains the actual
 #' underlying data (`PJRTBuffer` for `"xla"` backend, `array()` for `"quickr"` backend).
 #' @param dtype (`function`)\cr Extracts the dtype from an AnvilArray.
@@ -9,14 +9,16 @@
 #' @param as_array (`function`)\cr Converts an AnvilArray to an R array.
 #' @param as_raw (`function`)\cr Converts an AnvilArray to raw bytes.
 #' @param platform (`function`)\cr Returns the platform name (e.g. `"cpu"`).
-#' @param device (`function`)\cr Returns the device object.
+#' @param device (`function`)\cr Returns the device object for an AnvilArray.
+#' @param new_device (`function`)\cr Constructs a backend-specific device
+#'   object from a device type string (e.g. `"cpu"`). Called by [`nv_device()`].
 #' @param print_data (`function`)\cr Prints the array data with a footer.
 #' @param jit (`function`)\cr Creates a JIT-compiled function implementation.
 #' @return An `AnvilBackend` object.
 #' @keywords internal
 #' @export
 AnvilBackend <- function(
-  data_constructor,
+  new_data,
   dtype,
   shape,
   ambiguous,
@@ -24,12 +26,13 @@ AnvilBackend <- function(
   as_raw,
   platform,
   device,
+  new_device,
   print_data,
   jit
 ) {
   structure(
     list(
-      data_constructor = data_constructor,
+      new_data = new_data,
       dtype = dtype,
       shape = shape,
       ambiguous = ambiguous,
@@ -37,6 +40,7 @@ AnvilBackend <- function(
       as_raw = as_raw,
       platform = platform,
       device = device,
+      new_device = new_device,
       print_data = print_data,
       jit = jit
     ),
@@ -68,7 +72,7 @@ globals$backends <- list()
 register_backend(
   "plain",
   AnvilBackend(
-    data_constructor = function(data, dtype, shape, device, ambiguous) {
+    new_data = function(data, dtype, shape, device, ambiguous) {
       if (is.null(dtype)) {
         dtype <- default_dtype(data)
       }
@@ -105,6 +109,9 @@ register_backend(
     as_raw = function(x, row_major) cli_abort("as_raw not supported for plain backend"),
     platform = function(x) "cpu",
     device = function(x) PlainDeviceCpu(),
+    new_device = function(type) {
+      cli_abort("{.val plain} backend does not support creating devices.")
+    },
     print_data = function(x, footer) {
       print(x$data)
       cat(footer, "\n")

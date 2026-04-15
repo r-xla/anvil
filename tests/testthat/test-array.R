@@ -168,11 +168,11 @@ test_that("stablehlo dtype is printed", {
   expect_snapshot(nv_array(TRUE))
 })
 
-test_that("QuickrDeviceCpu is a classed object", {
+test_that("QuickrDevice is a classed object", {
   skip_if_not_installed("quickr")
-  dev <- QuickrDeviceCpu()
-  expect_s3_class(dev, "QuickrDeviceCpu")
-  expect_equal(format(dev), "QuickrDeviceCpu")
+  dev <- QuickrDevice("cpu")
+  expect_s3_class(dev, "QuickrDevice")
+  expect_equal(format(dev), "QuickrDevice(cpu)")
   expect_equal(as.character(dev), "cpu")
 })
 
@@ -183,16 +183,16 @@ test_that("PlainDeviceCpu is a classed object", {
   expect_equal(as.character(dev), "cpu")
 })
 
-test_that("device returns QuickrDeviceCpu for quickr arrays", {
+test_that("device returns QuickrDevice for quickr arrays", {
   skip_if_not_installed("quickr")
   local_backend("quickr")
   x <- nv_array(1)
   dev <- device(x)
-  expect_s3_class(dev, "QuickrDeviceCpu")
+  expect_s3_class(dev, "QuickrDevice")
 })
 
 test_that("device returns PlainDeviceCpu for plain arrays", {
-  x <- globals$backends[["plain"]]$data_constructor(1, "f32", 1L, NULL, FALSE)
+  x <- globals$backends[["plain"]]$new_data(1, "f32", 1L, NULL, FALSE)
   dev <- device(x)
   expect_s3_class(dev, "PlainDeviceCpu")
 })
@@ -204,7 +204,7 @@ test_that("platform returns 'cpu' for quickr backend", {
 })
 
 test_that("platform returns 'cpu' for plain backend", {
-  x <- globals$backends[["plain"]]$data_constructor(1, "f32", 1L, NULL, FALSE)
+  x <- globals$backends[["plain"]]$new_data(1, "f32", 1L, NULL, FALSE)
   expect_equal(platform(x), "cpu")
 })
 
@@ -232,4 +232,32 @@ test_that("default floating dtype is f64 for quickr", {
   local_backend("quickr")
   expect_equal(dtype(nv_array(1.0)), as_dtype("f64"))
   expect_equal(dtype(nv_scalar(1.0)), as_dtype("f64"))
+})
+
+test_that("nv_array_like inherits dtype, shape, ambiguous, device, backend from like", {
+  like <- nv_array(c(1L, 2L, 3L), dtype = "i16", ambiguous = TRUE)
+  out <- nv_array_like(like, c(7L, 8L, 9L))
+  expect_equal(dtype(out), dtype(like))
+  expect_equal(shape(out), shape(like))
+  expect_equal(ambiguous(out), ambiguous(like))
+  expect_equal(backend(out), backend(like))
+  expect_equal(as.integer(as_array(out)), c(7L, 8L, 9L))
+})
+
+test_that("nv_array_like respects explicit overrides", {
+  like <- nv_array(c(1L, 2L, 3L), dtype = "i16", ambiguous = TRUE)
+  out <- nv_array_like(like, c(1L, 2L, 3L, 4L), dtype = "i32", ambiguous = FALSE, shape = 4L)
+  expect_equal(dtype(out), as_dtype("i32"))
+  expect_equal(shape(out), 4L)
+  expect_false(ambiguous(out))
+})
+
+test_that("nv_scalar_like inherits dtype, ambiguous, device, backend from like", {
+  like <- nv_scalar(1L, dtype = "i16", ambiguous = TRUE)
+  out <- nv_scalar_like(like, 7L)
+  expect_equal(dtype(out), dtype(like))
+  expect_equal(shape(out), integer())
+  expect_equal(ambiguous(out), ambiguous(like))
+  expect_equal(backend(out), backend(like))
+  expect_equal(as.integer(as_array(out)), 7L)
 })

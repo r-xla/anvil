@@ -517,3 +517,55 @@ describe("nv_tcrossprod", {
     )
   })
 })
+
+describe("nv_fill_like", {
+  it("inherits shape, dtype, ambiguous, device from like", {
+    like <- nv_array(matrix(1:6, nrow = 2), dtype = "i16")
+    out <- nv_fill_like(like, 0L)
+    expect_equal(shape(out), shape(like))
+    expect_equal(dtype(out), dtype(like))
+    expect_equal(as.character(device(out)), as.character(device(like)))
+    expect_equal(as.integer(as_array(out)), rep(0L, 6L))
+  })
+
+  it("allows overriding the inherited attributes", {
+    like <- nv_array(matrix(1:6, nrow = 2), dtype = "i16")
+    out <- nv_fill_like(like, 1, shape = 5L, dtype = "f32")
+    expect_equal(shape(out), 5L)
+    expect_equal(dtype(out), as_dtype("f32"))
+  })
+})
+
+describe("nv_iota_like", {
+  it("inherits shape, dtype, ambiguous, device from like", {
+    like <- nv_array(matrix(0L, nrow = 2, ncol = 3), dtype = "i16")
+    out <- nv_iota_like(like, dim = 1L)
+    expect_equal(shape(out), shape(like))
+    expect_equal(dtype(out), dtype(like))
+    expect_equal(as.character(device(out)), as.character(device(like)))
+  })
+
+  it("allows overriding the inherited attributes", {
+    like <- nv_array(matrix(0L, nrow = 2, ncol = 3), dtype = "i16")
+    out <- nv_iota_like(like, dim = 1L, shape = 4L, dtype = "i32")
+    expect_equal(shape(out), 4L)
+    expect_equal(dtype(out), as_dtype("i32"))
+  })
+})
+
+describe("nv_seq_like", {
+  it("inherits dtype, ambiguous, device from like (length determined by start/end)", {
+    like <- nv_array(c(0L, 0L, 0L), dtype = "i16")
+    out <- nv_seq_like(like, 1L, 5L)
+    expect_equal(dtype(out), dtype(like))
+    expect_equal(as.character(device(out)), as.character(device(like)))
+    expect_equal(shape(out), 5L)
+    expect_equal(as.integer(as_array(out)), c(1L, 2L, 3L, 4L, 5L))
+  })
+
+  it("allows overriding the inherited attributes", {
+    like <- nv_array(c(0L, 0L, 0L), dtype = "i16")
+    out <- nv_seq_like(like, 1, 5, dtype = "f32")
+    expect_equal(dtype(out), as_dtype("f32"))
+  })
+})

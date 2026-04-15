@@ -2,9 +2,20 @@
 % Please edit documentation in R/api.R
 \name{nv_iota}
 \alias{nv_iota}
+\alias{nv_iota_like}
 \title{Iota}
 \usage{
-nv_iota(dim, dtype, shape, start = 1L, ambiguous = FALSE, backend = "auto")
+nv_iota(dim, dtype, shape, start = 1L, ambiguous = FALSE, device = NULL)
+
+nv_iota_like(
+  like,
+  dim,
+  shape = NULL,
+  start = 1L,
+  dtype = NULL,
+  ambiguous = NULL,
+  device = NULL
+)
 }
 \arguments{
 \item{dim}{(\code{integer(1)})\cr
@@ -24,10 +35,13 @@ Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
 See the \code{vignette("type-promotion")} for more details.}
 
-\item{backend}{(\code{character(1)})\cr
-Backend used to construct the array. \code{"auto"} (default) picks a backend
-based on the inputs (or \code{\link[=default_backend]{default_backend()}} when there are none).
-See \code{\link[=jit]{jit()}} for the list of available backends.}
+\item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{QuickrDevice}} | \code{NULL})\cr
+Device on which to create the array.
+This is also used to infer the backend.}
+
+\item{like}{(\code{\link{AnvilArray}})\cr
+Existing array whose attributes are used as defaults
+(only for \code{nv_iota_like()}).}
 }
 \value{
 \code{\link{arrayish}}\cr
@@ -36,10 +50,15 @@ Has the given \code{dtype} and \code{shape}.
 \description{
 Creates an array with values increasing along the specified dimension,
 starting from \code{start}.
+
+\code{nv_iota_like()} is a variant where \code{dtype}, \code{shape}, \code{ambiguous}, and
+\code{device} default to those of \code{like}.
 }
 \examples{
 \dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
 nv_iota(dim = 1L, dtype = "i32", shape = 5L)
+x <- nv_array(matrix(0L, nrow = 2, ncol = 3))
+nv_iota_like(x, dim = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -256,6 +256,9 @@ reference:
       - default_backend
       - local_backend
       - with_backend
+      - from_arg
+      - nv_device
+      - QuickrDevice
       - AnvilBackend
       - AnvilBackendXla
       - AnvilBackendQuickr

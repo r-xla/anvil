@@ -313,7 +313,8 @@ ambiguous.GraphBox <- function(x, ...) {
 
 #' @export
 backend.GraphBox <- function(x, ...) {
-  "auto"
+  # Tracing is backend-agnostic
+  "plain"
 }
 
 #' @export

@@ -348,16 +348,3 @@ Otherwise, the standard jit path is followed.
 What makes this a little difficult is our multi-backend approach.
 Ideally we would just have to `jit()` all the primitives and any `nv_` API function just calls into primitives.
 However, this fails in the case, where we create constants in the `nv_` function because these contants assume the `default_backend()` unless specified otherwise.
-
-However, there are some issues.
-
-E.g., consider the following function:
-
-```{r}
-add_three <- function(x, dim) {
-  three <- nv_scalar(3, dtype = dtype(x))
-  nv_add(x, three)
-}
-```
-
-This function can now unfortunately not be called with both backends and we therefore have to wrap it in `jit()` which means `nv_scalar()` an infer the correct backend from the jit context.

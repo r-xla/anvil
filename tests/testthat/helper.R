@@ -18,31 +18,40 @@ if (nzchar(system.file(package = "torch"))) {
 }
 
 verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
+  # We can only take gradients w.r.t. float arrays, so the outer input is f32
+  # and the actual dtype is restored inside the function before calling nvl_fn.
+  x_dtype <- dtype(x)
+  x_f32 <- nv_convert(x, "f32")
   if (is.null(f_wrapper)) {
     f <- function(x) {
-      out <- nvl_fn(x)
+      x_inner <- nv_convert(x, x_dtype)
+      out <- nvl_fn(x_inner)
       out <- nv_convert(out, "f32")
       nv_reduce_sum(out, dims = 1L, drop = TRUE)
     }
   } else {
     f <- f_wrapper
   }
-  grads <- jit(gradient(f))(x)
-  shp <- shape(x)
-  expected <- nv_array(0, shape = shp, dtype = dtype(x), ambiguous = ambiguous(x))
+  grads <- jit(gradient(f))(x_f32)
+  expected <- nv_array(0, shape = shape(x), dtype = "f32")
   testthat::expect_equal(grads[[1L]], expected)
 }
 
 verify_zero_grad_binary <- function(nvl_fn, x, y) {
+  x_dtype <- dtype(x)
+  y_dtype <- dtype(y)
+  x_f32 <- nv_convert(x, "f32")
+  y_f32 <- nv_convert(y, "f32")
   f <- function(x, y) {
-    out <- nvl_fn(x, y)
+    x_inner <- nv_convert(x, x_dtype)
+    y_inner <- nv_convert(y, y_dtype)
+    out <- nvl_fn(x_inner, y_inner)
     out <- nv_convert(out, "f32")
     nv_reduce_sum(out, dims = 1L, drop = TRUE)
   }
-  grads <- jit(gradient(f))(x, y)
-  shp <- shape(x)
-  expected1 <- nv_array(0, shape = shp, dtype = dtype(x), ambiguous = ambiguous(x))
-  expected2 <- nv_array(0, shape = shp, dtype = dtype(y), ambiguous = ambiguous(y))
+  grads <- jit(gradient(f))(x_f32, y_f32)
+  expected1 <- nv_array(0, shape = shape(x), dtype = "f32")
+  expected2 <- nv_array(0, shape = shape(y), dtype = "f32")
   testthat::expect_equal(grads[[1L]], expected1)
   testthat::expect_equal(grads[[2L]], expected2)
 }
