@@ -73,6 +73,7 @@
 <ul><li>
 <code>AnvilTensor</code>/<code>nv_tensor</code> were renamed to <code>AnvilArray</code> and <code>nv_array</code> to be more in line with R’s <code><a href="https://rdrr.io/r/base/array.html" class="external-link">array()</a></code>. Also, <code>nv_aten()</code> was renamed to <code><a href="../reference/AbstractArray.html">nv_abstract()</a></code>.</li>
 <li>Subsetting with <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> (e.g. <code>x[list(1, 3)]</code>) is no longer supported. Use <code><a href="https://rdrr.io/r/base/array.html" class="external-link">array()</a></code> to wrap the indices instead, e.g. <code>x[array(c(1L, 3L))]</code>. This mirrors the input convention used everywhere else in the package.</li>
+<li>Remove NSE support for <code>nvl_if</code>. It now requires passing 0-argument closures as <code>true</code> and <code>false</code> arguments.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>

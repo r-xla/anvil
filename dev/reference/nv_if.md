@@ -21,14 +21,14 @@ nv_if(pred, true, false)
 
 - true:
 
-  (`expression`)  
-  Expression for the true branch (non-standard evaluation).
+  (`function()`)  
+  Zero-argument function for the true branch.
 
 - false:
 
-  (`expression`)  
-  Expression for the false branch (non-standard evaluation). Must return
-  outputs with the same shapes as the true branch.
+  (`function()`)  
+  Zero-argument function for the false branch. Must return outputs with
+  the same shapes as the true branch.
 
 ## Value
 
@@ -44,7 +44,7 @@ for element-wise selection.
 ## Examples
 
 ``` r
-jit_eval(nv_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
+jit_eval(nv_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2)))
 #> AnvilArray
 #>  1
 #> [ CPUf32{} ] 

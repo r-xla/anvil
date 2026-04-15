@@ -20,9 +20,9 @@ nvl_if(pred, true, false)
 
 - true, false:
 
-  (NSE)  
-  Expressions for the true and false branches. Both must return outputs
-  with the same structure, dtypes, and shapes.
+  (`function()`)  
+  Zero-argument functions for the true and false branches. Both must
+  return outputs with the same structure, dtypes, and shapes.
 
 ## Value
 
@@ -50,7 +50,7 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval(nvl_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
+jit_eval(nvl_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2)))
 #> AnvilArray
 #>  1
 #> [ CPUf32{} ] 

@@ -91,7 +91,7 @@ mh_step <- function(theta, rng_state, b, proposal_sd) {
   u <- rng_out[[2L]]
 
   accept <- log(u) < log_accept
-  new_theta <- nv_if(accept, proposal, theta)
+  new_theta <- nv_if(accept, \() proposal, \() theta)
   list(theta = new_theta, rng_state = rng_state)
 }
 ```

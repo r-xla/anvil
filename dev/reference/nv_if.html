@@ -92,13 +92,13 @@ Predicate.</p></dd>
 
 
 <dt id="arg-true">true<a class="anchor" aria-label="anchor" href="#arg-true"></a></dt>
-<dd><p>(<code>expression</code>)<br>
-Expression for the true branch (non-standard evaluation).</p></dd>
+<dd><p>(<code>function()</code>)<br>
+Zero-argument function for the true branch.</p></dd>
 
 
 <dt id="arg-false">false<a class="anchor" aria-label="anchor" href="#arg-false"></a></dt>
-<dd><p>(<code>expression</code>)<br>
-Expression for the false branch (non-standard evaluation).
+<dd><p>(<code>function()</code>)<br>
+Zero-argument function for the false branch.
 Must return outputs with the same shapes as the true branch.</p></dd>
 
 </dl></div>
@@ -114,7 +114,7 @@ element-wise selection.</p></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="fu">nv_if</span><span class="op">(</span><span class="fu"><a href="AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span>, <span class="fu"><a href="AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="fu">nv_if</span><span class="op">(</span><span class="fu"><a href="AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span>, \<span class="op">(</span><span class="op">)</span> <span class="fu"><a href="AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, \<span class="op">(</span><span class="op">)</span> <span class="fu"><a href="AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{} ] </span>
