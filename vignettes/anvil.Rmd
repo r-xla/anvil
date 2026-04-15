@@ -50,16 +50,13 @@ Note that for 0-dimensional arrays, the result is an R vector of length 1, as R 
 as_array(y)
 ```
 
-At first, working with `AnvilArray`s may feel a bit cumbersome, because you cannot directly apply functions to them like you would with regular R arrays.
+Working with `AnvilArray`s differs from regular R arrays -- you cannot directly apply functions to them.
 
 ```{r, error = TRUE}
 x + x
 ```
 
-If we add the two anvil arrays, the output will be the type of the output instead of the actual result.
-Read more about this in the [debugging vignette](debugging.html).
-
-```{r}
+```{r, error = TRUE}
 y + y
 ```
 

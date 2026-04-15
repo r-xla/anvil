@@ -65,7 +65,6 @@ Collate:
     'backend-xla.R'
     'bibentries.R'
     'box.R'
-    'debug.R'
     'flatten.R'
     'graph-passes.R'
     'graph.R'

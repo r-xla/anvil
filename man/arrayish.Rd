@@ -22,7 +22,7 @@ A \code{arrayish} value is any object that can be input to a primitive such as \
 
 During runtime of a JIT-compiled function, these are \code{\link{AnvilArray}} objects.
 
-The following types are arrayish (during tracing / eager mode):
+The following types are arrayish (during tracing):
 \itemize{
 \item \code{\link{AnvilArray}}: a concrete array holding data on a device.
 \item \code{\link{GraphBox}}: a boxed abstract array representing a value in a graph.

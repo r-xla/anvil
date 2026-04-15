@@ -257,17 +257,13 @@ gradient <- function(f, wrt = NULL) {
     prep <- prepare_gradient_args(args, wrt)
 
     parent_desc <- .current_descriptor(silent = TRUE)
-    debug_mode <- is.null(parent_desc)
-    if (debug_mode) {
+    if (is.null(parent_desc)) {
       parent_desc <- local_descriptor()
     }
     fwd_graph <- trace_fn(f, args_flat = prep$args_flat, in_tree = prep$in_tree)
     grad_graph <- transform_gradient(fwd_graph, wrt)
     # parent_desc is modified in place
-    if (!debug_mode) {
-      return(inline_graph_into_desc(parent_desc, grad_graph))
-    }
-    unflatten(grad_graph$out_tree, lapply(grad_graph$outputs, \(x) DebugBox(x$aval)))
+    inline_graph_into_desc(parent_desc, grad_graph)
   }
   formals(f_gradient) <- formals2(f)
   return(f_gradient)
@@ -300,8 +296,7 @@ value_and_gradient <- function(f, wrt = NULL) {
     prep <- prepare_gradient_args(args, wrt)
 
     parent_desc <- .current_descriptor(silent = TRUE)
-    debug_mode <- is.null(parent_desc)
-    if (debug_mode) {
+    if (is.null(parent_desc)) {
       parent_desc <- local_descriptor()
     }
     fwd_graph <- trace_fn(f, args_flat = prep$args_flat, in_tree = prep$in_tree)
@@ -317,16 +312,7 @@ value_and_gradient <- function(f, wrt = NULL) {
       list(value_tree, grad_tree),
       names = c("value", "grad")
     )
-    if (!debug_mode) {
-      return(inline_graph_into_desc(parent_desc, combined_graph))
-    }
-    unflatten(
-      combined_graph$out_tree,
-      c(
-        lapply(fwd_graph$outputs, \(x) DebugBox(x$aval)),
-        lapply(grad_graph$outputs, \(x) DebugBox(x$aval))
-      )
-    )
+    inline_graph_into_desc(parent_desc, combined_graph)
   }
   formals(f_value_and_grad) <- formals2(f)
   f_value_and_grad

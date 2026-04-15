@@ -58,9 +58,6 @@ The main array object.
 Its type is determined by a data type and a shape.
 
 To transform arrays, apply \code{\link[=jit]{jit()}}ted functions.
-Directly calling operations (e.g. \code{nv_add(x, y)}) on \code{AnvilArray} objects
-only performs type inference and returns an \code{\link{AbstractArray}} --
-see \code{vignette("debugging")} for details.
 
 To compare whether two abstract arrays are equal, use \code{\link[=eq_type]{eq_type()}}.
 }
@@ -117,10 +114,6 @@ ambiguous(x)
 # --- Transforming arrays with jit ---
 add_one <- jit(function(x) x + 1)
 add_one(nv_array(1:4))
-
-# --- Debug mode (calling operations directly) ---
-# Outside of jit, operations only perform type inference:
-nv_add(nv_array(1:3), nv_array(4:6))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
