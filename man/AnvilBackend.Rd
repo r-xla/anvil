@@ -5,7 +5,7 @@
 \title{Create a backend}
 \usage{
 AnvilBackend(
-  data_constructor,
+  new_data,
   dtype,
   shape,
   ambiguous,
@@ -19,7 +19,7 @@ AnvilBackend(
 )
 }
 \arguments{
-\item{data_constructor}{(\code{function})\cr Constructs an AnvilArray from R data.
+\item{new_data}{(\code{function})\cr Constructs an AnvilArray from R data.
 This should be a \code{structure()} with at least a \verb{$data} field that contains the actual
 underlying data (\code{PJRTBuffer} for \code{"xla"} backend, \code{array()} for \code{"quickr"} backend).}
 

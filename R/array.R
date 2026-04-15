@@ -116,10 +116,10 @@ nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous 
     if (!is.null(backend)) {
       cli_abort("{.arg backend} must not be specified when calling {.fn nv_array} inside {.fn jit}.")
     }
-    return(globals$backends[["plain"]]$data_constructor(data, dtype, shape, device, ambiguous))
+    return(globals$backends[["plain"]]$new_data(data, dtype, shape, device, ambiguous))
   }
   backend <- backend %||% default_backend()
-  globals$backends[[backend]]$data_constructor(data, dtype, shape, device, ambiguous)
+  globals$backends[[backend]]$new_data(data, dtype, shape, device, ambiguous)
 }
 
 is_anvil_array <- function(x) {
