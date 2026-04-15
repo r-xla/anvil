@@ -21,15 +21,15 @@
 #'   to call time, picking the backend from the inputs (or [`default_backend()`]
 #'   when there are none).
 #'   If it is `NULL`, the [`default_backend()`] will be used unless the `device`
-#'   is determined dynamically (`from_arg()`) in which case the device's backend
+#'   is passed as a runtime argument (`device_arg()`) in which case the device's backend
 #'   will be used.
 #'
-#' @param device (`NULL` | `character(1)` | `PJRTDevice` | [`quickr_device()`] | `from_arg()`)\cr
-#'   Target device, forwarded to the backend-specific JIT.
-#'   The default (`NULL`) uses CPU device.
+#' @param device (`NULL` | `character(1)` | `PJRTDevice` | [`quickr_device()`] | `device_arg()`)\cr
+#'   Target device. The default (`NULL`) uses CPU device.
 #'
-#'   In order to enable runtime selection of the device (useful for constant creators such as
-#'   [nvl_fill()]), set to `from_arg("<device-arg>"")`.
+#'   In order to enable runtime selection of the device (required when jitting functions without
+#'   dynamic arguments from which to infer the devices such as [nvl_fill()]), set to
+#'   `device_arg("<argname>")`.
 #' @param ... Backend-specific options. Passing an option that is not supported
 #'   by the selected backend raises an error. See the **XLA JIT arguments** and
 #'   **Quickr JIT arguments** sections below for the options accepted by each
@@ -66,8 +66,14 @@ jit <- function(
   device = NULL,
   ...
 ) {
-  if (inherits(device, "AnvilBackendFromArg")) {
-    return(jit_auto(f, static, cache_size, device_arg = device$argname, ...))
+  if (inherits(device, "AnvilDeviceArg")) {
+    if (!(is.null(backend) || (backend == "auto"))) {
+      cli_abort(
+        "Invalid backend {.val backend} for device argument.",
+        i = "Must be either `NULL` or \"auto\""
+      )
+    }
+    return(jit_auto(f, static, cache_size, device_argname = device$argname, ...))
   }
   backend_explicit <- !is.null(backend)
   if (is.null(backend)) {
@@ -118,13 +124,13 @@ jit_with_backend <- function(f, static, cache_size, backend, ...) {
 #'
 #' @param argname (`character(1)`)\cr
 #'   Name of a formal argument of the function passed to [`jit()`].
-#' @return (`AnvilBackendFromArg`)\cr
+#' @return (`AnvilDeviceArg`)\cr
 #'   An object recognized by [`jit()`].
 #' @seealso [`jit()`], [`backend()`]
 #' @export
-from_arg <- function(argname) {
+device_arg <- function(argname) {
   assert_string(argname)
-  structure(list(argname = argname), class = "AnvilBackendFromArg")
+  structure(list(argname = argname), class = "AnvilDeviceArg")
 }
 
 #' @export
@@ -132,12 +138,14 @@ backend.JitFunction <- function(x, ...) {
   attr(x, "backend")
 }
 
-jit_auto <- function(f, static, cache_size, device_arg = NULL, ...) {
+jit_auto <- function(f, static, cache_size, device_argname = NULL, ...) {
   # Lazily create per-backend jit functions
   jit_fns <- list()
   dots <- list(...)
-  if (!is.null(device_arg)) {
-    assert_subset(device_arg, formalArgs2(f))
+  if (!is.null(device_argname)) {
+    assert_subset(device_argname, formalArgs2(f))
+    # the device argument is always static
+    static <- unique(c(static, device_argname))
   }
 
   wrapper <- function() {
@@ -154,8 +162,8 @@ jit_auto <- function(f, static, cache_size, device_arg = NULL, ...) {
     in_tree <- build_tree(mark_some(args, static))
     args_flat <- flatten(args)
     is_static_flat <- in_tree$marked
-    be <- if (!is.null(device_arg) && !is.null(args[[device_arg]])) {
-      backend(args[[device_arg]])
+    be <- if (!is.null(device_argname) && !is.null(args[[device_argname]])) {
+      backend(args[[device_argname]])
     } else {
       jit_auto_detect_backend(args_flat, is_static_flat)
     }
@@ -164,7 +172,7 @@ jit_auto <- function(f, static, cache_size, device_arg = NULL, ...) {
         jit_with_backend,
         c(
           list(f = f, static = static, cache_size = cache_size, backend = be),
-          if (!is.null(device_arg)) list(device = from_arg(device_arg)),
+          if (!is.null(device_argname)) list(device = device_arg(device_argname)),
           dots
         )
       )

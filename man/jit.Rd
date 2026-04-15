@@ -32,15 +32,15 @@ The special value \code{"auto"} defers backend selection
 to call time, picking the backend from the inputs (or \code{\link[=default_backend]{default_backend()}}
 when there are none).
 If it is \code{NULL}, the \code{\link[=default_backend]{default_backend()}} will be used unless the \code{device}
-is determined dynamically (\code{from_arg()}) in which case the device's backend
+is passed as a runtime argument (\code{device_arg()}) in which case the device's backend
 will be used.}
 
-\item{device}{(\code{NULL} | \code{character(1)} | \code{PJRTDevice} | \code{\link[=quickr_device]{quickr_device()}} | \code{from_arg()})\cr
-Target device, forwarded to the backend-specific JIT.
-The default (\code{NULL}) uses CPU device.
+\item{device}{(\code{NULL} | \code{character(1)} | \code{PJRTDevice} | \code{\link[=quickr_device]{quickr_device()}} | \code{device_arg()})\cr
+Target device. The default (\code{NULL}) uses CPU device.
 
-In order to enable runtime selection of the device (useful for constant creators such as
-\code{\link[=nvl_fill]{nvl_fill()}}), set to \verb{from_arg("<device-arg>"")}.}
+In order to enable runtime selection of the device (required when jitting functions without
+dynamic arguments from which to infer the devices such as \code{\link[=nvl_fill]{nvl_fill()}}), set to
+\code{device_arg("<argname>")}.}
 
 \item{...}{Backend-specific options. Passing an option that is not supported
 by the selected backend raises an error. See the \strong{XLA JIT arguments} and

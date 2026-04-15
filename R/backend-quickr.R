@@ -16,6 +16,11 @@ quickr_device <- function(x = "cpu") {
 }
 
 #' @export
+`==.QuickrDevice` <- function(e1, e2) {
+  e1$device == e2$device
+}
+
+#' @export
 as.character.QuickrDevice <- function(x, ...) x$device
 
 #' @export

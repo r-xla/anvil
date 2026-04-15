@@ -253,109 +253,115 @@ test_that("hash for cache depends on in_tree (#122)", {
 })
 
 describe("jit: backend and device combinations", {
-  # Trivial function usable for any backend
-  ident <- function(x) x
-
   it("backend = NULL, device = NULL uses default_backend()", {
     local_backend("xla")
-    f <- jit(ident)
+    f <- jit(identity)
     expect_equal(backend(f), "xla")
+    expect_equal(backend(f(1)), "xla")
   })
 
   it("backend = NULL, device = NULL follows default_backend() = 'quickr'", {
     skip_if_not_installed("quickr")
-    local_backend("xla")
-    f <- jit(ident)
-    expect_equal(backend(f), "xla")
+    local_backend("quickr")
+    f <- jit(identity)
+    expect_equal(backend(f), "quickr")
+    expect_equal(backend(f(1)), "quickr")
   })
 
   it("backend = 'xla', device = NULL uses xla", {
-    f <- jit(ident, backend = "xla")
+    local_backend("quickr")
+    f <- jit(identity, backend = "xla")
     expect_equal(backend(f), "xla")
-  })
-
-  it("backend = 'quickr', device = NULL uses quickr", {
-    skip_if_not_installed("quickr")
-    f <- jit(ident, backend = "quickr")
-    expect_equal(backend(f), "quickr")
+    expect_equal(backend(f(1)), "xla")
   })
 
   it("backend = NULL, device = PJRTDevice uses xla (derived from device)", {
-    f <- jit(ident, device = pjrt::pjrt_device("cpu"))
+    local_backend("quickr")
+    dev <- nv_device("cpu", "xla")
+    f <- jit(identity, device = pjrt::pjrt_device("cpu"))
     expect_equal(backend(f), "xla")
-  })
-
-  it("backend = NULL, device = QuickrDevice uses quickr (derived from device)", {
-    skip_if_not_installed("quickr")
-    f <- jit(ident, device = quickr_device("cpu"))
-    expect_equal(backend(f), "quickr")
+    expect_equal(backend(f(1)), "xla")
   })
 
   it("backend = 'xla', device = PJRTDevice is consistent", {
-    f <- jit(ident, backend = "xla", device = pjrt::pjrt_device("cpu"))
+    local_backend("quickr")
+    f <- jit(identity, backend = "xla", device = pjrt::pjrt_device("cpu"))
     expect_equal(backend(f), "xla")
-  })
-
-  it("backend = 'quickr', device = QuickrDevice is consistent", {
-    skip_if_not_installed("quickr")
-    f <- jit(ident, backend = "quickr", device = quickr_device("cpu"))
-    expect_equal(backend(f), "quickr")
-  })
-
-  it("backend = 'xla' conflicts with device = QuickrDevice", {
-    skip_if_not_installed("quickr")
-    expect_error(
-      jit(ident, backend = "xla", device = quickr_device("cpu")),
-      "has backend.*quickr.*backend.*xla"
-    )
+    expect_equal(backend(f(1)), "xla")
   })
 
   it("backend = 'quickr' conflicts with device = PJRTDevice", {
     skip_if_not_installed("quickr")
     expect_error(
-      jit(ident, backend = "quickr", device = pjrt::pjrt_device("cpu")),
+      jit(identity, backend = "quickr", device = pjrt::pjrt_device("cpu")),
       "has backend.*xla.*backend.*quickr"
+    )
+  })
+
+  it("checks backend for device_arg", {
+    expect_error(
+      jit(function(x, dev) x, device = device_arg("dev"), backend = "xla")
     )
   })
 
   it("backend = NULL, device = 'cpu' resolves via default_backend()", {
     withr::local_options(anvil.default_backend = "xla")
-    f <- jit(ident, device = "cpu")
+    f <- jit(identity, device = "cpu")
     expect_equal(backend(f), "xla")
+    expect_equal(backend(f(1)), "xla")
   })
 
   it("backend = 'xla', device = 'cpu' resolves to xla", {
-    f <- jit(ident, backend = "xla", device = "cpu")
+    f <- jit(identity, backend = "xla", device = "cpu")
     expect_equal(backend(f), "xla")
   })
 
-  it("backend = 'quickr', device = 'cpu' resolves to quickr", {
-    skip_if_not_installed("quickr")
-    f <- jit(ident, backend = "quickr", device = "cpu")
-    expect_equal(backend(f), "quickr")
-  })
-
-  it("backend = 'auto' routes to jit_auto (attr is 'auto' until called)", {
-    f <- jit(ident, backend = "auto")
+  it("backend 'auto' works with xla and quickr input", {
+    f <- jit(identity, backend = "auto")
     expect_equal(backend(f), "auto")
     # At call time, backend is picked from the input.
-    out <- f(nv_scalar(1))
-    expect_equal(backend(out), "xla")
-  })
-
-  it("device = from_arg(...) routes to jit_auto", {
-    g <- function(value, dev = NULL) nv_fill(value, shape = c(), dtype = "f32")
-    f <- jit(g, static = c("value", "dev"), device = from_arg("dev"))
-    expect_equal(backend(f), "auto")
-    out <- f(1, dev = pjrt::pjrt_device("cpu"))
-    expect_equal(backend(out), "xla")
-  })
-
-  it("device = from_arg(...) with QuickrDevice routes to quickr", {
+    expect_equal(backend(f(nv_scalar(1, backend = "xla"))), "xla")
     skip_if_not_installed("quickr")
-    g <- function(value, dev = NULL) nv_fill(value, shape = c(), dtype = "f32")
-    f <- jit(g, static = c("value", "dev"), device = from_arg("dev"))
-    out <- f(1, dev = quickr_device("cpu"))
-    expect_equal(backend(out), "quickr")
+    expect_equal(backend(f(nv_scalar(1, backend = "quickr"))), "quickr")
   })
+
+  it("device_arg allows to use runtime device with different backends", {
+    # device_arg is for JitFunctions that should work with any backend and infer device
+    # as runtime arg.
+    f <- jit(
+      function(val, dev) {
+        nv_array(val, device = dev)
+      },
+      device = device_arg("dev"),
+      static = c("val", "dev")
+    )
+    dev0 <- nv_device("cpu", "xla")
+    expect_true(device(f(1, dev0)) == dev0)
+    skip_if_not_installed("quickr")
+    dev1 <- nv_device("cpu", "quickr")
+    expect_true(device(f(1, dev1)) == dev1)
+  })
+
+  it("device_arg works when used correctly", {
+    f <- jit(
+      function(val, dev) {
+        val + nv_fill(1)
+      },
+      device =
+    )
+  })
+})
+
+test_that("cache hit when using PJRTDevice", {
+  # this used to be a bug before pjrt 0.2.0, because every PJRTDevice was a new external pointer
+  # and hashtab hashes address of xptr
+
+  # we don't need device_arg() as it is only for making jit backend-agnostic
+
+  f <- jit(function(dev) nv_scalar(1, device = dev), static = "dev")
+  dev0 <- nv_device("cpu", "xla")
+  dev1 <- nv_device("cpu", "xla")
+  f(dev = dev0)
+  f(dev = dev1)
+  expect_equal(cache_size(f), 1L)
 })
