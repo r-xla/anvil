@@ -128,7 +128,7 @@ compile_to_quickr <- function(f, args_flat, in_tree, unwrap = FALSE, flat = FALS
 #' @export
 AnvilBackendQuickr <- function() {
   backend <- AnvilBackend(
-    data_constructor = function(data, dtype, shape, device, ambiguous) {
+    new_data = function(data, dtype, shape, device, ambiguous) {
       if (is.null(dtype)) {
         dtype <- if (is.double(data)) FloatType(64) else default_dtype(data)
       }

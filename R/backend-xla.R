@@ -291,7 +291,7 @@ xla <- function(f, args, donate = character(), device = NULL) {
 #' @export
 AnvilBackendXla <- function() {
   backend <- AnvilBackend(
-    data_constructor = function(data, dtype, shape, device, ambiguous) {
+    new_data = function(data, dtype, shape, device, ambiguous) {
       buf <- pjrt_buffer(data, dtype = dtype, device = device, shape = shape)
       structure(
         list(data = buf, ambiguous = ambiguous, backend = "xla"),

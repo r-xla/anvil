@@ -192,7 +192,7 @@ test_that("device returns quickr_device for quickr arrays", {
 })
 
 test_that("device returns PlainDeviceCpu for plain arrays", {
-  x <- globals$backends[["plain"]]$data_constructor(1, "f32", 1L, NULL, FALSE)
+  x <- globals$backends[["plain"]]$new_data(1, "f32", 1L, NULL, FALSE)
   dev <- device(x)
   expect_s3_class(dev, "PlainDeviceCpu")
 })
@@ -204,7 +204,7 @@ test_that("platform returns 'cpu' for quickr backend", {
 })
 
 test_that("platform returns 'cpu' for plain backend", {
-  x <- globals$backends[["plain"]]$data_constructor(1, "f32", 1L, NULL, FALSE)
+  x <- globals$backends[["plain"]]$new_data(1, "f32", 1L, NULL, FALSE)
   expect_equal(platform(x), "cpu")
 })
 
