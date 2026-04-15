@@ -54,6 +54,8 @@ navbar:
       - text: Extending
       - text: Adding a Primitive
         href: articles/new_primitive.html
+      - text: Adding an API Function
+        href: articles/new_api_function.html
 
 reference:
   - title: API Functions

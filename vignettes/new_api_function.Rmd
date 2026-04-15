@@ -1,0 +1,105 @@
+---
+title: "Adding an API Function"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Adding an API Function}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Here, we will explain how to add an API function to the {anvil} package.
+API functions are the main user facing API and are follow the `nv_*` naming scheme.
+There are two types of API functions:
+
+1. Thin wrappers around primitives that add convenience like type casting and scalar broadcasting (AP function `nv_add` is a wrapper around the primitive `nvl_add`).
+2. Common mathematical functions that are expressed in terms of primitives (such as `nv_rnorm`).
+
+Here, we will focus on contributing such an API function to the {anvil} package.
+Specifically, API functions in the {anvil} package should:
+
+1. Work with any backend.
+2. Accept the following argument types for their dynamic inputs:
+   1. `numeric` and `logical` length-1 vectors
+   2. `numeric` and `logical` R arrays
+   3. `AnvilArray`s
+3. Always output `AnvilArray`s
+
+## 1. Work with any backend
+
+The first requirement means that a user of the {anvil} package should be able to use an {anvil} function with `AnvilArray`s from both the *xla* and the *quickr* backend.
+When you are just calling into other anvil primitives or correctly created API functions, there is nothing to take care of.
+This requirement is only relevant, when the API function is `jit()`ted (or internally calls into such a function).
+For example, we might want to add an API function that adds three to a tensor and jit the function.
+By setting the `backend` argument to `"auto"`, we can use it with both backends:
+
+```{r}
+library(anvil)
+nv_add_three_good <- jit(\(x) x + 3, backend = "auto")
+nv_add_three_good(nv_scalar(1, backend = "xla"))
+nv_add_three_good(nv_scalar(1, backend = "quickr"))
+```
+
+Otherwise, the function would fail in eager mode when provided with an input from a different backend.
+
+```{r, error = TRUE}
+nv_add_three_bad <- jit(\(x) x + 3)
+nv_add_three_bad(nv_scalar(1, backend = "quickr"))
+```
+
+Special care must also be taken when creating constants.
+It needs to be ensured that the constant is created on the correct device (from which the backend can be determined).
+If we don't specify it and do not jit the API function, the default backend is used, which means it won't work with non-default backends:
+
+```{r, error = TRUE}
+nv_add_const_bad <- function(x) {
+  three <- nv_scalar(3)
+  three + x
+}
+nv_add_const_bad(nv_scalar(1, backend = "quickr"))
+```
+
+If the API function was `jit`ted, than there would be no issue, because within a `jit()` context, the correct backend can be inferred from the jit context, so all we have to do is set `backend = "auto"`.
+
+```{r}
+nv_add_const_jit <- jit(nv_add_const_bad, backend = "auto")
+nv_add_const_jit(nv_scalar(1, backend = "xla"))
+```
+
+If we don't want to JIT the API function, then we need to pass the backend of the input to the constant creation.
+For that, we recommend using the `nv_<op>_like` functions that will use the attributes of the provided example as defaults for the properties of the newly created array:
+
+```{r}
+nv_add_const_eager <- function(x) {
+  three <- nv_scalar_like(like = x, 3)
+  x + three
+}
+```
+
+## 2. Input conversion
+
+In order to make the API function convenient to use, we auto-convert inputs.
+Sometimes, this conversion needs to be done explicitly in the API function.
+E.g., consider the function below that broadcasts
+
+```{r}
+nv_expand_bad <- function(x) {
+  if (identical(shape, x)) {
+    return(x)
+  }
+  nv_broadcast_to(x, shape)
+}
+```
+
+* `shape_abstract`
+
+
+3. Always output anvil arrays
+
+
