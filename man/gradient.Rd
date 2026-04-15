@@ -11,8 +11,8 @@ gradient(f, wrt = NULL)
 Function to differentiate. Arguments can be arrayish (\code{\link{AnvilArray}}) or
 static (non-array) values. Must return a single scalar float array.}
 
-\item{wrt}{(\code{character} or \code{NULL})\cr
-Names of the arguments to compute the gradient with respect to.
+\item{wrt}{(\code{character} | \code{integer} | \code{NULL})\cr
+Names or positions of the arguments to compute the gradient with respect to.
 Only arrayish (float array) arguments can be included; static arguments
 must not appear in \code{wrt}.
 If \code{NULL} (the default), the gradient is computed with respect to all

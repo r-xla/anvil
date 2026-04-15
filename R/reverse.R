@@ -224,8 +224,8 @@ transform_gradient <- function(graph, wrt) {
 #' @param f (`function`)\cr
 #'   Function to differentiate. Arguments can be arrayish ([`AnvilArray`]) or
 #'   static (non-array) values. Must return a single scalar float array.
-#' @param wrt (`character` or `NULL`)\cr
-#'   Names of the arguments to compute the gradient with respect to.
+#' @param wrt (`character` | `integer` | `NULL`)\cr
+#'   Names or positions of the arguments to compute the gradient with respect to.
 #'   Only arrayish (float array) arguments can be included; static arguments
 #'   must not appear in `wrt`.
 #'   If `NULL` (the default), the gradient is computed with respect to all
@@ -248,6 +248,7 @@ transform_gradient <- function(graph, wrt) {
 #' g2 <- jit(gradient(f2, wrt = "x"), static = "power")
 #' g2(nv_array(c(1, 2, 3), dtype = "f32"), power = 2L)
 gradient <- function(f, wrt = NULL) {
+  wrt <- resolve_arg_names(f, wrt, "wrt")
   if (!is.null(wrt) && !all(wrt %in% formalArgs(f))) {
     cli_abort("wrt must be a subset of the formal arguments of f")
   }
@@ -287,6 +288,7 @@ gradient <- function(f, wrt = NULL) {
 #' result$value
 #' result$grad
 value_and_gradient <- function(f, wrt = NULL) {
+  wrt <- resolve_arg_names(f, wrt, "wrt")
   if (!is.null(wrt) && !all(wrt %in% formalArgs(f))) {
     cli_abort("wrt must be a subset of the formal arguments of f")
   }
