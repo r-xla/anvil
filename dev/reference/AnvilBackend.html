@@ -73,7 +73,7 @@
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">AnvilBackend</span><span class="op">(</span></span>
-<span>  <span class="va">data_constructor</span>,</span>
+<span>  <span class="va">new_data</span>,</span>
 <span>  <span class="va">dtype</span>,</span>
 <span>  <span class="va">shape</span>,</span>
 <span>  <span class="va">ambiguous</span>,</span>
@@ -91,7 +91,7 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-data-constructor">data_constructor<a class="anchor" aria-label="anchor" href="#arg-data-constructor"></a></dt>
+<dl><dt id="arg-new-data">new_data<a class="anchor" aria-label="anchor" href="#arg-new-data"></a></dt>
 <dd><p>(<code>function</code>)<br> Constructs an AnvilArray from R data.
 This should be a <code><a href="https://rdrr.io/r/base/structure.html" class="external-link">structure()</a></code> with at least a <code>$data</code> field that contains the actual
 underlying data (<code>PJRTBuffer</code> for <code>"xla"</code> backend, <code><a href="https://rdrr.io/r/base/array.html" class="external-link">array()</a></code> for <code>"quickr"</code> backend).</p></dd>

@@ -6,7 +6,7 @@ Create a backend
 
 ``` r
 AnvilBackend(
-  data_constructor,
+  new_data,
   dtype,
   shape,
   ambiguous,
@@ -22,7 +22,7 @@ AnvilBackend(
 
 ## Arguments
 
-- data_constructor:
+- new_data:
 
   (`function`)  
   Constructs an AnvilArray from R data. This should be a
