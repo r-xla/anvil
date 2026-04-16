@@ -134,9 +134,9 @@ autoconvert_input <- function(x, backend, path = "") {
     return(nv_array(x, ambiguous = TRUE, backend = backend))
   }
   msg <- if (nzchar(path)) {
-    "Cannot autoconvert {.arg {path}} to an {.cls AnvilArray}."
+    "Attempted to autoconvert {.arg {path}} to an {.cls AnvilArray}."
   } else {
-    "Cannot autoconvert input to an {.cls AnvilArray}."
+    "Attempted to autoconvert input to an {.cls AnvilArray}."
   }
   cli_abort(c(
     msg,
