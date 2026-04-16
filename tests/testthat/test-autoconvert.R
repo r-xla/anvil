@@ -178,3 +178,26 @@ test_that("tree_paths: top-level list arg with nested list", {
   tree <- build_tree(list(pair = list(list(a = 1), list(b = 2))))
   expect_equal(tree_paths(tree), c("pair[[1]]$a", "pair[[2]]$b"))
 })
+
+test_that("jit: error message includes argument name for scalar arg", {
+  f <- jit(function(x) x)
+  expect_error(f("hello"), "x")
+})
+
+test_that("jit: error message includes path for nested list element", {
+  f <- jit(function(l) l[[1]])
+  expect_error(f(list(list(a = "abc"))), "l\\[\\[1\\]\\]\\$a")
+})
+
+test_that("jit: error message includes path for unnamed nested element", {
+  f <- jit(function(pair) pair[[1]])
+  expect_error(f(list("bad", nv_scalar(1))), "pair\\[\\[1\\]\\]")
+})
+
+test_that("xla: error message includes path for nested list element", {
+  f_compiled <- xla(
+    function(pair) pair[[1]] + pair[[2]],
+    args = list(pair = list(nv_abstract("f32", c()), nv_abstract("f32", c())))
+  )
+  expect_error(f_compiled(list("bad", nv_scalar(1))), "pair\\[\\[1\\]\\]")
+})
