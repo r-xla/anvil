@@ -27,6 +27,20 @@ test_that("(un)flatten lists", {
   )
 })
 
+test_that("tree_path", {
+  expect_snapshot({
+    tree_path(build_tree(list(x = 1)), 1L)
+    tree_path(build_tree(list(l = list(a = 1, b = 2))), 1L)
+    tree_path(build_tree(list(l = list(a = 1, b = 2))), 2L)
+    tree_path(build_tree(list(l = list(1, 2))), 2L)
+    tree_path(build_tree(list(l = list(1, b = 2))), 1L)
+    tree_path(build_tree(list(l = list(1, b = 2))), 2L)
+    tree_path(build_tree(list(l = list(list(a = 1)))), 1L)
+    tree_path(build_tree(list(x = 1, y = 2)), 2L)
+    tree_path(build_tree(list(pair = list(list(a = 1), list(b = 2)))), 2L)
+  })
+})
+
 test_that("flatten_fun", {
   f <- function(a, b) {
     list(a, b)

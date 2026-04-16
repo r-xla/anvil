@@ -328,6 +328,7 @@ reference:
       - build_tree
       - reindex_tree
       - tree_size
+      - tree_path
       - filter_list_node
 
   - title: Primitives

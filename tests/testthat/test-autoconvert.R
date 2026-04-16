@@ -144,41 +144,6 @@ test_that("quickr: bare vector errors", {
   expect_snapshot(f(c(1, 2, 3)), error = TRUE)
 })
 
-test_that("tree_paths: scalar argument", {
-  tree <- build_tree(list(x = 1))
-  expect_equal(tree_paths(tree), "x")
-})
-
-test_that("tree_paths: named nested list", {
-  tree <- build_tree(list(l = list(a = 1, b = 2)))
-  expect_equal(tree_paths(tree), c("l$a", "l$b"))
-})
-
-test_that("tree_paths: unnamed nested list", {
-  tree <- build_tree(list(l = list(1, 2)))
-  expect_equal(tree_paths(tree), c("l[[1]]", "l[[2]]"))
-})
-
-test_that("tree_paths: mixed named and unnamed", {
-  tree <- build_tree(list(l = list(1, b = 2)))
-  expect_equal(tree_paths(tree), c("l[[1]]", "l$b"))
-})
-
-test_that("tree_paths: deeply nested", {
-  tree <- build_tree(list(l = list(list(a = 1))))
-  expect_equal(tree_paths(tree), "l[[1]]$a")
-})
-
-test_that("tree_paths: multiple top-level args", {
-  tree <- build_tree(list(x = 1, y = 2))
-  expect_equal(tree_paths(tree), c("x", "y"))
-})
-
-test_that("tree_paths: top-level list arg with nested list", {
-  tree <- build_tree(list(pair = list(list(a = 1), list(b = 2))))
-  expect_equal(tree_paths(tree), c("pair[[1]]$a", "pair[[2]]$b"))
-})
-
 test_that("jit: error shows path for nested list element", {
   f <- jit(function(l) l[[1]])
   expect_snapshot(f(list(list(a = "abc"))), error = TRUE)

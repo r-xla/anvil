@@ -25,5 +25,5 @@ flat index. Only descends into the branch containing the target leaf,
 making it efficient for error reporting.
 }
 \seealso{
-\code{\link[=tree_paths]{tree_paths()}}, \code{\link[=build_tree]{build_tree()}}
+\code{\link[=build_tree]{build_tree()}}, \code{\link[=flatten]{flatten()}}
 }
