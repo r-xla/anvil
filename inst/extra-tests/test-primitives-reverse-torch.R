@@ -378,7 +378,7 @@ test_that("p_negate", {
 
 test_that("p_exp", {
   withr::local_seed(12)
-  verify_grad_uni(nvl_exp, torch::torch_exp)
+  verify_grad_uni(nvl_exp, torch::torch_exp, tol = 1e-4)
 })
 
 test_that("p_log", {

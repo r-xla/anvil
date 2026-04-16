@@ -30,7 +30,7 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
     prep <- jit_prepare_call(match.call(), parent.frame(), static, device = device, backend = "xla")
     avals_in <- to_avals(prep$args_flat, prep$is_static_flat)
 
-    cache_key <- list(prep$in_tree, avals_in, prep$device)
+    cache_key <- list(prep$in_tree, avals_in, device %??% prep$device)
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
       return(jit_call_xla(
@@ -52,7 +52,6 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
       args_flat = avals_in,
       in_tree = prep$in_tree,
       donate = donate,
-      device = prep$device,
       arg_devices = arg_devices
     )
     out <- jit_call_xla(
@@ -115,13 +114,13 @@ compile_xla <- function(f, args_flat, in_tree, donate = character(), device = NU
     # set device to default device
     if (length(unique_devices) == 0L) {
       device <- default_device("xla")
-    }
-    if (length(unique_devices) > 1L) {
+    } else if (length(unique_devices) > 1L) {
       devices_str <- paste0(vapply(unique_devices, as.character, character(1)), collapse = ", ")
       cli_abort(c("device is `NULL` (autodetect) but found more than one device", i = "Found devices: {devices_str}"))
+    } else {
+      # only a single device
+      device <- unique_devices[[1L]]
     }
-    # only a single device
-    device <- unique_devices
   }
   # Otherwise, everything will be converted to requested device and it does not matter
   # If we found different devices during tracing.

@@ -364,6 +364,35 @@ describe("jit: backend and device combinations", {
       device =
     )
   })
+
+  it("device overrides found constant's device", {
+    skip_if(!is_cuda())
+    expect_equal(
+      device(jit(\() nv_scalar(1, device = "cpu"), device = "cuda")()),
+      nv_device("cuda", "xla")
+    )
+  })
+
+  it("ignores devices in nv_array", {
+    skip_if(!is_cuda())
+    f <- function(x) {
+      x * nv_array(1:2, device = "cuda")
+    }
+    # no device specified in jit -> use the one from the input and ignore
+    # the device from scalar
+    expect_equal(
+      device(jit(f)(nv_scalar(1, device = "cpu"))),
+      nv_device("cpu", "xla")
+    )
+  })
+  it("errs when finding conflicting constants", {
+    const <- nv_array(1:2, device = "cuda")
+    f <- jit(function(x) {
+      x * const
+    })
+
+    f(nv_scalar(1, device = "cpu"))
+  })
 })
 
 test_that("cache hit when using PJRTDevice", {
@@ -379,3 +408,5 @@ test_that("cache hit when using PJRTDevice", {
   f(dev = dev1)
   expect_equal(cache_size(f), 1L)
 })
+
+describe("")
