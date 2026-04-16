@@ -86,7 +86,7 @@ jit <- function(
 
 jit_with_backend <- function(f, static, cache_size, backend, ...) {
   cache <- xlamisc::LRUCache$new(cache_size)
-  backend <- assert_backend(backend)
+  assert_backend(backend)
   assert_subset(static, formalArgs2(f))
 
   f_jit <- globals$backends[[backend]]$jit(f, static, cache, ...)
