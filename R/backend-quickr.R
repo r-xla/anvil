@@ -65,7 +65,7 @@ jit_quickr_impl <- function(f, static, cache, unwrap) {
       args <- lapply(args, eval, envir = parent.frame())
       return(do.call(f, args))
     }
-    prep <- jit_prepare_call(match.call(), parent.frame(), static, "quickr")
+    prep <- jit_prepare_call(match.call(), parent.frame(), static)
     inputs <- jit_quickr_inputs(prep$args_flat, prep$is_static_flat)
 
     cache_key <- list(prep$in_tree, inputs$avals_in, inputs$device)

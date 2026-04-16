@@ -237,3 +237,7 @@ scatter_to_gather_slice_sizes <- function(
   }
   slice_sizes
 }
+
+is_device_arg <- function(x) {
+  inherits(x, "AnvilDeviceArg")
+}

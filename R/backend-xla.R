@@ -57,15 +57,16 @@ jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat,
 
 jit_xla_impl <- function(f, static, cache, donate, device) {
   # device may be a fixed device object or a device_arg() marker
-  device_argname <- if (inherits(device, "AnvilDeviceArg")) device$argname else NULL
-  fixed_device <- if (inherits(device, "AnvilDeviceArg")) NULL else device
+  dev_arg <- is_device_arg(device)
+  device_argname <- if (dev_arg) device$argname else NULL
+  fixed_device <- if (dev_arg) NULL else (device %||% nv_device(Sys.getenv("PJRT_PLATFORM", "cpu"), backend = "xla"))
   function() {
     if (currently_tracing()) {
       args <- as.list(match.call())[-1L]
       args <- lapply(args, eval, envir = parent.frame())
       return(do.call(f, args))
     }
-    prep <- jit_prepare_call(match.call(), parent.frame(), static, "xla")
+    prep <- jit_prepare_call(match.call(), parent.frame(), static, device = fixed_device)
     effective_device <- if (!is.null(device_argname)) prep$args[[device_argname]] %||% fixed_device else fixed_device
     inputs <- jit_xla_inputs(prep$args_flat, prep$is_static_flat, effective_device)
 
@@ -228,7 +229,7 @@ compile_graph_to_xla <- function(graph, donate = character(), device = NULL) {
 #' f_compiled(a, b)
 xla <- function(f, args, donate = character(), device = NULL) {
   # FIXME: Also use device inference from trace_fn
-  device <- device %||% Sys.getenv("PJRT_PLATFORM", "cpu")
+  device <- nv_device(device %||% Sys.getenv("PJRT_PLATFORM", "cpu"), backend = "xla")
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
   compiled <- compile_to_xla(f, args_flat = args_flat, in_tree = in_tree, donate = donate, device = device)
@@ -241,7 +242,7 @@ xla <- function(f, args, donate = character(), device = NULL) {
     args <- as.list(match.call())[-1L]
     args <- lapply(args, eval, envir = parent.frame())
     args_flat <- flatten(args)
-    args_flat <- lapply(args_flat, autoconvert_input, backend = "xla")
+    args_flat <- lapply(args_flat, autoconvert_input, device = device)
     args_unwrapped <- lapply(args_flat, \(a) a$data)
     out_vals <- rlang::exec(
       pjrt::pjrt_execute,

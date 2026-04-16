@@ -118,6 +118,9 @@ nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous 
     }
     return(globals$backends[["plain"]]$new_data(data, dtype, shape, device, ambiguous))
   }
+  if (is.null(backend) && is_device(device)) {
+    backend <- backend(device)
+  }
   backend <- backend %||% default_backend()
   globals$backends[[backend]]$new_data(data, dtype, shape, device, ambiguous)
 }

@@ -113,3 +113,9 @@ test_that("graph_to_quickr_r_function lowers a graph to a plain R function", {
 
   expect_equal(f(2), 3)
 })
+
+test_that("quickr_device can be compared", {
+  dev0 <- quickr_device("cpu")
+  dev1 <- quickr_device("cpu")
+  expect_true(dev0 == dev1)
+})

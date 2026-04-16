@@ -67,7 +67,7 @@ jit <- function(
   ...
 ) {
   static <- resolve_arg_names(f, static, "static")
-  if (inherits(device, "AnvilDeviceArg")) {
+  if (is_device_arg(device)) {
     if (!(is.null(backend) || (backend == "auto"))) {
       cli_abort(
         "Invalid backend {.val backend} for device argument.",
@@ -120,8 +120,7 @@ jit_with_backend <- function(f, static, cache_size, backend, ...) {
 #'
 #' This is intended for functions that have no dynamic array inputs from which
 #' the backend could otherwise be detected (e.g. array constructors like
-#' [nvl_fill()] or [nvl_iota()]). If the named argument is `NULL` at call
-#' time, the backend falls back to being detected from the inputs.
+#' [nvl_fill()] or [nvl_iota()]).
 #'
 #' @param argname (`character(1)`)\cr
 #'   Name of a formal argument of the function passed to [`jit()`].
@@ -177,17 +176,11 @@ jit_auto <- function(f, static, cache_size, device_argname = NULL, ...) {
       cl[[1L]] <- f
       return(eval.parent(cl))
     }
-    # Determine backend from input arrays. We avoid jit_prepare_call() here
-    # because that would autoconvert inputs against an unknown backend.
-    cl0 <- match.call()
-    args <- lapply(as.list(cl0)[-1L], eval, envir = parent.frame())
-    in_tree <- build_tree(mark_some(args, static))
-    args_flat <- flatten(args)
-    is_static_flat <- in_tree$marked
+    args <- lapply(as.list(match.call())[-1L], eval, envir = parent.frame())
     be <- if (!is.null(device_argname) && !is.null(args[[device_argname]])) {
       backend(args[[device_argname]])
     } else {
-      jit_auto_detect_backend(args_flat, is_static_flat)
+      jit_auto_detect_backend(flatten(args[!names(args) %in% static]))
     }
     if (is.null(jit_fns[[be]])) {
       jit_fns[[be]] <<- do.call(
@@ -199,8 +192,7 @@ jit_auto <- function(f, static, cache_size, device_argname = NULL, ...) {
         )
       )
     }
-    cl0[[1L]] <- jit_fns[[be]]
-    eval.parent(cl0)
+    do.call(jit_fns[[be]], args)
   }
   formals(wrapper) <- formals2(f)
   class(wrapper) <- "JitFunction"
@@ -208,16 +200,16 @@ jit_auto <- function(f, static, cache_size, device_argname = NULL, ...) {
   wrapper
 }
 
-jit_auto_detect_backend <- function(args_flat, is_static_flat) {
+jit_auto_detect_backend <- function(args_flat) {
   for (i in seq_along(args_flat)) {
-    if (!is_static_flat[[i]] && is_anvil_array(args_flat[[i]]) && backend(args_flat[[i]]) != "plain") {
+    if (is_anvil_array(args_flat[[i]]) && backend(args_flat[[i]]) != "plain") {
       return(backend(args_flat[[i]]))
     }
   }
   default_backend()
 }
 
-jit_prepare_call <- function(call, eval_env, static, backend) {
+jit_prepare_call <- function(call, eval_env, static, device = NULL) {
   args <- as.list(call)[-1L]
   args <- lapply(args, eval, envir = eval_env)
 
@@ -228,7 +220,7 @@ jit_prepare_call <- function(call, eval_env, static, backend) {
   class(in_tree) <- c("ListNode", "Node")
 
   args_flat <- .mapply(
-    function(x, is_static) if (is_static) x else autoconvert_input(x, backend),
+    function(x, is_static) if (is_static) x else autoconvert_input(x, device),
     list(args_flat, is_static_flat),
     NULL
   )
@@ -242,15 +234,15 @@ jit_prepare_call <- function(call, eval_env, static, backend) {
   )
 }
 
-autoconvert_input <- function(x, backend) {
+autoconvert_input <- function(x, device = default_device()) {
   if (is_anvil_array(x)) {
     return(x)
   }
   if ((is.numeric(x) || is.logical(x)) && length(x) == 1L && is.null(dim(x))) {
-    return(nv_scalar(x, ambiguous = TRUE, backend = backend))
+    return(nv_scalar(x, ambiguous = TRUE, device = device))
   }
   if (is.array(x) && (is.numeric(x) || is.logical(x))) {
-    return(nv_array(x, ambiguous = TRUE, backend = backend))
+    return(nv_array(x, ambiguous = TRUE, device = device))
   }
   cli_abort(c(
     "Cannot autoconvert input to an {.cls AnvilArray}.",
