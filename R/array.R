@@ -162,7 +162,7 @@ nv_empty <- function(dtype, shape, device = NULL, ambiguous = FALSE) {
 
 #' @rdname AbstractArray
 #' @export
-nv_abstract <- function(dtype, shape, ambiguous = FALSE) {
+nv_aval <- function(dtype, shape, ambiguous = FALSE) {
   AbstractArray(dtype = dtype, shape = shape, ambiguous = ambiguous)
 }
 
@@ -278,10 +278,10 @@ backend.QuickrDevice <- function(x, ...) {
 #' ambiguous(a)
 #'
 #' # Shorthand
-#' nv_abstract("f32", c(2L, 3L))
+#' nv_aval("f32", c(2L, 3L))
 #'
 #' # How AbstractArrays appear in an AnvilGraph
-#' graph <- trace_fn(function(x) x + 1, list(x = nv_abstract("i32", 4L)))
+#' graph <- trace_fn(function(x) x + 1, list(x = nv_aval("i32", 4L)))
 #' graph
 #' graph$inputs[[1]]$aval
 #'
@@ -513,20 +513,20 @@ print.IotaArray <- function(x, ...) {
 #'   If `FALSE`, only dtype and shape are compared.
 #' @return `logical(1)` - `TRUE` if the arrays are equal, `FALSE` otherwise.
 #' @examples
-#' a <- nv_abstract("f32", c(2L, 3L))
-#' b <- nv_abstract("f32", c(2L, 3L))
+#' a <- nv_aval("f32", c(2L, 3L))
+#' b <- nv_aval("f32", c(2L, 3L))
 #'
 #' # Same dtype and shape
 #' eq_type(a, b, ambiguity = FALSE)
 #'
 #' # Different dtype
-#' eq_type(a, nv_abstract("i32", c(2L, 3L)), ambiguity = FALSE)
+#' eq_type(a, nv_aval("i32", c(2L, 3L)), ambiguity = FALSE)
 #'
 #' # Different shape
-#' eq_type(a, nv_abstract("f32", c(3L, 2L)), ambiguity = FALSE)
+#' eq_type(a, nv_aval("f32", c(3L, 2L)), ambiguity = FALSE)
 #'
 #' # ambiguity parameter controls whether ambiguous field is compared
-#' c <- nv_abstract("f32", c(2L, 3L), ambiguous = TRUE)
+#' c <- nv_aval("f32", c(2L, 3L), ambiguous = TRUE)
 #' eq_type(a, c, ambiguity = FALSE)
 #' eq_type(a, c, ambiguity = TRUE)
 #'

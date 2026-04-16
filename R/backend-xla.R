@@ -20,7 +20,7 @@ jit_xla_inputs <- function(args_flat, is_static_flat, device) {
       if (is.null(first_device)) {
         first_device <<- dev
       }
-      nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x))
+      nv_aval(dtype(x), shape(x), ambiguous = ambiguous(x))
     },
     args_flat,
     is_static_flat
@@ -196,7 +196,7 @@ compile_graph_to_xla <- function(graph, donate = character(), device = NULL) {
 #' Returns a callable R function that executes the compiled binary.
 #' Unlike [`jit()`], compilation happens eagerly at
 #' definition time rather than on first call, so the input shapes and dtypes must be
-#' specified upfront via abstract arrays (see [`nv_abstract()`]).
+#' specified upfront via abstract arrays (see [`nv_aval()`]).
 #' @details
 #' Traces `f` with the given abstract `args` (via [`trace_fn()`]), lowers the resulting graph
 #' via [`stablehlo()`] and then compiles it to an XLA executable via [`pjrt::pjrt_compile()`].
@@ -204,7 +204,7 @@ compile_graph_to_xla <- function(graph, donate = character(), device = NULL) {
 #' @param f (`function`)\cr
 #'   Function to compile. Must accept and return [`AnvilArray`]s.
 #' @param args (`list`)\cr
-#'   List of abstract array specifications (e.g. from [`nv_abstract()`]) describing the
+#'   List of abstract array specifications (e.g. from [`nv_aval()`]) describing the
 #'   expected shapes and dtypes of `f`'s arguments.
 #' @param donate (`character()`)\cr
 #'   Names of the arguments whose buffers should be donated.
@@ -217,7 +217,7 @@ compile_graph_to_xla <- function(graph, donate = character(), device = NULL) {
 #' @export
 #' @examplesIf pjrt::plugins_downloaded()
 #' f_compiled <- xla(function(x, y) x + y,
-#'   args = list(x = nv_abstract("f32", c(2, 2)), y = nv_abstract("f32", c(2, 2)))
+#'   args = list(x = nv_aval("f32", c(2, 2)), y = nv_aval("f32", c(2, 2)))
 #' )
 #' a <- nv_array(array(1:4, c(2, 2)), dtype = "f32")
 #' b <- nv_array(array(5:8, c(2, 2)), dtype = "f32")

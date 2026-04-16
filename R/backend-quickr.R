@@ -34,7 +34,7 @@ quickr_jit_aval <- function(x) {
   if (backend(x) != "quickr") {
     cli_abort("Expected {.val quickr} backend, but got {.val {backend(x)}} backend.")
   }
-  nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x))
+  nv_aval(dtype(x), shape(x), ambiguous = ambiguous(x))
 }
 
 jit_quickr_inputs <- function(args_flat, is_static_flat) {
