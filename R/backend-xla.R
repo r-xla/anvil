@@ -215,7 +215,7 @@ compile_graph_to_xla <- function(graph, donate = character(), device = NULL) {
 #'   and returns the result as [`AnvilArray`]s.
 #' @seealso [`jit()`] for lazy compilation, [`compile_to_xla()`] for the lower-level API.
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' f_compiled <- xla(function(x, y) x + y,
 #'   args = list(x = nv_abstract("f32", c(2, 2)), y = nv_abstract("f32", c(2, 2)))
 #' )

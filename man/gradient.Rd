@@ -28,7 +28,7 @@ same signature as \code{f} and returns the gradients in the same structure as th
 (or the subset selected by \code{wrt}).
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 f <- function(x, y) sum(x * y)
 g <- jit(gradient(f))
 g(nv_array(c(1, 2), dtype = "f32"), nv_array(c(3, 4), dtype = "f32"))

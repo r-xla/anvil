@@ -38,7 +38,7 @@ It lowers to \code{\link[stablehlo:hlo_iota]{stablehlo::hlo_iota()}}, optionally
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- IotaArray(shape = 4L, dtype = "i32", dimension = 1L)
 x
 ambiguous(x)

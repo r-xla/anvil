@@ -50,7 +50,7 @@ Lowers to \code{\link[stablehlo:hlo_slice]{stablehlo::hlo_slice()}}.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # 1-D: extract elements 2 through 4 (limit is exclusive)
 jit_eval({
   x <- nv_array(1:10)

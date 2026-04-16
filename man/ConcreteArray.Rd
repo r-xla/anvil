@@ -23,7 +23,7 @@ This is to avoid increasing compilation time and bloating the size of the execut
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 y <- nv_array(c(0.5, 0.6))
 x <- ConcreteArray(y)
 x

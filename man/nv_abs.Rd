@@ -18,7 +18,7 @@ Has the same shape and data type as the input.
 Element-wise absolute value. You can also use \code{abs()}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(c(-1, 2, -3))
   abs(x)

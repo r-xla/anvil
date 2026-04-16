@@ -31,7 +31,7 @@
 #' @seealso [`xla()`] for ahead-of-time compilation, [`jit_eval()`] for evaluating an expression once.
 #' @return (`function`)
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' f <- jit(function(x, y) x + y)
 #' f(nv_array(1), nv_array(2))
 #'
@@ -160,7 +160,7 @@ jit_wrap_outputs <- function(out_flat, out_tree, ambiguous_out, backend) {
 #' @return (`any`)\cr
 #'   Result of the compiled and evaluated expression.
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3), dtype = "f32")
 #' jit_eval(x + x)
 jit_eval <- function(expr, ...) {

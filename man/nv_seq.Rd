@@ -33,7 +33,7 @@ Without \code{steps}, behaves like R's \code{seq(start, end)} producing integer 
 With \code{steps}, produces \code{steps} evenly spaced values (like \code{seq(start, end, length.out = steps)}).
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval(nv_seq(3, 7))
 \dontshow{\}) # examplesIf}
 }

@@ -33,7 +33,7 @@ Lowers to \code{\link[stablehlo:hlo_cosine]{stablehlo::hlo_cosine()}}.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(c(0, pi / 2, pi))
   nvl_cosine(x)

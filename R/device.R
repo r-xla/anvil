@@ -13,7 +13,7 @@
 #' @return A backend-specific device object (e.g. `PJRTDevice` for `"xla"`,
 #'   [`quickr_device`] for `"quickr"`).
 #' @seealso [`backend()`], [`AnvilBackend()`].
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' # Create CPU device for xla backend:
 #' nv_device("cpu", "xla")
 #' # Create CPU device for quickr backend:

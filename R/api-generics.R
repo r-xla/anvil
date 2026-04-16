@@ -168,7 +168,7 @@ is.finite.AnvilArray <- is.finite.AnvilBox
 #' @return [`arrayish`]\cr
 #'   Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
 #' @seealso [nvl_transpose()] for the underlying primitive.
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' jit_eval({
 #'   x <- nv_array(matrix(1:6, nrow = 2))
 #'   t(x)
