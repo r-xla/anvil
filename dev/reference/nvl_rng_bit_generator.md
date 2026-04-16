@@ -58,21 +58,10 @@ Lowers to
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   state <- nv_array(c(0L, 0L), dtype = "ui64")
   nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
 })
-#> [[1]]
-#> AnvilArray
-#>  0
-#>  3
-#> [ CPUui64{2} ] 
-#> 
-#> [[2]]
-#> AnvilArray
-#>  1.7973e+09 2.5791e+09
-#>  1.3515e+09 3.2358e+09
-#>  1.6886e+09 4.2293e+09
-#> [ CPUui32{3,2} ] 
-#> 
+}
 ```

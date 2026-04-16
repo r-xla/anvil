@@ -102,24 +102,17 @@ for evaluating an expression once.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 f <- jit(function(x, y) x + y)
 f(nv_array(1), nv_array(2))
-#> AnvilArray
-#>  3
-#> [ CPUf32{1} ] 
 
 # Static arguments enable data-dependent control flow
 g <- jit(function(x, flag) {
   if (flag) x + 1 else x * 2
 }, static = "flag")
 g(nv_array(3), TRUE)
-#> AnvilArray
-#>  4
-#> [ CPUf32{1} ] 
 g(nv_array(3), FALSE)
-#> AnvilArray
-#>  6
-#> [ CPUf32{1} ] 
+}
 with_backend("quickr", {
   h <- jit(function(x, y) x + y)
   h(nv_array(1), nv_array(2))

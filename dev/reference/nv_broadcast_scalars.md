@@ -26,23 +26,11 @@ List of broadcasted arrays.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(c(1, 2, 3))
   # scalar 1 is broadcast to shape [3]
   nv_broadcast_scalars(x, 1)
 })
-#> [[1]]
-#> AnvilArray
-#>  1
-#>  2
-#>  3
-#> [ CPUf32{3} ] 
-#> 
-#> [[2]]
-#> AnvilArray
-#>  1
-#>  1
-#>  1
-#> [ CPUf32?{3} ] 
-#> 
+}
 ```

@@ -58,13 +58,10 @@ as the reducer.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(matrix(1:6, nrow = 2))
   nvl_reduce_max(x, dims = 1L)
 })
-#> AnvilArray
-#>  2
-#>  4
-#>  6
-#> [ CPUi32{3} ] 
+}
 ```

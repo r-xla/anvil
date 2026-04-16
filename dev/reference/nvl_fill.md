@@ -62,9 +62,7 @@ Lowers to
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval(nvl_fill(3.14, shape = c(2, 3), dtype = "f32"))
-#> AnvilArray
-#>  3.1400 3.1400 3.1400
-#>  3.1400 3.1400 3.1400
-#> [ CPUf32{2,3} ] 
+}
 ```

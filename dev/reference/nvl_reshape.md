@@ -48,12 +48,10 @@ Lowers to
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(1:6)
   nvl_reshape(x, shape = c(2, 3))
 })
-#> AnvilArray
-#>  1 2 3
-#>  4 5 6
-#> [ CPUi32{2,3} ] 
+}
 ```

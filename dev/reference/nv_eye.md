@@ -34,10 +34,7 @@ for general diagonal matrices.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval(nv_eye(3L))
-#> AnvilArray
-#>  1 0 0
-#>  0 1 0
-#>  0 0 1
-#> [ CPUf32{3,3} ] 
+}
 ```

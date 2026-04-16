@@ -41,19 +41,11 @@ that opens and closes a file connection.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded("cpu")
 x <- nv_array(array(1:6, dim = c(2, 3)))
 x
-#> AnvilArray
-#>  1 3 5
-#>  2 4 6
-#> [ CPUi32{2,3} ] 
 path <- tempfile(fileext = ".safetensors")
 nv_save(list(x = x), path)
 nv_read(path)
-#> $x
-#> AnvilArray
-#>  1 3 5
-#>  2 4 6
-#> [ CPUi32{2,3} ] 
-#> 
+}
 ```

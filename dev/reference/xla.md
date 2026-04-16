@@ -67,14 +67,12 @@ for the lower-level API.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 f_compiled <- xla(function(x, y) x + y,
   args = list(x = nv_abstract("f32", c(2, 2)), y = nv_abstract("f32", c(2, 2)))
 )
 a <- nv_array(array(1:4, c(2, 2)), dtype = "f32")
 b <- nv_array(array(5:8, c(2, 2)), dtype = "f32")
 f_compiled(a, b)
-#> AnvilArray
-#>   6 10
-#>   8 12
-#> [ CPUf32{2,2} ] 
+}
 ```

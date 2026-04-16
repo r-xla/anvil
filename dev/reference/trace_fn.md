@@ -88,16 +88,10 @@ end-to-end compilation.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 graph <- trace_fn(function(x, y) x + y,
   args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32"))
 )
 graph
-#> <AnvilGraph>
-#>   Inputs:
-#>     %x1: f32[1]
-#>     %x2: f32[1]
-#>   Body:
-#>     %1: f32[1] = add(%x1, %x2)
-#>   Outputs:
-#>     %1: f32[1] 
+}
 ```

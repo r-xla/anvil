@@ -41,10 +41,10 @@ for `"quickr"`).
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 # Create CPU device for xla backend:
 nv_device("cpu", "xla")
-#> <CpuDevice(id=0)>
 # Create CPU device for quickr backend:
 nv_device("cpu", "quickr")
-#> QuickrDevice(cpu) 
+}
 ```

@@ -32,12 +32,10 @@ Other rng:
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   state <- nv_rng_state(42L)
   state
 })
-#> AnvilArray
-#>  42
-#>   0
-#> [ CPUui64{2} ] 
+}
 ```

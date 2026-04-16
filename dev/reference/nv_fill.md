@@ -48,9 +48,7 @@ for the underlying primitive.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval(nv_fill(0, shape = c(2, 3)))
-#> AnvilArray
-#>  0 0 0
-#>  0 0 0
-#> [ CPUf32{2,3} ] 
+}
 ```

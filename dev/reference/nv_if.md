@@ -44,8 +44,7 @@ for element-wise selection.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval(nv_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2)))
-#> AnvilArray
-#>  1
-#> [ CPUf32{} ] 
+}
 ```

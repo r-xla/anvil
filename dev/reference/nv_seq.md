@@ -50,12 +50,7 @@ nv_seq(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE)
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval(nv_seq(3, 7))
-#> AnvilArray
-#>  3
-#>  4
-#>  5
-#>  6
-#>  7
-#> [ CPUi32{5} ] 
+}
 ```

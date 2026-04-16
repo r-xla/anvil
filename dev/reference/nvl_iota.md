@@ -63,12 +63,7 @@ Lowers to
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval(nvl_iota(dim = 1L, dtype = "i32", shape = 5L))
-#> AnvilArray
-#>  1
-#>  2
-#>  3
-#>  4
-#>  5
-#> [ CPUi32{5} ] 
+}
 ```

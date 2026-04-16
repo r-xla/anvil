@@ -33,11 +33,10 @@ Has the same data type as `operand` with an extra dimension of size 1.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(c(1, 2, 3))
   nv_unsqueeze(x, dim = 1L)
 })
-#> AnvilArray
-#>  1 2 3
-#> [ CPUf32{1,3} ] 
+}
 ```

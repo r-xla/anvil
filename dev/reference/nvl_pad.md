@@ -66,18 +66,12 @@ Lowers to
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(c(1, 2, 3))
   nvl_pad(x, nv_scalar(0),
     edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
   )
 })
-#> AnvilArray
-#>  0
-#>  0
-#>  1
-#>  2
-#>  3
-#>  0
-#> [ CPUf32{6} ] 
+}
 ```

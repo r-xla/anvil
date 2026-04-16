@@ -57,12 +57,10 @@ as the reducer.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
   nvl_reduce_any(x, dims = 1L)
 })
-#> AnvilArray
-#>  1
-#>  1
-#> [ CPUbool{2} ] 
+}
 ```

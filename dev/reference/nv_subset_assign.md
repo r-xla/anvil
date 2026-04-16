@@ -48,15 +48,12 @@ for a comprehensive guide.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(matrix(1:12, nrow = 3))
   # Set row 1 to zeros
   x[1, ] <- 0L
   x
 })
-#> AnvilArray
-#>   0  0  0  0
-#>   2  5  8 11
-#>   3  6  9 12
-#> [ CPUi32{3,4} ] 
+}
 ```

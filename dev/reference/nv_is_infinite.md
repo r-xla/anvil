@@ -37,15 +37,10 @@ Has the same shape as the input and boolean data type.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(c(1, NaN, Inf, -Inf, 0))
   nv_is_infinite(x)
 })
-#> AnvilArray
-#>  0
-#>  0
-#>  1
-#>  1
-#>  0
-#> [ CPUbool{5} ] 
+}
 ```

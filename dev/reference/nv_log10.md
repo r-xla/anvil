@@ -29,14 +29,10 @@ Has the same shape and data type as the input.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(c(1, 10, 100, 1000))
   nv_log10(x)
 })
-#> AnvilArray
-#>  0.0000
-#>  1.0000
-#>  2.0000
-#>  3.0000
-#> [ CPUf32{4} ] 
+}
 ```

@@ -47,18 +47,14 @@ Lowers to
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(1L)
   nvl_bitcast_convert(x, dtype = "i8")
 })
-#> AnvilArray
-#>  1 0 0 0
-#> [ CPUi8{1,4} ] 
 jit_eval({
   x <- nv_array(rep(1L, 4), dtype = "i8")
   nvl_bitcast_convert(x, dtype = "i32")
 })
-#> AnvilArray
-#>  1.6843e+07
-#> [ CPUi32{} ] 
+}
 ```

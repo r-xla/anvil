@@ -38,21 +38,11 @@ List of arrays, all with the same shape.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(matrix(1:6, nrow = 2))
   y <- nv_array(c(10, 20, 30))
   nv_broadcast_arrays(x, y)
 })
-#> [[1]]
-#> AnvilArray
-#>  1 3 5
-#>  2 4 6
-#> [ CPUi32{2,3} ] 
-#> 
-#> [[2]]
-#> AnvilArray
-#>  10 20 30
-#>  10 20 30
-#> [ CPUf32{2,3} ] 
-#> 
+}
 ```

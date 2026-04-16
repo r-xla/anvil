@@ -32,7 +32,8 @@ This is implemented via the generic
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 x <- nv_array(1:4, dtype = "f32")
 shape(x)
-#> [1] 4
+}
 ```

@@ -32,14 +32,11 @@ for the underlying primitive.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(c(7, 8, 9))
   y <- nv_array(c(3, 3, 4))
   x %% y
 })
-#> AnvilArray
-#>  1
-#>  2
-#>  1
-#> [ CPUf32{3} ] 
+}
 ```

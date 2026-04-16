@@ -51,13 +51,10 @@ Lowers to
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   pred <- nv_array(c(TRUE, FALSE, TRUE))
   nvl_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 })
-#> AnvilArray
-#>  1
-#>  5
-#>  3
-#> [ CPUf32{3} ] 
+}
 ```

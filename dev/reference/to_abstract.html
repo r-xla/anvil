@@ -96,26 +96,18 @@ Whether to convert to a pure <code>AbstractArray</code> and not e.g. <code>Liter
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># R literals become LiteralArrays (ambiguous by default, except logicals)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># pjrt::plugins_downloaded()</span></span></span>
+<span class="r-in"><span><span class="co"># R literals become LiteralArrays (ambiguous by default, except logicals)</span></span></span>
 <span class="r-in"><span><span class="fu">to_abstract</span><span class="op">(</span><span class="fl">1.5</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> LiteralArray(1.5, f32?, ()) </span>
 <span class="r-in"><span><span class="fu">to_abstract</span><span class="op">(</span><span class="fl">1L</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> LiteralArray(1, i32?, ()) </span>
 <span class="r-in"><span><span class="fu">to_abstract</span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> LiteralArray(TRUE, i1, ()) </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># AnvilArrays become ConcreteArrays</span></span></span>
 <span class="r-in"><span><span class="fu">to_abstract</span><span class="op">(</span><span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ConcreteArray</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{4} ] </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Use pure = TRUE to strip subclass info</span></span></span>
 <span class="r-in"><span><span class="fu">to_abstract</span><span class="op">(</span><span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span>, pure <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AbstractArray(dtype=i32, shape=4) </span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

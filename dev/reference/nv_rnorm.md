@@ -58,13 +58,11 @@ Other rng:
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   state <- nv_rng_state(42L)
   result <- nv_rnorm(c(2, 3), state)
   result[[2]]
 })
-#> AnvilArray
-#>  -0.0675  0.9489  1.9457
-#>  -0.5255  1.2002  0.0008
-#> [ CPUf32{2,3} ] 
+}
 ```

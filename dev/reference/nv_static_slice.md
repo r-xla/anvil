@@ -47,14 +47,10 @@ for the underlying primitive.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(1:10)
   nv_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 })
-#> AnvilArray
-#>  2
-#>  3
-#>  4
-#>  5
-#> [ CPUi32{4} ] 
+}
 ```

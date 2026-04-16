@@ -40,12 +40,10 @@ crossprod(x, y = NULL, ...)
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
   nv_crossprod(x)
 })
-#> AnvilArray
-#>  14 32
-#>  32 77
-#> [ CPUf32{2,2} ] 
+}
 ```

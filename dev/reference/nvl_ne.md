@@ -42,14 +42,11 @@ with `comparison_direction = "NE"`.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(c(1, 2, 3))
   y <- nv_array(c(1, 3, 2))
   nvl_ne(x, y)
 })
-#> AnvilArray
-#>  0
-#>  1
-#>  1
-#> [ CPUbool{3} ] 
+}
 ```

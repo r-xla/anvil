@@ -145,17 +145,13 @@ the effective start position may differ from the requested one.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># 1-D: extract 3 elements starting at position 3</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># pjrt::plugins_downloaded()</span></span></span>
+<span class="r-in"><span><span class="co"># 1-D: extract 3 elements starting at position 3</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="va">start</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">3L</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">nvl_dynamic_slice</span><span class="op">(</span><span class="va">x</span>, <span class="va">start</span>, slice_sizes <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{3} ] </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># 2-D: extract a 2x2 block from a matrix</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
@@ -164,10 +160,7 @@ the effective start position may differ from the requested one.</p>
 <span class="r-in"><span>  <span class="va">col_start</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1L</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">nvl_dynamic_slice</span><span class="op">(</span><span class="va">x</span>, <span class="va">row_start</span>, <span class="va">col_start</span>, slice_sizes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">2L</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3 6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{2,2} ] </span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

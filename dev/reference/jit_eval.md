@@ -34,11 +34,8 @@ Result of the compiled and evaluated expression.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 x <- nv_array(c(1, 2, 3), dtype = "f32")
 jit_eval(x + x)
-#> AnvilArray
-#>  2
-#>  4
-#>  6
-#> [ CPUf32{3} ] 
+}
 ```

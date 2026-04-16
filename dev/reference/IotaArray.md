@@ -60,26 +60,16 @@ optionally shifting the starting value via
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 x <- IotaArray(shape = 4L, dtype = "i32", dimension = 1L)
 x
-#> IotaArray(shape=(4), dtype=i32, dimension=1, start=1) 
 ambiguous(x)
-#> [1] FALSE
 shape(x)
-#> [1] 4
 ndims(x)
-#> [1] 1
 dtype(x)
-#> <i32>
 # How it appears during tracing:
 graph <- trace_fn(function() nv_iota(dim = 1L, dtype = "i32", shape = 4L), list())
 graph
-#> <AnvilGraph>
-#>   Inputs: (none)
-#>   Body:
-#>     %1: i32[4] = iota [dim = 1, dtype = i32, shape = 4, start = 1, ambiguous = FALSE] ()
-#>   Outputs:
-#>     %1: i32[4] 
 graph$outputs[[1]]$aval
-#> IotaArray(shape=(4), dtype=i32, dimension=1, start=1) 
+}
 ```

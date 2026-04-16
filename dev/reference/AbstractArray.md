@@ -87,33 +87,20 @@ The following extractors are available on `AbstractArray` objects:
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 # -- Creating abstract arrays --
 a <- AbstractArray("f32", c(2L, 3L))
 a
-#> AbstractArray(dtype=f32, shape=2x3) 
 dtype(a)
-#> <f32>
 shape(a)
-#> [1] 2 3
 ambiguous(a)
-#> [1] FALSE
 
 # Shorthand
 nv_abstract("f32", c(2L, 3L))
-#> AbstractArray(dtype=f32, shape=2x3) 
 
 # How AbstractArrays appear in an AnvilGraph
 graph <- trace_fn(function(x) x + 1, list(x = nv_abstract("i32", 4L)))
 graph
-#> <AnvilGraph>
-#>   Inputs:
-#>     %x1: i32[4]
-#>   Body:
-#>     %1: f32?[4] = convert [dtype = f32, ambiguous = TRUE] (%x1)
-#>     %2: f32?[4] = broadcast_in_dim [shape = 4, broadcast_dimensions = <any>] (1:f32?)
-#>     %3: f32?[4] = add(%1, %2)
-#>   Outputs:
-#>     %3: f32?[4] 
 graph$inputs[[1]]$aval
-#> AbstractArray(dtype=i32, shape=4) 
+}
 ```

@@ -40,12 +40,10 @@ for the underlying primitive.
 ## Examples
 
 ``` r
+if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
   nv_reduce_all(x, dims = 1L)
 })
-#> AnvilArray
-#>  0
-#>  1
-#> [ CPUbool{2} ] 
+}
 ```
