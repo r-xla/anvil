@@ -635,7 +635,7 @@ maybe_restore_previous_desc <- function(desc = NULL) {
   if (silent) {
     return(maybe_desc)
   }
-  maybe_desc %??%
+  maybe_desc %||%
     cli_abort("No graph is currently being built. Did you forget to use `jit()`?")
 }
 
@@ -708,7 +708,7 @@ is_graph_box <- function(x) {
 #' @return (`list` of [`GraphBox`])
 #' @export
 graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL) {
-  desc <- desc %??% .current_descriptor(silent = TRUE)
+  desc <- desc %||% .current_descriptor(silent = TRUE)
 
   boxes_in <- lapply(args, maybe_box_arrayish)
   gnodes_in <- unname(lapply(boxes_in, \(box) box$gnode))

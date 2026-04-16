@@ -4,15 +4,17 @@
 \alias{nv_device}
 \title{Create a Device}
 \usage{
-nv_device(x, backend = default_backend())
+nv_device(x, backend = NULL)
 }
 \arguments{
-\item{x}{(\code{character(1)})\cr
-Identifier for the device.
-E.g. \code{"cpu"}, \code{"cuda"}, or \code{"cuda:<n>"} (for the n-th GPU).}
+\item{x}{(\code{character(1)} | device object)\cr
+Identifier for the device (e.g. \code{"cpu"}, \code{"cuda"}, \code{"cuda:<n>"}),
+or an existing device object (returned as-is).}
 
-\item{backend}{(\code{character(1)})\cr
-The backend for which to create the device.}
+\item{backend}{(\code{NULL} | \code{character(1)})\cr
+The backend for which to create the device.
+Ignored when \code{x} is already a device object.
+Defaults to \code{\link[=default_backend]{default_backend()}} when \code{NULL}.}
 }
 \value{
 A backend-specific device object (e.g. \code{PJRTDevice} for \code{"xla"},
@@ -30,6 +32,9 @@ It is relevant for data allocation (e.g. via \code{\link[=nv_array]{nv_array()}}
 nv_device("cpu", "xla")
 # Create CPU device for quickr backend:
 nv_device("cpu", "quickr")
+# Pass through an existing device:
+dev <- nv_device("cpu")
+identical(nv_device(dev), dev)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

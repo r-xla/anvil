@@ -30,7 +30,7 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
     prep <- jit_prepare_call(match.call(), parent.frame(), static, device = device, backend = "xla")
     avals_in <- to_avals(prep$args_flat, prep$is_static_flat)
 
-    cache_key <- list(prep$in_tree, avals_in, device %??% prep$device)
+    cache_key <- list(prep$in_tree, avals_in, device %||% prep$device)
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
       return(jit_call_xla(

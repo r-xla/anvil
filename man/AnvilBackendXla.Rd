@@ -41,10 +41,6 @@ underlying buffers may be donated to (i.e., reused/consumed by) the
 compiled XLA executable. Donated buffers must not be used again by the
 caller after the call; this can reduce memory usage and copies for large
 inputs. Must not overlap with \code{static}.
-\item \code{device} (\code{NULL} | \code{character(1)} | \code{\link[pjrt:as_pjrt_device]{pjrt::PJRTDevice}},
-default \code{NULL}): target device (e.g. \code{"cpu"}, \code{"cuda"}) on which the
-function is compiled and executed. When \code{NULL}, the device is inferred
-from the inputs; if inputs live on different devices an error is raised.
 }
 }
 

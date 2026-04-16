@@ -31,16 +31,18 @@ Compilation backend (e.g. \code{"xla"}, \code{"quickr"}).
 The special value \code{"auto"} defers backend selection
 to call time, picking the backend from the inputs (or \code{\link[=default_backend]{default_backend()}}
 when there are none).
-If it is \code{NULL}, the \code{\link[=default_backend]{default_backend()}} will be used unless the \code{device}
-is passed as a runtime argument (\code{device_arg()}) in which case the device's backend
-will be used.}
+\code{NULL} (default) uses \code{\link[=default_backend]{default_backend()}}.}
 
-\item{device}{(\code{NULL} | \code{character(1)} | \code{PJRTDevice} | \code{\link[=quickr_device]{quickr_device()}} | \code{device_arg()})\cr
-Target device. The default (\code{NULL}) uses CPU device.
+\item{device}{(\code{NULL} | \code{character(1)} | device object | \code{device_arg()})\cr
+Target device for compilation. When a concrete device is specified,
+all arrays (constants and dynamic inputs) are moved to this device.
 
-In order to enable runtime selection of the device (required when jitting functions without
-dynamic arguments from which to infer the devices such as \code{\link[=nvl_fill]{nvl_fill()}}), set to
-\code{device_arg("<argname>")}.}
+The default (\code{NULL}) infers the device from inputs/constants a
+falling back to \code{\link[=default_device]{default_device()}} when there are no array inputs.
+
+For functions without dynamic array inputs (e.g. \code{\link[=nvl_fill]{nvl_fill()}}),
+use \code{device_arg("<argname>")} to read the device from a function argument
+at call time.}
 
 \item{...}{Backend-specific options. Passing an option that is not supported
 by the selected backend raises an error. See the \strong{XLA JIT arguments} and
@@ -68,10 +70,6 @@ underlying buffers may be donated to (i.e., reused/consumed by) the
 compiled XLA executable. Donated buffers must not be used again by the
 caller after the call; this can reduce memory usage and copies for large
 inputs. Must not overlap with \code{static}.
-\item \code{device} (\code{NULL} | \code{character(1)} | \code{\link[pjrt:as_pjrt_device]{pjrt::PJRTDevice}},
-default \code{NULL}): target device (e.g. \code{"cpu"}, \code{"cuda"}) on which the
-function is compiled and executed. When \code{NULL}, the device is inferred
-from the inputs; if inputs live on different devices an error is raised.
 }
 }
 

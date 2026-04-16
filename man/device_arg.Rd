@@ -23,8 +23,7 @@ JIT as the compilation device.
 
 This is intended for functions that have no dynamic array inputs from which
 the backend could otherwise be detected (e.g. array constructors like
-\code{\link[=nvl_fill]{nvl_fill()}} or \code{\link[=nvl_iota]{nvl_iota()}}). If the named argument is \code{NULL} at call
-time, the backend falls back to being detected from the inputs.
+\code{\link[=nvl_fill]{nvl_fill()}} or \code{\link[=nvl_iota]{nvl_iota()}}).
 }
 \seealso{
 \code{\link[=jit]{jit()}}, \code{\link[=backend]{backend()}}

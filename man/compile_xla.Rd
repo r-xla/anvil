@@ -4,7 +4,14 @@
 \alias{compile_xla}
 \title{Trace, lower, and compile a function to an XLA executable}
 \usage{
-compile_xla(f, args_flat, in_tree, donate = character(), device = NULL)
+compile_xla(
+  f,
+  args_flat,
+  in_tree,
+  donate = character(),
+  device = NULL,
+  arg_devices = list()
+)
 }
 \arguments{
 \item{f}{(\code{function})\cr
@@ -20,7 +27,13 @@ Tree structure of the inputs.}
 Names of the arguments whose buffers should be donated.}
 
 \item{device}{(\code{NULL} | \code{character(1)})\cr
-Target device (e.g. \code{"cpu"}, \code{"cuda"}). If \code{NULL}, inferred from traced arrays.}
+Target device (e.g. \code{"cpu"}, \code{"cuda"}). If \code{NULL}, inferred from \code{arg_devices}
+and traced arrays.}
+
+\item{arg_devices}{(\code{list})\cr
+Devices of the concrete (non-static) input arguments, extracted before
+converting to abstract values. Used together with traced devices for
+device inference when \code{device} is \code{NULL}.}
 }
 \value{
 A \code{list} with elements:

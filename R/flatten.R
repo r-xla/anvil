@@ -91,7 +91,7 @@ build_tree <- function(x, counter = NULL) {
 
 #' @export
 build_tree.list <- function(x, counter = NULL) {
-  counter <- counter %??% new_counter()
+  counter <- counter %||% new_counter()
   out <- lapply(unname(x), build_tree, counter = counter)
   # basically non-recursive unlist that maintains list structure even for atomics (unlist(list(1, 2))
   # would become c(1, 2))
@@ -103,7 +103,7 @@ build_tree.list <- function(x, counter = NULL) {
 
 #' @export
 build_tree.default <- function(x, counter = NULL) {
-  counter <- counter %??% new_counter()
+  counter <- counter %||% new_counter()
   i <- counter[["i"]] + 1L
   counter[["i"]] <- i
   LeafNode(i)

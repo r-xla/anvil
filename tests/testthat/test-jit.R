@@ -386,6 +386,7 @@ describe("jit: backend and device combinations", {
     )
   })
   it("errs when finding conflicting constants", {
+    skip_if(!is_cuda())
     const <- nv_array(1:2, device = "cuda")
     f <- jit(function(x) {
       x * const
@@ -419,21 +420,21 @@ describe("jit: backend and device combinations", {
       nv_device("cuda", "xla")
     )
   })
+  it("works when passing device as static arg for concrete backend", {
+    f <- function(x) nv_scalar(1, device = x)
+    g <- jit(f, backend = "xla", static = "x")
+    expect_equal(device(g("cpu:0")), nv_device("cpu:0", "xla"))
+    expect_equal(device(g("cpu:1")), nv_device("cpu:1", "xla"))
+  })
   it("works when device = device_arg()", {
-    skip_if(!is_cuda())
-    f <- function(dev) nv_fill(1, c(2, 2))
+    local_backend("xla")
+    f <- function(dev) nv_scalar(1, device = dev)
     g <- jit(f, device = device_arg("dev"))
 
-    g(nv_device("cuda"))
-    g(nv_device("cpu"))
-    
-    
-    # can also pass string
-    g(nv_scalar(1, device = nv_device("cuda")))
-    g(nv_scalar(1, device = nv_device("cpu")))
+    expect_equal(device(g(nv_device("cpu:0"))), nv_device("cpu:0"))
+    expect_equal(device(g(nv_device("cpu:1"))), nv_device("cpu:1"))
   })
 })
-
 
 
 test_that("cache hit when using PJRTDevice", {
