@@ -23,9 +23,9 @@
 #'   `NULL` (default) uses [`default_backend()`].
 #' @param device (`NULL` | `character(1)` | device object | `device_arg()`)\cr
 #'   Target device for compilation. When a concrete device is specified,
-#'   all dynamic inputs are moved to that device at call time.
+#'   all arrays (constants and dynamic inputs) are moved to this device.
 #'
-#'   The default (`NULL`) infers the device from the inputs at call time,
+#'   The default (`NULL`) infers the device from inputs/constants a
 #'   falling back to [`default_device()`] when there are no array inputs.
 #'
 #'   For functions without dynamic array inputs (e.g. [nvl_fill()]),

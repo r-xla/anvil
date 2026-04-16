@@ -390,10 +390,51 @@ describe("jit: backend and device combinations", {
     f <- jit(function(x) {
       x * const
     })
+    expect_error(
+      f(nv_scalar(1, device = "cpu")),
+      "more than one"
+    )
+  })
+  it("works with different device IDs when autodetecting", {
+    f <- jit(identity)
+    expect_equal(
+      device(f(nv_scalar(1, device = "cpu:0"))),
+      nv_device("cpu:0", "xla")
+    )
+    skip_if(!is_cuda())
+    expect_equal(
+      device(f(nv_scalar(1, device = "cuda"))),
+      nv_device("cuda", "xla")
+    )
+  })
+  it("works with different devices with 'auto' backend", {
+    f <- jit(nv_log, backend = "auto")
+    expect_equal(
+      device(f(nv_scalar(1, device = "cpu"))),
+      nv_device("cpu", "xla")
+    )
+    skip_if(!is_cuda())
+    expect_equal(
+      device(f(nv_scalar(1, device = "cuda"))),
+      nv_device("cuda", "xla")
+    )
+  })
+  it("works when device = device_arg()", {
+    skip_if(!is_cuda())
+    f <- function(dev) nv_fill(1, c(2, 2))
+    g <- jit(f, device = device_arg("dev"))
 
-    f(nv_scalar(1, device = "cpu"))
+    g(nv_device("cuda"))
+    g(nv_device("cpu"))
+    
+    
+    # can also pass string
+    g(nv_scalar(1, device = nv_device("cuda")))
+    g(nv_scalar(1, device = nv_device("cpu")))
   })
 })
+
+
 
 test_that("cache hit when using PJRTDevice", {
   # this used to be a bug before pjrt 0.2.0, because every PJRTDevice was a new external pointer
@@ -408,5 +449,3 @@ test_that("cache hit when using PJRTDevice", {
   f(dev = dev1)
   expect_equal(cache_size(f), 1L)
 })
-
-describe("")

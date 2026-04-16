@@ -116,7 +116,10 @@ compile_xla <- function(f, args_flat, in_tree, donate = character(), device = NU
       device <- default_device("xla")
     } else if (length(unique_devices) > 1L) {
       devices_str <- paste0(vapply(unique_devices, as.character, character(1)), collapse = ", ")
-      cli_abort(c("device is `NULL` (autodetect) but found more than one device", i = "Found devices: {devices_str}"))
+      cli_abort(c(
+        "device is `NULL` (autodetect) but found more than one device during tracing",
+        i = "Found devices: {devices_str}"
+      ))
     } else {
       # only a single device
       device <- unique_devices[[1L]]

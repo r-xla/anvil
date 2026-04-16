@@ -111,7 +111,7 @@ nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous 
     shape <- as.integer(shape)
   }
   desc <- .current_descriptor(silent = TRUE)
-  if (!is.null(desc)) {
+  if (!is.null(desc) && is.null(device)) {
     # The functions we jit should be backend-agnostic
     if (!is.null(backend)) {
       cli_abort("{.arg backend} must not be specified when calling {.fn nv_array} inside {.fn jit}.")
