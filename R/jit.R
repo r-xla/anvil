@@ -20,16 +20,15 @@
 #'   The special value `"auto"` defers backend selection
 #'   to call time, picking the backend from the inputs (or [`default_backend()`]
 #'   when there are none).
-#'   If it is `NULL`, the [`default_backend()`] will be used unless the `device`
-#'   is passed as a runtime argument (`device_arg()`) in which case the device's backend
-#'   will be used.
+#'   `NULL` (default) uses [`default_backend()`].
+#' @param device (`NULL` | `character(1)` | device object | `device_arg()`)\cr
+#'   Target device for compilation and autoconversion of raw R inputs.
+#'   The default (`NULL`) infers the device from the inputs at call time,
+#'   falling back to [`default_device()`] when there are no array inputs.
 #'
-#' @param device (`NULL` | `character(1)` | `PJRTDevice` | [`quickr_device()`] | `device_arg()`)\cr
-#'   Target device. The default (`NULL`) uses CPU device.
-#'
-#'   In order to enable runtime selection of the device (required when jitting functions without
-#'   dynamic arguments from which to infer the devices such as [nvl_fill()]), set to
-#'   `device_arg("<argname>")`.
+#'   For functions without dynamic array inputs (e.g. [nvl_fill()]),
+#'   use `device_arg("<argname>")` to read the device from a function argument
+#'   at call time.
 #' @param ... Backend-specific options. Passing an option that is not supported
 #'   by the selected backend raises an error. See the **XLA JIT arguments** and
 #'   **Quickr JIT arguments** sections below for the options accepted by each
@@ -68,30 +67,21 @@ jit <- function(
 ) {
   static <- resolve_arg_names(f, static, "static")
   if (is_device_arg(device)) {
-    if (!(is.null(backend) || (backend == "auto"))) {
-      cli_abort(
-        "Invalid backend {.val backend} for device argument.",
-        i = "Must be either `NULL` or \"auto\""
-      )
+    if (!is.null(backend)) {
+      cli_abort("{.arg backend} must not be specified together with {.fn device_arg}.")
     }
     return(jit_auto(f, static, cache_size, device_argname = device$argname, ...))
   }
-  backend_explicit <- !is.null(backend)
-  if (is.null(backend)) {
-    backend <- default_backend()
-  }
-  if (is.character(device)) {
-    device <- nv_device(device, backend = backend)
-  }
-  if (!is.null(device)) {
+  if (is_device(device)) {
     device_backend <- backend(device)
-    if (backend_explicit && backend != device_backend) {
+    if (!is.null(backend) && backend != device_backend) {
       cli_abort(
         "{.arg device} has backend {.val {device_backend}}, but {.arg backend} is {.val {backend}}."
       )
     }
-    backend <- device_backend
+    backend <- backend %||% device_backend
   }
+  backend <- backend %||% default_backend()
   if (backend == "auto") {
     return(jit_auto(f, static, cache_size, ...))
   }
@@ -209,7 +199,7 @@ jit_auto_detect_backend <- function(args_flat) {
   default_backend()
 }
 
-jit_prepare_call <- function(call, eval_env, static, device = NULL) {
+jit_prepare_call <- function(call, eval_env, static, device = NULL, backend = NULL) {
   args <- as.list(call)[-1L]
   args <- lapply(args, eval, envir = eval_env)
 
@@ -218,6 +208,21 @@ jit_prepare_call <- function(call, eval_env, static, device = NULL) {
   is_static_flat <- in_tree$marked
   in_tree$marked <- NULL
   class(in_tree) <- c("ListNode", "Node")
+
+  # Resolve device: device_arg() → extract from args, string/device → nv_device(),
+  # NULL → infer from inputs, then fall back to PJRT_PLATFORM default.
+  if (is_device_arg(device)) {
+    device <- args[[device$argname]]
+  }
+  if (is.null(device)) {
+    for (i in seq_along(args_flat)) {
+      if (!is_static_flat[[i]] && is_anvil_array(args_flat[[i]])) {
+        device <- device(args_flat[[i]])
+        break
+      }
+    }
+  }
+  device <- nv_device(device %||% Sys.getenv("PJRT_PLATFORM", "cpu"), backend = backend)
 
   args_flat <- .mapply(
     function(x, is_static) if (is_static) x else autoconvert_input(x, device),
@@ -230,11 +235,22 @@ jit_prepare_call <- function(call, eval_env, static, device = NULL) {
     args = args,
     args_flat = args_flat,
     is_static_flat = is_static_flat,
-    in_tree = in_tree
+    in_tree = in_tree,
+    device = device
   )
 }
 
-autoconvert_input <- function(x, device = default_device()) {
+to_avals <- function(args_flat, is_static_flat) {
+  Map(
+    function(x, is_static) {
+      if (is_static) x else nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x))
+    },
+    args_flat,
+    is_static_flat
+  )
+}
+
+autoconvert_input <- function(x, device) {
   if (is_anvil_array(x)) {
     return(x)
   }

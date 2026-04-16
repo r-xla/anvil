@@ -17,11 +17,13 @@ default_device <- function() {
 #' A device identifies a compute resources, such as CPU, or a specific GPU.
 #' It is relevant for data allocation (e.g. via [nv_array()]) but also compilation ([jit]).
 #'
-#' @param x (`character(1)`)\cr
-#'   Identifier for the device.
-#'   E.g. `"cpu"`, `"cuda"`, or `"cuda:<n>"` (for the n-th GPU).
-#' @param backend (`character(1)`)\cr
+#' @param x (`character(1)` | device object)\cr
+#'   Identifier for the device (e.g. `"cpu"`, `"cuda"`, `"cuda:<n>"`),
+#'   or an existing device object (returned as-is).
+#' @param backend (`NULL` | `character(1)`)\cr
 #'   The backend for which to create the device.
+#'   Ignored when `x` is already a device object.
+#'   Defaults to [`default_backend()`] when `NULL`.
 #' @return A backend-specific device object (e.g. `PJRTDevice` for `"xla"`,
 #'   [`quickr_device`] for `"quickr"`).
 #' @seealso [`backend()`], [`AnvilBackend()`].
@@ -30,9 +32,15 @@ default_device <- function() {
 #' nv_device("cpu", "xla")
 #' # Create CPU device for quickr backend:
 #' nv_device("cpu", "quickr")
+#' # Pass through an existing device:
+#' dev <- nv_device("cpu")
+#' identical(nv_device(dev), dev)
 #' @export
-nv_device <- function(x, backend = default_backend()) {
-  backend <- assert_backend(backend)
+nv_device <- function(x, backend = NULL) {
+  if (is_device(x)) {
+    return(x)
+  }
+  backend <- assert_backend(backend %||% default_backend())
   globals$backends[[backend]]$new_device(x)
 }
 

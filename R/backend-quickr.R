@@ -32,30 +32,6 @@ print.QuickrDevice <- function(x, ...) {
   invisible(x)
 }
 
-quickr_jit_aval <- function(x) {
-  if (!is_anvil_array(x)) {
-    cli_abort("Expected AnvilArray, but got {.cls {class(x)[1]}}")
-  }
-  if (backend(x) != "quickr") {
-    cli_abort("Expected {.val quickr} backend, but got {.val {backend(x)}} backend.")
-  }
-  nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x))
-}
-
-jit_quickr_inputs <- function(args_flat, is_static_flat) {
-  avals_in <- Map(
-    function(x, is_static) {
-      if (is_static) {
-        return(x)
-      }
-      quickr_jit_aval(x)
-    },
-    args_flat,
-    is_static_flat
-  )
-
-  list(avals_in = avals_in, device = NULL)
-}
 
 jit_quickr_impl <- function(f, static, cache, unwrap) {
   function() {
@@ -65,10 +41,10 @@ jit_quickr_impl <- function(f, static, cache, unwrap) {
       args <- lapply(args, eval, envir = parent.frame())
       return(do.call(f, args))
     }
-    prep <- jit_prepare_call(match.call(), parent.frame(), static)
-    inputs <- jit_quickr_inputs(prep$args_flat, prep$is_static_flat)
+    prep <- jit_prepare_call(match.call(), parent.frame(), static, backend = "quickr")
+    avals_in <- to_avals(prep$args_flat, prep$is_static_flat)
 
-    cache_key <- list(prep$in_tree, inputs$avals_in, inputs$device)
+    cache_key <- list(prep$in_tree, avals_in)
     r_args_flat <- lapply(prep$args_flat, function(a) {
       if (is_anvil_array(a)) as_array(a) else a
     })
@@ -77,7 +53,7 @@ jit_quickr_impl <- function(f, static, cache, unwrap) {
       return(cache_hit(r_args_flat))
     }
 
-    compiled <- compile_to_quickr(f, args_flat = inputs$avals_in, in_tree = prep$in_tree, unwrap = unwrap, flat = TRUE)
+    compiled <- compile_to_quickr(f, args_flat = avals_in, in_tree = prep$in_tree, unwrap = unwrap, flat = TRUE)
     cache$set(cache_key, compiled$fun)
     compiled$fun(r_args_flat)
   }

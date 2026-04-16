@@ -1,47 +1,6 @@
 #' @include backend.R
 NULL
 
-jit_xla_inputs <- function(args_flat, is_static_flat, device) {
-  device_strs <- character()
-  first_device <- NULL
-  avals_in <- Map(
-    function(x, is_static) {
-      if (is_static) {
-        return(x)
-      }
-      if (!is_anvil_array(x)) {
-        cli_abort("Expected AnvilArray, but got {.cls {class(x)[1]}}")
-      }
-      if (backend(x) != "xla") {
-        cli_abort("Expected {.val xla} backend, but got {.val {backend(x)}} backend.")
-      }
-      dev <- device(x)
-      device_strs <<- c(device_strs, as.character(dev))
-      if (is.null(first_device)) {
-        first_device <<- dev
-      }
-      nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x))
-    },
-    args_flat,
-    is_static_flat
-  )
-
-  unique_strs <- unique(device_strs)
-  if (length(unique_strs) > 1) {
-    cli_abort("Inputs live on different devices: {.val {unique_strs}}.")
-  }
-
-  inferred_device <- if (!is.null(first_device)) {
-    first_device
-  } else if (!is.null(device)) {
-    device
-  } else {
-    NULL
-  }
-
-  list(avals_in = avals_in, device = inferred_device)
-}
-
 jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat, ambiguous_out = NULL) {
   args_nonstatic <- args_flat[!is_static_flat]
   args_unwrapped <- lapply(args_nonstatic, \(a) a$data)
@@ -56,22 +15,16 @@ jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat,
 }
 
 jit_xla_impl <- function(f, static, cache, donate, device) {
-  # device may be a fixed device object or a device_arg() marker
-  dev_arg <- is_device_arg(device)
-  device_argname <- if (dev_arg) device$argname else NULL
-  fixed_device <- if (dev_arg) NULL else (device %||% nv_device(Sys.getenv("PJRT_PLATFORM", "cpu"), backend = "xla"))
   function() {
     if (currently_tracing()) {
       args <- as.list(match.call())[-1L]
       args <- lapply(args, eval, envir = parent.frame())
       return(do.call(f, args))
     }
-    prep <- jit_prepare_call(match.call(), parent.frame(), static, device = fixed_device)
-    effective_device <- if (!is.null(device_argname)) prep$args[[device_argname]] %||% fixed_device else fixed_device
-    inputs <- jit_xla_inputs(prep$args_flat, prep$is_static_flat, effective_device)
+    prep <- jit_prepare_call(match.call(), parent.frame(), static, device = device, backend = "xla")
+    avals_in <- to_avals(prep$args_flat, prep$is_static_flat)
 
-    device_key <- if (!is.null(inputs$device)) as.character(inputs$device) else NULL
-    cache_key <- list(prep$in_tree, inputs$avals_in, device_key)
+    cache_key <- list(prep$in_tree, avals_in, as.character(prep$device))
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
       return(jit_call_xla(
@@ -86,17 +39,12 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
 
     compiled <- compile_to_xla(
       f,
-      args_flat = inputs$avals_in,
+      args_flat = avals_in,
       in_tree = prep$in_tree,
       donate = donate,
-      device = inputs$device
+      device = prep$device
     )
-    cache$set(
-      cache_key,
-      list(compiled$exec, compiled$out_tree, compiled$const_arrays, compiled$ambiguous_out)
-    )
-
-    jit_call_xla(
+    out <- jit_call_xla(
       compiled$exec,
       compiled$out_tree,
       compiled$const_arrays,
@@ -104,6 +52,13 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
       prep$is_static_flat,
       compiled$ambiguous_out
     )
+
+    cache$set(
+      cache_key,
+      list(compiled$exec, compiled$out_tree, compiled$const_arrays, compiled$ambiguous_out)
+    )
+
+    return(out)
   }
 }
 
@@ -135,7 +90,7 @@ compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device =
   # FIXME: This should also respect the devices of args_flat
   traced_devices <- unique(vapply(desc$devices, as.character, character(1)))
   if (length(traced_devices) > 1) {
-    cli_abort("Tensors live on different devices: {traced_devices}.")
+    cli_abort("Arrays live on different devices: {traced_devices}.")
   }
 
   if (!is.null(device) && length(traced_devices) && traced_devices[[1L]] != pjrt::as_pjrt_device(device)) {
