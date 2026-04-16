@@ -9,8 +9,8 @@
 #' @param f (`function`)\cr
 #'   Function to compile. Must accept and return [`AnvilArray`]s (and/or
 #'   static arguments).
-#' @param static (`character()`)\cr
-#'   Names of parameters of `f` that are *not* arrays. Static values are
+#' @param static (`character()` | `integer()`)\cr
+#'   Names or positions of parameters of `f` that are *not* arrays. Static values are
 #'   embedded as constants in the compiled program; a new compilation is triggered whenever
 #'   a static value changes. For example useful when you want R control flow in your function.
 #' @param cache_size (`integer(1)`)\cr
@@ -66,6 +66,7 @@ jit <- function(
   device = NULL,
   ...
 ) {
+  static <- resolve_arg_names(f, static, "static")
   if (inherits(device, "AnvilDeviceArg")) {
     if (!(is.null(backend) || (backend == "auto"))) {
       cli_abort(
@@ -131,6 +132,27 @@ jit_with_backend <- function(f, static, cache_size, backend, ...) {
 device_arg <- function(argname) {
   assert_string(argname)
   structure(list(argname = argname), class = "AnvilDeviceArg")
+}
+
+# Translate a character-or-integer argument selector into character names
+# of the formals of `f`. `arg` is used in error messages. Rejects `"..."`
+# (whether supplied by name or resolved from an integer position), since it
+# does not name a single argument.
+resolve_arg_names <- function(f, x, arg) {
+  if (is.null(x)) {
+    return(x)
+  }
+  if (is.integer(x)) {
+    nms <- formalArgs2(f)
+    if (any(x < 1L | x > length(nms))) {
+      cli_abort("{.arg {arg}} index out of range.")
+    }
+    x <- nms[x]
+  }
+  if ("..." %in% x) {
+    cli_abort("{.arg {arg}} must not contain {.val ...}.")
+  }
+  x
 }
 
 #' @export

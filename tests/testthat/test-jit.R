@@ -184,6 +184,27 @@ test_that("can mark arguments as static ", {
   expect_equal(f(nv_array(1), FALSE), nv_array(1))
 })
 
+test_that("static accepts integer positions", {
+  body_fn <- function(x, add_one) {
+    if (add_one) x + nv_array(1) else x
+  }
+  # Positional static arg resolves to the same name.
+  f <- jit(body_fn, static = 2L)
+  expect_equal(f(nv_array(1), TRUE), nv_array(2))
+  expect_equal(f(nv_array(1), FALSE), nv_array(1))
+
+  # Out-of-range index is an error.
+  expect_error(jit(body_fn, static = 3L), "out of range")
+  expect_error(jit(body_fn, static = 0L), "out of range")
+})
+
+test_that("static cannot be '...'", {
+  f <- function(x, ...) x
+  expect_error(jit(f, static = "..."), "must not contain")
+  # Position pointing at `...` is also rejected.
+  expect_error(jit(f, static = 2L), "must not contain")
+})
+
 
 test_that("jit: array return value is not wrapped in list", {
   f <- jit(nvl_add)
