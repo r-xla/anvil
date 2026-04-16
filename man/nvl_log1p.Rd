@@ -33,7 +33,7 @@ Lowers to \code{\link[stablehlo:hlo_log_plus_one]{stablehlo::hlo_log_plus_one()}
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(c(0, 0.001, 1))
   nvl_log1p(x)

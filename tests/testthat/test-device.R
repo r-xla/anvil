@@ -6,7 +6,7 @@ test_that("nv_device dispatches to the backend-specific constructor", {
 })
 
 test_that("nv_device returns PJRTDevice for xla backend", {
-  skip_if(!pjrt::plugin_is_downloaded())
+  skip_if(!pjrt::plugins_downloaded())
   dev <- nv_device("cpu", backend = "xla")
   expect_s3_class(dev, "PJRTDevice")
   expect_equal(backend(dev), "xla")

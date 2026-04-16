@@ -30,7 +30,7 @@ Implemented as \code{nv_reduce_sum(operand, dims, drop) / n} where \code{n} is t
 product of the reduced dimension sizes.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(matrix(1:6, nrow = 2))
   nv_reduce_mean(x, dims = 1L)

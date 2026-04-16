@@ -25,7 +25,7 @@ A device identifies a compute resources, such as CPU, or a specific GPU.
 It is relevant for data allocation (e.g. via \code{\link[=nv_array]{nv_array()}}) but also compilation (\link{jit}).
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # Create CPU device for xla backend:
 nv_device("cpu", "xla")
 # Create CPU device for quickr backend:

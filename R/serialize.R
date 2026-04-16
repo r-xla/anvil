@@ -16,7 +16,7 @@
 #' @returns `NULL` (invisibly).
 #' @seealso [nv_read()], [nv_serialize()], [nv_unserialize()]
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded("cpu")
+#' @examplesIf pjrt::plugins_downloaded("cpu")
 #' x <- nv_array(array(1:6, dim = c(2, 3)))
 #' x
 #' path <- tempfile(fileext = ".safetensors")
@@ -54,7 +54,7 @@ nv_save <- function(arrays, path) {
 #' @returns Named `list` of [`AnvilArray`] objects.
 #' @seealso [nv_save()], [nv_serialize()], [nv_unserialize()]
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded("cpu")
+#' @examplesIf pjrt::plugins_downloaded("cpu")
 #' x <- nv_array(array(1:6, dim = c(2, 3)))
 #' x
 #' path <- tempfile(fileext = ".safetensors")
@@ -86,7 +86,7 @@ nv_read <- function(path, device = NULL, backend = default_backend()) {
 #' @returns A [`raw`] vector if `con` is `NULL`, otherwise `NULL` (invisibly).
 #' @seealso [nv_unserialize()], [nv_save()], [nv_read()]
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded("cpu")
+#' @examplesIf pjrt::plugins_downloaded("cpu")
 #' x <- nv_array(array(1:6, dim = c(2, 3)))
 #' x
 #' raw_data <- nv_serialize(list(x = x))
@@ -142,7 +142,7 @@ nv_serialize <- function(arrays, con = NULL) {
 #' @returns Named `list` of [`AnvilArray`] objects.
 #' @seealso [nv_serialize()], [nv_save()], [nv_read()]
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded("cpu")
+#' @examplesIf pjrt::plugins_downloaded("cpu")
 #' x <- nv_array(array(1:6, dim = c(2, 3)))
 #' x
 #' raw_data <- nv_serialize(list(x = x))

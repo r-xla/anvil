@@ -33,7 +33,7 @@ Creates an array with values increasing along the specified dimension,
 starting from \code{start}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval(nv_iota(dim = 1L, dtype = "i32", shape = 5L))
 \dontshow{\}) # examplesIf}
 }

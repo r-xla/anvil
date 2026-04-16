@@ -28,7 +28,7 @@ Extracts a slice from an array using static (compile-time) indices.
 For dynamic indexing, use \code{\link[=nv_subset]{nv_subset()}} instead.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(1:10)
   nv_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)

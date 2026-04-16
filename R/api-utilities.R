@@ -7,7 +7,7 @@
 #'   Scalar `i32` seed value.
 #' @return [`nv_array`] of dtype `ui64` and shape `(2)`.
 #' @family rng
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' jit_eval({
 #'   state <- nv_rng_state(42L)
 #'   state

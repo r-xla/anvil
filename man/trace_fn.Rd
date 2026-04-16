@@ -50,7 +50,7 @@ The resulting graph can be lowered to StableHLO (via \code{\link[=stablehlo]{sta
 (e.g. via \code{\link[=transform_gradient]{transform_gradient()}}).
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 graph <- trace_fn(function(x, y) x + y,
   args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32"))
 )

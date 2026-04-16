@@ -38,7 +38,7 @@ Traces \code{f} with the given abstract \code{args} (via \code{\link[=trace_fn]{
 via \code{\link[=stablehlo]{stablehlo()}} and then compiles it to an XLA executable via \code{\link[pjrt:pjrt_compile]{pjrt::pjrt_compile()}}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 f_compiled <- xla(function(x, y) x + y,
   args = list(x = nv_abstract("f32", c(2, 2)), y = nv_abstract("f32", c(2, 2)))
 )

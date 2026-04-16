@@ -49,7 +49,7 @@
 #'   Defaults to `default_backend()`.
 #'   Must not be specified inside [`jit()`].
 #' @return ([`AnvilArray`])
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' # A 1-d array (vector) with shape (4). Default type for integers is `i32`
 #' nv_array(1:4)
 #'
@@ -269,7 +269,7 @@ backend.QuickrDevice <- function(x, ...) {
 #' @template param_ambiguous
 #' @seealso [LiteralArray], [ConcreteArray], [IotaArray], [GraphValue], [to_abstract()], [GraphBox]
 #'
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' # -- Creating abstract arrays --
 #' a <- AbstractArray("f32", c(2L, 3L))
 #' a
@@ -333,7 +333,7 @@ shape.AbstractArray <- function(x, ...) {
 #' @param data ([`AnvilArray`])\cr
 #'   The actual array data.
 #'
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' y <- nv_array(c(0.5, 0.6))
 #' x <- ConcreteArray(y)
 #' x
@@ -386,7 +386,7 @@ ConcreteArray <- function(data) {
 #'   `i32` for integer, and `bool` for logical.
 #' @template param_ambiguous
 #'
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- LiteralArray(1L, shape = integer(), ambiguous = TRUE)
 #' x
 #' ambiguous(x)
@@ -448,7 +448,7 @@ LiteralArray <- function(data, shape, dtype = default_dtype(data), ambiguous) {
 #'   The starting value.
 #' @template param_ambiguous
 #'
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- IotaArray(shape = 4L, dtype = "i32", dimension = 1L)
 #' x
 #' ambiguous(x)
@@ -632,7 +632,7 @@ compare_proxy.AnvilArray <- function(x, path) { # nolint
 #' @param pure (`logical(1)`)\cr
 #'   Whether to convert to a pure `AbstractArray` and not e.g. `LiteralArray` or `ConcreteArray`.
 #' @return [`AbstractArray`]
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' # R literals become LiteralArrays (ambiguous by default, except logicals)
 #' to_abstract(1.5)
 #' to_abstract(1L)
@@ -704,7 +704,7 @@ is_shape <- function(x) {
 #' @return `logical(1)`
 #' @name arrayish
 #' @seealso [AnvilArray], [GraphBox]
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' # AnvilArrays are arrayish
 #' is_arrayish(nv_array(1:4))
 #'

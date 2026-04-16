@@ -18,7 +18,7 @@ Creates an initial RNG state from a seed. This state is required by all
 random sampling functions and is updated after each call.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   state <- nv_rng_state(42L)
   state

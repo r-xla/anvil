@@ -26,7 +26,7 @@ Returns the underlying bytes of an array as a \link{raw} vector.
 This is implemented via the generic \code{\link[tengen:as_raw]{tengen::as_raw()}}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(1:4, shape = c(2, 2), dtype = "f32")
 as_raw(x, row_major = TRUE)
 as_raw(x, row_major = FALSE)

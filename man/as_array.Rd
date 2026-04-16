@@ -23,7 +23,7 @@ Only in the case of scalars is the result a vector of length 1, as R \code{array
 This is implemented via the generic \code{\link[tengen:as_array]{tengen::as_array()}}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(1:4, dtype = "f32")
 as_array(x)
 y <- nv_scalar(1L)

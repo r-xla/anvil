@@ -33,7 +33,7 @@ Lowers to \code{\link[stablehlo:hlo_tanh]{stablehlo::hlo_tanh()}}.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(c(-1, 0, 1))
   nvl_tanh(x)
