@@ -8,7 +8,7 @@
   to be more in line with R’s
   [`array()`](https://rdrr.io/r/base/array.html). Also, `nv_aten()` was
   renamed to
-  [`nv_abstract()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md).
+  [`nv_aval()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md).
 - Subsetting with [`list()`](https://rdrr.io/r/base/list.html)
   (e.g. `x[list(1, 3)]`) is no longer supported. Use
   [`array()`](https://rdrr.io/r/base/array.html) to wrap the indices

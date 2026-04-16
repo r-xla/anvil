@@ -61,7 +61,7 @@ which takes in an `R` function and a list of `AbstractArray` inputs that
 specify the types of the inputs.
 
 ``` r
-aten <- nv_abstract("f32", c())
+aten <- nv_aval("f32", c())
 aten
 ```
 
@@ -157,7 +157,7 @@ prim("mul")$rules[["reverse"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x562514c90a70>
+    ## <bytecode: 0x5644b38c27e8>
     ## <environment: namespace:anvil>
 
 The
@@ -208,7 +208,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x562514c93c28>
+    ## <bytecode: 0x5644b38c5968>
     ## <environment: namespace:anvil>
 
 The

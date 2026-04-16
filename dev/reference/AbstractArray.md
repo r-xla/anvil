@@ -31,7 +31,7 @@ value to an abstract array, use
 ## Usage
 
 ``` r
-nv_abstract(dtype, shape, ambiguous = FALSE)
+nv_aval(dtype, shape, ambiguous = FALSE)
 
 AbstractArray(dtype, shape, ambiguous = FALSE)
 ```
@@ -96,10 +96,10 @@ shape(a)
 ambiguous(a)
 
 # Shorthand
-nv_abstract("f32", c(2L, 3L))
+nv_aval("f32", c(2L, 3L))
 
 # How AbstractArrays appear in an AnvilGraph
-graph <- trace_fn(function(x) x + 1, list(x = nv_abstract("i32", 4L)))
+graph <- trace_fn(function(x) x + 1, list(x = nv_aval("i32", 4L)))
 graph
 graph$inputs[[1]]$aval
 }

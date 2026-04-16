@@ -47,7 +47,7 @@ whose outputs are the requested gradients.
 ## Examples
 
 ``` r
-graph <- trace_fn(nvl_mul, list(nv_abstract("f32", c()), nv_abstract("f32", c())))
+graph <- trace_fn(nvl_mul, list(nv_aval("f32", c()), nv_aval("f32", c())))
 graph
 #> <AnvilGraph>
 #>   Inputs:

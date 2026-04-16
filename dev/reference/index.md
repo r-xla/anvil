@@ -402,7 +402,7 @@ Internal data structures and functions
 
 ### Abstract Types
 
-- [`nv_abstract()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
+- [`nv_aval()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
   [`AbstractArray()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
   : Abstract Array Class
 - [`ConcreteArray()`](https://r-xla.github.io/anvil/dev/reference/ConcreteArray.md)
