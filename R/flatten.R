@@ -234,6 +234,43 @@ tree_size.MarkedListNode <- function(x) {
   sum(vapply(x$nodes, tree_size, integer(1L)))
 }
 
+#' @title Tree Paths
+#' @description
+#' Converts a tree into a character vector of human-readable paths for each
+#' leaf node, in the same order as [flatten()]. Named list elements use `$name`
+#' syntax; unnamed elements use `[[i]]` syntax.
+#' @param node (`Node`)\cr
+#'   A tree node as returned by [build_tree()].
+#' @param prefix (`character(1)`)\cr
+#'   Path prefix. Used internally during recursion; callers should leave as `""`.
+#' @return A `character` vector with one element per leaf.
+#' @seealso [build_tree()], [flatten()]
+#' @export
+tree_paths <- function(node, prefix = "") {
+  UseMethod("tree_paths")
+}
+
+#' @export
+tree_paths.LeafNode <- function(node, prefix = "") {
+  prefix
+}
+
+#' @export
+tree_paths.ListNode <- function(node, prefix = "") {
+  out <- character()
+  for (i in seq_along(node$nodes)) {
+    nm <- if (!is.null(node$names)) node$names[i] else ""
+    suffix <- if (nzchar(nm)) {
+      if (nzchar(prefix)) paste0("$", nm) else nm
+    } else {
+      paste0("[[", i, "]]")
+    }
+    child_prefix <- paste0(prefix, suffix)
+    out <- c(out, tree_paths(node$nodes[[i]], prefix = child_prefix))
+  }
+  out
+}
+
 #' @title Filter List Node
 #' @description
 #' Subsets a `ListNode` to keep only the children whose names match `names`,
