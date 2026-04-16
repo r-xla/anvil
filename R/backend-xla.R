@@ -1,9 +1,15 @@
 #' @include backend.R
 NULL
 
-jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat, ambiguous_out = NULL) {
+jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat, ambiguous_out = NULL, device) {
   args_nonstatic <- args_flat[!is_static_flat]
-  args_unwrapped <- lapply(args_nonstatic, \(a) a$data)
+  args_unwrapped <- if (!is.null(device)) {
+    # Specific device in jit() requested -> move data
+    lapply(args_nonstatic, \(a) pjrt::copy_buffer(a$data, device))
+  } else {
+    lapply(args_nonstatic, \(a) a$data)
+  }
+
   out_vals <- rlang::exec(
     pjrt::pjrt_execute,
     exec,
@@ -31,18 +37,23 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
         cache_hit[[1]], # executable
         cache_hit[[2]], # out tree
         cache_hit[[3]], # constants
+
         prep$args_flat,
         prep$is_static_flat,
-        cache_hit[[4]] # ambiguity
+        cache_hit[[4]], # ambiguity
+        cache_hit[[5]] # device
       ))
     }
+
+    arg_devices <- lapply(prep$args_flat[!prep$is_static_flat], tengen::device)
 
     compiled <- compile_xla(
       f,
       args_flat = avals_in,
       in_tree = prep$in_tree,
       donate = donate,
-      device = prep$device
+      device = prep$device,
+      arg_devices = arg_devices
     )
     out <- jit_call_xla(
       compiled$exec,
@@ -50,12 +61,13 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
       compiled$const_arrays,
       prep$args_flat,
       prep$is_static_flat,
-      compiled$ambiguous_out
+      compiled$ambiguous_out,
+      compiled$device
     )
 
     cache$set(
       cache_key,
-      list(compiled$exec, compiled$out_tree, compiled$const_arrays, compiled$ambiguous_out)
+      list(compiled$exec, compiled$out_tree, compiled$const_arrays, compiled$ambiguous_out, compiled$device)
     )
 
     return(out)
@@ -76,46 +88,48 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
 #' @param donate (`character()`)\cr
 #'   Names of the arguments whose buffers should be donated.
 #' @param device (`NULL` | `character(1)`)\cr
-#'   Target device (e.g. `"cpu"`, `"cuda"`). If `NULL`, inferred from traced arrays.
+#'   Target device (e.g. `"cpu"`, `"cuda"`). If `NULL`, inferred from `arg_devices`
+#'   and traced arrays.
+#' @param arg_devices (`list`)\cr
+#'   Devices of the concrete (non-static) input arguments, extracted before
+#'   converting to abstract values. Used together with traced devices for
+#'   device inference when `device` is `NULL`.
 #' @return A `list` with elements:
 #'   - `exec`: The compiled PJRT executable.
 #'   - `out_tree`: The output tree structure.
 #'   - `const_arrays`: Constants needed at execution time.
 #'   - `ambiguous_out`: Logical vector indicating which outputs are ambiguous (`NULL` if none are).
 #' @keywords internal
-compile_xla <- function(f, args_flat, in_tree, donate = character(), device = NULL) {
+compile_xla <- function(f, args_flat, in_tree, donate = character(), device = NULL, arg_devices = list()) {
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
 
-  # FIXME: This should also respect the devices of args_flat
-  traced_devices <- unique(vapply(desc$devices, as.character, character(1)))
-  if (length(traced_devices) > 1) {
-    cli_abort("Arrays live on different devices: {traced_devices}.")
-  }
+  # if device is NULL, all devices from args_flat and the traced devices must be the same.
+  # If device is specified, then we use the requested device.
 
-  if (!is.null(device) && length(traced_devices) && traced_devices[[1L]] != pjrt::as_pjrt_device(device)) {
-    cli_abort(
-      "Provided device {.val {device}} does not match traced device {.val {traced_devices}}."
-    )
-  }
-  device <- if (!is.null(device)) {
-    pjrt::as_pjrt_device(device)
-  } else if (length(traced_devices)) {
-    desc$devices[[1L]]
-  } else {
-    pjrt::as_pjrt_device(Sys.getenv("PJRT_PLATFORM", "cpu"))
-  }
+  unique_devices <- unique(c(desc$devices, arg_devices))
 
-  compile_graph_to_xla(graph, donate = donate, device = device)
+  if (is.null(device)) {
+    # 0 input function and no allocated constants.
+    # There might still be "plain" constants to be converted, so we
+    # set device to default device
+    if (length(unique_devices) == 0L) {
+      device <- default_device("xla")
+    }
+    if (length(unique_devices) > 1L) {
+      devices_str <- paste0(vapply(unique_devices, as.character, character(1)), collapse = ", ")
+      cli_abort(c("device is `NULL` (autodetect) but found more than one device", i = "Found devices: {devices_str}"))
+    }
+    # only a single device
+    device <- unique_devices
+  }
+  # Otherwise, everything will be converted to requested device and it does not matter
+  # If we found different devices during tracing.
+
+  compile_graph_xla(graph, donate = donate, device = device)
 }
 
-compile_graph_to_xla <- function(graph, donate = character(), device = NULL) {
-  device <- if (!is.null(device)) {
-    pjrt::as_pjrt_device(device)
-  } else {
-    pjrt::as_pjrt_device(Sys.getenv("PJRT_PLATFORM", "cpu"))
-  }
-
+compile_graph_xla <- function(graph, donate = character(), device) {
   graph <- inline_scalarish_constants(graph)
   graph <- remove_unused_constants(graph)
 
@@ -130,8 +144,11 @@ compile_graph_to_xla <- function(graph, donate = character(), device = NULL) {
     arr <- const$aval$data
     if (backend(arr) == "plain") {
       pjrt_buffer(as_array(arr), dtype = dtype(arr), device = device, shape = shape(arr))
+    } else if (backend(arr) != "xla") {
+      cli_abort("Found non-XLA constant in program")
     } else {
-      unwrap_if_array(arr)
+      # no copy is done if buffer already on correct device
+      pjrt::copy_buffer(arr$data, device = device)
     }
   })
 
@@ -146,7 +163,7 @@ compile_graph_to_xla <- function(graph, donate = character(), device = NULL) {
   program <- pjrt_program(src = src, format = "mlir")
   exec <- pjrt_compile(program, device = device)
 
-  list(exec = exec, out_tree = out_tree, const_arrays = const_arrays, ambiguous_out = ambiguous_out)
+  list(exec = exec, out_tree = out_tree, const_arrays = const_arrays, ambiguous_out = ambiguous_out, device = device)
 }
 
 #' @title Ahead-of-time compile a function to XLA
@@ -198,7 +215,7 @@ xla <- function(f, args, donate = character(), device = NULL) {
   ambiguous_out <- compiled$ambiguous_out
 
   f_xla <- function() {
-    prep <- jit_prepare_call(match.call(), parent.frame(), static = character(), backend = "xla")
+    prep <- jit_prepare_call(match.call(), parent.frame(), static = character(), device = device, backend = "xla")
     args_unwrapped <- lapply(prep$args_flat, \(a) a$data)
     out_vals <- rlang::exec(
       pjrt::pjrt_execute,

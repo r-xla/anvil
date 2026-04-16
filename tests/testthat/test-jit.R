@@ -320,7 +320,7 @@ describe("jit: backend and device combinations", {
     skip_if_not_installed("quickr")
     expect_error(
       jit(identity, backend = "quickr", device = pjrt::pjrt_device("cpu")),
-      "has backend.*xla.*backend.*quickr"
+      "Backend of requested device"
     )
   })
 

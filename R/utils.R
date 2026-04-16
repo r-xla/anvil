@@ -241,3 +241,29 @@ scatter_to_gather_slice_sizes <- function(
 is_device_arg <- function(x) {
   inherits(x, "AnvilDeviceArg")
 }
+
+# returns list(device | NULL, backend)
+resolve_device <- function(device, backend) {
+  if (is.character(device)) {
+    backend <- backend %||% default_backend()
+    if (backend == "auto") {
+      device <- nv_device(device, default_backend())
+    }
+    return(list(device, backend))
+  }
+  if (is.null(device)) {
+    return(list(NULL, backend %||% default_backend()))
+  }
+  # concrete device
+  if (is.null(backend) || (backend == "auto")) {
+    return(list(device, backend(device)))
+  }
+  if (backend(device) != backend) {
+    cli_abort(c(
+      "Backend of requested device does not match requested backend",
+      i = "backend(device) = {backend(device)}",
+      i = "backend = {backend}"
+    ))
+  }
+  list(device, backend)
+}

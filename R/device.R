@@ -6,7 +6,8 @@
 #' @return A backend-specific device object.
 #' @seealso [`nv_device()`], [`default_backend()`]
 #' @export
-default_device <- function(backend = default_backend()) {
+default_device <- function(backend = NULL) {
+  backend <- backend %||% default_backend()
   nv_device(Sys.getenv("PJRT_PLATFORM", "cpu"), backend)
 }
 

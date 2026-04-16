@@ -69,16 +69,15 @@ jit <- function(
 ) {
   static <- resolve_arg_names(f, static, "static")
   if (is_device_arg(device)) {
-    if (!is.null(backend)) {
-      cli_abort("{.arg backend} must not be specified together with {.fn device_arg}.")
+    if (!(is.null(backend) || backend == "auto")) {
+      cli_abort("{.arg backend} must be 'auto' or `NULL` when using device_arg().")
     }
     return(jit_auto(f, static, cache_size, device_argname = device$argname, ...))
   }
-  if (!is.null(device)) {
-    device <- nv_device(device, backend = backend)
-    backend <- backend %||% backend(device)
-  }
-  backend <- backend %||% default_backend()
+  # device might still be NULL, which means infer from inputs
+  resolved <- resolve_device(device, backend)
+  device <- resolved[[1L]]
+  backend <- resolved[[2L]]
   if (backend == "auto") {
     return(jit_auto(f, static, cache_size, ...))
   }
