@@ -106,11 +106,9 @@ jit_prepare_call <- function(call, eval_env, static, backend) {
   in_tree$marked <- NULL
   class(in_tree) <- c("ListNode", "Node")
 
-  paths <- tree_paths(in_tree)
-
   args_flat <- .mapply(
-    function(x, is_static, path) if (is_static) x else autoconvert_input(x, backend, path),
-    list(args_flat, is_static_flat, paths),
+    function(x, is_static, i) if (is_static) x else autoconvert_input(x, backend, in_tree, i),
+    list(args_flat, is_static_flat, seq_along(args_flat)),
     NULL
   )
   args <- unflatten(in_tree, args_flat)
@@ -123,7 +121,7 @@ jit_prepare_call <- function(call, eval_env, static, backend) {
   )
 }
 
-autoconvert_input <- function(x, backend, path = "") {
+autoconvert_input <- function(x, backend, in_tree = NULL, i = NULL) {
   if (is_anvil_array(x)) {
     return(x)
   }
@@ -133,6 +131,7 @@ autoconvert_input <- function(x, backend, path = "") {
   if (is.array(x) && (is.numeric(x) || is.logical(x))) {
     return(nv_array(x, ambiguous = TRUE, backend = backend))
   }
+  path <- if (!is.null(in_tree) && !is.null(i)) tree_path(in_tree, i) else ""
   msg <- if (nzchar(path)) {
     "Attempted to autoconvert {.arg {path}} to an {.cls AnvilArray}."
   } else {

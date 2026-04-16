@@ -22,5 +22,5 @@ leaf node, in the same order as \code{\link[=flatten]{flatten()}}. Named list el
 syntax; unnamed elements use \verb{[[i]]} syntax.
 }
 \seealso{
-\code{\link[=build_tree]{build_tree()}}, \code{\link[=flatten]{flatten()}}
+\code{\link[=build_tree]{build_tree()}}, \code{\link[=flatten]{flatten()}}, \code{\link[=tree_path]{tree_path()}}
 }
