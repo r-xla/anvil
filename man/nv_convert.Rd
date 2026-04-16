@@ -22,7 +22,7 @@ Converts the elements of an array to a different data type.
 Returns the input unchanged if it already has the target type.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(c(1L, 2L, 3L))
   nv_convert(x, dtype = "f32")

@@ -20,7 +20,7 @@ Whether to convert to a pure \code{AbstractArray} and not e.g. \code{LiteralArra
 Convert an object to its abstract array representation (\code{\link{AbstractArray}}).
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # R literals become LiteralArrays (ambiguous by default, except logicals)
 to_abstract(1.5)
 to_abstract(1L)

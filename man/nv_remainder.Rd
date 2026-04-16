@@ -20,7 +20,7 @@ Has the same shape and the promoted common data type of the inputs.
 Element-wise remainder of division. You can also use the \code{\%\%} operator.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(c(7, 8, 9))
   y <- nv_array(c(3, 3, 4))

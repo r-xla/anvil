@@ -18,7 +18,7 @@ Returns the number of dimensions (sometimes also refered to as rank) of an array
 Equivalent to \code{length(shape(x))}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(1:4, dtype = "f32")
 ndims(x)
 \dontshow{\}) # examplesIf}

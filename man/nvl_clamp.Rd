@@ -39,7 +39,7 @@ Lowers to \code{\link[stablehlo:hlo_clamp]{stablehlo::hlo_clamp()}}.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(c(-1, 0.5, 2))
   nvl_clamp(nv_scalar(0), x, nv_scalar(1))

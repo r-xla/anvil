@@ -48,7 +48,7 @@ test_that("jit: quickr backend does not support donate", {
   skip_if_not_installed("quickr")
   local_backend("quickr")
   expect_error(
-    jit(function(x) x, device = quickr_device("cpu"), donate = "x"),
+    jit(function(x) x, donate = "x"),
     "donate",
     fixed = TRUE
   )

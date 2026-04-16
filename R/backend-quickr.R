@@ -53,13 +53,13 @@ jit_quickr_impl <- function(f, static, cache, unwrap) {
       return(cache_hit(r_args_flat))
     }
 
-    compiled <- compile_to_quickr(f, args_flat = avals_in, in_tree = prep$in_tree, unwrap = unwrap, flat = TRUE)
+    compiled <- compile_quickr(f, args_flat = avals_in, in_tree = prep$in_tree, unwrap = unwrap, flat = TRUE)
     cache$set(cache_key, compiled$fun)
     compiled$fun(r_args_flat)
   }
 }
 
-compile_to_quickr <- function(f, args_flat, in_tree, unwrap = FALSE, flat = FALSE) {
+compile_quickr <- function(f, args_flat, in_tree, unwrap = FALSE, flat = FALSE) {
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
   list(fun = graph_to_quickr_function(graph, unwrap = unwrap, flat = flat))

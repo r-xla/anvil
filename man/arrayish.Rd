@@ -33,7 +33,7 @@ The following types are arrayish (during tracing):
 Use \code{\link[=is_arrayish]{is_arrayish()}} to check whether a value is arrayish.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # AnvilArrays are arrayish
 is_arrayish(nv_array(1:4))
 

@@ -45,7 +45,7 @@ Lowers to \code{\link[stablehlo:hlo_iota]{stablehlo::hlo_iota()}}.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval(nvl_iota(dim = 1L, dtype = "i32", shape = 5L))
 \dontshow{\}) # examplesIf}
 }

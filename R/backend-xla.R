@@ -24,7 +24,7 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
     prep <- jit_prepare_call(match.call(), parent.frame(), static, device = device, backend = "xla")
     avals_in <- to_avals(prep$args_flat, prep$is_static_flat)
 
-    cache_key <- list(prep$in_tree, avals_in, as.character(prep$device))
+    cache_key <- list(prep$in_tree, avals_in, prep$device)
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
       return(jit_call_xla(
@@ -37,7 +37,7 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
       ))
     }
 
-    compiled <- compile_to_xla(
+    compiled <- compile_xla(
       f,
       args_flat = avals_in,
       in_tree = prep$in_tree,
@@ -83,7 +83,7 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
 #'   - `const_arrays`: Constants needed at execution time.
 #'   - `ambiguous_out`: Logical vector indicating which outputs are ambiguous (`NULL` if none are).
 #' @keywords internal
-compile_to_xla <- function(f, args_flat, in_tree, donate = character(), device = NULL) {
+compile_xla <- function(f, args_flat, in_tree, donate = character(), device = NULL) {
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
 
@@ -173,9 +173,9 @@ compile_graph_to_xla <- function(graph, donate = character(), device = NULL) {
 #' @return (`function`)\cr
 #'   A function that accepts [`AnvilArray`] arguments (matching the flat inputs)
 #'   and returns the result as [`AnvilArray`]s.
-#' @seealso [`jit()`] for lazy compilation, [`compile_to_xla()`] for the lower-level API.
+#' @seealso [`jit()`] for lazy compilation, [`compile_xla()`] for the lower-level API.
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' f_compiled <- xla(function(x, y) x + y,
 #'   args = list(x = nv_abstract("f32", c(2, 2)), y = nv_abstract("f32", c(2, 2)))
 #' )
@@ -187,7 +187,7 @@ xla <- function(f, args, donate = character(), device = NULL) {
   device <- nv_device(device %||% Sys.getenv("PJRT_PLATFORM", "cpu"), backend = "xla")
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
-  compiled <- compile_to_xla(f, args_flat = args_flat, in_tree = in_tree, donate = donate, device = device)
+  compiled <- compile_xla(f, args_flat = args_flat, in_tree = in_tree, donate = donate, device = device)
   exec <- compiled$exec
   out_tree <- compiled$out_tree
   const_arrays <- compiled$const_arrays
@@ -241,10 +241,6 @@ xla <- function(f, args, donate = character(), device = NULL) {
 #'   compiled XLA executable. Donated buffers must not be used again by the
 #'   caller after the call; this can reduce memory usage and copies for large
 #'   inputs. Must not overlap with `static`.
-#' * `device` (`NULL` | `character(1)` | [`pjrt::PJRTDevice`][pjrt::as_pjrt_device],
-#'   default `NULL`): target device (e.g. `"cpu"`, `"cuda"`) on which the
-#'   function is compiled and executed. When `NULL`, the device is inferred
-#'   from the inputs; if inputs live on different devices an error is raised.
 #'
 #' @return An [`AnvilBackend`] object with subclass `"AnvilBackendXla"`.
 #' @seealso [`AnvilBackend()`], [`AnvilBackendQuickr()`], [`local_backend()`], [`jit()`].

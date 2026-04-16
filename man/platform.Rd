@@ -26,7 +26,7 @@ the compute backend.
 Implemented via the generic \code{\link[pjrt:platform]{pjrt::platform()}}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(1:4, dtype = "f32")
 platform(x)
 \dontshow{\}) # examplesIf}

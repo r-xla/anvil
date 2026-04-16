@@ -296,45 +296,15 @@ describe("jit: backend and device combinations", {
     expect_equal(backend(f(1)), "xla")
   })
 
-  it("backend = NULL, device = PJRTDevice uses xla (derived from device)", {
-    local_backend("quickr")
-    dev <- nv_device("cpu", "xla")
-    f <- jit(identity, device = pjrt::pjrt_device("cpu"))
-    expect_equal(backend(f), "xla")
-    expect_equal(backend(f(1)), "xla")
-  })
-
-  it("backend = 'xla', device = PJRTDevice is consistent", {
-    local_backend("quickr")
-    f <- jit(identity, backend = "xla", device = pjrt::pjrt_device("cpu"))
-    expect_equal(backend(f), "xla")
-    expect_equal(backend(f(1)), "xla")
-  })
-
-  it("backend = 'quickr' conflicts with device = PJRTDevice", {
-    skip_if_not_installed("quickr")
-    expect_error(
-      jit(identity, backend = "quickr", device = pjrt::pjrt_device("cpu")),
-      "has backend.*xla.*backend.*quickr"
-    )
+  it("concrete device is not supported", {
+    expect_error(jit(identity, device = pjrt::pjrt_device("cpu")), "device_arg")
+    expect_error(jit(identity, device = "cpu"), "device_arg")
   })
 
   it("checks backend for device_arg", {
     expect_error(
       jit(function(x, dev) x, device = device_arg("dev"), backend = "xla")
     )
-  })
-
-  it("backend = NULL, device = 'cpu' resolves via default_backend()", {
-    withr::local_options(anvil.default_backend = "xla")
-    f <- jit(identity, device = "cpu")
-    expect_equal(backend(f), "xla")
-    expect_equal(backend(f(1)), "xla")
-  })
-
-  it("backend = 'xla', device = 'cpu' resolves to xla", {
-    f <- jit(identity, backend = "xla", device = "cpu")
-    expect_equal(backend(f), "xla")
   })
 
   it("backend 'auto' works with xla and quickr input", {

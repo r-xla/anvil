@@ -26,7 +26,7 @@ Unlike \code{\link[=nv_ifelse]{nv_ifelse()}}, which selects elements, this execu
 of the two branches depending on a scalar predicate.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval(nv_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2)))
 \dontshow{\}) # examplesIf}
 }

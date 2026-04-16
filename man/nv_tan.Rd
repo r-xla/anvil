@@ -18,7 +18,7 @@ Has the same shape and data type as the input.
 Element-wise tangent. You can also use \code{tan()}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(c(0, 0.5, 1))
   tan(x)

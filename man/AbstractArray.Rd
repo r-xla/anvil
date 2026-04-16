@@ -47,7 +47,7 @@ The following extractors are available on \code{AbstractArray} objects:
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # -- Creating abstract arrays --
 a <- AbstractArray("f32", c(2L, 3L))
 a

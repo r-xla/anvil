@@ -21,8 +21,7 @@
 #'   to call time, picking the backend from the inputs (or [`default_backend()`]
 #'   when there are none).
 #'   `NULL` (default) uses [`default_backend()`].
-#' @param device (`NULL` | `character(1)` | device object | `device_arg()`)\cr
-#'   Target device for compilation and autoconversion of raw R inputs.
+#' @param device (`NULL` | `device_arg()`)\cr
 #'   The default (`NULL`) infers the device from the inputs at call time,
 #'   falling back to [`default_device()`] when there are no array inputs.
 #'
@@ -41,7 +40,7 @@
 #' @seealso [`xla()`] for ahead-of-time compilation, [`jit_eval()`] for evaluating an expression once.
 #' @return (`function`)
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' f <- jit(function(x, y) x + y)
 #' f(nv_array(1), nv_array(2))
 #'
@@ -72,20 +71,14 @@ jit <- function(
     }
     return(jit_auto(f, static, cache_size, device_argname = device$argname, ...))
   }
-  if (is_device(device)) {
-    device_backend <- backend(device)
-    if (!is.null(backend) && backend != device_backend) {
-      cli_abort(
-        "{.arg device} has backend {.val {device_backend}}, but {.arg backend} is {.val {backend}}."
-      )
-    }
-    backend <- backend %||% device_backend
+  if (!is.null(device)) {
+    cli_abort("{.arg device} must be {.code NULL} or a {.fn device_arg}.")
   }
   backend <- backend %||% default_backend()
   if (backend == "auto") {
     return(jit_auto(f, static, cache_size, ...))
   }
-  jit_with_backend(f, static, cache_size, backend, device = device, ...)
+  jit_with_backend(f, static, cache_size, backend, ...)
 }
 
 jit_with_backend <- function(f, static, cache_size, backend, ...) {
@@ -290,7 +283,7 @@ jit_wrap_outputs <- function(out_flat, out_tree, ambiguous_out, backend) {
 #' @return (`any`)\cr
 #'   Result of the compiled and evaluated expression.
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3), dtype = "f32")
 #' jit_eval(x + x)
 jit_eval <- function(expr, ...) {

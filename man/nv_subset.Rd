@@ -29,7 +29,7 @@ ranges (\code{a:b}), and \code{array(c(...))} for selecting multiple elements al
 dimension.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(matrix(1:12, nrow = 3))
   # Select row 2

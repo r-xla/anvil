@@ -309,7 +309,7 @@ reference:
       - transform_gradient
       - graph_to_quickr_r_function
       - jit_eval
-      - compile_to_xla
+      - compile_xla
       - stablehlo
 
   - subtitle: Miscellaneous

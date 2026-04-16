@@ -27,7 +27,7 @@ default_device <- function() {
 #' @return A backend-specific device object (e.g. `PJRTDevice` for `"xla"`,
 #'   [`quickr_device`] for `"quickr"`).
 #' @seealso [`backend()`], [`AnvilBackend()`].
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' # Create CPU device for xla backend:
 #' nv_device("cpu", "xla")
 #' # Create CPU device for quickr backend:
@@ -38,6 +38,11 @@ default_device <- function() {
 #' @export
 nv_device <- function(x, backend = NULL) {
   if (is_device(x)) {
+    if (!is.null(backend) && backend(x) != backend) {
+      cli_abort(
+        "{.arg x} has backend {.val {backend(x)}}, but {.arg backend} is {.val {backend}}."
+      )
+    }
     return(x)
   }
   backend <- assert_backend(backend %||% default_backend())

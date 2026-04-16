@@ -20,7 +20,7 @@ Coerces a value to a \code{DataType}. Accepts data type strings
 This is implemented via the generic \code{\link[tengen:as_dtype]{tengen::as_dtype()}}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 as_dtype("f32")
 as_dtype("i32")
 \dontshow{\}) # examplesIf}

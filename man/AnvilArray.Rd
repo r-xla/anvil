@@ -86,7 +86,7 @@ Serialize/deserialize arrays to/from raw vectors.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # A 1-d array (vector) with shape (4). Default type for integers is `i32`
 nv_array(1:4)
 

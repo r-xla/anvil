@@ -86,7 +86,7 @@ would only get stripped again.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 f <- jit(function(x, y) x + y)
 f(nv_array(1), nv_array(2))
 
