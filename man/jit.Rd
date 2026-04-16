@@ -34,8 +34,8 @@ when there are none).
 \code{NULL} (default) uses \code{\link[=default_backend]{default_backend()}}.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | device object | \code{device_arg()})\cr
-Target device. When a concrete device is specified, all arrays (dynamic
-inputs and autoconverted scalars) are moved to this device.
+Target device. When a concrete device is specified, all arrays
+are moved to this device.
 
 The default (\code{NULL}) infers the device from the inputs at call time,
 falling back to \code{\link[=default_device]{default_device()}} when there are no array inputs.

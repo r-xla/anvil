@@ -22,8 +22,8 @@
 #'   when there are none).
 #'   `NULL` (default) uses [`default_backend()`].
 #' @param device (`NULL` | `character(1)` | device object | `device_arg()`)\cr
-#'   Target device. When a concrete device is specified, all arrays (dynamic
-#'   inputs and autoconverted scalars) are moved to this device.
+#'   Target device. When a concrete device is specified, all arrays
+#'   are moved to this device.
 #'
 #'   The default (`NULL`) infers the device from the inputs at call time,
 #'   falling back to [`default_device()`] when there are no array inputs.
