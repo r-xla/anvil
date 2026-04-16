@@ -234,11 +234,8 @@ xla <- function(f, args, donate = character(), device = NULL) {
   ambiguous_out <- compiled$ambiguous_out
 
   f_xla <- function() {
-    args <- as.list(match.call())[-1L]
-    args <- lapply(args, eval, envir = parent.frame())
-    args_flat <- flatten(args)
-    args_flat <- lapply(args_flat, autoconvert_input, backend = "xla")
-    args_unwrapped <- lapply(args_flat, \(a) a$data)
+    prep <- jit_prepare_call(match.call(), parent.frame(), static = character(), backend = "xla")
+    args_unwrapped <- lapply(prep$args_flat, \(a) a$data)
     out_vals <- rlang::exec(
       pjrt::pjrt_execute,
       exec,
