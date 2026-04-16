@@ -239,7 +239,7 @@ jit_prepare_call <- function(call, eval_env, static, device = NULL, backend = NU
 to_avals <- function(args_flat, is_static_flat) {
   Map(
     function(x, is_static) {
-      if (is_static) x else nv_abstract(dtype(x), shape(x), ambiguous = ambiguous(x))
+      if (is_static) x else nv_aval(dtype(x), shape(x), ambiguous = ambiguous(x))
     },
     args_flat,
     is_static_flat

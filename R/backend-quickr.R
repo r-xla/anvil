@@ -32,7 +32,6 @@ print.QuickrDevice <- function(x, ...) {
   invisible(x)
 }
 
-
 jit_quickr_impl <- function(f, static, cache, unwrap) {
   function() {
     # calling a jitted function within another jitted function --> re-trace the original closure

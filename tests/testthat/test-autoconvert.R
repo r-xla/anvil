@@ -81,7 +81,7 @@ test_that("jit: inside trace, autoconvert does not fire on GraphValues", {
 test_that("xla: autoconverts scalar and matrix inputs", {
   f_compiled <- xla(
     function(x, y) x + y,
-    args = list(x = nv_abstract("f32", c()), y = nv_abstract("f32", c(2, 2)))
+    args = list(x = nv_aval("f32", c()), y = nv_aval("f32", c(2, 2)))
   )
   out <- f_compiled(1, matrix(c(1, 2, 3, 4), 2, 2))
   expect_equal(dtype(out), as_dtype("f32"))
@@ -91,7 +91,7 @@ test_that("xla: autoconverts scalar and matrix inputs", {
 test_that("xla: bare vector errors", {
   f_compiled <- xla(
     function(x) x,
-    args = list(x = nv_abstract("f32", c(3)))
+    args = list(x = nv_aval("f32", c(3)))
   )
   expect_snapshot(f_compiled(c(1, 2, 3)), error = TRUE)
 })
@@ -99,7 +99,7 @@ test_that("xla: bare vector errors", {
 test_that("xla: accepts tree (nested list) inputs", {
   f_compiled <- xla(
     function(pair) pair[[1]] + pair[[2]],
-    args = list(pair = list(nv_abstract("f32", c()), nv_abstract("f32", c())))
+    args = list(pair = list(nv_aval("f32", c()), nv_aval("f32", c())))
   )
   out <- f_compiled(list(1, nv_scalar(2, dtype = "f32")))
   expect_equal(dtype(out), as_dtype("f32"))
@@ -157,7 +157,7 @@ test_that("jit: error shows path for unnamed nested element", {
 test_that("xla: error shows path for nested list element", {
   f_compiled <- xla(
     function(pair) pair[[1]] + pair[[2]],
-    args = list(pair = list(nv_abstract("f32", c()), nv_abstract("f32", c())))
+    args = list(pair = list(nv_aval("f32", c()), nv_aval("f32", c())))
   )
   expect_snapshot(f_compiled(list("bad", nv_scalar(1))), error = TRUE)
 })

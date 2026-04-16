@@ -24,7 +24,7 @@ test_that("donate: no aliasing with type mismatch", {
 
 test_that("xla: basic test", {
   f_add <- function(x, y) x + y
-  args <- list(x = nv_abstract("f32", c()), y = nv_abstract("f32", c()))
+  args <- list(x = nv_aval("f32", c()), y = nv_aval("f32", c()))
   f_compiled <- xla(f_add, args = args)
   result <- f_compiled(nv_scalar(1, dtype = "f32"), nv_scalar(2, dtype = "f32"))
   expect_equal(result, nv_scalar(3, dtype = "f32"))
