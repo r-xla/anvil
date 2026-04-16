@@ -266,6 +266,12 @@ autoconvert_input <- function(x, backend, device, in_tree = NULL, i = NULL) {
   } else {
     "Attempted to autoconvert input to an {.cls AnvilArray}."
   }
+  path <- if (!is.null(in_tree) && !is.null(i)) tree_path(in_tree, i) else ""
+  msg <- if (nzchar(path)) {
+    "Attempted to autoconvert {.arg {path}} to an {.cls AnvilArray}."
+  } else {
+    "Attempted to autoconvert input to an {.cls AnvilArray}."
+  }
   cli_abort(c(
     msg,
     i = "Expected an {.cls AnvilArray}, a length-1 atomic scalar, or an {.code is.array()} value.",
