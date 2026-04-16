@@ -46,13 +46,13 @@ test_that("jit: autoconverts higher-dim array via nv_array", {
 })
 
 test_that("jit: bare vector without dim errors", {
-  f <- jit(identity)
-  expect_error(f(c(1, 2, 3)), "autoconvert")
+  f <- jit(function(x) x)
+  expect_snapshot(f(c(1, 2, 3)), error = TRUE)
 })
 
 test_that("jit: non-array/non-scalar leaves (e.g. character) error", {
-  f <- jit(identity)
-  expect_error(f("hello"), "autoconvert")
+  f <- jit(function(x) x)
+  expect_snapshot(f("hello"), error = TRUE)
 })
 
 test_that("jit: nested list is flattened; leaves are autoconverted", {
@@ -93,7 +93,7 @@ test_that("xla: bare vector errors", {
     function(x) x,
     args = list(x = nv_abstract("f32", c(3)))
   )
-  expect_error(f_compiled(c(1, 2, 3)), "autoconvert")
+  expect_snapshot(f_compiled(c(1, 2, 3)), error = TRUE)
 })
 
 test_that("xla: accepts tree (nested list) inputs", {
@@ -140,6 +140,24 @@ test_that("quickr: nested input tree with mixed AnvilArray/scalar still works", 
 test_that("quickr: bare vector errors", {
   skip_if_not_installed("quickr")
   local_backend("quickr")
-  f <- jit(identity)
-  expect_error(f(c(1, 2, 3)), "autoconvert")
+  f <- jit(function(x) x)
+  expect_snapshot(f(c(1, 2, 3)), error = TRUE)
+})
+
+test_that("jit: error shows path for nested list element", {
+  f <- jit(function(l) l[[1]])
+  expect_snapshot(f(list(list(a = "abc"))), error = TRUE)
+})
+
+test_that("jit: error shows path for unnamed nested element", {
+  f <- jit(function(pair) pair[[1]])
+  expect_snapshot(f(list("bad", nv_scalar(1))), error = TRUE)
+})
+
+test_that("xla: error shows path for nested list element", {
+  f_compiled <- xla(
+    function(pair) pair[[1]] + pair[[2]],
+    args = list(pair = list(nv_abstract("f32", c()), nv_abstract("f32", c())))
+  )
+  expect_snapshot(f_compiled(list("bad", nv_scalar(1))), error = TRUE)
 })

@@ -184,7 +184,11 @@ compile_graph_to_xla <- function(graph, donate = character(), device = NULL) {
 #' f_compiled(a, b)
 xla <- function(f, args, donate = character(), device = NULL) {
   # FIXME: Also use device inference from trace_fn
-  device <- nv_device(device %||% Sys.getenv("PJRT_PLATFORM", "cpu"), backend = "xla")
+  device <- if (is.null(device)) {
+    default_device("xla")
+  } else {
+    nv_device(device, "xla")
+  }
   in_tree <- build_tree(args)
   args_flat <- flatten(args)
   compiled <- compile_xla(f, args_flat = args_flat, in_tree = in_tree, donate = donate, device = device)
@@ -194,11 +198,8 @@ xla <- function(f, args, donate = character(), device = NULL) {
   ambiguous_out <- compiled$ambiguous_out
 
   f_xla <- function() {
-    args <- as.list(match.call())[-1L]
-    args <- lapply(args, eval, envir = parent.frame())
-    args_flat <- flatten(args)
-    args_flat <- lapply(args_flat, autoconvert_input, device = device)
-    args_unwrapped <- lapply(args_flat, \(a) a$data)
+    prep <- jit_prepare_call(match.call(), parent.frame(), static = character(), backend = "xla")
+    args_unwrapped <- lapply(prep$args_flat, \(a) a$data)
     out_vals <- rlang::exec(
       pjrt::pjrt_execute,
       exec,

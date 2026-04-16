@@ -21,7 +21,10 @@
 #'   to call time, picking the backend from the inputs (or [`default_backend()`]
 #'   when there are none).
 #'   `NULL` (default) uses [`default_backend()`].
-#' @param device (`NULL` | `device_arg()`)\cr
+#' @param device (`NULL` | `character(1)` | device object | `device_arg()`)\cr
+#'   Target device for compilation. When a concrete device is specified,
+#'   all dynamic inputs are moved to that device at call time.
+#'
 #'   The default (`NULL`) infers the device from the inputs at call time,
 #'   falling back to [`default_device()`] when there are no array inputs.
 #'
@@ -72,13 +75,14 @@ jit <- function(
     return(jit_auto(f, static, cache_size, device_argname = device$argname, ...))
   }
   if (!is.null(device)) {
-    cli_abort("{.arg device} must be {.code NULL} or a {.fn device_arg}.")
+    device <- nv_device(device, backend = backend)
+    backend <- backend %||% backend(device)
   }
   backend <- backend %||% default_backend()
   if (backend == "auto") {
     return(jit_auto(f, static, cache_size, ...))
   }
-  jit_with_backend(f, static, cache_size, backend, ...)
+  jit_with_backend(f, static, cache_size, backend, device = device, ...)
 }
 
 jit_with_backend <- function(f, static, cache_size, backend, ...) {
@@ -218,8 +222,8 @@ jit_prepare_call <- function(call, eval_env, static, device = NULL, backend = NU
   device <- nv_device(device %||% Sys.getenv("PJRT_PLATFORM", "cpu"), backend = backend)
 
   args_flat <- .mapply(
-    function(x, is_static) if (is_static) x else autoconvert_input(x, device),
-    list(args_flat, is_static_flat),
+    function(x, is_static, i) if (is_static) x else autoconvert_input(x, backend, device, in_tree, i),
+    list(args_flat, is_static_flat, seq_along(args_flat)),
     NULL
   )
   args <- unflatten(in_tree, args_flat)
@@ -243,8 +247,11 @@ to_avals <- function(args_flat, is_static_flat) {
   )
 }
 
-autoconvert_input <- function(x, device) {
+autoconvert_input <- function(x, backend, device, in_tree = NULL, i = NULL) {
   if (is_anvil_array(x)) {
+    if (backend(x) == "xla" && device(x) != device) {
+      x$data <- pjrt::copy_buffer(x$data, device)
+    }
     return(x)
   }
   if ((is.numeric(x) || is.logical(x)) && length(x) == 1L && is.null(dim(x))) {
@@ -253,8 +260,14 @@ autoconvert_input <- function(x, device) {
   if (is.array(x) && (is.numeric(x) || is.logical(x))) {
     return(nv_array(x, ambiguous = TRUE, device = device))
   }
+  path <- if (!is.null(in_tree) && !is.null(i)) tree_path(in_tree, i) else ""
+  msg <- if (nzchar(path)) {
+    "Attempted to autoconvert {.arg {path}} to an {.cls AnvilArray}."
+  } else {
+    "Attempted to autoconvert input to an {.cls AnvilArray}."
+  }
   cli_abort(c(
-    "Cannot autoconvert input to an {.cls AnvilArray}.",
+    msg,
     i = "Expected an {.cls AnvilArray}, a length-1 atomic scalar, or an {.code is.array()} value.",
     x = "Got {.cls {class(x)[1]}} of length {length(x)}."
   ))

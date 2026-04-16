@@ -296,9 +296,32 @@ describe("jit: backend and device combinations", {
     expect_equal(backend(f(1)), "xla")
   })
 
-  it("concrete device is not supported", {
-    expect_error(jit(identity, device = pjrt::pjrt_device("cpu")), "device_arg")
-    expect_error(jit(identity, device = "cpu"), "device_arg")
+  it("concrete device string", {
+    f <- jit(identity, device = "cpu")
+    expect_equal(backend(f), "xla")
+    expect_equal(backend(f(1)), "xla")
+  })
+
+  it("concrete device object", {
+    f <- jit(identity, device = pjrt::pjrt_device("cpu"))
+    expect_equal(backend(f), "xla")
+    expect_equal(backend(f(1)), "xla")
+  })
+
+  it("concrete device infers backend from device", {
+    skip_if_not_installed("quickr")
+    local_backend("quickr")
+    f <- jit(identity, device = pjrt::pjrt_device("cpu"))
+    expect_equal(backend(f), "xla")
+    expect_equal(backend(f(1)), "xla")
+  })
+
+  it("concrete device conflicts with mismatched backend", {
+    skip_if_not_installed("quickr")
+    expect_error(
+      jit(identity, backend = "quickr", device = pjrt::pjrt_device("cpu")),
+      "has backend.*xla.*backend.*quickr"
+    )
   })
 
   it("checks backend for device_arg", {
