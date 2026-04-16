@@ -52,6 +52,7 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
       args_flat = avals_in,
       in_tree = prep$in_tree,
       donate = donate,
+      device = if (!is.null(device)) prep$device,
       arg_devices = arg_devices
     )
     out <- jit_call_xla(

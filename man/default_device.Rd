@@ -6,6 +6,10 @@
 \usage{
 default_device(backend = NULL)
 }
+\arguments{
+\item{backend}{(\code{character(1)})\cr
+Backend.}
+}
 \value{
 A backend-specific device object.
 }

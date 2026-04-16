@@ -34,6 +34,8 @@
 * Printing tensors via `nv_print()` now also works on GPUs.
 * R vectors of length 1 and arrays are now auto-converted when being passed
   to `jit`ted functions.
+* Improved device handling in `jit()
+* `
 
 ## Performance
 

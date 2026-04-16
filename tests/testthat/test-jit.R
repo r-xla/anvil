@@ -356,33 +356,31 @@ describe("jit: backend and device combinations", {
     expect_true(device(f(1, dev1)) == dev1)
   })
 
-  it("device_arg works when used correctly", {
-    f <- jit(
-      function(val, dev) {
-        val + nv_fill(1)
-      },
-      device =
-    )
-  })
-
   it("device overrides found constant's device", {
-    skip_if(!is_cuda())
     expect_equal(
-      device(jit(\() nv_scalar(1, device = "cpu"), device = "cuda")()),
-      nv_device("cuda", "xla")
+      device(jit(\() nv_scalar(1, device = "cpu:1"), device = "cpu:0")()),
+      nv_device("cpu:0", "xla")
     )
   })
 
-  it("ignores devices in nv_array", {
+  it("errs when constant's device differs from input device", {
     skip_if(!is_cuda())
     f <- function(x) {
-      x * nv_array(1:2, device = "cuda")
+      x * nv_array(1:2, device = "metal")
     }
     # no device specified in jit -> use the one from the input and ignore
     # the device from scalar
-    expect_equal(
+    expect_error(
       device(jit(f)(nv_scalar(1, device = "cpu"))),
-      nv_device("cpu", "xla")
+      "but found more than one device"
+    )
+  })
+  it("errs when finding inputs with different devices", {
+    f <- function(x, y) x + y
+    g <- jit(f)
+    expect_error(
+      g(nv_scalar(1, device = "cpu:0"), nv_scalar(2, device = "cpu:1")),
+      "live on different"
     )
   })
   it("errs when finding conflicting constants", {

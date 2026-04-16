@@ -34,15 +34,16 @@ when there are none).
 \code{NULL} (default) uses \code{\link[=default_backend]{default_backend()}}.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | device object | \code{device_arg()})\cr
-Target device for compilation. When a concrete device is specified,
-all arrays (constants and dynamic inputs) are moved to this device.
+Target device. When a concrete device is specified, all arrays (dynamic
+inputs and autoconverted scalars) are moved to this device.
 
-The default (\code{NULL}) infers the device from inputs/constants a
+The default (\code{NULL}) infers the device from the inputs at call time,
 falling back to \code{\link[=default_device]{default_device()}} when there are no array inputs.
 
-For functions without dynamic array inputs (e.g. \code{\link[=nvl_fill]{nvl_fill()}}),
-use \code{device_arg("<argname>")} to read the device from a function argument
-at call time.}
+For functions without dynamic array inputs (e.g. \code{\link[=nvl_fill]{nvl_fill()}}) that need
+to work with multiple backends, use \code{device_arg("<argname>")} together
+with \code{backend = "auto"} to read the device from a function argument
+at call time and derive the backend from it.}
 
 \item{...}{Backend-specific options. Passing an option that is not supported
 by the selected backend raises an error. See the \strong{XLA JIT arguments} and

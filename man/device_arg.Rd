@@ -25,6 +25,15 @@ This is intended for functions that have no dynamic array inputs from which
 the backend could otherwise be detected (e.g. array constructors like
 \code{\link[=nvl_fill]{nvl_fill()}} or \code{\link[=nvl_iota]{nvl_iota()}}).
 }
+\examples{
+\dontshow{if (plugins_downloaded("cpu")) withAutoprint(\{ # examplesIf}
+f <- function(x) nv_scalar(1, device = x)
+g <- jit(f, backend = "auto", device = device_arg("x"))
+# Because backend="auto", we need to be able to infer the backend
+# from an argument, otherwise we don't know which backend to use:
+g(nv_device("cpu", "xla"))
+\dontshow{\}) # examplesIf}
+}
 \seealso{
 \code{\link[=jit]{jit()}}, \code{\link[=backend]{backend()}}
 }
