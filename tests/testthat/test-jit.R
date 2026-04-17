@@ -432,6 +432,15 @@ describe("jit: backend and device combinations", {
     expect_equal(device(g(nv_device("cpu:0"))), nv_device("cpu:0"))
     expect_equal(device(g(nv_device("cpu:1"))), nv_device("cpu:1"))
   })
+  it("uses default backend when device_arg is character(1)", {
+    local_backend("xla")
+    f <- function(x) nv_scalar(1, device = x)
+    g <- jit(f, device = device_arg("x"), backend = "auto")
+    expect_equal(device(g("cpu:0")), nv_device("cpu:0", "xla"))
+    expect_equal(device(g("cpu:1")), nv_device("cpu:1", "xla"))
+    skip_if_not_installed("quickr")
+    expect_equal(device(g(nv_device("cpu", "quickr"))), nv_device("cpu", "quickr"))
+  })
 })
 
 

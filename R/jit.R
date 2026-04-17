@@ -178,7 +178,11 @@ jit_auto <- function(f, static, cache_size, device_argname = NULL, ...) {
     }
     args <- lapply(as.list(match.call())[-1L], eval, envir = parent.frame())
     be <- if (!is.null(device_argname) && !is.null(args[[device_argname]])) {
-      backend(args[[device_argname]])
+      if (is.character(args[[device_argname]])) {
+        default_backend()
+      } else {
+        backend(args[[device_argname]])
+      }
     } else {
       jit_auto_detect_backend(flatten(args[!names(args) %in% static]))
     }

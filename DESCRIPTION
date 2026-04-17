@@ -19,13 +19,13 @@ Imports:
     checkmate,
     cli,
     methods,
-    pjrt,
+    pjrt (>= 0.2.0),
     rlang,
     safetensors (>= 0.2.0),
-    stablehlo,
-    tengen,
+    stablehlo (>= 0.2.0),
+    tengen (>= 0.2.0),
     withr,
-    xlamisc
+    xlamisc (>= 0.2.0)
 Suggests:
     knitr,
     quarto,
