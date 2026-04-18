@@ -383,8 +383,10 @@ describe("jit: device and backend handling", {
 
   it("concrete device with backend = 'auto' collapses to the device's backend", {
     skip_if_not_installed("quickr")
-    f <- jit(identity, device = nv_device("cpu", "quickr"), backend = "auto")
-    expect_equal(backend(f), "quickr")
+    expect_error(
+      jit(identity, device = nv_device("cpu", "quickr"), backend = "auto"),
+      "Don't provide"
+    )
   })
 
   it("device_arg caches separately per device value", {

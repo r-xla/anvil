@@ -17,23 +17,18 @@
 #'   Maximum number of compiled executables to keep in the LRU cache.
 #' @param backend (`NULL` |  `character(1)`)\cr
 #'   Compilation backend (e.g. `"xla"`, `"quickr"`).
-#'   The special value `"auto"` defers backend selection
-#'   to call time, picking the backend from the inputs (or [`default_backend()`]
-#'   when there are none).
+#'   The special value `"auto"` defers backend selection to call-time.
 #'   `NULL` (default) uses [`default_backend()`].
 #' @param device (`NULL` | `character(1)` | device object | `device_arg()`)\cr
 #'   Target device. When a concrete device is specified, all arrays
 #'   are moved to this device.
 #'
-#'   The default (`NULL`) infers the device from the inputs at call time,
-#'   falling back to [`default_device()`] when there are no array inputs.
+#'   The default (`NULL`) infers the device at call time,
+#'   falling back to [`default_device()`].
 #'
-#'   Any closed-over constants are moved to the same device as the compiled program.
+#'   In order to use dynamic device selection with the `"auto"` backend (e.g. for functions without
+#'   dynamic inputs such as constant creation), set `device = device_arg()`.
 #'
-#'   For functions without dynamic array inputs (e.g. [nvl_fill()]) that need
-#'   to work with multiple backends, use `device_arg("<argname>")` together
-#'   with `backend = "auto"` to read the device from a function argument
-#'   at call time and derive the backend from it.
 #' @param ... Backend-specific options. Passing an option that is not supported
 #'   by the selected backend raises an error. See the **XLA JIT arguments** and
 #'   **Quickr JIT arguments** sections below for the options accepted by each
@@ -111,7 +106,7 @@ jit <- function(
   if (identical(backend, "auto")) {
     # Concrete device fixes the backend; everything else defers to call time.
     if (is_device(device)) {
-      backend <- backend(device)
+      cli_abort("Don't provide a concrete device when using the \"auto\" backend.")
     } else {
       return(jit_auto(f, static, cache_size, device = device, ...))
     }
@@ -281,7 +276,8 @@ jit_prepare_call <- function(call, eval_env, static, device = NULL, backend) {
 
   # Determine allocation device:
   # if device is specified -> use it
-  # else, use first found device and if no input has device fall back to default device
+  # else, use first found device; if no device was found, leave it at NULL and don't check
+  # device (will be inferred during tracing)
   allocation_device <- if (is.null(device)) {
     found_device <- NULL
     # If any input lives on a device, use it instead

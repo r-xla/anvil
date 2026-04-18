@@ -246,8 +246,10 @@ is_device_arg <- function(x) {
 resolve_device <- function(device, backend) {
   if (is.character(device)) {
     backend <- backend %||% default_backend()
-    if (backend == "auto") {
-      device <- nv_device(device, default_backend())
+    device <- if (backend == "auto") {
+      nv_device(device, default_backend())
+    } else {
+      nv_device(device, backend)
     }
     return(list(device, backend))
   }

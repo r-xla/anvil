@@ -28,24 +28,18 @@ Maximum number of compiled executables to keep in the LRU cache.}
 
 \item{backend}{(\code{NULL} |  \code{character(1)})\cr
 Compilation backend (e.g. \code{"xla"}, \code{"quickr"}).
-The special value \code{"auto"} defers backend selection
-to call time, picking the backend from the inputs (or \code{\link[=default_backend]{default_backend()}}
-when there are none).
+The special value \code{"auto"} defers backend selection to call-time.
 \code{NULL} (default) uses \code{\link[=default_backend]{default_backend()}}.}
 
 \item{device}{(\code{NULL} | \code{character(1)} | device object | \code{device_arg()})\cr
 Target device. When a concrete device is specified, all arrays
 are moved to this device.
 
-The default (\code{NULL}) infers the device from the inputs at call time,
-falling back to \code{\link[=default_device]{default_device()}} when there are no array inputs.
+The default (\code{NULL}) infers the device at call time,
+falling back to \code{\link[=default_device]{default_device()}}.
 
-Any closed-over constants are moved to the same device as the compiled program.
-
-For functions without dynamic array inputs (e.g. \code{\link[=nvl_fill]{nvl_fill()}}) that need
-to work with multiple backends, use \code{device_arg("<argname>")} together
-with \code{backend = "auto"} to read the device from a function argument
-at call time and derive the backend from it.}
+In order to use dynamic device selection with the \code{"auto"} backend (e.g. for functions without
+dynamic inputs such as constant creation), set \code{device = device_arg()}.}
 
 \item{...}{Backend-specific options. Passing an option that is not supported
 by the selected backend raises an error. See the \strong{XLA JIT arguments} and
