@@ -52,6 +52,37 @@ register_backend <- function(name, backend) {
   globals$backends[[name]] <- backend
 }
 
+# Compare two device objects for equality, returning FALSE when they are of
+# different classes. Avoids R's "incompatible methods" warning when `==` is
+# dispatched across device classes (e.g. PJRTDevice vs QuickrDevice).
+eq_device <- function(x, y) {
+  identical(class(x), class(y)) && isTRUE(x == y)
+}
+
+# Error when a traced graph contains arrays/devices from a backend other than
+# `expected` (after accounting for `"plain"` constants, which are backend-agnostic).
+# Catches both call-time inputs (via arg_devices) and closed-over constants,
+# producing a clearer error than the downstream device-unification or
+# codegen failures.
+check_single_backend <- function(graph, arg_devices, expected) {
+  const_backends <- vapply(
+    graph$constants,
+    function(const) if (is_concrete_tensor(const$aval)) backend(const$aval$data) else NA_character_,
+    character(1)
+  )
+  arg_backends <- vapply(arg_devices, backend, character(1))
+  found <- unique(c(const_backends, arg_backends))
+  mismatches <- setdiff(found, c(expected, "plain", NA_character_))
+  if (length(mismatches)) {
+    cli_abort(c(
+      "Cannot compile a {.val {expected}} program with inputs from other backends.",
+      i = "Found arrays from backend{?s} {.val {mismatches}}.",
+      i = "anvil does not support mixing backends in a single compiled program.",
+      i = "Ensure all inputs and closed-over constants use the {.val {expected}} backend."
+    ))
+  }
+}
+
 PlainDeviceCpu <- function() {
   structure("cpu", class = "PlainDeviceCpu")
 }

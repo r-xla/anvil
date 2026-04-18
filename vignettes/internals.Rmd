@@ -313,7 +313,12 @@ Some things that are important to be aware of:
    f <- jit(\(dev) nv_scalar(1, device = dev), backend = "auto", device = device_arg("dev"))
    f(nv_device("cpu", "xla"))
    ```
-   here we also really need to specify explicit device so we can call `backend()` on it.
+
+   If we would make the main `jit()` function already trace, we could determine the backend during
+   the tracing, but this is not really needed yet.
+
+3. We also allow `backend = "xla"` with `device = device_arg("<dev>")`.
+   This might seem unnecessary
 
 ### Nested Inputs and Outputs
 

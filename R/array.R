@@ -85,7 +85,7 @@ NULL
 #' @export
 nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL, backend = NULL) {
   if (is_anvil_array(data)) {
-    if (!is.null(device) && device(data) != pjrt::as_pjrt_device(device)) {
+    if (!is.null(device) && !eq_device(device(data), nv_device(device,backend))) {
       cli_abort("Cannot change device of existing AnvilArray from {.val {device(data)}} to {.val {device}}")
     }
     if (!is.null(shape) && !identical(shape(data), as.integer(shape))) {

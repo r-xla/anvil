@@ -43,6 +43,9 @@ jit_quickr_impl <- function(f, static, cache, unwrap) {
     prep <- jit_prepare_call(match.call(), parent.frame(), static, backend = "quickr")
     avals_in <- to_avals(prep$args_flat, prep$is_static_flat)
 
+    args_flat_nv <- prep$args_flat[!prep$is_static_flat & vapply(prep$args_flat, is_anvil_array, logical(1))]
+    arg_devices <- lapply(args_flat_nv, tengen::device)
+
     cache_key <- list(prep$in_tree, avals_in)
     r_args_flat <- lapply(prep$args_flat, function(a) {
       if (is_anvil_array(a)) as_array(a) else a
@@ -52,15 +55,23 @@ jit_quickr_impl <- function(f, static, cache, unwrap) {
       return(cache_hit(r_args_flat))
     }
 
-    compiled <- compile_quickr(f, args_flat = avals_in, in_tree = prep$in_tree, unwrap = unwrap, flat = TRUE)
+    compiled <- compile_quickr(
+      f,
+      args_flat = avals_in,
+      in_tree = prep$in_tree,
+      arg_devices = arg_devices,
+      unwrap = unwrap,
+      flat = TRUE
+    )
     cache$set(cache_key, compiled$fun)
     compiled$fun(r_args_flat)
   }
 }
 
-compile_quickr <- function(f, args_flat, in_tree, unwrap = FALSE, flat = FALSE) {
+compile_quickr <- function(f, args_flat, in_tree, arg_devices = list(), unwrap = FALSE, flat = FALSE) {
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
+  check_single_backend(graph, arg_devices = arg_devices, expected = "quickr")
   list(fun = graph_to_quickr_function(graph, unwrap = unwrap, flat = flat))
 }
 

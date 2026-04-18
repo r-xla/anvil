@@ -301,7 +301,7 @@ describe("jit: device and backend handling", {
     expect_equal(backend(f), "xla")
     expect_equal(backend(f(1)), "xla")
   })
-  
+
   it("if ")
 
   it("concrete device object", {
@@ -331,7 +331,7 @@ describe("jit: device and backend handling", {
     expect_equal(device(f("cpu:0")), nv_device("cpu:0", "xla"))
     expect_equal(device(f("cpu:1")), nv_device("cpu:1", "xla"))
   })
-  
+
   it("backend 'auto' works with xla and quickr input", {
     f <- jit(identity, backend = "auto")
     expect_equal(backend(f), "auto")
@@ -340,7 +340,42 @@ describe("jit: device and backend handling", {
     skip_if_not_installed("quickr")
     expect_equal(backend(f(nv_scalar(1, backend = "quickr"))), "quickr")
   })
-  
+
+  it("backend 'auto' routes to quickr when all inputs are quickr", {
+    skip_if_not_installed("quickr")
+    f <- jit(nv_add, backend = "auto")
+    out <- f(nv_scalar(1, backend = "quickr"), nv_scalar(2, backend = "quickr"))
+    expect_equal(backend(out), "quickr")
+    expect_equal(as_array(out), 3)
+  })
+
+  it("backend 'auto' errs when call-time inputs use multiple backends", {
+    skip_if_not_installed("quickr")
+    f <- jit(nv_add, backend = "auto")
+    expect_error(
+      f(nv_scalar(1, backend = "xla"), nv_scalar(2, backend = "quickr")),
+      "multiple backends"
+    )
+  })
+
+  it("cannot mix backends via closed-over constant", {
+    # A closed-over constant from a different backend than the call-time input
+    # must not silently compile on either backend.
+    skip_if_not_installed("quickr")
+    const_q <- nv_scalar(1, backend = "quickr")
+    f <- jit(function(x) x + const_q, backend = "xla")
+    expect_error(
+      f(nv_scalar(1, backend = "xla")),
+      "Cannot compile a \"xla\" program"
+    )
+    const_x <- nv_scalar(1, backend = "xla")
+    g <- jit(function(x) x + const_x, backend = "quickr")
+    expect_error(
+      g(nv_scalar(1, backend = "quickr")),
+      "Cannot compile a \"quickr\" program"
+    )
+  })
+
   it("converts constants with device specification to specified device", {
     f <- jit(function() nv_scalar(1), device = "cpu:1")
     expect_equal(device(f()), nv_device("cpu:1", "xla"))
@@ -352,7 +387,7 @@ describe("jit: device and backend handling", {
       nv_device("cpu:0", "xla")
     )
   })
-  
+
   it("errs when finding inputs with different devices (when jit does not set concrete device)", {
     f <- function(x, y) x + y
     g <- jit(f)
@@ -416,10 +451,10 @@ describe("jit: device and backend handling", {
   it("device-arg works with concrete 'xla' backend", {
     local_backend("xla")
     f <- function(dev) nv_scalar(1, device = dev)
-    g <- jit(f, device = device_arg("dev"), backend = "xla")
-
-    expect_equal(device(g(nv_device("cpu:0"))), nv_device("cpu:0"))
-    expect_equal(device(g(nv_device("cpu:1"))), nv_device("cpu:1"))
+    expect_error(
+      g <- jit(f, device = device_arg("dev"), backend = "xla"),
+      "is only allowed"
+    )
   })
 
   it("uses default backend when device_arg is character(1)", {

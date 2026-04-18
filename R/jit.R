@@ -51,24 +51,18 @@
 #' Setting the device explicitly allows you to enforce that the function always uses the specified
 #' device, e.g. `"cuda:0"`.
 #' If the `device` argument is set, all encountered arrays are converted to it.
-#' E.g., when compiling a function for GPU:0, all arrays (inputs and encountered constants) will be copied to GPU:0.
-#' with arrays living on the CPU, will copy the inputs to the VRAM of the GPU:0 device.
 #'
-#' If the device is not specified (`NULL`; default) the device will usually be inferred from the
-#' inputs. If multiple devices are found, an error is thrown.
-#' If no input has a device, the encountered constants device is used.
-#' If there is no device either, the fallback will be to use the default device.
+#' If the device is not specified (`NULL`; default) the device will be inferred from the input
+#' arrays and the constants within the program. If conflicting devices are found, an error
+#' is thrown. If no array with a device is found, we fall back to the default device.
 #'
 #' **Auto backend**:
-#' If the backend is set to `"auto"`
-#'
-#' Sometimes, there can be a function without dynamic array inputs.
-#' If the backend is set to `"auto"` and no dynamic array is available to
-#' TODO: Do we really need device_arg()?
-#'
-#' **Dynamic device selection**:
-#'
-#'
+#' When setting `backend = "auto"`, the backend will be inferred from the array inputs and
+#' otherwise fall back to the default backend.
+#' If you want to `jit()` a function without array inputs but make it work with different devices,
+#' set `device = device_arg("<device>")` where `<device>` is the name of the argument specifying
+#' the device. Note that this is only necessary with the `"auto"` backend.
+#' When using a concrete backend, you can just specify the device via a static argument.
 #'
 #' @return A `JitFunction` with the same formals as `f`.
 #'   The returned wrapper expects [`AnvilArray`] inputs and returns
@@ -105,12 +99,15 @@ jit <- function(
     if (!(device$argname %in% static)) {
       static <- c(static, device$argname)
     }
-    if (identical(backend, "auto")) {
+    if (is.null(backend) || identical(backend, "auto")) {
       return(jit_auto(f, static, cache_size, device_argname = device$argname, ...))
     }
-    # We use a specific backend but still determine device dynamically
-    backend <- backend %||% default_backend()
-    return(jit_with_backend(f, static, cache_size, backend, device = device, ...))
+    # There is really no need to support this. device_arg() is really about being able to detect
+    # backend at the start so we know which backend's jit method to call.
+    cli_abort(c(
+      "device = device_arg() is only allowed with backend `NULL` or \"auto\".",
+      i = "Just use a static argument for the device selection"
+    ))
   }
   # device might still be NULL, which means infer from encountered arrays
   resolved <- resolve_device(device, backend)
@@ -215,6 +212,7 @@ jit_auto <- function(f, static, cache_size, device_argname = NULL, ...) {
         backend(args[[device_argname]])
       }
     } else {
+      # TODO: Check that there are not arrays from different backends
       jit_auto_detect_backend(flatten(args[!names(args) %in% static]))
     }
     if (is.null(jit_fns[[be]])) {
@@ -236,10 +234,24 @@ jit_auto <- function(f, static, cache_size, device_argname = NULL, ...) {
 }
 
 jit_auto_detect_backend <- function(args_flat) {
+  found <- character()
   for (i in seq_along(args_flat)) {
-    if (is_anvil_array(args_flat[[i]]) && backend(args_flat[[i]]) != "plain") {
-      return(backend(args_flat[[i]]))
+    if (is_anvil_array(args_flat[[i]])) {
+      be <- backend(args_flat[[i]])
+      if (be != "plain") {
+        found <- unique(c(found, be))
+      }
     }
+  }
+  if (length(found) > 1L) {
+    cli_abort(c(
+      "Cannot auto-detect backend: inputs use multiple backends.",
+      i = "Found backends: {.val {found}}",
+      i = "Pass {.code backend =} to {.fn jit} or convert inputs to a common backend."
+    ))
+  }
+  if (length(found) == 1L) {
+    return(found)
   }
   default_backend()
 }
@@ -332,7 +344,7 @@ check_jit_input <- function(x, alloc_device, in_tree = NULL, i = NULL, copy_to_d
 
     # allocation device can be NULL if e.g. all inputs are R objects and no concrete device
     # was enforced in jit()
-    if (!is.null(alloc_device) && (device(x) != alloc_device)) {
+    if (!is.null(alloc_device) && !eq_device(device(x), alloc_device)) {
       # this can happen when there are multiple input devices but we are auto-detecting device
       path <- make_path()
       cli_abort(c(
@@ -350,7 +362,6 @@ check_jit_input <- function(x, alloc_device, in_tree = NULL, i = NULL, copy_to_d
   if (is.array(x) && (is.numeric(x) || is.logical(x))) {
     return(x)
   }
-
 
   path <- make_path()
   msg <- if (nzchar(path)) {

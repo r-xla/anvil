@@ -23,7 +23,7 @@ jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat,
   jit_wrap_outputs(out_vals, out_node, ambiguous_out, "xla")
 }
 
-# device: NULL | PJRTDdevice; 
+# device: NULL | PJRTDdevice;
 jit_xla_impl <- function(f, static, cache, donate, device) {
   if (!is.null(device) && !is_device_arg(device)) {
     device <- nv_device(device, "xla")
@@ -44,8 +44,7 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
     # In cases like jit(\(x) x)(1), we fall back to default device
     cache_key <- list(prep$in_tree, avals_in, prep$device)
     cache_hit <- cache$get(cache_key)
-    
-    
+
     if (!is.null(cache_hit)) {
       return(jit_call_xla(
         cache_hit[[1]], # executable
@@ -58,16 +57,16 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
         cache_hit[[5]] # device
       ))
     }
-    
+
     args_flat_nv <- prep$args_flat[!prep$is_static_flat & vapply(prep$args_flat, is_anvil_array, logical(1))]
 
     arg_devices <- lapply(args_flat_nv, tengen::device)
-    
+
     # prep$device is either
     # - device compatible with all inputs
     # - specified device
     # - NULL (device unknown from inputs)
-    
+
     compile_device <- if (is_device_arg(device)) {
       prep$args[[device$argname]]
     } else {
@@ -81,7 +80,7 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
       device = compile_device,
       arg_devices = arg_devices
     )
-    
+
     # Important: Here we pass compiled$device, which (if prep$device was NULL) is the
     # inferred device from the tracing (e.g. in jit(\() nv_scalar(1, device = "cpu:0")))
     out <- jit_call_xla(
@@ -132,6 +131,8 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
 compile_xla <- function(f, args_flat, in_tree, donate = character(), device = NULL, arg_devices = list()) {
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
+
+  check_single_backend(graph, arg_devices, expected = "xla")
 
   # if device is NULL, all devices from args_flat and the traced devices must be the same.
   # If device is specified, then we use the requested device.
@@ -195,7 +196,13 @@ compile_graph_xla <- function(graph, donate = character(), device) {
   program <- pjrt_program(src = src, format = "mlir")
   exec <- pjrt_compile(program, device = device)
 
-  list(exec = exec, out_tree = out_tree, const_arrays = const_arrays, ambiguous_out = ambiguous_out, device = device(exec))
+  list(
+    exec = exec,
+    out_tree = out_tree,
+    const_arrays = const_arrays,
+    ambiguous_out = ambiguous_out,
+    device = device(exec)
+  )
 }
 
 #' @title Ahead-of-time compile a function to XLA
