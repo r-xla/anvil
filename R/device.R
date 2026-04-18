@@ -1,8 +1,9 @@
 #' @title Get the default device
 #' @description
 #' Returns a device object for the default backend and platform.
-#' The platform is determined by the `PJRT_PLATFORM` environment variable
-#' (defaulting to `"cpu"`), and the backend by [`default_backend()`].
+#' For the `"xla"` backend, the platform is determined by the `PJRT_PLATFORM`
+#' environment variable (defaulting to `"cpu"`). Other backends (e.g. `"quickr"`)
+#' only support CPU. The backend defaults to [`default_backend()`].
 #' @param backend (`NULL` | `character(1)`)\cr
 #'   Backend. Defaults to [`default_backend()`] when `NULL`.
 #' @return A backend-specific device object.
@@ -10,7 +11,8 @@
 #' @export
 default_device <- function(backend = NULL) {
   backend <- backend %||% default_backend()
-  nv_device(Sys.getenv("PJRT_PLATFORM", "cpu"), backend)
+  platform <- if (backend == "xla") Sys.getenv("PJRT_PLATFORM", "cpu") else "cpu"
+  nv_device(platform, backend)
 }
 
 #' @title Create a Device

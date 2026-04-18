@@ -3,7 +3,7 @@ test_that("error message when using different platforms", {
   f <- jit(\(x, y) x + y)
   x <- nv_array(1, device = "cpu")
   y <- nv_array(1, device = "cuda")
-  expect_error(f(x, y), "Inputs live on different devices")
+  expect_error(f(x, y), "on unexpected device")
 })
 
 test_that("donate: must be formal args of f", {

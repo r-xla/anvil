@@ -424,7 +424,7 @@ describe("jit: device and backend handling", {
   })
   it("allocates scalar on default device when there is no AnvilArray to infer from", {
     g <- jit(function() 1, backend = "xla")
-    expect_equal(device(g()), nv_device("cpu:0", "xla"))
+    expect_equal(device(g()), default_device("xla"))
   })
   it("uses specified device when input is R object", {
     g <- jit(function() 1, device = "cpu:1")
