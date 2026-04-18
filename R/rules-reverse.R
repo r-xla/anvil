@@ -1055,4 +1055,78 @@ p_triangular_solve[["reverse"]] <- function(
   list(grad_a, grad_b)
 }
 
-p_qr[["reverse"]] <- rule_not_yet_implemented("qr", "reverse")
+#' @name nvl_qr
+#' @rdname nvl_qr
+#' @references
+#' `r xlamisc::format_bib("walter2012structured")`
+p_qr[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  if (!.required[[1L]]) {
+    return(list(NULL))
+  }
+  A <- inputs[[1L]]
+  Q <- outputs[[1L]]
+  R <- outputs[[2L]]
+  grad_Q <- grads[[1L]]
+  grad_R <- grads[[2L]]
+
+  shp <- shape(A)
+  if (length(shp) > 2L) {
+    cli_abort("Batched qr gradient is not yet supported.")
+  }
+  m <- shp[1L]
+  n <- shp[2L]
+
+  # Core formula for the tall/square case (m >= n); see Walter (2012), Sec. 4.2.
+  # For A = Q R with Q (m x n), R (n x n) upper triangular and full-rank,
+  # and upstream cotangents grad_Q, grad_R, the reverse-mode gradient is
+  #
+  #   qdq = Q^T grad_Q
+  #   rdr = R grad_R^T
+  #   M   = (qdq - qdq^T) + (rdr - rdr^T)          (skew-symmetric)
+  #   L   = tril(M)                                 (diagonal of M is zero)
+  #   grad_A = Q grad_R + (grad_Q - Q qdq + Q L) R^{-T}
+  #
+  # The skew/tril construction resolves the non-uniqueness in dQ that arises
+  # because perturbations of Q must remain orthogonal (Q^T dQ is skew-symmetric).
+  qr_grad_tall <- function(Q, R, grad_Q, grad_R) {
+    k <- shape(R)[1L]
+    qdq <- nv_matmul(t(Q), grad_Q)
+    rdr <- nv_matmul(R, t(grad_R))
+    M <- nvl_add(nvl_sub(qdq, t(qdq)), nvl_sub(rdr, t(rdr)))
+    L <- nvl_ifelse(tril_mask(k, dtype(M)), M, zeros_like(M))
+
+    inner <- nvl_add(nvl_sub(grad_Q, nv_matmul(Q, qdq)), nv_matmul(Q, L))
+    # inner @ R^{-T}: solve Y R^T = inner for Y via right-side triangular solve.
+    rhs <- nvl_triangular_solve(
+      R,
+      inner,
+      left_side = FALSE,
+      lower = FALSE,
+      unit_diagonal = FALSE,
+      transpose_a = "TRANSPOSE"
+    )
+    nvl_add(nv_matmul(Q, grad_R), rhs)
+  }
+
+  if (m >= n) {
+    grad_A <- qr_grad_tall(Q, R, grad_Q, grad_R)
+  } else {
+    # Wide case (m < n), Walter (2012), Sec. 4.2: partition R = [U | V] with
+    # U (m x m, upper triangular) and V (m x (n-m)). Correspondingly
+    # A = [X | Y] with X = Q U and Y = Q V. Y is just the trailing columns
+    # of A, and dY = Q dV, so grad_V contributes directly to grad_Y and also
+    # feeds back into grad_Q via dL/dQ += Y (grad_V)^T. The leading block
+    # grad_X is then obtained from the square-case formula on (Q, U).
+    U <- nvl_static_slice(R, c(1L, 1L), c(m, m), c(1L, 1L))
+    grad_U <- nvl_static_slice(grad_R, c(1L, 1L), c(m, m), c(1L, 1L))
+    grad_V <- nvl_static_slice(grad_R, c(1L, m + 1L), c(m, n), c(1L, 1L))
+    Y <- nvl_static_slice(A, c(1L, m + 1L), c(m, n), c(1L, 1L))
+
+    grad_Y <- nv_matmul(Q, grad_V)
+    grad_Q_adj <- nvl_add(grad_Q, nv_matmul(Y, t(grad_V)))
+    grad_X <- qr_grad_tall(Q, U, grad_Q_adj, grad_U)
+    grad_A <- nvl_concatenate(grad_X, grad_Y, dimension = 2L)
+  }
+
+  list(grad_A)
+}

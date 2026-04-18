@@ -5,6 +5,28 @@
 #include <string>
 #include <vector>
 
+// LAPACK Fortran routines. `d` = double precision, `s` = single precision.
+//
+// {d,s}geqrf: QR factorization of an m-by-n matrix A. On exit, the upper
+//   triangle of A holds R, and the lower triangle plus `tau` encode the
+//   elementary Householder reflectors whose product is Q.
+//     m, n  : matrix dimensions
+//     a     : in/out, column-major m-by-n matrix, overwritten with R and
+//             the Householder vectors
+//     lda   : leading dimension of a (= m for a contiguous column-major buffer)
+//     tau   : out, scalar factors of the Householder reflectors (length k)
+//     work  : workspace of length lwork
+//     lwork : workspace size; pass -1 to request the optimal size (written
+//             into work[0]) without performing any factorization
+//     info  : out, 0 on success, < 0 means illegal argument at position |info|
+//
+// {d,s}orgqr: materialize the first k columns of Q from the output of geqrf.
+//     m, n  : dimensions of the desired Q (n <= m, n <= k here)
+//     k     : number of Householder reflectors (= min(orig_m, orig_n))
+//     a     : in/out, on entry the geqrf output, on exit the m-by-n Q
+//     lda   : leading dimension of a
+//     tau   : Householder scalars from geqrf
+//     work, lwork, info: same convention as geqrf
 extern "C" {
 void dgeqrf_(const int *m, const int *n, double *a, const int *lda, double *tau,
              double *work, const int *lwork, int *info);
@@ -18,6 +40,13 @@ void sorgqr_(const int *m, const int *n, const int *k, float *a, const int *lda,
              const float *tau, float *work, const int *lwork, int *info);
 #endif
 }
+
+// LAPACK workspace-query idiom: the optimal workspace size depends on the
+// problem dimensions and on internal blocking parameters (ILAENV) that are
+// implementation-specific, so we can't compute it ahead of time. The
+// convention is to call the routine twice: first with lwork = -1, which makes
+// it skip the factorization and just write the optimal lwork into work[0];
+// then again with an allocated buffer of that size to perform the actual work.
 
 using namespace xla::ffi;
 

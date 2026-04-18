@@ -964,3 +964,43 @@ describe("p_triangular_solve", {
   it("masking: lower, unit_diagonal", verify_triangular_solve_masking(lower = TRUE, unit_diagonal = TRUE))
   it("masking: upper, unit_diagonal", verify_triangular_solve_masking(lower = FALSE, unit_diagonal = TRUE))
 })
+
+describe("p_qr", {
+  # Generate a matrix with a well-conditioned R factor so the gradient is
+  # numerically stable (R^{-T} appears in the formula).
+  gen_full_rank_matrix <- function(m, n) {
+    repeat {
+      A <- matrix(rnorm(m * n), nrow = m, ncol = n)
+      r <- qr(A)$rank
+      if (r == min(m, n)) return(A)
+    }
+  }
+
+  verify_qr_grad <- function(m, n) {
+    A_r <- gen_full_rank_matrix(m, n)
+
+    A_anvil <- nv_array(A_r, dtype = "f64")
+    A_torch <- torch::torch_tensor(A_r, requires_grad = TRUE, dtype = torch::torch_float64())
+
+    # Use a loss that is invariant under the QR sign ambiguity by reconstructing
+    # A = Q R and summing. This avoids coupling the test to a particular sign
+    # convention for R's diagonal.
+    f_anvil <- function(A) {
+      qr <- nvl_qr(A)
+      recon <- nv_matmul(qr[[1L]], qr[[2L]])
+      nv_reduce_sum(nvl_mul(recon, recon), dims = c(1L, 2L))
+    }
+    grad_anvil <- as_array(jit(gradient(f_anvil))(A_anvil)[[1L]])
+
+    qr_torch <- torch::linalg_qr(A_torch, mode = "reduced")
+    recon_torch <- torch::torch_matmul(qr_torch[[1L]], qr_torch[[2L]])
+    torch::torch_sum(recon_torch * recon_torch)$backward()
+    grad_torch <- as_array_torch(A_torch$grad)
+
+    expect_equal(grad_anvil, grad_torch, tolerance = 1e-5)
+  }
+
+  it("square (m == n)", verify_qr_grad(3L, 3L))
+  it("tall (m > n)", verify_qr_grad(4L, 2L))
+  it("wide (m < n)", verify_qr_grad(2L, 4L))
+})
