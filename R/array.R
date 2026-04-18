@@ -110,12 +110,12 @@ nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous 
   if (!is.null(shape)) {
     shape <- as.integer(shape)
   }
-  desc <- .current_descriptor(silent = TRUE)
-  if (!is.null(desc) && is.null(device)) {
+  if (currently_tracing() && is.null(device)) {
     # The functions we jit should be backend-agnostic
     if (!is.null(backend)) {
       cli_abort("{.arg backend} must not be specified when calling {.fn nv_array} inside {.fn jit}.")
     }
+    # ignore device as during tracing it needs to be known at the start
     return(globals$backends[["plain"]]$new_data(data, dtype, shape, device, ambiguous))
   }
   if (is.null(backend) && is_device(device)) {

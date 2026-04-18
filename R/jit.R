@@ -28,6 +28,8 @@
 #'   The default (`NULL`) infers the device from the inputs at call time,
 #'   falling back to [`default_device()`] when there are no array inputs.
 #'
+#'   Devices of encountered constants are always set to the device of the (inferred) device.
+#'
 #'   For functions without dynamic array inputs (e.g. [nvl_fill()]) that need
 #'   to work with multiple backends, use `device_arg("<argname>")` together
 #'   with `backend = "auto"` to read the device from a function argument
@@ -38,6 +40,36 @@
 #'   backend.
 #' @inheritSection AnvilBackendXla XLA JIT arguments
 #' @inheritSection AnvilBackendQuickr Quickr JIT arguments
+#'
+#' @section Device and Backend selection:
+#' There are various ways how to specify which device and which backend to use.
+#'
+#' **Concrete backend**:
+#'
+#' In the case where we fix a concrete backend (backend is not `"auto"`), the device can be
+#' inferred during the compilation or set explicitly.
+#' Setting the device explicitly allows you to enforce that the function always uses the specified
+#' device, e.g. `"cuda:0"`.
+#' If the `device` argument is set, all encountered arrays are converted to it.
+#' E.g., when compiling a function for GPU:0, all arrays (inputs and encountered constants) will be copied to GPU:0.
+#' with arrays living on the CPU, will copy the inputs to the VRAM of the GPU:0 device.
+#'
+#' If the device is not specified (`NULL`; default) the device will usually be inferred from the
+#' inputs. If multiple devices are found, an error is thrown.
+#' If no input has a device, the encountered constants device is used.
+#' If there is no device either, the fallback will be to use the default device.
+#'
+#' **Auto backend**:
+#' If the backend is set to `"auto"`
+#'
+#' Sometimes, there can be a function without dynamic array inputs.
+#' If the backend is set to `"auto"` and no dynamic array is available to
+#' TODO: Do we really need device_arg()?
+#'
+#' **Dynamic device selection**:
+#'
+#'
+#'
 #' @return A `JitFunction` with the same formals as `f`.
 #'   The returned wrapper expects [`AnvilArray`] inputs and returns
 #'   [`AnvilArray`] values.
@@ -70,18 +102,17 @@ jit <- function(
 ) {
   static <- resolve_arg_names(f, static, "static")
   if (is_device_arg(device)) {
-    # device_arg() is only meaningful with backend = "auto": it defers backend
-    # selection until call time by reading the device from a function argument.
-    # With a fixed backend, the user can just mark the device argument as
-    # static and pass it as a regular argument — no need for a device_arg() marker.
-    if (!is.null(backend) && backend != "auto") {
-      cli_abort(
-        "{.fn device_arg} can only be used with {.code backend = \"auto\"} (or {.code NULL})."
-      )
+    if (!(device$argname %in% static)) {
+      static <- c(static, device$argname)
     }
-    return(jit_auto(f, static, cache_size, device_argname = device$argname, ...))
+    if (identical(backend, "auto")) {
+      return(jit_auto(f, static, cache_size, device_argname = device$argname, ...))
+    }
+    # We use a specific backend but still determine device dynamically
+    backend <- backend %||% default_backend()
+    return(jit_with_backend(f, static, cache_size, backend, device = device, ...))
   }
-  # device might still be NULL, which means infer from inputs
+  # device might still be NULL, which means infer from encountered arrays
   resolved <- resolve_device(device, backend)
   device <- resolved[[1L]]
   backend <- resolved[[2L]]
@@ -122,7 +153,7 @@ jit_with_backend <- function(f, static, cache_size, backend, ...) {
 #'   An object recognized by [`jit()`].
 #' @seealso [`jit()`], [`backend()`]
 #' @export
-#' @examplesIf plugins_downloaded("cpu")
+#' @examplesIf pjrt::plugins_downloaded("cpu")
 #' f <- function(x) nv_scalar(1, device = x)
 #' g <- jit(f, backend = "auto", device = device_arg("x"))
 #' # Because backend="auto", we need to be able to infer the backend
@@ -213,7 +244,8 @@ jit_auto_detect_backend <- function(args_flat) {
   default_backend()
 }
 
-jit_prepare_call <- function(call, eval_env, static, device = NULL, backend = NULL) {
+jit_prepare_call <- function(call, eval_env, static, device = NULL, backend) {
+  assert_choice(backend, c("xla", "quickr"))
   args <- as.list(call)[-1L]
   args <- lapply(args, eval, envir = eval_env)
 
@@ -228,56 +260,99 @@ jit_prepare_call <- function(call, eval_env, static, device = NULL, backend = NU
   if (is_device_arg(device)) {
     device <- args[[device$argname]]
   }
-  if (is.null(device)) {
+
+  # Determine allocation device:
+  # if device is specified -> use it
+  # else, use first found device and if no input has device fall back to default device
+  allocation_device <- if (is.null(device)) {
+    found_device <- NULL
+    # If any input lives on a device, use it instead
     for (i in seq_along(args_flat)) {
       if (!is_static_flat[[i]] && is_anvil_array(args_flat[[i]])) {
-        device <- device(args_flat[[i]])
+        found_device <- device(args_flat[[i]])
         break
       }
     }
+    found_device
+  } else {
+    device
   }
-  device <- nv_device(device %||% Sys.getenv("PJRT_PLATFORM", "cpu"), backend = backend)
 
-  args_flat <- .mapply(
-    function(x, is_static, i) if (is_static) x else autoconvert_input(x, device, in_tree, i),
+  # whether we are copying between devices. This happens when specific device was specified in jit()
+  copy_to_device <- !is.null(device)
+
+  .mapply(
+    function(x, is_static, i) if (is_static) x else check_jit_input(x, allocation_device, in_tree, i, copy_to_device),
     list(args_flat, is_static_flat, seq_along(args_flat)),
     NULL
   )
-  args <- unflatten(in_tree, args_flat)
 
   list(
     args = args,
     args_flat = args_flat,
     is_static_flat = is_static_flat,
     in_tree = in_tree,
-    device = device
+    device = allocation_device
   )
 }
 
 to_avals <- function(args_flat, is_static_flat) {
   Map(
     function(x, is_static) {
-      if (is_static) x else nv_aval(dtype(x), shape(x), ambiguous = ambiguous(x))
+      if (is_static) {
+        x
+      } else if (is_anvil_array(x)) {
+        nv_aval(dtype(x), shape(x), ambiguous(x))
+      } else if ((is.numeric(x) || is.logical(x)) && length(x) == 1L && is.null(dim(x))) {
+        nv_aval(default_dtype(x), integer(), ambiguous = TRUE)
+      } else if (is.array(x) && (is.numeric(x) || is.logical(x))) {
+        nv_aval(default_dtype(x), as.integer(dim(x)), ambiguous = TRUE)
+      } else {
+        cli_abort("internal error: invalid input type for jit: {.cls {class(x)[1L]}}")
+      }
     },
     args_flat,
     is_static_flat
   )
 }
 
-autoconvert_input <- function(x, device, in_tree = NULL, i = NULL) {
+# Check whether an input to jit is valid (w.r.t. information available before tracing)
+# We don't convert yet as the concrete device is only known after tracing (respecting found constant's device)
+check_jit_input <- function(x, alloc_device, in_tree = NULL, i = NULL, copy_to_device) {
+  make_path <- function() {
+    if (!is.null(in_tree) && !is.null(i)) tree_path(in_tree, i) else ""
+  }
   if (is_anvil_array(x)) {
-    if (backend(x) == "xla" && device(x) != device) {
-      x$data <- pjrt::copy_buffer(x$data, device)
+    if (backend(x) == "quickr") {
+      return(x)
     }
+    if (copy_to_device) {
+      return(x)
+    }
+
+    # allocation device can be NULL if e.g. all inputs are R objects and no concrete device
+    # was enforced in jit()
+    if (!is.null(alloc_device) && (device(x) != alloc_device)) {
+      # this can happen when there are multiple input devices but we are auto-detecting device
+      path <- make_path()
+      cli_abort(c(
+        "Found AnvilArray input {.arg {path}} on unexpected device {device(x)}",
+        i = "when using jit(f, device = NULL), ensure that all inputs live on the same device"
+      ))
+    }
+
     return(x)
   }
+
   if ((is.numeric(x) || is.logical(x)) && length(x) == 1L && is.null(dim(x))) {
-    return(nv_scalar(x, ambiguous = TRUE, device = device))
+    return(x)
   }
   if (is.array(x) && (is.numeric(x) || is.logical(x))) {
-    return(nv_array(x, ambiguous = TRUE, device = device))
+    return(x)
   }
-  path <- if (!is.null(in_tree) && !is.null(i)) tree_path(in_tree, i) else ""
+
+
+  path <- make_path()
   msg <- if (nzchar(path)) {
     "Attempted to autoconvert {.arg {path}} to an {.cls AnvilArray}."
   } else {

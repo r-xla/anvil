@@ -109,6 +109,13 @@ compile_quickr <- function(f, args_flat, in_tree, unwrap = FALSE, flat = FALSE) 
 AnvilBackendQuickr <- function() {
   backend <- AnvilBackend(
     new_data = function(data, dtype, shape, device, ambiguous) {
+      if (!is.null(device)) {
+        if (is.character(device) && (device != "quickr")) {
+          cli_abort("Unsupported device {device} for 'quickr' backendj")
+        } else if (!inherits(device, "QuickrDevice")) {
+          cli_abort("Invalid device of class {.cls class(device)} for 'quickr' backend")
+        }
+      }
       if (is.null(dtype)) {
         dtype <- if (is.double(data)) FloatType(64) else default_dtype(data)
       }

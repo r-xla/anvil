@@ -295,6 +295,26 @@ Further note that:
 1. R Literals are immediately embedded as literals into the program.
 2. Currently, constants with the same value (that refer to different `AnvilArray`s) are not deduplicated, which we might change in the future.
 
+## Device Inference in `jit()`
+
+Device handling in `jit()` is quite complicated.
+Some things that are important to be aware of:
+
+1. We don't know the inferred device just from looking at the input as we might have something like:
+  `jit(\(x) x + nv_scalar(1, device = "cuda"))` where we might only learn about the device during tracing.
+  This means the data is only converted at the end.
+2. There are different backends.
+   There might be a function like `jit(\(dev) nv_scalar(1, device = dev), backend = "auto")`.
+   But with the current implementation of `jit()`, the tracing is handled by the backend's `jit` method,
+   so we need to determine the backend from the input arguments. Therefore, the `device = device_arg("dev")`
+   needs to be specified:
+
+   ```r
+   f <- jit(\(dev) nv_scalar(1, device = dev), backend = "auto", device = device_arg("dev"))
+   f(nv_device("cpu", "xla"))
+   ```
+   here we also really need to specify explicit device so we can call `backend()` on it.
+
 ### Nested Inputs and Outputs
 
 TODO
