@@ -122,9 +122,9 @@ AnvilBackendQuickr <- function() {
     new_data = function(data, dtype, shape, device, ambiguous) {
       if (!is.null(device)) {
         if (is.character(device) && (device != "quickr")) {
-          cli_abort("Unsupported device {device} for 'quickr' backendj")
+          cli_abort("Unsupported device {.val {device}} for 'quickr' backend")
         } else if (!inherits(device, "QuickrDevice")) {
-          cli_abort("Invalid device of class {.cls class(device)} for 'quickr' backend")
+          cli_abort("Invalid device of class {.cls {class(device)}} for 'quickr' backend")
         }
       }
       if (is.null(dtype)) {

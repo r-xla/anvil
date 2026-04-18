@@ -23,7 +23,7 @@ jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat,
   jit_wrap_outputs(out_vals, out_node, ambiguous_out, "xla")
 }
 
-# device: NULL | PJRTDdevice;
+# device: NULL | PJRTDdevice | AnvilDeviceArg;
 jit_xla_impl <- function(f, static, cache, donate, device) {
   if (!is.null(device) && !is_device_arg(device)) {
     device <- nv_device(device, "xla")
@@ -50,7 +50,6 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
         cache_hit[[1]], # executable
         cache_hit[[2]], # out tree
         cache_hit[[3]], # constants
-
         prep$args_flat,
         prep$is_static_flat,
         cache_hit[[4]], # ambiguity

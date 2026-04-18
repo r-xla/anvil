@@ -7,8 +7,8 @@
 default_device(backend = NULL)
 }
 \arguments{
-\item{backend}{(\code{character(1)})\cr
-Backend.}
+\item{backend}{(\code{NULL} | \code{character(1)})\cr
+Backend. Defaults to \code{\link[=default_backend]{default_backend()}} when \code{NULL}.}
 }
 \value{
 A backend-specific device object.

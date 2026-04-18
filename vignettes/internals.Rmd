@@ -317,8 +317,9 @@ Some things that are important to be aware of:
    If we would make the main `jit()` function already trace, we could determine the backend during
    the tracing, but this is not really needed yet.
 
-3. We also allow `backend = "xla"` with `device = device_arg("<dev>")`.
-   This might seem unnecessary
+3. `device = device_arg()` is only accepted together with `backend = NULL` or `backend = "auto"`.
+   A concrete backend combined with `device_arg()` is rejected, because with a concrete backend
+   the device can simply be passed via a static argument.
 
 ### Nested Inputs and Outputs
 

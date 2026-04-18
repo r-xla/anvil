@@ -3,8 +3,8 @@
 #' Returns a device object for the default backend and platform.
 #' The platform is determined by the `PJRT_PLATFORM` environment variable
 #' (defaulting to `"cpu"`), and the backend by [`default_backend()`].
-#' @param backend (`character(1)`)\cr
-#'   Backend.
+#' @param backend (`NULL` | `character(1)`)\cr
+#'   Backend. Defaults to [`default_backend()`] when `NULL`.
 #' @return A backend-specific device object.
 #' @seealso [`nv_device()`], [`default_backend()`]
 #' @export

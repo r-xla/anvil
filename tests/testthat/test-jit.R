@@ -302,8 +302,6 @@ describe("jit: device and backend handling", {
     expect_equal(backend(f(1)), "xla")
   })
 
-  it("if ")
-
   it("concrete device object", {
     f <- jit(identity, device = pjrt::pjrt_device("cpu"))
     expect_equal(backend(f), "xla")
@@ -374,6 +372,32 @@ describe("jit: device and backend handling", {
       g(nv_scalar(1, backend = "quickr")),
       "Cannot compile a \"quickr\" program"
     )
+  })
+
+  it("character device with backend = 'auto' is honored per chosen backend", {
+    skip_if_not_installed("quickr")
+    f <- jit(identity, device = "cpu", backend = "auto")
+    expect_equal(device(f(nv_scalar(1, backend = "xla"))), nv_device("cpu", "xla"))
+    expect_equal(device(f(nv_scalar(1, backend = "quickr"))), nv_device("cpu", "quickr"))
+  })
+
+  it("concrete device with backend = 'auto' collapses to the device's backend", {
+    skip_if_not_installed("quickr")
+    f <- jit(identity, device = nv_device("cpu", "quickr"), backend = "auto")
+    expect_equal(backend(f), "quickr")
+  })
+
+  it("device_arg caches separately per device value", {
+    skip_if_not_installed("quickr")
+    f <- jit(
+      function(dev) nv_scalar(1, device = dev),
+      backend = "auto",
+      device = device_arg("dev")
+    )
+    out_q <- f(nv_device("cpu", "quickr"))
+    out_x <- f(nv_device("cpu", "xla"))
+    expect_equal(backend(out_q), "quickr")
+    expect_equal(backend(out_x), "xla")
   })
 
   it("converts constants with device specification to specified device", {

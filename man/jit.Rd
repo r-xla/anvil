@@ -40,6 +40,8 @@ are moved to this device.
 The default (\code{NULL}) infers the device from the inputs at call time,
 falling back to \code{\link[=default_device]{default_device()}} when there are no array inputs.
 
+Any closed-over constants are moved to the same device as the compiled program.
+
 For functions without dynamic array inputs (e.g. \code{\link[=nvl_fill]{nvl_fill()}}) that need
 to work with multiple backends, use \code{device_arg("<argname>")} together
 with \code{backend = "auto"} to read the device from a function argument
@@ -51,11 +53,9 @@ by the selected backend raises an error. See the \strong{XLA JIT arguments} and
 backend.}
 }
 \value{
-A \code{JitFunction} with the same formals as \code{f}.
+A \code{JitFunction} (a \code{function} with the same formals as \code{f}).
 The returned wrapper expects \code{\link{AnvilArray}} inputs and returns
 \code{\link{AnvilArray}} values.
-
-(\code{function})
 }
 \description{
 Wraps a function so that it is traced and compiled on first call. Subsequent
@@ -63,6 +63,31 @@ calls with the same input structure, shapes, and dtypes hit an LRU cache and
 skip recompilation. Unlike \code{\link[=xla]{xla()}}, the compiled executable is not created
 eagerly but lazily on the first invocation.
 }
+\section{Device and Backend selection}{
+
+There are various ways how to specify which device and which backend to use.
+
+\strong{Concrete backend}:
+
+In the case where we fix a concrete backend (backend is not \code{"auto"}), the device can be
+inferred during the compilation or set explicitly.
+Setting the device explicitly allows you to enforce that the function always uses the specified
+device, e.g. \code{"cuda:0"}.
+If the \code{device} argument is set, all encountered arrays are converted to it.
+
+If the device is not specified (\code{NULL}; default) the device will be inferred from the input
+arrays and the constants within the program. If conflicting devices are found, an error
+is thrown. If no array with a device is found, we fall back to the default device.
+
+\strong{Auto backend}:
+When setting \code{backend = "auto"}, the backend will be inferred from the array inputs and
+otherwise fall back to the default backend.
+If you want to \code{jit()} a function without array inputs but make it work with different devices,
+set \code{device = device_arg("<argname>")} where \verb{<argname>} is the name of the argument specifying
+the device. Note that this is only necessary with the \code{"auto"} backend.
+When using a concrete backend, you can just specify the device via a static argument.
+}
+
 \section{XLA JIT arguments}{
 
 \itemize{

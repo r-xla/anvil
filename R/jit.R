@@ -28,7 +28,7 @@
 #'   The default (`NULL`) infers the device from the inputs at call time,
 #'   falling back to [`default_device()`] when there are no array inputs.
 #'
-#'   Devices of encountered constants are always set to the device of the (inferred) device.
+#'   Any closed-over constants are moved to the same device as the compiled program.
 #'
 #'   For functions without dynamic array inputs (e.g. [nvl_fill()]) that need
 #'   to work with multiple backends, use `device_arg("<argname>")` together
@@ -60,15 +60,14 @@
 #' When setting `backend = "auto"`, the backend will be inferred from the array inputs and
 #' otherwise fall back to the default backend.
 #' If you want to `jit()` a function without array inputs but make it work with different devices,
-#' set `device = device_arg("<device>")` where `<device>` is the name of the argument specifying
+#' set `device = device_arg("<argname>")` where `<argname>` is the name of the argument specifying
 #' the device. Note that this is only necessary with the `"auto"` backend.
 #' When using a concrete backend, you can just specify the device via a static argument.
 #'
-#' @return A `JitFunction` with the same formals as `f`.
+#' @return A `JitFunction` (a `function` with the same formals as `f`).
 #'   The returned wrapper expects [`AnvilArray`] inputs and returns
 #'   [`AnvilArray`] values.
 #' @seealso [`xla()`] for ahead-of-time compilation, [`jit_eval()`] for evaluating an expression once.
-#' @return (`function`)
 #' @export
 #' @examplesIf pjrt::plugins_downloaded()
 #' f <- jit(function(x, y) x + y)
@@ -109,14 +108,19 @@ jit <- function(
       i = "Just use a static argument for the device selection"
     ))
   }
+  if (identical(backend, "auto")) {
+    # Concrete device fixes the backend; everything else defers to call time.
+    if (is_device(device)) {
+      backend <- backend(device)
+    } else {
+      return(jit_auto(f, static, cache_size, device = device, ...))
+    }
+  }
   # device might still be NULL, which means infer from encountered arrays
   resolved <- resolve_device(device, backend)
   device <- resolved[[1L]]
   backend <- resolved[[2L]]
 
-  if (backend == "auto") {
-    return(jit_auto(f, static, cache_size, ...))
-  }
   jit_with_backend(f, static, cache_size, backend, device = device, ...)
 }
 
@@ -187,7 +191,12 @@ backend.JitFunction <- function(x, ...) {
   attr(x, "backend")
 }
 
-jit_auto <- function(f, static, cache_size, device_argname = NULL, ...) {
+jit_auto <- function(f, static, cache_size, device = NULL, device_argname = NULL, ...) {
+  # A concrete device would pin the backend and defeat the purpose of `auto`;
+  # `jit()` collapses that case to `jit_with_backend` before we get here.
+  if (is_device(device)) {
+    cli_abort("Internal error: jit_auto called with a concrete device; backend should have been pinned.")
+  }
   # Lazily create per-backend jit functions
   jit_fns <- list()
   dots <- list(...)
@@ -206,13 +215,9 @@ jit_auto <- function(f, static, cache_size, device_argname = NULL, ...) {
     }
     args <- lapply(as.list(match.call())[-1L], eval, envir = parent.frame())
     be <- if (!is.null(device_argname) && !is.null(args[[device_argname]])) {
-      if (is.character(args[[device_argname]])) {
-        default_backend()
-      } else {
-        backend(args[[device_argname]])
-      }
+      dev_val <- args[[device_argname]]
+      if (is.character(dev_val)) default_backend() else backend(dev_val)
     } else {
-      # TODO: Check that there are not arrays from different backends
       jit_auto_detect_backend(flatten(args[!names(args) %in% static]))
     }
     if (is.null(jit_fns[[be]])) {
@@ -220,7 +225,11 @@ jit_auto <- function(f, static, cache_size, device_argname = NULL, ...) {
         jit_with_backend,
         c(
           list(f = f, static = static, cache_size = cache_size, backend = be),
-          if (!is.null(device_argname)) list(device = device_arg(device_argname)),
+          if (!is.null(device_argname)) {
+            list(device = device_arg(device_argname))
+          } else if (!is.null(device)) {
+            list(device = device)
+          },
           dots
         )
       )
@@ -234,15 +243,12 @@ jit_auto <- function(f, static, cache_size, device_argname = NULL, ...) {
 }
 
 jit_auto_detect_backend <- function(args_flat) {
-  found <- character()
-  for (i in seq_along(args_flat)) {
-    if (is_anvil_array(args_flat[[i]])) {
-      be <- backend(args_flat[[i]])
-      if (be != "plain") {
-        found <- unique(c(found, be))
-      }
-    }
-  }
+  backends <- vapply(
+    args_flat,
+    function(x) if (is_anvil_array(x)) backend(x) else NA_character_,
+    character(1)
+  )
+  found <- setdiff(unique(backends), c(NA_character_, "plain"))
   if (length(found) > 1L) {
     cli_abort(c(
       "Cannot auto-detect backend: inputs use multiple backends.",

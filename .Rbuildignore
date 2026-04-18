@@ -29,3 +29,4 @@ anvil.Rproj
 ^\.git
 ^jarl\.toml$
 ^specs$
+^paper/$
