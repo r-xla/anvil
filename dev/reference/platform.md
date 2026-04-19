@@ -39,8 +39,7 @@ Implemented via the generic
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 x <- nv_array(1:4, dtype = "f32")
 platform(x)
-}
+#> [1] "cpu"
 ```

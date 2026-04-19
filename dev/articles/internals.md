@@ -157,7 +157,7 @@ prim("mul")$rules[["reverse"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x5644b38c27e8>
+    ## <bytecode: 0x561fec356048>
     ## <environment: namespace:anvil>
 
 The
@@ -208,7 +208,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x5644b38c5968>
+    ## <bytecode: 0x561fec359200>
     ## <environment: namespace:anvil>
 
 The
@@ -544,6 +544,43 @@ Further note that:
 2.  Currently, constants with the same value (that refer to different
     `AnvilArray`s) are not deduplicated, which we might change in the
     future.
+
+## Device Inference in `jit()`
+
+Device handling in
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) is quite
+complicated. Some things that are important to be aware of:
+
+1.  We don’t know the inferred device just from looking at the input as
+    we might have something like:
+    `jit(\(x) x + nv_scalar(1, device = "cuda"))` where we might only
+    learn about the device during tracing. This means the data is only
+    converted at the end.
+
+2.  There are different backends. There might be a function like
+    `jit(\(dev) nv_scalar(1, device = dev), backend = "auto")`. But with
+    the current implementation of
+    [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md), the
+    tracing is handled by the backend’s `jit` method, so we need to
+    determine the backend from the input arguments. Therefore, the
+    `device = device_arg("dev")` needs to be specified:
+
+    ``` r
+    f <- jit(\(dev) nv_scalar(1, device = dev), backend = "auto", device = device_arg("dev"))
+    f(nv_device("cpu", "xla"))
+    ```
+
+    If we would make the main
+    [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)
+    function already trace, we could determine the backend during the
+    tracing, but this is not really needed yet.
+
+3.  `device = device_arg()` is only accepted together with
+    `backend = NULL` or `backend = "auto"`. A concrete backend combined
+    with
+    [`device_arg()`](https://r-xla.github.io/anvil/dev/reference/device_arg.md)
+    is rejected, because with a concrete backend the device can simply
+    be passed via a static argument.
 
 ### Nested Inputs and Outputs
 

@@ -60,11 +60,13 @@ Mathematisch-Naturwissenschaftliche Fakult"at II.
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   # Create a positive-definite matrix
   x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
   nvl_cholesky(x, lower = TRUE)
 })
-}
+#> AnvilArray
+#>  2.0000 0.0000
+#>  1.0000 1.4142
+#> [ CPUf32{2,2} ] 
 ```

@@ -30,10 +30,13 @@ for creating a diagonal matrix,
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(1:9, shape = c(3, 3))
   nv_extract_diag(x)
 })
-}
+#> AnvilArray
+#>  1
+#>  5
+#>  9
+#> [ CPUi32{3} ] 
 ```

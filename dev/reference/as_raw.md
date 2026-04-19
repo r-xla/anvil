@@ -35,9 +35,9 @@ This is implemented via the generic
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 x <- nv_array(1:4, shape = c(2, 2), dtype = "f32")
 as_raw(x, row_major = TRUE)
+#>  [1] 00 00 80 3f 00 00 40 40 00 00 00 40 00 00 80 40
 as_raw(x, row_major = FALSE)
-}
+#>  [1] 00 00 80 3f 00 00 00 40 00 00 40 40 00 00 80 40
 ```

@@ -50,10 +50,13 @@ Lowers to
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(c(-1, 0.5, 2))
   nvl_clamp(nv_scalar(0), x, nv_scalar(1))
 })
-}
+#> AnvilArray
+#>  0.0000
+#>  0.5000
+#>  1.0000
+#> [ CPUf32{3} ] 
 ```

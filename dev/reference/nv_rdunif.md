@@ -49,12 +49,18 @@ Other rng:
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   state <- nv_rng_state(42L)
   # Roll 6 dice
   result <- nv_rdunif(6, state, n = 6L)
   result[[2]]
 })
-}
+#> AnvilArray
+#>  3
+#>  5
+#>  1
+#>  4
+#>  1
+#>  1
+#> [ CPUi32{6} ] 
 ```

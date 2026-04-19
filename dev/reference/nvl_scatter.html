@@ -233,8 +233,7 @@ implementation-defined and may vary between plugins ("cpu", "cuda").</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># pjrt::plugins_downloaded()</span></span></span>
-<span class="r-in"><span><span class="co"># Scatter values 10 and 30 into positions 1 and 3 of a zero vector</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Scatter values 10 and 30 into positions 1 and 3 of a zero vector</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="va">indices</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">3L</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -249,7 +248,13 @@ implementation-defined and may vary between plugins ("cpu", "cuda").</p>
 <span class="r-in"><span>    index_vector_dim <span class="op">=</span> <span class="fl">2L</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  30</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{5} ] </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

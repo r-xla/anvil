@@ -73,10 +73,32 @@ A `list` of length 2:
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 x <- nv_array(c(1, 2))
 graph <- trace_fn(function(y) y + x, list(y = nv_aval("f32", shape = c())))
 graph
+#> <AnvilGraph>
+#>   Inputs:
+#>     %x1: f32[]
+#>   Constants:
+#>     %c1: f32[2]
+#>   Body:
+#>     %1: f32[2] = broadcast_in_dim [shape = 2, broadcast_dimensions = <any>] (%x1)
+#>     %2: f32[2] = add(%1, %c1)
+#>   Outputs:
+#>     %2: f32[2] 
 stablehlo(graph)
-}
+#> [[1]]
+#> func.func @main (%0: tensor<2xf32>, %1: tensor<f32>) -> tensor<2xf32> {
+#> %2 = "stablehlo.broadcast_in_dim" (%1) {
+#> broadcast_dimensions = array<i64>
+#> }: (tensor<f32>) -> (tensor<2xf32>)
+#> %3 = stablehlo.add %2, %0 : tensor<2xf32>
+#> return %3 : tensor<2xf32>
+#> }
+#> 
+#> [[2]]
+#> [[2]][[1]]
+#> GraphValue(ConcreteArray(f32, (2))) 
+#> 
+#> 
 ```

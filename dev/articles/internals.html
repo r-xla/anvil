@@ -265,7 +265,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x5644b38c27e8&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x561fec356048&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -308,7 +308,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x5644b38c5968&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x561fec359200&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
@@ -580,6 +580,38 @@ program.</li>
 the future.</li>
 </ol>
 </div>
+</div>
+<div class="section level2">
+<h2 id="device-inference-in-jit">Device Inference in <code>jit()</code><a class="anchor" aria-label="anchor" href="#device-inference-in-jit"></a>
+</h2>
+<p>Device handling in <code><a href="../reference/jit.html">jit()</a></code> is quite complicated. Some
+things that are important to be aware of:</p>
+<ol style="list-style-type: decimal">
+<li><p>We don’t know the inferred device just from looking at the input
+as we might have something like:
+<code>jit(\(x) x + nv_scalar(1, device = "cuda"))</code> where we might
+only learn about the device during tracing. This means the data is only
+converted at the end.</p></li>
+<li>
+<p>There are different backends. There might be a function like
+<code>jit(\(dev) nv_scalar(1, device = dev), backend = "auto")</code>.
+But with the current implementation of <code><a href="../reference/jit.html">jit()</a></code>, the tracing
+is handled by the backend’s <code>jit</code> method, so we need to
+determine the backend from the input arguments. Therefore, the
+<code>device = device_arg("dev")</code> needs to be specified:</p>
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">dev</span><span class="op">)</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, device <span class="op">=</span> <span class="va">dev</span><span class="op">)</span>, backend <span class="op">=</span> <span class="st">"auto"</span>, device <span class="op">=</span> <span class="fu"><a href="../reference/device_arg.html">device_arg</a></span><span class="op">(</span><span class="st">"dev"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">f</span><span class="op">(</span><span class="fu"><a href="../reference/nv_device.html">nv_device</a></span><span class="op">(</span><span class="st">"cpu"</span>, <span class="st">"xla"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>If we would make the main <code><a href="../reference/jit.html">jit()</a></code> function already trace,
+we could determine the backend during the tracing, but this is not
+really needed yet.</p>
+</li>
+<li><p><code>device = device_arg()</code> is only accepted together with
+<code>backend = NULL</code> or <code>backend = "auto"</code>. A concrete
+backend combined with <code><a href="../reference/device_arg.html">device_arg()</a></code> is rejected, because
+with a concrete backend the device can simply be passed via a static
+argument.</p></li>
+</ol>
 <div class="section level3">
 <h3 id="nested-inputs-and-outputs">Nested Inputs and Outputs<a class="anchor" aria-label="anchor" href="#nested-inputs-and-outputs"></a>
 </h3>

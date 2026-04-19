@@ -58,21 +58,37 @@ I.e., they lower to
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 x <- LiteralArray(1L, shape = integer(), ambiguous = TRUE)
 x
+#> LiteralArray(1, i32?, ()) 
 ambiguous(x)
+#> [1] TRUE
 shape(x)
+#> integer(0)
 ndims(x)
+#> [1] 0
 dtype(x)
+#> <i32>
 # How it appears during tracing:
 # 1. via R literals
 graph <- trace_fn(function() 1, list())
 graph
+#> <AnvilGraph>
+#>   Inputs: (none)
+#>   Body: (empty)
+#>   Outputs:
+#>     1:f32? 
 graph$outputs[[1]]$aval
+#> LiteralArray(1, f32?, ()) 
 # 2. via nv_fill()
 graph <- trace_fn(function() nv_fill(2L, shape = c(2, 2)), list())
 graph
+#> <AnvilGraph>
+#>   Inputs: (none)
+#>   Body:
+#>     %1: i32[2, 2] = fill [value = 2, dtype = i32, shape = c(2, 2), ambiguous = FALSE] ()
+#>   Outputs:
+#>     %1: i32[2, 2] 
 graph$outputs[[1]]$aval
-}
+#> AbstractArray(dtype=i32, shape=2x2) 
 ```

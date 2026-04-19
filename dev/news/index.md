@@ -29,8 +29,8 @@
   [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md).
 - An experimental [{quickr}](https://github.com/t-kalinowski/quickr)
   backend is now available. It only runs on CPU for now and supports a
-  subset of available operations. You can enable it globally via the
-  `backend` argument in
+  subset of available operations. You can enable it via the `backend`
+  argument in
   [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) and
   [`nv_array()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
   or via the `anvil.default_backend` option.
@@ -57,6 +57,8 @@
   now also works on GPUs.
 - R vectors of length 1 and arrays are now auto-converted when being
   passed to `jit`ted functions.
+- Improved device handling in
+  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)
 
 ### Performance
 
@@ -80,10 +82,10 @@
 
 - New vignette on implementing Gaussian Processes.
 - New vignette on implementing Metropolis-Hastings sampling.
+
+### Platform support and installation
+
 - An installation guide was added.
-
-### Miscellaneous
-
 - Linux on ARM is now supported (CPU only).
 - To use the CUDA backend, it is now possible to install the `cuda12.8`
   package (see installation guide), which only requires a compatible

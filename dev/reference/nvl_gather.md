@@ -141,7 +141,6 @@ Lowers to
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 # Gather rows 1 and 3 from a 3x3 matrix
 jit_eval({
   operand <- nv_array(matrix(1:9, nrow = 3))
@@ -157,5 +156,8 @@ jit_eval({
     index_vector_dim = 2L
   )
 })
-}
+#> AnvilArray
+#>  1 4 7
+#>  3 6 9
+#> [ CPUi32{2,3} ] 
 ```

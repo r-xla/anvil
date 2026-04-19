@@ -70,7 +70,6 @@ effective start position may differ from the requested one.
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 # 1-D: overwrite two elements starting at position 2
 jit_eval({
   x <- nv_array(1:5)
@@ -78,6 +77,13 @@ jit_eval({
   start <- nv_scalar(2L)
   nvl_dynamic_update_slice(x, update, start)
 })
+#> AnvilArray
+#>   1
+#>  10
+#>  20
+#>   4
+#>   5
+#> [ CPUi32{5} ] 
 
 # 2-D: write a 2x2 block into a 3x4 matrix
 jit_eval({
@@ -87,5 +93,9 @@ jit_eval({
   col_start <- nv_scalar(3L)
   nvl_dynamic_update_slice(x, update, row_start, col_start)
 })
-}
+#> AnvilArray
+#>  0 0 0 0
+#>  0 0 1 3
+#>  0 0 2 4
+#> [ CPUi32{3,4} ] 
 ```

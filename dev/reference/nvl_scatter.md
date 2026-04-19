@@ -151,7 +151,6 @@ Lowers to
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 # Scatter values 10 and 30 into positions 1 and 3 of a zero vector
 jit_eval({
   input <- nv_array(c(0, 0, 0, 0, 0))
@@ -167,5 +166,11 @@ jit_eval({
     index_vector_dim = 2L
   )
 })
-}
+#> AnvilArray
+#>  10
+#>   0
+#>  30
+#>   0
+#>   0
+#> [ CPUf32{5} ] 
 ```

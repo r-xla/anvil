@@ -49,9 +49,11 @@
 <url><loc>https://r-xla.github.io/anvil/dev/reference/backend.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/build_tree.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/common_dtype.html</loc></url>
-<url><loc>https://r-xla.github.io/anvil/dev/reference/compile_to_xla.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/compile_xla.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/default_backend.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/default_device.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/device.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/device_arg.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/dot-current_descriptor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/dtype.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/eq_type.html</loc></url>
@@ -62,6 +64,7 @@
 <url><loc>https://r-xla.github.io/anvil/dev/reference/graph_to_quickr_function.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/graph_to_quickr_r_function.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/index.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/is_device.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/is_dtype.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/jit.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/jit_eval.html</loc></url>

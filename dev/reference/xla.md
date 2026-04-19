@@ -61,18 +61,20 @@ and then compiles it to an XLA executable via
 
 [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) for lazy
 compilation,
-[`compile_to_xla()`](https://r-xla.github.io/anvil/dev/reference/compile_to_xla.md)
+[`compile_xla()`](https://r-xla.github.io/anvil/dev/reference/compile_xla.md)
 for the lower-level API.
 
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 f_compiled <- xla(function(x, y) x + y,
   args = list(x = nv_aval("f32", c(2, 2)), y = nv_aval("f32", c(2, 2)))
 )
 a <- nv_array(array(1:4, c(2, 2)), dtype = "f32")
 b <- nv_array(array(5:8, c(2, 2)), dtype = "f32")
 f_compiled(a, b)
-}
+#> AnvilArray
+#>   6 10
+#>   8 12
+#> [ CPUf32{2,2} ] 
 ```

@@ -55,12 +55,14 @@ Other rng:
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   state <- nv_rng_state(42L)
   # Bernoulli samples
   result <- nv_rbinom(c(2, 3), state)
   result[[2]]
 })
-}
+#> AnvilArray
+#>  0 0 1
+#>  0 1 1
+#> [ CPUi32{2,3} ] 
 ```

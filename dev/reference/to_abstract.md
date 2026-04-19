@@ -29,16 +29,24 @@ to_abstract(x, pure = FALSE)
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 # R literals become LiteralArrays (ambiguous by default, except logicals)
 to_abstract(1.5)
+#> LiteralArray(1.5, f32?, ()) 
 to_abstract(1L)
+#> LiteralArray(1, i32?, ()) 
 to_abstract(TRUE)
+#> LiteralArray(TRUE, i1, ()) 
 
 # AnvilArrays become ConcreteArrays
 to_abstract(nv_array(1:4))
+#> ConcreteArray
+#>  1
+#>  2
+#>  3
+#>  4
+#> [ CPUi32{4} ] 
 
 # Use pure = TRUE to strip subclass info
 to_abstract(nv_array(1:4), pure = TRUE)
-}
+#> AbstractArray(dtype=i32, shape=4) 
 ```

@@ -70,18 +70,30 @@ Lowers to
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 # 1-D: extract elements 2 through 4 (limit is exclusive)
 jit_eval({
   x <- nv_array(1:10)
   nvl_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 })
+#> AnvilArray
+#>  2
+#>  3
+#>  4
+#>  5
+#> [ CPUi32{4} ] 
 
 # 1-D: every other element using strides
 jit_eval({
   x <- nv_array(1:10)
   nvl_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
 })
+#> AnvilArray
+#>  1
+#>  3
+#>  5
+#>  7
+#>  9
+#> [ CPUi32{5} ] 
 
 # 2-D: extract a submatrix (rows 1-2, columns 2-3)
 jit_eval({
@@ -92,5 +104,9 @@ jit_eval({
     strides       = c(1L, 1L)
   )
 })
-}
+#> AnvilArray
+#>   4  7 10
+#>   5  8 11
+#>   6  9 12
+#> [ CPUi32{3,3} ] 
 ```

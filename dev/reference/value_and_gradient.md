@@ -41,11 +41,18 @@ A function with the same formals as `f` that returns
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 loss_fn <- function(x) sum(x^2L)
 vg <- jit(value_and_gradient(loss_fn))
 result <- vg(nv_array(c(3, 4), dtype = "f32"))
 result$value
+#> AnvilArray
+#>  25
+#> [ CPUf32{} ] 
 result$grad
-}
+#> $x
+#> AnvilArray
+#>  6
+#>  8
+#> [ CPUf32{2} ] 
+#> 
 ```

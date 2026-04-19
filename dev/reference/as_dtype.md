@@ -34,8 +34,8 @@ This is implemented via the generic
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 as_dtype("f32")
+#> <f32>
 as_dtype("i32")
-}
+#> <i32>
 ```

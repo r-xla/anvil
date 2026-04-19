@@ -115,10 +115,6 @@ underlying buffers may be donated to (i.e., reused/consumed by) the
 compiled XLA executable. Donated buffers must not be used again by the
 caller after the call; this can reduce memory usage and copies for large
 inputs. Must not overlap with <code>static</code>.</p></li>
-<li><p><code>device</code> (<code>NULL</code> | <code>character(1)</code> | <code><a href="https://r-xla.github.io/pjrt/reference/as_pjrt_device.html" class="external-link">pjrt::PJRTDevice</a></code>,
-default <code>NULL</code>): target device (e.g. <code>"cpu"</code>, <code>"cuda"</code>) on which the
-function is compiled and executed. When <code>NULL</code>, the device is inferred
-from the inputs; if inputs live on different devices an error is raised.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

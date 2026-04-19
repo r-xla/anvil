@@ -14,7 +14,8 @@ jit(
   f,
   static = character(),
   cache_size = 100L,
-  backend = default_backend(),
+  backend = NULL,
+  device = NULL,
   ...
 )
 ```
@@ -44,11 +45,27 @@ jit(
 
 - backend:
 
-  (`character(1)`)  
-  Compilation backend. `"xla"` (default) uses PJRT/XLA. `"quickr"` uses
-  [`quickr::quick()`](https://rdrr.io/pkg/quickr/man/quick.html). If
-  omitted, the default comes from
+  (`NULL` \| `character(1)`)  
+  Compilation backend (e.g. `"xla"`, `"quickr"`). The special value
+  `"auto"` defers backend selection to call-time. `NULL` (default)
+  respects `device` and otherwise falls back to
   [`default_backend()`](https://r-xla.github.io/anvil/dev/reference/default_backend.md).
+
+- device:
+
+  (`NULL` \| `character(1)` \|
+  [`nv_device`](https://r-xla.github.io/anvil/dev/reference/nv_device.md)
+  \|
+  [`device_arg()`](https://r-xla.github.io/anvil/dev/reference/device_arg.md))  
+  Target device. When a concrete device is specified, all arrays are
+  moved to it.
+
+  The default (`NULL`) infers the device at call time, falling back to
+  [`default_device()`](https://r-xla.github.io/anvil/dev/reference/default_device.md).
+
+  In order to use dynamic device selection with the `"auto"` backend
+  (e.g. for functions without dynamic inputs such as constant creation),
+  set `device = device_arg("<arg>")`.
 
 - ...:
 
@@ -59,14 +76,35 @@ jit(
 
 ## Value
 
-A `JitFunction` with the same formals as `f`. The returned wrapper
-expects
+A `JitFunction` (a `function` with the same formals as `f`). The
+returned wrapper expects
 [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
 inputs and returns
 [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
-values (unless `unwrap = TRUE` is passed to the `"quickr"` backend).
+values.
 
-(`function`)
+## Device and Backend selection
+
+There are various ways to specify which device and which backend to use.
+
+**Concrete backend**: In the case where we fix a concrete backend
+(backend is not `"auto"`), the device can be inferred or set explicitly.
+Setting the device explicitly allows you to enforce that the function
+always uses the specified device, e.g. `"cuda:0"`. If the `device`
+argument is set, all encountered arrays are copied to it.
+
+If the device is not specified (`NULL`; default) the device will be
+inferred from the input arrays and the constants within the program. If
+conflicting devices are found, an error is thrown. If no array with a
+device is found, we fall back to the default device.
+
+**Auto backend**: When setting `backend = "auto"`, the backend will be
+inferred from the array inputs and otherwise fall back to the default
+backend. If you want to `jit()` a function without array inputs but make
+it work with different devices, set `device = device_arg("<argname>")`
+where `<argname>` is the name of the argument specifying the device.
+Note that this is only necessary with the `"auto"` backend. When using a
+concrete backend, you can just specify the device via a static argument.
 
 ## XLA JIT arguments
 
@@ -76,13 +114,6 @@ values (unless `unwrap = TRUE` is passed to the `"quickr"` backend).
   reused/consumed by) the compiled XLA executable. Donated buffers must
   not be used again by the caller after the call; this can reduce memory
   usage and copies for large inputs. Must not overlap with `static`.
-
-- `device` (`NULL` \| `character(1)` \|
-  [`pjrt::PJRTDevice`](https://r-xla.github.io/pjrt/reference/as_pjrt_device.html),
-  default `NULL`): target device (e.g. `"cpu"`, `"cuda"`) on which the
-  function is compiled and executed. When `NULL`, the device is inferred
-  from the inputs; if inputs live on different devices an error is
-  raised.
 
 ## Quickr JIT arguments
 
@@ -102,17 +133,24 @@ for evaluating an expression once.
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 f <- jit(function(x, y) x + y)
 f(nv_array(1), nv_array(2))
+#> AnvilArray
+#>  3
+#> [ CPUf32{1} ] 
 
 # Static arguments enable data-dependent control flow
 g <- jit(function(x, flag) {
   if (flag) x + 1 else x * 2
 }, static = "flag")
 g(nv_array(3), TRUE)
+#> AnvilArray
+#>  4
+#> [ CPUf32{1} ] 
 g(nv_array(3), FALSE)
-}
+#> AnvilArray
+#>  6
+#> [ CPUf32{1} ] 
 with_backend("quickr", {
   h <- jit(function(x, y) x + y)
   h(nv_array(1), nv_array(2))

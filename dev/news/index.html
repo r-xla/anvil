@@ -78,7 +78,7 @@
 <div class="section level3">
 <h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
 <ul><li>Better composability: <code><a href="../reference/jit.html">jit()</a></code>ted functions can now be traced when used within <code><a href="../reference/jit.html">jit()</a></code>.</li>
-<li>An experimental <a href="https://github.com/t-kalinowski/quickr" class="external-link">{quickr}</a> backend is now available. It only runs on CPU for now and supports a subset of available operations. You can enable it globally via the <code>backend</code> argument in <code><a href="../reference/jit.html">jit()</a></code> and <code><a href="../reference/AnvilArray.html">nv_array()</a></code> or via the <code>anvil.default_backend</code> option.</li>
+<li>An experimental <a href="https://github.com/t-kalinowski/quickr" class="external-link">{quickr}</a> backend is now available. It only runs on CPU for now and supports a subset of available operations. You can enable it via the <code>backend</code> argument in <code><a href="../reference/jit.html">jit()</a></code> and <code><a href="../reference/AnvilArray.html">nv_array()</a></code> or via the <code>anvil.default_backend</code> option.</li>
 <li>New primitives:
 <ul><li>
 <code><a href="../reference/nvl_cholesky.html">nvl_cholesky()</a></code> to compute the Cholesky decomposition of a matrix.</li>
@@ -98,6 +98,8 @@
 <li>New S3 methods <code><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim()</a></code>, <code><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow()</a></code>, <code><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol()</a></code>, and <code><a href="https://rdrr.io/r/base/length.html" class="external-link">length()</a></code> for anvil arrays.</li>
 <li>Printing tensors via <code><a href="../reference/nv_print.html">nv_print()</a></code> now also works on GPUs.</li>
 <li>R vectors of length 1 and arrays are now auto-converted when being passed to <code>jit</code>ted functions.</li>
+<li>Improved device handling in <code><a href="../reference/jit.html">jit()</a></code>
+</li>
 </ul></div>
 <div class="section level3">
 <h3 id="performance-development-version">Performance<a class="anchor" aria-label="anchor" href="#performance-development-version"></a></h3>
@@ -113,11 +115,11 @@
 <h3 id="documentation-development-version">Documentation<a class="anchor" aria-label="anchor" href="#documentation-development-version"></a></h3>
 <ul><li>New vignette on implementing Gaussian Processes.</li>
 <li>New vignette on implementing Metropolis-Hastings sampling.</li>
-<li>An installation guide was added.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="miscellaneous-development-version">Miscellaneous<a class="anchor" aria-label="anchor" href="#miscellaneous-development-version"></a></h3>
-<ul><li>Linux on ARM is now supported (CPU only).</li>
+<h3 id="platform-support-and-installation-development-version">Platform support and installation<a class="anchor" aria-label="anchor" href="#platform-support-and-installation-development-version"></a></h3>
+<ul><li>An installation guide was added.</li>
+<li>Linux on ARM is now supported (CPU only).</li>
 <li>To use the CUDA backend, it is now possible to install the <code>cuda12.8</code> package (see installation guide), which only requires a compatible CUDA driver.</li>
 </ul></div>
 </div>

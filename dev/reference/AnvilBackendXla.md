@@ -55,13 +55,6 @@ jitted call. Operations require all inputs to live on the same device.
   not be used again by the caller after the call; this can reduce memory
   usage and copies for large inputs. Must not overlap with `static`.
 
-- `device` (`NULL` \| `character(1)` \|
-  [`pjrt::PJRTDevice`](https://r-xla.github.io/pjrt/reference/as_pjrt_device.html),
-  default `NULL`): target device (e.g. `"cpu"`, `"cuda"`) on which the
-  function is compiled and executed. When `NULL`, the device is inferred
-  from the inputs; if inputs live on different devices an error is
-  raised.
-
 ## See also
 
 [`AnvilBackend()`](https://r-xla.github.io/anvil/dev/reference/AnvilBackend.md),

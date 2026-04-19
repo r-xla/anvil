@@ -39,7 +39,6 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   nv_while(
     init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
@@ -50,5 +49,14 @@ jit_eval({
     )
   )
 })
-}
+#> $i
+#> AnvilArray
+#>  5
+#> [ CPUi32{} ] 
+#> 
+#> $total
+#> AnvilArray
+#>  10
+#> [ CPUi32{} ] 
+#> 
 ```

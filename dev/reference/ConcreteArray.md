@@ -28,18 +28,35 @@ compilation time and bloating the size of the executable.
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 y <- nv_array(c(0.5, 0.6))
 x <- ConcreteArray(y)
 x
+#> ConcreteArray
+#>  0.5000
+#>  0.6000
+#> [ CPUf32{2} ] 
 ambiguous(x)
+#> [1] FALSE
 shape(x)
+#> [1] 2
 ndims(x)
+#> [1] 1
 dtype(x)
+#> <f32>
 
 # How it appears during tracing
 graph <- trace_fn(function() y, list())
 graph
+#> <AnvilGraph>
+#>   Inputs: (none)
+#>   Constants:
+#>     %c1: f32[2]
+#>   Body: (empty)
+#>   Outputs:
+#>     %c1: f32[2] 
 graph$outputs[[1]]$aval
-}
+#> ConcreteArray
+#>  0.5000
+#>  0.6000
+#> [ CPUf32{2} ] 
 ```

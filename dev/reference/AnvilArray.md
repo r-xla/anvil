@@ -130,33 +130,63 @@ Arrays can be serialized to and from the
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 # A 1-d array (vector) with shape (4). Default type for integers is `i32`
 nv_array(1:4)
+#> AnvilArray
+#>  1
+#>  2
+#>  3
+#>  4
+#> [ CPUi32{4} ] 
 
 # Specify a dtype
 nv_array(c(1.5, 2.5, 3.5), dtype = "f64")
+#> AnvilArray
+#>  1.5000
+#>  2.5000
+#>  3.5000
+#> [ CPUf64{3} ] 
 
 # A 2x3 matrix
 nv_array(1:6, shape = c(2L, 3L))
+#> AnvilArray
+#>  1 3 5
+#>  2 4 6
+#> [ CPUi32{2,3} ] 
 
 # A scalar array.
 nv_scalar(3.14)
+#> AnvilArray
+#>  3.1400
+#> [ CPUf32{} ] 
 
 # A 0x3 array
 nv_empty("f32", shape = c(0L, 3L))
+#> AnvilArray
+#> [ CPUf32{0,3} ] 
 
 # --- Extractors ---
 x <- nv_array(1:6, shape = c(2L, 3L))
 dtype(x)
+#> <i32>
 shape(x)
+#> [1] 2 3
 ndims(x)
+#> [1] 2
 device(x)
+#> <CpuDevice(id=0)>
 platform(x)
+#> [1] "cpu"
 ambiguous(x)
+#> [1] FALSE
 
 # --- Transforming arrays with jit ---
 add_one <- jit(function(x) x + 1)
 add_one(nv_array(1:4))
-}
+#> AnvilArray
+#>  2
+#>  3
+#>  4
+#>  5
+#> [ CPUf32?{4} ] 
 ```

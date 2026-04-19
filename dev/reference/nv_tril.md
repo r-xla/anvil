@@ -34,10 +34,13 @@ Has the same shape and data type as `operand`.
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_fill(1, c(3, 3))
   nv_tril(x)
 })
-}
+#> AnvilArray
+#>  1 0 0
+#>  1 1 0
+#>  1 1 1
+#> [ CPUf32{3,3} ] 
 ```

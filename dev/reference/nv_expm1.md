@@ -28,10 +28,13 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(c(0, 0.001, 1))
   nv_expm1(x)
 })
-}
+#> AnvilArray
+#>  0.0000
+#>  0.0010
+#>  1.7183
+#> [ CPUf32{3} ] 
 ```

@@ -85,7 +85,8 @@ eagerly but lazily on the first invocation.</p>
 <span>  <span class="va">f</span>,</span>
 <span>  static <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  cache_size <span class="op">=</span> <span class="fl">100L</span>,</span>
-<span>  backend <span class="op">=</span> <span class="fu"><a href="default_backend.html">default_backend</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  backend <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  device <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -113,10 +114,20 @@ Maximum number of compiled executables to keep in the LRU cache.</p></dd>
 
 
 <dt id="arg-backend">backend<a class="anchor" aria-label="anchor" href="#arg-backend"></a></dt>
-<dd><p>(<code>character(1)</code>)<br>
-Compilation backend. <code>"xla"</code> (default) uses PJRT/XLA.
-<code>"quickr"</code> uses <code><a href="https://rdrr.io/pkg/quickr/man/quick.html" class="external-link">quickr::quick()</a></code>. If omitted, the default comes from
-<code><a href="default_backend.html">default_backend()</a></code>.</p></dd>
+<dd><p>(<code>NULL</code> |  <code>character(1)</code>)<br>
+Compilation backend (e.g. <code>"xla"</code>, <code>"quickr"</code>).
+The special value <code>"auto"</code> defers backend selection to call-time.
+<code>NULL</code> (default) respects <code>device</code> and otherwise falls back to <code><a href="default_backend.html">default_backend()</a></code>.</p></dd>
+
+
+<dt id="arg-device">device<a class="anchor" aria-label="anchor" href="#arg-device"></a></dt>
+<dd><p>(<code>NULL</code> | <code>character(1)</code> | <code><a href="nv_device.html">nv_device</a></code> | <code><a href="device_arg.html">device_arg()</a></code>)<br>
+Target device. When a concrete device is specified, all arrays
+are moved to it.</p>
+<p>The default (<code>NULL</code>) infers the device at call time,
+falling back to <code><a href="default_device.html">default_device()</a></code>.</p>
+<p>In order to use dynamic device selection with the <code>"auto"</code> backend (e.g. for functions without
+dynamic inputs such as constant creation), set <code>device = device_arg("&lt;arg&gt;")</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -128,11 +139,31 @@ backend.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>JitFunction</code> with the same formals as <code>f</code>.
+    <p>A <code>JitFunction</code> (a <code>function</code> with the same formals as <code>f</code>).
 The returned wrapper expects <code><a href="AnvilArray.html">AnvilArray</a></code> inputs and returns
-<code><a href="AnvilArray.html">AnvilArray</a></code> values (unless <code>unwrap = TRUE</code> is passed to the
-<code>"quickr"</code> backend).</p>
-<p>(<code>function</code>)</p>
+<code><a href="AnvilArray.html">AnvilArray</a></code> values.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="device-and-backend-selection">Device and Backend selection<a class="anchor" aria-label="anchor" href="#device-and-backend-selection"></a></h2>
+
+
+<p>There are various ways to specify which device and which backend to use.</p>
+<p><strong>Concrete backend</strong>:
+In the case where we fix a concrete backend (backend is not <code>"auto"</code>), the device can be
+inferred or set explicitly.
+Setting the device explicitly allows you to enforce that the function always uses the specified
+device, e.g. <code>"cuda:0"</code>.
+If the <code>device</code> argument is set, all encountered arrays are copied to it.</p>
+<p>If the device is not specified (<code>NULL</code>; default) the device will be inferred from the input
+arrays and the constants within the program. If conflicting devices are found, an error
+is thrown. If no array with a device is found, we fall back to the default device.</p>
+<p><strong>Auto backend</strong>:
+When setting <code>backend = "auto"</code>, the backend will be inferred from the array inputs and
+otherwise fall back to the default backend.
+If you want to <code>jit()</code> a function without array inputs but make it work with different devices,
+set <code>device = device_arg("&lt;argname&gt;")</code> where <code>&lt;argname&gt;</code> is the name of the argument specifying
+the device. Note that this is only necessary with the <code>"auto"</code> backend.
+When using a concrete backend, you can just specify the device via a static argument.</p>
     </div>
     <div class="section level2">
     <h2 id="xla-jit-arguments">XLA JIT arguments<a class="anchor" aria-label="anchor" href="#xla-jit-arguments"></a></h2>
@@ -143,10 +174,6 @@ underlying buffers may be donated to (i.e., reused/consumed by) the
 compiled XLA executable. Donated buffers must not be used again by the
 caller after the call; this can reduce memory usage and copies for large
 inputs. Must not overlap with <code>static</code>.</p></li>
-<li><p><code>device</code> (<code>NULL</code> | <code>character(1)</code> | <code><a href="https://r-xla.github.io/pjrt/reference/as_pjrt_device.html" class="external-link">pjrt::PJRTDevice</a></code>,
-default <code>NULL</code>): target device (e.g. <code>"cpu"</code>, <code>"cuda"</code>) on which the
-function is compiled and executed. When <code>NULL</code>, the device is inferred
-from the inputs; if inputs live on different devices an error is raised.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="quickr-jit-arguments">Quickr JIT arguments<a class="anchor" aria-label="anchor" href="#quickr-jit-arguments"></a></h2>
@@ -164,17 +191,24 @@ would only get stripped again.</p></li>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># pjrt::plugins_downloaded()</span></span></span>
-<span class="r-in"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu">jit</span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="va">y</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu">jit</span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="va">y</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">f</span><span class="op">(</span><span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{1} ] </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Static arguments enable data-dependent control flow</span></span></span>
 <span class="r-in"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu">jit</span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">flag</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="kw">if</span> <span class="op">(</span><span class="va">flag</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="fl">1</span> <span class="kw">else</span> <span class="va">x</span> <span class="op">*</span> <span class="fl">2</span></span></span>
 <span class="r-in"><span><span class="op">}</span>, static <span class="op">=</span> <span class="st">"flag"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">g</span><span class="op">(</span><span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>, <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{1} ] </span>
 <span class="r-in"><span><span class="fu">g</span><span class="op">(</span><span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>, <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvilArray</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{1} ] </span>
 <span class="r-in"><span><span class="fu"><a href="with_backend.html">with_backend</a></span><span class="op">(</span><span class="st">"quickr"</span>, <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">h</span> <span class="op">&lt;-</span> <span class="fu">jit</span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="va">y</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">h</span><span class="op">(</span><span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>

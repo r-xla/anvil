@@ -38,10 +38,11 @@ for value-preserving type conversion.
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(1L)
   nvl_bitcast_convert(x, dtype = "i8")
 })
-}
+#> AnvilArray
+#>  1 0 0 0
+#> [ CPUi8{1,4} ] 
 ```

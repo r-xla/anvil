@@ -74,13 +74,17 @@ Lowers to
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 # 1-D: extract 3 elements starting at position 3
 jit_eval({
   x <- nv_array(1:10)
   start <- nv_scalar(3L)
   nvl_dynamic_slice(x, start, slice_sizes = 3L)
 })
+#> AnvilArray
+#>  3
+#>  4
+#>  5
+#> [ CPUi32{3} ] 
 
 # 2-D: extract a 2x2 block from a matrix
 jit_eval({
@@ -89,5 +93,8 @@ jit_eval({
   col_start <- nv_scalar(1L)
   nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
 })
-}
+#> AnvilArray
+#>  2 5
+#>  3 6
+#> [ CPUi32{2,2} ] 
 ```

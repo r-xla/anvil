@@ -39,10 +39,12 @@ Triangular matrix with the same shape and data type as the input.
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
   nv_cholesky(a)
 })
-}
+#> AnvilArray
+#>  2.0000 0.0000
+#>  1.0000 1.4142
+#> [ CPUf32{2,2} ] 
 ```

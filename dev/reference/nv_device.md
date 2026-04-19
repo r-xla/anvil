@@ -11,21 +11,23 @@ but also compilation
 ## Usage
 
 ``` r
-nv_device(x, backend = default_backend())
+nv_device(x, backend = NULL)
 ```
 
 ## Arguments
 
 - x:
 
-  (`character(1)`)  
-  Identifier for the device. E.g. `"cpu"`, `"cuda"`, or `"cuda:<n>"`
-  (for the n-th GPU).
+  (`character(1)` \| device object)  
+  Identifier for the device (e.g. `"cpu"`, `"cuda"`, `"cuda:<n>"`), or
+  an existing device object (returned as-is).
 
 - backend:
 
-  (`character(1)`)  
-  The backend for which to create the device.
+  (`NULL` \| `character(1)`)  
+  The backend for which to create the device. Defaults to
+  [`default_backend()`](https://r-xla.github.io/anvil/dev/reference/default_backend.md)
+  when `NULL`.
 
 ## Value
 
@@ -41,10 +43,14 @@ for `"quickr"`).
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 # Create CPU device for xla backend:
 nv_device("cpu", "xla")
+#> <CpuDevice(id=0)>
 # Create CPU device for quickr backend:
 nv_device("cpu", "quickr")
-}
+#> QuickrDevice(cpu) 
+# Pass through an existing device:
+dev <- nv_device("cpu")
+identical(nv_device(dev), dev)
+#> [1] TRUE
 ```

@@ -39,10 +39,13 @@ Lowers to
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(c(7L, 3L, 15L))
   nvl_popcnt(x)
 })
-}
+#> AnvilArray
+#>  3
+#>  2
+#>  4
+#> [ CPUi32{3} ] 
 ```

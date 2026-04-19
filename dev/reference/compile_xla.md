@@ -7,7 +7,14 @@ executable along with metadata needed for execution.
 ## Usage
 
 ``` r
-compile_to_xla(f, args_flat, in_tree, donate = character(), device = NULL)
+compile_xla(
+  f,
+  args_flat,
+  in_tree,
+  donate = character(),
+  device = NULL,
+  arg_devices = list()
+)
 ```
 
 ## Arguments
@@ -36,7 +43,14 @@ compile_to_xla(f, args_flat, in_tree, donate = character(), device = NULL)
 
   (`NULL` \| `character(1)`)  
   Target device (e.g. `"cpu"`, `"cuda"`). If `NULL`, inferred from
-  traced arrays.
+  `arg_devices` and traced arrays.
+
+- arg_devices:
+
+  (`list`)  
+  Devices of the concrete (non-static) input arguments, extracted before
+  converting to abstract values. Used together with traced devices for
+  device inference when `device` is `NULL`.
 
 ## Value
 

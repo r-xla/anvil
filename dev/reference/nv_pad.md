@@ -57,10 +57,16 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(c(1, 2, 3))
   nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
 })
-}
+#> AnvilArray
+#>  0
+#>  0
+#>  1
+#>  2
+#>  3
+#>  0
+#> [ CPUf32{6} ] 
 ```

@@ -52,7 +52,6 @@ Lowers to
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   nvl_while(
     init = list(i = 0L, total = 0L),
@@ -63,5 +62,14 @@ jit_eval({
     )
   )
 })
-}
+#> $i
+#> AnvilArray
+#>  6
+#> [ CPUi32?{} ] 
+#> 
+#> $total
+#> AnvilArray
+#>  15
+#> [ CPUi32?{} ] 
+#> 
 ```

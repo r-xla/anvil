@@ -42,11 +42,14 @@ with `comparison_direction = "GE"`.
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(c(1, 2, 3))
   y <- nv_array(c(3, 2, 1))
   nvl_ge(x, y)
 })
-}
+#> AnvilArray
+#>  0
+#>  1
+#>  1
+#> [ CPUbool{3} ] 
 ```

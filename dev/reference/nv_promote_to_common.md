@@ -25,12 +25,20 @@ nv_promote_to_common(...)
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   x <- nv_array(1L)
   y <- nv_array(1.5)
   # integer is promoted to float
   nv_promote_to_common(x, y)
 })
-}
+#> [[1]]
+#> AnvilArray
+#>  1
+#> [ CPUf32{1} ] 
+#> 
+#> [[2]]
+#> AnvilArray
+#>  1.5000
+#> [ CPUf32{1} ] 
+#> 
 ```

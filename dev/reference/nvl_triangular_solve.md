@@ -80,7 +80,6 @@ University Computing Laboratory.
 ## Examples
 
 ``` r
-if (FALSE) { # pjrt::plugins_downloaded()
 jit_eval({
   # Solve L %*% x = b where L is lower triangular
   L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
@@ -90,5 +89,8 @@ jit_eval({
     unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"
   )
 })
-}
+#> AnvilArray
+#>  2
+#>  1
+#> [ CPUf32{2,1} ] 
 ```
