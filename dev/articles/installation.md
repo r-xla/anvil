@@ -87,7 +87,20 @@ and CPU build for amd64/x86-64 architecture:
 
 Note that running the GPU container requires the [NVIDIA Container
 Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
-to be installed on the host.
+to be installed on the host. Once installed (and the Docker daemon
+restarted), pass `--gpus all` to `docker run` to expose the host GPUs to
+the container:
+
+``` bash
+docker run --rm -it --gpus all ghcr.io/r-xla/anvil-cuda:latest R
+```
+
+You can verify that the GPU is visible inside the container by running
+`nvidia-smi`, or from R:
+
+``` r
+anvil::nv_scalar(1, device = "cuda")
+```
 
 ### Tags
 
