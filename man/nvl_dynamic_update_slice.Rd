@@ -53,7 +53,7 @@ the effective start position may differ from the requested one.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # 1-D: overwrite two elements starting at position 2
 x <- nv_array(1:5)
 update <- nv_array(c(10L, 20L))

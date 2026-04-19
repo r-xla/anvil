@@ -23,7 +23,7 @@ the underlying data. If the target type is narrower, an extra trailing
 dimension is added; if wider, the last dimension is consumed.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(1L)
 nvl_bitcast_convert(x, dtype = "i8")
 \dontshow{\}) # examplesIf}

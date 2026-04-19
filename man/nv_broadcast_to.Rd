@@ -21,7 +21,7 @@ Has the given \code{shape} and the same data type as \code{operand}.
 Broadcasts an array to a target shape using NumPy-style broadcasting rules.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
 nv_broadcast_to(x, shape = c(2, 3))
 \dontshow{\}) # examplesIf}

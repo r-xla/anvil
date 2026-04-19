@@ -52,7 +52,7 @@ prepare_gradient_args <- function(args, wrt) {
 #' @seealso [`gradient()`], [`value_and_gradient()`]
 #' @export
 #' @examples
-#' graph <- trace_fn(nvl_mul, list(nv_abstract("f32", c()), nv_abstract("f32", c())))
+#' graph <- trace_fn(nvl_mul, list(nv_aval("f32", c()), nv_aval("f32", c())))
 #' graph
 #' transform_gradient(graph, "lhs")
 transform_gradient <- function(graph, wrt) {
@@ -224,8 +224,8 @@ transform_gradient <- function(graph, wrt) {
 #' @param f (`function`)\cr
 #'   Function to differentiate. Arguments can be arrayish ([`AnvilArray`]) or
 #'   static (non-array) values. Must return a single scalar float array.
-#' @param wrt (`character` or `NULL`)\cr
-#'   Names of the arguments to compute the gradient with respect to.
+#' @param wrt (`character` | `integer` | `NULL`)\cr
+#'   Names or positions of the arguments to compute the gradient with respect to.
 #'   Only arrayish (float array) arguments can be included; static arguments
 #'   must not appear in `wrt`.
 #'   If `NULL` (the default), the gradient is computed with respect to all
@@ -234,7 +234,7 @@ transform_gradient <- function(graph, wrt) {
 #' @seealso [`value_and_gradient()`] to get both the output and gradients,
 #'   [`transform_gradient()`] for the low-level graph transformation.
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' f <- function(x, y) sum(x * y)
 #' g <- jit(gradient(f))
 #' g(nv_array(c(1, 2), dtype = "f32"), nv_array(c(3, 4), dtype = "f32"))
@@ -248,6 +248,7 @@ transform_gradient <- function(graph, wrt) {
 #' g2 <- jit(gradient(f2, wrt = "x"), static = "power")
 #' g2(nv_array(c(1, 2, 3), dtype = "f32"), power = 2L)
 gradient <- function(f, wrt = NULL) {
+  wrt <- resolve_arg_names(f, wrt, "wrt")
   if (!is.null(wrt) && !all(wrt %in% formalArgs(f))) {
     cli_abort("wrt must be a subset of the formal arguments of f")
   }
@@ -280,13 +281,14 @@ gradient <- function(f, wrt = NULL) {
 #'   `list(value = ..., grad = ...)`.
 #' @seealso [`gradient()`]
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' loss_fn <- function(x) sum(x^2L)
 #' vg <- jit(value_and_gradient(loss_fn))
 #' result <- vg(nv_array(c(3, 4), dtype = "f32"))
 #' result$value
 #' result$grad
 value_and_gradient <- function(f, wrt = NULL) {
+  wrt <- resolve_arg_names(f, wrt, "wrt")
   if (!is.null(wrt) && !all(wrt %in% formalArgs(f))) {
     cli_abort("wrt must be a subset of the formal arguments of f")
   }

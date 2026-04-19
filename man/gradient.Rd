@@ -11,8 +11,8 @@ gradient(f, wrt = NULL)
 Function to differentiate. Arguments can be arrayish (\code{\link{AnvilArray}}) or
 static (non-array) values. Must return a single scalar float array.}
 
-\item{wrt}{(\code{character} or \code{NULL})\cr
-Names of the arguments to compute the gradient with respect to.
+\item{wrt}{(\code{character} | \code{integer} | \code{NULL})\cr
+Names or positions of the arguments to compute the gradient with respect to.
 Only arrayish (float array) arguments can be included; static arguments
 must not appear in \code{wrt}.
 If \code{NULL} (the default), the gradient is computed with respect to all
@@ -28,7 +28,7 @@ same signature as \code{f} and returns the gradients in the same structure as th
 (or the subset selected by \code{wrt}).
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 f <- function(x, y) sum(x * y)
 g <- jit(gradient(f))
 g(nv_array(c(1, 2), dtype = "f32"), nv_array(c(3, 4), dtype = "f32"))

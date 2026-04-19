@@ -55,7 +55,7 @@ Lowers to \code{\link[stablehlo:hlo_triangular_solve]{stablehlo::hlo_triangular_
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # Solve L \%*\% x = b where L is lower triangular
 L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
 b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")

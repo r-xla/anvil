@@ -18,7 +18,7 @@ An \verb{n x n} matrix with \code{x} on the diagonal and zeros elsewhere.
 Creates a diagonal matrix from a 1-D array.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 nv_diag(nv_array(c(1, 2, 3)))
 \dontshow{\}) # examplesIf}
 }

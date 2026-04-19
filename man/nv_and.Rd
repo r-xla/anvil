@@ -20,7 +20,7 @@ Has the same shape and the promoted common data type of the inputs.
 Element-wise logical AND. You can also use the \code{&} operator.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(TRUE, FALSE, TRUE))
 y <- nv_array(c(TRUE, TRUE, FALSE))
 x & y

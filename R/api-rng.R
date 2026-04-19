@@ -62,7 +62,7 @@ nv_unif_rand <- function(
 #' @return (`list()` of [`arrayish`])\cr
 #'   List of two elements: the updated RNG state and the sampled values.
 #' @family rng
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' state <- nv_rng_state(42L)
 #' result <- nv_runif(c(2, 3), state)
 #' result[[2]]
@@ -133,7 +133,7 @@ nv_runif <- function(
 #' @section Covariance:
 #' To implement a covariance structure use Cholesky decomposition.
 #' @family rng
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' state <- nv_rng_state(42L)
 #' result <- nv_rnorm(c(2, 3), state)
 #' result[[2]]
@@ -215,7 +215,7 @@ nv_rnorm <- function(shape, initial_state, dtype = "f32", mu = 0, sigma = 1) {
 #' @return (`list()` of [`arrayish`])\cr
 #'   List of two elements: the updated RNG state and the sampled values.
 #' @family rng
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' state <- nv_rng_state(42L)
 #' # Bernoulli samples
 #' result <- nv_rbinom(c(2, 3), state)
@@ -260,7 +260,7 @@ nv_rbinom <- function(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32") {
 #' @return (`list()` of [`arrayish`])\cr
 #'   List of two elements: the updated RNG state and the sampled integers.
 #' @family rng
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' state <- nv_rng_state(42L)
 #' # Roll 6 dice
 #' result <- nv_rdunif(6, state, n = 6L)

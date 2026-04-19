@@ -22,7 +22,7 @@ Returns the device on which an array is allocated.
 This is implemented via the generic \code{\link[tengen:device]{tengen::device()}}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(1:4, dtype = "f32")
 device(x)
 \dontshow{\}) # examplesIf}

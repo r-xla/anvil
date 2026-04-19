@@ -31,7 +31,7 @@ Samples from a binomial distribution with \eqn{n} trials and success probability
 When \code{n = 1} (the default), this is a Bernoulli distribution.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 state <- nv_rng_state(42L)
 # Bernoulli samples
 result <- nv_rbinom(c(2, 3), state)

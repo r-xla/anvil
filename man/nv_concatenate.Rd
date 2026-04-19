@@ -24,7 +24,7 @@ Concatenates arrays along a dimension. Operands are promoted to a common
 data type and scalars are broadcast before concatenation.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
 y <- nv_array(c(4, 5, 6))
 nv_concatenate(x, y)

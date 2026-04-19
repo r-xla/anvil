@@ -18,7 +18,7 @@ A 1-D array of length \code{min(nrow, ncol)} containing the diagonal elements.
 Extracts the diagonal elements from a 2-D array.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(1:9, shape = c(3, 3))
 nv_extract_diag(x)
 \dontshow{\}) # examplesIf}

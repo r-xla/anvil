@@ -5,14 +5,15 @@
 #' random sampling functions and is updated after each call.
 #' @param seed ([`arrayish`])\cr
 #'   Scalar `i32` seed value.
+#' @template param_device
 #' @return [`nv_array`] of dtype `ui64` and shape `(2)`.
 #' @family rng
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' state <- nv_rng_state(42L)
 #' state
 #' @export
-nv_rng_state <- function(seed) {
-  seed <- nv_array(seed, dtype = as_dtype("i32"), shape = integer())
+nv_rng_state <- function(seed, device = default_device()) {
+  seed <- nv_array(seed, dtype = as_dtype("i32"), shape = integer(), device = device)
   state <- nv_bitcast_convert(seed, dtype = "ui16")
   nv_convert(state, "ui64")
 }

@@ -19,7 +19,7 @@ Prints an array value to the console during JIT execution and returns the
 input unchanged. Useful for debugging.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
 nv_print(x)
 \dontshow{\}) # examplesIf}

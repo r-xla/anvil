@@ -110,7 +110,7 @@ Lowers to \code{\link[stablehlo:hlo_gather]{stablehlo::hlo_gather()}}.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # Gather rows 1 and 3 from a 3x3 matrix
 operand <- nv_array(matrix(1:9, nrow = 3))
 indices <- nv_array(matrix(c(1L, 3L), ncol = 1))

@@ -21,7 +21,7 @@ Element-wise two-argument arctangent, i.e. the angle (in radians) between the po
 x-axis and the point \verb{(rhs, lhs)}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 y <- nv_array(c(1, 0, -1))
 x <- nv_array(c(0, 1, 0))
 nv_atan2(y, x)

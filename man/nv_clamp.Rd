@@ -25,7 +25,7 @@ Converts \code{min_val} and \code{max_val} to the data type of \code{operand}.
 The underlying stableHLO function already broadcasts scalars, so no need to broadcast manually.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(-1, 0.5, 2))
 nv_clamp(nv_scalar(0), x, nv_scalar(1))
 \dontshow{\}) # examplesIf}

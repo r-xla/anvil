@@ -32,7 +32,7 @@ Lowers to \code{\link[stablehlo:hlo_cbrt]{stablehlo::hlo_cbrt()}}.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 8, 27))
 nvl_cbrt(x)
 \dontshow{\}) # examplesIf}

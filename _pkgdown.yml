@@ -290,7 +290,7 @@ reference:
 
   - subtitle: Abstract Types
     contents:
-      - nv_abstract
+      - nv_aval
       - AbstractArray
       - ConcreteArray
       - LiteralArray
@@ -329,6 +329,7 @@ reference:
       - build_tree
       - reindex_tree
       - tree_size
+      - tree_path
       - filter_list_node
 
   - title: Primitives

@@ -27,7 +27,7 @@ Performs logical AND along the specified dimensions.
 Returns \code{TRUE} only if all elements are \code{TRUE}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
 nv_reduce_all(x, dims = 1L)
 \dontshow{\}) # examplesIf}

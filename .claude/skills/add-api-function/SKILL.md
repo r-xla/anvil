@@ -84,7 +84,7 @@ If no proper template for a parameter or the return value exist, write the docum
 #'   <Description.>
 #' @template return_unary               # or return_binary, return_reduce, etc.
 #' @seealso [nvl_<name>()] for the underlying primitive.
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' <example code>
 #' @export
 ```
@@ -101,7 +101,7 @@ If no proper template for a parameter or the return value exist, write the docum
   - `params_reduce` — dims + drop params for reductions
 - **`@param`**: write inline for parameters not covered by templates
 - **`@seealso`**: always link to the underlying `nvl_*` primitive. Optionally link to related `nv_*` functions.
-- **`@examplesIf pjrt::plugin_is_downloaded()`**: wrap examples in this guard. Since all `nvl_*` functions are auto-jitted and `nv_*` functions call into `nvl_*` functions, examples can call them directly.
+- **`@examplesIf pjrt::plugins_downloaded()`**: wrap examples in this guard. Since all `nvl_*` functions are auto-jitted and `nv_*` functions call into `nvl_*` functions, examples can call them directly.
 - **`@family`**: use for groups of related functions (e.g. `@family rng` for all RNG functions)
 
 ### S3 methods for R generics

@@ -21,7 +21,7 @@ Has the same data type as \code{operand} with the specified dimensions removed.
 Removes dimensions of size 1 from an array.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(1:6, shape = c(1, 6, 1))
 nv_squeeze(x)
 \dontshow{\}) # examplesIf}

@@ -18,7 +18,7 @@ Has the same shape and data type as the input.
 Element-wise hyperbolic tangent. You can also use \code{tanh()}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(-1, 0, 1))
 tanh(x)
 \dontshow{\}) # examplesIf}

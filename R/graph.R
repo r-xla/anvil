@@ -546,7 +546,7 @@ match_args_to_formals <- function(f, args) {
 #' @seealso [`stablehlo()`] to lower the graph, [`jit()`] / [`xla()`] for end-to-end
 #'   compilation.
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' graph <- trace_fn(function(x, y) x + y,
 #'   args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32"))
 #' )

@@ -28,7 +28,7 @@ Samples integers from \code{1} to \code{n} with equal probability (with replacem
 analogous to R's \code{sample.int(n, size, replace = TRUE)}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 state <- nv_rng_state(42L)
 # Roll 6 dice
 result <- nv_rdunif(6, state, n = 6L)

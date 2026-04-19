@@ -24,7 +24,7 @@ An \verb{n x n} identity matrix.
 Creates an \verb{n x n} identity matrix.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 nv_eye(3L)
 \dontshow{\}) # examplesIf}
 }

@@ -40,7 +40,7 @@ I.e., they lower to \code{\link[stablehlo:hlo_constant]{stablehlo::hlo_tensor()}
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- LiteralArray(1L, shape = integer(), ambiguous = TRUE)
 x
 ambiguous(x)

@@ -23,7 +23,7 @@ Has the same shape as the input and boolean data type.
 Element-wise check if values are finite (not \code{Inf}, \code{-Inf}, or \code{NaN}).
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, Inf, NaN, -Inf, 0))
 nv_is_finite(x)
 \dontshow{\}) # examplesIf}

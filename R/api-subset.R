@@ -436,7 +436,7 @@ parse_subset_spec <- function(quo, dim_size) {
 #' @return [`arrayish`]
 #' @seealso [nv_subset_assign()] for updating subsets, `vignette("subsetting")`
 #'   for a comprehensive guide.
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:12, nrow = 3))
 #' # Select row 2
 #' x[2, ]
@@ -489,7 +489,7 @@ nv_subset <- function(x, ...) {
 #' @return [`arrayish`]\cr
 #'   A new array with the same shape as `x` and the subset replaced.
 #' @seealso [nv_subset()], `vignette("subsetting")` for a comprehensive guide.
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:12, nrow = 3))
 #' # Set row 1 to zeros
 #' x[1, ] <- nv_scalar(0L)

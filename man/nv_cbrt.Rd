@@ -18,7 +18,7 @@ Has the same shape and data type as the input.
 Element-wise cube root.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 8, 27))
 nv_cbrt(x)
 \dontshow{\}) # examplesIf}

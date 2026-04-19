@@ -26,7 +26,7 @@ Computes the Cholesky decomposition of a symmetric positive-definite matrix.
 Supports batched inputs: dimensions before the last two are batch dimensions.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
 nv_cholesky(a)
 \dontshow{\}) # examplesIf}

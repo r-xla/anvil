@@ -26,7 +26,7 @@ Selects elements from \code{true_value} or \code{false_value} based on \code{pre
 analogous to R's \code{\link[=ifelse]{ifelse()}}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 pred <- nv_array(c(TRUE, FALSE, TRUE))
 nv_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 \dontshow{\}) # examplesIf}

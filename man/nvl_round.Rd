@@ -37,7 +37,7 @@ Lowers to \code{\link[stablehlo:hlo_round_nearest_even]{stablehlo::hlo_round_nea
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1.4, 2.5, 3.6))
 nvl_round(x)
 \dontshow{\}) # examplesIf}

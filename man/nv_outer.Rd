@@ -18,7 +18,7 @@ A 2-D array of shape \verb{(length(x), length(y))}.
 Computes the outer product of two 1-D arrays.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
 y <- nv_array(c(4, 5))
 nv_outer(x, y)

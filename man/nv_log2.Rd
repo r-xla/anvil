@@ -18,7 +18,7 @@ Has the same shape and data type as the input.
 Element-wise base-2 logarithm. You can also use \code{log2()}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 4, 8))
 nv_log2(x)
 \dontshow{\}) # examplesIf}

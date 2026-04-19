@@ -62,7 +62,7 @@ With \code{steps}, produces \code{steps} evenly spaced values (like \code{seq(st
 default to those of \code{like}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 nv_seq(3, 7)
 x <- nv_array(c(1, 2, 3), dtype = "f64")
 nv_seq_like(x, 1, 5)

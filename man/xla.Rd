@@ -11,7 +11,7 @@ xla(f, args, donate = character(), device = NULL)
 Function to compile. Must accept and return \code{\link{AnvilArray}}s.}
 
 \item{args}{(\code{list})\cr
-List of abstract array specifications (e.g. from \code{\link[=nv_abstract]{nv_abstract()}}) describing the
+List of abstract array specifications (e.g. from \code{\link[=nv_aval]{nv_aval()}}) describing the
 expected shapes and dtypes of \code{f}'s arguments.}
 
 \item{donate}{(\code{character()})\cr
@@ -31,16 +31,16 @@ Compiles a function to an XLA executable via tracing.
 Returns a callable R function that executes the compiled binary.
 Unlike \code{\link[=jit]{jit()}}, compilation happens eagerly at
 definition time rather than on first call, so the input shapes and dtypes must be
-specified upfront via abstract arrays (see \code{\link[=nv_abstract]{nv_abstract()}}).
+specified upfront via abstract arrays (see \code{\link[=nv_aval]{nv_aval()}}).
 }
 \details{
 Traces \code{f} with the given abstract \code{args} (via \code{\link[=trace_fn]{trace_fn()}}), lowers the resulting graph
 via \code{\link[=stablehlo]{stablehlo()}} and then compiles it to an XLA executable via \code{\link[pjrt:pjrt_compile]{pjrt::pjrt_compile()}}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 f_compiled <- xla(function(x, y) x + y,
-  args = list(x = nv_abstract("f32", c(2, 2)), y = nv_abstract("f32", c(2, 2)))
+  args = list(x = nv_aval("f32", c(2, 2)), y = nv_aval("f32", c(2, 2)))
 )
 a <- nv_array(array(1:4, c(2, 2)), dtype = "f32")
 b <- nv_array(array(5:8, c(2, 2)), dtype = "f32")

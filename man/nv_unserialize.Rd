@@ -30,7 +30,7 @@ The data type, shape, and \link[=ambiguous]{ambiguity} of each array are
 restored from the serialized data.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded("cpu")) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded("cpu")) withAutoprint(\{ # examplesIf}
 x <- nv_array(array(1:6, dim = c(2, 3)))
 x
 raw_data <- nv_serialize(list(x = x))
