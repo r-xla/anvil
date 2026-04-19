@@ -2,7 +2,7 @@ compile_graph_pjrt <- function(graph) {
   testthat::skip_if_not_installed("pjrt")
   testthat::skip_if_not_installed("stablehlo")
 
-  compiled <- compile_graph_to_xla(graph)
+  compiled <- compile_graph_xla(graph, device = "cpu")
   input_nodes <- graph$inputs
 
   flatten_args_for_test <- function(x) {
@@ -61,7 +61,8 @@ compile_graph_pjrt <- function(graph) {
       compiled$const_arrays,
       args_nv,
       rep(FALSE, length(args_nv)),
-      compiled$ambiguous_out
+      compiled$ambiguous_out,
+      device = compiled$device
     )
     as_r(out_nv)
   }

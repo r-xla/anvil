@@ -147,8 +147,17 @@ dtype2string <- function(dtype, ambiguous = FALSE) {
   paste0(repr(dtype), if (ambiguous) "?")
 }
 
-is_lit <- function(x) {
+is_valid_lit <- function(x) {
   test_scalar(x) && (is.numeric(x) || is.logical(x))
+  #&& is.null(dim(x))
+}
+
+is_valid_array <- function(x) {
+  is.array(x) && (is.numeric(x) || is.logical(x))
+}
+
+is_valid_r <- function(x) {
+  (is.numeric(x) || is.logical(x)) && (is.array(x) || (length(x) == 1L))
 }
 
 cache_size <- function(f) {
@@ -236,4 +245,36 @@ scatter_to_gather_slice_sizes <- function(
     }
   }
   slice_sizes
+}
+
+is_device_arg <- function(x) {
+  inherits(x, "AnvilDeviceArg")
+}
+
+# returns list(device | NULL, backend)
+resolve_device <- function(device, backend) {
+  if (is.character(device)) {
+    backend <- backend %||% default_backend()
+    device <- if (backend == "auto") {
+      nv_device(device, default_backend())
+    } else {
+      nv_device(device, backend)
+    }
+    return(list(device, backend))
+  }
+  if (is.null(device)) {
+    return(list(NULL, backend %||% default_backend()))
+  }
+  # concrete device
+  if (is.null(backend) || (backend == "auto")) {
+    return(list(device, backend(device)))
+  }
+  if (backend(device) != backend) {
+    cli_abort(c(
+      "Backend of requested device does not match requested backend",
+      i = "backend(device) = {backend(device)}",
+      i = "backend = {backend}"
+    ))
+  }
+  list(device, backend)
 }

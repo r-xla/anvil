@@ -20,7 +20,7 @@
   `jit()`ted functions can now be traced when used within `jit()`.
 * An experimental [{quickr}](https://github.com/t-kalinowski/quickr) backend is now available.
   It only runs on CPU for now and supports a subset of available operations.
-  You can enable it globally via the `backend` argument in `jit()` and
+  You can enable it via the `backend` argument in `jit()` and
   `nv_array()` or via the `anvil.default_backend` option.
 * New primitives:
   * `nvl_cholesky()` to compute the Cholesky decomposition of a matrix.
@@ -34,6 +34,7 @@
 * Printing tensors via `nv_print()` now also works on GPUs.
 * R vectors of length 1 and arrays are now auto-converted when being passed
   to `jit`ted functions.
+* Improved device handling in `jit()`
 
 ## Performance
 
@@ -51,15 +52,14 @@
 
 * New vignette on implementing Gaussian Processes.
 * New vignette on implementing Metropolis-Hastings sampling.
+
+## Platform support and installation
+
 * An installation guide was added.
-
-## Miscellaneous
-
 * Linux on ARM is now supported (CPU only).
 * To use the CUDA backend, it is now possible to install the `cuda12.8`
   package (see installation guide), which only requires a compatible CUDA
   driver.
-
 
 
 # anvil 0.1.0

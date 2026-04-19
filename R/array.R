@@ -85,7 +85,7 @@ NULL
 #' @export
 nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL, backend = NULL) {
   if (is_anvil_array(data)) {
-    if (!is.null(device) && device(data) != pjrt::as_pjrt_device(device)) {
+    if (!is.null(device) && !eq_device(device(data), nv_device(device, backend))) {
       cli_abort("Cannot change device of existing AnvilArray from {.val {device(data)}} to {.val {device}}")
     }
     if (!is.null(shape) && !identical(shape(data), as.integer(shape))) {
@@ -110,13 +110,15 @@ nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous 
   if (!is.null(shape)) {
     shape <- as.integer(shape)
   }
-  desc <- .current_descriptor(silent = TRUE)
-  if (!is.null(desc)) {
+  if (currently_tracing() && is.null(device)) {
     # The functions we jit should be backend-agnostic
     if (!is.null(backend)) {
       cli_abort("{.arg backend} must not be specified when calling {.fn nv_array} inside {.fn jit}.")
     }
     return(globals$backends[["plain"]]$new_data(data, dtype, shape, device, ambiguous))
+  }
+  if (is.null(backend) && is_device(device)) {
+    backend <- backend(device)
   }
   backend <- backend %||% default_backend()
   globals$backends[[backend]]$new_data(data, dtype, shape, device, ambiguous)
@@ -735,6 +737,5 @@ is_arrayish <- function(x, convert_ok = TRUE) {
   if (!convert_ok) {
     return(FALSE)
   }
-  # length-1 vector or array of numeric or logical type
-  (is.numeric(x) || is.logical(x)) && (is.array(x) || (length(x) == 1L))
+  is_valid_r(x)
 }

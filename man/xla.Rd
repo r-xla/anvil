@@ -48,5 +48,5 @@ f_compiled(a, b)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=jit]{jit()}} for lazy compilation, \code{\link[=compile_to_xla]{compile_to_xla()}} for the lower-level API.
+\code{\link[=jit]{jit()}} for lazy compilation, \code{\link[=compile_xla]{compile_xla()}} for the lower-level API.
 }

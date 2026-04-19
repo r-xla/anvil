@@ -215,6 +215,14 @@ test_that("nv_array respects backend argument", {
   expect_equal(backend(x), "xla")
 })
 
+test_that("nv_array infers backend from device object", {
+  skip_if_not_installed("quickr")
+  local_backend("quickr")
+  x <- nv_array(1, device = pjrt::pjrt_device("cpu"))
+  expect_equal(backend(x), "xla")
+  expect_equal(device(x), nv_device("cpu", "xla"))
+})
+
 test_that("nv_array errors when backend specified inside jit", {
   expect_error(
     jit(function() nv_array(1, backend = "xla"))(),

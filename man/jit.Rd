@@ -8,7 +8,8 @@ jit(
   f,
   static = character(),
   cache_size = 100L,
-  backend = default_backend(),
+  backend = NULL,
+  device = NULL,
   ...
 )
 }
@@ -25,10 +26,20 @@ a static value changes. For example useful when you want R control flow in your 
 \item{cache_size}{(\code{integer(1)})\cr
 Maximum number of compiled executables to keep in the LRU cache.}
 
-\item{backend}{(\code{character(1)})\cr
-Compilation backend. \code{"xla"} (default) uses PJRT/XLA.
-\code{"quickr"} uses \code{quickr::quick()}. If omitted, the default comes from
-\code{default_backend()}.}
+\item{backend}{(\code{NULL} |  \code{character(1)})\cr
+Compilation backend (e.g. \code{"xla"}, \code{"quickr"}).
+The special value \code{"auto"} defers backend selection to call-time.
+\code{NULL} (default) respects \code{device} and otherwise falls back to \code{\link[=default_backend]{default_backend()}}.}
+
+\item{device}{(\code{NULL} | \code{character(1)} | \code{\link{nv_device}} | \code{device_arg()})\cr
+Target device. When a concrete device is specified, all arrays
+are moved to it.
+
+The default (\code{NULL}) infers the device at call time,
+falling back to \code{\link[=default_device]{default_device()}}.
+
+In order to use dynamic device selection with the \code{"auto"} backend (e.g. for functions without
+dynamic inputs such as constant creation), set \code{device = device_arg("<arg>")}.}
 
 \item{...}{Backend-specific options. Passing an option that is not supported
 by the selected backend raises an error. See the \strong{XLA JIT arguments} and
@@ -36,12 +47,9 @@ by the selected backend raises an error. See the \strong{XLA JIT arguments} and
 backend.}
 }
 \value{
-A \code{JitFunction} with the same formals as \code{f}.
+A \code{JitFunction} (a \code{function} with the same formals as \code{f}).
 The returned wrapper expects \code{\link{AnvilArray}} inputs and returns
-\code{\link{AnvilArray}} values (unless \code{unwrap = TRUE} is passed to the
-\code{"quickr"} backend).
-
-(\code{function})
+\code{\link{AnvilArray}} values.
 }
 \description{
 Wraps a function so that it is traced and compiled on first call. Subsequent
@@ -49,6 +57,30 @@ calls with the same input structure, shapes, and dtypes hit an LRU cache and
 skip recompilation. Unlike \code{\link[=xla]{xla()}}, the compiled executable is not created
 eagerly but lazily on the first invocation.
 }
+\section{Device and Backend selection}{
+
+There are various ways to specify which device and which backend to use.
+
+\strong{Concrete backend}:
+In the case where we fix a concrete backend (backend is not \code{"auto"}), the device can be
+inferred or set explicitly.
+Setting the device explicitly allows you to enforce that the function always uses the specified
+device, e.g. \code{"cuda:0"}.
+If the \code{device} argument is set, all encountered arrays are copied to it.
+
+If the device is not specified (\code{NULL}; default) the device will be inferred from the input
+arrays and the constants within the program. If conflicting devices are found, an error
+is thrown. If no array with a device is found, we fall back to the default device.
+
+\strong{Auto backend}:
+When setting \code{backend = "auto"}, the backend will be inferred from the array inputs and
+otherwise fall back to the default backend.
+If you want to \code{jit()} a function without array inputs but make it work with different devices,
+set \code{device = device_arg("<argname>")} where \verb{<argname>} is the name of the argument specifying
+the device. Note that this is only necessary with the \code{"auto"} backend.
+When using a concrete backend, you can just specify the device via a static argument.
+}
+
 \section{XLA JIT arguments}{
 
 \itemize{
@@ -57,10 +89,6 @@ underlying buffers may be donated to (i.e., reused/consumed by) the
 compiled XLA executable. Donated buffers must not be used again by the
 caller after the call; this can reduce memory usage and copies for large
 inputs. Must not overlap with \code{static}.
-\item \code{device} (\code{NULL} | \code{character(1)} | \code{\link[pjrt:as_pjrt_device]{pjrt::PJRTDevice}},
-default \code{NULL}): target device (e.g. \code{"cpu"}, \code{"cuda"}) on which the
-function is compiled and executed. When \code{NULL}, the device is inferred
-from the inputs; if inputs live on different devices an error is raised.
 }
 }
 

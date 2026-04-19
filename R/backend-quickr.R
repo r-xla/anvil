@@ -16,6 +16,11 @@ quickr_device <- function(x = "cpu") {
 }
 
 #' @export
+`==.QuickrDevice` <- function(e1, e2) {
+  e1$device == e2$device
+}
+
+#' @export
 as.character.QuickrDevice <- function(x, ...) x$device
 
 #' @export
@@ -27,31 +32,6 @@ print.QuickrDevice <- function(x, ...) {
   invisible(x)
 }
 
-quickr_jit_aval <- function(x) {
-  if (!is_anvil_array(x)) {
-    cli_abort("Expected AnvilArray, but got {.cls {class(x)[1]}}")
-  }
-  if (backend(x) != "quickr") {
-    cli_abort("Expected {.val quickr} backend, but got {.val {backend(x)}} backend.")
-  }
-  nv_aval(dtype(x), shape(x), ambiguous = ambiguous(x))
-}
-
-jit_quickr_inputs <- function(args_flat, is_static_flat) {
-  avals_in <- Map(
-    function(x, is_static) {
-      if (is_static) {
-        return(x)
-      }
-      quickr_jit_aval(x)
-    },
-    args_flat,
-    is_static_flat
-  )
-
-  list(avals_in = avals_in, device = NULL)
-}
-
 jit_quickr_impl <- function(f, static, cache, unwrap) {
   function() {
     # calling a jitted function within another jitted function --> re-trace the original closure
@@ -60,10 +40,13 @@ jit_quickr_impl <- function(f, static, cache, unwrap) {
       args <- lapply(args, eval, envir = parent.frame())
       return(do.call(f, args))
     }
-    prep <- jit_prepare_call(match.call(), parent.frame(), static, "quickr")
-    inputs <- jit_quickr_inputs(prep$args_flat, prep$is_static_flat)
+    prep <- jit_prepare_call(match.call(), parent.frame(), static, backend = "quickr")
+    avals_in <- to_avals(prep$args_flat, prep$is_static_flat)
 
-    cache_key <- list(prep$in_tree, inputs$avals_in, inputs$device)
+    args_flat_nv <- prep$args_flat[!prep$is_static_flat & vapply(prep$args_flat, is_anvil_array, logical(1))]
+    arg_devices <- lapply(args_flat_nv, tengen::device)
+
+    cache_key <- list(prep$in_tree, avals_in)
     r_args_flat <- lapply(prep$args_flat, function(a) {
       if (is_anvil_array(a)) as_array(a) else a
     })
@@ -72,15 +55,23 @@ jit_quickr_impl <- function(f, static, cache, unwrap) {
       return(cache_hit(r_args_flat))
     }
 
-    compiled <- compile_to_quickr(f, args_flat = inputs$avals_in, in_tree = prep$in_tree, unwrap = unwrap, flat = TRUE)
+    compiled <- compile_quickr(
+      f,
+      args_flat = avals_in,
+      in_tree = prep$in_tree,
+      arg_devices = arg_devices,
+      unwrap = unwrap,
+      flat = TRUE
+    )
     cache$set(cache_key, compiled$fun)
     compiled$fun(r_args_flat)
   }
 }
 
-compile_to_quickr <- function(f, args_flat, in_tree, unwrap = FALSE, flat = FALSE) {
+compile_quickr <- function(f, args_flat, in_tree, arg_devices = list(), unwrap = FALSE, flat = FALSE) {
   desc <- local_descriptor()
   graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
+  check_single_backend(graph, arg_devices = arg_devices, expected = "quickr")
   list(fun = graph_to_quickr_function(graph, unwrap = unwrap, flat = flat))
 }
 
@@ -129,6 +120,13 @@ compile_to_quickr <- function(f, args_flat, in_tree, unwrap = FALSE, flat = FALS
 AnvilBackendQuickr <- function() {
   backend <- AnvilBackend(
     new_data = function(data, dtype, shape, device, ambiguous) {
+      if (!is.null(device)) {
+        if (is.character(device) && (device != "quickr")) {
+          cli_abort("Unsupported device {.val {device}} for 'quickr' backend")
+        } else if (!inherits(device, "QuickrDevice")) {
+          cli_abort("Invalid device of class {.cls {class(device)}} for 'quickr' backend")
+        }
+      }
       if (is.null(dtype)) {
         dtype <- if (is.double(data)) FloatType(64) else default_dtype(data)
       }
@@ -173,7 +171,7 @@ AnvilBackendQuickr <- function() {
       print(x$data)
       cat(footer, "\n")
     },
-    jit = function(f, static, cache, unwrap = FALSE) {
+    jit = function(f, static, cache, unwrap = FALSE, device = NULL) {
       assert_flag(unwrap)
       jit_quickr_impl(f, static, cache, unwrap)
     }

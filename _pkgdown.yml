@@ -256,7 +256,10 @@ reference:
       - default_backend
       - local_backend
       - with_backend
+      - device_arg
       - nv_device
+      - default_device
+      - is_device
       - quickr_device
       - AnvilBackend
       - AnvilBackendXla
@@ -308,7 +311,7 @@ reference:
       - transform_gradient
       - graph_to_quickr_r_function
       - jit_eval
-      - compile_to_xla
+      - compile_xla
       - stablehlo
 
   - subtitle: Miscellaneous

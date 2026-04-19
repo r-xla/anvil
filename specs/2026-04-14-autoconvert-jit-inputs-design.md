@@ -75,7 +75,7 @@ is wasted work.
 
 ### Change
 
-`compile_to_quickr()` additionally returns a flat-args entry point
+`compile_quickr()` additionally returns a flat-args entry point
 (call it `fun_flat`) that:
 
 1. takes `args_flat` (including static leaves) and `is_static_flat`
