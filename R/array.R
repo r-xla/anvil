@@ -115,7 +115,6 @@ nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous 
     if (!is.null(backend)) {
       cli_abort("{.arg backend} must not be specified when calling {.fn nv_array} inside {.fn jit}.")
     }
-    # ignore device as during tracing it needs to be known at the start
     return(globals$backends[["plain"]]$new_data(data, dtype, shape, device, ambiguous))
   }
   if (is.null(backend) && is_device(device)) {
@@ -738,6 +737,5 @@ is_arrayish <- function(x, convert_ok = TRUE) {
   if (!convert_ok) {
     return(FALSE)
   }
-  # length-1 vector or array of numeric or logical type
-  (is.numeric(x) || is.logical(x)) && (is.array(x) || (length(x) == 1L))
+  is_valid_r(x)
 }

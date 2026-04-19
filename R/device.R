@@ -27,7 +27,6 @@ default_device <- function(backend = NULL) {
 #'   or an existing device object (returned as-is).
 #' @param backend (`NULL` | `character(1)`)\cr
 #'   The backend for which to create the device.
-#'   Ignored when `x` is already a device object.
 #'   Defaults to [`default_backend()`] when `NULL`.
 #' @return A backend-specific device object (e.g. `PJRTDevice` for `"xla"`,
 #'   [`quickr_device`] for `"quickr"`).

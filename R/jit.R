@@ -18,16 +18,16 @@
 #' @param backend (`NULL` |  `character(1)`)\cr
 #'   Compilation backend (e.g. `"xla"`, `"quickr"`).
 #'   The special value `"auto"` defers backend selection to call-time.
-#'   `NULL` (default) uses [`default_backend()`].
-#' @param device (`NULL` | `character(1)` | device object | `device_arg()`)\cr
+#'   `NULL` (default) respects `device` and otherwise falls back to [`default_backend()`].
+#' @param device (`NULL` | `character(1)` | [`nv_device`] | `device_arg()`)\cr
 #'   Target device. When a concrete device is specified, all arrays
-#'   are moved to this device.
+#'   are moved to it.
 #'
 #'   The default (`NULL`) infers the device at call time,
 #'   falling back to [`default_device()`].
 #'
 #'   In order to use dynamic device selection with the `"auto"` backend (e.g. for functions without
-#'   dynamic inputs such as constant creation), set `device = device_arg()`.
+#'   dynamic inputs such as constant creation), set `device = device_arg("<arg>")`.
 #'
 #' @param ... Backend-specific options. Passing an option that is not supported
 #'   by the selected backend raises an error. See the **XLA JIT arguments** and
@@ -37,15 +37,14 @@
 #' @inheritSection AnvilBackendQuickr Quickr JIT arguments
 #'
 #' @section Device and Backend selection:
-#' There are various ways how to specify which device and which backend to use.
+#' There are various ways to specify which device and which backend to use.
 #'
 #' **Concrete backend**:
-#'
 #' In the case where we fix a concrete backend (backend is not `"auto"`), the device can be
-#' inferred during the compilation or set explicitly.
+#' inferred or set explicitly.
 #' Setting the device explicitly allows you to enforce that the function always uses the specified
 #' device, e.g. `"cuda:0"`.
-#' If the `device` argument is set, all encountered arrays are converted to it.
+#' If the `device` argument is set, all encountered arrays are copied to it.
 #'
 #' If the device is not specified (`NULL`; default) the device will be inferred from the input
 #' arrays and the constants within the program. If conflicting devices are found, an error
@@ -104,7 +103,6 @@ jit <- function(
     ))
   }
   if (identical(backend, "auto")) {
-    # Concrete device fixes the backend; everything else defers to call time.
     if (is_device(device)) {
       cli_abort("Don't provide a concrete device when using the \"auto\" backend.")
     } else {
@@ -152,8 +150,6 @@ jit_with_backend <- function(f, static, cache_size, backend, ...) {
 #' @examplesIf pjrt::plugins_downloaded("cpu")
 #' f <- function(x) nv_scalar(1, device = x)
 #' g <- jit(f, backend = "auto", device = device_arg("x"))
-#' # Because backend="auto", we need to be able to infer the backend
-#' # from an argument, otherwise we don't know which backend to use:
 #' g(nv_device("cpu", "xla"))
 device_arg <- function(argname) {
   assert_string(argname)
@@ -317,9 +313,9 @@ to_avals <- function(args_flat, is_static_flat) {
         x
       } else if (is_anvil_array(x)) {
         nv_aval(dtype(x), shape(x), ambiguous(x))
-      } else if ((is.numeric(x) || is.logical(x)) && length(x) == 1L && is.null(dim(x))) {
+      } else if (is_valid_lit(x)) {
         nv_aval(default_dtype(x), integer(), ambiguous = TRUE)
-      } else if (is.array(x) && (is.numeric(x) || is.logical(x))) {
+      } else if (is_valid_array(x)) {
         nv_aval(default_dtype(x), as.integer(dim(x)), ambiguous = TRUE)
       } else {
         cli_abort("internal error: invalid input type for jit: {.cls {class(x)[1L]}}")
@@ -337,9 +333,11 @@ check_jit_input <- function(x, alloc_device, in_tree = NULL, i = NULL, copy_to_d
     if (!is.null(in_tree) && !is.null(i)) tree_path(in_tree, i) else ""
   }
   if (is_anvil_array(x)) {
+    # only single device currently
     if (backend(x) == "quickr") {
       return(x)
     }
+    # there any input is valid as we will move it to it
     if (copy_to_device) {
       return(x)
     }
@@ -358,13 +356,9 @@ check_jit_input <- function(x, alloc_device, in_tree = NULL, i = NULL, copy_to_d
     return(x)
   }
 
-  if ((is.numeric(x) || is.logical(x)) && length(x) == 1L && is.null(dim(x))) {
+  if (is_valid_r(x)) {
     return(x)
   }
-  if (is.array(x) && (is.numeric(x) || is.logical(x))) {
-    return(x)
-  }
-
   path <- make_path()
   msg <- if (nzchar(path)) {
     "Attempted to autoconvert {.arg {path}} to an {.cls AnvilArray}."

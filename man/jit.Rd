@@ -29,17 +29,17 @@ Maximum number of compiled executables to keep in the LRU cache.}
 \item{backend}{(\code{NULL} |  \code{character(1)})\cr
 Compilation backend (e.g. \code{"xla"}, \code{"quickr"}).
 The special value \code{"auto"} defers backend selection to call-time.
-\code{NULL} (default) uses \code{\link[=default_backend]{default_backend()}}.}
+\code{NULL} (default) respects \code{device} and otherwise falls back to \code{\link[=default_backend]{default_backend()}}.}
 
-\item{device}{(\code{NULL} | \code{character(1)} | device object | \code{device_arg()})\cr
+\item{device}{(\code{NULL} | \code{character(1)} | \code{\link{nv_device}} | \code{device_arg()})\cr
 Target device. When a concrete device is specified, all arrays
-are moved to this device.
+are moved to it.
 
 The default (\code{NULL}) infers the device at call time,
 falling back to \code{\link[=default_device]{default_device()}}.
 
 In order to use dynamic device selection with the \code{"auto"} backend (e.g. for functions without
-dynamic inputs such as constant creation), set \code{device = device_arg()}.}
+dynamic inputs such as constant creation), set \code{device = device_arg("<arg>")}.}
 
 \item{...}{Backend-specific options. Passing an option that is not supported
 by the selected backend raises an error. See the \strong{XLA JIT arguments} and
@@ -59,15 +59,14 @@ eagerly but lazily on the first invocation.
 }
 \section{Device and Backend selection}{
 
-There are various ways how to specify which device and which backend to use.
+There are various ways to specify which device and which backend to use.
 
 \strong{Concrete backend}:
-
 In the case where we fix a concrete backend (backend is not \code{"auto"}), the device can be
-inferred during the compilation or set explicitly.
+inferred or set explicitly.
 Setting the device explicitly allows you to enforce that the function always uses the specified
 device, e.g. \code{"cuda:0"}.
-If the \code{device} argument is set, all encountered arrays are converted to it.
+If the \code{device} argument is set, all encountered arrays are copied to it.
 
 If the device is not specified (\code{NULL}; default) the device will be inferred from the input
 arrays and the constants within the program. If conflicting devices are found, an error

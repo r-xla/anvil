@@ -147,8 +147,17 @@ dtype2string <- function(dtype, ambiguous = FALSE) {
   paste0(repr(dtype), if (ambiguous) "?")
 }
 
-is_lit <- function(x) {
+is_valid_lit <- function(x) {
   test_scalar(x) && (is.numeric(x) || is.logical(x))
+  #&& is.null(dim(x))
+}
+
+is_valid_array <- function(x) {
+  is.array(x) && (is.numeric(x) || is.logical(x))
+}
+
+is_valid_r <- function(x) {
+  (is.numeric(x) || is.logical(x)) && (is.array(x) || (length(x) == 1L))
 }
 
 cache_size <- function(f) {

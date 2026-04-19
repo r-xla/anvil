@@ -3,9 +3,9 @@ NULL
 
 jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat, ambiguous_out = NULL, device) {
   args_unwrapped <- lapply(args_flat[!is_static_flat], \(a) {
-    if (is_lit(a)) {
+    if (is_valid_lit(a)) {
       pjrt_scalar(a, device = device)
-    } else if (is.array(a) && (is.numeric(a) || is.logical(a))) {
+    } else if (is_valid_array(a)) {
       pjrt_buffer(a, device = device)
     } else {
       # no-op if already on correct device
@@ -40,8 +40,10 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
     prep <- jit_prepare_call(match.call(), parent.frame(), static, device = device, backend = "xla")
     avals_in <- to_avals(prep$args_flat, prep$is_static_flat)
 
-    # the device from the preparation is either the specified device or device that was found
-    # In cases like jit(\(x) x)(1), we fall back to default device
+    # prep$device is either
+    # - device compatible with all inputs
+    # - specified device
+    # - NULL (device unknown from inputs)
     cache_key <- list(prep$in_tree, avals_in, prep$device)
     cache_hit <- cache$get(cache_key)
 
@@ -61,11 +63,7 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
 
     arg_devices <- lapply(args_flat_nv, tengen::device)
 
-    # prep$device is either
-    # - device compatible with all inputs
-    # - specified device
-    # - NULL (device unknown from inputs)
-
+    # might still be NULL -> use default device
     compile_device <- if (is_device_arg(device)) {
       prep$args[[device$argname]]
     } else {
@@ -255,9 +253,9 @@ xla <- function(f, args, donate = character(), device = NULL) {
   f_xla <- function() {
     prep <- jit_prepare_call(match.call(), parent.frame(), static = character(), device = device, backend = "xla")
     args_unwrapped <- lapply(prep$args_flat, \(a) {
-      if (is_lit(a)) {
+      if (is_valid_lit(a)) {
         pjrt_scalar(a, device = device)
-      } else if (is.array(a) && (is.numeric(a) || is.logical(a))) {
+      } else if (is_valid_array(a)) {
         pjrt_buffer(a, device = device)
       } else {
         pjrt::copy_buffer(a$data, device)

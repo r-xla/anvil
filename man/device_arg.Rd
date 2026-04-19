@@ -29,8 +29,6 @@ the backend could otherwise be detected (e.g. array constructors like
 \dontshow{if (pjrt::plugins_downloaded("cpu")) withAutoprint(\{ # examplesIf}
 f <- function(x) nv_scalar(1, device = x)
 g <- jit(f, backend = "auto", device = device_arg("x"))
-# Because backend="auto", we need to be able to infer the backend
-# from an argument, otherwise we don't know which backend to use:
 g(nv_device("cpu", "xla"))
 \dontshow{\}) # examplesIf}
 }

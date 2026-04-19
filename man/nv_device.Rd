@@ -13,7 +13,6 @@ or an existing device object (returned as-is).}
 
 \item{backend}{(\code{NULL} | \code{character(1)})\cr
 The backend for which to create the device.
-Ignored when \code{x} is already a device object.
 Defaults to \code{\link[=default_backend]{default_backend()}} when \code{NULL}.}
 }
 \value{

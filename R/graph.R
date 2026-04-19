@@ -330,7 +330,7 @@ maybe_box_arrayish <- function(x) {
     }
     gval <- x$gnode
     get_box_or_register_const(current_desc, gval)
-  } else if (is_anvil_array(x) || is_lit(x)) {
+  } else if (is_anvil_array(x) || is_valid_lit(x)) {
     get_box_or_register_const(current_desc, x)
   } else {
     cli_abort("Expected arrayish value, but got {.cls {class(x)[1]}}")
