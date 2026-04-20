@@ -176,7 +176,7 @@ describe("inline_scalarish_constants", {
   it("preserves dtype of converted literals", {
     const_init <- nv_scalar(1, dtype = "i8")
     expect_equal(
-      const_init,
+      jit_eval(const_init),
       const_init
     )
   })

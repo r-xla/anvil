@@ -202,7 +202,7 @@ describe("nv_subset and nv_subset_assign", {
   it("subset errors on R vector of length > 1", {
     x <- nv_array(1:10)
     expect_error(
-      x[c(1, 2)],
+      jit_eval(x[c(1, 2)]),
       "Vectors of length > 1 are not allowed"
     )
   })
@@ -220,39 +220,39 @@ describe("nv_subset and nv_subset_assign", {
 
   it("subset_assign errors when update shape doesn't match", {
     expect_error(
-      {
+      jit_eval({
         x <- nv_array(matrix(1:6, nrow = 2))
         x[1:2, 1:2] <- nv_array(1:2)
         x
-      },
+      }),
       "Update shape does not match subset shape"
     )
   })
 
   it("errors on out-of-bounds range (start < 1)", {
     x <- nv_array(1:10)
-    expect_error(x[0:5], "out of bounds")
+    expect_error(jit_eval(x[0:5]), "out of bounds")
   })
 
   it("errors on out-of-bounds range (end > dim_size)", {
     x <- nv_array(1:10)
-    expect_error(x[5:11], "out of bounds")
+    expect_error(jit_eval(x[5:11]), "out of bounds")
   })
 
   it("errors on out-of-bounds single index (< 1)", {
     x <- nv_array(1:10)
-    expect_error(x[0L], "out of bounds")
+    expect_error(jit_eval(x[0L]), "out of bounds")
   })
 
   it("errors on out-of-bounds single index (> dim_size)", {
     x <- nv_array(1:10)
-    expect_error(x[11L], "out of bounds")
+    expect_error(jit_eval(x[11L]), "out of bounds")
   })
 
   it("errors on out-of-bounds array() index", {
     x <- nv_array(1:10)
-    expect_error(x[array(c(1, 11))], "out of bounds")
-    expect_error(x[array(c(0, 5))], "out of bounds")
+    expect_error(jit_eval(x[array(c(1L, 11L))]), "out of bounds")
+    expect_error(jit_eval(x[array(c(0L, 5L))]), "out of bounds")
   })
 
   it("works with all-static indices via [", {
@@ -266,15 +266,15 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("works with nv_arrays just like with R indices", {
-    x <- {
+    x <- jit_eval({
       x <- nv_array(1:24, shape = c(2, 3, 4))
       x1 <- x[1:2, array(c(1L, 3L)), 1]
       x2 <- x[nv_array(c(1L, 2L)), array(c(1L, 3L)), nv_scalar(1L)]
       list(x1, x2)
-    }
+    })
     expect_equal(x[[1]], x[[2]])
 
-    y <- {
+    y <- jit_eval({
       x <- nv_array(1:24, shape = c(2, 3, 4))
       x1 <- x
       x2 <- x
@@ -282,15 +282,15 @@ describe("nv_subset and nv_subset_assign", {
       x1[1:2, array(c(1L, 3L)), 1] <- update
       x2[nv_array(c(1L, 2L)), array(c(1L, 3L)), nv_scalar(1L)] <- update
       list(x1, x2)
-    }
+    })
     expect_equal(y[[1]], y[[2]])
   })
 
   it("works with nv_seq", {
-    x <- {
+    x <- jit_eval({
       x <- nv_array(1:10)
       x[nv_seq(2, 5)]
-    }
+    })
     expect_equal(x, nv_array(2:5))
   })
 })
@@ -367,14 +367,14 @@ describe("subset_specs_start_indices", {
   })
 
   it("works with empty subset", {
-    x <- {
+    x <- jit_eval({
       nv_array(1:10)[]
-    }
+    })
     expect_equal(x, nv_array(1:10))
-    x <- {
+    x <- jit_eval({
       x <- nv_array(1:10)
       x[] <- nv_array(2:11)
-    }
+    })
     expect_equal(x, nv_array(2:11))
   })
 })
