@@ -651,7 +651,8 @@ compare_proxy.AnvilArray <- function(x, path) { # nolint
       data = as_array(x),
       dtype = as.character(dtype(x)),
       ambiguous = ambiguous(x),
-      backend = backend(x)
+      backend = backend(x),
+      device = as.character(device(x))
     ),
     path = path
   )

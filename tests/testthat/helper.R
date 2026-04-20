@@ -5,6 +5,64 @@ expect_jit_equal <- function(.expr, .expected, ...) {
   testthat::expect_equal(observed, .expected, ...)
 }
 
+# Run an API function twice in eager mode -- once with every arrayish input
+# placed on cpu:0 and once on cpu:1 -- and assert the two outputs are equal.
+# Non-arrayish arguments are passed through unchanged.
+check_eager <- function(fn, ..., tolerance = 1e-6) {
+  dev0 <- nv_device("cpu:0", "xla")
+  dev1 <- nv_device("cpu:1", "xla")
+  args <- list(...)
+
+  place_on <- function(x, dev) {
+    if (is_anvil_array(x)) {
+      nv_array(
+        as_array(x),
+        dtype = dtype(x),
+        device = dev,
+        shape = shape(x),
+        ambiguous = ambiguous(x)
+      )
+    } else if (is.numeric(x) || is.logical(x)) {
+      nv_array(x, device = dev)
+    } else {
+      x
+    }
+  }
+
+  to_r <- function(x) {
+    if (is_anvil_array(x)) {
+      as_array(x)
+    } else if (is.list(x)) {
+      lapply(x, to_r)
+    } else {
+      x
+    }
+  }
+
+  # Recursively walk `out` and assert every AnvilArray lives on `dev`.
+  check_on_device <- function(out, dev) {
+    if (is_anvil_array(out)) {
+      testthat::expect_true(
+        eq_device(device(out), dev),
+        info = sprintf(
+          "expected output on %s, got %s",
+          as.character(dev),
+          as.character(device(out))
+        )
+      )
+    } else if (is.list(out)) {
+      lapply(out, check_on_device, dev = dev)
+    }
+    invisible(NULL)
+  }
+
+  out0 <- do.call(fn, lapply(args, place_on, dev = dev0))
+  out1 <- do.call(fn, lapply(args, place_on, dev = dev1))
+  check_on_device(out0, dev0)
+  check_on_device(out1, dev1)
+  testthat::expect_equal(to_r(out0), to_r(out1), tolerance = tolerance)
+}
+
 is_cuda <- function() {
   Sys.getenv("PJRT_PLATFORM") == "cuda"
 }

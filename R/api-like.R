@@ -18,9 +18,12 @@ like_defaults <- function(like, ...) {
   getters <- list(
     dtype = dtype,
     shape = shape,
+    # `device` and `backend` only come from concrete AnvilArrays. For a
+    # GraphBox (during tracing) they stay NULL so downstream constructors
+    # pick them up from the tracing context.
     device = function(x) if (is_anvil_array(x)) device(x),
     ambiguous = ambiguous,
-    backend = backend
+    backend = function(x) if (is_anvil_array(x)) backend(x)
   )
   for (name in names(args)) {
     if (is.null(args[[name]])) {
