@@ -105,7 +105,7 @@ nvl_fill <- jit(
     )[[1L]]
   },
   static = 1:5,
-  device = from_arg("device")
+  device = device_arg("device")
 )
 
 p_add <- AnvilPrimitive("add")
@@ -1664,7 +1664,7 @@ nvl_iota <- jit(
     result
   },
   static = 1:6,
-  device = from_arg("device")
+  device = device_arg("device")
 )
 
 p_pad <- AnvilPrimitive("pad")

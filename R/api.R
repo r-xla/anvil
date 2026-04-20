@@ -135,9 +135,7 @@ nv_broadcast_scalars <- function(...) {
 #' nv_promote_to_common(x, y)
 #' @export
 nv_promote_to_common <- function(...) {
-  args <- list(...)
-  be <- detect_backend_from_args(args)
-  args <- lapply(args, ensure_arrayish, backend = be)
+  args <- nv_align_inputs(...)
   avals <- lapply(args, to_abstract)
   tmp <- do.call(common_type_info, avals)
   cdt <- tmp[[1L]]
@@ -226,7 +224,7 @@ nv_convert <- function(operand, dtype) {
 #' @rdname nv_transpose
 #' @export
 nv_transpose <- function(x, permutation = NULL) {
-  permutation <- permutation %??% rev(seq_len(ndims_abstract(x)))
+  permutation <- permutation %||% rev(seq_len(ndims_abstract(x)))
   nvl_transpose(x, permutation)
 }
 
@@ -281,7 +279,7 @@ nv_concatenate <- function(..., dimension = NULL) {
   non_scalar_shapes <- shapes[ranks > 0L]
   n_scalars <- sum(ranks == 0L)
   assert_int(dimension, lower = 1L, upper = max(max(ranks), 1L), null.ok = max(ranks) <= 1L)
-  dimension <- dimension %??% 1L
+  dimension <- dimension %||% 1L
 
   non_scalar_shapes_without_dim <- lapply(non_scalar_shapes, \(shape) {
     shape[-dimension]

@@ -3,7 +3,7 @@
     Code
       f(c(1, 2, 3))
     Condition
-      Error in `autoconvert_input()`:
+      Error in `check_jit_input()`:
       ! Attempted to autoconvert `x` to an <AnvilArray>.
       i Expected an <AnvilArray>, a length-1 atomic scalar, or an `is.array()` value.
       x Got <numeric> of length 3.
@@ -13,7 +13,7 @@
     Code
       f("hello")
     Condition
-      Error in `autoconvert_input()`:
+      Error in `check_jit_input()`:
       ! Attempted to autoconvert `x` to an <AnvilArray>.
       i Expected an <AnvilArray>, a length-1 atomic scalar, or an `is.array()` value.
       x Got <character> of length 1.
@@ -23,7 +23,7 @@
     Code
       f_compiled(c(1, 2, 3))
     Condition
-      Error in `autoconvert_input()`:
+      Error in `check_jit_input()`:
       ! Attempted to autoconvert `x` to an <AnvilArray>.
       i Expected an <AnvilArray>, a length-1 atomic scalar, or an `is.array()` value.
       x Got <numeric> of length 3.
@@ -33,7 +33,7 @@
     Code
       f(c(1, 2, 3))
     Condition
-      Error in `autoconvert_input()`:
+      Error in `check_jit_input()`:
       ! Attempted to autoconvert `x` to an <AnvilArray>.
       i Expected an <AnvilArray>, a length-1 atomic scalar, or an `is.array()` value.
       x Got <numeric> of length 3.
@@ -43,7 +43,7 @@
     Code
       f(list(list(a = "abc")))
     Condition
-      Error in `autoconvert_input()`:
+      Error in `check_jit_input()`:
       ! Attempted to autoconvert `l[[1]]$a` to an <AnvilArray>.
       i Expected an <AnvilArray>, a length-1 atomic scalar, or an `is.array()` value.
       x Got <character> of length 1.
@@ -53,7 +53,7 @@
     Code
       f(list("bad", nv_scalar(1)))
     Condition
-      Error in `autoconvert_input()`:
+      Error in `check_jit_input()`:
       ! Attempted to autoconvert `pair[[1]]` to an <AnvilArray>.
       i Expected an <AnvilArray>, a length-1 atomic scalar, or an `is.array()` value.
       x Got <character> of length 1.
@@ -63,7 +63,7 @@
     Code
       f_compiled(list("bad", nv_scalar(1)))
     Condition
-      Error in `autoconvert_input()`:
+      Error in `check_jit_input()`:
       ! Attempted to autoconvert `pair[[1]]` to an <AnvilArray>.
       i Expected an <AnvilArray>, a length-1 atomic scalar, or an `is.array()` value.
       x Got <character> of length 1.

@@ -140,7 +140,7 @@ When doing so, you need to:
 Array *constructors* (e.g. [`nvl_fill()`], [`nvl_iota()`]) have no dynamic array inputs -- every argument is static. Two things change in this case:
 
 1. **All formals must be listed in `static`**. Otherwise {anvil} would try to interpret a scalar argument like `value` or `shape` as an `AnvilArray` input.
-2. **`backend = "auto"` no longer works**, because there are no array inputs to infer the backend from. Instead, add a `device` formal to the function and pass `device = from_arg("device")` to `jit()`. At call time, the user-supplied device is read from that argument and used to determine both the backend (via [`backend()`] dispatch) and the compilation device.
+2. **`backend = "auto"` no longer works**, because there are no array inputs to infer the backend from. Instead, add a `device` formal to the function and pass `device = device_arg("device")` to `jit()`. At call time, the user-supplied device is read from that argument and used to determine both the backend (via [`backend()`] dispatch) and the compilation device.
 
 For example, the real definition of [`nvl_fill()`] looks like this:
 
@@ -150,11 +150,11 @@ nvl_fill <- jit(
     # ... graph_desc_add(...) ...
   },
   static = 1:5,
-  device = from_arg("device")
+  device = device_arg("device")
 )
 ```
 
-See [`from_arg()`] for the detailed semantics.
+See [`device_arg()`] for the detailed semantics.
 
 ### Step 3: Add the StableHLO Rule
 
