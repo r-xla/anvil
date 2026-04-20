@@ -19,10 +19,8 @@ Element-wise square root. You can also use \code{sqrt()}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 4, 9))
-  sqrt(x)
-})
+x <- nv_array(c(1, 4, 9))
+sqrt(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

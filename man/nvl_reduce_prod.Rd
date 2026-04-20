@@ -44,10 +44,8 @@ Lowers to \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(matrix(1:6, nrow = 2))
-  nvl_reduce_prod(x, dims = 1L)
-})
+x <- nv_array(matrix(1:6, nrow = 2))
+nvl_reduce_prod(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

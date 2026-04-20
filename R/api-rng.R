@@ -63,11 +63,9 @@ nv_unif_rand <- function(
 #'   List of two elements: the updated RNG state and the sampled values.
 #' @family rng
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   state <- nv_rng_state(42L)
-#'   result <- nv_runif(c(2, 3), state)
-#'   result[[2]]
-#' })
+#' state <- nv_rng_state(42L)
+#' result <- nv_runif(c(2, 3), state)
+#' result[[2]]
 #' @export
 nv_runif <- function(
   shape,
@@ -136,11 +134,9 @@ nv_runif <- function(
 #' To implement a covariance structure use Cholesky decomposition.
 #' @family rng
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   state <- nv_rng_state(42L)
-#'   result <- nv_rnorm(c(2, 3), state)
-#'   result[[2]]
-#' })
+#' state <- nv_rng_state(42L)
+#' result <- nv_rnorm(c(2, 3), state)
+#' result[[2]]
 #' @export
 nv_rnorm <- function(shape, initial_state, dtype = "f32", mu = 0, sigma = 1) {
   checkmate::assertChoice(dtype, c("f32", "f64"))
@@ -220,12 +216,10 @@ nv_rnorm <- function(shape, initial_state, dtype = "f32", mu = 0, sigma = 1) {
 #'   List of two elements: the updated RNG state and the sampled values.
 #' @family rng
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   state <- nv_rng_state(42L)
-#'   # Bernoulli samples
-#'   result <- nv_rbinom(c(2, 3), state)
-#'   result[[2]]
-#' })
+#' state <- nv_rng_state(42L)
+#' # Bernoulli samples
+#' result <- nv_rbinom(c(2, 3), state)
+#' result[[2]]
 #' @export
 nv_rbinom <- function(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32") {
   checkmate::assert_int(n, lower = 1)
@@ -267,12 +261,10 @@ nv_rbinom <- function(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32") {
 #'   List of two elements: the updated RNG state and the sampled integers.
 #' @family rng
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   state <- nv_rng_state(42L)
-#'   # Roll 6 dice
-#'   result <- nv_rdunif(6, state, n = 6L)
-#'   result[[2]]
-#' })
+#' state <- nv_rng_state(42L)
+#' # Roll 6 dice
+#' result <- nv_rdunif(6, state, n = 6L)
+#' result[[2]]
 #' @export
 nv_rdunif <- function(shape, initial_state, n, dtype = "i32") {
   checkmate::assert_int(n, lower = 1)

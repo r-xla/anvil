@@ -25,10 +25,8 @@ Permutes the dimensions of an array. You can also use \code{t()} for matrices.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(matrix(1:6, nrow = 2))
-  t(x)
-})
+x <- nv_array(matrix(1:6, nrow = 2))
+t(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

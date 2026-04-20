@@ -19,10 +19,8 @@ Element-wise sign function. You can also use \code{sign()}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(-3, 0, 5))
-  sign(x)
-})
+x <- nv_array(c(-3, 0, 5))
+sign(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -25,7 +25,7 @@
 #'   Has the given `shape` and `dtype`.
 #' @seealso [nvl_fill()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval(nv_fill(0, shape = c(2, 3)))
+#' nv_fill(0, shape = c(2, 3))
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' nv_fill_like(x, 0)
 #' @export
@@ -81,11 +81,9 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
 #' @return (`list()` of [`arrayish`])\cr
 #'   List of broadcasted arrays.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   # scalar 1 is broadcast to shape [3]
-#'   nv_broadcast_scalars(x, 1)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' # scalar 1 is broadcast to shape [3]
+#' nv_broadcast_scalars(x, nv_scalar(1))
 #' @export
 nv_broadcast_scalars <- function(...) {
   args <- nv_align_arrayish(...)
@@ -120,12 +118,10 @@ nv_broadcast_scalars <- function(...) {
 #'   Arrays to promote.
 #' @return (`list()` of [`arrayish`])
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(1L)
-#'   y <- nv_array(1.5)
-#'   # integer is promoted to float
-#'   nv_promote_to_common(x, y)
-#' })
+#' x <- nv_array(1L)
+#' y <- nv_array(1.5)
+#' # integer is promoted to float
+#' nv_promote_to_common(x, y)
 #' @export
 nv_promote_to_common <- function(...) {
   args <- nv_align_arrayish(...)
@@ -159,11 +155,9 @@ nv_promote_to_common <- function(...) {
 #'   List of arrays, all with the same shape.
 #' @seealso [nv_broadcast_scalars()], [nv_broadcast_to()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   y <- nv_array(c(10, 20, 30))
-#'   nv_broadcast_arrays(x, y)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' y <- nv_array(c(10, 20, 30))
+#' nv_broadcast_arrays(x, y)
 #' @export
 nv_broadcast_arrays <- function(...) {
   args <- nv_align_arrayish(...)
@@ -182,10 +176,8 @@ nv_broadcast_arrays <- function(...) {
 #' @seealso [nv_broadcast_arrays()], [nv_broadcast_scalars()],
 #'   [nvl_broadcast_in_dim()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   nv_broadcast_to(x, shape = c(2, 3))
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' nv_broadcast_to(x, shape = c(2, 3))
 #' @export
 nv_broadcast_to <- function(operand, shape) {
   operand <- as_anvil_array(operand)
@@ -208,10 +200,8 @@ nv_broadcast_to <- function(operand, shape) {
 #'   Has the given `dtype` and the same shape as `operand`.
 #' @seealso [nvl_convert()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1L, 2L, 3L))
-#'   nv_convert(x, dtype = "f32")
-#' })
+#' x <- nv_array(c(1L, 2L, 3L))
+#' nv_convert(x, dtype = "f32")
 #' @export
 nv_convert <- function(operand, dtype) {
   operand <- as_anvil_array(operand)
@@ -244,10 +234,8 @@ nv_transpose <- function(x, permutation = NULL) {
 #'   Has the given `shape` and the same data type as `operand`.
 #' @seealso [nvl_reshape()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(1:6)
-#'   nv_reshape(x, c(2, 3))
-#' })
+#' x <- nv_array(1:6)
+#' nv_reshape(x, c(2, 3))
 #' @export
 nv_reshape <- function(operand, shape) {
   operand <- as_anvil_array(operand)
@@ -272,11 +260,9 @@ nv_reshape <- function(operand, shape) {
 #'   dimensions except `dimension`, which is the sum of input sizes.
 #' @seealso [nvl_concatenate()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(4, 5, 6))
-#'   nv_concatenate(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(4, 5, 6))
+#' nv_concatenate(x, y)
 #' @export
 nv_concatenate <- function(..., dimension = NULL) {
   args <- do.call(nv_promote_to_common, list(...))
@@ -331,10 +317,8 @@ nv_concatenate <- function(..., dimension = NULL) {
 #'   Has the same data type as `operand`.
 #' @seealso [nv_subset()], [nvl_static_slice()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(1:10)
-#'   nv_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
-#' })
+#' x <- nv_array(1:10)
+#' nv_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 #' @export
 nv_static_slice <- nvl_static_slice
 
@@ -347,10 +331,8 @@ nv_static_slice <- nvl_static_slice
 #'   Returns `operand` unchanged.
 #' @seealso [nvl_print()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   nv_print(x)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' nv_print(x)
 #' @export
 nv_print <- nvl_print
 
@@ -369,10 +351,8 @@ nv_print <- nvl_print
 #'   Has the same shape and data type as `true_value`.
 #' @seealso [nvl_ifelse()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   pred <- nv_array(c(TRUE, FALSE, TRUE))
-#'   nv_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
-#' })
+#' pred <- nv_array(c(TRUE, FALSE, TRUE))
+#' nv_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 #' @export
 nv_ifelse <- nvl_ifelse
 
@@ -393,11 +373,9 @@ make_do_binary <- function(f) {
 #' @template return_binary
 #' @seealso [nvl_add()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(4, 5, 6))
-#'   x + y
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(4, 5, 6))
+#' x + y
 #' @export
 nv_add <- make_do_binary(nvl_add)
 
@@ -408,11 +386,9 @@ nv_add <- make_do_binary(nvl_add)
 #' @template return_binary
 #' @seealso [nvl_mul()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(4, 5, 6))
-#'   x * y
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(4, 5, 6))
+#' x * y
 #' @export
 nv_mul <- make_do_binary(nvl_mul)
 
@@ -423,11 +399,9 @@ nv_mul <- make_do_binary(nvl_mul)
 #' @template return_binary
 #' @seealso [nvl_sub()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(4, 5, 6))
-#'   y <- nv_array(c(1, 2, 3))
-#'   x - y
-#' })
+#' x <- nv_array(c(4, 5, 6))
+#' y <- nv_array(c(1, 2, 3))
+#' x - y
 #' @export
 nv_sub <- make_do_binary(nvl_sub)
 
@@ -438,11 +412,9 @@ nv_sub <- make_do_binary(nvl_sub)
 #' @template return_binary
 #' @seealso [nvl_div()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(10, 20, 30))
-#'   y <- nv_array(c(2, 5, 10))
-#'   x / y
-#' })
+#' x <- nv_array(c(10, 20, 30))
+#' y <- nv_array(c(2, 5, 10))
+#' x / y
 #' @export
 nv_div <- make_do_binary(nvl_div)
 
@@ -453,11 +425,9 @@ nv_div <- make_do_binary(nvl_div)
 #' @template return_binary
 #' @seealso [nvl_pow()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(2, 3, 4))
-#'   y <- nv_array(c(3, 2, 1))
-#'   x ^ y
-#' })
+#' x <- nv_array(c(2, 3, 4))
+#' y <- nv_array(c(3, 2, 1))
+#' x ^ y
 #' @export
 nv_pow <- make_do_binary(nvl_pow)
 
@@ -468,11 +438,9 @@ nv_pow <- make_do_binary(nvl_pow)
 #' @template return_compare
 #' @seealso [nvl_eq()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(1, 3, 2))
-#'   x == y
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(1, 3, 2))
+#' x == y
 #' @export
 nv_eq <- make_do_binary(nvl_eq)
 
@@ -483,11 +451,9 @@ nv_eq <- make_do_binary(nvl_eq)
 #' @template return_compare
 #' @seealso [nvl_ne()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(1, 3, 2))
-#'   x != y
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(1, 3, 2))
+#' x != y
 #' @export
 nv_ne <- make_do_binary(nvl_ne)
 
@@ -498,11 +464,9 @@ nv_ne <- make_do_binary(nvl_ne)
 #' @template return_compare
 #' @seealso [nvl_gt()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(3, 2, 1))
-#'   x > y
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(3, 2, 1))
+#' x > y
 #' @export
 nv_gt <- make_do_binary(nvl_gt)
 
@@ -513,11 +477,9 @@ nv_gt <- make_do_binary(nvl_gt)
 #' @template return_compare
 #' @seealso [nvl_ge()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(3, 2, 1))
-#'   x >= y
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(3, 2, 1))
+#' x >= y
 #' @export
 nv_ge <- make_do_binary(nvl_ge)
 
@@ -528,11 +490,9 @@ nv_ge <- make_do_binary(nvl_ge)
 #' @template return_compare
 #' @seealso [nvl_lt()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(3, 2, 1))
-#'   x < y
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(3, 2, 1))
+#' x < y
 #' @export
 nv_lt <- make_do_binary(nvl_lt)
 
@@ -543,11 +503,9 @@ nv_lt <- make_do_binary(nvl_lt)
 #' @template return_compare
 #' @seealso [nvl_le()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(3, 2, 1))
-#'   x <= y
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(3, 2, 1))
+#' x <= y
 #' @export
 nv_le <- make_do_binary(nvl_le)
 
@@ -558,11 +516,9 @@ nv_le <- make_do_binary(nvl_le)
 #' @template return_binary
 #' @seealso [nvl_max()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 5, 3))
-#'   y <- nv_array(c(4, 2, 6))
-#'   nv_max(x, y)
-#' })
+#' x <- nv_array(c(1, 5, 3))
+#' y <- nv_array(c(4, 2, 6))
+#' nv_max(x, y)
 #' @export
 nv_max <- make_do_binary(nvl_max)
 
@@ -573,11 +529,9 @@ nv_max <- make_do_binary(nvl_max)
 #' @template return_binary
 #' @seealso [nvl_min()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 5, 3))
-#'   y <- nv_array(c(4, 2, 6))
-#'   nv_min(x, y)
-#' })
+#' x <- nv_array(c(1, 5, 3))
+#' y <- nv_array(c(4, 2, 6))
+#' nv_min(x, y)
 #' @export
 nv_min <- make_do_binary(nvl_min)
 
@@ -588,11 +542,9 @@ nv_min <- make_do_binary(nvl_min)
 #' @template return_binary
 #' @seealso [nvl_remainder()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(7, 8, 9))
-#'   y <- nv_array(c(3, 3, 4))
-#'   x %% y
-#' })
+#' x <- nv_array(c(7, 8, 9))
+#' y <- nv_array(c(3, 3, 4))
+#' x %% y
 #' @export
 nv_remainder <- make_do_binary(nvl_remainder)
 
@@ -603,11 +555,9 @@ nv_remainder <- make_do_binary(nvl_remainder)
 #' @template return_binary
 #' @seealso [nvl_and()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(TRUE, FALSE, TRUE))
-#'   y <- nv_array(c(TRUE, TRUE, FALSE))
-#'   x & y
-#' })
+#' x <- nv_array(c(TRUE, FALSE, TRUE))
+#' y <- nv_array(c(TRUE, TRUE, FALSE))
+#' x & y
 #' @export
 nv_and <- make_do_binary(nvl_and)
 
@@ -618,11 +568,9 @@ nv_and <- make_do_binary(nvl_and)
 #' @template return_binary
 #' @seealso [nvl_or()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(TRUE, FALSE, TRUE))
-#'   y <- nv_array(c(TRUE, TRUE, FALSE))
-#'   x | y
-#' })
+#' x <- nv_array(c(TRUE, FALSE, TRUE))
+#' y <- nv_array(c(TRUE, TRUE, FALSE))
+#' x | y
 #' @export
 nv_or <- make_do_binary(nvl_or)
 
@@ -633,11 +581,9 @@ nv_or <- make_do_binary(nvl_or)
 #' @template return_binary
 #' @seealso [nvl_xor()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(TRUE, FALSE, TRUE))
-#'   y <- nv_array(c(TRUE, TRUE, FALSE))
-#'   nv_xor(x, y)
-#' })
+#' x <- nv_array(c(TRUE, FALSE, TRUE))
+#' y <- nv_array(c(TRUE, TRUE, FALSE))
+#' nv_xor(x, y)
 #' @export
 nv_xor <- make_do_binary(nvl_xor)
 
@@ -648,11 +594,9 @@ nv_xor <- make_do_binary(nvl_xor)
 #' @template return_binary
 #' @seealso [nvl_shift_left()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1L, 2L, 4L))
-#'   y <- nv_array(c(1L, 2L, 1L))
-#'   nv_shift_left(x, y)
-#' })
+#' x <- nv_array(c(1L, 2L, 4L))
+#' y <- nv_array(c(1L, 2L, 1L))
+#' nv_shift_left(x, y)
 #' @export
 nv_shift_left <- make_do_binary(nvl_shift_left)
 
@@ -663,11 +607,9 @@ nv_shift_left <- make_do_binary(nvl_shift_left)
 #' @template return_binary
 #' @seealso [nvl_shift_right_logical()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(8L, 16L, 32L))
-#'   y <- nv_array(c(1L, 2L, 3L))
-#'   nv_shift_right_logical(x, y)
-#' })
+#' x <- nv_array(c(8L, 16L, 32L))
+#' y <- nv_array(c(1L, 2L, 3L))
+#' nv_shift_right_logical(x, y)
 #' @export
 nv_shift_right_logical <- make_do_binary(nvl_shift_right_logical)
 
@@ -678,11 +620,9 @@ nv_shift_right_logical <- make_do_binary(nvl_shift_right_logical)
 #' @template return_binary
 #' @seealso [nvl_shift_right_arithmetic()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(8L, -16L, 32L))
-#'   y <- nv_array(c(1L, 2L, 3L))
-#'   nv_shift_right_arithmetic(x, y)
-#' })
+#' x <- nv_array(c(8L, -16L, 32L))
+#' y <- nv_array(c(1L, 2L, 3L))
+#' nv_shift_right_arithmetic(x, y)
 #' @export
 nv_shift_right_arithmetic <- make_do_binary(nvl_shift_right_arithmetic)
 
@@ -694,11 +634,9 @@ nv_shift_right_arithmetic <- make_do_binary(nvl_shift_right_arithmetic)
 #' @template return_binary
 #' @seealso [nvl_atan2()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   y <- nv_array(c(1, 0, -1))
-#'   x <- nv_array(c(0, 1, 0))
-#'   nv_atan2(y, x)
-#' })
+#' y <- nv_array(c(1, 0, -1))
+#' x <- nv_array(c(0, 1, 0))
+#' nv_atan2(y, x)
 #' @export
 nv_atan2 <- make_do_binary(nvl_atan2)
 
@@ -717,10 +655,8 @@ nv_atan2 <- make_do_binary(nvl_atan2)
 #' @seealso [nvl_bitcast_convert()] for the underlying primitive, [nv_convert()]
 #'   for value-preserving type conversion.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(1L)
-#'   nvl_bitcast_convert(x, dtype = "i8")
-#' })
+#' x <- nv_array(1L)
+#' nvl_bitcast_convert(x, dtype = "i8")
 #' @export
 nv_bitcast_convert <- nvl_bitcast_convert
 
@@ -733,10 +669,8 @@ nv_bitcast_convert <- nvl_bitcast_convert
 #' @template return_unary
 #' @seealso [nvl_negate()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, -2, 3))
-#'   -x
-#' })
+#' x <- nv_array(c(1, -2, 3))
+#' -x
 #' @export
 nv_negate <- nvl_negate
 
@@ -747,10 +681,8 @@ nv_negate <- nvl_negate
 #' @template return_unary
 #' @seealso [nvl_not()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(TRUE, FALSE, TRUE))
-#'   !x
-#' })
+#' x <- nv_array(c(TRUE, FALSE, TRUE))
+#' !x
 #' @export
 nv_not <- nvl_not
 
@@ -761,10 +693,8 @@ nv_not <- nvl_not
 #' @template return_unary
 #' @seealso [nvl_abs()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-1, 2, -3))
-#'   abs(x)
-#' })
+#' x <- nv_array(c(-1, 2, -3))
+#' abs(x)
 #' @export
 nv_abs <- nvl_abs
 
@@ -775,10 +705,8 @@ nv_abs <- nvl_abs
 #' @template return_unary
 #' @seealso [nvl_sqrt()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 4, 9))
-#'   sqrt(x)
-#' })
+#' x <- nv_array(c(1, 4, 9))
+#' sqrt(x)
 #' @export
 nv_sqrt <- nvl_sqrt
 
@@ -789,10 +717,8 @@ nv_sqrt <- nvl_sqrt
 #' @template return_unary
 #' @seealso [nvl_rsqrt()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 4, 9))
-#'   nv_rsqrt(x)
-#' })
+#' x <- nv_array(c(1, 4, 9))
+#' nv_rsqrt(x)
 #' @export
 nv_rsqrt <- nvl_rsqrt
 
@@ -803,10 +729,8 @@ nv_rsqrt <- nvl_rsqrt
 #' @template return_unary
 #' @seealso [nvl_log()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2.718, 7.389))
-#'   log(x)
-#' })
+#' x <- nv_array(c(1, 2.718, 7.389))
+#' log(x)
 #' @export
 nv_log <- nvl_log
 
@@ -817,10 +741,8 @@ nv_log <- nvl_log
 #' @template return_unary
 #' @seealso [nvl_tanh()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-1, 0, 1))
-#'   tanh(x)
-#' })
+#' x <- nv_array(c(-1, 0, 1))
+#' tanh(x)
 #' @export
 nv_tanh <- nvl_tanh
 
@@ -831,10 +753,8 @@ nv_tanh <- nvl_tanh
 #' @template return_unary
 #' @seealso [nvl_tan()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, 0.5, 1))
-#'   tan(x)
-#' })
+#' x <- nv_array(c(0, 0.5, 1))
+#' tan(x)
 #' @export
 nv_tan <- nvl_tan
 
@@ -845,10 +765,8 @@ nv_tan <- nvl_tan
 #' @template return_unary
 #' @seealso [nvl_sine()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, pi / 2, pi))
-#'   sin(x)
-#' })
+#' x <- nv_array(c(0, pi / 2, pi))
+#' sin(x)
 #' @export
 nv_sine <- nvl_sine
 
@@ -859,10 +777,8 @@ nv_sine <- nvl_sine
 #' @template return_unary
 #' @seealso [nvl_cosine()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, pi / 2, pi))
-#'   cos(x)
-#' })
+#' x <- nv_array(c(0, pi / 2, pi))
+#' cos(x)
 #' @export
 nv_cosine <- nvl_cosine
 
@@ -873,10 +789,8 @@ nv_cosine <- nvl_cosine
 #' @template return_unary
 #' @seealso [nvl_floor()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1.2, 2.7, -1.5))
-#'   floor(x)
-#' })
+#' x <- nv_array(c(1.2, 2.7, -1.5))
+#' floor(x)
 #' @export
 nv_floor <- nvl_floor
 
@@ -887,10 +801,8 @@ nv_floor <- nvl_floor
 #' @template return_unary
 #' @seealso [nvl_ceil()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1.2, 2.7, -1.5))
-#'   ceiling(x)
-#' })
+#' x <- nv_array(c(1.2, 2.7, -1.5))
+#' ceiling(x)
 #' @export
 nv_ceil <- nvl_ceil
 
@@ -901,10 +813,8 @@ nv_ceil <- nvl_ceil
 #' @template return_unary
 #' @seealso [nvl_sign()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-3, 0, 5))
-#'   sign(x)
-#' })
+#' x <- nv_array(c(-3, 0, 5))
+#' sign(x)
 #' @export
 nv_sign <- nvl_sign
 
@@ -915,10 +825,8 @@ nv_sign <- nvl_sign
 #' @template return_unary
 #' @seealso [nvl_exp()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, 1, 2))
-#'   exp(x)
-#' })
+#' x <- nv_array(c(0, 1, 2))
+#' exp(x)
 #' @export
 nv_exp <- nvl_exp
 
@@ -929,10 +837,8 @@ nv_exp <- nvl_exp
 #' @template return_unary
 #' @seealso [nvl_expm1()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, 0.001, 1))
-#'   nv_expm1(x)
-#' })
+#' x <- nv_array(c(0, 0.001, 1))
+#' nv_expm1(x)
 #' @export
 nv_expm1 <- nvl_expm1
 
@@ -943,10 +849,8 @@ nv_expm1 <- nvl_expm1
 #' @template return_unary
 #' @seealso [nvl_log1p()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, 0.001, 1))
-#'   nv_log1p(x)
-#' })
+#' x <- nv_array(c(0, 0.001, 1))
+#' nv_log1p(x)
 #' @export
 nv_log1p <- nvl_log1p
 
@@ -957,10 +861,8 @@ nv_log1p <- nvl_log1p
 #' @template return_unary
 #' @seealso [nvl_cbrt()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 8, 27))
-#'   nv_cbrt(x)
-#' })
+#' x <- nv_array(c(1, 8, 27))
+#' nv_cbrt(x)
 #' @export
 nv_cbrt <- nvl_cbrt
 
@@ -971,10 +873,8 @@ nv_cbrt <- nvl_cbrt
 #' @template return_unary
 #' @seealso [nvl_logistic()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-2, 0, 2))
-#'   nv_logistic(x)
-#' })
+#' x <- nv_array(c(-2, 0, 2))
+#' nv_logistic(x)
 #' @export
 nv_logistic <- nvl_logistic
 
@@ -985,10 +885,8 @@ nv_logistic <- nvl_logistic
 #' @template return_unary_boolean
 #' @seealso [nvl_is_finite()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, Inf, NaN, -Inf, 0))
-#'   nv_is_finite(x)
-#' })
+#' x <- nv_array(c(1, Inf, NaN, -Inf, 0))
+#' nv_is_finite(x)
 #' @export
 nv_is_finite <- nvl_is_finite
 
@@ -999,10 +897,8 @@ nv_is_finite <- nvl_is_finite
 #' @template return_unary
 #' @seealso [nvl_popcnt()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(7L, 3L, 15L))
-#'   nv_popcnt(x)
-#' })
+#' x <- nv_array(c(7L, 3L, 15L))
+#' nv_popcnt(x)
 #' @export
 nv_popcnt <- nvl_popcnt
 
@@ -1018,10 +914,8 @@ nv_popcnt <- nvl_popcnt
 #' @template return_unary
 #' @seealso [nvl_clamp()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-1, 0.5, 2))
-#'   nv_clamp(nv_scalar(0), x, nv_scalar(1))
-#' })
+#' x <- nv_array(c(-1, 0.5, 2))
+#' nv_clamp(nv_scalar(0), x, nv_scalar(1))
 #' @export
 nv_clamp <- function(min_val, operand, max_val) {
   args <- nv_align_arrayish(min_val, operand, max_val)
@@ -1044,10 +938,8 @@ nv_clamp <- function(min_val, operand, max_val) {
 #'   Has the same shape and data type as `operand`.
 #' @seealso [nvl_reverse()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3, 4, 5))
-#'   nv_reverse(x, dims = 1L)
-#' })
+#' x <- nv_array(c(1, 2, 3, 4, 5))
+#' nv_reverse(x, dims = 1L)
 #' @export
 nv_reverse <- nvl_reverse
 
@@ -1073,7 +965,7 @@ nv_reverse <- nvl_reverse
 #'   Has the given `dtype` and `shape`.
 #' @seealso [nv_seq()] for a simpler 1-D sequence, [nvl_iota()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval(nv_iota(dim = 1L, dtype = "i32", shape = 5L))
+#' nv_iota(dim = 1L, dtype = "i32", shape = 5L)
 #' x <- nv_array(matrix(0L, nrow = 2, ncol = 3))
 #' nv_iota_like(x, dim = 1L)
 #' @export
@@ -1104,7 +996,7 @@ nv_iota <- nvl_iota
 #' @return [`arrayish`]\cr
 #'   1-D array of length `end - start + 1`.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval(nv_seq(3, 7))
+#' nv_seq(3, 7)
 #' x <- nv_array(c(1, 2, 3), dtype = "f64")
 #' nv_seq_like(x, 1, 5)
 #' @export
@@ -1149,10 +1041,8 @@ nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE, de
 #'   Has the same data type as `operand`.
 #' @seealso [nvl_pad()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
 #' @export
 nv_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding = NULL) {
   args <- nv_align_arrayish(operand, padding_value)
@@ -1175,10 +1065,8 @@ nv_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, 
 #' @template return_unary
 #' @seealso [nvl_round()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1.4, 2.5, 3.6))
-#'   round(x)
-#' })
+#' x <- nv_array(c(1.4, 2.5, 3.6))
+#' round(x)
 #' @export
 nv_round <- nvl_round
 
@@ -1198,11 +1086,9 @@ nv_round <- nvl_round
 #' @return [`arrayish`]
 #' @seealso [nvl_dot_general()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   y <- nv_array(matrix(1:6, nrow = 3))
-#'   x %*% y
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' y <- nv_array(matrix(1:6, nrow = 3))
+#' x %*% y
 #' @export
 nv_matmul <- function(lhs, rhs) {
   args <- nv_promote_to_common(lhs, rhs)
@@ -1239,10 +1125,8 @@ nv_matmul <- function(lhs, rhs) {
 #'   Triangular matrix with the same shape and data type as the input.
 #' @seealso [nv_solve()], [nvl_cholesky()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-#'   nv_cholesky(a)
-#' })
+#' a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+#' nv_cholesky(a)
 #' @export
 nv_cholesky <- function(a, lower = TRUE) {
   a <- as_anvil_array(a)
@@ -1271,11 +1155,9 @@ nv_cholesky <- function(a, lower = TRUE) {
 #'   The solution `x` such that `a %*% x = b`.
 #' @seealso [nv_cholesky()], [nvl_cholesky()], [nvl_triangular_solve()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-#'   b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
-#'   nv_solve(a, b)
-#' })
+#' a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+#' b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
+#' nv_solve(a, b)
 #' @export
 nv_solve <- function(a, b) {
   args <- nv_align_arrayish(a, b)
@@ -1296,9 +1178,7 @@ nv_solve <- function(a, b) {
 #' @return [`arrayish`]\cr
 #'   An `n x n` matrix with `x` on the diagonal and zeros elsewhere.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   nv_diag(nv_array(c(1, 2, 3)))
-#' })
+#' nv_diag(nv_array(c(1, 2, 3)))
 #' @export
 nv_diag <- function(operand) {
   operand <- as_anvil_array(operand)
@@ -1337,7 +1217,7 @@ nv_diag <- function(operand) {
 #'   An `n x n` identity matrix.
 #' @seealso [nv_diag()] for general diagonal matrices.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval(nv_eye(3L))
+#' nv_eye(3L)
 #' x <- nv_array(matrix(0, nrow = 3, ncol = 3), dtype = "f64")
 #' nv_eye_like(x, 3L)
 #' @export
@@ -1353,10 +1233,8 @@ nv_eye <- function(n, dtype = "f32", device = NULL) {
 #' @template return_reduce
 #' @seealso [nvl_reduce_sum()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nv_reduce_sum(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nv_reduce_sum(x, dims = 1L)
 #' @export
 nv_reduce_sum <- nvl_reduce_sum
 
@@ -1371,10 +1249,8 @@ nv_reduce_sum <- nvl_reduce_sum
 #' @template return_reduce
 #' @seealso [nv_reduce_sum()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nv_reduce_mean(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nv_reduce_mean(x, dims = 1L)
 #' @export
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
   operand <- as_anvil_array(operand)
@@ -1391,10 +1267,8 @@ nv_reduce_mean <- function(operand, dims, drop = TRUE) {
 #' @template return_reduce
 #' @seealso [nvl_reduce_prod()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nv_reduce_prod(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nv_reduce_prod(x, dims = 1L)
 #' @export
 nv_reduce_prod <- nvl_reduce_prod
 
@@ -1406,10 +1280,8 @@ nv_reduce_prod <- nvl_reduce_prod
 #' @template return_reduce
 #' @seealso [nvl_reduce_max()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nv_reduce_max(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nv_reduce_max(x, dims = 1L)
 #' @export
 nv_reduce_max <- nvl_reduce_max
 
@@ -1421,10 +1293,8 @@ nv_reduce_max <- nvl_reduce_max
 #' @template return_reduce
 #' @seealso [nvl_reduce_min()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nv_reduce_min(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nv_reduce_min(x, dims = 1L)
 #' @export
 nv_reduce_min <- nvl_reduce_min
 
@@ -1437,10 +1307,8 @@ nv_reduce_min <- nvl_reduce_min
 #' @template return_reduce_boolean
 #' @seealso [nvl_reduce_any()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-#'   nv_reduce_any(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#' nv_reduce_any(x, dims = 1L)
 #' @export
 nv_reduce_any <- nvl_reduce_any
 
@@ -1453,10 +1321,8 @@ nv_reduce_any <- nvl_reduce_any
 #' @template return_reduce_boolean
 #' @seealso [nvl_reduce_all()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-#'   nv_reduce_all(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#' nv_reduce_all(x, dims = 1L)
 #' @export
 nv_reduce_all <- nvl_reduce_all
 # Higher order primitives
@@ -1477,7 +1343,7 @@ nv_reduce_all <- nvl_reduce_all
 #' @seealso [nvl_if()] for the underlying primitive, [nv_ifelse()] for
 #'   element-wise selection.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval(nv_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2)))
+#' nv_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 #' @export
 nv_if <- nvl_if
 
@@ -1495,16 +1361,14 @@ nv_if <- nvl_if
 #' @return Final state after the loop terminates (same structure as `init`).
 #' @seealso [nvl_while()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   nv_while(
-#'     init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
-#'     cond = function(i, total) i < 5L,
-#'     body = function(i, total) list(
-#'       i = i + 1L,
-#'       total = total + i
-#'     )
+#' nv_while(
+#'   init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
+#'   cond = function(i, total) i < 5L,
+#'   body = function(i, total) list(
+#'     i = i + 1L,
+#'     total = total + i
 #'   )
-#' })
+#' )
 #' @export
 nv_while <- nvl_while
 
@@ -1517,10 +1381,8 @@ nv_while <- nvl_while
 #' @template return_unary
 #' @seealso [nv_log()], [nv_log10()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 4, 8))
-#'   nv_log2(x)
-#' })
+#' x <- nv_array(c(1, 2, 4, 8))
+#' nv_log2(x)
 #' @export
 nv_log2 <- function(operand) {
   operand <- as_anvil_array(operand)
@@ -1534,10 +1396,8 @@ nv_log2 <- function(operand) {
 #' @template return_unary
 #' @seealso [nv_log()], [nv_log2()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 10, 100, 1000))
-#'   nv_log10(x)
-#' })
+#' x <- nv_array(c(1, 10, 100, 1000))
+#' nv_log10(x)
 #' @export
 nv_log10 <- function(operand) {
   operand <- as_anvil_array(operand)
@@ -1551,10 +1411,8 @@ nv_log10 <- function(operand) {
 #' @template return_unary_boolean
 #' @seealso [nv_is_finite()], [nv_is_infinite()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, NaN, Inf, -Inf, 0))
-#'   nv_is_nan(x)
-#' })
+#' x <- nv_array(c(1, NaN, Inf, -Inf, 0))
+#' nv_is_nan(x)
 #' @export
 nv_is_nan <- function(operand) {
   operand <- as_anvil_array(operand)
@@ -1569,10 +1427,8 @@ nv_is_nan <- function(operand) {
 #' @template return_unary_boolean
 #' @seealso [nv_is_finite()], [nv_is_nan()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, NaN, Inf, -Inf, 0))
-#'   nv_is_infinite(x)
-#' })
+#' x <- nv_array(c(1, NaN, Inf, -Inf, 0))
+#' nv_is_infinite(x)
 #' @export
 nv_is_infinite <- function(operand) {
   operand <- as_anvil_array(operand)
@@ -1594,10 +1450,8 @@ nv_is_infinite <- function(operand) {
 #' @template return_reduce
 #' @seealso [nv_sd()], [nv_reduce_mean()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3, 4, 5))
-#'   nv_var(x, dims = 1L)
-#' })
+#' x <- nv_array(c(1, 2, 3, 4, 5))
+#' nv_var(x, dims = 1L)
 #' @export
 nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
   operand <- as_anvil_array(operand)
@@ -1624,10 +1478,8 @@ nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
 #' @template return_reduce
 #' @seealso [nv_var()], [nv_reduce_mean()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3, 4, 5))
-#'   nv_sd(x, dims = 1L)
-#' })
+#' x <- nv_array(c(1, 2, 3, 4, 5))
+#' nv_sd(x, dims = 1L)
 #' @export
 nv_sd <- function(operand, dims, drop = TRUE, correction = 1L) {
   operand <- as_anvil_array(operand)
@@ -1646,10 +1498,8 @@ nv_sd <- function(operand, dims, drop = TRUE, correction = 1L) {
 #'   Has the same data type as `operand` with the specified dimensions removed.
 #' @seealso [nv_unsqueeze()], [nv_reshape()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(1:6, shape = c(1, 6, 1))
-#'   nv_squeeze(x)
-#' })
+#' x <- nv_array(1:6, shape = c(1, 6, 1))
+#' nv_squeeze(x)
 #' @export
 nv_squeeze <- function(operand, dims = NULL) {
   operand <- as_anvil_array(operand)
@@ -1681,10 +1531,8 @@ nv_squeeze <- function(operand, dims = NULL) {
 #'   Has the same data type as `operand` with an extra dimension of size 1.
 #' @seealso [nv_squeeze()], [nv_reshape()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   nv_unsqueeze(x, dim = 1L)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' nv_unsqueeze(x, dim = 1L)
 #' @export
 nv_unsqueeze <- function(operand, dim) {
   operand <- as_anvil_array(operand)
@@ -1704,11 +1552,9 @@ nv_unsqueeze <- function(operand, dim) {
 #' @return [`arrayish`]\cr
 #'   A 2-D array of shape `(length(x), length(y))`.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(4, 5))
-#'   nv_outer(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(4, 5))
+#' nv_outer(x, y)
 #' @export
 nv_outer <- function(x, y) {
   args <- nv_promote_to_common(x, y)
@@ -1734,10 +1580,8 @@ nv_outer <- function(x, y) {
 #'   A 1-D array of length `min(nrow, ncol)` containing the diagonal elements.
 #' @seealso [nv_diag()] for creating a diagonal matrix, [nv_trace()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(1:9, shape = c(3, 3))
-#'   nv_extract_diag(x)
-#' })
+#' x <- nv_array(1:9, shape = c(3, 3))
+#' nv_extract_diag(x)
 #' @export
 nv_extract_diag <- function(operand) {
   operand <- as_anvil_array(operand)
@@ -1769,10 +1613,8 @@ nv_extract_diag <- function(operand) {
 #'   A scalar with the same data type as `operand`.
 #' @seealso [nv_extract_diag()], [nv_diag()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))
-#'   nv_trace(x)
-#' })
+#' x <- nv_array(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))
+#' nv_trace(x)
 #' @export
 nv_trace <- function(operand) {
   operand <- as_anvil_array(operand)
@@ -1792,10 +1634,8 @@ nv_trace <- function(operand) {
 #'   Has the same shape and data type as `operand`.
 #' @seealso [nv_triu()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_fill(1, c(3, 3))
-#'   nv_tril(x)
-#' })
+#' x <- nv_fill(1, c(3, 3))
+#' nv_tril(x)
 #' @export
 nv_tril <- function(operand, diagonal = 0L) {
   operand <- as_anvil_array(operand)
@@ -1821,10 +1661,8 @@ nv_tril <- function(operand, diagonal = 0L) {
 #'   Has the same shape and data type as `operand`.
 #' @seealso [nv_tril()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_fill(1, c(3, 3))
-#'   nv_triu(x)
-#' })
+#' x <- nv_fill(1, c(3, 3))
+#' nv_triu(x)
 #' @export
 nv_triu <- function(operand, diagonal = 0L) {
   operand <- as_anvil_array(operand)
@@ -1849,10 +1687,8 @@ nv_triu <- function(operand, diagonal = 0L) {
 #' @return [`arrayish`]
 #' @seealso [nv_tcrossprod()], [nv_matmul()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
-#'   nv_crossprod(x)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
+#' nv_crossprod(x)
 #' @export
 nv_crossprod <- function(x, y = NULL) {
   if (is.null(y)) {
@@ -1877,10 +1713,8 @@ nv_crossprod <- function(x, y = NULL) {
 #' @return [`arrayish`]
 #' @seealso [nv_crossprod()], [nv_matmul()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
-#'   nv_tcrossprod(x)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
+#' nv_tcrossprod(x)
 #' @export
 nv_tcrossprod <- function(x, y = NULL) {
   if (is.null(y)) {

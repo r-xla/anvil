@@ -38,11 +38,9 @@ where \code{...} are zero or more batch dimensions that must match between
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-  b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
-  nv_solve(a, b)
-})
+a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
+nv_solve(a, b)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -19,10 +19,8 @@ Element-wise population count (number of set bits).
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(7L, 3L, 15L))
-  nv_popcnt(x)
-})
+x <- nv_array(c(7L, 3L, 15L))
+nv_popcnt(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

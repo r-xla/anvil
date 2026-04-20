@@ -19,10 +19,8 @@ Element-wise tangent. You can also use \code{tan()}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(0, 0.5, 1))
-  tan(x)
-})
+x <- nv_array(c(0, 0.5, 1))
+tan(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

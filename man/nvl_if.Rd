@@ -39,7 +39,7 @@ Lowers to \code{\link[stablehlo:hlo_if]{stablehlo::hlo_if()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval(nvl_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2)))
+nvl_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

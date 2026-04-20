@@ -33,10 +33,8 @@ Lowers to \code{\link[stablehlo:hlo_rsqrt]{stablehlo::hlo_rsqrt()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 4, 9))
-  nvl_rsqrt(x)
-})
+x <- nv_array(c(1, 4, 9))
+nvl_rsqrt(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

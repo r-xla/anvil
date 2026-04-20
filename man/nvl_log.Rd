@@ -34,10 +34,8 @@ Lowers to \code{\link[stablehlo:hlo_log]{stablehlo::hlo_log()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 2.718, 7.389))
-  nvl_log(x)
-})
+x <- nv_array(c(1, 2.718, 7.389))
+nvl_log(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

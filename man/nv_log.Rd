@@ -19,10 +19,8 @@ Element-wise natural logarithm. You can also use \code{log()}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 2.718, 7.389))
-  log(x)
-})
+x <- nv_array(c(1, 2.718, 7.389))
+log(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

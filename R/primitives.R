@@ -90,7 +90,7 @@ p_fill <- AnvilPrimitive("fill")
 #' Lowers to [stablehlo::hlo_tensor()].
 #' @seealso [nv_fill()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval(nvl_fill(3.14, shape = c(2, 3), dtype = "f32"))
+#' nvl_fill(3.14, shape = c(2, 3), dtype = "f32")
 #' @export
 nvl_fill <- jit(
   function(value, shape, dtype, ambiguous = FALSE, device = NULL) {
@@ -120,11 +120,9 @@ p_add <- AnvilPrimitive("add")
 #' Lowers to [stablehlo::hlo_add()].
 #' @seealso [nv_add()], `+`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(4, 5, 6))
-#'   nvl_add(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(4, 5, 6))
+#' nvl_add(x, y)
 #' @export
 nvl_add <- make_binary_op(p_add, stablehlo::infer_types_add)
 
@@ -140,11 +138,9 @@ p_mul <- AnvilPrimitive("mul")
 #' Lowers to [stablehlo::hlo_multiply()].
 #' @seealso [nv_mul()], `*`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(4, 5, 6))
-#'   nvl_mul(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(4, 5, 6))
+#' nvl_mul(x, y)
 #' @export
 nvl_mul <- make_binary_op(p_mul, stablehlo::infer_types_multiply)
 
@@ -160,11 +156,9 @@ p_sub <- AnvilPrimitive("sub")
 #' Lowers to [stablehlo::hlo_subtract()].
 #' @seealso [nv_sub()], `-`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(4, 5, 6))
-#'   nvl_sub(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(4, 5, 6))
+#' nvl_sub(x, y)
 #' @export
 nvl_sub <- make_binary_op(p_sub, stablehlo::infer_types_subtract)
 
@@ -181,10 +175,8 @@ p_negate <- AnvilPrimitive("negate")
 #' Lowers to [stablehlo::hlo_negate()].
 #' @seealso [nv_negate()], unary `-`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, -2, 3))
-#'   nvl_negate(x)
-#' })
+#' x <- nv_array(c(1, -2, 3))
+#' nvl_negate(x)
 #' @export
 nvl_negate <- make_unary_op(p_negate, stablehlo::infer_types_negate)
 
@@ -200,11 +192,9 @@ p_div <- AnvilPrimitive("divide")
 #' Lowers to [stablehlo::hlo_divide()].
 #' @seealso [nv_div()], `/`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(10, 20, 30))
-#'   y <- nv_array(c(2, 5, 10))
-#'   nvl_div(x, y)
-#' })
+#' x <- nv_array(c(10, 20, 30))
+#' y <- nv_array(c(2, 5, 10))
+#' nvl_div(x, y)
 #' @export
 nvl_div <- make_binary_op(p_div, stablehlo::infer_types_divide)
 
@@ -220,11 +210,9 @@ p_pow <- AnvilPrimitive("power")
 #' Lowers to [stablehlo::hlo_power()].
 #' @seealso [nv_pow()], `^`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(2, 3, 4))
-#'   y <- nv_array(c(3, 2, 1))
-#'   nvl_pow(x, y)
-#' })
+#' x <- nv_array(c(2, 3, 4))
+#' y <- nv_array(c(3, 2, 1))
+#' nvl_pow(x, y)
 #' @export
 nvl_pow <- make_binary_op(p_pow, stablehlo::infer_types_power)
 
@@ -249,10 +237,8 @@ p_broadcast_in_dim <- AnvilPrimitive("broadcast_in_dim")
 #' Lowers to [stablehlo::hlo_broadcast_in_dim()].
 #' @seealso [nv_broadcast_to()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   nvl_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' nvl_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
 #' @export
 nvl_broadcast_in_dim <- jit(
   function(operand, shape, broadcast_dimensions) {
@@ -306,14 +292,12 @@ p_dot_general <- AnvilPrimitive("dot_general")
 #' Lowers to [stablehlo::hlo_dot_general()].
 #' @seealso [nv_matmul()], `%*%`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   y <- nv_array(matrix(1:6, nrow = 3))
-#'   nvl_dot_general(x, y,
-#'     contracting_dims = list(2L, 1L),
-#'     batching_dims = list(integer(0), integer(0))
-#'   )
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' y <- nv_array(matrix(1:6, nrow = 3))
+#' nvl_dot_general(x, y,
+#'   contracting_dims = list(2L, 1L),
+#'   batching_dims = list(integer(0), integer(0))
+#' )
 #' @export
 nvl_dot_general <- jit(
   function(lhs, rhs, contracting_dims, batching_dims) {
@@ -353,10 +337,8 @@ p_transpose <- AnvilPrimitive("transpose")
 #' Lowers to [stablehlo::hlo_transpose()].
 #' @seealso [nv_transpose()], [t()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nvl_transpose(x, permutation = c(2L, 1L))
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nvl_transpose(x, permutation = c(2L, 1L))
 #' @export
 nvl_transpose <- jit(
   function(operand, permutation) {
@@ -399,10 +381,8 @@ p_reshape <- AnvilPrimitive("reshape")
 #' Lowers to [stablehlo::hlo_reshape()].
 #' @seealso [nv_reshape()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(1:6)
-#'   nvl_reshape(x, shape = c(2, 3))
-#' })
+#' x <- nv_array(1:6)
+#' nvl_reshape(x, shape = c(2, 3))
 #' @export
 nvl_reshape <- jit(
   function(operand, shape) {
@@ -443,11 +423,9 @@ p_concatenate <- AnvilPrimitive("concatenate")
 #' Lowers to [stablehlo::hlo_concatenate()].
 #' @seealso [nv_concatenate()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(4, 5, 6))
-#'   nvl_concatenate(x, y, dimension = 1L)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(4, 5, 6))
+#' nvl_concatenate(x, y, dimension = 1L)
 #' @export
 nvl_concatenate <- jit(
   function(..., dimension) {
@@ -507,26 +485,20 @@ p_static_slice <- AnvilPrimitive("static_slice")
 #' @seealso [nvl_dynamic_slice()], [nvl_scatter()], [nvl_gather()], [nv_subset()], `[`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # 1-D: extract elements 2 through 4 (limit is exclusive)
-#' jit_eval({
-#'   x <- nv_array(1:10)
-#'   nvl_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
-#' })
+#' x <- nv_array(1:10)
+#' nvl_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 #'
 #' # 1-D: every other element using strides
-#' jit_eval({
-#'   x <- nv_array(1:10)
-#'   nvl_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
-#' })
+#' x <- nv_array(1:10)
+#' nvl_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
 #'
 #' # 2-D: extract a submatrix (rows 1-2, columns 2-3)
-#' jit_eval({
-#'   x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
-#'   nvl_static_slice(x,
-#'     start_indices = c(1L, 2L),
-#'     limit_indices = c(3L, 4L),
-#'     strides       = c(1L, 1L)
-#'   )
-#' })
+#' x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
+#' nvl_static_slice(x,
+#'   start_indices = c(1L, 2L),
+#'   limit_indices = c(3L, 4L),
+#'   strides       = c(1L, 1L)
+#' )
 #' @export
 nvl_static_slice <- jit(
   function(operand, start_indices, limit_indices, strides) {
@@ -588,19 +560,15 @@ p_dynamic_slice <- AnvilPrimitive("dynamic_slice")
 #' @seealso [nvl_static_slice()], [nvl_dynamic_update_slice()], [nvl_scatter()], [nvl_gather()], [nv_subset()], `[`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # 1-D: extract 3 elements starting at position 3
-#' jit_eval({
-#'   x <- nv_array(1:10)
-#'   start <- nv_scalar(3L)
-#'   nvl_dynamic_slice(x, start, slice_sizes = 3L)
-#' })
+#' x <- nv_array(1:10)
+#' start <- nv_scalar(3L)
+#' nvl_dynamic_slice(x, start, slice_sizes = 3L)
 #'
 #' # 2-D: extract a 2x2 block from a matrix
-#' jit_eval({
-#'   x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
-#'   row_start <- nv_scalar(2L)
-#'   col_start <- nv_scalar(1L)
-#'   nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
-#' })
+#' x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
+#' row_start <- nv_scalar(2L)
+#' col_start <- nv_scalar(1L)
+#' nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
 #' @export
 nvl_dynamic_slice <- jit(
   function(operand, ..., slice_sizes) {
@@ -653,21 +621,17 @@ p_dynamic_update_slice <- AnvilPrimitive("dynamic_update_slice")
 #' @seealso [nvl_dynamic_slice()], [nvl_scatter()], [nvl_gather()], [nv_subset_assign()], `[<-`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # 1-D: overwrite two elements starting at position 2
-#' jit_eval({
-#'   x <- nv_array(1:5)
-#'   update <- nv_array(c(10L, 20L))
-#'   start <- nv_scalar(2L)
-#'   nvl_dynamic_update_slice(x, update, start)
-#' })
+#' x <- nv_array(1:5)
+#' update <- nv_array(c(10L, 20L))
+#' start <- nv_scalar(2L)
+#' nvl_dynamic_update_slice(x, update, start)
 #'
 #' # 2-D: write a 2x2 block into a 3x4 matrix
-#' jit_eval({
-#'   x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
-#'   update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
-#'   row_start <- nv_scalar(2L)
-#'   col_start <- nv_scalar(3L)
-#'   nvl_dynamic_update_slice(x, update, row_start, col_start)
-#' })
+#' x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
+#' update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
+#' row_start <- nv_scalar(2L)
+#' col_start <- nv_scalar(3L)
+#' nvl_dynamic_update_slice(x, update, row_start, col_start)
 #' @export
 nvl_dynamic_update_slice <- jit(
   function(operand, update, ...) {
@@ -729,10 +693,8 @@ p_reduce_sum <- AnvilPrimitive("reduce_sum")
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_add()] as the reducer.
 #' @seealso [nv_reduce_sum()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nvl_reduce_sum(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nvl_reduce_sum(x, dims = 1L)
 #' @export
 nvl_reduce_sum <- make_reduce_op(p_reduce_sum)
 
@@ -754,10 +716,8 @@ p_reduce_prod <- AnvilPrimitive("reduce_prod")
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_multiply()] as the reducer.
 #' @seealso [nv_reduce_prod()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nvl_reduce_prod(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nvl_reduce_prod(x, dims = 1L)
 #' @export
 nvl_reduce_prod <- make_reduce_op(p_reduce_prod)
 
@@ -779,10 +739,8 @@ p_reduce_max <- AnvilPrimitive("reduce_max")
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_maximum()] as the reducer.
 #' @seealso [nv_reduce_max()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nvl_reduce_max(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nvl_reduce_max(x, dims = 1L)
 #' @export
 nvl_reduce_max <- make_reduce_op(p_reduce_max)
 
@@ -804,10 +762,8 @@ p_reduce_min <- AnvilPrimitive("reduce_min")
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_minimum()] as the reducer.
 #' @seealso [nv_reduce_min()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   nvl_reduce_min(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nvl_reduce_min(x, dims = 1L)
 #' @export
 nvl_reduce_min <- make_reduce_op(p_reduce_min)
 
@@ -829,10 +785,8 @@ p_reduce_any <- AnvilPrimitive("reduce_any")
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_or()] as the reducer.
 #' @seealso [nv_reduce_any()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-#'   nvl_reduce_any(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#' nvl_reduce_any(x, dims = 1L)
 #' @export
 nvl_reduce_any <- make_reduce_op(p_reduce_any, infer_reduce_boolean)
 
@@ -854,10 +808,8 @@ p_reduce_all <- AnvilPrimitive("reduce_all")
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_and()] as the reducer.
 #' @seealso [nv_reduce_all()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-#'   nvl_reduce_all(x, dims = 1L)
-#' })
+#' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#' nvl_reduce_all(x, dims = 1L)
 #' @export
 nvl_reduce_all <- make_reduce_op(p_reduce_all, infer_reduce_boolean)
 
@@ -900,11 +852,9 @@ p_eq <- AnvilPrimitive("equal")
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "EQ"`.
 #' @seealso [nv_eq()], `==`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(1, 3, 2))
-#'   nvl_eq(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(1, 3, 2))
+#' nvl_eq(x, y)
 #' @export
 nvl_eq <- make_compare_op(p_eq, "EQ")
 
@@ -920,11 +870,9 @@ p_ne <- AnvilPrimitive("not_equal")
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "NE"`.
 #' @seealso [nv_ne()], `!=`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(1, 3, 2))
-#'   nvl_ne(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(1, 3, 2))
+#' nvl_ne(x, y)
 #' @export
 nvl_ne <- make_compare_op(p_ne, "NE")
 
@@ -940,11 +888,9 @@ p_gt <- AnvilPrimitive("greater")
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "GT"`.
 #' @seealso [nv_gt()], `>`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(3, 2, 1))
-#'   nvl_gt(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(3, 2, 1))
+#' nvl_gt(x, y)
 #' @export
 nvl_gt <- make_compare_op(p_gt, "GT")
 
@@ -960,11 +906,9 @@ p_ge <- AnvilPrimitive("greater_equal")
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "GE"`.
 #' @seealso [nv_ge()], `>=`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(3, 2, 1))
-#'   nvl_ge(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(3, 2, 1))
+#' nvl_ge(x, y)
 #' @export
 nvl_ge <- make_compare_op(p_ge, "GE")
 
@@ -980,11 +924,9 @@ p_lt <- AnvilPrimitive("less")
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "LT"`.
 #' @seealso [nv_lt()], `<`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(3, 2, 1))
-#'   nvl_lt(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(3, 2, 1))
+#' nvl_lt(x, y)
 #' @export
 nvl_lt <- make_compare_op(p_lt, "LT")
 
@@ -1000,11 +942,9 @@ p_le <- AnvilPrimitive("less_equal")
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "LE"`.
 #' @seealso [nv_le()], `<=`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   y <- nv_array(c(3, 2, 1))
-#'   nvl_le(x, y)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' y <- nv_array(c(3, 2, 1))
+#' nvl_le(x, y)
 #' @export
 nvl_le <- make_compare_op(p_le, "LE")
 
@@ -1022,11 +962,9 @@ p_max <- AnvilPrimitive("maximum")
 #' Lowers to [stablehlo::hlo_maximum()].
 #' @seealso [nv_max()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 5, 3))
-#'   y <- nv_array(c(4, 2, 6))
-#'   nvl_max(x, y)
-#' })
+#' x <- nv_array(c(1, 5, 3))
+#' y <- nv_array(c(4, 2, 6))
+#' nvl_max(x, y)
 #' @export
 nvl_max <- make_binary_op(p_max, stablehlo::infer_types_maximum)
 
@@ -1042,11 +980,9 @@ p_min <- AnvilPrimitive("minimum")
 #' Lowers to [stablehlo::hlo_minimum()].
 #' @seealso [nv_min()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 5, 3))
-#'   y <- nv_array(c(4, 2, 6))
-#'   nvl_min(x, y)
-#' })
+#' x <- nv_array(c(1, 5, 3))
+#' y <- nv_array(c(4, 2, 6))
+#' nvl_min(x, y)
 #' @export
 nvl_min <- make_binary_op(p_min, stablehlo::infer_types_minimum)
 
@@ -1062,11 +998,9 @@ p_remainder <- AnvilPrimitive("remainder")
 #' Lowers to [stablehlo::hlo_remainder()].
 #' @seealso [nv_remainder()], `%%`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(7, 10, 15))
-#'   y <- nv_array(c(3, 4, 6))
-#'   nvl_remainder(x, y)
-#' })
+#' x <- nv_array(c(7, 10, 15))
+#' y <- nv_array(c(3, 4, 6))
+#' nvl_remainder(x, y)
 #' @export
 nvl_remainder <- make_binary_op(p_remainder, stablehlo::infer_types_remainder)
 
@@ -1082,11 +1016,9 @@ p_and <- AnvilPrimitive("and")
 #' Lowers to [stablehlo::hlo_and()].
 #' @seealso [nv_and()], `&`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(TRUE, FALSE, TRUE))
-#'   y <- nv_array(c(TRUE, TRUE, FALSE))
-#'   nvl_and(x, y)
-#' })
+#' x <- nv_array(c(TRUE, FALSE, TRUE))
+#' y <- nv_array(c(TRUE, TRUE, FALSE))
+#' nvl_and(x, y)
 #' @export
 nvl_and <- make_binary_op(p_and, stablehlo::infer_types_and)
 
@@ -1103,10 +1035,8 @@ p_not <- AnvilPrimitive("not")
 #' Lowers to [stablehlo::hlo_not()].
 #' @seealso [nv_not()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(TRUE, FALSE, TRUE))
-#'   nvl_not(x)
-#' })
+#' x <- nv_array(c(TRUE, FALSE, TRUE))
+#' nvl_not(x)
 #' @export
 nvl_not <- make_unary_op(p_not, stablehlo::infer_types_not)
 
@@ -1122,11 +1052,9 @@ p_or <- AnvilPrimitive("or")
 #' Lowers to [stablehlo::hlo_or()].
 #' @seealso [nv_or()], `|`
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(TRUE, FALSE, TRUE))
-#'   y <- nv_array(c(TRUE, TRUE, FALSE))
-#'   nvl_or(x, y)
-#' })
+#' x <- nv_array(c(TRUE, FALSE, TRUE))
+#' y <- nv_array(c(TRUE, TRUE, FALSE))
+#' nvl_or(x, y)
 #' @export
 nvl_or <- make_binary_op(p_or, stablehlo::infer_types_or)
 
@@ -1142,11 +1070,9 @@ p_xor <- AnvilPrimitive("xor")
 #' Lowers to [stablehlo::hlo_xor()].
 #' @seealso [nv_xor()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(TRUE, FALSE, TRUE))
-#'   y <- nv_array(c(TRUE, TRUE, FALSE))
-#'   nvl_xor(x, y)
-#' })
+#' x <- nv_array(c(TRUE, FALSE, TRUE))
+#' y <- nv_array(c(TRUE, TRUE, FALSE))
+#' nvl_xor(x, y)
 #' @export
 nvl_xor <- make_binary_op(p_xor, stablehlo::infer_types_xor)
 
@@ -1170,11 +1096,9 @@ p_shift_left <- AnvilPrimitive("shift_left")
 #' Lowers to [stablehlo::hlo_shift_left()].
 #' @seealso [nv_shift_left()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1L, 2L, 4L))
-#'   y <- nv_array(c(1L, 2L, 1L))
-#'   nvl_shift_left(x, y)
-#' })
+#' x <- nv_array(c(1L, 2L, 4L))
+#' y <- nv_array(c(1L, 2L, 1L))
+#' nvl_shift_left(x, y)
 #' @export
 nvl_shift_left <- jit(
   function(lhs, rhs) {
@@ -1196,11 +1120,9 @@ p_shift_right_logical <- AnvilPrimitive("shift_right_logical")
 #' Lowers to [stablehlo::hlo_shift_right_logical()].
 #' @seealso [nv_shift_right_logical()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(8L, 16L, 32L))
-#'   y <- nv_array(c(1L, 2L, 3L))
-#'   nvl_shift_right_logical(x, y)
-#' })
+#' x <- nv_array(c(8L, 16L, 32L))
+#' y <- nv_array(c(1L, 2L, 3L))
+#' nvl_shift_right_logical(x, y)
 #' @export
 nvl_shift_right_logical <- jit(
   function(lhs, rhs) {
@@ -1222,11 +1144,9 @@ p_shift_right_arithmetic <- AnvilPrimitive("shift_right_arithmetic")
 #' Lowers to [stablehlo::hlo_shift_right_arithmetic()].
 #' @seealso [nv_shift_right_arithmetic()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(8L, -16L, 32L))
-#'   y <- nv_array(c(1L, 2L, 3L))
-#'   nvl_shift_right_arithmetic(x, y)
-#' })
+#' x <- nv_array(c(8L, -16L, 32L))
+#' y <- nv_array(c(1L, 2L, 3L))
+#' nvl_shift_right_arithmetic(x, y)
 #' @export
 nvl_shift_right_arithmetic <- jit(
   function(lhs, rhs) {
@@ -1248,11 +1168,9 @@ p_atan2 <- AnvilPrimitive("atan2")
 #' Lowers to [stablehlo::hlo_atan2()].
 #' @seealso [nv_atan2()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   y <- nv_array(c(1, 0, -1))
-#'   x <- nv_array(c(0, 1, 0))
-#'   nvl_atan2(y, x)
-#' })
+#' y <- nv_array(c(1, 0, -1))
+#' x <- nv_array(c(0, 1, 0))
+#' nvl_atan2(y, x)
 #' @export
 nvl_atan2 <- make_binary_op(p_atan2, stablehlo::infer_types_atan2)
 
@@ -1274,14 +1192,10 @@ p_bitcast_convert <- AnvilPrimitive("bitcast_convert")
 #' Lowers to [stablehlo::hlo_bitcast_convert()].
 #' @seealso [nv_bitcast_convert()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(1L)
-#'   nvl_bitcast_convert(x, dtype = "i8")
-#' })
-#' jit_eval({
-#'   x <- nv_array(rep(1L, 4), dtype = "i8")
-#'   nvl_bitcast_convert(x, dtype = "i32")
-#' })
+#' x <- nv_array(1L)
+#' nvl_bitcast_convert(x, dtype = "i8")
+#' x <- nv_array(rep(1L, 4), dtype = "i8")
+#' nvl_bitcast_convert(x, dtype = "i32")
 #' @export
 nvl_bitcast_convert <- jit(
   function(operand, dtype) {
@@ -1308,10 +1222,8 @@ p_abs <- AnvilPrimitive("abs")
 #' Lowers to [stablehlo::hlo_abs()].
 #' @seealso [nv_abs()], [abs()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-1, 2, -3))
-#'   nvl_abs(x)
-#' })
+#' x <- nv_array(c(-1, 2, -3))
+#' nvl_abs(x)
 #' @export
 nvl_abs <- make_unary_op(p_abs, stablehlo::infer_types_abs)
 
@@ -1327,10 +1239,8 @@ p_sqrt <- AnvilPrimitive("sqrt")
 #' Lowers to [stablehlo::hlo_sqrt()].
 #' @seealso [nv_sqrt()], [sqrt()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 4, 9))
-#'   nvl_sqrt(x)
-#' })
+#' x <- nv_array(c(1, 4, 9))
+#' nvl_sqrt(x)
 #' @export
 nvl_sqrt <- make_unary_op(p_sqrt, stablehlo::infer_types_sqrt)
 
@@ -1346,10 +1256,8 @@ p_rsqrt <- AnvilPrimitive("rsqrt")
 #' Lowers to [stablehlo::hlo_rsqrt()].
 #' @seealso [nv_rsqrt()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 4, 9))
-#'   nvl_rsqrt(x)
-#' })
+#' x <- nv_array(c(1, 4, 9))
+#' nvl_rsqrt(x)
 #' @export
 nvl_rsqrt <- make_unary_op(p_rsqrt, stablehlo::infer_types_rsqrt)
 
@@ -1365,10 +1273,8 @@ p_log <- AnvilPrimitive("log")
 #' Lowers to [stablehlo::hlo_log()].
 #' @seealso [nv_log()], [log()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2.718, 7.389))
-#'   nvl_log(x)
-#' })
+#' x <- nv_array(c(1, 2.718, 7.389))
+#' nvl_log(x)
 #' @export
 nvl_log <- make_unary_op(p_log, stablehlo::infer_types_log)
 
@@ -1384,10 +1290,8 @@ p_tanh <- AnvilPrimitive("tanh")
 #' Lowers to [stablehlo::hlo_tanh()].
 #' @seealso [nv_tanh()], [tanh()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-1, 0, 1))
-#'   nvl_tanh(x)
-#' })
+#' x <- nv_array(c(-1, 0, 1))
+#' nvl_tanh(x)
 #' @export
 nvl_tanh <- make_unary_op(p_tanh, stablehlo::infer_types_tanh)
 
@@ -1403,10 +1307,8 @@ p_tan <- AnvilPrimitive("tan")
 #' Lowers to [stablehlo::hlo_tan()].
 #' @seealso [nv_tan()], [tan()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, 0.5, 1))
-#'   nvl_tan(x)
-#' })
+#' x <- nv_array(c(0, 0.5, 1))
+#' nvl_tan(x)
 #' @export
 nvl_tan <- make_unary_op(p_tan, stablehlo::infer_types_tan)
 
@@ -1422,10 +1324,8 @@ p_sine <- AnvilPrimitive("sine")
 #' Lowers to [stablehlo::hlo_sine()].
 #' @seealso [nv_sine()], [sin()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, pi / 2, pi))
-#'   nvl_sine(x)
-#' })
+#' x <- nv_array(c(0, pi / 2, pi))
+#' nvl_sine(x)
 #' @export
 nvl_sine <- make_unary_op(p_sine, stablehlo::infer_types_sine)
 
@@ -1441,10 +1341,8 @@ p_cosine <- AnvilPrimitive("cosine")
 #' Lowers to [stablehlo::hlo_cosine()].
 #' @seealso [nv_cosine()], [cos()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, pi / 2, pi))
-#'   nvl_cosine(x)
-#' })
+#' x <- nv_array(c(0, pi / 2, pi))
+#' nvl_cosine(x)
 #' @export
 nvl_cosine <- make_unary_op(p_cosine, stablehlo::infer_types_cosine)
 
@@ -1460,10 +1358,8 @@ p_floor <- AnvilPrimitive("floor")
 #' Lowers to [stablehlo::hlo_floor()].
 #' @seealso [nv_floor()], [floor()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1.2, 2.7, -1.5))
-#'   nvl_floor(x)
-#' })
+#' x <- nv_array(c(1.2, 2.7, -1.5))
+#' nvl_floor(x)
 #' @export
 nvl_floor <- make_unary_op(p_floor, stablehlo::infer_types_floor)
 
@@ -1479,10 +1375,8 @@ p_ceil <- AnvilPrimitive("ceil")
 #' Lowers to [stablehlo::hlo_ceil()].
 #' @seealso [nv_ceil()], [ceiling()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1.2, 2.7, -1.5))
-#'   nvl_ceil(x)
-#' })
+#' x <- nv_array(c(1.2, 2.7, -1.5))
+#' nvl_ceil(x)
 #' @export
 nvl_ceil <- make_unary_op(p_ceil, stablehlo::infer_types_ceil)
 
@@ -1498,10 +1392,8 @@ p_sign <- AnvilPrimitive("sign")
 #' Lowers to [stablehlo::hlo_sign()].
 #' @seealso [nv_sign()], [sign()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-3, 0, 5))
-#'   nvl_sign(x)
-#' })
+#' x <- nv_array(c(-3, 0, 5))
+#' nvl_sign(x)
 #' @export
 nvl_sign <- make_unary_op(p_sign, stablehlo::infer_types_sign)
 
@@ -1517,10 +1409,8 @@ p_exp <- AnvilPrimitive("exp")
 #' Lowers to [stablehlo::hlo_exponential()].
 #' @seealso [nv_exp()], [exp()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, 1, 2))
-#'   nvl_exp(x)
-#' })
+#' x <- nv_array(c(0, 1, 2))
+#' nvl_exp(x)
 #' @export
 nvl_exp <- make_unary_op(p_exp, stablehlo::infer_types_exponential)
 
@@ -1536,10 +1426,8 @@ p_expm1 <- AnvilPrimitive("expm1")
 #' Lowers to [stablehlo::hlo_exponential_minus_one()].
 #' @seealso [nv_expm1()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, 0.001, 1))
-#'   nvl_expm1(x)
-#' })
+#' x <- nv_array(c(0, 0.001, 1))
+#' nvl_expm1(x)
 #' @export
 nvl_expm1 <- make_unary_op(p_expm1, stablehlo::infer_types_exponential_minus_one)
 
@@ -1555,10 +1443,8 @@ p_log1p <- AnvilPrimitive("log1p")
 #' Lowers to [stablehlo::hlo_log_plus_one()].
 #' @seealso [nv_log1p()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(0, 0.001, 1))
-#'   nvl_log1p(x)
-#' })
+#' x <- nv_array(c(0, 0.001, 1))
+#' nvl_log1p(x)
 #' @export
 nvl_log1p <- make_unary_op(p_log1p, stablehlo::infer_types_log_plus_one)
 
@@ -1574,10 +1460,8 @@ p_cbrt <- AnvilPrimitive("cbrt")
 #' Lowers to [stablehlo::hlo_cbrt()].
 #' @seealso [nv_cbrt()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 8, 27))
-#'   nvl_cbrt(x)
-#' })
+#' x <- nv_array(c(1, 8, 27))
+#' nvl_cbrt(x)
 #' @export
 nvl_cbrt <- make_unary_op(p_cbrt, stablehlo::infer_types_cbrt)
 
@@ -1593,10 +1477,8 @@ p_logistic <- AnvilPrimitive("logistic")
 #' Lowers to [stablehlo::hlo_logistic()].
 #' @seealso [nv_logistic()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-2, 0, 2))
-#'   nvl_logistic(x)
-#' })
+#' x <- nv_array(c(-2, 0, 2))
+#' nvl_logistic(x)
 #' @export
 nvl_logistic <- make_unary_op(p_logistic, stablehlo::infer_types_logistic)
 
@@ -1614,10 +1496,8 @@ p_is_finite <- AnvilPrimitive("is_finite")
 #' Lowers to [stablehlo::hlo_is_finite()].
 #' @seealso [nv_is_finite()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, Inf, NaN, -Inf, 0))
-#'   nvl_is_finite(x)
-#' })
+#' x <- nv_array(c(1, Inf, NaN, -Inf, 0))
+#' nvl_is_finite(x)
 #' @export
 nvl_is_finite <- jit(
   function(operand) {
@@ -1643,10 +1523,8 @@ p_popcnt <- AnvilPrimitive("popcnt")
 #' Lowers to [stablehlo::hlo_popcnt()].
 #' @seealso [nv_popcnt()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(7L, 3L, 15L))
-#'   nvl_popcnt(x)
-#' })
+#' x <- nv_array(c(7L, 3L, 15L))
+#' nvl_popcnt(x)
 #' @export
 nvl_popcnt <- jit(
   function(operand) {
@@ -1680,10 +1558,8 @@ p_clamp <- AnvilPrimitive("clamp")
 #' Lowers to [stablehlo::hlo_clamp()].
 #' @seealso [nv_clamp()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(-1, 0.5, 2))
-#'   nvl_clamp(nv_scalar(0), x, nv_scalar(1))
-#' })
+#' x <- nv_array(c(-1, 0.5, 2))
+#' nvl_clamp(nv_scalar(0), x, nv_scalar(1))
 #' @export
 nvl_clamp <- jit(
   function(min_val, operand, max_val) {
@@ -1721,10 +1597,8 @@ p_reverse <- AnvilPrimitive("reverse")
 #' Lowers to [stablehlo::hlo_reverse()].
 #' @seealso [nv_reverse()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3, 4, 5))
-#'   nvl_reverse(x, dims = 1L)
-#' })
+#' x <- nv_array(c(1, 2, 3, 4, 5))
+#' nvl_reverse(x, dims = 1L)
 #' @export
 nvl_reverse <- jit(
   function(operand, dims) {
@@ -1763,7 +1637,7 @@ p_iota <- AnvilPrimitive("iota")
 #' Lowers to [stablehlo::hlo_iota()].
 #' @seealso [nv_iota()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval(nvl_iota(dim = 1L, dtype = "i32", shape = 5L))
+#' nvl_iota(dim = 1L, dtype = "i32", shape = 5L)
 #' @export
 nvl_iota <- jit(
   function(dim, dtype, shape, start = 1L, ambiguous = FALSE, device = NULL) {
@@ -1815,12 +1689,10 @@ p_pad <- AnvilPrimitive("pad")
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_pad()].
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   nvl_pad(x, nv_scalar(0),
-#'     edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
-#'   )
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' nvl_pad(x, nv_scalar(0),
+#'   edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
+#' )
 #' @export
 nvl_pad <- jit(
   function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
@@ -1874,10 +1746,8 @@ p_round <- AnvilPrimitive("round")
 #' [stablehlo::hlo_round_nearest_afz()] depending on the `method` parameter.
 #' @seealso [nv_round()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1.4, 2.5, 3.6))
-#'   nvl_round(x)
-#' })
+#' x <- nv_array(c(1.4, 2.5, 3.6))
+#' nvl_round(x)
 #' @export
 nvl_round <- jit(
   function(operand, method = "nearest_even") {
@@ -1917,10 +1787,8 @@ p_convert <- AnvilPrimitive("convert")
 #' Lowers to [stablehlo::hlo_convert()].
 #' @seealso [nv_convert()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1L, 2L, 3L))
-#'   nvl_convert(x, dtype = "f32")
-#' })
+#' x <- nv_array(c(1L, 2L, 3L))
+#' nvl_convert(x, dtype = "f32")
 #' @export
 nvl_convert <- jit(
   function(operand, dtype, ambiguous = FALSE) {
@@ -1964,10 +1832,8 @@ p_select <- AnvilPrimitive("select")
 #' Lowers to [stablehlo::hlo_select()].
 #' @seealso [nv_ifelse()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   pred <- nv_array(c(TRUE, FALSE, TRUE))
-#'   nvl_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
-#' })
+#' pred <- nv_array(c(TRUE, FALSE, TRUE))
+#' nvl_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 #' @export
 nvl_ifelse <- jit(
   function(pred, true_value, false_value) {
@@ -2014,7 +1880,7 @@ p_if <- AnvilPrimitive("if", subgraphs = c("true_graph", "false_graph"))
 #' Lowers to [stablehlo::hlo_if()].
 #' @seealso [nv_if()], [nvl_ifelse()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval(nvl_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2)))
+#' nvl_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 #' @export
 nvl_if <- jit(
   function(pred, true, false) {
@@ -2099,16 +1965,14 @@ p_while <- AnvilPrimitive("while", subgraphs = c("cond_graph", "body_graph"))
 #' Lowers to [stablehlo::hlo_while()].
 #' @seealso [nv_while()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   nvl_while(
-#'     init = list(i = 0L, total = 0L),
-#'     cond = function(i, total) i <= 5L,
-#'     body = function(i, total) list(
-#'       i = i + 1L,
-#'       total = total + i
-#'     )
+#' nvl_while(
+#'   init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
+#'   cond = function(i, total) i <= 5L,
+#'   body = function(i, total) list(
+#'     i = i + 1L,
+#'     total = total + i
 #'   )
-#' })
+#' )
 #' @export
 nvl_while <- jit(
   function(init, cond, body) {
@@ -2199,10 +2063,8 @@ p_print <- AnvilPrimitive("print")
 #' Lowers to [stablehlo::hlo_custom_call()].
 #' @seealso [nv_print()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   x <- nv_array(c(1, 2, 3))
-#'   nvl_print(x)
-#' })
+#' x <- nv_array(c(1, 2, 3))
+#' nvl_print(x)
 #' @export
 nvl_print <- jit(
   function(operand) {
@@ -2241,10 +2103,8 @@ p_rng_bit_generator <- AnvilPrimitive("rng_bit_generator")
 #' Lowers to [stablehlo::hlo_rng_bit_generator()].
 #' @seealso [nv_runif()], [nv_rnorm()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   state <- nv_array(c(0L, 0L), dtype = "ui64")
-#'   nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
-#' })
+#' state <- nv_array(c(0L, 0L), dtype = "ui64")
+#' nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
 #' @export
 nvl_rng_bit_generator <- jit(
   function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape) {
@@ -2333,20 +2193,18 @@ p_scatter <- AnvilPrimitive("scatter", subgraphs = "update_computation_graph")
 #' @seealso [nvl_gather()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Scatter values 10 and 30 into positions 1 and 3 of a zero vector
-#' jit_eval({
-#'   input <- nv_array(c(0, 0, 0, 0, 0))
-#'   indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
-#'   updates <- nv_array(c(10, 30))
-#'   nvl_scatter(
-#'     input, indices, updates,
-#'     update_window_dims = integer(0),
-#'     inserted_window_dims = 1L,
-#'     input_batching_dims = integer(0),
-#'     scatter_indices_batching_dims = integer(0),
-#'     scatter_dims_to_operand_dims = 1L,
-#'     index_vector_dim = 2L
-#'   )
-#' })
+#' input <- nv_array(c(0, 0, 0, 0, 0))
+#' indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
+#' updates <- nv_array(c(10, 30))
+#' nvl_scatter(
+#'   input, indices, updates,
+#'   update_window_dims = integer(0),
+#'   inserted_window_dims = 1L,
+#'   input_batching_dims = integer(0),
+#'   scatter_indices_batching_dims = integer(0),
+#'   scatter_dims_to_operand_dims = 1L,
+#'   index_vector_dim = 2L
+#' )
 #' @export
 nvl_scatter <- jit(
   function(
@@ -2531,20 +2389,18 @@ p_gather <- AnvilPrimitive("gather")
 #' @seealso [nvl_scatter()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Gather rows 1 and 3 from a 3x3 matrix
-#' jit_eval({
-#'   operand <- nv_array(matrix(1:9, nrow = 3))
-#'   indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
-#'   nvl_gather(
-#'     operand, indices,
-#'     slice_sizes = c(1L, 3L),
-#'     offset_dims = 2L,
-#'     collapsed_slice_dims = 1L,
-#'     operand_batching_dims = integer(0),
-#'     start_indices_batching_dims = integer(0),
-#'     start_index_map = 1L,
-#'     index_vector_dim = 2L
-#'   )
-#' })
+#' operand <- nv_array(matrix(1:9, nrow = 3))
+#' indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
+#' nvl_gather(
+#'   operand, indices,
+#'   slice_sizes = c(1L, 3L),
+#'   offset_dims = 2L,
+#'   collapsed_slice_dims = 1L,
+#'   operand_batching_dims = integer(0),
+#'   start_indices_batching_dims = integer(0),
+#'   start_index_map = 1L,
+#'   index_vector_dim = 2L
+#' )
 #' @export
 nvl_gather <- jit(
   function(
@@ -2641,11 +2497,9 @@ p_cholesky <- AnvilPrimitive("cholesky")
 #' Lowers to [stablehlo::hlo_cholesky()].
 #' @seealso [nv_solve()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   # Create a positive-definite matrix
-#'   x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-#'   nvl_cholesky(x, lower = TRUE)
-#' })
+#' # Create a positive-definite matrix
+#' x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+#' nvl_cholesky(x, lower = TRUE)
 #' @export
 nvl_cholesky <- jit(
   function(operand, lower) {
@@ -2701,15 +2555,13 @@ p_triangular_solve <- AnvilPrimitive("triangular_solve")
 #' Lowers to [stablehlo::hlo_triangular_solve()].
 #' @seealso [nv_solve()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   # Solve L %*% x = b where L is lower triangular
-#'   L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
-#'   b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
-#'   nvl_triangular_solve(L, b,
-#'     left_side = TRUE, lower = TRUE,
-#'     unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"
-#'   )
-#' })
+#' # Solve L %*% x = b where L is lower triangular
+#' L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
+#' b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
+#' nvl_triangular_solve(L, b,
+#'   left_side = TRUE, lower = TRUE,
+#'   unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"
+#' )
 #' @export
 nvl_triangular_solve <- jit(
   function(a, b, left_side, lower, unit_diagonal, transpose_a) {

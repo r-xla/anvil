@@ -21,11 +21,9 @@ Element-wise minimum of two arrays.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 5, 3))
-  y <- nv_array(c(4, 2, 6))
-  nv_min(x, y)
-})
+x <- nv_array(c(1, 5, 3))
+y <- nv_array(c(4, 2, 6))
+nv_min(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

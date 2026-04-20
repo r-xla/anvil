@@ -29,12 +29,10 @@ analogous to R's \code{sample.int(n, size, replace = TRUE)}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  state <- nv_rng_state(42L)
-  # Roll 6 dice
-  result <- nv_rdunif(6, state, n = 6L)
-  result[[2]]
-})
+state <- nv_rng_state(42L)
+# Roll 6 dice
+result <- nv_rdunif(6, state, n = 6L)
+result[[2]]
 \dontshow{\}) # examplesIf}
 }
 \seealso{
