@@ -73,7 +73,7 @@ nv_add_const_jit(nv_scalar(1, backend = "xla"))
 ```
 
 If we don't want to JIT the API function, then we need to pass the backend of the input to the constant creation.
-For that, we recommend using the `nv_<op>_like` functions that will use the attributes of the provided example as deefaults for `dtype`, `shape`, `backend`, `device`, and `ambiguous`:
+For that, we recommend using the `nv_<op>_like` functions that will use the attributes of the provided example as defaults for `dtype`, `shape`, `backend`, `device`, and `ambiguous`:
 
 ```{r}
 nv_add_const_eager <- \(x) {
@@ -82,24 +82,63 @@ nv_add_const_eager <- \(x) {
 }
 ```
 
-## 2. Input conversion
+The `nv_<op>_like` form is also the correct way to create constants that live on the *same device* as an arrayish input.
+Calling `device()` directly on the input would work for a concrete `AnvilArray`, but under `jit()` that same input is a `GraphBox` — and `device()` on a `GraphBox` raises an error (tracing has no concrete device; jit handles placement at the input/output boundary).
+Compare:
 
-In order to make the API function convenient to use, we auto-convert inputs.
-Sometimes, this conversion needs to be done explicitly in the API function.
-E.g., consider the function below that broadcasts
+```{r, error = TRUE}
+# BAD: errors under jit() because `device(x)` is not defined for a GraphBox
+nv_tril_bad <- function(x) {
+  zeros <- nv_fill(0, shape(x), dtype = dtype(x), device = device(x))
+  nv_ifelse(x > 0, x, zeros)
+}
+jit(nv_tril_bad)(nv_array(matrix(c(-1, 2, -3, 4), 2, 2)))
+```
 
 ```{r}
-nv_expand_bad <- function(x) {
-  if (identical(shape, x)) {
+# GOOD: `nv_fill_like` reads dtype/shape/device from `x`, and under jit()
+# it picks the device up from the tracing context instead of calling `device()`.
+nv_tril_good <- function(x) {
+  nv_ifelse(x > 0, x, nv_fill_like(x, 0))
+}
+jit(nv_tril_good)(nv_array(matrix(c(-1, 2, -3, 4), 2, 2)))
+```
+
+## 2. Input conversion
+
+API functions accept R literals (length-1 vectors, R arrays), `AnvilArray`s, and (during tracing) graph boxes.
+Primitives handle all of these, but having the same arrayish value arrive as three different R types makes the API function body awkward: every branch would have to re-check which case it is in.
+To keep the function body simple, we standardize at the top -- after that, we can treat every argument as an `AnvilArray` (or a tracing box) without caring about the original R type.
+Anvil provides two helpers for this:
+
+* `as_anvil_array(x, device = NULL)` -- use for API functions that take a **single** array input.
+  It converts an R value to an `AnvilArray` on the given device (or the default device if `NULL`), and passes `AnvilArray`s through.
+* `nv_align_arrayish(...)` -- use for API functions with **multiple** array inputs.
+  It infers a common device from any concrete `AnvilArray` in `...`, places R literals on that device, and errors if the concrete inputs live on different devices (or backends).
+
+Both helpers short-circuit during tracing: inside `jit()`, device placement is already handled at the input/output boundary and when boxing constants.
+
+### Single input
+
+```{r}
+nv_expand <- function(x, shape) {
+  x <- as_anvil_array(x)
+  if (identical(shape_abstract(x), shape)) {
     return(x)
   }
   nv_broadcast_to(x, shape)
 }
 ```
 
-* `shape_abstract`
+### Multiple inputs
 
+Use `nv_align_arrayish()` to normalize all arrayish inputs in one call:
 
-3. Always output anvil arrays
+```{r}
+nv_add_scaled <- function(x, y, alpha) {
+  args <- nv_align_arrayish(x, y, alpha)
+  args[[1L]] + args[[2L]] * args[[3L]]
+}
+```
 
-
+## 3. Always output anvil arrays

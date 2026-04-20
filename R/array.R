@@ -128,19 +128,32 @@ nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous 
   globals$backends[[backend]]$new_data(data, dtype, shape, device, ambiguous)
 }
 
-#' @rdname AnvilArray
-#' @param like ([`AnvilArray`])\cr
-#'   An existing array. Any of `dtype`, `device`, `shape`, `ambiguous`, and
-#'   `backend` that are `NULL` (the default) are taken from `like`.
-#' @export
-nv_array_like <- function(like, data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL, backend = NULL) {
-  dtype <- dtype %||% dtype(like)
-  device <- device %||% device(like)
-  shape <- shape %||% shape(like)
-  ambiguous <- ambiguous %||% ambiguous(like)
-  backend <- backend %||% backend(like)
-  nv_array(data = data, dtype = dtype, device = device, shape = shape, ambiguous = ambiguous, backend = backend)
+# Standardize a single arrayish input at the top of an API function. AnvilArrays
+# and graph boxes are returned unchanged; R literals are converted to
+# AnvilArrays on the given device. During tracing, R literals become plain-
+# backend constants that live in the graph -- this keeps downstream code uniform
+# so that the value is always an AnvilArray or a graph box afterwards.
+as_anvil_array <- function(x, device = NULL) {
+  if (is_anvil_array(x) || is_box(x)) {
+    return(x)
+  }
+  # Raw R literals have no explicit dtype, so they are ambiguous (except for
+  # logicals, which unambiguously map to `bool`).
+  ambiguous <- !is.logical(x)
+  if (currently_tracing()) {
+    if (is_valid_r(x)) {
+      # `maybe_box_arrayish()` lifts scalars into inlined GraphLiterals and
+      # materializes R arrays as plain-backend named constants.
+      return(maybe_box_arrayish(x))
+    }
+    return(x)
+  }
+  if (is_valid_lit(x)) {
+    return(nv_scalar(x, device = device, ambiguous = ambiguous))
+  }
+  nv_array(x, device = device, ambiguous = ambiguous)
 }
+
 
 is_anvil_array <- function(x) {
   inherits(x, "AnvilArray")
@@ -162,16 +175,6 @@ unwrap_if_array <- function(x) {
 #' @export
 nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL) {
   nv_array(data, dtype = dtype, device = device, shape = integer(), ambiguous = ambiguous, backend = backend)
-}
-
-#' @rdname AnvilArray
-#' @export
-nv_scalar_like <- function(like, data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL) {
-  dtype <- dtype %||% dtype(like)
-  device <- device %||% device(like)
-  ambiguous <- ambiguous %||% ambiguous(like)
-  backend <- backend %||% backend(like)
-  nv_scalar(data, dtype = dtype, device = device, ambiguous = ambiguous, backend = backend)
 }
 
 #' @rdname AnvilArray

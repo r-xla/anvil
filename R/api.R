@@ -38,17 +38,6 @@ nv_fill <- function(value, shape, dtype = NULL, ambiguous = FALSE, device = NULL
   nvl_fill(value, shape, dtype, ambiguous, device = device)
 }
 
-#' @rdname nv_fill
-#' @export
-nv_fill_like <- function(like, value, shape = NULL, dtype = NULL, ambiguous = NULL, device = NULL) {
-  shape <- shape %||% shape(like)
-  dtype <- dtype %||% dtype(like)
-  device <- device %||% device(like)
-  ambiguous <- ambiguous %||% ambiguous(like)
-  nv_fill(value, shape = shape, dtype = dtype, ambiguous = ambiguous, device = device)
-}
-
-
 ## Conversion ------------------------------------------------------------------
 
 broadcast_shapes <- function(shape_lhs, shape_rhs) {
@@ -97,8 +86,8 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
 #' nv_broadcast_scalars(x, nv_scalar(1))
 #' @export
 nv_broadcast_scalars <- function(...) {
-  args <- list(...)
-  shapes <- lapply(args, shape_abstract)
+  args <- nv_align_arrayish(...)
+  shapes <- lapply(args, shape)
   non_scalar_shapes <- Filter(\(s) length(s) > 0L, shapes)
 
   if (length(non_scalar_shapes) == 0L) {
@@ -114,7 +103,7 @@ nv_broadcast_scalars <- function(...) {
   }
 
   lapply(args, \(x) {
-    if (length(shape_abstract(x)) == 0L) {
+    if (length(shape(x)) == 0L) {
       nv_broadcast_to(x, target_shape)
     } else {
       x
@@ -135,7 +124,7 @@ nv_broadcast_scalars <- function(...) {
 #' nv_promote_to_common(x, y)
 #' @export
 nv_promote_to_common <- function(...) {
-  args <- nv_align_inputs(...)
+  args <- nv_align_arrayish(...)
   avals <- lapply(args, to_abstract)
   tmp <- do.call(common_type_info, avals)
   cdt <- tmp[[1L]]
@@ -171,8 +160,8 @@ nv_promote_to_common <- function(...) {
 #' nv_broadcast_arrays(x, y)
 #' @export
 nv_broadcast_arrays <- function(...) {
-  args <- list(...)
-  shape <- Reduce(broadcast_shapes, lapply(args, shape_abstract))
+  args <- nv_align_arrayish(...)
+  shape <- Reduce(broadcast_shapes, lapply(args, shape))
   lapply(args, nv_broadcast_to, shape = shape)
 }
 
@@ -191,7 +180,8 @@ nv_broadcast_arrays <- function(...) {
 #' nv_broadcast_to(x, shape = c(2, 3))
 #' @export
 nv_broadcast_to <- function(operand, shape) {
-  shape_op <- shape_abstract(operand)
+  operand <- as_anvil_array(operand)
+  shape_op <- shape(operand)
   if (!identical(shape_op, shape)) {
     broadcast_dimensions <- make_broadcast_dimensions(shape_op, shape)
     nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
@@ -214,7 +204,8 @@ nv_broadcast_to <- function(operand, shape) {
 #' nv_convert(x, dtype = "f32")
 #' @export
 nv_convert <- function(operand, dtype) {
-  if (dtype_abstract(operand) != as_dtype(dtype)) {
+  operand <- as_anvil_array(operand)
+  if (dtype(operand) != as_dtype(dtype)) {
     nvl_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
   } else {
     operand
@@ -224,7 +215,8 @@ nv_convert <- function(operand, dtype) {
 #' @rdname nv_transpose
 #' @export
 nv_transpose <- function(x, permutation = NULL) {
-  permutation <- permutation %||% rev(seq_len(ndims_abstract(x)))
+  x <- as_anvil_array(x)
+  permutation <- permutation %||% rev(seq_len(ndims(x)))
   nvl_transpose(x, permutation)
 }
 
@@ -246,7 +238,8 @@ nv_transpose <- function(x, permutation = NULL) {
 #' nv_reshape(x, c(2, 3))
 #' @export
 nv_reshape <- function(operand, shape) {
-  if (!identical(shape_abstract(operand), shape)) {
+  operand <- as_anvil_array(operand)
+  if (!identical(shape(operand), shape)) {
     nvl_reshape(operand, shape)
   } else {
     operand
@@ -272,9 +265,8 @@ nv_reshape <- function(operand, shape) {
 #' nv_concatenate(x, y)
 #' @export
 nv_concatenate <- function(..., dimension = NULL) {
-  args <- list(...)
-  args <- do.call(nv_promote_to_common, args)
-  shapes <- lapply(args, shape_abstract)
+  args <- do.call(nv_promote_to_common, list(...))
+  shapes <- lapply(args, shape)
   ranks <- lengths(shapes)
   non_scalar_shapes <- shapes[ranks > 0L]
   n_scalars <- sum(ranks == 0L)
@@ -301,7 +293,7 @@ nv_concatenate <- function(..., dimension = NULL) {
   out_shape_dim_is_one <- out_shape
   out_shape_dim_is_one[dimension] <- 1L
   args <- lapply(args, \(arg) {
-    if (ndims_abstract(arg) == 0L) {
+    if (ndims(arg) == 0L) {
       nv_broadcast_to(arg, out_shape_dim_is_one)
     } else {
       arg
@@ -926,7 +918,11 @@ nv_popcnt <- nvl_popcnt
 #' nv_clamp(nv_scalar(0), x, nv_scalar(1))
 #' @export
 nv_clamp <- function(min_val, operand, max_val) {
-  op_dtype <- dtype_abstract(operand)
+  args <- nv_align_arrayish(min_val, operand, max_val)
+  min_val <- args[[1L]]
+  operand <- args[[2L]]
+  max_val <- args[[3L]]
+  op_dtype <- dtype(operand)
   min_val <- nv_convert(min_val, op_dtype)
   max_val <- nv_convert(max_val, op_dtype)
   nvl_clamp(min_val, operand, max_val)
@@ -974,16 +970,6 @@ nv_reverse <- nvl_reverse
 #' nv_iota_like(x, dim = 1L)
 #' @export
 nv_iota <- nvl_iota
-
-#' @rdname nv_iota
-#' @export
-nv_iota_like <- function(like, dim, shape = NULL, start = 1L, dtype = NULL, ambiguous = NULL, device = NULL) {
-  shape <- shape %||% shape(like)
-  dtype <- dtype %||% dtype(like)
-  device <- device %||% device(like)
-  ambiguous <- ambiguous %||% ambiguous(like)
-  nv_iota(dim = dim, dtype = dtype, shape = shape, start = start, ambiguous = ambiguous, device = device)
-}
 
 #' @title Sequence
 #' @description
@@ -1038,15 +1024,6 @@ nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE, de
   indices * ((end - start) / (steps - 1L)) + start
 }
 
-#' @rdname nv_seq
-#' @export
-nv_seq_like <- function(like, start, end, steps = NULL, dtype = NULL, ambiguous = NULL, device = NULL) {
-  dtype <- dtype %||% dtype(like)
-  device <- device %||% device(like)
-  ambiguous <- ambiguous %||% ambiguous(like)
-  nv_seq(start, end, steps = steps, dtype = dtype, ambiguous = ambiguous, device = device)
-}
-
 #' @title Pad
 #' @description
 #' Pads an array with a given value at the edges and optionally between elements.
@@ -1068,7 +1045,10 @@ nv_seq_like <- function(like, start, end, steps = NULL, dtype = NULL, ambiguous 
 #' nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
 #' @export
 nv_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding = NULL) {
-  rank <- ndims_abstract(operand)
+  args <- nv_align_arrayish(operand, padding_value)
+  operand <- args[[1L]]
+  padding_value <- args[[2L]]
+  rank <- ndims(operand)
   if (is.null(interior_padding)) {
     interior_padding <- rep(0L, rank)
   }
@@ -1114,17 +1094,17 @@ nv_matmul <- function(lhs, rhs) {
   args <- nv_promote_to_common(lhs, rhs)
   lhs <- args[[1L]]
   rhs <- args[[2L]]
-  if (ndims_abstract(lhs) < 2L) {
+  if (ndims(lhs) < 2L) {
     cli_abort("lhs of matmul must have at least 2 dimensions")
   }
-  if (ndims_abstract(rhs) < 2L) {
+  if (ndims(rhs) < 2L) {
     cli_abort("rhs of matmul must have at least 2 dimensions")
   }
-  nbatch <- ndims_abstract(lhs) - 2L
+  nbatch <- ndims(lhs) - 2L
   nvl_dot_general(
     lhs,
     rhs,
-    contracting_dims = list(ndims_abstract(lhs), ndims_abstract(rhs) - 1L),
+    contracting_dims = list(ndims(lhs), ndims(rhs) - 1L),
     batching_dims = list(seq_len(nbatch), seq_len(nbatch))
   )
 }
@@ -1149,6 +1129,7 @@ nv_matmul <- function(lhs, rhs) {
 #' nv_cholesky(a)
 #' @export
 nv_cholesky <- function(a, lower = TRUE) {
+  a <- as_anvil_array(a)
   nvl_cholesky(a, lower = lower)
 }
 
@@ -1179,6 +1160,9 @@ nv_cholesky <- function(a, lower = TRUE) {
 #' nv_solve(a, b)
 #' @export
 nv_solve <- function(a, b) {
+  args <- nv_align_arrayish(a, b)
+  a <- args[[1L]]
+  b <- args[[2L]]
   L <- nvl_cholesky(a, lower = TRUE)
   # Solve L @ y = b
   y <- nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
@@ -1197,9 +1181,10 @@ nv_solve <- function(a, b) {
 #' nv_diag(nv_array(c(1, 2, 3)))
 #' @export
 nv_diag <- function(operand) {
-  n <- shape_abstract(operand)[1L]
-  zeros <- nv_fill(0, c(n, n), dtype = dtype_abstract(operand), device = device(operand))
-  idx <- nvl_reshape(nv_iota(dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
+  operand <- as_anvil_array(operand)
+  n <- shape(operand)[1L]
+  zeros <- nv_fill_like(operand, 0, shape = c(n, n))
+  idx <- nvl_reshape(nv_iota_like(operand, dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
   indices <- nv_concatenate(idx, idx, dimension = 2L)
   nvl_scatter(
     zeros,
@@ -1218,8 +1203,14 @@ nv_diag <- function(operand) {
 #' @title Identity Matrix
 #' @description
 #' Creates an `n x n` identity matrix.
+#'
+#' `nv_eye_like()` is a variant where `dtype` and `device` default to those of
+#' `like`.
 #' @param n (`integer(1)`)\cr
 #'   Size of the identity matrix.
+#' @param like ([`arrayish`])\cr
+#'   Existing array whose attributes are used as defaults
+#'   (only for `nv_eye_like()`).
 #' @template param_dtype
 #' @template param_device
 #' @return [`arrayish`]\cr
@@ -1227,6 +1218,8 @@ nv_diag <- function(operand) {
 #' @seealso [nv_diag()] for general diagonal matrices.
 #' @examplesIf pjrt::plugins_downloaded()
 #' nv_eye(3L)
+#' x <- nv_array(matrix(0, nrow = 3, ncol = 3), dtype = "f64")
+#' nv_eye_like(x, 3L)
 #' @export
 nv_eye <- function(n, dtype = "f32", device = NULL) {
   nv_diag(nv_fill(1, n, dtype = dtype, device = device))
@@ -1260,8 +1253,9 @@ nv_reduce_sum <- nvl_reduce_sum
 #' nv_reduce_mean(x, dims = 1L)
 #' @export
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
+  operand <- as_anvil_array(operand)
   # TODO: division by zero?
-  nelts <- prod(shape_abstract(operand)[dims])
+  nelts <- prod(shape(operand)[dims])
   nv_reduce_sum(operand, dims, drop) / nelts
 }
 
@@ -1391,6 +1385,7 @@ nv_while <- nvl_while
 #' nv_log2(x)
 #' @export
 nv_log2 <- function(operand) {
+  operand <- as_anvil_array(operand)
   nv_log(operand) / log(2)
 }
 
@@ -1405,6 +1400,7 @@ nv_log2 <- function(operand) {
 #' nv_log10(x)
 #' @export
 nv_log10 <- function(operand) {
+  operand <- as_anvil_array(operand)
   nv_log(operand) / log(10)
 }
 
@@ -1419,6 +1415,7 @@ nv_log10 <- function(operand) {
 #' nv_is_nan(x)
 #' @export
 nv_is_nan <- function(operand) {
+  operand <- as_anvil_array(operand)
   operand != operand
 }
 
@@ -1434,6 +1431,7 @@ nv_is_nan <- function(operand) {
 #' nv_is_infinite(x)
 #' @export
 nv_is_infinite <- function(operand) {
+  operand <- as_anvil_array(operand)
   !nv_is_finite(operand) & (operand == operand)
 }
 
@@ -1456,11 +1454,12 @@ nv_is_infinite <- function(operand) {
 #' nv_var(x, dims = 1L)
 #' @export
 nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
+  operand <- as_anvil_array(operand)
   assert_int(correction)
-  nelts <- prod(shape_abstract(operand)[dims])
+  nelts <- prod(shape(operand)[dims])
   mean_bc <- nv_broadcast_to(
     nv_reduce_mean(operand, dims, drop = FALSE),
-    shape_abstract(operand)
+    shape(operand)
   )
   diff <- operand - mean_bc
   nv_reduce_sum(diff * diff, dims, drop) / (nelts - correction)
@@ -1483,6 +1482,7 @@ nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
 #' nv_sd(x, dims = 1L)
 #' @export
 nv_sd <- function(operand, dims, drop = TRUE, correction = 1L) {
+  operand <- as_anvil_array(operand)
   nv_sqrt(nv_var(operand, dims, drop, correction))
 }
 
@@ -1502,7 +1502,8 @@ nv_sd <- function(operand, dims, drop = TRUE, correction = 1L) {
 #' nv_squeeze(x)
 #' @export
 nv_squeeze <- function(operand, dims = NULL) {
-  shp <- shape_abstract(operand)
+  operand <- as_anvil_array(operand)
+  shp <- shape(operand)
   if (is.null(dims)) {
     new_shape <- shp[shp != 1L]
   } else {
@@ -1534,7 +1535,8 @@ nv_squeeze <- function(operand, dims = NULL) {
 #' nv_unsqueeze(x, dim = 1L)
 #' @export
 nv_unsqueeze <- function(operand, dim) {
-  shp <- shape_abstract(operand)
+  operand <- as_anvil_array(operand)
+  shp <- shape(operand)
   assert_int(dim, lower = 1L, upper = length(shp) + 1L)
   new_shape <- append(shp, 1L, after = dim - 1L)
   nv_reshape(operand, new_shape)
@@ -1555,15 +1557,15 @@ nv_unsqueeze <- function(operand, dim) {
 #' nv_outer(x, y)
 #' @export
 nv_outer <- function(x, y) {
-  if (ndims_abstract(x) != 1L) {
-    cli_abort("x must be a 1-D array")
-  }
-  if (ndims_abstract(y) != 1L) {
-    cli_abort("y must be a 1-D array")
-  }
   args <- nv_promote_to_common(x, y)
   x <- args[[1L]]
   y <- args[[2L]]
+  if (ndims(x) != 1L) {
+    cli_abort("x must be a 1-D array")
+  }
+  if (ndims(y) != 1L) {
+    cli_abort("y must be a 1-D array")
+  }
   x_exp <- nv_unsqueeze(x, dim = 2L)
   y_exp <- nv_unsqueeze(y, dim = 1L)
   bcast <- nv_broadcast_arrays(x_exp, y_exp)
@@ -1582,12 +1584,13 @@ nv_outer <- function(x, y) {
 #' nv_extract_diag(x)
 #' @export
 nv_extract_diag <- function(operand) {
-  if (ndims_abstract(operand) != 2L) {
+  operand <- as_anvil_array(operand)
+  if (ndims(operand) != 2L) {
     cli_abort("operand must be a 2-D array")
   }
-  shp <- shape_abstract(operand)
+  shp <- shape(operand)
   n <- min(shp)
-  idx <- nvl_reshape(nv_iota(dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
+  idx <- nvl_reshape(nv_iota_like(operand, dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
   indices <- nv_concatenate(idx, idx, dimension = 2L)
   nvl_gather(
     operand,
@@ -1614,6 +1617,7 @@ nv_extract_diag <- function(operand) {
 #' nv_trace(x)
 #' @export
 nv_trace <- function(operand) {
+  operand <- as_anvil_array(operand)
   diag_vals <- nv_extract_diag(operand)
   nv_reduce_sum(diag_vals, dims = 1L, drop = TRUE)
 }
@@ -1634,16 +1638,15 @@ nv_trace <- function(operand) {
 #' nv_tril(x)
 #' @export
 nv_tril <- function(operand, diagonal = 0L) {
-  if (ndims_abstract(operand) != 2L) {
+  operand <- as_anvil_array(operand)
+  if (ndims(operand) != 2L) {
     cli_abort("operand must be a 2-D array")
   }
   assert_int(diagonal)
-  shp <- shape_abstract(operand)
-  dev <- device(operand)
-  rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32", device = dev)
-  cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32", device = dev)
+  rows <- nv_iota_like(operand, dim = 1L, dtype = "i32")
+  cols <- nv_iota_like(operand, dim = 2L, dtype = "i32")
   mask <- rows >= cols - as.integer(diagonal)
-  nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand), device = dev))
+  nv_ifelse(mask, operand, nv_fill_like(operand, 0))
 }
 
 #' @title Upper Triangular Matrix
@@ -1662,16 +1665,15 @@ nv_tril <- function(operand, diagonal = 0L) {
 #' nv_triu(x)
 #' @export
 nv_triu <- function(operand, diagonal = 0L) {
-  if (ndims_abstract(operand) != 2L) {
+  operand <- as_anvil_array(operand)
+  if (ndims(operand) != 2L) {
     cli_abort("operand must be a 2-D array")
   }
   assert_int(diagonal)
-  shp <- shape_abstract(operand)
-  dev <- device(operand)
-  rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32", device = dev)
-  cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32", device = dev)
+  rows <- nv_iota_like(operand, dim = 1L, dtype = "i32")
+  cols <- nv_iota_like(operand, dim = 2L, dtype = "i32")
   mask <- rows <= cols - as.integer(diagonal)
-  nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand), device = dev))
+  nv_ifelse(mask, operand, nv_fill_like(operand, 0))
 }
 
 #' @title Cross Product (Matrix)
@@ -1690,7 +1692,12 @@ nv_triu <- function(operand, diagonal = 0L) {
 #' @export
 nv_crossprod <- function(x, y = NULL) {
   if (is.null(y)) {
+    x <- as_anvil_array(x)
     y <- x
+  } else {
+    args <- nv_align_arrayish(x, y)
+    x <- args[[1L]]
+    y <- args[[2L]]
   }
   nv_matmul(nv_transpose(x), y)
 }
@@ -1711,7 +1718,12 @@ nv_crossprod <- function(x, y = NULL) {
 #' @export
 nv_tcrossprod <- function(x, y = NULL) {
   if (is.null(y)) {
+    x <- as_anvil_array(x)
     y <- x
+  } else {
+    args <- nv_align_arrayish(x, y)
+    x <- args[[1L]]
+    y <- args[[2L]]
   }
   nv_matmul(x, nv_transpose(y))
 }

@@ -148,8 +148,7 @@ dtype2string <- function(dtype, ambiguous = FALSE) {
 }
 
 is_valid_lit <- function(x) {
-  test_scalar(x) && (is.numeric(x) || is.logical(x))
-  #&& is.null(dim(x))
+  test_scalar(x) && (is.numeric(x) || is.logical(x)) && is.null(dim(x))
 }
 
 is_valid_array <- function(x) {

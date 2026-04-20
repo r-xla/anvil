@@ -394,6 +394,22 @@ describe("nv_trace", {
   })
 })
 
+describe("nv_diag", {
+  it("builds a diagonal matrix from a 1-D array", {
+    result <- nv_diag(nv_array(c(1, 2, 3)))
+    expected <- diag(c(1, 2, 3))
+    expect_equal(as_array(result), expected, tolerance = 1e-6)
+  })
+  it("works under jit (device() on a GraphBox operand)", {
+    f <- jit(function(x) nv_diag(x))
+    expect_equal(
+      as_array(f(nv_array(c(1, 2, 3)))),
+      diag(c(1, 2, 3)),
+      tolerance = 1e-6
+    )
+  })
+})
+
 describe("nv_tril", {
   it("returns lower triangular part", {
     result <- nv_tril(nv_fill(1, c(3, 3)))
@@ -409,6 +425,11 @@ describe("nv_tril", {
     result <- nv_tril(nv_fill(1, c(3, 3)), diagonal = -1L)
     expected <- matrix(c(0, 1, 1, 0, 0, 1, 0, 0, 0), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
+  })
+  it("works under jit (device() on a GraphBox operand)", {
+    f <- jit(function(x) nv_tril(x, diagonal = -1L))
+    expected <- matrix(c(0, 1, 1, 0, 0, 1, 0, 0, 0), nrow = 3, ncol = 3)
+    expect_equal(as_array(f(nv_fill(1, c(3, 3)))), expected, tolerance = 1e-6)
   })
 })
 
@@ -427,6 +448,11 @@ describe("nv_triu", {
     result <- nv_triu(nv_fill(1, c(3, 3)), diagonal = -1L)
     expected <- matrix(c(1, 1, 0, 1, 1, 1, 1, 1, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
+  })
+  it("works under jit (device() on a GraphBox operand)", {
+    f <- jit(function(x) nv_triu(x, diagonal = 1L))
+    expected <- matrix(c(0, 0, 0, 1, 0, 0, 1, 1, 0), nrow = 3, ncol = 3)
+    expect_equal(as_array(f(nv_fill(1, c(3, 3)))), expected, tolerance = 1e-6)
   })
 })
 

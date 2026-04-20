@@ -37,15 +37,18 @@ nv_rng_state <- function(seed, device = default_device()) {
 #'   The inputs in the same order, each converted to an [`AnvilArray`] (or
 #'   left as-is for tracing boxes / abstract literals).
 #' @examplesIf pjrt::plugins_downloaded()
-#' nv_align_inputs(nv_array(1:3), 1L)
+#' nv_align_arrayish(nv_array(1:3), 1L)
 #' @export
-nv_align_inputs <- function(...) {
+nv_align_arrayish <- function(...) {
   args <- list(...)
-  # In eager mode we place R literals on the device inferred from concrete
-  # inputs. In jit/tracing mode, device placement is handled at the input/output
-  # boundary and when boxing constants, so we can short-circuit here.
+
+  # In tracing mode, inputs are abstract (graph boxes), so there is no device
+  # to infer. We still standardize each arg through `as_anvil_array()`, which
+  # lifts scalar R literals into GraphBoxes and materializes R arrays as
+  # plain-backend constants. After this call every arg is either an AnvilArray
+  # or a graph box.
   if (currently_tracing()) {
-    return(args)
+    return(lapply(args, as_anvil_array))
   }
 
   devices <- list()
@@ -86,17 +89,4 @@ nv_align_inputs <- function(...) {
     }
     a
   })
-}
-
-# Convert an R-valid value (scalar numeric/logical, or R array of those) into
-# an [`AnvilArray`] on the given device. AnvilArrays are returned unchanged
-# (with a consistency check on the device, performed by [`nv_array()`]).
-as_anvil_array <- function(x, device = NULL) {
-  if (is_valid_lit(x)) {
-    nv_scalar(x, device = device)
-  } else if (is_valid_array(x)) {
-    nv_array(x, device = device)
-  } else {
-    nv_array(x, device = device)
-  }
 }

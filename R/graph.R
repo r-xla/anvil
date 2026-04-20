@@ -232,6 +232,11 @@ dtype.GraphValue <- function(x, ...) {
 }
 
 #' @export
+ambiguous.GraphValue <- function(x, ...) {
+  x$aval$ambiguous
+}
+
+#' @export
 shape.GraphLiteral <- function(x, ...) {
   shape(x$aval)
 }
@@ -239,6 +244,11 @@ shape.GraphLiteral <- function(x, ...) {
 #' @export
 dtype.GraphLiteral <- function(x, ...) {
   x$aval$dtype
+}
+
+#' @export
+ambiguous.GraphLiteral <- function(x, ...) {
+  x$aval$ambiguous
 }
 
 
@@ -318,6 +328,15 @@ backend.GraphBox <- function(x, ...) {
 }
 
 #' @export
+device.GraphBox <- function(x, ...) {
+  cli_abort(c(
+    "{.fn device} is not defined for a {.cls GraphBox}.",
+    i = "During tracing there is no concrete device; jit handles device placement at the input/output boundary and for constants.",
+    i = "If you need a constant on the same device as an arrayish input, use {.fn nv_fill_like} / {.fn nv_array_like} / {.fn nv_iota_like}, which pick the device up from the tracing context for you."
+  ))
+}
+
+#' @export
 print.GraphBox <- function(x, ...) {
   cat(format(x), "\n")
   invisible(x)
@@ -335,12 +354,17 @@ maybe_box_arrayish <- function(x) {
       return(x)
     }
     gval <- x$gnode
-    get_box_or_register_const(current_desc, gval)
-  } else if (is_anvil_array(x) || is_valid_lit(x)) {
-    get_box_or_register_const(current_desc, x)
-  } else {
-    cli_abort("Expected arrayish value, but got {.cls {class(x)[1]}}")
+    return(get_box_or_register_const(current_desc, gval))
   }
+  if (is_valid_array(x)) {
+    # Materialize R arrays as plain-backend AnvilArrays so they can be
+    # registered as named constants in the current graph.
+    x <- nv_array(x, ambiguous = !is.logical(x))
+  }
+  if (is_anvil_array(x) || is_valid_lit(x)) {
+    return(get_box_or_register_const(current_desc, x))
+  }
+  cli_abort("Expected arrayish value, but got {.cls {class(x)[1]}}")
 }
 
 # this function is on the inputs of trace_fn()

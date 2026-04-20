@@ -58,6 +58,7 @@ Collate:
     'primitives.R'
     'api.R'
     'api-generics.R'
+    'api-like.R'
     'api-rng.R'
     'api-subset.R'
     'api-utilities.R'
