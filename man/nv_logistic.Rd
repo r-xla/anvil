@@ -19,8 +19,10 @@ Element-wise logistic sigmoid: \code{1 / (1 + exp(-x))}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(-2, 0, 2))
-nv_logistic(x)
+jit_eval({
+  x <- nv_array(c(-2, 0, 2))
+  nv_logistic(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

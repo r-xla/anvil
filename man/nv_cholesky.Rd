@@ -27,8 +27,10 @@ Supports batched inputs: dimensions before the last two are batch dimensions.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-nv_cholesky(a)
+jit_eval({
+  a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+  nv_cholesky(a)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

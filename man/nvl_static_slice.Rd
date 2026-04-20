@@ -52,20 +52,26 @@ Lowers to \code{\link[stablehlo:hlo_slice]{stablehlo::hlo_slice()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # 1-D: extract elements 2 through 4 (limit is exclusive)
-x <- nv_array(1:10)
-nvl_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
+jit_eval({
+  x <- nv_array(1:10)
+  nvl_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
+})
 
 # 1-D: every other element using strides
-x <- nv_array(1:10)
-nvl_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
+jit_eval({
+  x <- nv_array(1:10)
+  nvl_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
+})
 
 # 2-D: extract a submatrix (rows 1-2, columns 2-3)
-x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
-nvl_static_slice(x,
-  start_indices = c(1L, 2L),
-  limit_indices = c(3L, 4L),
-  strides       = c(1L, 1L)
-)
+jit_eval({
+  x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
+  nvl_static_slice(x,
+    start_indices = c(1L, 2L),
+    limit_indices = c(3L, 4L),
+    strides       = c(1L, 1L)
+  )
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

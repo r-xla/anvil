@@ -21,9 +21,11 @@ Element-wise arithmetic right bit shift.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(8L, -16L, 32L))
-y <- nv_array(c(1L, 2L, 3L))
-nv_shift_right_arithmetic(x, y)
+jit_eval({
+  x <- nv_array(c(8L, -16L, 32L))
+  y <- nv_array(c(1L, 2L, 3L))
+  nv_shift_right_arithmetic(x, y)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

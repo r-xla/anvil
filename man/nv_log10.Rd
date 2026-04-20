@@ -19,8 +19,10 @@ Element-wise base-10 logarithm. You can also use \code{log10()}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(1, 10, 100, 1000))
-nv_log10(x)
+jit_eval({
+  x <- nv_array(c(1, 10, 100, 1000))
+  nv_log10(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

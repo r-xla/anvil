@@ -19,8 +19,10 @@ Element-wise base-2 logarithm. You can also use \code{log2()}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(1, 2, 4, 8))
-nv_log2(x)
+jit_eval({
+  x <- nv_array(c(1, 2, 4, 8))
+  nv_log2(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

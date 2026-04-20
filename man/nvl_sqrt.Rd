@@ -34,8 +34,10 @@ Lowers to \code{\link[stablehlo:hlo_sqrt]{stablehlo::hlo_sqrt()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(1, 4, 9))
-nvl_sqrt(x)
+jit_eval({
+  x <- nv_array(c(1, 4, 9))
+  nvl_sqrt(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

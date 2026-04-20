@@ -28,9 +28,11 @@ Samples from a uniform distribution in the open interval \verb{(lower, upper)}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-state <- nv_rng_state(42L)
-result <- nv_runif(c(2, 3), state)
-result[[2]]
+jit_eval({
+  state <- nv_rng_state(42L)
+  result <- nv_runif(c(2, 3), state)
+  result[[2]]
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

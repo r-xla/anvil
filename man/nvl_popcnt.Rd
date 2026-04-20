@@ -33,8 +33,10 @@ Lowers to \code{\link[stablehlo:hlo_popcnt]{stablehlo::hlo_popcnt()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(7L, 3L, 15L))
-nvl_popcnt(x)
+jit_eval({
+  x <- nv_array(c(7L, 3L, 15L))
+  nvl_popcnt(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

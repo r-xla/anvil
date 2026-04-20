@@ -21,9 +21,11 @@ Element-wise logical OR. You can also use the \code{|} operator.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(TRUE, FALSE, TRUE))
-y <- nv_array(c(TRUE, TRUE, FALSE))
-x | y
+jit_eval({
+  x <- nv_array(c(TRUE, FALSE, TRUE))
+  y <- nv_array(c(TRUE, TRUE, FALSE))
+  x | y
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

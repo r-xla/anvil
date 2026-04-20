@@ -43,8 +43,10 @@ Lowers to \code{\link[stablehlo:hlo_rng_bit_generator]{stablehlo::hlo_rng_bit_ge
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-state <- nv_array(c(0L, 0L), dtype = "ui64")
-nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
+jit_eval({
+  state <- nv_array(c(0L, 0L), dtype = "ui64")
+  nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

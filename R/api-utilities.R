@@ -9,8 +9,10 @@
 #' @return [`nv_array`] of dtype `ui64` and shape `(2)`.
 #' @family rng
 #' @examplesIf pjrt::plugins_downloaded()
-#' state <- nv_rng_state(42L)
-#' state
+#' jit_eval({
+#'   state <- nv_rng_state(42L)
+#'   state
+#' })
 #' @export
 nv_rng_state <- function(seed, device = default_device()) {
   seed <- nv_array(seed, dtype = as_dtype("i32"), shape = integer(), device = device)

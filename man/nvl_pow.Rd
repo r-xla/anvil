@@ -35,9 +35,11 @@ Lowers to \code{\link[stablehlo:hlo_power]{stablehlo::hlo_power()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(2, 3, 4))
-y <- nv_array(c(3, 2, 1))
-nvl_pow(x, y)
+jit_eval({
+  x <- nv_array(c(2, 3, 4))
+  y <- nv_array(c(3, 2, 1))
+  nvl_pow(x, y)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

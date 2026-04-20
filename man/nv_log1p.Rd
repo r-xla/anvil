@@ -19,8 +19,10 @@ Element-wise \code{log(1 + x)}, more accurate for small \code{x}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(0, 0.001, 1))
-nv_log1p(x)
+jit_eval({
+  x <- nv_array(c(0, 0.001, 1))
+  nv_log1p(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

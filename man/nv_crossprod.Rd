@@ -26,8 +26,10 @@ Computes \code{t(x) \%*\% y}. If \code{y} is missing, computes \code{t(x) \%*\% 
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
-nv_crossprod(x)
+jit_eval({
+  x <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
+  nv_crossprod(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

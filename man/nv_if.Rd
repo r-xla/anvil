@@ -27,7 +27,7 @@ of the two branches depending on a scalar predicate.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-nv_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
+jit_eval(nv_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2)))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

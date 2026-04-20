@@ -23,8 +23,10 @@ Element-wise rounding. You can also use the \code{round()} generic.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(1.4, 2.5, 3.6))
-round(x)
+jit_eval({
+  x <- nv_array(c(1.4, 2.5, 3.6))
+  round(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

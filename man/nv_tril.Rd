@@ -24,8 +24,10 @@ the specified diagonal to zero.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_fill(1, c(3, 3))
-nv_tril(x)
+jit_eval({
+  x <- nv_fill(1, c(3, 3))
+  nv_tril(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

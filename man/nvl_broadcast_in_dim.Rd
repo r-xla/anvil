@@ -42,8 +42,10 @@ Lowers to \code{\link[stablehlo:hlo_broadcast_in_dim]{stablehlo::hlo_broadcast_i
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(1, 2, 3))
-nvl_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
+jit_eval({
+  x <- nv_array(c(1, 2, 3))
+  nvl_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

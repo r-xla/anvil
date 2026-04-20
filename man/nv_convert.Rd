@@ -23,8 +23,10 @@ Returns the input unchanged if it already has the target type.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(1L, 2L, 3L))
-nv_convert(x, dtype = "f32")
+jit_eval({
+  x <- nv_array(c(1L, 2L, 3L))
+  nv_convert(x, dtype = "f32")
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

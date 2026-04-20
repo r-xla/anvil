@@ -24,8 +24,10 @@ dimension is added; if wider, the last dimension is consumed.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(1L)
-nvl_bitcast_convert(x, dtype = "i8")
+jit_eval({
+  x <- nv_array(1L)
+  nvl_bitcast_convert(x, dtype = "i8")
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

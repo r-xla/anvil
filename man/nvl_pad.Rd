@@ -53,9 +53,11 @@ Lowers to \code{\link[stablehlo:hlo_pad]{stablehlo::hlo_pad()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(1, 2, 3))
-nvl_pad(x, nv_scalar(0),
-  edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
-)
+jit_eval({
+  x <- nv_array(c(1, 2, 3))
+  nvl_pad(x, nv_scalar(0),
+    edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
+  )
+})
 \dontshow{\}) # examplesIf}
 }

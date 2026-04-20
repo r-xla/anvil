@@ -22,8 +22,10 @@ Removes dimensions of size 1 from an array.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(1:6, shape = c(1, 6, 1))
-nv_squeeze(x)
+jit_eval({
+  x <- nv_array(1:6, shape = c(1, 6, 1))
+  nv_squeeze(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

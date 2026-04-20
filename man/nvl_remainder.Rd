@@ -34,9 +34,11 @@ Lowers to \code{\link[stablehlo:hlo_remainder]{stablehlo::hlo_remainder()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(7, 10, 15))
-y <- nv_array(c(3, 4, 6))
-nvl_remainder(x, y)
+jit_eval({
+  x <- nv_array(c(7, 10, 15))
+  y <- nv_array(c(3, 4, 6))
+  nvl_remainder(x, y)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

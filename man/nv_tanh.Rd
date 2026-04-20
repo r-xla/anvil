@@ -19,8 +19,10 @@ Element-wise hyperbolic tangent. You can also use \code{tanh()}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(-1, 0, 1))
-tanh(x)
+jit_eval({
+  x <- nv_array(c(-1, 0, 1))
+  tanh(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

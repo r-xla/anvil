@@ -38,8 +38,10 @@ Lowers to \code{\link[stablehlo:hlo_transpose]{stablehlo::hlo_transpose()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(1:6, nrow = 2))
-nvl_transpose(x, permutation = c(2L, 1L))
+jit_eval({
+  x <- nv_array(matrix(1:6, nrow = 2))
+  nvl_transpose(x, permutation = c(2L, 1L))
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

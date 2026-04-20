@@ -19,8 +19,10 @@ Element-wise reciprocal square root, i.e. \code{1 / sqrt(x)}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(1, 4, 9))
-nv_rsqrt(x)
+jit_eval({
+  x <- nv_array(c(1, 4, 9))
+  nv_rsqrt(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

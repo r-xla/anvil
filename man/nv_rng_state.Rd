@@ -22,8 +22,10 @@ random sampling functions and is updated after each call.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-state <- nv_rng_state(42L)
-state
+jit_eval({
+  state <- nv_rng_state(42L)
+  state
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

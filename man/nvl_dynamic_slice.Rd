@@ -57,15 +57,19 @@ Lowers to \code{\link[stablehlo:hlo_dynamic_slice]{stablehlo::hlo_dynamic_slice(
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # 1-D: extract 3 elements starting at position 3
-x <- nv_array(1:10)
-start <- nv_scalar(3L)
-nvl_dynamic_slice(x, start, slice_sizes = 3L)
+jit_eval({
+  x <- nv_array(1:10)
+  start <- nv_scalar(3L)
+  nvl_dynamic_slice(x, start, slice_sizes = 3L)
+})
 
 # 2-D: extract a 2x2 block from a matrix
-x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
-row_start <- nv_scalar(2L)
-col_start <- nv_scalar(1L)
-nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
+jit_eval({
+  x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
+  row_start <- nv_scalar(2L)
+  col_start <- nv_scalar(1L)
+  nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

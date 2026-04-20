@@ -21,9 +21,11 @@ Element-wise maximum of two arrays.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(1, 5, 3))
-y <- nv_array(c(4, 2, 6))
-nv_max(x, y)
+jit_eval({
+  x <- nv_array(c(1, 5, 3))
+  y <- nv_array(c(4, 2, 6))
+  nv_max(x, y)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

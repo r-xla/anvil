@@ -40,8 +40,10 @@ Lowers to \code{\link[stablehlo:hlo_select]{stablehlo::hlo_select()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-pred <- nv_array(c(TRUE, FALSE, TRUE))
-nvl_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
+jit_eval({
+  pred <- nv_array(c(TRUE, FALSE, TRUE))
+  nvl_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

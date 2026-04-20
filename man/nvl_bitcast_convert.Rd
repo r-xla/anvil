@@ -38,10 +38,14 @@ Lowers to \code{\link[stablehlo:hlo_bitcast_convert]{stablehlo::hlo_bitcast_conv
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(1L)
-nvl_bitcast_convert(x, dtype = "i8")
-x <- nv_array(rep(1L, 4), dtype = "i8")
-nvl_bitcast_convert(x, dtype = "i32")
+jit_eval({
+  x <- nv_array(1L)
+  nvl_bitcast_convert(x, dtype = "i8")
+})
+jit_eval({
+  x <- nv_array(rep(1L, 4), dtype = "i8")
+  nvl_bitcast_convert(x, dtype = "i32")
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

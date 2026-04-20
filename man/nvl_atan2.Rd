@@ -34,9 +34,11 @@ Lowers to \code{\link[stablehlo:hlo_atan2]{stablehlo::hlo_atan2()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-y <- nv_array(c(1, 0, -1))
-x <- nv_array(c(0, 1, 0))
-nvl_atan2(y, x)
+jit_eval({
+  y <- nv_array(c(1, 0, -1))
+  x <- nv_array(c(0, 1, 0))
+  nvl_atan2(y, x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

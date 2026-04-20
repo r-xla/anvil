@@ -19,8 +19,10 @@ Element-wise cosine. You can also use \code{cos()}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(0, pi / 2, pi))
-cos(x)
+jit_eval({
+  x <- nv_array(c(0, pi / 2, pi))
+  cos(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

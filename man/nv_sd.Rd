@@ -34,8 +34,10 @@ Set \code{correction = 0} for population standard deviation.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(1, 2, 3, 4, 5))
-nv_sd(x, dims = 1L)
+jit_eval({
+  x <- nv_array(c(1, 2, 3, 4, 5))
+  nv_sd(x, dims = 1L)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

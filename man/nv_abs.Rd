@@ -19,8 +19,10 @@ Element-wise absolute value. You can also use \code{abs()}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(-1, 2, -3))
-abs(x)
+jit_eval({
+  x <- nv_array(c(-1, 2, -3))
+  abs(x)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

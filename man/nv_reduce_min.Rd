@@ -27,8 +27,10 @@ Finds the minimum of array elements along the specified dimensions.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(1:6, nrow = 2))
-nv_reduce_min(x, dims = 1L)
+jit_eval({
+  x <- nv_array(matrix(1:6, nrow = 2))
+  nv_reduce_min(x, dims = 1L)
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{
