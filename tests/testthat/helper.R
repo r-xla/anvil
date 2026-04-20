@@ -21,7 +21,7 @@ verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
   # We can only take gradients w.r.t. float arrays, so the outer input is f32
   # and the actual dtype is restored inside the function before calling nvl_fn.
   x_dtype <- dtype(x)
-  x_f32 <- jit(nv_convert, static = "dtype")(x, "f32")
+  x_f32 <- nv_convert(x, "f32")
   if (is.null(f_wrapper)) {
     f <- function(x) {
       x_inner <- nv_convert(x, x_dtype)
@@ -40,8 +40,8 @@ verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
 verify_zero_grad_binary <- function(nvl_fn, x, y) {
   x_dtype <- dtype(x)
   y_dtype <- dtype(y)
-  x_f32 <- jit(nv_convert, static = "dtype")(x, "f32")
-  y_f32 <- jit(nv_convert, static = "dtype")(y, "f32")
+  x_f32 <- nv_convert(x, "f32")
+  y_f32 <- nv_convert(y, "f32")
   f <- function(x, y) {
     x_inner <- nv_convert(x, x_dtype)
     y_inner <- nv_convert(y, y_dtype)
