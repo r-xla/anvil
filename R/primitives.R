@@ -2521,6 +2521,7 @@ prim_triangular_solve <- new_primitive(
 
 # Back-compat aliases — removed in a later commit.
 p_select <- prim_ifelse
+prim_select <- prim_ifelse
 nvl_ifelse <- prim_ifelse
 p_fill <- prim_fill
 nvl_fill <- prim_fill
