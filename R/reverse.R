@@ -52,7 +52,7 @@ prepare_gradient_args <- function(args, wrt) {
 #' @seealso [`gradient()`], [`value_and_gradient()`]
 #' @export
 #' @examples
-#' graph <- trace_fn(nvl_mul, list(nv_aval("f32", c()), nv_aval("f32", c())))
+#' graph <- trace_fn(prim_mul, list(nv_aval("f32", c()), nv_aval("f32", c())))
 #' graph
 #' transform_gradient(graph, "lhs")
 transform_gradient <- function(graph, wrt) {
@@ -120,7 +120,7 @@ transform_gradient <- function(graph, wrt) {
     if (is.null(grad1)) {
       return(grad2)
     }
-    nvl_add(grad1, grad2)
+    prim_add(grad1, grad2)
   }
 
   # We need to initialize the descriptor with the forward graph's structure,
@@ -151,7 +151,7 @@ transform_gradient <- function(graph, wrt) {
       grad <- grad_env[[output]]
       if (is.null(grad)) {
         # output grad might be NULL if there is dead code
-        nvl_fill(0L, dtype = dtype(output), shape = shape(output))
+        prim_fill(0L, dtype = dtype(output), shape = shape(output))
       } else {
         grad
       }

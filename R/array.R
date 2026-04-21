@@ -530,7 +530,7 @@ LiteralArray <- function(data, shape, dtype = default_dtype(data), ambiguous) {
 #' @title Iota Array Class
 #' @description
 #' An [`AbstractArray`] representing an integer sequence.
-#' Usually created by [`nv_iota()`] / [`nv_seq()`], which both call [`nvl_iota()`] internally.
+#' Usually created by [`nv_iota()`] / [`nv_seq()`], which both call [`prim_iota()`] internally.
 #' Inherits from [`AbstractArray`].
 #'
 #' @section Lowering:
@@ -787,7 +787,7 @@ is_shape <- function(x) {
 
 #' @title Array-like Objects
 #' @description
-#' A `arrayish` value is any object that can be input to a primitive such as [`nvl_add`].
+#' A `arrayish` value is any object that can be input to a primitive such as [`prim_add`].
 #'
 #' During runtime of a JIT-compiled function, these are [`AnvilArray`] objects.
 #'
