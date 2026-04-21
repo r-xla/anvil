@@ -32,7 +32,7 @@ It is ambiguous if the input is ambiguous.
 Extracts a slice from an array using static (compile-time) indices.
 All indices, limits, and strides are fixed R integers.
 
-Use \code{\link[=prim$dynamic_slice]{prim$dynamic_slice()}} instead when the start position must be
+Use \code{\link[=prim_dynamic_slice]{prim_dynamic_slice()}} instead when the start position must be
 computed at runtime (e.g. depends on array values).
 }
 \section{Access}{
@@ -74,5 +74,5 @@ prim$static_slice(x,
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=prim$dynamic_slice]{prim$dynamic_slice()}}, \code{\link[=prim$scatter]{prim$scatter()}}, \code{\link[=prim$gather]{prim$gather()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{[}
+\code{\link[=prim_dynamic_slice]{prim_dynamic_slice()}}, \code{\link[=prim_scatter]{prim_scatter()}}, \code{\link[=prim_gather]{prim_gather()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{[}
 }

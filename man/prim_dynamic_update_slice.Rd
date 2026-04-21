@@ -27,7 +27,7 @@ It is ambiguous if the input is ambiguous.
 \description{
 Returns a copy of \code{operand} with a slice replaced by \code{update} at a
 runtime-determined position. This is the write counterpart of
-\code{\link[=prim$dynamic_slice]{prim$dynamic_slice()}}: dynamic slice reads a block from an array,
+\code{\link[=prim_dynamic_slice]{prim_dynamic_slice()}}: dynamic slice reads a block from an array,
 while dynamic update slice writes a block into an array.
 }
 \section{Access}{
@@ -74,5 +74,5 @@ prim$dynamic_update_slice(x, update, row_start, col_start)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=prim$dynamic_slice]{prim$dynamic_slice()}}, \code{\link[=prim$scatter]{prim$scatter()}}, \code{\link[=prim$gather]{prim$gather()}}, \code{\link[=nv_subset_assign]{nv_subset_assign()}}, \verb{[<-}
+\code{\link[=prim_dynamic_slice]{prim_dynamic_slice()}}, \code{\link[=prim_scatter]{prim_scatter()}}, \code{\link[=prim_gather]{prim_gather()}}, \code{\link[=nv_subset_assign]{nv_subset_assign()}}, \verb{[<-}
 }

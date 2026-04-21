@@ -102,6 +102,9 @@ print.JitPrimitive <- function(x, ...) {
 #'   Names of parameters that are subgraphs (for higher-order primitives).
 #' @param static (`character()` | `integer()`)\cr
 #'   Passed to [`jit()`].
+#' @param device (`NULL` | `character(1)` | `device_arg()`)\cr
+#'   Passed to [`jit()`]. Useful for primitives with no array inputs
+#'   (e.g. `prim_fill`) where the device must come from an explicit argument.
 #' @param register (`logical(1)`)\cr
 #'   If `TRUE` (default), register the result under `name` in the primitive
 #'   registry.

@@ -29,7 +29,7 @@ Extracts a slice from an array whose start position is determined at
 runtime via array-valued indices. The slice shape (\code{slice_sizes}) is
 a fixed R integer vector.
 
-Use \code{\link[=prim$static_slice]{prim$static_slice()}} instead when all indices are known at compile
+Use \code{\link[=prim_static_slice]{prim_static_slice()}} instead when all indices are known at compile
 time and you need stride support.
 }
 \section{Out Of Bounds Behavior}{
@@ -74,5 +74,5 @@ prim$dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=prim$static_slice]{prim$static_slice()}}, \code{\link[=prim$dynamic_update_slice]{prim$dynamic_update_slice()}}, \code{\link[=prim$scatter]{prim$scatter()}}, \code{\link[=prim$gather]{prim$gather()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{[}
+\code{\link[=prim_static_slice]{prim_static_slice()}}, \code{\link[=prim_dynamic_update_slice]{prim_dynamic_update_slice()}}, \code{\link[=prim_scatter]{prim_scatter()}}, \code{\link[=prim_gather]{prim_gather()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{[}
 }

@@ -65,7 +65,7 @@ infer_reduce_boolean <- function(operand, dims, drop) {
 #' @description
 #' Creates an array of a given shape and data type, filled with a scalar value.
 #' The advantage of using this function instead of e.g. doing
-#' `nv_array(1, shape = c(100, 100))` is that lowering of [prim$fill()] is
+#' `nv_array(1, shape = c(100, 100))` is that lowering of [prim_fill()] is
 #' efficiently represented in the compiled program, while the latter uses
 #' 100 * 100 * 4 bytes of memory.
 #' @param value (`numeric(1)`)\cr
@@ -432,7 +432,7 @@ prim_concatenate <- new_primitive(
 #' Extracts a slice from an array using static (compile-time) indices.
 #' All indices, limits, and strides are fixed R integers.
 #'
-#' Use [prim$dynamic_slice()] instead when the start position must be
+#' Use [prim_dynamic_slice()] instead when the start position must be
 #' computed at runtime (e.g. depends on array values).
 #' @template param_prim_operand_any
 #' @param start_indices (`integer()`)\cr
@@ -452,7 +452,7 @@ prim_concatenate <- new_primitive(
 #' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_slice()].
-#' @seealso [prim$dynamic_slice()], [prim$scatter()], [prim$gather()], [nv_subset()], `[`
+#' @seealso [prim_dynamic_slice()], [prim_scatter()], [prim_gather()], [nv_subset()], `[`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # 1-D: extract elements 2 through 4 (limit is exclusive)
 #' x <- nv_array(1:10)
@@ -503,7 +503,7 @@ prim_static_slice <- new_primitive(
 #' runtime via array-valued indices. The slice shape (`slice_sizes`) is
 #' a fixed R integer vector.
 #'
-#' Use [prim$static_slice()] instead when all indices are known at compile
+#' Use [prim_static_slice()] instead when all indices are known at compile
 #' time and you need stride support.
 #' @template param_prim_operand_any
 #' @param ... ([`arrayish`] of integer type)\cr
@@ -525,7 +525,7 @@ prim_static_slice <- new_primitive(
 #' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_dynamic_slice()].
-#' @seealso [prim$static_slice()], [prim$dynamic_update_slice()], [prim$scatter()], [prim$gather()], [nv_subset()], `[`
+#' @seealso [prim_static_slice()], [prim_dynamic_update_slice()], [prim_scatter()], [prim_gather()], [nv_subset()], `[`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # 1-D: extract 3 elements starting at position 3
 #' x <- nv_array(1:10)
@@ -566,7 +566,7 @@ prim_dynamic_slice <- new_primitive(
 #' @description
 #' Returns a copy of `operand` with a slice replaced by `update` at a
 #' runtime-determined position. This is the write counterpart of
-#' [prim$dynamic_slice()]: dynamic slice reads a block from an array,
+#' [prim_dynamic_slice()]: dynamic slice reads a block from an array,
 #' while dynamic update slice writes a block into an array.
 #' @template param_prim_operand_any
 #' @param update ([`arrayish`])\cr
@@ -584,7 +584,7 @@ prim_dynamic_slice <- new_primitive(
 #' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_dynamic_update_slice()].
-#' @seealso [prim$dynamic_slice()], [prim$scatter()], [prim$gather()], [nv_subset_assign()], `[<-`
+#' @seealso [prim_dynamic_slice()], [prim_scatter()], [prim_gather()], [nv_subset_assign()], `[<-`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # 1-D: overwrite two elements starting at position 2
 #' x <- nv_array(1:5)
@@ -1727,7 +1727,7 @@ prim_ifelse <- new_primitive(
 #' @title Primitive If
 #' @description
 #' Conditional execution of one of two branches based on a scalar boolean
-#' predicate. Unlike [prim$ifelse()] which operates element-wise, this
+#' predicate. Unlike [prim_ifelse()] which operates element-wise, this
 #' evaluates only the selected branch.
 #' @param pred ([`arrayish`])\cr
 #'   Scalar boolean predicate that determines which branch to execute.
@@ -1740,9 +1740,9 @@ prim_ifelse <- new_primitive(
 #' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_if()].
-#' @seealso [nv_if()], [prim$ifelse()]
+#' @seealso [nv_if()], [prim_ifelse()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' prim$if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
+#' prim[["if"]](nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 prim_if <- new_primitive(
   "if",
   function(pred, true, false) {
@@ -1826,7 +1826,7 @@ prim_if <- new_primitive(
 #' Lowers to [stablehlo::hlo_while()].
 #' @seealso [nv_while()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' prim$while(
+#' prim[["while"]](
 #'   init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
 #'   cond = function(i, total) i <= 5L,
 #'   body = function(i, total) list(
@@ -1987,7 +1987,7 @@ prim_rng_bit_generator <- new_primitive(
 #' the `update_computation` function determines how to combine the values
 #' (by default the new value replaces the old one).
 #'
-#' This is the inverse of [prim$gather()]: gather reads slices from an array
+#' This is the inverse of [prim_gather()]: gather reads slices from an array
 #' at given indices, while scatter writes slices into an array at given
 #' indices.
 #' @param input ([`arrayish`])\cr
@@ -2046,7 +2046,7 @@ prim_rng_bit_generator <- new_primitive(
 #' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_scatter()].
-#' @seealso [prim$gather()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
+#' @seealso [prim_gather()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Scatter values 10 and 30 into positions 1 and 3 of a zero vector
 #' input <- nv_array(c(0, 0, 0, 0, 0))
@@ -2186,7 +2186,7 @@ prim_scatter <- new_primitive(
 #' extracted from that position. The gathered slices are assembled into
 #' the output array.
 #'
-#' This is the inverse of [prim$scatter()]: gather reads slices from a
+#' This is the inverse of [prim_scatter()]: gather reads slices from a
 #' array at given indices, while scatter writes slices into an array at
 #' given indices.
 #' @template param_prim_operand_any
@@ -2241,7 +2241,7 @@ prim_scatter <- new_primitive(
 #' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_gather()].
-#' @seealso [prim$scatter()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
+#' @seealso [prim_scatter()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Gather rows 1 and 3 from a 3x3 matrix
 #' operand <- nv_array(matrix(1:9, nrow = 3))

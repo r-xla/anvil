@@ -722,8 +722,8 @@ is_graph_box <- function(x) {
 #' @title Add a Primitive Call to a Graph Descriptor
 #' @description
 #' Add a primitive call to a graph descriptor.
-#' @param prim ([`AnvilPrimitive`])\cr
-#'   The primitive to add.
+#' @param prim_name (`character(1)`)\cr
+#'   Name of the primitive to add; looked up in [`prim`].
 #' @param args (`list` of [`GraphNode`])\cr
 #'   The arguments to the primitive.
 #' @param params (`list`)\cr

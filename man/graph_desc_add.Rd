@@ -7,6 +7,9 @@
 graph_desc_add(prim_name, args, params = list(), infer_fn, desc = NULL)
 }
 \arguments{
+\item{prim_name}{(\code{character(1)})\cr
+Name of the primitive to add; looked up in \code{\link{prim}}.}
+
 \item{args}{(\code{list} of \code{\link{GraphNode}})\cr
 The arguments to the primitive.}
 
@@ -20,9 +23,6 @@ Must output a list of \code{\link{AbstractArray}}s.}
 \item{desc}{(\code{\link{GraphDescriptor}} | \code{NULL})\cr
 The graph descriptor to add the primitive call to.
 Uses the \link[=.current_descriptor]{current descriptor} if \code{NULL}.}
-
-\item{prim}{(\code{\link{AnvilPrimitive}})\cr
-The primitive to add.}
 }
 \value{
 (\code{list} of \code{\link{GraphBox}})

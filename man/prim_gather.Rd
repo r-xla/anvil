@@ -83,7 +83,7 @@ starting position in \code{operand}, and a slice of size \code{slice_sizes} is
 extracted from that position. The gathered slices are assembled into
 the output array.
 
-This is the inverse of \code{\link[=prim$scatter]{prim$scatter()}}: gather reads slices from a
+This is the inverse of \code{\link[=prim_scatter]{prim_scatter()}}: gather reads slices from a
 array at given indices, while scatter writes slices into an array at
 given indices.
 }
@@ -132,5 +132,5 @@ prim$gather(
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=prim$scatter]{prim$scatter()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{\link[=nv_subset_assign]{nv_subset_assign()}}, \code{[}, \verb{[<-}
+\code{\link[=prim_scatter]{prim_scatter()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{\link[=nv_subset_assign]{nv_subset_assign()}}, \code{[}, \verb{[<-}
 }
