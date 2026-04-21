@@ -79,7 +79,7 @@ describe("subgraphs", {
     true_graph <- trace_fn(function() nv_scalar(1), list())
     false_graph <- trace_fn(function() nv_scalar(2), list())
     call <- PrimitiveCall(
-      primitive = p_if,
+      primitive = prim_if,
       inputs = list(GraphValue(aval = nv_aval("bool", integer()))),
       params = list(true_graph = true_graph, false_graph = false_graph),
       outputs = list(GraphValue(aval = nv_aval("f32", integer())))
@@ -93,7 +93,7 @@ describe("subgraphs", {
   })
   it("returns empty list for non-higher-order primitives", {
     call <- PrimitiveCall(
-      primitive = p_add,
+      primitive = prim_add,
       inputs = list(GraphValue(aval = nv_aval("f32", integer())), GraphValue(aval = nv_aval("f32", integer()))),
       params = list(),
       outputs = list(GraphValue(aval = nv_aval("f32", integer())))

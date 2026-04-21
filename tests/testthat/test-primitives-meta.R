@@ -1,6 +1,17 @@
 test_that("stablehlo rule is tested", {
   nms <- names(asNamespace("anvil"))
-  primitive_names <- nms[grepl("^p_", nms)]
+  primitive_names <- setdiff(nms[grepl("^prim_", nms)], "prim_dict")
+  # Deduplicate primitives that share a registered name via aliases (e.g., prim_select <- prim_ifelse).
+  seen <- character()
+  primitive_names <- Filter(function(nm) {
+    obj <- getFromNamespace(nm, "anvil")
+    p <- if (inherits(obj, "JitPrimitive")) attr(obj, "primitive") else obj
+    if (is.null(p) || !inherits(p, "AnvilPrimitive")) return(FALSE)
+    key <- p$name
+    keep <- !(key %in% seen)
+    if (keep) seen <<- c(seen, key)
+    keep
+  }, primitive_names)
 
   tests_dir <- testthat::test_path()
   candidate_files <- c(
@@ -25,7 +36,18 @@ test_that("stablehlo rule is tested", {
 
 test_that("reverse rule is tested", {
   nms <- names(asNamespace("anvil"))
-  primitive_names <- nms[grepl("^p_", nms)]
+  primitive_names <- setdiff(nms[grepl("^prim_", nms)], "prim_dict")
+  # Deduplicate primitives that share a registered name via aliases (e.g., prim_select <- prim_ifelse).
+  seen <- character()
+  primitive_names <- Filter(function(nm) {
+    obj <- getFromNamespace(nm, "anvil")
+    p <- if (inherits(obj, "JitPrimitive")) attr(obj, "primitive") else obj
+    if (is.null(p) || !inherits(p, "AnvilPrimitive")) return(FALSE)
+    key <- p$name
+    keep <- !(key %in% seen)
+    if (keep) seen <<- c(seen, key)
+    keep
+  }, primitive_names)
 
   primitive_names <- Filter(
     function(nm) {
