@@ -10,7 +10,7 @@
     Code
       jit(nvl_ceil)(nv_array(1:4))
     Condition
-      Error in `nvl_ceil()`:
+      Error in `prim$ceil`:
       ! `operand` must have dtype FloatType.
       x Got i32.
 
@@ -20,7 +20,7 @@
       jit(nvl_transpose, static = "permutation")(nv_array(1:4, shape = c(2, 2)),
       permutation = c(2, 2))
     Condition
-      Error in `nvl_transpose()`:
+      Error in `prim$transpose`:
       ! `permutation` must be a permutation of c(1, 2).
       x Got c(2, 2).
 

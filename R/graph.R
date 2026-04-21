@@ -740,6 +740,13 @@ is_graph_box <- function(x) {
 graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL) {
   desc <- desc %||% .current_descriptor(silent = TRUE)
 
+  if (is.character(prim)) {
+    prim <- get(prim, envir = prim_dict, inherits = FALSE)
+  }
+  if (inherits(prim, "JitPrimitive")) {
+    prim <- attr(prim, "primitive")
+  }
+
   boxes_in <- lapply(args, maybe_box_arrayish)
   gnodes_in <- unname(lapply(boxes_in, \(box) box$gnode))
   avals_in <- lapply(boxes_in, \(box) box$gnode$aval)
@@ -760,7 +767,8 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL) {
 }
 
 print_call_repr <- function(prim) {
-  rlang::exec(call, paste0("nvl_", prim$name))
+  if (inherits(prim, "JitPrimitive")) prim <- attr(prim, "primitive")
+  rlang::exec(call, paste0("prim$", prim$name))
 }
 
 
