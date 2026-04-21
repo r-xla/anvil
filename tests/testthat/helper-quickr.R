@@ -1,5 +1,12 @@
-skip_if_no_quickr_or_pjrt <- function() {
+skip_if_quickr <- function() {
   testthat::skip_if_not_installed("quickr")
+  if (nzchar(Sys.getenv("ANVIL_SKIP_QUICKR", ""))) {
+    testthat::skip("ANVIL_SKIP_QUICKR is set")
+  }
+}
+
+skip_if_no_quickr_or_pjrt <- function() {
+  skip_if_quickr()
   testthat::skip_if_not_installed("pjrt")
   testthat::skip_if_not_installed("stablehlo")
 }

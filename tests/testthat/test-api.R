@@ -458,7 +458,7 @@ describe("nv_triu", {
 
 describe("nv_tril with quickr backend", {
   it("works when operand is quickr", {
-    skip_if_not_installed("quickr")
+    skip_if_quickr()
     x <- nv_array(matrix(1, 3, 3), backend = "quickr")
     result <- nv_tril(x)
     expected <- matrix(c(1, 1, 1, 0, 1, 1, 0, 0, 1), nrow = 3, ncol = 3)
@@ -468,7 +468,7 @@ describe("nv_tril with quickr backend", {
 
 describe("nv_triu with quickr backend", {
   it("works when operand is quickr", {
-    skip_if_not_installed("quickr")
+    skip_if_quickr()
     x <- nv_array(matrix(1, 3, 3), backend = "quickr")
     result <- nv_triu(x)
     expected <- matrix(c(1, 0, 0, 1, 1, 0, 1, 1, 1), nrow = 3, ncol = 3)

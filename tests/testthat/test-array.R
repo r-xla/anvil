@@ -169,7 +169,7 @@ test_that("stablehlo dtype is printed", {
 })
 
 test_that("quickr_device is a classed object", {
-  skip_if_not_installed("quickr")
+  skip_if_quickr()
   dev <- quickr_device("cpu")
   expect_s3_class(dev, "QuickrDevice")
   expect_equal(format(dev), "QuickrDevice(cpu)")
@@ -184,7 +184,7 @@ test_that("PlainDeviceCpu is a classed object", {
 })
 
 test_that("device returns QuickrDevice for quickr arrays", {
-  skip_if_not_installed("quickr")
+  skip_if_quickr()
   local_backend("quickr")
   x <- nv_array(1)
   dev <- device(x)
@@ -198,7 +198,7 @@ test_that("device returns PlainDeviceCpu for plain arrays", {
 })
 
 test_that("platform returns 'cpu' for quickr backend", {
-  skip_if_not_installed("quickr")
+  skip_if_quickr()
   local_backend("quickr")
   expect_equal(platform(nv_array(1)), "cpu")
 })
@@ -209,14 +209,14 @@ test_that("platform returns 'cpu' for plain backend", {
 })
 
 test_that("nv_array respects backend argument", {
-  skip_if_not_installed("quickr")
+  skip_if_quickr()
   local_backend("quickr")
   x <- nv_array(1, backend = "xla")
   expect_equal(backend(x), "xla")
 })
 
 test_that("nv_array infers backend from device object", {
-  skip_if_not_installed("quickr")
+  skip_if_quickr()
   local_backend("quickr")
   x <- nv_array(1, device = pjrt::pjrt_device("cpu"))
   expect_equal(backend(x), "xla")
@@ -236,7 +236,7 @@ test_that("default floating dtype is f32 for xla", {
 })
 
 test_that("default floating dtype is f64 for quickr", {
-  skip_if_not_installed("quickr")
+  skip_if_quickr()
   local_backend("quickr")
   expect_equal(dtype(nv_array(1.0)), as_dtype("f64"))
   expect_equal(dtype(nv_scalar(1.0)), as_dtype("f64"))
@@ -353,7 +353,7 @@ describe("as_anvil_arrays", {
   })
 
   it("errors when concrete inputs come from different backends", {
-    skip_if_not_installed("quickr")
+    skip_if_quickr()
     dev_xla <- nv_device("cpu", "xla")
     dev_quickr <- nv_device("cpu", "quickr")
     x <- nv_array(1:3, device = dev_xla)
