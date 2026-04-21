@@ -287,9 +287,9 @@ reference:
   - subtitle: Primitives
     contents:
       - prim
+      - new_primitive
       - AnvilPrimitive
       - PrimitiveCall
-      - register_primitive
 
   - subtitle: Abstract Types
     contents:
@@ -336,6 +336,6 @@ reference:
       - filter_list_node
 
   - title: Primitives
-    desc: Low-level primitive operations (nvl_* functions)
+    desc: Low-level primitive operations (prim_* functions, accessed via `prim$<name>`)
     contents:
-      - starts_with("nvl_")
+      - starts_with("prim_")
