@@ -114,6 +114,46 @@ print.JitPrimitive <- function(x, ...) {
   invisible(x)
 }
 
+#' @title Create a Primitive
+#' @description
+#' Builds an [`AnvilPrimitive`] metadata object, wraps `fn` with [`jit()`]
+#' (backend `"auto"`), attaches the metadata via `attr(., "primitive")`,
+#' prepends class `"JitPrimitive"`, and (by default) registers the result
+#' under `name` in the primitive registry.
+#' @param name (`character(1)`)\cr
+#'   Primitive name.
+#' @param fn (`function`)\cr
+#'   Body of the primitive. Its formals become the formals of the returned
+#'   JIT-compiled callable. Inside `fn`, identify the primitive by passing
+#'   the name string to [`graph_desc_add()`] (not the `fn` itself).
+#' @param subgraphs (`character()`)\cr
+#'   Names of parameters that are subgraphs (for higher-order primitives).
+#' @param static (`character()` | `integer()`)\cr
+#'   Passed to [`jit()`].
+#' @param register (`logical(1)`)\cr
+#'   If `TRUE` (default), register the result under `name` in the primitive
+#'   registry.
+#' @return A callable of class `c("JitPrimitive", "JitFunction")`.
+#' @export
+new_primitive <- function(name, fn, subgraphs = character(),
+                          static = character(), register = TRUE) {
+  checkmate::assert_string(name)
+  checkmate::assert_function(fn)
+  checkmate::assert_character(subgraphs)
+  checkmate::assert_flag(register)
+
+  primitive <- AnvilPrimitive(name, subgraphs = subgraphs)
+  jit_fn <- jit(fn, static = static, backend = "auto")
+  attr(jit_fn, "primitive") <- primitive
+  class(jit_fn) <- c("JitPrimitive", class(jit_fn))
+
+  if (register) {
+    assign(name, jit_fn, envir = prim_dict)
+  }
+
+  jit_fn
+}
+
 #' @title Get Subgraphs from Higher-Order Primitive
 #' @description
 #' Extracts subgraphs from the parameters of a higher-order primitive call.

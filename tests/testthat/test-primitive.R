@@ -39,6 +39,23 @@ test_that("documented primitive ids resolve to registered primitives", {
   expect_identical(missing, character())
 })
 
+test_that("new_primitive builds a callable that self-registers into prim_dict", {
+  on.exit(rm("np_test", envir = prim_dict))
+
+  fn <- new_primitive("np_test", function(x) x + 1)
+
+  expect_class(fn, "JitPrimitive")
+  expect_class(fn, "JitFunction")
+  expect_identical(prim("np_test"), fn)
+  expect_identical(attr(fn, "primitive")$name, "np_test")
+  expect_identical(formals(fn), formals(function(x) x + 1))
+})
+
+test_that("new_primitive respects register = FALSE", {
+  fn <- new_primitive("np_unregistered", function(x) x, register = FALSE)
+  expect_false(exists("np_unregistered", envir = prim_dict, inherits = FALSE))
+})
+
 test_that("JitPrimitive [[ delegates to attached AnvilPrimitive", {
   p <- AnvilPrimitive("jp_test_a")
   f <- function(x) x
