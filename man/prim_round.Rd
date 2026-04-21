@@ -22,11 +22,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Rounds the elements of an array to the nearest integer.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$round}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -44,7 +39,7 @@ Lowers to \code{\link[stablehlo:hlo_round_nearest_even]{stablehlo::hlo_round_nea
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1.4, 2.5, 3.6))
-prim$round(x)
+prim_round(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

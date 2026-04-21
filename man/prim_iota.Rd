@@ -34,11 +34,6 @@ Has the given \code{dtype} and \code{shape}.
 \description{
 Creates an array with values increasing along the specified dimension.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$iota}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -54,7 +49,7 @@ Lowers to \code{\link[stablehlo:hlo_iota]{stablehlo::hlo_iota()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-prim$iota(dim = 1L, dtype = "i32", shape = 5L)
+prim_iota(dim = 1L, dtype = "i32", shape = 5L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

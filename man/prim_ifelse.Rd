@@ -24,11 +24,6 @@ Element-wise selection based on a boolean predicate, like R's \code{\link[=ifels
 For each element, returns the corresponding element from \code{true_value} where
 \code{pred} is \code{TRUE} and from \code{false_value} where \code{pred} is \code{FALSE}.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$select}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -46,7 +41,7 @@ Lowers to \code{\link[stablehlo:hlo_select]{stablehlo::hlo_select()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 pred <- nv_array(c(TRUE, FALSE, TRUE))
-prim$ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
+prim_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

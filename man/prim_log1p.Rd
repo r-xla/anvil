@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise log(1 + x), more accurate for small x.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$log1p}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_log_plus_one]{stablehlo::hlo_log_plus_one()}
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(0, 0.001, 1))
-prim$log1p(x)
+prim_log1p(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

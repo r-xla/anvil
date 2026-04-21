@@ -27,11 +27,6 @@ When \code{drop = FALSE}, the shape is that of \code{operand} with \code{dims} s
 \description{
 Performs logical OR along the specified dimensions.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$reduce_any}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -49,7 +44,7 @@ Lowers to \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-prim$reduce_any(x, dims = 1L)
+prim_reduce_any(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

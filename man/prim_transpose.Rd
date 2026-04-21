@@ -22,11 +22,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Permutes the dimensions of an array.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$transpose}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -44,7 +39,7 @@ Lowers to \code{\link[stablehlo:hlo_transpose]{stablehlo::hlo_transpose()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(matrix(1:6, nrow = 2))
-prim$transpose(x, permutation = c(2L, 1L))
+prim_transpose(x, permutation = c(2L, 1L))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

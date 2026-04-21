@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
 }
-\section{Access}{
-
-Access this primitive via \code{prim$logistic}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_logistic]{stablehlo::hlo_logistic()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(-2, 0, 2))
-prim$logistic(x)
+prim_logistic(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

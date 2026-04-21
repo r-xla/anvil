@@ -41,11 +41,6 @@ Dimensions before the last two are batch dimensions and must match
 between \code{a} and \code{b} (no broadcasting).
 Here \code{op} is \code{A} or \code{A^T} depending on \code{transpose_a}.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$triangular_solve}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -64,7 +59,7 @@ Lowers to \code{\link[stablehlo:hlo_triangular_solve]{stablehlo::hlo_triangular_
 # Solve L \%*\% x = b where L is lower triangular
 L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
 b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
-prim$triangular_solve(L, b,
+prim_triangular_solve(L, b,
   left_side = TRUE, lower = TRUE,
   unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"
 )

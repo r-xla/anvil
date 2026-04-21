@@ -27,11 +27,6 @@ It is ambiguous if the input is ambiguous.
 Computes the Cholesky decomposition of a symmetric positive-definite matrix.
 Dimensions before the last two are batch dimensions.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$cholesky}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -49,7 +44,7 @@ Lowers to \code{\link[stablehlo:hlo_cholesky]{stablehlo::hlo_cholesky()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # Create a positive-definite matrix
 x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-prim$cholesky(x, lower = TRUE)
+prim_cholesky(x, lower = TRUE)
 \dontshow{\}) # examplesIf}
 }
 \references{

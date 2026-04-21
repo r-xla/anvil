@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise cosine.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$cosine}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_cosine]{stablehlo::hlo_cosine()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(0, pi / 2, pi))
-prim$cosine(x)
+prim_cosine(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

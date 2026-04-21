@@ -723,7 +723,7 @@ is_graph_box <- function(x) {
 #' @description
 #' Add a primitive call to a graph descriptor.
 #' @param prim_name (`character(1)`)\cr
-#'   Name of the primitive to add; looked up in [`prim`].
+#'   Name of the primitive to add; looked up in the internal primitive registry.
 #' @param args (`list` of [`GraphNode`])\cr
 #'   The arguments to the primitive.
 #' @param params (`list`)\cr
@@ -739,7 +739,7 @@ is_graph_box <- function(x) {
 graph_desc_add <- function(prim_name, args, params = list(), infer_fn, desc = NULL) {
   desc <- desc %||% .current_descriptor(silent = TRUE)
   checkmate::assert_string(prim_name)
-  jit_primitive <- get(prim_name, envir = prim, inherits = FALSE)
+  jit_primitive <- get(prim_name, envir = primitive_env, inherits = FALSE)
   primitive <- attr(jit_primitive, "primitive")
 
   boxes_in <- lapply(args, maybe_box_arrayish)
@@ -762,7 +762,7 @@ graph_desc_add <- function(prim_name, args, params = list(), infer_fn, desc = NU
 }
 
 print_call_repr <- function(prim) {
-  rlang::exec(call, paste0("prim$", prim$name))
+  rlang::exec(call, paste0("prim_", prim$name))
 }
 
 

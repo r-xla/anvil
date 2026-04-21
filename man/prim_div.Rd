@@ -19,11 +19,6 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Divides two arrays element-wise.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$divide}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -42,7 +37,7 @@ Lowers to \code{\link[stablehlo:hlo_divide]{stablehlo::hlo_divide()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(10, 20, 30))
 y <- nv_array(c(2, 5, 10))
-prim$div(x, y)
+prim_div(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

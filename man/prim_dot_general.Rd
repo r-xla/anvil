@@ -29,11 +29,6 @@ The output shape is the batch dimensions followed by the remaining
 General dot product of two arrays, supporting contraction over arbitrary
 dimensions and batching.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$dot_general}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -52,7 +47,7 @@ Lowers to \code{\link[stablehlo:hlo_dot_general]{stablehlo::hlo_dot_general()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(matrix(1:6, nrow = 2))
 y <- nv_array(matrix(1:6, nrow = 3))
-prim$dot_general(x, y,
+prim_dot_general(x, y,
   contracting_dims = list(2L, 1L),
   batching_dims = list(integer(0), integer(0))
 )

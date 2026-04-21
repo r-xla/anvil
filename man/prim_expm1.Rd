@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise exp(x) - 1, more accurate for small x.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$expm1}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_exponential_minus_one]{stablehlo::hlo_expone
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(0, 0.001, 1))
-prim$expm1(x)
+prim_expm1(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

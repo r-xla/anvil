@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Negates an array element-wise.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$negate}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_negate]{stablehlo::hlo_negate()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, -2, 3))
-prim$negate(x)
+prim_negate(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

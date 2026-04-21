@@ -19,11 +19,6 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Subtracts two arrays element-wise.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$sub}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -42,7 +37,7 @@ Lowers to \code{\link[stablehlo:hlo_subtract]{stablehlo::hlo_subtract()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
 y <- nv_array(c(4, 5, 6))
-prim$sub(x, y)
+prim_sub(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

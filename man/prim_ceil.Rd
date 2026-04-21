@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise ceiling.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$ceil}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_ceil]{stablehlo::hlo_ceil()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1.2, 2.7, -1.5))
-prim$ceil(x)
+prim_ceil(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

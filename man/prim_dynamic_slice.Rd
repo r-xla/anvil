@@ -40,11 +40,6 @@ This means that out-of-bounds indices will not cause an error, but
 the effective start position may differ from the requested one.
 }
 
-\section{Access}{
-
-Access this primitive via \code{prim$dynamic_slice}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -64,13 +59,13 @@ Lowers to \code{\link[stablehlo:hlo_dynamic_slice]{stablehlo::hlo_dynamic_slice(
 # 1-D: extract 3 elements starting at position 3
 x <- nv_array(1:10)
 start <- nv_scalar(3L)
-prim$dynamic_slice(x, start, slice_sizes = 3L)
+prim_dynamic_slice(x, start, slice_sizes = 3L)
 
 # 2-D: extract a 2x2 block from a matrix
 x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
 row_start <- nv_scalar(2L)
 col_start <- nv_scalar(1L)
-prim$dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
+prim_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

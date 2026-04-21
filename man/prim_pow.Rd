@@ -19,11 +19,6 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Raises lhs to the power of rhs element-wise.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$power}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -42,7 +37,7 @@ Lowers to \code{\link[stablehlo:hlo_power]{stablehlo::hlo_power()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(2, 3, 4))
 y <- nv_array(c(3, 2, 1))
-prim$pow(x, y)
+prim_pow(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

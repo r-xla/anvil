@@ -25,11 +25,6 @@ It is ambiguous if the input is ambiguous.
 Clamps every element of \code{operand} to the range \verb{[min_val, max_val]},
 i.e. \code{max(min_val, min(operand, max_val))}.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$clamp}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -46,7 +41,7 @@ Lowers to \code{\link[stablehlo:hlo_clamp]{stablehlo::hlo_clamp()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(-1, 0.5, 2))
-prim$clamp(nv_scalar(0), x, nv_scalar(1))
+prim_clamp(nv_scalar(0), x, nv_scalar(1))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

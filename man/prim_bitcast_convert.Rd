@@ -23,11 +23,6 @@ Has the given \code{dtype}.
 Reinterprets the bits of an array as a different data type without
 modifying the underlying data.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$bitcast_convert}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -44,9 +39,9 @@ Lowers to \code{\link[stablehlo:hlo_bitcast_convert]{stablehlo::hlo_bitcast_conv
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(1L)
-prim$bitcast_convert(x, dtype = "i8")
+prim_bitcast_convert(x, dtype = "i8")
 x <- nv_array(rep(1L, 4), dtype = "i8")
-prim$bitcast_convert(x, dtype = "i32")
+prim_bitcast_convert(x, dtype = "i32")
 \dontshow{\}) # examplesIf}
 }
 \seealso{

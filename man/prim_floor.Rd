@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise floor.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$floor}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_floor]{stablehlo::hlo_floor()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1.2, 2.7, -1.5))
-prim$floor(x)
+prim_floor(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

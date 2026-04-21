@@ -19,11 +19,6 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Adds two arrays element-wise.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$add}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -42,7 +37,7 @@ Lowers to \code{\link[stablehlo:hlo_add]{stablehlo::hlo_add()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
 y <- nv_array(c(4, 5, 6))
-prim$add(x, y)
+prim_add(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

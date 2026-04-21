@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise check if values are finite (not Inf, -Inf, or NaN).
 }
-\section{Access}{
-
-Access this primitive via \code{prim$is_finite}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -39,7 +34,7 @@ Lowers to \code{\link[stablehlo:hlo_is_finite]{stablehlo::hlo_is_finite()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, Inf, NaN, -Inf, 0))
-prim$is_finite(x)
+prim_is_finite(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

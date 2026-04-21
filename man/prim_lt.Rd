@@ -19,11 +19,6 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Element-wise less than comparison.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$less}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -42,7 +37,7 @@ Lowers to \code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} with \co
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
 y <- nv_array(c(3, 2, 1))
-prim$lt(x, y)
+prim_lt(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

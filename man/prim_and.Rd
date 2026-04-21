@@ -19,11 +19,6 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Element-wise logical AND.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$and}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -42,7 +37,7 @@ Lowers to \code{\link[stablehlo:hlo_and]{stablehlo::hlo_and()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(TRUE, FALSE, TRUE))
 y <- nv_array(c(TRUE, TRUE, FALSE))
-prim$and(x, y)
+prim_and(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

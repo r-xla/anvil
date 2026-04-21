@@ -24,14 +24,7 @@ AnvilPrimitive <- function(name, subgraphs = character()) {
 }
 
 
-#' @title Primitive Registry
-#' @description
-#' Environment containing all registered primitives. Access an individual
-#' primitive by name via `prim$add`, `prim$mul`, etc. Iterate over all
-#' primitives with `as.list(prim)` or `eapply(prim, f)`.
-#' @format An environment.
-#' @export
-prim <- new.env(parent = emptyenv())
+primitive_env <- new.env(parent = emptyenv())
 
 is_higher_order_primitive <- function(x) {
   if (inherits(x, "JitPrimitive")) x <- attr(x, "primitive")
@@ -124,7 +117,7 @@ new_primitive <- function(name, fn, subgraphs = character(),
   class(jit_fn) <- c("JitPrimitive", class(jit_fn))
 
   if (register) {
-    assign(name, jit_fn, envir = prim)
+    assign(name, jit_fn, envir = primitive_env)
   }
 
   jit_fn

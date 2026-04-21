@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise sine.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$sine}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_sine]{stablehlo::hlo_sine()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(0, pi / 2, pi))
-prim$sine(x)
+prim_sine(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

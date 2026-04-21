@@ -19,11 +19,6 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Element-wise logical OR.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$or}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -42,7 +37,7 @@ Lowers to \code{\link[stablehlo:hlo_or]{stablehlo::hlo_or()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(TRUE, FALSE, TRUE))
 y <- nv_array(c(TRUE, TRUE, FALSE))
-prim$or(x, y)
+prim_or(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

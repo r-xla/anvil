@@ -19,11 +19,6 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Element-wise atan2 operation.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$atan2}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -41,7 +36,7 @@ Lowers to \code{\link[stablehlo:hlo_atan2]{stablehlo::hlo_atan2()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 y <- nv_array(c(1, 0, -1))
 x <- nv_array(c(0, 1, 0))
-prim$atan2(y, x)
+prim_atan2(y, x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

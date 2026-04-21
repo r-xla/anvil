@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise exponential.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$exp}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_exponential]{stablehlo::hlo_exponential()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(0, 1, 2))
-prim$exp(x)
+prim_exp(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

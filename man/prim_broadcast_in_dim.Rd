@@ -26,11 +26,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Broadcasts an array to a new shape by replicating the data along new or size-1 dimensions.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$broadcast_in_dim}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -48,7 +43,7 @@ Lowers to \code{\link[stablehlo:hlo_broadcast_in_dim]{stablehlo::hlo_broadcast_i
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
-prim$broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
+prim_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

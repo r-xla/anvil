@@ -1418,7 +1418,7 @@ quickr_register_prim_lowerer <- function(primitive, fun) {
 
 quickr_supported_prims <- function() {
   sort(unlist(
-    eapply(prim, function(primitive) {
+    eapply(primitive_env, function(primitive) {
       if (inherits(primitive, "JitPrimitive")) primitive <- attr(primitive, "primitive")
       if (is.null(primitive$rules[["quickr"]])) {
         NULL

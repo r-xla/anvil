@@ -28,11 +28,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Sums array elements along the specified dimensions.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$reduce_sum}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -50,7 +45,7 @@ Lowers to \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(matrix(1:6, nrow = 2))
-prim$reduce_sum(x, dims = 1L)
+prim_reduce_sum(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -22,11 +22,6 @@ It is ambiguous if the input is ambiguous.
 Reshapes an array to a new shape without changing the underlying data.
 Note that row-major order is used, which differs from R's column-major order.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$reshape}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -44,7 +39,7 @@ Lowers to \code{\link[stablehlo:hlo_reshape]{stablehlo::hlo_reshape()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(1:6)
-prim$reshape(x, shape = c(2, 3))
+prim_reshape(x, shape = c(2, 3))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

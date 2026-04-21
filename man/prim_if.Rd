@@ -23,11 +23,6 @@ Conditional execution of one of two branches based on a scalar boolean
 predicate. Unlike \code{\link[=prim_ifelse]{prim_ifelse()}} which operates element-wise, this
 evaluates only the selected branch.
 }
-\section{Access}{
-
-Access this primitive via \verb{prim$if}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -44,7 +39,7 @@ Lowers to \code{\link[stablehlo:hlo_if]{stablehlo::hlo_if()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-prim[["if"]](nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
+prim_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

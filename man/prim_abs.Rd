@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise absolute value.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$abs}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_abs]{stablehlo::hlo_abs()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(-1, 2, -3))
-prim$abs(x)
+prim_abs(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -19,11 +19,6 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Element-wise maximum of two arrays.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$maximum}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -42,7 +37,7 @@ Lowers to \code{\link[stablehlo:hlo_maximum]{stablehlo::hlo_maximum()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 5, 3))
 y <- nv_array(c(4, 2, 6))
-prim$max(x, y)
+prim_max(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

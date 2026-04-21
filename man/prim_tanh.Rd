@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise hyperbolic tangent.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$tanh}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_tanh]{stablehlo::hlo_tanh()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(-1, 0, 1))
-prim$tanh(x)
+prim_tanh(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

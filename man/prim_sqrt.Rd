@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise square root.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$sqrt}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_sqrt]{stablehlo::hlo_sqrt()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 4, 9))
-prim$sqrt(x)
+prim_sqrt(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

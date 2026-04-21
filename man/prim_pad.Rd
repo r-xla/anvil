@@ -37,11 +37,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Pads an array with a given padding value.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$pad}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -59,7 +54,7 @@ Lowers to \code{\link[stablehlo:hlo_pad]{stablehlo::hlo_pad()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
-prim$pad(x, nv_scalar(0),
+prim_pad(x, nv_scalar(0),
   edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
 )
 \dontshow{\}) # examplesIf}

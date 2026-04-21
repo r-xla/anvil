@@ -21,11 +21,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Reverses the order of elements along specified dimensions.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$reverse}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -43,7 +38,7 @@ Lowers to \code{\link[stablehlo:hlo_reverse]{stablehlo::hlo_reverse()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3, 4, 5))
-prim$reverse(x, dims = 1L)
+prim_reverse(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

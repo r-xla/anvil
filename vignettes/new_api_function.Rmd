@@ -19,7 +19,7 @@ Here, we will explain how to add an API function to the {anvil} package.
 API functions are the main user facing API and are follow the `nv_*` naming scheme.
 There are two types of API functions:
 
-1. Thin wrappers around primitives that add convenience like type casting and scalar broadcasting (API function `nv_add` is a wrapper around the primitive `prim$add`).
+1. Thin wrappers around primitives that add convenience like type casting and scalar broadcasting (API function `nv_add` is a wrapper around the primitive `prim_add`).
 2. Common mathematical functions that are expressed in terms of primitives (such as `nv_rnorm`).
 
 Here, we will focus on contributing such an API function to the {anvil} package.

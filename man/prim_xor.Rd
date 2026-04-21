@@ -19,11 +19,6 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Element-wise logical XOR.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$xor}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -42,7 +37,7 @@ Lowers to \code{\link[stablehlo:hlo_xor]{stablehlo::hlo_xor()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(TRUE, FALSE, TRUE))
 y <- nv_array(c(TRUE, TRUE, FALSE))
-prim$xor(x, y)
+prim_xor(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise sign.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$sign}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -39,7 +34,7 @@ Lowers to \code{\link[stablehlo:hlo_sign]{stablehlo::hlo_sign()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(-3, 0, 5))
-prim$sign(x)
+prim_sign(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -8,7 +8,7 @@ graph_desc_add(prim_name, args, params = list(), infer_fn, desc = NULL)
 }
 \arguments{
 \item{prim_name}{(\code{character(1)})\cr
-Name of the primitive to add; looked up in \code{\link{prim}}.}
+Name of the primitive to add; looked up in the internal primitive registry.}
 
 \item{args}{(\code{list} of \code{\link{GraphNode}})\cr
 The arguments to the primitive.}

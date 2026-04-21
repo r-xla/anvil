@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise natural logarithm.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$log}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_log]{stablehlo::hlo_log()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2.718, 7.389))
-prim$log(x)
+prim_log(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

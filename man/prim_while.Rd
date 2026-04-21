@@ -29,11 +29,6 @@ Repeatedly executes \code{body} while \code{cond} returns \code{TRUE}, like R's
 passed through each iteration.
 Otherwise, no state is maintained between iterations.
 }
-\section{Access}{
-
-Access this primitive via \verb{prim$while}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -49,7 +44,7 @@ Lowers to \code{\link[stablehlo:hlo_while]{stablehlo::hlo_while()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-prim[["while"]](
+prim_while(
   init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
   cond = function(i, total) i <= 5L,
   body = function(i, total) list(

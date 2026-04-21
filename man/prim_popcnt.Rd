@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise population count (number of set bits).
 }
-\section{Access}{
-
-Access this primitive via \code{prim$popcnt}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -39,7 +34,7 @@ Lowers to \code{\link[stablehlo:hlo_popcnt]{stablehlo::hlo_popcnt()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(7L, 3L, 15L))
-prim$popcnt(x)
+prim_popcnt(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

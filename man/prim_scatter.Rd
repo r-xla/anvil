@@ -103,11 +103,6 @@ of \code{input}, the order in which \code{update_computation} is applied is
 implementation-defined and may vary between plugins ("cpu", "cuda").
 }
 
-\section{Access}{
-
-Access this primitive via \code{prim$scatter}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -128,7 +123,7 @@ Lowers to \code{\link[stablehlo:hlo_scatter]{stablehlo::hlo_scatter()}}.
 input <- nv_array(c(0, 0, 0, 0, 0))
 indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
 updates <- nv_array(c(10, 30))
-prim$scatter(
+prim_scatter(
   input, indices, updates,
   update_window_dims = integer(0),
   inserted_window_dims = 1L,

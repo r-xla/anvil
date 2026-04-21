@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise logical NOT.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$not}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_not]{stablehlo::hlo_not()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(TRUE, FALSE, TRUE))
-prim$not(x)
+prim_not(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -24,11 +24,6 @@ It is ambiguous if all inputs are ambiguous.
 \description{
 Concatenates arrays along a dimension.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$concatenate}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -47,7 +42,7 @@ Lowers to \code{\link[stablehlo:hlo_concatenate]{stablehlo::hlo_concatenate()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
 y <- nv_array(c(4, 5, 6))
-prim$concatenate(x, y, dimension = 1L)
+prim_concatenate(x, y, dimension = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

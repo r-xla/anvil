@@ -93,11 +93,11 @@ prim_repeat_along <- new_primitive(
 )
 ```
 
-The primitive is now callable directly (`prim_repeat_along(x, times, dim)`) and also accessible via `prim$repeat_along`.
+The primitive is now callable directly as `prim_repeat_along(x, times, dim)`.
 
 Key points:
 
-- Pass the primitive **name string** to `graph_desc_add()`; it looks up the primitive in the `prim` registry.
+- Pass the primitive **name string** to `graph_desc_add()`; it looks up the primitive in the internal registry.
 - The inference function receives abstract arrays (types, not values) for dynamic inputs, and actual values for static parameters. It must verify that the arguments to the function are valid, and should throw clear error messages — {anvil} programs are otherwise hard to debug.
 - `graph_desc_add()` returns a list of outputs; use `[[1L]]` for single-output primitives.
 - Propagate the `ambiguous` flag from inputs to outputs, see [type promotion](type-promotion.html) for what this means.
@@ -114,12 +114,12 @@ When doing so, you need to:
 
 #### Special case: primitives with 0 dynamic inputs
 
-Array *constructors* (e.g. `prim$fill`, `prim$iota`) have no dynamic array inputs -- every argument is static. Two things change in this case:
+Array *constructors* (e.g. `prim_fill`, `prim_iota`) have no dynamic array inputs -- every argument is static. Two things change in this case:
 
 1. **All formals must be listed in `static`**. Otherwise {anvil} would try to interpret a scalar argument like `value` or `shape` as an `AnvilArray` input.
 2. **`backend = "auto"` cannot infer a device from inputs**, because there are no array inputs. Instead, add a `device` formal to the function and pass `device = device_arg("device")` to `new_primitive()`. At call time, the user-supplied device is read from that argument and used to determine both the backend (via [`backend()`] dispatch) and the compilation device.
 
-For example, the real definition of `prim$fill` looks like this:
+For example, the real definition of `prim_fill` looks like this:
 
 ```r
 prim_fill <- new_primitive(
@@ -199,20 +199,20 @@ It returns a list with one gradient per input (or `NULL` if not required).
 
 ### Step 5: Verify the Registration
 
-`new_primitive()` registers the primitive into the exported `prim` environment as a side effect, so no separate registration step is needed:
+`new_primitive()` returns the callable directly and also registers the primitive into an internal registry used by the graph machinery, so no separate registration step is needed:
 
 ```{r}
-prim$repeat_along
+prim_repeat_along
 ```
 
 ### Step 6: Add an `nv_` API Function
 
 In {anvil}, we also offer convenience wrappers around the primitives.
-An example is `prim$add` vs `nv_add`, where the latter calls into the former after optionally broadcasting (scalar) inputs:
+An example is `prim_add` vs `nv_add`, where the latter calls into the former after optionally broadcasting (scalar) inputs:
 
 ```{r, error = TRUE}
 nv_add(1L, nv_array(2:3))
-prim$add(1L, nv_array(2:3))
+prim_add(1L, nv_array(2:3))
 ```
 
 In our case, no such convenience is needed and the functionality is not too low-level (for it to be generally useful), so we can just reassign the `prim_*` function to an `nv_*` function:

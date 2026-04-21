@@ -95,11 +95,6 @@ This means that out-of-bounds indices will not cause an error, but
 the effective start position may differ from the requested one.
 }
 
-\section{Access}{
-
-Access this primitive via \code{prim$gather}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -119,7 +114,7 @@ Lowers to \code{\link[stablehlo:hlo_gather]{stablehlo::hlo_gather()}}.
 # Gather rows 1 and 3 from a 3x3 matrix
 operand <- nv_array(matrix(1:9, nrow = 3))
 indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
-prim$gather(
+prim_gather(
   operand, indices,
   slice_sizes = c(1L, 3L),
   offset_dims = 2L,

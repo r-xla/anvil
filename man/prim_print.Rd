@@ -18,11 +18,6 @@ Returns \code{operand} as-is.
 Prints an array value to the console during execution and returns the
 input unchanged. This is useful for debugging JIT-compiled code.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$print}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -38,7 +33,7 @@ Lowers to \code{\link[stablehlo:hlo_custom_call]{stablehlo::hlo_custom_call()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
-prim$print(x)
+prim_print(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

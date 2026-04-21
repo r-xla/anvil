@@ -59,12 +59,12 @@ nv_add(y, y)
 This works because {anvil}'s user-facing `nv_*` functions — as well as the operators dispatched on `AnvilArray`s — are themselves `jit()`-compiled.
 When called outside of a `jit()` context, each operation is compiled and executed immediately.
 
-### Two layers: `nv_*` API and `prim` primitives
+### Two layers: `nv_*` API and `prim_*` primitives
 
 {anvil} has two layers:
 
 - **`nv_*` functions** (e.g. `nv_add()`, `nv_matmul()`, `nv_fill()`) — the user-facing API. These handle broadcasting, type promotion, default arguments, and R-idiomatic semantics. They are exported and documented individually.
-- **Primitives** — the atomic operations recorded into the computation graph. Each primitive carries its interpretation rules (stablehlo lowering, reverse-mode autodiff, quickr lowering). Primitives are accessed by name through the exported `prim` environment, e.g. `prim$add` or `prim$fill`. Most users only need the `nv_*` functions; `prim$*` is relevant when defining new primitives or inspecting rules.
+- **`prim_*` functions** (e.g. `prim_add()`, `prim_fill()`) — the atomic operations recorded into the computation graph. Each primitive carries its interpretation rules (stablehlo lowering, reverse-mode autodiff, quickr lowering). Most users only need the `nv_*` functions; `prim_*` is relevant when defining new primitives or inspecting rules.
 This is called *eager mode*.
 
 These functions can also be used inside a `jit()` call, where their operations are inlined into the outer computation graph rather than being compiled separately (see the [Composability](#composability) section).

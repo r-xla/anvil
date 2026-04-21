@@ -18,11 +18,6 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise tangent.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$tan}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -40,7 +35,7 @@ Lowers to \code{\link[stablehlo:hlo_tan]{stablehlo::hlo_tan()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(0, 0.5, 1))
-prim$tan(x)
+prim_tan(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

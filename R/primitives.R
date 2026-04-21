@@ -83,7 +83,8 @@ infer_reduce_boolean <- function(operand, dims, drop) {
 #' Lowers to [stablehlo::hlo_tensor()].
 #' @seealso [nv_fill()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' prim$fill(3.14, shape = c(2, 3), dtype = "f32")
+#' prim_fill(3.14, shape = c(2, 3), dtype = "f32")
+#' @export
 prim_fill <- new_primitive(
   "fill",
   function(value, shape, dtype, ambiguous = FALSE, device = NULL) {
@@ -114,7 +115,8 @@ prim_fill <- new_primitive(
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(4, 5, 6))
-#' prim$add(x, y)
+#' prim_add(x, y)
+#' @export
 prim_add <- new_primitive("add", make_binary_op("add", stablehlo::infer_types_add))
 
 #' @title Primitive Multiplication
@@ -130,7 +132,8 @@ prim_add <- new_primitive("add", make_binary_op("add", stablehlo::infer_types_ad
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(4, 5, 6))
-#' prim$mul(x, y)
+#' prim_mul(x, y)
+#' @export
 prim_mul <- new_primitive("mul", make_binary_op("mul", stablehlo::infer_types_multiply))
 
 #' @title Primitive Subtraction
@@ -146,7 +149,8 @@ prim_mul <- new_primitive("mul", make_binary_op("mul", stablehlo::infer_types_mu
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(4, 5, 6))
-#' prim$sub(x, y)
+#' prim_sub(x, y)
+#' @export
 prim_sub <- new_primitive("sub", make_binary_op("sub", stablehlo::infer_types_subtract))
 
 #' @title Primitive Negation
@@ -162,7 +166,8 @@ prim_sub <- new_primitive("sub", make_binary_op("sub", stablehlo::infer_types_su
 #' @seealso [nv_negate()], unary `-`
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, -2, 3))
-#' prim$negate(x)
+#' prim_negate(x)
+#' @export
 prim_negate <- new_primitive("negate", make_unary_op("negate", stablehlo::infer_types_negate))
 
 #' @title Primitive Division
@@ -178,7 +183,8 @@ prim_negate <- new_primitive("negate", make_unary_op("negate", stablehlo::infer_
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(10, 20, 30))
 #' y <- nv_array(c(2, 5, 10))
-#' prim$div(x, y)
+#' prim_div(x, y)
+#' @export
 prim_div <- new_primitive("divide", make_binary_op("divide", stablehlo::infer_types_divide))
 
 #' @title Primitive Power
@@ -194,7 +200,8 @@ prim_div <- new_primitive("divide", make_binary_op("divide", stablehlo::infer_ty
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(2, 3, 4))
 #' y <- nv_array(c(3, 2, 1))
-#' prim$pow(x, y)
+#' prim_pow(x, y)
+#' @export
 prim_pow <- new_primitive("power", make_binary_op("power", stablehlo::infer_types_power))
 
 #' @title Primitive Broadcast
@@ -218,7 +225,8 @@ prim_pow <- new_primitive("power", make_binary_op("power", stablehlo::infer_type
 #' @seealso [nv_broadcast_to()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
-#' prim$broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
+#' prim_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
+#' @export
 prim_broadcast_in_dim <- new_primitive(
   "broadcast_in_dim",
   function(operand, shape, broadcast_dimensions) {
@@ -272,10 +280,11 @@ prim_broadcast_in_dim <- new_primitive(
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' y <- nv_array(matrix(1:6, nrow = 3))
-#' prim$dot_general(x, y,
+#' prim_dot_general(x, y,
 #'   contracting_dims = list(2L, 1L),
 #'   batching_dims = list(integer(0), integer(0))
 #' )
+#' @export
 prim_dot_general <- new_primitive(
   "dot_general",
   function(lhs, rhs, contracting_dims, batching_dims) {
@@ -314,7 +323,8 @@ prim_dot_general <- new_primitive(
 #' @seealso [nv_transpose()], [t()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
-#' prim$transpose(x, permutation = c(2L, 1L))
+#' prim_transpose(x, permutation = c(2L, 1L))
+#' @export
 prim_transpose <- new_primitive(
   "transpose",
   function(operand, permutation) {
@@ -356,7 +366,8 @@ prim_transpose <- new_primitive(
 #' @seealso [nv_reshape()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1:6)
-#' prim$reshape(x, shape = c(2, 3))
+#' prim_reshape(x, shape = c(2, 3))
+#' @export
 prim_reshape <- new_primitive(
   "reshape",
   function(operand, shape) {
@@ -397,7 +408,8 @@ prim_reshape <- new_primitive(
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(4, 5, 6))
-#' prim$concatenate(x, y, dimension = 1L)
+#' prim_concatenate(x, y, dimension = 1L)
+#' @export
 prim_concatenate <- new_primitive(
   "concatenate",
   function(..., dimension) {
@@ -456,19 +468,20 @@ prim_concatenate <- new_primitive(
 #' @examplesIf pjrt::plugins_downloaded()
 #' # 1-D: extract elements 2 through 4 (limit is exclusive)
 #' x <- nv_array(1:10)
-#' prim$static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
+#' prim_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 #'
 #' # 1-D: every other element using strides
 #' x <- nv_array(1:10)
-#' prim$static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
+#' prim_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
 #'
 #' # 2-D: extract a submatrix (rows 1-2, columns 2-3)
 #' x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
-#' prim$static_slice(x,
+#' prim_static_slice(x,
 #'   start_indices = c(1L, 2L),
 #'   limit_indices = c(3L, 4L),
 #'   strides       = c(1L, 1L)
 #' )
+#' @export
 prim_static_slice <- new_primitive(
   "static_slice",
   function(operand, start_indices, limit_indices, strides) {
@@ -530,13 +543,14 @@ prim_static_slice <- new_primitive(
 #' # 1-D: extract 3 elements starting at position 3
 #' x <- nv_array(1:10)
 #' start <- nv_scalar(3L)
-#' prim$dynamic_slice(x, start, slice_sizes = 3L)
+#' prim_dynamic_slice(x, start, slice_sizes = 3L)
 #'
 #' # 2-D: extract a 2x2 block from a matrix
 #' x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
 #' row_start <- nv_scalar(2L)
 #' col_start <- nv_scalar(1L)
-#' prim$dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
+#' prim_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
+#' @export
 prim_dynamic_slice <- new_primitive(
   "dynamic_slice",
   function(operand, ..., slice_sizes) {
@@ -590,14 +604,15 @@ prim_dynamic_slice <- new_primitive(
 #' x <- nv_array(1:5)
 #' update <- nv_array(c(10L, 20L))
 #' start <- nv_scalar(2L)
-#' prim$dynamic_update_slice(x, update, start)
+#' prim_dynamic_update_slice(x, update, start)
 #'
 #' # 2-D: write a 2x2 block into a 3x4 matrix
 #' x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
 #' update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
 #' row_start <- nv_scalar(2L)
 #' col_start <- nv_scalar(3L)
-#' prim$dynamic_update_slice(x, update, row_start, col_start)
+#' prim_dynamic_update_slice(x, update, row_start, col_start)
+#' @export
 prim_dynamic_update_slice <- new_primitive(
   "dynamic_update_slice",
   function(operand, update, ...) {
@@ -655,7 +670,8 @@ make_reduce_op <- function(name, infer_fn = infer_reduce) {
 #' @seealso [nv_reduce_sum()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
-#' prim$reduce_sum(x, dims = 1L)
+#' prim_reduce_sum(x, dims = 1L)
+#' @export
 prim_reduce_sum <- new_primitive("reduce_sum", make_reduce_op("reduce_sum"), static = 2:3)
 
 #' @title Primitive Product Reduction
@@ -676,7 +692,8 @@ prim_reduce_sum <- new_primitive("reduce_sum", make_reduce_op("reduce_sum"), sta
 #' @seealso [nv_reduce_prod()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
-#' prim$reduce_prod(x, dims = 1L)
+#' prim_reduce_prod(x, dims = 1L)
+#' @export
 prim_reduce_prod <- new_primitive("reduce_prod", make_reduce_op("reduce_prod"), static = 2:3)
 
 #' @title Primitive Max Reduction
@@ -697,7 +714,8 @@ prim_reduce_prod <- new_primitive("reduce_prod", make_reduce_op("reduce_prod"), 
 #' @seealso [nv_reduce_max()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
-#' prim$reduce_max(x, dims = 1L)
+#' prim_reduce_max(x, dims = 1L)
+#' @export
 prim_reduce_max <- new_primitive("reduce_max", make_reduce_op("reduce_max"), static = 2:3)
 
 #' @title Primitive Min Reduction
@@ -718,7 +736,8 @@ prim_reduce_max <- new_primitive("reduce_max", make_reduce_op("reduce_max"), sta
 #' @seealso [nv_reduce_min()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
-#' prim$reduce_min(x, dims = 1L)
+#' prim_reduce_min(x, dims = 1L)
+#' @export
 prim_reduce_min <- new_primitive("reduce_min", make_reduce_op("reduce_min"), static = 2:3)
 
 #' @title Primitive Any Reduction
@@ -739,7 +758,8 @@ prim_reduce_min <- new_primitive("reduce_min", make_reduce_op("reduce_min"), sta
 #' @seealso [nv_reduce_any()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-#' prim$reduce_any(x, dims = 1L)
+#' prim_reduce_any(x, dims = 1L)
+#' @export
 prim_reduce_any <- new_primitive("reduce_any", make_reduce_op("reduce_any", infer_reduce_boolean), static = 2:3)
 
 #' @title Primitive All Reduction
@@ -760,7 +780,8 @@ prim_reduce_any <- new_primitive("reduce_any", make_reduce_op("reduce_any", infe
 #' @seealso [nv_reduce_all()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-#' prim$reduce_all(x, dims = 1L)
+#' prim_reduce_all(x, dims = 1L)
+#' @export
 prim_reduce_all <- new_primitive("reduce_all", make_reduce_op("reduce_all", infer_reduce_boolean), static = 2:3)
 
 # comparison primitives --------------------------------------------------------
@@ -801,7 +822,8 @@ make_compare_op <- function(name, direction) {
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(1, 3, 2))
-#' prim$eq(x, y)
+#' prim_eq(x, y)
+#' @export
 prim_eq <- new_primitive("equal", make_compare_op("equal", "EQ"))
 
 #' @title Primitive Not Equal
@@ -817,7 +839,8 @@ prim_eq <- new_primitive("equal", make_compare_op("equal", "EQ"))
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(1, 3, 2))
-#' prim$ne(x, y)
+#' prim_ne(x, y)
+#' @export
 prim_ne <- new_primitive("not_equal", make_compare_op("not_equal", "NE"))
 
 #' @title Primitive Greater Than
@@ -833,7 +856,8 @@ prim_ne <- new_primitive("not_equal", make_compare_op("not_equal", "NE"))
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(3, 2, 1))
-#' prim$gt(x, y)
+#' prim_gt(x, y)
+#' @export
 prim_gt <- new_primitive("greater", make_compare_op("greater", "GT"))
 
 #' @title Primitive Greater Equal
@@ -849,7 +873,8 @@ prim_gt <- new_primitive("greater", make_compare_op("greater", "GT"))
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(3, 2, 1))
-#' prim$ge(x, y)
+#' prim_ge(x, y)
+#' @export
 prim_ge <- new_primitive("greater_equal", make_compare_op("greater_equal", "GE"))
 
 #' @title Primitive Less Than
@@ -865,7 +890,8 @@ prim_ge <- new_primitive("greater_equal", make_compare_op("greater_equal", "GE")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(3, 2, 1))
-#' prim$lt(x, y)
+#' prim_lt(x, y)
+#' @export
 prim_lt <- new_primitive("less", make_compare_op("less", "LT"))
 
 #' @title Primitive Less Equal
@@ -881,7 +907,8 @@ prim_lt <- new_primitive("less", make_compare_op("less", "LT"))
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(3, 2, 1))
-#' prim$le(x, y)
+#' prim_le(x, y)
+#' @export
 prim_le <- new_primitive("less_equal", make_compare_op("less_equal", "LE"))
 
 # additional simple binary primitives -----------------------------------------
@@ -899,7 +926,8 @@ prim_le <- new_primitive("less_equal", make_compare_op("less_equal", "LE"))
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 5, 3))
 #' y <- nv_array(c(4, 2, 6))
-#' prim$max(x, y)
+#' prim_max(x, y)
+#' @export
 prim_max <- new_primitive("maximum", make_binary_op("maximum", stablehlo::infer_types_maximum))
 
 #' @title Primitive Minimum
@@ -915,7 +943,8 @@ prim_max <- new_primitive("maximum", make_binary_op("maximum", stablehlo::infer_
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 5, 3))
 #' y <- nv_array(c(4, 2, 6))
-#' prim$min(x, y)
+#' prim_min(x, y)
+#' @export
 prim_min <- new_primitive("minimum", make_binary_op("minimum", stablehlo::infer_types_minimum))
 
 #' @title Primitive Remainder
@@ -931,7 +960,8 @@ prim_min <- new_primitive("minimum", make_binary_op("minimum", stablehlo::infer_
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(7, 10, 15))
 #' y <- nv_array(c(3, 4, 6))
-#' prim$remainder(x, y)
+#' prim_remainder(x, y)
+#' @export
 prim_remainder <- new_primitive("remainder", make_binary_op("remainder", stablehlo::infer_types_remainder))
 
 #' @title Primitive And
@@ -947,7 +977,8 @@ prim_remainder <- new_primitive("remainder", make_binary_op("remainder", stableh
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(TRUE, FALSE, TRUE))
 #' y <- nv_array(c(TRUE, TRUE, FALSE))
-#' prim$and(x, y)
+#' prim_and(x, y)
+#' @export
 prim_and <- new_primitive("and", make_binary_op("and", stablehlo::infer_types_and))
 
 #' @title Primitive Not
@@ -963,7 +994,8 @@ prim_and <- new_primitive("and", make_binary_op("and", stablehlo::infer_types_an
 #' @seealso [nv_not()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(TRUE, FALSE, TRUE))
-#' prim$not(x)
+#' prim_not(x)
+#' @export
 prim_not <- new_primitive("not", make_unary_op("not", stablehlo::infer_types_not))
 
 #' @title Primitive Or
@@ -979,7 +1011,8 @@ prim_not <- new_primitive("not", make_unary_op("not", stablehlo::infer_types_not
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(TRUE, FALSE, TRUE))
 #' y <- nv_array(c(TRUE, TRUE, FALSE))
-#' prim$or(x, y)
+#' prim_or(x, y)
+#' @export
 prim_or <- new_primitive("or", make_binary_op("or", stablehlo::infer_types_or))
 
 #' @title Primitive Xor
@@ -995,7 +1028,8 @@ prim_or <- new_primitive("or", make_binary_op("or", stablehlo::infer_types_or))
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(TRUE, FALSE, TRUE))
 #' y <- nv_array(c(TRUE, TRUE, FALSE))
-#' prim$xor(x, y)
+#' prim_xor(x, y)
+#' @export
 prim_xor <- new_primitive("xor", make_binary_op("xor", stablehlo::infer_types_xor))
 
 infer_shift <- function(lhs, rhs, shift_fn) {
@@ -1019,7 +1053,8 @@ infer_shift <- function(lhs, rhs, shift_fn) {
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1L, 2L, 4L))
 #' y <- nv_array(c(1L, 2L, 1L))
-#' prim$shift_left(x, y)
+#' prim_shift_left(x, y)
+#' @export
 prim_shift_left <- new_primitive(
   "shift_left",
   function(lhs, rhs) {
@@ -1041,7 +1076,8 @@ prim_shift_left <- new_primitive(
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(8L, 16L, 32L))
 #' y <- nv_array(c(1L, 2L, 3L))
-#' prim$shift_right_logical(x, y)
+#' prim_shift_right_logical(x, y)
+#' @export
 prim_shift_right_logical <- new_primitive(
   "shift_right_logical",
   function(lhs, rhs) {
@@ -1063,7 +1099,8 @@ prim_shift_right_logical <- new_primitive(
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(8L, -16L, 32L))
 #' y <- nv_array(c(1L, 2L, 3L))
-#' prim$shift_right_arithmetic(x, y)
+#' prim_shift_right_arithmetic(x, y)
+#' @export
 prim_shift_right_arithmetic <- new_primitive(
   "shift_right_arithmetic",
   function(lhs, rhs) {
@@ -1085,7 +1122,8 @@ prim_shift_right_arithmetic <- new_primitive(
 #' @examplesIf pjrt::plugins_downloaded()
 #' y <- nv_array(c(1, 0, -1))
 #' x <- nv_array(c(0, 1, 0))
-#' prim$atan2(y, x)
+#' prim_atan2(y, x)
+#' @export
 prim_atan2 <- new_primitive("atan2", make_binary_op("atan2", stablehlo::infer_types_atan2))
 
 #' @title Primitive Bitcast Convert
@@ -1106,9 +1144,10 @@ prim_atan2 <- new_primitive("atan2", make_binary_op("atan2", stablehlo::infer_ty
 #' @seealso [nv_bitcast_convert()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1L)
-#' prim$bitcast_convert(x, dtype = "i8")
+#' prim_bitcast_convert(x, dtype = "i8")
 #' x <- nv_array(rep(1L, 4), dtype = "i8")
-#' prim$bitcast_convert(x, dtype = "i32")
+#' prim_bitcast_convert(x, dtype = "i32")
+#' @export
 prim_bitcast_convert <- new_primitive(
   "bitcast_convert",
   function(operand, dtype) {
@@ -1134,7 +1173,8 @@ prim_bitcast_convert <- new_primitive(
 #' @seealso [nv_abs()], [abs()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-1, 2, -3))
-#' prim$abs(x)
+#' prim_abs(x)
+#' @export
 prim_abs <- new_primitive("abs", make_unary_op("abs", stablehlo::infer_types_abs))
 
 #' @title Primitive Square Root
@@ -1149,7 +1189,8 @@ prim_abs <- new_primitive("abs", make_unary_op("abs", stablehlo::infer_types_abs
 #' @seealso [nv_sqrt()], [sqrt()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 4, 9))
-#' prim$sqrt(x)
+#' prim_sqrt(x)
+#' @export
 prim_sqrt <- new_primitive("sqrt", make_unary_op("sqrt", stablehlo::infer_types_sqrt))
 
 #' @title Primitive Reciprocal Square Root
@@ -1164,7 +1205,8 @@ prim_sqrt <- new_primitive("sqrt", make_unary_op("sqrt", stablehlo::infer_types_
 #' @seealso [nv_rsqrt()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 4, 9))
-#' prim$rsqrt(x)
+#' prim_rsqrt(x)
+#' @export
 prim_rsqrt <- new_primitive("rsqrt", make_unary_op("rsqrt", stablehlo::infer_types_rsqrt))
 
 #' @title Primitive Logarithm
@@ -1179,7 +1221,8 @@ prim_rsqrt <- new_primitive("rsqrt", make_unary_op("rsqrt", stablehlo::infer_typ
 #' @seealso [nv_log()], [log()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2.718, 7.389))
-#' prim$log(x)
+#' prim_log(x)
+#' @export
 prim_log <- new_primitive("log", make_unary_op("log", stablehlo::infer_types_log))
 
 #' @title Primitive Hyperbolic Tangent
@@ -1194,7 +1237,8 @@ prim_log <- new_primitive("log", make_unary_op("log", stablehlo::infer_types_log
 #' @seealso [nv_tanh()], [tanh()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-1, 0, 1))
-#' prim$tanh(x)
+#' prim_tanh(x)
+#' @export
 prim_tanh <- new_primitive("tanh", make_unary_op("tanh", stablehlo::infer_types_tanh))
 
 #' @title Primitive Tangent
@@ -1209,7 +1253,8 @@ prim_tanh <- new_primitive("tanh", make_unary_op("tanh", stablehlo::infer_types_
 #' @seealso [nv_tan()], [tan()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, 0.5, 1))
-#' prim$tan(x)
+#' prim_tan(x)
+#' @export
 prim_tan <- new_primitive("tan", make_unary_op("tan", stablehlo::infer_types_tan))
 
 #' @title Primitive Sine
@@ -1224,7 +1269,8 @@ prim_tan <- new_primitive("tan", make_unary_op("tan", stablehlo::infer_types_tan
 #' @seealso [nv_sine()], [sin()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, pi / 2, pi))
-#' prim$sine(x)
+#' prim_sine(x)
+#' @export
 prim_sine <- new_primitive("sine", make_unary_op("sine", stablehlo::infer_types_sine))
 
 #' @title Primitive Cosine
@@ -1239,7 +1285,8 @@ prim_sine <- new_primitive("sine", make_unary_op("sine", stablehlo::infer_types_
 #' @seealso [nv_cosine()], [cos()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, pi / 2, pi))
-#' prim$cosine(x)
+#' prim_cosine(x)
+#' @export
 prim_cosine <- new_primitive("cosine", make_unary_op("cosine", stablehlo::infer_types_cosine))
 
 #' @title Primitive Floor
@@ -1254,7 +1301,8 @@ prim_cosine <- new_primitive("cosine", make_unary_op("cosine", stablehlo::infer_
 #' @seealso [nv_floor()], [floor()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1.2, 2.7, -1.5))
-#' prim$floor(x)
+#' prim_floor(x)
+#' @export
 prim_floor <- new_primitive("floor", make_unary_op("floor", stablehlo::infer_types_floor))
 
 #' @title Primitive Ceiling
@@ -1269,7 +1317,8 @@ prim_floor <- new_primitive("floor", make_unary_op("floor", stablehlo::infer_typ
 #' @seealso [nv_ceil()], [ceiling()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1.2, 2.7, -1.5))
-#' prim$ceil(x)
+#' prim_ceil(x)
+#' @export
 prim_ceil <- new_primitive("ceil", make_unary_op("ceil", stablehlo::infer_types_ceil))
 
 #' @title Primitive Sign
@@ -1284,7 +1333,8 @@ prim_ceil <- new_primitive("ceil", make_unary_op("ceil", stablehlo::infer_types_
 #' @seealso [nv_sign()], [sign()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-3, 0, 5))
-#' prim$sign(x)
+#' prim_sign(x)
+#' @export
 prim_sign <- new_primitive("sign", make_unary_op("sign", stablehlo::infer_types_sign))
 
 #' @title Primitive Exponential
@@ -1299,7 +1349,8 @@ prim_sign <- new_primitive("sign", make_unary_op("sign", stablehlo::infer_types_
 #' @seealso [nv_exp()], [exp()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, 1, 2))
-#' prim$exp(x)
+#' prim_exp(x)
+#' @export
 prim_exp <- new_primitive("exp", make_unary_op("exp", stablehlo::infer_types_exponential))
 
 #' @title Primitive Exponential Minus One
@@ -1314,7 +1365,8 @@ prim_exp <- new_primitive("exp", make_unary_op("exp", stablehlo::infer_types_exp
 #' @seealso [nv_expm1()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, 0.001, 1))
-#' prim$expm1(x)
+#' prim_expm1(x)
+#' @export
 prim_expm1 <- new_primitive("expm1", make_unary_op("expm1", stablehlo::infer_types_exponential_minus_one))
 
 #' @title Primitive Log Plus One
@@ -1329,7 +1381,8 @@ prim_expm1 <- new_primitive("expm1", make_unary_op("expm1", stablehlo::infer_typ
 #' @seealso [nv_log1p()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, 0.001, 1))
-#' prim$log1p(x)
+#' prim_log1p(x)
+#' @export
 prim_log1p <- new_primitive("log1p", make_unary_op("log1p", stablehlo::infer_types_log_plus_one))
 
 #' @title Primitive Cube Root
@@ -1344,7 +1397,8 @@ prim_log1p <- new_primitive("log1p", make_unary_op("log1p", stablehlo::infer_typ
 #' @seealso [nv_cbrt()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 8, 27))
-#' prim$cbrt(x)
+#' prim_cbrt(x)
+#' @export
 prim_cbrt <- new_primitive("cbrt", make_unary_op("cbrt", stablehlo::infer_types_cbrt))
 
 #' @title Primitive Logistic (Sigmoid)
@@ -1359,7 +1413,8 @@ prim_cbrt <- new_primitive("cbrt", make_unary_op("cbrt", stablehlo::infer_types_
 #' @seealso [nv_logistic()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-2, 0, 2))
-#' prim$logistic(x)
+#' prim_logistic(x)
+#' @export
 prim_logistic <- new_primitive("logistic", make_unary_op("logistic", stablehlo::infer_types_logistic))
 
 #' @title Primitive Is Finite
@@ -1376,7 +1431,8 @@ prim_logistic <- new_primitive("logistic", make_unary_op("logistic", stablehlo::
 #' @seealso [nv_is_finite()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, Inf, NaN, -Inf, 0))
-#' prim$is_finite(x)
+#' prim_is_finite(x)
+#' @export
 prim_is_finite <- new_primitive(
   "is_finite",
   function(operand) {
@@ -1401,7 +1457,8 @@ prim_is_finite <- new_primitive(
 #' @seealso [nv_popcnt()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(7L, 3L, 15L))
-#' prim$popcnt(x)
+#' prim_popcnt(x)
+#' @export
 prim_popcnt <- new_primitive(
   "popcnt",
   function(operand) {
@@ -1434,7 +1491,8 @@ prim_popcnt <- new_primitive(
 #' @seealso [nv_clamp()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-1, 0.5, 2))
-#' prim$clamp(nv_scalar(0), x, nv_scalar(1))
+#' prim_clamp(nv_scalar(0), x, nv_scalar(1))
+#' @export
 prim_clamp <- new_primitive(
   "clamp",
   function(min_val, operand, max_val) {
@@ -1471,7 +1529,8 @@ prim_clamp <- new_primitive(
 #' @seealso [nv_reverse()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3, 4, 5))
-#' prim$reverse(x, dims = 1L)
+#' prim_reverse(x, dims = 1L)
+#' @export
 prim_reverse <- new_primitive(
   "reverse",
   function(operand, dims) {
@@ -1508,7 +1567,8 @@ prim_reverse <- new_primitive(
 #' Lowers to [stablehlo::hlo_iota()].
 #' @seealso [nv_iota()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' prim$iota(dim = 1L, dtype = "i32", shape = 5L)
+#' prim_iota(dim = 1L, dtype = "i32", shape = 5L)
+#' @export
 prim_iota <- new_primitive(
   "iota",
   function(dim, dtype, shape, start = 1L, ambiguous = FALSE, device = NULL) {
@@ -1560,9 +1620,10 @@ prim_iota <- new_primitive(
 #' Lowers to [stablehlo::hlo_pad()].
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
-#' prim$pad(x, nv_scalar(0),
+#' prim_pad(x, nv_scalar(0),
 #'   edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
 #' )
+#' @export
 prim_pad <- new_primitive(
   "pad",
   function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
@@ -1615,7 +1676,8 @@ prim_pad <- new_primitive(
 #' @seealso [nv_round()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1.4, 2.5, 3.6))
-#' prim$round(x)
+#' prim_round(x)
+#' @export
 prim_round <- new_primitive(
   "round",
   function(operand, method = "nearest_even") {
@@ -1654,7 +1716,8 @@ prim_round <- new_primitive(
 #' @seealso [nv_convert()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1L, 2L, 3L))
-#' prim$convert(x, dtype = "f32")
+#' prim_convert(x, dtype = "f32")
+#' @export
 prim_convert <- new_primitive(
   "convert",
   function(operand, dtype, ambiguous = FALSE) {
@@ -1697,7 +1760,8 @@ prim_convert <- new_primitive(
 #' @seealso [nv_ifelse()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' pred <- nv_array(c(TRUE, FALSE, TRUE))
-#' prim$ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
+#' prim_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
+#' @export
 prim_ifelse <- new_primitive(
   "select",
   function(pred, true_value, false_value) {
@@ -1742,7 +1806,8 @@ prim_ifelse <- new_primitive(
 #' Lowers to [stablehlo::hlo_if()].
 #' @seealso [nv_if()], [prim_ifelse()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' prim[["if"]](nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
+#' prim_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
+#' @export
 prim_if <- new_primitive(
   "if",
   function(pred, true, false) {
@@ -1826,7 +1891,7 @@ prim_if <- new_primitive(
 #' Lowers to [stablehlo::hlo_while()].
 #' @seealso [nv_while()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' prim[["while"]](
+#' prim_while(
 #'   init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
 #'   cond = function(i, total) i <= 5L,
 #'   body = function(i, total) list(
@@ -1834,6 +1899,7 @@ prim_if <- new_primitive(
 #'     total = total + i
 #'   )
 #' )
+#' @export
 prim_while <- new_primitive(
   "while",
   function(init, cond, body) {
@@ -1924,7 +1990,8 @@ prim_while <- new_primitive(
 #' @seealso [nv_print()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
-#' prim$print(x)
+#' prim_print(x)
+#' @export
 prim_print <- new_primitive(
   "print",
   function(operand) {
@@ -1962,7 +2029,8 @@ prim_print <- new_primitive(
 #' @seealso [nv_runif()], [nv_rnorm()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' state <- nv_array(c(0L, 0L), dtype = "ui64")
-#' prim$rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
+#' prim_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
+#' @export
 prim_rng_bit_generator <- new_primitive(
   "rng_bit_generator",
   function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape) {
@@ -2052,7 +2120,7 @@ prim_rng_bit_generator <- new_primitive(
 #' input <- nv_array(c(0, 0, 0, 0, 0))
 #' indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
 #' updates <- nv_array(c(10, 30))
-#' prim$scatter(
+#' prim_scatter(
 #'   input, indices, updates,
 #'   update_window_dims = integer(0),
 #'   inserted_window_dims = 1L,
@@ -2061,6 +2129,7 @@ prim_rng_bit_generator <- new_primitive(
 #'   scatter_dims_to_operand_dims = 1L,
 #'   index_vector_dim = 2L
 #' )
+#' @export
 prim_scatter <- new_primitive(
   "scatter",
   function(
@@ -2246,7 +2315,7 @@ prim_scatter <- new_primitive(
 #' # Gather rows 1 and 3 from a 3x3 matrix
 #' operand <- nv_array(matrix(1:9, nrow = 3))
 #' indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
-#' prim$gather(
+#' prim_gather(
 #'   operand, indices,
 #'   slice_sizes = c(1L, 3L),
 #'   offset_dims = 2L,
@@ -2256,6 +2325,7 @@ prim_scatter <- new_primitive(
 #'   start_index_map = 1L,
 #'   index_vector_dim = 2L
 #' )
+#' @export
 prim_gather <- new_primitive(
   "gather",
   function(
@@ -2352,7 +2422,8 @@ prim_gather <- new_primitive(
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Create a positive-definite matrix
 #' x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-#' prim$cholesky(x, lower = TRUE)
+#' prim_cholesky(x, lower = TRUE)
+#' @export
 prim_cholesky <- new_primitive(
   "cholesky",
   function(operand, lower) {
@@ -2409,10 +2480,11 @@ prim_cholesky <- new_primitive(
 #' # Solve L %*% x = b where L is lower triangular
 #' L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
 #' b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
-#' prim$triangular_solve(L, b,
+#' prim_triangular_solve(L, b,
 #'   left_side = TRUE, lower = TRUE,
 #'   unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"
 #' )
+#' @export
 prim_triangular_solve <- new_primitive(
   "triangular_solve",
   function(a, b, left_side, lower, unit_diagonal, transpose_a) {

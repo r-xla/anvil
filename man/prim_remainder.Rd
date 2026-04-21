@@ -19,11 +19,6 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Element-wise remainder of division.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$remainder}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -41,7 +36,7 @@ Lowers to \code{\link[stablehlo:hlo_remainder]{stablehlo::hlo_remainder()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(7, 10, 15))
 y <- nv_array(c(3, 4, 6))
-prim$remainder(x, y)
+prim_remainder(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

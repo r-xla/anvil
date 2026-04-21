@@ -30,11 +30,6 @@ runtime-determined position. This is the write counterpart of
 \code{\link[=prim_dynamic_slice]{prim_dynamic_slice()}}: dynamic slice reads a block from an array,
 while dynamic update slice writes a block into an array.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$dynamic_update_slice}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -63,14 +58,14 @@ the effective start position may differ from the requested one.
 x <- nv_array(1:5)
 update <- nv_array(c(10L, 20L))
 start <- nv_scalar(2L)
-prim$dynamic_update_slice(x, update, start)
+prim_dynamic_update_slice(x, update, start)
 
 # 2-D: write a 2x2 block into a 3x4 matrix
 x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
 update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
 row_start <- nv_scalar(2L)
 col_start <- nv_scalar(3L)
-prim$dynamic_update_slice(x, update, row_start, col_start)
+prim_dynamic_update_slice(x, update, row_start, col_start)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

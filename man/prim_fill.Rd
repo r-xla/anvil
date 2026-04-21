@@ -35,11 +35,6 @@ The advantage of using this function instead of e.g. doing
 efficiently represented in the compiled program, while the latter uses
 100 * 100 * 4 bytes of memory.
 }
-\section{Access}{
-
-Access this primitive via \code{prim$fill}.
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -55,7 +50,7 @@ Lowers to \code{\link[stablehlo:hlo_constant]{stablehlo::hlo_tensor()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-prim$fill(3.14, shape = c(2, 3), dtype = "f32")
+prim_fill(3.14, shape = c(2, 3), dtype = "f32")
 \dontshow{\}) # examplesIf}
 }
 \seealso{
