@@ -78,8 +78,10 @@ Prefer testing by comparing with the corresponding torch function. If
 the test is trivial or the functionality is not covered by torch, test
 manually instead. Write one or the other, not both.
 
-Tests that use the quickr backend must call
-`skip_if_not_installed("quickr")` at the top of the test body. To test a
+Tests that use the quickr backend must call `skip_if_no_quickr()` at the
+top of the test body. This helper skips when quickr is not installed,
+and also when the `ANVIL_SKIP_QUICKR` environment variable is set
+(quickr tests can be slow and are often skipped locally). To test a
 different backend, use
 [`local_backend()`](https://r-xla.github.io/anvil/dev/reference/local_backend.md)
 (not
