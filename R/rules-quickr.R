@@ -1419,6 +1419,7 @@ quickr_register_prim_lowerer <- function(primitive, fun) {
 quickr_supported_prims <- function() {
   sort(unlist(
     lapply(prim(), function(primitive) {
+      if (inherits(primitive, "JitPrimitive")) primitive <- attr(primitive, "primitive")
       if (is.null(primitive$rules[["quickr"]])) {
         NULL
       } else {
@@ -1499,7 +1500,7 @@ quickr_lower_inline_graph <- function(graph, input_exprs, ctx) {
 
 local({
   quickr_register_prim_lowerer(
-    p_fill,
+    prim_fill,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -1510,7 +1511,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_iota,
+    prim_iota,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -1519,7 +1520,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_convert,
+    prim_convert,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -1529,7 +1530,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_reverse,
+    prim_reverse,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -1539,7 +1540,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_concatenate,
+    prim_concatenate,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -1549,7 +1550,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_static_slice,
+    prim_static_slice,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -1566,7 +1567,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_dynamic_slice,
+    prim_dynamic_slice,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -1584,7 +1585,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_dynamic_update_slice,
+    prim_dynamic_update_slice,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -1604,7 +1605,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_pad,
+    prim_pad,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -1623,7 +1624,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_gather,
+    prim_gather,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -1654,7 +1655,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_if,
+    prim_if,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       if (is.null(ctx)) {
         cli_abort("Internal error: missing quickr lowering context for primitive {.val if}")
@@ -1681,7 +1682,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_while,
+    prim_while,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       if (is.null(ctx)) {
         cli_abort("Internal error: missing quickr lowering context for primitive {.val while}")
@@ -1727,7 +1728,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_scatter,
+    prim_scatter,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       if (is.null(ctx)) {
         cli_abort("Internal error: missing quickr lowering context for primitive {.val scatter}")
@@ -1837,7 +1838,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    list(p_add, p_sub, p_mul),
+    list(prim_add, prim_sub, prim_mul),
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       op <- switch(
         prim_name,
@@ -1851,7 +1852,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_div,
+    prim_div,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_aval <- out_avals[[1L]]
       quotient <- rlang::call2("/", inputs[[1L]], inputs[[2L]])
@@ -1865,14 +1866,14 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_negate,
+    prim_negate,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       quickr_emit_assign(out_syms[[1L]], rlang::call2("-", inputs[[1L]]))
     }
   )
 
   quickr_register_prim_lowerer(
-    list(p_eq, p_ne, p_gt, p_ge, p_lt, p_le),
+    list(prim_eq, prim_ne, prim_gt, prim_ge, prim_lt, prim_le),
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       dt_lhs <- as.character(dtype(input_nodes[[1L]]$aval))
       dt_rhs <- as.character(dtype(input_nodes[[2L]]$aval))
@@ -1917,7 +1918,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    list(p_and, p_or, p_xor),
+    list(prim_and, prim_or, prim_xor),
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       dt <- as.character(dtype(input_nodes[[1L]]$aval))
       if (!dt %in% "bool") {
@@ -1945,7 +1946,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_not,
+    prim_not,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       dt <- as.character(dtype(input_nodes[[1L]]$aval))
       if (!dt %in% "bool") {
@@ -1956,7 +1957,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_select,
+    prim_select,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       quickr_emit_select(
         out_syms[[1L]],
@@ -1970,7 +1971,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    list(p_abs, p_sqrt, p_log, p_floor, p_ceil, p_exp, p_sine, p_cosine, p_tan),
+    list(prim_abs, prim_sqrt, prim_log, prim_floor, prim_ceil, prim_exp, prim_sine, prim_cosine, prim_tan),
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       fun <- switch(
         prim_name,
@@ -1984,14 +1985,14 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_tanh,
+    prim_tanh,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       quickr_emit_assign(out_syms[[1L]], rlang::call2("tanh", inputs[[1L]]))
     }
   )
 
   quickr_register_prim_lowerer(
-    p_expm1,
+    prim_expm1,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       empty <- quickr_emit_known_empty(out_syms[[1L]], out_avals[[1L]])
       if (!is.null(empty)) {
@@ -2002,7 +2003,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_log1p,
+    prim_log1p,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       empty <- quickr_emit_known_empty(out_syms[[1L]], out_avals[[1L]])
       if (!is.null(empty)) {
@@ -2013,7 +2014,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_logistic,
+    prim_logistic,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       x <- inputs[[1L]]
       denom <- rlang::call2("+", 1, rlang::call2("exp", rlang::call2("-", x)))
@@ -2022,7 +2023,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    list(p_max, p_min),
+    list(prim_max, prim_min),
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       empty <- quickr_emit_known_empty(out_syms[[1L]], out_avals[[1L]])
       if (!is.null(empty)) {
@@ -2037,7 +2038,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_pow,
+    prim_pow,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_aval <- out_avals[[1L]]
       expr <- rlang::call2("^", inputs[[1L]], inputs[[2L]])
@@ -2051,7 +2052,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_broadcast_in_dim,
+    prim_broadcast_in_dim,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -2068,7 +2069,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_dot_general,
+    prim_dot_general,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -2089,7 +2090,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_transpose,
+    prim_transpose,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -2098,7 +2099,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_reshape,
+    prim_reshape,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -2108,7 +2109,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_reduce_sum,
+    prim_reduce_sum,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -2118,7 +2119,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_reduce_prod,
+    prim_reduce_prod,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -2128,7 +2129,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_reduce_max,
+    prim_reduce_max,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -2138,7 +2139,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_reduce_min,
+    prim_reduce_min,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -2148,7 +2149,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_reduce_any,
+    prim_reduce_any,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
@@ -2170,7 +2171,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    p_reduce_all,
+    prim_reduce_all,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       out_sym <- out_syms[[1L]]
       out_aval <- out_avals[[1L]]
