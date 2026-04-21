@@ -28,5 +28,5 @@ nv_atan2(y, x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_atan2]{nvl_atan2()}} for the underlying primitive.
+\code{\link[=prim_atan2]{prim_atan2()}} for the underlying primitive.
 }

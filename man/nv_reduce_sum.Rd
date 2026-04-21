@@ -32,5 +32,5 @@ nv_reduce_sum(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_reduce_sum]{nvl_reduce_sum()}} for the underlying primitive.
+\code{\link[=prim_reduce_sum]{prim_reduce_sum()}} for the underlying primitive.
 }

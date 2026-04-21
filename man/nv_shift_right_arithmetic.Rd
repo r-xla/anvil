@@ -27,5 +27,5 @@ nv_shift_right_arithmetic(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_shift_right_arithmetic]{nvl_shift_right_arithmetic()}} for the underlying primitive.
+\code{\link[=prim_shift_right_arithmetic]{prim_shift_right_arithmetic()}} for the underlying primitive.
 }

@@ -24,5 +24,5 @@ cos(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_cosine]{nvl_cosine()}} for the underlying primitive.
+\code{\link[=prim_cosine]{prim_cosine()}} for the underlying primitive.
 }

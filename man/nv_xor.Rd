@@ -27,5 +27,5 @@ nv_xor(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_xor]{nvl_xor()}} for the underlying primitive.
+\code{\link[=prim_xor]{prim_xor()}} for the underlying primitive.
 }

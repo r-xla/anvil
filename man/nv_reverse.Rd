@@ -27,5 +27,5 @@ nv_reverse(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_reverse]{nvl_reverse()}} for the underlying primitive.
+\code{\link[=prim_reverse]{prim_reverse()}} for the underlying primitive.
 }

@@ -34,5 +34,5 @@ nv_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_subset]{nv_subset()}}, \code{\link[=nvl_static_slice]{nvl_static_slice()}} for the underlying primitive.
+\code{\link[=nv_subset]{nv_subset()}}, \code{\link[=prim_static_slice]{prim_static_slice()}} for the underlying primitive.
 }

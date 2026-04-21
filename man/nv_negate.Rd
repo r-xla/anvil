@@ -24,5 +24,5 @@ x <- nv_array(c(1, -2, 3))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_negate]{nvl_negate()}} for the underlying primitive.
+\code{\link[=prim_negate]{prim_negate()}} for the underlying primitive.
 }

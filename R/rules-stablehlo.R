@@ -349,7 +349,7 @@ prim_convert[["stablehlo"]] <- function(operand, dtype, ambiguous) {
 }
 
 
-prim_select[["stablehlo"]] <- function(pred, true_value, false_value) {
+prim_ifelse[["stablehlo"]] <- function(pred, true_value, false_value) {
   list(stablehlo::hlo_select(pred, true_value, false_value))
 }
 

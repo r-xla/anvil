@@ -30,5 +30,5 @@ t(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_transpose]{nvl_transpose()}} for the underlying primitive.
+\code{\link[=prim_transpose]{prim_transpose()}} for the underlying primitive.
 }

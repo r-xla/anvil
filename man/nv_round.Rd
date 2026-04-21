@@ -28,5 +28,5 @@ round(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_round]{nvl_round()}} for the underlying primitive.
+\code{\link[=prim_round]{prim_round()}} for the underlying primitive.
 }

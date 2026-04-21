@@ -31,6 +31,6 @@ nv_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_if]{nvl_if()}} for the underlying primitive, \code{\link[=nv_ifelse]{nv_ifelse()}} for
+\code{\link[=prim_if]{prim_if()}} for the underlying primitive, \code{\link[=nv_ifelse]{nv_ifelse()}} for
 element-wise selection.
 }

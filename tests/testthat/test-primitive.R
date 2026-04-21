@@ -1,7 +1,7 @@
-test_that("prim lookup", {
-  expect_identical(prim("add"), prim_add)
-  expect_true(is_higher_order_primitive(prim("while")))
-  expect_list(prim(), types = "JitPrimitive")
+test_that("prim env lookup", {
+  expect_identical(prim$add, prim_add)
+  expect_true(is_higher_order_primitive(prim[["while"]]))
+  expect_list(as.list(prim), types = "JitPrimitive")
 })
 
 test_that("AnvilPrimitive basics", {
@@ -12,8 +12,8 @@ test_that("AnvilPrimitive basics", {
 })
 
 test_that("quickr rules are exposed through primitives", {
-  expect_true(is.function(prim("add")[["quickr"]]))
-  expect_null(prim("print")[["quickr"]])
+  expect_true(is.function(prim$add[["quickr"]]))
+  expect_null(prim$print[["quickr"]])
 })
 
 documented_primitive_ids <- function() {
@@ -33,25 +33,25 @@ documented_primitive_ids <- function() {
 test_that("documented primitive ids resolve to registered primitives", {
   primitive_ids <- documented_primitive_ids()
 
-  missing <- primitive_ids[vapply(primitive_ids, function(id) is.null(prim(id)), logical(1))]
+  missing <- primitive_ids[vapply(primitive_ids, function(id) is.null(prim[[id]]), logical(1))]
   expect_identical(missing, character())
 })
 
-test_that("new_primitive builds a callable that self-registers into prim_dict", {
-  on.exit(rm("np_test", envir = prim_dict))
+test_that("new_primitive builds a callable that self-registers into prim", {
+  on.exit(rm("np_test", envir = prim))
 
   fn <- new_primitive("np_test", function(x) x + 1)
 
   expect_class(fn, "JitPrimitive")
   expect_class(fn, "JitFunction")
-  expect_identical(prim("np_test"), fn)
+  expect_identical(prim$np_test, fn)
   expect_identical(attr(fn, "primitive")$name, "np_test")
   expect_identical(formals(fn), formals(function(x) x + 1))
 })
 
 test_that("new_primitive respects register = FALSE", {
   fn <- new_primitive("np_unregistered", function(x) x, register = FALSE)
-  expect_false(exists("np_unregistered", envir = prim_dict, inherits = FALSE))
+  expect_false(exists("np_unregistered", envir = prim, inherits = FALSE))
 })
 
 test_that("JitPrimitive [[ delegates to attached AnvilPrimitive", {

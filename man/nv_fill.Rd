@@ -57,5 +57,5 @@ nv_fill_like(x, 0)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_fill]{nvl_fill()}} for the underlying primitive.
+\code{\link[=prim_fill]{prim_fill()}} for the underlying primitive.
 }

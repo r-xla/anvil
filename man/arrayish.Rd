@@ -18,7 +18,7 @@ Whether to accept \code{numeric(1)} and \code{logical(1)} and R arrays of type \
 \code{logical(1)}
 }
 \description{
-A \code{arrayish} value is any object that can be input to a primitive such as \code{\link{nvl_add}}.
+A \code{arrayish} value is any object that can be input to a primitive such as \code{\link{prim_add}}.
 
 During runtime of a JIT-compiled function, these are \code{\link{AnvilArray}} objects.
 

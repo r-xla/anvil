@@ -27,5 +27,5 @@ x == y
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_eq]{nvl_eq()}} for the underlying primitive.
+\code{\link[=prim_eq]{prim_eq()}} for the underlying primitive.
 }

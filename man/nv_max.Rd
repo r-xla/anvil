@@ -27,5 +27,5 @@ nv_max(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_max]{nvl_max()}} for the underlying primitive.
+\code{\link[=prim_max]{prim_max()}} for the underlying primitive.
 }

@@ -24,5 +24,5 @@ ceiling(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_ceil]{nvl_ceil()}} for the underlying primitive.
+\code{\link[=prim_ceil]{prim_ceil()}} for the underlying primitive.
 }

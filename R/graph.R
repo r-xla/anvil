@@ -742,7 +742,7 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL) {
   desc <- desc %||% .current_descriptor(silent = TRUE)
 
   if (is.character(prim)) {
-    prim <- get(prim, envir = prim_dict, inherits = FALSE)
+    prim <- get(prim, envir = getNamespace("anvil")$prim, inherits = FALSE)
   }
   if (inherits(prim, "JitPrimitive")) {
     prim <- attr(prim, "primitive")

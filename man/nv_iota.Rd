@@ -61,5 +61,5 @@ nv_iota_like(x, dim = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_seq]{nv_seq()}} for a simpler 1-D sequence, \code{\link[=nvl_iota]{nvl_iota()}} for the underlying primitive.
+\code{\link[=nv_seq]{nv_seq()}} for a simpler 1-D sequence, \code{\link[=prim_iota]{prim_iota()}} for the underlying primitive.
 }

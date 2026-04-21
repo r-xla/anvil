@@ -24,5 +24,5 @@ tan(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_tan]{nvl_tan()}} for the underlying primitive.
+\code{\link[=prim_tan]{prim_tan()}} for the underlying primitive.
 }

@@ -27,5 +27,5 @@ x - y
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_sub]{nvl_sub()}} for the underlying primitive.
+\code{\link[=prim_sub]{prim_sub()}} for the underlying primitive.
 }

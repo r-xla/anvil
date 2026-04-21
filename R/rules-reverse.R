@@ -164,7 +164,7 @@ prim_abs[["reverse"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
-prim_max[["reverse"]] <- p_min[["reverse"]] <- function(inputs, outputs, grads, .required) {
+prim_max[["reverse"]] <- prim_min[["reverse"]] <- function(inputs, outputs, grads, .required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
   grad <- grads[[1L]]
@@ -278,7 +278,7 @@ prim_reduce_sum[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .re
   )
 }
 
-prim_reduce_max[["reverse"]] <- p_reduce_min[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+prim_reduce_max[["reverse"]] <- prim_reduce_min[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
 
@@ -338,7 +338,7 @@ prim_broadcast_in_dim[["reverse"]] <- function(inputs, outputs, grads, shape, br
 
 # control flow reverse ---------------------------------------------------------
 
-prim_select[["reverse"]] <- function(inputs, outputs, grads, .required) {
+prim_ifelse[["reverse"]] <- function(inputs, outputs, grads, .required) {
   pred <- inputs[[1L]]
   true_value <- inputs[[2L]]
   grad <- grads[[1L]]
@@ -541,7 +541,7 @@ prim_reduce_all[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .re
   )
 }
 
-prim_reduce_any[["reverse"]] <- p_reduce_all[["reverse"]]
+prim_reduce_any[["reverse"]] <- prim_reduce_all[["reverse"]]
 
 prim_bitcast_convert[["reverse"]] <- function(inputs, outputs, grads, dtype, .required) {
   operand <- inputs[[1L]]

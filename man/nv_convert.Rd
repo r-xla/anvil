@@ -28,5 +28,5 @@ nv_convert(x, dtype = "f32")
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_convert]{nvl_convert()}} for the underlying primitive.
+\code{\link[=prim_convert]{prim_convert()}} for the underlying primitive.
 }

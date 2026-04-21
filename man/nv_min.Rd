@@ -27,5 +27,5 @@ nv_min(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_min]{nvl_min()}} for the underlying primitive.
+\code{\link[=prim_min]{prim_min()}} for the underlying primitive.
 }

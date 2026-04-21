@@ -27,5 +27,5 @@ x < y
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_lt]{nvl_lt()}} for the underlying primitive.
+\code{\link[=prim_lt]{prim_lt()}} for the underlying primitive.
 }

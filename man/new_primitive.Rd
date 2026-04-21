@@ -9,6 +9,7 @@ new_primitive(
   fn,
   subgraphs = character(),
   static = character(),
+  device = NULL,
   register = TRUE
 )
 }

@@ -185,7 +185,7 @@ test_that("prim_broadcast_in_dim", {
   testthat::expect_equal(sum(as_array(out_nv)), as.numeric(torch::as_array(out_th$sum())), tolerance = 1e-5)
 })
 
-test_that("prim_select", {
+test_that("prim_ifelse", {
   p <- nv_array(c(TRUE, FALSE, TRUE, FALSE), dtype = "bool")
   a <- nv_array(as.integer(c(1, 2, 3, 4)), dtype = "i32")
   b <- nv_array(as.integer(c(10, 20, 30, 40)), dtype = "i32")

@@ -450,7 +450,7 @@ test_that("prim_broadcast_in_dim", {
   )
 })
 
-test_that("prim_select", {
+test_that("prim_ifelse", {
   shp <- c(2L, 3L)
   x_arr <- generate_test_data(shp, dtype = "bool")
   x_anvil <- nv_array(x_arr, dtype = "bool")

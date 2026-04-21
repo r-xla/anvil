@@ -24,40 +24,14 @@ AnvilPrimitive <- function(name, subgraphs = character()) {
 }
 
 
-prim_dict <- new.env(parent = emptyenv())
-
-#' @title Register a Primitive
+#' @title Primitive Registry
 #' @description
-#' Register a primitive.
-#' @param name (`character()`)\cr
-#'   The name of the primitive.
-#' @param primitive (`AnvilPrimitive`)\cr
-#'   The primitive to register.
-#' @param overwrite (`logical(1)`)\cr
-#'   Whether to overwrite the primitive if it is already registered.
+#' Environment containing all registered primitives. Access an individual
+#' primitive by name via `prim$add`, `prim$mul`, etc. Iterate over all
+#' primitives with `as.list(prim)` or `eapply(prim, f)`.
+#' @format An environment.
 #' @export
-register_primitive <- function(name, primitive, overwrite = FALSE) {
-  p <- prim_dict[[name]]
-  if (!is.null(p) && !overwrite) {
-    cli_abort("Primitive {.field {name}} already registered")
-  }
-  prim_dict[[name]] <- primitive
-}
-
-#' @title Get a Primitive
-#' @description
-#' Get a primitive by name.
-#' @param name (`character()` | `NULL`)\cr
-#'   The name of the primitive.
-#'   If `NULL`, returns a list of all primitives.
-#' @return (`AnvilPrimitive`)
-#' @export
-prim <- function(name = NULL) {
-  if (is.null(name)) {
-    return(as.list(prim_dict))
-  }
-  prim_dict[[name]]
-}
+prim <- new.env(parent = emptyenv())
 
 is_higher_order_primitive <- function(x) {
   if (inherits(x, "JitPrimitive")) x <- attr(x, "primitive")
@@ -147,7 +121,7 @@ new_primitive <- function(name, fn, subgraphs = character(),
   class(jit_fn) <- c("JitPrimitive", class(jit_fn))
 
   if (register) {
-    assign(name, jit_fn, envir = prim_dict)
+    assign(name, jit_fn, envir = prim)
   }
 
   jit_fn

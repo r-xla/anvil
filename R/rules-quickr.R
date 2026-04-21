@@ -1418,7 +1418,7 @@ quickr_register_prim_lowerer <- function(primitive, fun) {
 
 quickr_supported_prims <- function() {
   sort(unlist(
-    lapply(prim(), function(primitive) {
+    eapply(prim, function(primitive) {
       if (inherits(primitive, "JitPrimitive")) primitive <- attr(primitive, "primitive")
       if (is.null(primitive$rules[["quickr"]])) {
         NULL
@@ -1957,7 +1957,7 @@ local({
   )
 
   quickr_register_prim_lowerer(
-    prim_select,
+    prim_ifelse,
     function(prim_name, inputs, params, out_syms, input_nodes, out_avals, ctx = NULL) {
       quickr_emit_select(
         out_syms[[1L]],
