@@ -134,14 +134,15 @@ print.JitPrimitive <- function(x, ...) {
 #' @return A callable of class `c("JitPrimitive", "JitFunction")`.
 #' @export
 new_primitive <- function(name, fn, subgraphs = character(),
-                          static = character(), register = TRUE) {
+                          static = character(), device = NULL,
+                          register = TRUE) {
   checkmate::assert_string(name)
   checkmate::assert_function(fn)
   checkmate::assert_character(subgraphs)
   checkmate::assert_flag(register)
 
   primitive <- AnvilPrimitive(name, subgraphs = subgraphs)
-  jit_fn <- jit(fn, static = static, backend = "auto")
+  jit_fn <- jit(fn, static = static, backend = "auto", device = device)
   attr(jit_fn, "primitive") <- primitive
   class(jit_fn) <- c("JitPrimitive", class(jit_fn))
 

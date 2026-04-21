@@ -29,7 +29,7 @@ test_that("reverse rule is tested", {
 
   primitive_names <- Filter(
     function(nm) {
-      !is.null(getFromNamespace(nm, "anvil")$rules[["reverse"]])
+      !is.null(getFromNamespace(nm, "anvil")[["reverse"]])
     },
     primitive_names
   )

@@ -162,7 +162,7 @@ test_that("trace_fn works with nv_aval inputs", {
   expect_equal(length(graph$inputs), 2L)
   expect_equal(length(graph$calls), 1L)
   expect_equal(length(graph$outputs), 1L)
-  expect_equal(graph$calls[[1L]]$primitive, p_add)
+  expect_equal(graph$calls[[1L]]$primitive, attr(prim_add, "primitive"))
 })
 
 test_that("local_descriptor errors when run in the global environment", {

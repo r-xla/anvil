@@ -92,6 +92,7 @@ NULL
 #' @return (`PrimitiveCall`)
 #' @export
 PrimitiveCall <- function(primitive, inputs, params, outputs) {
+  if (inherits(primitive, "JitPrimitive")) primitive <- attr(primitive, "primitive")
   checkmate::assert_class(primitive, "AnvilPrimitive")
   checkmate::assert_list(inputs, types = c("GraphValue", "GraphLiteral"))
   checkmate::assert_list(params)

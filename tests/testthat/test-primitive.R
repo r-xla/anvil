@@ -1,16 +1,14 @@
-test_that("prim", {
-  expect_equal(prim("add"), p_add)
+test_that("prim lookup", {
+  expect_identical(prim("add"), prim_add)
   expect_true(is_higher_order_primitive(prim("while")))
+  expect_list(prim(), types = "JitPrimitive")
+})
+
+test_that("AnvilPrimitive basics", {
   p <- AnvilPrimitive("abc")
   expect_class(p, "AnvilPrimitive")
   expect_equal(p$name, "abc")
   expect_snapshot(p)
-
-  on.exit(register_primitive("add", p_add, overwrite = TRUE))
-  expect_error(register_primitive("add", p))
-  register_primitive("add", p, overwrite = TRUE)
-  expect_equal(prim("add"), p)
-  expect_list(prim(), types = "AnvilPrimitive")
 })
 
 test_that("quickr rules are exposed through primitives", {

@@ -1409,7 +1409,7 @@ quickr_emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_
 # Primitive lowering registry ---------------------------------------------------
 
 quickr_register_prim_lowerer <- function(primitive, fun) {
-  primitives <- if (inherits(primitive, "AnvilPrimitive")) list(primitive) else primitive
+  primitives <- if (inherits(primitive, "AnvilPrimitive") || inherits(primitive, "JitPrimitive")) list(primitive) else primitive
   for (primitive in primitives) {
     primitive[["quickr"]] <- fun
   }
