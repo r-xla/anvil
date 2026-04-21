@@ -4,7 +4,7 @@ expect_graph_to_quickr_error <- function(fn, templates, pattern) {
 }
 
 test_that("graph_to_quickr_function errors on unsupported primitives", {
-  skip_if_quickr()
+  skip_if_no_quickr()
 
   unsupported_fns <- list(
     function(x) nv_popcnt(x),
@@ -26,7 +26,7 @@ test_that("graph_to_quickr_function errors on unsupported primitives", {
 })
 
 test_that("graph_to_quickr lowerers validate unsupported primitives in nested subgraphs", {
-  skip_if_quickr()
+  skip_if_no_quickr()
 
   graph <- trace_fn(
     function(p, x) {
@@ -51,7 +51,7 @@ test_that("graph_to_quickr lowerers validate unsupported primitives in nested su
 })
 
 test_that("graph_to_quickr_function errors on unsupported ranks", {
-  skip_if_quickr()
+  skip_if_no_quickr()
 
   # input rank > 5 is rejected during quickr argument declaration
   x6 <- array(0, dim = rep(1L, 6L))
@@ -70,14 +70,14 @@ test_that("graph_to_quickr_function errors on unsupported ranks", {
 })
 
 test_that("graph_to_quickr_function rejects unsupported dtypes", {
-  skip_if_quickr()
+  skip_if_no_quickr()
 
   graph <- trace_fn(function(x) x + x, list(x = nv_aval("i64", c())))
   testthat::expect_error(graph_to_quickr_function(graph), "Unsupported dtype.*i64", fixed = FALSE)
 })
 
 test_that("graph_to_quickr_function rejects transpose ranks other than 2", {
-  skip_if_quickr()
+  skip_if_no_quickr()
 
   x3 <- array(1:8, dim = c(2L, 2L, 2L))
   graph <- trace_fn(
@@ -88,7 +88,7 @@ test_that("graph_to_quickr_function rejects transpose ranks other than 2", {
 })
 
 test_that("graph_to_quickr_function rejects reshape ranks > 5", {
-  skip_if_quickr()
+  skip_if_no_quickr()
 
   x5 <- array(1, dim = rep(1L, 5L))
   graph <- trace_fn(
@@ -99,7 +99,7 @@ test_that("graph_to_quickr_function rejects reshape ranks > 5", {
 })
 
 test_that("graph_to_quickr_function rejects broadcast_in_dim ranks > 5", {
-  skip_if_quickr()
+  skip_if_no_quickr()
 
   graph <- trace_fn(
     function(x) nvl_broadcast_in_dim(x, shape = rep(1L, 6L), broadcast_dimensions = 6L),
@@ -109,7 +109,7 @@ test_that("graph_to_quickr_function rejects broadcast_in_dim ranks > 5", {
 })
 
 test_that("graph_to_quickr_function rejects reductions over empty dimensions", {
-  skip_if_quickr()
+  skip_if_no_quickr()
 
   templ <- list(x = nv_aval("f64", c(2L, 0L)))
   graph <- trace_fn(function(x) nvl_reduce_max(x, dims = 2L, drop = TRUE), templ)
@@ -117,7 +117,7 @@ test_that("graph_to_quickr_function rejects reductions over empty dimensions", {
 })
 
 test_that("graph_to_quickr_function rejects unsupported reduce_sum variants", {
-  skip_if_quickr()
+  skip_if_no_quickr()
 
   graph <- trace_fn(
     function(x) nvl_reduce_sum(x, dims = 1L, drop = TRUE),
@@ -145,7 +145,7 @@ test_that("graph_to_quickr_function rejects unsupported reduce_sum variants", {
 })
 
 test_that("throws error for unsupported dtype", {
-  skip_if_quickr()
+  skip_if_no_quickr()
 
   graph <- trace_fn(
     function(x) x,

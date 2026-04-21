@@ -112,7 +112,7 @@ test_that("jit_eval: scalar expression works unchanged", {
 })
 
 test_that("quickr: autoconverts scalar input", {
-  skip_if_quickr()
+  skip_if_no_quickr()
   local_backend("quickr")
   f <- jit(identity)
   out <- f(1)
@@ -120,7 +120,7 @@ test_that("quickr: autoconverts scalar input", {
 })
 
 test_that("quickr: autoconverts matrix input", {
-  skip_if_quickr()
+  skip_if_no_quickr()
   local_backend("quickr")
   f <- jit(identity)
   out <- f(matrix(1:4, 2, 2))
@@ -130,7 +130,7 @@ test_that("quickr: autoconverts matrix input", {
 })
 
 test_that("quickr: nested input tree with mixed AnvilArray/scalar still works", {
-  skip_if_quickr()
+  skip_if_no_quickr()
   local_backend("quickr")
   f <- jit(function(pair) pair[[1]] + pair[[2]])
   out <- f(list(nv_scalar(1L), 2L))
@@ -138,7 +138,7 @@ test_that("quickr: nested input tree with mixed AnvilArray/scalar still works", 
 })
 
 test_that("quickr: bare vector errors", {
-  skip_if_quickr()
+  skip_if_no_quickr()
   local_backend("quickr")
   f <- jit(function(x) x)
   expect_snapshot(f(c(1, 2, 3)), error = TRUE)

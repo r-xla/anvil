@@ -150,7 +150,7 @@ test_that("graph_to_quickr_function accepts flat static args (no nested inputs)"
 })
 
 test_that("graph_to_quickr wrappers reject mismatched runtime static args", {
-  skip_if_quickr()
+  skip_if_no_quickr()
 
   flat_graph <- trace_fn(
     function(x, flag) {
@@ -224,7 +224,7 @@ test_that("graph_to_quickr_function generates placeholder names for unnamed `...
 })
 
 test_that("graph_to_quickr_function errors on mismatched flattened input structure", {
-  skip_if_quickr()
+  skip_if_no_quickr()
 
   graph <- trace_fn(
     function(x, flag) {
