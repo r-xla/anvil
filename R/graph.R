@@ -738,15 +738,11 @@ is_graph_box <- function(x) {
 #'   Uses the [current descriptor][.current_descriptor] if `NULL`.
 #' @return (`list` of [`GraphBox`])
 #' @export
-graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL) {
+graph_desc_add <- function(prim_name, args, params = list(), infer_fn, desc = NULL) {
   desc <- desc %||% .current_descriptor(silent = TRUE)
-
-  if (is.character(prim)) {
-    prim <- get(prim, envir = getNamespace("anvil")$prim, inherits = FALSE)
-  }
-  if (inherits(prim, "JitPrimitive")) {
-    prim <- attr(prim, "primitive")
-  }
+  checkmate::assert_string(prim_name)
+  jit_primitive <- get(prim_name, envir = prim, inherits = FALSE)
+  primitive <- attr(jit_primitive, "primitive")
 
   boxes_in <- lapply(args, maybe_box_arrayish)
   gnodes_in <- unname(lapply(boxes_in, \(box) box$gnode))
@@ -756,19 +752,18 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL) {
       rlang::exec(infer_fn, !!!c(avals_in, params))
     },
     error = function(e) {
-      e$call <- print_call_repr(prim)
+      e$call <- print_call_repr(primitive)
       e <- stablehlo::to_one_based(e)
       rlang::cnd_signal(e)
     }
   )
   gvals_out <- lapply(ats_out, GraphValue)
-  call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)
+  call <- PrimitiveCall(primitive, gnodes_in, params, gvals_out)
   desc$calls <- c(desc$calls, list(call))
   lapply(gvals_out, register_gval, desc = desc)
 }
 
 print_call_repr <- function(prim) {
-  if (inherits(prim, "JitPrimitive")) prim <- attr(prim, "primitive")
   rlang::exec(call, paste0("prim$", prim$name))
 }
 
