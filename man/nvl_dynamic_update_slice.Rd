@@ -53,23 +53,19 @@ the effective start position may differ from the requested one.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # 1-D: overwrite two elements starting at position 2
-jit_eval({
-  x <- nv_array(1:5)
-  update <- nv_array(c(10L, 20L))
-  start <- nv_scalar(2L)
-  nvl_dynamic_update_slice(x, update, start)
-})
+x <- nv_array(1:5)
+update <- nv_array(c(10L, 20L))
+start <- nv_scalar(2L)
+nvl_dynamic_update_slice(x, update, start)
 
 # 2-D: write a 2x2 block into a 3x4 matrix
-jit_eval({
-  x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
-  update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
-  row_start <- nv_scalar(2L)
-  col_start <- nv_scalar(3L)
-  nvl_dynamic_update_slice(x, update, row_start, col_start)
-})
+x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
+update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
+row_start <- nv_scalar(2L)
+col_start <- nv_scalar(3L)
+nvl_dynamic_update_slice(x, update, row_start, col_start)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

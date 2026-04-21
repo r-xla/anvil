@@ -42,10 +42,10 @@ test_that("graph_to_quickr_function handles GraphLiteral inputs (R scalar litera
 
   graph <- trace_fn(
     function(x) {
-      x + 1
+      x + 1L
     },
     list(x = nv_scalar(0.0, dtype = "f64")),
-    desc = local_descriptor(backend = "quickr")
+    desc = local_descriptor()
   )
 
   expect_quickr_matches_pjrt(graph, 2.5)
@@ -125,9 +125,9 @@ test_that("graph_to_quickr_function accepts flat static args (no nested inputs)"
 
   fn <- function(x, flag) {
     if (flag) {
-      x + 1
+      x + 1L
     } else {
-      x - 1
+      x - 1L
     }
   }
 
@@ -137,7 +137,7 @@ test_that("graph_to_quickr_function accepts flat static args (no nested inputs)"
       x = nv_scalar(0.0, dtype = "f64"),
       flag = TRUE
     ),
-    desc = local_descriptor(backend = "quickr")
+    desc = local_descriptor()
   )
 
   f_quick <- graph_to_quickr_function(graph)
@@ -155,16 +155,16 @@ test_that("graph_to_quickr wrappers reject mismatched runtime static args", {
   flat_graph <- trace_fn(
     function(x, flag) {
       if (flag) {
-        x + 1
+        x + 1L
       } else {
-        x - 1
+        x - 1L
       }
     },
     list(
       x = nv_scalar(0.0, dtype = "f64"),
       flag = TRUE
     ),
-    desc = local_descriptor(backend = "quickr")
+    desc = local_descriptor()
   )
 
   flat_r <- graph_to_quickr_r_function(flat_graph)
@@ -266,10 +266,10 @@ test_that("graph_to_quickr_function preserves 1D output dims", {
 
   graph <- trace_fn(
     function(x) {
-      x + 1
+      x + 1L
     },
     list(x = nv_array(array(0, dim = 3L), dtype = "f64", shape = 3L)),
-    desc = local_descriptor(backend = "quickr")
+    desc = local_descriptor()
   )
 
   out <- expect_quickr_matches_pjrt(graph, c(0.5, 1.5, 2.5))
@@ -295,7 +295,7 @@ test_that("graph_to_quickr_function preserves empty 1D output dims without wrapp
   expect_identical(dim(f_r(x)), 0L)
   expect_identical(dim(f_quick(x)), 0L)
   expect_identical(f_r(x), out_pjrt)
-  expect_identical(f_quick(x), out_pjrt)
+  expect_identical(as_array(f_quick(x)), out_pjrt)
 })
 
 test_that("graph_to_quickr_function preserves rank-1 dims for direct quickr outputs", {
@@ -317,30 +317,7 @@ test_that("graph_to_quickr_function preserves rank-1 dims for direct quickr outp
   expect_identical(dim(f_r(x)), c(3L))
   expect_identical(dim(f_quick(x)), c(3L))
   expect_equal(f_r(x), out_pjrt, tolerance = 1e-12)
-  expect_equal(f_quick(x), out_pjrt, tolerance = 1e-12)
-})
-
-test_that("graph_to_quickr_function uses a specialized rank-1 wrapper", {
-  skip_if_no_quickr_or_pjrt()
-
-  testthat::local_mocked_bindings(
-    quickr_restore_output = function(...) stop("should not be called"),
-    .package = "anvil"
-  )
-
-  graph <- trace_fn(
-    function(x) {
-      nv_expm1(x)
-    },
-    list(x = nv_array(array(0, dim = 3L), dtype = "f64", shape = 3L))
-  )
-
-  f_quick <- graph_to_quickr_function(graph)
-  x <- array(c(0.1, 0.2, 0.3), dim = 3L)
-  out <- f_quick(x)
-
-  expect_identical(dim(out), c(3L))
-  expect_equal(out, array(expm1(c(0.1, 0.2, 0.3)), dim = 3L), tolerance = 1e-12)
+  expect_equal(as_array(f_quick(x)), out_pjrt, tolerance = 1e-12)
 })
 
 test_that("graph_to_quickr_function preserves rank-1 dims for wrapped quickr outputs", {
@@ -369,7 +346,7 @@ test_that("graph_to_quickr_function preserves rank-1 dims for wrapped quickr out
   expect_identical(dim(f_r(x, TRUE)), c(3L))
   expect_identical(dim(f_quick(x, TRUE)), c(3L))
   expect_equal(f_r(x, TRUE), out_pjrt, tolerance = 1e-12)
-  expect_equal(f_quick(x, TRUE), out_pjrt, tolerance = 1e-12)
+  expect_equal(as_array(f_quick(x, TRUE)), out_pjrt, tolerance = 1e-12)
 })
 
 test_that("graph_to_quickr_function preserves pred leaves in multiple outputs", {
@@ -377,10 +354,10 @@ test_that("graph_to_quickr_function preserves pred leaves in multiple outputs", 
 
   graph <- trace_fn(
     function(x) {
-      list(p = x > 0, v = x + 1)
+      list(p = x > 0L, v = x + 1L)
     },
     list(x = nv_scalar(0.0, dtype = "f64")),
-    desc = local_descriptor(backend = "quickr")
+    desc = local_descriptor()
   )
 
   out <- expect_quickr_matches_pjrt(graph, -0.5)

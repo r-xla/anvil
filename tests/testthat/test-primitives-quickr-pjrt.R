@@ -5,7 +5,7 @@ test_that("quickr pipeline matches PJRT: core math + comparisons + reductions", 
     a <- x_f64 + y_f64
     b <- x_f64 - y_f64
     c <- x_f64 * y_f64
-    d <- x_f64 / (y_f64 + 1)
+    d <- x_f64 / (y_f64 + 1L)
     e <- nv_negate(x_f64)
 
     ax <- nv_abs(x_f64)
@@ -155,7 +155,7 @@ test_that("quickr pipeline matches PJRT: i32 divide truncates toward zero", {
   f_quick <- graph_to_quickr_function(graph)
 
   expect_identical(f_r(lhs, rhs), out_pjrt)
-  expect_identical(f_quick(lhs, rhs), out_pjrt)
+  expect_identical(as_array(f_quick(lhs, rhs)), out_pjrt)
 })
 
 test_that("quickr pipeline matches PJRT: reshape unboxes singleton arrays to scalars", {
@@ -178,7 +178,7 @@ test_that("quickr pipeline matches PJRT: reshape unboxes singleton arrays to sca
   f_quick <- graph_to_quickr_function(graph)
 
   expect_identical(f_r(x), out_pjrt)
-  expect_identical(f_quick(x), out_pjrt)
+  expect_identical(as_array(f_quick(x)), out_pjrt)
 })
 
 test_that("quickr pipeline matches PJRT: tanh stays finite for large inputs", {
@@ -202,7 +202,7 @@ test_that("quickr pipeline matches PJRT: tanh stays finite for large inputs", {
   f_quick <- graph_to_quickr_function(graph)
 
   expect_identical(f_r(x), out_pjrt)
-  expect_identical(f_quick(x), out_pjrt)
+  expect_identical(as_array(f_quick(x)), out_pjrt)
 })
 
 test_that("quickr pipeline matches PJRT: select preserves array semantics in plain R", {
@@ -241,7 +241,7 @@ test_that("quickr pipeline matches PJRT: select preserves array semantics in pla
   expect_identical(out_pjrt$empty, array(integer(), dim = 0L))
 
   f_r <- graph_to_quickr_r_function(graph)
-  f_quick <- graph_to_quickr_function(graph)
+  f_quick <- graph_to_quickr_function(graph, unwrap = TRUE)
 
   expect_identical(
     f_r(
@@ -287,7 +287,7 @@ test_that("quickr pipeline matches PJRT: expm1 stays accurate near zero", {
   f_quick <- graph_to_quickr_function(graph)
 
   expect_identical(f_r(x), out_pjrt)
-  expect_identical(f_quick(x), out_pjrt)
+  expect_identical(as_array(f_quick(x)), out_pjrt)
 })
 
 test_that("quickr pipeline matches PJRT: expm1/log1p preserve empty f64 dtype", {
@@ -323,7 +323,7 @@ test_that("quickr pipeline matches PJRT: expm1/log1p preserve empty f64 dtype", 
     f_quick <- graph_to_quickr_function(graph)
 
     expect_identical(f_r(x), out_pjrt, info = case$info)
-    expect_identical(f_quick(x), out_pjrt, info = case$info)
+    expect_identical(as_array(f_quick(x)), out_pjrt, info = case$info)
   }
 })
 
@@ -347,7 +347,7 @@ test_that("quickr pipeline matches PJRT: log1p stays accurate near zero", {
   f_quick <- graph_to_quickr_function(graph)
 
   expect_identical(f_r(x), out_pjrt)
-  expect_identical(f_quick(x), out_pjrt)
+  expect_identical(as_array(f_quick(x)), out_pjrt)
 })
 
 test_that("quickr pipeline matches PJRT: maximum/minimum preserve empty f64 dtype", {
@@ -386,7 +386,7 @@ test_that("quickr pipeline matches PJRT: maximum/minimum preserve empty f64 dtyp
     f_quick <- graph_to_quickr_function(graph)
 
     expect_identical(f_r(x, x), out_pjrt, info = case$info)
-    expect_identical(f_quick(x, x), out_pjrt, info = case$info)
+    expect_identical(as_array(f_quick(x, x)), out_pjrt, info = case$info)
   }
 })
 
@@ -417,7 +417,7 @@ test_that("quickr pipeline matches PJRT: pad supports negative edge padding crop
   f_quick <- graph_to_quickr_function(graph)
 
   expect_identical(f_r(x), out_pjrt)
-  expect_identical(f_quick(x), out_pjrt)
+  expect_identical(as_array(f_quick(x)), out_pjrt)
 })
 
 test_that("quickr pipeline matches PJRT: i32 reduce_prod preserves dtype in fast paths", {
@@ -432,7 +432,7 @@ test_that("quickr pipeline matches PJRT: i32 reduce_prod preserves dtype in fast
     f_quick <- graph_to_quickr_function(graph)
 
     expect_identical(do.call(f_r, unname(args)), out_pjrt)
-    expect_identical(do.call(f_quick, unname(args)), out_pjrt)
+    expect_identical(as_array(do.call(f_quick, unname(args))), out_pjrt)
   }
 
   check_case(
@@ -488,7 +488,7 @@ test_that("quickr pipeline matches PJRT: i32 power keeps integer semantics", {
   f_quick <- graph_to_quickr_function(graph)
 
   expect_identical(f_r(x, y), out_pjrt)
-  expect_identical(f_quick(x, y), out_pjrt)
+  expect_identical(as_array(f_quick(x, y)), out_pjrt)
 })
 
 test_that("quickr pipeline matches PJRT: fill/iota/reverse/concatenate/convert/broadcast/transpose/reshape", {
@@ -999,11 +999,11 @@ test_that("quickr pipeline matches PJRT: control flow (if/while)", {
   skip_if_no_quickr_or_pjrt()
 
   cf_ops <- function(p) {
-    if_s <- nv_if(p, 1L, 2L)
+    if_s <- nv_if(p, \() 1L, \() 2L)
     if_a <- nv_if(
       p,
-      nv_fill(1L, shape = c(2L, 2L), dtype = "i32"),
-      nv_fill(2L, shape = c(2L, 2L), dtype = "i32")
+      \() nv_fill(1L, shape = c(2L, 2L), dtype = "i32"),
+      \() nv_fill(2L, shape = c(2L, 2L), dtype = "i32")
     )
 
     w1 <- nv_while(

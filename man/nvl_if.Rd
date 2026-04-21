@@ -10,8 +10,8 @@ nvl_if(pred, true, false)
 \item{pred}{(\code{\link{arrayish}})\cr
 Scalar boolean predicate that determines which branch to execute.}
 
-\item{true, false}{(NSE)\cr
-Expressions for the true and false branches. Both must return outputs
+\item{true, false}{(\verb{function()})\cr
+Zero-argument functions for the true and false branches. Both must return outputs
 with the same structure, dtypes, and shapes.}
 }
 \value{
@@ -38,8 +38,8 @@ Lowers to \code{\link[stablehlo:hlo_if]{stablehlo::hlo_if()}}.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval(nvl_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+nvl_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

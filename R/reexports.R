@@ -9,7 +9,7 @@
 #' @param ... Additional arguments passed to methods (unused).
 #' @returns `integer()`
 #' @name shape
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1:4, dtype = "f32")
 #' shape(x)
 NULL
@@ -29,7 +29,7 @@ tengen::shape
 #'   An array-like object.
 #' @param ... Additional arguments passed to methods (unused).
 #' @returns [`PJRTDevice`][pjrt::pjrt_device]
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1:4, dtype = "f32")
 #' device(x)
 #' @name device
@@ -53,7 +53,7 @@ tengen::device
 #'   An array-like object.
 #' @param ... Additional arguments passed to methods (unused).
 #' @returns An R [`array`] or `vector` of length 1.
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1:4, dtype = "f32")
 #' as_array(x)
 #' y <- nv_scalar(1L)
@@ -79,7 +79,7 @@ tengen::as_array
 #'   - `row_major` (`logical(1)`)\cr
 #'     Whether to write the bytes in row-major order.
 #' @returns A [`raw`] vector.
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1:4, shape = c(2, 2), dtype = "f32")
 #' as_raw(x, row_major = TRUE)
 #' as_raw(x, row_major = FALSE)
@@ -104,7 +104,7 @@ tengen::as_raw
 #' @returns A [`DataType`][tengen::DataType].
 #' @seealso [tengen::dtype()]
 #' @name dtype
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1:4, dtype = "f32")
 #' dtype(x)
 NULL
@@ -124,7 +124,7 @@ tengen::dtype
 #' @returns `integer(1)`
 #' @seealso [tengen::ndims()]
 #' @name ndims
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1:4, dtype = "f32")
 #' ndims(x)
 NULL
@@ -165,7 +165,7 @@ tengen::is_dtype
 #' @seealso [is_dtype()], [tengen::as_dtype()], [`tengen::DataType`]
 #' @name as_dtype
 #'
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' as_dtype("f32")
 #' as_dtype("i32")
 NULL
@@ -174,31 +174,6 @@ NULL
 #' @importFrom tengen as_dtype
 #' @export
 tengen::as_dtype
-
-#' @title Get the platform of an array or buffer
-#'
-#' @description
-#' Returns the platform name (e.g. `"cpu"`, `"cuda"`) identifying
-#' the compute backend.
-#'
-#' @details
-#' Implemented via the generic [`pjrt::platform()`].
-#'
-#' @param x ([`arrayish`])\cr
-#'   An array-like object.
-#' @param ... Additional arguments passed to methods (unused).
-#' @returns `character(1)`
-#' @seealso [pjrt::platform()]
-#' @name platform
-#' @examplesIf pjrt::plugin_is_downloaded()
-#' x <- nv_array(1:4, dtype = "f32")
-#' platform(x)
-NULL
-
-#' @rdname platform
-#' @importFrom pjrt platform
-#' @export
-pjrt::platform
 
 #' @title Create a Shape object
 #'
@@ -217,3 +192,28 @@ NULL
 #' @importFrom stablehlo Shape
 #' @export
 stablehlo::Shape
+
+#' @title Get the platform of an array or buffer
+#'
+#' @description
+#' Returns the platform name (e.g. `"cpu"`, `"cuda"`) identifying
+#' the compute backend.
+#'
+#' @details
+#' Implemented via the generic [`pjrt::platform()`].
+#'
+#' @param x ([`arrayish`])\cr
+#'   An array-like object.
+#' @param ... Additional arguments passed to methods (unused).
+#' @returns `character(1)`
+#' @seealso [pjrt::platform()]
+#' @name platform
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(1:4, dtype = "f32")
+#' platform(x)
+NULL
+
+#' @rdname platform
+#' @importFrom pjrt platform
+#' @export
+pjrt::platform

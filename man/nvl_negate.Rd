@@ -33,11 +33,9 @@ Lowers to \code{\link[stablehlo:hlo_negate]{stablehlo::hlo_negate()}}.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, -2, 3))
-  nvl_negate(x)
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(c(1, -2, 3))
+nvl_negate(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

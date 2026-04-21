@@ -19,11 +19,9 @@ Broadcast scalar arrays to match the shape of non-scalar arrays.
 All non-scalar arrays must have the same shape.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  # scalar 1 is broadcast to shape [3]
-  nv_broadcast_scalars(x, 1)
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(c(1, 2, 3))
+# scalar 1 is broadcast to shape [3]
+nv_broadcast_scalars(x, nv_scalar(1))
 \dontshow{\}) # examplesIf}
 }

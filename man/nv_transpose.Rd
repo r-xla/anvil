@@ -24,11 +24,9 @@ Has the same data type as \code{x} and shape \code{nv_shape(x)[permutation]}.
 Permutes the dimensions of an array. You can also use \code{t()} for matrices.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(matrix(1:6, nrow = 2))
-  t(x)
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(matrix(1:6, nrow = 2))
+t(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

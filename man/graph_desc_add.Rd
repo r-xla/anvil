@@ -4,14 +4,7 @@
 \alias{graph_desc_add}
 \title{Add a Primitive Call to a Graph Descriptor}
 \usage{
-graph_desc_add(
-  prim,
-  args,
-  params = list(),
-  infer_fn,
-  desc = NULL,
-  debug_mode = NULL
-)
+graph_desc_add(prim, args, params = list(), infer_fn, desc = NULL)
 }
 \arguments{
 \item{prim}{(\code{\link{AnvilPrimitive}})\cr
@@ -30,13 +23,9 @@ Must output a list of \code{\link{AbstractArray}}s.}
 \item{desc}{(\code{\link{GraphDescriptor}} | \code{NULL})\cr
 The graph descriptor to add the primitive call to.
 Uses the \link[=.current_descriptor]{current descriptor} if \code{NULL}.}
-
-\item{debug_mode}{(\code{logical(1)})\cr
-Whether to just perform abstract evaluation for debugging.}
 }
 \value{
-(\code{list} of \code{Box})\cr
-Either \code{GraphBox} objects or \code{DebugBox} objects, depending on \code{debug_mode}.
+(\code{list} of \code{\link{GraphBox}})
 }
 \description{
 Add a primitive call to a graph descriptor.

@@ -199,9 +199,7 @@ test_that("p_reduce_max", {
   out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(0, 4)))
   # f64
-  x <- jit_eval({
-    nv_reduce_max(nv_array(c(1, 2, 3), dtype = "f64"), dims = 1L)
-  })
+  x <- nv_reduce_max(nv_array(c(1, 2, 3), dtype = "f64"), dims = 1L)
   expect_equal(x, nv_scalar(3, dtype = "f64"))
 })
 
@@ -218,9 +216,7 @@ test_that("p_reduce_min", {
   out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(-1, 2)))
   # f64
-  x <- jit_eval({
-    nv_reduce_min(nv_array(c(1, 2, 3), dtype = "f64"), dims = 1L)
-  })
+  x <- nv_reduce_min(nv_array(c(1, 2, 3), dtype = "f64"), dims = 1L)
   expect_equal(x, nv_scalar(1, dtype = "f64"))
 })
 
@@ -278,7 +274,7 @@ describe("p_if", {
     f <- jit(function(pred, x) {
       x1 <- nv_mul(x, x)
       x2 <- nv_add(x, x)
-      nv_if(pred, x1, x2)
+      nv_if(pred, \() x1, \() x2)
     })
     expect_equal(
       f(nv_scalar(TRUE), nv_scalar(2)),
@@ -292,7 +288,7 @@ describe("p_if", {
 
   it("works in simple example", {
     # simple
-    f <- function(pred, x) nvl_if(pred, x, x * x)
+    f <- function(pred, x) nvl_if(pred, \() x, \() x * x)
     fj <- jit(f)
     expect_equal(fj(nv_scalar(TRUE), nv_scalar(2)), nv_scalar(2))
     expect_equal(fj(nv_scalar(FALSE), nv_scalar(2)), nv_scalar(4))
@@ -301,7 +297,7 @@ describe("p_if", {
     graph <- trace_fn(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
 
     f <- jit(function(pred, x) {
-      nvl_if(pred, list(list(x)), list(list(x * x)))
+      nvl_if(pred, \() list(list(x)), \() list(list(x * x)))
     })
     expect_equal(
       f(nv_scalar(TRUE), nv_scalar(2)),
@@ -313,7 +309,7 @@ describe("p_if", {
     )
 
     g <- jit(function(pred, x) {
-      nvl_if(pred, list(x[[1]]), list(x[[1]] * x[[1]]))
+      nvl_if(pred, \() list(x[[1]]), \() list(x[[1]] * x[[1]]))
     })
     expect_equal(
       g(nv_scalar(FALSE), list(nv_scalar(2))),
@@ -323,7 +319,7 @@ describe("p_if", {
 
   it("identical constants in both branches receive the same GraphValue", {
     x <- nv_scalar(1)
-    f <- function(y) nvl_if(y, x, x)
+    f <- function(y) nvl_if(y, \() x, \() x)
     graph <- trace_fn(f, list(y = nv_scalar(TRUE)))
     fj <- jit(f)
     expect_equal(fj(nv_scalar(TRUE)), nv_scalar(1))
@@ -331,14 +327,14 @@ describe("p_if", {
 
     g <- jit(function(pred) {
       y <- nv_scalar(2)
-      nvl_if(pred, y, y * nv_scalar(3))
+      nvl_if(pred, \() y, \() y * nv_scalar(3))
     })
     expect_equal(g(nv_scalar(TRUE)), nv_scalar(2))
     expect_equal(g(nv_scalar(FALSE)), nv_scalar(6))
   })
 
   it("works with literals as predicate", {
-    expect_equal(jit_eval(nv_if(TRUE, 1, 2)), nv_scalar(1, ambiguous = TRUE))
+    expect_equal(nv_if(TRUE, \() 1, \() 2), nv_scalar(1, ambiguous = TRUE))
   })
 })
 
@@ -491,7 +487,7 @@ test_that("p_triangular_solve", {
 
 test_that("error when multiplying lists in if-statement", {
   f <- jit(function(pred, x) {
-    nvl_if(pred, x + x, x * x)
+    nvl_if(pred, \() x + x, \() x * x)
   })
   expect_error(
     f(nv_scalar(FALSE), list(nv_scalar(2))),

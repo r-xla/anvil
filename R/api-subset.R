@@ -1,5 +1,3 @@
-#' @include jit.R
-
 SubsetFull <- function(size) {
   structure(list(size = size), class = "SubsetFull")
 }
@@ -67,9 +65,11 @@ subset_start_positions <- function(subsets) {
   lapply(subsets, subset_start_position)
 }
 
-# Inputs: list of 1-D arrays, each of shape [n_i].
-# Non-multi-index dims have n_i = 1, multi-index dims have n_i > 1.
-# Returns an array of shape [rank] or [gather_shape..., rank].
+# Takes a list of 1-D start arrays (one per dim). Scalar dims have length 1,
+# multi-index dims have length > 1.
+# Returns an array where each row is one index tuple into the original array,
+# covering all combinations of the multi-index dims (cartesian product).
+# Shape [rank] if all scalar, or [multi_index_sizes..., rank] otherwise.
 dynamic_start_indices <- function(starts) {
   rank <- length(starts)
   sizes <- vapply(starts, function(s) shape_abstract(s)[1L], integer(1L))
@@ -80,16 +80,9 @@ dynamic_start_indices <- function(starts) {
     return(start)
   }
 
-  # consider s_1, ..., s_n
-  # where some s_i are multi-index, some are not
-  # We wan't to create a  array S of shape [size(s_i1), ..., size(s_im), n]
-  # where i1, ..., im are the multi-index dimensions.
-  # We can look at this as j arrays of shape [size(s_i1), ..., size(s_im), 1] (S[.., j]) that we create
-  # for j that are not in {i1, ..., im} we simply broadcast the singular start index.
-  # The other J slices (S[.., j]) for j \in {i1, ..., im} form
-  # a cartesian product of the multi-index dimensions.
-  # But we compute each layer S[.., j] individually, where for j = s_i1, the indices are constant
-  # across every of the m dimensions except for the one corresponding to i1
+  # Each "row" (last axis) is an index tuple [d1, d2, ..., d_rank].
+  # Scalar dims contribute the same value to every row.
+  # Multi-index dims vary across their own axis, forming the cartesian product.
 
   multi_index_sizes <- sizes[multi_index_dims]
   n_gather <- length(multi_index_dims)
@@ -108,15 +101,22 @@ dynamic_start_indices <- function(starts) {
   out
 }
 
-.static_start_indices <- jit(
-  function(...) {
-    dynamic_start_indices(list(...))
+static_start_indices <- function(starts, like = NULL) {
+  sizes <- lengths(starts)
+  multi_index_dims <- which(sizes > 1L)
+  if (length(multi_index_dims) == 0L) {
+    data <- unlist(starts)
+    if (is.null(like)) {
+      return(nv_array(data, dtype = "i32"))
+    }
+    return(nv_array_like(like, data, dtype = "i32", shape = length(data), ambiguous = FALSE))
   }
-)
-
-static_start_indices <- function(starts) {
-  starts <- lapply(starts, nv_array, dtype = "i32")
-  do.call(.static_start_indices, starts)
+  grid <- as.matrix(do.call(expand.grid, starts))
+  out <- array(grid, dim = c(sizes[multi_index_dims], length(starts)))
+  if (is.null(like)) {
+    return(nv_array(out, dtype = "i32"))
+  }
+  nv_array_like(like, out, dtype = "i32", shape = dim(out), ambiguous = FALSE)
 }
 
 
@@ -134,16 +134,20 @@ static_start_indices <- function(starts) {
 #' @param subsets List of SubsetSpec objects (from parse_subset_specs)
 #' @return An array of start indices
 #' @noRd
-subset_specs_start_indices <- function(subsets) {
+subset_specs_start_indices <- function(subsets, like = NULL) {
   starts <- subset_start_positions(subsets)
   all_static <- all(vapply(starts, is.numeric, logical(1L)))
   if (all_static) {
-    static_start_indices(starts)
+    static_start_indices(starts, like = like)
   } else {
     # Convert R integers to 1D arrays, reshape 0D arrays to 1D
     starts <- lapply(starts, function(s) {
       if (is.numeric(s)) {
-        nv_array(s, dtype = "i32")
+        if (is.null(like)) {
+          nv_array(s, dtype = "i32")
+        } else {
+          nv_array_like(like, s, dtype = "i32", shape = length(s), ambiguous = FALSE)
+        }
       } else if (ndims_abstract(s) == 0L) {
         nv_reshape(s, 1L)
       } else {
@@ -168,7 +172,7 @@ subset_specs_start_indices <- function(subsets) {
 #'   - unique_indices: logical
 #'   - multi_index_subset: logical
 #' @noRd
-subset_specs_to_gather <- function(subsets) {
+subset_specs_to_gather <- function(subsets, like = NULL) {
   rank <- length(subsets)
 
   # Identify gather dimensions (SubsetIndices with multiple elements)
@@ -202,7 +206,7 @@ subset_specs_to_gather <- function(subsets) {
     ))
   ))
 
-  start_indices <- subset_specs_start_indices(subsets)
+  start_indices <- subset_specs_start_indices(subsets, like = like)
 
   # offset_dims: positions in the output for non-collapsed operand dims.
   # The output interleaves batch (gather) dims and offset (slice) dims
@@ -241,7 +245,7 @@ subset_specs_to_gather <- function(subsets) {
 #'   - unique_indices: logical
 #'   - update_shape: integer vector (expected shape of the update array)
 #' @noRd
-subset_specs_to_scatter <- function(subsets) {
+subset_specs_to_scatter <- function(subsets, like = NULL) {
   rank <- length(subsets)
 
   multi_index_dims <- which(vapply(
@@ -263,7 +267,7 @@ subset_specs_to_scatter <- function(subsets) {
     integer(1L)
   )
 
-  scatter_indices <- subset_specs_start_indices(subsets)
+  scatter_indices <- subset_specs_start_indices(subsets, like = like)
 
   # SubsetIndex dims are individually addressed (dropped from update),
   # just like collapsed_slice_dims in the gather path.
@@ -380,24 +384,20 @@ parse_subset_spec <- function(quo, dim_size) {
     return(SubsetIndex(idx))
   }
 
-  # R vectors of length > 1 - not allowed (use list() instead)
-  if (is.numeric(e) && length(e) > 1L) {
+  # R vectors of length > 1 without dim - not allowed (ambiguous shape)
+  if (is.numeric(e) && length(e) > 1L && is.null(dim(e))) {
     cli_abort(c(
       "Vectors of length > 1 are not allowed as subset indices.",
-      "i" = "Use {.code list()} to select multiple elements, e.g. {.code x[list(1, 3), ]}."
+      "i" = "Use {.code array()} to select multiple elements, e.g. {.code x[array(c(1L, 3L)), ]}."
     ))
   }
 
-  # list() - preserves dimensions (keep as R integer vector, convert to array later)
-  if (is.list(e) && !is.object(e)) {
-    if (length(e) == 0L) {
-      cli_abort("Empty list() indices are not allowed")
+  # Atomic numeric array - static indices (preserves dim)
+  if (is.array(e) && is.numeric(e)) {
+    if (length(dim(e)) != 1L) {
+      cli_abort("Array indices must be 1D, but got {length(dim(e))}D")
     }
-    if (!all(vapply(e, is_integerish, logical(1L)))) {
-      cli_abort("All list() elements must be scalar integers")
-    }
-
-    indices <- vapply(e, as.integer, integer(1L))
+    indices <- as.integer(e)
     oob <- indices < 1L | indices > dim_size
     if (any(oob)) {
       bad <- indices[oob][1L] # nolint
@@ -438,7 +438,7 @@ parse_subset_spec <- function(quo, dim_size) {
 #' @description
 #' Extracts a subset from an array. You can also use the `[` operator.
 #' Supports R-style indexing including scalar indices (which drop dimensions),
-#' ranges (`a:b`), and `list()` for selecting multiple elements along a
+#' ranges (`a:b`), and `array(c(...))` for selecting multiple elements along a
 #' dimension.
 #' @param x ([`arrayish`])\cr
 #'   Array to subset.
@@ -447,18 +447,14 @@ parse_subset_spec <- function(quo, dim_size) {
 #' @return [`arrayish`]
 #' @seealso [nv_subset_assign()] for updating subsets, `vignette("subsetting")`
 #'   for a comprehensive guide.
-#' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:12, nrow = 3))
-#'   # Select row 2
-#'   x[2, ]
-#' })
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(1:12, nrow = 3))
+#' # Select row 2
+#' x[2, ]
 #'
-#' jit_eval({
-#'   x <- nv_array(matrix(1:12, nrow = 3))
-#'   # Select rows 1 to 2, all columns
-#'   x[1:2, ]
-#' })
+#' x <- nv_array(matrix(1:12, nrow = 3))
+#' # Select rows 1 to 2, all columns
+#' x[1:2, ]
 #' @export
 nv_subset <- function(x, ...) {
   if (!is_arrayish(x)) {
@@ -471,7 +467,7 @@ nv_subset <- function(x, ...) {
   quos <- rlang::enquos(...)
 
   subsets <- parse_subset_specs(quos, operand_shape)
-  params <- subset_specs_to_gather(subsets)
+  params <- subset_specs_to_gather(subsets, like = x)
 
   out <- nvl_gather(
     operand = x,
@@ -504,13 +500,11 @@ nv_subset <- function(x, ...) {
 #' @return [`arrayish`]\cr
 #'   A new array with the same shape as `x` and the subset replaced.
 #' @seealso [nv_subset()], `vignette("subsetting")` for a comprehensive guide.
-#' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:12, nrow = 3))
-#'   # Set row 1 to zeros
-#'   x[1, ] <- 0L
-#'   x
-#' })
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(1:12, nrow = 3))
+#' # Set row 1 to zeros
+#' x[1, ] <- nv_scalar(0L)
+#' x
 #' @export
 nv_subset_assign <- function(x, ..., value) {
   if (!is_arrayish(x)) {
@@ -519,6 +513,9 @@ nv_subset_assign <- function(x, ..., value) {
   if (!is_arrayish(value)) {
     cli_abort("Expected arrayish `value`, but got {.cls {class(value)[1]}}")
   }
+  aligned <- as_anvil_arrays(x, value)
+  x <- aligned[[1L]]
+  value <- aligned[[2L]]
   if (dtype_abstract(x) != dtype_abstract(value)) {
     dt_x <- dtype_abstract(x)
     dt_value <- dtype_abstract(value)
@@ -535,7 +532,7 @@ nv_subset_assign <- function(x, ..., value) {
   quos <- rlang::enquos(...)
 
   subsets <- parse_subset_specs(quos, lhs_shape)
-  params <- subset_specs_to_scatter(subsets)
+  params <- subset_specs_to_scatter(subsets, like = x)
 
   if (!ndims_abstract(value)) {
     value <- nv_broadcast_to(value, params$update_shape)

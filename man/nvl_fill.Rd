@@ -4,7 +4,7 @@
 \alias{nvl_fill}
 \title{Primitive Fill}
 \usage{
-nvl_fill(value, shape, dtype, ambiguous = FALSE)
+nvl_fill(value, shape, dtype, ambiguous = FALSE, device = NULL)
 }
 \arguments{
 \item{value}{(\code{numeric(1)})\cr
@@ -20,6 +20,9 @@ Data type.}
 Whether the type is ambiguous.
 Ambiguous types usually arise from R literals (e.g., \code{1L}, \code{1.0}) and follow special promotion rules.
 See the \code{vignette("type-promotion")} for more details.}
+
+\item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{quickr_device}} | \code{NULL})\cr
+Device for data to live on.}
 }
 \value{
 \code{\link{arrayish}}\cr
@@ -46,8 +49,8 @@ Lowers to \code{\link[stablehlo:hlo_constant]{stablehlo::hlo_tensor()}}.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval(nvl_fill(3.14, shape = c(2, 3), dtype = "f32"))
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+nvl_fill(3.14, shape = c(2, 3), dtype = "f32")
 \dontshow{\}) # examplesIf}
 }
 \seealso{

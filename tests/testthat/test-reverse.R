@@ -1,4 +1,4 @@
-test_that("basic pullback test", {
+test_that("basic reverse test", {
   f <- function(x, y) {
     nvl_add(x, y)
   }
@@ -128,6 +128,31 @@ test_that("partial gradient simple", {
   expect_equal(out, nv_scalar(1.0))
 })
 
+test_that("gradient accepts integer positions for wrt", {
+  f <- function(lhs, rhs) {
+    nvl_add(lhs, rhs)
+  }
+  g <- jit(gradient(f, wrt = 1L))
+  out <- g(nv_scalar(1.0), nv_scalar(2.0))[[1L]]
+  expect_equal(out, nv_scalar(1.0))
+
+  # value_and_gradient also accepts integer positions.
+  vg <- jit(value_and_gradient(f, wrt = 2L))
+  res <- vg(nv_scalar(3.0), nv_scalar(4.0))
+  expect_equal(res$value, nv_scalar(7.0))
+  expect_equal(res$grad[[1L]], nv_scalar(1.0))
+
+  # Out-of-range indices are rejected.
+  expect_error(gradient(f, wrt = 3L), "out of range")
+  expect_error(value_and_gradient(f, wrt = 0L), "out of range")
+})
+
+test_that("wrt cannot be '...'", {
+  f <- function(x, ...) x
+  expect_error(gradient(f, wrt = "..."), "must not contain")
+  expect_error(value_and_gradient(f, wrt = 2L), "must not contain")
+})
+
 #test_that("partial gradient: y = a * (x * b) wrt x", {
 #  f <- function(a, x, b) {
 #    a * (x * b)
@@ -143,7 +168,7 @@ test_that("partial gradient simple", {
 #})
 #
 
-#test_that("pullback", {
+#test_that("reverse", {
 #  fbwd <- jit(pullback(nv_add, lhs = nv_scalar(1.0), rhs = nv_scalar(2.0), wrt = "lhs"))
 #  expect_equal(fbwd(nv_scalar(10.0)), list(lhs = nv_scalar(10.0)))
 #})
@@ -300,7 +325,7 @@ test_that("Can propagate ambiguous float32 through integer/bool functions", {
 })
 
 test_that("trace_fn matches args with formals", {
-  graph1 <- trace_fn(nvl_add, list(nv_abstract("f32", c()), nv_abstract("f32", c())))
-  graph2 <- trace_fn(nvl_add, list(lhs = nv_abstract("f32", c()), rhs = nv_abstract("f32", c())))
+  graph1 <- trace_fn(nvl_add, list(nv_aval("f32", c()), nv_aval("f32", c())))
+  graph2 <- trace_fn(nvl_add, list(lhs = nv_aval("f32", c()), rhs = nv_aval("f32", c())))
   expect_equal(graph1$in_tree, graph2$in_tree)
 })

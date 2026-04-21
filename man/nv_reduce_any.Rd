@@ -27,11 +27,9 @@ Performs logical OR along the specified dimensions.
 Returns \code{TRUE} if any element is \code{TRUE}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-  nv_reduce_any(x, dims = 1L)
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+nv_reduce_any(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

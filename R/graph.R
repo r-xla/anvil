@@ -189,8 +189,6 @@ AnvilGraph <- function(
 #' @param devices (`character()`)\cr
 #'   Device platforms encountered during tracing (e.g. `"cpu"`, `"cuda"`).
 #'   Populated automatically as arrays are registered.
-#' @param backend (`NULL` | `"xla"` | `"quickr"`)\cr
-#'   Backend associated with this graph descriptor.
 #' @return (`GraphDescriptor`)
 #' @export
 GraphDescriptor <- function(
@@ -204,8 +202,7 @@ GraphDescriptor <- function(
   outputs = list(),
   is_static_flat = NULL,
   static_args_flat = NULL,
-  devices = character(),
-  backend = NULL
+  devices = character()
 ) {
   # Use an environment for reference semantics (mutable)
   env <- new.env(parent = emptyenv())
@@ -220,7 +217,6 @@ GraphDescriptor <- function(
   env$is_static_flat <- is_static_flat
   env$static_args_flat <- static_args_flat
   env$devices <- devices
-  env$backend <- if (!is.null(backend)) normalize_backend(backend) else current_backend()
 
   structure(env, class = "GraphDescriptor")
 }
@@ -236,6 +232,11 @@ dtype.GraphValue <- function(x, ...) {
 }
 
 #' @export
+ambiguous.GraphValue <- function(x, ...) {
+  x$aval$ambiguous
+}
+
+#' @export
 shape.GraphLiteral <- function(x, ...) {
   shape(x$aval)
 }
@@ -243,6 +244,11 @@ shape.GraphLiteral <- function(x, ...) {
 #' @export
 dtype.GraphLiteral <- function(x, ...) {
   x$aval$dtype
+}
+
+#' @export
+ambiguous.GraphLiteral <- function(x, ...) {
+  x$aval$ambiguous
 }
 
 
@@ -274,7 +280,11 @@ descriptor_to_graph <- function(descriptor) {
 #' value is represented as a `GraphBox`.
 #' It also contains an associated [`GraphDescriptor`] in which the node "lives".
 #'
-#' @inheritSection DebugBox Extractors
+#' @section Extractors:
+#' - [`dtype()`][tengen::dtype]
+#' - [`shape()`][tengen::shape]
+#' - [`ndims()`][tengen::ndims]
+#' - [`ambiguous()`]
 #'
 #' @param gnode ([`GraphNode`])\cr
 #'   The graph node -- either a [`GraphValue`] or a [`GraphLiteral`].
@@ -282,7 +292,7 @@ descriptor_to_graph <- function(descriptor) {
 #'   The descriptor of the graph being built.
 #' @return (`GraphBox`)
 #'
-#' @seealso [AnvilBox], [DebugBox], [trace_fn()], [jit()]
+#' @seealso [AnvilBox], [trace_fn()], [jit()]
 #' @export
 GraphBox <- function(gnode, desc) {
   if (!is_graph_node(gnode)) {
@@ -307,14 +317,23 @@ dtype.GraphBox <- function(x, ...) {
 }
 
 #' @export
-#' @method ndims GraphBox
-ndims.GraphBox <- function(x, ...) {
-  ndims(x$gnode)
+ambiguous.GraphBox <- function(x, ...) {
+  ambiguous(x$gnode)
 }
 
 #' @export
-ambiguous.GraphBox <- function(x, ...) {
-  ambiguous(x$gnode)
+backend.GraphBox <- function(x, ...) {
+  # Tracing is backend-agnostic
+  "plain"
+}
+
+#' @export
+device.GraphBox <- function(x, ...) {
+  cli_abort(c(
+    "{.fn device} is not defined for a {.cls GraphBox}.",
+    i = "During tracing there is no concrete device; jit handles device placement at the input/output boundary and for constants.",
+    i = "If you need a constant on the same device as an arrayish input, use {.fn nv_fill_like} / {.fn nv_array_like} / {.fn nv_iota_like}, which pick the device up from the tracing context for you."
+  ))
 }
 
 #' @export
@@ -335,19 +354,17 @@ maybe_box_arrayish <- function(x) {
       return(x)
     }
     gval <- x$gnode
-    get_box_or_register_const(current_desc, gval)
-  } else if (is_anvil_array(x) || is_lit(x)) {
-    get_box_or_register_const(current_desc, x)
-  } else if (is_debug_box(x)) {
-    # We want debug mode to emulate standard tracing, so each primitive initializes it's own
-    # GraphDescriptor during debug mode and we evaluate with GraphBox objects
-    # before returning to the user, the GraphBox is converted to a DebugBox again
-    GraphBox(GraphValue(aval = x$aval), current_desc)
-  } else if (is_abstract_tensor(x)) {
-    cli_abort("Don't use AbtractTensors as inputs; For debugging, use `debug_box()`")
-  } else {
-    cli_abort("Expected arrayish value, but got {.cls {class(x)[1]}}")
+    return(get_box_or_register_const(current_desc, gval))
   }
+  if (is_valid_r_array(x)) {
+    # Materialize R arrays as plain-backend AnvilArrays so they can be
+    # registered as named constants in the current graph.
+    x <- nv_array(x, ambiguous = !is.logical(x))
+  }
+  if (is_anvil_array(x) || is_valid_r_lit(x)) {
+    return(get_box_or_register_const(current_desc, x))
+  }
+  cli_abort("Expected arrayish value, but got {.cls {class(x)[1]}}")
 }
 
 # this function is on the inputs of trace_fn()
@@ -377,7 +394,9 @@ maybe_box_input <- function(x, desc, toplevel, lit_to_array) {
     # however, if the value does not exist in the parent graph, we need to add it as a constant
     # for that, we need to keep the value of the actual array, so we can later register it
     # see test: "can pass constant to nested trace_fn call if it ..." in test-graph.R
-    desc$devices <- c(desc$devices, device(x))
+    if (backend(x) != "plain") {
+      desc$devices <- c(desc$devices, device(x))
+    }
     gval <- if (toplevel) {
       # user-provided inputs are simply unknown
       GraphValue(aval = to_abstract(x, pure = TRUE))
@@ -385,12 +404,6 @@ maybe_box_input <- function(x, desc, toplevel, lit_to_array) {
       # nested trace_fn call might receive known constants from the parent graph as input
       GraphValue(aval = ConcreteArray(x))
     }
-    register_input(desc, gval)
-  } else if (is_debug_box(x)) {
-    # User provided abstract input
-    # This is useful for debugging and in jit() we anyway verify that the inputs are AnvilArrays
-    # so we don't accidentally box abstract arrays there
-    gval <- GraphValue(aval = x$aval)
     register_input(desc, gval)
   } else if (is_graph_box(x)) {
     # Nested trace_fn call
@@ -445,7 +458,9 @@ get_box_or_register_const <- function(desc, x) {
     cli_abort("Internal error: trying to register a constant in a non-graph descriptor")
   }
   if (is_anvil_array(x)) {
-    desc$devices <- c(desc$devices, device(x))
+    if (backend(x) != "plain") {
+      desc$devices <- c(desc$devices, device(x))
+    }
     gval <- desc$data_to_gval[[x]]
     if (!is.null(gval)) {
       return(desc$gval_to_box[[gval]])
@@ -555,7 +570,7 @@ match_args_to_formals <- function(f, args) {
 #' @seealso [`stablehlo()`] to lower the graph, [`jit()`] / [`xla()`] for end-to-end
 #'   compilation.
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' graph <- trace_fn(function(x, y) x + y,
 #'   args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32"))
 #' )
@@ -569,9 +584,6 @@ trace_fn <- function(
   args_flat = NULL,
   in_tree = NULL
 ) {
-  if (inherits(f, "JitFunction")) {
-    cli_abort("{.arg f} must not be a jitted function.")
-  }
   if (is.null(args)) {
     if (is.null(args_flat) || is.null(in_tree)) {
       cli_abort("args or args_flat and in_tree must be provided")
@@ -653,8 +665,12 @@ maybe_restore_previous_desc <- function(desc = NULL) {
   if (silent) {
     return(maybe_desc)
   }
-  maybe_desc %??%
+  maybe_desc %||%
     cli_abort("No graph is currently being built. Did you forget to use `jit()`?")
+}
+
+currently_tracing <- function() {
+  !is.null(.current_descriptor(silent = TRUE))
 }
 
 #' @title Create a graph
@@ -674,7 +690,7 @@ maybe_restore_previous_desc <- function(desc = NULL) {
 #' @export
 local_descriptor <- function(..., envir = parent.frame()) {
   if (identical(envir, globalenv())) {
-    # lingering global descriptors mess with our debug mode
+    # lingering global descriptors interfere with graph tracing
     cli_abort("Don't run local_descriptor in the global environment")
   }
 
@@ -719,18 +735,10 @@ is_graph_box <- function(x) {
 #' @param desc ([`GraphDescriptor`] | `NULL`)\cr
 #'   The graph descriptor to add the primitive call to.
 #'   Uses the [current descriptor][.current_descriptor] if `NULL`.
-#' @param debug_mode (`logical(1)`)\cr
-#'   Whether to just perform abstract evaluation for debugging.
-#' @return (`list` of `Box`)\cr
-#'   Either `GraphBox` objects or `DebugBox` objects, depending on `debug_mode`.
+#' @return (`list` of [`GraphBox`])
 #' @export
-graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, debug_mode = NULL) {
-  desc <- desc %??% .current_descriptor(silent = TRUE)
-
-  debug_mode <- debug_mode %??% is.null(desc)
-  if (debug_mode && is.null(desc)) {
-    desc <- local_descriptor()
-  }
+graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL) {
+  desc <- desc %||% .current_descriptor(silent = TRUE)
 
   boxes_in <- lapply(args, maybe_box_arrayish)
   gnodes_in <- unname(lapply(boxes_in, \(box) box$gnode))
@@ -748,11 +756,7 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL, d
   gvals_out <- lapply(ats_out, GraphValue)
   call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)
   desc$calls <- c(desc$calls, list(call))
-  boxes_out <- lapply(gvals_out, register_gval, desc = desc)
-  if (debug_mode) {
-    return(lapply(boxes_out, \(x) DebugBox(to_abstract(x))))
-  }
-  return(boxes_out)
+  lapply(gvals_out, register_gval, desc = desc)
 }
 
 print_call_repr <- function(prim) {

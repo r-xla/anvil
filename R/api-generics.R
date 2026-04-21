@@ -50,8 +50,8 @@ Math.AnvilBox <- function(x, ...) {
     "exp" = nv_exp(x),
     "sqrt" = nv_sqrt(x),
     "log" = nv_log(x),
-    "log2" = nv_div(nv_log(x), log(2)),
-    "log10" = nv_div(nv_log(x), log(10)),
+    "log2" = nv_log2(x),
+    "log10" = nv_log10(x),
     "tanh" = nv_tanh(x),
     "tan" = nv_tan(x),
     "cos" = nv_cosine(x),
@@ -119,6 +119,42 @@ mean.AnvilBox <- function(x, ...) {
 #' @export
 mean.AnvilArray <- mean.AnvilBox
 
+#' @rdname nv_is_nan
+#' @param x ([`arrayish`])\cr Operand.
+#' @method is.nan AnvilBox
+#' @export
+is.nan.AnvilBox <- function(x) {
+  nv_is_nan(x)
+}
+
+#' @method is.nan AnvilArray
+#' @export
+is.nan.AnvilArray <- is.nan.AnvilBox
+
+#' @rdname nv_is_infinite
+#' @param x ([`arrayish`])\cr Operand.
+#' @method is.infinite AnvilBox
+#' @export
+is.infinite.AnvilBox <- function(x) {
+  nv_is_infinite(x)
+}
+
+#' @method is.infinite AnvilArray
+#' @export
+is.infinite.AnvilArray <- is.infinite.AnvilBox
+
+#' @rdname nv_is_finite
+#' @param x ([`arrayish`])\cr Operand.
+#' @method is.finite AnvilBox
+#' @export
+is.finite.AnvilBox <- function(x) {
+  nv_is_finite(x)
+}
+
+#' @method is.finite AnvilArray
+#' @export
+is.finite.AnvilArray <- is.finite.AnvilBox
+
 # if we don't give it the name nv_transpose, pkgdown thinks t.anvil is a package
 
 #' @title Transpose
@@ -132,11 +168,9 @@ mean.AnvilArray <- mean.AnvilBox
 #' @return [`arrayish`]\cr
 #'   Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
 #' @seealso [nvl_transpose()] for the underlying primitive.
-#' @examplesIf pjrt::plugin_is_downloaded()
-#' jit_eval({
-#'   x <- nv_array(matrix(1:6, nrow = 2))
-#'   t(x)
-#' })
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' t(x)
 #' @export
 t.AnvilBox <- function(x) {
   nv_transpose(x)
@@ -166,3 +200,45 @@ t.AnvilArray <- t.AnvilBox
 #' @rdname nv_subset_assign
 #' @export
 `[<-.AnvilArray` <- `[<-.AnvilBox`
+
+#' @rdname nv_crossprod
+#' @method crossprod AnvilBox
+#' @export
+crossprod.AnvilBox <- function(x, y = NULL, ...) {
+  nv_crossprod(x, y)
+}
+
+#' @method crossprod AnvilArray
+#' @export
+crossprod.AnvilArray <- crossprod.AnvilBox
+
+#' @rdname nv_tcrossprod
+#' @method tcrossprod AnvilBox
+#' @export
+tcrossprod.AnvilBox <- function(x, y = NULL, ...) {
+  nv_tcrossprod(x, y)
+}
+
+#' @method tcrossprod AnvilArray
+#' @export
+tcrossprod.AnvilArray <- tcrossprod.AnvilBox
+
+#' @method dim AnvilBox
+#' @export
+dim.AnvilBox <- function(x) {
+  shape(x)
+}
+
+#' @method dim AnvilArray
+#' @export
+dim.AnvilArray <- dim.AnvilBox
+
+#' @method length AnvilBox
+#' @export
+length.AnvilBox <- function(x) {
+  prod(shape(x))
+}
+
+#' @method length AnvilArray
+#' @export
+length.AnvilArray <- length.AnvilBox

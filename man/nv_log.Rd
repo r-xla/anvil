@@ -18,11 +18,9 @@ Has the same shape and data type as the input.
 Element-wise natural logarithm. You can also use \code{log()}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 2.718, 7.389))
-  log(x)
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(c(1, 2.718, 7.389))
+log(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

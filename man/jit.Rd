@@ -8,8 +8,9 @@ jit(
   f,
   static = character(),
   cache_size = 100L,
-  donate = character(),
-  device = NULL
+  backend = NULL,
+  device = NULL,
+  ...
 )
 }
 \arguments{
@@ -17,44 +18,92 @@ jit(
 Function to compile. Must accept and return \code{\link{AnvilArray}}s (and/or
 static arguments).}
 
-\item{static}{(\code{character()})\cr
-Names of parameters of \code{f} that are \emph{not} arrays. Static values are
+\item{static}{(\code{character()} | \code{integer()})\cr
+Names or positions of parameters of \code{f} that are \emph{not} arrays. Static values are
 embedded as constants in the compiled program; a new compilation is triggered whenever
 a static value changes. For example useful when you want R control flow in your function.}
 
 \item{cache_size}{(\code{integer(1)})\cr
 Maximum number of compiled executables to keep in the LRU cache.}
 
-\item{donate}{(\code{character()})\cr
-Names of the arguments whose buffers should be donated.
-Donated buffers can be aliased with outputs of the same type,
-allowing in-place operations and reducing memory usage.
-An argument cannot appear in both \code{donate} and \code{static}.}
+\item{backend}{(\code{NULL} |  \code{character(1)})\cr
+Compilation backend (e.g. \code{"xla"}, \code{"quickr"}).
+The special value \code{"auto"} defers backend selection to call-time.
+\code{NULL} (default) respects \code{device} and otherwise falls back to \code{\link[=default_backend]{default_backend()}}.}
 
-\item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
-The device to use if it cannot be inferred from the inputs or constants.
-Defaults to \code{"cpu"}. Only supported for the \code{"xla"} backend.}
+\item{device}{(\code{NULL} | \code{character(1)} | \code{\link{nv_device}} | \code{device_arg()})\cr
+Target device. When a concrete device is specified, all arrays
+are moved to it.
+
+The default (\code{NULL}) infers the device at call time,
+falling back to \code{\link[=default_device]{default_device()}}.
+
+In order to use dynamic device selection with the \code{"auto"} backend (e.g. for functions without
+dynamic inputs such as constant creation), set \code{device = device_arg("<arg>")}.}
+
+\item{...}{Backend-specific options. Passing an option that is not supported
+by the selected backend raises an error. See the \strong{XLA JIT arguments} and
+\strong{Quickr JIT arguments} sections below for the options accepted by each
+backend.}
 }
 \value{
-A \code{JitFunction} with the same formals as \code{f}.
-For the \code{"xla"} backend, the returned wrapper expects and returns
-\code{\link{AnvilArray}} values. For the \code{"quickr"} backend, the returned wrapper
-expects plain R numeric/integer/logical scalars, vectors, and arrays and
-returns plain R values.
-
-(\code{function})
+A \code{JitFunction} (a \code{function} with the same formals as \code{f}).
+The returned wrapper expects \code{\link{AnvilArray}} inputs and returns
+\code{\link{AnvilArray}} values.
 }
 \description{
 Wraps a function so that it is traced and compiled on first call. Subsequent
 calls with the same input structure, shapes, and dtypes hit an LRU cache and
 skip recompilation. Unlike \code{\link[=xla]{xla()}}, the compiled executable is not created
 eagerly but lazily on the first invocation.
-
-The compilation backend is determined by the global \code{anvil.backend} option,
-which defaults to \code{"xla"}. Use \code{with_backend()} to temporarily override it.
 }
+\section{Device and Backend selection}{
+
+There are various ways to specify which device and which backend to use.
+
+\strong{Concrete backend}:
+In the case where we fix a concrete backend (backend is not \code{"auto"}), the device can be
+inferred or set explicitly.
+Setting the device explicitly allows you to enforce that the function always uses the specified
+device, e.g. \code{"cuda:0"}.
+If the \code{device} argument is set, all encountered arrays are copied to it.
+
+If the device is not specified (\code{NULL}; default) the device will be inferred from the input
+arrays and the constants within the program. If conflicting devices are found, an error
+is thrown. If no array with a device is found, we fall back to the default device.
+
+\strong{Auto backend}:
+When setting \code{backend = "auto"}, the backend will be inferred from the array inputs and
+otherwise fall back to the default backend.
+If you want to \code{jit()} a function without array inputs but make it work with different devices,
+set \code{device = device_arg("<argname>")} where \verb{<argname>} is the name of the argument specifying
+the device. Note that this is only necessary with the \code{"auto"} backend.
+When using a concrete backend, you can just specify the device via a static argument.
+}
+
+\section{XLA JIT arguments}{
+
+\itemize{
+\item \code{donate} (\code{character()}, default \code{character()}): names of arguments whose
+underlying buffers may be donated to (i.e., reused/consumed by) the
+compiled XLA executable. Donated buffers must not be used again by the
+caller after the call; this can reduce memory usage and copies for large
+inputs. Must not overlap with \code{static}.
+}
+}
+
+\section{Quickr JIT arguments}{
+
+\itemize{
+\item \code{unwrap} (\code{logical(1)}, default \code{FALSE}): if \code{TRUE}, the compiled function
+returns plain R arrays instead of \code{\link{AnvilArray}}s. Useful when the jitted
+function's output is consumed by non-anvil R code and the extra wrapping
+would only get stripped again.
+}
+}
+
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 f <- jit(function(x, y) x + y)
 f(nv_array(1), nv_array(2))
 
@@ -64,6 +113,12 @@ g <- jit(function(x, flag) {
 }, static = "flag")
 g(nv_array(3), TRUE)
 g(nv_array(3), FALSE)
+\dontshow{\}) # examplesIf}
+\dontshow{if (requireNamespace("quickr", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+with_backend("quickr", {
+  h <- jit(function(x, y) x + y)
+  h(nv_array(1), nv_array(2))
+})
 \dontshow{\}) # examplesIf}
 }
 \seealso{

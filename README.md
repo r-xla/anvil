@@ -15,6 +15,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 status](https://www.r-pkg.org/badges/version/anvil)](https://CRAN.R-project.org/package=anvil)
 [![codecov](https://codecov.io/gh/r-xla/anvil/branch/main/graph/badge.svg)](https://codecov.io/gh/r-xla/anvil)
 [![r-universe](https://r-xla.r-universe.dev/badges/anvil)](https://r-xla.r-universe.dev/anvil)
+![CUDA 12.8](https://img.shields.io/badge/CUDA-12.8-green.svg)
 <!-- badges: end -->
 
 Composable code transformation framework for R, allowing you to run
@@ -26,17 +27,31 @@ including CPU and GPU.
 ## Installation
 
 {anvil} can be installed from GitHub or
-[r-universe](https://r-xla.r-universe.dev/builds). Prebuilt [Docker
-images](https://github.com/r-xla/docker) are also available. See the
-[Installation](https://r-xla.github.io/anvil/articles/installation.html)
-vignette for detailed instructions.
+[r-universe](https://r-xla.r-universe.dev/builds). During runtime, we
+require `libprotobuf`. Source installation requires a `C++20` compiler
+and `protoc` (protobuf compiler).
+
+``` r
+# Install release
+# from r-universe (prebuilt binary)
+install.packages("anvil", repos = c("https://cloud.r-project.org", "https://r-xla.r-universe.dev"))
+# from GitHub (installation from source)
+pak::pak("r-xla/anvil@*release")
+# Install dev version
+pak::pak("r-xla/anvil")
+# Install CUDA support (linux x86_64): only requires a compatible driver
+install.packages("cuda12.8", repos = "https://mlverse.r-universe.dev")
+```
+
+Prebuilt [Docker images](https://github.com/r-xla/docker) are also
+available. See the *Installation* vignette on the package website for
+more details.
 
 ## Quick Start
 
-Below, we create a standard R function. We cannot directly call this
-function, but first need to wrap it in a `jit()` call. If the resulting
-function is then called on `AnvilArray`s – the primary data type in
-{anvil} – it will be JIT compiled and subsequently executed.
+Below, we create an R function and `jit()` it. Then, we call the
+resulting function on `AnvilArray`s, which will compile and subsequently
+execute it.
 
 ``` r
 library(anvil)
@@ -72,6 +87,9 @@ g_jit(a, b, x)
 #> [ CPUf32{} ]
 ```
 
+For more complex examples, such as implementing a Gaussian Process, see
+the package website.
+
 ## Main Features
 
 - Automatic Differentiation:
@@ -89,30 +107,24 @@ g_jit(a, b, x)
   - The backend supports execution via XLA as well as an experimental
     {quickr}-based Fortran backend (CPU only).
 
-## When to use this package?
-
-While {anvil} allows to run certain types of programs extremely fast, it
-only applies to a certain category of problems. Specifically, it is
-suitable for numerical algorithms, such as optimizing bayesian models,
-training neural networks or more generally numerical optimization.
-Another restriction is that {anvil} needs to re-compile the code for
-each new unique input shape. This has the advantage, that the compiler
-can make memory optimizations, but the compilation overhead might be a
-problem for fast running programs.
-
 ## Platform Support
 
-- **Linux**
+- **Linux (x86_64)**
   - :white_check_mark: CPU backend is fully supported.
   - :white_check_mark: CUDA (NVIDIA GPU) backend is fully supported.
+- **Linux (ARM)**
+  - :white_check_mark: CPU backend is fully supported.
+  - :x: GPU is not supported.
 - **Windows**
   - :white_check_mark: CPU backend is fully supported.
   - :warning: GPU is only supported via Windows Subsystem for Linux
     (WSL2).
-- **macOS**
+- **macOS (ARM)**
   - :white_check_mark: CPU backend is supported.
   - :warning: Metal (Apple GPU) backend is available but not fully
     functional.
+- **macOS (x86_64)**
+  - :x: Not supported.
 
 ## Acknowledgments
 

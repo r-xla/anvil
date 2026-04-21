@@ -7,28 +7,25 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-Currently, {anvil} is not available on CRAN, so you either have to install it via r-universe or from GitHub.
+Currently, {anvil} is not available on CRAN, so you either have to install it via [r-universe](https://r-xla.r-universe.dev/) or from [GitHub](https://github.com/r-xla/anvil).
 
 ## System Dependencies
 
-You need a C++20 compiler, `libprotobuf`, and the `protobuf-compiler`.
+The system library required during runtime is `libprotobuf`.
+Source installation requires a `C++20` compiler and `protoc` (protobuf compiler).
 
-## Installing the latest release from GitHub
+## CPU Installation
 
-You can install the latest GitHub release via:
+You can install the latest release from GitHub
 
 ```{r, eval = FALSE}
 pak::pak("r-xla/anvil@*release")
 ```
 
-You can install the latest release from r-universe via:
+You can install the latest release from r-universe (prebuilt binary).
 
 ```{r, eval = FALSE}
-options(repos = c(
-  rxla = "https://r-xla.r-universe.dev",
-  CRAN = "https://cloud.r-project.org/"
-))
-install.packages("anvil")
+install.packages("anvil",repos = c("https://cloud.r-project.org", "https://r-xla.r-universe.dev"))
 ```
 
 To confirm that your CPU installation is working, run:
@@ -38,35 +35,42 @@ library(anvil)
 nv_scalar(1, device = "cpu")
 ```
 
-## Installation the development version from GitHub
-
 The development version can be installed via:
 
 ```{r, eval = FALSE}
 pak::pak("r-xla/anvil")
 ```
 
-## GPU Support
+## GPU Installation
 
-Running {anvil} with GPU support only works on Linux or via WSL2 on Windows.
-In principle, MPS support on macOS is available but many features are missing and the PJRT plugin is heavily outdated.
-To use {anvil} with GPU support, you need to have CUDA installed.
-The PJRT CUDA plugin was built with the following versions:
+Running {anvil} with GPU support currently only works on Linux (amd64/x86-64) or via WSL2 on Windows (experimental).
 
-* CUDA 12.8.1
-* CUDNN 9.8.0
-* NVSHMEM 3.2.5
-
-Besides, there is [this dockerfile](https://github.com/r-xla/docker/blob/main/cuda-base/Dockerfile) which is used in the GitHub Actions CI, and the versions used therein should also work.
-
-To confirm that your GPU installation is working, run:
-
-```{r, eval = FALSE}
-library(anvil)
-nv_scalar(1, device = "cuda")
+```{r, include = FALSE}
+cuda_pkg <- getFromNamespace("cuda_r_package", "pjrt")()
 ```
 
-If you are working on a server, you can also use the prebuilt Docker images, see the next section.
+The recommended way to use CUDA there is to install the {`r cuda_pkg`} R package, which only requires a compatible driver to be installed.
+You can install it from GitHub or r-universe:
+
+```{r, echo = FALSE, results = "asis"}
+cat(sprintf('```r\npak::pak("mlverse/cudatoolkit/%s")\n```', cuda_pkg))
+cat(sprintf('```r\ninstall.packages("%s", repos = "https://mlverse.r-universe.dev")\n```', cuda_pkg))
+```
+
+When the {`r cuda_pkg`} package is not installed, the correct runtime libraries need to be installed on the system and discoverable via `LD_LIBRARY_PATH`.
+The specific versions of the CUDA runtime libraries provided with {`r cuda_pkg`} are listed [here](`r sprintf("https://github.com/mlverse/cudatoolkit/blob/main/%s/inst/components.tsv", cuda_pkg)`).
+
+**Troubleshooting**
+
+To trouble-shoot the CUDA installation, run the following in a new R session for maximum debug output.
+
+```{r, eval = FALSE}
+Sys.setenv(PJRT_DEBUG = "1", TF_CPP_MIN_LOG_LEVEL = "0")
+anvil::nv_scalar(1, device = "cuda")
+```
+
+Note that if another package is using a different cudatoolkit package (e.g. when using {torch}), there might be some issues.
+In this case, use separate R processes, e.g. via {mirai}.
 
 ## Docker
 
@@ -79,9 +83,19 @@ This includes a CUDA and CPU build for amd64/x86-64 architecture:
 |-------|-------------|
 | `anvil-cpu` | CPU support, based on `rocker/r-ver` |
 | `anvil-cuda` | GPU support with CUDA 12.8 |
-| `anvil-cuda-base` | Base image for `anvil-cuda` without `anvil` installed|
 
 Note that running the GPU container requires the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) to be installed on the host.
+Once installed (and the Docker daemon restarted), pass `--gpus all` to `docker run` to expose the host GPUs to the container:
+
+```bash
+docker run --rm -it --gpus all ghcr.io/r-xla/anvil-cuda:latest R
+```
+
+You can verify that the GPU is visible inside the container by running `nvidia-smi`, or from R:
+
+```r
+anvil::nv_scalar(1, device = "cuda")
+```
 
 ### Tags
 

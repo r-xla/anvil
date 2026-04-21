@@ -18,11 +18,9 @@ Has the same shape and data type as the input.
 Element-wise sign function. You can also use \code{sign()}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(-3, 0, 5))
-  sign(x)
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(c(-3, 0, 5))
+sign(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

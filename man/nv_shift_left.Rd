@@ -20,12 +20,10 @@ Has the same shape and the promoted common data type of the inputs.
 Element-wise left bit shift.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1L, 2L, 4L))
-  y <- nv_array(c(1L, 2L, 1L))
-  nv_shift_left(x, y)
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(c(1L, 2L, 4L))
+y <- nv_array(c(1L, 2L, 1L))
+nv_shift_left(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

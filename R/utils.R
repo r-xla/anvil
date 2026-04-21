@@ -1,29 +1,6 @@
-# set utils
-set <- function() {
-  hashtab()
-}
-
-set_has <- function(set, key) {
-  !identical(gethash(set, key, NA), NA)
-}
-
-set_add <- function(set, key) {
-  set[[key]] <- NULL
-}
-
 dtype_from_buffer <- function(x) {
   d <- as.character(dtype(x))
   as_dtype(d)
-}
-
-hashkeys <- function(h) {
-  val <- vector("list", numhash(h))
-  idx <- 0
-  maphash(h, function(k, v) {
-    idx <<- idx + 1
-    val[[idx]] <<- k
-  })
-  val
 }
 
 hashvalues <- function(h) {
@@ -34,22 +11,6 @@ hashvalues <- function(h) {
     val[[idx]] <<- v
   })
   val
-}
-
-is_nv_type <- function(x) {
-  any(sapply(globals$nv_types, function(type, x) inherits(x, type), x))
-}
-
-
-transpose_list <- function(.l) {
-  if (length(.l) == 0L) {
-    return(list())
-  }
-  res <- .mapply(list, .l, list())
-  if (length(res) == length(.l[[1L]])) {
-    names(res) <- names(.l[[1L]])
-  }
-  res
 }
 
 # these functions also work with primitives etc.
@@ -87,7 +48,13 @@ nv_minval <- function(dtype, device) {
   } else if (dtype == "bool") {
     nv_scalar(FALSE, dtype = "bool", device = device)
   } else {
-    nv_scalar(globals$ranges_raw[[dtype]]$min, dtype = dtype, device = device)
+    nv_scalar(pjrt_buffer(
+      globals$ranges_raw[[dtype]]$min,
+      dtype = dtype,
+      device = device,
+      row_major = TRUE,
+      shape = integer()
+    ))
   }
 }
 
@@ -98,7 +65,13 @@ nv_maxval <- function(dtype, device) {
   } else if (dtype == "bool") {
     nv_scalar(TRUE, dtype = "bool", device = device)
   } else {
-    nv_scalar(globals$ranges_raw[[dtype]]$max, dtype = dtype, device = device)
+    nv_scalar(pjrt_buffer(
+      globals$ranges_raw[[dtype]]$max,
+      dtype = dtype,
+      device = device,
+      row_major = TRUE,
+      shape = integer()
+    ))
   }
 }
 
@@ -108,10 +81,6 @@ without <- function(x, indices) {
   } else {
     x
   }
-}
-
-zero_env <- function() {
-  new.env(size = 0L, parent = emptyenv())
 }
 
 shape2string <- function(x, parenthesize = TRUE) {
@@ -178,8 +147,16 @@ dtype2string <- function(dtype, ambiguous = FALSE) {
   paste0(repr(dtype), if (ambiguous) "?")
 }
 
-is_lit <- function(x) {
-  test_scalar(x) && (is.numeric(x) || is.logical(x))
+is_valid_r_lit <- function(x) {
+  test_scalar(x) && (is.numeric(x) || is.logical(x)) && is.null(dim(x))
+}
+
+is_valid_r_array <- function(x) {
+  is.array(x) && (is.numeric(x) || is.logical(x))
+}
+
+is_valid_r <- function(x) {
+  (is.numeric(x) || is.logical(x)) && (is.array(x) || (length(x) == 1L))
 }
 
 cache_size <- function(f) {
@@ -267,4 +244,36 @@ scatter_to_gather_slice_sizes <- function(
     }
   }
   slice_sizes
+}
+
+is_device_arg <- function(x) {
+  inherits(x, "AnvilDeviceArg")
+}
+
+# returns list(device | NULL, backend)
+resolve_device <- function(device, backend) {
+  if (is.character(device)) {
+    backend <- backend %||% default_backend()
+    device <- if (backend == "auto") {
+      nv_device(device, default_backend())
+    } else {
+      nv_device(device, backend)
+    }
+    return(list(device, backend))
+  }
+  if (is.null(device)) {
+    return(list(NULL, backend %||% default_backend()))
+  }
+  # concrete device
+  if (is.null(backend) || (backend == "auto")) {
+    return(list(device, backend(device)))
+  }
+  if (backend(device) != backend) {
+    cli_abort(c(
+      "Backend of requested device does not match requested backend",
+      i = "backend(device) = {backend(device)}",
+      i = "backend = {backend}"
+    ))
+  }
+  list(device, backend)
 }

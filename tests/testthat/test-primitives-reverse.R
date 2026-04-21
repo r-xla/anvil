@@ -1,4 +1,4 @@
-# most pullback tests are in extra-tests for comparison with torch
+# most reverse tests are in extra-tests for comparison with torch
 # Just a few selected ones that don't use torch are here
 
 test_that("p_dot_general: vector dot product gradient", {
@@ -237,7 +237,7 @@ test_that("p_if", {
   # TODO:
   #f <- jit(gradient(
   #  function(pred, x) {
-  #    nvl_if(pred, x * nv_scalar(1), x * nv_scalar(2))
+  #    nvl_if(pred, \() x * nv_scalar(1), \() x * nv_scalar(2))
   #  },
   #  wrt = "x"
   #))
@@ -664,7 +664,7 @@ describe("p_gather", {
         mean(x[nv_array(5:7)]^2)
       })(x)
       g2 <- gradient(function(x) {
-        mean(x[list(4, 4, 4, 4)]^2)
+        mean(x[array(c(4L, 4L, 4L, 4L))]^2)
       })(x)
       list(g1[[1L]], g2[[1L]])
     })
@@ -689,7 +689,7 @@ describe("p_scatter", {
     update <- nv_array(1:10, dtype = "f32")
     f <- function(update) {
       x <- nv_array(0)
-      x[as.list(rep(1L, 10))] <- update
+      x[array(rep(1L, 10))] <- update
       mean(x^2)
     }
     g <- jit(\(update) {
@@ -792,7 +792,7 @@ describe("gather/scatter reverse via subset operators", {
   })
 
   it("1D: gather", {
-    check(c(10L), list(1, 4, 7))
+    check(c(10L), array(c(1L, 4L, 7L)))
   })
 
   it("2D: single in both dims (scalar gather)", {
@@ -808,11 +808,11 @@ describe("gather/scatter reverse via subset operators", {
   })
 
   it("2D: gather in first, full second", {
-    check(c(6L, 4L), list(1, 3, 5), )
+    check(c(6L, 4L), array(c(1L, 3L, 5L)), )
   })
 
   it("2D: gather in both dims", {
-    check(c(5L, 6L), list(1, 3), list(2, 4))
+    check(c(5L, 6L), array(c(1L, 3L)), array(c(2L, 4L)))
   })
 
   it("3D: range, single, full", {

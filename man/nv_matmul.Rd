@@ -28,12 +28,10 @@ Supports batched matrix multiplication when inputs have more than 2 dimensions.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(matrix(1:6, nrow = 2))
-  y <- nv_array(matrix(1:6, nrow = 3))
-  x \%*\% y
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(matrix(1:6, nrow = 2))
+y <- nv_array(matrix(1:6, nrow = 3))
+x \%*\% y
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -20,12 +20,10 @@ Has the same shape as the inputs and boolean data type.
 Element-wise inequality comparison. You can also use the \code{!=} operator.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  y <- nv_array(c(1, 3, 2))
-  x != y
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(c(1, 2, 3))
+y <- nv_array(c(1, 3, 2))
+x != y
 \dontshow{\}) # examplesIf}
 }
 \seealso{

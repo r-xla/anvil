@@ -18,11 +18,9 @@ Has the same shape and data type as the input.
 Element-wise \code{exp(x) - 1}, more accurate for small \code{x}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(0, 0.001, 1))
-  nv_expm1(x)
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(c(0, 0.001, 1))
+nv_expm1(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

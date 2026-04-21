@@ -10,11 +10,11 @@ nv_if(pred, true, false)
 \item{pred}{(\code{\link{arrayish}} of boolean type, scalar)\cr
 Predicate.}
 
-\item{true}{(\code{expression})\cr
-Expression for the true branch (non-standard evaluation).}
+\item{true}{(\verb{function()})\cr
+Zero-argument function for the true branch.}
 
-\item{false}{(\code{expression})\cr
-Expression for the false branch (non-standard evaluation).
+\item{false}{(\verb{function()})\cr
+Zero-argument function for the false branch.
 Must return outputs with the same shapes as the true branch.}
 }
 \value{
@@ -26,8 +26,8 @@ Unlike \code{\link[=nv_ifelse]{nv_ifelse()}}, which selects elements, this execu
 of the two branches depending on a scalar predicate.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval(nv_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+nv_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -44,25 +44,19 @@ x
 * Static & Drop:
 
   ```{r}
-  jit_eval({
-    x[2]
-  })
+  x[2]
   ```
 
 * Static & Keep:
 
   ```{r}
-  jit_eval({
-    x[list(2)]
-  })
+  x[array(2L)]
   ```
 
 * Dynamic & Drop:
 
   ```{r}
-  jit_eval({
-    x[nv_scalar(2L)]
-  })
+  x[nv_scalar(2L)]
   ```
 
 * Dynamic & Keep:
@@ -72,9 +66,7 @@ x
   This ensures that the dimensionality of the result is the same for any 1D subset specification, and not suddenly "simplify" the result to 0D.
 
   ```{r}
-  jit_eval({
-    x[nv_array(2L)]
-  })
+  x[nv_array(2L)]
   ```
 
 Next, we subset multiple elements, where we only have to distinguish between static and dynamic indices.
@@ -82,31 +74,23 @@ Next, we subset multiple elements, where we only have to distinguish between sta
 * Static
 
   ```{r}
-  jit_eval({
-    x[list(2, 4, 6)]
-  })
+  x[array(c(2, 4, 6))]
   ```
 
 * Dynamic
 
   ```{r}
-  jit_eval({
-    x[nv_array(c(2L, 4L, 6L))]
-  })
+  x[nv_array(c(2L, 4L, 6L))]
   ```
 
-We are using `list()` instead of 1-dimension vectors, because otherwise the case where we use a length-1 vector would be ambiguous (do we drop or keep the dimension?).
+We use `array()` (wrapping a length-1 or longer integer vector) instead of a bare R vector, because otherwise the case where we use a length-1 vector would be ambiguous (do we drop or keep the dimension?).
 This allows us to do without a `drop` parameter.
 
 We can also use a range that can be specified either canonically via `a:b` or using `nv_seq()`.
 
 ```{r}
-jit_eval({
-  x[2:5]
-})
-jit_eval({
-  x[nv_seq(2, 5)]
-})
+x[2:5]
+x[nv_seq(2, 5)]
 ```
 
 Note that the `a:b` syntax works via Non-Standard-Evaluation (NSE), so we can distinguish it from the actual vector `2:5`.
@@ -115,9 +99,7 @@ Internally, it is translated to `nv_seq(a, b)`.
 It is also possible to select the whole range by omitting the specification altogether.
 
 ```{r}
-jit_eval({
-  x[]
-})
+x[]
 ```
 
 ### Subsetting higher-dimensional arrays
@@ -132,30 +114,14 @@ x
 Combining subsets just works like one would expect.
 
 ```{r}
-jit_eval({
-  x[1, ]
-})
-jit_eval({
-  x[1, 2]
-})
-jit_eval({
-  x[list(1), 2:3]
-})
-jit_eval({
-  x[list(1, 3), 2:3]
-})
-jit_eval({
-  x[1:2, 2:3]
-})
-jit_eval({
-  x[1, 2:3]
-})
-jit_eval({
-  x[list(2, 2), ]
-})
-jit_eval({
-  x[list(2, 2)]
-})
+x[1, ]
+x[1, 2]
+x[array(1), 2:3]
+x[array(c(1, 3)), 2:3]
+x[1:2, 2:3]
+x[1, 2:3]
+x[array(c(2, 2)), ]
+x[array(c(2, 2))]
 ```
 
 ### Out-of-bounds Handling
@@ -163,12 +129,8 @@ jit_eval({
 If one specifies out-of-bounds indices, we can only throw an error if the indices are static (we know them at compile time), as the XLA backend that {anvil} compiles to, does not throw errors when using out-of-bounds indices, but instead clamps them to the valid range:
 
 ```{r}
-jit_eval({
-  x[nv_array(-1L), nv_array(100L)]
-})
-jit_eval({
-  x[nv_array(1L), nv_array(4L)]
-})
+x[nv_array(-1L), nv_array(100L)]
+x[nv_array(1L), nv_array(4L)]
 ```
 
 Therefore, you need to be careful when using dynamic indexing in order to avoid bugs.
@@ -180,23 +142,19 @@ The value to write must either have the shape of the subset, or be a scalar.
 
 ```{r}
 x
-jit_eval({
-  x[, 3] <- nv_array(-(1:3))
-  x
-})
-jit_eval({
-  x[, 3] <- -99L
-  x
-})
+x[, 3] <- nv_array(-(1:3))
+x
+x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
+x[, 3] <- -99L
+x
 ```
 
 Also, it must have a data type that is convertible to the data type of the array.
 
 ```{r, error = TRUE}
-jit_eval({
-  x[, 3] <- nv_array(c(1.5, 2.5, 3.5))
-  x
-})
+x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
+x[, 3] <- nv_array(c(1.5, 2.5, 3.5))
+x
 ```
 
 ### Out-of-bounds Handling
@@ -206,10 +164,8 @@ For dynamic indices, out-of-bounds writes are simply ignored:
 
 ```{r}
 x <- nv_array(1:5)
-jit_eval({
-  x[nv_array(c(1L, 100L, 3L))] <- nv_array(c(-1L, -2L, -3L))
-  x
-})
+x[nv_array(c(1L, 100L, 3L))] <- nv_array(c(-1L, -2L, -3L))
+x
 ```
 
 Here, the write to index 100 is silently ignored, while indices 1 and 3 are updated.
@@ -221,8 +177,6 @@ Specifically, this might differ between backends (CPU vs. GPU).
 
 ```{r}
 x <- nv_array(1:5)
-jit_eval({
-  x[list(1, 1, 1)] <- nv_array(c(10L, 20L, 30L))
-  x
-})
+x[array(c(1L, 1L, 1L))] <- nv_array(c(10L, 20L, 30L))
+x
 ```

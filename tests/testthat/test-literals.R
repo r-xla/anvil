@@ -90,7 +90,8 @@ test_that("can use integers, logicals and doubles", {
     nv_scalar(2.0)
   )
   f3 <- function(x) {
-    x == TRUE # nolint
+    # jarl-ignore redundant_equals: testing literal TRUE comparison
+    x == TRUE
   }
   expect_equal(
     jit(f3)(nv_scalar(TRUE)),

@@ -36,11 +36,9 @@ Lowers to \code{\link[stablehlo:hlo_reverse]{stablehlo::hlo_reverse()}}.
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 2, 3, 4, 5))
-  nvl_reverse(x, dims = 1L)
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(c(1, 2, 3, 4, 5))
+nvl_reverse(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

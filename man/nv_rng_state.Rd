@@ -4,11 +4,14 @@
 \alias{nv_rng_state}
 \title{Generate RNG State}
 \usage{
-nv_rng_state(seed)
+nv_rng_state(seed, device = default_device())
 }
 \arguments{
-\item{seed}{(\code{integer(1)})\cr
-Seed value.}
+\item{seed}{(\code{\link{arrayish}})\cr
+Scalar \code{i32} seed value.}
+
+\item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{quickr_device}} | \code{NULL})\cr
+Device for data to live on.}
 }
 \value{
 \code{\link{nv_array}} of dtype \code{ui64} and shape \code{(2)}.
@@ -18,11 +21,9 @@ Creates an initial RNG state from a seed. This state is required by all
 random sampling functions and is updated after each call.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  state <- nv_rng_state(42L)
-  state
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+state <- nv_rng_state(42L)
+state
 \dontshow{\}) # examplesIf}
 }
 \seealso{

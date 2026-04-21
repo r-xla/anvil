@@ -25,11 +25,9 @@ Returns the input unchanged if it already has the target shape.
 Note that row-major order is used, which differs from R's column-major order.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(1:6)
-  nv_reshape(x, c(2, 3))
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(1:6)
+nv_reshape(x, c(2, 3))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

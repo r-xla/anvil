@@ -4,7 +4,7 @@
 \alias{nv_read}
 \title{Read arrays from a file}
 \usage{
-nv_read(path, device = NULL)
+nv_read(path, device = NULL, backend = default_backend())
 }
 \arguments{
 \item{path}{(\code{character(1)})\cr
@@ -13,6 +13,10 @@ Path to the safetensors file.}
 \item{device}{(\code{NULL} | \code{character(1)} | \code{\link[pjrt:pjrt_device]{PJRTDevice}})\cr
 The device on which to place the loaded arrays (\code{"cpu"}, \code{"cuda"}, ...).
 Default is to use the CPU.}
+
+\item{backend}{(\code{character(1)})\cr
+Backend for the loaded arrays.
+Defaults to \code{default_backend()}.}
 }
 \value{
 Named \code{list} of \code{\link{AnvilArray}} objects.
@@ -26,7 +30,7 @@ This is a convenience wrapper around \code{\link[=nv_unserialize]{nv_unserialize
 closes a file connection.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded("cpu")) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded("cpu")) withAutoprint(\{ # examplesIf}
 x <- nv_array(array(1:6, dim = c(2, 3)))
 x
 path <- tempfile(fileext = ".safetensors")

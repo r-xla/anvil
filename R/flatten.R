@@ -91,7 +91,7 @@ build_tree <- function(x, counter = NULL) {
 
 #' @export
 build_tree.list <- function(x, counter = NULL) {
-  counter <- counter %??% new_counter()
+  counter <- counter %||% new_counter()
   out <- lapply(unname(x), build_tree, counter = counter)
   # basically non-recursive unlist that maintains list structure even for atomics (unlist(list(1, 2))
   # would become c(1, 2))
@@ -103,7 +103,7 @@ build_tree.list <- function(x, counter = NULL) {
 
 #' @export
 build_tree.default <- function(x, counter = NULL) {
-  counter <- counter %??% new_counter()
+  counter <- counter %||% new_counter()
   i <- counter[["i"]] + 1L
   counter[["i"]] <- i
   LeafNode(i)
@@ -232,6 +232,50 @@ tree_size.ListNode <- function(x) {
 #' @export
 tree_size.MarkedListNode <- function(x) {
   sum(vapply(x$nodes, tree_size, integer(1L)))
+}
+
+#' @title Tree Path
+#' @description
+#' Returns the human-readable path for a single leaf node identified by its
+#' flat index. Only descends into the branch containing the target leaf,
+#' making it efficient for error reporting.
+#' @param node (`Node`)\cr
+#'   A tree node as returned by [build_tree()].
+#' @param i (`integer(1)`)\cr
+#'   The flat index of the leaf (as stored in `LeafNode$i`).
+#' @param prefix (`character(1)`)\cr
+#'   Path prefix. Used internally during recursion; callers should leave as `""`.
+#' @return A scalar `character` string.
+#' @seealso [build_tree()], [flatten()]
+#' @export
+tree_path <- function(node, i, prefix = "") {
+  UseMethod("tree_path")
+}
+
+#' @export
+tree_path.LeafNode <- function(node, i, prefix = "") {
+  prefix
+}
+
+#' @export
+tree_path.ListNode <- function(node, i, prefix = "") {
+  for (j in seq_along(node$nodes)) {
+    child <- node$nodes[[j]]
+    nm <- if (!is.null(node$names)) node$names[j] else ""
+    suffix <- if (nzchar(nm)) {
+      if (nzchar(prefix)) paste0("$", nm) else nm
+    } else {
+      paste0("[[", j, "]]")
+    }
+    child_prefix <- paste0(prefix, suffix)
+    if (inherits(child, "LeafNode")) {
+      if (child$i == i) return(child_prefix)
+    } else {
+      result <- tree_path(child, i, child_prefix)
+      if (!is.null(result)) return(result)
+    }
+  }
+  NULL
 }
 
 #' @title Filter List Node

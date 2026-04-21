@@ -22,11 +22,9 @@ Has the same shape and data type as the input.
 Element-wise rounding. You can also use the \code{round()} generic.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1.4, 2.5, 3.6))
-  round(x)
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(c(1.4, 2.5, 3.6))
+round(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

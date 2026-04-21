@@ -46,22 +46,21 @@ test_that("integration: MNIST-shaped classifier training from rank-5 image batch
     )
   ))
 
-  f_quick <- graph_to_quickr_function(graph)
+  f_quick <- graph_to_quickr_function(graph, unwrap = TRUE)
   f_r <- graph_to_quickr_r_function(graph)
   run_pjrt <- compile_graph_pjrt(graph)
 
   out_r0 <- f_r(X, Y, W, b)
   out_quick0 <- f_quick(X, Y, W, b)
   out_pjrt0 <- run_pjrt(X, Y, W, b)
-  out_r0 <- normalize_quickr_output(out_r0, out_pjrt0)
   expect_equal(out_quick0, out_pjrt0, tolerance = 1e-10)
   expect_equal(out_r0, out_pjrt0, tolerance = 1e-10)
 
   lr <- 0.1
   losses <- numeric(5)
   for (iter in seq_along(losses)) {
-    out_quick <- f_quick(X, Y, W, b)
     out_pjrt <- run_pjrt(X, Y, W, b)
+    out_quick <- f_quick(X, Y, W, b)
     expect_equal(out_quick, out_pjrt, tolerance = 1e-10)
 
     losses[[iter]] <- as.numeric(out_quick$loss)
@@ -109,14 +108,13 @@ test_that("integration: tfp/greta-like log_prob + grad workflow via quickr", {
     )
   ))
 
-  f_quick <- graph_to_quickr_function(graph)
+  f_quick <- graph_to_quickr_function(graph, unwrap = TRUE)
   f_r <- graph_to_quickr_r_function(graph)
   run_pjrt <- compile_graph_pjrt(graph)
 
   out_r0 <- f_r(0.1, -0.2)
-  out_quick0 <- f_quick(0.1, -0.2)
   out_pjrt0 <- run_pjrt(0.1, -0.2)
-  out_r0 <- normalize_quickr_output(out_r0, out_pjrt0)
+  out_quick0 <- f_quick(0.1, -0.2)
   expect_equal(out_quick0, out_pjrt0, tolerance = 1e-10)
   expect_equal(out_r0, out_pjrt0, tolerance = 1e-10)
 
@@ -131,8 +129,8 @@ test_that("integration: tfp/greta-like log_prob + grad workflow via quickr", {
 
   step <- 0.01
   for (iter in seq_len(10)) {
-    out_quick <- f_quick(w_quick, b_quick)
     out_pjrt <- run_pjrt(w_pjrt, b_pjrt)
+    out_quick <- f_quick(w_quick, b_quick)
 
     expect_equal(out_quick$log_prob, out_pjrt$log_prob, tolerance = 1e-12)
     expect_equal(out_quick$grad$w, out_pjrt$grad$w, tolerance = 1e-12)
@@ -147,7 +145,8 @@ test_that("integration: tfp/greta-like log_prob + grad workflow via quickr", {
     expect_equal(b_quick, b_pjrt, tolerance = 1e-12)
   }
 
-  lp1_quick <- as.numeric(f_quick(w_quick, b_quick)$log_prob)
+  final_quick <- f_quick(w_quick, b_quick)
+  lp1_quick <- as.numeric(final_quick$log_prob)
   lp1_pjrt <- as.numeric(run_pjrt(w_pjrt, b_pjrt)$log_prob)
   expect_equal(lp1_quick, lp1_pjrt, tolerance = 1e-12)
   expect_gt(lp1_quick, lp0)

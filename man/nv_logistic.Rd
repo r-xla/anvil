@@ -18,11 +18,9 @@ Has the same shape and data type as the input.
 Element-wise logistic sigmoid: \code{1 / (1 + exp(-x))}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(-2, 0, 2))
-  nv_logistic(x)
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(c(-2, 0, 2))
+nv_logistic(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

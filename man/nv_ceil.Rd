@@ -18,11 +18,9 @@ Has the same shape and data type as the input.
 Element-wise ceiling (round toward positive infinity). You can also use \code{ceiling()}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1.2, 2.7, -1.5))
-  ceiling(x)
-})
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
+x <- nv_array(c(1.2, 2.7, -1.5))
+ceiling(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

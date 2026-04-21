@@ -82,9 +82,9 @@ env_get <- function(env, gval) {
 #'   - The list of [`GraphValue`]s holding [`ConcreteArray`]s.
 #' @seealso [`trace_fn()`], [`jit()`], [`xla()`]
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2))
-#' graph <- trace_fn(function(y) y + x, list(y = nv_abstract("f32", shape = c())))
+#' graph <- trace_fn(function(y) y + x, list(y = nv_aval("f32", shape = c())))
 #' graph
 #' stablehlo(graph)
 stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = character()) {

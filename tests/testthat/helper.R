@@ -5,57 +5,70 @@ expect_jit_equal <- function(.expr, .expected, ...) {
   testthat::expect_equal(observed, .expected, ...)
 }
 
-expect_jit_error <- function(.expr, .error, ...) {
-  expr <- substitute(.expr)
-  eval_env <- new.env(parent = parent.frame())
-  testthat::expect_error(jit(\() eval(expr, envir = eval_env))(), .error, ...)
-}
+# Cross-check an API function by running it in two configurations:
+#   - eager mode with every AnvilArray input on cpu:1
+#   - jit-compiled (static args forwarded) with every AnvilArray input on cpu:0
+# and asserting that
+#   1. the eager outputs live on cpu:1
+#   2. the jit outputs live on cpu:0
+#   3. the two outputs agree value-wise (as plain R structures)
+#
+# `static` is forwarded to `jit()` and names the arguments that the jitted
+# compilation should capture as compile-time constants.
+check_eager <- function(fn, ..., static = character(), tolerance = 1e-6) {
+  dev_eager <- nv_device("cpu:1", "xla")
+  dev_jit <- nv_device("cpu:0", "xla")
+  args <- list(...)
 
-expect_jit_unary <- function(nv_fun, rfun, x, scalar = !is.array(x)) {
-  f <- jit(function(a) {
-    nv_fun(a)
-  })
-
-  out <- if (scalar) {
-    f(nv_scalar(x))
-  } else {
-    f(nv_array(x))
+  place_on <- function(x, dev) {
+    if (is_anvil_array(x)) {
+      nv_array(
+        as_array(x),
+        dtype = dtype(x),
+        device = dev,
+        shape = shape(x),
+        ambiguous = ambiguous(x)
+      )
+    } else {
+      x
+    }
   }
-  testthat::expect_equal(as_array(out), rfun(x), tolerance = 1e-6)
-}
 
-expect_jit_binary <- function(nv_fun, rfun, x, y, scalar = TRUE) {
-  f <- jit(function(a, b) {
-    nv_fun(a, b)
-  })
-  out <- if (scalar) {
-    f(nv_scalar(x), nv_scalar(y))
-  } else {
-    f(nv_array(x), nv_array(y))
+  to_r <- function(x) {
+    if (is_anvil_array(x)) {
+      as_array(x)
+    } else if (is.list(x)) {
+      lapply(x, to_r)
+    } else {
+      x
+    }
   }
-  testthat::expect_equal(as_array(out), rfun(x, y), tolerance = 1e-6)
-}
 
-expect_grad_unary <- function(nv_fun, d_rfun, x) {
-  gfun <- jit(gradient(function(a) nv_fun(a)))
-  gout <- gfun(nv_scalar(x))[[1L]]
-  testthat::expect_equal(as_array(gout), d_rfun(x), tolerance = 1e-5)
-}
-
-expect_grad_binary <- function(nv_fun, d_rx, d_ry, x, y) {
-  gfun <- jit(gradient(function(a, b) nv_fun(a, b)))
-  gout <- gfun(nv_scalar(x), nv_scalar(y))
-  gx <- as_array(gout[[1L]])
-  gy <- as_array(gout[[2L]])
-
-  testthat::expect_equal(gx, d_rx(x, y), tolerance = 1e-5)
-  testthat::expect_equal(gy, d_ry(x, y), tolerance = 1e-5)
-}
-
-skip_if_not_cpu <- function(msg = "") {
-  if (is_cuda()) {
-    testthat::skip(sprintf("Skipping test on %s device: %s", platform, msg))
+  # Recursively walk `out` and assert every AnvilArray lives on `dev`.
+  check_on_device <- function(out, dev) {
+    if (is_anvil_array(out)) {
+      testthat::expect_true(
+        eq_device(device(out), dev),
+        info = sprintf(
+          "expected output on %s, got %s",
+          as.character(dev),
+          as.character(device(out))
+        )
+      )
+    } else if (is.list(out)) {
+      lapply(out, check_on_device, dev = dev)
+    }
+    invisible(NULL)
   }
+
+  out_eager <- do.call(fn, lapply(args, place_on, dev = dev_eager))
+  out_jit <- do.call(
+    jit(fn, static = static),
+    lapply(args, place_on, dev = dev_jit)
+  )
+  check_on_device(out_eager, dev_eager)
+  check_on_device(out_jit, dev_jit)
+  testthat::expect_equal(to_r(out_eager), to_r(out_jit), tolerance = tolerance)
 }
 
 is_cuda <- function() {
@@ -66,58 +79,45 @@ is_cpu <- function() {
   Sys.getenv("PJRT_PLATFORM", "cpu") == "cpu"
 }
 
-generate_test_data <- function(dimension, dtype = "f64", non_negative = FALSE) {
-  data <- if (dtype == "bool") {
-    sample(c(TRUE, FALSE), size = prod(dimension), replace = TRUE)
-  } else if (dtype %in% c("ui8", "ui16", "ui32", "ui64")) {
-    sample(0:20, size = prod(dimension), replace = TRUE)
-  } else if (dtype %in% c("i8", "i16", "i32", "i64")) {
-    test_data <- as.integer(rgeom(prod(dimension), 0.5))
-    if (!non_negative) {
-      test_data <- as.integer((-1)^rbinom(prod(dimension), 1, 0.5) * test_data)
-    }
-    test_data
-  } else {
-    if (!non_negative) {
-      rnorm(prod(dimension), mean = 0, sd = 1)
-    } else {
-      rchisq(prod(dimension), df = 1)
-    }
-  }
-
-  array(data, dim = dimension)
-}
-
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
 }
 
 verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
+  # We can only take gradients w.r.t. float arrays, so the outer input is f32
+  # and the actual dtype is restored inside the function before calling nvl_fn.
+  x_dtype <- dtype(x)
+  x_f32 <- nv_convert(x, "f32")
   if (is.null(f_wrapper)) {
     f <- function(x) {
-      out <- nvl_fn(x)
+      x_inner <- nv_convert(x, x_dtype)
+      out <- nvl_fn(x_inner)
       out <- nv_convert(out, "f32")
       nv_reduce_sum(out, dims = 1L, drop = TRUE)
     }
   } else {
     f <- f_wrapper
   }
-  grads <- jit(gradient(f))(x)
-  shp <- shape(x)
-  expected <- nv_array(0, shape = shp, dtype = dtype(x), ambiguous = ambiguous(x))
+  grads <- jit(gradient(f))(x_f32)
+  expected <- nv_array(0, shape = shape(x), dtype = "f32")
   testthat::expect_equal(grads[[1L]], expected)
 }
 
 verify_zero_grad_binary <- function(nvl_fn, x, y) {
+  x_dtype <- dtype(x)
+  y_dtype <- dtype(y)
+  x_f32 <- nv_convert(x, "f32")
+  y_f32 <- nv_convert(y, "f32")
   f <- function(x, y) {
-    out <- nvl_fn(x, y)
+    x_inner <- nv_convert(x, x_dtype)
+    y_inner <- nv_convert(y, y_dtype)
+    out <- nvl_fn(x_inner, y_inner)
     out <- nv_convert(out, "f32")
     nv_reduce_sum(out, dims = 1L, drop = TRUE)
   }
-  grads <- jit(gradient(f))(x, y)
-  shp <- shape(x)
-  expected1 <- nv_array(0, shape = shp, dtype = dtype(x), ambiguous = ambiguous(x))
-  expected2 <- nv_array(0, shape = shp, dtype = dtype(y), ambiguous = ambiguous(y))
+  grads <- jit(gradient(f))(x_f32, y_f32)
+  expected1 <- nv_array(0, shape = shape(x), dtype = "f32")
+  expected2 <- nv_array(0, shape = shape(y), dtype = "f32")
   testthat::expect_equal(grads[[1L]], expected1)
   testthat::expect_equal(grads[[2L]], expected2)
 }
