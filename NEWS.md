@@ -8,17 +8,19 @@
 * Subsetting with `list()` (e.g. `x[list(1, 3)]`) is no longer supported.
   Use `array()` to wrap the indices instead, e.g. `x[array(c(1L, 3L))]`.
   This mirrors the input convention used everywhere else in the package.
+* Removed *debug mode*.
 * Remove NSE support for `nvl_if`. It now requires passing 0-argument
   closures as `true` and `false` arguments.
-* Remove debug mode. Calling primitives outside of `jit()` is no longer
-  supported. `DebugBox`, `debug_box()`, and the debugging vignette have
-  been removed.
 
 ## New Features
 
 * Better composability:
-  `jit()`ted functions can now be traced when used within `jit()`.
-* An experimental [{quickr}](https://github.com/t-kalinowski/quickr) backend is now available.
+  `jit()`ted functions can now be used in other `jit()`-calls.
+  This is the mechanism underlying the new *eager mode*.
+* *Eager mode* was added:
+  This means, you can now do `nv_add(1, nv_array(1:2))` and it will
+  actually perform the computation and not only do type inference.
+* An experimental [{quickr}](https://github.com/t-kalinowski/quickr) backend was added
   It only runs on CPU for now and supports a subset of available operations.
   You can enable it via the `backend` argument in `jit()` and
   `nv_array()` or via the `anvil.default_backend` option.
@@ -30,6 +32,8 @@
   * `nv_eye()` to create an identity matrix.
   * `nv_solve()` to solve a system of linear equations.
   * `nv_cholesky()` to compute the Cholesky decomposition of a matrix.
+  * `nv_device()` constructs a backend-specific device object (e.g. `nv_device("cpu")`)
+    that can be passed as `device` to array constructors like `nv_fill()` or `nv_iota()`.
 * New S3 methods `dim()`, `nrow()`, `ncol()`, and `length()` for anvil arrays.
 * Printing tensors via `nv_print()` now also works on GPUs.
 * R vectors of length 1 and arrays are now auto-converted when being passed
@@ -60,7 +64,6 @@
 * To use the CUDA backend, it is now possible to install the `cuda12.8`
   package (see installation guide), which only requires a compatible CUDA
   driver.
-
 
 # anvil 0.1.0
 

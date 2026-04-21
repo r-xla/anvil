@@ -49,10 +49,9 @@ more details.
 
 ## Quick Start
 
-Below, we create a standard R function. We cannot directly call this
-function, but first need to wrap it in a `jit()` call. If the resulting
-function is then called on `AnvilArray`s – the primary data type in
-{anvil} – it will be JIT compiled and subsequently executed.
+Below, we create an R function and `jit()` it. Then, we call the
+resulting function on `AnvilArray`s, which will compile and subsequently
+execute it.
 
 ``` r
 library(anvil)

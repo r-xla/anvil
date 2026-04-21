@@ -90,6 +90,30 @@ test_that("nv_rbinom", {
   expect_equal(shape(out3[[2]]), c(3L, 3L))
 })
 
+test_that("nv_runif works the same across devices (eager)", {
+  state <- nv_rng_state(42L)
+  check_eager(
+    function(state) nv_runif(c(2, 3), state, dtype = "f32", lower = -1, upper = 1),
+    state
+  )
+})
+
+test_that("nv_rnorm works the same across devices (eager)", {
+  state <- nv_rng_state(42L)
+  check_eager(
+    function(state) nv_rnorm(c(2, 3), state, dtype = "f32", mu = 1, sigma = 2),
+    state
+  )
+})
+
+test_that("nv_rbinom works the same across devices (eager)", {
+  state <- nv_rng_state(42L)
+  check_eager(
+    function(state) nv_rbinom(c(2, 3), state, n = 4L, prob = 0.3, dtype = "i32"),
+    state
+  )
+})
+
 test_that("nv_rdunif", {
   # statistical validity checks are in inst/random
 
@@ -115,4 +139,20 @@ test_that("nv_rdunif", {
   g3 <- jit(f3)
   out3 <- g3()
   expect_equal(shape(out3[[2]]), c(2L, 3L))
+})
+
+test_that("nv_rdunif works the same across devices (eager)", {
+  state <- nv_rng_state(42L)
+  check_eager(
+    function(state) nv_rdunif(10L, state, n = 6L),
+    state
+  )
+})
+
+test_that("nv_rng_state works the same across devices (eager)", {
+  dev0 <- nv_device("cpu:0", "xla")
+  dev1 <- nv_device("cpu:1", "xla")
+  s0 <- nv_rng_state(42L, device = dev0)
+  s1 <- nv_rng_state(42L, device = dev1)
+  expect_equal(as_array(s0), as_array(s1))
 })

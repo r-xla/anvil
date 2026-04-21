@@ -55,7 +55,6 @@ nv_<name> <- nvl_<name>
 ```
 
 For ops needing custom logic, write a function. Use `shape_abstract()`, `ndims_abstract()`, and `dtype_abstract()` to access properties from arrayish values.
-
 ## Roxygen2 Documentation
 
 API functions use a consistent documentation pattern. Use templates from `man-roxygen/` where applicable.
@@ -73,9 +72,7 @@ If no proper template for a parameter or the return value exist, write the docum
 #' @template return_unary               # or return_binary, return_reduce, etc.
 #' @seealso [nvl_<name>()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval({
-#'   <example code>
-#' })
+#' <example code>
 #' @export
 ```
 
@@ -91,7 +88,7 @@ If no proper template for a parameter or the return value exist, write the docum
   - `params_reduce` — dims + drop params for reductions
 - **`@param`**: write inline for parameters not covered by templates
 - **`@seealso`**: always link to the underlying `nvl_*` primitive. Optionally link to related `nv_*` functions.
-- **`@examplesIf pjrt::plugins_downloaded()`**: wrap examples in this guard. Use `jit_eval({...})` for concise examples.
+- **`@examplesIf pjrt::plugins_downloaded()`**: wrap examples in this guard. Since all `nvl_*` functions are auto-jitted and `nv_*` functions call into `nvl_*` functions, examples can call them directly.
 - **`@family`**: use for groups of related functions (e.g. `@family rng` for all RNG functions)
 
 ### S3 methods for R generics
@@ -131,9 +128,7 @@ describe("nv_foo", {
   })
 
   it("works via the + operator", {
-    out <- jit_eval({
-      nv_array(c(1, 2)) + nv_array(c(3, 4))
-    })
+    out <- nv_array(c(1, 2)) + nv_array(c(3, 4))
     expect_equal(as_array(out), array(c(4, 6), dim = 2L))
   })
 })

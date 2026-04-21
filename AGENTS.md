@@ -22,7 +22,7 @@ Primitives are `AnvilPrimitive` objects (defined in `R/primitive.R`), stored by 
 
 ## Graph Tracing
 
-When a function is JIT-compiled, anvil traces it by executing with `GraphValue` objects instead of real data. Operations record themselves into an `AnvilGraph` (see `R/graph.R`). The graph is then lowered to StableHLO IR or quickr code for compilation.
+When a function is JIT-compiled, anvil traces it by executing with `GraphBox` objects instead of real data. Operations record themselves into an `AnvilGraph` (see `R/graph.R`). The graph is then lowered to StableHLO IR or quickr code for compilation.
 
 Key types: `GraphValue` (traced variable), `GraphLiteral` (embedded constant), `AbstractArray` (shape + dtype metadata), `AnvilGraph`.
 

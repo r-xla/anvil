@@ -1,4 +1,6 @@
 #' @include backend.R
+#' @include device.R
+#' @include array.R
 #' @title JIT compile a function
 #' @description
 #' Wraps a function so that it is traced and compiled on first call. Subsequent
@@ -313,9 +315,9 @@ to_avals <- function(args_flat, is_static_flat) {
         x
       } else if (is_anvil_array(x)) {
         nv_aval(dtype(x), shape(x), ambiguous(x))
-      } else if (is_valid_lit(x)) {
+      } else if (is_valid_r_lit(x)) {
         nv_aval(default_dtype(x), integer(), ambiguous = TRUE)
-      } else if (is_valid_array(x)) {
+      } else if (is_valid_r_array(x)) {
         nv_aval(default_dtype(x), as.integer(dim(x)), ambiguous = TRUE)
       } else {
         cli_abort("internal error: invalid input type for jit: {.cls {class(x)[1L]}}")
@@ -328,6 +330,7 @@ to_avals <- function(args_flat, is_static_flat) {
 
 # Check whether an input to jit is valid (w.r.t. information available before tracing)
 # We don't convert yet as the concrete device is only known after tracing (respecting found constant's device)
+# in_tree and i are only used for good error messages
 check_jit_input <- function(x, alloc_device, in_tree = NULL, i = NULL, copy_to_device) {
   make_path <- function() {
     if (!is.null(in_tree) && !is.null(i)) tree_path(in_tree, i) else ""

@@ -4,11 +4,14 @@
 \alias{nv_rng_state}
 \title{Generate RNG State}
 \usage{
-nv_rng_state(seed)
+nv_rng_state(seed, device = default_device())
 }
 \arguments{
 \item{seed}{(\code{\link{arrayish}})\cr
 Scalar \code{i32} seed value.}
+
+\item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{quickr_device}} | \code{NULL})\cr
+Device for data to live on.}
 }
 \value{
 \code{\link{nv_array}} of dtype \code{ui64} and shape \code{(2)}.

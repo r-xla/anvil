@@ -4,10 +4,10 @@
 \alias{nv_diag}
 \title{Diagonal Matrix}
 \usage{
-nv_diag(x)
+nv_diag(operand)
 }
 \arguments{
-\item{x}{(\code{\link{arrayish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 A 1-D array of length \code{n} whose elements become the diagonal entries.}
 }
 \value{

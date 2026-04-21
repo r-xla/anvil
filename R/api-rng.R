@@ -20,17 +20,13 @@ nv_unif_rand <- function(
   )
 
   # shift value: 9 for f32, 11 for f64
-  shift <- nv_scalar(
-    ifelse(dtype == "f32", 9L, 11L),
-    dtype = paste0("ui", sub("f(\\d+)", "\\1", dtype))
-  )
+  shift <- if (dtype == "f32") 9L else 11L
 
   # shift to the right, s.t. exponent bits are all 0
   mantissa <- nv_shift_right_logical(rbits[[2]], shift)
 
-  # interpretation of 1.0 (float) as unsigned
   one_bits <- nv_bitcast_convert(
-    nv_scalar(1.0, dtype = dtype),
+    nv_fill_like(initial_state, 1.0, shape = integer(), dtype = dtype),
     dtype = paste0("ui", sub("f(\\d+)", "\\1", dtype))
   )
 
@@ -42,7 +38,7 @@ nv_unif_rand <- function(
   U <- nv_bitcast_convert(U, dtype = dtype)
 
   # shift to [0, 1)
-  U <- nv_add(U, nv_scalar(-1, dtype = dtype))
+  U <- U - 1
 
   # return state and RVs
   list(rbits[[1]], U)
@@ -82,30 +78,27 @@ nv_runif <- function(
   shape <- assert_shapevec(shape)
 
   if (upper == lower) {
-    return(nv_broadcast_to(nv_scalar(upper, dtype = dtype), shape = shape))
+    return(nv_fill_like(initial_state, upper, shape = shape, dtype = dtype))
   }
 
-  .lower <- nv_scalar(lower, dtype = dtype)
-  .upper <- nv_scalar(upper, dtype = dtype)
-  .range <- nv_sub(.upper, .lower)
+  .range <- upper - lower
 
   # generate samples in [0, 1)
   Unif <- nv_unif_rand(initial_state = initial_state, shape = shape, dtype = dtype)
   U <- Unif[[2]]
 
   # check if some values are <= 0
-  le_zero <- nv_le(U, nv_scalar(0, dtype = dtype))
+  le_zero <- nv_le(U, 0)
 
   # Define smallest step (like R's 0.5 * i2_32m1 philosophy)
   # for f32 and 23 mantissa bits 2^-24 lies between 0 and 2^-23,
   # the next smallest generated value.
   # Same applies for f64 and 2^-53 and 52 mantissa bits.
-  smallest_step <- nv_broadcast_to(
-    nv_scalar(
-      ifelse(dtype == "f32", 2^-24, 2^-53),
-      dtype = dtype
-    ),
-    shape = shape
+  smallest_step <- nv_fill_like(
+    initial_state,
+    ifelse(dtype == "f32", 2^-24, 2^-53),
+    shape = shape,
+    dtype = dtype
   )
 
   # Replace values <= 0 with smallest_step
@@ -114,7 +107,7 @@ nv_runif <- function(
   # expand to range
   U <- nv_mul(U, .range)
   # shift to interval
-  U <- nv_add(U, .lower)
+  Y <- U + lower
 
   return(list(Unif[[1]], U))
 }
@@ -165,14 +158,14 @@ nv_rnorm <- function(shape, initial_state, dtype = "f32", mu = 0, sigma = 1) {
   )
 
   # compute the radius R = sqrt(-2 * log(u1))
-  R <- nv_mul(nv_log(U[[2]]), nv_scalar(-2, dtype = dtype))
+  R <- nv_mul(nv_log(U[[2]]), -2)
   sqrt_R <- nv_sqrt(R)
 
   # generate second batch of ceil(n/2) random uniform variables
   Theta <- nv_unif_rand(initial_state = U[[1]], dtype = dtype, shape = as.integer(ceiling(n / 2)))
 
   # compute cos(2 * pi * u2) / sin(2 * pi * u2)
-  Theta[[2]] <- nv_mul(Theta[[2]], nv_scalar(2 * pi, dtype = dtype))
+  Theta[[2]] <- nv_mul(Theta[[2]], 2 * pi)
   sin_Theta <- nv_sine(Theta[[2]])
   cos_Theta <- nv_cosine(Theta[[2]])
 
@@ -242,7 +235,7 @@ nv_rbinom <- function(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32") {
   U <- res[[2]]
 
   # Success if U < prob
-  successes <- nv_convert(nv_lt(U, nv_scalar(prob, dtype = "f64")), dtype = dtype)
+  successes <- nv_convert(nv_lt(U, prob), dtype = dtype)
 
   result <- if (n == 1L) {
     nv_reshape(successes, shape = shape)
@@ -286,8 +279,8 @@ nv_rdunif <- function(shape, initial_state, n, dtype = "i32") {
   u <- res[[2]]
 
   cp <- nv_div(
-    nv_add(nv_iota(1L, "f64", n), 1),
-    nv_fill(n, "f64", shape = c())
+    nv_add(nv_iota_like(initial_state, dim = 1L, shape = n, dtype = "f64"), 1),
+    nv_fill_like(initial_state, n, shape = integer(), dtype = "f64")
   )
 
   u_col <- nv_reshape(u, c(n_sample, 1L))

@@ -16,7 +16,7 @@ test_that("donate: cannot also be static", {
 
 test_that("donate: no aliasing with type mismatch", {
   skip_if(!is_cpu()) # might get a segfault on other platforms
-  f <- jit(function(x) x, donate = "x")
+  f <- jit(function(x) x, device = "cpu", donate = "x")
   x <- nv_array(1)
   out <- f(x)
   expect_error(capture.output(x), "called on deleted or donated buffer")

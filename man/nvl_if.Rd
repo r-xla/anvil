@@ -11,8 +11,8 @@ nvl_if(pred, true, false)
 Scalar boolean predicate that determines which branch to execute.}
 
 \item{true, false}{(\verb{function()})\cr
-Zero-argument functions for the true and false branches. Both must return
-outputs with the same structure, dtypes, and shapes.}
+Zero-argument functions for the true and false branches. Both must return outputs
+with the same structure, dtypes, and shapes.}
 }
 \value{
 Result of the executed branch.\cr

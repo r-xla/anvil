@@ -3,10 +3,6 @@
 #' The main array object.
 #' Its type is determined by a data type and a shape.
 #'
-#' To transform arrays, apply [`jit()`]ted functions.
-#'
-#' To compare whether two abstract arrays are equal, use [`eq_type()`].
-#'
 #' @section Extractors:
 #' The following generic functions can be used to extract information from an `AnvilArray`:
 #' - [`dtype()`][tengen::dtype]: Get the data type of the array.
@@ -78,6 +74,9 @@
 #' add_one <- jit(function(x) x + 1)
 #' add_one(nv_array(1:4))
 #'
+#' # --- Eager mode (calling operations directly) ---
+#' nv_add(nv_array(1:3), nv_array(4:6))
+#'
 #' @name AnvilArray
 NULL
 
@@ -123,6 +122,106 @@ nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous 
   backend <- backend %||% default_backend()
   globals$backends[[backend]]$new_data(data, dtype, shape, device, ambiguous)
 }
+
+#' @title Convert to AnvilArray
+#' @description
+#' Use this to canonicalize inputs at the start of a function so it works
+#' both with eager executing and in combination with [`jit()`].
+#' Use [`as_anvil_array()`] for a single input and [`as_anvil_arrays()`] for multiple inputs.
+#' The latter will also ensure all arrays are from the same backend and live on the same device.
+#'
+#' @details
+#' During tracing, [boxes][GraphBox] are returned as is.
+#' During eager mode, R literals and arrays are converted to `AnvilArray`s on the specified device.
+#' For `AnvilArray` inputs, we check that they live on provided device (if specified).
+#'
+#' @param x ([`arrayish`])\cr
+#'   Input to standardize.
+#' @param ... ([`arrayish`])\cr
+#'   Inputs to align.
+#' @param device (`NULL` | [`device`])\cr
+#'   Target device. If `x` is an `AnvilArray` on a different device, an error
+#'   is raised.
+#' @return ([`AnvilArray`] for `as_anvil_array()`, `list` of [`AnvilArray`]s
+#'   for `as_anvil_arrays()`).
+#' @examplesIf pjrt::plugins_downloaded()
+#' as_anvil_array(1L)
+#' as_anvil_arrays(nv_array(1:3), 1L)
+#' @name as_anvil_array
+NULL
+
+#' @rdname as_anvil_array
+#' @export
+as_anvil_array <- function(x, device = NULL) {
+  if (is_box(x)) {
+    return(x)
+  }
+  if (!is_arrayish(x)) {
+    cli_abort("Expected arrayish input, but got {.cls {class(x)}}")
+  }
+  if (is_anvil_array(x)) {
+    if (!is.null(device) && !eq_device(device(x), nv_device(device, backend(x)))) {
+      cli_abort(c(
+        "Input is on an unexpected device.",
+        i = "Expected {.val {as.character(nv_device(device, backend(x)))}}.",
+        i = "Got {.val {as.character(device(x))}}."
+      ))
+    }
+    return(x)
+  }
+  # Raw R literals have no explicit dtype, so they are ambiguous (except for
+  # logicals, which unambiguously map to `bool`).
+  ambiguous <- !is.logical(x)
+  if (currently_tracing()) {
+    # `maybe_box_arrayish()` lifts scalars into inlined GraphLiterals and
+    # materializes R arrays as plain-backend named constants.
+    return(maybe_box_arrayish(x))
+  }
+  if (is_valid_r_lit(x)) {
+    return(nv_scalar(x, device = device, ambiguous = ambiguous))
+  }
+  nv_array(x, device = device, ambiguous = ambiguous)
+}
+
+#' @rdname as_anvil_array
+#' @export
+as_anvil_arrays <- function(...) {
+  args <- list(...)
+  # During tracing, device placement is handled by jit; just canonicalize each
+  # input so `shape()` / `dtype()` etc. work downstream.
+  # Without specifiying device, this will create arrays from the "plain" backend
+  if (currently_tracing()) {
+    return(lapply(args, as_anvil_array))
+  }
+  # Target device is the first concrete input's device, else the default.
+  dev <- default_device()
+  for (a in args) {
+    if (is_anvil_array(a) && backend(a) != "plain") {
+      dev <- device(a)
+      break
+    }
+  }
+  # Every other concrete input must match that device/backend.
+  for (a in args) {
+    if (!is_anvil_array(a) || backend(a) == "plain") {
+      next
+    }
+    if (backend(a) != backend(dev)) {
+      cli_abort(c(
+        "Found inputs from multiple backends.",
+        i = "Found backends {.val {backend(dev)}} and {.val {backend(a)}}."
+      ))
+    }
+    if (!eq_device(device(a), dev)) {
+      cli_abort(c(
+        "Found inputs living on multiple devices, which is currently not supported.",
+        i = "Found devices {.val {as.character(dev)}} and {.val {as.character(device(a))}}."
+      ))
+    }
+  }
+  lapply(args, as_anvil_array, device = dev)
+}
+
 
 is_anvil_array <- function(x) {
   inherits(x, "AnvilArray")
@@ -620,7 +719,8 @@ compare_proxy.AnvilArray <- function(x, path) { # nolint
       data = as_array(x),
       dtype = as.character(dtype(x)),
       ambiguous = ambiguous(x),
-      backend = backend(x)
+      backend = backend(x),
+      device = as.character(device(x))
     ),
     path = path
   )

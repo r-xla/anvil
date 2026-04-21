@@ -7,28 +7,36 @@
 #' @description
 #' Creates an array filled with a scalar value. More memory-efficient than
 #' `nv_array(value, shape = shape)` for large arrays.
+#'
+#' `nv_fill_like()` is a variant where `dtype`, `shape`, `ambiguous`, and
+#' `device` default to those of `like`.
 #' @param value (`numeric(1)`)\cr
 #'   Scalar value to fill the array with.
 #' @param shape (`integer()`)\cr
 #'   Shape of the output array.
 #' @param dtype (`character(1)` | `NULL`)\cr
-#'   Data type. If `NULL` (default), inferred from `value`.
+#'   Data type.
+#' @param like ([`AnvilArray`])\cr
+#'   Existing array whose attributes are used as defaults
+#'   (only for `nv_fill_like()`).
 #' @template param_ambiguous
+#' @template param_device
 #' @return [`arrayish`]\cr
 #'   Has the given `shape` and `dtype`.
 #' @seealso [nvl_fill()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' jit_eval(nv_fill(0, shape = c(2, 3)))
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nv_fill_like(x, 0)
 #' @export
-nv_fill <- function(value, shape, dtype = NULL, ambiguous = FALSE) {
+nv_fill <- function(value, shape, dtype = NULL, ambiguous = FALSE, device = NULL) {
   dtype <- if (is.null(dtype)) {
     default_dtype(value)
   } else {
     as_dtype(dtype)
   }
-  nvl_fill(value, shape, dtype, ambiguous)
+  nvl_fill(value, shape, dtype, ambiguous, device = device)
 }
-
 
 ## Conversion ------------------------------------------------------------------
 
@@ -80,8 +88,8 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
 #' })
 #' @export
 nv_broadcast_scalars <- function(...) {
-  args <- list(...)
-  shapes <- lapply(args, shape_abstract)
+  args <- as_anvil_arrays(...)
+  shapes <- lapply(args, shape)
   non_scalar_shapes <- Filter(\(s) length(s) > 0L, shapes)
 
   if (length(non_scalar_shapes) == 0L) {
@@ -97,7 +105,7 @@ nv_broadcast_scalars <- function(...) {
   }
 
   lapply(args, \(x) {
-    if (length(shape_abstract(x)) == 0L) {
+    if (length(shape(x)) == 0L) {
       nv_broadcast_to(x, target_shape)
     } else {
       x
@@ -120,13 +128,12 @@ nv_broadcast_scalars <- function(...) {
 #' })
 #' @export
 nv_promote_to_common <- function(...) {
-  args <- list(...)
-  avals <- lapply(args, to_abstract)
-  tmp <- do.call(common_type_info, avals)
+  args <- as_anvil_arrays(...)
+  tmp <- do.call(common_type_info, args)
   cdt <- tmp[[1L]]
   ambiguous <- tmp[[2L]]
   out <- lapply(seq_along(args), \(i) {
-    if (cdt == dtype(avals[[i]])) {
+    if (cdt == dtype(args[[i]])) {
       args[[i]]
     } else {
       nvl_convert(args[[i]], dtype = cdt, ambiguous = ambiguous)
@@ -158,8 +165,8 @@ nv_promote_to_common <- function(...) {
 #' })
 #' @export
 nv_broadcast_arrays <- function(...) {
-  args <- list(...)
-  shape <- Reduce(broadcast_shapes, lapply(args, shape_abstract))
+  args <- as_anvil_arrays(...)
+  shape <- Reduce(broadcast_shapes, lapply(args, shape))
   lapply(args, nv_broadcast_to, shape = shape)
 }
 
@@ -180,7 +187,8 @@ nv_broadcast_arrays <- function(...) {
 #' })
 #' @export
 nv_broadcast_to <- function(operand, shape) {
-  shape_op <- shape_abstract(operand)
+  operand <- as_anvil_array(operand)
+  shape_op <- shape(operand)
   if (!identical(shape_op, shape)) {
     broadcast_dimensions <- make_broadcast_dimensions(shape_op, shape)
     nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
@@ -205,7 +213,8 @@ nv_broadcast_to <- function(operand, shape) {
 #' })
 #' @export
 nv_convert <- function(operand, dtype) {
-  if (dtype_abstract(operand) != as_dtype(dtype)) {
+  operand <- as_anvil_array(operand)
+  if (dtype(operand) != as_dtype(dtype)) {
     nvl_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
   } else {
     operand
@@ -215,7 +224,8 @@ nv_convert <- function(operand, dtype) {
 #' @rdname nv_transpose
 #' @export
 nv_transpose <- function(x, permutation = NULL) {
-  permutation <- permutation %||% rev(seq_len(ndims_abstract(x)))
+  x <- as_anvil_array(x)
+  permutation <- permutation %||% rev(seq_len(ndims(x)))
   nvl_transpose(x, permutation)
 }
 
@@ -239,7 +249,8 @@ nv_transpose <- function(x, permutation = NULL) {
 #' })
 #' @export
 nv_reshape <- function(operand, shape) {
-  if (!identical(shape_abstract(operand), shape)) {
+  operand <- as_anvil_array(operand)
+  if (!identical(shape(operand), shape)) {
     nvl_reshape(operand, shape)
   } else {
     operand
@@ -267,9 +278,8 @@ nv_reshape <- function(operand, shape) {
 #' })
 #' @export
 nv_concatenate <- function(..., dimension = NULL) {
-  args <- list(...)
-  args <- do.call(nv_promote_to_common, args)
-  shapes <- lapply(args, shape_abstract)
+  args <- do.call(nv_promote_to_common, list(...))
+  shapes <- lapply(args, shape)
   ranks <- lengths(shapes)
   non_scalar_shapes <- shapes[ranks > 0L]
   n_scalars <- sum(ranks == 0L)
@@ -296,7 +306,7 @@ nv_concatenate <- function(..., dimension = NULL) {
   out_shape_dim_is_one <- out_shape
   out_shape_dim_is_one[dimension] <- 1L
   args <- lapply(args, \(arg) {
-    if (ndims_abstract(arg) == 0L) {
+    if (ndims(arg) == 0L) {
       nv_broadcast_to(arg, out_shape_dim_is_one)
     } else {
       arg
@@ -1013,7 +1023,11 @@ nv_popcnt <- nvl_popcnt
 #' })
 #' @export
 nv_clamp <- function(min_val, operand, max_val) {
-  op_dtype <- dtype_abstract(operand)
+  args <- as_anvil_arrays(min_val, operand, max_val)
+  min_val <- args[[1L]]
+  operand <- args[[2L]]
+  max_val <- args[[3L]]
+  op_dtype <- dtype(operand)
   min_val <- nv_convert(min_val, op_dtype)
   max_val <- nv_convert(max_val, op_dtype)
   nvl_clamp(min_val, operand, max_val)
@@ -1040,18 +1054,27 @@ nv_reverse <- nvl_reverse
 #' @description
 #' Creates an array with values increasing along the specified dimension,
 #' starting from `start`.
+#'
+#' `nv_iota_like()` is a variant where `dtype`, `shape`, `ambiguous`, and
+#' `device` default to those of `like`.
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which values increase.
+#' @param like ([`AnvilArray`])\cr
+#'   Existing array whose attributes are used as defaults
+#'   (only for `nv_iota_like()`).
 #' @template param_dtype
 #' @template param_shape
 #' @param start (`integer(1)`)\cr
 #'   Starting value (default 1).
 #' @template param_ambiguous
+#' @template param_device
 #' @return [`arrayish`]\cr
 #'   Has the given `dtype` and `shape`.
 #' @seealso [nv_seq()] for a simpler 1-D sequence, [nvl_iota()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' jit_eval(nv_iota(dim = 1L, dtype = "i32", shape = 5L))
+#' x <- nv_array(matrix(0L, nrow = 2, ncol = 3))
+#' nv_iota_like(x, dim = 1L)
 #' @export
 nv_iota <- nvl_iota
 
@@ -1061,6 +1084,9 @@ nv_iota <- nvl_iota
 #'
 #' Without `steps`, behaves like R's `seq(start, end)` producing integer values.
 #' With `steps`, produces `steps` evenly spaced values (like `seq(start, end, length.out = steps)`).
+#'
+#' `nv_seq_like()` is a variant where `dtype`, `ambiguous`, and `device`
+#' default to those of `like`.
 #' @param start,end (`numeric(1)`)\cr
 #'   Start and end values. When `steps` is `NULL`, must satisfy `start <= end`.
 #' @param steps (`integer(1)` or `NULL`)\cr
@@ -1068,26 +1094,40 @@ nv_iota <- nvl_iota
 #'   When `NULL` (default), generates consecutive integer values from `start` to `end`.
 #' @param dtype (`character(1)`)\cr
 #'   Data type. Default `"i32"` when `steps` is `NULL`, `"f32"` when `steps` is given.
+#'   For `nv_seq_like()`, `NULL` uses `dtype(like)`.
+#' @param like ([`AnvilArray`])\cr
+#'   Existing array whose attributes are used as defaults
+#'   (only for `nv_seq_like()`).
 #' @template param_ambiguous
+#' @template param_device
 #' @return [`arrayish`]\cr
 #'   1-D array of length `end - start + 1`.
 #' @examplesIf pjrt::plugins_downloaded()
 #' jit_eval(nv_seq(3, 7))
+#' x <- nv_array(c(1, 2, 3), dtype = "f64")
+#' nv_seq_like(x, 1, 5)
 #' @export
-nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE) {
+nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE, device = NULL) {
   if (is.null(steps)) {
     dtype <- dtype %||% "i32"
     assert_int(start)
     assert_int(end)
     assert(start <= end)
-    return(nv_iota(shape = end - start + 1, dtype = dtype, ambiguous = ambiguous, dim = 1L, start = start))
+    return(nv_iota(
+      shape = end - start + 1,
+      dtype = dtype,
+      ambiguous = ambiguous,
+      dim = 1L,
+      start = start,
+      device = device
+    ))
   }
   dtype <- dtype %||% "f32"
   assert_int(steps, lower = 1L)
   if (steps == 1L) {
-    return(nv_fill(start, 1L, dtype = dtype))
+    return(nv_fill(start, 1L, dtype = dtype, device = device))
   }
-  indices <- nv_iota(dim = 1L, shape = steps, dtype = dtype, start = 0L)
+  indices <- nv_iota(dim = 1L, shape = steps, dtype = dtype, start = 0L, device = device)
   indices * ((end - start) / (steps - 1L)) + start
 }
 
@@ -1114,7 +1154,10 @@ nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE) {
 #' })
 #' @export
 nv_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding = NULL) {
-  rank <- ndims_abstract(operand)
+  args <- as_anvil_arrays(operand, padding_value)
+  operand <- args[[1L]]
+  padding_value <- args[[2L]]
+  rank <- ndims(operand)
   if (is.null(interior_padding)) {
     interior_padding <- rep(0L, rank)
   }
@@ -1164,17 +1207,17 @@ nv_matmul <- function(lhs, rhs) {
   args <- nv_promote_to_common(lhs, rhs)
   lhs <- args[[1L]]
   rhs <- args[[2L]]
-  if (ndims_abstract(lhs) < 2L) {
+  if (ndims(lhs) < 2L) {
     cli_abort("lhs of matmul must have at least 2 dimensions")
   }
-  if (ndims_abstract(rhs) < 2L) {
+  if (ndims(rhs) < 2L) {
     cli_abort("rhs of matmul must have at least 2 dimensions")
   }
-  nbatch <- ndims_abstract(lhs) - 2L
+  nbatch <- ndims(lhs) - 2L
   nvl_dot_general(
     lhs,
     rhs,
-    contracting_dims = list(ndims_abstract(lhs), ndims_abstract(rhs) - 1L),
+    contracting_dims = list(ndims(lhs), ndims(rhs) - 1L),
     batching_dims = list(seq_len(nbatch), seq_len(nbatch))
   )
 }
@@ -1201,6 +1244,7 @@ nv_matmul <- function(lhs, rhs) {
 #' })
 #' @export
 nv_cholesky <- function(a, lower = TRUE) {
+  a <- as_anvil_array(a)
   nvl_cholesky(a, lower = lower)
 }
 
@@ -1233,6 +1277,9 @@ nv_cholesky <- function(a, lower = TRUE) {
 #' })
 #' @export
 nv_solve <- function(a, b) {
+  args <- as_anvil_arrays(a, b)
+  a <- args[[1L]]
+  b <- args[[2L]]
   L <- nvl_cholesky(a, lower = TRUE)
   # Solve L @ y = b
   y <- nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
@@ -1243,7 +1290,7 @@ nv_solve <- function(a, b) {
 #' @title Diagonal Matrix
 #' @description
 #' Creates a diagonal matrix from a 1-D array.
-#' @param x ([`arrayish`])\cr
+#' @param operand ([`arrayish`])\cr
 #'   A 1-D array of length `n` whose elements become the diagonal entries.
 #' @return [`arrayish`]\cr
 #'   An `n x n` matrix with `x` on the diagonal and zeros elsewhere.
@@ -1252,15 +1299,16 @@ nv_solve <- function(a, b) {
 #'   nv_diag(nv_array(c(1, 2, 3)))
 #' })
 #' @export
-nv_diag <- function(x) {
-  n <- shape_abstract(x)[1L]
-  zeros <- nv_fill(0, c(n, n), dtype = dtype_abstract(x))
-  idx <- nvl_reshape(nv_iota(dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
+nv_diag <- function(operand) {
+  operand <- as_anvil_array(operand)
+  n <- shape(operand)[1L]
+  zeros <- nv_fill_like(operand, 0, shape = c(n, n))
+  idx <- nvl_reshape(nv_iota_like(operand, dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
   indices <- nv_concatenate(idx, idx, dimension = 2L)
   nvl_scatter(
     zeros,
     indices,
-    x,
+    operand,
     update_window_dims = integer(0),
     inserted_window_dims = c(1L, 2L),
     input_batching_dims = integer(0),
@@ -1274,17 +1322,26 @@ nv_diag <- function(x) {
 #' @title Identity Matrix
 #' @description
 #' Creates an `n x n` identity matrix.
+#'
+#' `nv_eye_like()` is a variant where `dtype` and `device` default to those of
+#' `like`.
 #' @param n (`integer(1)`)\cr
 #'   Size of the identity matrix.
+#' @param like ([`arrayish`])\cr
+#'   Existing array whose attributes are used as defaults
+#'   (only for `nv_eye_like()`).
 #' @template param_dtype
+#' @template param_device
 #' @return [`arrayish`]\cr
 #'   An `n x n` identity matrix.
 #' @seealso [nv_diag()] for general diagonal matrices.
 #' @examplesIf pjrt::plugins_downloaded()
 #' jit_eval(nv_eye(3L))
+#' x <- nv_array(matrix(0, nrow = 3, ncol = 3), dtype = "f64")
+#' nv_eye_like(x, 3L)
 #' @export
-nv_eye <- function(n, dtype = "f32") {
-  nv_diag(nv_fill(1, n, dtype = dtype))
+nv_eye <- function(n, dtype = "f32", device = NULL) {
+  nv_diag(nv_fill(1, n, dtype = dtype, device = device))
 }
 
 #' @title Sum Reduction
@@ -1319,8 +1376,8 @@ nv_reduce_sum <- nvl_reduce_sum
 #' })
 #' @export
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
-  # TODO: division by zero?
-  nelts <- prod(shape_abstract(operand)[dims])
+  operand <- as_anvil_array(operand)
+  nelts <- prod(shape(operand)[dims])
   nv_reduce_sum(operand, dims, drop) / nelts
 }
 
@@ -1464,6 +1521,7 @@ nv_while <- nvl_while
 #' })
 #' @export
 nv_log2 <- function(operand) {
+  operand <- as_anvil_array(operand)
   nv_log(operand) / log(2)
 }
 
@@ -1480,6 +1538,7 @@ nv_log2 <- function(operand) {
 #' })
 #' @export
 nv_log10 <- function(operand) {
+  operand <- as_anvil_array(operand)
   nv_log(operand) / log(10)
 }
 
@@ -1496,6 +1555,7 @@ nv_log10 <- function(operand) {
 #' })
 #' @export
 nv_is_nan <- function(operand) {
+  operand <- as_anvil_array(operand)
   operand != operand
 }
 
@@ -1513,6 +1573,7 @@ nv_is_nan <- function(operand) {
 #' })
 #' @export
 nv_is_infinite <- function(operand) {
+  operand <- as_anvil_array(operand)
   !nv_is_finite(operand) & (operand == operand)
 }
 
@@ -1537,11 +1598,12 @@ nv_is_infinite <- function(operand) {
 #' })
 #' @export
 nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
+  operand <- as_anvil_array(operand)
   assert_int(correction)
-  nelts <- prod(shape_abstract(operand)[dims])
+  nelts <- prod(shape(operand)[dims])
   mean_bc <- nv_broadcast_to(
     nv_reduce_mean(operand, dims, drop = FALSE),
-    shape_abstract(operand)
+    shape(operand)
   )
   diff <- operand - mean_bc
   nv_reduce_sum(diff * diff, dims, drop) / (nelts - correction)
@@ -1566,6 +1628,7 @@ nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
 #' })
 #' @export
 nv_sd <- function(operand, dims, drop = TRUE, correction = 1L) {
+  operand <- as_anvil_array(operand)
   nv_sqrt(nv_var(operand, dims, drop, correction))
 }
 
@@ -1587,7 +1650,8 @@ nv_sd <- function(operand, dims, drop = TRUE, correction = 1L) {
 #' })
 #' @export
 nv_squeeze <- function(operand, dims = NULL) {
-  shp <- shape_abstract(operand)
+  operand <- as_anvil_array(operand)
+  shp <- shape(operand)
   if (is.null(dims)) {
     new_shape <- shp[shp != 1L]
   } else {
@@ -1621,7 +1685,8 @@ nv_squeeze <- function(operand, dims = NULL) {
 #' })
 #' @export
 nv_unsqueeze <- function(operand, dim) {
-  shp <- shape_abstract(operand)
+  operand <- as_anvil_array(operand)
+  shp <- shape(operand)
   assert_int(dim, lower = 1L, upper = length(shp) + 1L)
   new_shape <- append(shp, 1L, after = dim - 1L)
   nv_reshape(operand, new_shape)
@@ -1644,15 +1709,15 @@ nv_unsqueeze <- function(operand, dim) {
 #' })
 #' @export
 nv_outer <- function(x, y) {
-  if (ndims_abstract(x) != 1L) {
-    cli_abort("x must be a 1-D array")
-  }
-  if (ndims_abstract(y) != 1L) {
-    cli_abort("y must be a 1-D array")
-  }
   args <- nv_promote_to_common(x, y)
   x <- args[[1L]]
   y <- args[[2L]]
+  if (ndims(x) != 1L) {
+    cli_abort("x must be a 1-D array")
+  }
+  if (ndims(y) != 1L) {
+    cli_abort("y must be a 1-D array")
+  }
   x_exp <- nv_unsqueeze(x, dim = 2L)
   y_exp <- nv_unsqueeze(y, dim = 1L)
   bcast <- nv_broadcast_arrays(x_exp, y_exp)
@@ -1673,12 +1738,13 @@ nv_outer <- function(x, y) {
 #' })
 #' @export
 nv_extract_diag <- function(operand) {
-  if (ndims_abstract(operand) != 2L) {
+  operand <- as_anvil_array(operand)
+  if (ndims(operand) != 2L) {
     cli_abort("operand must be a 2-D array")
   }
-  shp <- shape_abstract(operand)
+  shp <- shape(operand)
   n <- min(shp)
-  idx <- nvl_reshape(nv_iota(dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
+  idx <- nvl_reshape(nv_iota_like(operand, dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
   indices <- nv_concatenate(idx, idx, dimension = 2L)
   nvl_gather(
     operand,
@@ -1707,6 +1773,7 @@ nv_extract_diag <- function(operand) {
 #' })
 #' @export
 nv_trace <- function(operand) {
+  operand <- as_anvil_array(operand)
   diag_vals <- nv_extract_diag(operand)
   nv_reduce_sum(diag_vals, dims = 1L, drop = TRUE)
 }
@@ -1729,15 +1796,15 @@ nv_trace <- function(operand) {
 #' })
 #' @export
 nv_tril <- function(operand, diagonal = 0L) {
-  if (ndims_abstract(operand) != 2L) {
+  operand <- as_anvil_array(operand)
+  if (ndims(operand) != 2L) {
     cli_abort("operand must be a 2-D array")
   }
   assert_int(diagonal)
-  shp <- shape_abstract(operand)
-  rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32")
-  cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32")
+  rows <- nv_iota_like(operand, dim = 1L, dtype = "i32")
+  cols <- nv_iota_like(operand, dim = 2L, dtype = "i32")
   mask <- rows >= cols - as.integer(diagonal)
-  nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand)))
+  nv_ifelse(mask, operand, nv_fill_like(operand, 0))
 }
 
 #' @title Upper Triangular Matrix
@@ -1758,15 +1825,15 @@ nv_tril <- function(operand, diagonal = 0L) {
 #' })
 #' @export
 nv_triu <- function(operand, diagonal = 0L) {
-  if (ndims_abstract(operand) != 2L) {
+  operand <- as_anvil_array(operand)
+  if (ndims(operand) != 2L) {
     cli_abort("operand must be a 2-D array")
   }
   assert_int(diagonal)
-  shp <- shape_abstract(operand)
-  rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32")
-  cols <- nv_iota(dim = 2L, shape = shp, dtype = "i32")
+  rows <- nv_iota_like(operand, dim = 1L, dtype = "i32")
+  cols <- nv_iota_like(operand, dim = 2L, dtype = "i32")
   mask <- rows <= cols - as.integer(diagonal)
-  nv_ifelse(mask, operand, nv_fill(0, shp, dtype = dtype_abstract(operand)))
+  nv_ifelse(mask, operand, nv_fill_like(operand, 0))
 }
 
 #' @title Cross Product (Matrix)
@@ -1787,7 +1854,12 @@ nv_triu <- function(operand, diagonal = 0L) {
 #' @export
 nv_crossprod <- function(x, y = NULL) {
   if (is.null(y)) {
+    x <- as_anvil_array(x)
     y <- x
+  } else {
+    args <- as_anvil_arrays(x, y)
+    x <- args[[1L]]
+    y <- args[[2L]]
   }
   nv_matmul(nv_transpose(x), y)
 }
@@ -1810,7 +1882,12 @@ nv_crossprod <- function(x, y = NULL) {
 #' @export
 nv_tcrossprod <- function(x, y = NULL) {
   if (is.null(y)) {
+    x <- as_anvil_array(x)
     y <- x
+  } else {
+    args <- as_anvil_arrays(x, y)
+    x <- args[[1L]]
+    y <- args[[2L]]
   }
   nv_matmul(x, nv_transpose(y))
 }
