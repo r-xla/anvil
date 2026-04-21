@@ -70,32 +70,43 @@ as_array(y)
     ## [1,]    1    3    5
     ## [2,]    2    4    6
 
-Working with `AnvilArray`s differs from regular R arrays – you cannot
-directly apply functions to them.
+We can transform `AnvilArray`s using {anvil} functions , as well as
+overloaded R operators:
 
 ``` r
-x + x
+nv_add(y, y)
 ```
 
-    ##      [,1] [,2] [,3]
-    ## [1,]    2    6   10
-    ## [2,]    4    8   12
+    ## AnvilArray
+    ##   2  6 10
+    ##   4  8 12
+    ## [ CPUi32{2,3} ]
 
-``` r
-y + y
-```
+This works because {anvil}’s `nv_*` and `nvl_*` functions – as well as
+the operators dispatched on `AnvilArray`s – are themselves
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)-compiled.
+When called outside of a
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) context,
+each operation is compiled and executed immediately. This is called
+*eager mode*.
 
-    ## Error in `.current_descriptor()`:
-    ## ! No graph is currently being built. Did you forget to use `jit()`?
+These functions can also be used inside a
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) call,
+where their operations are inlined into the outer computation graph
+rather than being compiled separately (see the
+[Composability](#composability) section).
 
-In order to actually perform the addition, we need to `jit`-compile the
-function, which we will cover in the next section.
+While eager mode is convenient for interactive use, compiling a larger
+function with
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) will lead
+to a more efficient binary.
 
 ## JIT Compilation
 
-In order to work with `AnvilArray`s, you need to convert the function
-you want to apply to a jit-compiled version via
-[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md).
+When many operations are applied in sequence, it is more efficient to
+compile them together into a single executable using
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md), rather
+than compiling each operation individually as in eager mode.
 
 ``` r
 plus_jit <- jit(`+`)
@@ -331,7 +342,7 @@ y <- X %*% beta + alpha + rnorm(100, sd = 0.5)
 plot(X, y)
 ```
 
-![](anvil_files/figure-html/unnamed-chunk-18-1.png)
+![](anvil_files/figure-html/unnamed-chunk-17-1.png)
 
 ``` r
 X <- nv_array(X)
@@ -394,7 +405,7 @@ for (i in 1:100) {
 }
 ```
 
-![](anvil_files/figure-html/unnamed-chunk-24-1.png)
+![](anvil_files/figure-html/unnamed-chunk-23-1.png)
 
 While this might seem like a reasonable solution, it continuously
 switches between the R interpreter and the XLA runtime. Moreover, we

@@ -91,7 +91,7 @@
 </ul></div>
 <div class="section level2">
 <h2 id="graph-tracing">Graph Tracing<a class="anchor" aria-label="anchor" href="#graph-tracing"></a></h2>
-<p>When a function is JIT-compiled, anvil traces it by executing with <code>GraphValue</code> objects instead of real data. Operations record themselves into an <code>AnvilGraph</code> (see <code>R/graph.R</code>). The graph is then lowered to StableHLO IR or quickr code for compilation.</p>
+<p>When a function is JIT-compiled, anvil traces it by executing with <code>GraphBox</code> objects instead of real data. Operations record themselves into an <code>AnvilGraph</code> (see <code>R/graph.R</code>). The graph is then lowered to StableHLO IR or quickr code for compilation.</p>
 <p>Key types: <code>GraphValue</code> (traced variable), <code>GraphLiteral</code> (embedded constant), <code>AbstractArray</code> (shape + dtype metadata), <code>AnvilGraph</code>.</p>
 </div>
 <div class="section level2">

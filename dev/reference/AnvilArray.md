@@ -3,13 +3,6 @@
 The main array object. Its type is determined by a data type and a
 shape.
 
-To transform arrays, apply
-[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)ted
-functions.
-
-To compare whether two abstract arrays are equal, use
-[`eq_type()`](https://r-xla.github.io/anvil/dev/reference/eq_type.md).
-
 ## Usage
 
 ``` r
@@ -25,6 +18,33 @@ nv_array(
 nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL)
 
 nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
+
+nv_array_like(
+  like,
+  data,
+  dtype = NULL,
+  device = NULL,
+  shape = NULL,
+  ambiguous = NULL,
+  backend = NULL
+)
+
+nv_scalar_like(
+  like,
+  data,
+  dtype = NULL,
+  device = NULL,
+  ambiguous = NULL,
+  backend = NULL
+)
+
+nv_empty_like(
+  like,
+  dtype = NULL,
+  shape = NULL,
+  device = NULL,
+  ambiguous = NULL
+)
 ```
 
 ## Arguments
@@ -76,6 +96,12 @@ nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
   [`default_backend()`](https://r-xla.github.io/anvil/dev/reference/default_backend.md).
   Must not be specified inside
   [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md).
+
+- like:
+
+  (`AnvilArray`)  
+  An existing array. Any of `dtype`, `device`, `shape`, `ambiguous`, and
+  `backend` that are `NULL` (the default) are taken from `like`.
 
 ## Value
 
@@ -189,4 +215,12 @@ add_one(nv_array(1:4))
 #>  4
 #>  5
 #> [ CPUf32?{4} ] 
+
+# --- Eager mode (calling operations directly) ---
+nv_add(nv_array(1:3), nv_array(4:6))
+#> AnvilArray
+#>  5
+#>  7
+#>  9
+#> [ CPUi32{3} ] 
 ```

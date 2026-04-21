@@ -124,7 +124,7 @@ n_warmup <- 5000L
 thin <- nv_scalar(200L)
 
 theta <- nv_array(c(0, 0), dtype = "f64")
-rng_state <- jit_eval(nv_rng_state(42L))
+rng_state <- nv_rng_state(42L)
 proposal_sd <- nv_scalar(3, dtype = "f64")
 
 result <- mh_sample(theta, rng_state, b_t, proposal_sd, thin)
@@ -171,8 +171,8 @@ The banana distribution has known analytical moments. Since \\\theta_1
 &nbsp;
 
     ##   Parameter     MH_Mean True_Mean    MH_SD   True_SD
-    ## 1    theta1 0.032508472         0 9.977817 10.000000
-    ## 2    theta2 0.008427101         0 1.720547  1.732051
+    ## 1    theta1  0.03383964         0 9.928612 10.000000
+    ## 2    theta2 -0.01169006         0 1.703516  1.732051
 
 The Metropolis-Hastings estimates closely match the analytical moments,
 confirming the correctness of our implementation.

@@ -220,7 +220,7 @@ that we are passing around the RNG state explicitly.</p>
 <span><span class="va">thin</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">200L</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">theta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>
-<span><span class="va">rng_state</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="fu"><a href="../reference/nv_rng_state.html">nv_rng_state</a></span><span class="op">(</span><span class="fl">42L</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">rng_state</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_rng_state.html">nv_rng_state</a></span><span class="op">(</span><span class="fl">42L</span><span class="op">)</span></span>
 <span><span class="va">proposal_sd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">3</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">mh_sample</span><span class="op">(</span><span class="va">theta</span>, <span class="va">rng_state</span>, <span class="va">b_t</span>, <span class="va">proposal_sd</span>, <span class="va">thin</span><span class="op">)</span></span>
@@ -266,8 +266,8 @@ successive draws are nearly independent:</p>
 </li>
 </ul>
 <pre><code><span><span class="co">##   Parameter     MH_Mean True_Mean    MH_SD   True_SD</span></span>
-<span><span class="co">## 1    theta1 0.032508472         0 9.977817 10.000000</span></span>
-<span><span class="co">## 2    theta2 0.008427101         0 1.720547  1.732051</span></span></code></pre>
+<span><span class="co">## 1    theta1  0.03383964         0 9.928612 10.000000</span></span>
+<span><span class="co">## 2    theta2 -0.01169006         0 1.703516  1.732051</span></span></code></pre>
 <p>The Metropolis-Hastings estimates closely match the analytical
 moments, confirming the correctness of our implementation.</p>
 <p>We can visualize the samples against the true density contours:</p>

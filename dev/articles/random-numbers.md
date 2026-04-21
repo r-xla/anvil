@@ -34,7 +34,7 @@ using
 
 ``` r
 library(anvil)
-state <- jit_eval(nv_rng_state(42L))
+state <- nv_rng_state(42L)
 state
 #> AnvilArray
 #>  42

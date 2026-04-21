@@ -34,12 +34,10 @@ more details.
 
 ## Quick Start
 
-Below, we create a standard R function. We cannot directly call this
-function, but first need to wrap it in a
-[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) call. If
-the resulting function is then called on `AnvilArray`s – the primary
-data type in {anvil} – it will be JIT compiled and subsequently
-executed.
+Below, we create an R function and
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) it. Then,
+we call the resulting function on `AnvilArray`s, which will compile and
+subsequently execute it.
 
 ``` r
 library(anvil)
@@ -136,6 +134,9 @@ Functions for type conversion, promotion, and broadcasting
   : Convert Data Type
 - [`nv_bitcast_convert()`](https://r-xla.github.io/anvil/dev/reference/nv_bitcast_convert.md)
   : Bitcast Conversion
+- [`as_anvil_array()`](https://r-xla.github.io/anvil/dev/reference/as_anvil_array.md)
+  [`as_anvil_arrays()`](https://r-xla.github.io/anvil/dev/reference/as_anvil_array.md)
+  : Convert to AnvilArray
 - [`nv_promote_to_common()`](https://r-xla.github.io/anvil/dev/reference/nv_promote_to_common.md)
   : Promote Arrays to a Common Dtype
 - [`nv_broadcast_scalars()`](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_scalars.md)
@@ -386,17 +387,24 @@ Functions for creating and initializing arrays
 - [`nv_array()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
   [`nv_scalar()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
   [`nv_empty()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  [`nv_array_like()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  [`nv_scalar_like()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  [`nv_empty_like()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
   : AnvilArray
 - [`nv_fill()`](https://r-xla.github.io/anvil/dev/reference/nv_fill.md)
+  [`nv_fill_like()`](https://r-xla.github.io/anvil/dev/reference/nv_fill.md)
   : Fill Constant
 - [`nv_iota()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md)
+  [`nv_iota_like()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md)
   : Iota
-- [`nv_seq()`](https://r-xla.github.io/anvil/dev/reference/nv_seq.md) :
-  Sequence
+- [`nv_seq()`](https://r-xla.github.io/anvil/dev/reference/nv_seq.md)
+  [`nv_seq_like()`](https://r-xla.github.io/anvil/dev/reference/nv_seq.md)
+  : Sequence
 - [`nv_diag()`](https://r-xla.github.io/anvil/dev/reference/nv_diag.md)
   : Diagonal Matrix
-- [`nv_eye()`](https://r-xla.github.io/anvil/dev/reference/nv_eye.md) :
-  Identity Matrix
+- [`nv_eye()`](https://r-xla.github.io/anvil/dev/reference/nv_eye.md)
+  [`nv_eye_like()`](https://r-xla.github.io/anvil/dev/reference/nv_eye.md)
+  : Identity Matrix
 
 ### Attributes
 
@@ -763,6 +771,8 @@ Low-level primitive operations (nvl\_\* functions)
 - [Logistic
   Regression](https://r-xla.github.io/anvil/dev/articles/logistic-regression.md):
 - [Metropolis-Hastings](https://r-xla.github.io/anvil/dev/articles/metropolis-hastings.md):
+- [Adding an API
+  Function](https://r-xla.github.io/anvil/dev/articles/new_api_function.md):
 - [Adding a
   Primitive](https://r-xla.github.io/anvil/dev/articles/new_primitive.md):
 - [Primitives

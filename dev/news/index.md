@@ -14,23 +14,23 @@
   [`array()`](https://rdrr.io/r/base/array.html) to wrap the indices
   instead, e.g. `x[array(c(1L, 3L))]`. This mirrors the input convention
   used everywhere else in the package.
+- Removed *debug mode*.
 - Remove NSE support for `nvl_if`. It now requires passing 0-argument
   closures as `true` and `false` arguments.
-- Remove debug mode. Calling primitives outside of
-  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) is no
-  longer supported. `DebugBox`, `debug_box()`, and the debugging
-  vignette have been removed.
 
 ### New Features
 
 - Better composability:
   [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)ted
-  functions can now be traced when used within
-  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md).
+  functions can now be used in other
+  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)-calls.
+  This is the mechanism underlying the new *eager mode*.
+- *Eager mode* was added: This means, you can now do
+  `nv_add(1, nv_array(1:2))` and it will actually perform the
+  computation and not only do type inference.
 - An experimental [{quickr}](https://github.com/t-kalinowski/quickr)
-  backend is now available. It only runs on CPU for now and supports a
-  subset of available operations. You can enable it via the `backend`
-  argument in
+  backend was added It only runs on CPU for now and supports a subset of
+  available operations. You can enable it via the `backend` argument in
   [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) and
   [`nv_array()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
   or via the `anvil.default_backend` option.
@@ -48,6 +48,13 @@
     to solve a system of linear equations.
   - [`nv_cholesky()`](https://r-xla.github.io/anvil/dev/reference/nv_cholesky.md)
     to compute the Cholesky decomposition of a matrix.
+  - [`nv_device()`](https://r-xla.github.io/anvil/dev/reference/nv_device.md)
+    constructs a backend-specific device object
+    (e.g. `nv_device("cpu")`) that can be passed as `device` to array
+    constructors like
+    [`nv_fill()`](https://r-xla.github.io/anvil/dev/reference/nv_fill.md)
+    or
+    [`nv_iota()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md).
 - New S3 methods [`dim()`](https://rdrr.io/r/base/dim.html),
   [`nrow()`](https://rdrr.io/r/base/nrow.html),
   [`ncol()`](https://rdrr.io/r/base/nrow.html), and

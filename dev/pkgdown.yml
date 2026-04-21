@@ -9,12 +9,13 @@ articles:
   internals: internals.html
   logistic-regression: logistic-regression.html
   metropolis-hastings: metropolis-hastings.html
+  new_api_function: new_api_function.html
   new_primitive: new_primitive.html
   primitives: primitives.html
   random-numbers: random-numbers.html
   subsetting: subsetting.html
   type-promotion: type-promotion.html
-last_built: 2026-04-19T13:43Z
+last_built: 2026-04-21T05:34Z
 urls:
   reference: https://r-xla.github.io/anvil/reference
   article: https://r-xla.github.io/anvil/articles

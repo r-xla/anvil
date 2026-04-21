@@ -80,35 +80,44 @@ The `nvl_*` function does two things:
     [`graph_desc_add()`](https://r-xla.github.io/anvil/dev/reference/graph_desc_add.md)
     to record the operation in the current `GraphDescriptor`.
 
-``` r
-nvl_repeat_along <- function(operand, times, dim) {
-  # type of operand is checked by graph_desc_add()
-  infer_fn <- function(operand, times, dim) {
-    if (!checkmate::test_integerish(dim, lower = 1, upper = ndims(operand), len = 1L)) {
-      cli::cli_abort("{.arg dim} must be between 1 and {ndims(operand)}, but is {.val dim}")
-    }
-    if (!checkmate::test_integerish(times, lower = 1, len = 1L)) {
-      cli_abort("times must be a positive integer, but is {times}")
-    }
-    new_shape <- shape(operand)
-    new_shape[dim] <- new_shape[dim] * times
-    list(AbstractArray(
-      dtype = dtype(operand),
-      shape = Shape(new_shape),
-      ambiguous = operand$ambiguous
-    ))
-  }
+The function itself is then wrapped with
+\[[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)\], which
+is what enables *eager mode* and composition inside other JIT-compiled
+functions (see the explanation after the code block).
 
-  graph_desc_add(
-    p_repeat_along,             # The primitive
-    list(operand = operand),    # Dynamic inputs (arrays)
-    params = list(              # Static parameters
-      times = times,
-      dim = dim
-    ),
-    infer_fn = infer_fn
-  )[[1L]]  # Extract single output from list
-}
+``` r
+nvl_repeat_along <- jit(
+  function(operand, times, dim) {
+    # type of operand is checked by graph_desc_add()
+    infer_fn <- function(operand, times, dim) {
+      if (!checkmate::test_integerish(dim, lower = 1, upper = ndims(operand), len = 1L)) {
+        cli::cli_abort("{.arg dim} must be between 1 and {ndims(operand)}, but is {.val dim}")
+      }
+      if (!checkmate::test_integerish(times, lower = 1, len = 1L)) {
+        cli_abort("times must be a positive integer, but is {times}")
+      }
+      new_shape <- shape(operand)
+      new_shape[dim] <- new_shape[dim] * times
+      list(AbstractArray(
+        dtype = dtype(operand),
+        shape = Shape(new_shape),
+        ambiguous = operand$ambiguous
+      ))
+    }
+
+    graph_desc_add(
+      p_repeat_along,             # The primitive
+      list(operand = operand),    # Dynamic inputs (arrays)
+      params = list(              # Static parameters
+        times = times,
+        dim = dim
+      ),
+      infer_fn = infer_fn
+    )[[1L]]  # Extract single output from list
+  },
+  static = c("times", "dim"),
+  backend = "auto"
+)
 ```
 
 Key points:
@@ -123,6 +132,36 @@ Key points:
 - Propagate the `ambiguous` flag from inputs to outputs, see [type
   promotion](https://r-xla.github.io/anvil/dev/articles/type-promotion.md)
   for what this means.
+
+#### Why wrap with `jit()`?
+
+Wrapping the `nvl_*` function with
+\[[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)\] turns
+it into a `JitFunction`. This has two benefits:
+
+- **Eager mode**: users can call
+  `nvl_repeat_along(x, times = 2L, dim = 2L)` directly on an
+  `AnvilArray` and get a concrete result back, without having to wrap
+  the call in another
+  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md).
+- **Composition**: when another JIT-compiled function calls
+  `nvl_repeat_along()`, the primitive is re-traced into the outer graph
+  instead of eagerly executing a separate compiled program.
+
+Every argument of the wrapped function that is *not* a dynamic array
+must be listed in `static`. In our case, `times` and `dim` are static
+parameters.
+
+#### Why `backend = "auto"`?
+
+`backend = "auto"` defers the choice of backend to call time: it is
+picked from the (array) inputs, falling back to
+\[[`default_backend()`](https://r-xla.github.io/anvil/dev/reference/default_backend.md)\]
+when there are none. This is the right setting for primitives because a
+primitive should work with any backend the user happens to be using;
+fixing the backend at definition time (e.g. `backend = "xla"`) would
+force every call to go through that backend regardless of where the
+inputs live.
 
 If the primitive is a wrapper around a stablehlo operation, it is
 possible to use the corresponding inference function from the stablehlo
@@ -139,6 +178,44 @@ When doing so, you need to:
 4.  Set the `ambiguous` flag of the output depending on the inputs
     (`ambiguity` is strictly an {anvil} concept, not a stablehlo
     concept).
+
+#### Special case: primitives with 0 dynamic inputs
+
+Array *constructors*
+(e.g. \[[`nvl_fill()`](https://r-xla.github.io/anvil/dev/reference/nvl_fill.md)\],
+\[[`nvl_iota()`](https://r-xla.github.io/anvil/dev/reference/nvl_iota.md)\])
+have no dynamic array inputs – every argument is static. Two things
+change in this case:
+
+1.  **All formals must be listed in `static`**. Otherwise {anvil} would
+    try to interpret a scalar argument like `value` or `shape` as an
+    `AnvilArray` input.
+2.  **`backend = "auto"` no longer works**, because there are no array
+    inputs to infer the backend from. Instead, add a `device` formal to
+    the function and pass `device = device_arg("device")` to
+    [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md). At
+    call time, the user-supplied device is read from that argument and
+    used to determine both the backend (via
+    \[[`backend()`](https://r-xla.github.io/anvil/dev/reference/backend.md)\]
+    dispatch) and the compilation device.
+
+For example, the real definition of
+\[[`nvl_fill()`](https://r-xla.github.io/anvil/dev/reference/nvl_fill.md)\]
+looks like this:
+
+``` r
+nvl_fill <- jit(
+  function(value, shape, dtype, ambiguous = FALSE, device = NULL) {
+    # ... graph_desc_add(...) ...
+  },
+  static = 1:5,
+  device = device_arg("device")
+)
+```
+
+See
+\[[`device_arg()`](https://r-xla.github.io/anvil/dev/reference/device_arg.md)\]
+for the detailed semantics.
 
 ### Step 3: Add the StableHLO Rule
 
@@ -238,11 +315,14 @@ after optionally broadcasting (scalar) inputs:
 
 ``` r
 nv_add(1L, nv_array(2:3))
-#> Error in `.current_descriptor()`:
-#> ! No graph is currently being built. Did you forget to use `jit()`?
+#> AnvilArray
+#>  3
+#>  4
+#> [ CPUi32{2} ]
 nvl_add(1L, nv_array(2:3))
-#> Error in `.current_descriptor()`:
-#> ! No graph is currently being built. Did you forget to use `jit()`?
+#> Error in `nvl_add()`:
+#> ! `lhs` and `rhs` must have the same tensor type.
+#> ✖ Got tensor<i32> and tensor<2xi32>.
 ```
 
 In our case, no such convenience is needed and the functionality is not
@@ -271,12 +351,20 @@ extracts the property.
 
 ### Using Your Primitive
 
-You can now use the primitive:
+You can now use the primitive, both eagerly and inside a larger
+JIT-compiled function:
 
 ``` r
 x <- nv_array(c(1, 2, 3), shape = c(3, 1))
-result <- jit(function(x) nvl_repeat_along(x, times = 2L, dim = 2L))(x)
-result
+# Eager call -- works because nvl_repeat_along is itself jit()ted.
+nvl_repeat_along(x, times = 2L, dim = 2L)
+#> AnvilArray
+#>  1 1
+#>  2 2
+#>  3 3
+#> [ CPUf32{3,2} ]
+# Traced into the outer graph when composed with another jit()ted function.
+jit(function(x) nvl_repeat_along(x, times = 2L, dim = 2L))(x)
 #> AnvilArray
 #>  1 1
 #>  2 2

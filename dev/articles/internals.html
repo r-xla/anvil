@@ -265,7 +265,7 @@ function:</p>
 <span><span class="co">##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, </span></span>
 <span><span class="co">##         lhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x56473b92c040&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x55922284f478&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/transform_gradient.html">anvil::transform_gradient</a></code> function uses these rules
 to compute the gradient of a function. For this specific transformation,
@@ -308,7 +308,7 @@ primitives.</p>
 <span><span class="co">## {</span></span>
 <span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
-<span><span class="co">## &lt;bytecode: 0x56473b92b3c8&gt;</span></span>
+<span><span class="co">## &lt;bytecode: 0x559222852630&gt;</span></span>
 <span><span class="co">## &lt;environment: namespace:anvil&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvil::stablehlo</a></code> function will create a
 <code><a href="https://r-xla.github.io/stablehlo/reference/Func.html" class="external-link">stablehlo::Func</a></code> object and will sequentially translate the
@@ -615,7 +615,80 @@ argument.</p></li>
 <div class="section level3">
 <h3 id="nested-inputs-and-outputs">Nested Inputs and Outputs<a class="anchor" aria-label="anchor" href="#nested-inputs-and-outputs"></a>
 </h3>
-<p>TODO</p>
+<p>TODO ## Dichotomy of anvil functions</p>
+<p>Here, we will dig deeper into the dichotomy of {anvil} functions such
+as <code>nvl_add</code>. In the <em>Getting Started</em> vignette, we
+have learned that these functions can either be called directly on
+<code>AnvilArray</code>s to transform data, or used within
+<code><a href="../reference/jit.html">jit()</a></code> blocks to build up programs. Here, we will explain
+what this actually does and why this is possible.</p>
+<p>The core problem this dichotomy solves is that it is a mental burden
+to always keep two versions os an {anvil} function:</p>
+<ol style="list-style-type: decimal">
+<li>The <code><a href="../reference/jit.html">jit()</a></code>ted version that can be used to transform
+arrays.</li>
+<li>The non-<code><a href="../reference/jit.html">jit()</a></code>ted one that can be used to build up
+programs.</li>
+</ol>
+<p>With our implementation, the following is possible:</p>
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/nvl_add.html">nvl_add</a></span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## AnvilArray</span></span>
+<span><span class="co">##  3</span></span>
+<span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">times_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/nv_mul.html">nv_mul</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">times_4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu">times_2</span><span class="op">(</span><span class="fu">times_2</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">times_2</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## AnvilArray</span></span>
+<span><span class="co">##  4</span></span>
+<span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
+<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">times_4</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## AnvilArray</span></span>
+<span><span class="co">##  8</span></span>
+<span><span class="co">## [ CPUf32{} ]</span></span></code></pre>
+<p>Otherwise, we would need the following:</p>
+<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">times_2_r</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/nv_mul.html">nv_mul</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">times_2_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">times_2_r</span><span class="op">)</span></span>
+<span><span class="va">times_4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu">times_2_r</span><span class="op">(</span><span class="fu">times_2_r</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<p>This is rather cumbersome, as there are always two versions of a
+function and the first solution is preferable. Internally, we have
+implemented this by wrapping every <code>nvl_*</code> primitive function
+in <code><a href="../reference/jit.html">jit()</a></code> and making a <code><a href="../reference/jit.html">jit()</a></code>ted function behave
+differently depending on whether we are in another <code><a href="../reference/jit.html">jit()</a></code>
+call or not.</p>
+<p>If we are in a <code><a href="../reference/jit.html">jit()</a></code> call, and call into a function
+<code>jit(f)</code>, internally <code>f</code> is evaluated, and the
+function is re-traced. Otherwise, the standard jit path is followed.</p>
+<p>However, for the {anvil} API this now means that special care needs
+to be taken that everything works in jit-mode and in eager-mode. The
+most important points are:</p>
+<ol style="list-style-type: decimal">
+<li>Canonicalize inputs at the start using
+<code>as_anvil_array(s)</code>
+</li>
+<li>Propagate device from inputs:
+<ol style="list-style-type: decimal">
+<li>For functions with dynamic inputs: use <code>nv_*_like</code> for
+constant creation and pass input operands</li>
+<li>For functions without dynamic inputs, add <code>device</code> arg
+and pass it to constant creators.</li>
+</ol>
+</li>
+</ol>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

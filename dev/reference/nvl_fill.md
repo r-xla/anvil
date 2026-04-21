@@ -9,7 +9,7 @@ efficiently represented in the compiled program, while the latter uses
 ## Usage
 
 ``` r
-nvl_fill(value, shape, dtype, ambiguous = FALSE)
+nvl_fill(value, shape, dtype, ambiguous = FALSE, device = NULL)
 ```
 
 ## Arguments
@@ -38,6 +38,13 @@ nvl_fill(value, shape, dtype, ambiguous = FALSE)
   the
   [`vignette("type-promotion")`](https://r-xla.github.io/anvil/dev/articles/type-promotion.md)
   for more details.
+
+- device:
+
+  ( `character(1)` \| `PJRTDevice` \|
+  [`quickr_device`](https://r-xla.github.io/anvil/dev/reference/quickr_device.md)
+  \| `NULL`)  
+  Device for data to live on.
 
 ## Value
 

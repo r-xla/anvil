@@ -12,6 +12,9 @@ Functions for type conversion, promotion, and broadcasting
   : Convert Data Type
 - [`nv_bitcast_convert()`](https://r-xla.github.io/anvil/dev/reference/nv_bitcast_convert.md)
   : Bitcast Conversion
+- [`as_anvil_array()`](https://r-xla.github.io/anvil/dev/reference/as_anvil_array.md)
+  [`as_anvil_arrays()`](https://r-xla.github.io/anvil/dev/reference/as_anvil_array.md)
+  : Convert to AnvilArray
 - [`nv_promote_to_common()`](https://r-xla.github.io/anvil/dev/reference/nv_promote_to_common.md)
   : Promote Arrays to a Common Dtype
 - [`nv_broadcast_scalars()`](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_scalars.md)
@@ -262,17 +265,24 @@ Functions for creating and initializing arrays
 - [`nv_array()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
   [`nv_scalar()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
   [`nv_empty()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  [`nv_array_like()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  [`nv_scalar_like()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  [`nv_empty_like()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
   : AnvilArray
 - [`nv_fill()`](https://r-xla.github.io/anvil/dev/reference/nv_fill.md)
+  [`nv_fill_like()`](https://r-xla.github.io/anvil/dev/reference/nv_fill.md)
   : Fill Constant
 - [`nv_iota()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md)
+  [`nv_iota_like()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md)
   : Iota
-- [`nv_seq()`](https://r-xla.github.io/anvil/dev/reference/nv_seq.md) :
-  Sequence
+- [`nv_seq()`](https://r-xla.github.io/anvil/dev/reference/nv_seq.md)
+  [`nv_seq_like()`](https://r-xla.github.io/anvil/dev/reference/nv_seq.md)
+  : Sequence
 - [`nv_diag()`](https://r-xla.github.io/anvil/dev/reference/nv_diag.md)
   : Diagonal Matrix
-- [`nv_eye()`](https://r-xla.github.io/anvil/dev/reference/nv_eye.md) :
-  Identity Matrix
+- [`nv_eye()`](https://r-xla.github.io/anvil/dev/reference/nv_eye.md)
+  [`nv_eye_like()`](https://r-xla.github.io/anvil/dev/reference/nv_eye.md)
+  : Identity Matrix
 
 ### Attributes
 

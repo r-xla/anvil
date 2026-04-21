@@ -182,35 +182,42 @@ types from input types</li>
 <li>Calls <code><a href="../reference/graph_desc_add.html">graph_desc_add()</a></code> to record the operation in the
 current <code>GraphDescriptor</code>.</li>
 </ol>
+<p>The function itself is then wrapped with [<code><a href="../reference/jit.html">jit()</a></code>], which
+is what enables <em>eager mode</em> and composition inside other
+JIT-compiled functions (see the explanation after the code block).</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">nvl_repeat_along</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">operand</span>, <span class="va">times</span>, <span class="va">dim</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="co"># type of operand is checked by graph_desc_add()</span></span>
-<span>  <span class="va">infer_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">operand</span>, <span class="va">times</span>, <span class="va">dim</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu">checkmate</span><span class="fu">::</span><span class="fu"><a href="https://mllg.github.io/checkmate/reference/checkIntegerish.html" class="external-link">test_integerish</a></span><span class="op">(</span><span class="va">dim</span>, lower <span class="op">=</span> <span class="fl">1</span>, upper <span class="op">=</span> <span class="fu"><a href="../reference/ndims.html">ndims</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span>, len <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="fu">cli</span><span class="fu">::</span><span class="fu"><a href="https://cli.r-lib.org/reference/cli_abort.html" class="external-link">cli_abort</a></span><span class="op">(</span><span class="st">"{.arg dim} must be between 1 and {ndims(operand)}, but is {.val dim}"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">nvl_repeat_along</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span></span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">operand</span>, <span class="va">times</span>, <span class="va">dim</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="co"># type of operand is checked by graph_desc_add()</span></span>
+<span>    <span class="va">infer_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">operand</span>, <span class="va">times</span>, <span class="va">dim</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu">checkmate</span><span class="fu">::</span><span class="fu"><a href="https://mllg.github.io/checkmate/reference/checkIntegerish.html" class="external-link">test_integerish</a></span><span class="op">(</span><span class="va">dim</span>, lower <span class="op">=</span> <span class="fl">1</span>, upper <span class="op">=</span> <span class="fu"><a href="../reference/ndims.html">ndims</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span>, len <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="fu">cli</span><span class="fu">::</span><span class="fu"><a href="https://cli.r-lib.org/reference/cli_abort.html" class="external-link">cli_abort</a></span><span class="op">(</span><span class="st">"{.arg dim} must be between 1 and {ndims(operand)}, but is {.val dim}"</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu">checkmate</span><span class="fu">::</span><span class="fu"><a href="https://mllg.github.io/checkmate/reference/checkIntegerish.html" class="external-link">test_integerish</a></span><span class="op">(</span><span class="va">times</span>, lower <span class="op">=</span> <span class="fl">1</span>, len <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="fu">cli_abort</span><span class="op">(</span><span class="st">"times must be a positive integer, but is {times}"</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span>      <span class="va">new_shape</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape.html">shape</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span></span>
+<span>      <span class="va">new_shape</span><span class="op">[</span><span class="va">dim</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">new_shape</span><span class="op">[</span><span class="va">dim</span><span class="op">]</span> <span class="op">*</span> <span class="va">times</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="../reference/AbstractArray.html">AbstractArray</a></span><span class="op">(</span></span>
+<span>        dtype <span class="op">=</span> <span class="fu"><a href="../reference/dtype.html">dtype</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span>,</span>
+<span>        shape <span class="op">=</span> <span class="fu"><a href="../reference/Shape-constructor.html">Shape</a></span><span class="op">(</span><span class="va">new_shape</span><span class="op">)</span>,</span>
+<span>        ambiguous <span class="op">=</span> <span class="va">operand</span><span class="op">$</span><span class="va">ambiguous</span></span>
+<span>      <span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
-<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu">checkmate</span><span class="fu">::</span><span class="fu"><a href="https://mllg.github.io/checkmate/reference/checkIntegerish.html" class="external-link">test_integerish</a></span><span class="op">(</span><span class="va">times</span>, lower <span class="op">=</span> <span class="fl">1</span>, len <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="fu">cli_abort</span><span class="op">(</span><span class="st">"times must be a positive integer, but is {times}"</span><span class="op">)</span></span>
-<span>    <span class="op">}</span></span>
-<span>    <span class="va">new_shape</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape.html">shape</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span></span>
-<span>    <span class="va">new_shape</span><span class="op">[</span><span class="va">dim</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">new_shape</span><span class="op">[</span><span class="va">dim</span><span class="op">]</span> <span class="op">*</span> <span class="va">times</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="../reference/AbstractArray.html">AbstractArray</a></span><span class="op">(</span></span>
-<span>      dtype <span class="op">=</span> <span class="fu"><a href="../reference/dtype.html">dtype</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span>,</span>
-<span>      shape <span class="op">=</span> <span class="fu"><a href="../reference/Shape-constructor.html">Shape</a></span><span class="op">(</span><span class="va">new_shape</span><span class="op">)</span>,</span>
-<span>      ambiguous <span class="op">=</span> <span class="va">operand</span><span class="op">$</span><span class="va">ambiguous</span></span>
-<span>    <span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="op">}</span></span>
 <span></span>
-<span>  <span class="fu"><a href="../reference/graph_desc_add.html">graph_desc_add</a></span><span class="op">(</span></span>
-<span>    <span class="va">p_repeat_along</span>,             <span class="co"># The primitive</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>operand <span class="op">=</span> <span class="va">operand</span><span class="op">)</span>,    <span class="co"># Dynamic inputs (arrays)</span></span>
-<span>    params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>              <span class="co"># Static parameters</span></span>
-<span>      times <span class="op">=</span> <span class="va">times</span>,</span>
-<span>      dim <span class="op">=</span> <span class="va">dim</span></span>
-<span>    <span class="op">)</span>,</span>
-<span>    infer_fn <span class="op">=</span> <span class="va">infer_fn</span></span>
-<span>  <span class="op">)</span><span class="op">[[</span><span class="fl">1L</span><span class="op">]</span><span class="op">]</span>  <span class="co"># Extract single output from list</span></span>
-<span><span class="op">}</span></span></code></pre></div>
+<span>    <span class="fu"><a href="../reference/graph_desc_add.html">graph_desc_add</a></span><span class="op">(</span></span>
+<span>      <span class="va">p_repeat_along</span>,             <span class="co"># The primitive</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>operand <span class="op">=</span> <span class="va">operand</span><span class="op">)</span>,    <span class="co"># Dynamic inputs (arrays)</span></span>
+<span>      params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>              <span class="co"># Static parameters</span></span>
+<span>        times <span class="op">=</span> <span class="va">times</span>,</span>
+<span>        dim <span class="op">=</span> <span class="va">dim</span></span>
+<span>      <span class="op">)</span>,</span>
+<span>      infer_fn <span class="op">=</span> <span class="va">infer_fn</span></span>
+<span>    <span class="op">)</span><span class="op">[[</span><span class="fl">1L</span><span class="op">]</span><span class="op">]</span>  <span class="co"># Extract single output from list</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  static <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"times"</span>, <span class="st">"dim"</span><span class="op">)</span>,</span>
+<span>  backend <span class="op">=</span> <span class="st">"auto"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>Key points:</p>
 <ul>
 <li>The inference function receives abstract arrays (types, not values)
@@ -225,6 +232,37 @@ programs are otherwise hard to debug.</li>
 see <a href="type-promotion.html">type promotion</a> for what this
 means.</li>
 </ul>
+<div class="section level4">
+<h4 id="why-wrap-with-jit">Why wrap with <code>jit()</code>?<a class="anchor" aria-label="anchor" href="#why-wrap-with-jit"></a>
+</h4>
+<p>Wrapping the <code>nvl_*</code> function with [<code><a href="../reference/jit.html">jit()</a></code>]
+turns it into a <code>JitFunction</code>. This has two benefits:</p>
+<ul>
+<li>
+<strong>Eager mode</strong>: users can call
+<code>nvl_repeat_along(x, times = 2L, dim = 2L)</code> directly on an
+<code>AnvilArray</code> and get a concrete result back, without having
+to wrap the call in another <code><a href="../reference/jit.html">jit()</a></code>.</li>
+<li>
+<strong>Composition</strong>: when another JIT-compiled function
+calls <code>nvl_repeat_along()</code>, the primitive is re-traced into
+the outer graph instead of eagerly executing a separate compiled
+program.</li>
+</ul>
+<p>Every argument of the wrapped function that is <em>not</em> a dynamic
+array must be listed in <code>static</code>. In our case,
+<code>times</code> and <code>dim</code> are static parameters.</p>
+</div>
+<div class="section level4">
+<h4 id="why-backend-auto">Why <code>backend = "auto"</code>?<a class="anchor" aria-label="anchor" href="#why-backend-auto"></a>
+</h4>
+<p><code>backend = "auto"</code> defers the choice of backend to call
+time: it is picked from the (array) inputs, falling back to
+[<code><a href="../reference/default_backend.html">default_backend()</a></code>] when there are none. This is the right
+setting for primitives because a primitive should work with any backend
+the user happens to be using; fixing the backend at definition time
+(e.g. <code>backend = "xla"</code>) would force every call to go through
+that backend regardless of where the inputs live.</p>
 <p>If the primitive is a wrapper around a stablehlo operation, it is
 possible to use the corresponding inference function from the stablehlo
 package (such as <code><a href="https://r-xla.github.io/stablehlo/reference/hlo_concatenate.html" class="external-link">stablehlo::infer_types_concatenate</a></code>). When
@@ -241,13 +279,47 @@ inputs (<code>ambiguity</code> is strictly an {anvil} concept, not a
 stablehlo concept).</li>
 </ol>
 </div>
+<div class="section level4">
+<h4 id="special-case-primitives-with-0-dynamic-inputs">Special case: primitives with 0 dynamic inputs<a class="anchor" aria-label="anchor" href="#special-case-primitives-with-0-dynamic-inputs"></a>
+</h4>
+<p>Array <em>constructors</em> (e.g. [<code><a href="../reference/nvl_fill.html">nvl_fill()</a></code>],
+[<code><a href="../reference/nvl_iota.html">nvl_iota()</a></code>]) have no dynamic array inputs – every argument
+is static. Two things change in this case:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>All formals must be listed in <code>static</code></strong>.
+Otherwise {anvil} would try to interpret a scalar argument like
+<code>value</code> or <code>shape</code> as an <code>AnvilArray</code>
+input.</li>
+<li>
+<strong><code>backend = "auto"</code> no longer works</strong>,
+because there are no array inputs to infer the backend from. Instead,
+add a <code>device</code> formal to the function and pass
+<code>device = device_arg("device")</code> to <code><a href="../reference/jit.html">jit()</a></code>. At
+call time, the user-supplied device is read from that argument and used
+to determine both the backend (via [<code><a href="../reference/backend.html">backend()</a></code>] dispatch)
+and the compilation device.</li>
+</ol>
+<p>For example, the real definition of [<code><a href="../reference/nvl_fill.html">nvl_fill()</a></code>] looks
+like this:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">nvl_fill</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span></span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">value</span>, <span class="va">shape</span>, <span class="va">dtype</span>, <span class="va">ambiguous</span> <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">device</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="co"># ... graph_desc_add(...) ...</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  static <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,</span>
+<span>  device <span class="op">=</span> <span class="fu"><a href="../reference/device_arg.html">device_arg</a></span><span class="op">(</span><span class="st">"device"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>See [<code><a href="../reference/device_arg.html">device_arg()</a></code>] for the detailed semantics.</p>
+</div>
+</div>
 <div class="section level3">
 <h3 id="step-3-add-the-stablehlo-rule">Step 3: Add the StableHLO Rule<a class="anchor" aria-label="anchor" href="#step-3-add-the-stablehlo-rule"></a>
 </h3>
 <p>The StableHLO rule defines how to lower this primitive to actual
 operations, which is used in the <code><a href="../reference/stablehlo.html">stablehlo()</a></code> lowering pass.
 We implement <code>repeat_along</code> using concatenation:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p_repeat_along</span><span class="op">[[</span><span class="st">"stablehlo"</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">operand</span>, <span class="va">times</span>, <span class="va">dim</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">operands</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">operand</span><span class="op">)</span>, <span class="va">times</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/exec.html" class="external-link">exec</a></span><span class="op">(</span><span class="fu">stablehlo</span><span class="fu">::</span><span class="va"><a href="https://r-xla.github.io/stablehlo/reference/hlo_concatenate.html" class="external-link">hlo_concatenate</a></span>, <span class="op">!</span><span class="op">!</span><span class="op">!</span><span class="va">operands</span>, dimension <span class="op">=</span> <span class="va">dim</span> <span class="op">-</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span></span>
@@ -279,7 +351,7 @@ that the output (and therefore it’s gradient) has shape
 <li>Sum over the <code>times</code> dimension and drop the
 <code>times</code> dimension.</li>
 </ol>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p_repeat_along</span><span class="op">[[</span><span class="st">"reverse"</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">inputs</span>, <span class="va">outputs</span>, <span class="va">grads</span>, <span class="va">dim</span>, <span class="va">times</span>, <span class="va">.required</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="va">.required</span><span class="op">[[</span><span class="fl">1L</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span>
@@ -326,7 +398,7 @@ if not required).</p>
 (<code>p_repeat_along</code> in our case) are not exported. Instead,
 they can be retrieved via <code>prim("repeat_along")</code>. To make
 this work, you need to register the primitive object:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/register_primitive.html">register_primitive</a></span><span class="op">(</span><span class="st">"repeat_along"</span>, <span class="va">p_repeat_along</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/prim.html">prim</a></span><span class="op">(</span><span class="st">"repeat_along"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;AnvilPrimitive:repeat_along&gt;</span></span></code></pre></div>
@@ -338,18 +410,21 @@ this work, you need to register the primitive object:</p>
 An example is <code>nvl_add</code> vs <code>nv_add</code>, where the
 latter calls into the former after optionally broadcasting (scalar)
 inputs:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/nv_add.html">nv_add</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `.current_descriptor()`:</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> No graph is currently being built. Did you forget to use `jit()`?</span></span>
+<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="co">#&gt;  3</span></span>
+<span><span class="co">#&gt;  4</span></span>
+<span><span class="co">#&gt; [ CPUi32{2} ]</span></span>
 <span><span class="fu"><a href="../reference/nvl_add.html">nvl_add</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `.current_descriptor()`:</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> No graph is currently being built. Did you forget to use `jit()`?</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `nvl_add()`:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `lhs` and `rhs` must have the same tensor type.</span></span>
+<span><span class="co">#&gt; <span style="color: #BB0000;">✖</span> Got <span style="color: #0000BB;">tensor&lt;i32&gt;</span> and <span style="color: #0000BB;">tensor&lt;2xi32&gt;</span>.</span></span></code></pre></div>
 <p>In our case, no such convenience is needed and the functionality is
 not too low-level (for it to be generally useful), so we can just
 reassign the <code>nvl_*</code> function to an <code>nv_*</code>
 function:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nv_repeat_along</span> <span class="op">&lt;-</span> <span class="va">nvl_repeat_along</span></span></code></pre></div>
 <p>Note that in the <code>nv_*</code> wrapper function, you can only
 access certain properties of the input arrayish values via:</p>
@@ -368,18 +443,26 @@ property.</p>
 <div class="section level3">
 <h3 id="using-your-primitive">Using Your Primitive<a class="anchor" aria-label="anchor" href="#using-your-primitive"></a>
 </h3>
-<p>You can now use the primitive:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<p>You can now use the primitive, both eagerly and inside a larger
+JIT-compiled function:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">nvl_repeat_along</span><span class="op">(</span><span class="va">x</span>, times <span class="op">=</span> <span class="fl">2L</span>, dim <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
-<span><span class="va">result</span></span>
+<span><span class="co"># Eager call -- works because nvl_repeat_along is itself jit()ted.</span></span>
+<span><span class="fu">nvl_repeat_along</span><span class="op">(</span><span class="va">x</span>, times <span class="op">=</span> <span class="fl">2L</span>, dim <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span></span>
+<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="co">#&gt;  1 1</span></span>
+<span><span class="co">#&gt;  2 2</span></span>
+<span><span class="co">#&gt;  3 3</span></span>
+<span><span class="co">#&gt; [ CPUf32{3,2} ]</span></span>
+<span><span class="co"># Traced into the outer graph when composed with another jit()ted function.</span></span>
+<span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">nvl_repeat_along</span><span class="op">(</span><span class="va">x</span>, times <span class="op">=</span> <span class="fl">2L</span>, dim <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span><span class="co">#&gt; AnvilArray</span></span>
 <span><span class="co">#&gt;  1 1</span></span>
 <span><span class="co">#&gt;  2 2</span></span>
 <span><span class="co">#&gt;  3 3</span></span>
 <span><span class="co">#&gt; [ CPUf32{3,2} ]</span></span></code></pre></div>
 <p>And compute gradients through it.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">repeated</span> <span class="op">&lt;-</span> <span class="fu">nvl_repeat_along</span><span class="op">(</span><span class="va">x</span>, times <span class="op">=</span> <span class="fl">2L</span>, dim <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">repeated</span><span class="op">)</span></span>

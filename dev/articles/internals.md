@@ -157,7 +157,7 @@ prim("mul")$rules[["reverse"]]
     ##     list(if (.required[[1L]]) nvl_mul(grad, rhs), if (.required[[2L]]) nvl_mul(grad, 
     ##         lhs))
     ## }
-    ## <bytecode: 0x56473b92c040>
+    ## <bytecode: 0x55922284f478>
     ## <environment: namespace:anvil>
 
 The
@@ -208,7 +208,7 @@ prim("mul")$rules[["stablehlo"]]
     ## {
     ##     list(stablehlo::hlo_multiply(lhs, rhs))
     ## }
-    ## <bytecode: 0x56473b92b3c8>
+    ## <bytecode: 0x559222852630>
     ## <environment: namespace:anvil>
 
 The
@@ -584,4 +584,93 @@ complicated. Some things that are important to be aware of:
 
 ### Nested Inputs and Outputs
 
-TODO
+TODO \## Dichotomy of anvil functions
+
+Here, we will dig deeper into the dichotomy of {anvil} functions such as
+`nvl_add`. In the *Getting Started* vignette, we have learned that these
+functions can either be called directly on `AnvilArray`s to transform
+data, or used within
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) blocks to
+build up programs. Here, we will explain what this actually does and why
+this is possible.
+
+The core problem this dichotomy solves is that it is a mental burden to
+always keep two versions os an {anvil} function:
+
+1.  The [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)ted
+    version that can be used to transform arrays.
+2.  The
+    non-[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)ted
+    one that can be used to build up programs.
+
+With our implementation, the following is possible:
+
+``` r
+library(anvil)
+nvl_add(nv_scalar(1), nv_scalar(2))
+```
+
+    ## AnvilArray
+    ##  3
+    ## [ CPUf32{} ]
+
+``` r
+times_2 <- jit(function(x) {
+  nv_mul(x, 2)
+})
+
+times_4 <- jit(function(x) {
+  times_2(times_2(x))
+})
+
+times_2(nv_scalar(2))
+```
+
+    ## AnvilArray
+    ##  4
+    ## [ CPUf32{} ]
+
+``` r
+times_4(nv_scalar(2))
+```
+
+    ## AnvilArray
+    ##  8
+    ## [ CPUf32{} ]
+
+Otherwise, we would need the following:
+
+``` r
+times_2_r <- function(x) {
+  nv_mul(x, 2)
+}
+times_2_jit <- jit(times_2_r)
+times_4 <- jit(function(x) {
+  times_2_r(times_2_r(x))
+})
+```
+
+This is rather cumbersome, as there are always two versions of a
+function and the first solution is preferable. Internally, we have
+implemented this by wrapping every `nvl_*` primitive function in
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) and making
+a [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)ted
+function behave differently depending on whether we are in another
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) call or
+not.
+
+If we are in a
+[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) call, and
+call into a function `jit(f)`, internally `f` is evaluated, and the
+function is re-traced. Otherwise, the standard jit path is followed.
+
+However, for the {anvil} API this now means that special care needs to
+be taken that everything works in jit-mode and in eager-mode. The most
+important points are:
+
+1.  Canonicalize inputs at the start using `as_anvil_array(s)`
+2.  Propagate device from inputs:
+    1.  For functions with dynamic inputs: use `nv_*_like` for constant
+        creation and pass input operands
+    2.  For functions without dynamic inputs, add `device` arg and pass
+        it to constant creators.

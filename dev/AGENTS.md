@@ -50,7 +50,7 @@ interpretation rules accessed via `p_<name>[["<rule_type>"]]`:
 ## Graph Tracing
 
 When a function is JIT-compiled, anvil traces it by executing with
-`GraphValue` objects instead of real data. Operations record themselves
+`GraphBox` objects instead of real data. Operations record themselves
 into an `AnvilGraph` (see `R/graph.R`). The graph is then lowered to
 StableHLO IR or quickr code for compilation.
 

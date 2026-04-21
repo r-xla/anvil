@@ -72,13 +72,15 @@
 <ul><li>
 <code>AnvilTensor</code>/<code>nv_tensor</code> were renamed to <code>AnvilArray</code> and <code>nv_array</code> to be more in line with R’s <code><a href="https://rdrr.io/r/base/array.html" class="external-link">array()</a></code>. Also, <code>nv_aten()</code> was renamed to <code><a href="../reference/AbstractArray.html">nv_aval()</a></code>.</li>
 <li>Subsetting with <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> (e.g. <code>x[list(1, 3)]</code>) is no longer supported. Use <code><a href="https://rdrr.io/r/base/array.html" class="external-link">array()</a></code> to wrap the indices instead, e.g. <code>x[array(c(1L, 3L))]</code>. This mirrors the input convention used everywhere else in the package.</li>
+<li>Removed <em>debug mode</em>.</li>
 <li>Remove NSE support for <code>nvl_if</code>. It now requires passing 0-argument closures as <code>true</code> and <code>false</code> arguments.</li>
-<li>Remove debug mode. Calling primitives outside of <code><a href="../reference/jit.html">jit()</a></code> is no longer supported. <code>DebugBox</code>, <code>debug_box()</code>, and the debugging vignette have been removed.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
-<ul><li>Better composability: <code><a href="../reference/jit.html">jit()</a></code>ted functions can now be traced when used within <code><a href="../reference/jit.html">jit()</a></code>.</li>
-<li>An experimental <a href="https://github.com/t-kalinowski/quickr" class="external-link">{quickr}</a> backend is now available. It only runs on CPU for now and supports a subset of available operations. You can enable it via the <code>backend</code> argument in <code><a href="../reference/jit.html">jit()</a></code> and <code><a href="../reference/AnvilArray.html">nv_array()</a></code> or via the <code>anvil.default_backend</code> option.</li>
+<ul><li>Better composability: <code><a href="../reference/jit.html">jit()</a></code>ted functions can now be used in other <code><a href="../reference/jit.html">jit()</a></code>-calls. This is the mechanism underlying the new <em>eager mode</em>.</li>
+<li>
+<em>Eager mode</em> was added: This means, you can now do <code>nv_add(1, nv_array(1:2))</code> and it will actually perform the computation and not only do type inference.</li>
+<li>An experimental <a href="https://github.com/t-kalinowski/quickr" class="external-link">{quickr}</a> backend was added It only runs on CPU for now and supports a subset of available operations. You can enable it via the <code>backend</code> argument in <code><a href="../reference/jit.html">jit()</a></code> and <code><a href="../reference/AnvilArray.html">nv_array()</a></code> or via the <code>anvil.default_backend</code> option.</li>
 <li>New primitives:
 <ul><li>
 <code><a href="../reference/nvl_cholesky.html">nvl_cholesky()</a></code> to compute the Cholesky decomposition of a matrix.</li>
@@ -94,6 +96,8 @@
 <code><a href="../reference/nv_solve.html">nv_solve()</a></code> to solve a system of linear equations.</li>
 <li>
 <code><a href="../reference/nv_cholesky.html">nv_cholesky()</a></code> to compute the Cholesky decomposition of a matrix.</li>
+<li>
+<code><a href="../reference/nv_device.html">nv_device()</a></code> constructs a backend-specific device object (e.g. <code>nv_device("cpu")</code>) that can be passed as <code>device</code> to array constructors like <code><a href="../reference/nv_fill.html">nv_fill()</a></code> or <code><a href="../reference/nv_iota.html">nv_iota()</a></code>.</li>
 </ul></li>
 <li>New S3 methods <code><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim()</a></code>, <code><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow()</a></code>, <code><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol()</a></code>, and <code><a href="https://rdrr.io/r/base/length.html" class="external-link">length()</a></code> for anvil arrays.</li>
 <li>Printing tensors via <code><a href="../reference/nv_print.html">nv_print()</a></code> now also works on GPUs.</li>

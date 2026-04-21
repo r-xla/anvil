@@ -11,6 +11,8 @@
 - [Logistic
   Regression](https://r-xla.github.io/anvil/dev/articles/logistic-regression.md):
 - [Metropolis-Hastings](https://r-xla.github.io/anvil/dev/articles/metropolis-hastings.md):
+- [Adding an API
+  Function](https://r-xla.github.io/anvil/dev/articles/new_api_function.md):
 - [Adding a
   Primitive](https://r-xla.github.io/anvil/dev/articles/new_primitive.md):
 - [Primitives

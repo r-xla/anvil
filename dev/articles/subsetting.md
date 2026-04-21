@@ -59,9 +59,7 @@ x
 - Static & Drop:
 
   ``` r
-  jit_eval({
-    x[2]
-  })
+  x[2]
   ```
 
       ## AnvilArray
@@ -71,9 +69,7 @@ x
 - Static & Keep:
 
   ``` r
-  jit_eval({
-    x[array(2L)]
-  })
+  x[array(2L)]
   ```
 
       ## AnvilArray
@@ -83,9 +79,7 @@ x
 - Dynamic & Drop:
 
   ``` r
-  jit_eval({
-    x[nv_scalar(2L)]
-  })
+  x[nv_scalar(2L)]
   ```
 
       ## AnvilArray
@@ -102,9 +96,7 @@ x
   subset specification, and not suddenly “simplify” the result to 0D.
 
   ``` r
-  jit_eval({
-    x[nv_array(2L)]
-  })
+  x[nv_array(2L)]
   ```
 
       ## AnvilArray
@@ -117,9 +109,7 @@ between static and dynamic indices.
 - Static
 
   ``` r
-  jit_eval({
-    x[array(c(2L, 4L, 6L))]
-  })
+  x[array(c(2, 4, 6))]
   ```
 
       ## AnvilArray
@@ -131,9 +121,7 @@ between static and dynamic indices.
 - Dynamic
 
   ``` r
-  jit_eval({
-    x[nv_array(c(2L, 4L, 6L))]
-  })
+  x[nv_array(c(2L, 4L, 6L))]
   ```
 
       ## AnvilArray
@@ -153,9 +141,7 @@ We can also use a range that can be specified either canonically via
 [`nv_seq()`](https://r-xla.github.io/anvil/dev/reference/nv_seq.md).
 
 ``` r
-jit_eval({
-  x[2:5]
-})
+x[2:5]
 ```
 
     ## AnvilArray
@@ -166,9 +152,7 @@ jit_eval({
     ## [ CPUi32{4} ]
 
 ``` r
-jit_eval({
-  x[nv_seq(2, 5)]
-})
+x[nv_seq(2, 5)]
 ```
 
     ## AnvilArray
@@ -186,9 +170,7 @@ It is also possible to select the whole range by omitting the
 specification altogether.
 
 ``` r
-jit_eval({
-  x[]
-})
+x[]
 ```
 
     ## AnvilArray
@@ -222,9 +204,7 @@ x
 Combining subsets just works like one would expect.
 
 ``` r
-jit_eval({
-  x[1, ]
-})
+x[1, ]
 ```
 
     ## AnvilArray
@@ -235,9 +215,7 @@ jit_eval({
     ## [ CPUi32{4} ]
 
 ``` r
-jit_eval({
-  x[1, 2]
-})
+x[1, 2]
 ```
 
     ## AnvilArray
@@ -245,9 +223,7 @@ jit_eval({
     ## [ CPUi32{} ]
 
 ``` r
-jit_eval({
-  x[array(1L), 2:3]
-})
+x[array(1), 2:3]
 ```
 
     ## AnvilArray
@@ -256,9 +232,7 @@ jit_eval({
     ## [ CPUi32{2} ]
 
 ``` r
-jit_eval({
-  x[array(c(1L, 3L)), 2:3]
-})
+x[array(c(1, 3)), 2:3]
 ```
 
     ## AnvilArray
@@ -267,9 +241,7 @@ jit_eval({
     ## [ CPUi32{2,2} ]
 
 ``` r
-jit_eval({
-  x[1:2, 2:3]
-})
+x[1:2, 2:3]
 ```
 
     ## AnvilArray
@@ -278,9 +250,7 @@ jit_eval({
     ## [ CPUi32{2,2} ]
 
 ``` r
-jit_eval({
-  x[1, 2:3]
-})
+x[1, 2:3]
 ```
 
     ## AnvilArray
@@ -289,9 +259,7 @@ jit_eval({
     ## [ CPUi32{2} ]
 
 ``` r
-jit_eval({
-  x[array(c(2L, 2L)), ]
-})
+x[array(c(2, 2)), ]
 ```
 
     ## AnvilArray
@@ -300,9 +268,7 @@ jit_eval({
     ## [ CPUi32{2,4} ]
 
 ``` r
-jit_eval({
-  x[array(c(2L, 2L))]
-})
+x[array(c(2, 2))]
 ```
 
     ## AnvilArray
@@ -318,9 +284,7 @@ backend that {anvil} compiles to, does not throw errors when using
 out-of-bounds indices, but instead clamps them to the valid range:
 
 ``` r
-jit_eval({
-  x[nv_array(-1L), nv_array(100L)]
-})
+x[nv_array(-1L), nv_array(100L)]
 ```
 
     ## AnvilArray
@@ -328,9 +292,7 @@ jit_eval({
     ## [ CPUi32{1,1} ]
 
 ``` r
-jit_eval({
-  x[nv_array(1L), nv_array(4L)]
-})
+x[nv_array(1L), nv_array(4L)]
 ```
 
     ## AnvilArray
@@ -356,10 +318,8 @@ x
     ## [ CPUi32{3,4} ]
 
 ``` r
-jit_eval({
-  x[, 3] <- nv_array(-(1:3))
-  x
-})
+x[, 3] <- nv_array(-(1:3))
+x
 ```
 
     ## AnvilArray
@@ -369,10 +329,9 @@ jit_eval({
     ## [ CPUi32{3,4} ]
 
 ``` r
-jit_eval({
-  x[, 3] <- -99L
-  x
-})
+x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
+x[, 3] <- -99L
+x
 ```
 
     ## AnvilArray
@@ -385,14 +344,22 @@ Also, it must have a data type that is convertible to the data type of
 the array.
 
 ``` r
-jit_eval({
-  x[, 3] <- nv_array(c(1.5, 2.5, 3.5))
-  x
-})
+x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
+x[, 3] <- nv_array(c(1.5, 2.5, 3.5))
 ```
 
     ## Error in `nv_subset_assign()`:
     ## ! Value type f32 is not promotable to left-hand side type i32
+
+``` r
+x
+```
+
+    ## AnvilArray
+    ##   1  2  3  4
+    ##   5  6  7  8
+    ##   9 10 11 12
+    ## [ CPUi32{3,4} ]
 
 ### Out-of-bounds Handling
 
@@ -402,10 +369,8 @@ ignored:
 
 ``` r
 x <- nv_array(1:5)
-jit_eval({
-  x[nv_array(c(1L, 100L, 3L))] <- nv_array(c(-1L, -2L, -3L))
-  x
-})
+x[nv_array(c(1L, 100L, 3L))] <- nv_array(c(-1L, -2L, -3L))
+x
 ```
 
     ## AnvilArray
@@ -427,10 +392,8 @@ backends (CPU vs. GPU).
 
 ``` r
 x <- nv_array(1:5)
-jit_eval({
-  x[array(c(1L, 1L, 1L))] <- nv_array(c(10L, 20L, 30L))
-  x
-})
+x[array(c(1L, 1L, 1L))] <- nv_array(c(10L, 20L, 30L))
+x
 ```
 
     ## AnvilArray

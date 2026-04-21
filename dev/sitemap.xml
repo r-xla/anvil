@@ -11,6 +11,7 @@
 <url><loc>https://r-xla.github.io/anvil/dev/articles/internals.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/articles/logistic-regression.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/articles/metropolis-hastings.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/articles/new_api_function.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/articles/new_primitive.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/articles/primitives.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/articles/random-numbers.html</loc></url>
@@ -41,6 +42,7 @@
 <url><loc>https://r-xla.github.io/anvil/dev/reference/abstract_properties.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/ambiguous.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/arrayish.html</loc></url>
+<url><loc>https://r-xla.github.io/anvil/dev/reference/as_anvil_array.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/as_array.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/as_dtype.html</loc></url>
 <url><loc>https://r-xla.github.io/anvil/dev/reference/as_raw.html</loc></url>

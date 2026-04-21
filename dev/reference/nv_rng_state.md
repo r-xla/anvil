@@ -6,7 +6,7 @@ random sampling functions and is updated after each call.
 ## Usage
 
 ``` r
-nv_rng_state(seed)
+nv_rng_state(seed, device = default_device())
 ```
 
 ## Arguments
@@ -15,6 +15,13 @@ nv_rng_state(seed)
 
   ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
   Scalar `i32` seed value.
+
+- device:
+
+  ( `character(1)` \| `PJRTDevice` \|
+  [`quickr_device`](https://r-xla.github.io/anvil/dev/reference/quickr_device.md)
+  \| `NULL`)  
+  Device for data to live on.
 
 ## Value
 

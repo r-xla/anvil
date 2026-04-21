@@ -178,9 +178,7 @@ dynamic and we can drop or keep the dimension:</p>
 <li>
 <p>Static &amp; Drop:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  2</span></span>
 <span><span class="co">## [ CPUi32{} ]</span></span></code></pre>
@@ -188,9 +186,7 @@ dynamic and we can drop or keep the dimension:</p>
 <li>
 <p>Static &amp; Keep:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">2L</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">2L</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  2</span></span>
 <span><span class="co">## [ CPUi32{} ]</span></span></code></pre>
@@ -198,9 +194,7 @@ dynamic and we can drop or keep the dimension:</p>
 <li>
 <p>Dynamic &amp; Drop:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2L</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2L</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  2</span></span>
 <span><span class="co">## [ CPUi32{} ]</span></span></code></pre>
@@ -215,9 +209,7 @@ above. This ensures that the dimensionality of the result is the same
 for any 1D subset specification, and not suddenly “simplify” the result
 to 0D.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">2L</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">2L</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  2</span></span>
 <span><span class="co">## [ CPUi32{1} ]</span></span></code></pre>
@@ -229,9 +221,7 @@ between static and dynamic indices.</p>
 <li>
 <p>Static</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">4L</span>, <span class="fl">6L</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">6</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  2</span></span>
 <span><span class="co">##  4</span></span>
@@ -241,9 +231,7 @@ between static and dynamic indices.</p>
 <li>
 <p>Dynamic</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">4L</span>, <span class="fl">6L</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">4L</span>, <span class="fl">6L</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  2</span></span>
 <span><span class="co">##  4</span></span>
@@ -259,9 +247,7 @@ parameter.</p>
 <p>We can also use a range that can be specified either canonically via
 <code>a:b</code> or using <code><a href="../reference/nv_seq.html">nv_seq()</a></code>.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  2</span></span>
 <span><span class="co">##  3</span></span>
@@ -269,9 +255,7 @@ parameter.</p>
 <span><span class="co">##  5</span></span>
 <span><span class="co">## [ CPUi32{4} ]</span></span></code></pre>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/nv_seq.html">nv_seq</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/nv_seq.html">nv_seq</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  2</span></span>
 <span><span class="co">##  3</span></span>
@@ -285,9 +269,7 @@ vector <code>2:5</code>. Internally, it is translated to
 <p>It is also possible to select the whole range by omitting the
 specification altogether.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##   1</span></span>
 <span><span class="co">##   2</span></span>
@@ -315,9 +297,7 @@ specification altogether.</p>
 <span><span class="co">## [ CPUi32{3,4} ]</span></span></code></pre>
 <p>Combining subsets just works like one would expect.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  1</span></span>
 <span><span class="co">##  2</span></span>
@@ -325,56 +305,42 @@ specification altogether.</p>
 <span><span class="co">##  4</span></span>
 <span><span class="co">## [ CPUi32{4} ]</span></span></code></pre>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  2</span></span>
 <span><span class="co">## [ CPUi32{} ]</span></span></code></pre>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">1L</span><span class="op">)</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  2</span></span>
 <span><span class="co">##  3</span></span>
 <span><span class="co">## [ CPUi32{2} ]</span></span></code></pre>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">3L</span><span class="op">)</span><span class="op">)</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##   2  3</span></span>
 <span><span class="co">##  10 11</span></span>
 <span><span class="co">## [ CPUi32{2,2} ]</span></span></code></pre>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  2 3</span></span>
 <span><span class="co">##  6 7</span></span>
 <span><span class="co">## [ CPUi32{2,2} ]</span></span></code></pre>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  2</span></span>
 <span><span class="co">##  3</span></span>
 <span><span class="co">## [ CPUi32{2} ]</span></span></code></pre>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">2L</span><span class="op">)</span><span class="op">)</span>, <span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>, <span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  5 6 7 8</span></span>
 <span><span class="co">##  5 6 7 8</span></span>
 <span><span class="co">## [ CPUi32{2,4} ]</span></span></code></pre>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">2L</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  5 6 7 8</span></span>
 <span><span class="co">##  5 6 7 8</span></span>
@@ -388,16 +354,12 @@ the indices are static (we know them at compile time), as the XLA
 backend that {anvil} compiles to, does not throw errors when using
 out-of-bounds indices, but instead clamps them to the valid range:</p>
 <div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1L</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">100L</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1L</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">100L</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  4</span></span>
 <span><span class="co">## [ CPUi32{1,1} ]</span></span></code></pre>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1L</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">4L</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1L</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">4L</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  4</span></span>
 <span><span class="co">## [ CPUi32{1,1} ]</span></span></code></pre>
@@ -418,20 +380,17 @@ write must either have the shape of the subset, or be a scalar.</p>
 <span><span class="co">##   9 10 11 12</span></span>
 <span><span class="co">## [ CPUi32{3,4} ]</span></span></code></pre>
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span>, <span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">x</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span>, <span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">x</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##   1  2 -1  4</span></span>
 <span><span class="co">##   5  6 -2  8</span></span>
 <span><span class="co">##   9 10 -3 12</span></span>
 <span><span class="co">## [ CPUi32{3,4} ]</span></span></code></pre>
 <div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span>, <span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">99L</span></span>
-<span>  <span class="va">x</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">12</span>, nrow <span class="op">=</span> <span class="fl">3</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">x</span><span class="op">[</span>, <span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">99L</span></span>
+<span><span class="va">x</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##    1   2 -99   4</span></span>
 <span><span class="co">##    5   6 -99   8</span></span>
@@ -440,24 +399,27 @@ write must either have the shape of the subset, or be a scalar.</p>
 <p>Also, it must have a data type that is convertible to the data type
 of the array.</p>
 <div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span>, <span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">2.5</span>, <span class="fl">3.5</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">x</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">12</span>, nrow <span class="op">=</span> <span class="fl">3</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">x</span><span class="op">[</span>, <span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">2.5</span>, <span class="fl">3.5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `nv_subset_assign()`:</span></span></span>
 <span><span class="co">## <span style="color: #BBBB00;">!</span> Value type f32 is not promotable to left-hand side type i32</span></span></code></pre>
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x</span></span></code></pre></div>
+<pre><code><span><span class="co">## AnvilArray</span></span>
+<span><span class="co">##   1  2  3  4</span></span>
+<span><span class="co">##   5  6  7  8</span></span>
+<span><span class="co">##   9 10 11 12</span></span>
+<span><span class="co">## [ CPUi32{3,4} ]</span></span></code></pre>
 <div class="section level3">
 <h3 id="out-of-bounds-handling-1">Out-of-bounds Handling<a class="anchor" aria-label="anchor" href="#out-of-bounds-handling-1"></a>
 </h3>
 <p>Similar to subsetting, out-of-bounds indices can only be checked for
 static values. For dynamic indices, out-of-bounds writes are simply
 ignored:</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">100L</span>, <span class="fl">3L</span><span class="op">)</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1L</span>, <span class="op">-</span><span class="fl">2L</span>, <span class="op">-</span><span class="fl">3L</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">x</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">100L</span>, <span class="fl">3L</span><span class="op">)</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1L</span>, <span class="op">-</span><span class="fl">2L</span>, <span class="op">-</span><span class="fl">3L</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">x</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  -1</span></span>
 <span><span class="co">##   2</span></span>
@@ -474,12 +436,10 @@ ignored:</p>
 <p>When writing to the same element multiple times, there is no
 gaurantee which value will be written. Specifically, this might differ
 between backends (CPU vs. GPU).</p>
-<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/jit_eval.html">jit_eval</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10L</span>, <span class="fl">20L</span>, <span class="fl">30L</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">x</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10L</span>, <span class="fl">20L</span>, <span class="fl">30L</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">x</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvilArray</span></span>
 <span><span class="co">##  30</span></span>
 <span><span class="co">##   2</span></span>

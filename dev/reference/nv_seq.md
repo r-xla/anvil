@@ -6,10 +6,30 @@ Without `steps`, behaves like R's `seq(start, end)` producing integer
 values. With `steps`, produces `steps` evenly spaced values (like
 `seq(start, end, length.out = steps)`).
 
+`nv_seq_like()` is a variant where `dtype`, `ambiguous`, and `device`
+default to those of `like`.
+
 ## Usage
 
 ``` r
-nv_seq(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE)
+nv_seq(
+  start,
+  end,
+  steps = NULL,
+  dtype = NULL,
+  ambiguous = FALSE,
+  device = NULL
+)
+
+nv_seq_like(
+  like,
+  start,
+  end,
+  steps = NULL,
+  dtype = NULL,
+  ambiguous = NULL,
+  device = NULL
+)
 ```
 
 ## Arguments
@@ -31,7 +51,7 @@ nv_seq(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE)
 
   (`character(1)`)  
   Data type. Default `"i32"` when `steps` is `NULL`, `"f32"` when
-  `steps` is given.
+  `steps` is given. For `nv_seq_like()`, `NULL` uses `dtype(like)`.
 
 - ambiguous:
 
@@ -41,6 +61,19 @@ nv_seq(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE)
   the
   [`vignette("type-promotion")`](https://r-xla.github.io/anvil/dev/articles/type-promotion.md)
   for more details.
+
+- device:
+
+  ( `character(1)` \| `PJRTDevice` \|
+  [`quickr_device`](https://r-xla.github.io/anvil/dev/reference/quickr_device.md)
+  \| `NULL`)  
+  Device for data to live on.
+
+- like:
+
+  ([`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))  
+  Existing array whose attributes are used as defaults (only for
+  `nv_seq_like()`).
 
 ## Value
 
@@ -58,4 +91,13 @@ jit_eval(nv_seq(3, 7))
 #>  6
 #>  7
 #> [ CPUi32{5} ] 
+x <- nv_array(c(1, 2, 3), dtype = "f64")
+nv_seq_like(x, 1, 5)
+#> AnvilArray
+#>  1
+#>  2
+#>  3
+#>  4
+#>  5
+#> [ CPUf64{5} ] 
 ```
