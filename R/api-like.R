@@ -1,18 +1,3 @@
-# `nv_*_like()` variants of the array constructors. Each takes an existing
-# arrayish `like` and fills in any `NULL` attribute (dtype, shape, device,
-# ambiguous, backend) from it, before delegating to the underlying
-# constructor.
-#
-# `like_defaults()` is the shared helper that does the filling.
-
-# Resolve defaults for an `nv_*_like()` helper. Each named argument is returned
-# unchanged if non-NULL, or filled in from the corresponding attribute of
-# `like`. Only fields the caller asked about are returned, so the result can
-# be spliced into a `do.call()` of the underlying constructor.
-#
-# `device` is only read from `like` when `like` is a concrete AnvilArray; for
-# a GraphBox (during tracing) we leave `device` as NULL so downstream
-# constructors pick the device up from the tracing context.
 like_defaults <- function(like, ...) {
   args <- list(...)
   getters <- list(

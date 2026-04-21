@@ -88,7 +88,7 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
 #' })
 #' @export
 nv_broadcast_scalars <- function(...) {
-  args <- nv_align_arrayish(...)
+  args <- as_anvil_arrays(...)
   shapes <- lapply(args, shape)
   non_scalar_shapes <- Filter(\(s) length(s) > 0L, shapes)
 
@@ -128,13 +128,12 @@ nv_broadcast_scalars <- function(...) {
 #' })
 #' @export
 nv_promote_to_common <- function(...) {
-  args <- nv_align_arrayish(...)
-  avals <- lapply(args, to_abstract)
-  tmp <- do.call(common_type_info, avals)
+  args <- as_anvil_arrays(...)
+  tmp <- do.call(common_type_info, args)
   cdt <- tmp[[1L]]
   ambiguous <- tmp[[2L]]
   out <- lapply(seq_along(args), \(i) {
-    if (cdt == dtype(avals[[i]])) {
+    if (cdt == dtype(args[[i]])) {
       args[[i]]
     } else {
       nvl_convert(args[[i]], dtype = cdt, ambiguous = ambiguous)
@@ -166,7 +165,7 @@ nv_promote_to_common <- function(...) {
 #' })
 #' @export
 nv_broadcast_arrays <- function(...) {
-  args <- nv_align_arrayish(...)
+  args <- as_anvil_arrays(...)
   shape <- Reduce(broadcast_shapes, lapply(args, shape))
   lapply(args, nv_broadcast_to, shape = shape)
 }
@@ -1024,7 +1023,7 @@ nv_popcnt <- nvl_popcnt
 #' })
 #' @export
 nv_clamp <- function(min_val, operand, max_val) {
-  args <- nv_align_arrayish(min_val, operand, max_val)
+  args <- as_anvil_arrays(min_val, operand, max_val)
   min_val <- args[[1L]]
   operand <- args[[2L]]
   max_val <- args[[3L]]
@@ -1155,7 +1154,7 @@ nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE, de
 #' })
 #' @export
 nv_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding = NULL) {
-  args <- nv_align_arrayish(operand, padding_value)
+  args <- as_anvil_arrays(operand, padding_value)
   operand <- args[[1L]]
   padding_value <- args[[2L]]
   rank <- ndims(operand)
@@ -1278,7 +1277,7 @@ nv_cholesky <- function(a, lower = TRUE) {
 #' })
 #' @export
 nv_solve <- function(a, b) {
-  args <- nv_align_arrayish(a, b)
+  args <- as_anvil_arrays(a, b)
   a <- args[[1L]]
   b <- args[[2L]]
   L <- nvl_cholesky(a, lower = TRUE)
@@ -1378,7 +1377,6 @@ nv_reduce_sum <- nvl_reduce_sum
 #' @export
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
   operand <- as_anvil_array(operand)
-  # TODO: division by zero?
   nelts <- prod(shape(operand)[dims])
   nv_reduce_sum(operand, dims, drop) / nelts
 }
@@ -1859,7 +1857,7 @@ nv_crossprod <- function(x, y = NULL) {
     x <- as_anvil_array(x)
     y <- x
   } else {
-    args <- nv_align_arrayish(x, y)
+    args <- as_anvil_arrays(x, y)
     x <- args[[1L]]
     y <- args[[2L]]
   }
@@ -1887,7 +1885,7 @@ nv_tcrossprod <- function(x, y = NULL) {
     x <- as_anvil_array(x)
     y <- x
   } else {
-    args <- nv_align_arrayish(x, y)
+    args <- as_anvil_arrays(x, y)
     x <- args[[1L]]
     y <- args[[2L]]
   }

@@ -519,7 +519,7 @@ nv_subset_assign <- function(x, ..., value) {
   if (!is_arrayish(value)) {
     cli_abort("Expected arrayish `value`, but got {.cls {class(value)[1]}}")
   }
-  aligned <- nv_align_arrayish(x, value)
+  aligned <- as_anvil_arrays(x, value)
   x <- aligned[[1L]]
   value <- aligned[[2L]]
   if (dtype_abstract(x) != dtype_abstract(value)) {

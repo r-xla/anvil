@@ -90,11 +90,6 @@ An existing array. Any of \code{dtype}, \code{device}, \code{shape}, \code{ambig
 \description{
 The main array object.
 Its type is determined by a data type and a shape.
-
-Operations such as \code{nv_add(x, y)} can be called directly on \code{AnvilArray} objects (eager mode)
-or inside \code{\link[=jit]{jit()}}-compiled functions for better performance.
-
-To compare whether two abstract arrays are equal, use \code{\link[=eq_type]{eq_type()}}.
 }
 \section{Extractors}{
 

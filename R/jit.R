@@ -315,9 +315,9 @@ to_avals <- function(args_flat, is_static_flat) {
         x
       } else if (is_anvil_array(x)) {
         nv_aval(dtype(x), shape(x), ambiguous(x))
-      } else if (is_valid_lit(x)) {
+      } else if (is_valid_r_lit(x)) {
         nv_aval(default_dtype(x), integer(), ambiguous = TRUE)
-      } else if (is_valid_array(x)) {
+      } else if (is_valid_r_array(x)) {
         nv_aval(default_dtype(x), as.integer(dim(x)), ambiguous = TRUE)
       } else {
         cli_abort("internal error: invalid input type for jit: {.cls {class(x)[1L]}}")

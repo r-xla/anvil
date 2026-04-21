@@ -3,9 +3,9 @@ NULL
 
 jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat, ambiguous_out = NULL, device) {
   args_unwrapped <- lapply(args_flat[!is_static_flat], \(a) {
-    if (is_valid_lit(a)) {
+    if (is_valid_r_lit(a)) {
       pjrt_scalar(a, device = device)
-    } else if (is_valid_array(a)) {
+    } else if (is_valid_r_array(a)) {
       pjrt_buffer(a, device = device)
     } else {
       # no-op if already on correct device
@@ -253,9 +253,9 @@ xla <- function(f, args, donate = character(), device = NULL) {
   f_xla <- function() {
     prep <- jit_prepare_call(match.call(), parent.frame(), static = character(), device = device, backend = "xla")
     args_unwrapped <- lapply(prep$args_flat, \(a) {
-      if (is_valid_lit(a)) {
+      if (is_valid_r_lit(a)) {
         pjrt_scalar(a, device = device)
-      } else if (is_valid_array(a)) {
+      } else if (is_valid_r_array(a)) {
         pjrt_buffer(a, device = device)
       } else {
         pjrt::copy_buffer(a$data, device)

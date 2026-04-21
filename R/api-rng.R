@@ -20,14 +20,11 @@ nv_unif_rand <- function(
   )
 
   # shift value: 9 for f32, 11 for f64
-  shift <- ifelse(dtype == "f32", 9L, 11L)
+  shift <- if (dtype == "f32") 9L else 11L
 
   # shift to the right, s.t. exponent bits are all 0
   mantissa <- nv_shift_right_logical(rbits[[2]], shift)
 
-  # interpretation of 1.0 (float) as unsigned. Built via `nv_fill_like` so the
-  # scalar lands on the same device as `initial_state` and carries the requested
-  # dtype (needed for the bitcast to have the right bit-width).
   one_bits <- nv_bitcast_convert(
     nv_fill_like(initial_state, 1.0, shape = integer(), dtype = dtype),
     dtype = paste0("ui", sub("f(\\d+)", "\\1", dtype))
@@ -41,7 +38,7 @@ nv_unif_rand <- function(
   U <- nv_bitcast_convert(U, dtype = dtype)
 
   # shift to [0, 1)
-  U <- nv_add(U, -1)
+  U <- U - 1
 
   # return state and RVs
   list(rbits[[1]], U)
@@ -110,7 +107,7 @@ nv_runif <- function(
   # expand to range
   U <- nv_mul(U, .range)
   # shift to interval
-  U <- nv_add(U, lower)
+  Y <- U + lower
 
   return(list(Unif[[1]], U))
 }

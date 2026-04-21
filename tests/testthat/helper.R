@@ -5,12 +5,19 @@ expect_jit_equal <- function(.expr, .expected, ...) {
   testthat::expect_equal(observed, .expected, ...)
 }
 
-# Run an API function twice in eager mode -- once with every arrayish input
-# placed on cpu:0 and once on cpu:1 -- and assert the two outputs are equal.
-# Non-arrayish arguments are passed through unchanged.
-check_eager <- function(fn, ..., tolerance = 1e-6) {
-  dev0 <- nv_device("cpu:0", "xla")
-  dev1 <- nv_device("cpu:1", "xla")
+# Cross-check an API function by running it in two configurations:
+#   - eager mode with every AnvilArray input on cpu:1
+#   - jit-compiled (static args forwarded) with every AnvilArray input on cpu:0
+# and asserting that
+#   1. the eager outputs live on cpu:1
+#   2. the jit outputs live on cpu:0
+#   3. the two outputs agree value-wise (as plain R structures)
+#
+# `static` is forwarded to `jit()` and names the arguments that the jitted
+# compilation should capture as compile-time constants.
+check_eager <- function(fn, ..., static = character(), tolerance = 1e-6) {
+  dev_eager <- nv_device("cpu:1", "xla")
+  dev_jit <- nv_device("cpu:0", "xla")
   args <- list(...)
 
   place_on <- function(x, dev) {
@@ -22,8 +29,6 @@ check_eager <- function(fn, ..., tolerance = 1e-6) {
         shape = shape(x),
         ambiguous = ambiguous(x)
       )
-    } else if (is.numeric(x) || is.logical(x)) {
-      nv_array(x, device = dev)
     } else {
       x
     }
@@ -56,11 +61,14 @@ check_eager <- function(fn, ..., tolerance = 1e-6) {
     invisible(NULL)
   }
 
-  out0 <- do.call(fn, lapply(args, place_on, dev = dev0))
-  out1 <- do.call(fn, lapply(args, place_on, dev = dev1))
-  check_on_device(out0, dev0)
-  check_on_device(out1, dev1)
-  testthat::expect_equal(to_r(out0), to_r(out1), tolerance = tolerance)
+  out_eager <- do.call(fn, lapply(args, place_on, dev = dev_eager))
+  out_jit <- do.call(
+    jit(fn, static = static),
+    lapply(args, place_on, dev = dev_jit)
+  )
+  check_on_device(out_eager, dev_eager)
+  check_on_device(out_jit, dev_jit)
+  testthat::expect_equal(to_r(out_eager), to_r(out_jit), tolerance = tolerance)
 }
 
 is_cuda <- function() {

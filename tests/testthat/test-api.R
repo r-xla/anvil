@@ -449,7 +449,7 @@ describe("nv_triu", {
     expected <- matrix(c(1, 1, 0, 1, 1, 1, 1, 1, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
-  it("works under jit (device() on a GraphBox operand)", {
+  it("works under jit", {
     f <- jit(function(x) nv_triu(x, diagonal = 1L))
     expected <- matrix(c(0, 0, 0, 1, 0, 0, 1, 1, 0), nrow = 3, ncol = 3)
     expect_equal(as_array(f(nv_fill(1, c(3, 3)))), expected, tolerance = 1e-6)

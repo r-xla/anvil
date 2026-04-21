@@ -55,19 +55,6 @@ nv_<name> <- nvl_<name>
 ```
 
 For ops needing custom logic, write a function. Use `shape_abstract()`, `ndims_abstract()`, and `dtype_abstract()` to access properties from arrayish values.
-
-### Propagating the backend for constant-creating calls
-
-When your API function internally calls functions that create constants from static values (`nv_fill()`, `nv_iota()`, `nv_array()`, `nv_scalar()`, etc.), pass the backend of the input operand through explicitly:
-
-```r
-be <- backend(operand)
-rows <- nv_iota(dim = 1L, shape = shp, dtype = "i32", backend = be)
-zeros <- nv_fill(0, shp, dtype = dtype_abstract(operand), backend = be)
-```
-
-Without this, the constants are placed on the default backend instead of following the operand, which breaks multi-backend use. See `nv_tril()` / `nv_triu()` in `R/api.R` for reference.
-
 ## Roxygen2 Documentation
 
 API functions use a consistent documentation pattern. Use templates from `man-roxygen/` where applicable.
