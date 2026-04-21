@@ -516,7 +516,7 @@ test_that("quickr pipeline matches PJRT: fill/iota/reverse/concatenate/convert/b
     s_i32 <- nv_convert(s, dtype = "i32")
     prim_i32 <- nv_convert(x_pred, dtype = "i32")
     i32_pred <- nv_convert(x_i32, dtype = "pred")
-    # Use nvl_* to force a convert node even when it's a no-op.
+    # Use prim_* to force a convert node even when it's a no-op.
     i32_i32 <- prim_convert(x_i32, dtype = "i32")
     pred_pred <- prim_convert(x_pred, dtype = "pred")
     i32_f64 <- prim_convert(x_i32, dtype = "f64")

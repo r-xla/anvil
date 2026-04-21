@@ -79,7 +79,7 @@ During this evaluation, we need to distinguish between two cases:
 The evaluation of the `if` statement is an example for the first category.
 Because we set `op = "mul"`, only the second branch is executed.
 Then, we are calling `nv_mul`, which attaches a `PrimitiveCall` that represents the multiplication of the two arrays to the `$calls` of the `GraphDescriptor`.
-Note that the `nv_mul` is itself not primitive, but performs some type promotion and broadcasting if needed, before calling into the primitive `nvl_mul()`.
+Note that the `nv_mul` is itself not primitive, but performs some type promotion and broadcasting if needed, before calling into the primitive `prim$mul`.
 
 A `PrimitiveCall` object consists of the following fields:
 
@@ -326,7 +326,7 @@ Some things that are important to be aware of:
 TODO
 ## Dichotomy of anvil functions
 
-Here, we will dig deeper into the dichotomy of {anvil} functions such as `nvl_add`.
+Here, we will dig deeper into the dichotomy of {anvil} functions such as `prim$add`.
 In the *Getting Started* vignette, we have learned that these functions can either be called directly on `AnvilArray`s to transform data, or used within `jit()` blocks to build up programs.
 Here, we will explain what this actually does and why this is possible.
 
@@ -339,7 +339,7 @@ With our implementation, the following is possible:
 
 ```{r}
 library(anvil)
-nvl_add(nv_scalar(1), nv_scalar(2))
+prim$add(nv_scalar(1), nv_scalar(2))
 
 times_2 <- jit(function(x) {
   nv_mul(x, 2)
@@ -366,7 +366,7 @@ times_4 <- jit(function(x) {
 ```
 
 This is rather cumbersome, as there are always two versions of a function and the first solution is preferable.
-Internally, we have implemented this by wrapping every `nvl_*` primitive function in `jit()` and making a `jit()`ted function behave differently depending on whether we are in another `jit()` call or not.
+Internally, we have implemented this by wrapping every primitive function in `jit()` and making a `jit()`ted function behave differently depending on whether we are in another `jit()` call or not.
 
 If we are in a `jit()` call, and call into a function `jit(f)`, internally `f` is evaluated, and the function is re-traced.
 Otherwise, the standard jit path is followed.

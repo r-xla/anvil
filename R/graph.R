@@ -79,8 +79,7 @@ NULL
 
 #' @title Primitive Call
 #' @description
-#' Call of a primitive in an [`AnvilGraph`]
-#' Note that a primitive call also be a call into another graph (`p_graph`).
+#' Call of a primitive in an [`AnvilGraph`].
 #' @param primitive (`AnvilPrimitive`)\cr
 #'   The function.
 #' @param inputs (`list(GraphValue)`)\cr
@@ -117,7 +116,6 @@ PrimitiveCall <- function(primitive, inputs, params, outputs) {
 #'
 #' @param calls (`list(PrimitiveCall)`)\cr
 #'   The primitive calls that make up the graph.
-#'   This can also be another call into a graph when the primitive is a `p_call`.
 #' @param in_tree (`NULL | Node`)\cr
 #'   The tree of inputs. May contain leaves for both array inputs and static
 #'   (non-array) arguments. Only the array leaves correspond to entries in
