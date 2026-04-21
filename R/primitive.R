@@ -18,10 +18,7 @@ AnvilPrimitive <- function(name, subgraphs = character()) {
   env <- new.env(parent = emptyenv())
   env$name <- name
   env$rules <- list()
-  env$higher_order <- length(subgraphs) > 0L
-  if (env$higher_order) {
-    env$subgraphs <- subgraphs
-  }
+  env$subgraphs <- subgraphs
 
   structure(env, class = "AnvilPrimitive")
 }
@@ -63,7 +60,8 @@ prim <- function(name = NULL) {
 }
 
 is_higher_order_primitive <- function(x) {
-  isTRUE(x$higher_order)
+  if (inherits(x, "JitPrimitive")) x <- attr(x, "primitive")
+  length(x$subgraphs) > 0L
 }
 
 
@@ -163,14 +161,12 @@ new_primitive <- function(name, fn, subgraphs = character(),
 #'   List of subgraphs found in the parameters.
 #' @export
 subgraphs <- function(call) {
-  if (!is_higher_order_primitive(call$primitive)) {
-    return(list())
-  }
+  p <- call$primitive
+  if (inherits(p, "JitPrimitive")) p <- attr(p, "primitive")
+  if (!is_higher_order_primitive(p)) return(list())
 
   stats::setNames(
-    lapply(call$primitive$subgraphs, \(sg) {
-      call$params[[sg]]
-    }),
-    call$primitive$subgraphs
+    lapply(p$subgraphs, \(sg) call$params[[sg]]),
+    p$subgraphs
   )
 }
