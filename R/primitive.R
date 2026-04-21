@@ -94,6 +94,26 @@ print.AnvilPrimitive <- function(x, ...) {
   invisible(x)
 }
 
+#' @method [[ JitPrimitive
+#' @export
+`[[.JitPrimitive` <- function(x, name) {
+  attr(x, "primitive")[[name]]
+}
+
+#' @method [[<- JitPrimitive
+#' @export
+`[[<-.JitPrimitive` <- function(x, name, value) {
+  attr(x, "primitive")[[name]] <- value
+  x
+}
+
+#' @method print JitPrimitive
+#' @export
+print.JitPrimitive <- function(x, ...) {
+  print(attr(x, "primitive"))
+  invisible(x)
+}
+
 #' @title Get Subgraphs from Higher-Order Primitive
 #' @description
 #' Extracts subgraphs from the parameters of a higher-order primitive call.

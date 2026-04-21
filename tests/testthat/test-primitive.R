@@ -39,6 +39,26 @@ test_that("documented primitive ids resolve to registered primitives", {
   expect_identical(missing, character())
 })
 
+test_that("JitPrimitive [[ delegates to attached AnvilPrimitive", {
+  p <- AnvilPrimitive("jp_test_a")
+  f <- function(x) x
+  attr(f, "primitive") <- p
+  class(f) <- c("JitPrimitive", "function")
+
+  f[["stablehlo"]] <- function(x) "stablehlo-rule"
+  expect_identical(p[["stablehlo"]](), "stablehlo-rule")
+
+  expect_identical(f[["stablehlo"]], p[["stablehlo"]])
+})
+
+test_that("print.JitPrimitive delegates to the AnvilPrimitive", {
+  p <- AnvilPrimitive("jp_test_b")
+  f <- function(x) x
+  attr(f, "primitive") <- p
+  class(f) <- c("JitPrimitive", "function")
+  expect_output(print(f), "<AnvilPrimitive:jp_test_b>")
+})
+
 describe("subgraphs", {
   it("extracts subgraphs from higher-order primitives", {
     true_graph <- trace_fn(function() nv_scalar(1), list())
