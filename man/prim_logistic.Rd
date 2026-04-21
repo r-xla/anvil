@@ -18,6 +18,20 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
 }
+\section{Access}{
+
+Access this primitive via \code{prim$logistic}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_logistic]{stablehlo::hlo_logistic()}}.

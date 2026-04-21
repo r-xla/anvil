@@ -41,6 +41,19 @@ Dimensions before the last two are batch dimensions and must match
 between \code{a} and \code{b} (no broadcasting).
 Here \code{op} is \code{A} or \code{A^T} depending on \code{transpose_a}.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$triangular_solve}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_triangular_solve]{stablehlo::hlo_triangular_solve()}}.

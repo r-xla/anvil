@@ -35,6 +35,19 @@ The advantage of using this function instead of e.g. doing
 efficiently represented in the compiled program, while the latter uses
 100 * 100 * 4 bytes of memory.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$fill}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_constant]{stablehlo::hlo_tensor()}}.

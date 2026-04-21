@@ -19,6 +19,20 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Adds two arrays element-wise.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$add}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_add]{stablehlo::hlo_add()}}.

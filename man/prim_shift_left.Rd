@@ -19,6 +19,19 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Element-wise left bit shift.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$shift_left}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_shift_left]{stablehlo::hlo_shift_left()}}.

@@ -18,6 +18,19 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise check if values are finite (not Inf, -Inf, or NaN).
 }
+\section{Access}{
+
+Access this primitive via \code{prim$is_finite}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_is_finite]{stablehlo::hlo_is_finite()}}.

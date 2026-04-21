@@ -25,6 +25,19 @@ It is ambiguous if the input is ambiguous.
 Clamps every element of \code{operand} to the range \verb{[min_val, max_val]},
 i.e. \code{max(min_val, min(operand, max_val))}.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$clamp}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_clamp]{stablehlo::hlo_clamp()}}.

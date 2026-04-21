@@ -27,6 +27,20 @@ When \code{drop = FALSE}, the shape is that of \code{operand} with \code{dims} s
 \description{
 Performs logical AND along the specified dimensions.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$reduce_all}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code{\link[stablehlo:hlo_and]{stablehlo::hlo_and()}} as the reducer.

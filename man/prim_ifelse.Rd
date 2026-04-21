@@ -24,6 +24,20 @@ Element-wise selection based on a boolean predicate, like R's \code{\link[=ifels
 For each element, returns the corresponding element from \code{true_value} where
 \code{pred} is \code{TRUE} and from \code{false_value} where \code{pred} is \code{FALSE}.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$select}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_select]{stablehlo::hlo_select()}}.

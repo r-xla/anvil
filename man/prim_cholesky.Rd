@@ -27,6 +27,19 @@ It is ambiguous if the input is ambiguous.
 Computes the Cholesky decomposition of a symmetric positive-definite matrix.
 Dimensions before the last two are batch dimensions.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$cholesky}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_cholesky]{stablehlo::hlo_cholesky()}}.

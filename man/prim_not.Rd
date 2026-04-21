@@ -18,6 +18,20 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise logical NOT.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$not}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_not]{stablehlo::hlo_not()}}.

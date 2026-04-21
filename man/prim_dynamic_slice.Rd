@@ -40,6 +40,20 @@ This means that out-of-bounds indices will not cause an error, but
 the effective start position may differ from the requested one.
 }
 
+\section{Access}{
+
+Access this primitive via \code{prim$dynamic_slice}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_dynamic_slice]{stablehlo::hlo_dynamic_slice()}}.

@@ -37,6 +37,20 @@ It is ambiguous if the input is ambiguous.
 \description{
 Pads an array with a given padding value.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$pad}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_pad]{stablehlo::hlo_pad()}}.

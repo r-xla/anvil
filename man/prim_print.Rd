@@ -18,6 +18,18 @@ Returns \code{operand} as-is.
 Prints an array value to the console during execution and returns the
 input unchanged. This is useful for debugging JIT-compiled code.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$print}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_custom_call]{stablehlo::hlo_custom_call()}}.

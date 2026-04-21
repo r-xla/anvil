@@ -19,6 +19,20 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Element-wise logical AND.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$and}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_and]{stablehlo::hlo_and()}}.

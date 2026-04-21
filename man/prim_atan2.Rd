@@ -19,6 +19,19 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Element-wise atan2 operation.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$atan2}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_atan2]{stablehlo::hlo_atan2()}}.

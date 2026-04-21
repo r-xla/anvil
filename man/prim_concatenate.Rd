@@ -24,6 +24,20 @@ It is ambiguous if all inputs are ambiguous.
 \description{
 Concatenates arrays along a dimension.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$concatenate}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_concatenate]{stablehlo::hlo_concatenate()}}.

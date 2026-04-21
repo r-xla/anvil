@@ -78,7 +78,7 @@ infer_reduce_boolean <- function(operand, dims, drop) {
 #' @return [`arrayish`]\cr
 #'   Has the given `shape` and `dtype`.
 #' @templateVar primitive_id fill
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_tensor()].
 #' @seealso [nv_fill()]
@@ -108,7 +108,7 @@ prim_fill <- new_primitive(
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_binary
 #' @templateVar primitive_id add
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_add()].
 #' @seealso [nv_add()], `+`
@@ -125,7 +125,7 @@ prim_add <- new_primitive("add", make_binary_op("add", stablehlo::infer_types_ad
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_binary
 #' @templateVar primitive_id mul
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_multiply()].
 #' @seealso [nv_mul()], `*`
@@ -142,7 +142,7 @@ prim_mul <- new_primitive("mul", make_binary_op("mul", stablehlo::infer_types_mu
 #' @template params_prim_lhs_rhs_numeric
 #' @template return_prim_binary
 #' @templateVar primitive_id sub
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_subtract()].
 #' @seealso [nv_sub()], `-`
@@ -160,7 +160,7 @@ prim_sub <- new_primitive("sub", make_binary_op("sub", stablehlo::infer_types_su
 #'   Arrayish value of data type integer or floating-point.
 #' @template return_prim_unary
 #' @templateVar primitive_id negate
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_negate()].
 #' @seealso [nv_negate()], unary `-`
@@ -176,7 +176,7 @@ prim_negate <- new_primitive("negate", make_unary_op("negate", stablehlo::infer_
 #' @template params_prim_lhs_rhs_numeric
 #' @template return_prim_binary
 #' @templateVar primitive_id divide
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_divide()].
 #' @seealso [nv_div()], `/`
@@ -193,7 +193,7 @@ prim_div <- new_primitive("divide", make_binary_op("divide", stablehlo::infer_ty
 #' @template params_prim_lhs_rhs_numeric
 #' @template return_prim_binary
 #' @templateVar primitive_id power
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_power()].
 #' @seealso [nv_pow()], `^`
@@ -219,7 +219,7 @@ prim_pow <- new_primitive("power", make_binary_op("power", stablehlo::infer_type
 #'   It is ambiguous if the input is ambiguous.
 #' @importFrom stablehlo r_to_constant
 #' @templateVar primitive_id broadcast_in_dim
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_broadcast_in_dim()].
 #' @seealso [nv_broadcast_to()]
@@ -273,7 +273,7 @@ prim_broadcast_in_dim <- new_primitive(
 #'   The output shape is the batch dimensions followed by the remaining
 #'   (non-contracted, non-batched) dimensions of `lhs`, then `rhs`.
 #' @templateVar primitive_id dot_general
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_dot_general()].
 #' @seealso [nv_matmul()], `%*%`
@@ -317,7 +317,7 @@ prim_dot_general <- new_primitive(
 #'   Has the same data type as the input and shape `nv_shape(operand)[permutation]`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id transpose
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_transpose()].
 #' @seealso [nv_transpose()], [t()]
@@ -360,7 +360,7 @@ prim_transpose <- new_primitive(
 #'   Has the same data type as the input and the given `shape`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id reshape
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_reshape()].
 #' @seealso [nv_reshape()]
@@ -401,7 +401,7 @@ prim_reshape <- new_primitive(
 #'   which is the sum of the input sizes along that dimension.
 #'   It is ambiguous if all inputs are ambiguous.
 #' @templateVar primitive_id concatenate
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_concatenate()].
 #' @seealso [nv_concatenate()]
@@ -461,7 +461,7 @@ prim_concatenate <- new_primitive(
 #'   `ceiling((limit_indices - start_indices + 1) / strides)`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id static_slice
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_slice()].
 #' @seealso [nvl_dynamic_slice()], [nvl_scatter()], [nvl_gather()], [nv_subset()], `[`
@@ -535,7 +535,7 @@ prim_static_slice <- new_primitive(
 #'   Has the same data type as the input and shape `slice_sizes`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id dynamic_slice
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_dynamic_slice()].
 #' @seealso [nvl_static_slice()], [nvl_dynamic_update_slice()], [nvl_scatter()], [nvl_gather()], [nv_subset()], `[`
@@ -595,7 +595,7 @@ prim_dynamic_slice <- new_primitive(
 #'   Has the same data type and shape as `operand`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id dynamic_update_slice
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_dynamic_update_slice()].
 #' @seealso [nvl_dynamic_slice()], [nvl_scatter()], [nvl_gather()], [nv_subset_assign()], `[<-`
@@ -664,7 +664,7 @@ make_reduce_op <- function(name, infer_fn = infer_reduce) {
 #'   If `FALSE`, the reduced dimensions are set to 1.
 #' @template return_prim_reduce
 #' @templateVar primitive_id reduce_sum
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_add()] as the reducer.
 #' @seealso [nv_reduce_sum()]
@@ -686,7 +686,7 @@ prim_reduce_sum <- new_primitive("reduce_sum", make_reduce_op("reduce_sum"), sta
 #'   If `FALSE`, the reduced dimensions are set to 1.
 #' @template return_prim_reduce
 #' @templateVar primitive_id reduce_prod
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_multiply()] as the reducer.
 #' @seealso [nv_reduce_prod()]
@@ -708,7 +708,7 @@ prim_reduce_prod <- new_primitive("reduce_prod", make_reduce_op("reduce_prod"), 
 #'   If `FALSE`, the reduced dimensions are set to 1.
 #' @template return_prim_reduce
 #' @templateVar primitive_id reduce_max
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_maximum()] as the reducer.
 #' @seealso [nv_reduce_max()]
@@ -730,7 +730,7 @@ prim_reduce_max <- new_primitive("reduce_max", make_reduce_op("reduce_max"), sta
 #'   If `FALSE`, the reduced dimensions are set to 1.
 #' @template return_prim_reduce
 #' @templateVar primitive_id reduce_min
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_minimum()] as the reducer.
 #' @seealso [nv_reduce_min()]
@@ -752,7 +752,7 @@ prim_reduce_min <- new_primitive("reduce_min", make_reduce_op("reduce_min"), sta
 #'   If `FALSE`, the reduced dimensions are set to 1.
 #' @template return_prim_reduce_boolean
 #' @templateVar primitive_id reduce_any
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_or()] as the reducer.
 #' @seealso [nv_reduce_any()]
@@ -774,7 +774,7 @@ prim_reduce_any <- new_primitive("reduce_any", make_reduce_op("reduce_any", infe
 #'   If `FALSE`, the reduced dimensions are set to 1.
 #' @template return_prim_reduce_boolean
 #' @templateVar primitive_id reduce_all
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_reduce()] with [stablehlo::hlo_and()] as the reducer.
 #' @seealso [nv_reduce_all()]
@@ -815,7 +815,7 @@ make_compare_op <- function(name, direction) {
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
 #' @templateVar primitive_id equal
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "EQ"`.
 #' @seealso [nv_eq()], `==`
@@ -832,7 +832,7 @@ prim_eq <- new_primitive("equal", make_compare_op("equal", "EQ"))
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
 #' @templateVar primitive_id not_equal
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "NE"`.
 #' @seealso [nv_ne()], `!=`
@@ -849,7 +849,7 @@ prim_ne <- new_primitive("not_equal", make_compare_op("not_equal", "NE"))
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
 #' @templateVar primitive_id greater
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "GT"`.
 #' @seealso [nv_gt()], `>`
@@ -866,7 +866,7 @@ prim_gt <- new_primitive("greater", make_compare_op("greater", "GT"))
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
 #' @templateVar primitive_id greater_equal
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "GE"`.
 #' @seealso [nv_ge()], `>=`
@@ -883,7 +883,7 @@ prim_ge <- new_primitive("greater_equal", make_compare_op("greater_equal", "GE")
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
 #' @templateVar primitive_id less
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "LT"`.
 #' @seealso [nv_lt()], `<`
@@ -900,7 +900,7 @@ prim_lt <- new_primitive("less", make_compare_op("less", "LT"))
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
 #' @templateVar primitive_id less_equal
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "LE"`.
 #' @seealso [nv_le()], `<=`
@@ -919,7 +919,7 @@ prim_le <- new_primitive("less_equal", make_compare_op("less_equal", "LE"))
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_binary
 #' @templateVar primitive_id maximum
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_maximum()].
 #' @seealso [nv_max()]
@@ -936,7 +936,7 @@ prim_max <- new_primitive("maximum", make_binary_op("maximum", stablehlo::infer_
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_binary
 #' @templateVar primitive_id minimum
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_minimum()].
 #' @seealso [nv_min()]
@@ -953,7 +953,7 @@ prim_min <- new_primitive("minimum", make_binary_op("minimum", stablehlo::infer_
 #' @template params_prim_lhs_rhs_numeric
 #' @template return_prim_binary
 #' @templateVar primitive_id remainder
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_remainder()].
 #' @seealso [nv_remainder()], `%%`
@@ -970,7 +970,7 @@ prim_remainder <- new_primitive("remainder", make_binary_op("remainder", stableh
 #' @template params_prim_lhs_rhs_intlike
 #' @template return_prim_binary
 #' @templateVar primitive_id and
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_and()].
 #' @seealso [nv_and()], `&`
@@ -988,7 +988,7 @@ prim_and <- new_primitive("and", make_binary_op("and", stablehlo::infer_types_an
 #'   Arrayish value of data type boolean, integer, or unsigned integer.
 #' @template return_prim_unary
 #' @templateVar primitive_id not
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_not()].
 #' @seealso [nv_not()]
@@ -1004,7 +1004,7 @@ prim_not <- new_primitive("not", make_unary_op("not", stablehlo::infer_types_not
 #' @template params_prim_lhs_rhs_intlike
 #' @template return_prim_binary
 #' @templateVar primitive_id or
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_or()].
 #' @seealso [nv_or()], `|`
@@ -1021,7 +1021,7 @@ prim_or <- new_primitive("or", make_binary_op("or", stablehlo::infer_types_or))
 #' @template params_prim_lhs_rhs_intlike
 #' @template return_prim_binary
 #' @templateVar primitive_id xor
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_xor()].
 #' @seealso [nv_xor()]
@@ -1046,7 +1046,7 @@ infer_shift <- function(lhs, rhs, shift_fn) {
 #' @template params_prim_lhs_rhs_intlike
 #' @template return_prim_binary
 #' @templateVar primitive_id shift_left
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_shift_left()].
 #' @seealso [nv_shift_left()]
@@ -1069,7 +1069,7 @@ prim_shift_left <- new_primitive(
 #' @template params_prim_lhs_rhs_intlike
 #' @template return_prim_binary
 #' @templateVar primitive_id shift_right_logical
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_shift_right_logical()].
 #' @seealso [nv_shift_right_logical()]
@@ -1092,7 +1092,7 @@ prim_shift_right_logical <- new_primitive(
 #' @template params_prim_lhs_rhs_intlike
 #' @template return_prim_binary
 #' @templateVar primitive_id shift_right_arithmetic
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_shift_right_arithmetic()].
 #' @seealso [nv_shift_right_arithmetic()]
@@ -1115,7 +1115,7 @@ prim_shift_right_arithmetic <- new_primitive(
 #' @template params_prim_lhs_rhs_float
 #' @template return_prim_binary
 #' @templateVar primitive_id atan2
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_atan2()].
 #' @seealso [nv_atan2()]
@@ -1138,7 +1138,7 @@ prim_atan2 <- new_primitive("atan2", make_binary_op("atan2", stablehlo::infer_ty
 #' @return [`arrayish`]\cr
 #'   Has the given `dtype`.
 #' @templateVar primitive_id bitcast_convert
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_bitcast_convert()].
 #' @seealso [nv_bitcast_convert()]
@@ -1167,7 +1167,7 @@ prim_bitcast_convert <- new_primitive(
 #' @template param_prim_operand_signed_numeric
 #' @template return_prim_unary
 #' @templateVar primitive_id abs
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_abs()].
 #' @seealso [nv_abs()], [abs()]
@@ -1183,7 +1183,7 @@ prim_abs <- new_primitive("abs", make_unary_op("abs", stablehlo::infer_types_abs
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id sqrt
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_sqrt()].
 #' @seealso [nv_sqrt()], [sqrt()]
@@ -1199,7 +1199,7 @@ prim_sqrt <- new_primitive("sqrt", make_unary_op("sqrt", stablehlo::infer_types_
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id rsqrt
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_rsqrt()].
 #' @seealso [nv_rsqrt()]
@@ -1215,7 +1215,7 @@ prim_rsqrt <- new_primitive("rsqrt", make_unary_op("rsqrt", stablehlo::infer_typ
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id log
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_log()].
 #' @seealso [nv_log()], [log()]
@@ -1231,7 +1231,7 @@ prim_log <- new_primitive("log", make_unary_op("log", stablehlo::infer_types_log
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id tanh
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_tanh()].
 #' @seealso [nv_tanh()], [tanh()]
@@ -1247,7 +1247,7 @@ prim_tanh <- new_primitive("tanh", make_unary_op("tanh", stablehlo::infer_types_
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id tan
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_tan()].
 #' @seealso [nv_tan()], [tan()]
@@ -1263,7 +1263,7 @@ prim_tan <- new_primitive("tan", make_unary_op("tan", stablehlo::infer_types_tan
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id sine
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_sine()].
 #' @seealso [nv_sine()], [sin()]
@@ -1279,7 +1279,7 @@ prim_sine <- new_primitive("sine", make_unary_op("sine", stablehlo::infer_types_
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id cosine
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_cosine()].
 #' @seealso [nv_cosine()], [cos()]
@@ -1295,7 +1295,7 @@ prim_cosine <- new_primitive("cosine", make_unary_op("cosine", stablehlo::infer_
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id floor
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_floor()].
 #' @seealso [nv_floor()], [floor()]
@@ -1311,7 +1311,7 @@ prim_floor <- new_primitive("floor", make_unary_op("floor", stablehlo::infer_typ
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id ceil
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_ceil()].
 #' @seealso [nv_ceil()], [ceiling()]
@@ -1327,7 +1327,7 @@ prim_ceil <- new_primitive("ceil", make_unary_op("ceil", stablehlo::infer_types_
 #' @template param_prim_operand_signed_numeric
 #' @template return_prim_unary
 #' @templateVar primitive_id sign
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_sign()].
 #' @seealso [nv_sign()], [sign()]
@@ -1343,7 +1343,7 @@ prim_sign <- new_primitive("sign", make_unary_op("sign", stablehlo::infer_types_
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id exp
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_exponential()].
 #' @seealso [nv_exp()], [exp()]
@@ -1359,7 +1359,7 @@ prim_exp <- new_primitive("exp", make_unary_op("exp", stablehlo::infer_types_exp
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id expm1
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_exponential_minus_one()].
 #' @seealso [nv_expm1()]
@@ -1375,7 +1375,7 @@ prim_expm1 <- new_primitive("expm1", make_unary_op("expm1", stablehlo::infer_typ
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id log1p
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_log_plus_one()].
 #' @seealso [nv_log1p()]
@@ -1391,7 +1391,7 @@ prim_log1p <- new_primitive("log1p", make_unary_op("log1p", stablehlo::infer_typ
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id cbrt
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_cbrt()].
 #' @seealso [nv_cbrt()]
@@ -1407,7 +1407,7 @@ prim_cbrt <- new_primitive("cbrt", make_unary_op("cbrt", stablehlo::infer_types_
 #' @template param_prim_operand_float
 #' @template return_prim_unary
 #' @templateVar primitive_id logistic
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_logistic()].
 #' @seealso [nv_logistic()]
@@ -1425,7 +1425,7 @@ prim_logistic <- new_primitive("logistic", make_unary_op("logistic", stablehlo::
 #'   Has the same shape as the input and boolean data type.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id is_finite
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_is_finite()].
 #' @seealso [nv_is_finite()]
@@ -1451,7 +1451,7 @@ prim_is_finite <- new_primitive(
 #'   Arrayish value of data type integer or unsigned integer.
 #' @template return_prim_unary
 #' @templateVar primitive_id popcnt
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_popcnt()].
 #' @seealso [nv_popcnt()]
@@ -1485,7 +1485,7 @@ prim_popcnt <- new_primitive(
 #'   Has the same data type and shape as `operand`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id clamp
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_clamp()].
 #' @seealso [nv_clamp()]
@@ -1523,7 +1523,7 @@ prim_clamp <- new_primitive(
 #'   Has the same data type and shape as `operand`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id reverse
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_reverse()].
 #' @seealso [nv_reverse()]
@@ -1562,7 +1562,7 @@ prim_reverse <- new_primitive(
 #' @return [`arrayish`]\cr
 #'   Has the given `dtype` and `shape`.
 #' @templateVar primitive_id iota
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_iota()].
 #' @seealso [nv_iota()]
@@ -1615,7 +1615,7 @@ prim_iota <- new_primitive(
 #'   For the output shape see the underlying stablehlo documentation ([stablehlo::hlo_pad()]).
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id pad
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_pad()].
 #' @examplesIf pjrt::plugins_downloaded()
@@ -1669,7 +1669,7 @@ prim_pad <- new_primitive(
 #'   Has the same dtype and shape as `operand`.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id round
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_round_nearest_even()] or
 #' [stablehlo::hlo_round_nearest_afz()] depending on the `method` parameter.
@@ -1710,7 +1710,7 @@ prim_round <- new_primitive(
 #'   Has the given `dtype` and the same shape as `operand`.
 #'   Ambiguity is controlled by the `ambiguous` parameter.
 #' @templateVar primitive_id convert
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_convert()].
 #' @seealso [nv_convert()]
@@ -1754,7 +1754,7 @@ prim_convert <- new_primitive(
 #'   Has the same dtype and shape as `true_value`.
 #'   It is ambiguous if both `true_value` and `false_value` are ambiguous.
 #' @templateVar primitive_id select
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_select()].
 #' @seealso [nv_ifelse()]
@@ -1801,7 +1801,7 @@ prim_ifelse <- new_primitive(
 #' @return Result of the executed branch.\cr
 #'   An output is ambiguous if it is ambiguous in both branches.
 #' @templateVar primitive_id if
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_if()].
 #' @seealso [nv_if()], [nvl_ifelse()]
@@ -1886,7 +1886,7 @@ prim_if <- new_primitive(
 #' @return Named list with the same structure as `init` containing the
 #'   final state after the loop terminates.
 #' @templateVar primitive_id while
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_while()].
 #' @seealso [nv_while()]
@@ -1984,7 +1984,7 @@ prim_while <- new_primitive(
 #' @return [`arrayish`]\cr
 #'   Returns `operand` as-is.
 #' @templateVar primitive_id print
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_custom_call()].
 #' @seealso [nv_print()]
@@ -2023,7 +2023,7 @@ prim_print <- new_primitive(
 #'   as `initial_state`. The second element is an array of random values with
 #'   the given `dtype` and `shape`.
 #' @templateVar primitive_id rng_bit_generator
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_rng_bit_generator()].
 #' @seealso [nv_runif()], [nv_rnorm()]
@@ -2111,7 +2111,7 @@ prim_rng_bit_generator <- new_primitive(
 #' of `input`, the order in which `update_computation` is applied is
 #' implementation-defined and may vary between plugins ("cpu", "cuda").
 #' @templateVar primitive_id scatter
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_scatter()].
 #' @seealso [nvl_gather()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
@@ -2307,7 +2307,7 @@ prim_scatter <- new_primitive(
 #' This means that out-of-bounds indices will not cause an error, but
 #' the effective start position may differ from the requested one.
 #' @templateVar primitive_id gather
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_gather()].
 #' @seealso [nvl_scatter()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
@@ -2415,7 +2415,7 @@ prim_gather <- new_primitive(
 #'   The values in the triangle not specified by `lower` are implementation-defined.
 #'   It is ambiguous if the input is ambiguous.
 #' @templateVar primitive_id cholesky
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_cholesky()].
 #' @seealso [nv_solve()]
@@ -2472,7 +2472,7 @@ prim_cholesky <- new_primitive(
 #'   Has the same shape and data type as `b`.
 #'   It is ambiguous if both `a` and `b` are ambiguous.
 #' @templateVar primitive_id triangular_solve
-#' @template section_rules
+#' @template section_primitive
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_triangular_solve()].
 #' @seealso [nv_solve()]

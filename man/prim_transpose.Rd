@@ -22,6 +22,20 @@ It is ambiguous if the input is ambiguous.
 \description{
 Permutes the dimensions of an array.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$transpose}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_transpose]{stablehlo::hlo_transpose()}}.

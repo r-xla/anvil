@@ -22,6 +22,20 @@ It is ambiguous if the input is ambiguous.
 Reshapes an array to a new shape without changing the underlying data.
 Note that row-major order is used, which differs from R's column-major order.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$reshape}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_reshape]{stablehlo::hlo_reshape()}}.

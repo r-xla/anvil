@@ -18,6 +18,19 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise reciprocal square root.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$rsqrt}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_rsqrt]{stablehlo::hlo_rsqrt()}}.

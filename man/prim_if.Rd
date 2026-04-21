@@ -23,6 +23,20 @@ Conditional execution of one of two branches based on a scalar boolean
 predicate. Unlike \code{\link[=nvl_ifelse]{nvl_ifelse()}} which operates element-wise, this
 evaluates only the selected branch.
 }
+\section{Access}{
+
+Access this primitive via \verb{prim$if}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_if]{stablehlo::hlo_if()}}.

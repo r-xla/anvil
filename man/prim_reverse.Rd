@@ -21,6 +21,20 @@ It is ambiguous if the input is ambiguous.
 \description{
 Reverses the order of elements along specified dimensions.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$reverse}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_reverse]{stablehlo::hlo_reverse()}}.

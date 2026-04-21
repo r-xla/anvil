@@ -19,6 +19,20 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Element-wise greater than or equal comparison.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$greater_equal}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} with \code{comparison_direction = "GE"}.

@@ -34,6 +34,19 @@ Has the given \code{dtype} and \code{shape}.
 \description{
 Creates an array with values increasing along the specified dimension.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$iota}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_iota]{stablehlo::hlo_iota()}}.

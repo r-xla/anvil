@@ -18,6 +18,20 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise natural logarithm.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$log}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_log]{stablehlo::hlo_log()}}.

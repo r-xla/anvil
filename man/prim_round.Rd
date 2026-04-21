@@ -22,6 +22,19 @@ It is ambiguous if the input is ambiguous.
 \description{
 Rounds the elements of an array to the nearest integer.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$round}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_round_nearest_even]{stablehlo::hlo_round_nearest_even()}} or

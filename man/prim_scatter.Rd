@@ -103,6 +103,20 @@ of \code{input}, the order in which \code{update_computation} is applied is
 implementation-defined and may vary between plugins ("cpu", "cuda").
 }
 
+\section{Access}{
+
+Access this primitive via \code{prim$scatter}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_scatter]{stablehlo::hlo_scatter()}}.

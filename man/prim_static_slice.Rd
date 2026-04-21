@@ -35,6 +35,20 @@ All indices, limits, and strides are fixed R integers.
 Use \code{\link[=nvl_dynamic_slice]{nvl_dynamic_slice()}} instead when the start position must be
 computed at runtime (e.g. depends on array values).
 }
+\section{Access}{
+
+Access this primitive via \code{prim$static_slice}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_slice]{stablehlo::hlo_slice()}}.

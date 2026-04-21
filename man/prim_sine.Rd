@@ -18,6 +18,20 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise sine.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$sine}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_sine]{stablehlo::hlo_sine()}}.

@@ -18,6 +18,20 @@ It is ambiguous if the input is ambiguous.
 \description{
 Element-wise exp(x) - 1, more accurate for small x.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$expm1}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_exponential_minus_one]{stablehlo::hlo_exponential_minus_one()}}.

@@ -19,6 +19,20 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Divides two arrays element-wise.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$divide}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_divide]{stablehlo::hlo_divide()}}.

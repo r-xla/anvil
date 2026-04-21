@@ -34,6 +34,18 @@ the given \code{dtype} and \code{shape}.
 Generates pseudo-random numbers using the specified algorithm and returns
 the updated RNG state together with the generated values.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$rng_bit_generator}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_rng_bit_generator]{stablehlo::hlo_rng_bit_generator()}}.

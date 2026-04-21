@@ -29,6 +29,19 @@ Repeatedly executes \code{body} while \code{cond} returns \code{TRUE}, like R's
 passed through each iteration.
 Otherwise, no state is maintained between iterations.
 }
+\section{Access}{
+
+Access this primitive via \verb{prim$while}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_while]{stablehlo::hlo_while()}}.

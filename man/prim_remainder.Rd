@@ -19,6 +19,19 @@ It is ambiguous if both inputs are ambiguous.
 \description{
 Element-wise remainder of division.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$remainder}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_remainder]{stablehlo::hlo_remainder()}}.

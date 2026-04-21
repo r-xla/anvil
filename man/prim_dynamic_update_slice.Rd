@@ -30,6 +30,20 @@ runtime-determined position. This is the write counterpart of
 \code{\link[=nvl_dynamic_slice]{nvl_dynamic_slice()}}: dynamic slice reads a block from an array,
 while dynamic update slice writes a block into an array.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$dynamic_update_slice}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_dynamic_update_slice]{stablehlo::hlo_dynamic_update_slice()}}.

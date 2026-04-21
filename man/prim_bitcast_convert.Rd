@@ -23,6 +23,19 @@ Has the given \code{dtype}.
 Reinterprets the bits of an array as a different data type without
 modifying the underlying data.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$bitcast_convert}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_bitcast_convert]{stablehlo::hlo_bitcast_convert()}}.

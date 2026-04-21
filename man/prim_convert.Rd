@@ -26,6 +26,20 @@ Ambiguity is controlled by the \code{ambiguous} parameter.
 \description{
 Converts the elements of an array to a different data type.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$convert}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_convert]{stablehlo::hlo_convert()}}.

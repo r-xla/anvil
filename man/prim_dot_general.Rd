@@ -29,6 +29,20 @@ The output shape is the batch dimensions followed by the remaining
 General dot product of two arrays, supporting contraction over arbitrary
 dimensions and batching.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$dot_general}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_dot_general]{stablehlo::hlo_dot_general()}}.

@@ -28,6 +28,20 @@ It is ambiguous if the input is ambiguous.
 \description{
 Finds the minimum of array elements along the specified dimensions.
 }
+\section{Access}{
+
+Access this primitive via \code{prim$reduce_min}.
+}
+
+\section{Implemented Rules}{
+
+\itemize{
+\item \code{stablehlo}
+\item \code{quickr}
+\item \code{reverse}
+}
+}
+
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_reduce]{stablehlo::hlo_reduce()}} with \code{\link[stablehlo:hlo_minimum]{stablehlo::hlo_minimum()}} as the reducer.
