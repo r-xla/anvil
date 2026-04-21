@@ -38,7 +38,7 @@ Lowers to \code{\link[stablehlo:hlo_custom_call]{stablehlo::hlo_custom_call()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
-nvl_print(x)
+prim$print(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

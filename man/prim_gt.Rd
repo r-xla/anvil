@@ -42,7 +42,7 @@ Lowers to \code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} with \co
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
 y <- nv_array(c(3, 2, 1))
-nvl_gt(x, y)
+prim$gt(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

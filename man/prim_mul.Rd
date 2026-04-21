@@ -42,7 +42,7 @@ Lowers to \code{\link[stablehlo:hlo_multiply]{stablehlo::hlo_multiply()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3))
 y <- nv_array(c(4, 5, 6))
-nvl_mul(x, y)
+prim$mul(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

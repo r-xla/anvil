@@ -46,7 +46,7 @@ Lowers to \code{\link[stablehlo:hlo_clamp]{stablehlo::hlo_clamp()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(-1, 0.5, 2))
-nvl_clamp(nv_scalar(0), x, nv_scalar(1))
+prim$clamp(nv_scalar(0), x, nv_scalar(1))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

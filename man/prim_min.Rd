@@ -42,7 +42,7 @@ Lowers to \code{\link[stablehlo:hlo_minimum]{stablehlo::hlo_minimum()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 5, 3))
 y <- nv_array(c(4, 2, 6))
-nvl_min(x, y)
+prim$min(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

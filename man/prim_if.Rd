@@ -20,7 +20,7 @@ An output is ambiguous if it is ambiguous in both branches.
 }
 \description{
 Conditional execution of one of two branches based on a scalar boolean
-predicate. Unlike \code{\link[=nvl_ifelse]{nvl_ifelse()}} which operates element-wise, this
+predicate. Unlike \code{\link[=prim$ifelse]{prim$ifelse()}} which operates element-wise, this
 evaluates only the selected branch.
 }
 \section{Access}{
@@ -44,9 +44,9 @@ Lowers to \code{\link[stablehlo:hlo_if]{stablehlo::hlo_if()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-nvl_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
+prim$if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_if]{nv_if()}}, \code{\link[=nvl_ifelse]{nvl_ifelse()}}
+\code{\link[=nv_if]{nv_if()}}, \code{\link[=prim$ifelse]{prim$ifelse()}}
 }

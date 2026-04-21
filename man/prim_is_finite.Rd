@@ -39,7 +39,7 @@ Lowers to \code{\link[stablehlo:hlo_is_finite]{stablehlo::hlo_is_finite()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, Inf, NaN, -Inf, 0))
-nvl_is_finite(x)
+prim$is_finite(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

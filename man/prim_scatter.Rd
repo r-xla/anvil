@@ -86,7 +86,7 @@ the \code{update} array. When multiple indices point to the same location,
 the \code{update_computation} function determines how to combine the values
 (by default the new value replaces the old one).
 
-This is the inverse of \code{\link[=nvl_gather]{nvl_gather()}}: gather reads slices from an array
+This is the inverse of \code{\link[=prim$gather]{prim$gather()}}: gather reads slices from an array
 at given indices, while scatter writes slices into an array at given
 indices.
 }
@@ -128,7 +128,7 @@ Lowers to \code{\link[stablehlo:hlo_scatter]{stablehlo::hlo_scatter()}}.
 input <- nv_array(c(0, 0, 0, 0, 0))
 indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
 updates <- nv_array(c(10, 30))
-nvl_scatter(
+prim$scatter(
   input, indices, updates,
   update_window_dims = integer(0),
   inserted_window_dims = 1L,
@@ -140,5 +140,5 @@ nvl_scatter(
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_gather]{nvl_gather()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{\link[=nv_subset_assign]{nv_subset_assign()}}, \code{[}, \verb{[<-}
+\code{\link[=prim$gather]{prim$gather()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{\link[=nv_subset_assign]{nv_subset_assign()}}, \code{[}, \verb{[<-}
 }

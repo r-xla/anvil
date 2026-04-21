@@ -42,7 +42,7 @@ Lowers to \code{\link[stablehlo:hlo_or]{stablehlo::hlo_or()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(TRUE, FALSE, TRUE))
 y <- nv_array(c(TRUE, TRUE, FALSE))
-nvl_or(x, y)
+prim$or(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -40,7 +40,7 @@ Lowers to \code{\link[stablehlo:hlo_exponential]{stablehlo::hlo_exponential()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(0, 1, 2))
-nvl_exp(x)
+prim$exp(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

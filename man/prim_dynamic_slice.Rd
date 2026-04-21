@@ -29,7 +29,7 @@ Extracts a slice from an array whose start position is determined at
 runtime via array-valued indices. The slice shape (\code{slice_sizes}) is
 a fixed R integer vector.
 
-Use \code{\link[=nvl_static_slice]{nvl_static_slice()}} instead when all indices are known at compile
+Use \code{\link[=prim$static_slice]{prim$static_slice()}} instead when all indices are known at compile
 time and you need stride support.
 }
 \section{Out Of Bounds Behavior}{
@@ -64,15 +64,15 @@ Lowers to \code{\link[stablehlo:hlo_dynamic_slice]{stablehlo::hlo_dynamic_slice(
 # 1-D: extract 3 elements starting at position 3
 x <- nv_array(1:10)
 start <- nv_scalar(3L)
-nvl_dynamic_slice(x, start, slice_sizes = 3L)
+prim$dynamic_slice(x, start, slice_sizes = 3L)
 
 # 2-D: extract a 2x2 block from a matrix
 x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
 row_start <- nv_scalar(2L)
 col_start <- nv_scalar(1L)
-nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
+prim$dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_static_slice]{nvl_static_slice()}}, \code{\link[=nvl_dynamic_update_slice]{nvl_dynamic_update_slice()}}, \code{\link[=nvl_scatter]{nvl_scatter()}}, \code{\link[=nvl_gather]{nvl_gather()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{[}
+\code{\link[=prim$static_slice]{prim$static_slice()}}, \code{\link[=prim$dynamic_update_slice]{prim$dynamic_update_slice()}}, \code{\link[=prim$scatter]{prim$scatter()}}, \code{\link[=prim$gather]{prim$gather()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{[}
 }

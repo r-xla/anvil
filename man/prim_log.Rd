@@ -40,7 +40,7 @@ Lowers to \code{\link[stablehlo:hlo_log]{stablehlo::hlo_log()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2.718, 7.389))
-nvl_log(x)
+prim$log(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

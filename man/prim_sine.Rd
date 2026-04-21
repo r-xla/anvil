@@ -40,7 +40,7 @@ Lowers to \code{\link[stablehlo:hlo_sine]{stablehlo::hlo_sine()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(0, pi / 2, pi))
-nvl_sine(x)
+prim$sine(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

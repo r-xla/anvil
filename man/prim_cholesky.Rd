@@ -49,7 +49,7 @@ Lowers to \code{\link[stablehlo:hlo_cholesky]{stablehlo::hlo_cholesky()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # Create a positive-definite matrix
 x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-nvl_cholesky(x, lower = TRUE)
+prim$cholesky(x, lower = TRUE)
 \dontshow{\}) # examplesIf}
 }
 \references{

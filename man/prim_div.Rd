@@ -42,7 +42,7 @@ Lowers to \code{\link[stablehlo:hlo_divide]{stablehlo::hlo_divide()}}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(10, 20, 30))
 y <- nv_array(c(2, 5, 10))
-nvl_div(x, y)
+prim$div(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

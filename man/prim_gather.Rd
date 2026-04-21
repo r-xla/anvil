@@ -83,7 +83,7 @@ starting position in \code{operand}, and a slice of size \code{slice_sizes} is
 extracted from that position. The gathered slices are assembled into
 the output array.
 
-This is the inverse of \code{\link[=nvl_scatter]{nvl_scatter()}}: gather reads slices from a
+This is the inverse of \code{\link[=prim$scatter]{prim$scatter()}}: gather reads slices from a
 array at given indices, while scatter writes slices into an array at
 given indices.
 }
@@ -119,7 +119,7 @@ Lowers to \code{\link[stablehlo:hlo_gather]{stablehlo::hlo_gather()}}.
 # Gather rows 1 and 3 from a 3x3 matrix
 operand <- nv_array(matrix(1:9, nrow = 3))
 indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
-nvl_gather(
+prim$gather(
   operand, indices,
   slice_sizes = c(1L, 3L),
   offset_dims = 2L,
@@ -132,5 +132,5 @@ nvl_gather(
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_scatter]{nvl_scatter()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{\link[=nv_subset_assign]{nv_subset_assign()}}, \code{[}, \verb{[<-}
+\code{\link[=prim$scatter]{prim$scatter()}}, \code{\link[=nv_subset]{nv_subset()}}, \code{\link[=nv_subset_assign]{nv_subset_assign()}}, \code{[}, \verb{[<-}
 }

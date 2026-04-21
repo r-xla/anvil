@@ -40,7 +40,7 @@ Lowers to \code{\link[stablehlo:hlo_floor]{stablehlo::hlo_floor()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1.2, 2.7, -1.5))
-nvl_floor(x)
+prim$floor(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

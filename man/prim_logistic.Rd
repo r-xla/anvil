@@ -40,7 +40,7 @@ Lowers to \code{\link[stablehlo:hlo_logistic]{stablehlo::hlo_logistic()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(-2, 0, 2))
-nvl_logistic(x)
+prim$logistic(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

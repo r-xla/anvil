@@ -40,7 +40,7 @@ Lowers to \code{\link[stablehlo:hlo_tan]{stablehlo::hlo_tan()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(0, 0.5, 1))
-nvl_tan(x)
+prim$tan(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -27,7 +27,7 @@ It is ambiguous if the input is ambiguous.
 \description{
 Returns a copy of \code{operand} with a slice replaced by \code{update} at a
 runtime-determined position. This is the write counterpart of
-\code{\link[=nvl_dynamic_slice]{nvl_dynamic_slice()}}: dynamic slice reads a block from an array,
+\code{\link[=prim$dynamic_slice]{prim$dynamic_slice()}}: dynamic slice reads a block from an array,
 while dynamic update slice writes a block into an array.
 }
 \section{Access}{
@@ -49,22 +49,30 @@ Access this primitive via \code{prim$dynamic_update_slice}.
 Lowers to \code{\link[stablehlo:hlo_dynamic_update_slice]{stablehlo::hlo_dynamic_update_slice()}}.
 }
 
+\section{Out Of Bounds Behavior}{
+
+Start indices are clamped before the slice is extracted:
+\code{adjusted_start_indices = clamp(1, start_indices, nv_shape(operand) - slice_sizes + 1)}.
+This means that out-of-bounds indices will not cause an error, but
+the effective start position may differ from the requested one.
+}
+
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # 1-D: overwrite two elements starting at position 2
 x <- nv_array(1:5)
 update <- nv_array(c(10L, 20L))
 start <- nv_scalar(2L)
-nvl_dynamic_update_slice(x, update, start)
+prim$dynamic_update_slice(x, update, start)
 
 # 2-D: write a 2x2 block into a 3x4 matrix
 x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
 update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
 row_start <- nv_scalar(2L)
 col_start <- nv_scalar(3L)
-nvl_dynamic_update_slice(x, update, row_start, col_start)
+prim$dynamic_update_slice(x, update, row_start, col_start)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_dynamic_slice]{nvl_dynamic_slice()}}, \code{\link[=nvl_scatter]{nvl_scatter()}}, \code{\link[=nvl_gather]{nvl_gather()}}, \code{\link[=nv_subset_assign]{nv_subset_assign()}}, \verb{[<-}
+\code{\link[=prim$dynamic_slice]{prim$dynamic_slice()}}, \code{\link[=prim$scatter]{prim$scatter()}}, \code{\link[=prim$gather]{prim$gather()}}, \code{\link[=nv_subset_assign]{nv_subset_assign()}}, \verb{[<-}
 }

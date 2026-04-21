@@ -41,7 +41,7 @@ Lowers to \code{\link[stablehlo:hlo_shift_right_arithmetic]{stablehlo::hlo_shift
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(8L, -16L, 32L))
 y <- nv_array(c(1L, 2L, 3L))
-nvl_shift_right_arithmetic(x, y)
+prim$shift_right_arithmetic(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -40,7 +40,7 @@ Lowers to \code{\link[stablehlo:hlo_ceil]{stablehlo::hlo_ceil()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1.2, 2.7, -1.5))
-nvl_ceil(x)
+prim$ceil(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -40,7 +40,7 @@ Lowers to \code{\link[stablehlo:hlo_cosine]{stablehlo::hlo_cosine()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(0, pi / 2, pi))
-nvl_cosine(x)
+prim$cosine(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
