@@ -97,12 +97,12 @@ Once the `R` function is staged out into a simpler format, it is ready to be tra
 The {anvil} package does not in any way dictate how such a `AnvilGraph` to `AnvilGraph` transformation can be implemented.
 For most interesting transformations, however, we need to store some information for each {anvil} primitive function.
 In the case of the gradient, we need to store the derivative rules.
-For this, `anvil::Primitive` objects have a `$rules` field that can be populated.
+For this, the `anvil::AnvilPrimitive` metadata object attached to each primitive has a `rules` field that can be populated.
 The derivative rules are stored as functions under the `"reverse"` name.
-We can access a primitive by it's name via the `prim()` function:
+We can access a primitive by its name via the exported `prim` environment; `[[` on the returned object reads a rule:
 
 ```{r}
-prim("mul")$rules[["reverse"]]
+prim$mul[["reverse"]]
 ```
 
 The `anvil::transform_gradient` function uses these rules to compute the gradient of a function.
@@ -121,10 +121,10 @@ Here, we show how to compile using the XLA backend.
 First, we will translate the `AnvilGraph` into the StableHLO representation via the {stablehlo} package.
 Then, we will compile this program using the XLA compiler that is accessible via the {pjrt} package.
 
-Like for the gradient transformation, the rules of how to do this transformation are stored in the `$rules` fields of the primitives.
+Like for the gradient transformation, the rules of how to do this transformation are attached to each primitive.
 
 ```{r}
-prim("mul")$rules[["stablehlo"]]
+prim$mul[["stablehlo"]]
 ```
 
 The `anvil::stablehlo` function will create a `stablehlo::Func` object and will sequentially translate the `PrimitiveCall`s into StableHLO operations.
