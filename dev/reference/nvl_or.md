@@ -42,11 +42,9 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(TRUE, FALSE, TRUE))
-  y <- nv_array(c(TRUE, TRUE, FALSE))
-  nvl_or(x, y)
-})
+x <- nv_array(c(TRUE, FALSE, TRUE))
+y <- nv_array(c(TRUE, TRUE, FALSE))
+nvl_or(x, y)
 #> AnvilArray
 #>  1
 #>  1

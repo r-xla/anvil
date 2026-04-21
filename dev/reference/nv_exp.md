@@ -29,10 +29,8 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(0, 1, 2))
-  exp(x)
-})
+x <- nv_array(c(0, 1, 2))
+exp(x)
 #> AnvilArray
 #>  1.0000
 #>  2.7183

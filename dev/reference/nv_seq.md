@@ -83,7 +83,7 @@ nv_seq_like(
 ## Examples
 
 ``` r
-jit_eval(nv_seq(3, 7))
+nv_seq(3, 7)
 #> AnvilArray
 #>  3
 #>  4

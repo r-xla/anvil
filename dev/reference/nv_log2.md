@@ -29,10 +29,8 @@ Has the same shape and data type as the input.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, 2, 4, 8))
-  nv_log2(x)
-})
+x <- nv_array(c(1, 2, 4, 8))
+nv_log2(x)
 #> AnvilArray
 #>  0
 #>  1

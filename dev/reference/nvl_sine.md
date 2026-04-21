@@ -42,10 +42,8 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(0, pi / 2, pi))
-  nvl_sine(x)
-})
+x <- nv_array(c(0, pi / 2, pi))
+nvl_sine(x)
 #> AnvilArray
 #>   0.0000e+00
 #>   1.0000e+00

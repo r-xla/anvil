@@ -38,10 +38,8 @@ for value-preserving type conversion.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(1L)
-  nvl_bitcast_convert(x, dtype = "i8")
-})
+x <- nv_array(1L)
+nvl_bitcast_convert(x, dtype = "i8")
 #> AnvilArray
 #>  1 0 0 0
 #> [ CPUi8{1,4} ] 

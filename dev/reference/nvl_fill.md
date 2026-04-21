@@ -69,7 +69,7 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval(nvl_fill(3.14, shape = c(2, 3), dtype = "f32"))
+nvl_fill(3.14, shape = c(2, 3), dtype = "f32")
 #> AnvilArray
 #>  3.1400 3.1400 3.1400
 #>  3.1400 3.1400 3.1400

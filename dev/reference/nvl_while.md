@@ -52,24 +52,22 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval({
-  nvl_while(
-    init = list(i = 0L, total = 0L),
-    cond = function(i, total) i <= 5L,
-    body = function(i, total) list(
-      i = i + 1L,
-      total = total + i
-    )
+nvl_while(
+  init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
+  cond = function(i, total) i <= 5L,
+  body = function(i, total) list(
+    i = i + 1L,
+    total = total + i
   )
-})
+)
 #> $i
 #> AnvilArray
 #>  6
-#> [ CPUi32?{} ] 
+#> [ CPUi32{} ] 
 #> 
 #> $total
 #> AnvilArray
 #>  15
-#> [ CPUi32?{} ] 
+#> [ CPUi32{} ] 
 #> 
 ```

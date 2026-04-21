@@ -39,10 +39,8 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, Inf, NaN, -Inf, 0))
-  nvl_is_finite(x)
-})
+x <- nv_array(c(1, Inf, NaN, -Inf, 0))
+nvl_is_finite(x)
 #> AnvilArray
 #>  1
 #>  0

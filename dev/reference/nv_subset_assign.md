@@ -48,12 +48,10 @@ for a comprehensive guide.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(matrix(1:12, nrow = 3))
-  # Set row 1 to zeros
-  x[1, ] <- 0L
-  x
-})
+x <- nv_array(matrix(1:12, nrow = 3))
+# Set row 1 to zeros
+x[1, ] <- nv_scalar(0L)
+x
 #> AnvilArray
 #>   0  0  0  0
 #>   2  5  8 11

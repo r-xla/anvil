@@ -51,10 +51,8 @@ population variance.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, 2, 3, 4, 5))
-  nv_var(x, dims = 1L)
-})
+x <- nv_array(c(1, 2, 3, 4, 5))
+nv_var(x, dims = 1L)
 #> AnvilArray
 #>  2.5000
 #> [ CPUf32{} ] 

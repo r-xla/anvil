@@ -39,10 +39,8 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, 4, 9))
-  nvl_rsqrt(x)
-})
+x <- nv_array(c(1, 4, 9))
+nvl_rsqrt(x)
 #> AnvilArray
 #>  1.0000
 #>  0.5000

@@ -45,11 +45,9 @@ for a comprehensive guide.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(matrix(1:12, nrow = 3))
-  # Select row 2
-  x[2, ]
-})
+x <- nv_array(matrix(1:12, nrow = 3))
+# Select row 2
+x[2, ]
 #> AnvilArray
 #>   2
 #>   5
@@ -57,11 +55,9 @@ jit_eval({
 #>  11
 #> [ CPUi32{4} ] 
 
-jit_eval({
-  x <- nv_array(matrix(1:12, nrow = 3))
-  # Select rows 1 to 2, all columns
-  x[1:2, ]
-})
+x <- nv_array(matrix(1:12, nrow = 3))
+# Select rows 1 to 2, all columns
+x[1:2, ]
 #> AnvilArray
 #>   1  4  7 10
 #>   2  5  8 11

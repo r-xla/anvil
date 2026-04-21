@@ -47,10 +47,8 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(1:10)
-  nv_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
-})
+x <- nv_array(1:10)
+nv_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 #> AnvilArray
 #>  2
 #>  3

@@ -38,11 +38,9 @@ List of arrays, all with the same shape.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(matrix(1:6, nrow = 2))
-  y <- nv_array(c(10, 20, 30))
-  nv_broadcast_arrays(x, y)
-})
+x <- nv_array(matrix(1:6, nrow = 2))
+y <- nv_array(c(10, 20, 30))
+nv_broadcast_arrays(x, y)
 #> [[1]]
 #> AnvilArray
 #>  1 3 5

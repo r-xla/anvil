@@ -40,10 +40,8 @@ crossprod(x, y = NULL, ...)
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
-  nv_crossprod(x)
-})
+x <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
+nv_crossprod(x)
 #> AnvilArray
 #>  14 32
 #>  32 77

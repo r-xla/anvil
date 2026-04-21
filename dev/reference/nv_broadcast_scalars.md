@@ -26,11 +26,9 @@ List of broadcasted arrays.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  # scalar 1 is broadcast to shape [3]
-  nv_broadcast_scalars(x, 1)
-})
+x <- nv_array(c(1, 2, 3))
+# scalar 1 is broadcast to shape [3]
+nv_broadcast_scalars(x, nv_scalar(1))
 #> [[1]]
 #> AnvilArray
 #>  1
@@ -43,6 +41,6 @@ jit_eval({
 #>  1
 #>  1
 #>  1
-#> [ CPUf32?{3} ] 
+#> [ CPUf32{3} ] 
 #> 
 ```

@@ -34,10 +34,8 @@ Has the same shape and data type as `operand`.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_fill(1, c(3, 3))
-  nv_triu(x)
-})
+x <- nv_fill(1, c(3, 3))
+nv_triu(x)
 #> AnvilArray
 #>  1 1 1
 #>  0 1 1

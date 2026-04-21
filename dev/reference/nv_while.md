@@ -39,16 +39,14 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-jit_eval({
-  nv_while(
-    init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
-    cond = function(i, total) i < 5L,
-    body = function(i, total) list(
-      i = i + 1L,
-      total = total + i
-    )
+nv_while(
+  init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
+  cond = function(i, total) i < 5L,
+  body = function(i, total) list(
+    i = i + 1L,
+    total = total + i
   )
-})
+)
 #> $i
 #> AnvilArray
 #>  5

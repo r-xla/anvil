@@ -42,11 +42,9 @@ with `comparison_direction = "LT"`.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  y <- nv_array(c(3, 2, 1))
-  nvl_lt(x, y)
-})
+x <- nv_array(c(1, 2, 3))
+y <- nv_array(c(3, 2, 1))
+nvl_lt(x, y)
 #> AnvilArray
 #>  1
 #>  0

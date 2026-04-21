@@ -51,10 +51,8 @@ population standard deviation.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, 2, 3, 4, 5))
-  nv_sd(x, dims = 1L)
-})
+x <- nv_array(c(1, 2, 3, 4, 5))
+nv_sd(x, dims = 1L)
 #> AnvilArray
 #>  1.5811
 #> [ CPUf32{} ] 

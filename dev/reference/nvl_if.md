@@ -50,7 +50,7 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval(nvl_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2)))
+nvl_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 #> AnvilArray
 #>  1
 #> [ CPUf32{} ] 

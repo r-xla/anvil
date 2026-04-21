@@ -35,10 +35,8 @@ removed.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(1:6, shape = c(1, 6, 1))
-  nv_squeeze(x)
-})
+x <- nv_array(1:6, shape = c(1, 6, 1))
+nv_squeeze(x)
 #> AnvilArray
 #>  1
 #>  2

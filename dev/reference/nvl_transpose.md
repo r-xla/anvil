@@ -50,10 +50,8 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(matrix(1:6, nrow = 2))
-  nvl_transpose(x, permutation = c(2L, 1L))
-})
+x <- nv_array(matrix(1:6, nrow = 2))
+nvl_transpose(x, permutation = c(2L, 1L))
 #> AnvilArray
 #>  1 2
 #>  3 4

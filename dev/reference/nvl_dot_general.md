@@ -60,14 +60,12 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(matrix(1:6, nrow = 2))
-  y <- nv_array(matrix(1:6, nrow = 3))
-  nvl_dot_general(x, y,
-    contracting_dims = list(2L, 1L),
-    batching_dims = list(integer(0), integer(0))
-  )
-})
+x <- nv_array(matrix(1:6, nrow = 2))
+y <- nv_array(matrix(1:6, nrow = 3))
+nvl_dot_general(x, y,
+  contracting_dims = list(2L, 1L),
+  batching_dims = list(integer(0), integer(0))
+)
 #> AnvilArray
 #>  22 49
 #>  28 64

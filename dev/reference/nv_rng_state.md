@@ -39,10 +39,8 @@ Other rng:
 ## Examples
 
 ``` r
-jit_eval({
-  state <- nv_rng_state(42L)
-  state
-})
+state <- nv_rng_state(42L)
+state
 #> AnvilArray
 #>  42
 #>   0

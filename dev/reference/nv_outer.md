@@ -23,11 +23,9 @@ A 2-D array of shape `(length(x), length(y))`.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  y <- nv_array(c(4, 5))
-  nv_outer(x, y)
-})
+x <- nv_array(c(1, 2, 3))
+y <- nv_array(c(4, 5))
+nv_outer(x, y)
 #> AnvilArray
 #>   4  5
 #>   8 10

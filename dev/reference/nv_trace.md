@@ -28,10 +28,8 @@ A scalar with the same data type as `operand`.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))
-  nv_trace(x)
-})
+x <- nv_array(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))
+nv_trace(x)
 #> AnvilArray
 #>  6
 #> [ CPUf32{} ] 

@@ -80,15 +80,13 @@ University Computing Laboratory.
 ## Examples
 
 ``` r
-jit_eval({
-  # Solve L %*% x = b where L is lower triangular
-  L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
-  b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
-  nvl_triangular_solve(L, b,
-    left_side = TRUE, lower = TRUE,
-    unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"
-  )
-})
+# Solve L %*% x = b where L is lower triangular
+L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
+b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
+nvl_triangular_solve(L, b,
+  left_side = TRUE, lower = TRUE,
+  unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"
+)
 #> AnvilArray
 #>  2
 #>  1

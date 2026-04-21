@@ -28,10 +28,8 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(7L, 3L, 15L))
-  nv_popcnt(x)
-})
+x <- nv_array(c(7L, 3L, 15L))
+nv_popcnt(x)
 #> AnvilArray
 #>  3
 #>  2

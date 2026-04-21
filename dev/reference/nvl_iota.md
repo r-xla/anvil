@@ -70,7 +70,7 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval(nvl_iota(dim = 1L, dtype = "i32", shape = 5L))
+nvl_iota(dim = 1L, dtype = "i32", shape = 5L)
 #> AnvilArray
 #>  1
 #>  2

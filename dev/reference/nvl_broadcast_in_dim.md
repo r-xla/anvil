@@ -54,10 +54,8 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  nvl_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
-})
+x <- nv_array(c(1, 2, 3))
+nvl_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
 #> AnvilArray
 #>  1 2 3
 #>  1 2 3

@@ -58,10 +58,8 @@ as the reducer.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(matrix(1:6, nrow = 2))
-  nvl_reduce_max(x, dims = 1L)
-})
+x <- nv_array(matrix(1:6, nrow = 2))
+nvl_reduce_max(x, dims = 1L)
 #> AnvilArray
 #>  2
 #>  4

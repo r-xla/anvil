@@ -82,7 +82,7 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-jit_eval(nv_iota(dim = 1L, dtype = "i32", shape = 5L))
+nv_iota(dim = 1L, dtype = "i32", shape = 5L)
 #> AnvilArray
 #>  1
 #>  2

@@ -23,9 +23,7 @@ An `n x n` matrix with `x` on the diagonal and zeros elsewhere.
 ## Examples
 
 ``` r
-jit_eval({
-  nv_diag(nv_array(c(1, 2, 3)))
-})
+nv_diag(nv_array(c(1, 2, 3)))
 #> AnvilArray
 #>  1 0 0
 #>  0 2 0

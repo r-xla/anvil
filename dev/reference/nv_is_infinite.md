@@ -37,10 +37,8 @@ Has the same shape as the input and boolean data type.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, NaN, Inf, -Inf, 0))
-  nv_is_infinite(x)
-})
+x <- nv_array(c(1, NaN, Inf, -Inf, 0))
+nv_is_infinite(x)
 #> AnvilArray
 #>  0
 #>  0

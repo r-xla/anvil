@@ -152,20 +152,18 @@ Lowers to
 
 ``` r
 # Scatter values 10 and 30 into positions 1 and 3 of a zero vector
-jit_eval({
-  input <- nv_array(c(0, 0, 0, 0, 0))
-  indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
-  updates <- nv_array(c(10, 30))
-  nvl_scatter(
-    input, indices, updates,
-    update_window_dims = integer(0),
-    inserted_window_dims = 1L,
-    input_batching_dims = integer(0),
-    scatter_indices_batching_dims = integer(0),
-    scatter_dims_to_operand_dims = 1L,
-    index_vector_dim = 2L
-  )
-})
+input <- nv_array(c(0, 0, 0, 0, 0))
+indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
+updates <- nv_array(c(10, 30))
+nvl_scatter(
+  input, indices, updates,
+  update_window_dims = integer(0),
+  inserted_window_dims = 1L,
+  input_batching_dims = integer(0),
+  scatter_indices_batching_dims = integer(0),
+  scatter_dims_to_operand_dims = 1L,
+  index_vector_dim = 2L
+)
 #> AnvilArray
 #>  10
 #>   0

@@ -32,11 +32,9 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  y <- nv_array(c(4, 5, 6))
-  x * y
-})
+x <- nv_array(c(1, 2, 3))
+y <- nv_array(c(4, 5, 6))
+x * y
 #> AnvilArray
 #>   4
 #>  10

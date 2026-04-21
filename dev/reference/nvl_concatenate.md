@@ -49,11 +49,9 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  y <- nv_array(c(4, 5, 6))
-  nvl_concatenate(x, y, dimension = 1L)
-})
+x <- nv_array(c(1, 2, 3))
+y <- nv_array(c(4, 5, 6))
+nvl_concatenate(x, y, dimension = 1L)
 #> AnvilArray
 #>  1
 #>  2

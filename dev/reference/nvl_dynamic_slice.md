@@ -75,11 +75,9 @@ Lowers to
 
 ``` r
 # 1-D: extract 3 elements starting at position 3
-jit_eval({
-  x <- nv_array(1:10)
-  start <- nv_scalar(3L)
-  nvl_dynamic_slice(x, start, slice_sizes = 3L)
-})
+x <- nv_array(1:10)
+start <- nv_scalar(3L)
+nvl_dynamic_slice(x, start, slice_sizes = 3L)
 #> AnvilArray
 #>  3
 #>  4
@@ -87,12 +85,10 @@ jit_eval({
 #> [ CPUi32{3} ] 
 
 # 2-D: extract a 2x2 block from a matrix
-jit_eval({
-  x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
-  row_start <- nv_scalar(2L)
-  col_start <- nv_scalar(1L)
-  nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
-})
+x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
+row_start <- nv_scalar(2L)
+col_start <- nv_scalar(1L)
+nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
 #> AnvilArray
 #>  2 5
 #>  3 6

@@ -52,7 +52,7 @@ for general diagonal matrices.
 ## Examples
 
 ``` r
-jit_eval(nv_eye(3L))
+nv_eye(3L)
 #> AnvilArray
 #>  1 0 0
 #>  0 1 0

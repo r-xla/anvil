@@ -42,11 +42,9 @@ with `comparison_direction = "NE"`.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  y <- nv_array(c(1, 3, 2))
-  nvl_ne(x, y)
-})
+x <- nv_array(c(1, 2, 3))
+y <- nv_array(c(1, 3, 2))
+nvl_ne(x, y)
 #> AnvilArray
 #>  0
 #>  1

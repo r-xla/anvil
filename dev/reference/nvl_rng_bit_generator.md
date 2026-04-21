@@ -58,10 +58,8 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval({
-  state <- nv_array(c(0L, 0L), dtype = "ui64")
-  nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
-})
+state <- nv_array(c(0L, 0L), dtype = "ui64")
+nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
 #> [[1]]
 #> AnvilArray
 #>  0

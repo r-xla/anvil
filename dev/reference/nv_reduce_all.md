@@ -40,10 +40,8 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-  nv_reduce_all(x, dims = 1L)
-})
+x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+nv_reduce_all(x, dims = 1L)
 #> AnvilArray
 #>  0
 #>  1

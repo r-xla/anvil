@@ -48,10 +48,8 @@ depending on the `method` parameter.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1.4, 2.5, 3.6))
-  nvl_round(x)
-})
+x <- nv_array(c(1.4, 2.5, 3.6))
+nvl_round(x)
 #> AnvilArray
 #>  1
 #>  2

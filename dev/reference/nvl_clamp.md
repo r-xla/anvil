@@ -50,10 +50,8 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(-1, 0.5, 2))
-  nvl_clamp(nv_scalar(0), x, nv_scalar(1))
-})
+x <- nv_array(c(-1, 0.5, 2))
+nvl_clamp(nv_scalar(0), x, nv_scalar(1))
 #> AnvilArray
 #>  0.0000
 #>  0.5000

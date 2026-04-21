@@ -56,10 +56,8 @@ Lowers to
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1L, 2L, 3L))
-  nvl_convert(x, dtype = "f32")
-})
+x <- nv_array(c(1L, 2L, 3L))
+nvl_convert(x, dtype = "f32")
 #> AnvilArray
 #>  1
 #>  2

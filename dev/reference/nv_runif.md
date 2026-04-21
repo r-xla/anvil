@@ -49,11 +49,9 @@ Other rng:
 ## Examples
 
 ``` r
-jit_eval({
-  state <- nv_rng_state(42L)
-  result <- nv_runif(c(2, 3), state)
-  result[[2]]
-})
+state <- nv_rng_state(42L)
+result <- nv_runif(c(2, 3), state)
+result[[2]]
 #> AnvilArray
 #>  0.8690 0.1506 0.5203
 #>  0.3103 0.9928 0.1065

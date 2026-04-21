@@ -49,11 +49,9 @@ where `...` are zero or more batch dimensions that must match between
 ## Examples
 
 ``` r
-jit_eval({
-  a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-  b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
-  nv_solve(a, b)
-})
+a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
+nv_solve(a, b)
 #> AnvilArray
 #>  -0.1250
 #>   0.7500

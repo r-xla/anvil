@@ -35,10 +35,8 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_array(c(1L, 2L, 3L))
-  nv_convert(x, dtype = "f32")
-})
+x <- nv_array(c(1L, 2L, 3L))
+nv_convert(x, dtype = "f32")
 #> AnvilArray
 #>  1
 #>  2
