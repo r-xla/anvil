@@ -63,7 +63,7 @@ default to those of \code{like}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-nv_seq(3, 7)
+jit_eval(nv_seq(3, 7))
 x <- nv_array(c(1, 2, 3), dtype = "f64")
 nv_seq_like(x, 1, 5)
 \dontshow{\}) # examplesIf}

@@ -25,7 +25,7 @@
 #'   Has the given `shape` and `dtype`.
 #' @seealso [nvl_fill()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' nv_fill(0, shape = c(2, 3))
+#' jit_eval(nv_fill(0, shape = c(2, 3)))
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' nv_fill_like(x, 0)
 #' @export
@@ -86,7 +86,7 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
 #' nv_broadcast_scalars(x, nv_scalar(1))
 #' @export
 nv_broadcast_scalars <- function(...) {
-  args <- nv_align_arrayish(...)
+  args <- as_anvil_arrays(...)
   shapes <- lapply(args, shape)
   non_scalar_shapes <- Filter(\(s) length(s) > 0L, shapes)
 
@@ -124,13 +124,12 @@ nv_broadcast_scalars <- function(...) {
 #' nv_promote_to_common(x, y)
 #' @export
 nv_promote_to_common <- function(...) {
-  args <- nv_align_arrayish(...)
-  avals <- lapply(args, to_abstract)
-  tmp <- do.call(common_type_info, avals)
+  args <- as_anvil_arrays(...)
+  tmp <- do.call(common_type_info, args)
   cdt <- tmp[[1L]]
   ambiguous <- tmp[[2L]]
   out <- lapply(seq_along(args), \(i) {
-    if (cdt == dtype(avals[[i]])) {
+    if (cdt == dtype(args[[i]])) {
       args[[i]]
     } else {
       nvl_convert(args[[i]], dtype = cdt, ambiguous = ambiguous)
@@ -160,7 +159,7 @@ nv_promote_to_common <- function(...) {
 #' nv_broadcast_arrays(x, y)
 #' @export
 nv_broadcast_arrays <- function(...) {
-  args <- nv_align_arrayish(...)
+  args <- as_anvil_arrays(...)
   shape <- Reduce(broadcast_shapes, lapply(args, shape))
   lapply(args, nv_broadcast_to, shape = shape)
 }
@@ -918,7 +917,7 @@ nv_popcnt <- nvl_popcnt
 #' nv_clamp(nv_scalar(0), x, nv_scalar(1))
 #' @export
 nv_clamp <- function(min_val, operand, max_val) {
-  args <- nv_align_arrayish(min_val, operand, max_val)
+  args <- as_anvil_arrays(min_val, operand, max_val)
   min_val <- args[[1L]]
   operand <- args[[2L]]
   max_val <- args[[3L]]
@@ -965,7 +964,7 @@ nv_reverse <- nvl_reverse
 #'   Has the given `dtype` and `shape`.
 #' @seealso [nv_seq()] for a simpler 1-D sequence, [nvl_iota()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' nv_iota(dim = 1L, dtype = "i32", shape = 5L)
+#' jit_eval(nv_iota(dim = 1L, dtype = "i32", shape = 5L))
 #' x <- nv_array(matrix(0L, nrow = 2, ncol = 3))
 #' nv_iota_like(x, dim = 1L)
 #' @export
@@ -996,7 +995,7 @@ nv_iota <- nvl_iota
 #' @return [`arrayish`]\cr
 #'   1-D array of length `end - start + 1`.
 #' @examplesIf pjrt::plugins_downloaded()
-#' nv_seq(3, 7)
+#' jit_eval(nv_seq(3, 7))
 #' x <- nv_array(c(1, 2, 3), dtype = "f64")
 #' nv_seq_like(x, 1, 5)
 #' @export
@@ -1045,7 +1044,7 @@ nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE, de
 #' nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
 #' @export
 nv_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding = NULL) {
-  args <- nv_align_arrayish(operand, padding_value)
+  args <- as_anvil_arrays(operand, padding_value)
   operand <- args[[1L]]
   padding_value <- args[[2L]]
   rank <- ndims(operand)
@@ -1160,7 +1159,7 @@ nv_cholesky <- function(a, lower = TRUE) {
 #' nv_solve(a, b)
 #' @export
 nv_solve <- function(a, b) {
-  args <- nv_align_arrayish(a, b)
+  args <- as_anvil_arrays(a, b)
   a <- args[[1L]]
   b <- args[[2L]]
   L <- nvl_cholesky(a, lower = TRUE)
@@ -1217,7 +1216,7 @@ nv_diag <- function(operand) {
 #'   An `n x n` identity matrix.
 #' @seealso [nv_diag()] for general diagonal matrices.
 #' @examplesIf pjrt::plugins_downloaded()
-#' nv_eye(3L)
+#' jit_eval(nv_eye(3L))
 #' x <- nv_array(matrix(0, nrow = 3, ncol = 3), dtype = "f64")
 #' nv_eye_like(x, 3L)
 #' @export
@@ -1254,7 +1253,6 @@ nv_reduce_sum <- nvl_reduce_sum
 #' @export
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
   operand <- as_anvil_array(operand)
-  # TODO: division by zero?
   nelts <- prod(shape(operand)[dims])
   nv_reduce_sum(operand, dims, drop) / nelts
 }
@@ -1695,7 +1693,7 @@ nv_crossprod <- function(x, y = NULL) {
     x <- as_anvil_array(x)
     y <- x
   } else {
-    args <- nv_align_arrayish(x, y)
+    args <- as_anvil_arrays(x, y)
     x <- args[[1L]]
     y <- args[[2L]]
   }
@@ -1721,7 +1719,7 @@ nv_tcrossprod <- function(x, y = NULL) {
     x <- as_anvil_array(x)
     y <- x
   } else {
-    args <- nv_align_arrayish(x, y)
+    args <- as_anvil_arrays(x, y)
     x <- args[[1L]]
     y <- args[[2L]]
   }

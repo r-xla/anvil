@@ -269,3 +269,124 @@ test_that("nv_scalar_like inherits dtype, ambiguous, device, backend from like",
   expect_equal(backend(out), backend(like))
   expect_equal(as.integer(as_array(out)), 7L)
 })
+
+describe("as_anvil_array", {
+  it("passes AnvilArrays through unchanged", {
+    x <- nv_array(1:3)
+    expect_identical(as_anvil_array(x), x)
+  })
+
+  it("converts scalar R literals into scalar AnvilArrays", {
+    out <- as_anvil_array(1L)
+    expect_s3_class(out, "AnvilArray")
+    expect_equal(shape(out), integer())
+    expect_true(ambiguous(out))
+  })
+
+  it("converts R arrays into AnvilArrays preserving shape", {
+    out <- as_anvil_array(array(1:6, c(2, 3)))
+    expect_s3_class(out, "AnvilArray")
+    expect_equal(shape(out), c(2L, 3L))
+  })
+
+  it("places R literals on the requested device", {
+    dev <- nv_device("cpu:1", "xla")
+    expect_equal(device(as_anvil_array(1L, device = dev)), dev)
+  })
+
+  it("errors if an AnvilArray is on a different device than requested", {
+    dev0 <- nv_device("cpu:0", "xla")
+    dev1 <- nv_device("cpu:1", "xla")
+    x <- nv_array(1:3, device = dev0)
+    expect_error(
+      as_anvil_array(x, device = dev1),
+      "unexpected device"
+    )
+  })
+
+  it("rejects non-arrayish inputs", {
+    expect_error(as_anvil_array("foo"), "Expected arrayish")
+    expect_error(as_anvil_array(list()), "Expected arrayish")
+  })
+
+  it("passes traced boxes through unchanged under jit()", {
+    f <- jit(function(x) {
+      y <- as_anvil_array(x)
+      y + 1
+    })
+    out <- f(nv_array(1:3))
+    expect_equal(as_array(out), array(2:4, dim = 3L))
+  })
+
+  it("handles R literals under jit()", {
+    f <- jit(function() as_anvil_array(1L) + 1L)
+    out <- f()
+    expect_s3_class(out, "AnvilArray")
+    expect_equal(as.integer(as_array(out)), 2L)
+  })
+})
+
+describe("as_anvil_arrays", {
+  it("places R literals on the first concrete input's device", {
+    dev <- nv_device("cpu:1", "xla")
+    x <- nv_array(1:3, device = dev)
+    out <- as_anvil_arrays(x, 1L)
+    expect_equal(device(out[[1L]]), dev)
+    expect_equal(device(out[[2L]]), dev)
+  })
+
+  it("uses the default device when no concrete input is present", {
+    out <- as_anvil_arrays(1L, 2L)
+    expect_equal(device(out[[1L]]), default_device())
+    expect_equal(device(out[[2L]]), default_device())
+  })
+
+  it("errors when concrete inputs live on different devices", {
+    dev0 <- nv_device("cpu:0", "xla")
+    dev1 <- nv_device("cpu:1", "xla")
+    x <- nv_array(1:3, device = dev0)
+    y <- nv_array(1:3, device = dev1)
+    expect_error(
+      as_anvil_arrays(x, y),
+      "multiple devices"
+    )
+  })
+
+  it("errors when concrete inputs come from different backends", {
+    skip_if_not_installed("quickr")
+    dev_xla <- nv_device("cpu", "xla")
+    dev_quickr <- nv_device("cpu", "quickr")
+    x <- nv_array(1:3, device = dev_xla)
+    y <- nv_array(1:3, device = dev_quickr)
+    expect_error(
+      as_anvil_arrays(x, y),
+      "multiple backends"
+    )
+  })
+
+  it("passes concrete inputs on the same device through unchanged", {
+    x <- nv_array(1:3)
+    y <- nv_array(4:6)
+    out <- as_anvil_arrays(x, y)
+    expect_identical(out[[1L]], x)
+    expect_identical(out[[2L]], y)
+  })
+
+  it("canonicalizes mixed traced and literal inputs under jit()", {
+    f <- jit(function(x) {
+      args <- as_anvil_arrays(x, 1L)
+      args[[1L]] + args[[2L]]
+    })
+    out <- f(nv_array(1:3))
+    expect_equal(as.integer(as_array(out)), 2:4)
+  })
+
+  it("canonicalizes multiple traced inputs under jit()", {
+    f <- jit(function(x, y) {
+      args <- as_anvil_arrays(x, y)
+      args[[1L]] + args[[2L]]
+    })
+    out <- f(nv_array(1:3), nv_array(4:6))
+    expect_equal(as.integer(as_array(out)), c(5L, 7L, 9L))
+  })
+})

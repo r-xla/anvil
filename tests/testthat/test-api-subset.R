@@ -378,3 +378,62 @@ describe("subset_specs_start_indices", {
     expect_equal(x, nv_array(2:11))
   })
 })
+
+describe("subsetting cross-device eager (check_eager)", {
+  it("nv_subset with static indices", {
+    check_eager(function(x) x[2L, 1L], nv_array(matrix(1:12, nrow = 3)))
+    check_eager(function(x) x[1:2, ], nv_array(matrix(1:12, nrow = 3)))
+    check_eager(function(x) x[, 1:2], nv_array(matrix(1:12, nrow = 3)))
+    check_eager(function(x) x[array(c(1L, 3L)), ], nv_array(matrix(1:12, nrow = 3)))
+    check_eager(function(x) x[], nv_array(1:10))
+  })
+
+  it("nv_subset with dynamic indices", {
+    check_eager(
+      function(x, i) x[i],
+      nv_array(1:10),
+      nv_scalar(3L)
+    )
+    check_eager(
+      function(x, idx) x[idx],
+      nv_array(1:10),
+      nv_array(c(1L, 3L, 5L))
+    )
+    check_eager(
+      function(x, i, j) x[i, j],
+      nv_array(matrix(1:12, nrow = 3)),
+      nv_scalar(2L),
+      nv_scalar(1L)
+    )
+  })
+
+  it("nv_subset_assign with static indices", {
+    check_eager(
+      function(x, v) {
+        x[1, ] <- v
+        x
+      },
+      nv_array(matrix(1:12, nrow = 3)),
+      nv_array(c(0L, 0L, 0L, 0L))
+    )
+    check_eager(
+      function(x) {
+        x[] <- 0L
+        x
+      },
+      nv_array(1:5)
+    )
+  })
+
+  it("nv_subset_assign with dynamic indices", {
+    check_eager(
+      function(x, i, v) {
+        x[i] <- v
+        x
+      },
+      nv_array(1:10),
+      nv_scalar(3L),
+      nv_scalar(99L)
+    )
+  })
+})

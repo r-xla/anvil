@@ -101,15 +101,22 @@ dynamic_start_indices <- function(starts) {
   out
 }
 
-static_start_indices <- function(starts) {
+static_start_indices <- function(starts, like = NULL) {
   sizes <- lengths(starts)
   multi_index_dims <- which(sizes > 1L)
   if (length(multi_index_dims) == 0L) {
-    return(nv_array(unlist(starts), dtype = "i32"))
+    data <- unlist(starts)
+    if (is.null(like)) {
+      return(nv_array(data, dtype = "i32"))
+    }
+    return(nv_array_like(like, data, dtype = "i32", shape = length(data), ambiguous = FALSE))
   }
   grid <- as.matrix(do.call(expand.grid, starts))
   out <- array(grid, dim = c(sizes[multi_index_dims], length(starts)))
-  nv_array(out, dtype = "i32")
+  if (is.null(like)) {
+    return(nv_array(out, dtype = "i32"))
+  }
+  nv_array_like(like, out, dtype = "i32", shape = dim(out), ambiguous = FALSE)
 }
 
 
@@ -127,16 +134,20 @@ static_start_indices <- function(starts) {
 #' @param subsets List of SubsetSpec objects (from parse_subset_specs)
 #' @return An array of start indices
 #' @noRd
-subset_specs_start_indices <- function(subsets) {
+subset_specs_start_indices <- function(subsets, like = NULL) {
   starts <- subset_start_positions(subsets)
   all_static <- all(vapply(starts, is.numeric, logical(1L)))
   if (all_static) {
-    static_start_indices(starts)
+    static_start_indices(starts, like = like)
   } else {
     # Convert R integers to 1D arrays, reshape 0D arrays to 1D
     starts <- lapply(starts, function(s) {
       if (is.numeric(s)) {
-        nv_array(s, dtype = "i32")
+        if (is.null(like)) {
+          nv_array(s, dtype = "i32")
+        } else {
+          nv_array_like(like, s, dtype = "i32", shape = length(s), ambiguous = FALSE)
+        }
       } else if (ndims_abstract(s) == 0L) {
         nv_reshape(s, 1L)
       } else {
@@ -161,7 +172,7 @@ subset_specs_start_indices <- function(subsets) {
 #'   - unique_indices: logical
 #'   - multi_index_subset: logical
 #' @noRd
-subset_specs_to_gather <- function(subsets) {
+subset_specs_to_gather <- function(subsets, like = NULL) {
   rank <- length(subsets)
 
   # Identify gather dimensions (SubsetIndices with multiple elements)
@@ -195,7 +206,7 @@ subset_specs_to_gather <- function(subsets) {
     ))
   ))
 
-  start_indices <- subset_specs_start_indices(subsets)
+  start_indices <- subset_specs_start_indices(subsets, like = like)
 
   # offset_dims: positions in the output for non-collapsed operand dims.
   # The output interleaves batch (gather) dims and offset (slice) dims
@@ -234,7 +245,7 @@ subset_specs_to_gather <- function(subsets) {
 #'   - unique_indices: logical
 #'   - update_shape: integer vector (expected shape of the update array)
 #' @noRd
-subset_specs_to_scatter <- function(subsets) {
+subset_specs_to_scatter <- function(subsets, like = NULL) {
   rank <- length(subsets)
 
   multi_index_dims <- which(vapply(
@@ -256,7 +267,7 @@ subset_specs_to_scatter <- function(subsets) {
     integer(1L)
   )
 
-  scatter_indices <- subset_specs_start_indices(subsets)
+  scatter_indices <- subset_specs_start_indices(subsets, like = like)
 
   # SubsetIndex dims are individually addressed (dropped from update),
   # just like collapsed_slice_dims in the gather path.
@@ -456,7 +467,7 @@ nv_subset <- function(x, ...) {
   quos <- rlang::enquos(...)
 
   subsets <- parse_subset_specs(quos, operand_shape)
-  params <- subset_specs_to_gather(subsets)
+  params <- subset_specs_to_gather(subsets, like = x)
 
   out <- nvl_gather(
     operand = x,
@@ -502,6 +513,9 @@ nv_subset_assign <- function(x, ..., value) {
   if (!is_arrayish(value)) {
     cli_abort("Expected arrayish `value`, but got {.cls {class(value)[1]}}")
   }
+  aligned <- as_anvil_arrays(x, value)
+  x <- aligned[[1L]]
+  value <- aligned[[2L]]
   if (dtype_abstract(x) != dtype_abstract(value)) {
     dt_x <- dtype_abstract(x)
     dt_value <- dtype_abstract(value)
@@ -518,7 +532,7 @@ nv_subset_assign <- function(x, ..., value) {
   quos <- rlang::enquos(...)
 
   subsets <- parse_subset_specs(quos, lhs_shape)
-  params <- subset_specs_to_scatter(subsets)
+  params <- subset_specs_to_scatter(subsets, like = x)
 
   if (!ndims_abstract(value)) {
     value <- nv_broadcast_to(value, params$update_shape)

@@ -35,7 +35,7 @@ Creates an \verb{n x n} identity matrix.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-nv_eye(3L)
+jit_eval(nv_eye(3L))
 x <- nv_array(matrix(0, nrow = 3, ncol = 3), dtype = "f64")
 nv_eye_like(x, 3L)
 \dontshow{\}) # examplesIf}

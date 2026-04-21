@@ -12,6 +12,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+quickr_available <- requireNamespace("quickr", quietly = TRUE)
 ```
 
 Here, we will explain how to add an API function to the {anvil} package.
@@ -43,13 +44,19 @@ By setting the `backend` argument to `"auto"`, we can use it with both backends:
 library(anvil)
 nv_add_three_good <- jit(\(x) x + 3, backend = "auto")
 nv_add_three_good(nv_scalar(1, backend = "xla"))
+```
+
+```{r, eval = quickr_available}
 nv_add_three_good(nv_scalar(1, backend = "quickr"))
 ```
 
 Otherwise, the function would fail in eager mode when provided with an input from a different backend.
 
-```{r, error = TRUE}
+```{r}
 nv_add_three_bad <- jit(\(x) x + 3)
+```
+
+```{r, error = TRUE, eval = quickr_available}
 nv_add_three_bad(nv_scalar(1, backend = "quickr"))
 ```
 
@@ -57,11 +64,14 @@ Special care must also be taken when creating constants.
 It needs to be ensured that the constant is created on the correct device and for the correct backend.
 If we don't specify it and do not jit the API function, the default backend is used, which means it won't work with non-default backends:
 
-```{r, error = TRUE}
+```{r}
 nv_add_const_bad <- \(x) {
   three <- nv_scalar(3)
   three + x
 }
+```
+
+```{r, error = TRUE, eval = quickr_available}
 nv_add_const_bad(nv_scalar(1, backend = "quickr"))
 ```
 
@@ -113,7 +123,7 @@ Anvil provides two helpers for this:
 
 * `as_anvil_array(x, device = NULL)` -- use for API functions that take a **single** array input.
   It converts an R value to an `AnvilArray` on the given device (or the default device if `NULL`), and passes `AnvilArray`s through.
-* `nv_align_arrayish(...)` -- use for API functions with **multiple** array inputs.
+* `as_anvil_arrays(...)` -- use for API functions with **multiple** array inputs.
   It infers a common device from any concrete `AnvilArray` in `...`, places R literals on that device, and errors if the concrete inputs live on different devices (or backends).
 
 Both helpers short-circuit during tracing: inside `jit()`, device placement is already handled at the input/output boundary and when boxing constants.
@@ -123,7 +133,7 @@ Both helpers short-circuit during tracing: inside `jit()`, device placement is a
 ```{r}
 nv_expand <- function(x, shape) {
   x <- as_anvil_array(x)
-  if (identical(shape_abstract(x), shape)) {
+  if (identical(shape(x), shape)) {
     return(x)
   }
   nv_broadcast_to(x, shape)
@@ -132,13 +142,36 @@ nv_expand <- function(x, shape) {
 
 ### Multiple inputs
 
-Use `nv_align_arrayish()` to normalize all arrayish inputs in one call:
+Use `as_anvil_arrays()` to normalize all arrayish inputs in one call:
 
 ```{r}
 nv_add_scaled <- function(x, y, alpha) {
-  args <- nv_align_arrayish(x, y, alpha)
+  args <- as_anvil_arrays(x, y, alpha)
   args[[1L]] + args[[2L]] * args[[3L]]
 }
 ```
 
 ## 3. Always output anvil arrays
+
+## Inputs that require checks must be static
+
+Any argument whose value the API function inspects (e.g. for validation, to pick a code path, or to compute a shape or `dim` index) must be a **static** argument under `jit()`.
+Under tracing, arrayish inputs are replaced by `GraphBox` tracers and their concrete R value is not available -- assertions on the value would either fail or see the tracer instead of the user's data.
+Static arguments, in contrast, are embedded as constants into the compiled program, so the function body sees their real R value during tracing.
+
+As a rule of thumb, if your API function body contains `if`, `switch`, `stopifnot`, `checkmate::assert_*`, or any other code that branches on or validates a value, that argument should be static.
+This typically applies to arguments like `dims`, `shape`, `dim`, flags, mode strings, or dtype specifiers -- anything that controls the *structure* of the computation rather than participating in it as data.
+
+```r
+nv_reduce_sum <- function(x, dims = NULL) {
+  if (!is.null(dims)) {
+    assert_integerish(dims, lower = 1L, upper = ndims(x))
+  }
+  # ...
+}
+
+# `dims` is inspected, so it must be static when jitted:
+jit(nv_reduce_sum, static = "dims")(x, dims = 1L)
+```
+
+Arrayish inputs (the actual data being operated on) should *not* be static -- they are meant to be traced.

@@ -356,12 +356,12 @@ maybe_box_arrayish <- function(x) {
     gval <- x$gnode
     return(get_box_or_register_const(current_desc, gval))
   }
-  if (is_valid_array(x)) {
+  if (is_valid_r_array(x)) {
     # Materialize R arrays as plain-backend AnvilArrays so they can be
     # registered as named constants in the current graph.
     x <- nv_array(x, ambiguous = !is.logical(x))
   }
-  if (is_anvil_array(x) || is_valid_lit(x)) {
+  if (is_anvil_array(x) || is_valid_r_lit(x)) {
     return(get_box_or_register_const(current_desc, x))
   }
   cli_abort("Expected arrayish value, but got {.cls {class(x)[1]}}")

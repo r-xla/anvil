@@ -449,7 +449,7 @@ describe("nv_triu", {
     expected <- matrix(c(1, 1, 0, 1, 1, 1, 1, 1, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
-  it("works under jit (device() on a GraphBox operand)", {
+  it("works under jit", {
     f <- jit(function(x) nv_triu(x, diagonal = 1L))
     expected <- matrix(c(0, 0, 0, 1, 0, 0, 1, 1, 0), nrow = 3, ncol = 3)
     expect_equal(as_array(f(nv_fill(1, c(3, 3)))), expected, tolerance = 1e-6)
@@ -593,5 +593,158 @@ describe("nv_seq_like", {
     like <- nv_array(c(0L, 0L, 0L), dtype = "i16")
     out <- nv_seq_like(like, 1, 5, dtype = "f32")
     expect_equal(dtype(out), as_dtype("f32"))
+  })
+})
+
+describe("cross-device eager (check_eager)", {
+  # Test data
+  vec_f <- nv_array(c(1, 2, 3))
+  vec_f2 <- nv_array(c(4, 5, 6))
+  vec_i <- nv_array(c(1L, 2L, 3L))
+  vec_i2 <- nv_array(c(3L, 2L, 1L))
+  vec_b <- nv_array(c(TRUE, FALSE, TRUE))
+  vec_b2 <- nv_array(c(FALSE, TRUE, TRUE))
+  mat_2x3 <- nv_array(matrix(1:6, nrow = 2))
+  mat_3x3 <- nv_array(matrix(c(4, 2, 1, 2, 5, 3, 1, 3, 6), nrow = 3), dtype = "f32")
+  sym_pd <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+  rhs_mat <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
+
+  it("binary arithmetic ops", {
+    check_eager(nv_add, vec_f, vec_f2)
+    check_eager(nv_sub, vec_f, vec_f2)
+    check_eager(nv_mul, vec_f, vec_f2)
+    check_eager(nv_div, vec_f, vec_f2)
+    check_eager(nv_pow, vec_f, vec_f2)
+    check_eager(nv_remainder, nv_array(c(7, 8, 9)), nv_array(c(3, 3, 4)))
+    check_eager(nv_max, vec_f, vec_f2)
+    check_eager(nv_min, vec_f, vec_f2)
+    check_eager(nv_atan2, vec_f, vec_f2)
+  })
+
+  it("binary comparison ops", {
+    check_eager(nv_eq, vec_i, vec_i2)
+    check_eager(nv_ne, vec_i, vec_i2)
+    check_eager(nv_gt, vec_i, vec_i2)
+    check_eager(nv_ge, vec_i, vec_i2)
+    check_eager(nv_lt, vec_i, vec_i2)
+    check_eager(nv_le, vec_i, vec_i2)
+  })
+
+  it("binary logical ops", {
+    check_eager(nv_and, vec_b, vec_b2)
+    check_eager(nv_or, vec_b, vec_b2)
+    check_eager(nv_xor, vec_b, vec_b2)
+  })
+
+  it("binary bitwise shifts", {
+    x <- nv_array(c(1L, 2L, 4L))
+    y <- nv_array(c(1L, 2L, 1L))
+    check_eager(nv_shift_left, x, y)
+    check_eager(nv_shift_right_logical, x, y)
+    check_eager(nv_shift_right_arithmetic, x, y)
+  })
+
+  it("unary math ops", {
+    check_eager(nv_abs, nv_array(c(-1, 2, -3)))
+    check_eager(nv_negate, vec_f)
+    check_eager(nv_sqrt, nv_array(c(1, 4, 9)))
+    check_eager(nv_rsqrt, nv_array(c(1, 4, 9)))
+    check_eager(nv_log, nv_array(c(1, 2.7, 7.4)))
+    check_eager(nv_log1p, nv_array(c(0, 0.001, 1)))
+    check_eager(nv_log2, nv_array(c(1, 2, 4, 8)))
+    check_eager(nv_log10, nv_array(c(1, 10, 100)))
+    check_eager(nv_exp, nv_array(c(0, 1, 2)))
+    check_eager(nv_expm1, nv_array(c(0, 0.001, 1)))
+    check_eager(nv_cbrt, nv_array(c(1, 8, 27)))
+    check_eager(nv_logistic, nv_array(c(-2, 0, 2)))
+    check_eager(nv_sine, nv_array(c(0, pi / 2, pi)))
+    check_eager(nv_cosine, nv_array(c(0, pi / 2, pi)))
+    check_eager(nv_tan, nv_array(c(0, 0.5, 1)))
+    check_eager(nv_tanh, nv_array(c(-1, 0, 1)))
+    check_eager(nv_floor, nv_array(c(1.2, 2.7, -1.5)))
+    check_eager(nv_ceil, nv_array(c(1.2, 2.7, -1.5)))
+    check_eager(nv_sign, nv_array(c(-3, 0, 5)))
+    check_eager(nv_round, nv_array(c(1.4, 2.5, 3.6)))
+    check_eager(nv_popcnt, nv_array(c(7L, 3L, 15L)))
+  })
+
+  it("unary predicates", {
+    x <- nv_array(c(1, NaN, Inf, -Inf, 0))
+    check_eager(nv_is_finite, x)
+    check_eager(nv_is_nan, x)
+    check_eager(nv_is_infinite, x)
+    check_eager(nv_not, vec_b)
+  })
+
+  it("conversion ops", {
+    check_eager(function(x) nv_convert(x, dtype = "f64"), vec_i)
+    check_eager(function(x) nv_bitcast_convert(x, dtype = "i32"), nv_array(1.5, dtype = "f32"))
+  })
+
+  it("broadcasting / shape-returning helpers", {
+    check_eager(nv_broadcast_arrays, vec_f, nv_array(matrix(1:9, 3, 3)))
+    check_eager(function(x) nv_broadcast_to(x, shape = c(2, 3)), vec_f)
+    check_eager(function(x) nv_broadcast_scalars(x, 1), vec_f)
+    check_eager(function(...) nv_concatenate(..., dimension = 1L), vec_f, vec_f2)
+    check_eager(function(...) nv_promote_to_common(...), vec_i, vec_f)
+  })
+
+  it("shape manipulation", {
+    check_eager(function(x) nv_reshape(x, c(3, 2)), mat_2x3)
+    check_eager(function(x) nv_transpose(x), mat_2x3)
+    check_eager(function(x) nv_squeeze(x), nv_array(1:6, shape = c(1, 6, 1)))
+    check_eager(function(x) nv_unsqueeze(x, dim = 1L), vec_f)
+    check_eager(function(x) nv_reverse(x, dims = 1L), vec_f)
+  })
+
+  it("reductions", {
+    check_eager(function(x) nv_reduce_sum(x, dims = 1L), mat_2x3)
+    check_eager(function(x) nv_reduce_mean(x, dims = 1L), nv_array(matrix(1:6, 2), dtype = "f32"))
+    check_eager(function(x) nv_reduce_prod(x, dims = 1L), mat_2x3)
+    check_eager(function(x) nv_reduce_max(x, dims = 1L), mat_2x3)
+    check_eager(function(x) nv_reduce_min(x, dims = 1L), mat_2x3)
+    check_eager(function(x) nv_reduce_any(x, dims = 1L), nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), 2)))
+    check_eager(function(x) nv_reduce_all(x, dims = 1L), nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), 2)))
+    check_eager(function(x) nv_var(x, dims = 1L), nv_array(c(1, 2, 3, 4, 5), dtype = "f32"))
+    check_eager(function(x) nv_sd(x, dims = 1L), nv_array(c(1, 2, 3, 4, 5), dtype = "f32"))
+  })
+
+  it("clamp / ifelse / pad", {
+    check_eager(function(x) nv_clamp(0, x, 1), nv_array(c(-0.5, 0.5, 1.5)))
+    check_eager(
+      function(p, x, y) nv_ifelse(p, x, y),
+      vec_b,
+      vec_f,
+      vec_f2
+    )
+    check_eager(
+      function(x) nv_pad(x, 0, edge_padding_low = 1L, edge_padding_high = 1L),
+      vec_f
+    )
+  })
+
+  it("linear algebra", {
+    a <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
+    b <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
+    check_eager(nv_matmul, a, b)
+    check_eager(nv_crossprod, a)
+    check_eager(nv_tcrossprod, a)
+    check_eager(nv_cholesky, sym_pd)
+    check_eager(nv_solve, sym_pd, rhs_mat)
+    check_eager(nv_diag, vec_f)
+    check_eager(nv_extract_diag, mat_3x3)
+    check_eager(nv_trace, mat_3x3)
+    check_eager(function(x) nv_tril(x, diagonal = 0L), mat_3x3)
+    check_eager(function(x) nv_triu(x, diagonal = 0L), mat_3x3)
+    check_eager(nv_outer, nv_array(c(1, 2, 3)), nv_array(c(4, 5)))
+  })
+
+  it("*_like helpers forward device from `like`", {
+    check_eager(function(like) nv_fill_like(like, 0, shape = c(2, 3)), vec_f)
+    check_eager(function(like) nv_iota_like(like, dim = 1L, shape = 4L, dtype = "i32"), vec_f)
+    check_eager(function(like) nv_eye_like(like, 3L), vec_f)
+    check_eager(function(like) nv_array_like(like, c(7L, 8L, 9L)), vec_i)
+    check_eager(function(like) nv_scalar_like(like, 7L), vec_i)
+    check_eager(function(like) nv_empty_like(like, shape = c(2, 2)), vec_f)
   })
 })

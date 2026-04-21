@@ -371,6 +371,11 @@ Internally, we have implemented this by wrapping every `nvl_*` primitive functio
 If we are in a `jit()` call, and call into a function `jit(f)`, internally `f` is evaluated, and the function is re-traced.
 Otherwise, the standard jit path is followed.
 
-What makes this a little difficult is our multi-backend approach.
-Ideally we would just have to `jit()` all the primitives and any `nv_` API function just calls into primitives.
-However, this fails in the case, where we create constants in the `nv_` function because these contants assume the `default_backend()` unless specified otherwise.
+However, for the {anvil} API this now means that special care needs to be taken that everything
+works in jit-mode and in eager-mode.
+The most important points are:
+
+1. Canonicalize inputs at the start using `as_anvil_array(s)`
+2. Propagate device from inputs:
+   1. For functions with dynamic inputs: use `nv_*_like` for constant creation and pass input operands
+   2. For functions without dynamic inputs, add `device` arg and pass it to constant creators.
