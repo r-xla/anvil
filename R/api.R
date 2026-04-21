@@ -25,7 +25,7 @@
 #'   Has the given `shape` and `dtype`.
 #' @seealso [nvl_fill()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval(nv_fill(0, shape = c(2, 3)))
+#' nv_fill(0, shape = c(2, 3))
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' nv_fill_like(x, 0)
 #' @export
@@ -964,7 +964,7 @@ nv_reverse <- nvl_reverse
 #'   Has the given `dtype` and `shape`.
 #' @seealso [nv_seq()] for a simpler 1-D sequence, [nvl_iota()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval(nv_iota(dim = 1L, dtype = "i32", shape = 5L))
+#' nv_iota(dim = 1L, dtype = "i32", shape = 5L)
 #' x <- nv_array(matrix(0L, nrow = 2, ncol = 3))
 #' nv_iota_like(x, dim = 1L)
 #' @export
@@ -995,7 +995,7 @@ nv_iota <- nvl_iota
 #' @return [`arrayish`]\cr
 #'   1-D array of length `end - start + 1`.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval(nv_seq(3, 7))
+#' nv_seq(3, 7)
 #' x <- nv_array(c(1, 2, 3), dtype = "f64")
 #' nv_seq_like(x, 1, 5)
 #' @export
@@ -1216,7 +1216,7 @@ nv_diag <- function(operand) {
 #'   An `n x n` identity matrix.
 #' @seealso [nv_diag()] for general diagonal matrices.
 #' @examplesIf pjrt::plugins_downloaded()
-#' jit_eval(nv_eye(3L))
+#' nv_eye(3L)
 #' x <- nv_array(matrix(0, nrow = 3, ncol = 3), dtype = "f64")
 #' nv_eye_like(x, 3L)
 #' @export

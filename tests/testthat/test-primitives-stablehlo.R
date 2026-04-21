@@ -199,9 +199,7 @@ test_that("p_reduce_max", {
   out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(0, 4)))
   # f64
-  x <- {
-    nv_reduce_max(nv_array(c(1, 2, 3), dtype = "f64"), dims = 1L)
-  }
+  x <- nv_reduce_max(nv_array(c(1, 2, 3), dtype = "f64"), dims = 1L)
   expect_equal(x, nv_scalar(3, dtype = "f64"))
 })
 
@@ -218,9 +216,7 @@ test_that("p_reduce_min", {
   out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(-1, 2)))
   # f64
-  x <- {
-    nv_reduce_min(nv_array(c(1, 2, 3), dtype = "f64"), dims = 1L)
-  }
+  x <- nv_reduce_min(nv_array(c(1, 2, 3), dtype = "f64"), dims = 1L)
   expect_equal(x, nv_scalar(1, dtype = "f64"))
 })
 
@@ -338,7 +334,7 @@ describe("p_if", {
   })
 
   it("works with literals as predicate", {
-    expect_equal(jit_eval(nv_if(TRUE, \() 1, \() 2)), nv_scalar(1, ambiguous = TRUE))
+    expect_equal(nv_if(TRUE, \() 1, \() 2), nv_scalar(1, ambiguous = TRUE))
   })
 })
 

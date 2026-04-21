@@ -94,20 +94,20 @@ describe("nv_concatenate", {
   it("can concatenate literals", {
     # Pure literals produce ambiguous output
     expect_equal(
-      jit_eval(nv_concatenate(1L, 2L)),
+      nv_concatenate(1L, 2L),
       nv_array(1:2, ambiguous = TRUE)
     )
     expect_equal(
-      jit_eval(nv_concatenate(1L, 2L, dimension = 1L)),
+      nv_concatenate(1L, 2L, dimension = 1L),
       nv_array(1:2, ambiguous = TRUE)
     )
     # Mixed array + literal: non-ambiguous array determines output ambiguity
     expect_equal(
-      jit_eval(nv_concatenate(nv_array(1:2), 3L)),
+      nv_concatenate(nv_array(1:2), 3L),
       nv_array(1:3)
     )
     expect_equal(
-      jit_eval(nv_concatenate(nv_array(1L), 2L)),
+      nv_concatenate(nv_array(1L), 2L),
       nv_array(1:2)
     )
   })
