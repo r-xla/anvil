@@ -34,10 +34,8 @@ Lowers to \code{\link[stablehlo:hlo_tanh]{stablehlo::hlo_tanh()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(-1, 0, 1))
-  nvl_tanh(x)
-})
+x <- nv_array(c(-1, 0, 1))
+nvl_tanh(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

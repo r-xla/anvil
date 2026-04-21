@@ -30,17 +30,13 @@ dimension.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(matrix(1:12, nrow = 3))
-  # Select row 2
-  x[2, ]
-})
+x <- nv_array(matrix(1:12, nrow = 3))
+# Select row 2
+x[2, ]
 
-jit_eval({
-  x <- nv_array(matrix(1:12, nrow = 3))
-  # Select rows 1 to 2, all columns
-  x[1:2, ]
-})
+x <- nv_array(matrix(1:12, nrow = 3))
+# Select rows 1 to 2, all columns
+x[1:2, ]
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -35,11 +35,9 @@ Lowers to \code{\link[stablehlo:hlo_subtract]{stablehlo::hlo_subtract()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 2, 3))
-  y <- nv_array(c(4, 5, 6))
-  nvl_sub(x, y)
-})
+x <- nv_array(c(1, 2, 3))
+y <- nv_array(c(4, 5, 6))
+nvl_sub(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

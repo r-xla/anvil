@@ -38,10 +38,8 @@ Lowers to \code{\link[stablehlo:hlo_reshape]{stablehlo::hlo_reshape()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(1:6)
-  nvl_reshape(x, shape = c(2, 3))
-})
+x <- nv_array(1:6)
+nvl_reshape(x, shape = c(2, 3))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

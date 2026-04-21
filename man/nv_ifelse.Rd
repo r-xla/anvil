@@ -27,10 +27,8 @@ analogous to R's \code{\link[=ifelse]{ifelse()}}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  pred <- nv_array(c(TRUE, FALSE, TRUE))
-  nv_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
-})
+pred <- nv_array(c(TRUE, FALSE, TRUE))
+nv_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

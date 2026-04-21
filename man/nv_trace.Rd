@@ -19,10 +19,8 @@ Computes the trace (sum of diagonal elements) of a 2-D array.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))
-  nv_trace(x)
-})
+x <- nv_array(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))
+nv_trace(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

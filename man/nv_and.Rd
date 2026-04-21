@@ -21,11 +21,9 @@ Element-wise logical AND. You can also use the \code{&} operator.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(TRUE, FALSE, TRUE))
-  y <- nv_array(c(TRUE, TRUE, FALSE))
-  x & y
-})
+x <- nv_array(c(TRUE, FALSE, TRUE))
+y <- nv_array(c(TRUE, TRUE, FALSE))
+x & y
 \dontshow{\}) # examplesIf}
 }
 \seealso{

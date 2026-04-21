@@ -79,7 +79,7 @@ test_that("promote to common", {
 
 test_that("nv_clamp converts min and max to operand dtype", {
   expect_equal(
-    jit_eval(nv_clamp(nv_scalar(0L), nv_array(c(-1, 0.5, 2), dtype = "f32"), nv_scalar(1L))),
+    nv_clamp(nv_scalar(0L), nv_array(c(-1, 0.5, 2), dtype = "f32"), nv_scalar(1L)),
     nv_array(c(0, 0.5, 1), dtype = "f32")
   )
 })
@@ -87,48 +87,48 @@ test_that("nv_clamp converts min and max to operand dtype", {
 describe("nv_concatenate", {
   it("auto-promotes to common", {
     expect_equal(
-      jit_eval(nv_concatenate(nv_array(c(1, 2)), nv_array(3:4))),
+      nv_concatenate(nv_array(c(1, 2)), nv_array(3:4)),
       nv_array(c(1, 2, 3, 4))
     )
   })
   it("can concatenate literals", {
     # Pure literals produce ambiguous output
     expect_equal(
-      jit_eval(nv_concatenate(1L, 2L)),
+      nv_concatenate(1L, 2L),
       nv_array(1:2, ambiguous = TRUE)
     )
     expect_equal(
-      jit_eval(nv_concatenate(1L, 2L, dimension = 1L)),
+      nv_concatenate(1L, 2L, dimension = 1L),
       nv_array(1:2, ambiguous = TRUE)
     )
     # Mixed array + literal: non-ambiguous array determines output ambiguity
     expect_equal(
-      jit_eval(nv_concatenate(nv_array(1:2), 3L)),
+      nv_concatenate(nv_array(1:2), 3L),
       nv_array(1:3)
     )
     expect_equal(
-      jit_eval(nv_concatenate(nv_array(1L), 2L)),
+      nv_concatenate(nv_array(1L), 2L),
       nv_array(1:2)
     )
   })
   it("fails when dimension is out of bounds", {
     expect_error(
-      jit_eval(nv_concatenate(nv_array(1:2, shape = c(2, 1)), nv_array(3:4, shape = c(2, 1)), dimension = 3L))
+      nv_concatenate(nv_array(1:2, shape = c(2, 1)), nv_array(3:4, shape = c(2, 1)), dimension = 3L)
     )
   })
   it("can concatenate 2d arrays", {
     expect_equal(
-      jit_eval(nv_concatenate(nv_array(1:2, shape = c(2, 1)), nv_array(3:4, shape = c(2, 1)), dimension = 1L)),
+      nv_concatenate(nv_array(1:2, shape = c(2, 1)), nv_array(3:4, shape = c(2, 1)), dimension = 1L),
       nv_array(1:4, shape = c(4, 1))
     )
     expect_equal(
-      jit_eval(nv_concatenate(nv_array(1:2, shape = c(2, 1)), nv_array(3:4, shape = c(2, 1)), dimension = 2L)),
+      nv_concatenate(nv_array(1:2, shape = c(2, 1)), nv_array(3:4, shape = c(2, 1)), dimension = 2L),
       nv_array(1:4, shape = c(2, 2), dtype = "i32")
     )
   })
   it("fails with incompatible shapes", {
     expect_error(
-      jit_eval(nv_concatenate(nv_array(1, shape = c(1, 1, 1)), nv_array(2, shape = c(1, 1)), dimension = 1L))
+      nv_concatenate(nv_array(1, shape = c(1, 1, 1)), nv_array(2, shape = c(1, 1)), dimension = 1L)
     )
   })
 })
@@ -273,7 +273,7 @@ describe("nv_squeeze", {
   })
   it("errors when squeezing non-1 dimension", {
     expect_error(
-      jit_eval(nv_squeeze(nv_array(1:6, shape = c(2, 3)), dims = 1L)),
+      nv_squeeze(nv_array(1:6, shape = c(2, 3)), dims = 1L),
       "Cannot squeeze"
     )
   })
@@ -412,17 +412,17 @@ describe("nv_diag", {
 
 describe("nv_tril", {
   it("returns lower triangular part", {
-    result <- jit_eval(nv_tril(nv_fill(1, c(3, 3))))
+    result <- nv_tril(nv_fill(1, c(3, 3)))
     expected <- matrix(c(1, 1, 1, 0, 1, 1, 0, 0, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
   it("supports positive diagonal offset", {
-    result <- jit_eval(nv_tril(nv_fill(1, c(3, 3)), diagonal = 1L))
+    result <- nv_tril(nv_fill(1, c(3, 3)), diagonal = 1L)
     expected <- matrix(c(1, 1, 1, 1, 1, 1, 0, 1, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
   it("supports negative diagonal offset", {
-    result <- jit_eval(nv_tril(nv_fill(1, c(3, 3)), diagonal = -1L))
+    result <- nv_tril(nv_fill(1, c(3, 3)), diagonal = -1L)
     expected <- matrix(c(0, 1, 1, 0, 0, 1, 0, 0, 0), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
@@ -435,17 +435,17 @@ describe("nv_tril", {
 
 describe("nv_triu", {
   it("returns upper triangular part", {
-    result <- jit_eval(nv_triu(nv_fill(1, c(3, 3))))
+    result <- nv_triu(nv_fill(1, c(3, 3)))
     expected <- matrix(c(1, 0, 0, 1, 1, 0, 1, 1, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
   it("supports positive diagonal offset", {
-    result <- jit_eval(nv_triu(nv_fill(1, c(3, 3)), diagonal = 1L))
+    result <- nv_triu(nv_fill(1, c(3, 3)), diagonal = 1L)
     expected <- matrix(c(0, 0, 0, 1, 0, 0, 1, 1, 0), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })
   it("supports negative diagonal offset", {
-    result <- jit_eval(nv_triu(nv_fill(1, c(3, 3)), diagonal = -1L))
+    result <- nv_triu(nv_fill(1, c(3, 3)), diagonal = -1L)
     expected <- matrix(c(1, 1, 0, 1, 1, 1, 1, 1, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
   })

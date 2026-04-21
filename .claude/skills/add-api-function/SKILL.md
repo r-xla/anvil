@@ -55,6 +55,8 @@ nv_<name> <- nvl_<name>
 ```
 
 For ops needing custom logic, write a function. Use `shape_abstract()`, `ndims_abstract()`, and `dtype_abstract()` to access properties from arrayish values.
+
+* TODO: _like functions
 ## Roxygen2 Documentation
 
 API functions use a consistent documentation pattern. Use templates from `man-roxygen/` where applicable.

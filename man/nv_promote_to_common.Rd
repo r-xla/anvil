@@ -18,11 +18,9 @@ Promote arrays to a common data type, see \code{\link{common_dtype}} for more de
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(1L)
-  y <- nv_array(1.5)
-  # integer is promoted to float
-  nv_promote_to_common(x, y)
-})
+x <- nv_array(1L)
+y <- nv_array(1.5)
+# integer is promoted to float
+nv_promote_to_common(x, y)
 \dontshow{\}) # examplesIf}
 }

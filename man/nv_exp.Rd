@@ -19,10 +19,8 @@ Element-wise exponential. You can also use \code{exp()}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  x <- nv_array(c(0, 1, 2))
-  exp(x)
-})
+x <- nv_array(c(0, 1, 2))
+exp(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

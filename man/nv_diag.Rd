@@ -19,8 +19,6 @@ Creates a diagonal matrix from a 1-D array.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-jit_eval({
-  nv_diag(nv_array(c(1, 2, 3)))
-})
+nv_diag(nv_array(c(1, 2, 3)))
 \dontshow{\}) # examplesIf}
 }
