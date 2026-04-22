@@ -27,7 +27,7 @@ We'll use the classic Titanic dataset from base R, which contains survival data 
 The `Titanic` object is a contingency table, so we first expand it into individual observations.
 
 ```{r}
-library(anvil)
+library(anvl)
 set.seed(42)
 
 # Expand contingency table to individual observations
@@ -102,7 +102,7 @@ model_loss <- function(X, y, beta, alpha) {
 }
 ```
 
-Using {anvil}'s automatic differentiation, we can obtain the gradients of the loss with respect to the model parameters.
+Using {anvl}'s automatic differentiation, we can obtain the gradients of the loss with respect to the model parameters.
 
 ```{r}
 model_loss_grad <- gradient(model_loss, wrt = c("beta", "alpha"))
@@ -156,7 +156,7 @@ glm_fit <- glm(y ~ X, family = binomial)
 Now let's compare the coefficients:
 
 ```{r, echo = FALSE}
-anvil_coef <- c(as_array(result$alpha), as.vector(as_array(result$beta)))
+anvl_coef <- c(as_array(result$alpha), as.vector(as_array(result$beta)))
 glm_coef <- coef(glm_fit)
 
 # Clean up parameter names (remove "X" prefix from glm output)
@@ -164,7 +164,7 @@ param_names <- gsub("^X", "", names(glm_coef))
 
 comparison <- data.frame(
   Parameter = param_names,
-  anvil = anvil_coef,
+  anvl = anvl_coef,
   glm = glm_coef,
   row.names = NULL
 )

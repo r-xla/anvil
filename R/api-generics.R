@@ -155,7 +155,7 @@ is.finite.AnvilBox <- function(x) {
 #' @export
 is.finite.AnvilArray <- is.finite.AnvilBox
 
-# if we don't give it the name nv_transpose, pkgdown thinks t.anvil is a package
+# if we don't give it the name nv_transpose, pkgdown thinks t.anvl is a package
 
 #' @title Transpose
 #' @name nv_transpose

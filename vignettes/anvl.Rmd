@@ -7,7 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-In this vignette, you will learn everything you need to know to get started implementing numerical algorithms using {anvil}.
+In this vignette, you will learn everything you need to know to get started implementing numerical algorithms using {anvl}.
 If you have experience with JAX in Python, you should feel right at home.
 
 ## The `AnvilArray`
@@ -23,7 +23,7 @@ We can create an `AnvilArray` from R objects using `nv_array`.
 Below, we create a 0-dimensional array (i.e., a scalar) that holds a 16-bit integer on the CPU.
 
 ```{r}
-library(anvil)
+library(anvl)
 set.seed(42)
 nv_array(1L, dtype = "i16", device = "cpu", shape = integer())
 ```
@@ -50,13 +50,13 @@ Note that for 0-dimensional arrays, the result is an R vector of length 1, as R 
 as_array(y)
 ```
 
-We can transform `AnvilArray`s using {anvil} functions , as well as overloaded R operators:
+We can transform `AnvilArray`s using {anvl} functions , as well as overloaded R operators:
 
 ```{r}
 nv_add(y, y)
 ```
 
-This works because {anvil}'s `nv_*` and `nvl_*` functions -- as well as the operators dispatched on `AnvilArray`s -- are themselves `jit()`-compiled.
+This works because {anvl}'s `nv_*` and `nvl_*` functions -- as well as the operators dispatched on `AnvilArray`s -- are themselves `jit()`-compiled.
 When called outside of a `jit()` context, each operation is compiled and executed immediately.
 This is called *eager mode*.
 
@@ -92,7 +92,7 @@ alpha <- nv_scalar(rnorm(1), dtype = "f32")
 linear_model(X, beta, alpha)
 ```
 
-One restriction of {anvil} is that a function has to be re-compiled for every unique combination of input types, each consisting of a specific shape and data type.
+One restriction of {anvl} is that a function has to be re-compiled for every unique combination of input types, each consisting of a specific shape and data type.
 To demonstrate this, we create a slightly modified version of our previous linear predictor function:
 
 ```{r}
@@ -131,14 +131,14 @@ If we call the function on data with different shapes (or data types), the funct
 y_hat <- do.call(linear_model2, simul_data(4, 3))
 ```
 
-Because the compilation step itself can take some time, {anvil} therefore gives the best results when the same function is called many times with the same (or only a few different) input types, or the computation itself is sufficiently large to amortize the compilation overhead.
+Because the compilation step itself can take some time, {anvl} therefore gives the best results when the same function is called many times with the same (or only a few different) input types, or the computation itself is sufficiently large to amortize the compilation overhead.
 
 ### Static Arguments
 
 Besides `AnvilArray`s, jit-compiled functions can also take in regular R values as arguments.
 For example, we might want a linear model with or without a bias term.
 To do so, we add the `logical(1)` argument `with_bias` to our function.
-We need to mark this argument as `static`, so {anvil} knows to treat it as a regular R value.
+We need to mark this argument as `static`, so {anvl} knows to treat it as a regular R value.
 
 ```{r}
 linear_model3 <- jit(function(X, beta, alpha = NULL, with_bias) {
@@ -193,12 +193,12 @@ This means you can build complex programs by composing smaller jitted building b
 Each piece can be used standalone (where it is compiled and executed normally) or as part of a larger jitted function (where its operations are folded into the outer compilation).
 
 So far, we have only implemented the prediction step for the linear model.
-One of the core applications of {anvil} is to implement learning algorithms, for which we often need gradients, as well as control flow.
+One of the core applications of {anvl} is to implement learning algorithms, for which we often need gradients, as well as control flow.
 We will start with gradients.
 
 ## Automatic Differentiation
 
-In {anvil}, you can easily obtain the gradient function of a scalar-valued function via `gradient()`.
+In {anvl}, you can easily obtain the gradient function of a scalar-valued function via `gradient()`.
 Currently, we don't support jacobians or hessians, but this will hopefilly be added in the future.
 Below, we implement the loss function for our linear model.
 
@@ -278,15 +278,15 @@ abline(as_array(weights$alpha), as_array(weights$beta), col = "red")
 While this might seem like a reasonable solution, it continuously switches between the R interpreter and the XLA runtime. Moreover, we allocate new arrays in each iteration for the weights.
 While the latter might not be a big problem for small models, it can cause significant overhead when working with bigger arrays.
 
-Next, we will discuss control flow in {anvil} before we address immutability.
+Next, we will discuss control flow in {anvl} before we address immutability.
 
 ## Control Flow
 
-In principle, there are three ways to implement control-flow in {anvil}:
+In principle, there are three ways to implement control-flow in {anvl}:
 
 1. Embed jit-compiled functions inside R control-flow constructs, which we have seen earlier.
 2. Embed R control flow inside a jit-compiled function (we have also seen this earlier when our linear model allowed to optionally include a bias term).
-3. Use special control-flow primitives provided by anvil, such as `nv_while()` and `nv_if()`.
+3. Use special control-flow primitives provided by anvl, such as `nv_while()` and `nv_if()`.
 
 Which solution is best depends on the specific scenario, so we will cover all three cases, at the risk of being a bit repetitive.
 We will illustrate this with our linear model training example from earlier.
@@ -329,7 +329,7 @@ train_unrolled(X, beta_hat, alpha_hat, y, n_steps = 10L)
 ```
 
 Finally, the third approach is to use the `nv_while` function.
-It is not like a standard while loop, because `anvil` is purely functional.
+It is not like a standard while loop, because `anvl` is purely functional.
 
 The function takes in:
 
@@ -359,13 +359,13 @@ alpha_hat <- nv_scalar(rnorm(1), dtype = "f32")
 train_while(X, beta_hat, alpha_hat, y, nv_scalar(100L))
 ```
 
-The same approach works analogously for `if`-statements, where the {anvil} primitive `nv_if` is available.
+The same approach works analogously for `if`-statements, where the {anvl} primitive `nv_if` is available.
 
 ## Immutability
 
 `AnvilArray` objects are immutable, i.e., once created, their value cannot be changed.
 In other words, there are conceptually no in-place updates like `x[1] <- x[1] + 1`.
-This means that {anvil} follows **value semantics**, i.e., functions are **pure**.
+This means that {anvl} follows **value semantics**, i.e., functions are **pure**.
 Naturally, this raises the question of how this impacts performance.
 We need to distinguish two scenarios:
 
@@ -376,16 +376,16 @@ For the first scenario, there is nothing to worry about.
 The XLA compiler is able to optimize this, ensuring that no unnecessary copies are actually made.
 This is similar to copy-on-write semantics in R.
 If you evaluate `x <- 1:10; y <- x`, you are conceptually creating a copy of `x` when assigning it to `y`, but internally, this is optimized away and the copy will only be created when modifying `y` or `x`.
-Because {anvil} uses compilation and shapes are known at compile time, it can make many more such optimizations, minimizing unnecessary copies as much as possible.
+Because {anvl} uses compilation and shapes are known at compile time, it can make many more such optimizations, minimizing unnecessary copies as much as possible.
 
-However, there is also the case where one calls into an {anvil} function from R code, as we have done in our initial linear model example.
+However, there is also the case where one calls into an {anvl} function from R code, as we have done in our initial linear model example.
 
 ```{r}
 weights <- update_weights(X, weights$beta, weights$alpha, y)
 ```
 
-Because the assignment of the outputs of the {anvil} function to R variables does not happen within the executable, the XLA compiler cannot optimize this.
-If we know that some of the inputs to the {anvil} function are not needed anymore after the function call (as is the case for "update-calls" like above), we can mark them as "donatable" when jit-compiling.
+Because the assignment of the outputs of the {anvl} function to R variables does not happen within the executable, the XLA compiler cannot optimize this.
+If we know that some of the inputs to the {anvl} function are not needed anymore after the function call (as is the case for "update-calls" like above), we can mark them as "donatable" when jit-compiling.
 
 ```{r}
 update_weights_donatable <- jit(update_weights_r, donate = c("beta", "alpha"))

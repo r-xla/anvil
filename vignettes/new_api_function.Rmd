@@ -15,15 +15,15 @@ knitr::opts_chunk$set(
 quickr_available <- requireNamespace("quickr", quietly = TRUE)
 ```
 
-Here, we will explain how to add an API function to the {anvil} package.
+Here, we will explain how to add an API function to the {anvl} package.
 API functions are the main user facing API and are follow the `nv_*` naming scheme.
 There are two types of API functions:
 
 1. Thin wrappers around primitives that add convenience like type casting and scalar broadcasting (AP function `nv_add` is a wrapper around the primitive `nvl_add`).
 2. Common mathematical functions that are expressed in terms of primitives (such as `nv_rnorm`).
 
-Here, we will focus on contributing such an API function to the {anvil} package.
-Specifically, API functions in the {anvil} package should:
+Here, we will focus on contributing such an API function to the {anvl} package.
+Specifically, API functions in the {anvl} package should:
 
 1. Work with any backend.
 2. Accept the following argument types for their dynamic inputs:
@@ -34,14 +34,14 @@ Specifically, API functions in the {anvil} package should:
 
 ## 1. Work with any backend
 
-The first requirement means that a user of the {anvil} package should be able to use an {anvil} function with `AnvilArray`s from both the *xla* and the *quickr* backend.
-When you are just calling into other anvil primitives or correctly created API functions, there is nothing to take care of.
+The first requirement means that a user of the {anvl} package should be able to use an {anvl} function with `AnvilArray`s from both the *xla* and the *quickr* backend.
+When you are just calling into other anvl primitives or correctly created API functions, there is nothing to take care of.
 This requirement is only relevant, when the API function is `jit()`ted (or internally calls into such a function).
 For example, we might want to add an API function that adds three to a tensor and jit the function.
 By setting the `backend` argument to `"auto"`, we can use it with both backends:
 
 ```{r}
-library(anvil)
+library(anvl)
 nv_add_three_good <- jit(\(x) x + 3, backend = "auto")
 nv_add_three_good(nv_scalar(1, backend = "xla"))
 ```
@@ -119,7 +119,7 @@ jit(nv_tril_good)(nv_array(matrix(c(-1, 2, -3, 4), 2, 2)))
 API functions accept R literals (length-1 vectors, R arrays), `AnvilArray`s, and (during tracing) graph boxes.
 Primitives handle all of these, but having the same arrayish value arrive as three different R types makes the API function body awkward: every branch would have to re-check which case it is in.
 To keep the function body simple, we standardize at the top -- after that, we can treat every argument as an `AnvilArray` (or a tracing box) without caring about the original R type.
-Anvil provides two helpers for this:
+Anvl provides two helpers for this:
 
 * `as_anvil_array(x, device = NULL)` -- use for API functions that take a **single** array input.
   It converts an R value to an `AnvilArray` on the given device (or the default device if `NULL`), and passes `AnvilArray`s through.
@@ -151,7 +151,7 @@ nv_add_scaled <- function(x, y, alpha) {
 }
 ```
 
-## 3. Always output anvil arrays
+## 3. Always output anvl arrays
 
 ## Inputs that require checks must be static
 

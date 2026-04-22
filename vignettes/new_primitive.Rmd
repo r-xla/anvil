@@ -56,7 +56,7 @@ This primitive has a *dynamic* input (an array) and two *static* parameters (how
 ### Step 1: Create the AnvilPrimitive Object
 
 ```{r}
-library(anvil)
+library(anvl)
 p_repeat_along <- AnvilPrimitive("repeat_along")
 ```
 
@@ -110,7 +110,7 @@ Key points:
 
 - The inference function receives abstract arrays (types, not values) for dynamic inputs, and actual values for static parameters.
   It must verify that the arguments to the function are valid.
-  Also, it should throw clear error messages if the arguments are invalid, as {anvil} programs are otherwise hard to debug.
+  Also, it should throw clear error messages if the arguments are invalid, as {anvl} programs are otherwise hard to debug.
 - `graph_desc_add()` returns a list of outputs; use `[[1L]]` for single-output primitives.
 - Propagate the `ambiguous` flag from inputs to outputs, see [type promotion](type-promotion.html) for what this means.
 
@@ -133,13 +133,13 @@ When doing so, you need to:
 1. Convert the abstract arrays to stablehlo `ValueType`s using `at2vt()`.
 2. Call the stablehlo inference function and obtain a list of `ValueType`s.
 3. Convert the `ValueType`s back to abstract arrays using `vt2at()`.
-4. Set the `ambiguous` flag of the output depending on the inputs (`ambiguity` is strictly an {anvil} concept, not a stablehlo concept).
+4. Set the `ambiguous` flag of the output depending on the inputs (`ambiguity` is strictly an {anvl} concept, not a stablehlo concept).
 
 #### Special case: primitives with 0 dynamic inputs
 
 Array *constructors* (e.g. [`nvl_fill()`], [`nvl_iota()`]) have no dynamic array inputs -- every argument is static. Two things change in this case:
 
-1. **All formals must be listed in `static`**. Otherwise {anvil} would try to interpret a scalar argument like `value` or `shape` as an `AnvilArray` input.
+1. **All formals must be listed in `static`**. Otherwise {anvl} would try to interpret a scalar argument like `value` or `shape` as an `AnvilArray` input.
 2. **`backend = "auto"` no longer works**, because there are no array inputs to infer the backend from. Instead, add a `device` formal to the function and pass `device = device_arg("device")` to `jit()`. At call time, the user-supplied device is read from that argument and used to determine both the backend (via [`backend()`] dispatch) and the compilation device.
 
 For example, the real definition of [`nvl_fill()`] looks like this:
@@ -175,7 +175,7 @@ The rule receives:
 
 It must return a list of `stablehlo::FuncValue`s, even if there is only one output.
 
-**Important**: StableHLO uses 0-based indexing, while {anvil} uses R's 1-based indexing.
+**Important**: StableHLO uses 0-based indexing, while {anvl} uses R's 1-based indexing.
 Always convert dimension indices by subtracting 1.
 Also note that in `graph_desc_add()` we are converting the error messages from stablehlo to our 1-based indexing, so you do not have to worry about that here.
 
@@ -232,7 +232,7 @@ prim("repeat_along")
 
 ### Step 6: Add an `nv_` API Function
 
-In {anvil}, we also offer convenience wrappers around the primitives.
+In {anvl}, we also offer convenience wrappers around the primitives.
 An example is `nvl_add` vs `nv_add`, where the latter calls into the former after optionally broadcasting (scalar) inputs:
 
 ```{r, error = TRUE}
@@ -282,7 +282,7 @@ grad_f(x)[[1L]]
 
 ## Contributing to the Package
 
-If you want to contribute your primitive to {anvil}, there are some additional things to be aware of.
+If you want to contribute your primitive to {anvl}, there are some additional things to be aware of.
 
 ### File Organization
 

@@ -111,7 +111,7 @@ compile_quickr <- function(f, args_flat, in_tree, arg_devices = list(), unwrap =
 #'
 #' * `unwrap` (`logical(1)`, default `FALSE`): if `TRUE`, the compiled function
 #'   returns plain R arrays instead of [`AnvilArray`]s. Useful when the jitted
-#'   function's output is consumed by non-anvil R code and the extra wrapping
+#'   function's output is consumed by non-anvl R code and the extra wrapping
 #'   would only get stripped again.
 #'
 #' @return An [`AnvilBackend`] object with subclass `"AnvilBackendQuickr"`.

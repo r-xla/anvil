@@ -7,7 +7,7 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(anvil)
+library(anvl)
 library(stablehlo)
 
-test_check("anvil")
+test_check("anvl")

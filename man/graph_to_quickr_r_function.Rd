@@ -23,6 +23,6 @@ Most users will prefer \code{\link[=jit]{jit()}} with \code{backend = "quickr"}.
 This function is the lower-level graph API.
 }
 \seealso{
-\code{\link[=jit]{jit()}} with \code{options(anvil.backend = "quickr")} for tracing and compiling a
+\code{\link[=jit]{jit()}} with \code{options(anvl.backend = "quickr")} for tracing and compiling a
 regular R function in one step.
 }

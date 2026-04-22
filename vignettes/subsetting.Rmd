@@ -7,8 +7,8 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-In this vignette, you will learn how to subset arrays in {anvil} and how to update subsets.
-Because array shapes in {anvil} programs are static, only certain subsetting operations are supported and they come with some surprises.
+In this vignette, you will learn how to subset arrays in {anvl} and how to update subsets.
+Because array shapes in {anvl} programs are static, only certain subsetting operations are supported and they come with some surprises.
 
 We start by listing possible subsets and whether they support dynamic values (arrays that are specified during runtime) or only static values (e.g., R literals).
 
@@ -36,7 +36,7 @@ Let's start with some simple examples of selecting individual elements from a 1-
 The index can be either static or dynamic and we can drop or keep the dimension:
 
 ```{r}
-library(anvil)
+library(anvl)
 x <- nv_array(1:10)
 x
 ```
@@ -126,7 +126,7 @@ x[array(c(2, 2))]
 
 ### Out-of-bounds Handling
 
-If one specifies out-of-bounds indices, we can only throw an error if the indices are static (we know them at compile time), as the XLA backend that {anvil} compiles to, does not throw errors when using out-of-bounds indices, but instead clamps them to the valid range:
+If one specifies out-of-bounds indices, we can only throw an error if the indices are static (we know them at compile time), as the XLA backend that {anvl} compiles to, does not throw errors when using out-of-bounds indices, but instead clamps them to the valid range:
 
 ```{r}
 x[nv_array(-1L), nv_array(100L)]

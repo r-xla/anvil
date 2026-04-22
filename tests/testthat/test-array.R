@@ -110,7 +110,7 @@ test_that("to_abstract", {
   expect_equal(to_abstract(TRUE), LiteralArray(TRUE, c(), "bool", FALSE))
   expect_equal(to_abstract(1L), LiteralArray(1L, c(), "i32", TRUE))
   expect_equal(to_abstract(1.0), LiteralArray(1.0, c(), "f32", TRUE))
-  # anvil array
+  # anvl array
   x <- nv_array(1:4, dtype = "f32", shape = c(2, 2))
   expect_equal(to_abstract(x), ConcreteArray(x))
   # graph box
@@ -154,7 +154,7 @@ test_that("to_abstract", {
   expect_equal(to_abstract(TRUE), LiteralArray(TRUE, c(), "bool", FALSE))
   expect_equal(to_abstract(1L), LiteralArray(1L, c(), "i32", TRUE))
   expect_equal(to_abstract(1.0), LiteralArray(1.0, c(), "f32", TRUE))
-  # anvil array
+  # anvl array
   x <- nv_array(1:4, dtype = "f32", shape = c(2, 2))
   expect_equal(to_abstract(x), ConcreteArray(x))
   # graph box

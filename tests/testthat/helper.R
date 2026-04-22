@@ -80,7 +80,7 @@ is_cpu <- function() {
 }
 
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
+  source(system.file("extra-tests", "torch-helpers.R", package = "anvl"))
 }
 
 verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {

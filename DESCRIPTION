@@ -1,4 +1,4 @@
-Package: anvil
+Package: anvl
 Title: Framework for R code transformations
 Version: 0.1.0.9000
 Authors@R: c(
@@ -11,8 +11,8 @@ Authors@R: c(
   )
 Description: Code transformation framework for R.
 License: MIT + file LICENSE
-URL: https://r-xla.github.io/anvil/, https://github.com/r-xla/anvil
-BugReports: https://github.com/r-xla/anvil/issues
+URL: https://r-xla.github.io/anvl/, https://github.com/r-xla/anvl
+BugReports: https://github.com/r-xla/anvl/issues
 Depends:
     R (>= 4.2.0)
 Imports:

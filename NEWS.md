@@ -1,7 +1,9 @@
-# anvil (development version)
+# anvl (development version)
 
 ## Breaking Changes
 
+* The package was renamed from `anvil` to `anvl` to avoid a conflict
+  with the Bioconductor package `AnVIL`.
 * `AnvilTensor`/`nv_tensor` were renamed to `AnvilArray` and `nv_array` to be
   more in line with R's `array()`.
   Also, `nv_aten()` was renamed to `nv_aval()`.
@@ -23,7 +25,7 @@
 * An experimental [{quickr}](https://github.com/t-kalinowski/quickr) backend was added
   It only runs on CPU for now and supports a subset of available operations.
   You can enable it via the `backend` argument in `jit()` and
-  `nv_array()` or via the `anvil.default_backend` option.
+  `nv_array()` or via the `anvl.default_backend` option.
 * New primitives:
   * `nvl_cholesky()` to compute the Cholesky decomposition of a matrix.
   * `nvl_triangular_solve()` to solve a system of linear equations with a triangular matrix.
@@ -34,7 +36,7 @@
   * `nv_cholesky()` to compute the Cholesky decomposition of a matrix.
   * `nv_device()` constructs a backend-specific device object (e.g. `nv_device("cpu")`)
     that can be passed as `device` to array constructors like `nv_fill()` or `nv_iota()`.
-* New S3 methods `dim()`, `nrow()`, `ncol()`, and `length()` for anvil arrays.
+* New S3 methods `dim()`, `nrow()`, `ncol()`, and `length()` for anvl arrays.
 * Printing tensors via `nv_print()` now also works on GPUs.
 * R vectors of length 1 and arrays are now auto-converted when being passed
   to `jit`ted functions.
@@ -65,6 +67,6 @@
   package (see installation guide), which only requires a compatible CUDA
   driver.
 
-# anvil 0.1.0
+# anvl 0.1.0
 
 Initial release

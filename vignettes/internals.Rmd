@@ -14,9 +14,9 @@ While a real anvil is made for reshaping metal, this package is a tool for resha
 We refer to such a rewriting of code as a **transformation**, of which there are three types:
 
 1. `R` $\rightarrow$ `AnvilGraph`:
-   Generic `R` functions are too complicated to handle, so the first step in {anvil} is always to convert them into a computational `anvil::Graph` object via **tracing**.
+   Generic `R` functions are too complicated to handle, so the first step in {anvl} is always to convert them into a computational `anvl::Graph` object via **tracing**.
    Such a `AnvilGraph` is similar to `JAXExpr` objects in `JAX`.
-   It operates only on `AnvilArray` objects and applies `anvil::Primitive` operations to them.
+   It operates only on `AnvilArray` objects and applies `anvl::Primitive` operations to them.
 1. `AnvilGraph` $\rightarrow$ `AnvilGraph`:
    It is possible to transform `AnvilGraph`s into other `AnvilGraph`s.
    Their purpose is to change the functionality of the code.
@@ -27,7 +27,7 @@ We refer to such a rewriting of code as a **transformation**, of which there are
 
 ### Tracing R Functions into Graphs
 
-All functionality in the {anvil} package is centered around the `anvil::Graph` class.
+All functionality in the {anvl} package is centered around the `anvl::Graph` class.
 While it is in principle possible to create `AnvilGraph`s by hand, these are usually created by tracing R functions.
 In general, when we want to convert some code into another form (in our case, R Code into a `AnvilGraph`), there are two approaches:
 
@@ -38,7 +38,7 @@ The former approach is followed by the {quickr} package, while we go with tracin
 We start with a simple, yet illustrative example that either adds or multiplies two inputs `x` and `y` depending on the value of `op`.
 
 ```{r}
-library(anvil)
+library(anvl)
 f <- function(x, y, op) {
   if (op == "add") {
     nv_add(x, y)
@@ -50,7 +50,7 @@ f <- function(x, y, op) {
 }
 ```
 
-To do this, we use `anvil::trace_fn()`, which takes in an `R` function and a list of `AbstractArray` inputs that specify the types of the inputs.
+To do this, we use `anvl::trace_fn()`, which takes in an `R` function and a list of `AbstractArray` inputs that specify the types of the inputs.
 
 ```{r}
 aten <- nv_aval("f32", c())
@@ -67,13 +67,13 @@ The fields of the `AnvilGraph` are:
 * `calls`, which are `PrimitiveCall`s that take in `GraphNode`s (and parameters) and produce output `GraphNode`s.
 * `in_tree`, `out_tree`, which we will cover later (do we??)
 
-What happens during `trace_fn()` is that a new `GraphDescriptor` is created and the inputs `x` and `y` are converted into `anvil::GraphBox` objects.
+What happens during `trace_fn()` is that a new `GraphDescriptor` is created and the inputs `x` and `y` are converted into `anvl::GraphBox` objects.
 Then, the function `f` is simply evaluated with the `GraphBox` objects as inputs.
 During this evaluation, we need to distinguish between two cases:
 
 1. A "standard" `R` function is called:
    Here, nothing special happens and the function is simply evaluated.
-2. An `anvil` function is called:
+2. An `anvl` function is called:
    Here, the operation that underlies the function is recorded in the `GraphDescriptor`.
 
 The evaluation of the `if` statement is an example for the first category.
@@ -94,10 +94,10 @@ The only difference between the `AnvilGraph` and the `GraphDescriptor` is that t
 ### Transforming Graphs into other Graphs
 
 Once the `R` function is staged out into a simpler format, it is ready to be transformed.
-The {anvil} package does not in any way dictate how such a `AnvilGraph` to `AnvilGraph` transformation can be implemented.
-For most interesting transformations, however, we need to store some information for each {anvil} primitive function.
+The {anvl} package does not in any way dictate how such a `AnvilGraph` to `AnvilGraph` transformation can be implemented.
+For most interesting transformations, however, we need to store some information for each {anvl} primitive function.
 In the case of the gradient, we need to store the derivative rules.
-For this, `anvil::Primitive` objects have a `$rules` field that can be populated.
+For this, `anvl::Primitive` objects have a `$rules` field that can be populated.
 The derivative rules are stored as functions under the `"reverse"` name.
 We can access a primitive by it's name via the `prim()` function:
 
@@ -105,7 +105,7 @@ We can access a primitive by it's name via the `prim()` function:
 prim("mul")$rules[["reverse"]]
 ```
 
-The `anvil::transform_gradient` function uses these rules to compute the gradient of a function.
+The `anvl::transform_gradient` function uses these rules to compute the gradient of a function.
 For this specific transformation, we are walking the graph backwards and apply the derivative rules, which will append the "reverse pass" to the graph.
 Besides the forward graph, the transformation takes in the `wrt` argument, which specifies with respect to which arguments to compute the gradient.
 
@@ -127,7 +127,7 @@ Like for the gradient transformation, the rules of how to do this transformation
 prim("mul")$rules[["stablehlo"]]
 ```
 
-The `anvil::stablehlo` function will create a `stablehlo::Func` object and will sequentially translate the `PrimitiveCall`s into StableHLO operations.
+The `anvl::stablehlo` function will create a `stablehlo::Func` object and will sequentially translate the `PrimitiveCall`s into StableHLO operations.
 
 ```{r}
 func <- stablehlo(graph)[[1L]]
@@ -249,7 +249,7 @@ Afterwards, this graph is lowered to stableHLO and subsequently compiled.
 
 ### Constant Handling
 
-Constants are handled specially in {anvil}.
+Constants are handled specially in {anvl}.
 Consider the program below:
 
 
@@ -324,13 +324,13 @@ Some things that are important to be aware of:
 ### Nested Inputs and Outputs
 
 TODO
-## Dichotomy of anvil functions
+## Dichotomy of anvl functions
 
-Here, we will dig deeper into the dichotomy of {anvil} functions such as `nvl_add`.
+Here, we will dig deeper into the dichotomy of {anvl} functions such as `nvl_add`.
 In the *Getting Started* vignette, we have learned that these functions can either be called directly on `AnvilArray`s to transform data, or used within `jit()` blocks to build up programs.
 Here, we will explain what this actually does and why this is possible.
 
-The core problem this dichotomy solves is that it is a mental burden to always keep two versions os an {anvil} function:
+The core problem this dichotomy solves is that it is a mental burden to always keep two versions os an {anvl} function:
 
 1. The `jit()`ted version that can be used to transform arrays.
 2. The non-`jit()`ted one that can be used to build up programs.
@@ -338,7 +338,7 @@ The core problem this dichotomy solves is that it is a mental burden to always k
 With our implementation, the following is possible:
 
 ```{r}
-library(anvil)
+library(anvl)
 nvl_add(nv_scalar(1), nv_scalar(2))
 
 times_2 <- jit(function(x) {
@@ -371,7 +371,7 @@ Internally, we have implemented this by wrapping every `nvl_*` primitive functio
 If we are in a `jit()` call, and call into a function `jit(f)`, internally `f` is evaluated, and the function is re-traced.
 Otherwise, the standard jit path is followed.
 
-However, for the {anvil} API this now means that special care needs to be taken that everything
+However, for the {anvl} API this now means that special care needs to be taken that everything
 works in jit-mode and in eager-mode.
 The most important points are:
 

@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r, echo = FALSE}
-library(anvil)
+library(anvl)
 
 prims <- prim()
 

@@ -1,4 +1,4 @@
-url: https://r-xla.github.io/anvil/
+url: https://r-xla.github.io/anvl/
 destination: docs
 
 development:
@@ -34,7 +34,7 @@ navbar:
       - text: Installation
         href: articles/installation.html
       - text: Get Started
-        href: articles/anvil.html
+        href: articles/anvl.html
       - text: Type Promotion
         href: articles/type-promotion.html
       - text: Subsetting

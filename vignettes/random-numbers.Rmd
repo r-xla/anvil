@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-In this vignette, you will learn how to generate random numbers in {anvil}, which is different from base R, where random number generation uses a global state (`.Random.seed`) that is automatically updated after each call:
+In this vignette, you will learn how to generate random numbers in {anvl}, which is different from base R, where random number generation uses a global state (`.Random.seed`) that is automatically updated after each call:
 
 ```{r}
 set.seed(42)
@@ -25,7 +25,7 @@ rnorm(3)
 .Random.seed[2:4]
 ```
 
-In {anvil}, the random state must be explicitly passed around.
+In {anvl}, the random state must be explicitly passed around.
 This is because we are following a functional programming paradigm where functions are pure and don't have side effects.
 
 **Note:** This explicit state-passing behavior might change in the future to provide a more R-like experience, but for now you need to manage the state yourself.
@@ -34,7 +34,7 @@ To generate random numbers, you first need to create an initial RNG state, which
 You can convert a seed into a state using `nv_rng_state()`:
 
 ```{r}
-library(anvil)
+library(anvl)
 state <- nv_rng_state(42L)
 state
 ```

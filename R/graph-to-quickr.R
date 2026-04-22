@@ -218,7 +218,7 @@ graph_to_quickr_make_wrapper <- function(
 #' @param graph ([`AnvilGraph`])\cr
 #'   Graph to convert.
 #' @return (`function`)
-#' @seealso [`jit()`] with `options(anvil.backend = "quickr")` for tracing and compiling a
+#' @seealso [`jit()`] with `options(anvl.backend = "quickr")` for tracing and compiling a
 #'   regular R function in one step.
 #' @export
 graph_to_quickr_r_function <- function(graph) {

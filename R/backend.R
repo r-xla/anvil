@@ -77,7 +77,7 @@ check_single_backend <- function(graph, arg_devices, expected) {
     cli_abort(c(
       "Cannot compile a {.val {expected}} program with inputs from other backends.",
       i = "Found arrays from backend{?s} {.val {mismatches}}.",
-      i = "anvil does not support mixing backends in a single compiled program.",
+      i = "anvl does not support mixing backends in a single compiled program.",
       i = "Ensure all inputs and closed-over constants use the {.val {expected}} backend."
     ))
   }
@@ -155,13 +155,13 @@ register_backend(
 
 #' Get the default backend
 #'
-#' Returns the current default backend from `getOption("anvil.default_backend", "xla")`.
+#' Returns the current default backend from `getOption("anvl.default_backend", "xla")`.
 #'
 #' @return `character(1)` — the backend name (e.g. `"xla"`, `"quickr"`).
 #' @seealso [local_backend()]
 #' @export
 default_backend <- function() {
-  getOption("anvil.default_backend", "xla")
+  getOption("anvl.default_backend", "xla")
 }
 
 assert_backend <- function(backend) {
@@ -170,7 +170,7 @@ assert_backend <- function(backend) {
 
 #' Temporarily set the default backend
 #'
-#' Sets the `anvil.default_backend` option for the duration of the
+#' Sets the `anvl.default_backend` option for the duration of the
 #' calling scope. This affects `nv_array()`, `nv_scalar()`, and `jit()`.
 #'
 #' @param backend (`character(1)`)\cr
@@ -180,12 +180,12 @@ assert_backend <- function(backend) {
 #' @export
 local_backend <- function(backend, envir = parent.frame()) {
   backend <- assert_backend(backend)
-  withr::local_options(anvil.default_backend = backend, .local_envir = envir)
+  withr::local_options(anvl.default_backend = backend, .local_envir = envir)
 }
 
 #' Run code with a specific backend
 #'
-#' Sets the `anvil.default_backend` option for the duration of the
+#' Sets the `anvl.default_backend` option for the duration of the
 #' expression. This affects [`jit()`] and data construction (e.g. via [`nv_array`]).
 #'
 #' @param backend (`character(1)`)\cr
@@ -195,5 +195,5 @@ local_backend <- function(backend, envir = parent.frame()) {
 #' @export
 with_backend <- function(backend, code) {
   backend <- assert_backend(backend)
-  withr::with_options(list(anvil.default_backend = backend), code)
+  withr::with_options(list(anvl.default_backend = backend), code)
 }

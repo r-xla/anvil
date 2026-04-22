@@ -51,7 +51,7 @@ lowered to quickr code. See \code{vignette("primitives")} for an overview.
 \itemize{
 \item \code{unwrap} (\code{logical(1)}, default \code{FALSE}): if \code{TRUE}, the compiled function
 returns plain R arrays instead of \code{\link{AnvilArray}}s. Useful when the jitted
-function's output is consumed by non-anvil R code and the extra wrapping
+function's output is consumed by non-anvl R code and the extra wrapping
 would only get stripped again.
 }
 }
