@@ -55,7 +55,7 @@ This primitive has a *dynamic* input (an array) and two *static* parameters (how
 
 ### Step 1: Define the Primitive
 
-Primitives are created with `new_primitive()`: it builds the `AnvilPrimitive` metadata object that holds the rules, wraps the body with `jit()`, attaches the metadata, and registers the result into the exported `prim` environment. The returned callable becomes the primitive.
+Primitives are created with `new_primitive()`: it builds the `AnvilPrimitive` metadata object that holds the rules, wraps the body with `jit()`, attaches the metadata, and registers the result in the internal primitive registry. The returned callable becomes the primitive and is bound to a `prim_<name>` R symbol.
 
 ```{r}
 library(anvil)
@@ -80,7 +80,7 @@ prim_repeat_along <- new_primitive(
     }
 
     graph_desc_add(
-      "repeat_along",             # primitive name — looked up in `prim`
+      self,                       # lexically bound to the AnvilPrimitive
       list(operand = operand),    # Dynamic inputs (arrays)
       params = list(              # Static parameters
         times = times,
@@ -97,7 +97,7 @@ The primitive is now callable directly as `prim_repeat_along(x, times, dim)`.
 
 Key points:
 
-- Pass the primitive **name string** to `graph_desc_add()`; it looks up the primitive in the internal registry.
+- Pass the lexically-bound `self` (the [`AnvilPrimitive`]) as the first argument to `graph_desc_add()`. `new_primitive()` installs `self` into the enclosing environment of the body, so this is always available inside a primitive.
 - The inference function receives abstract arrays (types, not values) for dynamic inputs, and actual values for static parameters. It must verify that the arguments to the function are valid, and should throw clear error messages — {anvil} programs are otherwise hard to debug.
 - `graph_desc_add()` returns a list of outputs; use `[[1L]]` for single-output primitives.
 - Propagate the `ambiguous` flag from inputs to outputs, see [type promotion](type-promotion.html) for what this means.
@@ -125,7 +125,7 @@ For example, the real definition of `prim_fill` looks like this:
 prim_fill <- new_primitive(
   "fill",
   function(value, shape, dtype, ambiguous = FALSE, device = NULL) {
-    # ... graph_desc_add("fill", ...) ...
+    # ... graph_desc_add(self, ...) ...
   },
   static = 1:5,
   device = device_arg("device")
@@ -199,7 +199,7 @@ It returns a list with one gradient per input (or `NULL` if not required).
 
 ### Step 5: Verify the Registration
 
-`new_primitive()` returns the callable directly and also registers the primitive into an internal registry used by the graph machinery, so no separate registration step is needed:
+`new_primitive()` returns the callable directly and also registers the primitive in the internal registry used by the graph machinery, so no separate registration step is needed:
 
 ```{r}
 prim_repeat_along

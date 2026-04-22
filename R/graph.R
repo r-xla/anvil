@@ -91,7 +91,9 @@ NULL
 #' @return (`PrimitiveCall`)
 #' @export
 PrimitiveCall <- function(primitive, inputs, params, outputs) {
-  if (inherits(primitive, "JitPrimitive")) primitive <- attr(primitive, "primitive")
+  if (inherits(primitive, "JitPrimitive")) {
+    primitive <- attr(primitive, "primitive")
+  }
   checkmate::assert_class(primitive, "AnvilPrimitive")
   checkmate::assert_list(inputs, types = c("GraphValue", "GraphLiteral"))
   checkmate::assert_list(params)
@@ -721,9 +723,12 @@ is_graph_box <- function(x) {
 
 #' @title Add a Primitive Call to a Graph Descriptor
 #' @description
-#' Add a primitive call to a graph descriptor.
-#' @param prim_name (`character(1)`)\cr
-#'   Name of the primitive to add; looked up in the internal primitive registry.
+#' Add a primitive call to a graph descriptor. Inside a primitive body created
+#' with [`new_primitive()`], pass the lexically-bound `self` as the primitive
+#' argument.
+#' @param primitive ([`AnvilPrimitive`] | `JitPrimitive`)\cr
+#'   The primitive the call is for. A `JitPrimitive` is accepted and unwrapped
+#'   to its underlying `AnvilPrimitive` metadata.
 #' @param args (`list` of [`GraphNode`])\cr
 #'   The arguments to the primitive.
 #' @param params (`list`)\cr
@@ -736,11 +741,12 @@ is_graph_box <- function(x) {
 #'   Uses the [current descriptor][.current_descriptor] if `NULL`.
 #' @return (`list` of [`GraphBox`])
 #' @export
-graph_desc_add <- function(prim_name, args, params = list(), infer_fn, desc = NULL) {
+graph_desc_add <- function(primitive, args, params = list(), infer_fn, desc = NULL) {
   desc <- desc %||% .current_descriptor(silent = TRUE)
-  checkmate::assert_string(prim_name)
-  jit_primitive <- get(prim_name, envir = primitive_env, inherits = FALSE)
-  primitive <- attr(jit_primitive, "primitive")
+  if (inherits(primitive, "JitPrimitive")) {
+    primitive <- attr(primitive, "primitive")
+  }
+  checkmate::assert_class(primitive, "AnvilPrimitive")
 
   boxes_in <- lapply(args, maybe_box_arrayish)
   gnodes_in <- unname(lapply(boxes_in, \(box) box$gnode))

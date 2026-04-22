@@ -19,8 +19,9 @@ Primitive name.}
 
 \item{fn}{(\code{function})\cr
 Body of the primitive. Its formals become the formals of the returned
-JIT-compiled callable. Inside \code{fn}, identify the primitive by passing
-the name string to \code{\link[=graph_desc_add]{graph_desc_add()}} (not the \code{fn} itself).}
+JIT-compiled callable. Inside \code{fn}, the primitive is accessible via
+the lexically-bound symbol \code{self} (an \code{\link{AnvilPrimitive}}); pass it as
+the first argument to \code{\link[=graph_desc_add]{graph_desc_add()}}.}
 
 \item{subgraphs}{(\code{character()})\cr
 Names of parameters that are subgraphs (for higher-order primitives).}

@@ -278,7 +278,14 @@ prim_reduce_sum[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .re
   )
 }
 
-prim_reduce_max[["reverse"]] <- prim_reduce_min[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .required) {
+prim_reduce_max[["reverse"]] <- prim_reduce_min[["reverse"]] <- function(
+  inputs,
+  outputs,
+  grads,
+  dims,
+  drop,
+  .required
+) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
 

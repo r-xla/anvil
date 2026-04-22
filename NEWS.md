@@ -11,6 +11,9 @@
 * Removed *debug mode*.
 * Remove NSE support for `nvl_if`. It now requires passing 0-argument
   closures as `true` and `false` arguments.
+* Primitives renamed from `nvl_*` to `prim_*`. Call sites now use
+  `prim_add(x, y)`, `prim_mul(x, y)`, etc. The old `nvl_*` names are
+  gone.
 
 ## New Features
 

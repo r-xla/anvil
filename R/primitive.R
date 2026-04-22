@@ -27,7 +27,9 @@ AnvilPrimitive <- function(name, subgraphs = character()) {
 primitive_env <- new.env(parent = emptyenv())
 
 is_higher_order_primitive <- function(x) {
-  if (inherits(x, "JitPrimitive")) x <- attr(x, "primitive")
+  if (inherits(x, "JitPrimitive")) {
+    x <- attr(x, "primitive")
+  }
   length(x$subgraphs) > 0L
 }
 
@@ -89,8 +91,9 @@ print.JitPrimitive <- function(x, ...) {
 #'   Primitive name.
 #' @param fn (`function`)\cr
 #'   Body of the primitive. Its formals become the formals of the returned
-#'   JIT-compiled callable. Inside `fn`, identify the primitive by passing
-#'   the name string to [`graph_desc_add()`] (not the `fn` itself).
+#'   JIT-compiled callable. Inside `fn`, the primitive is accessible via
+#'   the lexically-bound symbol `self` (an [`AnvilPrimitive`]); pass it as
+#'   the first argument to [`graph_desc_add()`].
 #' @param subgraphs (`character()`)\cr
 #'   Names of parameters that are subgraphs (for higher-order primitives).
 #' @param static (`character()` | `integer()`)\cr
@@ -103,15 +106,23 @@ print.JitPrimitive <- function(x, ...) {
 #'   registry.
 #' @return A callable of class `c("JitPrimitive", "JitFunction")`.
 #' @export
-new_primitive <- function(name, fn, subgraphs = character(),
-                          static = character(), device = NULL,
-                          register = TRUE) {
+new_primitive <- function(name, fn, subgraphs = character(), static = character(), device = NULL, register = TRUE) {
   checkmate::assert_string(name)
   checkmate::assert_function(fn)
   checkmate::assert_character(subgraphs)
   checkmate::assert_flag(register)
 
   primitive <- AnvilPrimitive(name, subgraphs = subgraphs)
+
+  # Bind `self` (the AnvilPrimitive) in a per-primitive env wrapped around fn's
+  # existing enclosing env, so the body can reference the primitive directly —
+  # same idea as R6's `self`. A per-primitive env is needed because inline
+  # `function(...)` literals in R/primitives.R all share the package namespace
+  # env; binding `self` there would clobber across primitives.
+  self_env <- new.env(parent = environment(fn))
+  self_env$self <- primitive
+  environment(fn) <- self_env
+
   jit_fn <- jit(fn, static = static, backend = "auto", device = device)
   attr(jit_fn, "primitive") <- primitive
   class(jit_fn) <- c("JitPrimitive", class(jit_fn))
@@ -133,8 +144,12 @@ new_primitive <- function(name, fn, subgraphs = character(),
 #' @export
 subgraphs <- function(call) {
   p <- call$primitive
-  if (inherits(p, "JitPrimitive")) p <- attr(p, "primitive")
-  if (!is_higher_order_primitive(p)) return(list())
+  if (inherits(p, "JitPrimitive")) {
+    p <- attr(p, "primitive")
+  }
+  if (!is_higher_order_primitive(p)) {
+    return(list())
+  }
 
   stats::setNames(
     lapply(p$subgraphs, \(sg) call$params[[sg]]),
