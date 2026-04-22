@@ -74,13 +74,6 @@ print.AnvilPrimitive <- function(x, ...) {
   x
 }
 
-#' @method print JitPrimitive
-#' @export
-print.JitPrimitive <- function(x, ...) {
-  print(attr(x, "primitive"))
-  invisible(x)
-}
-
 #' @title Create a Primitive
 #' @description
 #' Builds an [`AnvilPrimitive`] metadata object, wraps `fn` with [`jit()`]
