@@ -32,5 +32,5 @@ nv_reduce_prod(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_reduce_prod]{nvl_reduce_prod()}} for the underlying primitive.
+\code{\link[=prim_reduce_prod]{prim_reduce_prod()}} for the underlying primitive.
 }

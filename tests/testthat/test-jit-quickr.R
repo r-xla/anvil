@@ -1,5 +1,5 @@
 test_that("jit: quickr backend compiles simple function", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   local_backend("quickr")
 
   f <- jit(function(x, y) x + y)
@@ -8,7 +8,7 @@ test_that("jit: quickr backend compiles simple function", {
 })
 
 test_that("jit: quickr backend returns AnvilArray", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   local_backend("quickr")
 
   f <- jit(function(x, y) x + y)
@@ -22,7 +22,7 @@ test_that("jit: quickr backend returns AnvilArray", {
 })
 
 test_that("jit: quickr backend preserves nested multi-output shapes and types", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   local_backend("quickr")
 
   f <- jit(
@@ -45,7 +45,7 @@ test_that("jit: quickr backend preserves nested multi-output shapes and types", 
 })
 
 test_that("jit: quickr backend does not support donate", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   local_backend("quickr")
   expect_error(
     jit(function(x) x, donate = "x"),
@@ -55,7 +55,7 @@ test_that("jit: quickr backend does not support donate", {
 })
 
 test_that("jit: quickr backend supports unwrap = TRUE", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   local_backend("quickr")
 
   f <- jit(function(x, y) x + y, unwrap = TRUE)
@@ -68,7 +68,7 @@ test_that("jit: quickr backend supports unwrap = TRUE", {
 })
 
 test_that("jit: quickr backend unwrap = TRUE preserves nested output structure", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   local_backend("quickr")
 
   f <- jit(
@@ -100,7 +100,7 @@ test_that("jit: quickr backend traces floating literals as f32", {
 })
 
 test_that("graph_to_quickr_r_function lowers a graph to a plain R function", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   local_backend("quickr")
 
   graph <- trace_fn(

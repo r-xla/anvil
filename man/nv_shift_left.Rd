@@ -27,5 +27,5 @@ nv_shift_left(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_shift_left]{nvl_shift_left()}} for the underlying primitive.
+\code{\link[=prim_shift_left]{prim_shift_left()}} for the underlying primitive.
 }

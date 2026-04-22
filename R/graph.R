@@ -79,8 +79,7 @@ NULL
 
 #' @title Primitive Call
 #' @description
-#' Call of a primitive in an [`AnvilGraph`]
-#' Note that a primitive call also be a call into another graph (`p_graph`).
+#' Call of a primitive in an [`AnvilGraph`].
 #' @param primitive (`AnvilPrimitive`)\cr
 #'   The function.
 #' @param inputs (`list(GraphValue)`)\cr
@@ -92,6 +91,9 @@ NULL
 #' @return (`PrimitiveCall`)
 #' @export
 PrimitiveCall <- function(primitive, inputs, params, outputs) {
+  if (inherits(primitive, "JitPrimitive")) {
+    primitive <- attr(primitive, "primitive")
+  }
   checkmate::assert_class(primitive, "AnvilPrimitive")
   checkmate::assert_list(inputs, types = c("GraphValue", "GraphLiteral"))
   checkmate::assert_list(params)
@@ -116,7 +118,6 @@ PrimitiveCall <- function(primitive, inputs, params, outputs) {
 #'
 #' @param calls (`list(PrimitiveCall)`)\cr
 #'   The primitive calls that make up the graph.
-#'   This can also be another call into a graph when the primitive is a `p_call`.
 #' @param in_tree (`NULL | Node`)\cr
 #'   The tree of inputs. May contain leaves for both array inputs and static
 #'   (non-array) arguments. Only the array leaves correspond to entries in
@@ -722,9 +723,12 @@ is_graph_box <- function(x) {
 
 #' @title Add a Primitive Call to a Graph Descriptor
 #' @description
-#' Add a primitive call to a graph descriptor.
-#' @param prim ([`AnvilPrimitive`])\cr
-#'   The primitive to add.
+#' Add a primitive call to a graph descriptor. Inside a primitive body created
+#' with [`new_primitive()`], pass the lexically-bound `self` as the primitive
+#' argument.
+#' @param primitive ([`AnvilPrimitive`] | `JitPrimitive`)\cr
+#'   The primitive the call is for. A `JitPrimitive` is accepted and unwrapped
+#'   to its underlying `AnvilPrimitive` metadata.
 #' @param args (`list` of [`GraphNode`])\cr
 #'   The arguments to the primitive.
 #' @param params (`list`)\cr
@@ -737,8 +741,12 @@ is_graph_box <- function(x) {
 #'   Uses the [current descriptor][.current_descriptor] if `NULL`.
 #' @return (`list` of [`GraphBox`])
 #' @export
-graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL) {
+graph_desc_add <- function(primitive, args, params = list(), infer_fn, desc = NULL) {
   desc <- desc %||% .current_descriptor(silent = TRUE)
+  if (inherits(primitive, "JitPrimitive")) {
+    primitive <- attr(primitive, "primitive")
+  }
+  checkmate::assert_class(primitive, "AnvilPrimitive")
 
   boxes_in <- lapply(args, maybe_box_arrayish)
   gnodes_in <- unname(lapply(boxes_in, \(box) box$gnode))
@@ -748,19 +756,19 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL) {
       rlang::exec(infer_fn, !!!c(avals_in, params))
     },
     error = function(e) {
-      e$call <- print_call_repr(prim)
+      e$call <- print_call_repr(primitive)
       e <- stablehlo::to_one_based(e)
       rlang::cnd_signal(e)
     }
   )
   gvals_out <- lapply(ats_out, GraphValue)
-  call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)
+  call <- PrimitiveCall(primitive, gnodes_in, params, gvals_out)
   desc$calls <- c(desc$calls, list(call))
   lapply(gvals_out, register_gval, desc = desc)
 }
 
 print_call_repr <- function(prim) {
-  rlang::exec(call, paste0("nvl_", prim$name))
+  rlang::exec(call, paste0("prim_", prim$name))
 }
 
 

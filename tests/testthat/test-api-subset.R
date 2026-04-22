@@ -207,6 +207,41 @@ describe("nv_subset and nv_subset_assign", {
     )
   })
 
+  it("errors on too many subset specs (trailing empties)", {
+    x <- nv_array(1:10) # 1-D
+    expect_error(x[1:5, ], "Too many subset specifications")
+    expect_error(x[1:5, , ], "Too many subset specifications")
+    expect_error(x[1:5, 1:3, ], "Too many subset specifications")
+
+    y <- nv_array(matrix(1:6, nrow = 2)) # 2-D
+    expect_error(y[1, 1, ], "Too many subset specifications")
+    expect_error(y[1, 1, , ], "Too many subset specifications")
+  })
+
+  it("subset_assign errors on too many subset specs (trailing empties)", {
+    x <- nv_array(1:10) # 1-D
+    expect_error(
+      {
+        x[1:5, ] <- 0L
+      },
+      "Too many subset specifications"
+    )
+    expect_error(
+      {
+        x[1:5, , ] <- 0L
+      },
+      "Too many subset specifications"
+    )
+
+    y <- nv_array(matrix(1:6, nrow = 2)) # 2-D
+    expect_error(
+      {
+        y[1, 1, ] <- 0L
+      },
+      "Too many subset specifications"
+    )
+  })
+
   it("subset_assign broadcasts scalar rhs", {
     expect_jit_equal(
       {

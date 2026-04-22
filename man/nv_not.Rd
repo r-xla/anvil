@@ -24,5 +24,5 @@ x <- nv_array(c(TRUE, FALSE, TRUE))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_not]{nvl_not()}} for the underlying primitive.
+\code{\link[=prim_not]{prim_not()}} for the underlying primitive.
 }

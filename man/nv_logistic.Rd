@@ -24,5 +24,5 @@ nv_logistic(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_logistic]{nvl_logistic()}} for the underlying primitive.
+\code{\link[=prim_logistic]{prim_logistic()}} for the underlying primitive.
 }

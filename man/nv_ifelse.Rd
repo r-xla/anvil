@@ -32,5 +32,5 @@ nv_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_ifelse]{nvl_ifelse()}} for the underlying primitive.
+\code{\link[=prim_ifelse]{prim_ifelse()}} for the underlying primitive.
 }

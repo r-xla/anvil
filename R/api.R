@@ -23,7 +23,7 @@
 #' @template param_device
 #' @return [`arrayish`]\cr
 #'   Has the given `shape` and `dtype`.
-#' @seealso [nvl_fill()] for the underlying primitive.
+#' @seealso [prim_fill()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' nv_fill(0, shape = c(2, 3))
 #' x <- nv_array(matrix(1:6, nrow = 2))
@@ -35,7 +35,7 @@ nv_fill <- function(value, shape, dtype = NULL, ambiguous = FALSE, device = NULL
   } else {
     as_dtype(dtype)
   }
-  nvl_fill(value, shape, dtype, ambiguous, device = device)
+  prim_fill(value, shape, dtype, ambiguous, device = device)
 }
 
 ## Conversion ------------------------------------------------------------------
@@ -132,7 +132,7 @@ nv_promote_to_common <- function(...) {
     if (cdt == dtype(args[[i]])) {
       args[[i]]
     } else {
-      nvl_convert(args[[i]], dtype = cdt, ambiguous = ambiguous)
+      prim_convert(args[[i]], dtype = cdt, ambiguous = ambiguous)
     }
   })
   return(out)
@@ -173,7 +173,7 @@ nv_broadcast_arrays <- function(...) {
 #' @return [`arrayish`]\cr
 #'   Has the given `shape` and the same data type as `operand`.
 #' @seealso [nv_broadcast_arrays()], [nv_broadcast_scalars()],
-#'   [nvl_broadcast_in_dim()] for the underlying primitive.
+#'   [prim_broadcast_in_dim()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' nv_broadcast_to(x, shape = c(2, 3))
@@ -183,7 +183,7 @@ nv_broadcast_to <- function(operand, shape) {
   shape_op <- shape(operand)
   if (!identical(shape_op, shape)) {
     broadcast_dimensions <- make_broadcast_dimensions(shape_op, shape)
-    nvl_broadcast_in_dim(operand, shape, broadcast_dimensions)
+    prim_broadcast_in_dim(operand, shape, broadcast_dimensions)
   } else {
     operand
   }
@@ -197,7 +197,7 @@ nv_broadcast_to <- function(operand, shape) {
 #' @template param_dtype
 #' @return [`arrayish`]\cr
 #'   Has the given `dtype` and the same shape as `operand`.
-#' @seealso [nvl_convert()] for the underlying primitive.
+#' @seealso [prim_convert()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1L, 2L, 3L))
 #' nv_convert(x, dtype = "f32")
@@ -205,7 +205,7 @@ nv_broadcast_to <- function(operand, shape) {
 nv_convert <- function(operand, dtype) {
   operand <- as_anvil_array(operand)
   if (dtype(operand) != as_dtype(dtype)) {
-    nvl_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
+    prim_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
   } else {
     operand
   }
@@ -216,7 +216,7 @@ nv_convert <- function(operand, dtype) {
 nv_transpose <- function(x, permutation = NULL) {
   x <- as_anvil_array(x)
   permutation <- permutation %||% rev(seq_len(ndims(x)))
-  nvl_transpose(x, permutation)
+  prim_transpose(x, permutation)
 }
 
 
@@ -231,7 +231,7 @@ nv_transpose <- function(x, permutation = NULL) {
 #'   Target shape. Must have the same number of elements as `operand`.
 #' @return [`arrayish`]\cr
 #'   Has the given `shape` and the same data type as `operand`.
-#' @seealso [nvl_reshape()] for the underlying primitive.
+#' @seealso [prim_reshape()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1:6)
 #' nv_reshape(x, c(2, 3))
@@ -239,7 +239,7 @@ nv_transpose <- function(x, permutation = NULL) {
 nv_reshape <- function(operand, shape) {
   operand <- as_anvil_array(operand)
   if (!identical(shape(operand), shape)) {
-    nvl_reshape(operand, shape)
+    prim_reshape(operand, shape)
   } else {
     operand
   }
@@ -257,7 +257,7 @@ nv_reshape <- function(operand, shape) {
 #' @return [`arrayish`]\cr
 #'   Has the common data type and a shape matching the inputs in all
 #'   dimensions except `dimension`, which is the sum of input sizes.
-#' @seealso [nvl_concatenate()] for the underlying primitive.
+#' @seealso [prim_concatenate()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(4, 5, 6))
@@ -298,7 +298,7 @@ nv_concatenate <- function(..., dimension = NULL) {
       arg
     }
   })
-  rlang::exec(nvl_concatenate, !!!args, dimension = dimension)
+  rlang::exec(prim_concatenate, !!!args, dimension = dimension)
 }
 
 #' @title Static Slice
@@ -314,12 +314,12 @@ nv_concatenate <- function(..., dimension = NULL) {
 #'   Step sizes, one per dimension. A stride of 1 selects every element.
 #' @return [`arrayish`]\cr
 #'   Has the same data type as `operand`.
-#' @seealso [nv_subset()], [nvl_static_slice()] for the underlying primitive.
+#' @seealso [nv_subset()], [prim_static_slice()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1:10)
 #' nv_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 #' @export
-nv_static_slice <- nvl_static_slice
+nv_static_slice <- prim_static_slice
 
 #' @title Print Array
 #' @description
@@ -328,12 +328,12 @@ nv_static_slice <- nvl_static_slice
 #' @template param_operand
 #' @return [`arrayish`]\cr
 #'   Returns `operand` unchanged.
-#' @seealso [nvl_print()] for the underlying primitive.
+#' @seealso [prim_print()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' nv_print(x)
 #' @export
-nv_print <- nvl_print
+nv_print <- prim_print
 
 #' @title Conditional Element Selection
 #' @description
@@ -348,12 +348,12 @@ nv_print <- nvl_print
 #'   Must have the same shape and data type as `true_value`.
 #' @return [`arrayish`]\cr
 #'   Has the same shape and data type as `true_value`.
-#' @seealso [nvl_ifelse()] for the underlying primitive.
+#' @seealso [prim_ifelse()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' pred <- nv_array(c(TRUE, FALSE, TRUE))
 #' nv_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 #' @export
-nv_ifelse <- nvl_ifelse
+nv_ifelse <- prim_ifelse
 
 ## Binary ops ------------------------------------------------------------------
 
@@ -370,260 +370,260 @@ make_do_binary <- function(f) {
 #' Adds two arrays element-wise. You can also use the `+` operator.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_add()] for the underlying primitive.
+#' @seealso [prim_add()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(4, 5, 6))
 #' x + y
 #' @export
-nv_add <- make_do_binary(nvl_add)
+nv_add <- make_do_binary(prim_add)
 
 #' @title Multiplication
 #' @description
 #' Multiplies two arrays element-wise. You can also use the `*` operator.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_mul()] for the underlying primitive.
+#' @seealso [prim_mul()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(4, 5, 6))
 #' x * y
 #' @export
-nv_mul <- make_do_binary(nvl_mul)
+nv_mul <- make_do_binary(prim_mul)
 
 #' @title Subtraction
 #' @description
 #' Subtracts two arrays element-wise. You can also use the `-` operator.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_sub()] for the underlying primitive.
+#' @seealso [prim_sub()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(4, 5, 6))
 #' y <- nv_array(c(1, 2, 3))
 #' x - y
 #' @export
-nv_sub <- make_do_binary(nvl_sub)
+nv_sub <- make_do_binary(prim_sub)
 
 #' @title Division
 #' @description
 #' Divides two arrays element-wise. You can also use the `/` operator.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_div()] for the underlying primitive.
+#' @seealso [prim_div()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(10, 20, 30))
 #' y <- nv_array(c(2, 5, 10))
 #' x / y
 #' @export
-nv_div <- make_do_binary(nvl_div)
+nv_div <- make_do_binary(prim_div)
 
 #' @title Power
 #' @description
 #' Raises `lhs` to the power of `rhs` element-wise. You can also use the `^` operator.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_pow()] for the underlying primitive.
+#' @seealso [prim_pow()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(2, 3, 4))
 #' y <- nv_array(c(3, 2, 1))
 #' x ^ y
 #' @export
-nv_pow <- make_do_binary(nvl_pow)
+nv_pow <- make_do_binary(prim_pow)
 
 #' @title Equal
 #' @description
 #' Element-wise equality comparison. You can also use the `==` operator.
 #' @template params_lhs_rhs
 #' @template return_compare
-#' @seealso [nvl_eq()] for the underlying primitive.
+#' @seealso [prim_eq()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(1, 3, 2))
 #' x == y
 #' @export
-nv_eq <- make_do_binary(nvl_eq)
+nv_eq <- make_do_binary(prim_eq)
 
 #' @title Not Equal
 #' @description
 #' Element-wise inequality comparison. You can also use the `!=` operator.
 #' @template params_lhs_rhs
 #' @template return_compare
-#' @seealso [nvl_ne()] for the underlying primitive.
+#' @seealso [prim_ne()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(1, 3, 2))
 #' x != y
 #' @export
-nv_ne <- make_do_binary(nvl_ne)
+nv_ne <- make_do_binary(prim_ne)
 
 #' @title Greater Than
 #' @description
 #' Element-wise greater than comparison. You can also use the `>` operator.
 #' @template params_lhs_rhs
 #' @template return_compare
-#' @seealso [nvl_gt()] for the underlying primitive.
+#' @seealso [prim_gt()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(3, 2, 1))
 #' x > y
 #' @export
-nv_gt <- make_do_binary(nvl_gt)
+nv_gt <- make_do_binary(prim_gt)
 
 #' @title Greater Than or Equal
 #' @description
 #' Element-wise greater than or equal comparison. You can also use the `>=` operator.
 #' @template params_lhs_rhs
 #' @template return_compare
-#' @seealso [nvl_ge()] for the underlying primitive.
+#' @seealso [prim_ge()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(3, 2, 1))
 #' x >= y
 #' @export
-nv_ge <- make_do_binary(nvl_ge)
+nv_ge <- make_do_binary(prim_ge)
 
 #' @title Less Than
 #' @description
 #' Element-wise less than comparison. You can also use the `<` operator.
 #' @template params_lhs_rhs
 #' @template return_compare
-#' @seealso [nvl_lt()] for the underlying primitive.
+#' @seealso [prim_lt()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(3, 2, 1))
 #' x < y
 #' @export
-nv_lt <- make_do_binary(nvl_lt)
+nv_lt <- make_do_binary(prim_lt)
 
 #' @title Less Than or Equal
 #' @description
 #' Element-wise less than or equal comparison. You can also use the `<=` operator.
 #' @template params_lhs_rhs
 #' @template return_compare
-#' @seealso [nvl_le()] for the underlying primitive.
+#' @seealso [prim_le()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(3, 2, 1))
 #' x <= y
 #' @export
-nv_le <- make_do_binary(nvl_le)
+nv_le <- make_do_binary(prim_le)
 
 #' @title Maximum
 #' @description
 #' Element-wise maximum of two arrays.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_max()] for the underlying primitive.
+#' @seealso [prim_max()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 5, 3))
 #' y <- nv_array(c(4, 2, 6))
 #' nv_max(x, y)
 #' @export
-nv_max <- make_do_binary(nvl_max)
+nv_max <- make_do_binary(prim_max)
 
 #' @title Minimum
 #' @description
 #' Element-wise minimum of two arrays.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_min()] for the underlying primitive.
+#' @seealso [prim_min()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 5, 3))
 #' y <- nv_array(c(4, 2, 6))
 #' nv_min(x, y)
 #' @export
-nv_min <- make_do_binary(nvl_min)
+nv_min <- make_do_binary(prim_min)
 
 #' @title Remainder
 #' @description
 #' Element-wise remainder of division. You can also use the `%%` operator.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_remainder()] for the underlying primitive.
+#' @seealso [prim_remainder()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(7, 8, 9))
 #' y <- nv_array(c(3, 3, 4))
 #' x %% y
 #' @export
-nv_remainder <- make_do_binary(nvl_remainder)
+nv_remainder <- make_do_binary(prim_remainder)
 
 #' @title Logical And
 #' @description
 #' Element-wise logical AND. You can also use the `&` operator.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_and()] for the underlying primitive.
+#' @seealso [prim_and()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(TRUE, FALSE, TRUE))
 #' y <- nv_array(c(TRUE, TRUE, FALSE))
 #' x & y
 #' @export
-nv_and <- make_do_binary(nvl_and)
+nv_and <- make_do_binary(prim_and)
 
 #' @title Logical Or
 #' @description
 #' Element-wise logical OR. You can also use the `|` operator.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_or()] for the underlying primitive.
+#' @seealso [prim_or()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(TRUE, FALSE, TRUE))
 #' y <- nv_array(c(TRUE, TRUE, FALSE))
 #' x | y
 #' @export
-nv_or <- make_do_binary(nvl_or)
+nv_or <- make_do_binary(prim_or)
 
 #' @title Logical Xor
 #' @description
 #' Element-wise logical XOR.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_xor()] for the underlying primitive.
+#' @seealso [prim_xor()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(TRUE, FALSE, TRUE))
 #' y <- nv_array(c(TRUE, TRUE, FALSE))
 #' nv_xor(x, y)
 #' @export
-nv_xor <- make_do_binary(nvl_xor)
+nv_xor <- make_do_binary(prim_xor)
 
 #' @title Shift Left
 #' @description
 #' Element-wise left bit shift.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_shift_left()] for the underlying primitive.
+#' @seealso [prim_shift_left()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1L, 2L, 4L))
 #' y <- nv_array(c(1L, 2L, 1L))
 #' nv_shift_left(x, y)
 #' @export
-nv_shift_left <- make_do_binary(nvl_shift_left)
+nv_shift_left <- make_do_binary(prim_shift_left)
 
 #' @title Logical Shift Right
 #' @description
 #' Element-wise logical right bit shift.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_shift_right_logical()] for the underlying primitive.
+#' @seealso [prim_shift_right_logical()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(8L, 16L, 32L))
 #' y <- nv_array(c(1L, 2L, 3L))
 #' nv_shift_right_logical(x, y)
 #' @export
-nv_shift_right_logical <- make_do_binary(nvl_shift_right_logical)
+nv_shift_right_logical <- make_do_binary(prim_shift_right_logical)
 
 #' @title Arithmetic Shift Right
 #' @description
 #' Element-wise arithmetic right bit shift.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_shift_right_arithmetic()] for the underlying primitive.
+#' @seealso [prim_shift_right_arithmetic()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(8L, -16L, 32L))
 #' y <- nv_array(c(1L, 2L, 3L))
 #' nv_shift_right_arithmetic(x, y)
 #' @export
-nv_shift_right_arithmetic <- make_do_binary(nvl_shift_right_arithmetic)
+nv_shift_right_arithmetic <- make_do_binary(prim_shift_right_arithmetic)
 
 #' @title Arctangent 2
 #' @description
@@ -631,13 +631,13 @@ nv_shift_right_arithmetic <- make_do_binary(nvl_shift_right_arithmetic)
 #' x-axis and the point `(rhs, lhs)`.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [nvl_atan2()] for the underlying primitive.
+#' @seealso [prim_atan2()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' y <- nv_array(c(1, 0, -1))
 #' x <- nv_array(c(0, 1, 0))
 #' nv_atan2(y, x)
 #' @export
-nv_atan2 <- make_do_binary(nvl_atan2)
+nv_atan2 <- make_do_binary(prim_atan2)
 
 
 #' @title Bitcast Conversion
@@ -651,13 +651,13 @@ nv_atan2 <- make_do_binary(nvl_atan2)
 #'   Target data type.
 #' @return [`arrayish`]\cr
 #'   Has the given `dtype`.
-#' @seealso [nvl_bitcast_convert()] for the underlying primitive, [nv_convert()]
+#' @seealso [prim_bitcast_convert()] for the underlying primitive, [nv_convert()]
 #'   for value-preserving type conversion.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1L)
-#' nvl_bitcast_convert(x, dtype = "i8")
+#' prim_bitcast_convert(x, dtype = "i8")
 #' @export
-nv_bitcast_convert <- nvl_bitcast_convert
+nv_bitcast_convert <- prim_bitcast_convert
 
 ## Unary ops ------------------------------------------------------------------
 
@@ -666,240 +666,240 @@ nv_bitcast_convert <- nvl_bitcast_convert
 #' Negates an array element-wise. You can also use the unary `-` operator.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_negate()] for the underlying primitive.
+#' @seealso [prim_negate()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, -2, 3))
 #' -x
 #' @export
-nv_negate <- nvl_negate
+nv_negate <- prim_negate
 
 #' @title Logical Not
 #' @description
 #' Element-wise logical NOT. You can also use the `!` operator.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_not()] for the underlying primitive.
+#' @seealso [prim_not()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(TRUE, FALSE, TRUE))
 #' !x
 #' @export
-nv_not <- nvl_not
+nv_not <- prim_not
 
 #' @title Absolute Value
 #' @description
 #' Element-wise absolute value. You can also use `abs()`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_abs()] for the underlying primitive.
+#' @seealso [prim_abs()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-1, 2, -3))
 #' abs(x)
 #' @export
-nv_abs <- nvl_abs
+nv_abs <- prim_abs
 
 #' @title Square Root
 #' @description
 #' Element-wise square root. You can also use `sqrt()`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_sqrt()] for the underlying primitive.
+#' @seealso [prim_sqrt()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 4, 9))
 #' sqrt(x)
 #' @export
-nv_sqrt <- nvl_sqrt
+nv_sqrt <- prim_sqrt
 
 #' @title Reciprocal Square Root
 #' @description
 #' Element-wise reciprocal square root, i.e. `1 / sqrt(x)`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_rsqrt()] for the underlying primitive.
+#' @seealso [prim_rsqrt()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 4, 9))
 #' nv_rsqrt(x)
 #' @export
-nv_rsqrt <- nvl_rsqrt
+nv_rsqrt <- prim_rsqrt
 
 #' @title Natural Logarithm
 #' @description
 #' Element-wise natural logarithm. You can also use `log()`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_log()] for the underlying primitive.
+#' @seealso [prim_log()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2.718, 7.389))
 #' log(x)
 #' @export
-nv_log <- nvl_log
+nv_log <- prim_log
 
 #' @title Hyperbolic Tangent
 #' @description
 #' Element-wise hyperbolic tangent. You can also use `tanh()`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_tanh()] for the underlying primitive.
+#' @seealso [prim_tanh()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-1, 0, 1))
 #' tanh(x)
 #' @export
-nv_tanh <- nvl_tanh
+nv_tanh <- prim_tanh
 
 #' @title Tangent
 #' @description
 #' Element-wise tangent. You can also use `tan()`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_tan()] for the underlying primitive.
+#' @seealso [prim_tan()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, 0.5, 1))
 #' tan(x)
 #' @export
-nv_tan <- nvl_tan
+nv_tan <- prim_tan
 
 #' @title Sine
 #' @description
 #' Element-wise sine. You can also use `sin()`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_sine()] for the underlying primitive.
+#' @seealso [prim_sine()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, pi / 2, pi))
 #' sin(x)
 #' @export
-nv_sine <- nvl_sine
+nv_sine <- prim_sine
 
 #' @title Cosine
 #' @description
 #' Element-wise cosine. You can also use `cos()`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_cosine()] for the underlying primitive.
+#' @seealso [prim_cosine()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, pi / 2, pi))
 #' cos(x)
 #' @export
-nv_cosine <- nvl_cosine
+nv_cosine <- prim_cosine
 
 #' @title Floor
 #' @description
 #' Element-wise floor (round toward negative infinity). You can also use `floor()`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_floor()] for the underlying primitive.
+#' @seealso [prim_floor()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1.2, 2.7, -1.5))
 #' floor(x)
 #' @export
-nv_floor <- nvl_floor
+nv_floor <- prim_floor
 
 #' @title Ceiling
 #' @description
 #' Element-wise ceiling (round toward positive infinity). You can also use `ceiling()`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_ceil()] for the underlying primitive.
+#' @seealso [prim_ceil()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1.2, 2.7, -1.5))
 #' ceiling(x)
 #' @export
-nv_ceil <- nvl_ceil
+nv_ceil <- prim_ceil
 
 #' @title Sign
 #' @description
 #' Element-wise sign function. You can also use `sign()`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_sign()] for the underlying primitive.
+#' @seealso [prim_sign()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-3, 0, 5))
 #' sign(x)
 #' @export
-nv_sign <- nvl_sign
+nv_sign <- prim_sign
 
 #' @title Exponential
 #' @description
 #' Element-wise exponential. You can also use `exp()`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_exp()] for the underlying primitive.
+#' @seealso [prim_exp()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, 1, 2))
 #' exp(x)
 #' @export
-nv_exp <- nvl_exp
+nv_exp <- prim_exp
 
 #' @title Exponential Minus One
 #' @description
 #' Element-wise `exp(x) - 1`, more accurate for small `x`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_expm1()] for the underlying primitive.
+#' @seealso [prim_expm1()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, 0.001, 1))
 #' nv_expm1(x)
 #' @export
-nv_expm1 <- nvl_expm1
+nv_expm1 <- prim_expm1
 
 #' @title Log Plus One
 #' @description
 #' Element-wise `log(1 + x)`, more accurate for small `x`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_log1p()] for the underlying primitive.
+#' @seealso [prim_log1p()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, 0.001, 1))
 #' nv_log1p(x)
 #' @export
-nv_log1p <- nvl_log1p
+nv_log1p <- prim_log1p
 
 #' @title Cube Root
 #' @description
 #' Element-wise cube root.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_cbrt()] for the underlying primitive.
+#' @seealso [prim_cbrt()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 8, 27))
 #' nv_cbrt(x)
 #' @export
-nv_cbrt <- nvl_cbrt
+nv_cbrt <- prim_cbrt
 
 #' @title Logistic (Sigmoid)
 #' @description
 #' Element-wise logistic sigmoid: `1 / (1 + exp(-x))`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_logistic()] for the underlying primitive.
+#' @seealso [prim_logistic()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-2, 0, 2))
 #' nv_logistic(x)
 #' @export
-nv_logistic <- nvl_logistic
+nv_logistic <- prim_logistic
 
 #' @title Is Finite
 #' @description
 #' Element-wise check if values are finite (not `Inf`, `-Inf`, or `NaN`).
 #' @template param_operand
 #' @template return_unary_boolean
-#' @seealso [nvl_is_finite()] for the underlying primitive.
+#' @seealso [prim_is_finite()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, Inf, NaN, -Inf, 0))
 #' nv_is_finite(x)
 #' @export
-nv_is_finite <- nvl_is_finite
+nv_is_finite <- prim_is_finite
 
 #' @title Population Count
 #' @description
 #' Element-wise population count (number of set bits).
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_popcnt()] for the underlying primitive.
+#' @seealso [prim_popcnt()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(7L, 3L, 15L))
 #' nv_popcnt(x)
 #' @export
-nv_popcnt <- nvl_popcnt
+nv_popcnt <- prim_popcnt
 
 #' @title Clamp
 #' @description
@@ -911,7 +911,7 @@ nv_popcnt <- nvl_popcnt
 #'   Minimum and maximum values (scalar or same shape as `operand`).
 #' @template param_operand
 #' @template return_unary
-#' @seealso [nvl_clamp()] for the underlying primitive.
+#' @seealso [prim_clamp()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-1, 0.5, 2))
 #' nv_clamp(nv_scalar(0), x, nv_scalar(1))
@@ -924,7 +924,7 @@ nv_clamp <- function(min_val, operand, max_val) {
   op_dtype <- dtype(operand)
   min_val <- nv_convert(min_val, op_dtype)
   max_val <- nv_convert(max_val, op_dtype)
-  nvl_clamp(min_val, operand, max_val)
+  prim_clamp(min_val, operand, max_val)
 }
 
 #' @title Reverse
@@ -935,12 +935,12 @@ nv_clamp <- function(min_val, operand, max_val) {
 #'   Dimensions to reverse.
 #' @return [`arrayish`]\cr
 #'   Has the same shape and data type as `operand`.
-#' @seealso [nvl_reverse()] for the underlying primitive.
+#' @seealso [prim_reverse()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3, 4, 5))
 #' nv_reverse(x, dims = 1L)
 #' @export
-nv_reverse <- nvl_reverse
+nv_reverse <- prim_reverse
 
 #' @title Iota
 #' @description
@@ -962,13 +962,13 @@ nv_reverse <- nvl_reverse
 #' @template param_device
 #' @return [`arrayish`]\cr
 #'   Has the given `dtype` and `shape`.
-#' @seealso [nv_seq()] for a simpler 1-D sequence, [nvl_iota()] for the underlying primitive.
+#' @seealso [nv_seq()] for a simpler 1-D sequence, [prim_iota()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' nv_iota(dim = 1L, dtype = "i32", shape = 5L)
 #' x <- nv_array(matrix(0L, nrow = 2, ncol = 3))
 #' nv_iota_like(x, dim = 1L)
 #' @export
-nv_iota <- nvl_iota
+nv_iota <- prim_iota
 
 #' @title Sequence
 #' @description
@@ -1038,7 +1038,7 @@ nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE, de
 #'   If `NULL` (default), no interior padding is applied.
 #' @return [`arrayish`]\cr
 #'   Has the same data type as `operand`.
-#' @seealso [nvl_pad()] for the underlying primitive.
+#' @seealso [prim_pad()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
@@ -1051,7 +1051,7 @@ nv_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, 
   if (is.null(interior_padding)) {
     interior_padding <- rep(0L, rank)
   }
-  nvl_pad(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding)
+  prim_pad(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding)
 }
 
 #' @title Round
@@ -1062,12 +1062,12 @@ nv_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, 
 #'   Rounding method.
 #'   Either `"nearest_even"` (default) or `"afz"` (away from zero).
 #' @template return_unary
-#' @seealso [nvl_round()] for the underlying primitive.
+#' @seealso [prim_round()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1.4, 2.5, 3.6))
 #' round(x)
 #' @export
-nv_round <- nvl_round
+nv_round <- prim_round
 
 ## Other operations -----------------------------------------------------------
 
@@ -1083,7 +1083,7 @@ nv_round <- nvl_round
 #'   Arrays with at least 2 dimensions.
 #'   Operands are [promoted to a common data type][nv_promote_to_common()].
 #' @return [`arrayish`]
-#' @seealso [nvl_dot_general()] for the underlying primitive.
+#' @seealso [prim_dot_general()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' y <- nv_array(matrix(1:6, nrow = 3))
@@ -1100,7 +1100,7 @@ nv_matmul <- function(lhs, rhs) {
     cli_abort("rhs of matmul must have at least 2 dimensions")
   }
   nbatch <- ndims(lhs) - 2L
-  nvl_dot_general(
+  prim_dot_general(
     lhs,
     rhs,
     contracting_dims = list(ndims(lhs), ndims(rhs) - 1L),
@@ -1122,14 +1122,14 @@ nv_matmul <- function(lhs, rhs) {
 #'   such that `a = t(U) %*% U`.
 #' @return [`arrayish`]\cr
 #'   Triangular matrix with the same shape and data type as the input.
-#' @seealso [nv_solve()], [nvl_cholesky()]
+#' @seealso [nv_solve()], [prim_cholesky()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
 #' nv_cholesky(a)
 #' @export
 nv_cholesky <- function(a, lower = TRUE) {
   a <- as_anvil_array(a)
-  nvl_cholesky(a, lower = lower)
+  prim_cholesky(a, lower = lower)
 }
 
 #' @title Solve Linear System
@@ -1152,7 +1152,7 @@ nv_cholesky <- function(a, lower = TRUE) {
 #'   dimensions as `a`.
 #' @return [`arrayish`]\cr
 #'   The solution `x` such that `a %*% x = b`.
-#' @seealso [nv_cholesky()], [nvl_cholesky()], [nvl_triangular_solve()]
+#' @seealso [nv_cholesky()], [prim_cholesky()], [prim_triangular_solve()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
 #' b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
@@ -1162,11 +1162,11 @@ nv_solve <- function(a, b) {
   args <- as_anvil_arrays(a, b)
   a <- args[[1L]]
   b <- args[[2L]]
-  L <- nvl_cholesky(a, lower = TRUE)
+  L <- prim_cholesky(a, lower = TRUE)
   # Solve L @ y = b
-  y <- nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+  y <- prim_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
   # Solve L^T @ x = y
-  nvl_triangular_solve(L, y, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
+  prim_triangular_solve(L, y, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
 }
 
 #' @title Diagonal Matrix
@@ -1183,9 +1183,9 @@ nv_diag <- function(operand) {
   operand <- as_anvil_array(operand)
   n <- shape(operand)[1L]
   zeros <- nv_fill_like(operand, 0, shape = c(n, n))
-  idx <- nvl_reshape(nv_iota_like(operand, dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
+  idx <- prim_reshape(nv_iota_like(operand, dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
   indices <- nv_concatenate(idx, idx, dimension = 2L)
-  nvl_scatter(
+  prim_scatter(
     zeros,
     indices,
     operand,
@@ -1230,12 +1230,12 @@ nv_eye <- function(n, dtype = "f32", device = NULL) {
 #' @template param_operand
 #' @template params_reduce
 #' @template return_reduce
-#' @seealso [nvl_reduce_sum()] for the underlying primitive.
+#' @seealso [prim_reduce_sum()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' nv_reduce_sum(x, dims = 1L)
 #' @export
-nv_reduce_sum <- nvl_reduce_sum
+nv_reduce_sum <- prim_reduce_sum
 
 #' @title Mean Reduction
 #' @description
@@ -1263,12 +1263,12 @@ nv_reduce_mean <- function(operand, dims, drop = TRUE) {
 #' @template param_operand
 #' @template params_reduce
 #' @template return_reduce
-#' @seealso [nvl_reduce_prod()] for the underlying primitive.
+#' @seealso [prim_reduce_prod()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' nv_reduce_prod(x, dims = 1L)
 #' @export
-nv_reduce_prod <- nvl_reduce_prod
+nv_reduce_prod <- prim_reduce_prod
 
 #' @title Max Reduction
 #' @description
@@ -1276,12 +1276,12 @@ nv_reduce_prod <- nvl_reduce_prod
 #' @template param_operand
 #' @template params_reduce
 #' @template return_reduce
-#' @seealso [nvl_reduce_max()] for the underlying primitive.
+#' @seealso [prim_reduce_max()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' nv_reduce_max(x, dims = 1L)
 #' @export
-nv_reduce_max <- nvl_reduce_max
+nv_reduce_max <- prim_reduce_max
 
 #' @title Min Reduction
 #' @description
@@ -1289,12 +1289,12 @@ nv_reduce_max <- nvl_reduce_max
 #' @template param_operand
 #' @template params_reduce
 #' @template return_reduce
-#' @seealso [nvl_reduce_min()] for the underlying primitive.
+#' @seealso [prim_reduce_min()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' nv_reduce_min(x, dims = 1L)
 #' @export
-nv_reduce_min <- nvl_reduce_min
+nv_reduce_min <- prim_reduce_min
 
 #' @title Any Reduction
 #' @description
@@ -1303,12 +1303,12 @@ nv_reduce_min <- nvl_reduce_min
 #' @template param_operand
 #' @template params_reduce
 #' @template return_reduce_boolean
-#' @seealso [nvl_reduce_any()] for the underlying primitive.
+#' @seealso [prim_reduce_any()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
 #' nv_reduce_any(x, dims = 1L)
 #' @export
-nv_reduce_any <- nvl_reduce_any
+nv_reduce_any <- prim_reduce_any
 
 #' @title All Reduction
 #' @description
@@ -1317,12 +1317,12 @@ nv_reduce_any <- nvl_reduce_any
 #' @template param_operand
 #' @template params_reduce
 #' @template return_reduce_boolean
-#' @seealso [nvl_reduce_all()] for the underlying primitive.
+#' @seealso [prim_reduce_all()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
 #' nv_reduce_all(x, dims = 1L)
 #' @export
-nv_reduce_all <- nvl_reduce_all
+nv_reduce_all <- prim_reduce_all
 # Higher order primitives
 
 #' @title Conditional Branching
@@ -1338,12 +1338,12 @@ nv_reduce_all <- nvl_reduce_all
 #'   Zero-argument function for the false branch.
 #'   Must return outputs with the same shapes as the true branch.
 #' @return Result of the executed branch.
-#' @seealso [nvl_if()] for the underlying primitive, [nv_ifelse()] for
+#' @seealso [prim_if()] for the underlying primitive, [nv_ifelse()] for
 #'   element-wise selection.
 #' @examplesIf pjrt::plugins_downloaded()
 #' nv_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 #' @export
-nv_if <- nvl_if
+nv_if <- prim_if
 
 #' @title While Loop
 #' @description
@@ -1357,7 +1357,7 @@ nv_if <- nvl_if
 #'   Body function returning the updated state as a named list
 #'   with the same structure as `init`.
 #' @return Final state after the loop terminates (same structure as `init`).
-#' @seealso [nvl_while()] for the underlying primitive.
+#' @seealso [prim_while()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' nv_while(
 #'   init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
@@ -1368,7 +1368,7 @@ nv_if <- nvl_if
 #'   )
 #' )
 #' @export
-nv_while <- nvl_while
+nv_while <- prim_while
 
 ## Additional math functions ---------------------------------------------------
 
@@ -1567,7 +1567,7 @@ nv_outer <- function(x, y) {
   x_exp <- nv_unsqueeze(x, dim = 2L)
   y_exp <- nv_unsqueeze(y, dim = 1L)
   bcast <- nv_broadcast_arrays(x_exp, y_exp)
-  nvl_mul(bcast[[1L]], bcast[[2L]])
+  prim_mul(bcast[[1L]], bcast[[2L]])
 }
 
 #' @title Extract Diagonal
@@ -1588,9 +1588,9 @@ nv_extract_diag <- function(operand) {
   }
   shp <- shape(operand)
   n <- min(shp)
-  idx <- nvl_reshape(nv_iota_like(operand, dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
+  idx <- prim_reshape(nv_iota_like(operand, dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
   indices <- nv_concatenate(idx, idx, dimension = 2L)
-  nvl_gather(
+  prim_gather(
     operand,
     start_indices = indices,
     offset_dims = integer(0),

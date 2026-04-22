@@ -24,5 +24,5 @@ tanh(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_tanh]{nvl_tanh()}} for the underlying primitive.
+\code{\link[=prim_tanh]{prim_tanh()}} for the underlying primitive.
 }

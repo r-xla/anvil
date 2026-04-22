@@ -3,7 +3,7 @@
 #' @include primitive.R
 #' @include jit.R
 
-make_binary_op <- function(prim, stablehlo_infer) {
+make_binary_op <- function(stablehlo_infer) {
   force(stablehlo_infer)
   infer_fn <- function(lhs, rhs) {
     both_ambiguous <- lhs$ambiguous && rhs$ambiguous
@@ -12,15 +12,12 @@ make_binary_op <- function(prim, stablehlo_infer) {
     out$ambiguous <- both_ambiguous
     list(out)
   }
-  jit(
-    function(lhs, rhs) {
-      graph_desc_add(prim, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
-    },
-    backend = "auto"
-  )
+  function(lhs, rhs) {
+    graph_desc_add(self, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
+  }
 }
 
-make_unary_op <- function(prim, stablehlo_infer) {
+make_unary_op <- function(stablehlo_infer) {
   force(stablehlo_infer)
   infer_fn <- function(operand) {
     out <- stablehlo_infer(at2vt(operand))[[1L]]
@@ -28,12 +25,9 @@ make_unary_op <- function(prim, stablehlo_infer) {
     out$ambiguous <- operand$ambiguous
     list(out)
   }
-  jit(
-    function(operand) {
-      graph_desc_add(prim, list(operand = operand), infer_fn = infer_fn)[[1L]]
-    },
-    backend = "auto"
-  )
+  function(operand) {
+    graph_desc_add(self, list(operand = operand), infer_fn = infer_fn)[[1L]]
+  }
 }
 
 
@@ -67,12 +61,11 @@ infer_reduce_boolean <- function(operand, dims, drop) {
   ))
 }
 
-p_fill <- AnvilPrimitive("fill")
 #' @title Primitive Fill
 #' @description
 #' Creates an array of a given shape and data type, filled with a scalar value.
 #' The advantage of using this function instead of e.g. doing
-#' `nv_array(1, shape = c(100, 100))` is that lowering of [nvl_fill()] is
+#' `nv_array(1, shape = c(100, 100))` is that lowering of [prim_fill()] is
 #' efficiently represented in the compiled program, while the latter uses
 #' 100 * 100 * 4 bytes of memory.
 #' @param value (`numeric(1)`)\cr
@@ -90,15 +83,16 @@ p_fill <- AnvilPrimitive("fill")
 #' Lowers to [stablehlo::hlo_tensor()].
 #' @seealso [nv_fill()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' nvl_fill(3.14, shape = c(2, 3), dtype = "f32")
+#' prim_fill(3.14, shape = c(2, 3), dtype = "f32")
 #' @export
-nvl_fill <- jit(
+prim_fill <- new_primitive(
+  "fill",
   function(value, shape, dtype, ambiguous = FALSE, device = NULL) {
     infer_fill <- function(value, shape, dtype, ambiguous) {
       list(AbstractArray(dtype = as_dtype(dtype), shape = shape, ambiguous = ambiguous))
     }
     graph_desc_add(
-      p_fill,
+      self,
       list(),
       params = list(value = value, dtype = dtype, shape = shape, ambiguous = ambiguous),
       infer_fn = infer_fill
@@ -108,7 +102,6 @@ nvl_fill <- jit(
   device = device_arg("device")
 )
 
-p_add <- AnvilPrimitive("add")
 #' @title Primitive Addition
 #' @description
 #' Adds two arrays element-wise.
@@ -122,11 +115,10 @@ p_add <- AnvilPrimitive("add")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(4, 5, 6))
-#' nvl_add(x, y)
+#' prim_add(x, y)
 #' @export
-nvl_add <- make_binary_op(p_add, stablehlo::infer_types_add)
+prim_add <- new_primitive("add", make_binary_op(stablehlo::infer_types_add))
 
-p_mul <- AnvilPrimitive("mul")
 #' @title Primitive Multiplication
 #' @description
 #' Multiplies two arrays element-wise.
@@ -140,11 +132,10 @@ p_mul <- AnvilPrimitive("mul")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(4, 5, 6))
-#' nvl_mul(x, y)
+#' prim_mul(x, y)
 #' @export
-nvl_mul <- make_binary_op(p_mul, stablehlo::infer_types_multiply)
+prim_mul <- new_primitive("mul", make_binary_op(stablehlo::infer_types_multiply))
 
-p_sub <- AnvilPrimitive("sub")
 #' @title Primitive Subtraction
 #' @description
 #' Subtracts two arrays element-wise.
@@ -158,11 +149,10 @@ p_sub <- AnvilPrimitive("sub")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(4, 5, 6))
-#' nvl_sub(x, y)
+#' prim_sub(x, y)
 #' @export
-nvl_sub <- make_binary_op(p_sub, stablehlo::infer_types_subtract)
+prim_sub <- new_primitive("sub", make_binary_op(stablehlo::infer_types_subtract))
 
-p_negate <- AnvilPrimitive("negate")
 #' @title Primitive Negation
 #' @description
 #' Negates an array element-wise.
@@ -176,17 +166,16 @@ p_negate <- AnvilPrimitive("negate")
 #' @seealso [nv_negate()], unary `-`
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, -2, 3))
-#' nvl_negate(x)
+#' prim_negate(x)
 #' @export
-nvl_negate <- make_unary_op(p_negate, stablehlo::infer_types_negate)
+prim_negate <- new_primitive("negate", make_unary_op(stablehlo::infer_types_negate))
 
-p_div <- AnvilPrimitive("divide")
 #' @title Primitive Division
 #' @description
 #' Divides two arrays element-wise.
 #' @template params_prim_lhs_rhs_numeric
 #' @template return_prim_binary
-#' @templateVar primitive_id div
+#' @templateVar primitive_id divide
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_divide()].
@@ -194,17 +183,16 @@ p_div <- AnvilPrimitive("divide")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(10, 20, 30))
 #' y <- nv_array(c(2, 5, 10))
-#' nvl_div(x, y)
+#' prim_div(x, y)
 #' @export
-nvl_div <- make_binary_op(p_div, stablehlo::infer_types_divide)
+prim_div <- new_primitive("divide", make_binary_op(stablehlo::infer_types_divide))
 
-p_pow <- AnvilPrimitive("power")
 #' @title Primitive Power
 #' @description
 #' Raises lhs to the power of rhs element-wise.
 #' @template params_prim_lhs_rhs_numeric
 #' @template return_prim_binary
-#' @templateVar primitive_id pow
+#' @templateVar primitive_id power
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_power()].
@@ -212,11 +200,10 @@ p_pow <- AnvilPrimitive("power")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(2, 3, 4))
 #' y <- nv_array(c(3, 2, 1))
-#' nvl_pow(x, y)
+#' prim_pow(x, y)
 #' @export
-nvl_pow <- make_binary_op(p_pow, stablehlo::infer_types_power)
+prim_pow <- new_primitive("power", make_binary_op(stablehlo::infer_types_power))
 
-p_broadcast_in_dim <- AnvilPrimitive("broadcast_in_dim")
 #' @title Primitive Broadcast
 #' @description
 #' Broadcasts an array to a new shape by replicating the data along new or size-1 dimensions.
@@ -238,9 +225,10 @@ p_broadcast_in_dim <- AnvilPrimitive("broadcast_in_dim")
 #' @seealso [nv_broadcast_to()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
-#' nvl_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
+#' prim_broadcast_in_dim(x, shape = c(2, 3), broadcast_dimensions = 2L)
 #' @export
-nvl_broadcast_in_dim <- jit(
+prim_broadcast_in_dim <- new_primitive(
+  "broadcast_in_dim",
   function(operand, shape, broadcast_dimensions) {
     infer_fn <- function(operand, shape, broadcast_dimensions) {
       bd_attr <- r_to_constant(
@@ -258,7 +246,7 @@ nvl_broadcast_in_dim <- jit(
       list(out)
     }
     graph_desc_add(
-      p_broadcast_in_dim,
+      self,
       list(operand = operand),
       params = list(
         shape = shape,
@@ -267,11 +255,9 @@ nvl_broadcast_in_dim <- jit(
       infer_fn = infer_fn
     )[[1L]]
   },
-  static = 2:3,
-  backend = "auto"
+  static = 2:3
 )
 
-p_dot_general <- AnvilPrimitive("dot_general")
 #' @title Primitive Dot General
 #' @description
 #' General dot product of two arrays, supporting contraction over arbitrary
@@ -294,12 +280,13 @@ p_dot_general <- AnvilPrimitive("dot_general")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' y <- nv_array(matrix(1:6, nrow = 3))
-#' nvl_dot_general(x, y,
+#' prim_dot_general(x, y,
 #'   contracting_dims = list(2L, 1L),
 #'   batching_dims = list(integer(0), integer(0))
 #' )
 #' @export
-nvl_dot_general <- jit(
+prim_dot_general <- new_primitive(
+  "dot_general",
   function(lhs, rhs, contracting_dims, batching_dims) {
     infer_fn <- function(lhs, rhs, contracting_dims, batching_dims) {
       ddn <- stablehlo::DotDimensionNumbers(
@@ -310,17 +297,15 @@ nvl_dot_general <- jit(
       list(vt2at(out))
     }
     graph_desc_add(
-      p_dot_general,
+      self,
       list(lhs = lhs, rhs = rhs),
       list(contracting_dims = contracting_dims, batching_dims = batching_dims),
       infer_fn = infer_fn
     )[[1L]]
   },
-  static = 3:4,
-  backend = "auto"
+  static = 3:4
 )
 
-p_transpose <- AnvilPrimitive("transpose")
 #' @title Primitive Transpose
 #' @description
 #' Permutes the dimensions of an array.
@@ -338,9 +323,10 @@ p_transpose <- AnvilPrimitive("transpose")
 #' @seealso [nv_transpose()], [t()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
-#' nvl_transpose(x, permutation = c(2L, 1L))
+#' prim_transpose(x, permutation = c(2L, 1L))
 #' @export
-nvl_transpose <- jit(
+prim_transpose <- new_primitive(
+  "transpose",
   function(operand, permutation) {
     infer_fn <- function(operand, permutation) {
       perm_attr <- r_to_constant(
@@ -354,17 +340,15 @@ nvl_transpose <- jit(
       list(out)
     }
     graph_desc_add(
-      p_transpose,
+      self,
       list(operand = operand),
       list(permutation = permutation),
       infer_fn = infer_fn
     )[[1L]]
   },
-  static = 2L,
-  backend = "auto"
+  static = 2L
 )
 
-p_reshape <- AnvilPrimitive("reshape")
 #' @title Primitive Reshape
 #' @description
 #' Reshapes an array to a new shape without changing the underlying data.
@@ -382,9 +366,10 @@ p_reshape <- AnvilPrimitive("reshape")
 #' @seealso [nv_reshape()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1:6)
-#' nvl_reshape(x, shape = c(2, 3))
+#' prim_reshape(x, shape = c(2, 3))
 #' @export
-nvl_reshape <- jit(
+prim_reshape <- new_primitive(
+  "reshape",
   function(operand, shape) {
     infer_fn <- function(operand, shape) {
       out <- stablehlo::infer_types_reshape(at2vt(operand), shape = shape)[[1L]]
@@ -393,17 +378,15 @@ nvl_reshape <- jit(
       list(out)
     }
     graph_desc_add(
-      p_reshape,
+      self,
       list(operand = operand),
       params = list(shape = shape),
       infer_fn = infer_fn
     )[[1L]]
   },
-  static = 2L,
-  backend = "auto"
+  static = 2L
 )
 
-p_concatenate <- AnvilPrimitive("concatenate")
 #' @title Primitive Concatenate
 #' @description
 #' Concatenates arrays along a dimension.
@@ -425,9 +408,10 @@ p_concatenate <- AnvilPrimitive("concatenate")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(4, 5, 6))
-#' nvl_concatenate(x, y, dimension = 1L)
+#' prim_concatenate(x, y, dimension = 1L)
 #' @export
-nvl_concatenate <- jit(
+prim_concatenate <- new_primitive(
+  "concatenate",
   function(..., dimension) {
     dots <- list(...)
     infer_fn <- function(..., dimension) {
@@ -446,23 +430,21 @@ nvl_concatenate <- jit(
       list(out)
     }
     graph_desc_add(
-      p_concatenate,
+      self,
       args = dots,
       params = list(dimension = dimension),
       infer_fn = infer_fn
     )[[1L]]
   },
-  static = "dimension",
-  backend = "auto"
+  static = "dimension"
 )
 
-p_static_slice <- AnvilPrimitive("static_slice")
 #' @title Primitive Static Slice
 #' @description
 #' Extracts a slice from an array using static (compile-time) indices.
 #' All indices, limits, and strides are fixed R integers.
 #'
-#' Use [nvl_dynamic_slice()] instead when the start position must be
+#' Use [prim_dynamic_slice()] instead when the start position must be
 #' computed at runtime (e.g. depends on array values).
 #' @template param_prim_operand_any
 #' @param start_indices (`integer()`)\cr
@@ -482,25 +464,26 @@ p_static_slice <- AnvilPrimitive("static_slice")
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_slice()].
-#' @seealso [nvl_dynamic_slice()], [nvl_scatter()], [nvl_gather()], [nv_subset()], `[`
+#' @seealso [prim_dynamic_slice()], [prim_scatter()], [prim_gather()], [nv_subset()], `[`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # 1-D: extract elements 2 through 4 (limit is exclusive)
 #' x <- nv_array(1:10)
-#' nvl_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
+#' prim_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
 #'
 #' # 1-D: every other element using strides
 #' x <- nv_array(1:10)
-#' nvl_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
+#' prim_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
 #'
 #' # 2-D: extract a submatrix (rows 1-2, columns 2-3)
 #' x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
-#' nvl_static_slice(x,
+#' prim_static_slice(x,
 #'   start_indices = c(1L, 2L),
 #'   limit_indices = c(3L, 4L),
 #'   strides       = c(1L, 1L)
 #' )
 #' @export
-nvl_static_slice <- jit(
+prim_static_slice <- new_primitive(
+  "static_slice",
   function(operand, start_indices, limit_indices, strides) {
     infer_fn <- function(operand, start_indices, limit_indices, strides) {
       start_attr <- r_to_constant(start_indices - 1L, dtype = "i64", shape = length(start_indices))
@@ -512,7 +495,7 @@ nvl_static_slice <- jit(
       list(out)
     }
     graph_desc_add(
-      p_static_slice,
+      self,
       args = list(
         operand = operand
       ),
@@ -524,18 +507,16 @@ nvl_static_slice <- jit(
       infer_fn = infer_fn
     )[[1L]]
   },
-  static = 2:4,
-  backend = "auto"
+  static = 2:4
 )
 
-p_dynamic_slice <- AnvilPrimitive("dynamic_slice")
 #' @title Primitive Dynamic Slice
 #' @description
 #' Extracts a slice from an array whose start position is determined at
 #' runtime via array-valued indices. The slice shape (`slice_sizes`) is
 #' a fixed R integer vector.
 #'
-#' Use [nvl_static_slice()] instead when all indices are known at compile
+#' Use [prim_static_slice()] instead when all indices are known at compile
 #' time and you need stride support.
 #' @template param_prim_operand_any
 #' @param ... ([`arrayish`] of integer type)\cr
@@ -557,20 +538,21 @@ p_dynamic_slice <- AnvilPrimitive("dynamic_slice")
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_dynamic_slice()].
-#' @seealso [nvl_static_slice()], [nvl_dynamic_update_slice()], [nvl_scatter()], [nvl_gather()], [nv_subset()], `[`
+#' @seealso [prim_static_slice()], [prim_dynamic_update_slice()], [prim_scatter()], [prim_gather()], [nv_subset()], `[`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # 1-D: extract 3 elements starting at position 3
 #' x <- nv_array(1:10)
 #' start <- nv_scalar(3L)
-#' nvl_dynamic_slice(x, start, slice_sizes = 3L)
+#' prim_dynamic_slice(x, start, slice_sizes = 3L)
 #'
 #' # 2-D: extract a 2x2 block from a matrix
 #' x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
 #' row_start <- nv_scalar(2L)
 #' col_start <- nv_scalar(1L)
-#' nvl_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
+#' prim_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
 #' @export
-nvl_dynamic_slice <- jit(
+prim_dynamic_slice <- new_primitive(
+  "dynamic_slice",
   function(operand, ..., slice_sizes) {
     start_indices <- list(...)
     infer_fn <- function(operand, ..., slice_sizes) {
@@ -585,22 +567,20 @@ nvl_dynamic_slice <- jit(
       list(out)
     }
     graph_desc_add(
-      p_dynamic_slice,
+      self,
       args = c(list(operand = operand), start_indices),
       params = list(slice_sizes = slice_sizes),
       infer_fn = infer_fn
     )[[1L]]
   },
-  static = "slice_sizes",
-  backend = "auto"
+  static = "slice_sizes"
 )
 
-p_dynamic_update_slice <- AnvilPrimitive("dynamic_update_slice")
 #' @title Primitive Dynamic Update Slice
 #' @description
 #' Returns a copy of `operand` with a slice replaced by `update` at a
 #' runtime-determined position. This is the write counterpart of
-#' [nvl_dynamic_slice()]: dynamic slice reads a block from an array,
+#' [prim_dynamic_slice()]: dynamic slice reads a block from an array,
 #' while dynamic update slice writes a block into an array.
 #' @template param_prim_operand_any
 #' @param update ([`arrayish`])\cr
@@ -610,7 +590,7 @@ p_dynamic_update_slice <- AnvilPrimitive("dynamic_update_slice")
 #' @param ... ([`arrayish`] of integer type)\cr
 #'   Scalar start indices, one per dimension of `operand`.
 #'   Each must be a scalar array.
-#' @inheritSection nvl_dynamic_slice Out Of Bounds Behavior
+#' @inheritSection prim_dynamic_slice Out Of Bounds Behavior
 #' @return [`arrayish`]\cr
 #'   Has the same data type and shape as `operand`.
 #'   It is ambiguous if the input is ambiguous.
@@ -618,22 +598,23 @@ p_dynamic_update_slice <- AnvilPrimitive("dynamic_update_slice")
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_dynamic_update_slice()].
-#' @seealso [nvl_dynamic_slice()], [nvl_scatter()], [nvl_gather()], [nv_subset_assign()], `[<-`
+#' @seealso [prim_dynamic_slice()], [prim_scatter()], [prim_gather()], [nv_subset_assign()], `[<-`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # 1-D: overwrite two elements starting at position 2
 #' x <- nv_array(1:5)
 #' update <- nv_array(c(10L, 20L))
 #' start <- nv_scalar(2L)
-#' nvl_dynamic_update_slice(x, update, start)
+#' prim_dynamic_update_slice(x, update, start)
 #'
 #' # 2-D: write a 2x2 block into a 3x4 matrix
 #' x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
 #' update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
 #' row_start <- nv_scalar(2L)
 #' col_start <- nv_scalar(3L)
-#' nvl_dynamic_update_slice(x, update, row_start, col_start)
+#' prim_dynamic_update_slice(x, update, row_start, col_start)
 #' @export
-nvl_dynamic_update_slice <- jit(
+prim_dynamic_update_slice <- new_primitive(
+  "dynamic_update_slice",
   function(operand, update, ...) {
     start_indices <- list(...)
     infer_fn <- function(operand, update, ...) {
@@ -648,34 +629,29 @@ nvl_dynamic_update_slice <- jit(
       list(out)
     }
     graph_desc_add(
-      p_dynamic_update_slice,
+      self,
       args = c(list(operand = operand, update = update), start_indices),
       params = list(),
       infer_fn = infer_fn
     )[[1L]]
-  },
-  backend = "auto"
+  }
 )
 
 
 # reduction operators
 
-make_reduce_op <- function(prim, infer_fn = infer_reduce) {
-  jit(
-    function(operand, dims, drop = TRUE) {
-      graph_desc_add(
-        prim,
-        list(operand = operand),
-        params = list(dims = dims, drop = drop),
-        infer_fn = infer_fn
-      )[[1L]]
-    },
-    static = 2:3,
-    backend = "auto"
-  )
+make_reduce_op <- function(infer_fn = infer_reduce) {
+  force(infer_fn)
+  function(operand, dims, drop = TRUE) {
+    graph_desc_add(
+      self,
+      list(operand = operand),
+      params = list(dims = dims, drop = drop),
+      infer_fn = infer_fn
+    )[[1L]]
+  }
 }
 
-p_reduce_sum <- AnvilPrimitive("reduce_sum")
 #' @title Primitive Sum Reduction
 #' @description
 #' Sums array elements along the specified dimensions.
@@ -694,11 +670,10 @@ p_reduce_sum <- AnvilPrimitive("reduce_sum")
 #' @seealso [nv_reduce_sum()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
-#' nvl_reduce_sum(x, dims = 1L)
+#' prim_reduce_sum(x, dims = 1L)
 #' @export
-nvl_reduce_sum <- make_reduce_op(p_reduce_sum)
+prim_reduce_sum <- new_primitive("reduce_sum", make_reduce_op(), static = 2:3)
 
-p_reduce_prod <- AnvilPrimitive("reduce_prod")
 #' @title Primitive Product Reduction
 #' @description
 #' Multiplies array elements along the specified dimensions.
@@ -717,11 +692,10 @@ p_reduce_prod <- AnvilPrimitive("reduce_prod")
 #' @seealso [nv_reduce_prod()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
-#' nvl_reduce_prod(x, dims = 1L)
+#' prim_reduce_prod(x, dims = 1L)
 #' @export
-nvl_reduce_prod <- make_reduce_op(p_reduce_prod)
+prim_reduce_prod <- new_primitive("reduce_prod", make_reduce_op(), static = 2:3)
 
-p_reduce_max <- AnvilPrimitive("reduce_max")
 #' @title Primitive Max Reduction
 #' @description
 #' Finds the maximum of array elements along the specified dimensions.
@@ -740,11 +714,10 @@ p_reduce_max <- AnvilPrimitive("reduce_max")
 #' @seealso [nv_reduce_max()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
-#' nvl_reduce_max(x, dims = 1L)
+#' prim_reduce_max(x, dims = 1L)
 #' @export
-nvl_reduce_max <- make_reduce_op(p_reduce_max)
+prim_reduce_max <- new_primitive("reduce_max", make_reduce_op(), static = 2:3)
 
-p_reduce_min <- AnvilPrimitive("reduce_min")
 #' @title Primitive Min Reduction
 #' @description
 #' Finds the minimum of array elements along the specified dimensions.
@@ -763,11 +736,10 @@ p_reduce_min <- AnvilPrimitive("reduce_min")
 #' @seealso [nv_reduce_min()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
-#' nvl_reduce_min(x, dims = 1L)
+#' prim_reduce_min(x, dims = 1L)
 #' @export
-nvl_reduce_min <- make_reduce_op(p_reduce_min)
+prim_reduce_min <- new_primitive("reduce_min", make_reduce_op(), static = 2:3)
 
-p_reduce_any <- AnvilPrimitive("reduce_any")
 #' @title Primitive Any Reduction
 #' @description
 #' Performs logical OR along the specified dimensions.
@@ -786,11 +758,10 @@ p_reduce_any <- AnvilPrimitive("reduce_any")
 #' @seealso [nv_reduce_any()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-#' nvl_reduce_any(x, dims = 1L)
+#' prim_reduce_any(x, dims = 1L)
 #' @export
-nvl_reduce_any <- make_reduce_op(p_reduce_any, infer_reduce_boolean)
+prim_reduce_any <- new_primitive("reduce_any", make_reduce_op(infer_reduce_boolean), static = 2:3)
 
-p_reduce_all <- AnvilPrimitive("reduce_all")
 #' @title Primitive All Reduction
 #' @description
 #' Performs logical AND along the specified dimensions.
@@ -809,9 +780,9 @@ p_reduce_all <- AnvilPrimitive("reduce_all")
 #' @seealso [nv_reduce_all()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
-#' nvl_reduce_all(x, dims = 1L)
+#' prim_reduce_all(x, dims = 1L)
 #' @export
-nvl_reduce_all <- make_reduce_op(p_reduce_all, infer_reduce_boolean)
+prim_reduce_all <- new_primitive("reduce_all", make_reduce_op(infer_reduce_boolean), static = 2:3)
 
 # comparison primitives --------------------------------------------------------
 
@@ -830,23 +801,20 @@ infer_compare <- function(lhs, rhs, comparison_direction) {
   list(out)
 }
 
-make_compare_op <- function(prim, direction) {
+make_compare_op <- function(direction) {
+  force(direction)
   infer_fn <- function(lhs, rhs) infer_compare(lhs, rhs, direction)
-  jit(
-    function(lhs, rhs) {
-      graph_desc_add(prim, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
-    },
-    backend = "auto"
-  )
+  function(lhs, rhs) {
+    graph_desc_add(self, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
+  }
 }
 
-p_eq <- AnvilPrimitive("equal")
 #' @title Primitive Equal
 #' @description
 #' Element-wise equality comparison.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
-#' @templateVar primitive_id eq
+#' @templateVar primitive_id equal
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "EQ"`.
@@ -854,17 +822,16 @@ p_eq <- AnvilPrimitive("equal")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(1, 3, 2))
-#' nvl_eq(x, y)
+#' prim_eq(x, y)
 #' @export
-nvl_eq <- make_compare_op(p_eq, "EQ")
+prim_eq <- new_primitive("equal", make_compare_op("EQ"))
 
-p_ne <- AnvilPrimitive("not_equal")
 #' @title Primitive Not Equal
 #' @description
 #' Element-wise inequality comparison.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
-#' @templateVar primitive_id ne
+#' @templateVar primitive_id not_equal
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "NE"`.
@@ -872,17 +839,16 @@ p_ne <- AnvilPrimitive("not_equal")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(1, 3, 2))
-#' nvl_ne(x, y)
+#' prim_ne(x, y)
 #' @export
-nvl_ne <- make_compare_op(p_ne, "NE")
+prim_ne <- new_primitive("not_equal", make_compare_op("NE"))
 
-p_gt <- AnvilPrimitive("greater")
 #' @title Primitive Greater Than
 #' @description
 #' Element-wise greater than comparison.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
-#' @templateVar primitive_id gt
+#' @templateVar primitive_id greater
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "GT"`.
@@ -890,17 +856,16 @@ p_gt <- AnvilPrimitive("greater")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(3, 2, 1))
-#' nvl_gt(x, y)
+#' prim_gt(x, y)
 #' @export
-nvl_gt <- make_compare_op(p_gt, "GT")
+prim_gt <- new_primitive("greater", make_compare_op("GT"))
 
-p_ge <- AnvilPrimitive("greater_equal")
 #' @title Primitive Greater Equal
 #' @description
 #' Element-wise greater than or equal comparison.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
-#' @templateVar primitive_id ge
+#' @templateVar primitive_id greater_equal
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "GE"`.
@@ -908,17 +873,16 @@ p_ge <- AnvilPrimitive("greater_equal")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(3, 2, 1))
-#' nvl_ge(x, y)
+#' prim_ge(x, y)
 #' @export
-nvl_ge <- make_compare_op(p_ge, "GE")
+prim_ge <- new_primitive("greater_equal", make_compare_op("GE"))
 
-p_lt <- AnvilPrimitive("less")
 #' @title Primitive Less Than
 #' @description
 #' Element-wise less than comparison.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
-#' @templateVar primitive_id lt
+#' @templateVar primitive_id less
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "LT"`.
@@ -926,17 +890,16 @@ p_lt <- AnvilPrimitive("less")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(3, 2, 1))
-#' nvl_lt(x, y)
+#' prim_lt(x, y)
 #' @export
-nvl_lt <- make_compare_op(p_lt, "LT")
+prim_lt <- new_primitive("less", make_compare_op("LT"))
 
-p_le <- AnvilPrimitive("less_equal")
 #' @title Primitive Less Equal
 #' @description
 #' Element-wise less than or equal comparison.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_compare
-#' @templateVar primitive_id le
+#' @templateVar primitive_id less_equal
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_compare()] with `comparison_direction = "LE"`.
@@ -944,19 +907,18 @@ p_le <- AnvilPrimitive("less_equal")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(3, 2, 1))
-#' nvl_le(x, y)
+#' prim_le(x, y)
 #' @export
-nvl_le <- make_compare_op(p_le, "LE")
+prim_le <- new_primitive("less_equal", make_compare_op("LE"))
 
 # additional simple binary primitives -----------------------------------------
 
-p_max <- AnvilPrimitive("maximum")
 #' @title Primitive Maximum
 #' @description
 #' Element-wise maximum of two arrays.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_binary
-#' @templateVar primitive_id max
+#' @templateVar primitive_id maximum
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_maximum()].
@@ -964,17 +926,16 @@ p_max <- AnvilPrimitive("maximum")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 5, 3))
 #' y <- nv_array(c(4, 2, 6))
-#' nvl_max(x, y)
+#' prim_max(x, y)
 #' @export
-nvl_max <- make_binary_op(p_max, stablehlo::infer_types_maximum)
+prim_max <- new_primitive("maximum", make_binary_op(stablehlo::infer_types_maximum))
 
-p_min <- AnvilPrimitive("minimum")
 #' @title Primitive Minimum
 #' @description
 #' Element-wise minimum of two arrays.
 #' @template params_prim_lhs_rhs_any
 #' @template return_prim_binary
-#' @templateVar primitive_id min
+#' @templateVar primitive_id minimum
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_minimum()].
@@ -982,11 +943,10 @@ p_min <- AnvilPrimitive("minimum")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 5, 3))
 #' y <- nv_array(c(4, 2, 6))
-#' nvl_min(x, y)
+#' prim_min(x, y)
 #' @export
-nvl_min <- make_binary_op(p_min, stablehlo::infer_types_minimum)
+prim_min <- new_primitive("minimum", make_binary_op(stablehlo::infer_types_minimum))
 
-p_remainder <- AnvilPrimitive("remainder")
 #' @title Primitive Remainder
 #' @description
 #' Element-wise remainder of division.
@@ -1000,11 +960,10 @@ p_remainder <- AnvilPrimitive("remainder")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(7, 10, 15))
 #' y <- nv_array(c(3, 4, 6))
-#' nvl_remainder(x, y)
+#' prim_remainder(x, y)
 #' @export
-nvl_remainder <- make_binary_op(p_remainder, stablehlo::infer_types_remainder)
+prim_remainder <- new_primitive("remainder", make_binary_op(stablehlo::infer_types_remainder))
 
-p_and <- AnvilPrimitive("and")
 #' @title Primitive And
 #' @description
 #' Element-wise logical AND.
@@ -1018,11 +977,10 @@ p_and <- AnvilPrimitive("and")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(TRUE, FALSE, TRUE))
 #' y <- nv_array(c(TRUE, TRUE, FALSE))
-#' nvl_and(x, y)
+#' prim_and(x, y)
 #' @export
-nvl_and <- make_binary_op(p_and, stablehlo::infer_types_and)
+prim_and <- new_primitive("and", make_binary_op(stablehlo::infer_types_and))
 
-p_not <- AnvilPrimitive("not")
 #' @title Primitive Not
 #' @description
 #' Element-wise logical NOT.
@@ -1036,11 +994,10 @@ p_not <- AnvilPrimitive("not")
 #' @seealso [nv_not()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(TRUE, FALSE, TRUE))
-#' nvl_not(x)
+#' prim_not(x)
 #' @export
-nvl_not <- make_unary_op(p_not, stablehlo::infer_types_not)
+prim_not <- new_primitive("not", make_unary_op(stablehlo::infer_types_not))
 
-p_or <- AnvilPrimitive("or")
 #' @title Primitive Or
 #' @description
 #' Element-wise logical OR.
@@ -1054,11 +1011,10 @@ p_or <- AnvilPrimitive("or")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(TRUE, FALSE, TRUE))
 #' y <- nv_array(c(TRUE, TRUE, FALSE))
-#' nvl_or(x, y)
+#' prim_or(x, y)
 #' @export
-nvl_or <- make_binary_op(p_or, stablehlo::infer_types_or)
+prim_or <- new_primitive("or", make_binary_op(stablehlo::infer_types_or))
 
-p_xor <- AnvilPrimitive("xor")
 #' @title Primitive Xor
 #' @description
 #' Element-wise logical XOR.
@@ -1072,9 +1028,9 @@ p_xor <- AnvilPrimitive("xor")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(TRUE, FALSE, TRUE))
 #' y <- nv_array(c(TRUE, TRUE, FALSE))
-#' nvl_xor(x, y)
+#' prim_xor(x, y)
 #' @export
-nvl_xor <- make_binary_op(p_xor, stablehlo::infer_types_xor)
+prim_xor <- new_primitive("xor", make_binary_op(stablehlo::infer_types_xor))
 
 infer_shift <- function(lhs, rhs, shift_fn) {
   both_ambiguous <- lhs$ambiguous && rhs$ambiguous
@@ -1084,7 +1040,6 @@ infer_shift <- function(lhs, rhs, shift_fn) {
   list(out)
 }
 
-p_shift_left <- AnvilPrimitive("shift_left")
 #' @title Primitive Shift Left
 #' @description
 #' Element-wise left bit shift.
@@ -1098,17 +1053,16 @@ p_shift_left <- AnvilPrimitive("shift_left")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1L, 2L, 4L))
 #' y <- nv_array(c(1L, 2L, 1L))
-#' nvl_shift_left(x, y)
+#' prim_shift_left(x, y)
 #' @export
-nvl_shift_left <- jit(
+prim_shift_left <- new_primitive(
+  "shift_left",
   function(lhs, rhs) {
     infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_left)
-    graph_desc_add(p_shift_left, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
-  },
-  backend = "auto"
+    graph_desc_add(self, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
+  }
 )
 
-p_shift_right_logical <- AnvilPrimitive("shift_right_logical")
 #' @title Primitive Logical Shift Right
 #' @description
 #' Element-wise logical right bit shift.
@@ -1122,17 +1076,16 @@ p_shift_right_logical <- AnvilPrimitive("shift_right_logical")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(8L, 16L, 32L))
 #' y <- nv_array(c(1L, 2L, 3L))
-#' nvl_shift_right_logical(x, y)
+#' prim_shift_right_logical(x, y)
 #' @export
-nvl_shift_right_logical <- jit(
+prim_shift_right_logical <- new_primitive(
+  "shift_right_logical",
   function(lhs, rhs) {
     infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_logical)
-    graph_desc_add(p_shift_right_logical, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
-  },
-  backend = "auto"
+    graph_desc_add(self, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
+  }
 )
 
-p_shift_right_arithmetic <- AnvilPrimitive("shift_right_arithmetic")
 #' @title Primitive Arithmetic Shift Right
 #' @description
 #' Element-wise arithmetic right bit shift.
@@ -1146,17 +1099,16 @@ p_shift_right_arithmetic <- AnvilPrimitive("shift_right_arithmetic")
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(8L, -16L, 32L))
 #' y <- nv_array(c(1L, 2L, 3L))
-#' nvl_shift_right_arithmetic(x, y)
+#' prim_shift_right_arithmetic(x, y)
 #' @export
-nvl_shift_right_arithmetic <- jit(
+prim_shift_right_arithmetic <- new_primitive(
+  "shift_right_arithmetic",
   function(lhs, rhs) {
     infer_fn <- function(lhs, rhs) infer_shift(lhs, rhs, stablehlo::infer_types_shift_right_arithmetic)
-    graph_desc_add(p_shift_right_arithmetic, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
-  },
-  backend = "auto"
+    graph_desc_add(self, list(lhs = lhs, rhs = rhs), infer_fn = infer_fn)[[1L]]
+  }
 )
 
-p_atan2 <- AnvilPrimitive("atan2")
 #' @title Primitive Atan2
 #' @description
 #' Element-wise atan2 operation.
@@ -1170,11 +1122,10 @@ p_atan2 <- AnvilPrimitive("atan2")
 #' @examplesIf pjrt::plugins_downloaded()
 #' y <- nv_array(c(1, 0, -1))
 #' x <- nv_array(c(0, 1, 0))
-#' nvl_atan2(y, x)
+#' prim_atan2(y, x)
 #' @export
-nvl_atan2 <- make_binary_op(p_atan2, stablehlo::infer_types_atan2)
+prim_atan2 <- new_primitive("atan2", make_binary_op(stablehlo::infer_types_atan2))
 
-p_bitcast_convert <- AnvilPrimitive("bitcast_convert")
 #' @title Primitive Bitcast Convert
 #' @description
 #' Reinterprets the bits of an array as a different data type without
@@ -1193,24 +1144,23 @@ p_bitcast_convert <- AnvilPrimitive("bitcast_convert")
 #' @seealso [nv_bitcast_convert()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1L)
-#' nvl_bitcast_convert(x, dtype = "i8")
+#' prim_bitcast_convert(x, dtype = "i8")
 #' x <- nv_array(rep(1L, 4), dtype = "i8")
-#' nvl_bitcast_convert(x, dtype = "i32")
+#' prim_bitcast_convert(x, dtype = "i32")
 #' @export
-nvl_bitcast_convert <- jit(
+prim_bitcast_convert <- new_primitive(
+  "bitcast_convert",
   function(operand, dtype) {
     infer_fn <- function(operand, dtype) {
       lapply(stablehlo::infer_types_bitcast_convert(at2vt(operand), dtype), vt2at)
     }
-    graph_desc_add(p_bitcast_convert, list(operand = operand), params = list(dtype = dtype), infer_fn = infer_fn)[[1L]]
+    graph_desc_add(self, list(operand = operand), params = list(dtype = dtype), infer_fn = infer_fn)[[1L]]
   },
-  static = 2L,
-  backend = "auto"
+  static = 2L
 )
 
 # unary math primitives ---------------------------------------------------------
 
-p_abs <- AnvilPrimitive("abs")
 #' @title Primitive Absolute Value
 #' @description
 #' Element-wise absolute value.
@@ -1223,11 +1173,10 @@ p_abs <- AnvilPrimitive("abs")
 #' @seealso [nv_abs()], [abs()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-1, 2, -3))
-#' nvl_abs(x)
+#' prim_abs(x)
 #' @export
-nvl_abs <- make_unary_op(p_abs, stablehlo::infer_types_abs)
+prim_abs <- new_primitive("abs", make_unary_op(stablehlo::infer_types_abs))
 
-p_sqrt <- AnvilPrimitive("sqrt")
 #' @title Primitive Square Root
 #' @description
 #' Element-wise square root.
@@ -1240,11 +1189,10 @@ p_sqrt <- AnvilPrimitive("sqrt")
 #' @seealso [nv_sqrt()], [sqrt()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 4, 9))
-#' nvl_sqrt(x)
+#' prim_sqrt(x)
 #' @export
-nvl_sqrt <- make_unary_op(p_sqrt, stablehlo::infer_types_sqrt)
+prim_sqrt <- new_primitive("sqrt", make_unary_op(stablehlo::infer_types_sqrt))
 
-p_rsqrt <- AnvilPrimitive("rsqrt")
 #' @title Primitive Reciprocal Square Root
 #' @description
 #' Element-wise reciprocal square root.
@@ -1257,11 +1205,10 @@ p_rsqrt <- AnvilPrimitive("rsqrt")
 #' @seealso [nv_rsqrt()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 4, 9))
-#' nvl_rsqrt(x)
+#' prim_rsqrt(x)
 #' @export
-nvl_rsqrt <- make_unary_op(p_rsqrt, stablehlo::infer_types_rsqrt)
+prim_rsqrt <- new_primitive("rsqrt", make_unary_op(stablehlo::infer_types_rsqrt))
 
-p_log <- AnvilPrimitive("log")
 #' @title Primitive Logarithm
 #' @description
 #' Element-wise natural logarithm.
@@ -1274,11 +1221,10 @@ p_log <- AnvilPrimitive("log")
 #' @seealso [nv_log()], [log()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2.718, 7.389))
-#' nvl_log(x)
+#' prim_log(x)
 #' @export
-nvl_log <- make_unary_op(p_log, stablehlo::infer_types_log)
+prim_log <- new_primitive("log", make_unary_op(stablehlo::infer_types_log))
 
-p_tanh <- AnvilPrimitive("tanh")
 #' @title Primitive Hyperbolic Tangent
 #' @description
 #' Element-wise hyperbolic tangent.
@@ -1291,11 +1237,10 @@ p_tanh <- AnvilPrimitive("tanh")
 #' @seealso [nv_tanh()], [tanh()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-1, 0, 1))
-#' nvl_tanh(x)
+#' prim_tanh(x)
 #' @export
-nvl_tanh <- make_unary_op(p_tanh, stablehlo::infer_types_tanh)
+prim_tanh <- new_primitive("tanh", make_unary_op(stablehlo::infer_types_tanh))
 
-p_tan <- AnvilPrimitive("tan")
 #' @title Primitive Tangent
 #' @description
 #' Element-wise tangent.
@@ -1308,11 +1253,10 @@ p_tan <- AnvilPrimitive("tan")
 #' @seealso [nv_tan()], [tan()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, 0.5, 1))
-#' nvl_tan(x)
+#' prim_tan(x)
 #' @export
-nvl_tan <- make_unary_op(p_tan, stablehlo::infer_types_tan)
+prim_tan <- new_primitive("tan", make_unary_op(stablehlo::infer_types_tan))
 
-p_sine <- AnvilPrimitive("sine")
 #' @title Primitive Sine
 #' @description
 #' Element-wise sine.
@@ -1325,11 +1269,10 @@ p_sine <- AnvilPrimitive("sine")
 #' @seealso [nv_sine()], [sin()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, pi / 2, pi))
-#' nvl_sine(x)
+#' prim_sine(x)
 #' @export
-nvl_sine <- make_unary_op(p_sine, stablehlo::infer_types_sine)
+prim_sine <- new_primitive("sine", make_unary_op(stablehlo::infer_types_sine))
 
-p_cosine <- AnvilPrimitive("cosine")
 #' @title Primitive Cosine
 #' @description
 #' Element-wise cosine.
@@ -1342,11 +1285,10 @@ p_cosine <- AnvilPrimitive("cosine")
 #' @seealso [nv_cosine()], [cos()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, pi / 2, pi))
-#' nvl_cosine(x)
+#' prim_cosine(x)
 #' @export
-nvl_cosine <- make_unary_op(p_cosine, stablehlo::infer_types_cosine)
+prim_cosine <- new_primitive("cosine", make_unary_op(stablehlo::infer_types_cosine))
 
-p_floor <- AnvilPrimitive("floor")
 #' @title Primitive Floor
 #' @description
 #' Element-wise floor.
@@ -1359,11 +1301,10 @@ p_floor <- AnvilPrimitive("floor")
 #' @seealso [nv_floor()], [floor()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1.2, 2.7, -1.5))
-#' nvl_floor(x)
+#' prim_floor(x)
 #' @export
-nvl_floor <- make_unary_op(p_floor, stablehlo::infer_types_floor)
+prim_floor <- new_primitive("floor", make_unary_op(stablehlo::infer_types_floor))
 
-p_ceil <- AnvilPrimitive("ceil")
 #' @title Primitive Ceiling
 #' @description
 #' Element-wise ceiling.
@@ -1376,11 +1317,10 @@ p_ceil <- AnvilPrimitive("ceil")
 #' @seealso [nv_ceil()], [ceiling()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1.2, 2.7, -1.5))
-#' nvl_ceil(x)
+#' prim_ceil(x)
 #' @export
-nvl_ceil <- make_unary_op(p_ceil, stablehlo::infer_types_ceil)
+prim_ceil <- new_primitive("ceil", make_unary_op(stablehlo::infer_types_ceil))
 
-p_sign <- AnvilPrimitive("sign")
 #' @title Primitive Sign
 #' @description
 #' Element-wise sign.
@@ -1393,11 +1333,10 @@ p_sign <- AnvilPrimitive("sign")
 #' @seealso [nv_sign()], [sign()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-3, 0, 5))
-#' nvl_sign(x)
+#' prim_sign(x)
 #' @export
-nvl_sign <- make_unary_op(p_sign, stablehlo::infer_types_sign)
+prim_sign <- new_primitive("sign", make_unary_op(stablehlo::infer_types_sign))
 
-p_exp <- AnvilPrimitive("exp")
 #' @title Primitive Exponential
 #' @description
 #' Element-wise exponential.
@@ -1410,11 +1349,10 @@ p_exp <- AnvilPrimitive("exp")
 #' @seealso [nv_exp()], [exp()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, 1, 2))
-#' nvl_exp(x)
+#' prim_exp(x)
 #' @export
-nvl_exp <- make_unary_op(p_exp, stablehlo::infer_types_exponential)
+prim_exp <- new_primitive("exp", make_unary_op(stablehlo::infer_types_exponential))
 
-p_expm1 <- AnvilPrimitive("expm1")
 #' @title Primitive Exponential Minus One
 #' @description
 #' Element-wise exp(x) - 1, more accurate for small x.
@@ -1427,11 +1365,10 @@ p_expm1 <- AnvilPrimitive("expm1")
 #' @seealso [nv_expm1()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, 0.001, 1))
-#' nvl_expm1(x)
+#' prim_expm1(x)
 #' @export
-nvl_expm1 <- make_unary_op(p_expm1, stablehlo::infer_types_exponential_minus_one)
+prim_expm1 <- new_primitive("expm1", make_unary_op(stablehlo::infer_types_exponential_minus_one))
 
-p_log1p <- AnvilPrimitive("log1p")
 #' @title Primitive Log Plus One
 #' @description
 #' Element-wise log(1 + x), more accurate for small x.
@@ -1444,11 +1381,10 @@ p_log1p <- AnvilPrimitive("log1p")
 #' @seealso [nv_log1p()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, 0.001, 1))
-#' nvl_log1p(x)
+#' prim_log1p(x)
 #' @export
-nvl_log1p <- make_unary_op(p_log1p, stablehlo::infer_types_log_plus_one)
+prim_log1p <- new_primitive("log1p", make_unary_op(stablehlo::infer_types_log_plus_one))
 
-p_cbrt <- AnvilPrimitive("cbrt")
 #' @title Primitive Cube Root
 #' @description
 #' Element-wise cube root.
@@ -1461,11 +1397,10 @@ p_cbrt <- AnvilPrimitive("cbrt")
 #' @seealso [nv_cbrt()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 8, 27))
-#' nvl_cbrt(x)
+#' prim_cbrt(x)
 #' @export
-nvl_cbrt <- make_unary_op(p_cbrt, stablehlo::infer_types_cbrt)
+prim_cbrt <- new_primitive("cbrt", make_unary_op(stablehlo::infer_types_cbrt))
 
-p_logistic <- AnvilPrimitive("logistic")
 #' @title Primitive Logistic (Sigmoid)
 #' @description
 #' Element-wise logistic sigmoid: 1 / (1 + exp(-x)).
@@ -1478,11 +1413,10 @@ p_logistic <- AnvilPrimitive("logistic")
 #' @seealso [nv_logistic()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-2, 0, 2))
-#' nvl_logistic(x)
+#' prim_logistic(x)
 #' @export
-nvl_logistic <- make_unary_op(p_logistic, stablehlo::infer_types_logistic)
+prim_logistic <- new_primitive("logistic", make_unary_op(stablehlo::infer_types_logistic))
 
-p_is_finite <- AnvilPrimitive("is_finite")
 #' @title Primitive Is Finite
 #' @description
 #' Element-wise check if values are finite (not Inf, -Inf, or NaN).
@@ -1497,20 +1431,19 @@ p_is_finite <- AnvilPrimitive("is_finite")
 #' @seealso [nv_is_finite()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, Inf, NaN, -Inf, 0))
-#' nvl_is_finite(x)
+#' prim_is_finite(x)
 #' @export
-nvl_is_finite <- jit(
+prim_is_finite <- new_primitive(
+  "is_finite",
   function(operand) {
     infer_fn <- function(operand) {
       out <- stablehlo::infer_types_is_finite(at2vt(operand))[[1L]]
       list(vt2at(out))
     }
-    graph_desc_add(p_is_finite, list(operand = operand), list(), infer_fn = infer_fn)[[1L]]
-  },
-  backend = "auto"
+    graph_desc_add(self, list(operand = operand), list(), infer_fn = infer_fn)[[1L]]
+  }
 )
 
-p_popcnt <- AnvilPrimitive("popcnt")
 #' @title Primitive Population Count
 #' @description
 #' Element-wise population count (number of set bits).
@@ -1524,9 +1457,10 @@ p_popcnt <- AnvilPrimitive("popcnt")
 #' @seealso [nv_popcnt()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(7L, 3L, 15L))
-#' nvl_popcnt(x)
+#' prim_popcnt(x)
 #' @export
-nvl_popcnt <- jit(
+prim_popcnt <- new_primitive(
+  "popcnt",
   function(operand) {
     infer_fn <- function(operand) {
       out <- stablehlo::infer_types_popcnt(at2vt(operand))[[1L]]
@@ -1534,12 +1468,10 @@ nvl_popcnt <- jit(
       out$ambiguous <- operand$ambiguous
       list(out)
     }
-    graph_desc_add(p_popcnt, list(operand = operand), list(), infer_fn = infer_fn)[[1L]]
-  },
-  backend = "auto"
+    graph_desc_add(self, list(operand = operand), list(), infer_fn = infer_fn)[[1L]]
+  }
 )
 
-p_clamp <- AnvilPrimitive("clamp")
 #' @title Primitive Clamp
 #' @description
 #' Clamps every element of `operand` to the range `[min_val, max_val]`,
@@ -1559,9 +1491,10 @@ p_clamp <- AnvilPrimitive("clamp")
 #' @seealso [nv_clamp()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(-1, 0.5, 2))
-#' nvl_clamp(nv_scalar(0), x, nv_scalar(1))
+#' prim_clamp(nv_scalar(0), x, nv_scalar(1))
 #' @export
-nvl_clamp <- jit(
+prim_clamp <- new_primitive(
+  "clamp",
   function(min_val, operand, max_val) {
     infer_fn <- function(min_val, operand, max_val) {
       out <- stablehlo::infer_types_clamp(at2vt(min_val), at2vt(operand), at2vt(max_val))[[1L]]
@@ -1570,18 +1503,16 @@ nvl_clamp <- jit(
       list(out)
     }
     graph_desc_add(
-      p_clamp,
+      self,
       list(min_val = min_val, operand = operand, max_val = max_val),
       list(),
       infer_fn = infer_fn
     )[[
       1L
     ]]
-  },
-  backend = "auto"
+  }
 )
 
-p_reverse <- AnvilPrimitive("reverse")
 #' @title Primitive Reverse
 #' @description
 #' Reverses the order of elements along specified dimensions.
@@ -1598,9 +1529,10 @@ p_reverse <- AnvilPrimitive("reverse")
 #' @seealso [nv_reverse()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3, 4, 5))
-#' nvl_reverse(x, dims = 1L)
+#' prim_reverse(x, dims = 1L)
 #' @export
-nvl_reverse <- jit(
+prim_reverse <- new_primitive(
+  "reverse",
   function(operand, dims) {
     infer_fn <- function(operand, dims) {
       # stablehlo uses 0-based indexing
@@ -1610,13 +1542,11 @@ nvl_reverse <- jit(
       out$ambiguous <- operand$ambiguous
       list(out)
     }
-    graph_desc_add(p_reverse, list(operand = operand), list(dims = dims), infer_fn = infer_fn)[[1L]]
+    graph_desc_add(self, list(operand = operand), list(dims = dims), infer_fn = infer_fn)[[1L]]
   },
-  static = 2L,
-  backend = "auto"
+  static = 2L
 )
 
-p_iota <- AnvilPrimitive("iota")
 #' @title Primitive Iota
 #' @description
 #' Creates an array with values increasing along the specified dimension.
@@ -1637,9 +1567,10 @@ p_iota <- AnvilPrimitive("iota")
 #' Lowers to [stablehlo::hlo_iota()].
 #' @seealso [nv_iota()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' nvl_iota(dim = 1L, dtype = "i32", shape = 5L)
+#' prim_iota(dim = 1L, dtype = "i32", shape = 5L)
 #' @export
-nvl_iota <- jit(
+prim_iota <- new_primitive(
+  "iota",
   function(dim, dtype, shape, start = 1L, ambiguous = FALSE, device = NULL) {
     infer_fn <- function(dim, dtype, shape, start, ambiguous) {
       # stablehlo uses 0-based indexing, anvl uses 1-based
@@ -1655,7 +1586,7 @@ nvl_iota <- jit(
       list(IotaArray(shape = shape, dtype = dtype, dimension = dim, start = start, ambiguous = ambiguous))
     }
     result <- graph_desc_add(
-      p_iota,
+      self,
       list(),
       list(dim = dim, dtype = dtype, shape = shape, start = start, ambiguous = ambiguous),
       infer_fn = infer_fn
@@ -1667,7 +1598,6 @@ nvl_iota <- jit(
   device = device_arg("device")
 )
 
-p_pad <- AnvilPrimitive("pad")
 #' @title Primitive Pad
 #' @description
 #' Pads an array with a given padding value.
@@ -1690,11 +1620,12 @@ p_pad <- AnvilPrimitive("pad")
 #' Lowers to [stablehlo::hlo_pad()].
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
-#' nvl_pad(x, nv_scalar(0),
+#' prim_pad(x, nv_scalar(0),
 #'   edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L
 #' )
 #' @export
-nvl_pad <- jit(
+prim_pad <- new_primitive(
+  "pad",
   function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
     infer_fn <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding) {
       rank <- ndims_abstract(operand)
@@ -1714,7 +1645,7 @@ nvl_pad <- jit(
     }
 
     graph_desc_add(
-      p_pad,
+      self,
       list(operand = operand, padding_value = padding_value),
       list(
         edge_padding_low = edge_padding_low,
@@ -1724,11 +1655,9 @@ nvl_pad <- jit(
       infer_fn = infer_fn
     )[[1L]]
   },
-  static = 3:5,
-  backend = "auto"
+  static = 3:5
 )
 
-p_round <- AnvilPrimitive("round")
 #' @title Primitive Round
 #' @description
 #' Rounds the elements of an array to the nearest integer.
@@ -1747,9 +1676,10 @@ p_round <- AnvilPrimitive("round")
 #' @seealso [nv_round()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1.4, 2.5, 3.6))
-#' nvl_round(x)
+#' prim_round(x)
 #' @export
-nvl_round <- jit(
+prim_round <- new_primitive(
+  "round",
   function(operand, method = "nearest_even") {
     if (!(method %in% c("nearest_even", "afz"))) {
       cli_abort("method must be one of: 'nearest_even', 'afz', but is {method}")
@@ -1762,15 +1692,13 @@ nvl_round <- jit(
       out$ambiguous <- operand$ambiguous
       list(out)
     }
-    graph_desc_add(p_round, list(operand = operand), list(method = method), infer_fn = infer_fn)[[1L]]
+    graph_desc_add(self, list(operand = operand), list(method = method), infer_fn = infer_fn)[[1L]]
   },
-  static = 2L,
-  backend = "auto"
+  static = 2L
 )
 
 # dtype conversion ----------------------------------------------------------------
 
-p_convert <- AnvilPrimitive("convert")
 #' @title Primitive Convert
 #' @description
 #' Converts the elements of an array to a different data type.
@@ -1788,9 +1716,10 @@ p_convert <- AnvilPrimitive("convert")
 #' @seealso [nv_convert()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1L, 2L, 3L))
-#' nvl_convert(x, dtype = "f32")
+#' prim_convert(x, dtype = "f32")
 #' @export
-nvl_convert <- jit(
+prim_convert <- new_primitive(
+  "convert",
   function(operand, dtype, ambiguous = FALSE) {
     dtype <- as_dtype(dtype)
     infer_fn <- function(operand, dtype, ambiguous) {
@@ -1801,18 +1730,16 @@ nvl_convert <- jit(
       ))
     }
     graph_desc_add(
-      p_convert,
+      self,
       list(operand = operand),
       params = list(dtype = dtype, ambiguous = ambiguous),
       infer_fn = infer_fn
     )[[1L]]
   },
-  static = 2:3,
-  backend = "auto"
+  static = 2:3
 )
 
 
-p_select <- AnvilPrimitive("select")
 #' @title Primitive Ifelse
 #' @description
 #' Element-wise selection based on a boolean predicate, like R's [ifelse()].
@@ -1833,9 +1760,10 @@ p_select <- AnvilPrimitive("select")
 #' @seealso [nv_ifelse()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' pred <- nv_array(c(TRUE, FALSE, TRUE))
-#' nvl_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
+#' prim_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
 #' @export
-nvl_ifelse <- jit(
+prim_ifelse <- new_primitive(
+  "select",
   function(pred, true_value, false_value) {
     infer_fn <- function(pred, true_value, false_value) {
       both_ambiguous <- true_value$ambiguous && false_value$ambiguous
@@ -1849,23 +1777,21 @@ nvl_ifelse <- jit(
       list(out)
     }
     graph_desc_add(
-      p_select,
+      self,
       list(pred = pred, true_value = true_value, false_value = false_value),
       infer_fn = infer_fn
     )[[
       1L
     ]]
-  },
-  backend = "auto"
+  }
 )
 
 # Higher order primitives -------------------------------------------------------
 
-p_if <- AnvilPrimitive("if", subgraphs = c("true_graph", "false_graph"))
 #' @title Primitive If
 #' @description
 #' Conditional execution of one of two branches based on a scalar boolean
-#' predicate. Unlike [nvl_ifelse()] which operates element-wise, this
+#' predicate. Unlike [prim_ifelse()] which operates element-wise, this
 #' evaluates only the selected branch.
 #' @param pred ([`arrayish`])\cr
 #'   Scalar boolean predicate that determines which branch to execute.
@@ -1878,11 +1804,12 @@ p_if <- AnvilPrimitive("if", subgraphs = c("true_graph", "false_graph"))
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_if()].
-#' @seealso [nv_if()], [nvl_ifelse()]
+#' @seealso [nv_if()], [prim_ifelse()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' nvl_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
+#' prim_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
 #' @export
-nvl_if <- jit(
+prim_if <- new_primitive(
+  "if",
   function(pred, true, false) {
     force(pred)
     force(true)
@@ -1929,7 +1856,7 @@ nvl_if <- jit(
     }
 
     out <- graph_desc_add(
-      p_if,
+      self,
       list(pred = pred),
       params = list(true_graph = true_graph, false_graph = false_graph),
       infer_fn = infer_fn,
@@ -1937,11 +1864,10 @@ nvl_if <- jit(
     )
     unflatten(true_graph$out_tree, out)
   },
-  static = 2:3,
-  backend = "auto"
+  subgraphs = c("true_graph", "false_graph"),
+  static = 2:3
 )
 
-p_while <- AnvilPrimitive("while", subgraphs = c("cond_graph", "body_graph"))
 #' @title Primitive While Loop
 #' @description
 #' Repeatedly executes `body` while `cond` returns `TRUE`, like R's
@@ -1965,7 +1891,7 @@ p_while <- AnvilPrimitive("while", subgraphs = c("cond_graph", "body_graph"))
 #' Lowers to [stablehlo::hlo_while()].
 #' @seealso [nv_while()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' nvl_while(
+#' prim_while(
 #'   init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
 #'   cond = function(i, total) i <= 5L,
 #'   body = function(i, total) list(
@@ -1974,7 +1900,8 @@ p_while <- AnvilPrimitive("while", subgraphs = c("cond_graph", "body_graph"))
 #'   )
 #' )
 #' @export
-nvl_while <- jit(
+prim_while <- new_primitive(
+  "while",
   function(init, cond, body) {
     # delayed promise evaluation can cause the value to be added to the wrong graph descriptor
     force(init)
@@ -2035,7 +1962,7 @@ nvl_while <- jit(
     }
 
     out <- graph_desc_add(
-      p_while,
+      self,
       args = lapply(flatten(init), maybe_box_arrayish),
       params = list(cond_graph = cond_graph, body_graph = body_graph),
       infer_fn = infer_fn,
@@ -2044,12 +1971,11 @@ nvl_while <- jit(
 
     unflatten(body_graph$out_tree, out)
   },
-  static = 2:3,
-  backend = "auto"
+  subgraphs = c("cond_graph", "body_graph"),
+  static = 2:3
 )
 
 # Print primitive
-p_print <- AnvilPrimitive("print")
 #' @title Primitive Print
 #' @description
 #' Prints an array value to the console during execution and returns the
@@ -2064,9 +1990,10 @@ p_print <- AnvilPrimitive("print")
 #' @seealso [nv_print()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
-#' nvl_print(x)
+#' prim_print(x)
 #' @export
-nvl_print <- jit(
+prim_print <- new_primitive(
+  "print",
   function(operand) {
     # HACK: ambiguity is not available in stablehlo, so we need to pre-compute this
     # and pass it as a "param", although it is not really one
@@ -2074,15 +2001,13 @@ nvl_print <- jit(
     dtype_str <- paste0(as.character(dtype(operand)), if (ambiguous_abstract(operand)) "?")
     footer <- sprintf("[ %s{%s} ]", dtype_str, paste0(shape(operand), collapse = ","))
     # slig
-    graph_desc_add(p_print, list(operand = operand), list(footer = footer), infer_fn = function(operand, ...) {
+    graph_desc_add(self, list(operand = operand), list(footer = footer), infer_fn = function(operand, ...) {
       list(operand)
     })[[1L]]
-  },
-  backend = "auto"
+  }
 )
 
 # RNG primitives
-p_rng_bit_generator <- AnvilPrimitive("rng_bit_generator")
 #' @title Primitive RNG Bit Generator
 #' @description
 #' Generates pseudo-random numbers using the specified algorithm and returns
@@ -2104,25 +2029,24 @@ p_rng_bit_generator <- AnvilPrimitive("rng_bit_generator")
 #' @seealso [nv_runif()], [nv_rnorm()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' state <- nv_array(c(0L, 0L), dtype = "ui64")
-#' nvl_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
+#' prim_rng_bit_generator(state, dtype = "f32", shape = c(3, 2))
 #' @export
-nvl_rng_bit_generator <- jit(
+prim_rng_bit_generator <- new_primitive(
+  "rng_bit_generator",
   function(initial_state, rng_algorithm = "THREE_FRY", dtype, shape) {
     infer_fn <- function(initial_state, rng_algorithm, dtype, shape) {
       lapply(stablehlo::infer_types_rng_bit_generator(at2vt(initial_state), rng_algorithm, dtype, shape), vt2at)
     }
     graph_desc_add(
-      p_rng_bit_generator,
+      self,
       list(initial_state = initial_state),
       params = list(rng_algorithm = rng_algorithm, dtype = dtype, shape = shape),
       infer_fn = infer_fn
     )
   },
-  static = 2:4,
-  backend = "auto"
+  static = 2:4
 )
 
-p_scatter <- AnvilPrimitive("scatter", subgraphs = "update_computation_graph")
 #' @title Primitive Scatter
 #' @description
 #' Produces a result array identical to `input` except that slices at
@@ -2131,7 +2055,7 @@ p_scatter <- AnvilPrimitive("scatter", subgraphs = "update_computation_graph")
 #' the `update_computation` function determines how to combine the values
 #' (by default the new value replaces the old one).
 #'
-#' This is the inverse of [nvl_gather()]: gather reads slices from an array
+#' This is the inverse of [prim_gather()]: gather reads slices from an array
 #' at given indices, while scatter writes slices into an array at given
 #' indices.
 #' @param input ([`arrayish`])\cr
@@ -2190,13 +2114,13 @@ p_scatter <- AnvilPrimitive("scatter", subgraphs = "update_computation_graph")
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_scatter()].
-#' @seealso [nvl_gather()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
+#' @seealso [prim_gather()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Scatter values 10 and 30 into positions 1 and 3 of a zero vector
 #' input <- nv_array(c(0, 0, 0, 0, 0))
 #' indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
 #' updates <- nv_array(c(10, 30))
-#' nvl_scatter(
+#' prim_scatter(
 #'   input, indices, updates,
 #'   update_window_dims = integer(0),
 #'   inserted_window_dims = 1L,
@@ -2206,7 +2130,8 @@ p_scatter <- AnvilPrimitive("scatter", subgraphs = "update_computation_graph")
 #'   index_vector_dim = 2L
 #' )
 #' @export
-nvl_scatter <- jit(
+prim_scatter <- new_primitive(
+  "scatter",
   function(
     input,
     scatter_indices,
@@ -2299,7 +2224,7 @@ nvl_scatter <- jit(
     }
 
     out <- graph_desc_add(
-      p_scatter,
+      self,
       args = list(input = input, scatter_indices = scatter_indices, update = update),
       params = list(
         update_window_dims = update_window_dims,
@@ -2318,11 +2243,10 @@ nvl_scatter <- jit(
 
     out[[1L]]
   },
-  static = 4:12,
-  backend = "auto"
+  subgraphs = "update_computation_graph",
+  static = 4:12
 )
 
-p_gather <- AnvilPrimitive("gather")
 #' @title Primitive Gather
 #' @description
 #' Gathers slices from the `operand` array at positions specified by
@@ -2331,7 +2255,7 @@ p_gather <- AnvilPrimitive("gather")
 #' extracted from that position. The gathered slices are assembled into
 #' the output array.
 #'
-#' This is the inverse of [nvl_scatter()]: gather reads slices from a
+#' This is the inverse of [prim_scatter()]: gather reads slices from a
 #' array at given indices, while scatter writes slices into an array at
 #' given indices.
 #' @template param_prim_operand_any
@@ -2386,12 +2310,12 @@ p_gather <- AnvilPrimitive("gather")
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_gather()].
-#' @seealso [nvl_scatter()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
+#' @seealso [prim_scatter()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Gather rows 1 and 3 from a 3x3 matrix
 #' operand <- nv_array(matrix(1:9, nrow = 3))
 #' indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
-#' nvl_gather(
+#' prim_gather(
 #'   operand, indices,
 #'   slice_sizes = c(1L, 3L),
 #'   offset_dims = 2L,
@@ -2402,7 +2326,8 @@ p_gather <- AnvilPrimitive("gather")
 #'   index_vector_dim = 2L
 #' )
 #' @export
-nvl_gather <- jit(
+prim_gather <- new_primitive(
+  "gather",
   function(
     operand,
     start_indices,
@@ -2454,7 +2379,7 @@ nvl_gather <- jit(
       list(out)
     }
     graph_desc_add(
-      p_gather,
+      self,
       args = list(operand = operand, start_indices = start_indices),
       params = list(
         slice_sizes = slice_sizes,
@@ -2470,11 +2395,9 @@ nvl_gather <- jit(
       infer_fn = infer_fn
     )[[1L]]
   },
-  static = 3:11,
-  backend = "auto"
+  static = 3:11
 )
 
-p_cholesky <- AnvilPrimitive("cholesky")
 #' @title Primitive Cholesky Decomposition
 #' @description
 #' Computes the Cholesky decomposition of a symmetric positive-definite matrix.
@@ -2499,9 +2422,10 @@ p_cholesky <- AnvilPrimitive("cholesky")
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Create a positive-definite matrix
 #' x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-#' nvl_cholesky(x, lower = TRUE)
+#' prim_cholesky(x, lower = TRUE)
 #' @export
-nvl_cholesky <- jit(
+prim_cholesky <- new_primitive(
+  "cholesky",
   function(operand, lower) {
     infer_fn <- function(operand, lower) {
       # Output has same shape and dtype as input (square matrix)
@@ -2512,17 +2436,15 @@ nvl_cholesky <- jit(
       ))
     }
     graph_desc_add(
-      p_cholesky,
+      self,
       list(operand = operand),
       list(lower = lower),
       infer_fn = infer_fn
     )[[1L]]
   },
-  static = 2L,
-  backend = "auto"
+  static = 2L
 )
 
-p_triangular_solve <- AnvilPrimitive("triangular_solve")
 #' @title Primitive Triangular Solve
 #' @description
 #' Solves a system of linear equations with a triangular coefficient matrix.
@@ -2558,12 +2480,13 @@ p_triangular_solve <- AnvilPrimitive("triangular_solve")
 #' # Solve L %*% x = b where L is lower triangular
 #' L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
 #' b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
-#' nvl_triangular_solve(L, b,
+#' prim_triangular_solve(L, b,
 #'   left_side = TRUE, lower = TRUE,
 #'   unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"
 #' )
 #' @export
-nvl_triangular_solve <- jit(
+prim_triangular_solve <- new_primitive(
+  "triangular_solve",
   function(a, b, left_side, lower, unit_diagonal, transpose_a) {
     infer_fn <- function(a, b, left_side, lower, unit_diagonal, transpose_a) {
       left_side_attr <- r_to_constant(as.logical(left_side), dtype = "bool", shape = integer())
@@ -2582,7 +2505,7 @@ nvl_triangular_solve <- jit(
       list(out)
     }
     graph_desc_add(
-      p_triangular_solve,
+      self,
       list(a = a, b = b),
       list(
         left_side = left_side,
@@ -2593,6 +2516,5 @@ nvl_triangular_solve <- jit(
       infer_fn = infer_fn
     )[[1L]]
   },
-  static = 3:6,
-  backend = "auto"
+  static = 3:6
 )

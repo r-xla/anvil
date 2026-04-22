@@ -27,5 +27,5 @@ x | y
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_or]{nvl_or()}} for the underlying primitive.
+\code{\link[=prim_or]{prim_or()}} for the underlying primitive.
 }

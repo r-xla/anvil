@@ -23,6 +23,5 @@ The (array) outputs of the primitive.}
 (\code{PrimitiveCall})
 }
 \description{
-Call of a primitive in an \code{\link{AnvilGraph}}
-Note that a primitive call also be a call into another graph (\code{p_graph}).
+Call of a primitive in an \code{\link{AnvilGraph}}.
 }

@@ -4,11 +4,12 @@
 \alias{graph_desc_add}
 \title{Add a Primitive Call to a Graph Descriptor}
 \usage{
-graph_desc_add(prim, args, params = list(), infer_fn, desc = NULL)
+graph_desc_add(primitive, args, params = list(), infer_fn, desc = NULL)
 }
 \arguments{
-\item{prim}{(\code{\link{AnvilPrimitive}})\cr
-The primitive to add.}
+\item{primitive}{(\code{\link{AnvilPrimitive}} | \code{JitPrimitive})\cr
+The primitive the call is for. A \code{JitPrimitive} is accepted and unwrapped
+to its underlying \code{AnvilPrimitive} metadata.}
 
 \item{args}{(\code{list} of \code{\link{GraphNode}})\cr
 The arguments to the primitive.}
@@ -28,5 +29,7 @@ Uses the \link[=.current_descriptor]{current descriptor} if \code{NULL}.}
 (\code{list} of \code{\link{GraphBox}})
 }
 \description{
-Add a primitive call to a graph descriptor.
+Add a primitive call to a graph descriptor. Inside a primitive body created
+with \code{\link[=new_primitive]{new_primitive()}}, pass the lexically-bound \code{self} as the primitive
+argument.
 }

@@ -32,5 +32,5 @@ nv_cholesky(a)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_solve]{nv_solve()}}, \code{\link[=nvl_cholesky]{nvl_cholesky()}}
+\code{\link[=nv_solve]{nv_solve()}}, \code{\link[=prim_cholesky]{prim_cholesky()}}
 }

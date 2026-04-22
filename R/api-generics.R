@@ -167,7 +167,7 @@ is.finite.AnvilArray <- is.finite.AnvilBox
 #'   New ordering of dimensions. If `NULL` (default), reverses the dimensions.
 #' @return [`arrayish`]\cr
 #'   Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
-#' @seealso [nvl_transpose()] for the underlying primitive.
+#' @seealso [prim_transpose()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' t(x)
@@ -182,6 +182,13 @@ t.AnvilArray <- t.AnvilBox
 #' @rdname nv_subset
 #' @export
 `[.AnvilBox` <- function(x, ...) {
+  # nargs() sees trailing missing args (e.g. the last `,` in x[1:5, , ])
+  # that rlang::enquos() silently drops.
+  n_args <- nargs() - 1L
+  rank <- length(shape_abstract(x))
+  if (n_args > rank) {
+    cli_abort("Too many subset specifications: got {n_args}, expected at most {rank}")
+  }
   quos <- rlang::enquos(...)
   rlang::inject(nv_subset(x, !!!quos))
 }
@@ -193,6 +200,11 @@ t.AnvilArray <- t.AnvilBox
 #' @rdname nv_subset_assign
 #' @export
 `[<-.AnvilBox` <- function(x, ..., value) {
+  n_args <- nargs() - 2L
+  rank <- length(shape_abstract(x))
+  if (n_args > rank) {
+    cli_abort("Too many subset specifications: got {n_args}, expected at most {rank}")
+  }
   quos <- rlang::enquos(...)
   rlang::inject(nv_subset_assign(x, !!!quos, value = value))
 }

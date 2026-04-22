@@ -24,5 +24,5 @@ exp(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_exp]{nvl_exp()}} for the underlying primitive.
+\code{\link[=prim_exp]{prim_exp()}} for the underlying primitive.
 }

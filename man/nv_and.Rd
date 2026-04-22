@@ -27,5 +27,5 @@ x & y
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_and]{nvl_and()}} for the underlying primitive.
+\code{\link[=prim_and]{prim_and()}} for the underlying primitive.
 }
