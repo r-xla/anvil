@@ -167,7 +167,7 @@ is.finite.AnvilArray <- is.finite.AnvilBox
 #'   New ordering of dimensions. If `NULL` (default), reverses the dimensions.
 #' @return [`arrayish`]\cr
 #'   Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
-#' @seealso [nvl_transpose()] for the underlying primitive.
+#' @seealso [prim_transpose()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' t(x)

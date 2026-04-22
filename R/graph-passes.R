@@ -115,7 +115,7 @@ inline_scalarish_constants <- function(graph, map = NULL) {
       new_graph$calls,
       lapply(consts, function(const) {
         PrimitiveCall(
-          primitive = p_fill,
+          primitive = prim_fill,
           inputs = list(),
           params = list(value = const$aval$data, dtype = dtype(const$aval), shape = shape(const$aval)),
           outputs = list(const)

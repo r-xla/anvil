@@ -27,5 +27,5 @@ x >= y
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_ge]{nvl_ge()}} for the underlying primitive.
+\code{\link[=prim_ge]{prim_ge()}} for the underlying primitive.
 }

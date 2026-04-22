@@ -31,5 +31,5 @@ nv_concatenate(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_concatenate]{nvl_concatenate()}} for the underlying primitive.
+\code{\link[=prim_concatenate]{prim_concatenate()}} for the underlying primitive.
 }

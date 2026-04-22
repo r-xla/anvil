@@ -24,5 +24,5 @@ nv_popcnt(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_popcnt]{nvl_popcnt()}} for the underlying primitive.
+\code{\link[=prim_popcnt]{prim_popcnt()}} for the underlying primitive.
 }

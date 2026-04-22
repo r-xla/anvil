@@ -24,5 +24,5 @@ abs(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_abs]{nvl_abs()}} for the underlying primitive.
+\code{\link[=prim_abs]{prim_abs()}} for the underlying primitive.
 }

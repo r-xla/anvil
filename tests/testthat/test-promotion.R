@@ -18,18 +18,18 @@ test_that("ambiguity is propagated by unary ops", {
   )
 })
 
-test_that("p_convert reverse", {
+test_that("prim_convert reverse", {
   out <- jit(function(x) {
-    z <- nvl_convert(x, "f32", ambiguous = FALSE)
+    z <- prim_convert(x, "f32", ambiguous = FALSE)
     a <- gradient(\(y) {
-      y_int <- nvl_convert(y, "i32", ambiguous = TRUE)
-      nvl_convert(y_int, "f32", ambiguous = TRUE)
+      y_int <- prim_convert(y, "i32", ambiguous = TRUE)
+      prim_convert(y_int, "f32", ambiguous = TRUE)
     })(z)[[1L]]
   })(nv_scalar(TRUE))
   expect_equal(out, nv_scalar(1, dtype = "f32"))
 })
 
-test_that("p_if propagates ambiguity", {
+test_that("prim_if propagates ambiguity", {
   f <- function(pred, x) {
     x <- x * 2L
     nv_if(pred, \() x, \() x * x) * nv_scalar(3L, dtype = "i16")
@@ -40,7 +40,7 @@ test_that("p_if propagates ambiguity", {
   )
 })
 
-test_that("p_while propagates ambiguity", {
+test_that("prim_while propagates ambiguity", {
   f <- jit(function(n) {
     i <- 0L * nv_scalar(TRUE) # ambiguous i32
     nv_while(list(i = i), \(i) i <= n, \(i) {

@@ -1,6 +1,6 @@
 test_that("trace_fn: simple test", {
   f <- function(x, y) {
-    nvl_add(x, y)
+    prim_add(x, y)
   }
   graph <- trace_fn(f, list(x = nv_scalar(1), y = nv_scalar(2)))
   expect_true(is_graph(graph))
@@ -12,7 +12,7 @@ test_that("trace_fn: simple test", {
 
 test_that("trace_fn: in- and outputs are reference identical to the outputs of the calls that produced them", {
   f <- function(x, y) {
-    nvl_add(x, y)
+    prim_add(x, y)
   }
   graph <- trace_fn(f, list(x = nv_scalar(1), y = nv_scalar(2)))
   expect_true(identical(graph$outputs, graph$calls[[1]]$outputs))
@@ -21,7 +21,7 @@ test_that("trace_fn: in- and outputs are reference identical to the outputs of t
 
 test_that("trace_fn: nested inputs and outputs", {
   f <- function(lst) {
-    list(nvl_add(lst[[1]], lst[[2]]))
+    list(prim_add(lst[[1]], lst[[2]]))
   }
 
   graph <- trace_fn(f, list(lst = list(nv_scalar(1), nv_scalar(2))))
@@ -41,7 +41,7 @@ test_that("trace_fn: nested inputs and outputs", {
 test_that("trace_fn: closed-over constants", {
   x <- nv_scalar(1)
   f <- function(y) {
-    nvl_add(x, y)
+    prim_add(x, y)
   }
   graph <- trace_fn(f, list(y = nv_scalar(2)))
   expect_list(graph$inputs, len = 1L, types = "GraphValue")
@@ -60,7 +60,7 @@ test_that("trace_fn: closed-over constants", {
 test_that("trace_fn can deduplicate constants", {
   x <- nv_scalar(1)
   f <- function(y) {
-    nvl_add(x, x)
+    prim_add(x, x)
   }
   graph <- trace_fn(f, list(y = nv_scalar(2)))
   expect_equal(length(graph$constants), 1L)
@@ -152,7 +152,7 @@ test_that("GraphLiteral", {
 
 test_that("trace_fn works with nv_aval inputs", {
   f <- function(x, y) {
-    nvl_add(x, y)
+    prim_add(x, y)
   }
   in_type <- nv_aval("f32", c(2, 2))
   graph <- trace_fn(f, list(x = in_type, y = in_type))
@@ -162,7 +162,7 @@ test_that("trace_fn works with nv_aval inputs", {
   expect_equal(length(graph$inputs), 2L)
   expect_equal(length(graph$calls), 1L)
   expect_equal(length(graph$outputs), 1L)
-  expect_equal(graph$calls[[1L]]$primitive, p_add)
+  expect_equal(graph$calls[[1L]]$primitive, attr(prim_add, "primitive"))
 })
 
 test_that("local_descriptor errors when run in the global environment", {
@@ -173,7 +173,7 @@ test_that("can pass abstract arrays to trace_fn", {
   # Here, its fine because we call into maybe_box_input, which will convert the abstract array
   # into a GraphValue/Box before any infix op can be called
   f <- function(x, y) {
-    nvl_add(x, y)
+    prim_add(x, y)
   }
   in_type <- nv_aval("f32", c(2, 2))
   graph <- trace_fn(f, list(x = in_type, y = in_type))
@@ -184,10 +184,10 @@ test_that("can pass abstract arrays to trace_fn", {
 })
 
 test_that("error handling", {
-  expect_snapshot(error = TRUE, jit(nvl_ceil)(nv_array(1:4)))
+  expect_snapshot(error = TRUE, jit(prim_ceil)(nv_array(1:4)))
   expect_snapshot(
     error = TRUE,
-    jit(nvl_transpose, static = "permutation")(nv_array(1:4, shape = c(2, 2)), permutation = c(2, 2))
+    jit(prim_transpose, static = "permutation")(nv_array(1:4, shape = c(2, 2)), permutation = c(2, 2))
   )
 })
 

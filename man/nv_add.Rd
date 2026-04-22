@@ -27,5 +27,5 @@ x + y
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_add]{nvl_add()}} for the underlying primitive.
+\code{\link[=prim_add]{prim_add()}} for the underlying primitive.
 }

@@ -83,15 +83,15 @@ if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
 }
 
-verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
+verify_zero_grad_unary <- function(prim_fn, x, f_wrapper = NULL) {
   # We can only take gradients w.r.t. float arrays, so the outer input is f32
-  # and the actual dtype is restored inside the function before calling nvl_fn.
+  # and the actual dtype is restored inside the function before calling prim_fn.
   x_dtype <- dtype(x)
   x_f32 <- nv_convert(x, "f32")
   if (is.null(f_wrapper)) {
     f <- function(x) {
       x_inner <- nv_convert(x, x_dtype)
-      out <- nvl_fn(x_inner)
+      out <- prim_fn(x_inner)
       out <- nv_convert(out, "f32")
       nv_reduce_sum(out, dims = 1L, drop = TRUE)
     }
@@ -103,7 +103,7 @@ verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
   testthat::expect_equal(grads[[1L]], expected)
 }
 
-verify_zero_grad_binary <- function(nvl_fn, x, y) {
+verify_zero_grad_binary <- function(prim_fn, x, y) {
   x_dtype <- dtype(x)
   y_dtype <- dtype(y)
   x_f32 <- nv_convert(x, "f32")
@@ -111,7 +111,7 @@ verify_zero_grad_binary <- function(nvl_fn, x, y) {
   f <- function(x, y) {
     x_inner <- nv_convert(x, x_dtype)
     y_inner <- nv_convert(y, y_dtype)
-    out <- nvl_fn(x_inner, y_inner)
+    out <- prim_fn(x_inner, y_inner)
     out <- nv_convert(out, "f32")
     nv_reduce_sum(out, dims = 1L, drop = TRUE)
   }

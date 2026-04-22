@@ -24,5 +24,5 @@ nv_cbrt(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_cbrt]{nvl_cbrt()}} for the underlying primitive.
+\code{\link[=prim_cbrt]{prim_cbrt()}} for the underlying primitive.
 }

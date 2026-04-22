@@ -11,6 +11,9 @@
 * Removed *debug mode*.
 * Remove NSE support for `nvl_if`. It now requires passing 0-argument
   closures as `true` and `false` arguments.
+* Primitives renamed from `nvl_*` to `prim_*`.
+  The underlying primitive object containing the rules and metadata
+  is now part of the `JitPrimitive` function via the `primitive` attribute.
 
 ## New Features
 

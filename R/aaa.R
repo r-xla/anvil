@@ -23,4 +23,4 @@ globals$nv_types <- "AnvilArray"
 globals$interpretation_rules <- c("stablehlo", "quickr", "reverse")
 globals[["DESCRIPTOR_STASH"]] <- list()
 globals[["CURRENT_DESCRIPTOR"]] <- NULL
-utils::globalVariables(c("globals"))
+utils::globalVariables(c("globals", "self"))

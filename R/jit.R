@@ -141,7 +141,7 @@ jit_with_backend <- function(f, static, cache_size, backend, ...) {
 #'
 #' This is intended for functions that have no dynamic array inputs from which
 #' the backend could otherwise be detected (e.g. array constructors like
-#' [nvl_fill()] or [nvl_iota()]).
+#' [prim_fill()] or [prim_iota()]).
 #'
 #' @param argname (`character(1)`)\cr
 #'   Name of a formal argument of the function passed to [`jit()`].

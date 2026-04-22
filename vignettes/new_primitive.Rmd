@@ -47,32 +47,20 @@ There are various sceanrios:
 ## Adding a Primitive: Practical Example
 
 Let's add a new primitive step by step.
-We'll implement `nvl_repeat_along` -- a primitive that repeats an array multiple times along a specified dimension.
+We'll implement `prim_repeat_along` -- a primitive that repeats an array multiple times along a specified dimension.
 
 For example, repeating `c(1, 2, 3)` twice along dimension 1 gives `c(1, 2, 3, 1, 2, 3)`.
 
 This primitive has a *dynamic* input (an array) and two *static* parameters (how many times to repeat and which dimension).
 
-### Step 1: Create the AnvilPrimitive Object
+### Step 1: Define the Primitive
+
+Primitives are created with `new_primitive()`: it builds the `AnvilPrimitive` metadata object that holds the rules, wraps the body with `jit()`, attaches the metadata, and registers the result in the internal primitive registry. The returned callable becomes the primitive and is bound to a `prim_<name>` R symbol.
 
 ```{r}
 library(anvil)
-p_repeat_along <- AnvilPrimitive("repeat_along")
-```
-
-This is simply the primitive object that will identify this operation in an `AnvilGraph` and it will hold the rules for how to lower it to StableHLO and how to compute gradients.
-
-### Step 2: Define the nvl_* Function
-
-The `nvl_*` function does two things:
-
-1. Defines an **inference function** that computes output types from input types
-2. Calls `graph_desc_add()` to record the operation in the current `GraphDescriptor`.
-
-The function itself is then wrapped with [`jit()`], which is what enables *eager mode* and composition inside other JIT-compiled functions (see the explanation after the code block).
-
-```{r}
-nvl_repeat_along <- jit(
+prim_repeat_along <- new_primitive(
+  "repeat_along",
   function(operand, times, dim) {
     # type of operand is checked by graph_desc_add()
     infer_fn <- function(operand, times, dim) {
@@ -92,7 +80,7 @@ nvl_repeat_along <- jit(
     }
 
     graph_desc_add(
-      p_repeat_along,             # The primitive
+      self,                       # lexically bound to the AnvilPrimitive
       list(operand = operand),    # Dynamic inputs (arrays)
       params = list(              # Static parameters
         times = times,
@@ -101,31 +89,20 @@ nvl_repeat_along <- jit(
       infer_fn = infer_fn
     )[[1L]]  # Extract single output from list
   },
-  static = c("times", "dim"),
-  backend = "auto"
+  static = c("times", "dim")
 )
 ```
 
+The primitive is now callable directly as `prim_repeat_along(x, times, dim)`.
+
 Key points:
 
-- The inference function receives abstract arrays (types, not values) for dynamic inputs, and actual values for static parameters.
-  It must verify that the arguments to the function are valid.
-  Also, it should throw clear error messages if the arguments are invalid, as {anvil} programs are otherwise hard to debug.
+- Pass the lexically-bound `self` (the [`AnvilPrimitive`]) as the first argument to `graph_desc_add()`. `new_primitive()` installs `self` into the enclosing environment of the body, so this is always available inside a primitive.
+- The inference function receives abstract arrays (types, not values) for dynamic inputs, and actual values for static parameters. It must verify that the arguments to the function are valid, and should throw clear error messages — {anvil} programs are otherwise hard to debug.
 - `graph_desc_add()` returns a list of outputs; use `[[1L]]` for single-output primitives.
 - Propagate the `ambiguous` flag from inputs to outputs, see [type promotion](type-promotion.html) for what this means.
 
-#### Why wrap with `jit()`?
-
-Wrapping the `nvl_*` function with [`jit()`] turns it into a `JitFunction`. This has two benefits:
-
-- **Eager mode**: users can call `nvl_repeat_along(x, times = 2L, dim = 2L)` directly on an `AnvilArray` and get a concrete result back, without having to wrap the call in another `jit()`.
-- **Composition**: when another JIT-compiled function calls `nvl_repeat_along()`, the primitive is re-traced into the outer graph instead of eagerly executing a separate compiled program.
-
-Every argument of the wrapped function that is *not* a dynamic array must be listed in `static`. In our case, `times` and `dim` are static parameters.
-
-#### Why `backend = "auto"`?
-
-`backend = "auto"` defers the choice of backend to call time: it is picked from the (array) inputs, falling back to [`default_backend()`] when there are none. This is the right setting for primitives because a primitive should work with any backend the user happens to be using; fixing the backend at definition time (e.g. `backend = "xla"`) would force every call to go through that backend regardless of where the inputs live.
+Every argument that is *not* a dynamic array must be listed in `static`. `new_primitive` calls `jit()` with `backend = "auto"` internally, which defers the choice of backend to call time.
 
 If the primitive is a wrapper around a stablehlo operation, it is possible to use the corresponding inference function from the stablehlo package (such as `stablehlo::infer_types_concatenate`).
 When doing so, you need to:
@@ -137,17 +114,18 @@ When doing so, you need to:
 
 #### Special case: primitives with 0 dynamic inputs
 
-Array *constructors* (e.g. [`nvl_fill()`], [`nvl_iota()`]) have no dynamic array inputs -- every argument is static. Two things change in this case:
+Array *constructors* (e.g. `prim_fill`, `prim_iota`) have no dynamic array inputs -- every argument is static. Two things change in this case:
 
 1. **All formals must be listed in `static`**. Otherwise {anvil} would try to interpret a scalar argument like `value` or `shape` as an `AnvilArray` input.
-2. **`backend = "auto"` no longer works**, because there are no array inputs to infer the backend from. Instead, add a `device` formal to the function and pass `device = device_arg("device")` to `jit()`. At call time, the user-supplied device is read from that argument and used to determine both the backend (via [`backend()`] dispatch) and the compilation device.
+2. **`backend = "auto"` cannot infer a device from inputs**, because there are no array inputs. Instead, add a `device` formal to the function and pass `device = device_arg("device")` to `new_primitive()`. At call time, the user-supplied device is read from that argument and used to determine both the backend (via [`backend()`] dispatch) and the compilation device.
 
-For example, the real definition of [`nvl_fill()`] looks like this:
+For example, the real definition of `prim_fill` looks like this:
 
 ```r
-nvl_fill <- jit(
+prim_fill <- new_primitive(
+  "fill",
   function(value, shape, dtype, ambiguous = FALSE, device = NULL) {
-    # ... graph_desc_add(...) ...
+    # ... graph_desc_add(self, ...) ...
   },
   static = 1:5,
   device = device_arg("device")
@@ -162,7 +140,7 @@ The StableHLO rule defines how to lower this primitive to actual operations, whi
 We implement `repeat_along` using concatenation:
 
 ```{r}
-p_repeat_along[["stablehlo"]] <- function(operand, times, dim) {
+prim_repeat_along[["stablehlo"]] <- function(operand, times, dim) {
   operands <- rep(list(operand), times)
   list(rlang::exec(stablehlo::hlo_concatenate, !!!operands, dimension = dim - 1L))
 }
@@ -188,7 +166,7 @@ The idea here is the following, where we assume the input `operand` has shape `(
 2. Sum over the `times` dimension and drop the `times` dimension.
 
 ```{r}
-p_repeat_along[["reverse"]] <- function(inputs, outputs, grads, dim, times, .required) {
+prim_repeat_along[["reverse"]] <- function(inputs, outputs, grads, dim, times, .required) {
   if (!.required[[1L]]) {
     return(list(NULL))
   }
@@ -203,8 +181,8 @@ p_repeat_along[["reverse"]] <- function(inputs, outputs, grads, dim, times, .req
   new_shape[dim] <- old_shape[dim]
   new_shape <- append(new_shape, times, after = dim - 1L)
 
-  grad_reshaped <- nvl_reshape(grad, new_shape)
-  grad_summed <- nvl_reduce_sum(grad_reshaped, dims = dim, drop = TRUE)
+  grad_reshaped <- prim_reshape(grad, new_shape)
+  grad_summed <- prim_reduce_sum(grad_reshaped, dims = dim, drop = TRUE)
   list(grad_summed)
 }
 ```
@@ -219,31 +197,28 @@ The reverse rule receives:
 
 It returns a list with one gradient per input (or `NULL` if not required).
 
-### Step 5: Register the Primitive
+### Step 5: Verify the Registration
 
-To not pollute the global namespace, the primitive objects (`p_repeat_along` in our case) are not exported.
-Instead, they can be retrieved via `prim("repeat_along")`.
-To make this work, you need to register the primitive object:
+`new_primitive()` returns the callable directly and also registers the primitive in the internal registry used by the graph machinery, so no separate registration step is needed:
 
 ```{r}
-register_primitive("repeat_along", p_repeat_along)
-prim("repeat_along")
+prim_repeat_along
 ```
 
 ### Step 6: Add an `nv_` API Function
 
 In {anvil}, we also offer convenience wrappers around the primitives.
-An example is `nvl_add` vs `nv_add`, where the latter calls into the former after optionally broadcasting (scalar) inputs:
+An example is `prim_add` vs `nv_add`, where the latter calls into the former after optionally broadcasting (scalar) inputs:
 
 ```{r, error = TRUE}
 nv_add(1L, nv_array(2:3))
-nvl_add(1L, nv_array(2:3))
+prim_add(1L, nv_array(2:3))
 ```
 
-In our case, no such convenience is needed and the functionality is not too low-level (for it to be generally useful), so we can just reassign the `nvl_*` function to an `nv_*` function:
+In our case, no such convenience is needed and the functionality is not too low-level (for it to be generally useful), so we can just reassign the `prim_*` function to an `nv_*` function:
 
 ```{r}
-nv_repeat_along <- nvl_repeat_along
+nv_repeat_along <- prim_repeat_along
 ```
 
 Note that in the `nv_*` wrapper function, you can only access certain properties of the input arrayish values via:
@@ -262,17 +237,17 @@ You can now use the primitive, both eagerly and inside a larger JIT-compiled fun
 
 ```{r}
 x <- nv_array(c(1, 2, 3), shape = c(3, 1))
-# Eager call -- works because nvl_repeat_along is itself jit()ted.
-nvl_repeat_along(x, times = 2L, dim = 2L)
+# Eager call -- works because prim_repeat_along is itself jit()ted.
+prim_repeat_along(x, times = 2L, dim = 2L)
 # Traced into the outer graph when composed with another jit()ted function.
-jit(function(x) nvl_repeat_along(x, times = 2L, dim = 2L))(x)
+jit(function(x) prim_repeat_along(x, times = 2L, dim = 2L))(x)
 ```
 
 And compute gradients through it.
 
 ```{r}
 f <- function(x) {
-  repeated <- nvl_repeat_along(x, times = 2L, dim = 2L)
+  repeated <- prim_repeat_along(x, times = 2L, dim = 2L)
   sum(repeated)
 }
 
@@ -286,7 +261,7 @@ If you want to contribute your primitive to {anvil}, there are some additional t
 
 ### File Organization
 
-- **`R/primitives.R`**: Define `AnvilPrimitive` object and `nvl_*` function
+- **`R/primitives.R`**: Define `AnvilPrimitive` object and `prim_*` function
 - **`R/rules-stablehlo.R`**: Add the StableHLO lowering rule
 - **`R/rules-reverse.R`**: Add the reverse rule (if differentiable)
 - **`R/api.R`**: Add the `nv_*` wrapper function (or possibly in another **api** file).
@@ -302,7 +277,7 @@ Tests can go in two places:
 **Important**: Test names must start with `"p_<name>"` (matching the primitive object name).
 The meta tests verify that every primitive has corresponding tests.
 
-Since no torch counterpart exists for `nvl_repeat_along`, we would add manual tests in:
+Since no torch counterpart exists for `prim_repeat_along`, we would add manual tests in:
 
 - `tests/testthat/test-primitives-stablehlo.R`
 - `tests/testthat/test-primitives-reverse.R`
@@ -312,6 +287,6 @@ Also, ensure that no linter errors are present, `devtools::check()` passes, and 
 ## Higher-Order Primitives
 
 Higher-Order Primitives are primitives that parameterized by an R function or expression.
-Examples include `nvl_if` and `nvl_while`.
+Examples include `prim_if` and `prim_while`.
 These are generally much more complex to handle, so we don't cover them here in detail (for now).
-The general idea, however, is that the primitive `nvl_*` function needs to trace the provided function using `trace_fn()` and then forward this graph to the stablehlo lowering rule and reverse rule.
+The general idea, however, is that the primitive `prim_*` function needs to trace the provided function using `trace_fn()` and then forward this graph to the stablehlo lowering rule and reverse rule.

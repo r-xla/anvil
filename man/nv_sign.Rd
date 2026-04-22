@@ -24,5 +24,5 @@ sign(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_sign]{nvl_sign()}} for the underlying primitive.
+\code{\link[=prim_sign]{prim_sign()}} for the underlying primitive.
 }

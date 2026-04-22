@@ -31,5 +31,5 @@ nv_clamp(nv_scalar(0), x, nv_scalar(1))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_clamp]{nvl_clamp()}} for the underlying primitive.
+\code{\link[=prim_clamp]{prim_clamp()}} for the underlying primitive.
 }

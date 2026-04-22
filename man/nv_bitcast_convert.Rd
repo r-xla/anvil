@@ -25,10 +25,10 @@ dimension is added; if wider, the last dimension is consumed.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(1L)
-nvl_bitcast_convert(x, dtype = "i8")
+prim_bitcast_convert(x, dtype = "i8")
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_bitcast_convert]{nvl_bitcast_convert()}} for the underlying primitive, \code{\link[=nv_convert]{nv_convert()}}
+\code{\link[=prim_bitcast_convert]{prim_bitcast_convert()}} for the underlying primitive, \code{\link[=nv_convert]{nv_convert()}}
 for value-preserving type conversion.
 }

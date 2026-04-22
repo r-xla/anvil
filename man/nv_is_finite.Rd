@@ -29,5 +29,5 @@ nv_is_finite(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_is_finite]{nvl_is_finite()}} for the underlying primitive.
+\code{\link[=prim_is_finite]{prim_is_finite()}} for the underlying primitive.
 }

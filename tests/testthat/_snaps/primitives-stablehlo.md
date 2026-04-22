@@ -1,4 +1,4 @@
-# p_print
+# prim_print
 
     Code
       out <<- f(x)

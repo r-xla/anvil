@@ -1,26 +1,26 @@
-test_that("p_add", {
-  expect_jit_torch_binary(nvl_add, torch::torch_add, c(2, 3), c(2, 3))
+test_that("prim_add", {
+  expect_jit_torch_binary(prim_add, torch::torch_add, c(2, 3), c(2, 3))
 })
 
-test_that("p_sub", {
-  expect_jit_torch_binary(nvl_sub, torch::torch_sub, c(2, 3), c(2, 3))
+test_that("prim_sub", {
+  expect_jit_torch_binary(prim_sub, torch::torch_sub, c(2, 3), c(2, 3))
 })
 
-test_that("p_mul", {
-  expect_jit_torch_binary(nvl_mul, torch::torch_mul, c(2, 3), c(2, 3))
+test_that("prim_mul", {
+  expect_jit_torch_binary(prim_mul, torch::torch_mul, c(2, 3), c(2, 3))
 })
 
-test_that("p_negate", {
-  expect_jit_torch_unary(nvl_negate, torch::torch_neg, c(2, 3))
+test_that("prim_negate", {
+  expect_jit_torch_unary(prim_negate, torch::torch_neg, c(2, 3))
 })
 
-test_that("p_div", {
-  expect_jit_torch_binary(nvl_div, torch::torch_div, c(2, 3), c(2, 3))
+test_that("prim_div", {
+  expect_jit_torch_binary(prim_div, torch::torch_div, c(2, 3), c(2, 3))
 })
 
-test_that("p_pow", {
+test_that("prim_pow", {
   expect_jit_torch_binary(
-    nvl_pow,
+    prim_pow,
     torch::torch_pow,
     c(2, 3),
     c(2, 3),
@@ -31,46 +31,46 @@ test_that("p_pow", {
 
 ## Comparisons
 
-test_that("p_eq", {
-  expect_jit_torch_binary(nvl_eq, torch::torch_eq, c(2, 3), c(2, 3))
+test_that("prim_eq", {
+  expect_jit_torch_binary(prim_eq, torch::torch_eq, c(2, 3), c(2, 3))
 })
 
-test_that("p_ne", {
-  expect_jit_torch_binary(nvl_ne, torch::torch_ne, c(2, 3), c(2, 3))
+test_that("prim_ne", {
+  expect_jit_torch_binary(prim_ne, torch::torch_ne, c(2, 3), c(2, 3))
 })
 
-test_that("p_gt", {
-  expect_jit_torch_binary(nvl_gt, torch::torch_gt, c(2, 3), c(2, 3))
+test_that("prim_gt", {
+  expect_jit_torch_binary(prim_gt, torch::torch_gt, c(2, 3), c(2, 3))
 })
 
-test_that("p_ge", {
-  expect_jit_torch_binary(nvl_ge, torch::torch_ge, c(2, 3), c(2, 3))
+test_that("prim_ge", {
+  expect_jit_torch_binary(prim_ge, torch::torch_ge, c(2, 3), c(2, 3))
 })
 
-test_that("p_lt", {
-  expect_jit_torch_binary(nvl_lt, torch::torch_lt, c(2, 3), c(2, 3))
+test_that("prim_lt", {
+  expect_jit_torch_binary(prim_lt, torch::torch_lt, c(2, 3), c(2, 3))
 })
 
-test_that("p_le", {
-  expect_jit_torch_binary(nvl_le, torch::torch_le, c(2, 3), c(2, 3))
+test_that("prim_le", {
+  expect_jit_torch_binary(prim_le, torch::torch_le, c(2, 3), c(2, 3))
 })
 
-test_that("p_max", {
-  expect_jit_torch_binary(nvl_max, torch::torch_maximum, c(2, 3), c(2, 3))
+test_that("prim_max", {
+  expect_jit_torch_binary(prim_max, torch::torch_maximum, c(2, 3), c(2, 3))
 })
 
-test_that("p_min", {
-  expect_jit_torch_binary(nvl_min, torch::torch_minimum, c(2, 3), c(2, 3))
+test_that("prim_min", {
+  expect_jit_torch_binary(prim_min, torch::torch_minimum, c(2, 3), c(2, 3))
 })
 
-test_that("p_remainder", {
+test_that("prim_remainder", {
   pos_int_nz <- function(shp, dtype) {
     nelts <- if (!length(shp)) 1L else prod(shp)
     vals <- sample(10, size = nelts, replace = TRUE)
     if (!length(shp)) vals else array(vals, shp)
   }
   expect_jit_torch_binary(
-    nvl_remainder,
+    prim_remainder,
     torch::torch_remainder,
     c(2, 3),
     c(2, 3),
@@ -80,128 +80,128 @@ test_that("p_remainder", {
   )
 })
 
-test_that("p_and", {
-  expect_jit_torch_binary(nvl_and, torch::torch_logical_and, c(2, 3), c(2, 3), dtype = "bool")
+test_that("prim_and", {
+  expect_jit_torch_binary(prim_and, torch::torch_logical_and, c(2, 3), c(2, 3), dtype = "bool")
 })
 
-test_that("p_not", {
-  expect_jit_torch_unary(nvl_not, \(x) !x, c(2, 3), dtype = "bool")
+test_that("prim_not", {
+  expect_jit_torch_unary(prim_not, \(x) !x, c(2, 3), dtype = "bool")
 })
 
-test_that("p_or", {
-  expect_jit_torch_binary(nvl_or, torch::torch_logical_or, c(2, 3), c(2, 3), dtype = "bool")
+test_that("prim_or", {
+  expect_jit_torch_binary(prim_or, torch::torch_logical_or, c(2, 3), c(2, 3), dtype = "bool")
 })
 
-test_that("p_xor", {
-  expect_jit_torch_binary(nvl_xor, torch::torch_logical_xor, c(2, 3), c(2, 3), dtype = "bool")
+test_that("prim_xor", {
+  expect_jit_torch_binary(prim_xor, torch::torch_logical_xor, c(2, 3), c(2, 3), dtype = "bool")
 })
 
 
-test_that("p_atan2", {
-  expect_jit_torch_binary(nvl_atan2, torch::torch_atan2, c(2, 3), c(2, 3))
+test_that("prim_atan2", {
+  expect_jit_torch_binary(prim_atan2, torch::torch_atan2, c(2, 3), c(2, 3))
 })
 
 # Unary math
 
-test_that("p_abs", {
-  expect_jit_torch_unary(nvl_abs, torch::torch_abs, c(2, 3))
+test_that("prim_abs", {
+  expect_jit_torch_unary(prim_abs, torch::torch_abs, c(2, 3))
 })
 
-test_that("p_sqrt", {
+test_that("prim_sqrt", {
   expect_jit_torch_unary(
-    nvl_sqrt,
+    prim_sqrt,
     torch::torch_sqrt,
     c(2, 3),
     non_negative = TRUE
   )
 })
 
-test_that("p_rsqrt", {
+test_that("prim_rsqrt", {
   expect_jit_torch_unary(
-    nvl_rsqrt,
+    prim_rsqrt,
     torch::torch_rsqrt,
     c(2, 3),
     non_negative = TRUE
   )
 })
 
-test_that("p_log", {
+test_that("prim_log", {
   expect_jit_torch_unary(
-    nvl_log,
+    prim_log,
     torch::torch_log,
     c(2, 3),
     non_negative = TRUE
   )
 })
 
-test_that("p_tanh", {
-  expect_jit_torch_unary(nvl_tanh, torch::torch_tanh, c(2, 3))
+test_that("prim_tanh", {
+  expect_jit_torch_unary(prim_tanh, torch::torch_tanh, c(2, 3))
 })
 
-test_that("p_tan", {
-  expect_jit_torch_unary(nvl_tan, torch::torch_tan, c(2, 3))
+test_that("prim_tan", {
+  expect_jit_torch_unary(prim_tan, torch::torch_tan, c(2, 3))
 })
 
-test_that("p_floor", {
-  expect_jit_torch_unary(nvl_floor, torch::torch_floor, c(2, 3))
+test_that("prim_floor", {
+  expect_jit_torch_unary(prim_floor, torch::torch_floor, c(2, 3))
 })
 
-test_that("p_ceil", {
-  expect_jit_torch_unary(nvl_ceil, torch::torch_ceil, c(2, 3))
+test_that("prim_ceil", {
+  expect_jit_torch_unary(prim_ceil, torch::torch_ceil, c(2, 3))
 })
 
-test_that("p_sign", {
-  expect_jit_torch_unary(nvl_sign, torch::torch_sign, c(2, 3))
+test_that("prim_sign", {
+  expect_jit_torch_unary(prim_sign, torch::torch_sign, c(2, 3))
 })
 
-test_that("p_exp", {
-  expect_jit_torch_unary(nvl_exp, torch::torch_exp, c(2, 3))
+test_that("prim_exp", {
+  expect_jit_torch_unary(prim_exp, torch::torch_exp, c(2, 3))
 })
 
-test_that("p_round", {
-  nv_even <- function(a) nvl_round(a, method = "nearest_even")
+test_that("prim_round", {
+  nv_even <- function(a) prim_round(a, method = "nearest_even")
   th_even <- function(a) torch::torch_round(a)
   expect_jit_torch_unary(nv_even, th_even, c(2, 3))
 
-  nv_afz <- function(a) nvl_round(a, method = "afz")
+  nv_afz <- function(a) prim_round(a, method = "afz")
   th_afz <- function(a) torch::torch_sign(a) * torch::torch_floor(torch::torch_abs(a) + 0.5)
   expect_jit_torch_unary(nv_afz, th_afz, c(2, 3))
 })
 
-test_that("p_convert", {
-  nv_fun <- function(a) nvl_convert(a, "f64")
+test_that("prim_convert", {
+  nv_fun <- function(a) prim_convert(a, "f64")
   th_fun <- function(a) a$to(dtype = torch::torch_float64())
   expect_jit_torch_unary(nv_fun, th_fun, c(2, 3))
 })
 
-test_that("p_broadcast_in_dim", {
+test_that("prim_broadcast_in_dim", {
   input_shape <- c(2L, 3L)
   target_shape <- c(4L, 2L, 3L)
   bdims <- c(2L, 3L)
   x <- generate_test_data(input_shape, dtype = "f32")
-  f <- jit(function(a) nvl_broadcast_in_dim(a, target_shape, bdims))
+  f <- jit(function(a) prim_broadcast_in_dim(a, target_shape, bdims))
   out_nv <- f(nv_array(x))
   out_th <- torch::torch_tensor(x)$unsqueeze(1)$expand(target_shape)
   testthat::expect_equal(sum(as_array(out_nv)), as.numeric(torch::as_array(out_th$sum())), tolerance = 1e-5)
 })
 
-test_that("p_select", {
+test_that("prim_ifelse", {
   p <- nv_array(c(TRUE, FALSE, TRUE, FALSE), dtype = "bool")
   a <- nv_array(as.integer(c(1, 2, 3, 4)), dtype = "i32")
   b <- nv_array(as.integer(c(10, 20, 30, 40)), dtype = "i32")
-  out <- jit(nvl_ifelse)(p, a, b)
+  out <- jit(prim_ifelse)(p, a, b)
   pt <- torch::torch_tensor(as_array(p), dtype = torch::torch_bool())
   at <- torch::torch_tensor(as_array(a), dtype = torch::torch_int32())
   bt <- torch::torch_tensor(as_array(b), dtype = torch::torch_int32())
   expect_equal(as_array(out), as_array_torch(torch::torch_where(pt, at, bt)))
 })
 
-test_that("p_dot_general", {
+test_that("prim_dot_general", {
   # vector dot
   x <- nv_array(rnorm(4), dtype = "f32")
   y <- nv_array(rnorm(4), dtype = "f32")
   out <- jit(function(a, b) {
-    nvl_dot_general(a, b, contracting_dims = list(1L, 1L), batching_dims = list(integer(), integer()))
+    prim_dot_general(a, b, contracting_dims = list(1L, 1L), batching_dims = list(integer(), integer()))
   })(x, y)
   tx <- torch::torch_tensor(as_array(x))
   ty <- torch::torch_tensor(as_array(y))
@@ -211,7 +211,7 @@ test_that("p_dot_general", {
   A <- nv_array(matrix(rnorm(6), 3, 2), dtype = "f32")
   v <- nv_array(rnorm(2), dtype = "f32")
   out2 <- jit(function(a, b) {
-    nvl_dot_general(a, b, contracting_dims = list(2L, 1L), batching_dims = list(integer(), integer()))
+    prim_dot_general(a, b, contracting_dims = list(2L, 1L), batching_dims = list(integer(), integer()))
   })(A, v)
   tA <- torch::torch_tensor(as_array(A))
   tv <- torch::torch_tensor(as_array(v))
@@ -221,61 +221,61 @@ test_that("p_dot_general", {
   X <- nv_array(array(rnorm(2 * 3 * 4), c(2, 3, 4)), dtype = "f32")
   Y <- nv_array(array(rnorm(2 * 4 * 5), c(2, 4, 5)), dtype = "f32")
   out3 <- jit(function(a, b) {
-    nvl_dot_general(a, b, contracting_dims = list(3L, 2L), batching_dims = list(1L, 1L))
+    prim_dot_general(a, b, contracting_dims = list(3L, 2L), batching_dims = list(1L, 1L))
   })(X, Y)
   tX <- torch::torch_tensor(as_array(X))
   tY <- torch::torch_tensor(as_array(Y))
   expect_equal(as_array(out3), as_array_torch(tX$matmul(tY)), tolerance = 1e-5)
 })
 
-test_that("p_cbrt", {
+test_that("prim_cbrt", {
   expect_jit_torch_unary(
-    nvl_cbrt,
+    prim_cbrt,
     \(x) torch::torch_pow(x, 1 / 3),
     c(2, 3),
     non_negative = TRUE
   )
 })
 
-test_that("p_expm1", {
-  expect_jit_torch_unary(nvl_expm1, torch::torch_expm1, c(2, 3))
+test_that("prim_expm1", {
+  expect_jit_torch_unary(prim_expm1, torch::torch_expm1, c(2, 3))
 })
 
-test_that("p_log1p", {
+test_that("prim_log1p", {
   expect_jit_torch_unary(
-    nvl_log1p,
+    prim_log1p,
     torch::torch_log1p,
     c(2, 3),
     non_negative = TRUE
   )
 })
 
-test_that("p_logistic", {
-  expect_jit_torch_unary(nvl_logistic, torch::torch_sigmoid, c(2, 3))
+test_that("prim_logistic", {
+  expect_jit_torch_unary(prim_logistic, torch::torch_sigmoid, c(2, 3))
 })
 
-describe("p_cholesky", {
+describe("prim_cholesky", {
   it("lower = TRUE", {
     A <- crossprod(matrix(rnorm(9), 3, 3)) + diag(3)
-    out_nv <- as_array(jit(function(a) nvl_cholesky(a, lower = TRUE))(nv_array(A, dtype = "f64")))
+    out_nv <- as_array(jit(function(a) prim_cholesky(a, lower = TRUE))(nv_array(A, dtype = "f64")))
     out_th <- as_array_torch(torch::linalg_cholesky(torch::torch_tensor(A, dtype = torch::torch_float64())))
     expect_equal(out_nv, out_th, tolerance = 1e-6)
   })
 
   it("lower = FALSE", {
     A <- crossprod(matrix(rnorm(9), 3, 3)) + diag(3)
-    out_nv <- as_array(jit(function(a) nvl_cholesky(a, lower = FALSE))(nv_array(A, dtype = "f64")))
+    out_nv <- as_array(jit(function(a) prim_cholesky(a, lower = FALSE))(nv_array(A, dtype = "f64")))
     out_th <- as_array_torch(torch::linalg_cholesky(torch::torch_tensor(A, dtype = torch::torch_float64()))$t())
     expect_equal(out_nv, out_th, tolerance = 1e-6)
   })
 })
 
-describe("p_triangular_solve", {
+describe("prim_triangular_solve", {
   it("left_side, lower", {
     L <- matrix(c(3, 1, 0, 2), nrow = 2)
     b <- matrix(c(6, 5), nrow = 2)
     out_nv <- as_array(jit(function(a, b) {
-      nvl_triangular_solve(a, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+      prim_triangular_solve(a, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
     })(nv_array(L, dtype = "f64"), nv_array(b, dtype = "f64")))
     out_th <- as_array_torch(torch::linalg_solve_triangular(
       torch::torch_tensor(L, dtype = torch::torch_float64()),
@@ -290,7 +290,7 @@ describe("p_triangular_solve", {
     U <- matrix(c(3, 0, 1, 2), nrow = 2)
     b <- matrix(c(6, 5, 4, 3), nrow = 2)
     out_nv <- as_array(jit(function(a, b) {
-      nvl_triangular_solve(a, b, left_side = FALSE, lower = FALSE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+      prim_triangular_solve(a, b, left_side = FALSE, lower = FALSE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
     })(nv_array(U, dtype = "f64"), nv_array(b, dtype = "f64")))
     out_th <- as_array_torch(torch::linalg_solve_triangular(
       torch::torch_tensor(U, dtype = torch::torch_float64()),
@@ -302,14 +302,14 @@ describe("p_triangular_solve", {
   })
 })
 
-test_that("p_pad", {
+test_that("prim_pad", {
   x_arr <- array(1:6, c(2, 3))
   x_nv <- nv_array(x_arr, dtype = "f32")
   x_th <- torch::torch_tensor(x_arr, dtype = torch::torch_float32())
 
   # Simple edge padding
   out_nv <- jit(function(a) {
-    nvl_pad(a, nv_scalar(0.0, "f32"), c(1L, 1L), c(1L, 1L), c(0L, 0L))
+    prim_pad(a, nv_scalar(0.0, "f32"), c(1L, 1L), c(1L, 1L), c(0L, 0L))
   })(x_nv)
   # torch.nn.functional.pad uses (left, right, top, bottom) for 2D
   out_th <- torch::nnf_pad(x_th, c(1L, 1L, 1L, 1L), value = 0.0)

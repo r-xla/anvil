@@ -27,5 +27,5 @@ x != y
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_ne]{nvl_ne()}} for the underlying primitive.
+\code{\link[=prim_ne]{prim_ne()}} for the underlying primitive.
 }

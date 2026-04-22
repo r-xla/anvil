@@ -1,6 +1,6 @@
 test_that("stablehlo rule is tested", {
   nms <- names(asNamespace("anvil"))
-  primitive_names <- nms[grepl("^p_", nms)]
+  primitive_names <- nms[grepl("^prim_", nms)]
 
   tests_dir <- testthat::test_path()
   candidate_files <- c(
@@ -25,11 +25,11 @@ test_that("stablehlo rule is tested", {
 
 test_that("reverse rule is tested", {
   nms <- names(asNamespace("anvil"))
-  primitive_names <- nms[grepl("^p_", nms)]
+  primitive_names <- nms[grepl("^prim_", nms)]
 
   primitive_names <- Filter(
     function(nm) {
-      !is.null(getFromNamespace(nm, "anvil")$rules[["reverse"]])
+      !is.null(getFromNamespace(nm, "anvil")[["reverse"]])
     },
     primitive_names
   )

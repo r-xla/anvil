@@ -79,7 +79,7 @@ During this evaluation, we need to distinguish between two cases:
 The evaluation of the `if` statement is an example for the first category.
 Because we set `op = "mul"`, only the second branch is executed.
 Then, we are calling `nv_mul`, which attaches a `PrimitiveCall` that represents the multiplication of the two arrays to the `$calls` of the `GraphDescriptor`.
-Note that the `nv_mul` is itself not primitive, but performs some type promotion and broadcasting if needed, before calling into the primitive `nvl_mul()`.
+Note that the `nv_mul` is itself not primitive, but performs some type promotion and broadcasting if needed, before calling into the primitive `prim_mul`.
 
 A `PrimitiveCall` object consists of the following fields:
 
@@ -97,12 +97,12 @@ Once the `R` function is staged out into a simpler format, it is ready to be tra
 The {anvil} package does not in any way dictate how such a `AnvilGraph` to `AnvilGraph` transformation can be implemented.
 For most interesting transformations, however, we need to store some information for each {anvil} primitive function.
 In the case of the gradient, we need to store the derivative rules.
-For this, `anvil::Primitive` objects have a `$rules` field that can be populated.
+For this, the `anvil::AnvilPrimitive` metadata object attached to each primitive has a `rules` field that can be populated.
 The derivative rules are stored as functions under the `"reverse"` name.
-We can access a primitive by it's name via the `prim()` function:
+Each primitive is an exported `prim_*` function; `[[` on it reads a rule:
 
 ```{r}
-prim("mul")$rules[["reverse"]]
+prim_mul[["reverse"]]
 ```
 
 The `anvil::transform_gradient` function uses these rules to compute the gradient of a function.
@@ -121,10 +121,10 @@ Here, we show how to compile using the XLA backend.
 First, we will translate the `AnvilGraph` into the StableHLO representation via the {stablehlo} package.
 Then, we will compile this program using the XLA compiler that is accessible via the {pjrt} package.
 
-Like for the gradient transformation, the rules of how to do this transformation are stored in the `$rules` fields of the primitives.
+Like for the gradient transformation, the rules of how to do this transformation are attached to each primitive.
 
 ```{r}
-prim("mul")$rules[["stablehlo"]]
+prim_mul[["stablehlo"]]
 ```
 
 The `anvil::stablehlo` function will create a `stablehlo::Func` object and will sequentially translate the `PrimitiveCall`s into StableHLO operations.
@@ -326,7 +326,7 @@ Some things that are important to be aware of:
 TODO
 ## Dichotomy of anvil functions
 
-Here, we will dig deeper into the dichotomy of {anvil} functions such as `nvl_add`.
+Here, we will dig deeper into the dichotomy of {anvil} functions such as `prim_add`.
 In the *Getting Started* vignette, we have learned that these functions can either be called directly on `AnvilArray`s to transform data, or used within `jit()` blocks to build up programs.
 Here, we will explain what this actually does and why this is possible.
 
@@ -339,7 +339,7 @@ With our implementation, the following is possible:
 
 ```{r}
 library(anvil)
-nvl_add(nv_scalar(1), nv_scalar(2))
+prim_add(nv_scalar(1), nv_scalar(2))
 
 times_2 <- jit(function(x) {
   nv_mul(x, 2)
@@ -366,7 +366,7 @@ times_4 <- jit(function(x) {
 ```
 
 This is rather cumbersome, as there are always two versions of a function and the first solution is preferable.
-Internally, we have implemented this by wrapping every `nvl_*` primitive function in `jit()` and making a `jit()`ted function behave differently depending on whether we are in another `jit()` call or not.
+Internally, we have implemented this by wrapping every primitive function in `jit()` and making a `jit()`ted function behave differently depending on whether we are in another `jit()` call or not.
 
 If we are in a `jit()` call, and call into a function `jit(f)`, internally `f` is evaluated, and the function is re-traced.
 Otherwise, the standard jit path is followed.

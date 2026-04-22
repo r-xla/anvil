@@ -1,6 +1,6 @@
 test_that("jit: basic test", {
   f <- jit(function(x, y) {
-    nvl_add(x, y)
+    prim_add(x, y)
   })
 
   expect_equal(
@@ -16,7 +16,7 @@ test_that("jit: basic test", {
 test_that("jit: a constant", {
   x <- nv_scalar(1)
   f <- function(y) {
-    nvl_add(x, y)
+    prim_add(x, y)
   }
   f_jit <- jit(f)
   expect_equal(
@@ -51,7 +51,7 @@ test_that("jit basic test", {
 })
 
 test_that("can return single array", {
-  f <- jit(nvl_add)
+  f <- jit(prim_add)
   expect_equal(
     f(
       nv_array(1.0),
@@ -97,8 +97,8 @@ test_that("Can multiply values from lists", {
 test_that("multiple returns", {
   f <- jit(function(x, y) {
     list(
-      nvl_add(x, y),
-      nvl_mul(x, y)
+      prim_add(x, y),
+      prim_mul(x, y)
     )
   })
 
@@ -207,7 +207,7 @@ test_that("static cannot be '...'", {
 
 
 test_that("jit: array return value is not wrapped in list", {
-  f <- jit(nvl_add)
+  f <- jit(prim_add)
   out <- f(nv_scalar(1.2), nv_scalar(-0.7))
   expect_equal(as_array(out), 1.2 + (-0.7), tolerance = 1e-6)
 })

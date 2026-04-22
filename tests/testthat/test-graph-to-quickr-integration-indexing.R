@@ -9,7 +9,7 @@ test_that("integration: indexing-heavy graph matches PJRT", {
   sc_idx <- matrix(c(2L, 6L), ncol = 1L)
 
   fn <- function(operand, idx, padv, s1, s2, sc_idx) {
-    g <- nvl_gather(
+    g <- prim_gather(
       operand,
       idx,
       slice_sizes = c(1L, 2L, 2L),
@@ -23,7 +23,7 @@ test_that("integration: indexing-heavy graph matches PJRT", {
 
     r <- nv_reverse(g, dims = 3L)
 
-    p <- nvl_pad(
+    p <- prim_pad(
       r,
       padv,
       edge_padding_low = c(1L, 0L, 0L),
@@ -31,12 +31,12 @@ test_that("integration: indexing-heavy graph matches PJRT", {
       interior_padding = c(0L, 1L, 0L)
     )
 
-    s <- nvl_dynamic_slice(p, s1, s2, 1L, slice_sizes = c(2L, 2L, 2L))
-    m <- nvl_reshape(s, shape = c(2L, 4L))
-    upd <- nvl_reduce_sum(m, dims = 2L, drop = TRUE)
+    s <- prim_dynamic_slice(p, s1, s2, 1L, slice_sizes = c(2L, 2L, 2L))
+    m <- prim_reshape(s, shape = c(2L, 4L))
+    upd <- prim_reduce_sum(m, dims = 2L, drop = TRUE)
 
     base <- nv_iota(dim = 1L, dtype = "i32", shape = 6L, start = 0L)
-    scattered <- nvl_scatter(
+    scattered <- prim_scatter(
       base,
       sc_idx,
       upd,
@@ -49,7 +49,7 @@ test_that("integration: indexing-heavy graph matches PJRT", {
       update_computation = function(old, new) old + new
     )
 
-    out_f64 <- nvl_convert(scattered, dtype = "f64")
+    out_f64 <- prim_convert(scattered, dtype = "f64")
     list(slice = s, scattered = scattered, total = sum(out_f64))
   }
 

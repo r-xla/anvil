@@ -17,8 +17,7 @@ AnvilGraph(
 }
 \arguments{
 \item{calls}{(\code{list(PrimitiveCall)})\cr
-The primitive calls that make up the graph.
-This can also be another call into a graph when the primitive is a \code{p_call}.}
+The primitive calls that make up the graph.}
 
 \item{in_tree}{(\code{NULL | Node})\cr
 The tree of inputs. May contain leaves for both array inputs and static
