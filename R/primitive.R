@@ -76,10 +76,12 @@ print.AnvilPrimitive <- function(x, ...) {
 
 #' @title Create a Primitive
 #' @description
-#' Builds an [`AnvilPrimitive`] metadata object, wraps `fn` with [`jit()`]
-#' (backend `"auto"`), attaches the metadata via `attr(., "primitive")`,
-#' prepends class `"JitPrimitive"`, and (by default) registers the result
-#' under `name` in the primitive registry.
+#' Builds an [`AnvilPrimitive`] metadata object, wraps `fn` with [`jit()`],
+#' attaches the metadata via `attr(., "primitive")`, prepends class
+#' `"JitPrimitive"`, and (by default) registers the result under `name` in
+#' the primitive registry.
+#'
+#' The backend is always `"auto"` and cannot be configured.
 #' @param name (`character(1)`)\cr
 #'   Primitive name.
 #' @param fn (`function`)\cr
