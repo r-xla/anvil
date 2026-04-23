@@ -99,11 +99,11 @@ shapes2string <- function(shapes) {
 }
 
 zeros <- function(dtype, shape, ambiguous) {
-  nvl_fill(0L, dtype = dtype, shape = shape, ambiguous = ambiguous)
+  prim_fill(0L, dtype = dtype, shape = shape, ambiguous = ambiguous)
 }
 
 ones <- function(dtype, shape, ambiguous) {
-  nvl_fill(1L, dtype = dtype, shape = shape, ambiguous = ambiguous)
+  prim_fill(1L, dtype = dtype, shape = shape, ambiguous = ambiguous)
 }
 
 
@@ -199,25 +199,25 @@ gather_clamp_indices <- function(
     bounds_shape <- rep(1L, length(indices_shape))
     bounds_shape[index_vector_dim] <- n_index_coords
 
-    min_tensor <- nvl_broadcast_in_dim(
-      nvl_fill(1L, dtype = dtype(start_indices), shape = integer()),
+    min_tensor <- prim_broadcast_in_dim(
+      prim_fill(1L, dtype = dtype(start_indices), shape = integer()),
       indices_shape,
       integer()
     )
 
     # The max bound is the same for a given slice along the index_vector_dim
-    max_tensor_vals <- nvl_reshape(
+    max_tensor_vals <- prim_reshape(
       nv_convert(nv_array(max_bounds, dtype = "i64"), dtype = dtype(start_indices)),
       bounds_shape
     )
     max_tensor <- nv_broadcast_to(max_tensor_vals, indices_shape)
 
-    nvl_clamp(min_tensor, start_indices, max_tensor)
+    prim_clamp(min_tensor, start_indices, max_tensor)
   } else {
     # Implicit index vector (single coordinate)
-    min_tensor <- nvl_fill(1L, dtype = dtype(start_indices), shape = integer())
-    max_tensor <- nvl_fill(max_bounds[1L], dtype = dtype(start_indices), shape = integer())
-    nvl_clamp(min_tensor, start_indices, max_tensor)
+    min_tensor <- prim_fill(1L, dtype = dtype(start_indices), shape = integer())
+    max_tensor <- prim_fill(max_bounds[1L], dtype = dtype(start_indices), shape = integer())
+    prim_clamp(min_tensor, start_indices, max_tensor)
   }
 }
 
@@ -247,7 +247,7 @@ scatter_to_gather_slice_sizes <- function(
 }
 
 is_device_arg <- function(x) {
-  inherits(x, "AnvilDeviceArg")
+  inherits(x, "AnvlDeviceArg")
 }
 
 # returns list(device | NULL, backend)

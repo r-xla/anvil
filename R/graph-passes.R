@@ -15,7 +15,7 @@ traverse_gnodes <- function(graph, fn, graph_outputs = TRUE) {
 }
 
 remove_unused_constants <- function(graph) {
-  new_graph <- AnvilGraph(
+  new_graph <- AnvlGraph(
     calls = graph$calls,
     in_tree = graph$in_tree,
     out_tree = graph$out_tree,
@@ -58,7 +58,7 @@ inline_scalarish_constants <- function(graph, map = NULL) {
   }
 
   # Create a copy of the graph
-  new_graph <- AnvilGraph(
+  new_graph <- AnvlGraph(
     calls = graph$calls,
     in_tree = graph$in_tree,
     out_tree = graph$out_tree,
@@ -115,7 +115,7 @@ inline_scalarish_constants <- function(graph, map = NULL) {
       new_graph$calls,
       lapply(consts, function(const) {
         PrimitiveCall(
-          primitive = p_fill,
+          primitive = prim_fill,
           inputs = list(),
           params = list(value = const$aval$data, dtype = dtype(const$aval), shape = shape(const$aval)),
           outputs = list(const)

@@ -32,5 +32,5 @@ nv_reduce_max(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_reduce_max]{nvl_reduce_max()}} for the underlying primitive.
+\code{\link[=prim_reduce_max]{prim_reduce_max()}} for the underlying primitive.
 }

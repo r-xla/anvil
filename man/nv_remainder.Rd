@@ -27,5 +27,5 @@ x \%\% y
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_remainder]{nvl_remainder()}} for the underlying primitive.
+\code{\link[=prim_remainder]{prim_remainder()}} for the underlying primitive.
 }

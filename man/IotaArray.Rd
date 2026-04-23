@@ -26,7 +26,7 @@ See the \code{vignette("type-promotion")} for more details.}
 }
 \description{
 An \code{\link{AbstractArray}} representing an integer sequence.
-Usually created by \code{\link[=nv_iota]{nv_iota()}} / \code{\link[=nv_seq]{nv_seq()}}, which both call \code{\link[=nvl_iota]{nvl_iota()}} internally.
+Usually created by \code{\link[=nv_iota]{nv_iota()}} / \code{\link[=nv_seq]{nv_seq()}}, which both call \code{\link[=prim_iota]{prim_iota()}} internally.
 Inherits from \code{\link{AbstractArray}}.
 }
 \section{Lowering}{

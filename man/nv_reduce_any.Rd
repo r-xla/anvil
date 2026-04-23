@@ -33,5 +33,5 @@ nv_reduce_any(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_reduce_any]{nvl_reduce_any()}} for the underlying primitive.
+\code{\link[=prim_reduce_any]{prim_reduce_any()}} for the underlying primitive.
 }

@@ -37,5 +37,5 @@ nv_while(
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_while]{nvl_while()}} for the underlying primitive.
+\code{\link[=prim_while]{prim_while()}} for the underlying primitive.
 }

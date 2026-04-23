@@ -23,7 +23,7 @@ jit_call_xla <- function(exec, out_node, consts_flat, args_flat, is_static_flat,
   jit_wrap_outputs(out_vals, out_node, ambiguous_out, "xla")
 }
 
-# device: NULL | PJRTDdevice | AnvilDeviceArg;
+# device: NULL | PJRTDdevice | AnvlDeviceArg;
 jit_xla_impl <- function(f, static, cache, donate, device) {
   if (!is.null(device) && !is_device_arg(device)) {
     device <- nv_device(device, "xla")
@@ -59,7 +59,7 @@ jit_xla_impl <- function(f, static, cache, donate, device) {
       ))
     }
 
-    args_flat_nv <- prep$args_flat[!prep$is_static_flat & vapply(prep$args_flat, is_anvil_array, logical(1))]
+    args_flat_nv <- prep$args_flat[!prep$is_static_flat & vapply(prep$args_flat, is_anvl_array, logical(1))]
 
     arg_devices <- lapply(args_flat_nv, tengen::device)
 
@@ -215,7 +215,7 @@ compile_graph_xla <- function(graph, donate = character(), device) {
 #' via [`stablehlo()`] and then compiles it to an XLA executable via [`pjrt::pjrt_compile()`].
 #'
 #' @param f (`function`)\cr
-#'   Function to compile. Must accept and return [`AnvilArray`]s.
+#'   Function to compile. Must accept and return [`AnvlArray`]s.
 #' @param args (`list`)\cr
 #'   List of abstract array specifications (e.g. from [`nv_aval()`]) describing the
 #'   expected shapes and dtypes of `f`'s arguments.
@@ -224,8 +224,8 @@ compile_graph_xla <- function(graph, donate = character(), device) {
 #' @param device (`character(1)` | `PJRTDevice`)\cr
 #'   Target device such as `"cpu"` (default) or `"cuda"`.
 #' @return (`function`)\cr
-#'   A function that accepts [`AnvilArray`] arguments (matching the flat inputs)
-#'   and returns the result as [`AnvilArray`]s.
+#'   A function that accepts [`AnvlArray`] arguments (matching the flat inputs)
+#'   and returns the result as [`AnvlArray`]s.
 #' @seealso [`jit()`] for lazy compilation, [`compile_xla()`] for the lower-level API.
 #' @export
 #' @examplesIf pjrt::plugins_downloaded()
@@ -282,14 +282,14 @@ xla <- function(f, args, donate = character(), device = NULL) {
 #' backend.
 #'
 #' @section Data representation:
-#' An [`AnvilArray`] with `backend = "xla"` wraps a [`pjrt::pjrt_buffer()`]
+#' An [`AnvlArray`] with `backend = "xla"` wraps a [`pjrt::pjrt_buffer()`]
 #' stored in the `$data` field. The buffer owns the memory holding the tensor
 #' values and may live on any device supported by PJRT (CPU, CUDA, Metal,
 #' ...). Calling [`as_array()`] transfers the buffer contents back to an R
 #' array; calling [`nv_array()`] on an R object uploads it to the requested
 #' device.
 #'
-#' Each `AnvilArray` therefore has an associated device, queryable via
+#' Each `AnvlArray` therefore has an associated device, queryable via
 #' [`device()`]. A device is a [`pjrt::as_pjrt_device()`] object (e.g. the
 #' platform `"cpu"` or `"cuda"`, optionally with an index such as `"cuda:1"`).
 #' When `device` is `NULL` in [`nv_array()`] or the [`jit()`] wrapper, the
@@ -304,16 +304,16 @@ xla <- function(f, args, donate = character(), device = NULL) {
 #'   caller after the call; this can reduce memory usage and copies for large
 #'   inputs. Must not overlap with `static`.
 #'
-#' @return An [`AnvilBackend`] object with subclass `"AnvilBackendXla"`.
-#' @seealso [`AnvilBackend()`], [`AnvilBackendQuickr()`], [`local_backend()`], [`jit()`].
+#' @return An [`AnvlBackend`] object with subclass `"AnvlBackendXla"`.
+#' @seealso [`AnvlBackend()`], [`AnvlBackendQuickr()`], [`local_backend()`], [`jit()`].
 #' @export
-AnvilBackendXla <- function() {
-  backend <- AnvilBackend(
+AnvlBackendXla <- function() {
+  backend <- AnvlBackend(
     new_data = function(data, dtype, shape, device, ambiguous) {
       buf <- pjrt_buffer(data, dtype = dtype, device = device, shape = shape)
       structure(
         list(data = buf, ambiguous = ambiguous, backend = "xla"),
-        class = "AnvilArray"
+        class = "AnvlArray"
       )
     },
     dtype = function(x) tengen::dtype(x$data),
@@ -335,8 +335,8 @@ AnvilBackendXla <- function() {
       jit_xla_impl(f, static, cache, donate, device)
     }
   )
-  class(backend) <- c("AnvilBackendXla", class(backend))
+  class(backend) <- c("AnvlBackendXla", class(backend))
   backend
 }
 
-register_backend("xla", AnvilBackendXla())
+register_backend("xla", AnvlBackendXla())

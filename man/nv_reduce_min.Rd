@@ -32,5 +32,5 @@ nv_reduce_min(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_reduce_min]{nvl_reduce_min()}} for the underlying primitive.
+\code{\link[=prim_reduce_min]{prim_reduce_min()}} for the underlying primitive.
 }

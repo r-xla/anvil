@@ -26,7 +26,7 @@ to_abstract(1.5)
 to_abstract(1L)
 to_abstract(TRUE)
 
-# AnvilArrays become ConcreteArrays
+# AnvlArrays become ConcreteArrays
 to_abstract(nv_array(1:4))
 
 # Use pure = TRUE to strip subclass info

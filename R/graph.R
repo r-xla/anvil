@@ -3,7 +3,7 @@
 
 #' @title Graph Value
 #' @description
-#' Value in an [`AnvilGraph`]. This is a mutable class.
+#' Value in an [`AnvlGraph`]. This is a mutable class.
 #' @param aval ([`AbstractArray`])\cr
 #'   The abstract value of the variable.
 #' @return (`GraphValue`)
@@ -20,7 +20,7 @@ GraphValue <- function(aval) {
 
 #' @title Graph Literal
 #' @description
-#' Literal in an [`AnvilGraph`]. This is a mutable class.
+#' Literal in an [`AnvlGraph`]. This is a mutable class.
 #' @param aval ([`LiteralArray`])\cr
 #'   The value of the literal.
 #' @return (`GraphLiteral`)
@@ -55,7 +55,7 @@ print.GraphValue <- function(x, ...) {
 format.GraphLiteral <- function(x, ...) {
   # otherwise there might be conversion issues, so we directly use the pjrt printer
   # instead of converting via as_array(), which loses precision
-  val <- if (is_anvil_array(x$aval$data)) {
+  val <- if (is_anvl_array(x$aval$data)) {
     trimws(capture.output(print(x$aval$data))[2L])
   } else {
     as.character(x$aval$data)
@@ -71,7 +71,7 @@ print.GraphLiteral <- function(x, ...) {
 
 #' @title Graph Node
 #' @description
-#' Virtual base class for nodes in an [`AnvilGraph`].
+#' Virtual base class for nodes in an [`AnvlGraph`].
 #' Is either a [`GraphValue`] or a [`GraphLiteral`].
 #' Cannot be instantiated directly - use [`GraphValue()`] or [`GraphLiteral()`] instead.
 #' @name GraphNode
@@ -79,9 +79,8 @@ NULL
 
 #' @title Primitive Call
 #' @description
-#' Call of a primitive in an [`AnvilGraph`]
-#' Note that a primitive call also be a call into another graph (`p_graph`).
-#' @param primitive (`AnvilPrimitive`)\cr
+#' Call of a primitive in an [`AnvlGraph`].
+#' @param primitive (`AnvlPrimitive`)\cr
 #'   The function.
 #' @param inputs (`list(GraphValue)`)\cr
 #'   The (array) inputs to the primitive.
@@ -92,7 +91,10 @@ NULL
 #' @return (`PrimitiveCall`)
 #' @export
 PrimitiveCall <- function(primitive, inputs, params, outputs) {
-  checkmate::assert_class(primitive, "AnvilPrimitive")
+  if (inherits(primitive, "JitPrimitive")) {
+    primitive <- attr(primitive, "primitive")
+  }
+  checkmate::assert_class(primitive, "AnvlPrimitive")
   checkmate::assert_list(inputs, types = c("GraphValue", "GraphLiteral"))
   checkmate::assert_list(params)
   checkmate::assert_list(outputs, c("GraphValue", "GraphLiteral"))
@@ -116,7 +118,6 @@ PrimitiveCall <- function(primitive, inputs, params, outputs) {
 #'
 #' @param calls (`list(PrimitiveCall)`)\cr
 #'   The primitive calls that make up the graph.
-#'   This can also be another call into a graph when the primitive is a `p_call`.
 #' @param in_tree (`NULL | Node`)\cr
 #'   The tree of inputs. May contain leaves for both array inputs and static
 #'   (non-array) arguments. Only the array leaves correspond to entries in
@@ -134,9 +135,9 @@ PrimitiveCall <- function(primitive, inputs, params, outputs) {
 #'   `NULL` when all args are array inputs.
 #' @param static_args_flat (`NULL | list()`)\cr
 #'   Flattened traced values for the static arguments indicated by `is_static_flat`.
-#' @return (`AnvilGraph`)
+#' @return (`AnvlGraph`)
 # @export
-AnvilGraph <- function(
+AnvlGraph <- function(
   calls = list(),
   in_tree = NULL,
   out_tree = NULL,
@@ -157,16 +158,16 @@ AnvilGraph <- function(
   env$is_static_flat <- is_static_flat
   env$static_args_flat <- static_args_flat
 
-  structure(env, class = "AnvilGraph")
+  structure(env, class = "AnvlGraph")
 }
 
 #' @title Graph Descriptor
 #' @description
-#' Descriptor of an [`AnvilGraph`]. This is a mutable class.
+#' Descriptor of an [`AnvlGraph`]. This is a mutable class.
 #' @param calls (`list(PrimitiveCall)`)\cr
 #'   The primitive calls that make up the graph.
 #' @param tensor_to_gval (`hashtab`)\cr
-#'   Mapping: `AnvilArray` -> `GraphValue`
+#'   Mapping: `AnvlArray` -> `GraphValue`
 #' @param gval_to_box (`hashtab`)\cr
 #'   Mapping: `GraphValue` -> `GraphBox`
 #' @param constants (`list(GraphValue)`)\cr
@@ -257,7 +258,7 @@ is_graph_descriptor <- function(x) {
 }
 
 descriptor_to_graph <- function(descriptor) {
-  graph <- AnvilGraph(
+  graph <- AnvlGraph(
     calls = descriptor$calls,
     in_tree = descriptor$in_tree,
     out_tree = descriptor$out_tree,
@@ -275,7 +276,7 @@ descriptor_to_graph <- function(descriptor) {
 
 #' @title Graph Box
 #' @description
-#' An [`AnvilBox`] subclass that wraps a [`GraphNode`] during graph construction (tracing).
+#' An [`AnvlBox`] subclass that wraps a [`GraphNode`] during graph construction (tracing).
 #' When a function is traced via [`trace_fn()`], each intermediate array
 #' value is represented as a `GraphBox`.
 #' It also contains an associated [`GraphDescriptor`] in which the node "lives".
@@ -292,7 +293,7 @@ descriptor_to_graph <- function(descriptor) {
 #'   The descriptor of the graph being built.
 #' @return (`GraphBox`)
 #'
-#' @seealso [AnvilBox], [trace_fn()], [jit()]
+#' @seealso [AnvlBox], [trace_fn()], [jit()]
 #' @export
 GraphBox <- function(gnode, desc) {
   if (!is_graph_node(gnode)) {
@@ -302,7 +303,7 @@ GraphBox <- function(gnode, desc) {
 
   structure(
     list(gnode = gnode, desc = desc),
-    class = c("GraphBox", "AnvilBox")
+    class = c("GraphBox", "AnvlBox")
   )
 }
 
@@ -357,11 +358,11 @@ maybe_box_arrayish <- function(x) {
     return(get_box_or_register_const(current_desc, gval))
   }
   if (is_valid_r_array(x)) {
-    # Materialize R arrays as plain-backend AnvilArrays so they can be
+    # Materialize R arrays as plain-backend AnvlArrays so they can be
     # registered as named constants in the current graph.
     x <- nv_array(x, ambiguous = !is.logical(x))
   }
-  if (is_anvil_array(x) || is_valid_r_lit(x)) {
+  if (is_anvl_array(x) || is_valid_r_lit(x)) {
     return(get_box_or_register_const(current_desc, x))
   }
   cli_abort("Expected arrayish value, but got {.cls {class(x)[1]}}")
@@ -381,7 +382,7 @@ maybe_box_input <- function(x, desc, toplevel, lit_to_array) {
     )
     return(register_input(desc, gval))
   }
-  if (is_anvil_array(x)) {
+  if (is_anvl_array(x)) {
     # cases:
     # 1. top-level trace_fn call
     # 2. a constant is passed to a nested trace_fn call
@@ -457,7 +458,7 @@ get_box_or_register_const <- function(desc, x) {
   if (!is_graph_descriptor(desc)) {
     cli_abort("Internal error: trying to register a constant in a non-graph descriptor")
   }
-  if (is_anvil_array(x)) {
+  if (is_anvl_array(x)) {
     if (backend(x) != "plain") {
       desc$devices <- c(desc$devices, device(x))
     }
@@ -486,7 +487,7 @@ get_box_or_register_const <- function(desc, x) {
     cli_abort("Internal error: trying to register an invalid constant")
   }
   # gval$aval can either be a
-  # * ConcreteArray: AnvilArray that is captured from the parent environment
+  # * ConcreteArray: AnvlArray that is captured from the parent environment
   # * AbstractArray: Output of a computation in a parent graph
   # In either case, we first check whether the value is already registered in the current graph
   # and if so, return it:
@@ -544,20 +545,20 @@ match_args_to_formals <- function(f, args) {
 #' @title Trace an R function into a Graph
 #' @description
 #' Executes `f` with abstract array arguments and records every primitive operation into
-#' an [`AnvilGraph`].
+#' an [`AnvlGraph`].
 #'
 #' The resulting graph can be lowered to StableHLO (via [`stablehlo()`]) or transformed
 #' (e.g. via [`transform_gradient()`]).
 #'
 #' @param f (`function`)\cr
 #'   The function to trace. Must not be a `JitFunction` (i.e. already jitted).
-#' @param args (`list` of ([`AnvilArray`] | [`AbstractArray`]))\cr
+#' @param args (`list` of ([`AnvlArray`] | [`AbstractArray`]))\cr
 #'   The (unflattened) arguments to the function. Mutually exclusive with the
 #'   `args_flat`/`in_tree` pair.
 #' @param desc (`NULL` | `GraphDescriptor`)\cr
 #'   Optional descriptor. When `NULL` (default), a new descriptor is created.
 #' @param toplevel (`logical(1)`)\cr
-#'   If `TRUE`, concrete [`AnvilArray`] inputs are treated as unknown (traced) values.
+#'   If `TRUE`, concrete [`AnvlArray`] inputs are treated as unknown (traced) values.
 #'   If `FALSE` (default), they are treated as known constants.
 #' @param lit_to_array (`logical(1)`)\cr
 #'   Whether to convert literal inputs to arrays. Used internally by higher-order
@@ -566,7 +567,7 @@ match_args_to_formals <- function(f, args) {
 #'   Flattened arguments. Must be accompanied by `in_tree`.
 #' @param in_tree (`Node`)\cr
 #'   Tree structure describing how `args_flat` maps back to `f`'s arguments.
-#' @return An [`AnvilGraph`] containing the traced operations.
+#' @return An [`AnvlGraph`] containing the traced operations.
 #' @seealso [`stablehlo()`] to lower the graph, [`jit()`] / [`xla()`] for end-to-end
 #'   compilation.
 #' @export
@@ -714,7 +715,7 @@ local_descriptor <- function(..., envir = parent.frame()) {
 }
 
 is_graph <- function(x) {
-  inherits(x, "AnvilGraph")
+  inherits(x, "AnvlGraph")
 }
 is_graph_box <- function(x) {
   inherits(x, "GraphBox")
@@ -722,9 +723,12 @@ is_graph_box <- function(x) {
 
 #' @title Add a Primitive Call to a Graph Descriptor
 #' @description
-#' Add a primitive call to a graph descriptor.
-#' @param prim ([`AnvilPrimitive`])\cr
-#'   The primitive to add.
+#' Add a primitive call to a graph descriptor. Inside a primitive body created
+#' with [`new_primitive()`], pass the lexically-bound `self` as the primitive
+#' argument.
+#' @param primitive ([`AnvlPrimitive`] | `JitPrimitive`)\cr
+#'   The primitive the call is for. A `JitPrimitive` is accepted and unwrapped
+#'   to its underlying `AnvlPrimitive` metadata.
 #' @param args (`list` of [`GraphNode`])\cr
 #'   The arguments to the primitive.
 #' @param params (`list`)\cr
@@ -737,8 +741,12 @@ is_graph_box <- function(x) {
 #'   Uses the [current descriptor][.current_descriptor] if `NULL`.
 #' @return (`list` of [`GraphBox`])
 #' @export
-graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL) {
+graph_desc_add <- function(primitive, args, params = list(), infer_fn, desc = NULL) {
   desc <- desc %||% .current_descriptor(silent = TRUE)
+  if (inherits(primitive, "JitPrimitive")) {
+    primitive <- attr(primitive, "primitive")
+  }
+  checkmate::assert_class(primitive, "AnvlPrimitive")
 
   boxes_in <- lapply(args, maybe_box_arrayish)
   gnodes_in <- unname(lapply(boxes_in, \(box) box$gnode))
@@ -748,19 +756,19 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL) {
       rlang::exec(infer_fn, !!!c(avals_in, params))
     },
     error = function(e) {
-      e$call <- print_call_repr(prim)
+      e$call <- print_call_repr(primitive)
       e <- stablehlo::to_one_based(e)
       rlang::cnd_signal(e)
     }
   )
   gvals_out <- lapply(ats_out, GraphValue)
-  call <- PrimitiveCall(prim, gnodes_in, params, gvals_out)
+  call <- PrimitiveCall(primitive, gnodes_in, params, gvals_out)
   desc$calls <- c(desc$calls, list(call))
   lapply(gvals_out, register_gval, desc = desc)
 }
 
 print_call_repr <- function(prim) {
-  rlang::exec(call, paste0("nvl_", prim$name))
+  rlang::exec(call, paste0("prim_", prim$name))
 }
 
 

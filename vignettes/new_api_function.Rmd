@@ -15,33 +15,33 @@ knitr::opts_chunk$set(
 quickr_available <- requireNamespace("quickr", quietly = TRUE)
 ```
 
-Here, we will explain how to add an API function to the {anvil} package.
+Here, we will explain how to add an API function to the {anvl} package.
 API functions are the main user facing API and are follow the `nv_*` naming scheme.
 There are two types of API functions:
 
-1. Thin wrappers around primitives that add convenience like type casting and scalar broadcasting (AP function `nv_add` is a wrapper around the primitive `nvl_add`).
+1. Thin wrappers around primitives that add convenience like type casting and scalar broadcasting (API function `nv_add` is a wrapper around the primitive `prim_add`).
 2. Common mathematical functions that are expressed in terms of primitives (such as `nv_rnorm`).
 
-Here, we will focus on contributing such an API function to the {anvil} package.
-Specifically, API functions in the {anvil} package should:
+Here, we will focus on contributing such an API function to the {anvl} package.
+Specifically, API functions in the {anvl} package should:
 
 1. Work with any backend.
 2. Accept the following argument types for their dynamic inputs:
    1. `numeric` and `logical` length-1 vectors
    2. `numeric` and `logical` R arrays
-   3. `AnvilArray`s
-3. Always output `AnvilArray`s
+   3. `AnvlArray`s
+3. Always output `AnvlArray`s
 
 ## 1. Work with any backend
 
-The first requirement means that a user of the {anvil} package should be able to use an {anvil} function with `AnvilArray`s from both the *xla* and the *quickr* backend.
-When you are just calling into other anvil primitives or correctly created API functions, there is nothing to take care of.
+The first requirement means that a user of the {anvl} package should be able to use an {anvl} function with `AnvlArray`s from both the *xla* and the *quickr* backend.
+When you are just calling into other anvl primitives or correctly created API functions, there is nothing to take care of.
 This requirement is only relevant, when the API function is `jit()`ted (or internally calls into such a function).
 For example, we might want to add an API function that adds three to a tensor and jit the function.
 By setting the `backend` argument to `"auto"`, we can use it with both backends:
 
 ```{r}
-library(anvil)
+library(anvl)
 nv_add_three_good <- jit(\(x) x + 3, backend = "auto")
 nv_add_three_good(nv_scalar(1, backend = "xla"))
 ```
@@ -93,7 +93,7 @@ nv_add_const_eager <- \(x) {
 ```
 
 The `nv_<op>_like` form is also the correct way to create constants that live on the *same device* as an arrayish input.
-Calling `device()` directly on the input would work for a concrete `AnvilArray`, but under `jit()` that same input is a `GraphBox` — and `device()` on a `GraphBox` raises an error (tracing has no concrete device; jit handles placement at the input/output boundary).
+Calling `device()` directly on the input would work for a concrete `AnvlArray`, but under `jit()` that same input is a `GraphBox` — and `device()` on a `GraphBox` raises an error (tracing has no concrete device; jit handles placement at the input/output boundary).
 Compare:
 
 ```{r, error = TRUE}
@@ -116,15 +116,15 @@ jit(nv_tril_good)(nv_array(matrix(c(-1, 2, -3, 4), 2, 2)))
 
 ## 2. Input conversion
 
-API functions accept R literals (length-1 vectors, R arrays), `AnvilArray`s, and (during tracing) graph boxes.
+API functions accept R literals (length-1 vectors, R arrays), `AnvlArray`s, and (during tracing) graph boxes.
 Primitives handle all of these, but having the same arrayish value arrive as three different R types makes the API function body awkward: every branch would have to re-check which case it is in.
-To keep the function body simple, we standardize at the top -- after that, we can treat every argument as an `AnvilArray` (or a tracing box) without caring about the original R type.
-Anvil provides two helpers for this:
+To keep the function body simple, we standardize at the top -- after that, we can treat every argument as an `AnvlArray` (or a tracing box) without caring about the original R type.
+Anvl provides two helpers for this:
 
-* `as_anvil_array(x, device = NULL)` -- use for API functions that take a **single** array input.
-  It converts an R value to an `AnvilArray` on the given device (or the default device if `NULL`), and passes `AnvilArray`s through.
-* `as_anvil_arrays(...)` -- use for API functions with **multiple** array inputs.
-  It infers a common device from any concrete `AnvilArray` in `...`, places R literals on that device, and errors if the concrete inputs live on different devices (or backends).
+* `as_anvl_array(x, device = NULL)` -- use for API functions that take a **single** array input.
+  It converts an R value to an `AnvlArray` on the given device (or the default device if `NULL`), and passes `AnvlArray`s through.
+* `as_anvl_arrays(...)` -- use for API functions with **multiple** array inputs.
+  It infers a common device from any concrete `AnvlArray` in `...`, places R literals on that device, and errors if the concrete inputs live on different devices (or backends).
 
 Both helpers short-circuit during tracing: inside `jit()`, device placement is already handled at the input/output boundary and when boxing constants.
 
@@ -132,7 +132,7 @@ Both helpers short-circuit during tracing: inside `jit()`, device placement is a
 
 ```{r}
 nv_expand <- function(x, shape) {
-  x <- as_anvil_array(x)
+  x <- as_anvl_array(x)
   if (identical(shape(x), shape)) {
     return(x)
   }
@@ -142,16 +142,16 @@ nv_expand <- function(x, shape) {
 
 ### Multiple inputs
 
-Use `as_anvil_arrays()` to normalize all arrayish inputs in one call:
+Use `as_anvl_arrays()` to normalize all arrayish inputs in one call:
 
 ```{r}
 nv_add_scaled <- function(x, y, alpha) {
-  args <- as_anvil_arrays(x, y, alpha)
+  args <- as_anvl_arrays(x, y, alpha)
   args[[1L]] + args[[2L]] * args[[3L]]
 }
 ```
 
-## 3. Always output anvil arrays
+## 3. Always output anvl arrays
 
 As long as you normalize the inputs with `as_anvil_array()` / `as_anvil_arrays()` and then build the result from primitives (or from values that already went through that conversion), the output is automatically an `AnvilArray`.
 The one thing to watch for is short-circuit returns: if a code path returns one of the inputs unchanged (see [Return the input unchanged when possible](#return-the-input-unchanged-when-possible)), make sure the conversion step happened first so you are returning an `AnvilArray` and not the original R value.

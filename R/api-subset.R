@@ -93,7 +93,7 @@ dynamic_start_indices <- function(starts) {
     if (identical(shape_abstract(starts[[d]]), 1L)) {
       slices[[d]] <- nv_broadcast_to(starts[[d]], c(multi_index_sizes, 1L))
     } else {
-      slices[[d]] <- nvl_broadcast_in_dim(starts[[d]], c(multi_index_sizes, 1L), multi_index_i)
+      slices[[d]] <- prim_broadcast_in_dim(starts[[d]], c(multi_index_sizes, 1L), multi_index_i)
       multi_index_i <- multi_index_i + 1L
     }
   }
@@ -161,7 +161,7 @@ subset_specs_start_indices <- function(subsets, like = NULL) {
 #' Convert subset specs to gather parameters
 #'
 #' @param subsets List of SubsetSpec objects (from parse_subset_specs)
-#' @return A list with all parameters needed for nvl_gather:
+#' @return A list with all parameters needed for prim_gather:
 #'   - start_indices: array of start indices (shape `(gather_shape..., rank)` or `(1, rank)`)
 #'   - slice_sizes: integer vector
 #'   - offset_dims: integer vector
@@ -235,7 +235,7 @@ subset_specs_to_gather <- function(subsets, like = NULL) {
 #' Convert subset specs to scatter parameters
 #'
 #' @param subsets List of SubsetSpec objects (from parse_subset_specs)
-#' @return A list with all parameters needed for nvl_scatter:
+#' @return A list with all parameters needed for prim_scatter:
 #'   - scatter_indices: array of scatter indices
 #'   - update_window_dims: integer vector
 #'   - inserted_window_dims: integer vector
@@ -406,7 +406,7 @@ parse_subset_spec <- function(quo, dim_size) {
     return(SubsetIndices(indices))
   }
 
-  # AnvilRange (dynamic range) - not supported
+  # AnvlRange (dynamic range) - not supported
   if (inherits(e, "IotaArray")) {
     if (length(shape) != 1L) {
       cli_abort("IotaArray must be 1D, but got {length(shape)}D")
@@ -414,7 +414,7 @@ parse_subset_spec <- function(quo, dim_size) {
     return(SubsetRange(e$start, e$end))
   }
 
-  # Array indices (AnvilArray or GraphBox)
+  # Array indices (AnvlArray or GraphBox)
   if (is_arrayish(e) && !is.atomic(e)) {
     dt <- dtype_abstract(e)
     if (!(inherits(dt, "IntegerType") || inherits(dt, "UIntegerType"))) {
@@ -469,7 +469,7 @@ nv_subset <- function(x, ...) {
   subsets <- parse_subset_specs(quos, operand_shape)
   params <- subset_specs_to_gather(subsets, like = x)
 
-  out <- nvl_gather(
+  out <- prim_gather(
     operand = x,
     start_indices = params$start_indices,
     slice_sizes = params$slice_sizes,
@@ -513,7 +513,7 @@ nv_subset_assign <- function(x, ..., value) {
   if (!is_arrayish(value)) {
     cli_abort("Expected arrayish `value`, but got {.cls {class(value)[1]}}")
   }
-  aligned <- as_anvil_arrays(x, value)
+  aligned <- as_anvl_arrays(x, value)
   x <- aligned[[1L]]
   value <- aligned[[2L]]
   if (dtype_abstract(x) != dtype_abstract(value)) {
@@ -546,7 +546,7 @@ nv_subset_assign <- function(x, ..., value) {
     }
   }
 
-  nvl_scatter(
+  prim_scatter(
     input = x,
     scatter_indices = params$scatter_indices,
     update = value,

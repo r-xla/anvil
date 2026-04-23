@@ -4,7 +4,7 @@
 \alias{GraphNode}
 \title{Graph Node}
 \description{
-Virtual base class for nodes in an \code{\link{AnvilGraph}}.
+Virtual base class for nodes in an \code{\link{AnvlGraph}}.
 Is either a \code{\link{GraphValue}} or a \code{\link{GraphLiteral}}.
 Cannot be instantiated directly - use \code{\link[=GraphValue]{GraphValue()}} or \code{\link[=GraphLiteral]{GraphLiteral()}} instead.
 }

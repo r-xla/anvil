@@ -1,4 +1,4 @@
-url: https://r-xla.github.io/anvil/
+url: https://r-xla.github.io/anvl/
 destination: docs
 
 development:
@@ -25,7 +25,7 @@ navbar:
       - text: Installation
         href: articles/installation.html
       - text: Get Started
-        href: articles/anvil.html
+        href: articles/anvl.html
     user_guide:
       text: User guide
       menu:
@@ -65,7 +65,7 @@ articles:
     navbar: ~
     contents:
       - installation
-      - anvil
+      - anvl
   - title: User guide
     navbar: ~
     contents:
@@ -97,7 +97,7 @@ reference:
     contents:
       - nv_convert
       - nv_bitcast_convert
-      - as_anvil_array
+      - as_anvl_array
       - nv_promote_to_common
       - nv_broadcast_scalars
       - nv_broadcast_arrays
@@ -229,12 +229,12 @@ reference:
       - nv_rng_state
 
   - title: Array
-    desc: Constructing and working with AnvilArrays
+    desc: Constructing and working with AnvlArrays
 
   - subtitle: Construction
     desc: Functions for creating and initializing arrays
     contents:
-      - AnvilArray
+      - AnvlArray
       - nv_array
       - nv_scalar
       - nv_empty
@@ -295,9 +295,9 @@ reference:
       - default_device
       - is_device
       - quickr_device
-      - AnvilBackend
-      - AnvilBackendXla
-      - AnvilBackendQuickr
+      - AnvlBackend
+      - AnvlBackendXla
+      - AnvlBackendQuickr
 
 
   - title: Internals
@@ -305,13 +305,13 @@ reference:
 
   - subtitle: Graph
     contents:
-      - AnvilGraph
+      - AnvlGraph
       - GraphDescriptor
       - GraphNode
       - GraphValue
       - GraphBox
       - GraphLiteral
-      - AnvilBox
+      - AnvlBox
       - graph_desc_add
       - local_descriptor
       - .current_descriptor
@@ -319,10 +319,9 @@ reference:
 
   - subtitle: Primitives
     contents:
-      - prim
-      - AnvilPrimitive
+      - new_primitive
+      - AnvlPrimitive
       - PrimitiveCall
-      - register_primitive
 
   - subtitle: Abstract Types
     contents:
@@ -369,6 +368,6 @@ reference:
       - filter_list_node
 
   - title: Primitives
-    desc: Low-level primitive operations (nvl_* functions)
+    desc: Low-level primitive operations (prim_* functions)
     contents:
-      - starts_with("nvl_")
+      - starts_with("prim_")

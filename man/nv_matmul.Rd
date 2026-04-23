@@ -35,5 +35,5 @@ x \%*\% y
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_dot_general]{nvl_dot_general()}} for the underlying primitive.
+\code{\link[=prim_dot_general]{prim_dot_general()}} for the underlying primitive.
 }

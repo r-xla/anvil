@@ -7,7 +7,7 @@
 ConcreteArray(data)
 }
 \arguments{
-\item{data}{(\code{\link{AnvilArray}})\cr
+\item{data}{(\code{\link{AnvlArray}})\cr
 The actual array data.}
 }
 \description{

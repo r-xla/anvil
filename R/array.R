@@ -1,10 +1,10 @@
-#' @title AnvilArray
+#' @title AnvlArray
 #' @description
 #' The main array object.
 #' Its type is determined by a data type and a shape.
 #'
 #' @section Extractors:
-#' The following generic functions can be used to extract information from an `AnvilArray`:
+#' The following generic functions can be used to extract information from an `AnvlArray`:
 #' - [`dtype()`][tengen::dtype]: Get the data type of the array.
 #' - [`shape()`][tengen::shape]: Get the shape (dimensions) of the array.
 #' - [`ndims()`][tengen::ndims]: Get the number of dimensions.
@@ -44,7 +44,7 @@
 #'   Backend to use (`"xla"` or `"quickr"`).
 #'   Defaults to `default_backend()`.
 #'   Must not be specified inside [`jit()`].
-#' @return ([`AnvilArray`])
+#' @return ([`AnvlArray`])
 #' @examplesIf pjrt::plugins_downloaded()
 #' # A 1-d array (vector) with shape (4). Default type for integers is `i32`
 #' nv_array(1:4)
@@ -77,26 +77,26 @@
 #' # --- Eager mode (calling operations directly) ---
 #' nv_add(nv_array(1:3), nv_array(4:6))
 #'
-#' @name AnvilArray
+#' @name AnvlArray
 NULL
 
-#' @rdname AnvilArray
+#' @rdname AnvlArray
 #' @export
 nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL, backend = NULL) {
-  if (is_anvil_array(data)) {
+  if (is_anvl_array(data)) {
     if (!is.null(device) && !eq_device(device(data), nv_device(device, backend))) {
-      cli_abort("Cannot change device of existing AnvilArray from {.val {device(data)}} to {.val {device}}")
+      cli_abort("Cannot change device of existing AnvlArray from {.val {device(data)}} to {.val {device}}")
     }
     if (!is.null(shape) && !identical(shape(data), as.integer(shape))) {
-      cli_abort("Cannot change shape of existing AnvilArray")
+      cli_abort("Cannot change shape of existing AnvlArray")
     }
     if (!is.null(dtype)) {
       if (dtype(data) != as_dtype(dtype)) {
-        cli_abort("Cannot change dtype of existing AnvilArray from {.val {dtype(data)}} to {.val {dtype}}")
+        cli_abort("Cannot change dtype of existing AnvlArray from {.val {dtype(data)}} to {.val {dtype}}")
       }
     }
     if (!is.null(ambiguous) && ambiguous(data) != ambiguous) {
-      cli_abort("Cannot change ambiguous of existing AnvilArray from {.val {ambiguous(data)}} to {.val {ambiguous}}")
+      cli_abort("Cannot change ambiguous of existing AnvlArray from {.val {ambiguous(data)}} to {.val {ambiguous}}")
     }
     return(data)
   }
@@ -123,43 +123,43 @@ nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous 
   globals$backends[[backend]]$new_data(data, dtype, shape, device, ambiguous)
 }
 
-#' @title Convert to AnvilArray
+#' @title Convert to AnvlArray
 #' @description
 #' Use this to canonicalize inputs at the start of a function so it works
 #' both with eager executing and in combination with [`jit()`].
-#' Use [`as_anvil_array()`] for a single input and [`as_anvil_arrays()`] for multiple inputs.
+#' Use [`as_anvl_array()`] for a single input and [`as_anvl_arrays()`] for multiple inputs.
 #' The latter will also ensure all arrays are from the same backend and live on the same device.
 #'
 #' @details
 #' During tracing, [boxes][GraphBox] are returned as is.
-#' During eager mode, R literals and arrays are converted to `AnvilArray`s on the specified device.
-#' For `AnvilArray` inputs, we check that they live on provided device (if specified).
+#' During eager mode, R literals and arrays are converted to `AnvlArray`s on the specified device.
+#' For `AnvlArray` inputs, we check that they live on provided device (if specified).
 #'
 #' @param x ([`arrayish`])\cr
 #'   Input to standardize.
 #' @param ... ([`arrayish`])\cr
 #'   Inputs to align.
 #' @param device (`NULL` | [`device`])\cr
-#'   Target device. If `x` is an `AnvilArray` on a different device, an error
+#'   Target device. If `x` is an `AnvlArray` on a different device, an error
 #'   is raised.
-#' @return ([`AnvilArray`] for `as_anvil_array()`, `list` of [`AnvilArray`]s
-#'   for `as_anvil_arrays()`).
+#' @return ([`AnvlArray`] for `as_anvl_array()`, `list` of [`AnvlArray`]s
+#'   for `as_anvl_arrays()`).
 #' @examplesIf pjrt::plugins_downloaded()
-#' as_anvil_array(1L)
-#' as_anvil_arrays(nv_array(1:3), 1L)
-#' @name as_anvil_array
+#' as_anvl_array(1L)
+#' as_anvl_arrays(nv_array(1:3), 1L)
+#' @name as_anvl_array
 NULL
 
-#' @rdname as_anvil_array
+#' @rdname as_anvl_array
 #' @export
-as_anvil_array <- function(x, device = NULL) {
+as_anvl_array <- function(x, device = NULL) {
   if (is_box(x)) {
     return(x)
   }
   if (!is_arrayish(x)) {
     cli_abort("Expected arrayish input, but got {.cls {class(x)}}")
   }
-  if (is_anvil_array(x)) {
+  if (is_anvl_array(x)) {
     if (!is.null(device) && !eq_device(device(x), nv_device(device, backend(x)))) {
       cli_abort(c(
         "Input is on an unexpected device.",
@@ -183,27 +183,27 @@ as_anvil_array <- function(x, device = NULL) {
   nv_array(x, device = device, ambiguous = ambiguous)
 }
 
-#' @rdname as_anvil_array
+#' @rdname as_anvl_array
 #' @export
-as_anvil_arrays <- function(...) {
+as_anvl_arrays <- function(...) {
   args <- list(...)
   # During tracing, device placement is handled by jit; just canonicalize each
   # input so `shape()` / `dtype()` etc. work downstream.
   # Without specifiying device, this will create arrays from the "plain" backend
   if (currently_tracing()) {
-    return(lapply(args, as_anvil_array))
+    return(lapply(args, as_anvl_array))
   }
   # Target device is the first concrete input's device, else the default.
   dev <- default_device()
   for (a in args) {
-    if (is_anvil_array(a) && backend(a) != "plain") {
+    if (is_anvl_array(a) && backend(a) != "plain") {
       dev <- device(a)
       break
     }
   }
   # Every other concrete input must match that device/backend.
   for (a in args) {
-    if (!is_anvil_array(a) || backend(a) == "plain") {
+    if (!is_anvl_array(a) || backend(a) == "plain") {
       next
     }
     if (backend(a) != backend(dev)) {
@@ -219,33 +219,33 @@ as_anvil_arrays <- function(...) {
       ))
     }
   }
-  lapply(args, as_anvil_array, device = dev)
+  lapply(args, as_anvl_array, device = dev)
 }
 
 
-is_anvil_array <- function(x) {
-  inherits(x, "AnvilArray")
+is_anvl_array <- function(x) {
+  inherits(x, "AnvlArray")
 }
 
-#' Get the underlying PJRT buffer from an AnvilArray or pass through other values
-#' @param x An AnvilArray or any other value
-#' @return The underlying PJRT buffer if x is an AnvilArray, otherwise x unchanged
+#' Get the underlying PJRT buffer from an AnvlArray or pass through other values
+#' @param x An AnvlArray or any other value
+#' @return The underlying PJRT buffer if x is an AnvlArray, otherwise x unchanged
 #' @keywords internal
 unwrap_if_array <- function(x) {
-  if (is_anvil_array(x)) {
+  if (is_anvl_array(x)) {
     x$data
   } else {
     x
   }
 }
 
-#' @rdname AnvilArray
+#' @rdname AnvlArray
 #' @export
 nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL) {
   nv_array(data, dtype = dtype, device = device, shape = integer(), ambiguous = ambiguous, backend = backend)
 }
 
-#' @rdname AnvilArray
+#' @rdname AnvlArray
 #' @export
 nv_empty <- function(dtype, shape, device = NULL, ambiguous = FALSE) {
   shape <- as.integer(shape)
@@ -268,7 +268,7 @@ nv_aval <- function(dtype, shape, ambiguous = FALSE) {
 }
 
 #' @export
-dtype.AnvilArray <- function(x, ...) {
+dtype.AnvlArray <- function(x, ...) {
   globals$backends[[x$backend]]$dtype(x)
 }
 
@@ -284,7 +284,7 @@ ambiguous <- function(x, ...) {
 }
 
 #' @export
-ambiguous.AnvilArray <- function(x, ...) {
+ambiguous.AnvlArray <- function(x, ...) {
   globals$backends[[x$backend]]$ambiguous(x)
 }
 
@@ -294,28 +294,28 @@ ambiguous.AbstractArray <- function(x, ...) {
 }
 
 #' @export
-shape.AnvilArray <- function(x, ...) {
+shape.AnvlArray <- function(x, ...) {
   globals$backends[[x$backend]]$shape(x)
 }
 
 #' @export
-as_array.AnvilArray <- function(x, ...) {
+as_array.AnvlArray <- function(x, ...) {
   globals$backends[[x$backend]]$as_array(x)
 }
 
 #' @export
-as_raw.AnvilArray <- function(x, row_major = FALSE, ...) {
+as_raw.AnvlArray <- function(x, row_major = FALSE, ...) {
   globals$backends[[x$backend]]$as_raw(x, row_major)
 }
 
 #' @rdname platform
 #' @export
-platform.AnvilArray <- function(x, ...) {
+platform.AnvlArray <- function(x, ...) {
   globals$backends[[x$backend]]$platform(x)
 }
 
 #' @export
-device.AnvilArray <- function(x, ...) {
+device.AnvlArray <- function(x, ...) {
   globals$backends[[x$backend]]$device(x)
 }
 
@@ -329,7 +329,7 @@ backend <- function(x, ...) {
 }
 
 #' @export
-backend.AnvilArray <- function(x, ...) {
+backend.AnvlArray <- function(x, ...) {
   x$backend
 }
 
@@ -347,7 +347,7 @@ backend.QuickrDevice <- function(x, ...) {
 #' @description
 #' Representation of an abstract array type.
 #' During tracing, it is wrapped in a [`GraphNode`] held by a [`GraphBox`].
-#' In the lowered [`AnvilGraph`] it is also part of [`GraphNode`]s representing the values in the program.
+#' In the lowered [`AnvlGraph`] it is also part of [`GraphNode`]s representing the values in the program.
 #'
 #' The base class represents an *unknown* value, but child classes exist for:
 #' * closed-over constants: [`ConcreteArray`]
@@ -381,7 +381,7 @@ backend.QuickrDevice <- function(x, ...) {
 #' # Shorthand
 #' nv_aval("f32", c(2L, 3L))
 #'
-#' # How AbstractArrays appear in an AnvilGraph
+#' # How AbstractArrays appear in an AnvlGraph
 #' graph <- trace_fn(function(x) x + 1, list(x = nv_aval("i32", 4L)))
 #' graph
 #' graph$inputs[[1]]$aval
@@ -431,7 +431,7 @@ shape.AbstractArray <- function(x, ...) {
 #' programs as constants.
 #' This is to avoid increasing compilation time and bloating the size of the executable.
 #'
-#' @param data ([`AnvilArray`])\cr
+#' @param data ([`AnvlArray`])\cr
 #'   The actual array data.
 #'
 #' @examplesIf pjrt::plugins_downloaded()
@@ -449,8 +449,8 @@ shape.AbstractArray <- function(x, ...) {
 #' graph$outputs[[1]]$aval
 #' @export
 ConcreteArray <- function(data) {
-  if (!inherits(data, "AnvilArray")) {
-    cli_abort("data must be an AnvilArray")
+  if (!inherits(data, "AnvlArray")) {
+    cli_abort("data must be an AnvlArray")
   }
 
   structure(
@@ -478,8 +478,8 @@ ConcreteArray <- function(data) {
 #' `LiteralArray`s become constants inlined into the stableHLO program.
 #' I.e., they lower to [`stablehlo::hlo_tensor()`].
 #'
-#' @param data (`double(1)` | `integer(1)` | `logical(1)` | [`AnvilArray`])\cr
-#'   The scalar value or scalarish AnvilArray (contains 1 element).
+#' @param data (`double(1)` | `integer(1)` | `logical(1)` | [`AnvlArray`])\cr
+#'   The scalar value or scalarish AnvlArray (contains 1 element).
 #' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
 #'   The shape of the array.
 #' @param dtype ([`tengen::DataType`])\cr
@@ -505,12 +505,12 @@ ConcreteArray <- function(data) {
 #' graph$outputs[[1]]$aval
 #' @export
 LiteralArray <- function(data, shape, dtype = default_dtype(data), ambiguous) {
-  if (!test_scalar(data) && !inherits(data, "AnvilArray")) {
-    cli_abort("LiteralArrays expect scalars or AnvilArray")
+  if (!test_scalar(data) && !inherits(data, "AnvlArray")) {
+    cli_abort("LiteralArrays expect scalars or AnvlArray")
   }
-  if (inherits(data, "AnvilArray")) {
+  if (inherits(data, "AnvlArray")) {
     if (prod(shape(data)) != 1L) {
-      cli_abort("AnvilArray must contain exactly one element.")
+      cli_abort("AnvlArray must contain exactly one element.")
     }
   }
   shape <- as_shape(shape)
@@ -530,7 +530,7 @@ LiteralArray <- function(data, shape, dtype = default_dtype(data), ambiguous) {
 #' @title Iota Array Class
 #' @description
 #' An [`AbstractArray`] representing an integer sequence.
-#' Usually created by [`nv_iota()`] / [`nv_seq()`], which both call [`nvl_iota()`] internally.
+#' Usually created by [`nv_iota()`] / [`nv_seq()`], which both call [`prim_iota()`] internally.
 #' Inherits from [`AbstractArray`].
 #'
 #' @section Lowering:
@@ -674,7 +674,7 @@ format.ConcreteArray <- function(x, ...) {
 
 #' @export
 format.LiteralArray <- function(x, ...) {
-  data_str <- if (is_anvil_array(x$data)) {
+  data_str <- if (is_anvl_array(x$data)) {
     trimws(capture.output(print(x$data, ..., header = FALSE))[1L])
   } else {
     x$data
@@ -696,15 +696,15 @@ print.ConcreteArray <- function(x, ...) {
 }
 
 #' @export
-format.AnvilArray <- function(x, ...) {
+format.AnvlArray <- function(x, ...) {
   dtype_str <- if (ambiguous(x)) paste0(repr(dtype(x)), "?") else repr(dtype(x))
-  sprintf("AnvilArray(dtype=%s, shape=%s)", dtype_str, paste(shape(x), collapse = "x"))
+  sprintf("AnvlArray(dtype=%s, shape=%s)", dtype_str, paste(shape(x), collapse = "x"))
 }
 
 #' @export
-print.AnvilArray <- function(x, header = TRUE, ...) {
+print.AnvlArray <- function(x, header = TRUE, ...) {
   if (header) {
-    cat("AnvilArray\n")
+    cat("AnvlArray\n")
   }
   dtype_str <- paste0(as.character(dtype(x)), if (ambiguous(x)) "?")
   footer <- sprintf("[ %s%s{%s} ]", toupper(platform(x)), dtype_str, paste0(shape(x), collapse = ","))
@@ -713,7 +713,7 @@ print.AnvilArray <- function(x, header = TRUE, ...) {
 }
 
 # fmt: skip
-compare_proxy.AnvilArray <- function(x, path) { # nolint
+compare_proxy.AnvlArray <- function(x, path) { # nolint
   list(
     object = list(
       data = as_array(x),
@@ -740,7 +740,7 @@ compare_proxy.AnvilArray <- function(x, path) { # nolint
 #' to_abstract(1L)
 #' to_abstract(TRUE)
 #'
-#' # AnvilArrays become ConcreteArrays
+#' # AnvlArrays become ConcreteArrays
 #' to_abstract(nv_array(1:4))
 #'
 #' # Use pure = TRUE to strip subclass info
@@ -748,7 +748,7 @@ compare_proxy.AnvilArray <- function(x, path) { # nolint
 #'
 #' @export
 to_abstract <- function(x, pure = FALSE) {
-  x <- if (is_anvil_array(x)) {
+  x <- if (is_anvl_array(x)) {
     ConcreteArray(x)
   } else if (is_abstract_tensor(x)) {
     x
@@ -787,12 +787,12 @@ is_shape <- function(x) {
 
 #' @title Array-like Objects
 #' @description
-#' A `arrayish` value is any object that can be input to a primitive such as [`nvl_add`].
+#' A `arrayish` value is any object that can be input to a primitive such as [`prim_add`].
 #'
-#' During runtime of a JIT-compiled function, these are [`AnvilArray`] objects.
+#' During runtime of a JIT-compiled function, these are [`AnvlArray`] objects.
 #'
 #' The following types are arrayish (during tracing):
-#' * [`AnvilArray`]: a concrete array holding data on a device.
+#' * [`AnvlArray`]: a concrete array holding data on a device.
 #' * [`GraphBox`]: a boxed abstract array representing a value in a graph.
 #' * Length-1 vectors: `numeric(1)` and `logical(1)`
 #' * R arrays of types: `numeric` and `logical`.
@@ -805,9 +805,9 @@ is_shape <- function(x) {
 #'   Whether to accept `numeric(1)` and `logical(1)` and R arrays of type `numeric` and `logical`.
 #' @return `logical(1)`
 #' @name arrayish
-#' @seealso [AnvilArray], [GraphBox]
+#' @seealso [AnvlArray], [GraphBox]
 #' @examplesIf pjrt::plugins_downloaded()
-#' # AnvilArrays are arrayish
+#' # AnvlArrays are arrayish
 #' is_arrayish(nv_array(1:4))
 #'
 #' # Scalar R literals are arrayish by default
@@ -827,7 +827,7 @@ NULL
 #' @rdname arrayish
 #' @export
 is_arrayish <- function(x, convert_ok = TRUE) {
-  ok <- inherits(x, "AnvilArray") ||
+  ok <- inherits(x, "AnvlArray") ||
     is_box(x)
 
   if (ok) {

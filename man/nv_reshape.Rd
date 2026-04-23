@@ -31,5 +31,5 @@ nv_reshape(x, c(2, 3))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_reshape]{nvl_reshape()}} for the underlying primitive.
+\code{\link[=prim_reshape]{prim_reshape()}} for the underlying primitive.
 }

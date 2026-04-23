@@ -7,18 +7,18 @@
 transform_gradient(graph, wrt)
 }
 \arguments{
-\item{graph}{(\code{\link{AnvilGraph}})\cr
+\item{graph}{(\code{\link{AnvlGraph}})\cr
 The graph to transform. Must produce a single scalar float output.}
 
 \item{wrt}{(\code{character})\cr
 Names of the graph inputs to differentiate with respect to.}
 }
 \value{
-An \code{\link{AnvilGraph}} whose outputs are the requested gradients.
+An \code{\link{AnvlGraph}} whose outputs are the requested gradients.
 }
 \description{
 Low-level graph transformation that appends the reverse pass to a
-traced \code{\link{AnvilGraph}}. The function \code{f} represented by \code{graph} must return a single
+traced \code{\link{AnvlGraph}}. The function \code{f} represented by \code{graph} must return a single
 float scalar. The resulting graph computes the gradients of that scalar with respect
 to the inputs specified by \code{wrt}.
 
@@ -28,7 +28,7 @@ This is the building block used by \code{\link[=gradient]{gradient()}} and \code
 those higher-level wrappers unless you need to operate on graphs directly.
 }
 \examples{
-graph <- trace_fn(nvl_mul, list(nv_aval("f32", c()), nv_aval("f32", c())))
+graph <- trace_fn(prim_mul, list(nv_aval("f32", c()), nv_aval("f32", c())))
 graph
 transform_gradient(graph, "lhs")
 }

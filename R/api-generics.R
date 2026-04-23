@@ -1,7 +1,7 @@
 #' @include api.R
 
 #' @export
-Ops.AnvilBox <- function(e1, e2) {
+Ops.AnvlBox <- function(e1, e2) {
   switch(
     .Generic, # nolint
     "+" = nv_add(e1, e2),
@@ -29,10 +29,10 @@ Ops.AnvilBox <- function(e1, e2) {
 }
 
 #' @export
-Ops.AnvilArray <- Ops.AnvilBox
+Ops.AnvlArray <- Ops.AnvlBox
 
 #' @export
-matrixOps.AnvilBox <- function(x, y) {
+matrixOps.AnvlBox <- function(x, y) {
   switch(
     .Generic, # nolint
     "%*%" = nv_matmul(x, y)
@@ -40,10 +40,10 @@ matrixOps.AnvilBox <- function(x, y) {
 }
 
 #' @export
-matrixOps.AnvilArray <- matrixOps.AnvilBox
+matrixOps.AnvlArray <- matrixOps.AnvlBox
 
 #' @export
-Math.AnvilBox <- function(x, ...) {
+Math.AnvlBox <- function(x, ...) {
   switch(
     .Generic, # nolint
     "abs" = nv_abs(x),
@@ -67,10 +67,10 @@ Math.AnvilBox <- function(x, ...) {
 }
 
 #' @export
-Math.AnvilArray <- Math.AnvilBox
+Math.AnvlArray <- Math.AnvlBox
 
 #' @export
-Math2.AnvilBox <- function(x, digits, ...) {
+Math2.AnvlBox <- function(x, digits, ...) {
   method <- list(...)$method
   switch(
     .Generic, # nolint
@@ -85,11 +85,11 @@ Math2.AnvilBox <- function(x, digits, ...) {
 }
 
 #' @export
-Math2.AnvilArray <- Math2.AnvilBox
+Math2.AnvlArray <- Math2.AnvlBox
 
 
 #' @export
-Summary.AnvilBox <- function(..., na.rm) {
+Summary.AnvlBox <- function(..., na.rm) {
   if (...length() != 1L) {
     cli_abort("Currently only one argument is supported for Summary group generic")
   }
@@ -109,53 +109,53 @@ Summary.AnvilBox <- function(..., na.rm) {
 }
 
 #' @export
-Summary.AnvilArray <- Summary.AnvilBox
+Summary.AnvlArray <- Summary.AnvlBox
 
 #' @export
-mean.AnvilBox <- function(x, ...) {
+mean.AnvlBox <- function(x, ...) {
   nv_reduce_mean(x, dims = seq_along(shape(x)), drop = TRUE)
 }
 
 #' @export
-mean.AnvilArray <- mean.AnvilBox
+mean.AnvlArray <- mean.AnvlBox
 
 #' @rdname nv_is_nan
 #' @param x ([`arrayish`])\cr Operand.
-#' @method is.nan AnvilBox
+#' @method is.nan AnvlBox
 #' @export
-is.nan.AnvilBox <- function(x) {
+is.nan.AnvlBox <- function(x) {
   nv_is_nan(x)
 }
 
-#' @method is.nan AnvilArray
+#' @method is.nan AnvlArray
 #' @export
-is.nan.AnvilArray <- is.nan.AnvilBox
+is.nan.AnvlArray <- is.nan.AnvlBox
 
 #' @rdname nv_is_infinite
 #' @param x ([`arrayish`])\cr Operand.
-#' @method is.infinite AnvilBox
+#' @method is.infinite AnvlBox
 #' @export
-is.infinite.AnvilBox <- function(x) {
+is.infinite.AnvlBox <- function(x) {
   nv_is_infinite(x)
 }
 
-#' @method is.infinite AnvilArray
+#' @method is.infinite AnvlArray
 #' @export
-is.infinite.AnvilArray <- is.infinite.AnvilBox
+is.infinite.AnvlArray <- is.infinite.AnvlBox
 
 #' @rdname nv_is_finite
 #' @param x ([`arrayish`])\cr Operand.
-#' @method is.finite AnvilBox
+#' @method is.finite AnvlBox
 #' @export
-is.finite.AnvilBox <- function(x) {
+is.finite.AnvlBox <- function(x) {
   nv_is_finite(x)
 }
 
-#' @method is.finite AnvilArray
+#' @method is.finite AnvlArray
 #' @export
-is.finite.AnvilArray <- is.finite.AnvilBox
+is.finite.AnvlArray <- is.finite.AnvlBox
 
-# if we don't give it the name nv_transpose, pkgdown thinks t.anvil is a package
+# if we don't give it the name nv_transpose, pkgdown thinks t.anvl is a package
 
 #' @title Transpose
 #' @name nv_transpose
@@ -167,78 +167,90 @@ is.finite.AnvilArray <- is.finite.AnvilBox
 #'   New ordering of dimensions. If `NULL` (default), reverses the dimensions.
 #' @return [`arrayish`]\cr
 #'   Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
-#' @seealso [nvl_transpose()] for the underlying primitive.
+#' @seealso [prim_transpose()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' t(x)
 #' @export
-t.AnvilBox <- function(x) {
+t.AnvlBox <- function(x) {
   nv_transpose(x)
 }
 
 #' @export
-t.AnvilArray <- t.AnvilBox
+t.AnvlArray <- t.AnvlBox
 
 #' @rdname nv_subset
 #' @export
-`[.AnvilBox` <- function(x, ...) {
+`[.AnvlBox` <- function(x, ...) {
+  # nargs() sees trailing missing args (e.g. the last `,` in x[1:5, , ])
+  # that rlang::enquos() silently drops.
+  n_args <- nargs() - 1L
+  rank <- length(shape_abstract(x))
+  if (n_args > rank) {
+    cli_abort("Too many subset specifications: got {n_args}, expected at most {rank}")
+  }
   quos <- rlang::enquos(...)
   rlang::inject(nv_subset(x, !!!quos))
 }
 
 #' @rdname nv_subset
 #' @export
-`[.AnvilArray` <- `[.AnvilBox`
+`[.AnvlArray` <- `[.AnvlBox`
 
 #' @rdname nv_subset_assign
 #' @export
-`[<-.AnvilBox` <- function(x, ..., value) {
+`[<-.AnvlBox` <- function(x, ..., value) {
+  n_args <- nargs() - 2L
+  rank <- length(shape_abstract(x))
+  if (n_args > rank) {
+    cli_abort("Too many subset specifications: got {n_args}, expected at most {rank}")
+  }
   quos <- rlang::enquos(...)
   rlang::inject(nv_subset_assign(x, !!!quos, value = value))
 }
 
 #' @rdname nv_subset_assign
 #' @export
-`[<-.AnvilArray` <- `[<-.AnvilBox`
+`[<-.AnvlArray` <- `[<-.AnvlBox`
 
 #' @rdname nv_crossprod
-#' @method crossprod AnvilBox
+#' @method crossprod AnvlBox
 #' @export
-crossprod.AnvilBox <- function(x, y = NULL, ...) {
+crossprod.AnvlBox <- function(x, y = NULL, ...) {
   nv_crossprod(x, y)
 }
 
-#' @method crossprod AnvilArray
+#' @method crossprod AnvlArray
 #' @export
-crossprod.AnvilArray <- crossprod.AnvilBox
+crossprod.AnvlArray <- crossprod.AnvlBox
 
 #' @rdname nv_tcrossprod
-#' @method tcrossprod AnvilBox
+#' @method tcrossprod AnvlBox
 #' @export
-tcrossprod.AnvilBox <- function(x, y = NULL, ...) {
+tcrossprod.AnvlBox <- function(x, y = NULL, ...) {
   nv_tcrossprod(x, y)
 }
 
-#' @method tcrossprod AnvilArray
+#' @method tcrossprod AnvlArray
 #' @export
-tcrossprod.AnvilArray <- tcrossprod.AnvilBox
+tcrossprod.AnvlArray <- tcrossprod.AnvlBox
 
-#' @method dim AnvilBox
+#' @method dim AnvlBox
 #' @export
-dim.AnvilBox <- function(x) {
+dim.AnvlBox <- function(x) {
   shape(x)
 }
 
-#' @method dim AnvilArray
+#' @method dim AnvlArray
 #' @export
-dim.AnvilArray <- dim.AnvilBox
+dim.AnvlArray <- dim.AnvlBox
 
-#' @method length AnvilBox
+#' @method length AnvlBox
 #' @export
-length.AnvilBox <- function(x) {
+length.AnvlBox <- function(x) {
   prod(shape(x))
 }
 
-#' @method length AnvilArray
+#' @method length AnvlArray
 #' @export
-length.AnvilArray <- length.AnvilBox
+length.AnvlArray <- length.AnvlBox

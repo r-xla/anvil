@@ -2,12 +2,12 @@
 % Please edit documentation in R/api.R, R/api-generics.R
 \name{nv_crossprod}
 \alias{nv_crossprod}
-\alias{crossprod.AnvilBox}
+\alias{crossprod.AnvlBox}
 \title{Cross Product (Matrix)}
 \usage{
 nv_crossprod(x, y = NULL)
 
-\method{crossprod}{AnvilBox}(x, y = NULL, ...)
+\method{crossprod}{AnvlBox}(x, y = NULL, ...)
 }
 \arguments{
 \item{x}{(\code{\link{arrayish}})\cr

@@ -6,8 +6,8 @@ expect_jit_equal <- function(.expr, .expected, ...) {
 }
 
 # Cross-check an API function by running it in two configurations:
-#   - eager mode with every AnvilArray input on cpu:1
-#   - jit-compiled (static args forwarded) with every AnvilArray input on cpu:0
+#   - eager mode with every AnvlArray input on cpu:1
+#   - jit-compiled (static args forwarded) with every AnvlArray input on cpu:0
 # and asserting that
 #   1. the eager outputs live on cpu:1
 #   2. the jit outputs live on cpu:0
@@ -21,7 +21,7 @@ check_eager <- function(fn, ..., static = character(), tolerance = 1e-6) {
   args <- list(...)
 
   place_on <- function(x, dev) {
-    if (is_anvil_array(x)) {
+    if (is_anvl_array(x)) {
       nv_array(
         as_array(x),
         dtype = dtype(x),
@@ -35,7 +35,7 @@ check_eager <- function(fn, ..., static = character(), tolerance = 1e-6) {
   }
 
   to_r <- function(x) {
-    if (is_anvil_array(x)) {
+    if (is_anvl_array(x)) {
       as_array(x)
     } else if (is.list(x)) {
       lapply(x, to_r)
@@ -44,9 +44,9 @@ check_eager <- function(fn, ..., static = character(), tolerance = 1e-6) {
     }
   }
 
-  # Recursively walk `out` and assert every AnvilArray lives on `dev`.
+  # Recursively walk `out` and assert every AnvlArray lives on `dev`.
   check_on_device <- function(out, dev) {
-    if (is_anvil_array(out)) {
+    if (is_anvl_array(out)) {
       testthat::expect_true(
         eq_device(device(out), dev),
         info = sprintf(
@@ -80,18 +80,18 @@ is_cpu <- function() {
 }
 
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
+  source(system.file("extra-tests", "torch-helpers.R", package = "anvl"))
 }
 
-verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
+verify_zero_grad_unary <- function(prim_fn, x, f_wrapper = NULL) {
   # We can only take gradients w.r.t. float arrays, so the outer input is f32
-  # and the actual dtype is restored inside the function before calling nvl_fn.
+  # and the actual dtype is restored inside the function before calling prim_fn.
   x_dtype <- dtype(x)
   x_f32 <- nv_convert(x, "f32")
   if (is.null(f_wrapper)) {
     f <- function(x) {
       x_inner <- nv_convert(x, x_dtype)
-      out <- nvl_fn(x_inner)
+      out <- prim_fn(x_inner)
       out <- nv_convert(out, "f32")
       nv_reduce_sum(out, dims = 1L, drop = TRUE)
     }
@@ -103,7 +103,7 @@ verify_zero_grad_unary <- function(nvl_fn, x, f_wrapper = NULL) {
   testthat::expect_equal(grads[[1L]], expected)
 }
 
-verify_zero_grad_binary <- function(nvl_fn, x, y) {
+verify_zero_grad_binary <- function(prim_fn, x, y) {
   x_dtype <- dtype(x)
   y_dtype <- dtype(y)
   x_f32 <- nv_convert(x, "f32")
@@ -111,7 +111,7 @@ verify_zero_grad_binary <- function(nvl_fn, x, y) {
   f <- function(x, y) {
     x_inner <- nv_convert(x, x_dtype)
     y_inner <- nv_convert(y, y_dtype)
-    out <- nvl_fn(x_inner, y_inner)
+    out <- prim_fn(x_inner, y_inner)
     out <- nv_convert(out, "f32")
     nv_reduce_sum(out, dims = 1L, drop = TRUE)
   }

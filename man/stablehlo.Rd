@@ -7,7 +7,7 @@
 stablehlo(graph, constants_as_inputs = TRUE, env = NULL, donate = character())
 }
 \arguments{
-\item{graph}{(\code{\link{AnvilGraph}})\cr
+\item{graph}{(\code{\link{AnvlGraph}})\cr
 The graph to lower (e.g. produced by \code{\link[=trace_fn]{trace_fn()}}).}
 
 \item{constants_as_inputs}{(\code{logical(1)})\cr
@@ -33,7 +33,7 @@ A \code{list} of length 2:
 }
 }
 \description{
-Converts a traced \code{\link{AnvilGraph}} into the StableHLO intermediate representation (IR).
+Converts a traced \code{\link{AnvlGraph}} into the StableHLO intermediate representation (IR).
 Each graph operation is translated to its corresponding StableHLO op. The result can
 be serialized to MLIR text via \code{stablehlo::repr()} and subsequently compiled to an
 XLA executable with \code{pjrt::pjrt_compile()}.
