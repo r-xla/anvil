@@ -15,7 +15,7 @@ jit(
 }
 \arguments{
 \item{f}{(\code{function})\cr
-Function to compile. Must accept and return \code{\link{AnvilArray}}s (and/or
+Function to compile. Must accept and return \code{\link{AnvlArray}}s (and/or
 static arguments).}
 
 \item{static}{(\code{character()} | \code{integer()})\cr
@@ -48,8 +48,8 @@ backend.}
 }
 \value{
 A \code{JitFunction} (a \code{function} with the same formals as \code{f}).
-The returned wrapper expects \code{\link{AnvilArray}} inputs and returns
-\code{\link{AnvilArray}} values.
+The returned wrapper expects \code{\link{AnvlArray}} inputs and returns
+\code{\link{AnvlArray}} values.
 }
 \description{
 Wraps a function so that it is traced and compiled on first call. Subsequent
@@ -96,8 +96,8 @@ inputs. Must not overlap with \code{static}.
 
 \itemize{
 \item \code{unwrap} (\code{logical(1)}, default \code{FALSE}): if \code{TRUE}, the compiled function
-returns plain R arrays instead of \code{\link{AnvilArray}}s. Useful when the jitted
-function's output is consumed by non-anvil R code and the extra wrapping
+returns plain R arrays instead of \code{\link{AnvlArray}}s. Useful when the jitted
+function's output is consumed by non-anvl R code and the extra wrapping
 would only get stripped again.
 }
 }

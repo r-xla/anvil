@@ -8,7 +8,7 @@ value_and_gradient(f, wrt = NULL)
 }
 \arguments{
 \item{f}{(\code{function})\cr
-Function to differentiate. Arguments can be arrayish (\code{\link{AnvilArray}}) or
+Function to differentiate. Arguments can be arrayish (\code{\link{AnvlArray}}) or
 static (non-array) values. Must return a single scalar float array.}
 
 \item{wrt}{(\code{character} | \code{integer} | \code{NULL})\cr

@@ -30,7 +30,7 @@ default_device <- function(backend = NULL) {
 #'   Defaults to [`default_backend()`] when `NULL`.
 #' @return A backend-specific device object (e.g. `PJRTDevice` for `"xla"`,
 #'   [`quickr_device`] for `"quickr"`).
-#' @seealso [`backend()`], [`AnvilBackend()`].
+#' @seealso [`backend()`], [`AnvlBackend()`].
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Create CPU device for xla backend:
 #' nv_device("cpu", "xla")
@@ -59,7 +59,7 @@ nv_device <- function(x, backend = NULL) {
 #' @return `logical(1)`
 #' @export
 is_device <- function(x) {
-  # TODO: device objects should share a common base class (like AnvilArray)
+  # TODO: device objects should share a common base class (like AnvlArray)
   # instead of checking each backend's class individually.
   inherits(x, c("PJRTDevice", "QuickrDevice"))
 }

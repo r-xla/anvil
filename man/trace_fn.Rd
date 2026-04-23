@@ -18,7 +18,7 @@ trace_fn(
 \item{f}{(\code{function})\cr
 The function to trace. Must not be a \code{JitFunction} (i.e. already jitted).}
 
-\item{args}{(\code{list} of (\code{\link{AnvilArray}} | \code{\link{AbstractArray}}))\cr
+\item{args}{(\code{list} of (\code{\link{AnvlArray}} | \code{\link{AbstractArray}}))\cr
 The (unflattened) arguments to the function. Mutually exclusive with the
 \code{args_flat}/\code{in_tree} pair.}
 
@@ -26,7 +26,7 @@ The (unflattened) arguments to the function. Mutually exclusive with the
 Optional descriptor. When \code{NULL} (default), a new descriptor is created.}
 
 \item{toplevel}{(\code{logical(1)})\cr
-If \code{TRUE}, concrete \code{\link{AnvilArray}} inputs are treated as unknown (traced) values.
+If \code{TRUE}, concrete \code{\link{AnvlArray}} inputs are treated as unknown (traced) values.
 If \code{FALSE} (default), they are treated as known constants.}
 
 \item{lit_to_array}{(\code{logical(1)})\cr
@@ -40,11 +40,11 @@ Flattened arguments. Must be accompanied by \code{in_tree}.}
 Tree structure describing how \code{args_flat} maps back to \code{f}'s arguments.}
 }
 \value{
-An \code{\link{AnvilGraph}} containing the traced operations.
+An \code{\link{AnvlGraph}} containing the traced operations.
 }
 \description{
 Executes \code{f} with abstract array arguments and records every primitive operation into
-an \code{\link{AnvilGraph}}.
+an \code{\link{AnvlGraph}}.
 
 The resulting graph can be lowered to StableHLO (via \code{\link[=stablehlo]{stablehlo()}}) or transformed
 (e.g. via \code{\link[=transform_gradient]{transform_gradient()}}).

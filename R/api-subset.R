@@ -406,7 +406,7 @@ parse_subset_spec <- function(quo, dim_size) {
     return(SubsetIndices(indices))
   }
 
-  # AnvilRange (dynamic range) - not supported
+  # AnvlRange (dynamic range) - not supported
   if (inherits(e, "IotaArray")) {
     if (length(shape) != 1L) {
       cli_abort("IotaArray must be 1D, but got {length(shape)}D")
@@ -414,7 +414,7 @@ parse_subset_spec <- function(quo, dim_size) {
     return(SubsetRange(e$start, e$end))
   }
 
-  # Array indices (AnvilArray or GraphBox)
+  # Array indices (AnvlArray or GraphBox)
   if (is_arrayish(e) && !is.atomic(e)) {
     dt <- dtype_abstract(e)
     if (!(inherits(dt, "IntegerType") || inherits(dt, "UIntegerType"))) {
@@ -513,7 +513,7 @@ nv_subset_assign <- function(x, ..., value) {
   if (!is_arrayish(value)) {
     cli_abort("Expected arrayish `value`, but got {.cls {class(value)[1]}}")
   }
-  aligned <- as_anvil_arrays(x, value)
+  aligned <- as_anvl_arrays(x, value)
   x <- aligned[[1L]]
   value <- aligned[[2L]]
   if (dtype_abstract(x) != dtype_abstract(value)) {

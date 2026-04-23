@@ -19,7 +19,7 @@ NULL
 NULL
 
 globals <- new.env()
-globals$nv_types <- "AnvilArray"
+globals$nv_types <- "AnvlArray"
 globals$interpretation_rules <- c("stablehlo", "quickr", "reverse")
 globals[["DESCRIPTOR_STASH"]] <- list()
 globals[["CURRENT_DESCRIPTOR"]] <- NULL

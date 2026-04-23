@@ -15,11 +15,11 @@ knitr::opts_chunk$set(
 
 ## Type Promotion Rules
 
-When combining arrays of different types (e.g., adding an `f32` to an `i32`), {anvil} needs to determine a common type.
+When combining arrays of different types (e.g., adding an `f32` to an `i32`), {anvl} needs to determine a common type.
 For example, below we are adding an `f32` to an `f64`, where the former is promoted to the latter's type, because it's more expressive.
 
 ```{r}
-library(anvil)
+library(anvl)
 jit(nv_add)(
   nv_scalar(1.0, dtype = "f32"),
   nv_scalar(1.0, dtype = "f64")
@@ -54,7 +54,7 @@ knitr::kable(tbl, format = "html", caption = "Type promotion rules (row × colum
 
 ## Literals as Ambiguous Types
 
-Usually, the types in an {anvil} program can be deterministically inferred from the input types.
+Usually, the types in an {anvl} program can be deterministically inferred from the input types.
 The only case where this is not possible is when you use R literals.
 The default types for literals are as follows:
 
@@ -69,7 +69,7 @@ jit(\() list(1L, 1.0, TRUE))()
 However, because this is just a guess, they behave differently than known types during promotion.
 Therefore, the `common_dtype` function has two arguments indicating which of the data types are ambiguous.
 Below, the first type is a known `f64` and the second is an ambiguous `f32`.
-Within anvil, we denote the latter as `i32?`.
+Within anvl, we denote the latter as `i32?`.
 The result is an `f64`, although we would promote to an `f64` if both were known.
 If both types are ambiguous, the result is generally the same as if both were known.
 

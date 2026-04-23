@@ -206,24 +206,24 @@ graph_to_quickr_make_wrapper <- function(
   wrapper
 }
 
-#' Convert an AnvilGraph to a plain R function
+#' Convert an AnvlGraph to a plain R function
 #'
-#' Lowers a supported subset of `AnvilGraph` objects to a plain R function (no
+#' Lowers a supported subset of `AnvlGraph` objects to a plain R function (no
 #' compilation) suitable for `quickr::quick()`. The returned function expects
 #' plain R scalars/vectors/arrays and returns plain R values/arrays.
 #'
 #' Most users will prefer [`jit()`] with `backend = "quickr"`.
 #' This function is the lower-level graph API.
 #'
-#' @param graph ([`AnvilGraph`])\cr
+#' @param graph ([`AnvlGraph`])\cr
 #'   Graph to convert.
 #' @return (`function`)
-#' @seealso [`jit()`] with `options(anvil.backend = "quickr")` for tracing and compiling a
+#' @seealso [`jit()`] with `options(anvl.backend = "quickr")` for tracing and compiling a
 #'   regular R function in one step.
 #' @export
 graph_to_quickr_r_function <- function(graph) {
   if (!is_graph(graph)) {
-    cli_abort("{.arg graph} must be a {.cls AnvilGraph}")
+    cli_abort("{.arg graph} must be a {.cls AnvlGraph}")
   }
 
   prep <- graph_to_quickr_prepare(graph)
@@ -248,13 +248,13 @@ graph_to_quickr_r_function <- function(graph) {
   )
 }
 
-#' Convert an AnvilGraph to a quickr-compiled function
+#' Convert an AnvlGraph to a quickr-compiled function
 #'
-#' Lowers a supported subset of `AnvilGraph` objects to a plain R function and
+#' Lowers a supported subset of `AnvlGraph` objects to a plain R function and
 #' compiles it with `quickr::quick()`.
 #'
 #' The returned function expects plain R scalars/vectors/arrays (not
-#' [`AnvilArray`]) and returns [`AnvilArray`] outputs by default, or plain R
+#' [`AnvlArray`]) and returns [`AnvlArray`] outputs by default, or plain R
 #' values when `unwrap = TRUE`.
 #'
 #' If the graph returns multiple outputs (e.g. a nested list), the compiled
@@ -269,24 +269,24 @@ graph_to_quickr_r_function <- function(graph) {
 #' Most users will prefer [`jit()`] with `backend = "quickr"`. This function is
 #' the lower-level graph API.
 #'
-#' @param graph ([`AnvilGraph`])\cr
+#' @param graph ([`AnvlGraph`])\cr
 #'   Graph to convert.
 #' @param unwrap (`logical(1)`)\cr
-#'   If `FALSE` (default), each output leaf is wrapped in an [`AnvilArray`]
+#'   If `FALSE` (default), each output leaf is wrapped in an [`AnvlArray`]
 #'   with the `"quickr"` backend. If `TRUE`, outputs are returned as plain
 #'   R values.
 #' @param flat (`logical(1)`)\cr
 #'   If `FALSE` (default), the returned function takes structured top-level
 #'   arguments matching the formals of the traced function. If `TRUE`, it
 #'   takes a single flat list of all leaves (including static slots).
-#' @return (`function`) that returns [`AnvilArray`] outputs (or a tree of
+#' @return (`function`) that returns [`AnvlArray`] outputs (or a tree of
 #'   them), or plain R values when `unwrap = TRUE`.
 #' @seealso [`jit()`] with `backend = "quickr"` for tracing and compiling a
 #'   regular R function in one step.
 #' @keywords internal
 graph_to_quickr_function <- function(graph, unwrap = FALSE, flat = FALSE) {
   if (!is_graph(graph)) {
-    cli_abort("{.arg graph} must be a {.cls AnvilGraph}")
+    cli_abort("{.arg graph} must be a {.cls AnvlGraph}")
   }
 
   assert_quickr_installed("{.fn graph_to_quickr_function}")
@@ -298,7 +298,7 @@ graph_to_quickr_function <- function(graph, unwrap = FALSE, flat = FALSE) {
 
   out_infos <- prep$out_infos
   if (!isTRUE(unwrap)) {
-    # Tag out_infos so that quickr_restore_leaf wraps each leaf as an AnvilArray.
+    # Tag out_infos so that quickr_restore_leaf wraps each leaf as an AnvlArray.
     out_infos <- lapply(out_infos, function(info) {
       info$backend <- "quickr"
       info

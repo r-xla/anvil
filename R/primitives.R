@@ -1573,7 +1573,7 @@ prim_iota <- new_primitive(
   "iota",
   function(dim, dtype, shape, start = 1L, ambiguous = FALSE, device = NULL) {
     infer_fn <- function(dim, dtype, shape, start, ambiguous) {
-      # stablehlo uses 0-based indexing, anvil uses 1-based
+      # stablehlo uses 0-based indexing, anvl uses 1-based
       # Convert dim to Constant as required by stablehlo
       iota_dim_const <- stablehlo::r_to_constant(
         as.integer(dim - 1L),

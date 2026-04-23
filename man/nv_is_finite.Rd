@@ -2,12 +2,12 @@
 % Please edit documentation in R/api.R, R/api-generics.R
 \name{nv_is_finite}
 \alias{nv_is_finite}
-\alias{is.finite.AnvilBox}
+\alias{is.finite.AnvlBox}
 \title{Is Finite}
 \usage{
 nv_is_finite(operand)
 
-\method{is.finite}{AnvilBox}(x)
+\method{is.finite}{AnvlBox}(x)
 }
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr

@@ -24,7 +24,7 @@ See the \code{vignette("type-promotion")} for more details.}
 \description{
 Representation of an abstract array type.
 During tracing, it is wrapped in a \code{\link{GraphNode}} held by a \code{\link{GraphBox}}.
-In the lowered \code{\link{AnvilGraph}} it is also part of \code{\link{GraphNode}}s representing the values in the program.
+In the lowered \code{\link{AnvlGraph}} it is also part of \code{\link{GraphNode}}s representing the values in the program.
 
 The base class represents an \emph{unknown} value, but child classes exist for:
 \itemize{
@@ -58,7 +58,7 @@ ambiguous(a)
 # Shorthand
 nv_aval("f32", c(2L, 3L))
 
-# How AbstractArrays appear in an AnvilGraph
+# How AbstractArrays appear in an AnvlGraph
 graph <- trace_fn(function(x) x + 1, list(x = nv_aval("i32", 4L)))
 graph
 graph$inputs[[1]]$aval

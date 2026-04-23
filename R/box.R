@@ -1,10 +1,10 @@
-#' @title AnvilBox
+#' @title AnvlBox
 #' @description
 #' Virtual S3 base class for [`GraphBox`].
 #' @seealso [GraphBox]
-#' @name AnvilBox
+#' @name AnvlBox
 NULL
 
 is_box <- function(x) {
-  inherits(x, "AnvilBox")
+  inherits(x, "AnvlBox")
 }

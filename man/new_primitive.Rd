@@ -20,7 +20,7 @@ Primitive name.}
 \item{fn}{(\code{function})\cr
 Body of the primitive. Its formals become the formals of the returned
 JIT-compiled callable. Inside \code{fn}, the primitive is accessible via
-the lexically-bound symbol \code{self} (an \code{\link{AnvilPrimitive}}); pass it as
+the lexically-bound symbol \code{self} (an \code{\link{AnvlPrimitive}}); pass it as
 the first argument to \code{\link[=graph_desc_add]{graph_desc_add()}}.}
 
 \item{subgraphs}{(\code{character()})\cr
@@ -41,7 +41,7 @@ registry.}
 A callable of class \code{c("JitPrimitive", "JitFunction")}.
 }
 \description{
-Builds an \code{\link{AnvilPrimitive}} metadata object, wraps \code{fn} with \code{\link[=jit]{jit()}},
+Builds an \code{\link{AnvlPrimitive}} metadata object, wraps \code{fn} with \code{\link[=jit]{jit()}},
 attaches the metadata via \code{attr(., "primitive")}, prepends class
 \code{"JitPrimitive"}, and (by default) registers the result under \code{name} in
 the primitive registry.

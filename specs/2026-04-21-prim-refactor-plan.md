@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rename the anvil primitive layer from `nvl_*` / `p_*` to a single `prim_*` object per primitive, exposed only via an exported `prim` environment (`prim$add`). Keep each primitive visible in pkgdown.
+**Goal:** Rename the anvl primitive layer from `nvl_*` / `p_*` to a single `prim_*` object per primitive, exposed only via an exported `prim` environment (`prim$add`). Keep each primitive visible in pkgdown.
 
-**Architecture:** `AnvilPrimitive(name, subgraphs)` stays the env-based metadata holder (drop the redundant `higher_order` field). A new helper `new_primitive(name, fn, subgraphs, static, register)` builds the `AnvilPrimitive`, wraps `fn` with `jit(backend = "auto")`, attaches the metadata as `attr(., "primitive")`, prepends class `"JitPrimitive"`, and self-registers into the exported `prim` environment. Bodies identify their primitive by passing the name string to `graph_desc_add`, which looks up via `prim[[name]]`. `[[.JitPrimitive` / `[[<-.JitPrimitive` / `print.JitPrimitive` delegate to the attached `AnvilPrimitive`.
+**Architecture:** `AnvlPrimitive(name, subgraphs)` stays the env-based metadata holder (drop the redundant `higher_order` field). A new helper `new_primitive(name, fn, subgraphs, static, register)` builds the `AnvlPrimitive`, wraps `fn` with `jit(backend = "auto")`, attaches the metadata as `attr(., "primitive")`, prepends class `"JitPrimitive"`, and self-registers into the exported `prim` environment. Bodies identify their primitive by passing the name string to `graph_desc_add`, which looks up via `prim[[name]]`. `[[.JitPrimitive` / `[[<-.JitPrimitive` / `print.JitPrimitive` delegate to the attached `AnvlPrimitive`.
 
 **Tech Stack:** R, S3, checkmate, roxygen2, testthat, pkgdown.
 
@@ -21,7 +21,7 @@
 - [ ] **Step 1: Confirm working tree is clean on `prim-refactor`**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git status
 ```
 Expected: `On branch prim-refactor`, "nothing to commit, working tree clean" (the spec commit is the only delta vs main).
@@ -29,7 +29,7 @@ Expected: `On branch prim-refactor`, "nothing to commit, working tree clean" (th
 - [ ] **Step 2: Run the full R test suite**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::test()'
 ```
 Expected: all tests pass. This is the green baseline the refactor must preserve.
@@ -37,7 +37,7 @@ Expected: all tests pass. This is the green baseline the refactor must preserve.
 - [ ] **Step 3: Run R CMD check (sanity)**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::check(args = "--no-manual", vignettes = FALSE, error_on = "error")'
 ```
 Expected: 0 errors. Warnings/notes can exist; just note them for comparison at the end.
@@ -54,7 +54,7 @@ Expected: 0 errors. Warnings/notes can exist; just note them for comparison at t
 
 - [ ] **Step 1: Add S3 methods for `JitPrimitive` in `R/primitive.R`**
 
-After the existing `print.AnvilPrimitive` method, append:
+After the existing `print.AnvlPrimitive` method, append:
 
 ```r
 #' @method [[ JitPrimitive
@@ -83,13 +83,13 @@ print.JitPrimitive <- function(x, ...) {
 Append to `tests/testthat/test-primitive.R`:
 
 ```r
-test_that("JitPrimitive [[ delegates to attached AnvilPrimitive", {
-  p <- AnvilPrimitive("jp_test_a")
+test_that("JitPrimitive [[ delegates to attached AnvlPrimitive", {
+  p <- AnvlPrimitive("jp_test_a")
   f <- function(x) x
   attr(f, "primitive") <- p
   class(f) <- c("JitPrimitive", "function")
 
-  # [[<- assigns onto the underlying AnvilPrimitive rules
+  # [[<- assigns onto the underlying AnvlPrimitive rules
   f[["stablehlo"]] <- function(x) "stablehlo-rule"
   expect_identical(p[["stablehlo"]](), "stablehlo-rule")
 
@@ -97,19 +97,19 @@ test_that("JitPrimitive [[ delegates to attached AnvilPrimitive", {
   expect_identical(f[["stablehlo"]], p[["stablehlo"]])
 })
 
-test_that("print.JitPrimitive delegates to the AnvilPrimitive", {
-  p <- AnvilPrimitive("jp_test_b")
+test_that("print.JitPrimitive delegates to the AnvlPrimitive", {
+  p <- AnvlPrimitive("jp_test_b")
   f <- function(x) x
   attr(f, "primitive") <- p
   class(f) <- c("JitPrimitive", "function")
-  expect_output(print(f), "<AnvilPrimitive:jp_test_b>")
+  expect_output(print(f), "<AnvlPrimitive:jp_test_b>")
 })
 ```
 
 - [ ] **Step 3: Run the tests**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'testthat::test_file("tests/testthat/test-primitive.R")'
 ```
 Expected: all tests pass.
@@ -117,7 +117,7 @@ Expected: all tests pass.
 - [ ] **Step 4: Regenerate NAMESPACE**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::document()'
 ```
 Expected: `S3method("[[",JitPrimitive)`, `S3method("[[<-",JitPrimitive)`, `S3method(print,JitPrimitive)` appear in `NAMESPACE`.
@@ -125,9 +125,9 @@ Expected: `S3method("[[",JitPrimitive)`, `S3method("[[<-",JitPrimitive)`, `S3met
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add R/primitive.R tests/testthat/test-primitive.R NAMESPACE
-git commit -m "feat: add JitPrimitive S3 methods delegating to AnvilPrimitive
+git commit -m "feat: add JitPrimitive S3 methods delegating to AnvlPrimitive
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 ```
@@ -168,7 +168,7 @@ test_that("new_primitive respects register = FALSE", {
 - [ ] **Step 2: Run the tests to confirm they fail**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'testthat::test_file("tests/testthat/test-primitive.R")'
 ```
 Expected: the two new tests fail with `could not find function "new_primitive"`.
@@ -180,7 +180,7 @@ After the `JitPrimitive` S3 methods (from Task 2), append:
 ```r
 #' @title Create a Primitive
 #' @description
-#' Builds an [`AnvilPrimitive`] metadata object, wraps `fn` with [`jit()`]
+#' Builds an [`AnvlPrimitive`] metadata object, wraps `fn` with [`jit()`]
 #' (backend `"auto"`), attaches the metadata via `attr(., "primitive")`,
 #' prepends class `"JitPrimitive"`, and (by default) registers the result
 #' under `name` in the internal primitive registry (exposed via [`prim`]
@@ -204,7 +204,7 @@ new_primitive <- function(name, fn, subgraphs = character(),
   checkmate::assert_character(subgraphs)
   checkmate::assert_flag(register)
 
-  primitive <- AnvilPrimitive(name, subgraphs = subgraphs)
+  primitive <- AnvlPrimitive(name, subgraphs = subgraphs)
   jit_fn <- jit(fn, static = static, backend = "auto")
   attr(jit_fn, "primitive") <- primitive
   class(jit_fn) <- c("JitPrimitive", class(jit_fn))
@@ -220,7 +220,7 @@ new_primitive <- function(name, fn, subgraphs = character(),
 - [ ] **Step 4: Regenerate NAMESPACE + man pages**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::document()'
 ```
 Expected: `export(new_primitive)` in `NAMESPACE`; `man/new_primitive.Rd` created.
@@ -228,7 +228,7 @@ Expected: `export(new_primitive)` in `NAMESPACE`; `man/new_primitive.Rd` created
 - [ ] **Step 5: Re-run the tests**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'testthat::test_file("tests/testthat/test-primitive.R")'
 ```
 Expected: all tests pass.
@@ -236,7 +236,7 @@ Expected: all tests pass.
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add R/primitive.R tests/testthat/test-primitive.R NAMESPACE man/new_primitive.Rd
 git commit -m "feat: add new_primitive constructor
 
@@ -245,18 +245,18 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 
 ---
 
-## Task 4: Drop `higher_order` field on `AnvilPrimitive`
+## Task 4: Drop `higher_order` field on `AnvlPrimitive`
 
 **Files:**
 - Modify: `R/primitive.R`
 - Modify: `tests/testthat/_snaps/primitive.md` (snapshot, may auto-update)
 
-- [ ] **Step 1: Simplify `AnvilPrimitive` and rewrite `is_higher_order_primitive`**
+- [ ] **Step 1: Simplify `AnvlPrimitive` and rewrite `is_higher_order_primitive`**
 
-In `R/primitive.R`, replace the body of `AnvilPrimitive` (currently setting `env$higher_order` etc.) with:
+In `R/primitive.R`, replace the body of `AnvlPrimitive` (currently setting `env$higher_order` etc.) with:
 
 ```r
-AnvilPrimitive <- function(name, subgraphs = character()) {
+AnvlPrimitive <- function(name, subgraphs = character()) {
   checkmate::assert_string(name)
   checkmate::assert_character(subgraphs)
 
@@ -265,7 +265,7 @@ AnvilPrimitive <- function(name, subgraphs = character()) {
   env$rules <- list()
   env$subgraphs <- subgraphs
 
-  structure(env, class = "AnvilPrimitive")
+  structure(env, class = "AnvlPrimitive")
 }
 ```
 
@@ -288,7 +288,7 @@ In the same file, replace `subgraphs <- function(call) { ... }` with:
 #' Extracts subgraphs from the parameters of a higher-order primitive call.
 #' @param call (`PrimitiveCall`)\cr
 #'   The primitive call.
-#' @return (`list(AnvilGraph)`)\cr
+#' @return (`list(AnvlGraph)`)\cr
 #'   List of subgraphs found in the parameters.
 #' @export
 subgraphs <- function(call) {
@@ -306,7 +306,7 @@ subgraphs <- function(call) {
 - [ ] **Step 3: Run the existing primitive tests**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'testthat::test_file("tests/testthat/test-primitive.R")'
 ```
 Expected: all pass. If the `expect_snapshot(p)` snapshot differs (because `higher_order` field no longer shown in the env listing), accept with:
@@ -318,7 +318,7 @@ R -q -e 'testthat::snapshot_accept()'
 - [ ] **Step 4: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add R/primitive.R tests/testthat/_snaps/primitive.md 2>/dev/null
 git commit -m "refactor: derive higher_order from subgraphs
 
@@ -358,7 +358,7 @@ graph_desc_add <- function(prim, args, params = list(), infer_fn, desc = NULL) {
 
 (Uses `prim_dict` because at this point the old `prim()` callable and the new `prim` env do not yet coexist — `prim_dict` is the canonical registry. Task 14 rewrites this block to use the exported `prim` env.)
 
-The `JitPrimitive` unwrap covers two cases: the name-string lookup returns a `JitPrimitive` callable, and (transiently, during Task 7) callers who pass `p_<name>` — now aliased to the `JitPrimitive` — also land here. Both need to arrive at the `AnvilPrimitive` env for `PrimitiveCall` and `print_call_repr` to see the expected `$name`, `$rules`, etc.
+The `JitPrimitive` unwrap covers two cases: the name-string lookup returns a `JitPrimitive` callable, and (transiently, during Task 7) callers who pass `p_<name>` — now aliased to the `JitPrimitive` — also land here. Both need to arrive at the `AnvlPrimitive` env for `PrimitiveCall` and `print_call_repr` to see the expected `$name`, `$rules`, etc.
 
 No other changes in this function.
 
@@ -384,7 +384,7 @@ print_call_repr <- function(prim) {
 - [ ] **Step 3: Run the full test suite to verify no regression**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::test()'
 ```
 Expected: all tests still pass. `graph_desc_add` still accepts the old `p_*` env objects (no consumer has been migrated yet); the new string path is dormant until primitives are migrated.
@@ -392,7 +392,7 @@ Expected: all tests still pass. `graph_desc_add` still accepts the old `p_*` env
 - [ ] **Step 4: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add R/graph.R
 git commit -m "feat: graph_desc_add accepts primitive name string
 
@@ -529,7 +529,7 @@ p_<name> <- prim_<name>
 nvl_<name> <- prim_<name>
 ```
 
-Rely on `[[.JitPrimitive` delegation so `p_<name>[["stablehlo"]] <- rule` in `rules-*.R` writes through the alias to the underlying `AnvilPrimitive`.
+Rely on `[[.JitPrimitive` delegation so `p_<name>[["stablehlo"]] <- rule` in `rules-*.R` writes through the alias to the underlying `AnvlPrimitive`.
 
 **Patterns to apply:**
 
@@ -537,7 +537,7 @@ Rely on `[[.JitPrimitive` delegation so `p_<name>[["stablehlo"]] <- rule` in `ru
 
 Before:
 ```r
-p_add <- AnvilPrimitive("add")
+p_add <- AnvlPrimitive("add")
 #' @title …
 #' @export
 nvl_add <- make_binary_op(p_add, stablehlo::infer_types_add)
@@ -559,7 +559,7 @@ Apply to every `make_binary_op`, `make_unary_op`, `make_reduce_op`, `make_compar
 
 Before:
 ```r
-p_fill <- AnvilPrimitive("fill")
+p_fill <- AnvlPrimitive("fill")
 #' @title …
 #' @export
 nvl_fill <- jit(
@@ -590,7 +590,7 @@ nvl_fill <- prim_fill
 ```
 
 Changes:
-- drop the separate `p_<name> <- AnvilPrimitive(...)` line.
+- drop the separate `p_<name> <- AnvlPrimitive(...)` line.
 - wrap the body in `new_primitive("<name>", <body>, static = ..., [subgraphs = ...])`.
 - drop the outer `jit(..., backend = "auto")` — `new_primitive` handles jit and backend.
 - replace `graph_desc_add(p_<name>, ...)` → `graph_desc_add("<name>", ...)` inside the body.
@@ -602,7 +602,7 @@ Same as Pattern B, but also pass `subgraphs = c(...)` to `new_primitive()`:
 
 Before:
 ```r
-p_if <- AnvilPrimitive("if", subgraphs = c("true_graph", "false_graph"))
+p_if <- AnvlPrimitive("if", subgraphs = c("true_graph", "false_graph"))
 #' @title …
 #' @export
 nvl_if <- jit(
@@ -650,7 +650,7 @@ Note the primitive-name vs alias-name mismatches that must be preserved:
 
 In definition order: `fill`, `broadcast_in_dim`, `dot_general`, `transpose`, `reshape`, `concatenate`, `static_slice`, `dynamic_slice`, `dynamic_update_slice`, `shift_left`, `shift_right_logical`, `shift_right_arithmetic`, `bitcast_convert`, `is_finite`, `popcnt`, `clamp`, `reverse`, `iota`, `pad`, `round`, `convert`, `ifelse`, `print`, `rng_bit_generator`, `gather`, `cholesky`, `triangular_solve`.
 
-For each: collapse `p_<name> <- AnvilPrimitive(...)` + `nvl_<name> <- jit(..., static = ..., backend = "auto")` into a single `prim_<name> <- new_primitive("<name>", fn, static = ...)`; rewrite `graph_desc_add(p_<name>, ...)` → `graph_desc_add("<name>", ...)`; add the two alias lines below.
+For each: collapse `p_<name> <- AnvlPrimitive(...)` + `nvl_<name> <- jit(..., static = ..., backend = "auto")` into a single `prim_<name> <- new_primitive("<name>", fn, static = ...)`; rewrite `graph_desc_add(p_<name>, ...)` → `graph_desc_add("<name>", ...)`; add the two alias lines below.
 
 - [ ] **Step 3: Apply Pattern C to higher-order primitives**
 
@@ -661,7 +661,7 @@ For each, the `new_primitive()` call additionally passes `subgraphs = <original 
 - [ ] **Step 4: Load the package to check for syntax errors**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::load_all()'
 ```
 Expected: no errors. Every `prim_<name>` is now defined. Every `p_<name>` and `nvl_<name>` binding still resolves via the alias.
@@ -669,7 +669,7 @@ Expected: no errors. Every `prim_<name>` is now defined. Every `p_<name>` and `n
 - [ ] **Step 5: Run the full test suite**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::test()'
 ```
 Expected: all tests pass. Rules files still write via `p_<name>[[...]] <- ...` through the alias; api files still call `nvl_<name>(...)` through the alias; user-facing tests that called `nvl_*` still work.
@@ -677,7 +677,7 @@ Expected: all tests pass. Rules files still write via `p_<name>[[...]] <- ...` t
 - [ ] **Step 6: Commit (tasks 7 + 8 together)**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add R/primitives.R
 git commit -m "refactor: migrate primitive definitions to new_primitive
 
@@ -707,15 +707,15 @@ Scope: the whole file. ~72 edits.
 - [ ] **Step 2: Run the full test suite**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::test()'
 ```
-Expected: all tests pass. Writing via `prim_<name>[[<rule>]] <- …` now goes through `[[<-.JitPrimitive` into the attached `AnvilPrimitive`.
+Expected: all tests pass. Writing via `prim_<name>[[<rule>]] <- …` now goes through `[[<-.JitPrimitive` into the attached `AnvlPrimitive`.
 
 - [ ] **Step 3: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add R/rules-stablehlo.R
 git commit -m "refactor: rename p_* -> prim_* in stablehlo rules
 
@@ -740,7 +740,7 @@ Reverse rules frequently compute cotangents by calling the primitive's forward. 
 - [ ] **Step 3: Run the full test suite**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::test()'
 ```
 Expected: all tests pass (reverse rules still use the aliases if any were missed).
@@ -748,7 +748,7 @@ Expected: all tests pass (reverse rules still use the aliases if any were missed
 - [ ] **Step 4: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add R/rules-reverse.R
 git commit -m "refactor: rename p_* / nvl_* -> prim_* in reverse rules
 
@@ -783,12 +783,12 @@ lapply(prim(), function(primitive) {
 
 Keep the `prim()` call form (still a function) — Task 13 converts it to `as.list(prim)` alongside the registry rename.
 
-The `call$primitive` uses later in the file (around line 1452: `call$primitive[["quickr"]]` and line 1459: `call$primitive$name`) read `call$primitive`. `graph_desc_add` (Task 14) will store the `AnvilPrimitive` env there, so these keep working without change. No edits needed inside `quickr_lower_graph_calls`.
+The `call$primitive` uses later in the file (around line 1452: `call$primitive[["quickr"]]` and line 1459: `call$primitive$name`) read `call$primitive`. `graph_desc_add` (Task 14) will store the `AnvlPrimitive` env there, so these keep working without change. No edits needed inside `quickr_lower_graph_calls`.
 
 - [ ] **Step 3: Run the full test suite (skip quickr tests if not installed)**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::test()'
 ```
 Expected: all tests pass.
@@ -796,7 +796,7 @@ Expected: all tests pass.
 - [ ] **Step 4: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add R/rules-quickr.R
 git commit -m "refactor: rename p_* -> prim_* in quickr rules; unwrap JitPrimitive
 
@@ -823,7 +823,7 @@ Exclude `R/primitives.R` from this pass — its own aliases define `nvl_<name>`,
 - [ ] **Step 2: Run the full test suite**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::test()'
 ```
 Expected: all tests pass.
@@ -831,7 +831,7 @@ Expected: all tests pass.
 - [ ] **Step 3: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add R/api.R R/api-generics.R R/api-like.R R/api-rng.R R/api-subset.R R/api-utilities.R R/reverse.R R/array.R R/utils.R
 git commit -m "refactor: rename nvl_* -> prim_* at api call sites
 
@@ -852,7 +852,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 
 - [ ] **Step 1: Update `tests/testthat/test-primitive.R` for the new class names**
 
-At this point `prim` is still the function form (env promotion happens in Task 13). Rewrite only the bits that break due to `JitPrimitive` replacing `AnvilPrimitive` envs in the registry. Keep `prim("name")` calls — they still work.
+At this point `prim` is still the function form (env promotion happens in Task 13). Rewrite only the bits that break due to `JitPrimitive` replacing `AnvlPrimitive` envs in the registry. Keep `prim("name")` calls — they still work.
 
 Replace the top `test_that("prim", ...)` block (lines 1-14) with:
 
@@ -863,9 +863,9 @@ test_that("prim lookup", {
   expect_list(prim(), types = "JitPrimitive")
 })
 
-test_that("AnvilPrimitive basics", {
-  p <- AnvilPrimitive("abc")
-  expect_class(p, "AnvilPrimitive")
+test_that("AnvlPrimitive basics", {
+  p <- AnvlPrimitive("abc")
+  expect_class(p, "AnvlPrimitive")
   expect_equal(p$name, "abc")
   expect_snapshot(p)
 })
@@ -889,7 +889,7 @@ Update the `describe("subgraphs", ...)` block — replace `primitive = p_if` wit
 - [ ] **Step 2: Find and rename `nvl_*` in remaining tests**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 find tests inst/extra-tests -type f -name '*.R' -exec grep -l '\bnvl_' {} + | \
   xargs sed -i '' -E 's/\bnvl_([a-z_]+)\(/prim_\1(/g'
 ```
@@ -898,20 +898,20 @@ Expected: ~dozens of rewrites. Snapshot `.md` files are excluded by the `-name '
 - [ ] **Step 3: Run the full test suite**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::test()'
 ```
-Expected: all tests pass. Snapshot for `AnvilPrimitive` print may have changed (no `higher_order` field); accept if so:
+Expected: all tests pass. Snapshot for `AnvlPrimitive` print may have changed (no `higher_order` field); accept if so:
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'testthat::snapshot_accept()'
 ```
 
 - [ ] **Step 4: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add tests inst/extra-tests
 git commit -m "test: migrate tests to prim_* / prim\$name API
 
@@ -938,7 +938,7 @@ Regex to match alias lines (two forms):
 Delete ~140 alias lines (two per primitive). An editor-global delete-matching-lines is fine, or:
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 sed -i '' -E '/^(p|nvl)_[a-z_]+ <- prim_[a-z_]+$/d' R/primitives.R
 ```
 
@@ -1010,20 +1010,20 @@ In `tests/testthat/test-primitive.R`, replace the `prim("…")` / `prim()` calls
 - [ ] **Step 6: Regenerate NAMESPACE and man pages**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::document()'
 ```
 Expected: `export(register_primitive)` gone; `man/prim.Rd` now documents the env.
 
 Delete obsolete man files:
 ```bash
-rm -f /Users/sebi/r-xla/anvil/man/register_primitive.Rd
+rm -f /Users/sebi/r-xla/anvl/man/register_primitive.Rd
 ```
 
 - [ ] **Step 7: Run the full test suite**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::test()'
 ```
 Expected: all tests pass.
@@ -1031,7 +1031,7 @@ Expected: all tests pass.
 - [ ] **Step 8: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add R/primitives.R R/primitive.R R/zzz.R R/rules-quickr.R tests/testthat/test-primitive.R NAMESPACE man/
 git commit -m "refactor: promote prim_dict to exported prim env; remove old registry API
 
@@ -1053,7 +1053,7 @@ Replace the entire `graph_desc_add` function in `R/graph.R` with this final form
 
 1. Parameter renamed from `prim` to `prim_name` (avoids shadowing the package-level `prim` env).
 2. The string-or-object branch is gone; a string is required.
-3. The lookup returns the `JitPrimitive` callable. It is unwrapped to the `AnvilPrimitive` env before being stored in `PrimitiveCall`, because `call$primitive$name`, `call$primitive[["quickr"]]`, and similar accesses in `rules-quickr.R` / lowering code expect the env form.
+3. The lookup returns the `JitPrimitive` callable. It is unwrapped to the `AnvlPrimitive` env before being stored in `PrimitiveCall`, because `call$primitive$name`, `call$primitive[["quickr"]]`, and similar accesses in `rules-quickr.R` / lowering code expect the env form.
 
 ```r
 graph_desc_add <- function(prim_name, args, params = list(), infer_fn, desc = NULL) {
@@ -1082,7 +1082,7 @@ graph_desc_add <- function(prim_name, args, params = list(), infer_fn, desc = NU
 }
 ```
 
-- [ ] **Step 2: Simplify `print_call_repr` now that its arg is always an `AnvilPrimitive` env**
+- [ ] **Step 2: Simplify `print_call_repr` now that its arg is always an `AnvlPrimitive` env**
 
 Replace the Task 5 version (which handled both forms) with:
 
@@ -1095,7 +1095,7 @@ print_call_repr <- function(prim) {
 - [ ] **Step 3: Run the full test suite**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::test()'
 ```
 Expected: all tests pass.
@@ -1103,7 +1103,7 @@ Expected: all tests pass.
 - [ ] **Step 4: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add R/graph.R
 git commit -m "refactor: require name string in graph_desc_add
 
@@ -1136,14 +1136,14 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 - [ ] **Step 2: Delete the old template**
 
 ```bash
-rm /Users/sebi/r-xla/anvil/man-roxygen/section_rules.R
+rm /Users/sebi/r-xla/anvl/man-roxygen/section_rules.R
 ```
 
 - [ ] **Step 3: Replace every `@template section_rules` with `@template section_primitive`**
 
 Scoped to `R/primitives.R`:
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 sed -i '' -E 's|#'\'' @template section_rules|#'\'' @template section_primitive|g' R/primitives.R
 ```
 Expected: ~70 substitutions (one per primitive).
@@ -1151,7 +1151,7 @@ Expected: ~70 substitutions (one per primitive).
 - [ ] **Step 4: Regenerate man pages**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::document()'
 ```
 Expected: every `man/prim_*.Rd` now has an "Access" section. No roxygen warnings.
@@ -1159,14 +1159,14 @@ Expected: every `man/prim_*.Rd` now has an "Access" section. No roxygen warnings
 - [ ] **Step 5: Visual spot-check one Rd**
 
 ```bash
-grep -A2 "Access" /Users/sebi/r-xla/anvil/man/prim_add.Rd
+grep -A2 "Access" /Users/sebi/r-xla/anvl/man/prim_add.Rd
 ```
 Expected: a stanza like `Access this primitive via \code{prim$add}.`
 
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add man-roxygen R/primitives.R man/
 git commit -m "docs: merge section_rules into section_primitive template
 
@@ -1186,7 +1186,7 @@ Scoped to `R/primitives.R`, targeting lines that are roxygen comments
 (start with `#'`). Use single-quoted sed to avoid shell-escaping `$`:
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 sed -i '' -E "/^#'/ s/\\bnvl_([a-z_]+)\\(/prim\\\$\\1(/g" R/primitives.R
 ```
 
@@ -1206,24 +1206,24 @@ using a single-quoted Perl one-liner (so `$1` stays a Perl backref, not a
 shell variable):
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 perl -i -0pe 's/#'\''\s+\@export\n(prim_\w+ <- new_primitive\()/$1/g' R/primitives.R
 ```
 
-Expected: ~70 `@export` lines deleted; `grep -c "^#' @export" R/primitives.R` should return a small number (only for `AnvilPrimitive`, `subgraphs`, `new_primitive`, `prim`, and the handful of other top-level definitions that stay exported — count them manually to confirm nothing unexpected is left over).
+Expected: ~70 `@export` lines deleted; `grep -c "^#' @export" R/primitives.R` should return a small number (only for `AnvlPrimitive`, `subgraphs`, `new_primitive`, `prim`, and the handful of other top-level definitions that stay exported — count them manually to confirm nothing unexpected is left over).
 
 - [ ] **Step 3: Regenerate docs**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::document()'
 ```
-Expected: `NAMESPACE` loses all `export(prim_*)` entries; `export(prim)`, `export(new_primitive)`, `export(AnvilPrimitive)` remain.
+Expected: `NAMESPACE` loses all `export(prim_*)` entries; `export(prim)`, `export(new_primitive)`, `export(AnvlPrimitive)` remain.
 
 - [ ] **Step 4: Run full test suite**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::test()'
 ```
 Expected: all tests pass. Examples inside the Rd files still build (pkgdown/example runner reaches them via the exported `prim` env).
@@ -1231,7 +1231,7 @@ Expected: all tests pass. Examples inside the Rd files still build (pkgdown/exam
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add R/primitives.R NAMESPACE man/
 git commit -m "refactor: unexport prim_* and rewrite examples to use prim\$<name>
 
@@ -1276,7 +1276,7 @@ prim$mul[["stablehlo"]]
 Also add a new paragraph above the existing content that names the two layers explicitly (addresses issue #235):
 
 ```rmd
-anvil has two layers: the user-facing `nv_*` API (in `nv_array()`,
+anvl has two layers: the user-facing `nv_*` API (in `nv_array()`,
 `nv_matmul()`, …) and the low-level primitives `prim_<name>` (accessed
 via `prim$<name>`). `nv_*` functions implement R-idiomatic semantics
 (broadcasting, type promotion, default arguments) and delegate to
@@ -1301,7 +1301,7 @@ prims <- as.list(prim)
 
 - [ ] **Step 3: Rewrite `vignettes/new_primitive.Rmd`**
 
-Find the section around line 220-230 that teaches the two-step `AnvilPrimitive` + `register_primitive` dance. Replace with:
+Find the section around line 220-230 that teaches the two-step `AnvlPrimitive` + `register_primitive` dance. Replace with:
 
 ```rmd
 To define a new primitive, call `new_primitive()`:
@@ -1339,7 +1339,7 @@ Delete any remaining references to `register_primitive()` in the vignette.
 - [ ] **Step 4: Build vignettes to verify**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::build_vignettes()'
 ```
 Expected: no errors. Vignette HTML renders.
@@ -1347,7 +1347,7 @@ Expected: no errors. Vignette HTML renders.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add vignettes/
 git commit -m "docs(vignettes): update for prim_* refactor and explain two layers
 
@@ -1390,7 +1390,7 @@ Delete the `- register_primitive` line (around line 292).
 - [ ] **Step 4: Build the pkgdown site (optional quick check)**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'pkgdown::build_reference_index()' 2>&1 | head -40
 ```
 Expected: no errors; reference index lists `prim`, `new_primitive`, and every `prim_<name>` topic.
@@ -1398,7 +1398,7 @@ Expected: no errors; reference index lists `prim`, `new_primitive`, and every `p
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add pkgdown/_pkgdown.yml
 git commit -m "docs(pkgdown): list prim_* primitives and prim env
 
@@ -1414,7 +1414,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 - [ ] **Step 1: Regenerate everything and run full checks**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::document(); devtools::test()'
 ```
 Expected: all tests pass.
@@ -1422,7 +1422,7 @@ Expected: all tests pass.
 - [ ] **Step 2: R CMD check (no manual)**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 R -q -e 'devtools::check(args = "--no-manual", vignettes = FALSE, error_on = "error")'
 ```
 Expected: 0 errors. Warnings / notes should be no worse than the baseline captured in Task 1.
@@ -1430,7 +1430,7 @@ Expected: 0 errors. Warnings / notes should be no worse than the baseline captur
 - [ ] **Step 3: Ensure no stray `nvl_` or `p_<name>` references survive**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 grep -rn '\bnvl_' R/ tests/ inst/extra-tests/ vignettes/ | grep -v 'nvl_\\*\\|nvl_[* ]' || echo "OK: no nvl_ references"
 grep -rn '\bp_[a-z]' R/ | grep -v '# ' || echo "OK: no p_ references"
 grep -rn '\bregister_primitive\b\|\bprim_dict\b' R/ tests/ inst/extra-tests/ vignettes/ || echo "OK: no old-API references"
@@ -1440,7 +1440,7 @@ Expected: "OK" for each. Any hits need a follow-up commit.
 - [ ] **Step 4: Run `jarl check`**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 jarl check . || true
 ```
 Review output; if new lint errors appeared that weren't present at baseline, fix them in a follow-up commit.
@@ -1450,7 +1450,7 @@ Review output; if new lint errors appeared that weren't present at baseline, fix
 If any of Steps 3-4 surfaced a follow-up:
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git add -u
 git commit -m "fixup: straggling references after prim_* refactor
 
@@ -1460,13 +1460,13 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 - [ ] **Step 6: Push and open PR**
 
 ```bash
-cd /Users/sebi/r-xla/anvil
+cd /Users/sebi/r-xla/anvl
 git push -u origin prim-refactor
 gh pr create --title "refactor: rename nvl_* / p_* to prim_*" --body "$(cat <<'EOF'
 ## Summary
 - Merges the primitive metadata (`p_*`) and traced entry point (`nvl_*`) into a single `prim_*` object per primitive.
 - Unexports individual primitives; users access via `prim$<name>` on the newly exported `prim` environment.
-- Introduces `new_primitive()` as the single constructor for primitives; `AnvilPrimitive()` keeps its role as the metadata holder.
+- Introduces `new_primitive()` as the single constructor for primitives; `AnvlPrimitive()` keeps its role as the metadata holder.
 - `graph_desc_add()` now identifies its primitive by name string.
 - Merges the rules/access doc sections into a single `section_primitive` roxygen template.
 - Closes #235 (the layer naming is now self-describing; `internals.Rmd` documents the two layers explicitly).
@@ -1501,7 +1501,7 @@ These primitives have an internal name that differs from the R binding:
 | `prim_lt`  | `less` |
 | `prim_le`  | `less_equal` |
 
-For each of these, `new_primitive()` takes the **internal** name (first column of the original `AnvilPrimitive(...)` call), and `graph_desc_add(...)` inside the body passes the same internal name string. The R binding (`prim_div`, etc.) is what we write on the left-hand side of the assignment.
+For each of these, `new_primitive()` takes the **internal** name (first column of the original `AnvlPrimitive(...)` call), and `graph_desc_add(...)` inside the body passes the same internal name string. The R binding (`prim_div`, etc.) is what we write on the left-hand side of the assignment.
 
 After migration verify:
 ```r

@@ -8,7 +8,7 @@
 #' This is a convenience wrapper around [`nv_serialize()`] that opens and closes
 #' a file connection.
 #'
-#' @param arrays (named `list` of [`AnvilArray`])\cr
+#' @param arrays (named `list` of [`AnvlArray`])\cr
 #'   Named list of arrays to save. Names must be unique.
 #' @param path (`character(1)`)\cr
 #'   File path to write to.
@@ -23,7 +23,7 @@
 #' nv_save(list(x = x), path)
 #' nv_read(path)
 nv_save <- function(arrays, path) {
-  checkmate::assert_list(arrays, names = "unique", types = "AnvilArray")
+  checkmate::assert_list(arrays, names = "unique", types = "AnvlArray")
   checkmate::assert_string(path)
 
   con <- file(path, "wb")
@@ -51,7 +51,7 @@ nv_save <- function(arrays, path) {
 #'   Backend for the loaded arrays.
 #'   Defaults to `default_backend()`.
 #'
-#' @returns Named `list` of [`AnvilArray`] objects.
+#' @returns Named `list` of [`AnvlArray`] objects.
 #' @seealso [nv_save()], [nv_serialize()], [nv_unserialize()]
 #' @export
 #' @examplesIf pjrt::plugins_downloaded("cpu")
@@ -77,7 +77,7 @@ nv_read <- function(path, device = NULL, backend = default_backend()) {
 #' @details
 #' The ambiguity of the arrays is stored in the metadata and preserved in write-read roundtrips.
 #'
-#' @param arrays (named `list` of [`AnvilArray`])\cr
+#' @param arrays (named `list` of [`AnvlArray`])\cr
 #'   Named list of arrays to serialize. Names must be unique.
 #' @param con (`NULL` | connection)\cr
 #'   An optional connection to write to.
@@ -93,7 +93,7 @@ nv_read <- function(path, device = NULL, backend = default_backend()) {
 #' raw_data
 #' nv_unserialize(raw_data)
 nv_serialize <- function(arrays, con = NULL) {
-  checkmate::assert_list(arrays, names = "unique", types = "AnvilArray")
+  checkmate::assert_list(arrays, names = "unique", types = "AnvlArray")
 
   # Extract ambiguity information to store in metadata
   ambiguity_info <- lapply(arrays, function(t) if (ambiguous(t)) TRUE else FALSE)
@@ -139,7 +139,7 @@ nv_serialize <- function(arrays, con = NULL) {
 #'   Backend for the loaded arrays.
 #'   Defaults to `default_backend()`.
 #'
-#' @returns Named `list` of [`AnvilArray`] objects.
+#' @returns Named `list` of [`AnvlArray`] objects.
 #' @seealso [nv_serialize()], [nv_save()], [nv_read()]
 #' @export
 #' @examplesIf pjrt::plugins_downloaded("cpu")

@@ -23,7 +23,7 @@ GraphDescriptor(
 The primitive calls that make up the graph.}
 
 \item{tensor_to_gval}{(\code{hashtab})\cr
-Mapping: \code{AnvilArray} -> \code{GraphValue}}
+Mapping: \code{AnvlArray} -> \code{GraphValue}}
 
 \item{gval_to_box}{(\code{hashtab})\cr
 Mapping: \code{GraphValue} -> \code{GraphBox}}
@@ -60,5 +60,5 @@ Populated automatically as arrays are registered.}
 (\code{GraphDescriptor})
 }
 \description{
-Descriptor of an \code{\link{AnvilGraph}}. This is a mutable class.
+Descriptor of an \code{\link{AnvlGraph}}. This is a mutable class.
 }

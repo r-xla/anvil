@@ -7,9 +7,9 @@
 graph_desc_add(primitive, args, params = list(), infer_fn, desc = NULL)
 }
 \arguments{
-\item{primitive}{(\code{\link{AnvilPrimitive}} | \code{JitPrimitive})\cr
+\item{primitive}{(\code{\link{AnvlPrimitive}} | \code{JitPrimitive})\cr
 The primitive the call is for. A \code{JitPrimitive} is accepted and unwrapped
-to its underlying \code{AnvilPrimitive} metadata.}
+to its underlying \code{AnvlPrimitive} metadata.}
 
 \item{args}{(\code{list} of \code{\link{GraphNode}})\cr
 The arguments to the primitive.}

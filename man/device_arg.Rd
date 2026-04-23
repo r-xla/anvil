@@ -11,7 +11,7 @@ device_arg(argname)
 Name of a formal argument of the function passed to \code{\link[=jit]{jit()}}.}
 }
 \value{
-(\code{AnvilDeviceArg})\cr
+(\code{AnvlDeviceArg})\cr
 An object recognized by \code{\link[=jit]{jit()}}.
 }
 \description{

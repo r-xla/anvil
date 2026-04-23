@@ -1,20 +1,20 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# anvil <img src="man/figures/logo.png" align="right" width = "120" />
+# anvl <img src="man/figures/logo.png" align="right" width = "120" />
 
-Package website: [release](https://r-xla.github.io/anvil/) \|
-[dev](https://r-xla.github.io/anvil/dev/)
+Package website: [release](https://r-xla.github.io/anvl/) \|
+[dev](https://r-xla.github.io/anvl/dev/)
 
 <!-- badges: start -->
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-![R-CMD-check](https://github.com/r-xla/anvil/actions/workflows/R-CMD-check.yaml/badge.svg)
+![R-CMD-check](https://github.com/r-xla/anvl/actions/workflows/R-CMD-check.yaml/badge.svg)
 [![CRAN
-status](https://www.r-pkg.org/badges/version/anvil)](https://CRAN.R-project.org/package=anvil)
-[![codecov](https://codecov.io/gh/r-xla/anvil/branch/main/graph/badge.svg)](https://codecov.io/gh/r-xla/anvil)
-[![r-universe](https://r-xla.r-universe.dev/badges/anvil)](https://r-xla.r-universe.dev/anvil)
+status](https://www.r-pkg.org/badges/version/anvl)](https://CRAN.R-project.org/package=anvl)
+[![codecov](https://codecov.io/gh/r-xla/anvl/branch/main/graph/badge.svg)](https://codecov.io/gh/r-xla/anvl)
+[![r-universe](https://r-xla.r-universe.dev/badges/anvl)](https://r-xla.r-universe.dev/anvl)
 ![CUDA 12.8](https://img.shields.io/badge/CUDA-12.8-green.svg)
 <!-- badges: end -->
 
@@ -26,7 +26,7 @@ including CPU and GPU.
 
 ## Installation
 
-{anvil} can be installed from GitHub or
+{anvl}[^1] can be installed from GitHub or
 [r-universe](https://r-xla.r-universe.dev/builds). During runtime, we
 require `libprotobuf`. Source installation requires a `C++20` compiler
 and `protoc` (protobuf compiler).
@@ -34,11 +34,11 @@ and `protoc` (protobuf compiler).
 ``` r
 # Install release
 # from r-universe (prebuilt binary)
-install.packages("anvil", repos = c("https://cloud.r-project.org", "https://r-xla.r-universe.dev"))
+install.packages("anvl", repos = c("https://cloud.r-project.org", "https://r-xla.r-universe.dev"))
 # from GitHub (installation from source)
-pak::pak("r-xla/anvil@*release")
+pak::pak("r-xla/anvl@*release")
 # Install dev version
-pak::pak("r-xla/anvil")
+pak::pak("r-xla/anvl")
 # Install CUDA support (linux x86_64): only requires a compatible driver
 install.packages("cuda12.8", repos = "https://mlverse.r-universe.dev")
 ```
@@ -50,11 +50,11 @@ more details.
 ## Quick Start
 
 Below, we create an R function and `jit()` it. Then, we call the
-resulting function on `AnvilArray`s, which will compile and subsequently
+resulting function on `AnvlArray`s, which will compile and subsequently
 execute it.
 
 ``` r
-library(anvil)
+library(anvl)
 f <- function(a, b, x) {
   a * x + b
 }
@@ -65,7 +65,7 @@ b <- nv_scalar(-2.0, "f32")
 x <- nv_scalar(3.0, "f32")
 
 f_jit(a, b, x)
-#> AnvilArray
+#> AnvlArray
 #>  1
 #> [ CPUf32{} ]
 ```
@@ -77,12 +77,12 @@ the above function.
 g_jit <- jit(gradient(f, wrt = c("a", "b")))
 g_jit(a, b, x)
 #> $a
-#> AnvilArray
+#> AnvlArray
 #>  3
 #> [ CPUf32{} ] 
 #> 
 #> $b
-#> AnvilArray
+#> AnvlArray
 #>  1
 #> [ CPUf32{} ]
 ```
@@ -135,3 +135,8 @@ the package website.
   - The [microjax](https://github.com/joey00072/microjax) project.
 - For JIT compilation, we leverage the [OpenXLA](https://openxla.org/)
   project.
+
+[^1]: A real anvil is a tool blacksmiths use to reshape metal; this
+    package reshapes R code in a similar spirit. We spell the package
+    name `anvl` (without the `i`) because `AnVIL` is already taken by a
+    Bioconductor package.

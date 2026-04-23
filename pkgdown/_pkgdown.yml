@@ -1,4 +1,4 @@
-url: https://r-xla.github.io/anvil/
+url: https://r-xla.github.io/anvl/
 destination: docs
 
 development:
@@ -34,7 +34,7 @@ navbar:
       - text: Installation
         href: articles/installation.html
       - text: Get Started
-        href: articles/anvil.html
+        href: articles/anvl.html
       - text: Type Promotion
         href: articles/type-promotion.html
       - text: Subsetting
@@ -64,7 +64,7 @@ reference:
     contents:
       - nv_convert
       - nv_bitcast_convert
-      - as_anvil_array
+      - as_anvl_array
       - nv_promote_to_common
       - nv_broadcast_scalars
       - nv_broadcast_arrays
@@ -196,12 +196,12 @@ reference:
       - nv_rng_state
 
   - title: Array
-    desc: Constructing and working with AnvilArrays
+    desc: Constructing and working with AnvlArrays
 
   - subtitle: Construction
     desc: Functions for creating and initializing arrays
     contents:
-      - AnvilArray
+      - AnvlArray
       - nv_array
       - nv_scalar
       - nv_empty
@@ -262,9 +262,9 @@ reference:
       - default_device
       - is_device
       - quickr_device
-      - AnvilBackend
-      - AnvilBackendXla
-      - AnvilBackendQuickr
+      - AnvlBackend
+      - AnvlBackendXla
+      - AnvlBackendQuickr
 
 
   - title: Internals
@@ -272,13 +272,13 @@ reference:
 
   - subtitle: Graph
     contents:
-      - AnvilGraph
+      - AnvlGraph
       - GraphDescriptor
       - GraphNode
       - GraphValue
       - GraphBox
       - GraphLiteral
-      - AnvilBox
+      - AnvlBox
       - graph_desc_add
       - local_descriptor
       - .current_descriptor
@@ -287,7 +287,7 @@ reference:
   - subtitle: Primitives
     contents:
       - new_primitive
-      - AnvilPrimitive
+      - AnvlPrimitive
       - PrimitiveCall
 
   - subtitle: Abstract Types

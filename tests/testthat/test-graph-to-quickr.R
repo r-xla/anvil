@@ -12,11 +12,11 @@ test_that("graph_to_quickr_function supports list outputs", {
 })
 
 test_that("graph_to_quickr_function rejects non-graph inputs", {
-  expect_error(graph_to_quickr_function(1), "must be a .*AnvilGraph", fixed = FALSE)
+  expect_error(graph_to_quickr_function(1), "must be a .*AnvlGraph", fixed = FALSE)
 })
 
 test_that("graph_to_quickr_r_function rejects non-graph inputs", {
-  expect_error(graph_to_quickr_r_function(1), "must be a .*AnvilGraph", fixed = FALSE)
+  expect_error(graph_to_quickr_r_function(1), "must be a .*AnvlGraph", fixed = FALSE)
 })
 
 test_that("graph_to_quickr_function supports nested inputs", {

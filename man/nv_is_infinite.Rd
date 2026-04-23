@@ -2,12 +2,12 @@
 % Please edit documentation in R/api.R, R/api-generics.R
 \name{nv_is_infinite}
 \alias{nv_is_infinite}
-\alias{is.infinite.AnvilBox}
+\alias{is.infinite.AnvlBox}
 \title{Is Infinite}
 \usage{
 nv_is_infinite(operand)
 
-\method{is.infinite}{AnvilBox}(x)
+\method{is.infinite}{AnvlBox}(x)
 }
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr

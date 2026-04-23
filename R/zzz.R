@@ -34,5 +34,5 @@ register_s3_method <- function(pkg, generic, class, fun = NULL) {
   )
 
   # Register compare_proxy for waldo/testthat
-  register_s3_method("waldo", "compare_proxy", "AnvilArray")
+  register_s3_method("waldo", "compare_proxy", "AnvlArray")
 }
