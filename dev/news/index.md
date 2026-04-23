@@ -1,14 +1,16 @@
 # Changelog
 
-## anvil (development version)
+## anvl (development version)
 
 ### Breaking Changes
 
-- `AnvilTensor`/`nv_tensor` were renamed to `AnvilArray` and `nv_array`
+- The package was renamed from `anvl` to `anvl` to avoid a conflict with
+  the Bioconductor package `AnVIL`.
+- `AnvilTensor`/`nv_tensor` were renamed to `AnvlArray` and `nv_array`
   to be more in line with R’s
   [`array()`](https://rdrr.io/r/base/array.html). Also, `nv_aten()` was
   renamed to
-  [`nv_aval()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md).
+  [`nv_aval()`](https://r-xla.github.io/anvl/dev/reference/AbstractArray.md).
 - Subsetting with [`list()`](https://rdrr.io/r/base/list.html)
   (e.g. `x[list(1, 3)]`) is no longer supported. Use
   [`array()`](https://rdrr.io/r/base/array.html) to wrap the indices
@@ -17,13 +19,16 @@
 - Removed *debug mode*.
 - Remove NSE support for `nvl_if`. It now requires passing 0-argument
   closures as `true` and `false` arguments.
+- Primitives renamed from `nvl_*` to `prim_*`. The underlying primitive
+  object containing the rules and metadata is now part of the
+  `JitPrimitive` function via the `primitive` attribute.
 
 ### New Features
 
 - Better composability:
-  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)ted
+  [`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md)ted
   functions can now be used in other
-  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)-calls.
+  [`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md)-calls.
   This is the mechanism underlying the new *eager mode*.
 - *Eager mode* was added: This means, you can now do
   `nv_add(1, nv_array(1:2))` and it will actually perform the
@@ -31,41 +36,40 @@
 - An experimental [{quickr}](https://github.com/t-kalinowski/quickr)
   backend was added It only runs on CPU for now and supports a subset of
   available operations. You can enable it via the `backend` argument in
-  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) and
-  [`nv_array()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
-  or via the `anvil.default_backend` option.
+  [`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md) and
+  [`nv_array()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  or via the `anvl.default_backend` option.
 - New primitives:
-  - [`nvl_cholesky()`](https://r-xla.github.io/anvil/dev/reference/nvl_cholesky.md)
-    to compute the Cholesky decomposition of a matrix.
-  - [`nvl_triangular_solve()`](https://r-xla.github.io/anvil/dev/reference/nvl_triangular_solve.md)
-    to solve a system of linear equations with a triangular matrix.
+  - `nvl_cholesky()` to compute the Cholesky decomposition of a matrix.
+  - `nvl_triangular_solve()` to solve a system of linear equations with
+    a triangular matrix.
 - New API functions:
-  - [`nv_diag()`](https://r-xla.github.io/anvil/dev/reference/nv_diag.md)
+  - [`nv_diag()`](https://r-xla.github.io/anvl/dev/reference/nv_diag.md)
     to create a diagonal matrix from a 1-D tensor.
-  - [`nv_eye()`](https://r-xla.github.io/anvil/dev/reference/nv_eye.md)
+  - [`nv_eye()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
     to create an identity matrix.
-  - [`nv_solve()`](https://r-xla.github.io/anvil/dev/reference/nv_solve.md)
+  - [`nv_solve()`](https://r-xla.github.io/anvl/dev/reference/nv_solve.md)
     to solve a system of linear equations.
-  - [`nv_cholesky()`](https://r-xla.github.io/anvil/dev/reference/nv_cholesky.md)
+  - [`nv_cholesky()`](https://r-xla.github.io/anvl/dev/reference/nv_cholesky.md)
     to compute the Cholesky decomposition of a matrix.
-  - [`nv_device()`](https://r-xla.github.io/anvil/dev/reference/nv_device.md)
+  - [`nv_device()`](https://r-xla.github.io/anvl/dev/reference/nv_device.md)
     constructs a backend-specific device object
     (e.g. `nv_device("cpu")`) that can be passed as `device` to array
     constructors like
-    [`nv_fill()`](https://r-xla.github.io/anvil/dev/reference/nv_fill.md)
+    [`nv_fill()`](https://r-xla.github.io/anvl/dev/reference/nv_fill.md)
     or
-    [`nv_iota()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md).
+    [`nv_iota()`](https://r-xla.github.io/anvl/dev/reference/nv_iota.md).
 - New S3 methods [`dim()`](https://rdrr.io/r/base/dim.html),
   [`nrow()`](https://rdrr.io/r/base/nrow.html),
   [`ncol()`](https://rdrr.io/r/base/nrow.html), and
-  [`length()`](https://rdrr.io/r/base/length.html) for anvil arrays.
+  [`length()`](https://rdrr.io/r/base/length.html) for anvl arrays.
 - Printing tensors via
-  [`nv_print()`](https://r-xla.github.io/anvil/dev/reference/nv_print.md)
+  [`nv_print()`](https://r-xla.github.io/anvl/dev/reference/nv_print.md)
   now also works on GPUs.
 - R vectors of length 1 and arrays are now auto-converted when being
   passed to `jit`ted functions.
 - Improved device handling in
-  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)
+  [`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md)
 
 ### Performance
 
@@ -75,14 +79,14 @@
 ### Bug Fixes
 
 - +-Inf/NaN are correctly created for `f64` when inlined into the XLA
-  exectuable ([\#182](https://github.com/r-xla/anvil/issues/182)). This
+  exectuable ([\#182](https://github.com/r-xla/anvl/issues/182)). This
   caused wrong results with
-  e.g. [`nv_reduce_max()`](https://r-xla.github.io/anvil/dev/reference/nv_reduce_max.md)
+  e.g. [`nv_reduce_max()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_max.md)
   when working with `f64`.
 - Corrected argument checks in
-  [`nv_iota()`](https://r-xla.github.io/anvil/dev/reference/nv_iota.md).
+  [`nv_iota()`](https://r-xla.github.io/anvl/dev/reference/nv_iota.md).
 - Fix check that `wrt` arguments in
-  [`gradient()`](https://r-xla.github.io/anvil/dev/reference/gradient.md)
+  [`gradient()`](https://r-xla.github.io/anvl/dev/reference/gradient.md)
   must be floats.
 
 ### Documentation
@@ -98,6 +102,6 @@
   package (see installation guide), which only requires a compatible
   CUDA driver.
 
-## anvil 0.1.0
+## anvl 0.1.0
 
 Initial release

@@ -1,7 +1,7 @@
 # Get the current graph
 
 Get the current graph being built (via
-[`local_descriptor`](https://r-xla.github.io/anvil/dev/reference/local_descriptor.md)).
+[`local_descriptor`](https://r-xla.github.io/anvl/dev/reference/local_descriptor.md)).
 
 ## Usage
 
@@ -20,5 +20,5 @@ Get the current graph being built (via
 ## Value
 
 A
-[`GraphDescriptor`](https://r-xla.github.io/anvil/dev/reference/GraphDescriptor.md)
+[`GraphDescriptor`](https://r-xla.github.io/anvl/dev/reference/GraphDescriptor.md)
 object.

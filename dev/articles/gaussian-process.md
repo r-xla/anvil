@@ -36,7 +36,7 @@ we implement a function that computes the kernel matrix for two sets of
 points:
 
 ``` r
-library(anvil)
+library(anvl)
 
 # X1: (n, d) array
 # X2: (m, d) array
@@ -55,7 +55,7 @@ rbf_kernel_matrix <- function(X1, X2, lengthscale, signal_var) {
 }
 ```
 
-Because `anvil` jit-compiles the code, there is no performance penalty
+Because `anvl` jit-compiles the code, there is no performance penalty
 for custom kernels, other than if we would use a C++ library that has a
 number of hard-coded kernels available.
 
@@ -251,9 +251,9 @@ neg_log_marginal_likelihood <- function(kernel, X, y, lengthscale, signal_var, n
 
 We optimize the hyperparameters using gradient descent. Since \\\ell\\,
 \\\sigma_f^2\\, and \\\sigma^2\\ must be positive, we optimize on the
-log scale to allow unconstrained updates. `anvil` computes the gradients
+log scale to allow unconstrained updates. `anvl` computes the gradients
 via
-[`gradient()`](https://r-xla.github.io/anvil/dev/reference/gradient.md)
+[`gradient()`](https://r-xla.github.io/anvl/dev/reference/gradient.md)
 and the entire training loop is JIT-compiled with `nv_while`.
 
 ``` r
@@ -307,17 +307,17 @@ result
 ```
 
     ## $lengthscale
-    ## AnvilArray
+    ## AnvlArray
     ##  1.0904
     ## [ CPUf32{} ] 
     ## 
     ## $signal_var
-    ## AnvilArray
+    ## AnvlArray
     ##  1.2431
     ## [ CPUf32{} ] 
     ## 
     ## $noise_var
-    ## AnvilArray
+    ## AnvlArray
     ##  0.0303
     ## [ CPUf32{} ]
 

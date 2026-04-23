@@ -18,7 +18,7 @@ nv_rdunif(shape, initial_state, n, dtype = "i32")
 
 - initial_state:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   RNG state (`ui64[2]`).
 
 - n:
@@ -35,16 +35,16 @@ nv_rdunif(shape, initial_state, n, dtype = "i32")
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
 List of two elements: the updated RNG state and the sampled integers.
 
 ## See also
 
 Other rng:
-[`nv_rbinom()`](https://r-xla.github.io/anvil/dev/reference/nv_rbinom.md),
-[`nv_rng_state()`](https://r-xla.github.io/anvil/dev/reference/nv_rng_state.md),
-[`nv_rnorm()`](https://r-xla.github.io/anvil/dev/reference/nv_rnorm.md),
-[`nv_runif()`](https://r-xla.github.io/anvil/dev/reference/nv_runif.md)
+[`nv_rbinom()`](https://r-xla.github.io/anvl/dev/reference/nv_rbinom.md),
+[`nv_rng_state()`](https://r-xla.github.io/anvl/dev/reference/nv_rng_state.md),
+[`nv_rnorm()`](https://r-xla.github.io/anvl/dev/reference/nv_rnorm.md),
+[`nv_runif()`](https://r-xla.github.io/anvl/dev/reference/nv_runif.md)
 
 ## Examples
 
@@ -53,7 +53,7 @@ state <- nv_rng_state(42L)
 # Roll 6 dice
 result <- nv_rdunif(6, state, n = 6L)
 result[[2]]
-#> AnvilArray
+#> AnvlArray
 #>  3
 #>  5
 #>  1

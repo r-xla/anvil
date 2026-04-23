@@ -13,13 +13,13 @@ nv_broadcast_arrays(...)
 
 - ...:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Arrays to broadcast.
 
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
 List of arrays, all with the same shape.
 
 ## Broadcasting Rules
@@ -32,8 +32,8 @@ List of arrays, all with the same shape.
 
 ## See also
 
-[`nv_broadcast_scalars()`](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_scalars.md),
-[`nv_broadcast_to()`](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_to.md)
+[`nv_broadcast_scalars()`](https://r-xla.github.io/anvl/dev/reference/nv_broadcast_scalars.md),
+[`nv_broadcast_to()`](https://r-xla.github.io/anvl/dev/reference/nv_broadcast_to.md)
 
 ## Examples
 
@@ -42,13 +42,13 @@ x <- nv_array(matrix(1:6, nrow = 2))
 y <- nv_array(c(10, 20, 30))
 nv_broadcast_arrays(x, y)
 #> [[1]]
-#> AnvilArray
+#> AnvlArray
 #>  1 3 5
 #>  2 4 6
 #> [ CPUi32{2,3} ] 
 #> 
 #> [[2]]
-#> AnvilArray
+#> AnvlArray
 #>  10 20 30
 #>  10 20 30
 #> [ CPUf32{2,3} ] 

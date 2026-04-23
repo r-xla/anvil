@@ -7,7 +7,7 @@ Element-wise check if values are finite (not `Inf`, `-Inf`, or `NaN`).
 ``` r
 nv_is_finite(operand)
 
-# S3 method for class 'AnvilBox'
+# S3 method for class 'AnvlBox'
 is.finite(x)
 ```
 
@@ -15,22 +15,22 @@ is.finite(x)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 - x:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same shape as the input and boolean data type.
 
 ## See also
 
-[`nvl_is_finite()`](https://r-xla.github.io/anvil/dev/reference/nvl_is_finite.md)
+[`prim_is_finite()`](https://r-xla.github.io/anvl/dev/reference/prim_is_finite.md)
 for the underlying primitive.
 
 ## Examples
@@ -38,7 +38,7 @@ for the underlying primitive.
 ``` r
 x <- nv_array(c(1, Inf, NaN, -Inf, 0))
 nv_is_finite(x)
-#> AnvilArray
+#> AnvlArray
 #>  1
 #>  0
 #>  0

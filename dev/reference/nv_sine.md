@@ -13,17 +13,17 @@ nv_sine(operand)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same shape and data type as the input.
 
 ## See also
 
-[`nvl_sine()`](https://r-xla.github.io/anvil/dev/reference/nvl_sine.md)
+[`prim_sine()`](https://r-xla.github.io/anvl/dev/reference/prim_sine.md)
 for the underlying primitive.
 
 ## Examples
@@ -31,7 +31,7 @@ for the underlying primitive.
 ``` r
 x <- nv_array(c(0, pi / 2, pi))
 sin(x)
-#> AnvilArray
+#> AnvlArray
 #>   0.0000e+00
 #>   1.0000e+00
 #>  -8.7423e-08

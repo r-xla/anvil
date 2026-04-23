@@ -3,10 +3,10 @@
 Captures the nesting structure of an object as a tree of `Node`s. Each
 leaf in the input becomes a `LeafNode` with an integer index
 corresponding to its position in the flat list produced by
-[`flatten()`](https://r-xla.github.io/anvil/dev/reference/flatten.md).
+[`flatten()`](https://r-xla.github.io/anvl/dev/reference/flatten.md).
 Lists become `ListNode`s that record child nodes and names. The
 resulting tree can be passed to
-[`unflatten()`](https://r-xla.github.io/anvil/dev/reference/unflatten.md)
+[`unflatten()`](https://r-xla.github.io/anvl/dev/reference/unflatten.md)
 to reconstruct the original structure from a flat list.
 
 ## Usage
@@ -35,10 +35,10 @@ A `Node` (`LeafNode` for scalars, `ListNode` for lists).
 
 ## See also
 
-[`flatten()`](https://r-xla.github.io/anvil/dev/reference/flatten.md),
-[`unflatten()`](https://r-xla.github.io/anvil/dev/reference/unflatten.md),
-[`tree_size()`](https://r-xla.github.io/anvil/dev/reference/tree_size.md),
-[`reindex_tree()`](https://r-xla.github.io/anvil/dev/reference/reindex_tree.md)
+[`flatten()`](https://r-xla.github.io/anvl/dev/reference/flatten.md),
+[`unflatten()`](https://r-xla.github.io/anvl/dev/reference/unflatten.md),
+[`tree_size()`](https://r-xla.github.io/anvl/dev/reference/tree_size.md),
+[`reindex_tree()`](https://r-xla.github.io/anvl/dev/reference/reindex_tree.md)
 
 ## Examples
 

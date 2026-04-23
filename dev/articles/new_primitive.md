@@ -2,7 +2,7 @@
 
 This guide explains how to implement a new primitive. It will primarily
 focus on *how* to do this. See the [internals
-vignette](https://r-xla.github.io/anvil/dev/articles/internals.md) for
+vignette](https://r-xla.github.io/anvl/dev/articles/internals.md) for
 more information on how primitives work.
 
 In general, there are two main reasons to add a new primitive:
@@ -50,7 +50,7 @@ are various sceanrios:
 ## Adding a Primitive: Practical Example
 
 Let’s add a new primitive step by step. We’ll implement
-`nvl_repeat_along` – a primitive that repeats an array multiple times
+`prim_repeat_along` – a primitive that repeats an array multiple times
 along a specified dimension.
 
 For example, repeating `c(1, 2, 3)` twice along dimension 1 gives
@@ -59,34 +59,21 @@ For example, repeating `c(1, 2, 3)` twice along dimension 1 gives
 This primitive has a *dynamic* input (an array) and two *static*
 parameters (how many times to repeat and which dimension).
 
-### Step 1: Create the AnvilPrimitive Object
+### Step 1: Define the Primitive
+
+Primitives are created with
+[`new_primitive()`](https://r-xla.github.io/anvl/dev/reference/new_primitive.md):
+it builds the `AnvlPrimitive` metadata object that holds the rules,
+wraps the body with
+[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md), attaches
+the metadata, and registers the result in the internal primitive
+registry. The returned callable becomes the primitive and is bound to a
+`prim_<name>` R symbol.
 
 ``` r
-library(anvil)
-p_repeat_along <- AnvilPrimitive("repeat_along")
-```
-
-This is simply the primitive object that will identify this operation in
-an `AnvilGraph` and it will hold the rules for how to lower it to
-StableHLO and how to compute gradients.
-
-### Step 2: Define the nvl\_\* Function
-
-The `nvl_*` function does two things:
-
-1.  Defines an **inference function** that computes output types from
-    input types
-2.  Calls
-    [`graph_desc_add()`](https://r-xla.github.io/anvil/dev/reference/graph_desc_add.md)
-    to record the operation in the current `GraphDescriptor`.
-
-The function itself is then wrapped with
-\[[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)\], which
-is what enables *eager mode* and composition inside other JIT-compiled
-functions (see the explanation after the code block).
-
-``` r
-nvl_repeat_along <- jit(
+library(anvl)
+prim_repeat_along <- new_primitive(
+  "repeat_along",
   function(operand, times, dim) {
     # type of operand is checked by graph_desc_add()
     infer_fn <- function(operand, times, dim) {
@@ -106,7 +93,7 @@ nvl_repeat_along <- jit(
     }
 
     graph_desc_add(
-      p_repeat_along,             # The primitive
+      self,                       # lexically bound to the AnvlPrimitive
       list(operand = operand),    # Dynamic inputs (arrays)
       params = list(              # Static parameters
         times = times,
@@ -115,53 +102,36 @@ nvl_repeat_along <- jit(
       infer_fn = infer_fn
     )[[1L]]  # Extract single output from list
   },
-  static = c("times", "dim"),
-  backend = "auto"
+  static = c("times", "dim")
 )
 ```
 
+The primitive is now callable directly as
+`prim_repeat_along(x, times, dim)`.
+
 Key points:
 
+- Pass the lexically-bound `self` (the \[`AnvlPrimitive`\]) as the first
+  argument to
+  [`graph_desc_add()`](https://r-xla.github.io/anvl/dev/reference/graph_desc_add.md).
+  [`new_primitive()`](https://r-xla.github.io/anvl/dev/reference/new_primitive.md)
+  installs `self` into the enclosing environment of the body, so this is
+  always available inside a primitive.
 - The inference function receives abstract arrays (types, not values)
   for dynamic inputs, and actual values for static parameters. It must
-  verify that the arguments to the function are valid. Also, it should
-  throw clear error messages if the arguments are invalid, as {anvil}
-  programs are otherwise hard to debug.
-- [`graph_desc_add()`](https://r-xla.github.io/anvil/dev/reference/graph_desc_add.md)
+  verify that the arguments to the function are valid, and should throw
+  clear error messages — {anvl} programs are otherwise hard to debug.
+- [`graph_desc_add()`](https://r-xla.github.io/anvl/dev/reference/graph_desc_add.md)
   returns a list of outputs; use `[[1L]]` for single-output primitives.
 - Propagate the `ambiguous` flag from inputs to outputs, see [type
-  promotion](https://r-xla.github.io/anvil/dev/articles/type-promotion.md)
+  promotion](https://r-xla.github.io/anvl/dev/articles/type-promotion.md)
   for what this means.
 
-#### Why wrap with `jit()`?
-
-Wrapping the `nvl_*` function with
-\[[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)\] turns
-it into a `JitFunction`. This has two benefits:
-
-- **Eager mode**: users can call
-  `nvl_repeat_along(x, times = 2L, dim = 2L)` directly on an
-  `AnvilArray` and get a concrete result back, without having to wrap
-  the call in another
-  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md).
-- **Composition**: when another JIT-compiled function calls
-  `nvl_repeat_along()`, the primitive is re-traced into the outer graph
-  instead of eagerly executing a separate compiled program.
-
-Every argument of the wrapped function that is *not* a dynamic array
-must be listed in `static`. In our case, `times` and `dim` are static
-parameters.
-
-#### Why `backend = "auto"`?
-
-`backend = "auto"` defers the choice of backend to call time: it is
-picked from the (array) inputs, falling back to
-\[[`default_backend()`](https://r-xla.github.io/anvil/dev/reference/default_backend.md)\]
-when there are none. This is the right setting for primitives because a
-primitive should work with any backend the user happens to be using;
-fixing the backend at definition time (e.g. `backend = "xla"`) would
-force every call to go through that backend regardless of where the
-inputs live.
+Every argument that is *not* a dynamic array must be listed in `static`.
+`new_primitive` calls
+[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md) with
+`backend = "auto"` internally, which defers the choice of backend to
+call time.
 
 If the primitive is a wrapper around a stablehlo operation, it is
 possible to use the corresponding inference function from the stablehlo
@@ -170,43 +140,39 @@ package (such as
 When doing so, you need to:
 
 1.  Convert the abstract arrays to stablehlo `ValueType`s using
-    [`at2vt()`](https://r-xla.github.io/anvil/dev/reference/at2vt.md).
+    [`at2vt()`](https://r-xla.github.io/anvl/dev/reference/at2vt.md).
 2.  Call the stablehlo inference function and obtain a list of
     `ValueType`s.
 3.  Convert the `ValueType`s back to abstract arrays using
-    [`vt2at()`](https://r-xla.github.io/anvil/dev/reference/vt2at.md).
+    [`vt2at()`](https://r-xla.github.io/anvl/dev/reference/vt2at.md).
 4.  Set the `ambiguous` flag of the output depending on the inputs
-    (`ambiguity` is strictly an {anvil} concept, not a stablehlo
+    (`ambiguity` is strictly an {anvl} concept, not a stablehlo
     concept).
 
 #### Special case: primitives with 0 dynamic inputs
 
-Array *constructors*
-(e.g. \[[`nvl_fill()`](https://r-xla.github.io/anvil/dev/reference/nvl_fill.md)\],
-\[[`nvl_iota()`](https://r-xla.github.io/anvil/dev/reference/nvl_iota.md)\])
-have no dynamic array inputs – every argument is static. Two things
-change in this case:
+Array *constructors* (e.g. `prim_fill`, `prim_iota`) have no dynamic
+array inputs – every argument is static. Two things change in this case:
 
-1.  **All formals must be listed in `static`**. Otherwise {anvil} would
+1.  **All formals must be listed in `static`**. Otherwise {anvl} would
     try to interpret a scalar argument like `value` or `shape` as an
-    `AnvilArray` input.
-2.  **`backend = "auto"` no longer works**, because there are no array
-    inputs to infer the backend from. Instead, add a `device` formal to
-    the function and pass `device = device_arg("device")` to
-    [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md). At
-    call time, the user-supplied device is read from that argument and
-    used to determine both the backend (via
-    \[[`backend()`](https://r-xla.github.io/anvil/dev/reference/backend.md)\]
+    `AnvlArray` input.
+2.  **`backend = "auto"` cannot infer a device from inputs**, because
+    there are no array inputs. Instead, add a `device` formal to the
+    function and pass `device = device_arg("device")` to
+    [`new_primitive()`](https://r-xla.github.io/anvl/dev/reference/new_primitive.md).
+    At call time, the user-supplied device is read from that argument
+    and used to determine both the backend (via
+    \[[`backend()`](https://r-xla.github.io/anvl/dev/reference/backend.md)\]
     dispatch) and the compilation device.
 
-For example, the real definition of
-\[[`nvl_fill()`](https://r-xla.github.io/anvil/dev/reference/nvl_fill.md)\]
-looks like this:
+For example, the real definition of `prim_fill` looks like this:
 
 ``` r
-nvl_fill <- jit(
+prim_fill <- new_primitive(
+  "fill",
   function(value, shape, dtype, ambiguous = FALSE, device = NULL) {
-    # ... graph_desc_add(...) ...
+    # ... graph_desc_add(self, ...) ...
   },
   static = 1:5,
   device = device_arg("device")
@@ -214,18 +180,18 @@ nvl_fill <- jit(
 ```
 
 See
-\[[`device_arg()`](https://r-xla.github.io/anvil/dev/reference/device_arg.md)\]
+\[[`device_arg()`](https://r-xla.github.io/anvl/dev/reference/device_arg.md)\]
 for the detailed semantics.
 
 ### Step 3: Add the StableHLO Rule
 
 The StableHLO rule defines how to lower this primitive to actual
 operations, which is used in the
-[`stablehlo()`](https://r-xla.github.io/anvil/dev/reference/stablehlo.md)
+[`stablehlo()`](https://r-xla.github.io/anvl/dev/reference/stablehlo.md)
 lowering pass. We implement `repeat_along` using concatenation:
 
 ``` r
-p_repeat_along[["stablehlo"]] <- function(operand, times, dim) {
+prim_repeat_along[["stablehlo"]] <- function(operand, times, dim) {
   operands <- rep(list(operand), times)
   list(rlang::exec(stablehlo::hlo_concatenate, !!!operands, dimension = dim - 1L))
 }
@@ -241,10 +207,10 @@ It must return a list of
 [`stablehlo::FuncValue`](https://r-xla.github.io/stablehlo/reference/FuncValue.html)s,
 even if there is only one output.
 
-**Important**: StableHLO uses 0-based indexing, while {anvil} uses R’s
+**Important**: StableHLO uses 0-based indexing, while {anvl} uses R’s
 1-based indexing. Always convert dimension indices by subtracting 1.
 Also note that in
-[`graph_desc_add()`](https://r-xla.github.io/anvil/dev/reference/graph_desc_add.md)
+[`graph_desc_add()`](https://r-xla.github.io/anvl/dev/reference/graph_desc_add.md)
 we are converting the error messages from stablehlo to our 1-based
 indexing, so you do not have to worry about that here.
 
@@ -261,7 +227,7 @@ therefore it’s gradient) has shape
 2.  Sum over the `times` dimension and drop the `times` dimension.
 
 ``` r
-p_repeat_along[["reverse"]] <- function(inputs, outputs, grads, dim, times, .required) {
+prim_repeat_along[["reverse"]] <- function(inputs, outputs, grads, dim, times, .required) {
   if (!.required[[1L]]) {
     return(list(NULL))
   }
@@ -276,8 +242,8 @@ p_repeat_along[["reverse"]] <- function(inputs, outputs, grads, dim, times, .req
   new_shape[dim] <- old_shape[dim]
   new_shape <- append(new_shape, times, after = dim - 1L)
 
-  grad_reshaped <- nvl_reshape(grad, new_shape)
-  grad_summed <- nvl_reduce_sum(grad_reshaped, dims = dim, drop = TRUE)
+  grad_reshaped <- prim_reshape(grad, new_shape)
+  grad_summed <- prim_reduce_sum(grad_reshaped, dims = dim, drop = TRUE)
   list(grad_summed)
 }
 ```
@@ -294,57 +260,91 @@ The reverse rule receives:
 It returns a list with one gradient per input (or `NULL` if not
 required).
 
-### Step 5: Register the Primitive
+### Step 5: Verify the Registration
 
-To not pollute the global namespace, the primitive objects
-(`p_repeat_along` in our case) are not exported. Instead, they can be
-retrieved via `prim("repeat_along")`. To make this work, you need to
-register the primitive object:
+[`new_primitive()`](https://r-xla.github.io/anvl/dev/reference/new_primitive.md)
+returns the callable directly and also registers the primitive in the
+internal registry used by the graph machinery, so no separate
+registration step is needed:
 
 ``` r
-register_primitive("repeat_along", p_repeat_along)
-prim("repeat_along")
-#> <AnvilPrimitive:repeat_along>
+prim_repeat_along
+#> function (operand, times, dim) 
+#> {
+#>     if (currently_tracing()) {
+#>         cl <- match.call()
+#>         cl[[1L]] <- f
+#>         return(eval.parent(cl))
+#>     }
+#>     args <- lapply(as.list(match.call())[-1L], eval, envir = parent.frame())
+#>     be <- if (!is.null(device_argname) && !is.null(args[[device_argname]])) {
+#>         dev_val <- args[[device_argname]]
+#>         if (is.character(dev_val)) 
+#>             default_backend()
+#>         else backend(dev_val)
+#>     }
+#>     else {
+#>         jit_auto_detect_backend(flatten(args[!names(args) %in% 
+#>             static]))
+#>     }
+#>     if (is.null(jit_fns[[be]])) {
+#>         jit_fns[[be]] <<- do.call(jit_with_backend, c(list(f = f, 
+#>             static = static, cache_size = cache_size, backend = be), 
+#>             if (!is.null(device_argname)) {
+#>                 list(device = device_arg(device_argname))
+#>             } else if (!is.null(device)) {
+#>                 list(device = device)
+#>             }, dots))
+#>     }
+#>     do.call(jit_fns[[be]], args)
+#> }
+#> <environment: 0x563608e54bc8>
+#> attr(,"class")
+#> [1] "JitPrimitive" "JitFunction" 
+#> attr(,"backend")
+#> [1] "auto"
+#> attr(,"primitive")
+#> <AnvlPrimitive:repeat_along>
 ```
 
 ### Step 6: Add an `nv_` API Function
 
-In {anvil}, we also offer convenience wrappers around the primitives. An
-example is `nvl_add` vs `nv_add`, where the latter calls into the former
-after optionally broadcasting (scalar) inputs:
+In {anvl}, we also offer convenience wrappers around the primitives. An
+example is `prim_add` vs `nv_add`, where the latter calls into the
+former after optionally broadcasting (scalar) inputs:
 
 ``` r
 nv_add(1L, nv_array(2:3))
-#> AnvilArray
+#> AnvlArray
 #>  3
 #>  4
 #> [ CPUi32{2} ]
-nvl_add(1L, nv_array(2:3))
-#> Error in `nvl_add()`:
+prim_add(1L, nv_array(2:3))
+#> Error in `prim_add()`:
 #> ! `lhs` and `rhs` must have the same tensor type.
 #> ✖ Got tensor<i32> and tensor<2xi32>.
 ```
 
 In our case, no such convenience is needed and the functionality is not
 too low-level (for it to be generally useful), so we can just reassign
-the `nvl_*` function to an `nv_*` function:
+the `prim_*` function to an `nv_*` function:
 
 ``` r
-nv_repeat_along <- nvl_repeat_along
+nv_repeat_along <- prim_repeat_along
 ```
 
 Note that in the `nv_*` wrapper function, you can only access certain
 properties of the input arrayish values via:
 
-- [`shape_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
-- [`ndims_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
-- [`dtype_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
-- [`ambiguous_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md)
+- [`shape_abstract()`](https://r-xla.github.io/anvl/dev/reference/abstract_properties.md)
+- [`ndims_abstract()`](https://r-xla.github.io/anvl/dev/reference/abstract_properties.md)
+- [`dtype_abstract()`](https://r-xla.github.io/anvl/dev/reference/abstract_properties.md)
+- [`ambiguous_abstract()`](https://r-xla.github.io/anvl/dev/reference/abstract_properties.md)
 
 If you, for example, use
-[`shape()`](https://r-xla.github.io/anvil/dev/reference/shape.md)
-instead of
-[`shape_abstract()`](https://r-xla.github.io/anvil/dev/reference/abstract_properties.md),
+[`shape()`](https://r-xla.github.io/anvl/dev/reference/shape.md) instead
+of
+[`shape_abstract()`](https://r-xla.github.io/anvl/dev/reference/abstract_properties.md),
 your function won’t work with R literals. I.e., `<extract>_abstract()`
 first converts the input to an `AbstractArray` (if possible) and then
 extracts the property.
@@ -356,16 +356,16 @@ JIT-compiled function:
 
 ``` r
 x <- nv_array(c(1, 2, 3), shape = c(3, 1))
-# Eager call -- works because nvl_repeat_along is itself jit()ted.
-nvl_repeat_along(x, times = 2L, dim = 2L)
-#> AnvilArray
+# Eager call -- works because prim_repeat_along is itself jit()ted.
+prim_repeat_along(x, times = 2L, dim = 2L)
+#> AnvlArray
 #>  1 1
 #>  2 2
 #>  3 3
 #> [ CPUf32{3,2} ]
 # Traced into the outer graph when composed with another jit()ted function.
-jit(function(x) nvl_repeat_along(x, times = 2L, dim = 2L))(x)
-#> AnvilArray
+jit(function(x) prim_repeat_along(x, times = 2L, dim = 2L))(x)
+#> AnvlArray
 #>  1 1
 #>  2 2
 #>  3 3
@@ -376,13 +376,13 @@ And compute gradients through it.
 
 ``` r
 f <- function(x) {
-  repeated <- nvl_repeat_along(x, times = 2L, dim = 2L)
+  repeated <- prim_repeat_along(x, times = 2L, dim = 2L)
   sum(repeated)
 }
 
 grad_f <- jit(gradient(f))
 grad_f(x)[[1L]]
-#> AnvilArray
+#> AnvlArray
 #>  2
 #>  2
 #>  2
@@ -391,12 +391,12 @@ grad_f(x)[[1L]]
 
 ## Contributing to the Package
 
-If you want to contribute your primitive to {anvil}, there are some
+If you want to contribute your primitive to {anvl}, there are some
 additional things to be aware of.
 
 ### File Organization
 
-- **`R/primitives.R`**: Define `AnvilPrimitive` object and `nvl_*`
+- **`R/primitives.R`**: Define `AnvlPrimitive` object and `prim_*`
   function
 - **`R/rules-stablehlo.R`**: Add the StableHLO lowering rule
 - **`R/rules-reverse.R`**: Add the reverse rule (if differentiable)
@@ -415,7 +415,7 @@ Tests can go in two places:
 primitive object name). The meta tests verify that every primitive has
 corresponding tests.
 
-Since no torch counterpart exists for `nvl_repeat_along`, we would add
+Since no torch counterpart exists for `prim_repeat_along`, we would add
 manual tests in:
 
 - `tests/testthat/test-primitives-stablehlo.R`
@@ -427,10 +427,10 @@ passes, and format the code using `make format`.
 ## Higher-Order Primitives
 
 Higher-Order Primitives are primitives that parameterized by an R
-function or expression. Examples include `nvl_if` and `nvl_while`. These
-are generally much more complex to handle, so we don’t cover them here
-in detail (for now). The general idea, however, is that the primitive
-`nvl_*` function needs to trace the provided function using
-[`trace_fn()`](https://r-xla.github.io/anvil/dev/reference/trace_fn.md)
+function or expression. Examples include `prim_if` and `prim_while`.
+These are generally much more complex to handle, so we don’t cover them
+here in detail (for now). The general idea, however, is that the
+primitive `prim_*` function needs to trace the provided function using
+[`trace_fn()`](https://r-xla.github.io/anvl/dev/reference/trace_fn.md)
 and then forward this graph to the stablehlo lowering rule and reverse
 rule.

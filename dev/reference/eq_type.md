@@ -14,12 +14,12 @@ neq_type(e1, e2, ambiguity)
 
 - e1:
 
-  ([`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md))  
+  ([`AbstractArray`](https://r-xla.github.io/anvl/dev/reference/AbstractArray.md))  
   First array to compare.
 
 - e2:
 
-  ([`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md))  
+  ([`AbstractArray`](https://r-xla.github.io/anvl/dev/reference/AbstractArray.md))  
   Second array to compare.
 
 - ambiguity:

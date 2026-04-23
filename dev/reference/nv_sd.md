@@ -12,7 +12,7 @@ nv_sd(operand, dims, drop = TRUE, correction = 1L)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 - dims:
@@ -32,7 +32,7 @@ nv_sd(operand, dims, drop = TRUE, correction = 1L)
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same data type as the input. When `drop = TRUE`, the reduced
 dimensions are removed. When `drop = FALSE`, the reduced dimensions are
 set to 1.
@@ -45,15 +45,15 @@ population standard deviation.
 
 ## See also
 
-[`nv_var()`](https://r-xla.github.io/anvil/dev/reference/nv_var.md),
-[`nv_reduce_mean()`](https://r-xla.github.io/anvil/dev/reference/nv_reduce_mean.md)
+[`nv_var()`](https://r-xla.github.io/anvl/dev/reference/nv_var.md),
+[`nv_reduce_mean()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_mean.md)
 
 ## Examples
 
 ``` r
 x <- nv_array(c(1, 2, 3, 4, 5))
 nv_sd(x, dims = 1L)
-#> AnvilArray
+#> AnvlArray
 #>  1.5811
 #> [ CPUf32{} ] 
 ```

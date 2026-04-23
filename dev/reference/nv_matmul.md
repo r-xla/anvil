@@ -14,14 +14,14 @@ nv_matmul(lhs, rhs)
 
 - lhs, rhs:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Arrays with at least 2 dimensions. Operands are [promoted to a common
   data
-  type](https://r-xla.github.io/anvil/dev/reference/nv_promote_to_common.md).
+  type](https://r-xla.github.io/anvl/dev/reference/nv_promote_to_common.md).
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)
 
 ## Shapes
 
@@ -33,7 +33,7 @@ nv_matmul(lhs, rhs)
 
 ## See also
 
-[`nvl_dot_general()`](https://r-xla.github.io/anvil/dev/reference/nvl_dot_general.md)
+[`prim_dot_general()`](https://r-xla.github.io/anvl/dev/reference/prim_dot_general.md)
 for the underlying primitive.
 
 ## Examples
@@ -42,7 +42,7 @@ for the underlying primitive.
 x <- nv_array(matrix(1:6, nrow = 2))
 y <- nv_array(matrix(1:6, nrow = 3))
 x %*% y
-#> AnvilArray
+#> AnvlArray
 #>  22 49
 #>  28 64
 #> [ CPUi32{2,2} ] 

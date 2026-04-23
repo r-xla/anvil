@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Type Promotion • anvil</title>
+<title>Type Promotion • anvl</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -30,7 +30,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">anvil</a>
+    <a class="navbar-brand me-2" href="../index.html">anvl</a>
 
     <small class="nav-text text-default me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9000</small>
 
@@ -47,7 +47,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
-    <li><a class="dropdown-item" href="../articles/anvil.html">Get Started</a></li>
+    <li><a class="dropdown-item" href="../articles/anvl.html">Get Started</a></li>
     <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
     <li><a class="dropdown-item" href="../articles/subsetting.html">Subsetting</a></li>
     <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
@@ -76,7 +76,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvil/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvl/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
@@ -100,7 +100,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Type Promotion</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/type-promotion.Rmd" class="external-link"><code>vignettes/type-promotion.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvl/blob/main/vignettes/type-promotion.Rmd" class="external-link"><code>vignettes/type-promotion.Rmd</code></a></small>
       <div class="d-none name"><code>type-promotion.Rmd</code></div>
     </div>
 
@@ -110,17 +110,17 @@
 <h2 id="type-promotion-rules">Type Promotion Rules<a class="anchor" aria-label="anchor" href="#type-promotion-rules"></a>
 </h2>
 <p>When combining arrays of different types (e.g., adding an
-<code>f32</code> to an <code>i32</code>), {anvil} needs to determine a
+<code>f32</code> to an <code>i32</code>), {anvl} needs to determine a
 common type. For example, below we are adding an <code>f32</code> to an
 <code>f64</code>, where the former is promoted to the latter’s type,
 because it’s more expressive.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvl/">anvl</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">nv_add</span><span class="op">)</span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilArray</span></span>
+<pre><code><span><span class="co">## AnvlArray</span></span>
 <span><span class="co">##  2</span></span>
 <span><span class="co">## [ CPUf64{} ]</span></span></code></pre>
 <p>The type-promotion rules are inspired by JAX, and they are designed
@@ -603,7 +603,7 @@ f64
 <div class="section level2">
 <h2 id="literals-as-ambiguous-types">Literals as Ambiguous Types<a class="anchor" aria-label="anchor" href="#literals-as-ambiguous-types"></a>
 </h2>
-<p>Usually, the types in an {anvil} program can be deterministically
+<p>Usually, the types in an {anvl} program can be deterministically
 inferred from the input types. The only case where this is not possible
 is when you use R literals. The default types for literals are as
 follows:</p>
@@ -620,24 +620,24 @@ follows:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1.0</span>, <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [[1]]</span></span>
-<span><span class="co">## AnvilArray</span></span>
+<span><span class="co">## AnvlArray</span></span>
 <span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUi32?{} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## [[2]]</span></span>
-<span><span class="co">## AnvilArray</span></span>
+<span><span class="co">## AnvlArray</span></span>
 <span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUf32?{} ] </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## [[3]]</span></span>
-<span><span class="co">## AnvilArray</span></span>
+<span><span class="co">## AnvlArray</span></span>
 <span><span class="co">##  1</span></span>
 <span><span class="co">## [ CPUbool{} ]</span></span></code></pre>
 <p>However, because this is just a guess, they behave differently than
 known types during promotion. Therefore, the <code>common_dtype</code>
 function has two arguments indicating which of the data types are
 ambiguous. Below, the first type is a known <code>f64</code> and the
-second is an ambiguous <code>f32</code>. Within anvil, we denote the
+second is an ambiguous <code>f32</code>. Within anvl, we denote the
 latter as <code>i32?</code>. The result is an <code>f64</code>, although
 we would promote to an <code>f64</code> if both were known. If both
 types are ambiguous, the result is generally the same as if both were
@@ -1139,23 +1139,23 @@ f64
 <div class="section level2">
 <h2 id="creating-tensors-with-different-ambiguity">Creating Tensors with Different Ambiguity<a class="anchor" aria-label="anchor" href="#creating-tensors-with-different-ambiguity"></a>
 </h2>
-<p>Both <code><a href="../reference/AnvilArray.html">nv_scalar()</a></code> and <code><a href="../reference/AnvilArray.html">nv_array()</a></code> create
+<p>Both <code><a href="../reference/AnvlArray.html">nv_scalar()</a></code> and <code><a href="../reference/AnvlArray.html">nv_array()</a></code> create
 <strong>non-ambiguous</strong> arrays by default. You can explicitly
 control ambiguity using the <code>ambiguous</code> parameter:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">s1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">s1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/ambiguous.html">ambiguous</a></span><span class="op">(</span><span class="va">s1</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] FALSE</span></span></code></pre>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">s2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, ambiguous <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">s2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, ambiguous <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/ambiguous.html">ambiguous</a></span><span class="op">(</span><span class="va">s2</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">t1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">t1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/ambiguous.html">ambiguous</a></span><span class="op">(</span><span class="va">t1</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] FALSE</span></span></code></pre>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">t2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span><span class="op">)</span>, ambiguous <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">t2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span><span class="op">)</span>, ambiguous <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/ambiguous.html">ambiguous</a></span><span class="op">(</span><span class="va">t2</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
 </div>
@@ -1169,8 +1169,8 @@ example:</p>
 <span>  <span class="va">z</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">+</span> <span class="fl">1L</span></span>
 <span>  <span class="va">z</span> <span class="op">*</span> <span class="va">y</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu">f</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2L</span>, dtype <span class="op">=</span> <span class="st">"i16"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## AnvilArray</span></span>
+<span><span class="fu">f</span><span class="op">(</span><span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">2L</span>, dtype <span class="op">=</span> <span class="st">"i16"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## AnvlArray</span></span>
 <span><span class="co">##  4</span></span>
 <span><span class="co">## [ CPUi16{} ]</span></span></code></pre>
 <p>The type of <code>z</code> is <code>i32?</code>, because

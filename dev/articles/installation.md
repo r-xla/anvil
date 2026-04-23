@@ -1,8 +1,8 @@
 # Installation
 
-Currently, {anvil} is not available on CRAN, so you either have to
+Currently, {anvl} is not available on CRAN, so you either have to
 install it via [r-universe](https://r-xla.r-universe.dev/) or from
-[GitHub](https://github.com/r-xla/anvil).
+[GitHub](https://github.com/r-xla/anvl).
 
 ## System Dependencies
 
@@ -15,31 +15,31 @@ compiler).
 You can install the latest release from GitHub
 
 ``` r
-pak::pak("r-xla/anvil@*release")
+pak::pak("r-xla/anvl@*release")
 ```
 
 You can install the latest release from r-universe (prebuilt binary).
 
 ``` r
-install.packages("anvil",repos = c("https://cloud.r-project.org", "https://r-xla.r-universe.dev"))
+install.packages("anvl",repos = c("https://cloud.r-project.org", "https://r-xla.r-universe.dev"))
 ```
 
 To confirm that your CPU installation is working, run:
 
 ``` r
-library(anvil)
+library(anvl)
 nv_scalar(1, device = "cpu")
 ```
 
 The development version can be installed via:
 
 ``` r
-pak::pak("r-xla/anvil")
+pak::pak("r-xla/anvl")
 ```
 
 ## GPU Installation
 
-Running {anvil} with GPU support currently only works on Linux
+Running {anvl} with GPU support currently only works on Linux
 (amd64/x86-64) or via WSL2 on Windows (experimental).
 
 The recommended way to use CUDA there is to install the {cuda12.8} R
@@ -65,7 +65,7 @@ session for maximum debug output.
 
 ``` r
 Sys.setenv(PJRT_DEBUG = "1", TF_CPP_MIN_LOG_LEVEL = "0")
-anvil::nv_scalar(1, device = "cuda")
+anvl::nv_scalar(1, device = "cuda")
 ```
 
 Note that if another package is using a different cudatoolkit package
@@ -80,10 +80,10 @@ and CPU build for amd64/x86-64 architecture:
 
 ### Available Images
 
-| Image        | Description                          |
-|--------------|--------------------------------------|
-| `anvil-cpu`  | CPU support, based on `rocker/r-ver` |
-| `anvil-cuda` | GPU support with CUDA 12.8           |
+| Image       | Description                          |
+|-------------|--------------------------------------|
+| `anvl-cpu`  | CPU support, based on `rocker/r-ver` |
+| `anvl-cuda` | GPU support with CUDA 12.8           |
 
 Note that running the GPU container requires the [NVIDIA Container
 Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
@@ -92,14 +92,14 @@ restarted), pass `--gpus all` to `docker run` to expose the host GPUs to
 the container:
 
 ``` bash
-docker run --rm -it --gpus all ghcr.io/r-xla/anvil-cuda:latest R
+docker run --rm -it --gpus all ghcr.io/r-xla/anvl-cuda:latest R
 ```
 
 You can verify that the GPU is visible inside the container by running
 `nvidia-smi`, or from R:
 
 ``` r
-anvil::nv_scalar(1, device = "cuda")
+anvl::nv_scalar(1, device = "cuda")
 ```
 
 ### Tags

@@ -14,7 +14,7 @@ nv_serialize(arrays, con = NULL)
 - arrays:
 
   (named `list` of
-  [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))  
+  [`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md))  
   Named list of arrays to serialize. Names must be unique.
 
 - con:
@@ -35,16 +35,16 @@ write-read roundtrips.
 
 ## See also
 
-[`nv_unserialize()`](https://r-xla.github.io/anvil/dev/reference/nv_unserialize.md),
-[`nv_save()`](https://r-xla.github.io/anvil/dev/reference/nv_save.md),
-[`nv_read()`](https://r-xla.github.io/anvil/dev/reference/nv_read.md)
+[`nv_unserialize()`](https://r-xla.github.io/anvl/dev/reference/nv_unserialize.md),
+[`nv_save()`](https://r-xla.github.io/anvl/dev/reference/nv_save.md),
+[`nv_read()`](https://r-xla.github.io/anvl/dev/reference/nv_read.md)
 
 ## Examples
 
 ``` r
 x <- nv_array(array(1:6, dim = c(2, 3)))
 x
-#> AnvilArray
+#> AnvlArray
 #>  1 3 5
 #>  2 4 6
 #> [ CPUi32{2,3} ] 
@@ -64,7 +64,7 @@ raw_data
 #> [276] 7d 01 00 00 00 03 00 00 00 05 00 00 00 02 00 00 00 04 00 00 00 06 00 00 00
 nv_unserialize(raw_data)
 #> $x
-#> AnvilArray
+#> AnvlArray
 #>  1 3 5
 #>  2 4 6
 #> [ CPUi32{2,3} ] 

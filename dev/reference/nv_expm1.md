@@ -12,17 +12,17 @@ nv_expm1(operand)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same shape and data type as the input.
 
 ## See also
 
-[`nvl_expm1()`](https://r-xla.github.io/anvil/dev/reference/nvl_expm1.md)
+[`prim_expm1()`](https://r-xla.github.io/anvl/dev/reference/prim_expm1.md)
 for the underlying primitive.
 
 ## Examples
@@ -30,7 +30,7 @@ for the underlying primitive.
 ``` r
 x <- nv_array(c(0, 0.001, 1))
 nv_expm1(x)
-#> AnvilArray
+#> AnvlArray
 #>  0.0000
 #>  0.0010
 #>  1.7183

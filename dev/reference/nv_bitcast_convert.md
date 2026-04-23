@@ -14,7 +14,7 @@ nv_bitcast_convert(operand, dtype)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 - dtype:
@@ -25,22 +25,22 @@ nv_bitcast_convert(operand, dtype)
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the given `dtype`.
 
 ## See also
 
-[`nvl_bitcast_convert()`](https://r-xla.github.io/anvil/dev/reference/nvl_bitcast_convert.md)
+[`prim_bitcast_convert()`](https://r-xla.github.io/anvl/dev/reference/prim_bitcast_convert.md)
 for the underlying primitive,
-[`nv_convert()`](https://r-xla.github.io/anvil/dev/reference/nv_convert.md)
+[`nv_convert()`](https://r-xla.github.io/anvl/dev/reference/nv_convert.md)
 for value-preserving type conversion.
 
 ## Examples
 
 ``` r
 x <- nv_array(1L)
-nvl_bitcast_convert(x, dtype = "i8")
-#> AnvilArray
+prim_bitcast_convert(x, dtype = "i8")
+#> AnvlArray
 #>  1 0 0 0
 #> [ CPUi8{1,4} ] 
 ```

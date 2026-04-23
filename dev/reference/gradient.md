@@ -18,7 +18,7 @@ gradient(f, wrt = NULL)
 
   (`function`)  
   Function to differentiate. Arguments can be arrayish
-  ([`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))
+  ([`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md))
   or static (non-array) values. Must return a single scalar float array.
 
 - wrt:
@@ -36,9 +36,9 @@ gradient(f, wrt = NULL)
 
 ## See also
 
-[`value_and_gradient()`](https://r-xla.github.io/anvil/dev/reference/value_and_gradient.md)
+[`value_and_gradient()`](https://r-xla.github.io/anvl/dev/reference/value_and_gradient.md)
 to get both the output and gradients,
-[`transform_gradient()`](https://r-xla.github.io/anvil/dev/reference/transform_gradient.md)
+[`transform_gradient()`](https://r-xla.github.io/anvl/dev/reference/transform_gradient.md)
 for the low-level graph transformation.
 
 ## Examples
@@ -48,13 +48,13 @@ f <- function(x, y) sum(x * y)
 g <- jit(gradient(f))
 g(nv_array(c(1, 2), dtype = "f32"), nv_array(c(3, 4), dtype = "f32"))
 #> $x
-#> AnvilArray
+#> AnvlArray
 #>  3
 #>  4
 #> [ CPUf32{2} ] 
 #> 
 #> $y
-#> AnvilArray
+#> AnvlArray
 #>  1
 #>  2
 #> [ CPUf32{2} ] 
@@ -64,7 +64,7 @@ g(nv_array(c(1, 2), dtype = "f32"), nv_array(c(3, 4), dtype = "f32"))
 g_x <- jit(gradient(f, wrt = "x"))
 g_x(nv_array(c(1, 2), dtype = "f32"), nv_array(c(3, 4), dtype = "f32"))
 #> $x
-#> AnvilArray
+#> AnvlArray
 #>  3
 #>  4
 #> [ CPUf32{2} ] 
@@ -75,7 +75,7 @@ f2 <- function(x, power) sum(x^power)
 g2 <- jit(gradient(f2, wrt = "x"), static = "power")
 g2(nv_array(c(1, 2, 3), dtype = "f32"), power = 2L)
 #> $x
-#> AnvilArray
+#> AnvlArray
 #>  2
 #>  4
 #>  6

@@ -8,10 +8,10 @@ elements along a dimension.
 ## Usage
 
 ``` r
-# S3 method for class 'AnvilBox'
+# S3 method for class 'AnvlBox'
 x[...]
 
-# S3 method for class 'AnvilArray'
+# S3 method for class 'AnvlArray'
 x[...]
 
 nv_subset(x, ...)
@@ -21,25 +21,25 @@ nv_subset(x, ...)
 
 - x:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Array to subset.
 
 - ...:
 
   Subset specifications, one per dimension. Omitted trailing dimensions
   select all elements. See
-  [`vignette("subsetting")`](https://r-xla.github.io/anvil/dev/articles/subsetting.md)
+  [`vignette("subsetting")`](https://r-xla.github.io/anvl/dev/articles/subsetting.md)
   for details.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)
 
 ## See also
 
-[`nv_subset_assign()`](https://r-xla.github.io/anvil/dev/reference/nv_subset_assign.md)
+[`nv_subset_assign()`](https://r-xla.github.io/anvl/dev/reference/nv_subset_assign.md)
 for updating subsets,
-[`vignette("subsetting")`](https://r-xla.github.io/anvil/dev/articles/subsetting.md)
+[`vignette("subsetting")`](https://r-xla.github.io/anvl/dev/articles/subsetting.md)
 for a comprehensive guide.
 
 ## Examples
@@ -48,7 +48,7 @@ for a comprehensive guide.
 x <- nv_array(matrix(1:12, nrow = 3))
 # Select row 2
 x[2, ]
-#> AnvilArray
+#> AnvlArray
 #>   2
 #>   5
 #>   8
@@ -58,7 +58,7 @@ x[2, ]
 x <- nv_array(matrix(1:12, nrow = 3))
 # Select rows 1 to 2, all columns
 x[1:2, ]
-#> AnvilArray
+#> AnvlArray
 #>   1  4  7 10
 #>   2  5  8 11
 #> [ CPUi32{2,4} ] 

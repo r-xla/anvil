@@ -4,37 +4,48 @@
 
 ## Package Overview
 
-`anvil` is a code transformation framework for R, similar to JAX. It
+`anvl` is a code transformation framework for R, similar to JAX. It
 provides JIT compilation
-([`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md),
-[`xla()`](https://r-xla.github.io/anvil/dev/reference/xla.md)) and
+([`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md),
+[`xla()`](https://r-xla.github.io/anvl/dev/reference/xla.md)) and
 automatic differentiation
-([`gradient()`](https://r-xla.github.io/anvil/dev/reference/gradient.md),
-[`value_and_gradient()`](https://r-xla.github.io/anvil/dev/reference/value_and_gradient.md)).
+([`gradient()`](https://r-xla.github.io/anvl/dev/reference/gradient.md),
+[`value_and_gradient()`](https://r-xla.github.io/anvl/dev/reference/value_and_gradient.md)).
 
 ## Two-Layer API
 
 - **`nv_*` functions**
-  (e.g. [`nv_fill()`](https://r-xla.github.io/anvil/dev/reference/nv_fill.md),
-  [`nv_matmul()`](https://r-xla.github.io/anvil/dev/reference/nv_matmul.md))
+  (e.g. [`nv_fill()`](https://r-xla.github.io/anvl/dev/reference/nv_fill.md),
+  [`nv_matmul()`](https://r-xla.github.io/anvl/dev/reference/nv_matmul.md))
   – user-facing API in `R/api.R` and `R/api-*.R`. These handle
   broadcasting, type promotion, default arguments, and then delegate to
-  `nvl_*` primitives.
-- **`nvl_*` functions**
-  (e.g. [`nvl_fill()`](https://r-xla.github.io/anvil/dev/reference/nvl_fill.md),
-  [`nvl_mul()`](https://r-xla.github.io/anvil/dev/reference/nvl_mul.md))
-  – low-level primitives in `R/primitives.R`. These record operations
-  into the computation graph during tracing.
+  `prim_*` primitives.
+- **`prim_*` functions**
+  (e.g. [`prim_fill()`](https://r-xla.github.io/anvl/dev/reference/prim_fill.md),
+  [`prim_mul()`](https://r-xla.github.io/anvl/dev/reference/prim_mul.md))
+  – low-level primitives in `R/primitives.R`, exported directly under
+  their `prim_<name>` R symbols. Calling a primitive records an
+  operation into the computation graph during tracing (or executes it
+  eagerly).
 
 When adding new functionality, decide which layer it belongs to. Most
-new operations need both: an `nvl_*` primitive with rules, and an `nv_*`
+new operations need both: a `prim_*` primitive with rules, and an `nv_*`
 wrapper with R-idiomatic semantics.
 
 ## Primitive System
 
-Primitives are `AnvilPrimitive` objects (defined in `R/primitive.R`),
-stored by convention as `p_<name>` variables. Each primitive has
-interpretation rules accessed via `p_<name>[["<rule_type>"]]`:
+Primitives are `JitPrimitive` callables constructed by
+[`new_primitive()`](https://r-xla.github.io/anvl/dev/reference/new_primitive.md)
+(defined in `R/primitive.R`). The returned object is both callable (it
+wraps `fn` with
+[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md)) and
+carries an `AnvlPrimitive` metadata object via `attr(., "primitive")`.
+Primitives are stored as `prim_<name>` variables.
+[`new_primitive()`](https://r-xla.github.io/anvl/dev/reference/new_primitive.md)
+lexically binds `self` (the `AnvlPrimitive`) into the body’s enclosing
+environment, so inside a primitive body you write
+`graph_desc_add(self, ...)` — never the primitive name as a string.
+Interpretation rules are accessed via `prim_<name>[["<rule_type>"]]`:
 
 - **`stablehlo`** – JIT lowering rules in `R/rules-stablehlo.R`. These
   convert traced operations into StableHLO IR. Since stablehlo uses
@@ -49,13 +60,13 @@ interpretation rules accessed via `p_<name>[["<rule_type>"]]`:
 
 ## Graph Tracing
 
-When a function is JIT-compiled, anvil traces it by executing with
+When a function is JIT-compiled, anvl traces it by executing with
 `GraphBox` objects instead of real data. Operations record themselves
-into an `AnvilGraph` (see `R/graph.R`). The graph is then lowered to
+into an `AnvlGraph` (see `R/graph.R`). The graph is then lowered to
 StableHLO IR or quickr code for compilation.
 
 Key types: `GraphValue` (traced variable), `GraphLiteral` (embedded
-constant), `AbstractArray` (shape + dtype metadata), `AnvilGraph`.
+constant), `AbstractArray` (shape + dtype metadata), `AnvlGraph`.
 
 ## NSE and Tracing
 
@@ -80,10 +91,10 @@ manually instead. Write one or the other, not both.
 
 Tests that use the quickr backend must call `skip_if_no_quickr()` at the
 top of the test body. This helper skips when quickr is not installed,
-and also when the `ANVIL_SKIP_QUICKR` environment variable is set
-(quickr tests can be slow and are often skipped locally). To test a
-different backend, use
-[`local_backend()`](https://r-xla.github.io/anvil/dev/reference/local_backend.md)
+and also when the `ANVL_SKIP_QUICKR` environment variable is set (quickr
+tests can be slow and are often skipped locally). To test a different
+backend, use
+[`local_backend()`](https://r-xla.github.io/anvl/dev/reference/local_backend.md)
 (not
 [`withr::local_options()`](https://withr.r-lib.org/reference/with_options.html)
 directly).
@@ -97,7 +108,7 @@ When writing roxygen2 documentation for primitives or API functions:
 - Use `@templateVar primitive_id <name>` with `@template section_rules`
   to auto-generate the “Implemented Rules” section.
 - Use `@rdname` or `@inheritParams` to share documentation between
-  `nvl_*` and `nv_*` variants.
+  `prim_*` and `nv_*` variants.
 - Where a `man-roxygen/` template is too generic for a specific
   primitive (e.g. the operand has specific dtype constraints), write the
   `@param` inline instead.

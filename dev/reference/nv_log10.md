@@ -13,25 +13,25 @@ nv_log10(operand)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same shape and data type as the input.
 
 ## See also
 
-[`nv_log()`](https://r-xla.github.io/anvil/dev/reference/nv_log.md),
-[`nv_log2()`](https://r-xla.github.io/anvil/dev/reference/nv_log2.md)
+[`nv_log()`](https://r-xla.github.io/anvl/dev/reference/nv_log.md),
+[`nv_log2()`](https://r-xla.github.io/anvl/dev/reference/nv_log2.md)
 
 ## Examples
 
 ``` r
 x <- nv_array(c(1, 10, 100, 1000))
 nv_log10(x)
-#> AnvilArray
+#> AnvlArray
 #>  0
 #>  1
 #>  2

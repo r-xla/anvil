@@ -13,7 +13,7 @@ nv_convert(operand, dtype)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 - dtype:
@@ -24,12 +24,12 @@ nv_convert(operand, dtype)
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the given `dtype` and the same shape as `operand`.
 
 ## See also
 
-[`nvl_convert()`](https://r-xla.github.io/anvil/dev/reference/nvl_convert.md)
+[`prim_convert()`](https://r-xla.github.io/anvl/dev/reference/prim_convert.md)
 for the underlying primitive.
 
 ## Examples
@@ -37,7 +37,7 @@ for the underlying primitive.
 ``` r
 x <- nv_array(c(1L, 2L, 3L))
 nv_convert(x, dtype = "f32")
-#> AnvilArray
+#> AnvlArray
 #>  1
 #>  2
 #>  3

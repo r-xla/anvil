@@ -12,27 +12,27 @@ nv_extract_diag(operand)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 A 1-D array of length `min(nrow, ncol)` containing the diagonal
 elements.
 
 ## See also
 
-[`nv_diag()`](https://r-xla.github.io/anvil/dev/reference/nv_diag.md)
-for creating a diagonal matrix,
-[`nv_trace()`](https://r-xla.github.io/anvil/dev/reference/nv_trace.md)
+[`nv_diag()`](https://r-xla.github.io/anvl/dev/reference/nv_diag.md) for
+creating a diagonal matrix,
+[`nv_trace()`](https://r-xla.github.io/anvl/dev/reference/nv_trace.md)
 
 ## Examples
 
 ``` r
 x <- nv_array(1:9, shape = c(3, 3))
 nv_extract_diag(x)
-#> AnvilArray
+#> AnvlArray
 #>  1
 #>  5
 #>  9

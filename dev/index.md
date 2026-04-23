@@ -1,7 +1,7 @@
-# anvil
+# anvl
 
-Package website: [release](https://r-xla.github.io/anvil/) \|
-[dev](https://r-xla.github.io/anvil/dev/)
+Package website: [release](https://r-xla.github.io/anvl/) \|
+[dev](https://r-xla.github.io/anvl/dev/)
 
 Composable code transformation framework for R, allowing you to run
 numerical programs at the speed of light. It currently implements JIT
@@ -11,7 +11,7 @@ including CPU and GPU.
 
 ## Installation
 
-{anvil} can be installed from GitHub or
+{anvl}[¹](#fn1) can be installed from GitHub or
 [r-universe](https://r-xla.r-universe.dev/builds). During runtime, we
 require `libprotobuf`. Source installation requires a `C++20` compiler
 and `protoc` (protobuf compiler).
@@ -19,11 +19,11 @@ and `protoc` (protobuf compiler).
 ``` r
 # Install release
 # from r-universe (prebuilt binary)
-install.packages("anvil", repos = c("https://cloud.r-project.org", "https://r-xla.r-universe.dev"))
+install.packages("anvl", repos = c("https://cloud.r-project.org", "https://r-xla.r-universe.dev"))
 # from GitHub (installation from source)
-pak::pak("r-xla/anvil@*release")
+pak::pak("r-xla/anvl@*release")
 # Install dev version
-pak::pak("r-xla/anvil")
+pak::pak("r-xla/anvl")
 # Install CUDA support (linux x86_64): only requires a compatible driver
 install.packages("cuda12.8", repos = "https://mlverse.r-universe.dev")
 ```
@@ -35,12 +35,12 @@ more details.
 ## Quick Start
 
 Below, we create an R function and
-[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) it. Then,
-we call the resulting function on `AnvilArray`s, which will compile and
+[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md) it. Then,
+we call the resulting function on `AnvlArray`s, which will compile and
 subsequently execute it.
 
 ``` r
-library(anvil)
+library(anvl)
 f <- function(a, b, x) {
   a * x + b
 }
@@ -51,7 +51,7 @@ b <- nv_scalar(-2.0, "f32")
 x <- nv_scalar(3.0, "f32")
 
 f_jit(a, b, x)
-#> AnvilArray
+#> AnvlArray
 #>  1
 #> [ CPUf32{} ]
 ```
@@ -63,12 +63,12 @@ the above function.
 g_jit <- jit(gradient(f, wrt = c("a", "b")))
 g_jit(a, b, x)
 #> $a
-#> AnvilArray
+#> AnvlArray
 #>  3
 #> [ CPUf32{} ] 
 #> 
 #> $b
-#> AnvilArray
+#> AnvlArray
 #>  1
 #> [ CPUf32{} ]
 ```
@@ -119,3 +119,10 @@ the package website.
   - The [microjax](https://github.com/joey00072/microjax) project.
 - For JIT compilation, we leverage the [OpenXLA](https://openxla.org/)
   project.
+
+------------------------------------------------------------------------
+
+1.  A real anvil is a tool blacksmiths use to reshape metal; this
+    package reshapes R code in a similar spirit. We spell the package
+    name `anvl` (without the `i`) because `AnVIL` is already taken by a
+    Bioconductor package.

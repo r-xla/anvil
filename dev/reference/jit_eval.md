@@ -2,7 +2,7 @@
 
 Convenience wrapper that JIT-compiles and immediately evaluates a single
 expression. Equivalent to wrapping `expr` in an anonymous function,
-calling [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) on
+calling [`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md) on
 it, and invoking the result. Useful if you want to evaluate an
 expression once.
 
@@ -22,7 +22,7 @@ jit_eval(expr, ...)
 - ...:
 
   Backend-specific options forwarded to
-  [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) (e.g.
+  [`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md) (e.g.
   `device` for the `"xla"` backend, `unwrap` for the `"quickr"`
   backend).
 
@@ -36,7 +36,7 @@ Result of the compiled and evaluated expression.
 ``` r
 x <- nv_array(c(1, 2, 3), dtype = "f32")
 jit_eval(x + x)
-#> AnvilArray
+#> AnvlArray
 #>  2
 #>  4
 #>  6

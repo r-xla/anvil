@@ -22,5 +22,5 @@ A `QuickrDevice` object.
 
 ## See also
 
-[`nv_device()`](https://r-xla.github.io/anvil/dev/reference/nv_device.md),
-[`AnvilBackendQuickr()`](https://r-xla.github.io/anvil/dev/reference/AnvilBackendQuickr.md).
+[`nv_device()`](https://r-xla.github.io/anvl/dev/reference/nv_device.md),
+[`AnvlBackendQuickr()`](https://r-xla.github.io/anvl/dev/reference/AnvlBackendQuickr.md).

@@ -1,13 +1,13 @@
 # Graph Box
 
-An [`AnvilBox`](https://r-xla.github.io/anvil/dev/reference/AnvilBox.md)
+An [`AnvlBox`](https://r-xla.github.io/anvl/dev/reference/AnvlBox.md)
 subclass that wraps a
-[`GraphNode`](https://r-xla.github.io/anvil/dev/reference/GraphNode.md)
+[`GraphNode`](https://r-xla.github.io/anvl/dev/reference/GraphNode.md)
 during graph construction (tracing). When a function is traced via
-[`trace_fn()`](https://r-xla.github.io/anvil/dev/reference/trace_fn.md),
+[`trace_fn()`](https://r-xla.github.io/anvl/dev/reference/trace_fn.md),
 each intermediate array value is represented as a `GraphBox`. It also
 contains an associated
-[`GraphDescriptor`](https://r-xla.github.io/anvil/dev/reference/GraphDescriptor.md)
+[`GraphDescriptor`](https://r-xla.github.io/anvl/dev/reference/GraphDescriptor.md)
 in which the node "lives".
 
 ## Usage
@@ -20,15 +20,15 @@ GraphBox(gnode, desc)
 
 - gnode:
 
-  ([`GraphNode`](https://r-xla.github.io/anvil/dev/reference/GraphNode.md))  
+  ([`GraphNode`](https://r-xla.github.io/anvl/dev/reference/GraphNode.md))  
   The graph node – either a
-  [`GraphValue`](https://r-xla.github.io/anvil/dev/reference/GraphValue.md)
+  [`GraphValue`](https://r-xla.github.io/anvl/dev/reference/GraphValue.md)
   or a
-  [`GraphLiteral`](https://r-xla.github.io/anvil/dev/reference/GraphLiteral.md).
+  [`GraphLiteral`](https://r-xla.github.io/anvl/dev/reference/GraphLiteral.md).
 
 - desc:
 
-  ([`GraphDescriptor`](https://r-xla.github.io/anvil/dev/reference/GraphDescriptor.md))  
+  ([`GraphDescriptor`](https://r-xla.github.io/anvl/dev/reference/GraphDescriptor.md))  
   The descriptor of the graph being built.
 
 ## Value
@@ -43,10 +43,10 @@ GraphBox(gnode, desc)
 
 - [`ndims()`](https://r-xla.github.io/tengen/reference/ndims.html)
 
-- [`ambiguous()`](https://r-xla.github.io/anvil/dev/reference/ambiguous.md)
+- [`ambiguous()`](https://r-xla.github.io/anvl/dev/reference/ambiguous.md)
 
 ## See also
 
-[AnvilBox](https://r-xla.github.io/anvil/dev/reference/AnvilBox.md),
-[`trace_fn()`](https://r-xla.github.io/anvil/dev/reference/trace_fn.md),
-[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md)
+[AnvlBox](https://r-xla.github.io/anvl/dev/reference/AnvlBox.md),
+[`trace_fn()`](https://r-xla.github.io/anvl/dev/reference/trace_fn.md),
+[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md)

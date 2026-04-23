@@ -6,7 +6,7 @@ compute backend.
 ## Usage
 
 ``` r
-# S3 method for class 'AnvilArray'
+# S3 method for class 'AnvlArray'
 platform(x, ...)
 
 platform(x, ...)
@@ -16,7 +16,7 @@ platform(x, ...)
 
 - x:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   An array-like object.
 
 - ...:

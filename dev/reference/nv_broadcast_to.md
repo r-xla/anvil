@@ -13,7 +13,7 @@ nv_broadcast_to(operand, shape)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 - shape:
@@ -23,14 +23,14 @@ nv_broadcast_to(operand, shape)
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the given `shape` and the same data type as `operand`.
 
 ## See also
 
-[`nv_broadcast_arrays()`](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_arrays.md),
-[`nv_broadcast_scalars()`](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_scalars.md),
-[`nvl_broadcast_in_dim()`](https://r-xla.github.io/anvil/dev/reference/nvl_broadcast_in_dim.md)
+[`nv_broadcast_arrays()`](https://r-xla.github.io/anvl/dev/reference/nv_broadcast_arrays.md),
+[`nv_broadcast_scalars()`](https://r-xla.github.io/anvl/dev/reference/nv_broadcast_scalars.md),
+[`prim_broadcast_in_dim()`](https://r-xla.github.io/anvl/dev/reference/prim_broadcast_in_dim.md)
 for the underlying primitive.
 
 ## Examples
@@ -38,7 +38,7 @@ for the underlying primitive.
 ``` r
 x <- nv_array(c(1, 2, 3))
 nv_broadcast_to(x, shape = c(2, 3))
-#> AnvilArray
+#> AnvlArray
 #>  1 2 3
 #>  1 2 3
 #> [ CPUf32{2,3} ] 

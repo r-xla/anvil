@@ -27,32 +27,32 @@ nv_unserialize(con, device = NULL, backend = default_backend())
 
   (`character(1)`)  
   Backend for the loaded arrays. Defaults to
-  [`default_backend()`](https://r-xla.github.io/anvil/dev/reference/default_backend.md).
+  [`default_backend()`](https://r-xla.github.io/anvl/dev/reference/default_backend.md).
 
 ## Value
 
 Named `list` of
-[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+[`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
 objects.
 
 ## Details
 
 The data type, shape, and
-[ambiguity](https://r-xla.github.io/anvil/dev/reference/ambiguous.md) of
+[ambiguity](https://r-xla.github.io/anvl/dev/reference/ambiguous.md) of
 each array are restored from the serialized data.
 
 ## See also
 
-[`nv_serialize()`](https://r-xla.github.io/anvil/dev/reference/nv_serialize.md),
-[`nv_save()`](https://r-xla.github.io/anvil/dev/reference/nv_save.md),
-[`nv_read()`](https://r-xla.github.io/anvil/dev/reference/nv_read.md)
+[`nv_serialize()`](https://r-xla.github.io/anvl/dev/reference/nv_serialize.md),
+[`nv_save()`](https://r-xla.github.io/anvl/dev/reference/nv_save.md),
+[`nv_read()`](https://r-xla.github.io/anvl/dev/reference/nv_read.md)
 
 ## Examples
 
 ``` r
 x <- nv_array(array(1:6, dim = c(2, 3)))
 x
-#> AnvilArray
+#> AnvlArray
 #>  1 3 5
 #>  2 4 6
 #> [ CPUi32{2,3} ] 
@@ -72,7 +72,7 @@ raw_data
 #> [276] 7d 01 00 00 00 03 00 00 00 05 00 00 00 02 00 00 00 04 00 00 00 06 00 00 00
 nv_unserialize(raw_data)
 #> $x
-#> AnvilArray
+#> AnvlArray
 #>  1 3 5
 #>  2 4 6
 #> [ CPUi32{2,3} ] 

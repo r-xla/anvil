@@ -8,7 +8,7 @@ also use [`is.infinite()`](https://rdrr.io/r/base/is.finite.html).
 ``` r
 nv_is_infinite(operand)
 
-# S3 method for class 'AnvilBox'
+# S3 method for class 'AnvlBox'
 is.infinite(x)
 ```
 
@@ -16,30 +16,30 @@ is.infinite(x)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 - x:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same shape as the input and boolean data type.
 
 ## See also
 
-[`nv_is_finite()`](https://r-xla.github.io/anvil/dev/reference/nv_is_finite.md),
-[`nv_is_nan()`](https://r-xla.github.io/anvil/dev/reference/nv_is_nan.md)
+[`nv_is_finite()`](https://r-xla.github.io/anvl/dev/reference/nv_is_finite.md),
+[`nv_is_nan()`](https://r-xla.github.io/anvl/dev/reference/nv_is_nan.md)
 
 ## Examples
 
 ``` r
 x <- nv_array(c(1, NaN, Inf, -Inf, 0))
 nv_is_infinite(x)
-#> AnvilArray
+#> AnvlArray
 #>  0
 #>  0
 #>  1

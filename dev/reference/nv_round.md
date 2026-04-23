@@ -13,7 +13,7 @@ nv_round(operand, method = "nearest_even")
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 - method:
@@ -24,12 +24,12 @@ nv_round(operand, method = "nearest_even")
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same shape and data type as the input.
 
 ## See also
 
-[`nvl_round()`](https://r-xla.github.io/anvil/dev/reference/nvl_round.md)
+[`prim_round()`](https://r-xla.github.io/anvl/dev/reference/prim_round.md)
 for the underlying primitive.
 
 ## Examples
@@ -37,7 +37,7 @@ for the underlying primitive.
 ``` r
 x <- nv_array(c(1.4, 2.5, 3.6))
 round(x)
-#> AnvilArray
+#> AnvlArray
 #>  1
 #>  2
 #>  4

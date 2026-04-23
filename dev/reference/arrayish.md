@@ -1,18 +1,18 @@
 # Array-like Objects
 
 A `arrayish` value is any object that can be input to a primitive such
-as [`nvl_add`](https://r-xla.github.io/anvil/dev/reference/nvl_add.md).
+as [`prim_add`](https://r-xla.github.io/anvl/dev/reference/prim_add.md).
 
 During runtime of a JIT-compiled function, these are
-[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+[`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
 objects.
 
 The following types are arrayish (during tracing):
 
-- [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md):
+- [`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md):
   a concrete array holding data on a device.
 
-- [`GraphBox`](https://r-xla.github.io/anvil/dev/reference/GraphBox.md):
+- [`GraphBox`](https://r-xla.github.io/anvl/dev/reference/GraphBox.md):
   a boxed abstract array representing a value in a graph.
 
 - Length-1 vectors: `numeric(1)` and `logical(1)`
@@ -46,13 +46,13 @@ is_arrayish(x, convert_ok = TRUE)
 
 ## See also
 
-[AnvilArray](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md),
-[GraphBox](https://r-xla.github.io/anvil/dev/reference/GraphBox.md)
+[AnvlArray](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md),
+[GraphBox](https://r-xla.github.io/anvl/dev/reference/GraphBox.md)
 
 ## Examples
 
 ``` r
-# AnvilArrays are arrayish
+# AnvlArrays are arrayish
 is_arrayish(nv_array(1:4))
 #> [1] TRUE
 

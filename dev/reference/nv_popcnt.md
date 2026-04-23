@@ -12,17 +12,17 @@ nv_popcnt(operand)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same shape and data type as the input.
 
 ## See also
 
-[`nvl_popcnt()`](https://r-xla.github.io/anvil/dev/reference/nvl_popcnt.md)
+[`prim_popcnt()`](https://r-xla.github.io/anvl/dev/reference/prim_popcnt.md)
 for the underlying primitive.
 
 ## Examples
@@ -30,7 +30,7 @@ for the underlying primitive.
 ``` r
 x <- nv_array(c(7L, 3L, 15L))
 nv_popcnt(x)
-#> AnvilArray
+#> AnvlArray
 #>  3
 #>  2
 #>  4

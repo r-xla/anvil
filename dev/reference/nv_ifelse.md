@@ -13,29 +13,29 @@ nv_ifelse(pred, true_value, false_value)
 
 - pred:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)
   of boolean type)  
   Predicate array. Must be scalar or the same shape as `true_value`.
 
 - true_value:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Values to return where `pred` is `TRUE`.
 
 - false_value:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Values to return where `pred` is `FALSE`. Must have the same shape and
   data type as `true_value`.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same shape and data type as `true_value`.
 
 ## See also
 
-[`nvl_ifelse()`](https://r-xla.github.io/anvil/dev/reference/nvl_ifelse.md)
+[`prim_ifelse()`](https://r-xla.github.io/anvl/dev/reference/prim_ifelse.md)
 for the underlying primitive.
 
 ## Examples
@@ -43,7 +43,7 @@ for the underlying primitive.
 ``` r
 pred <- nv_array(c(TRUE, FALSE, TRUE))
 nv_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
-#> AnvilArray
+#> AnvlArray
 #>  1
 #>  5
 #>  3

@@ -16,7 +16,7 @@ tree_path(node, i, prefix = "")
 
   (`Node`)  
   A tree node as returned by
-  [`build_tree()`](https://r-xla.github.io/anvil/dev/reference/build_tree.md).
+  [`build_tree()`](https://r-xla.github.io/anvl/dev/reference/build_tree.md).
 
 - i:
 
@@ -35,5 +35,5 @@ A scalar `character` string.
 
 ## See also
 
-[`build_tree()`](https://r-xla.github.io/anvil/dev/reference/build_tree.md),
-[`flatten()`](https://r-xla.github.io/anvil/dev/reference/flatten.md)
+[`build_tree()`](https://r-xla.github.io/anvl/dev/reference/build_tree.md),
+[`flatten()`](https://r-xla.github.io/anvl/dev/reference/flatten.md)

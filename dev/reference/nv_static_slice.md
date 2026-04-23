@@ -2,7 +2,7 @@
 
 Extracts a slice from an array using static (compile-time) indices. For
 dynamic indexing, use
-[`nv_subset()`](https://r-xla.github.io/anvil/dev/reference/nv_subset.md)
+[`nv_subset()`](https://r-xla.github.io/anvl/dev/reference/nv_subset.md)
 instead.
 
 ## Usage
@@ -15,7 +15,7 @@ nv_static_slice(operand, start_indices, limit_indices, strides)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 - start_indices:
@@ -35,13 +35,13 @@ nv_static_slice(operand, start_indices, limit_indices, strides)
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same data type as `operand`.
 
 ## See also
 
-[`nv_subset()`](https://r-xla.github.io/anvil/dev/reference/nv_subset.md),
-[`nvl_static_slice()`](https://r-xla.github.io/anvil/dev/reference/nvl_static_slice.md)
+[`nv_subset()`](https://r-xla.github.io/anvl/dev/reference/nv_subset.md),
+[`prim_static_slice()`](https://r-xla.github.io/anvl/dev/reference/prim_static_slice.md)
 for the underlying primitive.
 
 ## Examples
@@ -49,7 +49,7 @@ for the underlying primitive.
 ``` r
 x <- nv_array(1:10)
 nv_static_slice(x, start_indices = 2L, limit_indices = 5L, strides = 1L)
-#> AnvilArray
+#> AnvlArray
 #>  2
 #>  3
 #>  4

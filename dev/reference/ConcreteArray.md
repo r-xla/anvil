@@ -1,10 +1,10 @@
 # Concrete Array Class
 
 An
-[`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
+[`AbstractArray`](https://r-xla.github.io/anvl/dev/reference/AbstractArray.md)
 that also holds a reference to the actual array data. Usually represents
 a closed-over constant in a program. Inherits from
-[`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md).
+[`AbstractArray`](https://r-xla.github.io/anvl/dev/reference/AbstractArray.md).
 
 ## Usage
 
@@ -16,7 +16,7 @@ ConcreteArray(data)
 
 - data:
 
-  ([`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))  
+  ([`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md))  
   The actual array data.
 
 ## Lowering
@@ -47,7 +47,7 @@ dtype(x)
 # How it appears during tracing
 graph <- trace_fn(function() y, list())
 graph
-#> <AnvilGraph>
+#> <AnvlGraph>
 #>   Inputs: (none)
 #>   Constants:
 #>     %c1: f32[2]

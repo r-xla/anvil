@@ -2,31 +2,31 @@
 
 Representation of an abstract array type. During tracing, it is wrapped
 in a
-[`GraphNode`](https://r-xla.github.io/anvil/dev/reference/GraphNode.md)
+[`GraphNode`](https://r-xla.github.io/anvl/dev/reference/GraphNode.md)
 held by a
-[`GraphBox`](https://r-xla.github.io/anvil/dev/reference/GraphBox.md).
-In the lowered
-[`AnvilGraph`](https://r-xla.github.io/anvil/dev/reference/AnvilGraph.md)
+[`GraphBox`](https://r-xla.github.io/anvl/dev/reference/GraphBox.md). In
+the lowered
+[`AnvlGraph`](https://r-xla.github.io/anvl/dev/reference/AnvlGraph.md)
 it is also part of
-[`GraphNode`](https://r-xla.github.io/anvil/dev/reference/GraphNode.md)s
+[`GraphNode`](https://r-xla.github.io/anvl/dev/reference/GraphNode.md)s
 representing the values in the program.
 
 The base class represents an *unknown* value, but child classes exist
 for:
 
 - closed-over constants:
-  [`ConcreteArray`](https://r-xla.github.io/anvil/dev/reference/ConcreteArray.md)
+  [`ConcreteArray`](https://r-xla.github.io/anvl/dev/reference/ConcreteArray.md)
 
 - scalar arrays arising from R literals:
-  [`LiteralArray`](https://r-xla.github.io/anvil/dev/reference/LiteralArray.md)
+  [`LiteralArray`](https://r-xla.github.io/anvl/dev/reference/LiteralArray.md)
 
 - sequence patterns:
-  [`IotaArray`](https://r-xla.github.io/anvil/dev/reference/IotaArray.md)
+  [`IotaArray`](https://r-xla.github.io/anvl/dev/reference/IotaArray.md)
 
 To convert a
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)
 value to an abstract array, use
-[`to_abstract()`](https://r-xla.github.io/anvil/dev/reference/to_abstract.md).
+[`to_abstract()`](https://r-xla.github.io/anvl/dev/reference/to_abstract.md).
 
 ## Usage
 
@@ -56,7 +56,7 @@ AbstractArray(dtype, shape, ambiguous = FALSE)
   Whether the type is ambiguous. Ambiguous types usually arise from R
   literals (e.g., `1L`, `1.0`) and follow special promotion rules. See
   the
-  [`vignette("type-promotion")`](https://r-xla.github.io/anvil/dev/articles/type-promotion.md)
+  [`vignette("type-promotion")`](https://r-xla.github.io/anvl/dev/articles/type-promotion.md)
   for more details.
 
 ## Extractors
@@ -69,7 +69,7 @@ The following extractors are available on `AbstractArray` objects:
 - [`shape()`](https://r-xla.github.io/tengen/reference/shape.html): Get
   the shape (dimensions) of the array.
 
-- [`ambiguous()`](https://r-xla.github.io/anvil/dev/reference/ambiguous.md):
+- [`ambiguous()`](https://r-xla.github.io/anvl/dev/reference/ambiguous.md):
   Get whether the dtype is ambiguous.
 
 - [`ndims()`](https://r-xla.github.io/tengen/reference/ndims.html): Get
@@ -77,12 +77,12 @@ The following extractors are available on `AbstractArray` objects:
 
 ## See also
 
-[LiteralArray](https://r-xla.github.io/anvil/dev/reference/LiteralArray.md),
-[ConcreteArray](https://r-xla.github.io/anvil/dev/reference/ConcreteArray.md),
-[IotaArray](https://r-xla.github.io/anvil/dev/reference/IotaArray.md),
-[GraphValue](https://r-xla.github.io/anvil/dev/reference/GraphValue.md),
-[`to_abstract()`](https://r-xla.github.io/anvil/dev/reference/to_abstract.md),
-[GraphBox](https://r-xla.github.io/anvil/dev/reference/GraphBox.md)
+[LiteralArray](https://r-xla.github.io/anvl/dev/reference/LiteralArray.md),
+[ConcreteArray](https://r-xla.github.io/anvl/dev/reference/ConcreteArray.md),
+[IotaArray](https://r-xla.github.io/anvl/dev/reference/IotaArray.md),
+[GraphValue](https://r-xla.github.io/anvl/dev/reference/GraphValue.md),
+[`to_abstract()`](https://r-xla.github.io/anvl/dev/reference/to_abstract.md),
+[GraphBox](https://r-xla.github.io/anvl/dev/reference/GraphBox.md)
 
 ## Examples
 
@@ -102,10 +102,10 @@ ambiguous(a)
 nv_aval("f32", c(2L, 3L))
 #> AbstractArray(dtype=f32, shape=2x3) 
 
-# How AbstractArrays appear in an AnvilGraph
+# How AbstractArrays appear in an AnvlGraph
 graph <- trace_fn(function(x) x + 1, list(x = nv_aval("i32", 4L)))
 graph
-#> <AnvilGraph>
+#> <AnvlGraph>
 #>   Inputs:
 #>     %x1: i32[4]
 #>   Body:

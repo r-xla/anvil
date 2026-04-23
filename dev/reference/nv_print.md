@@ -13,17 +13,17 @@ nv_print(operand)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Returns `operand` unchanged.
 
 ## See also
 
-[`nvl_print()`](https://r-xla.github.io/anvil/dev/reference/nvl_print.md)
+[`prim_print()`](https://r-xla.github.io/anvl/dev/reference/prim_print.md)
 for the underlying primitive.
 
 ## Examples
@@ -31,12 +31,12 @@ for the underlying primitive.
 ``` r
 x <- nv_array(c(1, 2, 3))
 nv_print(x)
-#> AnvilArray
+#> AnvlArray
 #>  1
 #>  2
 #>  3
 #> [ f32{3} ]
-#> AnvilArray
+#> AnvlArray
 #>  1
 #>  2
 #>  3

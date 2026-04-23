@@ -12,19 +12,19 @@ nv_diag(operand)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   A 1-D array of length `n` whose elements become the diagonal entries.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 An `n x n` matrix with `x` on the diagonal and zeros elsewhere.
 
 ## Examples
 
 ``` r
 nv_diag(nv_array(c(1, 2, 3)))
-#> AnvilArray
+#> AnvlArray
 #>  1 0 0
 #>  0 2 0
 #>  0 0 3

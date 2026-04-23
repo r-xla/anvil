@@ -12,7 +12,7 @@ nv_reduce_max(operand, dims, drop = TRUE)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 - dims:
@@ -27,14 +27,14 @@ nv_reduce_max(operand, dims, drop = TRUE)
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same data type as the input. When `drop = TRUE`, the reduced
 dimensions are removed. When `drop = FALSE`, the reduced dimensions are
 set to 1.
 
 ## See also
 
-[`nvl_reduce_max()`](https://r-xla.github.io/anvil/dev/reference/nvl_reduce_max.md)
+[`prim_reduce_max()`](https://r-xla.github.io/anvl/dev/reference/prim_reduce_max.md)
 for the underlying primitive.
 
 ## Examples
@@ -42,7 +42,7 @@ for the underlying primitive.
 ``` r
 x <- nv_array(matrix(1:6, nrow = 2))
 nv_reduce_max(x, dims = 1L)
-#> AnvilArray
+#> AnvlArray
 #>  2
 #>  4
 #>  6

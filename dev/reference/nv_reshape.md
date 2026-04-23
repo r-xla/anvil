@@ -13,7 +13,7 @@ nv_reshape(operand, shape)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 - shape:
@@ -23,7 +23,7 @@ nv_reshape(operand, shape)
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the given `shape` and the same data type as `operand`.
 
 ## Details
@@ -33,7 +33,7 @@ order.
 
 ## See also
 
-[`nvl_reshape()`](https://r-xla.github.io/anvil/dev/reference/nvl_reshape.md)
+[`prim_reshape()`](https://r-xla.github.io/anvl/dev/reference/prim_reshape.md)
 for the underlying primitive.
 
 ## Examples
@@ -41,7 +41,7 @@ for the underlying primitive.
 ``` r
 x <- nv_array(1:6)
 nv_reshape(x, c(2, 3))
-#> AnvilArray
+#> AnvlArray
 #>  1 2 3
 #>  4 5 6
 #> [ CPUi32{2,3} ] 

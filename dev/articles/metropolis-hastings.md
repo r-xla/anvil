@@ -1,7 +1,7 @@
 # Metropolis-Hastings
 
 In this vignette, we show how to implement a random-walk
-Metropolis-Hastings sampler using {anvil} (Hastings 1970).
+Metropolis-Hastings sampler using {anvl} (Hastings 1970).
 Metropolis-Hastings is a well known MCMC algorithm that generates
 samples from a target distribution by proposing moves and accepting or
 rejecting them based on the density ratio.
@@ -24,7 +24,7 @@ will use later to verify the correctness of our implementation. We set
 the hyperparameter \\b\\ to 0.01.
 
 ``` r
-library(anvil)
+library(anvl)
 b_param <- 0.01
 ```
 
@@ -54,7 +54,7 @@ The log-density of the banana distribution (up to a constant) is:
 \\\log p(\theta_1, \theta_2) = -\frac{\theta_1^2}{200} -
 \frac{\bigl(\theta_2 - b\theta_1^2 + 100b\bigr)^2}{2}\\
 
-We implement this in {anvil} and convert the parameter to an `f64` array
+We implement this in {anvl} and convert the parameter to an `f64` array
 for maximal precision.
 
 ``` r
@@ -70,8 +70,8 @@ log_density <- function(theta, b) {
 There are a few things to note in the code below:
 
 1.  the accept/reject decision uses the primitive
-    [`nv_if()`](https://r-xla.github.io/anvil/dev/reference/nv_if.md)
-    and not a native R conditional.
+    [`nv_if()`](https://r-xla.github.io/anvl/dev/reference/nv_if.md) and
+    not a native R conditional.
 2.  we sample a scalar uniform random number by setting
     `shape = integer()`
 3.  the RNG state is passed around explicitly.
@@ -98,7 +98,7 @@ mh_step <- function(theta, rng_state, b, proposal_sd) {
 
 Because subsequent samples are autocorrelated, we thin the output by
 keeping every nth sample. We implement this loop via
-[`nv_while()`](https://r-xla.github.io/anvil/dev/reference/nv_while.md)
+[`nv_while()`](https://r-xla.github.io/anvl/dev/reference/nv_while.md)
 below, avoiding R loop overhead.
 
 ``` r

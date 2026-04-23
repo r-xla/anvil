@@ -1,7 +1,7 @@
 # Convert to Abstract Array
 
 Convert an object to its abstract array representation
-([`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)).
+([`AbstractArray`](https://r-xla.github.io/anvl/dev/reference/AbstractArray.md)).
 
 ## Usage
 
@@ -24,7 +24,7 @@ to_abstract(x, pure = FALSE)
 
 ## Value
 
-[`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
+[`AbstractArray`](https://r-xla.github.io/anvl/dev/reference/AbstractArray.md)
 
 ## Examples
 
@@ -37,7 +37,7 @@ to_abstract(1L)
 to_abstract(TRUE)
 #> LiteralArray(TRUE, i1, ()) 
 
-# AnvilArrays become ConcreteArrays
+# AnvlArrays become ConcreteArrays
 to_abstract(nv_array(1:4))
 #> ConcreteArray
 #>  1

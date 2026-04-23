@@ -27,7 +27,7 @@ This is implemented via the generic
 
 ## See also
 
-[`is_dtype()`](https://r-xla.github.io/anvil/dev/reference/is_dtype.md),
+[`is_dtype()`](https://r-xla.github.io/anvl/dev/reference/is_dtype.md),
 [`tengen::as_dtype()`](https://r-xla.github.io/tengen/reference/as_dtype.html),
 [`tengen::DataType`](https://r-xla.github.io/tengen/reference/DataType.html)
 

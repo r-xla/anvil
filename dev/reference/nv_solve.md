@@ -15,18 +15,18 @@ nv_solve(a, b)
 
 - a:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Symmetric positive-definite matrix.
 
 - b:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Right-hand side matrix or vector. Must have the same data type and
   batch dimensions as `a`.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 The solution `x` such that `a %*% x = b`.
 
 ## Shapes
@@ -42,9 +42,9 @@ where `...` are zero or more batch dimensions that must match between
 
 ## See also
 
-[`nv_cholesky()`](https://r-xla.github.io/anvil/dev/reference/nv_cholesky.md),
-[`nvl_cholesky()`](https://r-xla.github.io/anvil/dev/reference/nvl_cholesky.md),
-[`nvl_triangular_solve()`](https://r-xla.github.io/anvil/dev/reference/nvl_triangular_solve.md)
+[`nv_cholesky()`](https://r-xla.github.io/anvl/dev/reference/nv_cholesky.md),
+[`prim_cholesky()`](https://r-xla.github.io/anvl/dev/reference/prim_cholesky.md),
+[`prim_triangular_solve()`](https://r-xla.github.io/anvl/dev/reference/prim_triangular_solve.md)
 
 ## Examples
 
@@ -52,7 +52,7 @@ where `...` are zero or more batch dimensions that must match between
 a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
 b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
 nv_solve(a, b)
-#> AnvilArray
+#> AnvlArray
 #>  -0.1250
 #>   0.7500
 #> [ CPUf32{2,1} ] 

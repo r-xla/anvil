@@ -13,7 +13,7 @@ nv_concatenate(..., dimension = NULL)
 
 - ...:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Arrays to concatenate. Must have the same shape except along
   `dimension`.
 
@@ -25,13 +25,13 @@ nv_concatenate(..., dimension = NULL)
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the common data type and a shape matching the inputs in all
 dimensions except `dimension`, which is the sum of input sizes.
 
 ## See also
 
-[`nvl_concatenate()`](https://r-xla.github.io/anvil/dev/reference/nvl_concatenate.md)
+[`prim_concatenate()`](https://r-xla.github.io/anvl/dev/reference/prim_concatenate.md)
 for the underlying primitive.
 
 ## Examples
@@ -40,7 +40,7 @@ for the underlying primitive.
 x <- nv_array(c(1, 2, 3))
 y <- nv_array(c(4, 5, 6))
 nv_concatenate(x, y)
-#> AnvilArray
+#> AnvlArray
 #>  1
 #>  2
 #>  3

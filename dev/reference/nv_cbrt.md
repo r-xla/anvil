@@ -12,17 +12,17 @@ nv_cbrt(operand)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same shape and data type as the input.
 
 ## See also
 
-[`nvl_cbrt()`](https://r-xla.github.io/anvil/dev/reference/nvl_cbrt.md)
+[`prim_cbrt()`](https://r-xla.github.io/anvl/dev/reference/prim_cbrt.md)
 for the underlying primitive.
 
 ## Examples
@@ -30,7 +30,7 @@ for the underlying primitive.
 ``` r
 x <- nv_array(c(1, 8, 27))
 nv_cbrt(x)
-#> AnvilArray
+#> AnvlArray
 #>  1
 #>  2
 #>  3

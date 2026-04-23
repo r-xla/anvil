@@ -12,7 +12,7 @@ nv_squeeze(operand, dims = NULL)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 - dims:
@@ -23,21 +23,21 @@ nv_squeeze(operand, dims = NULL)
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same data type as `operand` with the specified dimensions
 removed.
 
 ## See also
 
-[`nv_unsqueeze()`](https://r-xla.github.io/anvil/dev/reference/nv_unsqueeze.md),
-[`nv_reshape()`](https://r-xla.github.io/anvil/dev/reference/nv_reshape.md)
+[`nv_unsqueeze()`](https://r-xla.github.io/anvl/dev/reference/nv_unsqueeze.md),
+[`nv_reshape()`](https://r-xla.github.io/anvl/dev/reference/nv_reshape.md)
 
 ## Examples
 
 ``` r
 x <- nv_array(1:6, shape = c(1, 6, 1))
 nv_squeeze(x)
-#> AnvilArray
+#> AnvlArray
 #>  1
 #>  2
 #>  3

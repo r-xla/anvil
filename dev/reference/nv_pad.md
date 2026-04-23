@@ -19,12 +19,12 @@ nv_pad(
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 - padding_value:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Scalar value to use for padding. Must have the same dtype as
   `operand`.
 
@@ -46,12 +46,12 @@ nv_pad(
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same data type as `operand`.
 
 ## See also
 
-[`nvl_pad()`](https://r-xla.github.io/anvil/dev/reference/nvl_pad.md)
+[`prim_pad()`](https://r-xla.github.io/anvl/dev/reference/prim_pad.md)
 for the underlying primitive.
 
 ## Examples
@@ -59,7 +59,7 @@ for the underlying primitive.
 ``` r
 x <- nv_array(c(1, 2, 3))
 nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
-#> AnvilArray
+#> AnvlArray
 #>  0
 #>  0
 #>  1

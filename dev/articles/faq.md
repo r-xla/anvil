@@ -2,7 +2,7 @@
 
 ## How do I control the number of threads used by XLA?
 
-XLA (the compiler backend used by `anvil`) may use multiple CPU threads
+XLA (the compiler backend used by `anvl`) may use multiple CPU threads
 for parallelism. On shared systems such as HPC clusters, it is often
 necessary to restrict which cores a process can use.
 

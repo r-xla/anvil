@@ -1,10 +1,10 @@
 # Literal Array Class
 
 An
-[`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)
+[`AbstractArray`](https://r-xla.github.io/anvl/dev/reference/AbstractArray.md)
 where all elements have the same constant value. This either arises when
 using literals in traced code (e.g. `x + 1`) or when using
-[`nv_fill()`](https://r-xla.github.io/anvil/dev/reference/nv_fill.md) to
+[`nv_fill()`](https://r-xla.github.io/anvl/dev/reference/nv_fill.md) to
 create a constant.
 
 ## Usage
@@ -18,8 +18,8 @@ LiteralArray(data, shape, dtype = default_dtype(data), ambiguous)
 - data:
 
   (`double(1)` \| `integer(1)` \| `logical(1)` \|
-  [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))  
-  The scalar value or scalarish AnvilArray (contains 1 element).
+  [`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md))  
+  The scalar value or scalarish AnvlArray (contains 1 element).
 
 - shape:
 
@@ -39,14 +39,14 @@ LiteralArray(data, shape, dtype = default_dtype(data), ambiguous)
   Whether the type is ambiguous. Ambiguous types usually arise from R
   literals (e.g., `1L`, `1.0`) and follow special promotion rules. See
   the
-  [`vignette("type-promotion")`](https://r-xla.github.io/anvil/dev/articles/type-promotion.md)
+  [`vignette("type-promotion")`](https://r-xla.github.io/anvl/dev/articles/type-promotion.md)
   for more details.
 
 ## Type Ambiguity
 
 When arising from R literals, the resulting `LiteralArray` is ambiguous
 because no type information was available. See the
-[`vignette("type-promotion")`](https://r-xla.github.io/anvil/dev/articles/type-promotion.md)
+[`vignette("type-promotion")`](https://r-xla.github.io/anvl/dev/articles/type-promotion.md)
 for more details.
 
 ## Lowering
@@ -73,7 +73,7 @@ dtype(x)
 # 1. via R literals
 graph <- trace_fn(function() 1, list())
 graph
-#> <AnvilGraph>
+#> <AnvlGraph>
 #>   Inputs: (none)
 #>   Body: (empty)
 #>   Outputs:
@@ -83,7 +83,7 @@ graph$outputs[[1]]$aval
 # 2. via nv_fill()
 graph <- trace_fn(function() nv_fill(2L, shape = c(2, 2)), list())
 graph
-#> <AnvilGraph>
+#> <AnvlGraph>
 #>   Inputs: (none)
 #>   Body:
 #>     %1: i32[2, 2] = fill [value = 2, dtype = i32, shape = c(2, 2), ambiguous = FALSE] ()

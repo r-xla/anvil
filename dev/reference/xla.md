@@ -3,11 +3,11 @@
 Compiles a function to an XLA executable via tracing.
 
 Returns a callable R function that executes the compiled binary. Unlike
-[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md),
+[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md),
 compilation happens eagerly at definition time rather than on first
 call, so the input shapes and dtypes must be specified upfront via
 abstract arrays (see
-[`nv_aval()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)).
+[`nv_aval()`](https://r-xla.github.io/anvl/dev/reference/AbstractArray.md)).
 
 ## Usage
 
@@ -21,13 +21,13 @@ xla(f, args, donate = character(), device = NULL)
 
   (`function`)  
   Function to compile. Must accept and return
-  [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)s.
+  [`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)s.
 
 - args:
 
   (`list`)  
   List of abstract array specifications (e.g. from
-  [`nv_aval()`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md))
+  [`nv_aval()`](https://r-xla.github.io/anvl/dev/reference/AbstractArray.md))
   describing the expected shapes and dtypes of `f`'s arguments.
 
 - donate:
@@ -44,24 +44,24 @@ xla(f, args, donate = character(), device = NULL)
 
 (`function`)  
 A function that accepts
-[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+[`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
 arguments (matching the flat inputs) and returns the result as
-[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)s.
+[`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)s.
 
 ## Details
 
 Traces `f` with the given abstract `args` (via
-[`trace_fn()`](https://r-xla.github.io/anvil/dev/reference/trace_fn.md)),
+[`trace_fn()`](https://r-xla.github.io/anvl/dev/reference/trace_fn.md)),
 lowers the resulting graph via
-[`stablehlo()`](https://r-xla.github.io/anvil/dev/reference/stablehlo.md)
+[`stablehlo()`](https://r-xla.github.io/anvl/dev/reference/stablehlo.md)
 and then compiles it to an XLA executable via
 [`pjrt::pjrt_compile()`](https://r-xla.github.io/pjrt/reference/pjrt_compile.html).
 
 ## See also
 
-[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) for lazy
+[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md) for lazy
 compilation,
-[`compile_xla()`](https://r-xla.github.io/anvil/dev/reference/compile_xla.md)
+[`compile_xla()`](https://r-xla.github.io/anvl/dev/reference/compile_xla.md)
 for the lower-level API.
 
 ## Examples
@@ -73,7 +73,7 @@ f_compiled <- xla(function(x, y) x + y,
 a <- nv_array(array(1:4, c(2, 2)), dtype = "f32")
 b <- nv_array(array(5:8, c(2, 2)), dtype = "f32")
 f_compiled(a, b)
-#> AnvilArray
+#> AnvlArray
 #>   6 10
 #>   8 12
 #> [ CPUf32{2,2} ] 

@@ -1,7 +1,7 @@
 # Random Number Generation
 
 In this vignette, you will learn how to generate random numbers in
-{anvil}, which is different from base R, where random number generation
+{anvl}, which is different from base R, where random number generation
 uses a global state (`.Random.seed`) that is automatically updated after
 each call:
 
@@ -19,7 +19,7 @@ rnorm(3)
 #> [1]          12 -1577024373  1699409082
 ```
 
-In {anvil}, the random state must be explicitly passed around. This is
+In {anvl}, the random state must be explicitly passed around. This is
 because we are following a functional programming paradigm where
 functions are pure and don’t have side effects.
 
@@ -30,24 +30,24 @@ manage the state yourself.
 To generate random numbers, you first need to create an initial RNG
 state, which is simply a `ui64[2]`. You can convert a seed into a state
 using
-[`nv_rng_state()`](https://r-xla.github.io/anvil/dev/reference/nv_rng_state.md):
+[`nv_rng_state()`](https://r-xla.github.io/anvl/dev/reference/nv_rng_state.md):
 
 ``` r
-library(anvil)
+library(anvl)
 state <- nv_rng_state(42L)
 state
-#> AnvilArray
+#> AnvlArray
 #>  42
 #>   0
 #> [ CPUui64{2} ]
 ```
 
 The main functions for generating random numbers are
-[`nv_runif()`](https://r-xla.github.io/anvil/dev/reference/nv_runif.md),
-[`nv_rdunif()`](https://r-xla.github.io/anvil/dev/reference/nv_rdunif.md),
-[`nv_rbinom()`](https://r-xla.github.io/anvil/dev/reference/nv_rbinom.md),
+[`nv_runif()`](https://r-xla.github.io/anvl/dev/reference/nv_runif.md),
+[`nv_rdunif()`](https://r-xla.github.io/anvl/dev/reference/nv_rdunif.md),
+[`nv_rbinom()`](https://r-xla.github.io/anvl/dev/reference/nv_rbinom.md),
 and
-[`nv_rnorm()`](https://r-xla.github.io/anvil/dev/reference/nv_rnorm.md).
+[`nv_rnorm()`](https://r-xla.github.io/anvl/dev/reference/nv_rnorm.md).
 All those functions return a list with two elements:
 
 1.  The **new** RNG state (to be used for subsequent random number
@@ -63,12 +63,12 @@ f <- jit(function(state) {
 
 result <- f(state)
 result[[1]]  # new state
-#> AnvilArray
+#> AnvlArray
 #>  42
 #>   3
 #> [ CPUui64{2} ]
 result[[2]]  # random numbers
-#> AnvilArray
+#> AnvlArray
 #>  0.8690 0.1506 0.5203
 #>  0.3103 0.9928 0.1065
 #> [ CPUf32{2,3} ]
@@ -83,7 +83,7 @@ g <- jit(function(state) {
 
 result <- g(state)
 result[[2]]
-#> AnvilArray
+#> AnvlArray
 #>  -0.0675  0.9489  1.9457
 #>  -0.5255  1.2002  0.0008
 #> [ CPUf32{2,3} ]
@@ -101,14 +101,14 @@ h <- jit(function(state) {
 
 h(state)
 #> $first
-#> AnvilArray
+#> AnvlArray
 #>  0.8690
 #>  0.3103
 #>  0.1506
 #> [ CPUf32{3} ] 
 #> 
 #> $second
-#> AnvilArray
+#> AnvlArray
 #>  0.8690
 #>  0.3103
 #>  0.1506
@@ -130,14 +130,14 @@ proper_rng <- jit(function(state) {
 
 proper_rng(state)
 #> $first
-#> AnvilArray
+#> AnvlArray
 #>  0.8690
 #>  0.3103
 #>  0.1506
 #> [ CPUf32{3} ] 
 #> 
 #> $second
-#> AnvilArray
+#> AnvlArray
 #>  0.5203
 #>  0.1065
 #>  0.2499

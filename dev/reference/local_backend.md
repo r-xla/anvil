@@ -1,10 +1,10 @@
 # Temporarily set the default backend
 
-Sets the `anvil.default_backend` option for the duration of the calling
+Sets the `anvl.default_backend` option for the duration of the calling
 scope. This affects
-[`nv_array()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md),
-[`nv_scalar()`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md),
-and [`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md).
+[`nv_array()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md),
+[`nv_scalar()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md),
+and [`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md).
 
 ## Usage
 

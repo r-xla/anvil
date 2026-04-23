@@ -44,43 +44,43 @@ nv_fill_like(
   Whether the type is ambiguous. Ambiguous types usually arise from R
   literals (e.g., `1L`, `1.0`) and follow special promotion rules. See
   the
-  [`vignette("type-promotion")`](https://r-xla.github.io/anvil/dev/articles/type-promotion.md)
+  [`vignette("type-promotion")`](https://r-xla.github.io/anvl/dev/articles/type-promotion.md)
   for more details.
 
 - device:
 
   ( `character(1)` \| `PJRTDevice` \|
-  [`quickr_device`](https://r-xla.github.io/anvil/dev/reference/quickr_device.md)
+  [`quickr_device`](https://r-xla.github.io/anvl/dev/reference/quickr_device.md)
   \| `NULL`)  
   Device for data to live on.
 
 - like:
 
-  ([`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))  
+  ([`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md))  
   Existing array whose attributes are used as defaults (only for
   `nv_fill_like()`).
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the given `shape` and `dtype`.
 
 ## See also
 
-[`nvl_fill()`](https://r-xla.github.io/anvil/dev/reference/nvl_fill.md)
+[`prim_fill()`](https://r-xla.github.io/anvl/dev/reference/prim_fill.md)
 for the underlying primitive.
 
 ## Examples
 
 ``` r
 nv_fill(0, shape = c(2, 3))
-#> AnvilArray
+#> AnvlArray
 #>  0 0 0
 #>  0 0 0
 #> [ CPUf32{2,3} ] 
 x <- nv_array(matrix(1:6, nrow = 2))
 nv_fill_like(x, 0)
-#> AnvilArray
+#> AnvlArray
 #>  0 0 0
 #>  0 0 0
 #> [ CPUi32{2,3} ] 

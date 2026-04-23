@@ -1,7 +1,7 @@
 # Get the default backend
 
 Returns the current default backend from
-`getOption("anvil.default_backend", "xla")`.
+`getOption("anvl.default_backend", "xla")`.
 
 ## Usage
 
@@ -15,4 +15,4 @@ default_backend()
 
 ## See also
 
-[`local_backend()`](https://r-xla.github.io/anvil/dev/reference/local_backend.md)
+[`local_backend()`](https://r-xla.github.io/anvl/dev/reference/local_backend.md)

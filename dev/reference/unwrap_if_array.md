@@ -1,6 +1,6 @@
-# Get the underlying PJRT buffer from an AnvilArray or pass through other values
+# Get the underlying PJRT buffer from an AnvlArray or pass through other values
 
-Get the underlying PJRT buffer from an AnvilArray or pass through other
+Get the underlying PJRT buffer from an AnvlArray or pass through other
 values
 
 ## Usage
@@ -13,8 +13,8 @@ unwrap_if_array(x)
 
 - x:
 
-  An AnvilArray or any other value
+  An AnvlArray or any other value
 
 ## Value
 
-The underlying PJRT buffer if x is an AnvilArray, otherwise x unchanged
+The underlying PJRT buffer if x is an AnvlArray, otherwise x unchanged

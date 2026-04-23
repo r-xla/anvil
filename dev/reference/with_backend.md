@@ -1,10 +1,10 @@
 # Run code with a specific backend
 
-Sets the `anvil.default_backend` option for the duration of the
+Sets the `anvl.default_backend` option for the duration of the
 expression. This affects
-[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) and data
+[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md) and data
 construction (e.g. via
-[`nv_array`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)).
+[`nv_array`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)).
 
 ## Usage
 

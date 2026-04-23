@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Adding an API Function • anvil</title>
+<title>Adding an API Function • anvl</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -30,7 +30,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">anvil</a>
+    <a class="navbar-brand me-2" href="../index.html">anvl</a>
 
     <small class="nav-text text-default me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9000</small>
 
@@ -47,7 +47,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
-    <li><a class="dropdown-item" href="../articles/anvil.html">Get Started</a></li>
+    <li><a class="dropdown-item" href="../articles/anvl.html">Get Started</a></li>
     <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
     <li><a class="dropdown-item" href="../articles/subsetting.html">Subsetting</a></li>
     <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
@@ -76,7 +76,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvil/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvl/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
@@ -100,25 +100,25 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Adding an API Function</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/new_api_function.Rmd" class="external-link"><code>vignettes/new_api_function.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvl/blob/main/vignettes/new_api_function.Rmd" class="external-link"><code>vignettes/new_api_function.Rmd</code></a></small>
       <div class="d-none name"><code>new_api_function.Rmd</code></div>
     </div>
 
     
     
-<p>Here, we will explain how to add an API function to the {anvil}
+<p>Here, we will explain how to add an API function to the {anvl}
 package. API functions are the main user facing API and are follow the
 <code>nv_*</code> naming scheme. There are two types of API
 functions:</p>
 <ol style="list-style-type: decimal">
 <li>Thin wrappers around primitives that add convenience like type
-casting and scalar broadcasting (AP function <code>nv_add</code> is a
-wrapper around the primitive <code>nvl_add</code>).</li>
+casting and scalar broadcasting (API function <code>nv_add</code> is a
+wrapper around the primitive <code>prim_add</code>).</li>
 <li>Common mathematical functions that are expressed in terms of
 primitives (such as <code>nv_rnorm</code>).</li>
 </ol>
 <p>Here, we will focus on contributing such an API function to the
-{anvil} package. Specifically, API functions in the {anvil} package
+{anvl} package. Specifically, API functions in the {anvl} package
 should:</p>
 <ol style="list-style-type: decimal">
 <li>Work with any backend.</li>
@@ -129,18 +129,18 @@ should:</p>
 <li>
 <code>numeric</code> and <code>logical</code> R arrays</li>
 <li>
-<code>AnvilArray</code>s</li>
+<code>AnvlArray</code>s</li>
 </ol>
 </li>
-<li>Always output <code>AnvilArray</code>s</li>
+<li>Always output <code>AnvlArray</code>s</li>
 </ol>
 <div class="section level2">
 <h2 id="work-with-any-backend">1. Work with any backend<a class="anchor" aria-label="anchor" href="#work-with-any-backend"></a>
 </h2>
-<p>The first requirement means that a user of the {anvil} package should
-be able to use an {anvil} function with <code>AnvilArray</code>s from
-both the <em>xla</em> and the <em>quickr</em> backend. When you are just
-calling into other anvil primitives or correctly created API functions,
+<p>The first requirement means that a user of the {anvl} package should
+be able to use an {anvl} function with <code>AnvlArray</code>s from both
+the <em>xla</em> and the <em>quickr</em> backend. When you are just
+calling into other anvl primitives or correctly created API functions,
 there is nothing to take care of. This requirement is only relevant,
 when the API function is <code><a href="../reference/jit.html">jit()</a></code>ted (or internally calls into
 such a function). For example, we might want to add an API function that
@@ -148,15 +148,15 @@ adds three to a tensor and jit the function. By setting the
 <code>backend</code> argument to <code>"auto"</code>, we can use it with
 both backends:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvl/">anvl</a></span><span class="op">)</span></span>
 <span><span class="va">nv_add_three_good</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="fl">3</span>, backend <span class="op">=</span> <span class="st">"auto"</span><span class="op">)</span></span>
-<span><span class="fu">nv_add_three_good</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, backend <span class="op">=</span> <span class="st">"xla"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="fu">nv_add_three_good</span><span class="op">(</span><span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, backend <span class="op">=</span> <span class="st">"xla"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  4</span></span>
 <span><span class="co">#&gt; [ CPUf32{} ]</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">nv_add_three_good</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, backend <span class="op">=</span> <span class="st">"quickr"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<code class="sourceCode R"><span><span class="fu">nv_add_three_good</span><span class="op">(</span><span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, backend <span class="op">=</span> <span class="st">"quickr"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt; [1] 4</span></span>
 <span><span class="co">#&gt; [ CPUf64{} ]</span></span></code></pre></div>
 <p>Otherwise, the function would fail in eager mode when provided with
@@ -164,11 +164,11 @@ an input from a different backend.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nv_add_three_bad</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">nv_add_three_bad</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, backend <span class="op">=</span> <span class="st">"quickr"</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu">nv_add_three_bad</span><span class="op">(</span><span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, backend <span class="op">=</span> <span class="st">"quickr"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `check_single_backend()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> Cannot compile a <span style="color: #0000BB;">"xla"</span> program with inputs from other backends.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Found arrays from backend <span style="color: #0000BB;">"quickr"</span>.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> anvil does not support mixing backends in a single compiled program.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> anvl does not support mixing backends in a single compiled program.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Ensure all inputs and closed-over constants use the <span style="color: #0000BB;">"xla"</span> backend.</span></span></code></pre></div>
 <p>Special care must also be taken when creating constants. It needs to
 be ensured that the constant is created on the correct device and for
@@ -177,12 +177,12 @@ function, the default backend is used, which means it won’t work with
 non-default backends:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nv_add_const_bad</span> <span class="op">&lt;-</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">three</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
+<span>  <span class="va">three</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
 <span>  <span class="va">three</span> <span class="op">+</span> <span class="va">x</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">nv_add_const_bad</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, backend <span class="op">=</span> <span class="st">"quickr"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `as_anvil_arrays()`:</span></span></span>
+<code class="sourceCode R"><span><span class="fu">nv_add_const_bad</span><span class="op">(</span><span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, backend <span class="op">=</span> <span class="st">"quickr"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `as_anvl_arrays()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> Found inputs from multiple backends.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Found backends <span style="color: #0000BB;">"xla"</span> and <span style="color: #0000BB;">"quickr"</span>.</span></span></code></pre></div>
 <p>If the API function was <code>jit</code>ted, than there would be no
@@ -191,8 +191,8 @@ can be inferred from the context, so all we have to do is set
 <code>backend = "auto"</code>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nv_add_const_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">nv_add_const_bad</span>, backend <span class="op">=</span> <span class="st">"auto"</span><span class="op">)</span></span>
-<span><span class="fu">nv_add_const_jit</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, backend <span class="op">=</span> <span class="st">"xla"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="fu">nv_add_const_jit</span><span class="op">(</span><span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1</span>, backend <span class="op">=</span> <span class="st">"xla"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  4</span></span>
 <span><span class="co">#&gt; [ CPUf32{} ]</span></span></code></pre></div>
 <p>If we don’t want to JIT the API function, then we need to pass the
@@ -203,25 +203,24 @@ attributes of the provided example as defaults for <code>dtype</code>,
 <code>ambiguous</code>:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nv_add_const_eager</span> <span class="op">&lt;-</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">three</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span>like <span class="op">=</span> <span class="va">x</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span>  <span class="va">three</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span>like <span class="op">=</span> <span class="va">x</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span>  <span class="va">x</span> <span class="op">+</span> <span class="va">three</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>The <code>nv_&lt;op&gt;_like</code> form is also the correct way to
 create constants that live on the <em>same device</em> as an arrayish
 input. Calling <code><a href="../reference/device.html">device()</a></code> directly on the input would work
-for a concrete <code>AnvilArray</code>, but under <code><a href="../reference/jit.html">jit()</a></code>
-that same input is a <code>GraphBox</code> — and <code><a href="../reference/device.html">device()</a></code>
-on a <code>GraphBox</code> raises an error (tracing has no concrete
-device; jit handles placement at the input/output boundary).
-Compare:</p>
+for a concrete <code>AnvlArray</code>, but under <code><a href="../reference/jit.html">jit()</a></code> that
+same input is a <code>GraphBox</code> — and <code><a href="../reference/device.html">device()</a></code> on a
+<code>GraphBox</code> raises an error (tracing has no concrete device;
+jit handles placement at the input/output boundary). Compare:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># BAD: errors under jit() because `device(x)` is not defined for a GraphBox</span></span>
 <span><span class="va">nv_tril_bad</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">zeros</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_fill.html">nv_fill</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="../reference/shape.html">shape</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="fu"><a href="../reference/dtype.html">dtype</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, device <span class="op">=</span> <span class="fu"><a href="../reference/device.html">device</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="../reference/nv_ifelse.html">nv_ifelse</a></span><span class="op">(</span><span class="va">x</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="va">x</span>, <span class="va">zeros</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">nv_tril_bad</span><span class="op">)</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="op">-</span><span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">nv_tril_bad</span><span class="op">)</span><span class="op">(</span><span class="fu"><a href="../reference/AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="op">-</span><span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  0 0</span></span>
 <span><span class="co">#&gt;  2 4</span></span>
 <span><span class="co">#&gt; [ CPUf32{2,2} ]</span></span></code></pre></div>
@@ -231,8 +230,8 @@ Compare:</p>
 <span><span class="va">nv_tril_good</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/nv_ifelse.html">nv_ifelse</a></span><span class="op">(</span><span class="va">x</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="va">x</span>, <span class="fu"><a href="../reference/nv_fill.html">nv_fill_like</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">nv_tril_good</span><span class="op">)</span><span class="op">(</span><span class="fu"><a href="../reference/AnvilArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="op">-</span><span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="va">nv_tril_good</span><span class="op">)</span><span class="op">(</span><span class="fu"><a href="../reference/AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="op">-</span><span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  0 0</span></span>
 <span><span class="co">#&gt;  2 4</span></span>
 <span><span class="co">#&gt; [ CPUf32{2,2} ]</span></span></code></pre></div>
@@ -241,24 +240,23 @@ Compare:</p>
 <h2 id="input-conversion">2. Input conversion<a class="anchor" aria-label="anchor" href="#input-conversion"></a>
 </h2>
 <p>API functions accept R literals (length-1 vectors, R arrays),
-<code>AnvilArray</code>s, and (during tracing) graph boxes. Primitives
+<code>AnvlArray</code>s, and (during tracing) graph boxes. Primitives
 handle all of these, but having the same arrayish value arrive as three
 different R types makes the API function body awkward: every branch
 would have to re-check which case it is in. To keep the function body
 simple, we standardize at the top – after that, we can treat every
-argument as an <code>AnvilArray</code> (or a tracing box) without caring
-about the original R type. Anvil provides two helpers for this:</p>
+argument as an <code>AnvlArray</code> (or a tracing box) without caring
+about the original R type. Anvl provides two helpers for this:</p>
 <ul>
 <li>
-<code>as_anvil_array(x, device = NULL)</code> – use for API
-functions that take a <strong>single</strong> array input. It converts
-an R value to an <code>AnvilArray</code> on the given device (or the
-default device if <code>NULL</code>), and passes
-<code>AnvilArray</code>s through.</li>
+<code>as_anvl_array(x, device = NULL)</code> – use for API functions
+that take a <strong>single</strong> array input. It converts an R value
+to an <code>AnvlArray</code> on the given device (or the default device
+if <code>NULL</code>), and passes <code>AnvlArray</code>s through.</li>
 <li>
-<code>as_anvil_arrays(...)</code> – use for API functions with
+<code>as_anvl_arrays(...)</code> – use for API functions with
 <strong>multiple</strong> array inputs. It infers a common device from
-any concrete <code>AnvilArray</code> in <code>...</code>, places R
+any concrete <code>AnvlArray</code> in <code>...</code>, places R
 literals on that device, and errors if the concrete inputs live on
 different devices (or backends).</li>
 </ul>
@@ -270,7 +268,7 @@ when boxing constants.</p>
 </h3>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nv_expand</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">shape</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_anvil_array.html">as_anvil_array</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_anvl_array.html">as_anvl_array</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="../reference/shape.html">shape</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="va">shape</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
@@ -280,17 +278,17 @@ when boxing constants.</p>
 <div class="section level3">
 <h3 id="multiple-inputs">Multiple inputs<a class="anchor" aria-label="anchor" href="#multiple-inputs"></a>
 </h3>
-<p>Use <code><a href="../reference/as_anvil_array.html">as_anvil_arrays()</a></code> to normalize all arrayish inputs
-in one call:</p>
+<p>Use <code><a href="../reference/as_anvl_array.html">as_anvl_arrays()</a></code> to normalize all arrayish inputs in
+one call:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nv_add_scaled</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">alpha</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">args</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_anvil_array.html">as_anvil_arrays</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">alpha</span><span class="op">)</span></span>
+<span>  <span class="va">args</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_anvl_array.html">as_anvl_arrays</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">alpha</span><span class="op">)</span></span>
 <span>  <span class="va">args</span><span class="op">[[</span><span class="fl">1L</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="va">args</span><span class="op">[[</span><span class="fl">2L</span><span class="op">]</span><span class="op">]</span> <span class="op">*</span> <span class="va">args</span><span class="op">[[</span><span class="fl">3L</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="always-output-anvil-arrays">3. Always output anvil arrays<a class="anchor" aria-label="anchor" href="#always-output-anvil-arrays"></a>
+<h2 id="always-output-anvl-arrays">3. Always output anvl arrays<a class="anchor" aria-label="anchor" href="#always-output-anvl-arrays"></a>
 </h2>
 </div>
 <div class="section level2">

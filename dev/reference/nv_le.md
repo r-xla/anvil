@@ -13,21 +13,21 @@ nv_le(lhs, rhs)
 
 - lhs, rhs:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Left and right operand. Operands are [promoted to a common data
-  type](https://r-xla.github.io/anvil/dev/reference/nv_promote_to_common.md).
+  type](https://r-xla.github.io/anvl/dev/reference/nv_promote_to_common.md).
   Scalars are
-  [broadcast](https://r-xla.github.io/anvil/dev/reference/nv_broadcast_scalars.md)
+  [broadcast](https://r-xla.github.io/anvl/dev/reference/nv_broadcast_scalars.md)
   to the shape of the other operand.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same shape as the inputs and boolean data type.
 
 ## See also
 
-[`nvl_le()`](https://r-xla.github.io/anvil/dev/reference/nvl_le.md) for
+[`prim_le()`](https://r-xla.github.io/anvl/dev/reference/prim_le.md) for
 the underlying primitive.
 
 ## Examples
@@ -36,7 +36,7 @@ the underlying primitive.
 x <- nv_array(c(1, 2, 3))
 y <- nv_array(c(3, 2, 1))
 x <= y
-#> AnvilArray
+#> AnvlArray
 #>  1
 #>  1
 #>  0

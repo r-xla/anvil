@@ -19,7 +19,7 @@ nv_rbinom(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32")
 
 - initial_state:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   RNG state (`ui64[2]`).
 
 - n:
@@ -41,16 +41,16 @@ nv_rbinom(shape, initial_state, n = 1L, prob = 0.5, dtype = "i32")
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
 List of two elements: the updated RNG state and the sampled values.
 
 ## See also
 
 Other rng:
-[`nv_rdunif()`](https://r-xla.github.io/anvil/dev/reference/nv_rdunif.md),
-[`nv_rng_state()`](https://r-xla.github.io/anvil/dev/reference/nv_rng_state.md),
-[`nv_rnorm()`](https://r-xla.github.io/anvil/dev/reference/nv_rnorm.md),
-[`nv_runif()`](https://r-xla.github.io/anvil/dev/reference/nv_runif.md)
+[`nv_rdunif()`](https://r-xla.github.io/anvl/dev/reference/nv_rdunif.md),
+[`nv_rng_state()`](https://r-xla.github.io/anvl/dev/reference/nv_rng_state.md),
+[`nv_rnorm()`](https://r-xla.github.io/anvl/dev/reference/nv_rnorm.md),
+[`nv_runif()`](https://r-xla.github.io/anvl/dev/reference/nv_runif.md)
 
 ## Examples
 
@@ -59,7 +59,7 @@ state <- nv_rng_state(42L)
 # Bernoulli samples
 result <- nv_rbinom(c(2, 3), state)
 result[[2]]
-#> AnvilArray
+#> AnvlArray
 #>  0 0 1
 #>  0 1 1
 #> [ CPUi32{2,3} ] 

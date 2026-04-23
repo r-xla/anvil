@@ -14,7 +14,7 @@ nv_cholesky(a, lower = TRUE)
 
 - a:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Symmetric positive-definite matrix with at least 2 dimensions. The
   last two dimensions form the square matrix; any leading dimensions are
   batch dimensions.
@@ -28,20 +28,20 @@ nv_cholesky(a, lower = TRUE)
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Triangular matrix with the same shape and data type as the input.
 
 ## See also
 
-[`nv_solve()`](https://r-xla.github.io/anvil/dev/reference/nv_solve.md),
-[`nvl_cholesky()`](https://r-xla.github.io/anvil/dev/reference/nvl_cholesky.md)
+[`nv_solve()`](https://r-xla.github.io/anvl/dev/reference/nv_solve.md),
+[`prim_cholesky()`](https://r-xla.github.io/anvl/dev/reference/prim_cholesky.md)
 
 ## Examples
 
 ``` r
 a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
 nv_cholesky(a)
-#> AnvilArray
+#> AnvlArray
 #>  2.0000 0.0000
 #>  1.0000 1.4142
 #> [ CPUf32{2,2} ] 

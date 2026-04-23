@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Framework for R code transformations • anvil</title>
+<title>Framework for R code transformations • anvl</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -24,7 +24,7 @@
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Framework for R code transformations">
 <meta name="description" content="Code transformation framework for R.">
 <meta property="og:description" content="Code transformation framework for R.">
-<meta property="og:image" content="https://r-xla.github.io/anvil/logo.svg">
+<meta property="og:image" content="https://r-xla.github.io/anvl/logo.svg">
 <meta name="robots" content="noindex">
 </head>
 <body>
@@ -33,7 +33,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="index.html">anvil</a>
+    <a class="navbar-brand me-2" href="index.html">anvl</a>
 
     <small class="nav-text text-default me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9000</small>
 
@@ -50,7 +50,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/installation.html">Installation</a></li>
-    <li><a class="dropdown-item" href="articles/anvil.html">Get Started</a></li>
+    <li><a class="dropdown-item" href="articles/anvl.html">Get Started</a></li>
     <li><a class="dropdown-item" href="articles/type-promotion.html">Type Promotion</a></li>
     <li><a class="dropdown-item" href="articles/subsetting.html">Subsetting</a></li>
     <li><a class="dropdown-item" href="articles/random-numbers.html">Random Number Generation</a></li>
@@ -79,7 +79,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvil/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvl/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
@@ -97,25 +97,25 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header">
-<img src="logo.svg" class="logo" alt=""><h1 id="anvil-">anvil <a class="anchor" aria-label="anchor" href="#anvil-"></a>
+<img src="logo.svg" class="logo" alt=""><h1 id="anvl-">anvl <a class="anchor" aria-label="anchor" href="#anvl-"></a>
 </h1>
 </div>
-<p>Package website: <a href="https://r-xla.github.io/anvil/">release</a> | <a href="https://r-xla.github.io/anvil/dev/">dev</a></p>
+<p>Package website: <a href="https://r-xla.github.io/anvl/">release</a> | <a href="https://r-xla.github.io/anvl/dev/">dev</a></p>
 <!-- badges: start -->
 
 <p>Composable code transformation framework for R, allowing you to run numerical programs at the speed of light. It currently implements JIT compilation for very fast execution and reverse-mode automatic differentiation. Programs can run on various hardware backends, including CPU and GPU.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>{anvil} can be installed from GitHub or <a href="https://r-xla.r-universe.dev/builds" class="external-link">r-universe</a>. During runtime, we require <code>libprotobuf</code>. Source installation requires a <code>C++20</code> compiler and <code>protoc</code> (protobuf compiler).</p>
+<p>{anvl}<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;A real anvil is a tool blacksmiths use to reshape metal; this package reshapes R code in a similar spirit. We spell the package name &lt;code&gt;anvl&lt;/code&gt; (without the &lt;code&gt;i&lt;/code&gt;) because &lt;code&gt;AnVIL&lt;/code&gt; is already taken by a Bioconductor package.&lt;/p&gt;"><sup>1</sup></a> can be installed from GitHub or <a href="https://r-xla.r-universe.dev/builds" class="external-link">r-universe</a>. During runtime, we require <code>libprotobuf</code>. Source installation requires a <code>C++20</code> compiler and <code>protoc</code> (protobuf compiler).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install release</span></span>
 <span><span class="co"># from r-universe (prebuilt binary)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"anvil"</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://cloud.r-project.org"</span>, <span class="st">"https://r-xla.r-universe.dev"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"anvl"</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://cloud.r-project.org"</span>, <span class="st">"https://r-xla.r-universe.dev"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># from GitHub (installation from source)</span></span>
-<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"r-xla/anvil@*release"</span><span class="op">)</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"r-xla/anvl@*release"</span><span class="op">)</span></span>
 <span><span class="co"># Install dev version</span></span>
-<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"r-xla/anvil"</span><span class="op">)</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"r-xla/anvl"</span><span class="op">)</span></span>
 <span><span class="co"># Install CUDA support (linux x86_64): only requires a compatible driver</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"cuda12.8"</span>, repos <span class="op">=</span> <span class="st">"https://mlverse.r-universe.dev"</span><span class="op">)</span></span></code></pre></div>
 <p>Prebuilt <a href="https://github.com/r-xla/docker" class="external-link">Docker images</a> are also available. See the <em>Installation</em> vignette on the package website for more details.</p>
@@ -123,20 +123,20 @@
 <div class="section level2">
 <h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<p>Below, we create an R function and <code><a href="reference/jit.html">jit()</a></code> it. Then, we call the resulting function on <code>AnvilArray</code>s, which will compile and subsequently execute it.</p>
+<p>Below, we create an R function and <code><a href="reference/jit.html">jit()</a></code> it. Then, we call the resulting function on <code>AnvlArray</code>s, which will compile and subsequently execute it.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvl/">anvl</a></span><span class="op">)</span></span>
 <span><span class="va">f</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">a</span> <span class="op">*</span> <span class="va">x</span> <span class="op">+</span> <span class="va">b</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">f_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jit.html">jit</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, <span class="st">"f32"</span><span class="op">)</span></span>
-<span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2.0</span>, <span class="st">"f32"</span><span class="op">)</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/AnvilArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">3.0</span>, <span class="st">"f32"</span><span class="op">)</span></span>
+<span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1.0</span>, <span class="st">"f32"</span><span class="op">)</span></span>
+<span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2.0</span>, <span class="st">"f32"</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">3.0</span>, <span class="st">"f32"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">f_jit</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">x</span><span class="op">)</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  1</span></span>
 <span><span class="co">#&gt; [ CPUf32{} ]</span></span></code></pre></div>
 <p>Through automatic differentiation, we can also obtain the gradient of the above function.</p>
@@ -144,12 +144,12 @@
 <code class="sourceCode R"><span><span class="va">g_jit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jit.html">jit</a></span><span class="op">(</span><span class="fu"><a href="reference/gradient.html">gradient</a></span><span class="op">(</span><span class="va">f</span>, wrt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">g_jit</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">x</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $a</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  3</span></span>
 <span><span class="co">#&gt; [ CPUf32{} ] </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  1</span></span>
 <span><span class="co">#&gt; [ CPUf32{} ]</span></span></code></pre></div>
 <p>For more complex examples, such as implementing a Gaussian Process, see the package website.</p>
@@ -247,11 +247,13 @@
 </ul>
 </div>
 </div>
+
+
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/r-xla/anvil/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/r-xla/anvil/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/r-xla/anvl/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/r-xla/anvl/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 
@@ -267,7 +269,7 @@
 <div class="citation">
 <h2 data-toc-skip>Citation</h2>
 <ul class="list-unstyled">
-<li><a href="authors.html#citation">Citing anvil</a></li>
+<li><a href="authors.html#citation">Citing anvl</a></li>
 </ul>
 </div>
 
@@ -284,9 +286,9 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
-<li><a href="https://CRAN.R-project.org/package=anvil" class="external-link"><img src="https://www.r-pkg.org/badges/version/anvil" alt="CRAN status"></a></li>
-<li><a href="https://codecov.io/gh/r-xla/anvil" class="external-link"><img src="https://codecov.io/gh/r-xla/anvil/branch/main/graph/badge.svg" alt="codecov"></a></li>
-<li><a href="https://r-xla.r-universe.dev/anvil" class="external-link"><img src="https://r-xla.r-universe.dev/badges/anvil" alt="r-universe"></a></li>
+<li><a href="https://CRAN.R-project.org/package=anvl" class="external-link"><img src="https://www.r-pkg.org/badges/version/anvl" alt="CRAN status"></a></li>
+<li><a href="https://codecov.io/gh/r-xla/anvl" class="external-link"><img src="https://codecov.io/gh/r-xla/anvl/branch/main/graph/badge.svg" alt="codecov"></a></li>
+<li><a href="https://r-xla.r-universe.dev/anvl" class="external-link"><img src="https://r-xla.r-universe.dev/badges/anvl" alt="r-universe"></a></li>
 </ul>
 </div>
 

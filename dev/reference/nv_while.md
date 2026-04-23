@@ -33,7 +33,7 @@ Final state after the loop terminates (same structure as `init`).
 
 ## See also
 
-[`nvl_while()`](https://r-xla.github.io/anvil/dev/reference/nvl_while.md)
+[`prim_while()`](https://r-xla.github.io/anvl/dev/reference/prim_while.md)
 for the underlying primitive.
 
 ## Examples
@@ -48,12 +48,12 @@ nv_while(
   )
 )
 #> $i
-#> AnvilArray
+#> AnvlArray
 #>  5
 #> [ CPUi32{} ] 
 #> 
 #> $total
-#> AnvilArray
+#> AnvlArray
 #>  10
 #> [ CPUi32{} ] 
 #> 

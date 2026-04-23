@@ -3,7 +3,7 @@
 Wraps a function so that it is traced and compiled on first call.
 Subsequent calls with the same input structure, shapes, and dtypes hit
 an LRU cache and skip recompilation. Unlike
-[`xla()`](https://r-xla.github.io/anvil/dev/reference/xla.md), the
+[`xla()`](https://r-xla.github.io/anvl/dev/reference/xla.md), the
 compiled executable is not created eagerly but lazily on the first
 invocation.
 
@@ -26,7 +26,7 @@ jit(
 
   (`function`)  
   Function to compile. Must accept and return
-  [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)s
+  [`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)s
   (and/or static arguments).
 
 - static:
@@ -49,19 +49,19 @@ jit(
   Compilation backend (e.g. `"xla"`, `"quickr"`). The special value
   `"auto"` defers backend selection to call-time. `NULL` (default)
   respects `device` and otherwise falls back to
-  [`default_backend()`](https://r-xla.github.io/anvil/dev/reference/default_backend.md).
+  [`default_backend()`](https://r-xla.github.io/anvl/dev/reference/default_backend.md).
 
 - device:
 
   (`NULL` \| `character(1)` \|
-  [`nv_device`](https://r-xla.github.io/anvil/dev/reference/nv_device.md)
+  [`nv_device`](https://r-xla.github.io/anvl/dev/reference/nv_device.md)
   \|
-  [`device_arg()`](https://r-xla.github.io/anvil/dev/reference/device_arg.md))  
+  [`device_arg()`](https://r-xla.github.io/anvl/dev/reference/device_arg.md))  
   Target device. When a concrete device is specified, all arrays are
   moved to it.
 
   The default (`NULL`) infers the device at call time, falling back to
-  [`default_device()`](https://r-xla.github.io/anvil/dev/reference/default_device.md).
+  [`default_device()`](https://r-xla.github.io/anvl/dev/reference/default_device.md).
 
   In order to use dynamic device selection with the `"auto"` backend
   (e.g. for functions without dynamic inputs such as constant creation),
@@ -78,9 +78,9 @@ jit(
 
 A `JitFunction` (a `function` with the same formals as `f`). The
 returned wrapper expects
-[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+[`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
 inputs and returns
-[`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+[`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
 values.
 
 ## Device and Backend selection
@@ -119,15 +119,15 @@ concrete backend, you can just specify the device via a static argument.
 
 - `unwrap` (`logical(1)`, default `FALSE`): if `TRUE`, the compiled
   function returns plain R arrays instead of
-  [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)s.
-  Useful when the jitted function's output is consumed by non-anvil R
+  [`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)s.
+  Useful when the jitted function's output is consumed by non-anvl R
   code and the extra wrapping would only get stripped again.
 
 ## See also
 
-[`xla()`](https://r-xla.github.io/anvil/dev/reference/xla.md) for
+[`xla()`](https://r-xla.github.io/anvl/dev/reference/xla.md) for
 ahead-of-time compilation,
-[`jit_eval()`](https://r-xla.github.io/anvil/dev/reference/jit_eval.md)
+[`jit_eval()`](https://r-xla.github.io/anvl/dev/reference/jit_eval.md)
 for evaluating an expression once.
 
 ## Examples
@@ -135,7 +135,7 @@ for evaluating an expression once.
 ``` r
 f <- jit(function(x, y) x + y)
 f(nv_array(1), nv_array(2))
-#> AnvilArray
+#> AnvlArray
 #>  3
 #> [ CPUf32{1} ] 
 
@@ -144,18 +144,18 @@ g <- jit(function(x, flag) {
   if (flag) x + 1 else x * 2
 }, static = "flag")
 g(nv_array(3), TRUE)
-#> AnvilArray
+#> AnvlArray
 #>  4
 #> [ CPUf32{1} ] 
 g(nv_array(3), FALSE)
-#> AnvilArray
+#> AnvlArray
 #>  6
 #> [ CPUf32{1} ] 
 with_backend("quickr", {
   h <- jit(function(x, y) x + y)
   h(nv_array(1), nv_array(2))
 })
-#> AnvilArray
+#> AnvlArray
 #> [1] 3
 #> [ CPUf64{1} ] 
 ```

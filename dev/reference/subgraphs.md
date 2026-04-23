@@ -17,5 +17,5 @@ subgraphs(call)
 
 ## Value
 
-(`list(AnvilGraph)`)  
+(`list(AnvlGraph)`)  
 List of subgraphs found in the parameters.

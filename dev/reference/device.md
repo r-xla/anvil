@@ -12,7 +12,7 @@ device(x, ...)
 
 - x:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   An array-like object.
 
 - ...:

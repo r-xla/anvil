@@ -7,9 +7,9 @@ Currently only lists are flattened and all other objects are treated as
 leaves.
 
 Use
-[`build_tree()`](https://r-xla.github.io/anvil/dev/reference/build_tree.md)
+[`build_tree()`](https://r-xla.github.io/anvl/dev/reference/build_tree.md)
 to capture the nesting structure so it can be restored with
-[`unflatten()`](https://r-xla.github.io/anvil/dev/reference/unflatten.md).
+[`unflatten()`](https://r-xla.github.io/anvl/dev/reference/unflatten.md).
 
 ## Usage
 
@@ -31,9 +31,9 @@ values.
 
 ## See also
 
-[`build_tree()`](https://r-xla.github.io/anvil/dev/reference/build_tree.md),
-[`unflatten()`](https://r-xla.github.io/anvil/dev/reference/unflatten.md),
-[`tree_size()`](https://r-xla.github.io/anvil/dev/reference/tree_size.md)
+[`build_tree()`](https://r-xla.github.io/anvl/dev/reference/build_tree.md),
+[`unflatten()`](https://r-xla.github.io/anvl/dev/reference/unflatten.md),
+[`tree_size()`](https://r-xla.github.io/anvl/dev/reference/tree_size.md)
 
 ## Examples
 

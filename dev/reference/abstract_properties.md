@@ -1,7 +1,7 @@
 # Abstract Properties
 
 Calls the extractor after converting the input to an
-[`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md).
+[`AbstractArray`](https://r-xla.github.io/anvl/dev/reference/AbstractArray.md).
 
 ## Usage
 
@@ -19,4 +19,4 @@ ambiguous_abstract(x)
 
 - x:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  

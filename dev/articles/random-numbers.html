@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Random Number Generation • anvil</title>
+<title>Random Number Generation • anvl</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -30,7 +30,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">anvil</a>
+    <a class="navbar-brand me-2" href="../index.html">anvl</a>
 
     <small class="nav-text text-default me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9000</small>
 
@@ -47,7 +47,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
-    <li><a class="dropdown-item" href="../articles/anvil.html">Get Started</a></li>
+    <li><a class="dropdown-item" href="../articles/anvl.html">Get Started</a></li>
     <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
     <li><a class="dropdown-item" href="../articles/subsetting.html">Subsetting</a></li>
     <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
@@ -76,7 +76,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvil/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvl/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
@@ -100,14 +100,14 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Random Number Generation</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/random-numbers.Rmd" class="external-link"><code>vignettes/random-numbers.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvl/blob/main/vignettes/random-numbers.Rmd" class="external-link"><code>vignettes/random-numbers.Rmd</code></a></small>
       <div class="d-none name"><code>random-numbers.Rmd</code></div>
     </div>
 
     
     
 <p>In this vignette, you will learn how to generate random numbers in
-{anvil}, which is different from base R, where random number generation
+{anvl}, which is different from base R, where random number generation
 uses a global state (<code>.Random.seed</code>) that is automatically
 updated after each call:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -122,8 +122,8 @@ updated after each call:</p>
 <span><span class="co">#&gt; [1]  0.6328626  0.4042683 -0.1061245</span></span>
 <span><span class="va">.Random.seed</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1]          12 -1577024373  1699409082</span></span></code></pre></div>
-<p>In {anvil}, the random state must be explicitly passed around. This
-is because we are following a functional programming paradigm where
+<p>In {anvl}, the random state must be explicitly passed around. This is
+because we are following a functional programming paradigm where
 functions are pure and don’t have side effects.</p>
 <p><strong>Note:</strong> This explicit state-passing behavior might
 change in the future to provide a more R-like experience, but for now
@@ -132,10 +132,10 @@ you need to manage the state yourself.</p>
 state, which is simply a <code>ui64[2]</code>. You can convert a seed
 into a state using <code><a href="../reference/nv_rng_state.html">nv_rng_state()</a></code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvl/">anvl</a></span><span class="op">)</span></span>
 <span><span class="va">state</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_rng_state.html">nv_rng_state</a></span><span class="op">(</span><span class="fl">42L</span><span class="op">)</span></span>
 <span><span class="va">state</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  42</span></span>
 <span><span class="co">#&gt;   0</span></span>
 <span><span class="co">#&gt; [ CPUui64{2} ]</span></span></code></pre></div>
@@ -156,12 +156,12 @@ number generation).</li>
 <span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">f</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
 <span><span class="va">result</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>  <span class="co"># new state</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  42</span></span>
 <span><span class="co">#&gt;   3</span></span>
 <span><span class="co">#&gt; [ CPUui64{2} ]</span></span>
 <span><span class="va">result</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>  <span class="co"># random numbers</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  0.8690 0.1506 0.5203</span></span>
 <span><span class="co">#&gt;  0.3103 0.9928 0.1065</span></span>
 <span><span class="co">#&gt; [ CPUf32{2,3} ]</span></span></code></pre></div>
@@ -173,7 +173,7 @@ number generation).</li>
 <span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">g</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
 <span><span class="va">result</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  -0.0675  0.9489  1.9457</span></span>
 <span><span class="co">#&gt;  -0.5255  1.2002  0.0008</span></span>
 <span><span class="co">#&gt; [ CPUf32{2,3} ]</span></span></code></pre></div>
@@ -188,14 +188,14 @@ done in the example below:</p>
 <span></span>
 <span><span class="fu">h</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $first</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  0.8690</span></span>
 <span><span class="co">#&gt;  0.3103</span></span>
 <span><span class="co">#&gt;  0.1506</span></span>
 <span><span class="co">#&gt; [ CPUf32{3} ] </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $second</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  0.8690</span></span>
 <span><span class="co">#&gt;  0.3103</span></span>
 <span><span class="co">#&gt;  0.1506</span></span>
@@ -214,14 +214,14 @@ returned by the previous call:</p>
 <span></span>
 <span><span class="fu">proper_rng</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $first</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  0.8690</span></span>
 <span><span class="co">#&gt;  0.3103</span></span>
 <span><span class="co">#&gt;  0.1506</span></span>
 <span><span class="co">#&gt; [ CPUf32{3} ] </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $second</span></span>
-<span><span class="co">#&gt; AnvilArray</span></span>
+<span><span class="co">#&gt; AnvlArray</span></span>
 <span><span class="co">#&gt;  0.5203</span></span>
 <span><span class="co">#&gt;  0.1065</span></span>
 <span><span class="co">#&gt;  0.2499</span></span>

@@ -1,7 +1,7 @@
 # Subsetting
 
-In this vignette, you will learn how to subset arrays in {anvil} and how
-to update subsets. Because array shapes in {anvil} programs are static,
+In this vignette, you will learn how to subset arrays in {anvl} and how
+to update subsets. Because array shapes in {anvl} programs are static,
 only certain subsetting operations are supported and they come with some
 surprises.
 
@@ -21,7 +21,7 @@ would be unknown (what’s the size of `a:b` where `a` and `b` are
 unknown?). Boolean masks are not supported, because the output shape
 depends on the data, which is not known at compile time. If you want to
 modify arrays based on a mask, see
-[`nv_ifelse()`](https://r-xla.github.io/anvil/dev/reference/nv_ifelse.md).
+[`nv_ifelse()`](https://r-xla.github.io/anvl/dev/reference/nv_ifelse.md).
 Negative indexing (e.g., `x[-1]` to exclude elements) is currently also
 not supported. For static values, this will throw an error, for dynamic
 values, it will be clamped to the valid range. If you are missing a
@@ -38,12 +38,12 @@ from a 1-dimension array. The index can be either static or dynamic and
 we can drop or keep the dimension:
 
 ``` r
-library(anvil)
+library(anvl)
 x <- nv_array(1:10)
 x
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##   1
     ##   2
     ##   3
@@ -62,7 +62,7 @@ x
   x[2]
   ```
 
-      ## AnvilArray
+      ## AnvlArray
       ##  2
       ## [ CPUi32{} ]
 
@@ -72,7 +72,7 @@ x
   x[array(2L)]
   ```
 
-      ## AnvilArray
+      ## AnvlArray
       ##  2
       ## [ CPUi32{} ]
 
@@ -82,7 +82,7 @@ x
   x[nv_scalar(2L)]
   ```
 
-      ## AnvilArray
+      ## AnvlArray
       ##  2
       ## [ CPUi32{} ]
 
@@ -99,7 +99,7 @@ x
   x[nv_array(2L)]
   ```
 
-      ## AnvilArray
+      ## AnvlArray
       ##  2
       ## [ CPUi32{1} ]
 
@@ -112,7 +112,7 @@ between static and dynamic indices.
   x[array(c(2, 4, 6))]
   ```
 
-      ## AnvilArray
+      ## AnvlArray
       ##  2
       ##  4
       ##  6
@@ -124,7 +124,7 @@ between static and dynamic indices.
   x[nv_array(c(2L, 4L, 6L))]
   ```
 
-      ## AnvilArray
+      ## AnvlArray
       ##  2
       ##  4
       ##  6
@@ -138,13 +138,13 @@ parameter.
 
 We can also use a range that can be specified either canonically via
 `a:b` or using
-[`nv_seq()`](https://r-xla.github.io/anvil/dev/reference/nv_seq.md).
+[`nv_seq()`](https://r-xla.github.io/anvl/dev/reference/nv_seq.md).
 
 ``` r
 x[2:5]
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##  2
     ##  3
     ##  4
@@ -155,7 +155,7 @@ x[2:5]
 x[nv_seq(2, 5)]
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##  2
     ##  3
     ##  4
@@ -173,7 +173,7 @@ specification altogether.
 x[]
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##   1
     ##   2
     ##   3
@@ -195,7 +195,7 @@ x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
 x
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##   1  2  3  4
     ##   5  6  7  8
     ##   9 10 11 12
@@ -207,7 +207,7 @@ Combining subsets just works like one would expect.
 x[1, ]
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##  1
     ##  2
     ##  3
@@ -218,7 +218,7 @@ x[1, ]
 x[1, 2]
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##  2
     ## [ CPUi32{} ]
 
@@ -226,7 +226,7 @@ x[1, 2]
 x[array(1), 2:3]
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##  2
     ##  3
     ## [ CPUi32{2} ]
@@ -235,7 +235,7 @@ x[array(1), 2:3]
 x[array(c(1, 3)), 2:3]
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##   2  3
     ##  10 11
     ## [ CPUi32{2,2} ]
@@ -244,7 +244,7 @@ x[array(c(1, 3)), 2:3]
 x[1:2, 2:3]
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##  2 3
     ##  6 7
     ## [ CPUi32{2,2} ]
@@ -253,7 +253,7 @@ x[1:2, 2:3]
 x[1, 2:3]
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##  2
     ##  3
     ## [ CPUi32{2} ]
@@ -262,7 +262,7 @@ x[1, 2:3]
 x[array(c(2, 2)), ]
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##  5 6 7 8
     ##  5 6 7 8
     ## [ CPUi32{2,4} ]
@@ -271,7 +271,7 @@ x[array(c(2, 2)), ]
 x[array(c(2, 2))]
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##  5 6 7 8
     ##  5 6 7 8
     ## [ CPUi32{2,4} ]
@@ -280,14 +280,14 @@ x[array(c(2, 2))]
 
 If one specifies out-of-bounds indices, we can only throw an error if
 the indices are static (we know them at compile time), as the XLA
-backend that {anvil} compiles to, does not throw errors when using
+backend that {anvl} compiles to, does not throw errors when using
 out-of-bounds indices, but instead clamps them to the valid range:
 
 ``` r
 x[nv_array(-1L), nv_array(100L)]
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##  4
     ## [ CPUi32{1,1} ]
 
@@ -295,7 +295,7 @@ x[nv_array(-1L), nv_array(100L)]
 x[nv_array(1L), nv_array(4L)]
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##  4
     ## [ CPUi32{1,1} ]
 
@@ -311,7 +311,7 @@ write must either have the shape of the subset, or be a scalar.
 x
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##   1  2  3  4
     ##   5  6  7  8
     ##   9 10 11 12
@@ -322,7 +322,7 @@ x[, 3] <- nv_array(-(1:3))
 x
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##   1  2 -1  4
     ##   5  6 -2  8
     ##   9 10 -3 12
@@ -334,7 +334,7 @@ x[, 3] <- -99L
 x
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##    1   2 -99   4
     ##    5   6 -99   8
     ##    9  10 -99  12
@@ -355,7 +355,7 @@ x[, 3] <- nv_array(c(1.5, 2.5, 3.5))
 x
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##   1  2  3  4
     ##   5  6  7  8
     ##   9 10 11 12
@@ -373,7 +373,7 @@ x[nv_array(c(1L, 100L, 3L))] <- nv_array(c(-1L, -2L, -3L))
 x
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##  -1
     ##   2
     ##  -3
@@ -396,7 +396,7 @@ x[array(c(1L, 1L, 1L))] <- nv_array(c(10L, 20L, 30L))
 x
 ```
 
-    ## AnvilArray
+    ## AnvlArray
     ##  30
     ##   2
     ##   3

@@ -1,7 +1,7 @@
 # Graph Descriptor
 
 Descriptor of an
-[`AnvilGraph`](https://r-xla.github.io/anvil/dev/reference/AnvilGraph.md).
+[`AnvlGraph`](https://r-xla.github.io/anvl/dev/reference/AnvlGraph.md).
 This is a mutable class.
 
 ## Usage
@@ -32,7 +32,7 @@ GraphDescriptor(
 - tensor_to_gval:
 
   (`hashtab`)  
-  Mapping: `AnvilArray` -\> `GraphValue`
+  Mapping: `AnvlArray` -\> `GraphValue`
 
 - gval_to_box:
 

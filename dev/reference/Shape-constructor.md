@@ -21,7 +21,7 @@ A `Shape` object.
 
 ## See also
 
-[`shape()`](https://r-xla.github.io/anvil/dev/reference/shape.md),
+[`shape()`](https://r-xla.github.io/anvl/dev/reference/shape.md),
 [`stablehlo::Shape()`](https://r-xla.github.io/stablehlo/reference/Shape.html)
 
 ## Examples

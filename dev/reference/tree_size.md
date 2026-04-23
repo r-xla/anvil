@@ -2,7 +2,7 @@
 
 Counts the number of leaf nodes in a tree. This equals the length of the
 flat list produced by
-[`flatten()`](https://r-xla.github.io/anvil/dev/reference/flatten.md) on
+[`flatten()`](https://r-xla.github.io/anvl/dev/reference/flatten.md) on
 the original structure.
 
 ## Usage
@@ -17,7 +17,7 @@ tree_size(x)
 
   (`Node`)  
   A tree node as returned by
-  [`build_tree()`](https://r-xla.github.io/anvil/dev/reference/build_tree.md).
+  [`build_tree()`](https://r-xla.github.io/anvl/dev/reference/build_tree.md).
 
 ## Value
 
@@ -25,8 +25,8 @@ A scalar `integer`.
 
 ## See also
 
-[`build_tree()`](https://r-xla.github.io/anvil/dev/reference/build_tree.md),
-[`flatten()`](https://r-xla.github.io/anvil/dev/reference/flatten.md)
+[`build_tree()`](https://r-xla.github.io/anvl/dev/reference/build_tree.md),
+[`flatten()`](https://r-xla.github.io/anvl/dev/reference/flatten.md)
 
 ## Examples
 

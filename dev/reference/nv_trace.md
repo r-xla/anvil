@@ -12,25 +12,25 @@ nv_trace(operand)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 A scalar with the same data type as `operand`.
 
 ## See also
 
-[`nv_extract_diag()`](https://r-xla.github.io/anvil/dev/reference/nv_extract_diag.md),
-[`nv_diag()`](https://r-xla.github.io/anvil/dev/reference/nv_diag.md)
+[`nv_extract_diag()`](https://r-xla.github.io/anvl/dev/reference/nv_extract_diag.md),
+[`nv_diag()`](https://r-xla.github.io/anvl/dev/reference/nv_diag.md)
 
 ## Examples
 
 ``` r
 x <- nv_array(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))
 nv_trace(x)
-#> AnvilArray
+#> AnvlArray
 #>  6
 #> [ CPUf32{} ] 
 ```

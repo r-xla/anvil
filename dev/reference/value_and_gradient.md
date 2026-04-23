@@ -17,7 +17,7 @@ value_and_gradient(f, wrt = NULL)
 
   (`function`)  
   Function to differentiate. Arguments can be arrayish
-  ([`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md))
+  ([`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md))
   or static (non-array) values. Must return a single scalar float array.
 
 - wrt:
@@ -36,7 +36,7 @@ A function with the same formals as `f` that returns
 
 ## See also
 
-[`gradient()`](https://r-xla.github.io/anvil/dev/reference/gradient.md)
+[`gradient()`](https://r-xla.github.io/anvl/dev/reference/gradient.md)
 
 ## Examples
 
@@ -45,12 +45,12 @@ loss_fn <- function(x) sum(x^2L)
 vg <- jit(value_and_gradient(loss_fn))
 result <- vg(nv_array(c(3, 4), dtype = "f32"))
 result$value
-#> AnvilArray
+#> AnvlArray
 #>  25
 #> [ CPUf32{} ] 
 result$grad
 #> $x
-#> AnvilArray
+#> AnvlArray
 #>  6
 #>  8
 #> [ CPUf32{2} ] 

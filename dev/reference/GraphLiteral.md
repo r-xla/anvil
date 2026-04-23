@@ -1,7 +1,7 @@
 # Graph Literal
 
 Literal in an
-[`AnvilGraph`](https://r-xla.github.io/anvil/dev/reference/AnvilGraph.md).
+[`AnvlGraph`](https://r-xla.github.io/anvl/dev/reference/AnvlGraph.md).
 This is a mutable class.
 
 ## Usage
@@ -14,7 +14,7 @@ GraphLiteral(aval)
 
 - aval:
 
-  ([`LiteralArray`](https://r-xla.github.io/anvil/dev/reference/LiteralArray.md))  
+  ([`LiteralArray`](https://r-xla.github.io/anvl/dev/reference/LiteralArray.md))  
   The value of the literal.
 
 ## Value

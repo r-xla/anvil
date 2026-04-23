@@ -2,12 +2,12 @@
 
 Executes `f` with abstract array arguments and records every primitive
 operation into an
-[`AnvilGraph`](https://r-xla.github.io/anvil/dev/reference/AnvilGraph.md).
+[`AnvlGraph`](https://r-xla.github.io/anvl/dev/reference/AnvlGraph.md).
 
 The resulting graph can be lowered to StableHLO (via
-[`stablehlo()`](https://r-xla.github.io/anvil/dev/reference/stablehlo.md))
+[`stablehlo()`](https://r-xla.github.io/anvl/dev/reference/stablehlo.md))
 or transformed (e.g. via
-[`transform_gradient()`](https://r-xla.github.io/anvil/dev/reference/transform_gradient.md)).
+[`transform_gradient()`](https://r-xla.github.io/anvl/dev/reference/transform_gradient.md)).
 
 ## Usage
 
@@ -34,9 +34,9 @@ trace_fn(
 - args:
 
   (`list` of
-  ([`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  ([`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
   \|
-  [`AbstractArray`](https://r-xla.github.io/anvil/dev/reference/AbstractArray.md)))  
+  [`AbstractArray`](https://r-xla.github.io/anvl/dev/reference/AbstractArray.md)))  
   The (unflattened) arguments to the function. Mutually exclusive with
   the `args_flat`/`in_tree` pair.
 
@@ -50,7 +50,7 @@ trace_fn(
 
   (`logical(1)`)  
   If `TRUE`, concrete
-  [`AnvilArray`](https://r-xla.github.io/anvil/dev/reference/AnvilArray.md)
+  [`AnvlArray`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
   inputs are treated as unknown (traced) values. If `FALSE` (default),
   they are treated as known constants.
 
@@ -74,15 +74,15 @@ trace_fn(
 ## Value
 
 An
-[`AnvilGraph`](https://r-xla.github.io/anvil/dev/reference/AnvilGraph.md)
+[`AnvlGraph`](https://r-xla.github.io/anvl/dev/reference/AnvlGraph.md)
 containing the traced operations.
 
 ## See also
 
-[`stablehlo()`](https://r-xla.github.io/anvil/dev/reference/stablehlo.md)
+[`stablehlo()`](https://r-xla.github.io/anvl/dev/reference/stablehlo.md)
 to lower the graph,
-[`jit()`](https://r-xla.github.io/anvil/dev/reference/jit.md) /
-[`xla()`](https://r-xla.github.io/anvil/dev/reference/xla.md) for
+[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md) /
+[`xla()`](https://r-xla.github.io/anvl/dev/reference/xla.md) for
 end-to-end compilation.
 
 ## Examples
@@ -92,7 +92,7 @@ graph <- trace_fn(function(x, y) x + y,
   args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32"))
 )
 graph
-#> <AnvilGraph>
+#> <AnvlGraph>
 #>   Inputs:
 #>     %x1: f32[1]
 #>     %x2: f32[1]

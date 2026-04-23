@@ -13,7 +13,7 @@ nv_triu(operand, diagonal = 0L)
 
 - operand:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Operand.
 
 - diagonal:
@@ -24,19 +24,19 @@ nv_triu(operand, diagonal = 0L)
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same shape and data type as `operand`.
 
 ## See also
 
-[`nv_tril()`](https://r-xla.github.io/anvil/dev/reference/nv_tril.md)
+[`nv_tril()`](https://r-xla.github.io/anvl/dev/reference/nv_tril.md)
 
 ## Examples
 
 ``` r
 x <- nv_fill(1, c(3, 3))
 nv_triu(x)
-#> AnvilArray
+#> AnvlArray
 #>  1 1 1
 #>  0 1 1
 #>  0 0 1

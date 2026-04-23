@@ -8,7 +8,7 @@ Permutes the dimensions of an array. You can also use
 ``` r
 nv_transpose(x, permutation = NULL)
 
-# S3 method for class 'AnvilBox'
+# S3 method for class 'AnvlBox'
 t(x)
 ```
 
@@ -16,7 +16,7 @@ t(x)
 
 - x:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Array to transpose.
 
 - permutation:
@@ -27,12 +27,12 @@ t(x)
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
 
 ## See also
 
-[`nvl_transpose()`](https://r-xla.github.io/anvil/dev/reference/nvl_transpose.md)
+[`prim_transpose()`](https://r-xla.github.io/anvl/dev/reference/prim_transpose.md)
 for the underlying primitive.
 
 ## Examples
@@ -40,7 +40,7 @@ for the underlying primitive.
 ``` r
 x <- nv_array(matrix(1:6, nrow = 2))
 t(x)
-#> AnvilArray
+#> AnvlArray
 #>  1 2
 #>  3 4
 #>  5 6

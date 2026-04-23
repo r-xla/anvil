@@ -17,7 +17,7 @@ filter_list_node(tree, names)
 
   (`ListNode`)  
   A named list node as returned by
-  [`build_tree()`](https://r-xla.github.io/anvil/dev/reference/build_tree.md).
+  [`build_tree()`](https://r-xla.github.io/anvl/dev/reference/build_tree.md).
 
 - names:
 
@@ -31,9 +31,9 @@ leaves.
 
 ## See also
 
-[`build_tree()`](https://r-xla.github.io/anvil/dev/reference/build_tree.md),
-[`reindex_tree()`](https://r-xla.github.io/anvil/dev/reference/reindex_tree.md),
-[`unflatten()`](https://r-xla.github.io/anvil/dev/reference/unflatten.md)
+[`build_tree()`](https://r-xla.github.io/anvl/dev/reference/build_tree.md),
+[`reindex_tree()`](https://r-xla.github.io/anvl/dev/reference/reindex_tree.md),
+[`unflatten()`](https://r-xla.github.io/anvl/dev/reference/unflatten.md)
 
 ## Examples
 

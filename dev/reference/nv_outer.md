@@ -12,12 +12,12 @@ nv_outer(x, y)
 
 - x, y:
 
-  ([`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   1-D arrays.
 
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvil/dev/reference/arrayish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
 A 2-D array of shape `(length(x), length(y))`.
 
 ## Examples
@@ -26,7 +26,7 @@ A 2-D array of shape `(length(x), length(y))`.
 x <- nv_array(c(1, 2, 3))
 y <- nv_array(c(4, 5))
 nv_outer(x, y)
-#> AnvilArray
+#> AnvlArray
 #>   4  5
 #>   8 10
 #>  12 15
