@@ -62,7 +62,7 @@ jobs:
     needs: R-CMD-check
     runs-on: ['self-hosted', 'gpu']
     container:
-      image: 'sebffischer/anvil-cuda-base:latest'
+      image: 'sebffischer/anvl-cuda-base:latest'
       options: '--gpus all --runtime=nvidia'
 
     name: ubuntu - cuda (release)

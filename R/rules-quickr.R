@@ -1409,7 +1409,7 @@ quickr_emit_reshape <- function(out_sym, operand_expr, shape_in, shape_out, out_
 # Primitive lowering registry ---------------------------------------------------
 
 quickr_register_prim_lowerer <- function(primitive, fun) {
-  primitives <- if (inherits(primitive, "AnvilPrimitive") || inherits(primitive, "JitPrimitive")) {
+  primitives <- if (inherits(primitive, "AnvlPrimitive") || inherits(primitive, "JitPrimitive")) {
     list(primitive)
   } else {
     primitive
@@ -1480,7 +1480,7 @@ quickr_lower_graph_calls <- function(graph, ctx) {
 
 quickr_lower_inline_graph <- function(graph, input_exprs, ctx) {
   if (!is_graph(graph)) {
-    cli_abort("{.arg graph} must be a {.cls AnvilGraph}")
+    cli_abort("{.arg graph} must be a {.cls AnvlGraph}")
   }
   node_expr <- ctx$node_expr
 
@@ -2239,7 +2239,7 @@ graph_to_quickr_r_fun_impl <- function(graph, include_declare = TRUE) {
   include_declare <- as.logical(include_declare)
 
   if (!is_graph(graph)) {
-    cli_abort("{.arg graph} must be a {.cls AnvilGraph}")
+    cli_abort("{.arg graph} must be a {.cls AnvlGraph}")
   }
   if (is.null(graph$in_tree) || is.null(graph$out_tree)) {
     cli_abort("{.arg graph} must have non-NULL {.field in_tree} and {.field out_tree}")
@@ -2248,17 +2248,17 @@ graph_to_quickr_r_fun_impl <- function(graph, include_declare = TRUE) {
   user_arg_names <- quickr_user_arg_names(length(graph$inputs))
   n_const <- length(graph$constants)
   const_arg_names <- if (n_const) {
-    paste0("anvil_const", seq_len(n_const))
+    paste0("anvl_const", seq_len(n_const))
   } else {
     character()
   }
   all_arg_names <- c(user_arg_names, const_arg_names)
 
-  prefix <- "anvil_quickr_"
+  prefix <- "anvl_quickr_"
   prefix_i <- 0L
   while (any(grepl(prefix, all_arg_names, fixed = TRUE))) {
     prefix_i <- prefix_i + 1L
-    prefix <- paste0("anvil_quickr", prefix_i, "_")
+    prefix <- paste0("anvl_quickr", prefix_i, "_")
   }
 
   supported_prims <- quickr_supported_prims()

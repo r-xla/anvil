@@ -1,6 +1,6 @@
-test_that("AnvilPrimitive basics", {
-  p <- AnvilPrimitive("abc")
-  expect_class(p, "AnvilPrimitive")
+test_that("AnvlPrimitive basics", {
+  p <- AnvlPrimitive("abc")
+  expect_class(p, "AnvlPrimitive")
   expect_equal(p$name, "abc")
   expect_snapshot(p)
 })
@@ -48,8 +48,8 @@ test_that("new_primitive respects register = FALSE", {
   expect_false(exists("np_unregistered", envir = primitive_env, inherits = FALSE))
 })
 
-test_that("JitPrimitive [[ delegates to attached AnvilPrimitive", {
-  p <- AnvilPrimitive("jp_test_a")
+test_that("JitPrimitive [[ delegates to attached AnvlPrimitive", {
+  p <- AnvlPrimitive("jp_test_a")
   f <- function(x) x
   attr(f, "primitive") <- p
   class(f) <- c("JitPrimitive", "function")

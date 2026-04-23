@@ -18,5 +18,5 @@ Device descriptor for the quickr backend. The only supported \code{type} is
 \code{"cpu"}.
 }
 \seealso{
-\code{\link[=nv_device]{nv_device()}}, \code{\link[=AnvilBackendQuickr]{AnvilBackendQuickr()}}.
+\code{\link[=nv_device]{nv_device()}}, \code{\link[=AnvlBackendQuickr]{AnvlBackendQuickr()}}.
 }

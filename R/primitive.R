@@ -1,4 +1,4 @@
-#' @title AnvilPrimitive
+#' @title AnvlPrimitive
 #' @description
 #' Primitive interpretation rule.
 #' Note that `[[` and `[[<-` access the interpretation rules.
@@ -9,9 +9,9 @@
 #'   The name of the primitive.
 #' @param subgraphs (`character()`)\cr
 #'   Names of parameters that are subgraphs. Only used if `higher_order = TRUE`.
-#' @return (`AnvilPrimitive`)
+#' @return (`AnvlPrimitive`)
 #' @export
-AnvilPrimitive <- function(name, subgraphs = character()) {
+AnvlPrimitive <- function(name, subgraphs = character()) {
   checkmate::assert_string(name)
   checkmate::assert_character(subgraphs)
 
@@ -20,7 +20,7 @@ AnvilPrimitive <- function(name, subgraphs = character()) {
   env$rules <- list()
   env$subgraphs <- subgraphs
 
-  structure(env, class = "AnvilPrimitive")
+  structure(env, class = "AnvlPrimitive")
 }
 
 
@@ -34,9 +34,9 @@ is_higher_order_primitive <- function(x) {
 }
 
 
-#' @method [[<- AnvilPrimitive
+#' @method [[<- AnvlPrimitive
 #' @export
-`[[<-.AnvilPrimitive` <- function(x, name, value) {
+`[[<-.AnvlPrimitive` <- function(x, name, value) {
   if (name %in% globals$interpretation_rules) {
     x$rules[[name]] <- value
   } else {
@@ -45,19 +45,19 @@ is_higher_order_primitive <- function(x) {
   x
 }
 
-#' @method [[ AnvilPrimitive
+#' @method [[ AnvlPrimitive
 #' @export
-`[[.AnvilPrimitive` <- function(x, name) {
+`[[.AnvlPrimitive` <- function(x, name) {
   if (name %in% globals$interpretation_rules) {
     return(x$rules[[name]])
   }
   cli_abort("Invalid field name {.field {name}} for primitive {.field {x$name}}")
 }
 
-#' @method print AnvilPrimitive
+#' @method print AnvlPrimitive
 #' @export
-print.AnvilPrimitive <- function(x, ...) {
-  cat(sprintf("<AnvilPrimitive:%s>\n", x$name))
+print.AnvlPrimitive <- function(x, ...) {
+  cat(sprintf("<AnvlPrimitive:%s>\n", x$name))
   invisible(x)
 }
 
@@ -76,7 +76,7 @@ print.AnvilPrimitive <- function(x, ...) {
 
 #' @title Create a Primitive
 #' @description
-#' Builds an [`AnvilPrimitive`] metadata object, wraps `fn` with [`jit()`],
+#' Builds an [`AnvlPrimitive`] metadata object, wraps `fn` with [`jit()`],
 #' attaches the metadata via `attr(., "primitive")`, prepends class
 #' `"JitPrimitive"`, and (by default) registers the result under `name` in
 #' the primitive registry.
@@ -87,7 +87,7 @@ print.AnvilPrimitive <- function(x, ...) {
 #' @param fn (`function`)\cr
 #'   Body of the primitive. Its formals become the formals of the returned
 #'   JIT-compiled callable. Inside `fn`, the primitive is accessible via
-#'   the lexically-bound symbol `self` (an [`AnvilPrimitive`]); pass it as
+#'   the lexically-bound symbol `self` (an [`AnvlPrimitive`]); pass it as
 #'   the first argument to [`graph_desc_add()`].
 #' @param subgraphs (`character()`)\cr
 #'   Names of parameters that are subgraphs (for higher-order primitives).
@@ -107,9 +107,9 @@ new_primitive <- function(name, fn, subgraphs = character(), static = character(
   checkmate::assert_character(subgraphs)
   checkmate::assert_flag(register)
 
-  primitive <- AnvilPrimitive(name, subgraphs = subgraphs)
+  primitive <- AnvlPrimitive(name, subgraphs = subgraphs)
 
-  # Bind `self` (the AnvilPrimitive) in a per-primitive env wrapped around fn's
+  # Bind `self` (the AnvlPrimitive) in a per-primitive env wrapped around fn's
   # existing enclosing env, so the body can reference the primitive directly —
   # same idea as R6's `self`. A per-primitive env is needed because inline
   # `function(...)` literals in R/primitives.R all share the package namespace
@@ -134,7 +134,7 @@ new_primitive <- function(name, fn, subgraphs = character(), static = character(
 #' Extracts subgraphs from the parameters of a higher-order primitive call.
 #' @param call (`PrimitiveCall`)\cr
 #'   The primitive call.
-#' @return (`list(AnvilGraph)`)\cr
+#' @return (`list(AnvlGraph)`)\cr
 #'   List of subgraphs found in the parameters.
 #' @export
 subgraphs <- function(call) {

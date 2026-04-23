@@ -2,16 +2,16 @@
 % Please edit documentation in R/graph-to-quickr.R
 \name{graph_to_quickr_function}
 \alias{graph_to_quickr_function}
-\title{Convert an AnvilGraph to a quickr-compiled function}
+\title{Convert an AnvlGraph to a quickr-compiled function}
 \usage{
 graph_to_quickr_function(graph, unwrap = FALSE, flat = FALSE)
 }
 \arguments{
-\item{graph}{(\code{\link{AnvilGraph}})\cr
+\item{graph}{(\code{\link{AnvlGraph}})\cr
 Graph to convert.}
 
 \item{unwrap}{(\code{logical(1)})\cr
-If \code{FALSE} (default), each output leaf is wrapped in an \code{\link{AnvilArray}}
+If \code{FALSE} (default), each output leaf is wrapped in an \code{\link{AnvlArray}}
 with the \code{"quickr"} backend. If \code{TRUE}, outputs are returned as plain
 R values.}
 
@@ -21,16 +21,16 @@ arguments matching the formals of the traced function. If \code{TRUE}, it
 takes a single flat list of all leaves (including static slots).}
 }
 \value{
-(\code{function}) that returns \code{\link{AnvilArray}} outputs (or a tree of
+(\code{function}) that returns \code{\link{AnvlArray}} outputs (or a tree of
 them), or plain R values when \code{unwrap = TRUE}.
 }
 \description{
-Lowers a supported subset of \code{AnvilGraph} objects to a plain R function and
+Lowers a supported subset of \code{AnvlGraph} objects to a plain R function and
 compiles it with \code{quickr::quick()}.
 }
 \details{
 The returned function expects plain R scalars/vectors/arrays (not
-\code{\link{AnvilArray}}) and returns \code{\link{AnvilArray}} outputs by default, or plain R
+\code{\link{AnvlArray}}) and returns \code{\link{AnvlArray}} outputs by default, or plain R
 values when \code{unwrap = TRUE}.
 
 If the graph returns multiple outputs (e.g. a nested list), the compiled

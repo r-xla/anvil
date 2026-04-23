@@ -7,7 +7,7 @@
 nv_save(arrays, path)
 }
 \arguments{
-\item{arrays}{(named \code{list} of \code{\link{AnvilArray}})\cr
+\item{arrays}{(named \code{list} of \code{\link{AnvlArray}})\cr
 Named list of arrays to save. Names must be unique.}
 
 \item{path}{(\code{character(1)})\cr

@@ -1,12 +1,12 @@
 ---
 name: add-api-function
-description: Add a user-facing nv_* API function to anvil, wrapping primitives with R-idiomatic semantics
+description: Add a user-facing nv_* API function to anvl, wrapping primitives with R-idiomatic semantics
 user_invocable: true
 ---
 
-# Add an API Function (`nv_*`) to anvil
+# Add an API Function (`nv_*`) to anvl
 
-You are adding a user-facing API function to the anvil package.
+You are adding a user-facing API function to the anvl package.
 API functions (`nv_*`) wrap one or more primitives (`nvl_*`) to provide a convenient, R-idiomatic interface.
 
 ## Design Principles
@@ -16,11 +16,11 @@ API functions (`nv_*`) wrap one or more primitives (`nvl_*`) to provide a conven
 - **Naming:** Use R naming conventions. If base R or a common R package already has a function for this operation, match its name. For example: `nv_abs` (not `nv_absolute`), `nv_transpose` (matching `t()`), `nv_seq` (matching `seq()`). Only deviate from R names when there is a good reason (e.g. no R equivalent, or the R name would be ambiguous in the array context).
 - **Semantics:** Match R behavior where it makes sense. For example, `nv_seq(start, end)` mirrors R's `seq()`, reductions like `nv_reduce_sum()` map to `sum()`. When R semantics conflict with array programming conventions (e.g. recycling rules vs. explicit broadcasting), prefer the array convention but document the difference.
 - **R generics:** If a base R generic exists for this operation, implement an S3 method. For example:
-  - `t()` → `t.AnvilBox` / `t.AnvilArray` dispatching to `nv_transpose()`
-  - `abs()` → handled via `Math.AnvilBox` group generic
-  - `+`, `-`, `*`, `/` → handled via `Ops.AnvilBox` group generic
-  - `sum()`, `prod()`, `min()`, `max()` → handled via `Summary.AnvilBox` group generic
-  - `[` → `[.AnvilBox` dispatching to `nv_subset()`
+  - `t()` → `t.AnvlBox` / `t.AnvlArray` dispatching to `nv_transpose()`
+  - `abs()` → handled via `Math.AnvlBox` group generic
+  - `+`, `-`, `*`, `/` → handled via `Ops.AnvlBox` group generic
+  - `sum()`, `prod()`, `min()`, `max()` → handled via `Summary.AnvlBox` group generic
+  - `[` → `[.AnvlBox` dispatching to `nv_subset()`
 
   Check `R/api-generics.R` for the existing group generics (`Ops`, `Math`, `Summary`) and individual method registrations. If your operation fits an existing group generic, add it there. Otherwise, create a standalone S3 method.
 

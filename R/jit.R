@@ -9,7 +9,7 @@
 #' eagerly but lazily on the first invocation.
 #'
 #' @param f (`function`)\cr
-#'   Function to compile. Must accept and return [`AnvilArray`]s (and/or
+#'   Function to compile. Must accept and return [`AnvlArray`]s (and/or
 #'   static arguments).
 #' @param static (`character()` | `integer()`)\cr
 #'   Names or positions of parameters of `f` that are *not* arrays. Static values are
@@ -35,8 +35,8 @@
 #'   by the selected backend raises an error. See the **XLA JIT arguments** and
 #'   **Quickr JIT arguments** sections below for the options accepted by each
 #'   backend.
-#' @inheritSection AnvilBackendXla XLA JIT arguments
-#' @inheritSection AnvilBackendQuickr Quickr JIT arguments
+#' @inheritSection AnvlBackendXla XLA JIT arguments
+#' @inheritSection AnvlBackendQuickr Quickr JIT arguments
 #'
 #' @section Device and Backend selection:
 #' There are various ways to specify which device and which backend to use.
@@ -61,8 +61,8 @@
 #' When using a concrete backend, you can just specify the device via a static argument.
 #'
 #' @return A `JitFunction` (a `function` with the same formals as `f`).
-#'   The returned wrapper expects [`AnvilArray`] inputs and returns
-#'   [`AnvilArray`] values.
+#'   The returned wrapper expects [`AnvlArray`] inputs and returns
+#'   [`AnvlArray`] values.
 #' @seealso [`xla()`] for ahead-of-time compilation, [`jit_eval()`] for evaluating an expression once.
 #' @export
 #' @examplesIf pjrt::plugins_downloaded()
@@ -145,7 +145,7 @@ jit_with_backend <- function(f, static, cache_size, backend, ...) {
 #'
 #' @param argname (`character(1)`)\cr
 #'   Name of a formal argument of the function passed to [`jit()`].
-#' @return (`AnvilDeviceArg`)\cr
+#' @return (`AnvlDeviceArg`)\cr
 #'   An object recognized by [`jit()`].
 #' @seealso [`jit()`], [`backend()`]
 #' @export
@@ -155,7 +155,7 @@ jit_with_backend <- function(f, static, cache_size, backend, ...) {
 #' g(nv_device("cpu", "xla"))
 device_arg <- function(argname) {
   assert_string(argname)
-  structure(list(argname = argname), class = "AnvilDeviceArg")
+  structure(list(argname = argname), class = "AnvlDeviceArg")
 }
 
 # Translate a character-or-integer argument selector into character names
@@ -238,7 +238,7 @@ jit_auto <- function(f, static, cache_size, device = NULL, device_argname = NULL
 jit_auto_detect_backend <- function(args_flat) {
   backends <- vapply(
     args_flat,
-    function(x) if (is_anvil_array(x)) backend(x) else NA_character_,
+    function(x) if (is_anvl_array(x)) backend(x) else NA_character_,
     character(1)
   )
   found <- setdiff(unique(backends), c(NA_character_, "plain"))
@@ -280,7 +280,7 @@ jit_prepare_call <- function(call, eval_env, static, device = NULL, backend) {
     found_device <- NULL
     # If any input lives on a device, use it instead
     for (i in seq_along(args_flat)) {
-      if (!is_static_flat[[i]] && is_anvil_array(args_flat[[i]])) {
+      if (!is_static_flat[[i]] && is_anvl_array(args_flat[[i]])) {
         found_device <- device(args_flat[[i]])
         break
       }
@@ -313,7 +313,7 @@ to_avals <- function(args_flat, is_static_flat) {
     function(x, is_static) {
       if (is_static) {
         x
-      } else if (is_anvil_array(x)) {
+      } else if (is_anvl_array(x)) {
         nv_aval(dtype(x), shape(x), ambiguous(x))
       } else if (is_valid_r_lit(x)) {
         nv_aval(default_dtype(x), integer(), ambiguous = TRUE)
@@ -335,7 +335,7 @@ check_jit_input <- function(x, alloc_device, in_tree = NULL, i = NULL, copy_to_d
   make_path <- function() {
     if (!is.null(in_tree) && !is.null(i)) tree_path(in_tree, i) else ""
   }
-  if (is_anvil_array(x)) {
+  if (is_anvl_array(x)) {
     # only single device currently
     if (backend(x) == "quickr") {
       return(x)
@@ -351,7 +351,7 @@ check_jit_input <- function(x, alloc_device, in_tree = NULL, i = NULL, copy_to_d
       # this can happen when there are multiple input devices but we are auto-detecting device
       path <- make_path()
       cli_abort(c(
-        "Found AnvilArray input {.arg {path}} on unexpected device {device(x)}",
+        "Found AnvlArray input {.arg {path}} on unexpected device {device(x)}",
         i = "when using jit(f, device = NULL), ensure that all inputs live on the same device"
       ))
     }
@@ -364,13 +364,13 @@ check_jit_input <- function(x, alloc_device, in_tree = NULL, i = NULL, copy_to_d
   }
   path <- make_path()
   msg <- if (nzchar(path)) {
-    "Attempted to autoconvert {.arg {path}} to an {.cls AnvilArray}."
+    "Attempted to autoconvert {.arg {path}} to an {.cls AnvlArray}."
   } else {
-    "Attempted to autoconvert input to an {.cls AnvilArray}."
+    "Attempted to autoconvert input to an {.cls AnvlArray}."
   }
   cli_abort(c(
     msg,
-    i = "Expected an {.cls AnvilArray}, a length-1 atomic scalar, or an {.code is.array()} value.",
+    i = "Expected an {.cls AnvlArray}, a length-1 atomic scalar, or an {.code is.array()} value.",
     x = "Got {.cls {class(x)[1]}} of length {length(x)}."
   ))
 }

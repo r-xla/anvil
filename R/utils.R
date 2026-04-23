@@ -247,7 +247,7 @@ scatter_to_gather_slice_sizes <- function(
 }
 
 is_device_arg <- function(x) {
-  inherits(x, "AnvilDeviceArg")
+  inherits(x, "AnvlDeviceArg")
 }
 
 # returns list(device | NULL, backend)

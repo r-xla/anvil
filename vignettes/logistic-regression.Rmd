@@ -59,7 +59,7 @@ summary(titanic)
 
 The general survival rate was `r sprintf("%.2f", mean(y) * 100)`%.
 
-Now we convert the data to `AnvilArray`s.
+Now we convert the data to `AnvlArray`s.
 
 ```{r}
 X_tensor <- nv_array(X, dtype = "f32")

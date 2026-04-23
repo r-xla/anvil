@@ -2,9 +2,9 @@
 
 ## Breaking Changes
 
-* The package was renamed from `anvil` to `anvl` to avoid a conflict
+* The package was renamed from `anvl` to `anvl` to avoid a conflict
   with the Bioconductor package `AnVIL`.
-* `AnvilTensor`/`nv_tensor` were renamed to `AnvilArray` and `nv_array` to be
+* `AnvilTensor`/`nv_tensor` were renamed to `AnvlArray` and `nv_array` to be
   more in line with R's `array()`.
   Also, `nv_aten()` was renamed to `nv_aval()`.
 * Subsetting with `list()` (e.g. `x[list(1, 3)]`) is no longer supported.

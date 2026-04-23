@@ -1,10 +1,10 @@
 ---
 name: add-primitive
-description: Add a new primitive operation to anvil (prim_* function with stablehlo, reverse rules, and tests)
+description: Add a new primitive operation to anvl (prim_* function with stablehlo, reverse rules, and tests)
 user_invocable: true
 ---
 
-# Add a New Primitive to anvil
+# Add a New Primitive to anvl
 
 Read `vignettes/new_primitive.Rmd` first — it is the primary guide with a complete walkthrough (primitive creation via `new_primitive()`, stablehlo rule, reverse rule, nv_* API, file organization). This skill covers additional details not in the vignette.
 
@@ -71,7 +71,7 @@ Use `describe()` / `it()` blocks. Cover:
 - Boundary values (depends on the specific operation)
 - dtype variations where relevant
 - Parameter variations (e.g. different `dims`, `permutation` values)
-- Non-differentiable points: include those values in the test inputs and verify anvil's gradient matches torch's gradient at those points.
+- Non-differentiable points: include those values in the test inputs and verify anvl's gradient matches torch's gradient at those points.
 
 ### Forward test example (torch comparison in `inst/extra-tests/test-primitives-stablehlo-torch.R`)
 

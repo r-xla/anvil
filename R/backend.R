@@ -1,23 +1,23 @@
 #' Create a backend
 #'
-#' @param new_data (`function`)\cr Constructs an AnvilArray from R data.
+#' @param new_data (`function`)\cr Constructs an AnvlArray from R data.
 #' This should be a `structure()` with at least a `$data` field that contains the actual
 #' underlying data (`PJRTBuffer` for `"xla"` backend, `array()` for `"quickr"` backend).
-#' @param dtype (`function`)\cr Extracts the dtype from an AnvilArray.
-#' @param shape (`function`)\cr Extracts the shape from an AnvilArray.
-#' @param ambiguous (`function`)\cr Extracts the ambiguous flag from an AnvilArray.
-#' @param as_array (`function`)\cr Converts an AnvilArray to an R array.
-#' @param as_raw (`function`)\cr Converts an AnvilArray to raw bytes.
+#' @param dtype (`function`)\cr Extracts the dtype from an AnvlArray.
+#' @param shape (`function`)\cr Extracts the shape from an AnvlArray.
+#' @param ambiguous (`function`)\cr Extracts the ambiguous flag from an AnvlArray.
+#' @param as_array (`function`)\cr Converts an AnvlArray to an R array.
+#' @param as_raw (`function`)\cr Converts an AnvlArray to raw bytes.
 #' @param platform (`function`)\cr Returns the platform name (e.g. `"cpu"`).
-#' @param device (`function`)\cr Returns the device object for an AnvilArray.
+#' @param device (`function`)\cr Returns the device object for an AnvlArray.
 #' @param new_device (`function`)\cr Constructs a backend-specific device
 #'   object from a device type string (e.g. `"cpu"`). Called by [`nv_device()`].
 #' @param print_data (`function`)\cr Prints the array data with a footer.
 #' @param jit (`function`)\cr Creates a JIT-compiled function implementation.
-#' @return An `AnvilBackend` object.
+#' @return An `AnvlBackend` object.
 #' @keywords internal
 #' @export
-AnvilBackend <- function(
+AnvlBackend <- function(
   new_data,
   dtype,
   shape,
@@ -44,7 +44,7 @@ AnvilBackend <- function(
       print_data = print_data,
       jit = jit
     ),
-    class = "AnvilBackend"
+    class = "AnvlBackend"
   )
 }
 
@@ -102,7 +102,7 @@ globals$backends <- list()
 # Otherwise it is unused
 register_backend(
   "plain",
-  AnvilBackend(
+  AnvlBackend(
     new_data = function(data, dtype, shape, device, ambiguous) {
       if (is.null(dtype)) {
         dtype <- default_dtype(data)
@@ -130,7 +130,7 @@ register_backend(
       )
       structure(
         list(data = data, dtype = dtype, shape = shape, ambiguous = ambiguous, backend = "plain"),
-        class = "AnvilArray"
+        class = "AnvlArray"
       )
     },
     dtype = function(x) x$dtype,

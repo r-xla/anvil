@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# anvl[^1] <img src="man/figures/logo.png" align="right" width = "120" />
+# anvl <img src="man/figures/logo.png" align="right" width = "120" />
 
 Package website: [release](https://r-xla.github.io/anvl/) \|
 [dev](https://r-xla.github.io/anvl/dev/)
@@ -26,7 +26,7 @@ including CPU and GPU.
 
 ## Installation
 
-{anvl} can be installed from GitHub or
+{anvl}[^1] can be installed from GitHub or
 [r-universe](https://r-xla.r-universe.dev/builds). During runtime, we
 require `libprotobuf`. Source installation requires a `C++20` compiler
 and `protoc` (protobuf compiler).
@@ -50,7 +50,7 @@ more details.
 ## Quick Start
 
 Below, we create an R function and `jit()` it. Then, we call the
-resulting function on `AnvilArray`s, which will compile and subsequently
+resulting function on `AnvlArray`s, which will compile and subsequently
 execute it.
 
 ``` r
@@ -65,7 +65,7 @@ b <- nv_scalar(-2.0, "f32")
 x <- nv_scalar(3.0, "f32")
 
 f_jit(a, b, x)
-#> AnvilArray
+#> AnvlArray
 #>  1
 #> [ CPUf32{} ]
 ```
@@ -77,12 +77,12 @@ the above function.
 g_jit <- jit(gradient(f, wrt = c("a", "b")))
 g_jit(a, b, x)
 #> $a
-#> AnvilArray
+#> AnvlArray
 #>  3
 #> [ CPUf32{} ] 
 #> 
 #> $b
-#> AnvilArray
+#> AnvlArray
 #>  1
 #> [ CPUf32{} ]
 ```
@@ -137,7 +137,6 @@ the package website.
   project.
 
 [^1]: A real anvil is a tool blacksmiths use to reshape metal; this
-    package reshapes R code in a similar spirit – tracing, transforming,
-    and recompiling it into efficient forms. We spell the package name
-    `anvl` (without the `i`) because `AnVIL` is already taken by a
-    [Bioconductor package](https://bioconductor.org/packages/AnVIL/).
+    package reshapes R code in a similar spirit. We spell the package
+    name `anvl` (without the `i`) because `AnVIL` is already taken by a
+    Bioconductor package.

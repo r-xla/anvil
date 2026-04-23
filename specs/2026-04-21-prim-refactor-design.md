@@ -2,11 +2,11 @@
 
 **Status:** draft
 **Date:** 2026-04-21
-**Relates to:** [r-xla/anvil#235](https://github.com/r-xla/anvil/issues/235)
+**Relates to:** [r-xla/anvl#235](https://github.com/r-xla/anvl/issues/235)
 
 ## Motivation
 
-Issue #235 reports confusion between the two layers of the anvil API: the
+Issue #235 reports confusion between the two layers of the anvl API: the
 user-facing `nv_*` functions and the low-level `nvl_*` primitives. The
 distinction is real and load-bearing, but the `nv_` / `nvl_` naming gives users
 no signal about *what* the layers are for.
@@ -21,9 +21,9 @@ visible in the pkgdown reference. We don't export `prim_*` functions to not poll
 
 Each primitive today consists of two separate top-level bindings:
 
-- `p_<name>` — an `AnvilPrimitive` environment holding `name`, `rules`,
+- `p_<name>` — an `AnvlPrimitive` environment holding `name`, `rules`,
   `higher_order`, `subgraphs`. Rules are registered via the
-  `[[.AnvilPrimitive` / `[[<-.AnvilPrimitive` methods
+  `[[.AnvlPrimitive` / `[[<-.AnvlPrimitive` methods
   (e.g. `p_add[["stablehlo"]] <- rule`).
 - `nvl_<name>` — a jit-compiled function that records the operation into the
   graph via `graph_desc_add(p_<name>, ...)`. Built either by the
@@ -52,17 +52,17 @@ Consumers:
 
 ## Design
 
-### `AnvilPrimitive` (unchanged)
+### `AnvlPrimitive` (unchanged)
 
-`AnvilPrimitive(name, subgraphs = character())` returns an
-environment-backed metadata holder with class `AnvilPrimitive`, carrying
+`AnvlPrimitive(name, subgraphs = character())` returns an
+environment-backed metadata holder with class `AnvlPrimitive`, carrying
 `name`, `rules`, and `subgraphs`. The `[[`, `[[<-`, and `print` S3 methods
 keep today's semantics. The redundant `higher_order` field that today's
 implementation stores is dropped — derive it from `length(subgraphs) > 0L`
 in `is_higher_order_primitive()` instead.
 
 ```r
-AnvilPrimitive <- function(name, subgraphs = character()) {
+AnvlPrimitive <- function(name, subgraphs = character()) {
   checkmate::assert_string(name)
   checkmate::assert_character(subgraphs)
 
@@ -70,7 +70,7 @@ AnvilPrimitive <- function(name, subgraphs = character()) {
   env$name <- name
   env$rules <- list()
   env$subgraphs <- subgraphs
-  structure(env, class = "AnvilPrimitive")
+  structure(env, class = "AnvlPrimitive")
 }
 
 is_higher_order_primitive <- function(x) {
@@ -84,7 +84,7 @@ This is the object whose rules the `rules-*.R` files populate.
 ### `new_primitive` helper
 
 `new_primitive()` is the new user-facing constructor. It wires together an
-`AnvilPrimitive` metadata object and a jit-wrapped callable, and returns the
+`AnvlPrimitive` metadata object and a jit-wrapped callable, and returns the
 combined callable — what `prim_<name>` now is.
 
 ```r
@@ -95,7 +95,7 @@ new_primitive <- function(name, fn, subgraphs = character(),
   checkmate::assert_character(subgraphs)
   checkmate::assert_flag(register)
 
-  primitive <- AnvilPrimitive(name, subgraphs = subgraphs)
+  primitive <- AnvlPrimitive(name, subgraphs = subgraphs)
   jit_fn <- jit(fn, static = static, backend = "auto")
   attr(jit_fn, "primitive") <- primitive
   # jit() tags the return with class "JitFunction"; prepend "JitPrimitive"
@@ -141,7 +141,7 @@ print_call_repr <- function(primitive) {
 ```
 
 Internally, `prim[[name]]` returns the callable; `[[.JitPrimitive` delegates
-to the attached `AnvilPrimitive` so rule access
+to the attached `AnvlPrimitive` so rule access
 (`primitive[["stablehlo"]]`) continues to work unchanged in lowering code.
 
 ### S3 methods on `JitPrimitive`
@@ -149,7 +149,7 @@ to the attached `AnvilPrimitive` so rule access
 The callable returned by `new_primitive()` has class
 `c("JitPrimitive", "JitFunction")` — `"JitFunction"` is set by `jit()`,
 `"JitPrimitive"` prepended in `new_primitive()`. `[[`, `[[<-`, and `print`
-delegate to the attached `AnvilPrimitive` so the existing rule-registration
+delegate to the attached `AnvlPrimitive` so the existing rule-registration
 syntax (`prim_add[["stablehlo"]] <- rule`) works unchanged.
 
 ```r
@@ -166,7 +166,7 @@ print.JitPrimitive <- function(x, ...) {
 }
 ```
 
-(`is_higher_order_primitive(x)` is defined above in the `AnvilPrimitive`
+(`is_higher_order_primitive(x)` is defined above in the `AnvlPrimitive`
 section — it unwraps a `JitPrimitive` if needed and derives the answer from
 `length(subgraphs) > 0L`.)
 
@@ -211,7 +211,7 @@ becomes the literal name string. `static` is lifted to a named argument on
 
 ```r
 # Before:
-p_fill <- AnvilPrimitive("fill")
+p_fill <- AnvlPrimitive("fill")
 nvl_fill <- jit(
   function(value, shape, dtype, ambiguous = FALSE, device = NULL) {
     infer_fill <- function(value, shape, dtype, ambiguous) { ... }
@@ -248,7 +248,7 @@ prim_add[["stablehlo"]] <- function(inputs, outputs, params, builder) { ... }
 
 ### Exports
 
-- `AnvilPrimitive` — still exported.
+- `AnvlPrimitive` — still exported.
 - `new_primitive` — newly exported.
 - `prim` — newly exported.
 - `register_primitive` — unexported (removed).
@@ -305,7 +305,7 @@ primitives, accessed via `prim$<name>`) and describe when to reach for which.
 
 | File | Change |
 | --- | --- |
-| `R/primitive.R` | Keep `AnvilPrimitive` roughly as-is (env + class + `[[`/`[[<-`/`print`; drop the redundant `higher_order` field). Add `new_primitive()`, `prim` env, `JitPrimitive` S3 class with `[[`/`[[<-`/`print` delegating to the attached `AnvilPrimitive`. Delete `prim()` callable, `register_primitive()`, `prim_dict`. |
+| `R/primitive.R` | Keep `AnvlPrimitive` roughly as-is (env + class + `[[`/`[[<-`/`print`; drop the redundant `higher_order` field). Add `new_primitive()`, `prim` env, `JitPrimitive` S3 class with `[[`/`[[<-`/`print` delegating to the attached `AnvlPrimitive`. Delete `prim()` callable, `register_primitive()`, `prim_dict`. |
 | `R/primitives.R` | Migrate ~70 `p_*` / `nvl_*` pairs into single `prim_*` definitions using `new_primitive(name, body, static = ...)`. `make_binary_op`, `make_unary_op`, `make_reduce_op`, `make_compare_op` take a name string and return plain closures (no `jit()`) that pass the name to `graph_desc_add`. |
 | `R/zzz.R` | Drop the `p_*` scan in `.onLoad`. |
 | `R/graph.R` | `graph_desc_add()` accepts a primitive-*name* string instead of the primitive object, resolves via `prim[[name]]`. `print_call_repr()` updated to show `prim$<name>`. |
@@ -336,7 +336,7 @@ primitives, accessed via `prim$<name>`) and describe when to reach for which.
   of the `nv_*` / `prim_*` layering per issue #235.
 - `vignettes/primitives.Rmd` — `prims <- prim()` → `prims <- as.list(prim)`.
 - `vignettes/new_primitive.Rmd` — substantive rewrite. The existing vignette
-  teaches the two-step `p_repeat_along <- AnvilPrimitive(...)` +
+  teaches the two-step `p_repeat_along <- AnvlPrimitive(...)` +
   `register_primitive("repeat_along", p_repeat_along)`. New version is a
   single `prim_repeat_along <- new_primitive("repeat_along", function(...) { ... })`
   call (body references `self`) that covers creation, jit wrapping, and
@@ -354,7 +354,7 @@ primitives, accessed via `prim$<name>`) and describe when to reach for which.
 
 ## Compatibility
 
-This is a breaking change to the anvil public API:
+This is a breaking change to the anvl public API:
 
 - `nvl_*` — removed.
 - `prim("name")`, `prim()` callable — removed.
@@ -362,7 +362,7 @@ This is a breaking change to the anvil public API:
 
 `prim` is the new way to reach the primitive layer. Users of `nvl_*` in
 third-party code will need to rewrite call sites to `prim$<name>`. This is
-accepted: anvil is pre-1.0, the layer naming was a documented source of
+accepted: anvl is pre-1.0, the layer naming was a documented source of
 confusion (#235), and there's no way to deliver the layer-naming fix without
 breaking callers.
 
@@ -370,7 +370,7 @@ breaking callers.
 
 - Writing the #235 documentation contribution to the "Getting Started"
   vignette is partially addressed here (`vignettes/internals.Rmd` update) but
-  a dedicated "Two layers" section in `vignettes/anvil.Rmd` is a natural
+  a dedicated "Two layers" section in `vignettes/anvl.Rmd` is a natural
   next task after this refactor lands.
 - Considering whether `make_binary_op` / `make_unary_op` etc. should be
   exposed to extensions that want to define new primitives, or whether the

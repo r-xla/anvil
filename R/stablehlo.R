@@ -1,15 +1,15 @@
 # We interprete jitting directly as a transformation and not as a higher order primitive
 # because this seems simpler for now.
 
-# S3 methods for stablehlo functions to handle AnvilArray
+# S3 methods for stablehlo functions to handle AnvlArray
 
 #' @export
-hlo_scalar.AnvilArray <- function(value, ..., func = NULL) {
+hlo_scalar.AnvlArray <- function(value, ..., func = NULL) {
   stablehlo::hlo_scalar(value$data, ..., func = func)
 }
 
 #' @export
-hlo_tensor.AnvilArray <- function(value, ..., func = NULL) {
+hlo_tensor.AnvlArray <- function(value, ..., func = NULL) {
   stablehlo::hlo_tensor(value$data, ..., func = func)
 }
 
@@ -55,7 +55,7 @@ env_get <- function(env, gval) {
 
 #' @title Lower a graph to StableHLO
 #' @description
-#' Converts a traced [`AnvilGraph`] into the StableHLO intermediate representation (IR).
+#' Converts a traced [`AnvlGraph`] into the StableHLO intermediate representation (IR).
 #' Each graph operation is translated to its corresponding StableHLO op. The result can
 #' be serialized to MLIR text via `stablehlo::repr()` and subsequently compiled to an
 #' XLA executable with `pjrt::pjrt_compile()`.
@@ -63,7 +63,7 @@ env_get <- function(env, gval) {
 #' The rules for translating to stablehlo are stored in `$rules[["stablehlo"]]` of the primitives.
 #'
 #' This is a low-level function; most users should use [`jit()`] or [`xla()`] instead.
-#' @param graph ([`AnvilGraph`])\cr
+#' @param graph ([`AnvlGraph`])\cr
 #'   The graph to lower (e.g. produced by [`trace_fn()`]).
 #' @param constants_as_inputs (`logical(1)`)\cr
 #'   If `TRUE` (default), constants are registered as inputs to the StableHLO function

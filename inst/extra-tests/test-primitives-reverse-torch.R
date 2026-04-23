@@ -5,15 +5,15 @@ build_extra_args <- function(args_f, shp, dtype) {
   args_f(shp, dtype)
 }
 
-wrap_uni_anvil <- function(.f, args_anvil, shp) {
+wrap_uni_anvl <- function(.f, args_anvl, shp) {
   if (identical(shp, integer())) {
     return(\(operand) {
-      do.call(.f, c(list(operand), args_anvil))
+      do.call(.f, c(list(operand), args_anvl))
     })
   }
 
   \(operand) {
-    x <- do.call(.f, c(list(operand), args_anvil))
+    x <- do.call(.f, c(list(operand), args_anvl))
     nv_reduce_sum(x, dims = seq_along(shape(x)), drop = TRUE)
   }
 }
@@ -31,15 +31,15 @@ wrap_uni_torch <- function(.g, args_torch, shp) {
   }
 }
 
-wrap_biv_anvil <- function(.f, args_anvil, shp) {
+wrap_biv_anvl <- function(.f, args_anvl, shp) {
   if (identical(shp, integer())) {
     return(\(lhs, rhs) {
-      do.call(.f, c(list(lhs, rhs), args_anvil))
+      do.call(.f, c(list(lhs, rhs), args_anvl))
     })
   }
 
   \(lhs, rhs) {
-    x <- do.call(.f, c(list(lhs, rhs), args_anvil))
+    x <- do.call(.f, c(list(lhs, rhs), args_anvl))
     nv_reduce_sum(x, dims = seq_along(shape(x)), drop = TRUE)
   }
 }
@@ -71,31 +71,31 @@ verify_grad_uni_scalar <- function(
     operand <- gen(shp, dtype)
   }
 
-  operand_anvil <- nv_scalar(operand, dtype = dtype)
+  operand_anvl <- nv_scalar(operand, dtype = dtype)
 
   # I think there is a bug in torch, so we can't use torch_scalar_tensor
   operand_torch <- torch::torch_scalar_tensor(operand, requires_grad = TRUE, dtype = str_to_torch_dtype(dtype))
   operand_torch$retain_grad()
 
   args <- build_extra_args(args_f, shp, dtype)
-  args_anvil <- args[[1L]]
+  args_anvl <- args[[1L]]
   args_torch <- args[[2L]]
 
-  .f_anvil <- \(operand) {
-    do.call(.f, c(list(operand), args_anvil))
+  .f_anvl <- \(operand) {
+    do.call(.f, c(list(operand), args_anvl))
   }
   .g_torch <- \(operand) {
     do.call(.g, c(list(operand), args_torch))
   }
 
-  grads_anvil <- jit(gradient(.f_anvil))(operand_anvil)
+  grads_anvl <- jit(gradient(.f_anvl))(operand_anvl)
   out <- .g_torch(operand_torch)
   out$backward(retrain_graph = TRUE)
 
-  expect_equal(to_abstract(grads_anvil[[1L]], TRUE), to_abstract(operand_anvil, TRUE))
+  expect_equal(to_abstract(grads_anvl[[1L]], TRUE), to_abstract(operand_anvl, TRUE))
 
   testthat::expect_equal(
-    tengen::as_array(grads_anvil[[1L]]),
+    tengen::as_array(grads_anvl[[1L]]),
     as_array_torch(operand_torch$grad),
     tolerance = tol
   )
@@ -124,7 +124,7 @@ verify_grad_uni_tensor <- function(
     operand <- gen(shp, dtype)
   }
 
-  operand_anvil <- nv_array(operand, dtype = dtype)
+  operand_anvl <- nv_array(operand, dtype = dtype)
 
   operand_torch <- torch::torch_tensor(
     operand,
@@ -133,19 +133,19 @@ verify_grad_uni_tensor <- function(
   )
 
   args <- build_extra_args(args_f, shp, dtype)
-  args_anvil <- args[[1L]]
+  args_anvl <- args[[1L]]
   args_torch <- args[[2L]]
 
-  .f_anvil <- wrap_uni_anvil(.f, args_anvil, shp)
+  .f_anvl <- wrap_uni_anvl(.f, args_anvl, shp)
   .g_torch <- wrap_uni_torch(.g, args_torch, shp)
 
-  grads_anvil <- jit(gradient(.f_anvil))(operand_anvil)
+  grads_anvl <- jit(gradient(.f_anvl))(operand_anvl)
   .g_torch(operand_torch)$backward()
 
-  expect_equal(to_abstract(grads_anvil[[1L]], TRUE), to_abstract(operand_anvil, TRUE))
+  expect_equal(to_abstract(grads_anvl[[1L]], TRUE), to_abstract(operand_anvl, TRUE))
 
   testthat::expect_equal(
-    tengen::as_array(grads_anvil[[1L]]),
+    tengen::as_array(grads_anvl[[1L]]),
     as_array_torch(operand_torch$grad),
     tolerance = tol
   )
@@ -180,8 +180,8 @@ verify_grad_biv_scalar <- function(
     rhs <- gen_rhs(shp, dtype)
   }
 
-  lhs_anvil <- nv_scalar(lhs, dtype = dtype)
-  rhs_anvil <- nv_scalar(rhs, dtype = dtype)
+  lhs_anvl <- nv_scalar(lhs, dtype = dtype)
+  rhs_anvl <- nv_scalar(rhs, dtype = dtype)
 
   # I think there is a bug in torch, so we can't use torch_scalar_tensor
   lhs_torch <- torch::torch_scalar_tensor(lhs, requires_grad = TRUE, dtype = str_to_torch_dtype(dtype))
@@ -190,31 +190,31 @@ verify_grad_biv_scalar <- function(
   rhs_torch$retain_grad()
 
   args <- build_extra_args(args_f, shp, dtype)
-  args_anvil <- args[[1L]]
+  args_anvl <- args[[1L]]
   args_torch <- args[[2L]]
 
-  .f_anvil <- \(lhs, rhs) {
-    do.call(.f, c(list(lhs, rhs), args_anvil))
+  .f_anvl <- \(lhs, rhs) {
+    do.call(.f, c(list(lhs, rhs), args_anvl))
   }
   .g_torch <- \(lhs, rhs) {
     do.call(.g, c(list(lhs, rhs), args_torch))
   }
 
-  grads_anvil <- jit(gradient(.f_anvil))(lhs_anvil, rhs_anvil)
+  grads_anvl <- jit(gradient(.f_anvl))(lhs_anvl, rhs_anvl)
   out <- .g_torch(lhs_torch, rhs_torch)
   out$backward(retrain_graph = TRUE)
 
-  expect_equal(to_abstract(grads_anvil[[1L]], TRUE), to_abstract(lhs_anvil, TRUE))
-  expect_equal(to_abstract(grads_anvil[[2L]], TRUE), to_abstract(rhs_anvil, TRUE))
+  expect_equal(to_abstract(grads_anvl[[1L]], TRUE), to_abstract(lhs_anvl, TRUE))
+  expect_equal(to_abstract(grads_anvl[[2L]], TRUE), to_abstract(rhs_anvl, TRUE))
 
   testthat::expect_equal(
-    tengen::as_array(grads_anvil[[1L]]),
+    tengen::as_array(grads_anvl[[1L]]),
     as_array_torch(lhs_torch$grad), # nolint
     tolerance = tol
   )
 
   testthat::expect_equal(
-    tengen::as_array(grads_anvil[[2L]]),
+    tengen::as_array(grads_anvl[[2L]]),
     as_array_torch(rhs_torch$grad), # nolint
     tolerance = tol
   )
@@ -257,33 +257,33 @@ verify_grad_biv_tensor <- function(
     rhs <- gen_rhs(shp, dtype)
   }
 
-  lhs_anvil <- nv_array(lhs)
-  rhs_anvil <- nv_array(rhs)
+  lhs_anvl <- nv_array(lhs)
+  rhs_anvl <- nv_array(rhs)
 
   lhs_torch <- torch::torch_tensor(lhs, requires_grad = TRUE)
   rhs_torch <- torch::torch_tensor(rhs, requires_grad = TRUE)
 
   args <- build_extra_args(args_f, shp, dtype)
-  args_anvil <- args[[1L]]
+  args_anvl <- args[[1L]]
   args_torch <- args[[2L]]
 
-  .f_anvil <- wrap_biv_anvil(.f, args_anvil, shp)
+  .f_anvl <- wrap_biv_anvl(.f, args_anvl, shp)
   .g_torch <- wrap_biv_torch(.g, args_torch, shp)
 
-  grads_anvil <- jit(gradient(.f_anvil))(lhs_anvil, rhs_anvil)
+  grads_anvl <- jit(gradient(.f_anvl))(lhs_anvl, rhs_anvl)
   .g_torch(lhs_torch, rhs_torch)$backward()
 
-  expect_equal(to_abstract(grads_anvil[[1L]], TRUE), to_abstract(lhs_anvil, TRUE))
-  expect_equal(to_abstract(grads_anvil[[2L]], TRUE), to_abstract(rhs_anvil, TRUE))
+  expect_equal(to_abstract(grads_anvl[[1L]], TRUE), to_abstract(lhs_anvl, TRUE))
+  expect_equal(to_abstract(grads_anvl[[2L]], TRUE), to_abstract(rhs_anvl, TRUE))
 
   testthat::expect_equal(
-    tengen::as_array(grads_anvil[[1L]]),
+    tengen::as_array(grads_anvl[[1L]]),
     as_array_torch(lhs_torch$grad), # nolint
     tolerance = tol # nolint
   )
 
   testthat::expect_equal(
-    tengen::as_array(grads_anvil[[2L]]),
+    tengen::as_array(grads_anvl[[2L]]),
     as_array_torch(rhs_torch$grad),
     tolerance = tol
   )
@@ -453,21 +453,21 @@ test_that("prim_broadcast_in_dim", {
 test_that("prim_ifelse", {
   shp <- c(2L, 3L)
   x_arr <- generate_test_data(shp, dtype = "bool")
-  x_anvil <- nv_array(x_arr, dtype = "bool")
+  x_anvl <- nv_array(x_arr, dtype = "bool")
   x_torch <- torch::torch_tensor(x_arr, dtype = torch::torch_bool())
 
   a_arr <- generate_test_data(shp, dtype = "f32")
   b_arr <- generate_test_data(shp, dtype = "f32")
-  a_anvil <- nv_array(a_arr, dtype = "f32")
-  b_anvil <- nv_array(b_arr, dtype = "f32")
+  a_anvl <- nv_array(a_arr, dtype = "f32")
+  b_anvl <- nv_array(b_arr, dtype = "f32")
   a_torch <- torch::torch_tensor(a_arr, requires_grad = TRUE, dtype = torch::torch_float32())
   b_torch <- torch::torch_tensor(b_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
-  f_anvil <- function(a, b) {
-    out <- prim_ifelse(x_anvil, a, b)
+  f_anvl <- function(a, b) {
+    out <- prim_ifelse(x_anvl, a, b)
     nv_reduce_sum(out, dims = 1:2, drop = TRUE)
   }
-  grads <- jit(gradient(f_anvil))(a_anvil, b_anvil)
+  grads <- jit(gradient(f_anvl))(a_anvl, b_anvl)
 
   out_t <- torch::torch_where(x_torch, a_torch, b_torch)
   torch::torch_sum(out_t)$backward()
@@ -807,14 +807,14 @@ describe("prim_cholesky", {
     n <- sample(2:4, 1L)
     A_r <- gen_spd_matrix(n)
 
-    A_anvil <- nv_array(A_r, dtype = "f64")
+    A_anvl <- nv_array(A_r, dtype = "f64")
     A_torch <- torch::torch_tensor(A_r, requires_grad = TRUE, dtype = torch::torch_float64())
 
-    f_anvil <- function(A) {
+    f_anvl <- function(A) {
       L <- prim_cholesky(A, lower = lower)
       nv_reduce_sum(L, dims = c(1L, 2L))
     }
-    grad_anvil <- as_array(jit(gradient(f_anvil))(A_anvil)[[1L]])
+    grad_anvl <- as_array(jit(gradient(f_anvl))(A_anvl)[[1L]])
 
     L_torch <- torch::linalg_cholesky(A_torch)
     if (!lower) {
@@ -823,7 +823,7 @@ describe("prim_cholesky", {
     torch::torch_sum(L_torch)$backward()
     grad_torch <- as_array_torch(A_torch$grad)
 
-    expect_equal(grad_anvil, grad_torch, tolerance = 1e-5)
+    expect_equal(grad_anvl, grad_torch, tolerance = 1e-5)
   }
 
   it("lower = TRUE", verify_cholesky_grad(lower = TRUE))
@@ -837,13 +837,13 @@ describe("prim_triangular_solve", {
     a_r <- gen_tri_matrix(n, lower, unit_diagonal)
     b_r <- if (left_side) array(rnorm(n * m), c(n, m)) else array(rnorm(m * n), c(m, n))
 
-    a_anvil <- nv_array(a_r, dtype = "f64")
-    b_anvil <- nv_array(b_r, dtype = "f64")
+    a_anvl <- nv_array(a_r, dtype = "f64")
+    b_anvl <- nv_array(b_r, dtype = "f64")
 
     a_torch <- torch::torch_tensor(a_r, requires_grad = TRUE, dtype = torch::torch_float64())
     b_torch <- torch::torch_tensor(b_r, requires_grad = TRUE, dtype = torch::torch_float64())
 
-    f_anvil <- function(a, b) {
+    f_anvl <- function(a, b) {
       x <- prim_triangular_solve(
         a,
         b,
@@ -854,7 +854,7 @@ describe("prim_triangular_solve", {
       )
       nv_reduce_sum(x, dims = c(1L, 2L))
     }
-    grads_anvil <- jit(gradient(f_anvil))(a_anvil, b_anvil)
+    grads_anvl <- jit(gradient(f_anvl))(a_anvl, b_anvl)
 
     is_upper <- if (transpose_a == "TRANSPOSE") lower else !lower
     a_effective <- if (transpose_a == "TRANSPOSE") a_torch$t() else a_torch
@@ -867,8 +867,8 @@ describe("prim_triangular_solve", {
     )
     torch::torch_sum(x_torch)$backward()
 
-    expect_equal(as_array(grads_anvil[[1L]]), as_array_torch(a_torch$grad), tolerance = 1e-5)
-    expect_equal(as_array(grads_anvil[[2L]]), as_array_torch(b_torch$grad), tolerance = 1e-5)
+    expect_equal(as_array(grads_anvl[[1L]]), as_array_torch(a_torch$grad), tolerance = 1e-5)
+    expect_equal(as_array(grads_anvl[[2L]]), as_array_torch(b_torch$grad), tolerance = 1e-5)
   }
 
   it(

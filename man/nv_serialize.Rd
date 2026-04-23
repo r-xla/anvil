@@ -7,7 +7,7 @@
 nv_serialize(arrays, con = NULL)
 }
 \arguments{
-\item{arrays}{(named \code{list} of \code{\link{AnvilArray}})\cr
+\item{arrays}{(named \code{list} of \code{\link{AnvlArray}})\cr
 Named list of arrays to serialize. Names must be unique.}
 
 \item{con}{(\code{NULL} | connection)\cr

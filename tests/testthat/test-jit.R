@@ -422,7 +422,7 @@ describe("jit: device and backend handling", {
       "on unexpected device"
     )
   })
-  it("allocates scalar on default device when there is no AnvilArray to infer from", {
+  it("allocates scalar on default device when there is no AnvlArray to infer from", {
     g <- jit(function() 1, backend = "xla")
     expect_equal(device(g()), default_device("xla"))
   })

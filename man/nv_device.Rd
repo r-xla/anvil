@@ -37,5 +37,5 @@ identical(nv_device(dev), dev)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=backend]{backend()}}, \code{\link[=AnvilBackend]{AnvilBackend()}}.
+\code{\link[=backend]{backend()}}, \code{\link[=AnvlBackend]{AnvlBackend()}}.
 }

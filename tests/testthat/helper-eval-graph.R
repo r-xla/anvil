@@ -17,7 +17,7 @@ compile_graph_pjrt <- function(graph) {
   }
 
   as_r <- function(x) {
-    if (inherits(x, "AnvilArray")) {
+    if (inherits(x, "AnvlArray")) {
       return(as_array(x))
     }
     if (is.list(x)) {
@@ -34,7 +34,7 @@ compile_graph_pjrt <- function(graph) {
 
     args_nv <- Map(
       function(x, gval) {
-        if (inherits(x, "AnvilArray")) {
+        if (inherits(x, "AnvlArray")) {
           return(x)
         }
         expected_shape <- gval$aval$shape$dims

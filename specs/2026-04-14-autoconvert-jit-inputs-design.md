@@ -6,7 +6,7 @@
 ## Goal
 
 Today, calling a `jit()`-wrapped or `xla()`-compiled function with a plain
-R scalar or array errors with `"Expected AnvilArray, but got <class>"`. The
+R scalar or array errors with `"Expected AnvlArray, but got <class>"`. The
 user has to wrap every input in `nv_array()` / `nv_scalar()` themselves.
 
 Autoconvert trivially-convertible inputs at the call boundary so the
@@ -19,10 +19,10 @@ Applied per non-static leaf of the input tree:
 
 | Input                                      | Action                                     |
 | ------------------------------------------ | ------------------------------------------ |
-| `is_anvil_array(x)`                        | Pass through                               |
+| `is_anvl_array(x)`                        | Pass through                               |
 | atomic, `length(x) == 1`,                  | `nv_scalar(x, backend = backend, ambiguous = TRUE)` (shape `()`) |
 | `is.array(x)` (has `dim`)                  | `nv_array(x, backend = backend, ambiguous = TRUE)` (shape from `dim`) |
-| anything else                              | Error: must be an `AnvilArray`, scalar, or array |
+| anything else                              | Error: must be an `AnvlArray`, scalar, or array |
 
 Notable consequences:
 
@@ -86,7 +86,7 @@ is wasted work.
 4. restores the output tree
 
 `jit_quickr_impl` uses `fun_flat` with flat args already unwrapped from
-`AnvilArray`s (via `as_array()` per leaf), and stores `fun_flat` in the
+`AnvlArray`s (via `as_array()` per leaf), and stores `fun_flat` in the
 LRU cache.
 
 The existing structured wrapper returned by `graph_to_quickr_function()`
@@ -104,13 +104,13 @@ structured wrapper and `fun_flat`. This keeps the two paths in sync.
 The new error for non-convertible inputs is raised inside
 `autoconvert_input()` with a class and value preview:
 
-> Cannot autoconvert input to an `AnvilArray`: expected an `AnvilArray`, a
+> Cannot autoconvert input to an `AnvlArray`: expected an `AnvlArray`, a
 > length-1 atomic (scalar), or an `is.array()` value, but got
 > `<cls>` of length `<n>`.
 
 The backend-specific backend-mismatch errors (`backend(x) != "xla"` /
 `!= "quickr"`) remain unchanged; they now fire only when the input was
-already an `AnvilArray` on the wrong backend.
+already an `AnvlArray` on the wrong backend.
 
 ## Testing
 
@@ -126,7 +126,7 @@ New tests (in `tests/testthat/test-jit.R` or a new `test-autoconvert.R`):
 5. `jit(\(x) x)(c(1, 2, 3))` errors.
 6. Static args are not converted:
    `jit(\(x, flag) ..., static = "flag")(nv_array(1), TRUE)` behaves as
-   before; passing a non-AnvilArray non-scalar as `flag` is still fine.
+   before; passing a non-AnvlArray non-scalar as `flag` is still fine.
 7. `xla()` with a scalar and a matrix input works.
 8. Same cases repeated for the quickr backend (gated on
    `skip_if_not_installed("quickr")`).

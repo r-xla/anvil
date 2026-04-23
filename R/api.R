@@ -16,7 +16,7 @@
 #'   Shape of the output array.
 #' @param dtype (`character(1)` | `NULL`)\cr
 #'   Data type.
-#' @param like ([`AnvilArray`])\cr
+#' @param like ([`AnvlArray`])\cr
 #'   Existing array whose attributes are used as defaults
 #'   (only for `nv_fill_like()`).
 #' @template param_ambiguous
@@ -86,7 +86,7 @@ make_broadcast_dimensions <- function(shape_in, shape_out) {
 #' nv_broadcast_scalars(x, nv_scalar(1))
 #' @export
 nv_broadcast_scalars <- function(...) {
-  args <- as_anvil_arrays(...)
+  args <- as_anvl_arrays(...)
   shapes <- lapply(args, shape)
   non_scalar_shapes <- Filter(\(s) length(s) > 0L, shapes)
 
@@ -124,7 +124,7 @@ nv_broadcast_scalars <- function(...) {
 #' nv_promote_to_common(x, y)
 #' @export
 nv_promote_to_common <- function(...) {
-  args <- as_anvil_arrays(...)
+  args <- as_anvl_arrays(...)
   tmp <- do.call(common_type_info, args)
   cdt <- tmp[[1L]]
   ambiguous <- tmp[[2L]]
@@ -159,7 +159,7 @@ nv_promote_to_common <- function(...) {
 #' nv_broadcast_arrays(x, y)
 #' @export
 nv_broadcast_arrays <- function(...) {
-  args <- as_anvil_arrays(...)
+  args <- as_anvl_arrays(...)
   shape <- Reduce(broadcast_shapes, lapply(args, shape))
   lapply(args, nv_broadcast_to, shape = shape)
 }
@@ -179,7 +179,7 @@ nv_broadcast_arrays <- function(...) {
 #' nv_broadcast_to(x, shape = c(2, 3))
 #' @export
 nv_broadcast_to <- function(operand, shape) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   shape_op <- shape(operand)
   if (!identical(shape_op, shape)) {
     broadcast_dimensions <- make_broadcast_dimensions(shape_op, shape)
@@ -203,7 +203,7 @@ nv_broadcast_to <- function(operand, shape) {
 #' nv_convert(x, dtype = "f32")
 #' @export
 nv_convert <- function(operand, dtype) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   if (dtype(operand) != as_dtype(dtype)) {
     prim_convert(operand, dtype = as_dtype(dtype), ambiguous = FALSE)
   } else {
@@ -214,7 +214,7 @@ nv_convert <- function(operand, dtype) {
 #' @rdname nv_transpose
 #' @export
 nv_transpose <- function(x, permutation = NULL) {
-  x <- as_anvil_array(x)
+  x <- as_anvl_array(x)
   permutation <- permutation %||% rev(seq_len(ndims(x)))
   prim_transpose(x, permutation)
 }
@@ -237,7 +237,7 @@ nv_transpose <- function(x, permutation = NULL) {
 #' nv_reshape(x, c(2, 3))
 #' @export
 nv_reshape <- function(operand, shape) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   if (!identical(shape(operand), shape)) {
     prim_reshape(operand, shape)
   } else {
@@ -917,7 +917,7 @@ nv_popcnt <- prim_popcnt
 #' nv_clamp(nv_scalar(0), x, nv_scalar(1))
 #' @export
 nv_clamp <- function(min_val, operand, max_val) {
-  args <- as_anvil_arrays(min_val, operand, max_val)
+  args <- as_anvl_arrays(min_val, operand, max_val)
   min_val <- args[[1L]]
   operand <- args[[2L]]
   max_val <- args[[3L]]
@@ -951,7 +951,7 @@ nv_reverse <- prim_reverse
 #' `device` default to those of `like`.
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which values increase.
-#' @param like ([`AnvilArray`])\cr
+#' @param like ([`AnvlArray`])\cr
 #'   Existing array whose attributes are used as defaults
 #'   (only for `nv_iota_like()`).
 #' @template param_dtype
@@ -987,7 +987,7 @@ nv_iota <- prim_iota
 #' @param dtype (`character(1)`)\cr
 #'   Data type. Default `"i32"` when `steps` is `NULL`, `"f32"` when `steps` is given.
 #'   For `nv_seq_like()`, `NULL` uses `dtype(like)`.
-#' @param like ([`AnvilArray`])\cr
+#' @param like ([`AnvlArray`])\cr
 #'   Existing array whose attributes are used as defaults
 #'   (only for `nv_seq_like()`).
 #' @template param_ambiguous
@@ -1044,7 +1044,7 @@ nv_seq <- function(start, end, steps = NULL, dtype = NULL, ambiguous = FALSE, de
 #' nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
 #' @export
 nv_pad <- function(operand, padding_value, edge_padding_low, edge_padding_high, interior_padding = NULL) {
-  args <- as_anvil_arrays(operand, padding_value)
+  args <- as_anvl_arrays(operand, padding_value)
   operand <- args[[1L]]
   padding_value <- args[[2L]]
   rank <- ndims(operand)
@@ -1128,7 +1128,7 @@ nv_matmul <- function(lhs, rhs) {
 #' nv_cholesky(a)
 #' @export
 nv_cholesky <- function(a, lower = TRUE) {
-  a <- as_anvil_array(a)
+  a <- as_anvl_array(a)
   prim_cholesky(a, lower = lower)
 }
 
@@ -1159,7 +1159,7 @@ nv_cholesky <- function(a, lower = TRUE) {
 #' nv_solve(a, b)
 #' @export
 nv_solve <- function(a, b) {
-  args <- as_anvil_arrays(a, b)
+  args <- as_anvl_arrays(a, b)
   a <- args[[1L]]
   b <- args[[2L]]
   L <- prim_cholesky(a, lower = TRUE)
@@ -1180,7 +1180,7 @@ nv_solve <- function(a, b) {
 #' nv_diag(nv_array(c(1, 2, 3)))
 #' @export
 nv_diag <- function(operand) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   n <- shape(operand)[1L]
   zeros <- nv_fill_like(operand, 0, shape = c(n, n))
   idx <- prim_reshape(nv_iota_like(operand, dim = 1L, shape = n, dtype = "i32"), shape = c(n, 1L))
@@ -1252,7 +1252,7 @@ nv_reduce_sum <- prim_reduce_sum
 #' nv_reduce_mean(x, dims = 1L)
 #' @export
 nv_reduce_mean <- function(operand, dims, drop = TRUE) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   nelts <- prod(shape(operand)[dims])
   nv_reduce_sum(operand, dims, drop) / nelts
 }
@@ -1383,7 +1383,7 @@ nv_while <- prim_while
 #' nv_log2(x)
 #' @export
 nv_log2 <- function(operand) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   nv_log(operand) / log(2)
 }
 
@@ -1398,7 +1398,7 @@ nv_log2 <- function(operand) {
 #' nv_log10(x)
 #' @export
 nv_log10 <- function(operand) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   nv_log(operand) / log(10)
 }
 
@@ -1413,7 +1413,7 @@ nv_log10 <- function(operand) {
 #' nv_is_nan(x)
 #' @export
 nv_is_nan <- function(operand) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   operand != operand
 }
 
@@ -1429,7 +1429,7 @@ nv_is_nan <- function(operand) {
 #' nv_is_infinite(x)
 #' @export
 nv_is_infinite <- function(operand) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   !nv_is_finite(operand) & (operand == operand)
 }
 
@@ -1452,7 +1452,7 @@ nv_is_infinite <- function(operand) {
 #' nv_var(x, dims = 1L)
 #' @export
 nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   assert_int(correction)
   nelts <- prod(shape(operand)[dims])
   mean_bc <- nv_broadcast_to(
@@ -1480,7 +1480,7 @@ nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
 #' nv_sd(x, dims = 1L)
 #' @export
 nv_sd <- function(operand, dims, drop = TRUE, correction = 1L) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   nv_sqrt(nv_var(operand, dims, drop, correction))
 }
 
@@ -1500,7 +1500,7 @@ nv_sd <- function(operand, dims, drop = TRUE, correction = 1L) {
 #' nv_squeeze(x)
 #' @export
 nv_squeeze <- function(operand, dims = NULL) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   shp <- shape(operand)
   if (is.null(dims)) {
     new_shape <- shp[shp != 1L]
@@ -1533,7 +1533,7 @@ nv_squeeze <- function(operand, dims = NULL) {
 #' nv_unsqueeze(x, dim = 1L)
 #' @export
 nv_unsqueeze <- function(operand, dim) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   shp <- shape(operand)
   assert_int(dim, lower = 1L, upper = length(shp) + 1L)
   new_shape <- append(shp, 1L, after = dim - 1L)
@@ -1582,7 +1582,7 @@ nv_outer <- function(x, y) {
 #' nv_extract_diag(x)
 #' @export
 nv_extract_diag <- function(operand) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   if (ndims(operand) != 2L) {
     cli_abort("operand must be a 2-D array")
   }
@@ -1615,7 +1615,7 @@ nv_extract_diag <- function(operand) {
 #' nv_trace(x)
 #' @export
 nv_trace <- function(operand) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   diag_vals <- nv_extract_diag(operand)
   nv_reduce_sum(diag_vals, dims = 1L, drop = TRUE)
 }
@@ -1636,7 +1636,7 @@ nv_trace <- function(operand) {
 #' nv_tril(x)
 #' @export
 nv_tril <- function(operand, diagonal = 0L) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   if (ndims(operand) != 2L) {
     cli_abort("operand must be a 2-D array")
   }
@@ -1663,7 +1663,7 @@ nv_tril <- function(operand, diagonal = 0L) {
 #' nv_triu(x)
 #' @export
 nv_triu <- function(operand, diagonal = 0L) {
-  operand <- as_anvil_array(operand)
+  operand <- as_anvl_array(operand)
   if (ndims(operand) != 2L) {
     cli_abort("operand must be a 2-D array")
   }
@@ -1690,10 +1690,10 @@ nv_triu <- function(operand, diagonal = 0L) {
 #' @export
 nv_crossprod <- function(x, y = NULL) {
   if (is.null(y)) {
-    x <- as_anvil_array(x)
+    x <- as_anvl_array(x)
     y <- x
   } else {
-    args <- as_anvil_arrays(x, y)
+    args <- as_anvl_arrays(x, y)
     x <- args[[1L]]
     y <- args[[2L]]
   }
@@ -1716,10 +1716,10 @@ nv_crossprod <- function(x, y = NULL) {
 #' @export
 nv_tcrossprod <- function(x, y = NULL) {
   if (is.null(y)) {
-    x <- as_anvil_array(x)
+    x <- as_anvl_array(x)
     y <- x
   } else {
-    args <- as_anvil_arrays(x, y)
+    args <- as_anvl_arrays(x, y)
     x <- args[[1L]]
     y <- args[[2L]]
   }

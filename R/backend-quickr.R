@@ -8,7 +8,7 @@ NULL
 #' @param x (`character(1)`)\cr
 #'   Device type. Currently only supports `"cpu"`.
 #' @return A `QuickrDevice` object.
-#' @seealso [`nv_device()`], [`AnvilBackendQuickr()`].
+#' @seealso [`nv_device()`], [`AnvlBackendQuickr()`].
 #' @export
 quickr_device <- function(x = "cpu") {
   assert_choice(x, c("cpu"))
@@ -43,12 +43,12 @@ jit_quickr_impl <- function(f, static, cache, unwrap) {
     prep <- jit_prepare_call(match.call(), parent.frame(), static, backend = "quickr")
     avals_in <- to_avals(prep$args_flat, prep$is_static_flat)
 
-    args_flat_nv <- prep$args_flat[!prep$is_static_flat & vapply(prep$args_flat, is_anvil_array, logical(1))]
+    args_flat_nv <- prep$args_flat[!prep$is_static_flat & vapply(prep$args_flat, is_anvl_array, logical(1))]
     arg_devices <- lapply(args_flat_nv, tengen::device)
 
     cache_key <- list(prep$in_tree, avals_in)
     r_args_flat <- lapply(prep$args_flat, function(a) {
-      if (is_anvil_array(a)) as_array(a) else a
+      if (is_anvl_array(a)) as_array(a) else a
     })
     cache_hit <- cache$get(cache_key)
     if (!is.null(cache_hit)) {
@@ -89,7 +89,7 @@ compile_quickr <- function(f, args_flat, in_tree, arg_devices = list(), unwrap =
 #' quickr package to be installed.
 #'
 #' @section Data representation:
-#' An [`AnvilArray`] with `backend = "quickr"` is, under the hood, a plain R
+#' An [`AnvlArray`] with `backend = "quickr"` is, under the hood, a plain R
 #' vector or array (`numeric`, `integer`, or `logical`) stored in the `$data`
 #' field. [`as_array()`] returns the underlying vector/array directly without
 #' copying, and [`nv_array()`] simply wraps an R vector/array. As a
@@ -110,15 +110,15 @@ compile_quickr <- function(f, args_flat, in_tree, arg_devices = list(), unwrap =
 #' @section Quickr JIT arguments:
 #'
 #' * `unwrap` (`logical(1)`, default `FALSE`): if `TRUE`, the compiled function
-#'   returns plain R arrays instead of [`AnvilArray`]s. Useful when the jitted
+#'   returns plain R arrays instead of [`AnvlArray`]s. Useful when the jitted
 #'   function's output is consumed by non-anvl R code and the extra wrapping
 #'   would only get stripped again.
 #'
-#' @return An [`AnvilBackend`] object with subclass `"AnvilBackendQuickr"`.
-#' @seealso [`AnvilBackend()`], [`AnvilBackendXla()`], [`local_backend()`], [`jit()`].
+#' @return An [`AnvlBackend`] object with subclass `"AnvlBackendQuickr"`.
+#' @seealso [`AnvlBackend()`], [`AnvlBackendXla()`], [`local_backend()`], [`jit()`].
 #' @export
-AnvilBackendQuickr <- function() {
-  backend <- AnvilBackend(
+AnvlBackendQuickr <- function() {
+  backend <- AnvlBackend(
     new_data = function(data, dtype, shape, device, ambiguous) {
       if (!is.null(device)) {
         if (is.character(device) && (device != "quickr")) {
@@ -156,7 +156,7 @@ AnvilBackendQuickr <- function() {
       }
       structure(
         list(data = data, dtype = dtype, shape = shape, ambiguous = ambiguous, backend = "quickr"),
-        class = "AnvilArray"
+        class = "AnvlArray"
       )
     },
     dtype = function(x) x$dtype,
@@ -176,8 +176,8 @@ AnvilBackendQuickr <- function() {
       jit_quickr_impl(f, static, cache, unwrap)
     }
   )
-  class(backend) <- c("AnvilBackendQuickr", class(backend))
+  class(backend) <- c("AnvlBackendQuickr", class(backend))
   backend
 }
 
-register_backend("quickr", AnvilBackendQuickr())
+register_backend("quickr", AnvlBackendQuickr())

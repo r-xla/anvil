@@ -97,7 +97,7 @@ test_that("JIT handles constants with ambiguity", {
   expect_equal(result2, nv_scalar(11.0, dtype = "f32"))
 })
 
-test_that("format.AnvilArray shows ambiguity with ?", {
+test_that("format.AnvlArray shows ambiguity with ?", {
   x_amb <- nv_scalar(1.0, ambiguous = TRUE)
   expect_match(format(x_amb), "f32\\?")
 
@@ -116,13 +116,13 @@ test_that("boolean reductions never produce ambiguous output", {
   expect_false(ambiguous(f_all(x_amb)))
 })
 
-test_that("ambiguous() generic works for AnvilArray and AbstractArray", {
-  # AnvilArray
-  x_anvil_amb <- nv_scalar(1.0, ambiguous = TRUE)
-  expect_true(ambiguous(x_anvil_amb))
+test_that("ambiguous() generic works for AnvlArray and AbstractArray", {
+  # AnvlArray
+  x_anvl_amb <- nv_scalar(1.0, ambiguous = TRUE)
+  expect_true(ambiguous(x_anvl_amb))
 
-  x_anvil_nonamb <- nv_array(1.0)
-  expect_false(ambiguous(x_anvil_nonamb))
+  x_anvl_nonamb <- nv_array(1.0)
+  expect_false(ambiguous(x_anvl_nonamb))
 
   # AbstractArray
   aval_amb <- nv_aval("f32", c(2, 3), ambiguous = TRUE)

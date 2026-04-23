@@ -129,7 +129,7 @@ test_that("quickr: autoconverts matrix input", {
   expect_equal(out, nv_array(matrix(1:4, 2, 2), ambiguous = TRUE))
 })
 
-test_that("quickr: nested input tree with mixed AnvilArray/scalar still works", {
+test_that("quickr: nested input tree with mixed AnvlArray/scalar still works", {
   skip_if_no_quickr()
   local_backend("quickr")
   f <- jit(function(pair) pair[[1]] + pair[[2]])

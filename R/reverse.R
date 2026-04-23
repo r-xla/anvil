@@ -36,7 +36,7 @@ prepare_gradient_args <- function(args, wrt) {
 #' @title Transform a graph to its gradient
 #' @description
 #' Low-level graph transformation that appends the reverse pass to a
-#' traced [`AnvilGraph`]. The function `f` represented by `graph` must return a single
+#' traced [`AnvlGraph`]. The function `f` represented by `graph` must return a single
 #' float scalar. The resulting graph computes the gradients of that scalar with respect
 #' to the inputs specified by `wrt`.
 #'
@@ -44,11 +44,11 @@ prepare_gradient_args <- function(args, wrt) {
 #'
 #' This is the building block used by [`gradient()`] and [`value_and_gradient()`]; prefer
 #' those higher-level wrappers unless you need to operate on graphs directly.
-#' @param graph ([`AnvilGraph`])\cr
+#' @param graph ([`AnvlGraph`])\cr
 #'   The graph to transform. Must produce a single scalar float output.
 #' @param wrt (`character`)\cr
 #'   Names of the graph inputs to differentiate with respect to.
-#' @return An [`AnvilGraph`] whose outputs are the requested gradients.
+#' @return An [`AnvlGraph`] whose outputs are the requested gradients.
 #' @seealso [`gradient()`], [`value_and_gradient()`]
 #' @export
 #' @examples
@@ -222,7 +222,7 @@ transform_gradient <- function(graph, wrt) {
 #' same signature as `f` and returns the gradients in the same structure as the inputs
 #' (or the subset selected by `wrt`).
 #' @param f (`function`)\cr
-#'   Function to differentiate. Arguments can be arrayish ([`AnvilArray`]) or
+#'   Function to differentiate. Arguments can be arrayish ([`AnvlArray`]) or
 #'   static (non-array) values. Must return a single scalar float array.
 #' @param wrt (`character` | `integer` | `NULL`)\cr
 #'   Names or positions of the arguments to compute the gradient with respect to.
