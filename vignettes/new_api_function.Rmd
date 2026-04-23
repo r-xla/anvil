@@ -153,6 +153,9 @@ nv_add_scaled <- function(x, y, alpha) {
 
 ## 3. Always output anvil arrays
 
+As long as you normalize the inputs with `as_anvil_array()` / `as_anvil_arrays()` and then build the result from primitives (or from values that already went through that conversion), the output is automatically an `AnvilArray`.
+The one thing to watch for is short-circuit returns: if a code path returns one of the inputs unchanged (see [Return the input unchanged when possible](#return-the-input-unchanged-when-possible)), make sure the conversion step happened first so you are returning an `AnvilArray` and not the original R value.
+
 ## Inputs that require checks must be static
 
 Any argument whose value the API function inspects (e.g. for validation, to pick a code path, or to compute a shape or `dim` index) must be a **static** argument under `jit()`.
@@ -175,3 +178,101 @@ jit(nv_reduce_sum, static = "dims")(x, dims = 1L)
 ```
 
 Arrayish inputs (the actual data being operated on) should *not* be static -- they are meant to be traced.
+
+## Binary element-wise operations
+
+Element-wise binary ops (`nv_add`, `nv_mul`, comparisons, ...) share a fixed preparation pipeline: promote both operands to a common dtype via `nv_promote_to_common()`, then broadcast a scalar operand up to the non-scalar shape via `nv_broadcast_scalars()`, and finally dispatch to the primitive.
+The internal helper `make_do_binary()` in `R/api.R` wraps this pipeline, which is why most of the binary API functions are one-liners:
+
+```r
+make_do_binary <- function(f) {
+  function(lhs, rhs) {
+    args <- nv_promote_to_common(lhs, rhs)
+    args <- nv_broadcast_scalars(args[[1L]], args[[2L]])
+    do.call(f, args)
+  }
+}
+
+nv_add <- make_do_binary(nvl_add)
+```
+
+When adding another element-wise binary primitive, reuse `make_do_binary()`.
+If instead you need full NumPy-style broadcasting (not just scalar-against-tensor -- e.g. for `nv_outer()`), use `nv_broadcast_arrays()` after promotion.
+
+## Converting auxiliary arguments to the operand dtype
+
+Some primitives require all their inputs to share a dtype.
+When your function has one "primary" operand and a few helper arguments (e.g. `min_val` and `max_val` in `nv_clamp()`, or `padding_value` in `nv_pad()`), convert the helpers to match the operand so the user can pass them as literals of a convenient type:
+
+```r
+nv_clamp <- function(min_val, operand, max_val) {
+  args <- as_anvil_arrays(min_val, operand, max_val)
+  op_dtype <- dtype(args[[2L]])
+  nvl_clamp(
+    nv_convert(args[[1L]], op_dtype),
+    args[[2L]],
+    nv_convert(args[[3L]], op_dtype)
+  )
+}
+```
+
+`nv_convert()` is itself a no-op when the dtype already matches (see next section), so the extra calls are cheap.
+
+## Return the input unchanged when possible
+
+Several API functions short-circuit when the requested transformation is already satisfied -- `nv_convert()` returns the input when the dtype matches, `nv_reshape()` when the shape matches, `nv_broadcast_to()` when the shape matches:
+
+```r
+nv_reshape <- function(operand, shape) {
+  operand <- as_anvil_array(operand)
+  if (!identical(shape(operand), shape)) {
+    nvl_reshape(operand, shape)
+  } else {
+    operand
+  }
+}
+```
+
+This avoids emitting no-op graph nodes, which would otherwise clutter the computation graph and make traces harder to read.
+Do this whenever the check is cheap and the no-op case is likely (common call sites, conservative defaults).
+
+## Testing
+
+API functions should work identically in eager mode and under `jit()`, and should preserve the device of their inputs in both modes.
+The `check_eager()` helper in `tests/testthat/helper.R` checks all three properties in one call: it runs the function in eager mode with the array inputs placed on `cpu:1`, runs it `jit()`-compiled with the inputs on `cpu:0`, and asserts that
+
+1. the eager output lives on `cpu:1`,
+2. the jitted output lives on `cpu:0`, and
+3. both outputs agree value-wise (within `tolerance`, default `1e-6`).
+
+```r
+test_that("nv_foo works in eager and jit mode", {
+  x <- nv_array(1:6, dtype = "f32", shape = c(2, 3))
+  check_eager(nv_foo, x)
+})
+
+test_that("nv_foo with a static argument", {
+  x <- nv_array(1:6, dtype = "f32", shape = c(2, 3))
+  check_eager(nv_foo, x, dims = 1L, static = "dims")
+})
+```
+
+Forward any `static` arguments via the `static =` argument so the jit wrapper sees the same declaration you would pass to `jit()` yourself.
+For non-arrayish arguments, `check_eager()` passes them through unchanged -- only `AnvilArray` inputs are placed on the test devices.
+
+## Summary checklist
+
+When adding a new API function, work through the following list:
+
+- [ ] **Backend-agnostic.** The function works with both the xla and quickr backends.
+  - If it creates constants, it uses `nv_*_like()` (or equivalent) so the constants pick up the backend/device from an input.
+  - If it internally jit-compiles a helper, `backend = "auto"` is set on the `jit()` call.
+- [ ] **Normalized inputs.** Arrayish arguments are canonicalized at the top of the function via `as_anvil_array()` (single input) or `as_anvil_arrays()` (multiple inputs).
+- [ ] **Dtype promotion + broadcasting** for element-wise binary ops: go through `nv_promote_to_common()` + `nv_broadcast_scalars()`, typically via `make_do_binary()`.
+- [ ] **Auxiliary args converted** to the operand dtype via `nv_convert()` when the primitive requires matching dtypes.
+- [ ] **No-op shortcuts** return the input unchanged (e.g. reshape to the same shape, convert to the same dtype).
+- [ ] **Static arguments** declared for every value the body inspects (shape, dims, flags, mode strings, dtype specifiers).
+- [ ] **Output is always arrayish** -- short-circuit returns go through `as_anvil_array[s]()` first.
+- [ ] **`_like()` variant** provided for any array-creator function.
+- [ ] **Tests use `check_eager()`** to verify eager/jit parity and device preservation, with all static arguments forwarded via `static =`.
+- [ ] **Exported and registered** -- `@export` tag in the roxygen block, and an entry in `_pkgdown.yml` under the appropriate section.

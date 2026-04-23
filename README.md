@@ -49,21 +49,29 @@ more details.
 
 ## Quick Start
 
-Below, we create an R function and `jit()` it. Then, we call the
-resulting function on `AnvilArray`s, which will compile and subsequently
-execute it.
+We define an R function operating on `AnvilArray`s – the primary data
+type of {anvil}. It can be executed in either *eager* mode (each
+operation is compiled and run immediately) or *jit* mode (the whole
+function is compiled into a single kernel via `jit()`).
 
 ``` r
 library(anvil)
 f <- function(a, b, x) {
   a * x + b
 }
-f_jit <- jit(f)
 
 a <- nv_scalar(1.0, "f32")
 b <- nv_scalar(-2.0, "f32")
 x <- nv_scalar(3.0, "f32")
 
+# Eager mode
+f(a, b, x)
+#> AnvilArray
+#>  1
+#> [ CPUf32{} ]
+
+# JIT mode
+f_jit <- jit(f)
 f_jit(a, b, x)
 #> AnvilArray
 #>  1
@@ -94,6 +102,9 @@ the package website.
 
 - Automatic Differentiation:
   - Gradients for functions with scalar outputs are supported.
+- Eager and JIT mode:
+  - Run operations eagerly for interactive use, or `jit()` entire
+    functions into a single fused kernel for performance.
 - Fast:
   - Code is JIT compiled into a single kernel.
   - Runs on different hardware backends, including CPU and GPU.

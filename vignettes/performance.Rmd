@@ -1,0 +1,159 @@
+---
+title: "Performance"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Performance}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+{anvil} supports two execution modes: *eager mode*, where each operation is compiled and dispatched on its own, and *jit mode*, where an entire function is compiled into a single executable via `jit()`.
+Both modes produce identical results, but they have very different performance characteristics.
+This vignette explains when to prefer each, how the compilation cache works, and how {anvil}'s asynchronous dispatch should shape the code you write around it.
+
+If you haven't yet, read the [Get Started](anvil.html) vignette first.
+
+```{r}
+library(anvil)
+```
+
+## Eager vs. JIT
+
+In eager mode, every `nv_*` call and every overloaded R operator compiles a tiny XLA program, submits it to the device, and returns.
+This is convenient for interactive work -- you can print intermediates, step through with familiar tools, and mix {anvil} code freely with plain R.
+It has two costs:
+
+1. **Per-call overhead.** Each eager call goes through tracing, argument marshalling, and dispatch. The compilation cost is paid only once per input type (see below), but the other overheads are paid every call.
+2. **No cross-operation optimization.** The XLA compiler sees only one operation at a time, so it cannot fuse consecutive operations, eliminate temporaries, or reorder work.
+
+`jit()` compiles a whole function at once, so all of its operations end up in a single graph.
+This lets XLA fuse element-wise operations, reuse buffers, and remove dead code.
+For anything that chains more than a handful of operations or is called repeatedly, `jit()` is almost always the right default.
+
+```{r}
+f <- function(x) {
+  y <- x * x
+  z <- y + x
+  z - 1
+}
+x <- nv_array(1:8, dtype = "f32")
+
+# Eager: three separate dispatches
+f(x)
+
+# JIT: one fused kernel
+f_jit <- jit(f)
+f_jit(x)
+```
+
+Because jitted functions inline each other (see the [Composability](anvil.html#composability) section), you can freely use `nv_*` primitives inside `jit()` without paying any eager-mode overhead -- their operations are traced into the outer graph and compiled alongside the rest.
+
+## Compilation Cache
+
+Compilation itself isn't free -- building an XLA executable can take from milliseconds to seconds depending on the size of the graph.
+{anvil} caches compiled executables keyed by the *abstract types* of the inputs: shape and dtype for `AnvilArray`s, or the value itself for arguments marked `static =`.
+
+```{r}
+g_jit <- jit(function(x, y) {
+  cat("compiling ...\n")
+  x + y
+})
+a <- nv_scalar(1, "f32")
+b <- nv_scalar(2, "f32")
+g_jit(a, b)  # compiles
+g_jit(a, b)  # cache hit, no message
+g_jit(nv_array(1:4, dtype = "f32"), nv_array(5:8, dtype = "f32"))  # recompiles
+```
+
+Two consequences follow:
+
+- Call `jit()` once on a function and reuse the result. Calling `jit()` inside a loop creates a fresh cache on every iteration and defeats the point.
+- Use `static =` sparingly. Every unique value of a static argument forces a recompilation, so reserve it for flags or small integers that only take a handful of distinct values.
+
+See the [JIT Compilation](anvil.html#jit-compilation) section of the getting-started vignette for more on what `jit()` traces and when it recompiles.
+
+## Asynchronous Dispatch
+
+An `AnvilArray` is not raw data -- it wraps a device buffer that may not yet be materialized.
+Both eager and jit calls return immediately with such an array; the device continues computing in the background.
+While it does, R is free to prepare the next call.
+This overlap is where a lot of {anvil}'s speed comes from, especially on GPUs where kernel launches and host-device transfers are expensive.
+
+You only pay the synchronization cost when you actually need the value on the host:
+
+- `as_array(x)` transfers the buffer back to R and returns a plain R array -- this blocks.
+- `print(x)` and comparisons like `expect_equal(as_array(x), ...)` block for the same reason.
+- Control flow that branches on an array value (e.g. `if (as.logical(some_flag))`) blocks to read the flag.
+
+Metadata access -- `shape(x)`, `dtype(x)`, `device(x)` -- never blocks. It is always known from the abstract type.
+
+This design is inherited from the underlying PJRT runtime.
+The [pjrt *Get Started* article](https://r-xla.github.io/pjrt/articles/pjrt.html#asynchronous-dispatch) has a lower-level treatment, including the distinction between `PJRTBuffer` (implicit promise, passed through operations without blocking) and `PJRTArrayPromise` (explicit promise for data in transit back to R).
+
+## Writing Efficient Loops
+
+Async dispatch only helps if you don't accidentally serialize it.
+The classic mistake is reading a value back from the device on every iteration:
+
+```r
+# Bad: blocks every step to print the loss.
+for (i in seq_len(n_steps)) {
+  weights <- step(X, weights, y)
+  cat("loss:", as.numeric(loss(X, weights, y)), "\n")
+}
+```
+
+Even though `step()` would happily run while R prepares the next iteration, the `as.numeric()` call forces R to wait for the device on every loop.
+A few ways to keep the device busy:
+
+- Log less often (every 10 or 100 steps, not every step).
+- Keep the previous iteration's result around and read it *one step late*, so the current step can overlap with the previous transfer.
+- Move the loop itself into `jit()` -- either as an unrolled R loop inside a jitted function, or via `nv_while()` -- so the whole loop becomes one compiled program with no host round-trips at all.
+
+## Mutability and Donation
+
+`AnvilArray`s are immutable and {anvil} follows value semantics (see the [Value Semantics](anvil.html#value-semantics) section of the Get Started vignette).
+This raises the question of how that impacts performance.
+There are two scenarios to distinguish:
+
+1. Updating an `AnvilArray` that lives entirely within a jit-compiled function.
+1. Updating an `AnvilArray` that lives in R, through a jit-compiled function.
+
+**Within a jitted function** there is nothing to worry about.
+XLA optimizes away unnecessary copies, similar to copy-on-write semantics in R: `x <- 1:10; y <- x` conceptually copies `x` on assignment, but the copy is only actually materialized when `y` or `x` is modified.
+Because {anvil} compiles whole functions with shapes known at compile time, it can perform many more such optimizations.
+
+**Across the jit boundary** -- when you assign the output of a jitted function back to an R variable -- XLA cannot see that the input arrays are no longer needed, so it has to leave them intact.
+If you know that some inputs will not be needed after the call (as is the case for "update-calls" like a weight update), you can mark them as `donate` so the compiler is free to reuse their memory:
+
+```r
+update_weights_donatable <- jit(
+  function(X, beta, alpha, y) {
+    lr <- 0.1
+    grads <- model_loss_grad(X, beta, alpha, y)
+    list(
+      beta = beta - lr * grads$beta,
+      alpha = alpha - lr * grads$alpha
+    )
+  },
+  donate = c("beta", "alpha")
+)
+
+weights_out <- update_weights_donatable(X, weights$beta, weights$alpha, y)
+weights$beta  # errors: the buffer was donated to the call
+```
+
+This matters most in training loops over large parameters, where the alternative is allocating a fresh parameter buffer on every step.
+
+## Further Reading
+
+- [Get Started](anvil.html) -- introduction to {anvil}, eager/jit modes, and control flow.
+- [pjrt *Get Started* article](https://r-xla.github.io/pjrt/articles/pjrt.html) -- lower-level view of the runtime, with more detail on async dispatch and writing async-friendly loops.
+- [Asynchronous dispatch in JAX](https://docs.jax.dev/en/latest/async_dispatch.html) -- the design that inspired {anvil}'s execution model.

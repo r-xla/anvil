@@ -16,9 +16,40 @@ toc:
 
 navbar:
   structure:
-    left:  [reference, news, articles, examples, technical, faq]
+    left:  [reference, news, get_started, user_guide, developers, examples]
     right: [search, github, lightswitch]
   components:
+    get_started:
+      text: Get started
+      menu:
+      - text: Installation
+        href: articles/installation.html
+      - text: Get Started
+        href: articles/anvil.html
+    user_guide:
+      text: User guide
+      menu:
+      - text: Type Promotion
+        href: articles/type-promotion.html
+      - text: Subsetting
+        href: articles/subsetting.html
+      - text: Random Number Generation
+        href: articles/random-numbers.html
+      - text: Performance
+        href: articles/performance.html
+      - text: FAQ
+        href: articles/faq.html
+    developers:
+      text: Developers
+      menu:
+      - text: Internals
+        href: articles/internals.html
+      - text: Primitives Overview
+        href: articles/primitives.html
+      - text: Adding a Primitive
+        href: articles/new_primitive.html
+      - text: Adding an API Function
+        href: articles/new_api_function.html
     examples:
       text: Examples
       menu:
@@ -28,32 +59,34 @@ navbar:
         href: articles/metropolis-hastings.html
       - text: Gaussian Process
         href: articles/gaussian-process.html
-    articles:
-      text: Articles
-      menu:
-      - text: Installation
-        href: articles/installation.html
-      - text: Get Started
-        href: articles/anvil.html
-      - text: Type Promotion
-        href: articles/type-promotion.html
-      - text: Subsetting
-        href: articles/subsetting.html
-      - text: Random Number Generation
-        href: articles/random-numbers.html
-    faq:
-      text: FAQ
-      href: articles/faq.html
-    technical:
-      text: Technical
-      menu:
-      - text: Internals
-        href: articles/internals.html
-      - text: Primitives Overview
-        href: articles/primitives.html
-      - text: Extending
-      - text: Adding a Primitive
-        href: articles/new_primitive.html
+
+articles:
+  - title: Get started
+    navbar: ~
+    contents:
+      - installation
+      - anvil
+  - title: User guide
+    navbar: ~
+    contents:
+      - type-promotion
+      - subsetting
+      - random-numbers
+      - performance
+      - faq
+  - title: Developers
+    navbar: ~
+    contents:
+      - internals
+      - primitives
+      - new_primitive
+      - new_api_function
+  - title: Examples
+    navbar: ~
+    contents:
+      - logistic-regression
+      - metropolis-hastings
+      - gaussian-process
 
 reference:
   - title: API Functions
