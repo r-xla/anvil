@@ -7,6 +7,18 @@ test_that("auto-broadcasting higher-dimensional arrays is not supported (it's bu
   )
 })
 
+test_that("nv_fill rejects AnvlArray value with a helpful message", {
+  x <- nv_scalar(1, dtype = "f32")
+  expect_error(
+    nv_fill(x, shape = c(2, 3)),
+    "must be a scalar R value, not an .*AnvlArray"
+  )
+  expect_error(
+    nv_fill(x, shape = c(2, 3)),
+    "nv_broadcast_to"
+  )
+})
+
 test_that("broadcasting scalars", {
   fjit <- jit(nv_add)
   expect_equal(

@@ -30,6 +30,12 @@
 #' nv_fill_like(x, 0)
 #' @export
 nv_fill <- function(value, shape, dtype = NULL, ambiguous = FALSE, device = NULL) {
+  if (is_anvl_array(value)) {
+    cli_abort(c(
+      "{.arg value} must be a scalar R value, not an {.cls AnvlArray}.",
+      i = "To broadcast an existing array to {.arg shape}, use {.fn nv_broadcast_to} instead."
+    ))
+  }
   dtype <- if (is.null(dtype)) {
     default_dtype(value)
   } else {
