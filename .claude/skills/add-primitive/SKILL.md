@@ -47,6 +47,10 @@ Beyond what the vignette covers:
 - Build gradient expressions using `prim_*` primitives — never use R arithmetic directly.
 - For non-differentiable points (e.g. `abs` at 0, `floor` everywhere), follow PyTorch conventions (subgradients, zero gradients, etc.). Read existing rules in `R/rules-reverse.R` for examples.
 
+## Optional: Quickr Rule
+
+If the primitive should also run under `local_backend("quickr")`, add a `quickr` lowering in `R/rules-quickr.R` via `quickr_register_prim_lowerer(prim_<name>, function(...) { ... })`. This emits plain R code for the quickr backend. If you skip it, the primitive still works on the xla backend — the quickr meta test simply excludes it from coverage.
+
 ## API Wrapper (`nv_*`)
 
 Follow the `/add-api-function` skill for this step — it covers design principles (R naming, semantics, generics), implementation, documentation, `_pkgdown.yml` placement, and testing.
@@ -152,9 +156,10 @@ devtools::test()  # or run specific test files
 ## Checklist
 
 - [ ] Can be expressed in StableHLO
-- [ ] Primitive defined: `prim_<name> <- new_primitive("<name>", function(...) { graph_desc_add(self, ...) })` with roxygen docs and `@export` (auto-registered into the internal primitive registry)
+- [ ] Primitive defined: `prim_<name> <- new_primitive("<name>", function(...) { graph_desc_add(self, ...) })` with roxygen docs and `@export` (auto-registered into the internal primitive registry). For simple shapes, use `make_unary_op()` / `make_binary_op()` / `make_reduce_op()` / `make_compare_op()` instead of writing the body by hand.
 - [ ] StableHLO rule: `prim_<name>[["stablehlo"]]` in `R/rules-stablehlo.R`
 - [ ] Reverse rule: `prim_<name>[["reverse"]]` in `R/rules-reverse.R`
+- [ ] Quickr rule (optional): `quickr_register_prim_lowerer(prim_<name>, ...)` in `R/rules-quickr.R`
 - [ ] API wrapper: `nv_<name>` added via `/add-api-function` skill
 - [ ] Tests: primitive forward + reverse, property-based with edge cases (use `describe("prim_<name>", { ... })`)
 - [ ] `devtools::document()` run

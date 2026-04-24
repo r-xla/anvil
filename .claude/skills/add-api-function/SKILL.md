@@ -7,11 +7,18 @@ user_invocable: true
 # Add an API Function (`nv_*`) to anvl
 
 You are adding a user-facing API function to the anvl package.
-API functions (`nv_*`) wrap one or more primitives (`nvl_*`) to provide a convenient, R-idiomatic interface.
+API functions (`nv_*`) call into or more primitives (`prim_*`) to provide a convenient, R-idiomatic interface or add higher level functionality.
 
-See `vignettes/new_api_function.Rmd` for the in-depth explanation of the patterns below; this skill is the short operational checklist.
+See `vignettes/correct_functions.Rmd` for the in-depth explanation of the patterns below; this skill is the short operational checklist.
 
 ## Design Principles
+
+### Work with any backend
+
+API functions shipped with {anvl} must work with **both** the xla and quickr backends. In practice this means:
+
+- If the function internally `jit()`s a helper, set `backend = "auto"` on that `jit()` call so it adapts to the caller's backend.
+- If the function creates a constant inside its body, use the `nv_<op>_like()` variant (see below) so the constant inherits the input's backend/device. Do **not** call `device()` on a traced input -- it fails under `jit()`.
 
 ### Follow R semantics
 
@@ -53,15 +60,15 @@ This automatically adds type promotion and scalar broadcasting.
 
 For simple unary ops that need no extra convenience, alias the primitive directly:
 ```r
-nv_<name> <- nvl_<name>
+nv_<name> <- prim_<name>
 ```
 
 For ops needing custom logic, write a function that normalizes its array inputs at the top:
 
-- `as_anvil_array(x)` for a single array input.
-- `as_anvil_arrays(...)` for multiple array inputs (infers a common device, errors on mismatched backends/devices).
+- `as_anvl_array(x)` for a single array input.
+- `as_anvl_arrays(...)` for multiple array inputs (infers a common device, errors on mismatched backends/devices).
 
-After conversion, use `shape()`, `ndims()`, and `dtype()` directly -- they work on both concrete `AnvilArray`s and the `GraphBox` tracers that appear under `jit()`.
+After conversion, use `shape()`, `ndims()`, and `dtype()` directly -- they work on both concrete `AnvlArray`s and the `GraphBox` tracers that appear under `jit()`.
 Do **not** call `device()` on an arrayish input directly; it fails under tracing. Instead, rely on the `_like` pattern below.
 
 ### Constants and the `_like` pattern
@@ -203,7 +210,7 @@ devtools::test()
 - [ ] Design confirmed with user (naming, semantics, convenience features)
 - [ ] R generic / S3 method added if applicable (in `R/api-generics.R`)
 - [ ] `nv_<name>` implemented with roxygen docs and `@export`
-- [ ] Array inputs normalized at the top via `as_anvil_array()` / `as_anvil_arrays()`
+- [ ] Array inputs normalized at the top via `as_anvl_array()` / `as_anvl_arrays()`
 - [ ] Binary element-wise ops built with `make_do_binary()` (or equivalent `nv_promote_to_common()` + `nv_broadcast_scalars()` pipeline)
 - [ ] Auxiliary arguments converted to the operand dtype via `nv_convert()` where the primitive requires it
 - [ ] No-op shortcuts return the input unchanged (e.g. identity reshape / convert / broadcast)

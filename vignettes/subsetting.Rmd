@@ -180,3 +180,18 @@ x <- nv_array(1:5)
 x[array(c(1L, 1L, 1L))] <- nv_array(c(10L, 20L, 30L))
 x
 ```
+
+### Copying Behavior
+
+In eager mode, `x[i] <- val` always allocates a fresh array, regardless of whether `x` has any other R references.
+This differs from plain R, which can perform the update in place when its reference count for `x` is 1.
+
+```{r}
+x <- nv_array(1:5)
+x[1] <- -1L  # allocates a new length-5 buffer, even though x has only one reference
+x
+```
+
+This is unnecessarily expensive.
+To avoid it, move the update into a `jit()`ed function so XLA can fuse it into the surrounding computation, and optionally use `donate` to let the input buffer be reused for the output.
+See the [Eager subset-assignment always copies](efficiency.html#eager-subset-assignment-always-copies) section of the efficiency vignette for details.

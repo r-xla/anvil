@@ -35,8 +35,14 @@ navbar:
         href: articles/subsetting.html
       - text: Random Number Generation
         href: articles/random-numbers.html
-      - text: Performance
-        href: articles/performance.html
+      - text: JIT Deep Dive
+        href: articles/jit.html
+      - text: Correct Functions
+        href: articles/correct_functions.html
+      - text: Working Around Static Shapes
+        href: articles/static_shapes.html
+      - text: Efficiency
+        href: articles/efficiency.html
       - text: FAQ
         href: articles/faq.html
     developers:
@@ -48,8 +54,6 @@ navbar:
         href: articles/primitives.html
       - text: Adding a Primitive
         href: articles/new_primitive.html
-      - text: Adding an API Function
-        href: articles/new_api_function.html
     examples:
       text: Examples
       menu:
@@ -59,34 +63,6 @@ navbar:
         href: articles/metropolis-hastings.html
       - text: Gaussian Process
         href: articles/gaussian-process.html
-
-articles:
-  - title: Get started
-    navbar: ~
-    contents:
-      - installation
-      - anvl
-  - title: User guide
-    navbar: ~
-    contents:
-      - type-promotion
-      - subsetting
-      - random-numbers
-      - performance
-      - faq
-  - title: Developers
-    navbar: ~
-    contents:
-      - internals
-      - primitives
-      - new_primitive
-      - new_api_function
-  - title: Examples
-    navbar: ~
-    contents:
-      - logistic-regression
-      - metropolis-hastings
-      - gaussian-process
 
 reference:
   - title: API Functions
