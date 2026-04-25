@@ -29,16 +29,14 @@ navbar:
     user_guide:
       text: User guide
       menu:
-      - text: Type Promotion
-        href: articles/type-promotion.html
+      - text: JIT Deep Dive
+        href: articles/jit.html
       - text: Subsetting
         href: articles/subsetting.html
       - text: Random Number Generation
         href: articles/random-numbers.html
-      - text: JIT Deep Dive
-        href: articles/jit.html
-      - text: Correct Functions
-        href: articles/correct_functions.html
+      - text: Type Promotion
+        href: articles/type-promotion.html
       - text: Working Around Static Shapes
         href: articles/static_shapes.html
       - text: Efficiency
@@ -48,12 +46,15 @@ navbar:
     developers:
       text: Developers
       menu:
+      - text: Adding a Primitive
+        href: articles/extending_primitive.html
+      - text: Extending the API
+        href: articles/extending_primitive.html
       - text: Internals
         href: articles/internals.html
-      - text: Primitives Overview
+      - text: Available Primitives
         href: articles/primitives.html
-      - text: Adding a Primitive
-        href: articles/new_primitive.html
+
     examples:
       text: Examples
       menu:

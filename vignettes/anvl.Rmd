@@ -88,7 +88,7 @@ There are two categories of functions in {anvl} that can be used to transform ar
 1. Anvl primitives, that follow the naming scheme `prim_<op>`.
    They define the fundamental operations that can be expressed in {anvl}.
    These functions are rather low-level and often lack some ergonomics such as type promotion or broadcasting.
-   Most users will not require to use them; for an overview see `vignette("primitives")`, and for how to add one see `vignette("new_primitive")`.
+   Most users will not require to use them; for an overview see `vignette("primitives")`, and for how to add one see `vignette("extending_primitive")`.
 1. The main User API (`nv_<op>` functions) and the overloaded R operators that dispatch to them.
    They are built on top of the primitives and either add convenience or higher-level functionality.
 

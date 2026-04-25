@@ -84,6 +84,14 @@ test_that("nv_clamp converts min and max to operand dtype", {
   )
 })
 
+test_that("nv_ifelse broadcasts scalars and promotes branches to a common dtype", {
+  pred <- nv_array(c(TRUE, FALSE, TRUE))
+  expect_equal(
+    nv_ifelse(pred, nv_scalar(1L), nv_array(c(0.5, 0.5, 0.5), dtype = "f32")),
+    nv_array(c(1, 0.5, 1), dtype = "f32")
+  )
+})
+
 describe("nv_concatenate", {
   it("auto-promotes to common", {
     expect_equal(

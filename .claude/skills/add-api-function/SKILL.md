@@ -9,7 +9,7 @@ user_invocable: true
 You are adding a user-facing API function to the anvl package.
 API functions (`nv_*`) call into or more primitives (`prim_*`) to provide a convenient, R-idiomatic interface or add higher level functionality.
 
-See `vignettes/correct_functions.Rmd` for the in-depth explanation of the patterns below; this skill is the short operational checklist.
+See `vignettes/extending_api.Rmd` for the in-depth explanation of the patterns below; this skill is the short operational checklist.
 
 ## Design Principles
 
@@ -54,7 +54,7 @@ The exact convenience a wrapper should add varies by operation. **Propose a wrap
 
 For simple binary ops, use the factory:
 ```r
-nv_<name> <- make_do_binary(nvl_<name>)
+nv_<name> <- make_do_binary(prim_<name>)
 ```
 This automatically adds type promotion and scalar broadcasting.
 

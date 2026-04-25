@@ -6,7 +6,7 @@ user_invocable: true
 
 # Add a New Primitive to anvl
 
-Read `vignettes/new_primitive.Rmd` first — it is the primary guide with a complete walkthrough (primitive creation via `new_primitive()`, stablehlo rule, reverse rule, nv_* API, file organization). This skill covers additional details not in the vignette.
+Read `vignettes/extending_primitive.Rmd` first — it is the primary guide with a complete walkthrough (primitive creation via `new_primitive()`, stablehlo rule, reverse rule, nv_* API, file organization). This skill covers additional details not in the vignette.
 
 ## Before Starting: Check StableHLO Support
 
