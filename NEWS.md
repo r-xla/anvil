@@ -40,6 +40,10 @@
   * `nv_device()` constructs a backend-specific device object (e.g. `nv_device("cpu")`)
     that can be passed as `device` to array constructors like `nv_fill()` or `nv_iota()`.
 * New S3 methods `dim()`, `nrow()`, `ncol()`, and `length()` for anvl arrays.
+* New S3 methods `as.double()` (and the equivalent `as.numeric()`), `as.integer()`,
+  and `as.logical()` for `AnvlArray`. They return a bare R vector, discarding the
+  shape. Each requires a compatible dtype: `as.double()` for floats,
+  `as.integer()` for signed or unsigned integers, and `as.logical()` for `bool`.
 * Printing tensors via `nv_print()` now also works on GPUs.
 * R vectors of length 1 and arrays are now auto-converted when being passed
   to `jit`ted functions.

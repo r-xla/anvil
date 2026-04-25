@@ -254,3 +254,57 @@ length.AnvlBox <- function(x) {
 #' @method length AnvlArray
 #' @export
 length.AnvlArray <- length.AnvlBox
+
+#' @title Coerce AnvlArray to an R Vector
+#' @description
+#' Convert an [`AnvlArray`] to a bare R vector.
+#' The array's shape is discarded; the result is always a flat vector.
+#' Each method requires a compatible dtype:
+#' * `as.double()` / `as.numeric()`: float dtypes (e.g. `f16`, `f32`, `f64`).
+#' * `as.integer()`: signed or unsigned integer dtypes.
+#' * `as.logical()`: `bool`.
+#'
+#' Use [`as_array()`] to obtain an R array that preserves the shape, or
+#' [`nv_convert()`] to change the dtype of an [`AnvlArray`] before coercing.
+#' @param x ([`AnvlArray`])\cr
+#'   Array to coerce.
+#' @param ... Unused.
+#' @return An R vector of the corresponding type (`double`, `integer`, or `logical`).
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(1.5, 2.5, 3.5, 4.5), shape = c(2L, 2L))
+#' as.numeric(x)
+#' as.integer(nv_array(1:6, shape = c(2L, 3L)))
+#' as.logical(nv_array(c(TRUE, FALSE), dtype = "bool"))
+#' @name as-AnvlArray
+NULL
+
+#' @rdname as-AnvlArray
+#' @method as.double AnvlArray
+#' @export
+as.double.AnvlArray <- function(x, ...) {
+  if (!inherits(dtype(x), "FloatType")) {
+    cli_abort("{.fn as.double} requires a float dtype, but got {.val {as.character(dtype(x))}}.")
+  }
+  as.double(as_array(x))
+}
+
+#' @rdname as-AnvlArray
+#' @method as.integer AnvlArray
+#' @export
+as.integer.AnvlArray <- function(x, ...) {
+  dt <- dtype(x)
+  if (!(inherits(dt, "IntegerType") || inherits(dt, "UIntegerType"))) {
+    cli_abort("{.fn as.integer} requires a (signed or unsigned) integer dtype, but got {.val {as.character(dt)}}.")
+  }
+  as.integer(as_array(x))
+}
+
+#' @rdname as-AnvlArray
+#' @method as.logical AnvlArray
+#' @export
+as.logical.AnvlArray <- function(x, ...) {
+  if (!inherits(dtype(x), "BooleanType")) {
+    cli_abort("{.fn as.logical} requires a {.val bool} dtype, but got {.val {as.character(dtype(x))}}.")
+  }
+  as.logical(as_array(x))
+}
