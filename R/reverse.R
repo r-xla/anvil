@@ -212,9 +212,6 @@ transform_gradient <- function(graph, wrt) {
 }
 
 
-# A non-lowering transformation builds a graph and inserts it into the parent graph.
-# This is fine, because such a parent graph always exists.
-
 #' @title Gradient
 #' @description
 #' Returns a new function that computes the gradient of `f` via reverse-mode automatic

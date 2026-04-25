@@ -62,7 +62,7 @@ y[1, 1]
 
 Note that such subset assignment always copies -- unlike plain R, where `y[i] <- val` can be done in place when `y` has only one reference.
 This only applies to *eager* execution; inside a `jit()`-compiled function (covered in the [Just In Time Compilation](#just-in-time-compilation) section below) the XLA compiler can fuse the update with surrounding operations and elide the copy entirely.
-See the [Eager subset-assignment always copies](efficiency.html#eager-subset-assignment-always-copies) section of the efficiency vignette for the implications and how to work around it.
+See the [Eager-mode subset-assignment always copies](efficiency.html#eager-mode-subset-assignment-always-copies) section of the efficiency vignette for the implications and how to work around it.
 
 The `as_array()` function allows to convert `AnvlArray`s back to R objects, which involves copying the data.
 Note that for 0-dimensional arrays, the result is an R vector of length 1, as R arrays cannot have 0 dimensions.
@@ -149,7 +149,7 @@ The output is an executable program that runs independently of the R interpreter
 Note that under the hood, each `prim_*` function is itself a `jit()`-compiled function.
 
 One central assumption about programs that are `jit()`-compiled is that the R function is a *pure* function, so do not rely on side effects such as manipulation of global state within such a function.
-See the [Functional](jit.html#functional) section of the JIT deep dive for a more thorough explanation.
+See the [Tracing Contract](jit.html#the-tracing-contract) section of the JIT deep dive for a more thorough explanation.
 
 At the jit boundary, plain R values are transparently converted to `AnvlArray`s, so you don't need to wrap every input in `nv_array()` yourself.
 This applies to both `nv_*` calls and your own `jit()`-compiled functions:
@@ -254,7 +254,7 @@ abline(as_array(weights$alpha), as_array(weights$beta), col = "red")
 
 One problem with the above approach is that we are creating new weight arrays in each iteration and throw away the previous weights, just like we saw earlier when demonstrating subset assignment.
 We can work around this using the `donate` argument of `jit()`, which allows XLA to overwrite the inputs.
-See the [Mutability and Donation](efficiency.html#mutability-and-donation) section of the efficiency vignette for details.
+See the [Donation](efficiency.html#donation) section of the efficiency vignette for details.
 
 Next, we will discuss control flow.
 

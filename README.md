@@ -40,7 +40,7 @@ pak::pak("r-xla/anvl@*release")
 # Install dev version
 pak::pak("r-xla/anvl")
 # Install CUDA support (linux x86_64): only requires a compatible driver
-install.packages("cuda12.8", repos = c("https://r-xla.r-universe.dev", getOption("repos")))
+install.packages("cuda12.8", repos = "https://mlverse.r-universe.dev")
 ```
 
 Prebuilt [Docker images](https://github.com/r-xla/docker) are also

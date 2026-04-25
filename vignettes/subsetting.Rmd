@@ -194,4 +194,4 @@ x
 
 This is unnecessarily expensive.
 To avoid it, move the update into a `jit()`ed function so XLA can fuse it into the surrounding computation, and optionally use `donate` to let the input buffer be reused for the output.
-See the [Eager subset-assignment always copies](efficiency.html#eager-subset-assignment-always-copies) section of the efficiency vignette for details.
+See the [Eager-mode subset-assignment always copies](efficiency.html#eager-mode-subset-assignment-always-copies) section of the efficiency vignette for details.
