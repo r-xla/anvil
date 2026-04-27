@@ -16,7 +16,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/r-xla/anvl/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/r-xla/anvl/blob/v0.2.0/DESCRIPTION)
 
 Fischer S, Falbel D, Kalinowski T, German N (2026). *anvl: Framework for
 R code transformations*. R package version 0.2.0,
