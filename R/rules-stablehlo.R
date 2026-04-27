@@ -391,14 +391,17 @@ prim_while[["stablehlo"]] <- function(..., cond_graph, body_graph, .env) {
   stablehlo::hlo_while(..., cond = cond_func, body = body_func, simplify = FALSE)
 }
 
-prim_sort[["stablehlo"]] <- function(operand, dim, descending, is_stable, comparator_graph, .env) {
+prim_sort[["stablehlo"]] <- function(..., dim, descending, is_stable, comparator_graph, .env) {
   cmp_func <- stablehlo(comparator_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
-  list(stablehlo::hlo_sort(
-    operand,
+  result <- stablehlo::hlo_sort(
+    ...,
     dimension = dim - 1L,
     is_stable = is_stable,
     comparator = cmp_func
-  ))
+  )
+  # hlo_sort auto-simplifies to a bare FuncValue for single-input; the rule
+  # must always return a list of outputs.
+  if (inherits(result, "FuncValue")) list(result) else result
 }
 
 prim_scatter[["stablehlo"]] <- function(

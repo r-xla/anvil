@@ -601,40 +601,46 @@ test_that("prim_print", {
 })
 
 describe("prim_sort", {
+  it("returns a list (always), even for a single operand", {
+    out <- prim_sort(nv_array(c(3, 1, 2)), dim = 1L)
+    expect_type(out, "list")
+    expect_length(out, 1L)
+  })
+
   it("sorts a 1D float vector ascending by default", {
-    f <- jit(function(x) prim_sort(x, dim = 1L))
+    f <- jit(function(x) prim_sort(x, dim = 1L)[[1L]])
     x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
     expect_equal(as.vector(as_array(f(x))), c(1, 1, 2, 3, 4, 5, 6, 9))
   })
 
   it("sorts descending when descending = TRUE", {
-    f <- jit(function(x) prim_sort(x, dim = 1L, descending = TRUE))
+    f <- jit(function(x) prim_sort(x, dim = 1L, descending = TRUE)[[1L]])
     x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
     expect_equal(as.vector(as_array(f(x))), c(9, 6, 5, 4, 3, 2, 1, 1))
   })
 
   it("sorts integer arrays", {
-    f <- jit(function(x) prim_sort(x, dim = 1L))
+    f <- jit(function(x) prim_sort(x, dim = 1L)[[1L]])
     x <- nv_array(c(5L, 2L, 8L, 1L, 4L), dtype = "i32")
     expect_equal(as.vector(as_array(f(x))), c(1L, 2L, 4L, 5L, 8L))
   })
 
   it("sorts each row (dim = 2) of a matrix", {
-    f <- jit(function(x) prim_sort(x, dim = 2L))
+    f <- jit(function(x) prim_sort(x, dim = 2L)[[1L]])
     m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
     expected <- matrix(c(1, 3, 5, 0, 2, 4), nrow = 2, byrow = TRUE)
     expect_equal(as_array(f(m)), expected)
   })
 
   it("sorts each column (dim = 1) of a matrix", {
-    f <- jit(function(x) prim_sort(x, dim = 1L))
+    f <- jit(function(x) prim_sort(x, dim = 1L)[[1L]])
     m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
     expected <- matrix(c(2, 1, 0, 3, 4, 5), nrow = 2, byrow = TRUE)
     expect_equal(as_array(f(m)), expected)
   })
 
   it("preserves shape and dtype", {
-    f <- jit(function(x) prim_sort(x, dim = 1L))
+    f <- jit(function(x) prim_sort(x, dim = 1L)[[1L]])
     x <- nv_array(c(2.5, -1.5, 0), dtype = "f32")
     out <- f(x)
     expect_equal(shape(out), 3L)
@@ -643,13 +649,44 @@ describe("prim_sort", {
 
   it("works eagerly (outside jit)", {
     x <- nv_array(c(3, 1, 2))
-    expect_equal(as.vector(as_array(prim_sort(x, dim = 1L))), c(1, 2, 3))
+    expect_equal(as.vector(as_array(prim_sort(x, dim = 1L)[[1L]])), c(1, 2, 3))
+  })
+
+  it("variadic: sorts secondary operands by the first key (argsort idiom)", {
+    f <- jit(function(x, idx) prim_sort(x, idx, dim = 1L))
+    x <- nv_array(c(3, 1, 4, 1, 5))
+    idx <- nv_iota(dim = 1L, dtype = "i64", shape = 5L)
+    out <- f(x, idx)
+    expect_length(out, 2L)
+    perm <- as.vector(as_array(out[[2L]]))
+    sorted_vals <- as.vector(as_array(out[[1L]]))
+    # x[perm] must equal sorted_vals
+    xv <- as.vector(as_array(x))
+    expect_equal(xv[perm], sorted_vals)
+  })
+
+  it("variadic: 3 operands all permuted by the first key", {
+    x <- nv_array(c(3, 1, 4, 1, 5))
+    idx <- nv_iota(dim = 1L, dtype = "i64", shape = 5L)
+    y <- nv_array(c(10, 20, 30, 40, 50))
+    out <- prim_sort(x, idx, y, dim = 1L)
+    expect_length(out, 3L)
+    perm <- as.vector(as_array(out[[2L]]))
+    yv <- as.vector(as_array(y))
+    expect_equal(as.vector(as_array(out[[3L]])), yv[perm])
   })
 
   it("rejects out-of-bounds dim", {
     expect_error(
-      jit(function(x) prim_sort(x, dim = 3L))(nv_array(c(1, 2, 3))),
+      jit(function(x) prim_sort(x, dim = 3L)[[1L]])(nv_array(c(1, 2, 3))),
       "valid range"
+    )
+  })
+
+  it("rejects calls with no operands", {
+    expect_error(
+      prim_sort(dim = 1L),
+      "at least one operand"
     )
   })
 })

@@ -570,6 +570,48 @@ prim_atan2[["reverse"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
+# sort reverse: route each upstream gradient back to original positions via
+# the inverse permutation.
+#
+# For y = sort(key)[forward perm π], we have y[i] = key[π[i]], so the gradient
+# satisfies dkey[k] = dy[σ[k]] where σ = π^{-1} (= argsort(π)).
+#
+# Implementation trick: instead of computing σ explicitly and gathering, sort
+# (π, grad) ascending — the second output is grad permuted by argsort(π) = σ,
+# which is exactly the input gradient.
+prim_sort[["reverse"]] <- function(
+  inputs,
+  outputs,
+  grads,
+  dim,
+  descending,
+  is_stable,
+  comparator_graph,
+  .required
+) {
+  required <- as.logical(.required)
+  if (!any(required)) {
+    return(rep(list(NULL), length(inputs)))
+  }
+
+  key <- inputs[[1L]]
+  iota <- prim_iota(dim = dim, dtype = "i64", shape = shape(key), start = 1L)
+  perm <- prim_sort(
+    key,
+    iota,
+    dim = dim,
+    descending = descending,
+    is_stable = is_stable
+  )[[2L]]
+
+  lapply(seq_along(inputs), function(j) {
+    if (!required[[j]]) {
+      return(NULL)
+    }
+    prim_sort(perm, grads[[j]], dim = dim, descending = FALSE, is_stable = FALSE)[[2L]]
+  })
+}
+
 # concatenate reverse: split the gradient back along the concatenation dimension
 prim_concatenate[["reverse"]] <- function(inputs, outputs, grads, dimension, .required) {
   grad <- grads[[1L]]

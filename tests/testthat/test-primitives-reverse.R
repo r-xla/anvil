@@ -820,6 +820,126 @@ describe("gather/scatter reverse via subset operators", {
   })
 })
 
+describe("prim_sort", {
+  it("routes the upstream gradient back to original positions (1D)", {
+    # f(x) = sum(sort(x) * weights). df/dx[k] = weights[sigma[k]] where sigma = argsort(pi).
+    weights <- nv_array(c(1, 2, 3, 4, 5))
+    f <- function(x) {
+      sorted <- prim_sort(x, dim = 1L)[[1L]]
+      nv_reduce_sum(sorted * weights, dims = 1L)
+    }
+    x <- nv_array(c(3, 1, 4, 1.5, 5))
+    # Sorted x = (1, 1.5, 3, 4, 5) coming from positions (2, 4, 1, 3, 5);
+    # so sigma (where each k ended up) = (3, 1, 4, 2, 5).
+    grad <- jit(gradient(f))(x)[[1L]]
+    expect_equal(as.vector(as_array(grad)), c(3, 1, 4, 2, 5))
+  })
+
+  it("handles descending sort", {
+    weights <- nv_array(c(1, 2, 3, 4, 5))
+    f <- function(x) {
+      sorted <- prim_sort(x, dim = 1L, descending = TRUE)[[1L]]
+      nv_reduce_sum(sorted * weights, dims = 1L)
+    }
+    x <- nv_array(c(3, 1, 4, 1.5, 5))
+    # Descending sort: (5, 4, 3, 1.5, 1) from positions (5, 3, 1, 4, 2);
+    # so sigma = (3, 5, 2, 4, 1).
+    grad <- jit(gradient(f))(x)[[1L]]
+    expect_equal(as.vector(as_array(grad)), c(3, 5, 2, 4, 1))
+  })
+
+  it("operates per-row on a matrix (dim = 2)", {
+    weights <- nv_array(matrix(c(1, 2, 3, 1, 2, 3), nrow = 2, byrow = TRUE))
+    f <- function(m) {
+      s <- prim_sort(m, dim = 2L)[[1L]]
+      nv_reduce_sum(s * weights, dims = c(1L, 2L))
+    }
+    m <- nv_array(matrix(c(3, 1, 4, 1.5, 5, 2), nrow = 2, byrow = TRUE))
+    # Row 1: pi = (2, 1, 3) -> sigma = (2, 1, 3) -> grad = weights[1,] permuted = (2, 1, 3)
+    # Row 2: pi = (1, 3, 2) -> sigma = (1, 3, 2) -> grad = (1, 3, 2)
+    grad <- jit(gradient(f))(m)[[1L]]
+    expect_equal(
+      as_array(grad),
+      matrix(c(2, 1, 3, 1, 3, 2), nrow = 2, byrow = TRUE)
+    )
+  })
+
+  it("propagates gradient through carried operands of variadic sort", {
+    # Sort (x, y) by x; differentiate the result w.r.t. y.
+    weights <- nv_array(c(1, 10, 100, 1000, 10000))
+    f <- function(x, y) {
+      out <- prim_sort(x, y, dim = 1L)
+      nv_reduce_sum(out[[2L]] * weights, dims = 1L)
+    }
+    x <- nv_array(c(3, 1, 4, 1.5, 5))
+    y <- nv_array(c(11, 22, 33, 44, 55))
+    grad_y <- jit(gradient(f, wrt = "y"))(x, y)[[1L]]
+    # y is permuted by pi = (2, 4, 1, 3, 5); sigma = (3, 1, 4, 2, 5)
+    # grad y[k] = weights[sigma[k]] -> (100, 1, 1000, 10, 10000)
+    expect_equal(as.vector(as_array(grad_y)), c(100, 1, 1000, 10, 10000))
+  })
+
+  it("variadic key gradient matches single-input case", {
+    # Adding a carried operand must not change the gradient of the key.
+    weights <- nv_array(c(1, 2, 3, 4, 5))
+    fxy <- function(x, y) {
+      out <- prim_sort(x, y, dim = 1L)
+      nv_reduce_sum(out[[1L]] * weights, dims = 1L)
+    }
+    fx <- function(x) {
+      s <- prim_sort(x, dim = 1L)[[1L]]
+      nv_reduce_sum(s * weights, dims = 1L)
+    }
+    x <- nv_array(c(3, 1, 4, 1.5, 5))
+    y <- nv_array(c(11, 22, 33, 44, 55))
+    expect_equal(
+      as_array(jit(gradient(fxy, wrt = "x"))(x, y)[[1L]]),
+      as_array(jit(gradient(fx))(x)[[1L]])
+    )
+  })
+
+  it("variadic: simultaneous gradients w.r.t. both inputs", {
+    weights <- nv_array(c(1, 2, 3, 4, 5))
+    f <- function(x, y) {
+      out <- prim_sort(x, y, dim = 1L)
+      nv_reduce_sum(out[[1L]] * weights, dims = 1L) +
+        nv_reduce_sum(out[[2L]] * weights, dims = 1L)
+    }
+    x <- nv_array(c(3, 1, 4, 1.5, 5))
+    y <- nv_array(c(11, 22, 33, 44, 55))
+    grads <- jit(gradient(f))(x, y)
+    # Both gradients route through the same sigma = (3, 1, 4, 2, 5).
+    expect_equal(as.vector(as_array(grads[[1L]])), c(3, 1, 4, 2, 5))
+    expect_equal(as.vector(as_array(grads[[2L]])), c(3, 1, 4, 2, 5))
+  })
+
+  it("propagates gradient through nv_median (odd length)", {
+    f <- function(x) nv_median(x)
+    x <- nv_array(c(3, 1, 4, 1.5, 5))
+    grad <- jit(gradient(f))(x)[[1L]]
+    # Median = 3 = x[1] (sorted pos 3, original pos 1). Grad has 1 at pos 1.
+    expect_equal(as.vector(as_array(grad)), c(1, 0, 0, 0, 0))
+  })
+
+  it("propagates gradient through nv_median (even length: average of two middles)", {
+    f <- function(x) nv_median(x)
+    x <- nv_array(c(1, 4, 2, 3))
+    grad <- jit(gradient(f))(x)[[1L]]
+    # Sorted = (1, 2, 3, 4); median = (2 + 3) / 2 = 2.5; positions 2 and 3
+    # of sorted come from x[3] and x[4] respectively. Each gets 0.5.
+    expect_equal(as.vector(as_array(grad)), c(0, 0, 0.5, 0.5))
+  })
+
+  it("propagates gradient through nv_top_k", {
+    f <- function(x) nv_reduce_sum(nv_top_k(x, k = 3L), dims = 1L)
+    x <- nv_array(c(3, 1, 4, 1.5, 5))
+    grad <- jit(gradient(f))(x)[[1L]]
+    # Top 3 = (5, 4, 3); each contributes 1 to the sum. Original positions
+    # (5, 3, 1) get 1, others get 0.
+    expect_equal(as.vector(as_array(grad)), c(1, 0, 1, 0, 1))
+  })
+})
+
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvl"))
 }

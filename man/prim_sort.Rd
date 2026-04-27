@@ -4,55 +4,78 @@
 \alias{prim_sort}
 \title{Primitive Sort}
 \usage{
-prim_sort(operand, dim = 1L, descending = FALSE, is_stable = FALSE)
+prim_sort(..., dim, descending = FALSE, is_stable = FALSE)
 }
 \arguments{
-\item{operand}{(\code{\link{arrayish}})\cr
-Arrayish value of any data type.}
+\item{...}{(\code{\link{arrayish}})\cr
+One or more arrays to sort. \strong{The first is the sort key}; the
+remaining operands are carried along under the same permutation.
+All must share the same shape.}
 
 \item{dim}{(\code{integer(1)})\cr
 Dimension along which to sort.}
 
 \item{descending}{(\code{logical(1)})\cr
-If \code{TRUE}, sort in descending order (largest first). Default \code{FALSE}.}
+If \code{TRUE}, sort the key in descending order (largest first). Default
+\code{FALSE}. Carried operands are reordered by the same permutation
+regardless.}
 
 \item{is_stable}{(\code{logical(1)})\cr
-If \code{TRUE}, the sort is stable: the relative order of equal elements is
+If \code{TRUE}, the sort is stable: the relative order of equal \emph{keys} is
 preserved. Default \code{FALSE}.}
 }
 \value{
-\code{\link{arrayish}}\cr
-Has the same shape and data type as the input.
-It is ambiguous if the input is ambiguous.
+\code{list} of \code{\link{arrayish}}\cr
+One sorted output per input, in the same order. Each has the same
+shape, data type, and ambiguity as the corresponding input.
 }
 \description{
-Sorts an array along the given dimension. 1-dimensional slices along
-\code{dim} are sorted independently; all other dimensions are preserved.
+Sorts arrays along the given dimension.
+
+Sorting is determined by the \emph{first operand} only: it is treated as the
+sort key, and any additional operands are reordered under the same
+permutation that sorts the first. This enables idioms like \emph{argsort}
+(sort \code{x} paired with an \code{iota} and read off the second output) and
+key-value sorts (sort \code{keys} paired with \code{values}).
+
+All operands must have the same shape; their dtypes may differ.
+1-dimensional slices along \code{dim} are sorted independently; other
+dimensions are preserved.
 }
+\section{Gradient}{
+
+The reverse rule routes each upstream output gradient back to the
+original positions of the corresponding input via the inverse
+permutation. The carried operands are differentiable independently;
+the key's gradient is unaffected by the carried operands (small
+perturbations of the key change values but not the permutation, except
+on the measure-zero tie set).
+}
+
 \section{Implemented Rules}{
 
 \itemize{
 \item \code{stablehlo}
+\item \code{reverse}
 }
 }
 
 \section{StableHLO}{
 
 Lowers to \code{\link[stablehlo:hlo_sort]{stablehlo::hlo_sort()}} with a comparator that uses
-\code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} (\code{LT} for ascending, \code{GT} for descending).
+\code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} (\code{LT} for ascending, \code{GT} for descending) on
+the first key.
 }
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(3, 1, 4, 1, 5))
-prim_sort(x, dim = 1L)
+prim_sort(x, dim = 1L)[[1L]]
 
-# Descending
-prim_sort(x, dim = 1L, descending = TRUE)
-
-# Sort each row of a matrix
-m <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
-prim_sort(m, dim = 2L)
+# Sort indices by the values (argsort): pair x with iota and read off
+# the second result.
+idx <- nv_iota(dim = 1L, dtype = "i64", shape = 5L)
+prim_sort(x, idx, dim = 1L)[[2L]]
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -1780,7 +1780,7 @@ nv_sort <- function(x, dim = NULL, decreasing = FALSE, stable = FALSE) {
     cli_abort("Cannot sort a 0-dimensional array")
   }
   dim <- dim %||% ndims(x)
-  prim_sort(x, dim = as.integer(dim), descending = decreasing, is_stable = stable)
+  prim_sort(x, dim = as.integer(dim), descending = decreasing, is_stable = stable)[[1L]]
 }
 
 #' @title Top-K Elements
@@ -1813,7 +1813,7 @@ nv_top_k <- function(x, k, dim = NULL) {
   k <- as.integer(k)
   shp <- shape(x)
   assert_int(k, lower = 1L, upper = shp[dim])
-  sorted <- prim_sort(x, dim = dim, descending = TRUE)
+  sorted <- prim_sort(x, dim = dim, descending = TRUE)[[1L]]
   start_indices <- rep(1L, length(shp))
   limit_indices <- shp
   strides <- rep(1L, length(shp))
@@ -1855,7 +1855,7 @@ nv_median <- function(x, dim = NULL) {
   dim <- as.integer(dim %||% ndims(x))
   shp <- shape(x)
   n <- shp[dim]
-  sorted <- prim_sort(x, dim = dim)
+  sorted <- prim_sort(x, dim = dim)[[1L]]
   if (n %% 2L == 1L) {
     .take_at(sorted, dim, (n + 1L) %/% 2L)
   } else {

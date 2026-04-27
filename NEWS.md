@@ -6,8 +6,12 @@
 
 ## New Features
 
-* New primitive: `prim_sort()` sorts an array along a given dimension
-  (ascending or descending, optionally stable). Lowers to `stablehlo::hlo_sort()`.
+* New primitive: `prim_sort()` sorts arrays along a given dimension
+  (ascending or descending, optionally stable). Variadic: the first operand
+  is the key and additional operands are reordered by the same permutation,
+  enabling argsort and key-value sorts. Returns a list of outputs.
+  Lowers to `stablehlo::hlo_sort()`. Differentiable (gradient routes
+  upstream `dy` back to original positions via the inverse permutation).
 * New API functions:
   * `nv_sort()` to sort along a dimension.
   * `nv_top_k()` to return the `k` largest values along a dimension.

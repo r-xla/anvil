@@ -1977,38 +1977,66 @@ prim_while <- new_primitive(
 
 #' @title Primitive Sort
 #' @description
-#' Sorts an array along the given dimension. 1-dimensional slices along
-#' `dim` are sorted independently; all other dimensions are preserved.
-#' @template param_prim_operand_any
+#' Sorts arrays along the given dimension.
+#'
+#' Sorting is determined by the *first operand* only: it is treated as the
+#' sort key, and any additional operands are reordered under the same
+#' permutation that sorts the first. This enables idioms like *argsort*
+#' (sort `x` paired with an `iota` and read off the second output) and
+#' key-value sorts (sort `keys` paired with `values`).
+#'
+#' All operands must have the same shape; their dtypes may differ.
+#' 1-dimensional slices along `dim` are sorted independently; other
+#' dimensions are preserved.
+#' @param ... ([`arrayish`])\cr
+#'   One or more arrays to sort. **The first is the sort key**; the
+#'   remaining operands are carried along under the same permutation.
+#'   All must share the same shape.
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which to sort.
 #' @param descending (`logical(1)`)\cr
-#'   If `TRUE`, sort in descending order (largest first). Default `FALSE`.
+#'   If `TRUE`, sort the key in descending order (largest first). Default
+#'   `FALSE`. Carried operands are reordered by the same permutation
+#'   regardless.
 #' @param is_stable (`logical(1)`)\cr
-#'   If `TRUE`, the sort is stable: the relative order of equal elements is
+#'   If `TRUE`, the sort is stable: the relative order of equal *keys* is
 #'   preserved. Default `FALSE`.
-#' @template return_prim_unary
+#' @return `list` of [`arrayish`]\cr
+#'   One sorted output per input, in the same order. Each has the same
+#'   shape, data type, and ambiguity as the corresponding input.
+#' @section Gradient:
+#' The reverse rule routes each upstream output gradient back to the
+#' original positions of the corresponding input via the inverse
+#' permutation. The carried operands are differentiable independently;
+#' the key's gradient is unaffected by the carried operands (small
+#' perturbations of the key change values but not the permutation, except
+#' on the measure-zero tie set).
 #' @templateVar primitive_id sort
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_sort()] with a comparator that uses
-#' [stablehlo::hlo_compare()] (`LT` for ascending, `GT` for descending).
+#' [stablehlo::hlo_compare()] (`LT` for ascending, `GT` for descending) on
+#' the first key.
 #' @seealso [nv_sort()], [nv_top_k()], [nv_median()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(3, 1, 4, 1, 5))
-#' prim_sort(x, dim = 1L)
+#' prim_sort(x, dim = 1L)[[1L]]
 #'
-#' # Descending
-#' prim_sort(x, dim = 1L, descending = TRUE)
-#'
-#' # Sort each row of a matrix
-#' m <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
-#' prim_sort(m, dim = 2L)
+#' # Sort indices by the values (argsort): pair x with iota and read off
+#' # the second result.
+#' idx <- nv_iota(dim = 1L, dtype = "i64", shape = 5L)
+#' prim_sort(x, idx, dim = 1L)[[2L]]
 #' @export
 prim_sort <- new_primitive(
   "sort",
-  function(operand, dim = 1L, descending = FALSE, is_stable = FALSE) {
-    force(operand)
+  function(..., dim, descending = FALSE, is_stable = FALSE) {
+    operands <- list(...)
+    if (!length(operands)) {
+      cli_abort("{.fn prim_sort} requires at least one operand")
+    }
+    for (i in seq_along(operands)) {
+      force(operands[[i]])
+    }
 
     if (!checkmate::test_integerish(dim, lower = 1, len = 1L)) {
       cli_abort("{.arg dim} must be a positive integer scalar")
@@ -2023,21 +2051,29 @@ prim_sort <- new_primitive(
     current_desc <- .current_descriptor(silent = TRUE)
     desc_cmp <- local_descriptor()
 
-    op_dtype <- dtype_abstract(operand)
-    dummy_args <- list(
-      lhs = AbstractArray(dtype = op_dtype, shape = Shape(integer()), ambiguous = FALSE),
-      rhs = AbstractArray(dtype = op_dtype, shape = Shape(integer()), ambiguous = FALSE)
+    # Comparator: takes (lhs_1, rhs_1, ..., lhs_N, rhs_N) scalars; uses only
+    # the first key. We construct the dummy inputs as a flat list of 2*N
+    # abstract scalars matching each operand's dtype.
+    op_dtypes <- lapply(operands, dtype)
+    dummy_args <- unlist(
+      lapply(op_dtypes, function(dt) {
+        list(
+          nv_aval(dtype = dt, shape = integer()),
+          nv_aval(dtype = dt, shape = integer())
+        )
+      }),
+      recursive = FALSE
     )
     cmp_fn <- if (descending) prim_gt else prim_lt
-    comparator <- function(lhs, rhs) cmp_fn(lhs, rhs)
+    comparator <- function(...) {
+      args <- list(...)
+      cmp_fn(args[[1L]], args[[2L]])
+    }
 
     comparator_graph <- trace_fn(comparator, dummy_args, desc = desc_cmp, lit_to_array = TRUE)
 
-    for (const in comparator_graph$constants) {
-      get_box_or_register_const(current_desc, const)
-    }
-
-    infer_fn <- function(operand, dim, descending, is_stable, comparator_graph) {
+    infer_fn <- function(..., dim, descending, is_stable, comparator_graph) {
+      ops <- list(...)
       dim_const <- stablehlo::r_to_constant(
         as.integer(dim - 1L),
         dtype = "i64",
@@ -2049,20 +2085,24 @@ prim_sort <- new_primitive(
         shape = integer(0)
       )
       cmp_func <- stablehlo(comparator_graph, constants_as_inputs = FALSE)[[1L]]
-      out <- stablehlo::infer_types_sort(
-        at2vt(operand),
+      vts_in <- lapply(ops, at2vt)
+      vts_out <- rlang::exec(
+        stablehlo::infer_types_sort,
+        !!!vts_in,
         dimension = dim_const,
         is_stable = is_stable_const,
         comparator = cmp_func
-      )[[1L]]
-      out <- vt2at(out)
-      out$ambiguous <- operand$ambiguous
-      list(out)
+      )
+      lapply(seq_along(ops), function(i) {
+        out <- vt2at(vts_out[[i]])
+        out$ambiguous <- ops[[i]]$ambiguous
+        out
+      })
     }
 
     graph_desc_add(
       self,
-      args = list(operand = operand),
+      args = operands,
       params = list(
         dim = dim,
         descending = descending,
@@ -2071,7 +2111,7 @@ prim_sort <- new_primitive(
       ),
       infer_fn = infer_fn,
       desc = current_desc
-    )[[1L]]
+    )
   },
   subgraphs = "comparator_graph",
   static = c("dim", "descending", "is_stable")
