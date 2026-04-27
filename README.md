@@ -34,7 +34,7 @@ and `protoc` (protobuf compiler).
 ``` r
 # Install release
 # from r-universe (prebuilt binary)
-install.packages("anvl", repos = c("https://cloud.r-project.org", "https://r-xla.r-universe.dev"))
+install.packages("anvl", repos = c("https://r-xla.r-universe.dev", getOption("repos")))
 # from GitHub (installation from source)
 pak::pak("r-xla/anvl@*release")
 # Install dev version
@@ -49,21 +49,29 @@ more details.
 
 ## Quick Start
 
-Below, we create an R function and `jit()` it. Then, we call the
-resulting function on `AnvlArray`s, which will compile and subsequently
-execute it.
+We define an R function operating on `AnvlArray`s – the primary data
+type of {anvl}. It can be executed in either *eager* mode (each
+operation is performed immediately) or *jit* mode (the whole function is
+compiled into a single kernel via `jit()`).
 
 ``` r
 library(anvl)
 f <- function(a, b, x) {
   a * x + b
 }
-f_jit <- jit(f)
 
 a <- nv_scalar(1.0, "f32")
 b <- nv_scalar(-2.0, "f32")
 x <- nv_scalar(3.0, "f32")
 
+# Eager mode
+f(a, b, x)
+#> AnvlArray
+#>  1
+#> [ CPUf32{} ]
+
+# JIT mode
+f_jit <- jit(f)
 f_jit(a, b, x)
 #> AnvlArray
 #>  1
@@ -94,6 +102,9 @@ the package website.
 
 - Automatic Differentiation:
   - Gradients for functions with scalar outputs are supported.
+- Eager and JIT mode:
+  - Run operations eagerly for interactive use, or `jit()` entire
+    functions into a single fused kernel for performance.
 - Fast:
   - Code is JIT compiled into a single kernel.
   - Runs on different hardware backends, including CPU and GPU.

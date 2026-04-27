@@ -16,9 +16,33 @@ toc:
 
 navbar:
   structure:
-    left:  [reference, news, articles, examples, technical, faq]
+    left:  [reference, news, get_started, user_guide, examples, developers]
     right: [search, github, lightswitch]
   components:
+    get_started:
+      text: Get started
+      menu:
+      - text: Installation
+        href: articles/installation.html
+      - text: Get Started
+        href: articles/anvl.html
+    user_guide:
+      text: User guide
+      menu:
+      - text: JIT Deep Dive
+        href: articles/jit.html
+      - text: Static Shape Restriction
+        href: articles/static_shapes.html
+      - text: Subsetting
+        href: articles/subsetting.html
+      - text: Random Number Generation
+        href: articles/random-numbers.html
+      - text: Type Promotion
+        href: articles/type-promotion.html
+      - text: Efficiency
+        href: articles/efficiency.html
+      - text: FAQ
+        href: articles/faq.html
     examples:
       text: Examples
       menu:
@@ -28,34 +52,62 @@ navbar:
         href: articles/metropolis-hastings.html
       - text: Gaussian Process
         href: articles/gaussian-process.html
-    articles:
-      text: Articles
+    developers:
+      text: Developers
       menu:
-      - text: Installation
-        href: articles/installation.html
-      - text: Get Started
-        href: articles/anvl.html
-      - text: Type Promotion
-        href: articles/type-promotion.html
-      - text: Subsetting
-        href: articles/subsetting.html
-      - text: Random Number Generation
-        href: articles/random-numbers.html
-    faq:
-      text: FAQ
-      href: articles/faq.html
-    technical:
-      text: Technical
-      menu:
+      - text: Adding a Primitive
+        href: articles/extending_primitive.html
+      - text: Extending the API
+        href: articles/extending_primitive.html
       - text: Internals
         href: articles/internals.html
-      - text: Primitives Overview
+      - text: Available Primitives
         href: articles/primitives.html
-      - text: Extending
-      - text: Adding a Primitive
-        href: articles/new_primitive.html
 
 reference:
+  - title: Array
+    desc: Constructing and working with AnvlArrays
+
+  - subtitle: Construction
+    desc: Functions for creating and initializing arrays
+    contents:
+      - AnvlArray
+      - nv_array
+      - nv_scalar
+      - nv_empty
+      - nv_fill
+      - nv_iota
+      - nv_seq
+      - nv_diag
+      - nv_eye
+
+  - subtitle: Attributes
+    desc: Functions for querying array properties
+    contents:
+      - backend
+      - ambiguous
+      - dtype
+      - shape
+      - ndims
+      - device
+      - starts_with("platform")
+
+  - subtitle: Converters
+    desc: Functions for converting arrays
+    contents:
+      - as_array
+      - as_raw
+      - as_dtype
+      - is_dtype
+
+  - subtitle: Serialization
+    desc: Functions for serializing and deserializing arrays
+    contents:
+      - nv_save
+      - nv_read
+      - nv_serialize
+      - nv_unserialize
+
   - title: API Functions
     desc: User-facing `nv_*` functions for array operations
 
@@ -195,6 +247,7 @@ reference:
       - nv_rdunif
       - nv_rng_state
 
+<<<<<<< HEAD
   - title: Array
     desc: Constructing and working with AnvlArrays
 
@@ -239,6 +292,8 @@ reference:
       - nv_serialize
       - nv_unserialize
 
+=======
+>>>>>>> main
   - title: Transformations
     desc: Code transformations
     contents:
