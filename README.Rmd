@@ -55,7 +55,7 @@ See the *Installation* vignette on the package website for more details.
 ## Quick Start
 
 We define an R function operating on `AnvlArray`s -- the primary data type of {anvl}.
-It can be executed in either *eager* mode (each operation is compiled and run immediately) or *jit* mode (the whole function is compiled into a single kernel via `jit()`).
+It can be executed in either *eager* mode (each operation is performed immediately) or *jit* mode (the whole function is compiled into a single kernel via `jit()`).
 
 ```{r}
 library(anvl)
