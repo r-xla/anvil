@@ -600,6 +600,60 @@ test_that("prim_print", {
   expect_equal(x, out)
 })
 
+describe("prim_sort", {
+  it("sorts a 1D float vector ascending by default", {
+    f <- jit(function(x) prim_sort(x, dim = 1L))
+    x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
+    expect_equal(as.vector(as_array(f(x))), c(1, 1, 2, 3, 4, 5, 6, 9))
+  })
+
+  it("sorts descending when descending = TRUE", {
+    f <- jit(function(x) prim_sort(x, dim = 1L, descending = TRUE))
+    x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
+    expect_equal(as.vector(as_array(f(x))), c(9, 6, 5, 4, 3, 2, 1, 1))
+  })
+
+  it("sorts integer arrays", {
+    f <- jit(function(x) prim_sort(x, dim = 1L))
+    x <- nv_array(c(5L, 2L, 8L, 1L, 4L), dtype = "i32")
+    expect_equal(as.vector(as_array(f(x))), c(1L, 2L, 4L, 5L, 8L))
+  })
+
+  it("sorts each row (dim = 2) of a matrix", {
+    f <- jit(function(x) prim_sort(x, dim = 2L))
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    expected <- matrix(c(1, 3, 5, 0, 2, 4), nrow = 2, byrow = TRUE)
+    expect_equal(as_array(f(m)), expected)
+  })
+
+  it("sorts each column (dim = 1) of a matrix", {
+    f <- jit(function(x) prim_sort(x, dim = 1L))
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    expected <- matrix(c(2, 1, 0, 3, 4, 5), nrow = 2, byrow = TRUE)
+    expect_equal(as_array(f(m)), expected)
+  })
+
+  it("preserves shape and dtype", {
+    f <- jit(function(x) prim_sort(x, dim = 1L))
+    x <- nv_array(c(2.5, -1.5, 0), dtype = "f32")
+    out <- f(x)
+    expect_equal(shape(out), 3L)
+    expect_equal(as.character(dtype(out)), "f32")
+  })
+
+  it("works eagerly (outside jit)", {
+    x <- nv_array(c(3, 1, 2))
+    expect_equal(as.vector(as_array(prim_sort(x, dim = 1L))), c(1, 2, 3))
+  })
+
+  it("rejects out-of-bounds dim", {
+    expect_error(
+      jit(function(x) prim_sort(x, dim = 3L))(nv_array(c(1, 2, 3))),
+      "valid range"
+    )
+  })
+})
+
 # we don't want to include torch in Suggests just for the tests, as it's a relatively
 # heavy dependency
 # We have a CI job that installs torch, so it's at least tested once

@@ -604,6 +604,134 @@ describe("nv_seq_like", {
   })
 })
 
+describe("nv_sort", {
+  it("defaults dim to the last dimension", {
+    expect_jit_equal(
+      nv_sort(nv_array(c(3, 1, 4, 1, 5))),
+      nv_array(c(1, 1, 3, 4, 5))
+    )
+  })
+
+  it("sorts decreasing", {
+    expect_jit_equal(
+      nv_sort(nv_array(c(3, 1, 4, 1, 5)), decreasing = TRUE),
+      nv_array(c(5, 4, 3, 1, 1))
+    )
+  })
+
+  it("defaults to last dim for matrices (rows)", {
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    expected <- nv_array(matrix(c(1, 3, 5, 0, 2, 4), nrow = 2, byrow = TRUE))
+    expect_jit_equal(nv_sort(m), expected)
+  })
+
+  it("errors on a 0-dimensional input", {
+    expect_error(nv_sort(nv_scalar(1)), "0-dimensional")
+  })
+})
+
+describe("nv_top_k", {
+  it("returns the k largest values along the last dim", {
+    expect_jit_equal(
+      nv_top_k(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)), k = 3L),
+      nv_array(c(9, 6, 5))
+    )
+  })
+
+  it("operates per-row on a matrix when dim is the last dim", {
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    out <- jit(nv_top_k, static = "k")(m, k = 2L)
+    expect_equal(shape(out), c(2L, 2L))
+    expect_equal(as_array(out), matrix(c(5, 3, 4, 2), nrow = 2, byrow = TRUE))
+  })
+
+  it("errors when k > size of dim", {
+    expect_error(nv_top_k(nv_array(c(1, 2, 3)), k = 5L))
+  })
+})
+
+describe("nv_median", {
+  it("returns the middle element for odd length", {
+    expect_jit_equal(
+      nv_median(nv_array(c(3, 1, 4, 1, 5))),
+      nv_scalar(3)
+    )
+  })
+
+  it("averages the two middle elements for even length", {
+    expect_jit_equal(
+      nv_median(nv_array(c(1, 2, 3, 4))),
+      nv_scalar(2.5)
+    )
+  })
+
+  it("operates row-wise by default on a matrix", {
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    out <- jit(nv_median)(m)
+    expect_equal(as.vector(as_array(out)), c(3, 2))
+  })
+
+  it("dispatches via the median() generic", {
+    expect_equal(as_array(median(nv_array(c(1, 2, 3, 4)))), as_array(nv_scalar(2.5)))
+    expect_equal(
+      as_array(jit(function(x) median(x))(nv_array(c(1, 2, 3, 4, 5)))),
+      as_array(nv_scalar(3))
+    )
+  })
+
+  it("errors when na.rm = TRUE", {
+    x <- nv_array(c(1, 2, 3, 4))
+    expect_error(median(x, na.rm = TRUE), "na.rm = TRUE")
+  })
+})
+
+describe("mean()", {
+  it("errors when na.rm = TRUE", {
+    x <- nv_array(c(1, 2, 3, 4))
+    expect_error(mean(x, na.rm = TRUE), "na.rm = TRUE")
+  })
+
+  it("errors when trim is non-zero", {
+    x <- nv_array(c(1, 2, 3, 4))
+    expect_error(mean(x, trim = 0.1), "trim")
+  })
+})
+
+describe("nv_argmax / nv_argmin", {
+  it("returns the index (1-based) of the maximum", {
+    expect_jit_equal(
+      nv_argmax(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))),
+      nv_scalar(6L, dtype = "i64")
+    )
+  })
+
+  it("returns the index of the minimum", {
+    expect_jit_equal(
+      nv_argmin(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))),
+      nv_scalar(2L, dtype = "i64")
+    )
+  })
+
+  it("breaks ties by returning the smallest index", {
+    expect_jit_equal(
+      nv_argmax(nv_array(c(1, 5, 5, 3))),
+      nv_scalar(2L, dtype = "i64")
+    )
+  })
+
+  it("operates per-row on a matrix by default", {
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    out <- jit(nv_argmax)(m)
+    expect_equal(as.vector(as_array(out)), c(3L, 2L))
+  })
+
+  it("supports an explicit dim", {
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    out <- jit(nv_argmax, static = "dim")(m, dim = 1L)
+    expect_equal(as.vector(as_array(out)), c(1L, 2L, 1L))
+  })
+})
+
 describe("cross-device eager (check_eager)", {
   # Test data
   vec_f <- nv_array(c(1, 2, 3))
@@ -707,7 +835,7 @@ describe("cross-device eager (check_eager)", {
 
   it("reductions", {
     check_eager(function(x) nv_reduce_sum(x, dims = 1L), mat_2x3)
-    check_eager(function(x) nv_reduce_mean(x, dims = 1L), nv_array(matrix(1:6, 2), dtype = "f32"))
+    check_eager(function(x) nv_mean(x, dims = 1L), nv_array(matrix(1:6, 2), dtype = "f32"))
     check_eager(function(x) nv_reduce_prod(x, dims = 1L), mat_2x3)
     check_eager(function(x) nv_reduce_max(x, dims = 1L), mat_2x3)
     check_eager(function(x) nv_reduce_min(x, dims = 1L), mat_2x3)
@@ -754,5 +882,16 @@ describe("cross-device eager (check_eager)", {
     check_eager(function(like) nv_array_like(like, c(7L, 8L, 9L)), vec_i)
     check_eager(function(like) nv_scalar_like(like, 7L), vec_i)
     check_eager(function(like) nv_empty_like(like, shape = c(2, 2)), vec_f)
+  })
+
+  it("sorting / searching", {
+    sortable <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
+    sortable_even <- nv_array(c(1, 2, 3, 4))
+    check_eager(nv_sort, sortable)
+    check_eager(function(x) nv_top_k(x, k = 3L), sortable)
+    check_eager(nv_median, sortable)
+    check_eager(nv_median, sortable_even)
+    check_eager(nv_argmax, sortable)
+    check_eager(nv_argmin, sortable)
   })
 })

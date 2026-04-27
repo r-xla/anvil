@@ -1975,6 +1975,108 @@ prim_while <- new_primitive(
   static = 2:3
 )
 
+#' @title Primitive Sort
+#' @description
+#' Sorts an array along the given dimension. 1-dimensional slices along
+#' `dim` are sorted independently; all other dimensions are preserved.
+#' @template param_prim_operand_any
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which to sort.
+#' @param descending (`logical(1)`)\cr
+#'   If `TRUE`, sort in descending order (largest first). Default `FALSE`.
+#' @param is_stable (`logical(1)`)\cr
+#'   If `TRUE`, the sort is stable: the relative order of equal elements is
+#'   preserved. Default `FALSE`.
+#' @template return_prim_unary
+#' @templateVar primitive_id sort
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_sort()] with a comparator that uses
+#' [stablehlo::hlo_compare()] (`LT` for ascending, `GT` for descending).
+#' @seealso [nv_sort()], [nv_top_k()], [nv_median()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(3, 1, 4, 1, 5))
+#' prim_sort(x, dim = 1L)
+#'
+#' # Descending
+#' prim_sort(x, dim = 1L, descending = TRUE)
+#'
+#' # Sort each row of a matrix
+#' m <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+#' prim_sort(m, dim = 2L)
+#' @export
+prim_sort <- new_primitive(
+  "sort",
+  function(operand, dim = 1L, descending = FALSE, is_stable = FALSE) {
+    force(operand)
+
+    if (!checkmate::test_integerish(dim, lower = 1, len = 1L)) {
+      cli_abort("{.arg dim} must be a positive integer scalar")
+    }
+    if (!checkmate::test_flag(descending)) {
+      cli_abort("{.arg descending} must be a flag")
+    }
+    if (!checkmate::test_flag(is_stable)) {
+      cli_abort("{.arg is_stable} must be a flag")
+    }
+
+    current_desc <- .current_descriptor(silent = TRUE)
+    desc_cmp <- local_descriptor()
+
+    op_dtype <- dtype_abstract(operand)
+    dummy_args <- list(
+      lhs = AbstractArray(dtype = op_dtype, shape = Shape(integer()), ambiguous = FALSE),
+      rhs = AbstractArray(dtype = op_dtype, shape = Shape(integer()), ambiguous = FALSE)
+    )
+    cmp_fn <- if (descending) prim_gt else prim_lt
+    comparator <- function(lhs, rhs) cmp_fn(lhs, rhs)
+
+    comparator_graph <- trace_fn(comparator, dummy_args, desc = desc_cmp, lit_to_array = TRUE)
+
+    for (const in comparator_graph$constants) {
+      get_box_or_register_const(current_desc, const)
+    }
+
+    infer_fn <- function(operand, dim, descending, is_stable, comparator_graph) {
+      dim_const <- stablehlo::r_to_constant(
+        as.integer(dim - 1L),
+        dtype = "i64",
+        shape = integer(0)
+      )
+      is_stable_const <- stablehlo::r_to_constant(
+        is_stable,
+        dtype = "i1",
+        shape = integer(0)
+      )
+      cmp_func <- stablehlo(comparator_graph, constants_as_inputs = FALSE)[[1L]]
+      out <- stablehlo::infer_types_sort(
+        at2vt(operand),
+        dimension = dim_const,
+        is_stable = is_stable_const,
+        comparator = cmp_func
+      )[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- operand$ambiguous
+      list(out)
+    }
+
+    graph_desc_add(
+      self,
+      args = list(operand = operand),
+      params = list(
+        dim = dim,
+        descending = descending,
+        is_stable = is_stable,
+        comparator_graph = comparator_graph
+      ),
+      infer_fn = infer_fn,
+      desc = current_desc
+    )[[1L]]
+  },
+  subgraphs = "comparator_graph",
+  static = c("dim", "descending", "is_stable")
+)
+
 # Print primitive
 #' @title Primitive Print
 #' @description

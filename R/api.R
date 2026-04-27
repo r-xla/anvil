@@ -1246,9 +1246,10 @@ nv_eye <- function(n, dtype = "f32", device = NULL) {
 #' @export
 nv_reduce_sum <- prim_reduce_sum
 
-#' @title Mean Reduction
+#' @title Mean
 #' @description
-#' Computes the arithmetic mean along the specified dimensions.
+#' Computes the arithmetic mean along the specified dimensions. You can also
+#' use `mean()` (which reduces over all dimensions, like base R).
 #' @details
 #' Implemented as `nv_reduce_sum(operand, dims, drop) / n` where `n` is the
 #' product of the reduced dimension sizes.
@@ -1258,9 +1259,9 @@ nv_reduce_sum <- prim_reduce_sum
 #' @seealso [nv_reduce_sum()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
-#' nv_reduce_mean(x, dims = 1L)
+#' nv_mean(x, dims = 1L)
 #' @export
-nv_reduce_mean <- function(operand, dims, drop = TRUE) {
+nv_mean <- function(operand, dims, drop = TRUE) {
   operand <- as_anvl_array(operand)
   nelts <- prod(shape(operand)[dims])
   nv_reduce_sum(operand, dims, drop) / nelts
@@ -1455,7 +1456,7 @@ nv_is_infinite <- function(operand) {
 #' @param correction (`integer(1)`)\cr
 #'   Degrees of freedom correction. Default is `1` (Bessel's correction).
 #' @template return_reduce
-#' @seealso [nv_sd()], [nv_reduce_mean()]
+#' @seealso [nv_sd()], [nv_mean()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3, 4, 5))
 #' nv_var(x, dims = 1L)
@@ -1465,7 +1466,7 @@ nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
   assert_int(correction)
   nelts <- prod(shape(operand)[dims])
   mean_bc <- nv_broadcast_to(
-    nv_reduce_mean(operand, dims, drop = FALSE),
+    nv_mean(operand, dims, drop = FALSE),
     shape(operand)
   )
   diff <- operand - mean_bc
@@ -1483,7 +1484,7 @@ nv_var <- function(operand, dims, drop = TRUE, correction = 1L) {
 #' @param correction (`integer(1)`)\cr
 #'   Degrees of freedom correction. Default is `1` (Bessel's correction).
 #' @template return_reduce
-#' @seealso [nv_var()], [nv_reduce_mean()]
+#' @seealso [nv_var()], [nv_mean()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3, 4, 5))
 #' nv_sd(x, dims = 1L)
@@ -1733,4 +1734,191 @@ nv_tcrossprod <- function(x, y = NULL) {
     y <- args[[2L]]
   }
   nv_matmul(x, nv_transpose(y))
+}
+
+# Sorting and searching --------------------------------------------------------
+
+# Slice along a single dim at a single (1-based) index, dropping the dim.
+.take_at <- function(x, dim, idx) {
+  shp <- shape(x)
+  start_indices <- rep(1L, length(shp))
+  limit_indices <- shp
+  strides <- rep(1L, length(shp))
+  start_indices[dim] <- idx
+  limit_indices[dim] <- idx
+  sliced <- prim_static_slice(x, start_indices, limit_indices, strides)
+  prim_reshape(sliced, shp[-dim])
+}
+
+#' @title Sort
+#' @description
+#' Sorts an array along a dimension. You can also use `sort()` for 1-D arrays.
+#' @param x ([`arrayish`])\cr
+#'   The array to sort.
+#' @param dim (`integer(1)` | `NULL`)\cr
+#'   Dimension along which to sort. If `NULL` (default), uses the last
+#'   dimension.
+#' @param decreasing (`logical(1)`)\cr
+#'   If `TRUE`, sort in decreasing order. Default `FALSE`.
+#' @param stable (`logical(1)`)\cr
+#'   If `TRUE`, the sort is stable. Default `FALSE`.
+#' @return [`arrayish`]\cr
+#'   Sorted along `dim`. Same shape and data type as `x`.
+#' @seealso [prim_sort()] for the underlying primitive,
+#'   [nv_top_k()], [nv_median()], [nv_argmax()], [nv_argmin()].
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
+#' nv_sort(x)
+#' nv_sort(x, decreasing = TRUE)
+#'
+#' m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+#' nv_sort(m, dim = 2L)
+#' @export
+nv_sort <- function(x, dim = NULL, decreasing = FALSE, stable = FALSE) {
+  x <- as_anvl_array(x)
+  if (ndims(x) == 0L) {
+    cli_abort("Cannot sort a 0-dimensional array")
+  }
+  dim <- dim %||% ndims(x)
+  prim_sort(x, dim = as.integer(dim), descending = decreasing, is_stable = stable)
+}
+
+#' @title Top-K Elements
+#' @description
+#' Returns the `k` largest values along a dimension, sorted in decreasing order.
+#' @param x ([`arrayish`])\cr
+#'   The array.
+#' @param k (`integer(1)`)\cr
+#'   Number of top elements to return. Must satisfy `1 <= k <= shape(x)[dim]`.
+#' @param dim (`integer(1)` | `NULL`)\cr
+#'   Dimension along which to take the top `k`. If `NULL` (default),
+#'   uses the last dimension.
+#' @return [`arrayish`]\cr
+#'   Same shape as `x` except `dim` has size `k`. Values are sorted
+#'   in decreasing order along `dim`.
+#' @seealso [nv_sort()], [prim_sort()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
+#' nv_top_k(x, k = 3L)
+#'
+#' m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+#' nv_top_k(m, k = 2L, dim = 2L)
+#' @export
+nv_top_k <- function(x, k, dim = NULL) {
+  x <- as_anvl_array(x)
+  if (ndims(x) == 0L) {
+    cli_abort("Cannot take top-k of a 0-dimensional array")
+  }
+  dim <- as.integer(dim %||% ndims(x))
+  k <- as.integer(k)
+  shp <- shape(x)
+  assert_int(k, lower = 1L, upper = shp[dim])
+  sorted <- prim_sort(x, dim = dim, descending = TRUE)
+  start_indices <- rep(1L, length(shp))
+  limit_indices <- shp
+  strides <- rep(1L, length(shp))
+  limit_indices[dim] <- k
+  prim_static_slice(sorted, start_indices, limit_indices, strides)
+}
+
+#' @title Median
+#' @name nv_median
+#' @description
+#' Computes the median along a dimension. For an even-length axis, the
+#' average of the two middle values is returned (matching base R's
+#' `median()`).
+#'
+#' You can also use `median()` directly on an [`AnvlArray`] or [`AnvlBox`].
+#' @param x ([`arrayish`])\cr
+#'   The array.
+#' @param dim (`integer(1)` | `NULL`)\cr
+#'   Dimension along which to compute the median. If `NULL` (default),
+#'   uses the last dimension.
+#' @param na.rm Included for compatibility with the [stats::median()] generic.
+#'   anvl arrays do not carry `NA`s; passing `na.rm = TRUE` raises an error.
+#' @param ... Forwarded to `nv_median()`.
+#' @return [`arrayish`]\cr
+#'   Same shape as `x` with `dim` removed.
+#' @seealso [nv_sort()], [prim_sort()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' nv_median(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
+#' median(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
+#' nv_median(nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)),
+#'   dim = 2L
+#' )
+#' @export
+nv_median <- function(x, dim = NULL) {
+  x <- as_anvl_array(x)
+  if (ndims(x) == 0L) {
+    cli_abort("Cannot compute median of a 0-dimensional array")
+  }
+  dim <- as.integer(dim %||% ndims(x))
+  shp <- shape(x)
+  n <- shp[dim]
+  sorted <- prim_sort(x, dim = dim)
+  if (n %% 2L == 1L) {
+    .take_at(sorted, dim, (n + 1L) %/% 2L)
+  } else {
+    lo <- .take_at(sorted, dim, n %/% 2L)
+    hi <- .take_at(sorted, dim, n %/% 2L + 1L)
+    nv_div(nv_add(lo, hi), 2)
+  }
+}
+
+#' @title Index of the Maximum
+#' @description
+#' Returns the index of the maximum value along a dimension. Ties are broken
+#' by returning the smallest index.
+#' @param x ([`arrayish`])\cr
+#'   The array.
+#' @param dim (`integer(1)` | `NULL`)\cr
+#'   Dimension along which to find the index. If `NULL` (default), uses
+#'   the last dimension.
+#' @return [`arrayish`] of dtype `i64`\cr
+#'   Same shape as `x` with `dim` removed.
+#' @seealso [nv_argmin()], [nv_reduce_max()].
+#' @examplesIf pjrt::plugins_downloaded()
+#' nv_argmax(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
+#' nv_argmax(nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)),
+#'   dim = 2L
+#' )
+#' @export
+nv_argmax <- function(x, dim = NULL) {
+  .arg_extreme(x, dim, descending = TRUE)
+}
+
+#' @title Index of the Minimum
+#' @description
+#' Returns the index of the minimum value along a dimension. Ties are broken
+#' by returning the smallest index.
+#' @param x ([`arrayish`])\cr
+#'   The array.
+#' @param dim (`integer(1)` | `NULL`)\cr
+#'   Dimension along which to find the index. If `NULL` (default), uses
+#'   the last dimension.
+#' @return [`arrayish`] of dtype `i64`\cr
+#'   Same shape as `x` with `dim` removed.
+#' @seealso [nv_argmax()], [nv_reduce_min()].
+#' @examplesIf pjrt::plugins_downloaded()
+#' nv_argmin(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
+#' @export
+nv_argmin <- function(x, dim = NULL) {
+  .arg_extreme(x, dim, descending = FALSE)
+}
+
+.arg_extreme <- function(x, dim, descending) {
+  x <- as_anvl_array(x)
+  if (ndims(x) == 0L) {
+    cli_abort("Cannot take arg-extreme of a 0-dimensional array")
+  }
+  dim <- as.integer(dim %||% ndims(x))
+  shp <- shape(x)
+  reducer <- if (descending) prim_reduce_max else prim_reduce_min
+  extremum <- reducer(x, dims = dim, drop = FALSE)
+  extremum <- nv_broadcast_to(extremum, shp)
+  is_extremum <- prim_eq(x, extremum)
+  idx <- nv_iota_like(x, dim = dim, dtype = "i64", shape = shp, start = 1L)
+  big <- nv_fill_like(x, .Machine$integer.max, dtype = "i64", shape = shp)
+  selected <- prim_ifelse(is_extremum, idx, big)
+  prim_reduce_min(selected, dims = dim, drop = TRUE)
 }

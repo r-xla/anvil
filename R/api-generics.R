@@ -111,11 +111,19 @@ Summary.AnvlBox <- function(..., na.rm) {
 #' @export
 Summary.AnvlArray <- Summary.AnvlBox
 
+#' @rdname nv_mean
 #' @export
-mean.AnvlBox <- function(x, ...) {
-  nv_reduce_mean(x, dims = seq_along(shape(x)), drop = TRUE)
+mean.AnvlBox <- function(x, trim = 0, na.rm = FALSE, ...) {
+  if (isTRUE(na.rm)) {
+    cli_abort("{.code na.rm = TRUE} is not supported: anvl arrays do not carry {.code NA}s.")
+  }
+  if (!identical(trim, 0)) {
+    cli_abort("{.arg trim} is not supported by {.fn mean} for anvl arrays.")
+  }
+  nv_mean(x, dims = seq_along(shape(x)), drop = TRUE)
 }
 
+#' @rdname nv_mean
 #' @export
 mean.AnvlArray <- mean.AnvlBox
 
@@ -178,6 +186,19 @@ t.AnvlBox <- function(x) {
 
 #' @export
 t.AnvlArray <- t.AnvlBox
+
+#' @rdname nv_median
+#' @export
+median.AnvlBox <- function(x, na.rm = FALSE, ...) {
+  if (isTRUE(na.rm)) {
+    cli_abort("{.code na.rm = TRUE} is not supported: anvl arrays do not carry {.code NA}s.")
+  }
+  nv_median(x, ...)
+}
+
+#' @rdname nv_median
+#' @export
+median.AnvlArray <- median.AnvlBox
 
 #' @rdname nv_subset
 #' @export

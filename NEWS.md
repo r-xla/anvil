@@ -1,5 +1,23 @@
 # anvl (development version)
 
+## Breaking Changes
+
+* `nv_reduce_mean()` was renamed to `nv_mean()`.
+
+## New Features
+
+* New primitive: `prim_sort()` sorts an array along a given dimension
+  (ascending or descending, optionally stable). Lowers to `stablehlo::hlo_sort()`.
+* New API functions:
+  * `nv_sort()` to sort along a dimension.
+  * `nv_top_k()` to return the `k` largest values along a dimension.
+  * `nv_median()` to compute the median along a dimension. Also dispatches
+    from base R's `median()`.
+  * `nv_argmax()` and `nv_argmin()` to find the index of the maximum/minimum
+    along a dimension. Ties are broken by returning the smallest index.
+* `mean()` and `median()` now error when called with `na.rm = TRUE`, since
+  anvl arrays do not carry `NA`s.
+
 # anvl 0.2.0
 
 ## Breaking Changes
