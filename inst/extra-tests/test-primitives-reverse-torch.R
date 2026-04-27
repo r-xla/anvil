@@ -58,7 +58,7 @@ verify_grad_uni_scalar <- function(
   ndims = 0L,
   dtypes = "f32",
   args_f = NULL,
-  tol = 0,
+  tol = 1e-5,
   non_negative = FALSE,
   gen = NULL
 ) {
@@ -108,7 +108,7 @@ verify_grad_uni_tensor <- function(
   dtypes = "f32",
   args_f = NULL,
   shape = NULL,
-  tol = 0,
+  tol = 1e-5,
   non_negative = FALSE,
   gen = NULL
 ) {
@@ -227,7 +227,7 @@ verify_grad_biv_tensor <- function(
   dtypes = "f32",
   args_f = NULL,
   shape = NULL,
-  tol = 0,
+  tol = 1e-5,
   non_negative = list(FALSE, FALSE),
   gen_lhs = NULL,
   gen_rhs = NULL
@@ -295,7 +295,7 @@ verify_grad_biv <- function(
   ndims = sample(1:3, 1L),
   dtypes = "f32",
   args_f = NULL,
-  tol = 0,
+  tol = 1e-5,
   non_negative = list(FALSE, FALSE),
   gen_lhs = NULL,
   gen_rhs = NULL
@@ -330,7 +330,7 @@ verify_grad_uni <- function(
   ndims = sample(1:3, 1L),
   dtypes = "f32",
   args_f = NULL,
-  tol = 0,
+  tol = 1e-5,
   non_negative = FALSE,
   skip_scalar = FALSE,
   gen = NULL

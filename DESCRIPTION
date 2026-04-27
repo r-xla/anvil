@@ -19,7 +19,7 @@ Imports:
     checkmate,
     cli,
     methods,
-    pjrt (>= 0.2.0),
+    pjrt (>= 0.3.0),
     rlang,
     safetensors (>= 0.2.0),
     stablehlo (>= 0.2.0),
