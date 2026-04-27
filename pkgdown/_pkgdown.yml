@@ -99,6 +99,7 @@ reference:
       - as_raw
       - as_dtype
       - is_dtype
+      - as-AnvlArray
 
   - subtitle: Serialization
     desc: Functions for serializing and deserializing arrays
@@ -246,50 +247,6 @@ reference:
       - nv_rbinom
       - nv_rdunif
       - nv_rng_state
-
-  - title: Array
-    desc: Constructing and working with AnvlArrays
-
-  - subtitle: Construction
-    desc: Functions for creating and initializing arrays
-    contents:
-      - AnvlArray
-      - nv_array
-      - nv_scalar
-      - nv_empty
-      - nv_fill
-      - nv_iota
-      - nv_seq
-      - nv_diag
-      - nv_eye
-
-  - subtitle: Attributes
-    desc: Functions for querying array properties
-    contents:
-      - backend
-      - ambiguous
-      - dtype
-      - shape
-      - ndims
-      - device
-      - starts_with("platform")
-
-  - subtitle: Converters
-    desc: Functions for converting arrays
-    contents:
-      - as_array
-      - as_raw
-      - as_dtype
-      - is_dtype
-      - as-AnvlArray
-
-  - subtitle: Serialization
-    desc: Functions for serializing and deserializing arrays
-    contents:
-      - nv_save
-      - nv_read
-      - nv_serialize
-      - nv_unserialize
 
   - title: Transformations
     desc: Code transformations
