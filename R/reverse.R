@@ -212,9 +212,6 @@ transform_gradient <- function(graph, wrt) {
 }
 
 
-# A non-lowering transformation builds a graph and inserts it into the parent graph.
-# This is fine, because such a parent graph always exists.
-
 #' @title Gradient
 #' @description
 #' Returns a new function that computes the gradient of `f` via reverse-mode automatic
@@ -259,7 +256,10 @@ gradient <- function(f, wrt = NULL) {
 
     parent_desc <- .current_descriptor(silent = TRUE)
     if (is.null(parent_desc)) {
-      parent_desc <- local_descriptor()
+      cli_abort(c(
+        "{.fn gradient} can only be called inside a {.fn jit}-compiled function.",
+        i = "Wrap the result of {.fn gradient} in {.fn jit}, e.g. {.code jit(gradient(f))}."
+      ))
     }
     fwd_graph <- trace_fn(f, args_flat = prep$args_flat, in_tree = prep$in_tree)
     grad_graph <- transform_gradient(fwd_graph, wrt)
@@ -299,7 +299,10 @@ value_and_gradient <- function(f, wrt = NULL) {
 
     parent_desc <- .current_descriptor(silent = TRUE)
     if (is.null(parent_desc)) {
-      parent_desc <- local_descriptor()
+      cli_abort(c(
+        "{.fn value_and_gradient} can only be called inside a {.fn jit}-compiled function.",
+        i = "Wrap the result of {.fn value_and_gradient} in {.fn jit}, e.g. {.code jit(value_and_gradient(f))}."
+      ))
     }
     fwd_graph <- trace_fn(f, args_flat = prep$args_flat, in_tree = prep$in_tree)
     grad_graph <- transform_gradient(fwd_graph, wrt)

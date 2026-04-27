@@ -346,20 +346,29 @@ nv_print <- prim_print
 #' Selects elements from `true_value` or `false_value` based on `pred`,
 #' analogous to R's [ifelse()].
 #' @param pred ([`arrayish`] of boolean type)\cr
-#'   Predicate array. Must be scalar or the same shape as `true_value`.
-#' @param true_value ([`arrayish`])\cr
-#'   Values to return where `pred` is `TRUE`.
-#' @param false_value ([`arrayish`])\cr
-#'   Values to return where `pred` is `FALSE`.
-#'   Must have the same shape and data type as `true_value`.
+#'   Predicate array. Must be scalar or have the same shape as the
+#'   non-scalar arguments.
+#' @param true_value,false_value ([`arrayish`])\cr
+#'   Values to return where `pred` is `TRUE` / `FALSE`.
+#'   `true_value` and `false_value` are
+#'   [promoted to a common data type][nv_promote_to_common()].
+#'   Scalars (including `pred`) are
+#'   [broadcast][nv_broadcast_scalars()] to the shape of the non-scalar arguments.
 #' @return [`arrayish`]\cr
-#'   Has the same shape and data type as `true_value`.
+#'   Has the common data type of `true_value` and `false_value` and the
+#'   shape of the non-scalar arguments.
 #' @seealso [prim_ifelse()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' pred <- nv_array(c(TRUE, FALSE, TRUE))
 #' nv_ifelse(pred, nv_array(c(1, 2, 3)), nv_array(c(4, 5, 6)))
+#' # scalar branches are broadcast and promoted to a common dtype
+#' nv_ifelse(pred, nv_scalar(1L), nv_scalar(0.5))
 #' @export
-nv_ifelse <- prim_ifelse
+nv_ifelse <- function(pred, true_value, false_value) {
+  promoted <- nv_promote_to_common(true_value, false_value)
+  args <- nv_broadcast_scalars(pred, promoted[[1L]], promoted[[2L]])
+  prim_ifelse(args[[1L]], args[[2L]], args[[3L]])
+}
 
 ## Binary ops ------------------------------------------------------------------
 
