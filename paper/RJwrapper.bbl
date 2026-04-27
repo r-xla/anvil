@@ -1,4 +1,4 @@
-\begin{thebibliography}{28}
+\begin{thebibliography}{27}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -20,15 +20,15 @@ P.-C. B{\"u}rkner.
 \newblock brms: An r package for bayesian multilevel models using stan.
 \newblock \emph{Journal of statistical software}, 80:\penalty0 1--28, 2017.
 
+\bibitem[Cabezas et~al.(2024)Cabezas, Corenflos, Lao, Lou{\"a}f, et~al.]{ref-blackjax}
+A.~Cabezas, A.~Corenflos, J.~Lao, R.~Lou{\"a}f, et~al.
+\newblock {BlackJAX}: Composable {B}ayesian inference in {JAX}.
+\newblock \emph{arXiv preprint arXiv:2402.10797}, 2024.
+
 \bibitem[Carpenter et~al.(2017)Carpenter, Gelman, Hoffman, Lee, Goodrich, Betancourt, Brubaker, Guo, Li, and Riddell]{ref-stan}
 B.~Carpenter, A.~Gelman, M.~D. Hoffman, D.~Lee, B.~Goodrich, M.~Betancourt, M.~Brubaker, J.~Guo, P.~Li, and A.~Riddell.
 \newblock Stan: A probabilistic programming language.
 \newblock \emph{Journal of statistical software}, 76:\penalty0 1--32, 2017.
-
-\bibitem[Eddelbuettel(2013)]{ref-rcpp}
-D.~Eddelbuettel.
-\newblock Seamless r and c++ integration with rcpp.
-\newblock 2013.
 
 \bibitem[Falbel(2025)]{ref-safetensors}
 D.~Falbel.
@@ -109,10 +109,10 @@ J.~Pfeifer.
 \newblock \emph{gpjrt: Go Wrappers for OpenXLA PJRT}, 2026.
 \newblock URL \url{https://github.com/gomlx/gpjrt}.
 
-\bibitem[{PJRT Team}(2026)]{ref-pjrt}
-{PJRT Team}.
-\newblock \emph{PJRT: Pluggable JIT RunTime}, 2026.
-\newblock URL \url{https://openxla.org/pjrt/}.
+\bibitem[Phan et~al.(2019)Phan, Pradhan, and Jankowiak]{ref-numpyro}
+D.~Phan, N.~Pradhan, and M.~Jankowiak.
+\newblock Composable effects for flexible and accelerated probabilistic programming in {NumPyro}.
+\newblock \emph{arXiv preprint arXiv:1912.11554}, 2019.
 
 \bibitem[{R Core Team}(2025)]{ref-r}
 {R Core Team}.
@@ -131,20 +131,15 @@ L.~Sartore.
 \newblock \emph{StableHLO}, 2026.
 \newblock URL \url{https://openxla.org/stablehlo/spec}.
 
-\bibitem[Team(2025)]{ref-go}
-G.~Team.
-\newblock \emph{{Go} Software, Version~1.25}, 2025.
-\newblock URL \url{https://go.dev/}.
+\bibitem[{The IREE Authors}(2019)]{ref-iree}
+{The IREE Authors}.
+\newblock {IREE}, Sept. 2019.
+\newblock URL \url{https://github.com/iree-org/iree}.
 
-\bibitem[{The JAX Authors}(2024)]{ref-autodidax}
-{The JAX Authors}.
-\newblock Autodidax: {JAX} core from scratch, 2024.
-\newblock URL \url{https://docs.jax.dev/en/latest/autodidax.html}.
-
-\bibitem[{The MicroJAX Authors}(2024)]{ref-microjax}
-{The MicroJAX Authors}.
-\newblock \emph{MicroJAX}, 2024.
-\newblock URL \url{https://github.com/joey00072/microjax}.
+\bibitem[{The ZML Authors}(2026)]{ref-zml}
+{The ZML Authors}.
+\newblock \emph{ZML}, 2026.
+\newblock URL \url{https://github.com/zml/zml}.
 
 \bibitem[Towell(2026)]{ref-nabla}
 A.~Towell.
@@ -152,10 +147,10 @@ A.~Towell.
 \newblock URL \url{https://github.com/queelius/nabla}.
 \newblock R package version 0.7.1.
 
-\bibitem[Vaughan et~al.(2025)Vaughan, Hester, Kalinowski, Landau, Lawrence, Maechler, Tierney, and Wickham]{wickham2024s7}
-D.~Vaughan, J.~Hester, T.~Kalinowski, W.~Landau, M.~Lawrence, M.~Maechler, L.~Tierney, and H.~Wickham.
-\newblock \emph{S7: An Object Oriented System Meant to Become a Successor to S3 and S4}, 2025.
-\newblock URL \url{https://CRAN.R-project.org/package=S7}.
-\newblock R package version 0.2.1.
+\bibitem[Urbanek and Puchert(2023)]{ref-r-opencl}
+S.~Urbanek and A.~Puchert.
+\newblock \emph{OpenCL: Interface allowing R to use OpenCL}, 2023.
+\newblock URL \url{https://CRAN.R-project.org/package=OpenCL}.
+\newblock R package version 0.2-10.
 
 \end{thebibliography}

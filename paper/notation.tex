@@ -220,19 +220,19 @@
 % math spaces
 \ifdefined\N                                                                % N, naturals
 \else
-  \newcommand{\N}{\mathds{N}}
+  \newcommand{\N}{\mathbb{N}}
 \fi
-\newcommand{\Z}{\mathds{Z}}                                                 % Z, integers
-\newcommand{\Q}{\mathds{Q}}                                                 % Q, rationals
+\newcommand{\Z}{\mathbb{Z}}                                                 % Z, integers
+\newcommand{\Q}{\mathbb{Q}}                                                 % Q, rationals
 \ifdefined\R
-  \renewcommand{\R}{\mathds{R}}                                             % R, reals
+  \renewcommand{\R}{\mathbb{R}}                                             % R, reals
 \else
-  \newcommand{\R}{\mathds{R}}
+  \newcommand{\R}{\mathbb{R}}
 \fi
 \ifdefined\C
-  \renewcommand{\C}{\mathds{C}}                                             % C, complex
+  \renewcommand{\C}{\mathbb{C}}                                             % C, complex
 \else
-  \newcommand{\C}{\mathds{C}}
+  \newcommand{\C}{\mathbb{C}}
 \fi
 \newcommand{\continuous}{\mathcal{C}}                                       % C, space of continuous functions
 \newcommand{\M}{\mathcal{M}} 												% machine numbers
@@ -294,8 +294,8 @@
 
 
 % basic probability + stats
-\renewcommand{\P}{\mathds{P}}                                               % P, probability
-%\newcommand{\E}{\mathds{E}}                                                 % E, expectation
+\renewcommand{\P}{\mathbb{P}}                                               % P, probability
+%\newcommand{\E}{\mathbb{E}}                                                 % E, expectation
 \renewcommand{\var}{\mathsf{Var}}                                            % Var, variance
 \newcommand{\cov}{\mathsf{Cov}}                                             % Cov, covariance
 \newcommand{\corr}{\mathsf{Corr}}                                           % Corr, correlation
@@ -323,13 +323,13 @@
 \newcommand{\xy}{(\xv, y)}                                                  % observation (x, y)
 \newcommand{\xvec}{\left(x_1, \ldots, x_p\right)^T}                         % (x1, ..., xp)
 \newcommand{\Xmat}{\mathbf{X}}											  % Design matrix
-\newcommand{\allDatasets}{\mathds{D}}                                       % The set of all datasets
+\newcommand{\allDatasets}{\mathbb{D}}                                       % The set of all datasets
 \newcommand{\D}{\mathcal{D}}                                                      % D, data
 \newcommand{\obs}[1][i]{\left(\xv^{(#1)},y^{(#1)}\right)}                                                                               % observation (x^(i), y^(i))
-\newcommand{\allLosses}{\mathds{L}}
+\newcommand{\allLosses}{\mathbb{L}}
 \newcommand{\Dset}{\left( \obs[1], \ldots, \obs[n]\right)}    % {(x1,y1)), ..., (xn,yn)}, data
 \newcommand{\Dn}{\D_n}                                                      % D_n, data of size n
-\newcommand{\allDatasetsn}{\mathds{D}_n}                                    % The set of all datasets of size n
+\newcommand{\allDatasetsn}{\mathbb{D}_n}                                    % The set of all datasets of size n
 \newcommand{\defAllDatasetsn}{(\Xspace \times \Yspace)^n}                   % Def. of the set of all datasets of size n
 \newcommand{\defAllDatasets}{\bigcup_{n \in \N}(\Xspace \times \Yspace)^n}  % Def. of the set of all datasets
 \newcommand{\xdat}{\left\{ \mathbf{x}^{(1)}, \ldots, \mathbf{x}^{(n)}\right\}}   				% {x1, ..., xn}, input data
@@ -347,9 +347,9 @@
 \newcommand{\Dtest}{\mathcal{D}_{\text{test}}}                              % D_test, test set
 \newcommand{\ranDtest}{\ranD_{\text{test}}}
 \newcommand{\ResampledData}{\mathcal{S}} % sequence of pairs of train-test data (a concrete resampled dataset)
-\newcommand{\allResampledData}[1][\D]{\mathds{S}_{#1}} % all possible resampled datasets for a specifi inference algorithm on a dataset
+\newcommand{\allResampledData}[1][\D]{\mathbb{S}_{#1}} % all possible resampled datasets for a specifi inference algorithm on a dataset
 \newcommand{\ResampledIndices}{\mathcal{J}} % sequence of pairs of train-test indices (concrete indices for a dataset)
-\newcommand{\allResampledIndices}[1][n_\D]{\mathds{J}_{#1}} % all possible resampled indices for a specific mehod on a dataset of given size.
+\newcommand{\allResampledIndices}[1][n_\D]{\mathbb{J}_{#1}} % all possible resampled indices for a specific mehod on a dataset of given size.
 \newcommand{\phiv}{\mathbf{\phi}}												% Basis transformation function phi
 \newcommand{\phixi}{\mathbf{\phi}^{(i)}}										% Basis transformation of xi: phi^i := phi(xi)
 % all
