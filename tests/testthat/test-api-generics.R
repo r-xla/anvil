@@ -230,6 +230,29 @@ describe("rbind", {
     y <- nv_array(c(4, 5, 6))
     expect_equal(nv_rbind(x, y), rbind(x, y))
   })
+
+  it("broadcasts a scalar to the column count of a matrix", {
+    a <- matrix(1:6, nrow = 2)
+    expect_equal(rbind(nv_array(a), nv_array(0)), nv_array(rbind(a, 0)))
+    expect_equal(rbind(nv_array(0), nv_array(a)), nv_array(rbind(0, a)))
+  })
+
+  it("broadcasts a scalar to the column count of a 1-D vector", {
+    v <- c(7, 8, 9)
+    expect_equal(rbind(nv_array(v), nv_array(0)), nv_array(rbind(v, 0)))
+  })
+
+  it("treats all scalars as 1x1 rows", {
+    expect_equal(rbind(nv_array(1), nv_array(2)), nv_array(rbind(1, 2)))
+  })
+
+  it("broadcasts a scalar against a 3-D array", {
+    a <- array(1:24, dim = c(2L, 3L, 4L))
+    out <- rbind(nv_array(a), nv_array(0))
+    expect_equal(shape(out), c(3L, 3L, 4L))
+    expect_equal(as_array(out)[1:2, , ], a)
+    expect_equal(as_array(out)[3L, , ], array(0, dim = c(3L, 4L)))
+  })
 })
 
 describe("cbind", {
@@ -296,6 +319,32 @@ describe("cbind", {
     x <- nv_array(c(1, 2, 3))
     y <- nv_array(c(4, 5, 6))
     expect_equal(nv_cbind(x, y), cbind(x, y))
+  })
+
+  it("broadcasts a scalar to the row count of a matrix", {
+    a <- matrix(1:6, nrow = 3)
+    expect_equal(cbind(nv_array(a), nv_array(0)), nv_array(cbind(a, 0)))
+    expect_equal(cbind(nv_array(0), nv_array(a)), nv_array(cbind(0, a)))
+  })
+
+  it("broadcasts a scalar to the row count of a 1-D vector", {
+    v <- c(7, 8, 9)
+    expect_equal(cbind(nv_array(v), nv_array(0)), nv_array(cbind(v, 0)))
+  })
+
+  it("treats all scalars as 1x1 columns", {
+    expect_equal(cbind(nv_array(1), nv_array(2)), nv_array(cbind(1, 2)))
+  })
+
+  it("broadcasts a scalar against a 3-D array", {
+    a <- array(1:24, dim = c(2L, 3L, 4L))
+    out <- cbind(nv_array(a), nv_array(0))
+    expect_equal(shape(out), c(2L, 4L, 4L))
+    expect_equal(as_array(out)[, 1:3, ], a)
+    expect_equal(as_array(out)[, 4L, ], array(0, dim = c(2L, 4L)))
+  })
+})
+
 describe("as.double", {
   it("returns a bare double vector and discards shape", {
     x <- nv_array(c(1, 2, 3, 4, 5, 6), dtype = "f32", shape = c(2L, 3L))

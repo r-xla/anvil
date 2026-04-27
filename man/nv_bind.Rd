@@ -37,11 +37,13 @@ A rank-2 array of the common data type.
 Combine arrays along the row (\code{nv_rbind}) or column (\code{nv_cbind}) dimension.
 Arguments are promoted to a common data type before being combined.
 
-Inputs of rank 0 (scalars) are reshaped to \code{c(1, 1)}. Inputs of rank 1 are
-treated as a single row (for \code{nv_rbind}) or a single column (for
-\code{nv_cbind}). Inputs of rank >= 2 are concatenated along dimension 1
-(\code{nv_rbind}) or dimension 2 (\code{nv_cbind}); their other dimensions must
-match.
+Single-element inputs (rank 0, or rank 1 of length 1) are broadcast to
+match the non-stacked dimensions of the other inputs, with size 1 along
+the stacked dimension; if all inputs are single-element, they become
+\code{c(1, 1)}. Inputs of rank 1 with length > 1 are treated as a single row
+(for \code{nv_rbind}) or column (for \code{nv_cbind}). Inputs of rank >= 2 are
+concatenated along dimension 1 (\code{nv_rbind}) or dimension 2 (\code{nv_cbind});
+their other dimensions must match.
 
 \code{\link[base:cbind]{base::rbind()}} and \code{\link[base:cbind]{base::cbind()}} dispatch to these via S3 when at least
 one argument is an \code{\link{AnvlBox}} or \code{\link{AnvlArray}}.

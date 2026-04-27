@@ -261,11 +261,13 @@ length.AnvlArray <- length.AnvlBox
 #' Combine arrays along the row (`nv_rbind`) or column (`nv_cbind`) dimension.
 #' Arguments are promoted to a common data type before being combined.
 #'
-#' Inputs of rank 0 (scalars) are reshaped to `c(1, 1)`. Inputs of rank 1 are
-#' treated as a single row (for `nv_rbind`) or a single column (for
-#' `nv_cbind`). Inputs of rank >= 2 are concatenated along dimension 1
-#' (`nv_rbind`) or dimension 2 (`nv_cbind`); their other dimensions must
-#' match.
+#' Single-element inputs (rank 0, or rank 1 of length 1) are broadcast to
+#' match the non-stacked dimensions of the other inputs, with size 1 along
+#' the stacked dimension; if all inputs are single-element, they become
+#' `c(1, 1)`. Inputs of rank 1 with length > 1 are treated as a single row
+#' (for `nv_rbind`) or column (for `nv_cbind`). Inputs of rank >= 2 are
+#' concatenated along dimension 1 (`nv_rbind`) or dimension 2 (`nv_cbind`);
+#' their other dimensions must match.
 #'
 #' [base::rbind()] and [base::cbind()] dispatch to these via S3 when at least
 #' one argument is an [`AnvlBox`] or [`AnvlArray`].
@@ -283,25 +285,35 @@ length.AnvlArray <- length.AnvlBox
 #' nv_cbind(x, y)
 NULL
 
-bind_reshape_for_rbind <- function(arg) {
-  arg <- as_anvl_array(arg)
-  s <- shape(arg)
-  if (length(s) == 0L) {
-    nv_reshape(arg, c(1L, 1L))
-  } else if (length(s) == 1L) {
-    nv_reshape(arg, c(1L, s))
-  } else {
-    arg
-  }
+bind_is_scalar_like <- function(s) {
+  length(s) == 0L || (length(s) == 1L && s[[1L]] == 1L)
 }
 
-bind_reshape_for_cbind <- function(arg) {
-  arg <- as_anvl_array(arg)
+# Find the shape of the first non-scalar-like arg, after applying the rank-1
+# row/column reshape. Returns NULL if every arg is scalar-like.
+bind_target_shape <- function(args, stack_dim) {
+  for (arg in args) {
+    s <- shape(arg)
+    if (bind_is_scalar_like(s)) {
+      next
+    }
+    if (length(s) == 1L) {
+      return(if (stack_dim == 1L) c(1L, s) else c(s, 1L))
+    }
+    return(s)
+  }
+  NULL
+}
+
+bind_reshape <- function(arg, stack_dim, target_shape) {
   s <- shape(arg)
-  if (length(s) == 0L) {
-    nv_reshape(arg, c(1L, 1L))
+  if (bind_is_scalar_like(s)) {
+    target <- target_shape %||% c(1L, 1L)
+    target[stack_dim] <- 1L
+    arg <- nv_reshape(arg, integer(0L))
+    nv_broadcast_to(arg, target)
   } else if (length(s) == 1L) {
-    nv_reshape(arg, c(s, 1L))
+    nv_reshape(arg, if (stack_dim == 1L) c(1L, s) else c(s, 1L))
   } else {
     arg
   }
@@ -310,14 +322,18 @@ bind_reshape_for_cbind <- function(arg) {
 #' @rdname nv_bind
 #' @export
 nv_rbind <- function(...) {
-  args <- lapply(list(...), bind_reshape_for_rbind)
+  args <- lapply(list(...), as_anvl_array)
+  target_shape <- bind_target_shape(args, stack_dim = 1L)
+  args <- lapply(args, bind_reshape, stack_dim = 1L, target_shape = target_shape)
   rlang::exec(nv_concatenate, !!!args, dimension = 1L)
 }
 
 #' @rdname nv_bind
 #' @export
 nv_cbind <- function(...) {
-  args <- lapply(list(...), bind_reshape_for_cbind)
+  args <- lapply(list(...), as_anvl_array)
+  target_shape <- bind_target_shape(args, stack_dim = 2L)
+  args <- lapply(args, bind_reshape, stack_dim = 2L, target_shape = target_shape)
   rlang::exec(nv_concatenate, !!!args, dimension = 2L)
 }
 
