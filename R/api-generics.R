@@ -254,3 +254,93 @@ length.AnvlBox <- function(x) {
 #' @method length AnvlArray
 #' @export
 length.AnvlArray <- length.AnvlBox
+
+#' @title Combine arrays by rows or columns
+#' @name nv_bind
+#' @description
+#' Combine arrays along the row (`nv_rbind`) or column (`nv_cbind`) dimension.
+#' Arguments are promoted to a common data type before being combined.
+#'
+#' Inputs of rank 0 (scalars) are reshaped to `c(1, 1)`. Inputs of rank 1 are
+#' treated as a single row (for `nv_rbind`) or a single column (for
+#' `nv_cbind`). Inputs of rank >= 2 are concatenated along dimension 1
+#' (`nv_rbind`) or dimension 2 (`nv_cbind`); their other dimensions must
+#' match.
+#'
+#' [base::rbind()] and [base::cbind()] dispatch to these via S3 when at least
+#' one argument is an [`AnvlBox`] or [`AnvlArray`].
+#' @param ... ([`arrayish`])\cr
+#'   Arrays to combine.
+#' @param deparse.level Ignored. Kept for compatibility with [base::rbind()]
+#'   and [base::cbind()].
+#' @return [`arrayish`]\cr
+#'   A rank-2 array of the common data type.
+#' @seealso [nv_concatenate()] for concatenation along an arbitrary dimension.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(1:3)
+#' y <- nv_array(4:6)
+#' nv_rbind(x, y)
+#' nv_cbind(x, y)
+NULL
+
+bind_reshape_for_rbind <- function(arg) {
+  arg <- as_anvl_array(arg)
+  s <- shape(arg)
+  if (length(s) == 0L) {
+    nv_reshape(arg, c(1L, 1L))
+  } else if (length(s) == 1L) {
+    nv_reshape(arg, c(1L, s))
+  } else {
+    arg
+  }
+}
+
+bind_reshape_for_cbind <- function(arg) {
+  arg <- as_anvl_array(arg)
+  s <- shape(arg)
+  if (length(s) == 0L) {
+    nv_reshape(arg, c(1L, 1L))
+  } else if (length(s) == 1L) {
+    nv_reshape(arg, c(s, 1L))
+  } else {
+    arg
+  }
+}
+
+#' @rdname nv_bind
+#' @export
+nv_rbind <- function(...) {
+  args <- lapply(list(...), bind_reshape_for_rbind)
+  rlang::exec(nv_concatenate, !!!args, dimension = 1L)
+}
+
+#' @rdname nv_bind
+#' @export
+nv_cbind <- function(...) {
+  args <- lapply(list(...), bind_reshape_for_cbind)
+  rlang::exec(nv_concatenate, !!!args, dimension = 2L)
+}
+
+#' @rdname nv_bind
+#' @method rbind AnvlBox
+#' @export
+rbind.AnvlBox <- function(..., deparse.level = 1) {
+  nv_rbind(...)
+}
+
+#' @rdname nv_bind
+#' @method rbind AnvlArray
+#' @export
+rbind.AnvlArray <- rbind.AnvlBox
+
+#' @rdname nv_bind
+#' @method cbind AnvlBox
+#' @export
+cbind.AnvlBox <- function(..., deparse.level = 1) {
+  nv_cbind(...)
+}
+
+#' @rdname nv_bind
+#' @method cbind AnvlArray
+#' @export
+cbind.AnvlArray <- cbind.AnvlBox

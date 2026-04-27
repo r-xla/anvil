@@ -157,3 +157,144 @@ describe("dim", {
     expect_equal(dim(x), shape(x))
   })
 })
+
+describe("rbind", {
+  it("stacks two 1-D vectors as rows (eager)", {
+    x <- nv_array(c(1, 2, 3))
+    y <- nv_array(c(4, 5, 6))
+    expect_equal(
+      rbind(x, y),
+      nv_array(rbind(c(1, 2, 3), c(4, 5, 6)))
+    )
+  })
+
+  it("stacks two 1-D vectors as rows (jit)", {
+    expect_jit_equal(
+      {
+        x <- nv_array(c(1, 2, 3))
+        y <- nv_array(c(4, 5, 6))
+        rbind(x, y)
+      },
+      nv_array(rbind(c(1, 2, 3), c(4, 5, 6)))
+    )
+  })
+
+  it("stacks two matrices vertically", {
+    a <- matrix(1:6, nrow = 2)
+    b <- matrix(7:12, nrow = 2)
+    expect_jit_equal(
+      {
+        x <- nv_array(a)
+        y <- nv_array(b)
+        rbind(x, y)
+      },
+      nv_array(rbind(a, b))
+    )
+  })
+
+  it("treats 1-D operand as a row when mixed with a matrix", {
+    a <- matrix(1:6, nrow = 2)
+    v <- c(7, 8, 9)
+    expect_jit_equal(
+      {
+        x <- nv_array(a)
+        y <- nv_array(v)
+        rbind(x, y)
+      },
+      nv_array(rbind(a, v))
+    )
+  })
+
+  it("accepts more than two arguments", {
+    expect_jit_equal(
+      {
+        rbind(nv_array(c(1, 2)), nv_array(c(3, 4)), nv_array(c(5, 6)))
+      },
+      nv_array(rbind(c(1, 2), c(3, 4), c(5, 6)))
+    )
+  })
+
+  it("promotes operands to a common dtype", {
+    x <- nv_array(c(1L, 2L, 3L))
+    y <- nv_array(c(4, 5, 6))
+    out <- rbind(x, y)
+    expect_equal(dtype(out), dtype(y))
+  })
+
+  it("errors when number of columns mismatch", {
+    expect_error(rbind(nv_array(c(1, 2)), nv_array(c(3, 4, 5))))
+  })
+
+  it("nv_rbind matches rbind", {
+    x <- nv_array(c(1, 2, 3))
+    y <- nv_array(c(4, 5, 6))
+    expect_equal(nv_rbind(x, y), rbind(x, y))
+  })
+})
+
+describe("cbind", {
+  it("stacks two 1-D vectors as columns (eager)", {
+    x <- nv_array(c(1, 2, 3))
+    y <- nv_array(c(4, 5, 6))
+    expect_equal(
+      cbind(x, y),
+      nv_array(cbind(c(1, 2, 3), c(4, 5, 6)))
+    )
+  })
+
+  it("stacks two 1-D vectors as columns (jit)", {
+    expect_jit_equal(
+      {
+        x <- nv_array(c(1, 2, 3))
+        y <- nv_array(c(4, 5, 6))
+        cbind(x, y)
+      },
+      nv_array(cbind(c(1, 2, 3), c(4, 5, 6)))
+    )
+  })
+
+  it("stacks two matrices horizontally", {
+    a <- matrix(1:6, nrow = 3)
+    b <- matrix(7:12, nrow = 3)
+    expect_jit_equal(
+      {
+        x <- nv_array(a)
+        y <- nv_array(b)
+        cbind(x, y)
+      },
+      nv_array(cbind(a, b))
+    )
+  })
+
+  it("treats 1-D operand as a column when mixed with a matrix", {
+    a <- matrix(1:6, nrow = 3)
+    v <- c(7, 8, 9)
+    expect_jit_equal(
+      {
+        x <- nv_array(a)
+        y <- nv_array(v)
+        cbind(x, y)
+      },
+      nv_array(cbind(a, v))
+    )
+  })
+
+  it("accepts more than two arguments", {
+    expect_jit_equal(
+      {
+        cbind(nv_array(c(1, 2)), nv_array(c(3, 4)), nv_array(c(5, 6)))
+      },
+      nv_array(cbind(c(1, 2), c(3, 4), c(5, 6)))
+    )
+  })
+
+  it("errors when number of rows mismatch", {
+    expect_error(cbind(nv_array(c(1, 2)), nv_array(c(3, 4, 5))))
+  })
+
+  it("nv_cbind matches cbind", {
+    x <- nv_array(c(1, 2, 3))
+    y <- nv_array(c(4, 5, 6))
+    expect_equal(nv_cbind(x, y), cbind(x, y))
+  })
+})
