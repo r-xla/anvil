@@ -2,6 +2,11 @@
 
 ## anvl (development version)
 
+### New Features
+
+- Added `AnvlArray` -\> R `vector` converters `as.numeric`, `as.double`,
+  `as.integer` and `as.logical`
+
 ## anvl 0.2.0
 
 ### Breaking Changes

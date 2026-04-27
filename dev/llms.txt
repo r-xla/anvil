@@ -202,6 +202,10 @@ Functions for converting arrays
   : Convert to a DataType
 - [`is_dtype()`](https://r-xla.github.io/anvl/dev/reference/is_dtype.md)
   : Check if an object is a DataType
+- [`as.double(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/as-AnvlArray.md)
+  [`as.integer(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/as-AnvlArray.md)
+  [`as.logical(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/as-AnvlArray.md)
+  : Coerce AnvlArray to an R Vector
 
 ### Serialization
 
