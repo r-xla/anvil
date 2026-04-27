@@ -13,13 +13,13 @@ In general, there are two main reasons to add a new primitive:
 
 In order to be able to add a new primitive, it needs to be expressible
 in the [{stablehlo}](https://github.com/r-xla/stablehlo) package. There
-are various sceanrios:
+are various scenarios:
 
 1.  The operation is expressible in the StableHLO language and:
     1.  All required operations are already implemented in the
         {stablehlo} R package.
 
-        \\\rightarrow\\ This is the simplest caseand the one we assume
+        \\\rightarrow\\ This is the simplest case and the one we assume
         in this guide.
 
     2.  One or more required operations are not already implemented in
@@ -183,7 +183,37 @@ See
 \[[`device_arg()`](https://r-xla.github.io/anvl/dev/reference/device_arg.md)\]
 for the detailed semantics.
 
-### Step 3: Add the StableHLO Rule
+#### Shortcut helpers for common shapes
+
+`prim_repeat_along` has its own parameters and needs a custom body. Many
+primitives are simpler – elementwise unary or binary ops, reductions,
+and comparisons all share a standard shape. `R/primitives.R` exposes
+factories that generate the body for you:
+
+- `make_unary_op(stablehlo_infer)` – elementwise unary (e.g. `prim_abs`,
+  `prim_negate`).
+- `make_binary_op(stablehlo_infer)` – elementwise binary
+  (e.g. `prim_add`, `prim_mul`).
+- `make_reduce_op(infer_fn)` – reductions with `dims` / `drop`
+  parameters (e.g. `prim_reduce_sum`).
+- `make_compare_op(direction)` – comparison ops with a fixed `direction`
+  string (e.g. `prim_eq`, `prim_lt`).
+
+Used together with the corresponding stablehlo inference function, the
+primitive definition collapses to a one-liner:
+
+``` r
+prim_add <- new_primitive("add", make_binary_op(stablehlo::infer_types_add))
+prim_negate <- new_primitive("negate", make_unary_op(stablehlo::infer_types_negate))
+prim_reduce_sum <- new_primitive("reduce_sum", make_reduce_op(), static = 2:3)
+```
+
+Reach for the manual
+[`graph_desc_add()`](https://r-xla.github.io/anvl/dev/reference/graph_desc_add.md)
+form when the primitive has extra static parameters, a custom inference
+function, or multiple outputs.
+
+### Step 2: Add the StableHLO Rule
 
 The StableHLO rule defines how to lower this primitive to actual
 operations, which is used in the
@@ -214,7 +244,7 @@ Also note that in
 we are converting the error messages from stablehlo to our 1-based
 indexing, so you do not have to worry about that here.
 
-### Step 4: Add the Reverse Rule
+### Step 3: Add the Reverse Rule
 
 If the operation should support automatic differentiation, add a reverse
 rule. The idea here is the following, where we assume the input
@@ -260,7 +290,16 @@ The reverse rule receives:
 It returns a list with one gradient per input (or `NULL` if not
 required).
 
-### Step 5: Verify the Registration
+#### Optional: a quickr rule
+
+`prim_<name>[["stablehlo"]]` and `prim_<name>[["reverse"]]` are the two
+rules you almost always want. A primitive can optionally also carry a
+`quickr` rule, which lowers it to plain R code for the quickr backend
+(see `R/rules-quickr.R`). The quickr rule is only required if you want
+the primitive to run under `local_backend("quickr")`; if you skip it,
+the primitive will still work on the xla backend.
+
+### Step 4: Verify the Registration
 
 [`new_primitive()`](https://r-xla.github.io/anvl/dev/reference/new_primitive.md)
 returns the callable directly and also registers the primitive in the
@@ -298,7 +337,7 @@ prim_repeat_along
 #>     }
 #>     do.call(jit_fns[[be]], args)
 #> }
-#> <environment: 0x563608e54bc8>
+#> <environment: 0x55ed7f1b8700>
 #> attr(,"class")
 #> [1] "JitPrimitive" "JitFunction" 
 #> attr(,"backend")
@@ -307,7 +346,7 @@ prim_repeat_along
 #> <AnvlPrimitive:repeat_along>
 ```
 
-### Step 6: Add an `nv_` API Function
+### Step 5: Add an `nv_` API Function
 
 In {anvl}, we also offer convenience wrappers around the primitives. An
 example is `prim_add` vs `nv_add`, where the latter calls into the
@@ -356,14 +395,14 @@ JIT-compiled function:
 
 ``` r
 x <- nv_array(c(1, 2, 3), shape = c(3, 1))
-# Eager call -- works because prim_repeat_along is itself jit()ted.
+# Eager call -- works because prim_repeat_along is itself jit-compiled.
 prim_repeat_along(x, times = 2L, dim = 2L)
 #> AnvlArray
 #>  1 1
 #>  2 2
 #>  3 3
 #> [ CPUf32{3,2} ]
-# Traced into the outer graph when composed with another jit()ted function.
+# Traced into the outer graph when composed with another jit-compiled function.
 jit(function(x) prim_repeat_along(x, times = 2L, dim = 2L))(x)
 #> AnvlArray
 #>  1 1
@@ -396,10 +435,12 @@ additional things to be aware of.
 
 ### File Organization
 
-- **`R/primitives.R`**: Define `AnvlPrimitive` object and `prim_*`
-  function
+- **`R/primitives.R`**: Define the `prim_*` primitive via
+  [`new_primitive()`](https://r-xla.github.io/anvl/dev/reference/new_primitive.md)
 - **`R/rules-stablehlo.R`**: Add the StableHLO lowering rule
 - **`R/rules-reverse.R`**: Add the reverse rule (if differentiable)
+- **`R/rules-quickr.R`**: Add the quickr lowering rule (optional; only
+  if the primitive should run on the quickr backend)
 - **`R/api.R`**: Add the `nv_*` wrapper function (or possibly in another
   **api** file).
 
@@ -411,9 +452,11 @@ Tests can go in two places:
     live in `inst/` to avoid listing torch as a dependency.
 2.  **`tests/testthat/`**: For tests without a torch counterpart.
 
-**Important**: Test names must start with `"p_<name>"` (matching the
-primitive object name). The meta tests verify that every primitive has
-corresponding tests.
+**Important**: the `describe()` / `test_that()` label must contain the
+full primitive name, e.g. `describe("prim_repeat_along", { ... })`. The
+meta tests in `tests/testthat/test-primitives-meta.R` verify that every
+primitive has corresponding stablehlo and reverse tests, and flag any
+that are missing.
 
 Since no torch counterpart exists for `prim_repeat_along`, we would add
 manual tests in:

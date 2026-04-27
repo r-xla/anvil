@@ -3,19 +3,22 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   anvl: anvl.html
+  efficiency: efficiency.html
+  extending_api: extending_api.html
+  extending_primitive: extending_primitive.html
   faq: faq.html
   gaussian-process: gaussian-process.html
   installation: installation.html
   internals: internals.html
+  jit: jit.html
   logistic-regression: logistic-regression.html
   metropolis-hastings: metropolis-hastings.html
-  new_api_function: new_api_function.html
-  new_primitive: new_primitive.html
   primitives: primitives.html
   random-numbers: random-numbers.html
+  static_shapes: static_shapes.html
   subsetting: subsetting.html
   type-promotion: type-promotion.html
-last_built: 2026-04-23T04:45Z
+last_built: 2026-04-27T07:00Z
 urls:
   reference: https://r-xla.github.io/anvl/reference
   article: https://r-xla.github.io/anvl/articles

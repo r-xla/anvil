@@ -1,9 +1,11 @@
 # Subsetting
 
 In this vignette, you will learn how to subset arrays in {anvl} and how
-to update subsets. Because array shapes in {anvl} programs are static,
-only certain subsetting operations are supported and they come with some
-surprises.
+to update subsets. Because array shapes in {anvl} programs are static
+(see the [Static Shape
+Restriction](https://r-xla.github.io/anvl/dev/articles/static_shapes.md)
+vignette), only certain subsetting operations are supported and they
+come with some surprises.
 
 We start by listing possible subsets and whether they support dynamic
 values (arrays that are specified during runtime) or only static values
@@ -19,13 +21,15 @@ values (arrays that are specified during runtime) or only static values
 Ranges cannot have dynamic values, because then the size of the subset
 would be unknown (what’s the size of `a:b` where `a` and `b` are
 unknown?). Boolean masks are not supported, because the output shape
-depends on the data, which is not known at compile time. If you want to
-modify arrays based on a mask, see
-[`nv_ifelse()`](https://r-xla.github.io/anvl/dev/reference/nv_ifelse.md).
-Negative indexing (e.g., `x[-1]` to exclude elements) is currently also
-not supported. For static values, this will throw an error, for dynamic
-values, it will be clamped to the valid range. If you are missing a
-feature, please open an issue on GitHub.
+depends on the data, which is not known at compile time. For workarounds
+(e.g. `sum(x[x > 0])` or `x[mask] <- update`), see the [masking
+pattern](https://r-xla.github.io/anvl/dev/articles/static_shapes.html#the-masking-pattern)
+section of the Static Shape Restriction vignette. Negative indexing
+(e.g., `x[-1]` to exclude elements) is currently also not supported. For
+static values, this will throw an error. For dynamic values, negative
+indices are treated as out-of-bounds and clamped to the valid range (see
+[Out-of-bounds Handling](#out-of-bounds-handling) below). If you are
+missing a feature, please open an issue on GitHub.
 
 We will start with subsetting and then move on to subset-assignment.
 
@@ -34,8 +38,8 @@ We will start with subsetting and then move on to subset-assignment.
 ### Subsetting 1D arrays
 
 Let’s start with some simple examples of selecting individual elements
-from a 1-dimension array. The index can be either static or dynamic and
-we can drop or keep the dimension:
+from a 1-dimensional array. The index can be either static or dynamic
+and we can drop or keep the dimension:
 
 ``` r
 library(anvl)
@@ -88,12 +92,13 @@ x
 
 - Dynamic & Keep:
 
-  Below, we almost perform the same operation as above, only do we use
-  an array of shape `(1)` instead of a scalar with shape `()`. The
+  Below, we perform almost the same operation as above, except that we
+  use an array of shape `(1)` instead of a scalar with shape `()`. The
   difference is that subsetting with the former will preserve the
   dimension, while the latter will drop it, as we have seen above. This
   ensures that the dimensionality of the result is the same for any 1D
-  subset specification, and not suddenly “simplify” the result to 0D.
+  subset specification, and does not suddenly “simplify” the result to
+  0D.
 
   ``` r
   x[nv_array(2L)]
@@ -162,7 +167,7 @@ x[nv_seq(2, 5)]
     ##  5
     ## [ CPUi32{4} ]
 
-Note that the `a:b` syntax works via Non-Standard-Evaluation (NSE), so
+Note that the `a:b` syntax works via Non-Standard Evaluation (NSE), so
 we can distinguish it from the actual vector `2:5`. Internally, it is
 translated to `nv_seq(a, b)`.
 
@@ -279,9 +284,9 @@ x[array(c(2, 2))]
 ### Out-of-bounds Handling
 
 If one specifies out-of-bounds indices, we can only throw an error if
-the indices are static (we know them at compile time), as the XLA
-backend that {anvl} compiles to, does not throw errors when using
-out-of-bounds indices, but instead clamps them to the valid range:
+the indices are static (and therefore known at compile time). The XLA
+backend that {anvl} compiles to does not throw errors for out-of-bounds
+dynamic indices, but instead clamps them to the valid range:
 
 ``` r
 x[nv_array(-1L), nv_array(100L)]
@@ -386,7 +391,7 @@ are updated.
 
 ### Duplicate Indices
 
-When writing to the same element multiple times, there is no gaurantee
+When writing to the same element multiple times, there is no guarantee
 which value will be written. Specifically, this might differ between
 backends (CPU vs. GPU).
 
@@ -403,3 +408,32 @@ x
     ##   4
     ##   5
     ## [ CPUi32{5} ]
+
+### Copying Behavior
+
+In eager mode, `x[i] <- val` always allocates a fresh array, regardless
+of whether `x` has any other R references. This differs from plain R,
+which can perform the update in place when its reference count for `x`
+is 1.
+
+``` r
+x <- nv_array(1:5)
+x[1] <- -1L  # allocates a new length-5 buffer, even though x has only one reference
+x
+```
+
+    ## AnvlArray
+    ##  -1
+    ##   2
+    ##   3
+    ##   4
+    ##   5
+    ## [ CPUi32{5} ]
+
+This is unnecessarily expensive. To avoid it, move the update into a
+[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md)ed function
+so XLA can fuse it into the surrounding computation, and optionally use
+`donate` to let the input buffer be reused for the output. See the
+[Eager-mode subset-assignment always
+copies](https://r-xla.github.io/anvl/dev/articles/efficiency.html#eager-mode-subset-assignment-always-copies)
+section of the efficiency vignette for details.

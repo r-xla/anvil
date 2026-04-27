@@ -1,5 +1,80 @@
 # Package index
 
+## Array
+
+Constructing and working with AnvlArrays
+
+### Construction
+
+Functions for creating and initializing arrays
+
+- [`nv_array()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  [`nv_scalar()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  [`nv_empty()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  [`nv_array_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  [`nv_scalar_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  [`nv_empty_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  : AnvlArray
+- [`nv_fill()`](https://r-xla.github.io/anvl/dev/reference/nv_fill.md)
+  [`nv_fill_like()`](https://r-xla.github.io/anvl/dev/reference/nv_fill.md)
+  : Fill Constant
+- [`nv_iota()`](https://r-xla.github.io/anvl/dev/reference/nv_iota.md)
+  [`nv_iota_like()`](https://r-xla.github.io/anvl/dev/reference/nv_iota.md)
+  : Iota
+- [`nv_seq()`](https://r-xla.github.io/anvl/dev/reference/nv_seq.md)
+  [`nv_seq_like()`](https://r-xla.github.io/anvl/dev/reference/nv_seq.md)
+  : Sequence
+- [`nv_diag()`](https://r-xla.github.io/anvl/dev/reference/nv_diag.md) :
+  Diagonal Matrix
+- [`nv_eye()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
+  [`nv_eye_like()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
+  : Identity Matrix
+
+### Attributes
+
+Functions for querying array properties
+
+- [`backend()`](https://r-xla.github.io/anvl/dev/reference/backend.md) :
+  Get Backend of an Array
+- [`ambiguous()`](https://r-xla.github.io/anvl/dev/reference/ambiguous.md)
+  : Get Ambiguity of an Array
+- [`dtype()`](https://r-xla.github.io/anvl/dev/reference/dtype.md) : Get
+  the data type of an array
+- [`shape()`](https://r-xla.github.io/anvl/dev/reference/shape.md) : Get
+  the shape of an array
+- [`ndims()`](https://r-xla.github.io/anvl/dev/reference/ndims.md) : Get
+  the number of dimensions of an array
+- [`device()`](https://r-xla.github.io/anvl/dev/reference/device.md) :
+  Get the device of an array
+- [`platform()`](https://r-xla.github.io/anvl/dev/reference/platform.md)
+  : Get the platform of an array or buffer
+
+### Converters
+
+Functions for converting arrays
+
+- [`as_array()`](https://r-xla.github.io/anvl/dev/reference/as_array.md)
+  : Convert to an R array
+- [`as_raw()`](https://r-xla.github.io/anvl/dev/reference/as_raw.md) :
+  Convert an array to a raw vector
+- [`as_dtype()`](https://r-xla.github.io/anvl/dev/reference/as_dtype.md)
+  : Convert to a DataType
+- [`is_dtype()`](https://r-xla.github.io/anvl/dev/reference/is_dtype.md)
+  : Check if an object is a DataType
+
+### Serialization
+
+Functions for serializing and deserializing arrays
+
+- [`nv_save()`](https://r-xla.github.io/anvl/dev/reference/nv_save.md) :
+  Save arrays to a file
+- [`nv_read()`](https://r-xla.github.io/anvl/dev/reference/nv_read.md) :
+  Read arrays from a file
+- [`nv_serialize()`](https://r-xla.github.io/anvl/dev/reference/nv_serialize.md)
+  : Serialize arrays to raw bytes
+- [`nv_unserialize()`](https://r-xla.github.io/anvl/dev/reference/nv_unserialize.md)
+  : Deserialize arrays from raw bytes
+
 ## API Functions
 
 User-facing `nv_*` functions for array operations
@@ -253,81 +328,6 @@ Functions for generating random numbers
   : Sample from a Discrete Uniform Distribution
 - [`nv_rng_state()`](https://r-xla.github.io/anvl/dev/reference/nv_rng_state.md)
   : Generate RNG State
-
-## Array
-
-Constructing and working with AnvlArrays
-
-### Construction
-
-Functions for creating and initializing arrays
-
-- [`nv_array()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
-  [`nv_scalar()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
-  [`nv_empty()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
-  [`nv_array_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
-  [`nv_scalar_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
-  [`nv_empty_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
-  : AnvlArray
-- [`nv_fill()`](https://r-xla.github.io/anvl/dev/reference/nv_fill.md)
-  [`nv_fill_like()`](https://r-xla.github.io/anvl/dev/reference/nv_fill.md)
-  : Fill Constant
-- [`nv_iota()`](https://r-xla.github.io/anvl/dev/reference/nv_iota.md)
-  [`nv_iota_like()`](https://r-xla.github.io/anvl/dev/reference/nv_iota.md)
-  : Iota
-- [`nv_seq()`](https://r-xla.github.io/anvl/dev/reference/nv_seq.md)
-  [`nv_seq_like()`](https://r-xla.github.io/anvl/dev/reference/nv_seq.md)
-  : Sequence
-- [`nv_diag()`](https://r-xla.github.io/anvl/dev/reference/nv_diag.md) :
-  Diagonal Matrix
-- [`nv_eye()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
-  [`nv_eye_like()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
-  : Identity Matrix
-
-### Attributes
-
-Functions for querying array properties
-
-- [`backend()`](https://r-xla.github.io/anvl/dev/reference/backend.md) :
-  Get Backend of an Array
-- [`ambiguous()`](https://r-xla.github.io/anvl/dev/reference/ambiguous.md)
-  : Get Ambiguity of an Array
-- [`dtype()`](https://r-xla.github.io/anvl/dev/reference/dtype.md) : Get
-  the data type of an array
-- [`shape()`](https://r-xla.github.io/anvl/dev/reference/shape.md) : Get
-  the shape of an array
-- [`ndims()`](https://r-xla.github.io/anvl/dev/reference/ndims.md) : Get
-  the number of dimensions of an array
-- [`device()`](https://r-xla.github.io/anvl/dev/reference/device.md) :
-  Get the device of an array
-- [`platform()`](https://r-xla.github.io/anvl/dev/reference/platform.md)
-  : Get the platform of an array or buffer
-
-### Converters
-
-Functions for converting arrays
-
-- [`as_array()`](https://r-xla.github.io/anvl/dev/reference/as_array.md)
-  : Convert to an R array
-- [`as_raw()`](https://r-xla.github.io/anvl/dev/reference/as_raw.md) :
-  Convert an array to a raw vector
-- [`as_dtype()`](https://r-xla.github.io/anvl/dev/reference/as_dtype.md)
-  : Convert to a DataType
-- [`is_dtype()`](https://r-xla.github.io/anvl/dev/reference/is_dtype.md)
-  : Check if an object is a DataType
-
-### Serialization
-
-Functions for serializing and deserializing arrays
-
-- [`nv_save()`](https://r-xla.github.io/anvl/dev/reference/nv_save.md) :
-  Save arrays to a file
-- [`nv_read()`](https://r-xla.github.io/anvl/dev/reference/nv_read.md) :
-  Read arrays from a file
-- [`nv_serialize()`](https://r-xla.github.io/anvl/dev/reference/nv_serialize.md)
-  : Serialize arrays to raw bytes
-- [`nv_unserialize()`](https://r-xla.github.io/anvl/dev/reference/nv_unserialize.md)
-  : Deserialize arrays from raw bytes
 
 ## Transformations
 

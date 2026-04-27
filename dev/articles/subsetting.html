@@ -43,14 +43,32 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
-<li class="active nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-get-started" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Get started</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-get-started">
 <li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/anvl.html">Get Started</a></li>
-    <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
+  </ul>
+</li>
+<li class="active nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-user-guide" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">User guide</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-user-guide">
+<li><a class="dropdown-item" href="../articles/jit.html">JIT Deep Dive</a></li>
+    <li><a class="dropdown-item" href="../articles/static_shapes.html">Static Shape Restriction</a></li>
     <li><a class="dropdown-item" href="../articles/subsetting.html">Subsetting</a></li>
     <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
+    <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
+    <li><a class="dropdown-item" href="../articles/efficiency.html">Efficiency</a></li>
+    <li><a class="dropdown-item" href="../articles/faq.html">FAQ</a></li>
+  </ul>
+</li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-developers" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Developers</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-developers">
+<li><a class="dropdown-item" href="../articles/extending_primitive.html">Adding a Primitive</a></li>
+    <li><a class="dropdown-item" href="../articles/extending_primitive.html">Extending the API</a></li>
+    <li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
+    <li><a class="dropdown-item" href="../articles/primitives.html">Available Primitives</a></li>
   </ul>
 </li>
 <li class="nav-item dropdown">
@@ -61,16 +79,6 @@
     <li><a class="dropdown-item" href="../articles/gaussian-process.html">Gaussian Process</a></li>
   </ul>
 </li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-technical" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Technical</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-technical">
-<li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
-    <li><a class="dropdown-item" href="../articles/primitives.html">Primitives Overview</a></li>
-    <li><h6 class="dropdown-header" data-toc-skip>Extending</h6></li>
-    <li><a class="dropdown-item" href="../articles/new_primitive.html">Adding a Primitive</a></li>
-  </ul>
-</li>
-<li class="nav-item"><a class="nav-link" href="../articles/faq.html">FAQ</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -108,8 +116,9 @@
     
 <p>In this vignette, you will learn how to subset arrays in {anvl} and
 how to update subsets. Because array shapes in {anvl} programs are
-static, only certain subsetting operations are supported and they come
-with some surprises.</p>
+static (see the <a href="static_shapes.html">Static Shape
+Restriction</a> vignette), only certain subsetting operations are
+supported and they come with some surprises.</p>
 <p>We start by listing possible subsets and whether they support dynamic
 values (arrays that are specified during runtime) or only static values
 (e.g., R literals).</p>
@@ -146,12 +155,16 @@ values (arrays that are specified during runtime) or only static values
 subset would be unknown (what’s the size of <code>a:b</code> where
 <code>a</code> and <code>b</code> are unknown?). Boolean masks are not
 supported, because the output shape depends on the data, which is not
-known at compile time. If you want to modify arrays based on a mask, see
-<code><a href="../reference/nv_ifelse.html">nv_ifelse()</a></code>. Negative indexing (e.g., <code>x[-1]</code> to
-exclude elements) is currently also not supported. For static values,
-this will throw an error, for dynamic values, it will be clamped to the
-valid range. If you are missing a feature, please open an issue on
-GitHub.</p>
+known at compile time. For workarounds
+(e.g. <code>sum(x[x &gt; 0])</code> or
+<code>x[mask] &lt;- update</code>), see the <a href="static_shapes.html#the-masking-pattern">masking pattern</a>
+section of the Static Shape Restriction vignette. Negative indexing
+(e.g., <code>x[-1]</code> to exclude elements) is currently also not
+supported. For static values, this will throw an error. For dynamic
+values, negative indices are treated as out-of-bounds and clamped to the
+valid range (see <a href="#out-of-bounds-handling">Out-of-bounds
+Handling</a> below). If you are missing a feature, please open an issue
+on GitHub.</p>
 <p>We will start with subsetting and then move on to
 subset-assignment.</p>
 <div class="section level2">
@@ -161,7 +174,7 @@ subset-assignment.</p>
 <h3 id="subsetting-1d-arrays">Subsetting 1D arrays<a class="anchor" aria-label="anchor" href="#subsetting-1d-arrays"></a>
 </h3>
 <p>Let’s start with some simple examples of selecting individual
-elements from a 1-dimension array. The index can be either static or
+elements from a 1-dimensional array. The index can be either static or
 dynamic and we can drop or keep the dimension:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvl/">anvl</a></span><span class="op">)</span></span>
@@ -206,13 +219,13 @@ dynamic and we can drop or keep the dimension:</p>
 </li>
 <li>
 <p>Dynamic &amp; Keep:</p>
-<p>Below, we almost perform the same operation as above, only do we use
-an array of shape <code>(1)</code> instead of a scalar with shape
+<p>Below, we perform almost the same operation as above, except that we
+use an array of shape <code>(1)</code> instead of a scalar with shape
 <code>()</code>. The difference is that subsetting with the former will
 preserve the dimension, while the latter will drop it, as we have seen
 above. This ensures that the dimensionality of the result is the same
-for any 1D subset specification, and not suddenly “simplify” the result
-to 0D.</p>
+for any 1D subset specification, and does not suddenly “simplify” the
+result to 0D.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fl">2L</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvlArray</span></span>
@@ -267,9 +280,9 @@ parameter.</p>
 <span><span class="co">##  4</span></span>
 <span><span class="co">##  5</span></span>
 <span><span class="co">## [ CPUi32{4} ]</span></span></code></pre>
-<p>Note that the <code>a:b</code> syntax works via
-Non-Standard-Evaluation (NSE), so we can distinguish it from the actual
-vector <code>2:5</code>. Internally, it is translated to
+<p>Note that the <code>a:b</code> syntax works via Non-Standard
+Evaluation (NSE), so we can distinguish it from the actual vector
+<code>2:5</code>. Internally, it is translated to
 <code>nv_seq(a, b)</code>.</p>
 <p>It is also possible to select the whole range by omitting the
 specification altogether.</p>
@@ -355,9 +368,9 @@ specification altogether.</p>
 <h3 id="out-of-bounds-handling">Out-of-bounds Handling<a class="anchor" aria-label="anchor" href="#out-of-bounds-handling"></a>
 </h3>
 <p>If one specifies out-of-bounds indices, we can only throw an error if
-the indices are static (we know them at compile time), as the XLA
-backend that {anvl} compiles to, does not throw errors when using
-out-of-bounds indices, but instead clamps them to the valid range:</p>
+the indices are static (and therefore known at compile time). The XLA
+backend that {anvl} compiles to does not throw errors for out-of-bounds
+dynamic indices, but instead clamps them to the valid range:</p>
 <div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1L</span><span class="op">)</span>, <span class="fu"><a href="../reference/AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fl">100L</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvlArray</span></span>
@@ -439,7 +452,7 @@ ignored:</p>
 <h3 id="duplicate-indices">Duplicate Indices<a class="anchor" aria-label="anchor" href="#duplicate-indices"></a>
 </h3>
 <p>When writing to the same element multiple times, there is no
-gaurantee which value will be written. Specifically, this might differ
+guarantee which value will be written. Specifically, this might differ
 between backends (CPU vs. GPU).</p>
 <div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span>
@@ -452,6 +465,31 @@ between backends (CPU vs. GPU).</p>
 <span><span class="co">##   4</span></span>
 <span><span class="co">##   5</span></span>
 <span><span class="co">## [ CPUi32{5} ]</span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="copying-behavior">Copying Behavior<a class="anchor" aria-label="anchor" href="#copying-behavior"></a>
+</h3>
+<p>In eager mode, <code>x[i] &lt;- val</code> always allocates a fresh
+array, regardless of whether <code>x</code> has any other R references.
+This differs from plain R, which can perform the update in place when
+its reference count for <code>x</code> is 1.</p>
+<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">1L</span>  <span class="co"># allocates a new length-5 buffer, even though x has only one reference</span></span>
+<span><span class="va">x</span></span></code></pre></div>
+<pre><code><span><span class="co">## AnvlArray</span></span>
+<span><span class="co">##  -1</span></span>
+<span><span class="co">##   2</span></span>
+<span><span class="co">##   3</span></span>
+<span><span class="co">##   4</span></span>
+<span><span class="co">##   5</span></span>
+<span><span class="co">## [ CPUi32{5} ]</span></span></code></pre>
+<p>This is unnecessarily expensive. To avoid it, move the update into a
+<code><a href="../reference/jit.html">jit()</a></code>ed function so XLA can fuse it into the surrounding
+computation, and optionally use <code>donate</code> to let the input
+buffer be reused for the output. See the <a href="efficiency.html#eager-mode-subset-assignment-always-copies">Eager-mode
+subset-assignment always copies</a> section of the efficiency vignette
+for details.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

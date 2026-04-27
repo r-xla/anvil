@@ -26,12 +26,26 @@ analogous to R's ifelse()."><meta property="og:image" content="https://r-xla.git
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
 <li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-get-started" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Get started</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-get-started"><li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/anvl.html">Get Started</a></li>
-    <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
+  </ul></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-user-guide" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">User guide</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-user-guide"><li><a class="dropdown-item" href="../articles/jit.html">JIT Deep Dive</a></li>
+    <li><a class="dropdown-item" href="../articles/static_shapes.html">Static Shape Restriction</a></li>
     <li><a class="dropdown-item" href="../articles/subsetting.html">Subsetting</a></li>
     <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
+    <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
+    <li><a class="dropdown-item" href="../articles/efficiency.html">Efficiency</a></li>
+    <li><a class="dropdown-item" href="../articles/faq.html">FAQ</a></li>
+  </ul></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-developers" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Developers</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-developers"><li><a class="dropdown-item" href="../articles/extending_primitive.html">Adding a Primitive</a></li>
+    <li><a class="dropdown-item" href="../articles/extending_primitive.html">Extending the API</a></li>
+    <li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
+    <li><a class="dropdown-item" href="../articles/primitives.html">Available Primitives</a></li>
   </ul></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-examples" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Examples</button>
@@ -39,14 +53,6 @@ analogous to R's ifelse()."><meta property="og:image" content="https://r-xla.git
     <li><a class="dropdown-item" href="../articles/metropolis-hastings.html">Metropolis Hastings</a></li>
     <li><a class="dropdown-item" href="../articles/gaussian-process.html">Gaussian Process</a></li>
   </ul></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-technical" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Technical</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-technical"><li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
-    <li><a class="dropdown-item" href="../articles/primitives.html">Primitives Overview</a></li>
-    <li><h6 class="dropdown-header" data-toc-skip>Extending</h6></li>
-    <li><a class="dropdown-item" href="../articles/new_primitive.html">Adding a Primitive</a></li>
-  </ul></li>
-<li class="nav-item"><a class="nav-link" href="../articles/faq.html">FAQ</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvl/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -84,24 +90,24 @@ analogous to R's <code><a href="https://rdrr.io/r/base/ifelse.html" class="exter
 
 <dl><dt id="arg-pred">pred<a class="anchor" aria-label="anchor" href="#arg-pred"></a></dt>
 <dd><p>(<code><a href="arrayish.html">arrayish</a></code> of boolean type)<br>
-Predicate array. Must be scalar or the same shape as <code>true_value</code>.</p></dd>
+Predicate array. Must be scalar or have the same shape as the
+non-scalar arguments.</p></dd>
 
 
-<dt id="arg-true-value">true_value<a class="anchor" aria-label="anchor" href="#arg-true-value"></a></dt>
+<dt id="arg-true-value-false-value">true_value, false_value<a class="anchor" aria-label="anchor" href="#arg-true-value-false-value"></a></dt>
 <dd><p>(<code><a href="arrayish.html">arrayish</a></code>)<br>
-Values to return where <code>pred</code> is <code>TRUE</code>.</p></dd>
-
-
-<dt id="arg-false-value">false_value<a class="anchor" aria-label="anchor" href="#arg-false-value"></a></dt>
-<dd><p>(<code><a href="arrayish.html">arrayish</a></code>)<br>
-Values to return where <code>pred</code> is <code>FALSE</code>.
-Must have the same shape and data type as <code>true_value</code>.</p></dd>
+Values to return where <code>pred</code> is <code>TRUE</code> / <code>FALSE</code>.
+<code>true_value</code> and <code>false_value</code> are
+<a href="nv_promote_to_common.html">promoted to a common data type</a>.
+Scalars (including <code>pred</code>) are
+<a href="nv_broadcast_scalars.html">broadcast</a> to the shape of the non-scalar arguments.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code><a href="arrayish.html">arrayish</a></code><br>
-Has the same shape and data type as <code>true_value</code>.</p>
+Has the common data type of <code>true_value</code> and <code>false_value</code> and the
+shape of the non-scalar arguments.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -116,6 +122,13 @@ Has the same shape and data type as <code>true_value</code>.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{3} ] </span>
+<span class="r-in"><span><span class="co"># scalar branches are broadcast and promoted to a common dtype</span></span></span>
+<span class="r-in"><span><span class="fu">nv_ifelse</span><span class="op">(</span><span class="va">pred</span>, <span class="fu"><a href="AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">1L</span><span class="op">)</span>, <span class="fu"><a href="AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvlArray</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.5000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUf32{3} ] </span>
 </code></pre></div>
     </div>

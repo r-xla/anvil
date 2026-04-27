@@ -19,7 +19,7 @@ and `protoc` (protobuf compiler).
 ``` r
 # Install release
 # from r-universe (prebuilt binary)
-install.packages("anvl", repos = c("https://cloud.r-project.org", "https://r-xla.r-universe.dev"))
+install.packages("anvl", repos = c("https://r-xla.r-universe.dev", getOption("repos")))
 # from GitHub (installation from source)
 pak::pak("r-xla/anvl@*release")
 # Install dev version
@@ -34,22 +34,30 @@ more details.
 
 ## Quick Start
 
-Below, we create an R function and
-[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md) it. Then,
-we call the resulting function on `AnvlArray`s, which will compile and
-subsequently execute it.
+We define an R function operating on `AnvlArray`s – the primary data
+type of {anvl}. It can be executed in either *eager* mode (each
+operation is performed immediately) or *jit* mode (the whole function is
+compiled into a single kernel via
+[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md)).
 
 ``` r
 library(anvl)
 f <- function(a, b, x) {
   a * x + b
 }
-f_jit <- jit(f)
 
 a <- nv_scalar(1.0, "f32")
 b <- nv_scalar(-2.0, "f32")
 x <- nv_scalar(3.0, "f32")
 
+# Eager mode
+f(a, b, x)
+#> AnvlArray
+#>  1
+#> [ CPUf32{} ]
+
+# JIT mode
+f_jit <- jit(f)
 f_jit(a, b, x)
 #> AnvlArray
 #>  1
@@ -80,6 +88,10 @@ the package website.
 
 - Automatic Differentiation:
   - Gradients for functions with scalar outputs are supported.
+- Eager and JIT mode:
+  - Run operations eagerly for interactive use, or
+    [`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md) entire
+    functions into a single fused kernel for performance.
 - Fast:
   - Code is JIT compiled into a single kernel.
   - Runs on different hardware backends, including CPU and GPU.
@@ -128,6 +140,81 @@ the package website.
     Bioconductor package.
 
 # Package index
+
+## Array
+
+Constructing and working with AnvlArrays
+
+### Construction
+
+Functions for creating and initializing arrays
+
+- [`nv_array()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  [`nv_scalar()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  [`nv_empty()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  [`nv_array_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  [`nv_scalar_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  [`nv_empty_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  : AnvlArray
+- [`nv_fill()`](https://r-xla.github.io/anvl/dev/reference/nv_fill.md)
+  [`nv_fill_like()`](https://r-xla.github.io/anvl/dev/reference/nv_fill.md)
+  : Fill Constant
+- [`nv_iota()`](https://r-xla.github.io/anvl/dev/reference/nv_iota.md)
+  [`nv_iota_like()`](https://r-xla.github.io/anvl/dev/reference/nv_iota.md)
+  : Iota
+- [`nv_seq()`](https://r-xla.github.io/anvl/dev/reference/nv_seq.md)
+  [`nv_seq_like()`](https://r-xla.github.io/anvl/dev/reference/nv_seq.md)
+  : Sequence
+- [`nv_diag()`](https://r-xla.github.io/anvl/dev/reference/nv_diag.md) :
+  Diagonal Matrix
+- [`nv_eye()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
+  [`nv_eye_like()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
+  : Identity Matrix
+
+### Attributes
+
+Functions for querying array properties
+
+- [`backend()`](https://r-xla.github.io/anvl/dev/reference/backend.md) :
+  Get Backend of an Array
+- [`ambiguous()`](https://r-xla.github.io/anvl/dev/reference/ambiguous.md)
+  : Get Ambiguity of an Array
+- [`dtype()`](https://r-xla.github.io/anvl/dev/reference/dtype.md) : Get
+  the data type of an array
+- [`shape()`](https://r-xla.github.io/anvl/dev/reference/shape.md) : Get
+  the shape of an array
+- [`ndims()`](https://r-xla.github.io/anvl/dev/reference/ndims.md) : Get
+  the number of dimensions of an array
+- [`device()`](https://r-xla.github.io/anvl/dev/reference/device.md) :
+  Get the device of an array
+- [`platform()`](https://r-xla.github.io/anvl/dev/reference/platform.md)
+  : Get the platform of an array or buffer
+
+### Converters
+
+Functions for converting arrays
+
+- [`as_array()`](https://r-xla.github.io/anvl/dev/reference/as_array.md)
+  : Convert to an R array
+- [`as_raw()`](https://r-xla.github.io/anvl/dev/reference/as_raw.md) :
+  Convert an array to a raw vector
+- [`as_dtype()`](https://r-xla.github.io/anvl/dev/reference/as_dtype.md)
+  : Convert to a DataType
+- [`is_dtype()`](https://r-xla.github.io/anvl/dev/reference/is_dtype.md)
+  : Check if an object is a DataType
+
+### Serialization
+
+Functions for serializing and deserializing arrays
+
+- [`nv_save()`](https://r-xla.github.io/anvl/dev/reference/nv_save.md) :
+  Save arrays to a file
+- [`nv_read()`](https://r-xla.github.io/anvl/dev/reference/nv_read.md) :
+  Read arrays from a file
+- [`nv_serialize()`](https://r-xla.github.io/anvl/dev/reference/nv_serialize.md)
+  : Serialize arrays to raw bytes
+- [`nv_unserialize()`](https://r-xla.github.io/anvl/dev/reference/nv_unserialize.md)
+  : Deserialize arrays from raw bytes
 
 ## API Functions
 
@@ -382,81 +469,6 @@ Functions for generating random numbers
   : Sample from a Discrete Uniform Distribution
 - [`nv_rng_state()`](https://r-xla.github.io/anvl/dev/reference/nv_rng_state.md)
   : Generate RNG State
-
-## Array
-
-Constructing and working with AnvlArrays
-
-### Construction
-
-Functions for creating and initializing arrays
-
-- [`nv_array()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
-  [`nv_scalar()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
-  [`nv_empty()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
-  [`nv_array_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
-  [`nv_scalar_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
-  [`nv_empty_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
-  : AnvlArray
-- [`nv_fill()`](https://r-xla.github.io/anvl/dev/reference/nv_fill.md)
-  [`nv_fill_like()`](https://r-xla.github.io/anvl/dev/reference/nv_fill.md)
-  : Fill Constant
-- [`nv_iota()`](https://r-xla.github.io/anvl/dev/reference/nv_iota.md)
-  [`nv_iota_like()`](https://r-xla.github.io/anvl/dev/reference/nv_iota.md)
-  : Iota
-- [`nv_seq()`](https://r-xla.github.io/anvl/dev/reference/nv_seq.md)
-  [`nv_seq_like()`](https://r-xla.github.io/anvl/dev/reference/nv_seq.md)
-  : Sequence
-- [`nv_diag()`](https://r-xla.github.io/anvl/dev/reference/nv_diag.md) :
-  Diagonal Matrix
-- [`nv_eye()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
-  [`nv_eye_like()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
-  : Identity Matrix
-
-### Attributes
-
-Functions for querying array properties
-
-- [`backend()`](https://r-xla.github.io/anvl/dev/reference/backend.md) :
-  Get Backend of an Array
-- [`ambiguous()`](https://r-xla.github.io/anvl/dev/reference/ambiguous.md)
-  : Get Ambiguity of an Array
-- [`dtype()`](https://r-xla.github.io/anvl/dev/reference/dtype.md) : Get
-  the data type of an array
-- [`shape()`](https://r-xla.github.io/anvl/dev/reference/shape.md) : Get
-  the shape of an array
-- [`ndims()`](https://r-xla.github.io/anvl/dev/reference/ndims.md) : Get
-  the number of dimensions of an array
-- [`device()`](https://r-xla.github.io/anvl/dev/reference/device.md) :
-  Get the device of an array
-- [`platform()`](https://r-xla.github.io/anvl/dev/reference/platform.md)
-  : Get the platform of an array or buffer
-
-### Converters
-
-Functions for converting arrays
-
-- [`as_array()`](https://r-xla.github.io/anvl/dev/reference/as_array.md)
-  : Convert to an R array
-- [`as_raw()`](https://r-xla.github.io/anvl/dev/reference/as_raw.md) :
-  Convert an array to a raw vector
-- [`as_dtype()`](https://r-xla.github.io/anvl/dev/reference/as_dtype.md)
-  : Convert to a DataType
-- [`is_dtype()`](https://r-xla.github.io/anvl/dev/reference/is_dtype.md)
-  : Check if an object is a DataType
-
-### Serialization
-
-Functions for serializing and deserializing arrays
-
-- [`nv_save()`](https://r-xla.github.io/anvl/dev/reference/nv_save.md) :
-  Save arrays to a file
-- [`nv_read()`](https://r-xla.github.io/anvl/dev/reference/nv_read.md) :
-  Read arrays from a file
-- [`nv_serialize()`](https://r-xla.github.io/anvl/dev/reference/nv_serialize.md)
-  : Serialize arrays to raw bytes
-- [`nv_unserialize()`](https://r-xla.github.io/anvl/dev/reference/nv_unserialize.md)
-  : Deserialize arrays from raw bytes
 
 ## Transformations
 
@@ -768,22 +780,26 @@ Low-level primitive operations (prim\_\* functions)
 ### All vignettes
 
 - [Get Started](https://r-xla.github.io/anvl/dev/articles/anvl.md):
+- [Efficiency](https://r-xla.github.io/anvl/dev/articles/efficiency.md):
+- [Extending the
+  API](https://r-xla.github.io/anvl/dev/articles/extending_api.md):
+- [Adding a
+  Primitive](https://r-xla.github.io/anvl/dev/articles/extending_primitive.md):
 - [FAQ](https://r-xla.github.io/anvl/dev/articles/faq.md):
 - [Gaussian
   Process](https://r-xla.github.io/anvl/dev/articles/gaussian-process.md):
 - [Installation](https://r-xla.github.io/anvl/dev/articles/installation.md):
 - [Internals](https://r-xla.github.io/anvl/dev/articles/internals.md):
+- [JIT Deep Dive](https://r-xla.github.io/anvl/dev/articles/jit.md):
 - [Logistic
   Regression](https://r-xla.github.io/anvl/dev/articles/logistic-regression.md):
 - [Metropolis-Hastings](https://r-xla.github.io/anvl/dev/articles/metropolis-hastings.md):
-- [Adding an API
-  Function](https://r-xla.github.io/anvl/dev/articles/new_api_function.md):
-- [Adding a
-  Primitive](https://r-xla.github.io/anvl/dev/articles/new_primitive.md):
 - [Primitives
   Reference](https://r-xla.github.io/anvl/dev/articles/primitives.md):
 - [Random Number
   Generation](https://r-xla.github.io/anvl/dev/articles/random-numbers.md):
+- [Static Shape
+  Restriction](https://r-xla.github.io/anvl/dev/articles/static_shapes.md):
 - [Subsetting](https://r-xla.github.io/anvl/dev/articles/subsetting.md):
 - [Type
   Promotion](https://r-xla.github.io/anvl/dev/articles/type-promotion.md):
