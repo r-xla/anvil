@@ -30,6 +30,11 @@
 #' nv_fill_like(x, 0)
 #' @export
 nv_fill <- function(value, shape, dtype = NULL, ambiguous = FALSE, device = NULL) {
+  if (!is_valid_r_lit(value)) {
+    cli_abort(
+      "{.arg value} must be an R vector of length 1 of type double, integer, or logical, not {.cls {class(value)[1]}}."
+    )
+  }
   dtype <- if (is.null(dtype)) {
     default_dtype(value)
   } else {
