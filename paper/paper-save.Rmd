@@ -96,6 +96,9 @@ TODOs:
 * [ ] static vs tracing:
     * [ ] tracing requires control of the R function (now rowSums etc.)
     * [ ] tracing allows to "borow" more from the host interpreter (static arguments)
+* [ ] related work:
+  * [ ] OpenCL package by Simon Urbanek
+  * [ ] discuss problems: heterogenous compute
 
 
 
