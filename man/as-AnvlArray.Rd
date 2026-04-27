@@ -27,7 +27,7 @@ Convert an \code{\link{AnvlArray}} to a bare R vector.
 The array's shape is discarded; the result is always a flat vector.
 Each method requires a compatible dtype:
 \itemize{
-\item \code{as.double()} / \code{as.numeric()}: float dtypes (e.g. \code{f16}, \code{f32}, \code{f64}).
+\item \code{as.double()} / \code{as.numeric()}: float or (signed/unsigned) integer dtypes.
 \item \code{as.integer()}: signed or unsigned integer dtypes.
 \item \code{as.logical()}: \code{bool}.
 }

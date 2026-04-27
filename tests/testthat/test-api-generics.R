@@ -176,9 +176,20 @@ describe("as.double", {
     expect_identical(as.double(nv_scalar(3.5, dtype = "f64")), 3.5)
   })
 
-  it("errors on non-float dtype", {
-    expect_error(as.double(nv_array(1:3, dtype = "i32")), "requires a float dtype")
-    expect_error(as.double(nv_array(TRUE, dtype = "bool")), "requires a float dtype")
+  it("works on signed integer dtypes", {
+    x <- nv_array(1:4, dtype = "i32", shape = c(2L, 2L))
+    result <- as.double(x)
+    expect_type(result, "double")
+    expect_null(dim(result))
+    expect_equal(result, c(1, 2, 3, 4))
+  })
+
+  it("works on unsigned integer dtypes", {
+    expect_identical(as.double(nv_array(c(1L, 2L, 3L), dtype = "ui32")), c(1, 2, 3))
+  })
+
+  it("errors on bool dtype", {
+    expect_error(as.double(nv_array(TRUE, dtype = "bool")), "requires a float or integer dtype")
   })
 })
 

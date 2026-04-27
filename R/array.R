@@ -313,7 +313,7 @@ as_raw.AnvlArray <- function(x, row_major = FALSE, ...) {
 #' Convert an [`AnvlArray`] to a bare R vector.
 #' The array's shape is discarded; the result is always a flat vector.
 #' Each method requires a compatible dtype:
-#' * `as.double()` / `as.numeric()`: float dtypes (e.g. `f16`, `f32`, `f64`).
+#' * `as.double()` / `as.numeric()`: float or (signed/unsigned) integer dtypes.
 #' * `as.integer()`: signed or unsigned integer dtypes.
 #' * `as.logical()`: `bool`.
 #'
@@ -335,8 +335,9 @@ NULL
 #' @method as.double AnvlArray
 #' @export
 as.double.AnvlArray <- function(x, ...) {
-  if (!inherits(dtype(x), "FloatType")) {
-    cli_abort("{.fn as.double} requires a float dtype, but got {.val {as.character(dtype(x))}}.")
+  dt <- dtype(x)
+  if (!(inherits(dt, "FloatType") || inherits(dt, "IntegerType") || inherits(dt, "UIntegerType"))) {
+    cli_abort("{.fn as.double} requires a float or integer dtype, but got {.val {as.character(dt)}}.")
   }
   as.double(as_array(x))
 }
