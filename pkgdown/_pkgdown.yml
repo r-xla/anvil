@@ -16,7 +16,7 @@ toc:
 
 navbar:
   structure:
-    left:  [reference, news, get_started, user_guide, developers, examples]
+    left:  [reference, news, get_started, user_guide, examples, developers]
     right: [search, github, lightswitch]
   components:
     get_started:
