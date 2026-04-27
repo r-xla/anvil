@@ -99,6 +99,7 @@ reference:
       - as_raw
       - as_dtype
       - is_dtype
+      - as-AnvlArray
 
   - subtitle: Serialization
     desc: Functions for serializing and deserializing arrays
