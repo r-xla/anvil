@@ -32,7 +32,7 @@
 * New primitives:
   * `nvl_cholesky()` to compute the Cholesky decomposition of a matrix.
   * `nvl_triangular_solve()` to solve a system of linear equations with a triangular matrix.
-* New API functions:
+* New API functions (+ corresponding R generic implementations):
   * `nv_diag()` to create a diagonal matrix from a 1-D tensor.
   * `nv_eye()` to create an identity matrix.
   * `nv_solve()` to solve a system of linear equations.
@@ -50,9 +50,6 @@
   * `nv_sd()` and `nv_var()` for standard deviation and variance.
 * `jit()` now accepts integer positions for the `static` argument.
 * New S3 methods `dim()`, `nrow()`, `ncol()`, and `length()` for anvl arrays.
-* Base R generics now dispatch to anvl arrays:
-  `log2()`, `log10()`, `is.finite()`, `is.infinite()`, `is.nan()`, `mean()`,
-  `t()`, `crossprod()`, and `tcrossprod()`.
 * Printing tensors via `nv_print()` now also works on GPUs.
 * R vectors of length 1 and arrays are now auto-converted when being passed
   to `jit`ted functions.
