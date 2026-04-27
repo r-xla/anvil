@@ -37,7 +37,7 @@ There are also many other kernels that can be used, such as the Matérn kernel, 
 Below, we implement a function that computes the kernel matrix for two sets of points:
 
 ```{r}
-library(anvil)
+library(anvl)
 
 # X1: (n, d) array
 # X2: (m, d) array
@@ -56,7 +56,7 @@ rbf_kernel_matrix <- function(X1, X2, lengthscale, signal_var) {
 }
 ```
 
-Because `anvil` jit-compiles the code, there is no performance penalty for custom kernels, other than if we would use a C++ library that has a number of hard-coded kernels available.
+Because `anvl` jit-compiles the code, there is no performance penalty for custom kernels, other than if we would use a C++ library that has a number of hard-coded kernels available.
 
 ## Joint Distribution
 
@@ -259,7 +259,7 @@ neg_log_marginal_likelihood <- function(kernel, X, y, lengthscale, signal_var, n
 
 We optimize the hyperparameters using gradient descent. Since $\ell$, $\sigma_f^2$, and
 $\sigma^2$ must be positive, we optimize on the log scale to allow unconstrained updates.
-`anvil` computes the gradients via `gradient()` and the entire training loop is
+`anvl` computes the gradients via `gradient()` and the entire training loop is
 JIT-compiled with `nv_while`.
 
 ```{r}

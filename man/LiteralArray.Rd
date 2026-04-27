@@ -7,8 +7,8 @@
 LiteralArray(data, shape, dtype = default_dtype(data), ambiguous)
 }
 \arguments{
-\item{data}{(\code{double(1)} | \code{integer(1)} | \code{logical(1)} | \code{\link{AnvilArray}})\cr
-The scalar value or scalarish AnvilArray (contains 1 element).}
+\item{data}{(\code{double(1)} | \code{integer(1)} | \code{logical(1)} | \code{\link{AnvlArray}})\cr
+The scalar value or scalarish AnvlArray (contains 1 element).}
 
 \item{shape}{(\code{\link[stablehlo:Shape]{stablehlo::Shape}} | \code{integer()})\cr
 The shape of the array.}

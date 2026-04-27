@@ -34,7 +34,7 @@ See the \code{vignette("type-promotion")} for more details.}
 \item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{quickr_device}} | \code{NULL})\cr
 Device for data to live on.}
 
-\item{like}{(\code{\link{AnvilArray}})\cr
+\item{like}{(\code{\link{AnvlArray}})\cr
 Existing array whose attributes are used as defaults
 (only for \code{nv_fill_like()}).}
 }
@@ -57,5 +57,5 @@ nv_fill_like(x, 0)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_fill]{nvl_fill()}} for the underlying primitive.
+\code{\link[=prim_fill]{prim_fill()}} for the underlying primitive.
 }

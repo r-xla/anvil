@@ -1,8 +1,12 @@
-# anvil (development version)
+# anvl (development version)
+
+# anvl 0.2.0
 
 ## Breaking Changes
 
-* `AnvilTensor`/`nv_tensor` were renamed to `AnvilArray` and `nv_array` to be
+* The package was renamed from `anvil` to `anvl` to avoid a conflict
+  with the Bioconductor package `AnVIL`.
+* `AnvilTensor`/`nv_tensor` were renamed to `AnvlArray` and `nv_array` to be
   more in line with R's `array()`.
   Also, `nv_aten()` was renamed to `nv_aval()`.
 * Subsetting with `list()` (e.g. `x[list(1, 3)]`) is no longer supported.
@@ -11,6 +15,9 @@
 * Removed *debug mode*.
 * Remove NSE support for `nvl_if`. It now requires passing 0-argument
   closures as `true` and `false` arguments.
+* Primitives renamed from `nvl_*` to `prim_*`.
+  The underlying primitive object containing the rules and metadata
+  is now part of the `JitPrimitive` function via the `primitive` attribute.
 
 ## New Features
 
@@ -23,18 +30,28 @@
 * An experimental [{quickr}](https://github.com/t-kalinowski/quickr) backend was added
   It only runs on CPU for now and supports a subset of available operations.
   You can enable it via the `backend` argument in `jit()` and
-  `nv_array()` or via the `anvil.default_backend` option.
+  `nv_array()` or via the `anvl.default_backend` option.
 * New primitives:
   * `nvl_cholesky()` to compute the Cholesky decomposition of a matrix.
   * `nvl_triangular_solve()` to solve a system of linear equations with a triangular matrix.
-* New API functions:
+* New API functions (+ corresponding R generic implementations):
   * `nv_diag()` to create a diagonal matrix from a 1-D tensor.
   * `nv_eye()` to create an identity matrix.
   * `nv_solve()` to solve a system of linear equations.
   * `nv_cholesky()` to compute the Cholesky decomposition of a matrix.
   * `nv_device()` constructs a backend-specific device object (e.g. `nv_device("cpu")`)
     that can be passed as `device` to array constructors like `nv_fill()` or `nv_iota()`.
-* New S3 methods `dim()`, `nrow()`, `ncol()`, and `length()` for anvil arrays.
+  * `nv_crossprod()` and `nv_tcrossprod()` for matrix cross-products.
+  * `nv_outer()` for the outer product.
+  * `nv_extract_diag()` to extract the diagonal of a matrix.
+  * `nv_trace()` to compute the trace of a matrix.
+  * `nv_tril()` and `nv_triu()` to extract lower/upper triangular parts.
+  * `nv_squeeze()` and `nv_unsqueeze()` to drop or add length-1 dimensions.
+  * `nv_log2()` and `nv_log10()`.
+  * `nv_is_infinite()` and `nv_is_nan()`.
+  * `nv_sd()` and `nv_var()` for standard deviation and variance.
+* `jit()` now accepts integer positions for the `static` argument.
+* New S3 methods `dim()`, `nrow()`, `ncol()`, and `length()` for anvl arrays.
 * Printing tensors via `nv_print()` now also works on GPUs.
 * R vectors of length 1 and arrays are now auto-converted when being passed
   to `jit`ted functions.
@@ -51,6 +68,7 @@
   This caused wrong results with e.g. `nv_reduce_max()` when working with `f64`.
 * Corrected argument checks in `nv_iota()`.
 * Fix check that `wrt` arguments in `gradient()` must be floats.
+* `nv_subset()` and `nv_subset_assign()` now error on trailing-comma subscripts (#273).
 
 ## Documentation
 
@@ -65,6 +83,6 @@
   package (see installation guide), which only requires a compatible CUDA
   driver.
 
-# anvil 0.1.0
+# anvl 0.1.0
 
 Initial release

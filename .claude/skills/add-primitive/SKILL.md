@@ -1,12 +1,12 @@
 ---
 name: add-primitive
-description: Add a new primitive operation to anvil (nvl_* function with stablehlo, reverse rules, and tests)
+description: Add a new primitive operation to anvl (prim_* function with stablehlo, reverse rules, and tests)
 user_invocable: true
 ---
 
-# Add a New Primitive to anvil
+# Add a New Primitive to anvl
 
-Read `vignettes/new_primitive.Rmd` first — it is the primary guide with a complete walkthrough (primitive creation, nvl_* function, stablehlo rule, reverse rule, registration, nv_* API, file organization). This skill covers additional details not in the vignette.
+Read `vignettes/extending_primitive.Rmd` first — it is the primary guide with a complete walkthrough (primitive creation via `new_primitive()`, stablehlo rule, reverse rule, nv_* API, file organization). This skill covers additional details not in the vignette.
 
 ## Before Starting: Check StableHLO Support
 
@@ -30,28 +30,32 @@ Use templates from `man-roxygen/` where applicable:
 
 ## Shortcuts for Simple Ops
 
-The vignette shows the manual `graph_desc_add()` approach. For simple ops without extra parameters, use these shortcuts instead:
+The vignette shows the manual `graph_desc_add()` approach. For simple ops without extra parameters, pass a body produced by `make_unary_op()` / `make_binary_op()` to `new_primitive()`. Both helpers take a stablehlo type-inference function and rely on the lexically-bound `self` installed by `new_primitive()`:
 
 ```r
-# Simple unary (e.g. nvl_abs, nvl_negate):
-nvl_<name> <- make_unary_op(p_<name>, stablehlo::infer_types_<name>)
+# Simple unary (e.g. prim_abs, prim_negate):
+prim_<name> <- new_primitive("<name>", make_unary_op(stablehlo::infer_types_<name>))
 
-# Simple binary (e.g. nvl_add, nvl_mul):
-nvl_<name> <- make_binary_op(p_<name>, stablehlo::infer_types_<name>)
+# Simple binary (e.g. prim_add, prim_mul):
+prim_<name> <- new_primitive("<name>", make_binary_op(stablehlo::infer_types_<name>))
 ```
 
 ## Reverse Rule: Additional Guidance
 
 Beyond what the vignette covers:
 
-- Build gradient expressions using `nvl_*` primitives — never use R arithmetic directly.
+- Build gradient expressions using `prim_*` primitives — never use R arithmetic directly.
 - For non-differentiable points (e.g. `abs` at 0, `floor` everywhere), follow PyTorch conventions (subgradients, zero gradients, etc.). Read existing rules in `R/rules-reverse.R` for examples.
+
+## Optional: Quickr Rule
+
+If the primitive should also run under `local_backend("quickr")`, add a `quickr` lowering in `R/rules-quickr.R` via `quickr_register_prim_lowerer(prim_<name>, function(...) { ... })`. This emits plain R code for the quickr backend. If you skip it, the primitive still works on the xla backend — the quickr meta test simply excludes it from coverage.
 
 ## API Wrapper (`nv_*`)
 
 Follow the `/add-api-function` skill for this step — it covers design principles (R naming, semantics, generics), implementation, documentation, `_pkgdown.yml` placement, and testing.
 
-`nvl_*` primitives are auto-included under the "Primitives" section in `_pkgdown.yml` via `starts_with("nvl_")`.
+`prim_*` primitives are auto-included under the "Primitives" section in `_pkgdown.yml` via `starts_with("prim_")`.
 
 ## Testing
 
@@ -71,12 +75,12 @@ Use `describe()` / `it()` blocks. Cover:
 - Boundary values (depends on the specific operation)
 - dtype variations where relevant
 - Parameter variations (e.g. different `dims`, `permutation` values)
-- Non-differentiable points: include those values in the test inputs and verify anvil's gradient matches torch's gradient at those points.
+- Non-differentiable points: include those values in the test inputs and verify anvl's gradient matches torch's gradient at those points.
 
 ### Forward test example (torch comparison in `inst/extra-tests/test-primitives-stablehlo-torch.R`)
 
 ```r
-describe("p_foo", {
+describe("prim_foo", {
   gen_foo <- function(shp, dtype) {
     n <- if (!length(shp)) 1L else prod(shp)
     vals <- c(0, -1, 1, 0.5, -0.5, 100, -100, sample(rnorm(100), n - 7L))
@@ -85,15 +89,15 @@ describe("p_foo", {
   }
 
   it("works for scalars", {
-    expect_jit_torch_unary(nvl_foo, torch::torch_foo, integer(), gen = gen_foo)
+    expect_jit_torch_unary(prim_foo, torch::torch_foo, integer(), gen = gen_foo)
   })
 
   it("works for vectors", {
-    expect_jit_torch_unary(nvl_foo, torch::torch_foo, 10L, gen = gen_foo)
+    expect_jit_torch_unary(prim_foo, torch::torch_foo, 10L, gen = gen_foo)
   })
 
   it("works for matrices", {
-    expect_jit_torch_unary(nvl_foo, torch::torch_foo, c(3, 4), gen = gen_foo)
+    expect_jit_torch_unary(prim_foo, torch::torch_foo, c(3, 4), gen = gen_foo)
   })
 })
 ```
@@ -103,7 +107,7 @@ For binary ops, use `expect_jit_torch_binary` with `gen_x` / `gen_y`.
 ### Reverse test example (torch comparison in `inst/extra-tests/test-primitives-reverse-torch.R`)
 
 ```r
-describe("p_foo", {
+describe("prim_foo", {
   gen_foo <- function(shp, dtype) {
     n <- if (!length(shp)) 1L else prod(shp)
     vals <- c(0.5, -0.5, 1, -1, 2, -2, sample(rnorm(100), max(0, n - 6)))
@@ -112,11 +116,11 @@ describe("p_foo", {
   }
 
   it("scalar gradient", {
-    verify_grad_uni(nvl_foo, torch::torch_foo, gen = gen_foo)
+    verify_grad_uni(prim_foo, torch::torch_foo, gen = gen_foo)
   })
 
   it("tensor gradient", {
-    verify_grad_uni_tensor(nvl_foo, torch::torch_foo, shape = c(3, 4), gen = gen_foo)
+    verify_grad_uni_tensor(prim_foo, torch::torch_foo, shape = c(3, 4), gen = gen_foo)
   })
 })
 ```
@@ -139,7 +143,7 @@ Custom generators (`gen`, `gen_x`, `gen_y`, `gen_lhs`, `gen_rhs`) have signature
 
 ### Meta-test coverage
 
-`tests/testthat/test-primitives-meta.R` automatically checks that every `p_*` primitive has corresponding stablehlo and reverse tests. Your new primitive will be flagged if tests are missing.
+`tests/testthat/test-primitives-meta.R` automatically checks that every `prim_*` primitive has corresponding stablehlo and reverse tests. Your new primitive will be flagged if tests are missing. Tests must use the full `prim_<name>` identifier as the `describe()` / `test_that()` label (e.g. `describe("prim_foo", { ... })`).
 
 ## Verify
 
@@ -152,11 +156,11 @@ devtools::test()  # or run specific test files
 ## Checklist
 
 - [ ] Can be expressed in StableHLO
-- [ ] Primitive registered: `p_<name> <- AnvilPrimitive("<name>")`
-- [ ] Primitive implemented: `nvl_<name>` with roxygen docs and `@export`
-- [ ] StableHLO rule: `p_<name>[["stablehlo"]]` in `R/rules-stablehlo.R`
-- [ ] Reverse rule: `p_<name>[["reverse"]]` in `R/rules-reverse.R`
+- [ ] Primitive defined: `prim_<name> <- new_primitive("<name>", function(...) { graph_desc_add(self, ...) })` with roxygen docs and `@export` (auto-registered into the internal primitive registry). For simple shapes, use `make_unary_op()` / `make_binary_op()` / `make_reduce_op()` / `make_compare_op()` instead of writing the body by hand.
+- [ ] StableHLO rule: `prim_<name>[["stablehlo"]]` in `R/rules-stablehlo.R`
+- [ ] Reverse rule: `prim_<name>[["reverse"]]` in `R/rules-reverse.R`
+- [ ] Quickr rule (optional): `quickr_register_prim_lowerer(prim_<name>, ...)` in `R/rules-quickr.R`
 - [ ] API wrapper: `nv_<name>` added via `/add-api-function` skill
-- [ ] Tests: primitive forward + reverse, property-based with edge cases
+- [ ] Tests: primitive forward + reverse, property-based with edge cases (use `describe("prim_<name>", { ... })`)
 - [ ] `devtools::document()` run
 - [ ] `devtools::test()` passes

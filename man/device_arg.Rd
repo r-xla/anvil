@@ -11,7 +11,7 @@ device_arg(argname)
 Name of a formal argument of the function passed to \code{\link[=jit]{jit()}}.}
 }
 \value{
-(\code{AnvilDeviceArg})\cr
+(\code{AnvlDeviceArg})\cr
 An object recognized by \code{\link[=jit]{jit()}}.
 }
 \description{
@@ -23,7 +23,7 @@ JIT as the compilation device.
 
 This is intended for functions that have no dynamic array inputs from which
 the backend could otherwise be detected (e.g. array constructors like
-\code{\link[=nvl_fill]{nvl_fill()}} or \code{\link[=nvl_iota]{nvl_iota()}}).
+\code{\link[=prim_fill]{prim_fill()}} or \code{\link[=prim_iota]{prim_iota()}}).
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded("cpu")) withAutoprint(\{ # examplesIf}

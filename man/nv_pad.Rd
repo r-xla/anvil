@@ -43,5 +43,5 @@ nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_pad]{nvl_pad()}} for the underlying primitive.
+\code{\link[=prim_pad]{prim_pad()}} for the underlying primitive.
 }

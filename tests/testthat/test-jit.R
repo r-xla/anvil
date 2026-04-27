@@ -1,6 +1,6 @@
 test_that("jit: basic test", {
   f <- jit(function(x, y) {
-    nvl_add(x, y)
+    prim_add(x, y)
   })
 
   expect_equal(
@@ -16,7 +16,7 @@ test_that("jit: basic test", {
 test_that("jit: a constant", {
   x <- nv_scalar(1)
   f <- function(y) {
-    nvl_add(x, y)
+    prim_add(x, y)
   }
   f_jit <- jit(f)
   expect_equal(
@@ -51,7 +51,7 @@ test_that("jit basic test", {
 })
 
 test_that("can return single array", {
-  f <- jit(nvl_add)
+  f <- jit(prim_add)
   expect_equal(
     f(
       nv_array(1.0),
@@ -97,8 +97,8 @@ test_that("Can multiply values from lists", {
 test_that("multiple returns", {
   f <- jit(function(x, y) {
     list(
-      nvl_add(x, y),
-      nvl_mul(x, y)
+      prim_add(x, y),
+      prim_mul(x, y)
     )
   })
 
@@ -207,7 +207,7 @@ test_that("static cannot be '...'", {
 
 
 test_that("jit: array return value is not wrapped in list", {
-  f <- jit(nvl_add)
+  f <- jit(prim_add)
   out <- f(nv_scalar(1.2), nv_scalar(-0.7))
   expect_equal(as_array(out), 1.2 + (-0.7), tolerance = 1e-6)
 })
@@ -282,7 +282,7 @@ describe("jit: device and backend handling", {
   })
 
   it("backend = NULL, device = NULL follows default_backend() = 'quickr'", {
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     local_backend("quickr")
     f <- jit(identity)
     expect_equal(backend(f), "quickr")
@@ -309,7 +309,7 @@ describe("jit: device and backend handling", {
   })
 
   it("concrete device infers backend from device", {
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     local_backend("quickr")
     f <- jit(identity, device = pjrt::pjrt_device("cpu"))
     expect_equal(backend(f), "xla")
@@ -317,7 +317,7 @@ describe("jit: device and backend handling", {
   })
 
   it("concrete device conflicts with mismatched backend", {
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     expect_error(
       jit(identity, backend = "quickr", device = pjrt::pjrt_device("cpu")),
       "Backend of requested device"
@@ -335,12 +335,12 @@ describe("jit: device and backend handling", {
     expect_equal(backend(f), "auto")
     # At call time, backend is picked from the input.
     expect_equal(backend(f(nv_scalar(1, backend = "xla"))), "xla")
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     expect_equal(backend(f(nv_scalar(1, backend = "quickr"))), "quickr")
   })
 
   it("backend 'auto' routes to quickr when all inputs are quickr", {
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     f <- jit(nv_add, backend = "auto")
     out <- f(nv_scalar(1, backend = "quickr"), nv_scalar(2, backend = "quickr"))
     expect_equal(backend(out), "quickr")
@@ -348,7 +348,7 @@ describe("jit: device and backend handling", {
   })
 
   it("backend 'auto' errs when call-time inputs use multiple backends", {
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     f <- jit(nv_add, backend = "auto")
     expect_error(
       f(nv_scalar(1, backend = "xla"), nv_scalar(2, backend = "quickr")),
@@ -359,7 +359,7 @@ describe("jit: device and backend handling", {
   it("cannot mix backends via closed-over constant", {
     # A closed-over constant from a different backend than the call-time input
     # must not silently compile on either backend.
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     const_q <- nv_scalar(1, backend = "quickr")
     f <- jit(function(x) x + const_q, backend = "xla")
     expect_error(
@@ -375,14 +375,14 @@ describe("jit: device and backend handling", {
   })
 
   it("character device with backend = 'auto' is honored per chosen backend", {
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     f <- jit(identity, device = "cpu", backend = "auto")
     expect_equal(device(f(nv_scalar(1, backend = "xla"))), nv_device("cpu", "xla"))
     expect_equal(device(f(nv_scalar(1, backend = "quickr"))), nv_device("cpu", "quickr"))
   })
 
   it("concrete device with backend = 'auto' collapses to the device's backend", {
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     expect_error(
       jit(identity, device = nv_device("cpu", "quickr"), backend = "auto"),
       "Don't provide"
@@ -390,7 +390,7 @@ describe("jit: device and backend handling", {
   })
 
   it("device_arg caches separately per device value", {
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     f <- jit(
       function(dev) nv_scalar(1, device = dev),
       backend = "auto",
@@ -422,7 +422,7 @@ describe("jit: device and backend handling", {
       "on unexpected device"
     )
   })
-  it("allocates scalar on default device when there is no AnvilArray to infer from", {
+  it("allocates scalar on default device when there is no AnvlArray to infer from", {
     g <- jit(function() 1, backend = "xla")
     expect_equal(device(g()), default_device("xla"))
   })
@@ -489,7 +489,7 @@ describe("jit: device and backend handling", {
     g <- jit(f, device = device_arg("x"), backend = "auto")
     expect_equal(device(g("cpu:0")), nv_device("cpu:0", "xla"))
     expect_equal(device(g("cpu:1")), nv_device("cpu:1", "xla"))
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     expect_equal(device(g(nv_device("cpu", "quickr"))), nv_device("cpu", "quickr"))
   })
 
@@ -512,7 +512,7 @@ describe("jit: device and backend handling", {
     )
     dev0 <- nv_device("cpu", "xla")
     expect_true(device(f(1, dev0)) == dev0)
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     dev1 <- nv_device("cpu", "quickr")
     expect_true(device(f(1, dev1)) == dev1)
   })

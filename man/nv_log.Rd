@@ -24,5 +24,5 @@ log(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_log]{nvl_log()}} for the underlying primitive.
+\code{\link[=prim_log]{prim_log()}} for the underlying primitive.
 }

@@ -38,7 +38,7 @@ See the \code{vignette("type-promotion")} for more details.}
 \item{device}{( \code{character(1)} | \code{PJRTDevice} | \code{\link{quickr_device}} | \code{NULL})\cr
 Device for data to live on.}
 
-\item{like}{(\code{\link{AnvilArray}})\cr
+\item{like}{(\code{\link{AnvlArray}})\cr
 Existing array whose attributes are used as defaults
 (only for \code{nv_iota_like()}).}
 }
@@ -61,5 +61,5 @@ nv_iota_like(x, dim = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_seq]{nv_seq()}} for a simpler 1-D sequence, \code{\link[=nvl_iota]{nvl_iota()}} for the underlying primitive.
+\code{\link[=nv_seq]{nv_seq()}} for a simpler 1-D sequence, \code{\link[=prim_iota]{prim_iota()}} for the underlying primitive.
 }

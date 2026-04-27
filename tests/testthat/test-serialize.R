@@ -19,7 +19,7 @@ test_that("nv_save and nv_read works for a single array", {
 })
 
 test_that("nv_serialize and nv_unserialize work for quickr backend", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   x <- nv_array(array(1:6, dim = c(2, 3)), dtype = "i32", backend = "quickr")
   lst <- list(x = x)
   raw_data <- nv_serialize(lst)
@@ -32,7 +32,7 @@ test_that("nv_serialize and nv_unserialize work for quickr backend", {
 })
 
 test_that("nv_save and nv_read work for quickr backend", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   x <- nv_array(c(1.5, 2.5, 3.5), dtype = "f64", backend = "quickr")
   lst <- list(x = x)
   tmp <- tempfile(fileext = ".safetensors")

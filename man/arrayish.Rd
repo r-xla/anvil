@@ -18,13 +18,13 @@ Whether to accept \code{numeric(1)} and \code{logical(1)} and R arrays of type \
 \code{logical(1)}
 }
 \description{
-A \code{arrayish} value is any object that can be input to a primitive such as \code{\link{nvl_add}}.
+A \code{arrayish} value is any object that can be input to a primitive such as \code{\link{prim_add}}.
 
-During runtime of a JIT-compiled function, these are \code{\link{AnvilArray}} objects.
+During runtime of a JIT-compiled function, these are \code{\link{AnvlArray}} objects.
 
 The following types are arrayish (during tracing):
 \itemize{
-\item \code{\link{AnvilArray}}: a concrete array holding data on a device.
+\item \code{\link{AnvlArray}}: a concrete array holding data on a device.
 \item \code{\link{GraphBox}}: a boxed abstract array representing a value in a graph.
 \item Length-1 vectors: \code{numeric(1)} and \code{logical(1)}
 \item R arrays of types: \code{numeric} and \code{logical}.
@@ -34,7 +34,7 @@ Use \code{\link[=is_arrayish]{is_arrayish()}} to check whether a value is arrayi
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-# AnvilArrays are arrayish
+# AnvlArrays are arrayish
 is_arrayish(nv_array(1:4))
 
 # Scalar R literals are arrayish by default
@@ -52,5 +52,5 @@ is_arrayish(1.5, convert_ok = TRUE)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\link{AnvilArray}, \link{GraphBox}
+\link{AnvlArray}, \link{GraphBox}
 }

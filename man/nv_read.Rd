@@ -19,7 +19,7 @@ Backend for the loaded arrays.
 Defaults to \code{default_backend()}.}
 }
 \value{
-Named \code{list} of \code{\link{AnvilArray}} objects.
+Named \code{list} of \code{\link{AnvlArray}} objects.
 }
 \description{
 Loads arrays from a file in the

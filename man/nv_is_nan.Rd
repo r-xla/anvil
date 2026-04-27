@@ -2,12 +2,12 @@
 % Please edit documentation in R/api.R, R/api-generics.R
 \name{nv_is_nan}
 \alias{nv_is_nan}
-\alias{is.nan.AnvilBox}
+\alias{is.nan.AnvlBox}
 \title{Is NaN}
 \usage{
 nv_is_nan(operand)
 
-\method{is.nan}{AnvilBox}(x)
+\method{is.nan}{AnvlBox}(x)
 }
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr

@@ -1,4 +1,4 @@
-#' @title AnvilPrimitive
+#' @title AnvlPrimitive
 #' @description
 #' Primitive interpretation rule.
 #' Note that `[[` and `[[<-` access the interpretation rules.
@@ -9,67 +9,34 @@
 #'   The name of the primitive.
 #' @param subgraphs (`character()`)\cr
 #'   Names of parameters that are subgraphs. Only used if `higher_order = TRUE`.
-#' @return (`AnvilPrimitive`)
+#' @return (`AnvlPrimitive`)
 #' @export
-AnvilPrimitive <- function(name, subgraphs = character()) {
+AnvlPrimitive <- function(name, subgraphs = character()) {
   checkmate::assert_string(name)
   checkmate::assert_character(subgraphs)
 
   env <- new.env(parent = emptyenv())
   env$name <- name
   env$rules <- list()
-  env$higher_order <- length(subgraphs) > 0L
-  if (env$higher_order) {
-    env$subgraphs <- subgraphs
-  }
+  env$subgraphs <- subgraphs
 
-  structure(env, class = "AnvilPrimitive")
+  structure(env, class = "AnvlPrimitive")
 }
 
 
-prim_dict <- new.env(parent = emptyenv())
-
-#' @title Register a Primitive
-#' @description
-#' Register a primitive.
-#' @param name (`character()`)\cr
-#'   The name of the primitive.
-#' @param primitive (`AnvilPrimitive`)\cr
-#'   The primitive to register.
-#' @param overwrite (`logical(1)`)\cr
-#'   Whether to overwrite the primitive if it is already registered.
-#' @export
-register_primitive <- function(name, primitive, overwrite = FALSE) {
-  p <- prim_dict[[name]]
-  if (!is.null(p) && !overwrite) {
-    cli_abort("Primitive {.field {name}} already registered")
-  }
-  prim_dict[[name]] <- primitive
-}
-
-#' @title Get a Primitive
-#' @description
-#' Get a primitive by name.
-#' @param name (`character()` | `NULL`)\cr
-#'   The name of the primitive.
-#'   If `NULL`, returns a list of all primitives.
-#' @return (`AnvilPrimitive`)
-#' @export
-prim <- function(name = NULL) {
-  if (is.null(name)) {
-    return(as.list(prim_dict))
-  }
-  prim_dict[[name]]
-}
+primitive_env <- new.env(parent = emptyenv())
 
 is_higher_order_primitive <- function(x) {
-  isTRUE(x$higher_order)
+  if (inherits(x, "JitPrimitive")) {
+    x <- attr(x, "primitive")
+  }
+  length(x$subgraphs) > 0L
 }
 
 
-#' @method [[<- AnvilPrimitive
+#' @method [[<- AnvlPrimitive
 #' @export
-`[[<-.AnvilPrimitive` <- function(x, name, value) {
+`[[<-.AnvlPrimitive` <- function(x, name, value) {
   if (name %in% globals$interpretation_rules) {
     x$rules[[name]] <- value
   } else {
@@ -78,20 +45,88 @@ is_higher_order_primitive <- function(x) {
   x
 }
 
-#' @method [[ AnvilPrimitive
+#' @method [[ AnvlPrimitive
 #' @export
-`[[.AnvilPrimitive` <- function(x, name) {
+`[[.AnvlPrimitive` <- function(x, name) {
   if (name %in% globals$interpretation_rules) {
     return(x$rules[[name]])
   }
   cli_abort("Invalid field name {.field {name}} for primitive {.field {x$name}}")
 }
 
-#' @method print AnvilPrimitive
+#' @method print AnvlPrimitive
 #' @export
-print.AnvilPrimitive <- function(x, ...) {
-  cat(sprintf("<AnvilPrimitive:%s>\n", x$name))
+print.AnvlPrimitive <- function(x, ...) {
+  cat(sprintf("<AnvlPrimitive:%s>\n", x$name))
   invisible(x)
+}
+
+#' @method [[ JitPrimitive
+#' @export
+`[[.JitPrimitive` <- function(x, name) {
+  attr(x, "primitive")[[name]]
+}
+
+#' @method [[<- JitPrimitive
+#' @export
+`[[<-.JitPrimitive` <- function(x, name, value) {
+  attr(x, "primitive")[[name]] <- value
+  x
+}
+
+#' @title Create a Primitive
+#' @description
+#' Builds an [`AnvlPrimitive`] metadata object, wraps `fn` with [`jit()`],
+#' attaches the metadata via `attr(., "primitive")`, prepends class
+#' `"JitPrimitive"`, and (by default) registers the result under `name` in
+#' the primitive registry.
+#'
+#' The backend is always `"auto"` and cannot be configured.
+#' @param name (`character(1)`)\cr
+#'   Primitive name.
+#' @param fn (`function`)\cr
+#'   Body of the primitive. Its formals become the formals of the returned
+#'   JIT-compiled callable. Inside `fn`, the primitive is accessible via
+#'   the lexically-bound symbol `self` (an [`AnvlPrimitive`]); pass it as
+#'   the first argument to [`graph_desc_add()`].
+#' @param subgraphs (`character()`)\cr
+#'   Names of parameters that are subgraphs (for higher-order primitives).
+#' @param static (`character()` | `integer()`)\cr
+#'   Passed to [`jit()`].
+#' @param device (`NULL` | `character(1)` | `device_arg()`)\cr
+#'   Passed to [`jit()`]. Useful for primitives with no array inputs
+#'   (e.g. `prim_fill`) where the device must come from an explicit argument.
+#' @param register (`logical(1)`)\cr
+#'   If `TRUE` (default), register the result under `name` in the primitive
+#'   registry.
+#' @return A callable of class `c("JitPrimitive", "JitFunction")`.
+#' @export
+new_primitive <- function(name, fn, subgraphs = character(), static = character(), device = NULL, register = TRUE) {
+  checkmate::assert_string(name)
+  checkmate::assert_function(fn)
+  checkmate::assert_character(subgraphs)
+  checkmate::assert_flag(register)
+
+  primitive <- AnvlPrimitive(name, subgraphs = subgraphs)
+
+  # Bind `self` (the AnvlPrimitive) in a per-primitive env wrapped around fn's
+  # existing enclosing env, so the body can reference the primitive directly —
+  # same idea as R6's `self`. A per-primitive env is needed because inline
+  # `function(...)` literals in R/primitives.R all share the package namespace
+  # env; binding `self` there would clobber across primitives.
+  self_env <- new.env(parent = environment(fn))
+  self_env$self <- primitive
+  environment(fn) <- self_env
+
+  jit_fn <- jit(fn, static = static, backend = "auto", device = device)
+  attr(jit_fn, "primitive") <- primitive
+  class(jit_fn) <- c("JitPrimitive", class(jit_fn))
+
+  if (register) {
+    assign(name, jit_fn, envir = primitive_env)
+  }
+
+  jit_fn
 }
 
 #' @title Get Subgraphs from Higher-Order Primitive
@@ -99,18 +134,20 @@ print.AnvilPrimitive <- function(x, ...) {
 #' Extracts subgraphs from the parameters of a higher-order primitive call.
 #' @param call (`PrimitiveCall`)\cr
 #'   The primitive call.
-#' @return (`list(AnvilGraph)`)\cr
+#' @return (`list(AnvlGraph)`)\cr
 #'   List of subgraphs found in the parameters.
 #' @export
 subgraphs <- function(call) {
-  if (!is_higher_order_primitive(call$primitive)) {
+  p <- call$primitive
+  if (inherits(p, "JitPrimitive")) {
+    p <- attr(p, "primitive")
+  }
+  if (!is_higher_order_primitive(p)) {
     return(list())
   }
 
   stats::setNames(
-    lapply(call$primitive$subgraphs, \(sg) {
-      call$params[[sg]]
-    }),
-    call$primitive$subgraphs
+    lapply(p$subgraphs, \(sg) call$params[[sg]]),
+    p$subgraphs
   )
 }

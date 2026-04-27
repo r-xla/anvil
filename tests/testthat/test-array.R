@@ -1,7 +1,7 @@
 test_that("array", {
   x <- nv_array(1:4, dtype = "i32", shape = c(4, 1), device = "cpu")
   expect_snapshot(x)
-  expect_class(x, "AnvilArray")
+  expect_class(x, "AnvlArray")
   expect_equal(shape(x), c(4, 1))
   expect_equal(dtype(x), as_dtype("i32"))
   expect_equal(as_array(x), array(1:4, c(4, 1)))
@@ -15,7 +15,7 @@ test_that("device returns the pjrt device", {
 test_that("nv_scalar", {
   x <- nv_scalar(1L, dtype = "f32", device = "cpu")
   x
-  expect_class(x, "AnvilArray")
+  expect_class(x, "AnvlArray")
   expect_snapshot(x)
 })
 
@@ -60,9 +60,9 @@ test_that("ConcreteArray", {
 })
 
 test_that("from DataType", {
-  expect_class(nv_array(1L, "i32"), "AnvilArray")
-  expect_class(nv_scalar(1L, "i32"), "AnvilArray")
-  expect_class(nv_empty("i32", c(0, 1)), "AnvilArray")
+  expect_class(nv_array(1L, "i32"), "AnvlArray")
+  expect_class(nv_scalar(1L, "i32"), "AnvlArray")
+  expect_class(nv_empty("i32", c(0, 1)), "AnvlArray")
 })
 
 test_that("nv_array from nv_array", {
@@ -75,7 +75,7 @@ test_that("nv_array from nv_array", {
 })
 
 test_that("format", {
-  expect_equal(format(nv_array(1:4, shape = c(4, 1))), "AnvilArray(dtype=i32, shape=4x1)")
+  expect_equal(format(nv_array(1:4, shape = c(4, 1))), "AnvlArray(dtype=i32, shape=4x1)")
 })
 
 test_that("eq_type and neq_type respect ambiguity argument", {
@@ -110,7 +110,7 @@ test_that("to_abstract", {
   expect_equal(to_abstract(TRUE), LiteralArray(TRUE, c(), "bool", FALSE))
   expect_equal(to_abstract(1L), LiteralArray(1L, c(), "i32", TRUE))
   expect_equal(to_abstract(1.0), LiteralArray(1.0, c(), "f32", TRUE))
-  # anvil array
+  # anvl array
   x <- nv_array(1:4, dtype = "f32", shape = c(2, 2))
   expect_equal(to_abstract(x), ConcreteArray(x))
   # graph box
@@ -154,7 +154,7 @@ test_that("to_abstract", {
   expect_equal(to_abstract(TRUE), LiteralArray(TRUE, c(), "bool", FALSE))
   expect_equal(to_abstract(1L), LiteralArray(1L, c(), "i32", TRUE))
   expect_equal(to_abstract(1.0), LiteralArray(1.0, c(), "f32", TRUE))
-  # anvil array
+  # anvl array
   x <- nv_array(1:4, dtype = "f32", shape = c(2, 2))
   expect_equal(to_abstract(x), ConcreteArray(x))
   # graph box
@@ -169,7 +169,7 @@ test_that("stablehlo dtype is printed", {
 })
 
 test_that("quickr_device is a classed object", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   dev <- quickr_device("cpu")
   expect_s3_class(dev, "QuickrDevice")
   expect_equal(format(dev), "QuickrDevice(cpu)")
@@ -184,7 +184,7 @@ test_that("PlainDeviceCpu is a classed object", {
 })
 
 test_that("device returns QuickrDevice for quickr arrays", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   local_backend("quickr")
   x <- nv_array(1)
   dev <- device(x)
@@ -198,7 +198,7 @@ test_that("device returns PlainDeviceCpu for plain arrays", {
 })
 
 test_that("platform returns 'cpu' for quickr backend", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   local_backend("quickr")
   expect_equal(platform(nv_array(1)), "cpu")
 })
@@ -209,14 +209,14 @@ test_that("platform returns 'cpu' for plain backend", {
 })
 
 test_that("nv_array respects backend argument", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   local_backend("quickr")
   x <- nv_array(1, backend = "xla")
   expect_equal(backend(x), "xla")
 })
 
 test_that("nv_array infers backend from device object", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   local_backend("quickr")
   x <- nv_array(1, device = pjrt::pjrt_device("cpu"))
   expect_equal(backend(x), "xla")
@@ -236,7 +236,7 @@ test_that("default floating dtype is f32 for xla", {
 })
 
 test_that("default floating dtype is f64 for quickr", {
-  skip_if_not_installed("quickr")
+  skip_if_no_quickr()
   local_backend("quickr")
   expect_equal(dtype(nv_array(1.0)), as_dtype("f64"))
   expect_equal(dtype(nv_scalar(1.0)), as_dtype("f64"))
@@ -270,48 +270,48 @@ test_that("nv_scalar_like inherits dtype, ambiguous, device, backend from like",
   expect_equal(as.integer(as_array(out)), 7L)
 })
 
-describe("as_anvil_array", {
-  it("passes AnvilArrays through unchanged", {
+describe("as_anvl_array", {
+  it("passes AnvlArrays through unchanged", {
     x <- nv_array(1:3)
-    expect_identical(as_anvil_array(x), x)
+    expect_identical(as_anvl_array(x), x)
   })
 
-  it("converts scalar R literals into scalar AnvilArrays", {
-    out <- as_anvil_array(1L)
-    expect_s3_class(out, "AnvilArray")
+  it("converts scalar R literals into scalar AnvlArrays", {
+    out <- as_anvl_array(1L)
+    expect_s3_class(out, "AnvlArray")
     expect_equal(shape(out), integer())
     expect_true(ambiguous(out))
   })
 
-  it("converts R arrays into AnvilArrays preserving shape", {
-    out <- as_anvil_array(array(1:6, c(2, 3)))
-    expect_s3_class(out, "AnvilArray")
+  it("converts R arrays into AnvlArrays preserving shape", {
+    out <- as_anvl_array(array(1:6, c(2, 3)))
+    expect_s3_class(out, "AnvlArray")
     expect_equal(shape(out), c(2L, 3L))
   })
 
   it("places R literals on the requested device", {
     dev <- nv_device("cpu:1", "xla")
-    expect_equal(device(as_anvil_array(1L, device = dev)), dev)
+    expect_equal(device(as_anvl_array(1L, device = dev)), dev)
   })
 
-  it("errors if an AnvilArray is on a different device than requested", {
+  it("errors if an AnvlArray is on a different device than requested", {
     dev0 <- nv_device("cpu:0", "xla")
     dev1 <- nv_device("cpu:1", "xla")
     x <- nv_array(1:3, device = dev0)
     expect_error(
-      as_anvil_array(x, device = dev1),
+      as_anvl_array(x, device = dev1),
       "unexpected device"
     )
   })
 
   it("rejects non-arrayish inputs", {
-    expect_error(as_anvil_array("foo"), "Expected arrayish")
-    expect_error(as_anvil_array(list()), "Expected arrayish")
+    expect_error(as_anvl_array("foo"), "Expected arrayish")
+    expect_error(as_anvl_array(list()), "Expected arrayish")
   })
 
   it("passes traced boxes through unchanged under jit()", {
     f <- jit(function(x) {
-      y <- as_anvil_array(x)
+      y <- as_anvl_array(x)
       y + 1
     })
     out <- f(nv_array(1:3))
@@ -319,24 +319,24 @@ describe("as_anvil_array", {
   })
 
   it("handles R literals under jit()", {
-    f <- jit(function() as_anvil_array(1L) + 1L)
+    f <- jit(function() as_anvl_array(1L) + 1L)
     out <- f()
-    expect_s3_class(out, "AnvilArray")
+    expect_s3_class(out, "AnvlArray")
     expect_equal(as.integer(as_array(out)), 2L)
   })
 })
 
-describe("as_anvil_arrays", {
+describe("as_anvl_arrays", {
   it("places R literals on the first concrete input's device", {
     dev <- nv_device("cpu:1", "xla")
     x <- nv_array(1:3, device = dev)
-    out <- as_anvil_arrays(x, 1L)
+    out <- as_anvl_arrays(x, 1L)
     expect_equal(device(out[[1L]]), dev)
     expect_equal(device(out[[2L]]), dev)
   })
 
   it("uses the default device when no concrete input is present", {
-    out <- as_anvil_arrays(1L, 2L)
+    out <- as_anvl_arrays(1L, 2L)
     expect_equal(device(out[[1L]]), default_device())
     expect_equal(device(out[[2L]]), default_device())
   })
@@ -347,19 +347,19 @@ describe("as_anvil_arrays", {
     x <- nv_array(1:3, device = dev0)
     y <- nv_array(1:3, device = dev1)
     expect_error(
-      as_anvil_arrays(x, y),
+      as_anvl_arrays(x, y),
       "multiple devices"
     )
   })
 
   it("errors when concrete inputs come from different backends", {
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     dev_xla <- nv_device("cpu", "xla")
     dev_quickr <- nv_device("cpu", "quickr")
     x <- nv_array(1:3, device = dev_xla)
     y <- nv_array(1:3, device = dev_quickr)
     expect_error(
-      as_anvil_arrays(x, y),
+      as_anvl_arrays(x, y),
       "multiple backends"
     )
   })
@@ -367,14 +367,14 @@ describe("as_anvil_arrays", {
   it("passes concrete inputs on the same device through unchanged", {
     x <- nv_array(1:3)
     y <- nv_array(4:6)
-    out <- as_anvil_arrays(x, y)
+    out <- as_anvl_arrays(x, y)
     expect_identical(out[[1L]], x)
     expect_identical(out[[2L]], y)
   })
 
   it("canonicalizes mixed traced and literal inputs under jit()", {
     f <- jit(function(x) {
-      args <- as_anvil_arrays(x, 1L)
+      args <- as_anvl_arrays(x, 1L)
       args[[1L]] + args[[2L]]
     })
     out <- f(nv_array(1:3))
@@ -383,7 +383,7 @@ describe("as_anvil_arrays", {
 
   it("canonicalizes multiple traced inputs under jit()", {
     f <- jit(function(x, y) {
-      args <- as_anvil_arrays(x, y)
+      args <- as_anvl_arrays(x, y)
       args[[1L]] + args[[2L]]
     })
     out <- f(nv_array(1:3), nv_array(4:6))

@@ -514,17 +514,17 @@ test_that("quickr pipeline matches PJRT: fill/iota/reverse/concatenate/convert/b
     c4 <- nv_concatenate(x13_i32, x13_i32, dimension = 1L)
 
     s_i32 <- nv_convert(s, dtype = "i32")
-    p_i32 <- nv_convert(x_pred, dtype = "i32")
+    prim_i32 <- nv_convert(x_pred, dtype = "i32")
     i32_pred <- nv_convert(x_i32, dtype = "pred")
-    # Use nvl_* to force a convert node even when it's a no-op.
-    i32_i32 <- nvl_convert(x_i32, dtype = "i32")
-    pred_pred <- nvl_convert(x_pred, dtype = "pred")
-    i32_f64 <- nvl_convert(x_i32, dtype = "f64")
+    # Use prim_* to force a convert node even when it's a no-op.
+    i32_i32 <- prim_convert(x_i32, dtype = "i32")
+    pred_pred <- prim_convert(x_pred, dtype = "pred")
+    i32_f64 <- prim_convert(x_i32, dtype = "f64")
 
     b0 <- nv_broadcast_to(s, shape = c(2L, 1L, 3L))
-    b1 <- nvl_broadcast_in_dim(x_i32, shape = c(2L, 3L), broadcast_dimensions = c(1L, 2L))
+    b1 <- prim_broadcast_in_dim(x_i32, shape = c(2L, 3L), broadcast_dimensions = c(1L, 2L))
     b2 <- nv_broadcast_to(x21_i32, shape = c(2L, 3L))
-    b3 <- nvl_broadcast_in_dim(x_i32, shape = c(2L, 3L, 1L), broadcast_dimensions = c(1L, 2L))
+    b3 <- prim_broadcast_in_dim(x_i32, shape = c(2L, 3L, 1L), broadcast_dimensions = c(1L, 2L))
 
     t0 <- nv_transpose(x_i32, permutation = c(2L, 1L))
     t1 <- nv_transpose(x_i32, permutation = c(1L, 2L))
@@ -549,7 +549,7 @@ test_that("quickr pipeline matches PJRT: fill/iota/reverse/concatenate/convert/b
       concatenate3 = c3,
       concatenate_1row = c4,
       convert_s = s_i32,
-      convert_pred_i32 = p_i32,
+      convert_pred_i32 = prim_i32,
       convert_i32_pred = i32_pred,
       convert_i32_i32 = i32_i32,
       convert_pred_pred = pred_pred,
@@ -628,18 +628,18 @@ test_that("quickr pipeline matches PJRT: zero-length dims (reverse/concatenate/b
   # - reverse/concatenate/reduce_any/reduce_all on 0-extent arrays.
   zero_dim_ops <- function(X, empty_cols, empty_rows) {
     one <- nv_scalar(1L, dtype = "i32")
-    ds_empty_cols <- nvl_dynamic_slice(X, one, one, slice_sizes = c(2L, 0L))
-    ds_empty_rows <- nvl_dynamic_slice(X, one, one, slice_sizes = c(0L, 3L))
+    ds_empty_cols <- prim_dynamic_slice(X, one, one, slice_sizes = c(2L, 0L))
+    ds_empty_rows <- prim_dynamic_slice(X, one, one, slice_sizes = c(0L, 3L))
 
-    p_cols <- nv_reverse(empty_cols, dims = 2L) > 0L
+    prim_cols <- nv_reverse(empty_cols, dims = 2L) > 0L
 
     list(
       ds_empty_cols = ds_empty_cols,
       ds_empty_rows = ds_empty_rows,
       cat_rows = nv_concatenate(empty_rows, X, dimension = 1L),
       cat_cols = nv_concatenate(X, empty_cols, dimension = 2L),
-      any_cols = nv_reduce_any(p_cols, dims = 2L, drop = TRUE),
-      all_cols = nv_reduce_all(p_cols, dims = 2L, drop = TRUE),
+      any_cols = nv_reduce_any(prim_cols, dims = 2L, drop = TRUE),
+      all_cols = nv_reduce_all(prim_cols, dims = 2L, drop = TRUE),
       any_rows = nv_reduce_any(empty_rows > 0L, dims = 1L, drop = TRUE),
       all_rows = nv_reduce_all(empty_rows > 0L, dims = 1L, drop = TRUE)
     )
@@ -795,14 +795,14 @@ test_that("quickr pipeline matches PJRT: indexing ops (slice/update/pad) + gathe
       strides = c(1L, 1L, 1L)
     )
 
-    ds0 <- nvl_dynamic_slice(s, slice_sizes = integer())
-    ds1 <- nvl_dynamic_slice(x, s, slice_sizes = 3L)
-    ds2 <- nvl_dynamic_slice(X, r, c, slice_sizes = c(2L, 2L))
-    ds3 <- nvl_dynamic_slice(X3, a, b, d, slice_sizes = c(2L, 2L, 1L))
+    ds0 <- prim_dynamic_slice(s, slice_sizes = integer())
+    ds1 <- prim_dynamic_slice(x, s, slice_sizes = 3L)
+    ds2 <- prim_dynamic_slice(X, r, c, slice_sizes = c(2L, 2L))
+    ds3 <- prim_dynamic_slice(X3, a, b, d, slice_sizes = c(2L, 2L, 1L))
 
-    dus0 <- nvl_dynamic_update_slice(s, upd_s)
-    dus1 <- nvl_dynamic_update_slice(x, upd, s)
-    dus2 <- nvl_dynamic_update_slice(X, upd2, r, c)
+    dus0 <- prim_dynamic_update_slice(s, upd_s)
+    dus1 <- prim_dynamic_update_slice(x, upd, s)
+    dus2 <- prim_dynamic_update_slice(X, upd2, r, c)
 
     p0 <- nv_pad(s, padv, edge_padding_low = integer(), edge_padding_high = integer())
     p1 <- nv_pad(x, padv, edge_padding_low = 2L, edge_padding_high = 1L, interior_padding = 0L)
@@ -822,7 +822,7 @@ test_that("quickr pipeline matches PJRT: indexing ops (slice/update/pad) + gathe
     scattered_overwrite <- nv_subset_assign(base, sc_idx_vec, value = upd)
 
     sc_idx <- nv_reshape(sc_idx_vec, c(2L, 1L))
-    scattered_add <- nvl_scatter(
+    scattered_add <- prim_scatter(
       base,
       sc_idx,
       upd,
@@ -911,7 +911,7 @@ test_that("quickr pipeline matches PJRT: gather can return a scalar", {
   skip_if_no_quickr_or_pjrt()
 
   gather_scalar <- function(x, idx) {
-    nvl_gather(
+    prim_gather(
       x,
       idx,
       slice_sizes = 1L,
@@ -939,22 +939,22 @@ test_that("quickr pipeline matches PJRT: dot_general variants", {
   skip_if_no_quickr_or_pjrt()
 
   dot_ops <- function(a, b, a1, b1, a_dot, b_dot, a_mv, b_mv, lhs, rhs, lhs_b, rhs_b) {
-    s <- nvl_dot_general(
+    s <- prim_dot_general(
       a,
       b,
       contracting_dims = list(integer(), integer()),
       batching_dims = list(integer(), integer())
     )
-    outer <- nvl_dot_general(
+    outer <- prim_dot_general(
       a1,
       b1,
       contracting_dims = list(integer(), integer()),
       batching_dims = list(integer(), integer())
     )
-    dot <- nvl_dot_general(a_dot, b_dot, contracting_dims = list(1L, 1L), batching_dims = list(integer(), integer()))
-    mv <- nvl_dot_general(a_mv, b_mv, contracting_dims = list(2L, 1L), batching_dims = list(integer(), integer()))
-    mm <- nvl_dot_general(lhs, rhs, contracting_dims = list(2L, 1L), batching_dims = list(integer(), integer()))
-    batch <- nvl_dot_general(lhs_b, rhs_b, contracting_dims = list(3L, 2L), batching_dims = list(1L, 1L))
+    dot <- prim_dot_general(a_dot, b_dot, contracting_dims = list(1L, 1L), batching_dims = list(integer(), integer()))
+    mv <- prim_dot_general(a_mv, b_mv, contracting_dims = list(2L, 1L), batching_dims = list(integer(), integer()))
+    mm <- prim_dot_general(lhs, rhs, contracting_dims = list(2L, 1L), batching_dims = list(integer(), integer()))
+    batch <- prim_dot_general(lhs_b, rhs_b, contracting_dims = list(3L, 2L), batching_dims = list(1L, 1L))
 
     list(scalar = s, outer = outer, dot = dot, mv = mv, mm = mm, batch = batch)
   }

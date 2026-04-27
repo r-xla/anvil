@@ -1,4 +1,4 @@
-source(system.file("extra-tests", "torch-helpers.R", package = "anvil"))
+source(system.file("extra-tests", "torch-helpers.R", package = "anvl"))
 
 test_that("MLP forward and reverse", {
   relu <- function(x) (x + abs(x)) / 2

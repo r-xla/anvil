@@ -1,9 +1,9 @@
-# p_print
+# prim_print
 
     Code
       out <<- f(x)
     Output
-      AnvilArray
+      AnvlArray
        1
        2
        3

@@ -12,7 +12,7 @@ nv_unif_rand <- function(
 
   # generate random bits
   # use THREE_FRY as rng algorithm: JAX default
-  rbits <- nvl_rng_bit_generator(
+  rbits <- prim_rng_bit_generator(
     initial_state = initial_state,
     "THREE_FRY",
     paste0("ui", sub("f(\\d+)", "\\1", dtype)),

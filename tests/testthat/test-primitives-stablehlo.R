@@ -1,18 +1,18 @@
-test_that("p_sine", {
+test_that("prim_sine", {
   x <- nv_array(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
-  out <- as_array(jit(nvl_sine)(x))
+  out <- as_array(jit(prim_sine)(x))
   expect_equal(c(out), c(0, 1, 0, -1), tolerance = 1e-15)
 })
 
-test_that("p_cosine", {
+test_that("prim_cosine", {
   x <- nv_array(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
-  out <- as_array(jit(nvl_cosine)(x))
+  out <- as_array(jit(prim_cosine)(x))
   expect_equal(c(out), c(1, 0, -1, 0), tolerance = 1e-15)
 })
 
-test_that("p_rng_bit_generator", {
+test_that("prim_rng_bit_generator", {
   f <- function() {
-    nvl_rng_bit_generator(nv_array(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
+    prim_rng_bit_generator(nv_array(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
   }
   g <- jit(f)
   out <- g()
@@ -20,7 +20,7 @@ test_that("p_rng_bit_generator", {
   expect_equal(as_array(out[[2]]), array(c(43444564L, 1672743891L, -315321645L, 2109414752L), c(2, 2)))
 })
 
-test_that("p_bitcast_convert", {
+test_that("prim_bitcast_convert", {
   f <- function() {
     nv_bitcast_convert(
       nv_array(seq(-1, 1, length.out = 6), dtype = "f64", shape = c(2, 3)),
@@ -33,7 +33,7 @@ test_that("p_bitcast_convert", {
   expect_true(is.integer(as_array(out)))
 })
 
-test_that("p_static_slice", {
+test_that("prim_static_slice", {
   f <- function() {
     nv_static_slice(
       nv_array(1:6, dtype = "ui64", shape = c(2, 3)),
@@ -47,11 +47,11 @@ test_that("p_static_slice", {
   expect_equal(as_array(out), matrix(c(1:4), nrow = 2))
 })
 
-test_that("p_dynamic_slice", {
+test_that("prim_dynamic_slice", {
   # Basic dynamic slice with scalar indices
   f <- function(start_i, start_j) {
     x <- nv_array(1:12, dtype = "i32", shape = c(3, 4))
-    nvl_dynamic_slice(x, start_i, start_j, slice_sizes = c(2L, 2L))
+    prim_dynamic_slice(x, start_i, start_j, slice_sizes = c(2L, 2L))
   }
   g <- jit(f)
   # Slice starting at (1, 1) should give [[1, 4], [2, 5]]
@@ -65,16 +65,16 @@ test_that("p_dynamic_slice", {
   # 1D case
   f1d <- function(start_i) {
     x <- nv_array(1:10, dtype = "i32", shape = c(10))
-    nvl_dynamic_slice(x, start_i, slice_sizes = c(3L))
+    prim_dynamic_slice(x, start_i, slice_sizes = c(3L))
   }
   g1d <- jit(f1d)
   out <- g1d(nv_scalar(3L, dtype = "i32"))
   expect_equal(out, nv_array(c(3L, 4L, 5L), dtype = "i32", shape = 3L))
 })
 
-test_that("p_dynamic_update_slice", {
+test_that("prim_dynamic_update_slice", {
   scalar <- jit(function(x, update) {
-    nvl_dynamic_update_slice(x, update)
+    prim_dynamic_update_slice(x, update)
   })
   expect_equal(
     scalar(nv_scalar(1L, dtype = "i32"), nv_scalar(100L, dtype = "i32")),
@@ -85,7 +85,7 @@ test_that("p_dynamic_update_slice", {
   f <- function(start_i, start_j) {
     x <- nv_array(1:12, dtype = "i32", shape = c(3, 4))
     update <- nv_array(c(100L, 200L, 300L, 400L), dtype = "i32", shape = c(2, 2))
-    nvl_dynamic_update_slice(x, update, start_i, start_j)
+    prim_dynamic_update_slice(x, update, start_i, start_j)
   }
   g <- jit(f)
 
@@ -107,14 +107,14 @@ test_that("p_dynamic_update_slice", {
   f1d <- function(start_i) {
     x <- nv_array(1:10, dtype = "i32", shape = c(10))
     update <- nv_array(c(100L, 200L, 300L), dtype = "i32", shape = c(3))
-    nvl_dynamic_update_slice(x, update, start_i)
+    prim_dynamic_update_slice(x, update, start_i)
   }
   g1d <- jit(f1d)
   out <- g1d(nv_scalar(4L, dtype = "i32"))
   expect_equal(out, nv_array(c(1L, 2L, 3L, 100L, 200L, 300L, 7L, 8L, 9L, 10L), dtype = "i32", shape = 10L))
 })
 
-test_that("p_concatenate", {
+test_that("prim_concatenate", {
   f <- function() {
     nv_concatenate(
       nv_array(c(1:6), dtype = "ui64", shape = c(2, 3)),
@@ -126,7 +126,7 @@ test_that("p_concatenate", {
   out <- g()
   expect_equal(dim(as_array(out)), c(2, 5))
 })
-test_that("p_fill", {
+test_that("prim_fill", {
   f <- jit(function(x) nv_fill(x, shape = c(2, 3), dtype = "f32"), static = "x")
   expect_equal(f(1), nv_array(1, shape = c(2, 3), dtype = "f32"))
   expect_equal(f(2), nv_array(2, shape = c(2, 3), dtype = "f32"))
@@ -146,30 +146,30 @@ test_that("p_fill", {
   )
 })
 
-test_that("p_shift_left", {
+test_that("prim_shift_left", {
   x <- nv_array(as.integer(c(1L, 2L, 3L, 8L)), dtype = "i32")
   y <- nv_array(as.integer(c(0L, 1L, 2L, 3L)), dtype = "i32")
-  out <- as.integer(as_array(jit(nvl_shift_left)(x, y)))
+  out <- as.integer(as_array(jit(prim_shift_left)(x, y)))
   expect_equal(out, as.integer(c(1L, 4L, 12L, 64L)))
 })
 
-test_that("p_shift_right_logical", {
+test_that("prim_shift_right_logical", {
   x <- nv_array(as.integer(c(16L, 8L, 7L, 1L)), dtype = "i32")
   y <- nv_array(as.integer(c(0L, 1L, 2L, 0L)), dtype = "i32")
-  out <- as.integer(as_array(jit(nvl_shift_right_logical)(x, y)))
+  out <- as.integer(as_array(jit(prim_shift_right_logical)(x, y)))
   expect_equal(out, as.integer(c(16L, 4L, 1L, 1L)))
 })
 
-test_that("p_shift_right_arithmetic", {
+test_that("prim_shift_right_arithmetic", {
   x <- nv_array(as.integer(c(-8L, -1L, 8L, -17L)), dtype = "i32")
   y <- nv_array(as.integer(c(1L, 3L, 2L, 4L)), dtype = "i32")
-  out <- as.integer(as_array(jit(nvl_shift_right_arithmetic)(x, y)))
+  out <- as.integer(as_array(jit(prim_shift_right_arithmetic)(x, y)))
   expect_equal(out, as.integer(c(-4L, -1L, 2L, -2L)))
 })
 
-test_that("p_rng_bit_generator", {
+test_that("prim_rng_bit_generator", {
   f <- function() {
-    nvl_rng_bit_generator(nv_array(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
+    prim_rng_bit_generator(nv_array(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
   }
   g <- jit(f)
   out <- g()
@@ -179,23 +179,23 @@ test_that("p_rng_bit_generator", {
 
 # Reduction ops (simplified hardcoded examples, no torch comparisons)
 
-test_that("p_reduce_sum", {
+test_that("prim_reduce_sum", {
   x <- array(1:6, c(2, 3))
-  f <- jit(function(a) nvl_reduce_sum(a, dims = 2L, drop = TRUE))
+  f <- jit(function(a) prim_reduce_sum(a, dims = 2L, drop = TRUE))
   out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(9, 12)))
 })
 
-test_that("p_reduce_prod", {
+test_that("prim_reduce_prod", {
   x <- array(1:6, c(2, 3))
-  f <- jit(function(a) nvl_reduce_prod(a, dims = 1L, drop = FALSE))
+  f <- jit(function(a) prim_reduce_prod(a, dims = 1L, drop = FALSE))
   out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(2, 12, 30), c(1, 3)))
 })
 
-test_that("p_reduce_max", {
+test_that("prim_reduce_max", {
   x <- array(c(-1, 4, 0, 2), c(2, 2))
-  f <- jit(function(a) nvl_reduce_max(a, dims = 2L, drop = TRUE))
+  f <- jit(function(a) prim_reduce_max(a, dims = 2L, drop = TRUE))
   out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(0, 4)))
   # f64
@@ -203,16 +203,16 @@ test_that("p_reduce_max", {
   expect_equal(x, nv_scalar(3, dtype = "f64"))
 })
 
-test_that("p_reduce_max drop = FALSE", {
+test_that("prim_reduce_max drop = FALSE", {
   x <- array(c(-1, 4, 0, 2), c(2, 2))
-  f <- jit(function(a) nvl_reduce_max(a, dims = 2L, drop = FALSE))
+  f <- jit(function(a) prim_reduce_max(a, dims = 2L, drop = FALSE))
   out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(0, 4), c(2, 1)))
 })
 
-test_that("p_reduce_min", {
+test_that("prim_reduce_min", {
   x <- array(c(-1, 4, 0, 2), c(2, 2))
-  f <- jit(function(a) nvl_reduce_min(a, dims = 2L, drop = TRUE))
+  f <- jit(function(a) prim_reduce_min(a, dims = 2L, drop = TRUE))
   out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(-1, 2)))
   # f64
@@ -220,30 +220,30 @@ test_that("p_reduce_min", {
   expect_equal(x, nv_scalar(1, dtype = "f64"))
 })
 
-test_that("p_reduce_min drop = FALSE", {
+test_that("prim_reduce_min drop = FALSE", {
   x <- array(c(-1, 4, 0, 2), c(2, 2))
-  f <- jit(function(a) nvl_reduce_min(a, dims = 2L, drop = FALSE))
+  f <- jit(function(a) prim_reduce_min(a, dims = 2L, drop = FALSE))
   out <- as_array(f(nv_array(x, dtype = "f32")))
   expect_equal(out, array(c(-1, 2), c(2, 1)))
 })
 
-test_that("p_reduce_any", {
+test_that("prim_reduce_any", {
   x <- array(c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE), c(2, 3))
-  f <- jit(function(a) nvl_reduce_any(a, dims = 2L, drop = TRUE))
+  f <- jit(function(a) prim_reduce_any(a, dims = 2L, drop = TRUE))
   out <- as_array(f(nv_array(x, dtype = "bool")))
   expect_equal(out, array(c(TRUE, FALSE)))
 })
 
-test_that("p_reduce_all", {
+test_that("prim_reduce_all", {
   x <- array(c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE), c(2, 3))
-  f <- jit(function(a) nvl_reduce_all(a, dims = 1L, drop = FALSE))
+  f <- jit(function(a) prim_reduce_all(a, dims = 1L, drop = FALSE))
   out <- as_array(f(nv_array(x, dtype = "bool")))
   expect_equal(out, array(rep(FALSE, 3), c(1, 3)))
 })
 
-test_that("p_broadcast_in_dim", {
+test_that("prim_broadcast_in_dim", {
   x <- 1L
-  f <- jit(nvl_broadcast_in_dim, static = c("shape", "broadcast_dimensions"))
+  f <- jit(prim_broadcast_in_dim, static = c("shape", "broadcast_dimensions"))
   expect_equal(
     f(nv_scalar(1L), c(1, 2), integer()),
     nv_array(1L, shape = c(1, 2)),
@@ -251,8 +251,8 @@ test_that("p_broadcast_in_dim", {
   )
 })
 
-test_that("p_reshape", {
-  f <- jit(nvl_reshape, static = "shape")
+test_that("prim_reshape", {
+  f <- jit(prim_reshape, static = "shape")
   x <- array(1:6, c(3, 2))
   expect_equal(
     f(nv_array(x), shape = 6),
@@ -260,16 +260,16 @@ test_that("p_reshape", {
   )
 })
 
-test_that("p_transpose", {
+test_that("prim_transpose", {
   x <- array(1:4, c(2, 2))
-  f <- jit(\(x) nvl_transpose(x, c(2, 1)))
+  f <- jit(\(x) prim_transpose(x, c(2, 1)))
   expect_equal(
     t(x),
     as_array(f(nv_array(x)))
   )
 })
 
-describe("p_if", {
+describe("prim_if", {
   it("can capture non-arguments", {
     f <- jit(function(pred, x) {
       x1 <- nv_mul(x, x)
@@ -288,7 +288,7 @@ describe("p_if", {
 
   it("works in simple example", {
     # simple
-    f <- function(pred, x) nvl_if(pred, \() x, \() x * x)
+    f <- function(pred, x) prim_if(pred, \() x, \() x * x)
     fj <- jit(f)
     expect_equal(fj(nv_scalar(TRUE), nv_scalar(2)), nv_scalar(2))
     expect_equal(fj(nv_scalar(FALSE), nv_scalar(2)), nv_scalar(4))
@@ -297,7 +297,7 @@ describe("p_if", {
     graph <- trace_fn(f, list(pred = nv_scalar(TRUE), x = nv_scalar(2)))
 
     f <- jit(function(pred, x) {
-      nvl_if(pred, \() list(list(x)), \() list(list(x * x)))
+      prim_if(pred, \() list(list(x)), \() list(list(x * x)))
     })
     expect_equal(
       f(nv_scalar(TRUE), nv_scalar(2)),
@@ -309,7 +309,7 @@ describe("p_if", {
     )
 
     g <- jit(function(pred, x) {
-      nvl_if(pred, \() list(x[[1]]), \() list(x[[1]] * x[[1]]))
+      prim_if(pred, \() list(x[[1]]), \() list(x[[1]] * x[[1]]))
     })
     expect_equal(
       g(nv_scalar(FALSE), list(nv_scalar(2))),
@@ -319,7 +319,7 @@ describe("p_if", {
 
   it("identical constants in both branches receive the same GraphValue", {
     x <- nv_scalar(1)
-    f <- function(y) nvl_if(y, \() x, \() x)
+    f <- function(y) prim_if(y, \() x, \() x)
     graph <- trace_fn(f, list(y = nv_scalar(TRUE)))
     fj <- jit(f)
     expect_equal(fj(nv_scalar(TRUE)), nv_scalar(1))
@@ -327,7 +327,7 @@ describe("p_if", {
 
     g <- jit(function(pred) {
       y <- nv_scalar(2)
-      nvl_if(pred, \() y, \() y * nv_scalar(3))
+      prim_if(pred, \() y, \() y * nv_scalar(3))
     })
     expect_equal(g(nv_scalar(TRUE)), nv_scalar(2))
     expect_equal(g(nv_scalar(FALSE)), nv_scalar(6))
@@ -340,7 +340,7 @@ describe("p_if", {
 
 
 # TODO: Continue here
-describe("p_while", {
+describe("prim_while", {
   it("works in simple case", {
     f <- jit(function(n) {
       nv_while(list(i = nv_scalar(1L)), \(i) i <= n, \(i) {
@@ -447,9 +447,9 @@ describe("p_while", {
   })
 })
 
-test_that("p_cholesky", {
+test_that("prim_cholesky", {
   A <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
-  L <- as_array(jit(function(A) nvl_cholesky(A, lower = TRUE))(A))
+  L <- as_array(jit(function(A) prim_cholesky(A, lower = TRUE))(A))
   expect_equal(L[1, 1], 2)
   expect_equal(L[2, 1], 1)
   expect_equal(L[2, 2], sqrt(2), tolerance = 1e-10)
@@ -457,28 +457,28 @@ test_that("p_cholesky", {
   expect_equal(L %*% t(L), matrix(c(4, 2, 2, 3), nrow = 2), tolerance = 1e-10)
 })
 
-test_that("p_cholesky zeros out non-triangular part", {
+test_that("prim_cholesky zeros out non-triangular part", {
   A <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
-  L <- as_array(jit(function(A) nvl_cholesky(A, lower = TRUE))(A))
+  L <- as_array(jit(function(A) prim_cholesky(A, lower = TRUE))(A))
   expect_equal(L[1, 2], 0)
 
-  U <- as_array(jit(function(A) nvl_cholesky(A, lower = FALSE))(A))
+  U <- as_array(jit(function(A) prim_cholesky(A, lower = FALSE))(A))
   expect_equal(U[2, 1], 0)
 })
 
-test_that("p_triangular_solve", {
+test_that("prim_triangular_solve", {
   # Solve L %*% x = b where L = [[3, 0], [1, 2]]
   L <- nv_array(matrix(c(3, 1, 0, 2), nrow = 2), dtype = "f64")
   b <- nv_array(matrix(c(6, 5), nrow = 2), dtype = "f64")
   x <- as_array(jit(function(L, b) {
-    nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+    prim_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
   })(L, b))
   # x = L^{-1} b: 3*x1 = 6 -> x1 = 2; x1 + 2*x2 = 5 -> x2 = 1.5
   expect_equal(c(x), c(2, 1.5), tolerance = 1e-10)
 
   # Verify: solve with TRANSPOSE
   x2 <- as_array(jit(function(L, b) {
-    nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
+    prim_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
   })(L, b))
   # L^T x = b: [[3,1],[0,2]] x = [6,5] -> 2*x2=5 -> x2=2.5; 3*x1+x2=6 -> x1=7/6
   expect_equal(c(x2), c(7 / 6, 2.5), tolerance = 1e-10)
@@ -487,7 +487,7 @@ test_that("p_triangular_solve", {
 
 test_that("error when multiplying lists in if-statement", {
   f <- jit(function(pred, x) {
-    nvl_if(pred, \() x + x, \() x * x)
+    prim_if(pred, \() x + x, \() x * x)
   })
   expect_error(
     f(nv_scalar(FALSE), list(nv_scalar(2))),
@@ -495,56 +495,56 @@ test_that("error when multiplying lists in if-statement", {
   )
 })
 
-test_that("p_is_finite", {
-  f <- jit(function(x) nvl_is_finite(x))
+test_that("prim_is_finite", {
+  f <- jit(function(x) prim_is_finite(x))
   x <- nv_array(c(1.0, Inf, -Inf, NaN), dtype = "f32")
   expect_equal(f(x), nv_array(c(TRUE, FALSE, FALSE, FALSE), dtype = "bool"))
 })
 
-test_that("p_clamp", {
+test_that("prim_clamp", {
   f <- jit(function(x) {
     min_val <- nv_broadcast_to(nv_scalar(-1.0, "f32"), shape(x))
     max_val <- nv_broadcast_to(nv_scalar(1.0, "f32"), shape(x))
-    nvl_clamp(min_val, x, max_val)
+    prim_clamp(min_val, x, max_val)
   })
   x <- nv_array(c(-2.0, -0.5, 0.5, 2.0), dtype = "f32")
   expect_equal(f(x), nv_array(c(-1.0, -0.5, 0.5, 1.0), dtype = "f32"))
 })
 
-test_that("p_reverse", {
-  f <- jit(function(x) nvl_reverse(x, 1L))
+test_that("prim_reverse", {
+  f <- jit(function(x) prim_reverse(x, 1L))
   x <- nv_array(1:5, dtype = "i32")
   expect_equal(f(x), nv_array(5:1, dtype = "i32"))
 
   # 2D reverse
-  f2 <- jit(function(x) nvl_reverse(x, 2L))
+  f2 <- jit(function(x) prim_reverse(x, 2L))
   x2 <- nv_array(matrix(1:6, 2, 3), dtype = "i32")
   expect_equal(f2(x2), nv_array(matrix(c(5L, 6L, 3L, 4L, 1L, 2L), 2, 3), dtype = "i32"))
 })
 
-test_that("p_iota", {
-  f <- jit(function() nvl_iota(1L, "i32", 5L, start = 0L))
+test_that("prim_iota", {
+  f <- jit(function() prim_iota(1L, "i32", 5L, start = 0L))
   expect_equal(f(), nv_array(0:4, dtype = "i32"))
 
-  f <- jit(function() nvl_iota(1L, "i32", 5L, start = 1L))
+  f <- jit(function() prim_iota(1L, "i32", 5L, start = 1L))
   expect_equal(f(), nv_array(1:5, dtype = "i32"))
 
   # 2D along first dimension (default start = 1)
-  f2 <- jit(function() nvl_iota(1L, "i32", c(3L, 2L)))
+  f2 <- jit(function() prim_iota(1L, "i32", c(3L, 2L)))
   expected <- matrix(c(1L, 2L, 3L, 1L, 2L, 3L), 3, 2)
   expect_equal(f2(), nv_array(expected, dtype = "i32"))
 })
 
-test_that("p_popcnt", {
-  f <- jit(function(x) nvl_popcnt(x))
+test_that("prim_popcnt", {
+  f <- jit(function(x) prim_popcnt(x))
   x <- nv_array(c(0L, 1L, 2L, 3L, 7L, 255L), dtype = "i32")
   expect_equal(f(x), nv_array(c(0L, 1L, 1L, 2L, 3L, 8L), dtype = "i32"))
 })
 
-test_that("p_gather", {
+test_that("prim_gather", {
   # Simple 1D gather: select elements at specific indices
   f <- jit(function(x, indices) {
-    nvl_gather(
+    prim_gather(
       operand = x,
       start_indices = indices,
       slice_sizes = c(1L),
@@ -565,10 +565,10 @@ test_that("p_gather", {
   expect_equal(out, nv_array(c(10L, 30L, 50L), dtype = "i32"))
 })
 
-test_that("p_scatter", {
+test_that("prim_scatter", {
   # Simple 1D scatter: update elements at specific indices
   f <- jit(function(x, indices, updates) {
-    nvl_scatter(
+    prim_scatter(
       input = x,
       scatter_indices = indices,
       update = updates,
@@ -591,8 +591,8 @@ test_that("p_scatter", {
   expect_equal(out, nv_array(c(100L, 2L, 300L, 4L, 500L), dtype = "i32"))
 })
 
-test_that("p_print", {
-  f <- jit(function(x) nvl_print(x))
+test_that("prim_print", {
+  f <- jit(function(x) prim_print(x))
   x <- nv_array(c(1.0, 2.0, 3.0), dtype = "f32")
   expect_snapshot({
     out <<- f(x)
@@ -605,5 +605,5 @@ test_that("p_print", {
 # We have a CI job that installs torch, so it's at least tested once
 
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "test-primitives-stablehlo-torch.R", package = "anvil"))
+  source(system.file("extra-tests", "test-primitives-stablehlo-torch.R", package = "anvl"))
 }

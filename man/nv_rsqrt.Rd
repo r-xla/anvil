@@ -24,5 +24,5 @@ nv_rsqrt(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_rsqrt]{nvl_rsqrt()}} for the underlying primitive.
+\code{\link[=prim_rsqrt]{prim_rsqrt()}} for the underlying primitive.
 }

@@ -84,6 +84,14 @@ test_that("nv_clamp converts min and max to operand dtype", {
   )
 })
 
+test_that("nv_ifelse broadcasts scalars and promotes branches to a common dtype", {
+  pred <- nv_array(c(TRUE, FALSE, TRUE))
+  expect_equal(
+    nv_ifelse(pred, nv_scalar(1L), nv_array(c(0.5, 0.5, 0.5), dtype = "f32")),
+    nv_array(c(1, 0.5, 1), dtype = "f32")
+  )
+})
+
 describe("nv_concatenate", {
   it("auto-promotes to common", {
     expect_equal(
@@ -458,7 +466,7 @@ describe("nv_triu", {
 
 describe("nv_tril with quickr backend", {
   it("works when operand is quickr", {
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     x <- nv_array(matrix(1, 3, 3), backend = "quickr")
     result <- nv_tril(x)
     expected <- matrix(c(1, 1, 1, 0, 1, 1, 0, 0, 1), nrow = 3, ncol = 3)
@@ -468,7 +476,7 @@ describe("nv_tril with quickr backend", {
 
 describe("nv_triu with quickr backend", {
   it("works when operand is quickr", {
-    skip_if_not_installed("quickr")
+    skip_if_no_quickr()
     x <- nv_array(matrix(1, 3, 3), backend = "quickr")
     result <- nv_triu(x)
     expected <- matrix(c(1, 0, 0, 1, 1, 0, 1, 1, 1), nrow = 3, ncol = 3)

@@ -13,7 +13,7 @@ format_node_id <- function(node, node_ids) {
 
 format_literal <- function(node) {
   val <- node$aval$data
-  if (is_anvil_array(val)) {
+  if (is_anvl_array(val)) {
     val <- as_array(val)
   }
   dt <- repr(dtype(node$aval))
@@ -181,18 +181,18 @@ format.PrimitiveCall <- function(x, ...) {
 }
 
 #' @export
-format.AnvilGraph <- function(x, ...) {
+format.AnvlGraph <- function(x, ...) {
   format_graph_body(
     inputs = x$inputs,
     constants = x$constants,
     calls = x$calls,
     outputs = x$outputs,
-    title = "AnvilGraph"
+    title = "AnvlGraph"
   )
 }
 
 #' @export
-print.AnvilGraph <- function(x, ...) {
+print.AnvlGraph <- function(x, ...) {
   cat(format(x), "\n")
   invisible(x)
 }

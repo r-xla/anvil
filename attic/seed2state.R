@@ -80,8 +80,8 @@ test_that("seed2state", {
 
   expect_true(identical(as_array(out1), as_array(out2)))
   expect_equal(shape(out2), c(3, 2))
-  expect_true(inherits(dtype.AnvilArray(out1), UnsignedType))
-  expect_equal(dtype.AnvilArray(out1)@value, 64L)
+  expect_true(inherits(dtype.AnvlArray(out1), UnsignedType))
+  expect_equal(dtype.AnvlArray(out1)@value, 64L)
 
   # test ui32
   set.seed(1)
@@ -91,6 +91,6 @@ test_that("seed2state", {
   g <- jit(f)
   out3 <- g()
   expect_equal(shape(out3), 2)
-  expect_true(inherits(dtype.AnvilArray(out3), UnsignedType))
-  expect_equal(dtype.AnvilArray(out3)@value, 32L)
+  expect_true(inherits(dtype.AnvlArray(out3), UnsignedType))
+  expect_equal(dtype.AnvlArray(out3)@value, 32L)
 })

@@ -1,10 +1,10 @@
 test_that("stablehlo rule is tested", {
-  nms <- names(asNamespace("anvil"))
-  primitive_names <- nms[grepl("^p_", nms)]
+  nms <- names(asNamespace("anvl"))
+  primitive_names <- nms[grepl("^prim_", nms)]
 
   tests_dir <- testthat::test_path()
   candidate_files <- c(
-    system.file("extra-tests", "test-primitives-stablehlo-torch.R", package = "anvil"),
+    system.file("extra-tests", "test-primitives-stablehlo-torch.R", package = "anvl"),
     file.path(testthat::test_path(), "test-primitives-stablehlo.R")
   )
 
@@ -24,18 +24,18 @@ test_that("stablehlo rule is tested", {
 
 
 test_that("reverse rule is tested", {
-  nms <- names(asNamespace("anvil"))
-  primitive_names <- nms[grepl("^p_", nms)]
+  nms <- names(asNamespace("anvl"))
+  primitive_names <- nms[grepl("^prim_", nms)]
 
   primitive_names <- Filter(
     function(nm) {
-      !is.null(getFromNamespace(nm, "anvil")$rules[["reverse"]])
+      !is.null(getFromNamespace(nm, "anvl")[["reverse"]])
     },
     primitive_names
   )
 
   candidate_files <- c(
-    system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvil"),
+    system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvl"),
     file.path(testthat::test_path(), "test-primitives-reverse.R")
   )
 

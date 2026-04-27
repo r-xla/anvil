@@ -25,5 +25,5 @@ nv_print(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_print]{nvl_print()}} for the underlying primitive.
+\code{\link[=prim_print]{prim_print()}} for the underlying primitive.
 }

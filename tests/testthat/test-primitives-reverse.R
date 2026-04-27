@@ -1,10 +1,10 @@
 # most reverse tests are in extra-tests for comparison with torch
 # Just a few selected ones that don't use torch are here
 
-test_that("p_dot_general: vector dot product gradient", {
+test_that("prim_dot_general: vector dot product gradient", {
   # y = <x, y> = sum_i x_i * y_i, scalar output
   f <- function(x, y) {
-    nvl_dot_general(
+    prim_dot_general(
       x,
       y,
       contracting_dims = list(1L, 1L),
@@ -20,10 +20,10 @@ test_that("p_dot_general: vector dot product gradient", {
   expect_equal(as.numeric(pjrt::as_array(out[[2L]])), c(1, 2, 3))
 })
 
-test_that("p_dot_general: matrix-vector with summed loss", {
+test_that("prim_dot_general: matrix-vector with summed loss", {
   nv_hacky_sum <- function(y) {
     ones <- nv_array(1, shape = shape(y)[1L], dtype = dtype(y))
-    out <- nvl_dot_general(
+    out <- prim_dot_general(
       y,
       ones,
       contracting_dims = list(1L, 1L),
@@ -33,7 +33,7 @@ test_that("p_dot_general: matrix-vector with summed loss", {
   }
 
   f <- function(A, x) {
-    y <- nvl_dot_general(
+    y <- prim_dot_general(
       A,
       x,
       contracting_dims = list(2L, 1L),
@@ -61,7 +61,7 @@ test_that("p_dot_general: matrix-vector with summed loss", {
   expect_equal(dx, dx_true)
 })
 
-test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
+test_that("prim_dot_general: batched matmul gradient w.r.t both inputs", {
   # Helpers to reduce repetition
   make_ones_like <- function(Y) {
     nv_array(
@@ -75,7 +75,7 @@ test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
     ones <- make_ones_like(Y)
     rank <- length(shape(Y))
     all_dims <- 1:rank
-    nvl_dot_general(
+    prim_dot_general(
       Y,
       ones,
       contracting_dims = list(all_dims, all_dims),
@@ -84,7 +84,7 @@ test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
   }
   check_case <- function(A, B, contracting_dims, batching_dims) {
     f <- function(A, B) {
-      nvl_dot_general(
+      prim_dot_general(
         A,
         B,
         contracting_dims = contracting_dims,
@@ -105,7 +105,7 @@ test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
     # Verify linearization: <A, dA> == l(A,B) and <B, dB> == l(A,B)
     all_dims_A <- seq_along(shape(A))
     lin_A <- function(A) {
-      nvl_dot_general(
+      prim_dot_general(
         A,
         dA,
         contracting_dims = list(all_dims_A, all_dims_A),
@@ -114,7 +114,7 @@ test_that("p_dot_general: batched matmul gradient w.r.t both inputs", {
     }
     all_dims_B <- seq_along(shape(B))
     lin_B <- function(B) {
-      nvl_dot_general(
+      prim_dot_general(
         B,
         dB,
         contracting_dims = list(all_dims_B, all_dims_B),
@@ -233,11 +233,11 @@ test_that("broadcasting", {
   expect_equal(out[[2L]], nv_array(0.5, shape = c(1, 2)))
 })
 
-test_that("p_if", {
+test_that("prim_if", {
   # TODO:
   #f <- jit(gradient(
   #  function(pred, x) {
-  #    nvl_if(pred, \() x * nv_scalar(1), \() x * nv_scalar(2))
+  #    prim_if(pred, \() x * nv_scalar(1), \() x * nv_scalar(2))
   #  },
   #  wrt = "x"
   #))
@@ -246,7 +246,7 @@ test_that("p_if", {
   #expect_equal(out[[2L]], nv_scalar(1))
 })
 
-test_that("p_log reverse", {
+test_that("prim_log reverse", {
   f <- jit(gradient(function(x) {
     nv_log(x)
   }))
@@ -257,7 +257,7 @@ test_that("p_log reverse", {
   expect_equal(as_array(grad), 0.5)
 })
 
-test_that("p_exp", {
+test_that("prim_exp", {
   f <- jit(gradient(function(x) {
     nv_exp(x)
   }))
@@ -268,9 +268,9 @@ test_that("p_exp", {
   expect_equal(as_array(grad), exp(2))
 })
 
-test_that("p_reduce_max reverse", {
+test_that("prim_reduce_max reverse", {
   f <- jit(gradient(function(x) {
-    rows_max <- nvl_reduce_max(x, dims = 2L, drop = TRUE)
+    rows_max <- prim_reduce_max(x, dims = 2L, drop = TRUE)
     nv_reduce_sum(rows_max, dims = 1L, drop = TRUE)
   }))
 
@@ -292,9 +292,9 @@ test_that("p_reduce_max reverse", {
   )
 })
 
-test_that("p_reduce_min reverse", {
+test_that("prim_reduce_min reverse", {
   f <- jit(gradient(function(x) {
-    rows_min <- nvl_reduce_min(x, dims = 2L, drop = TRUE)
+    rows_min <- prim_reduce_min(x, dims = 2L, drop = TRUE)
     nv_reduce_sum(rows_min, dims = 1L, drop = TRUE)
   }))
 
@@ -319,13 +319,13 @@ test_that("p_reduce_min reverse", {
   )
 })
 
-test_that("p_max on ties", {
+test_that("prim_max on ties", {
   x <- nv_array(c(1, 2, 2))
   grads <- jit(gradient(\(x) nv_reduce_max(x, dims = 1)))(x)
   expect_equal(as_array(grads$x), array(c(0, 0.5, 0.5), dim = 3))
 })
 
-test_that("p_max", {
+test_that("prim_max", {
   x <- nv_array(c(1, 2, 3))
   y <- nv_array(c(3, 2, 1))
 
@@ -335,7 +335,7 @@ test_that("p_max", {
   expect_equal(as_array(grads$y), array(c(1, 0.5, 0), dim = 3))
 })
 
-test_that("p_min", {
+test_that("prim_min", {
   x <- nv_array(c(1, 2, 3))
   y <- nv_array(c(3, 2, 1))
 
@@ -345,11 +345,11 @@ test_that("p_min", {
   expect_equal(as_array(grads$y), array(c(0, 0.5, 1), dim = 3))
 })
 
-test_that("p_convert reverse converts gradients to the input dtype", {
+test_that("prim_convert reverse converts gradients to the input dtype", {
   x_arr <- array(1:6, c(2, 3))
   x <- nv_array(x_arr, dtype = "f32")
   f <- jit(gradient(function(x) {
-    y <- nvl_convert(x, dtype = "f64", ambiguous = FALSE)
+    y <- prim_convert(x, dtype = "f64", ambiguous = FALSE)
     nv_reduce_sum(y, dims = 1:2, drop = TRUE)
   }))
 
@@ -358,7 +358,7 @@ test_that("p_convert reverse converts gradients to the input dtype", {
   expect_equal(dtype(grads[[1L]]), as_dtype("f32"))
 })
 
-test_that("p_eq, p_ne, p_gt, p_ge, p_lt, p_le", {
+test_that("prim_eq, prim_ne, prim_gt, prim_ge, prim_lt, prim_le", {
   a <- 1
   b <- 2
 
@@ -398,13 +398,13 @@ test_that("p_eq, p_ne, p_gt, p_ge, p_lt, p_le", {
   }
 })
 
-test_that("p_pad reverse with interior padding", {
+test_that("prim_pad reverse with interior padding", {
   # Interior padding adds padding between elements
   # For input [a, b, c] with interior_padding=1, output is [a, 0, b, 0, c]
   # Gradient flows only to original positions [a, b, c]
   f <- jit(gradient(function(x) {
     x <- x * nv_array(c(1, 2, 3), dtype = "f64")
-    y <- nvl_pad(x, nv_scalar(0, "f64"), 0L, 0L, 1L)
+    y <- prim_pad(x, nv_scalar(0, "f64"), 0L, 0L, 1L)
     nv_reduce_sum(y, dims = 1L, drop = TRUE)
   }))
   x <- nv_array(c(1, 2, 3), dtype = "f64")
@@ -416,7 +416,7 @@ test_that("p_pad reverse with interior padding", {
     x <- x * nv_array(c(1, 2), dtype = "f64")
     # edge_padding_low=1, edge_padding_high=1, interior_padding=1
     # For input [a, b], output is [0, a, 0, b, 0]
-    y <- nvl_pad(x, nv_scalar(0, "f64"), 1L, 1L, 1L)
+    y <- prim_pad(x, nv_scalar(0, "f64"), 1L, 1L, 1L)
     nv_reduce_sum(y, dims = 1L, drop = TRUE)
   }))
   x2 <- nv_array(c(5, 10), dtype = "f64")
@@ -426,7 +426,7 @@ test_that("p_pad reverse with interior padding", {
   # Test 2D with interior padding
   f3 <- jit(gradient(function(x) {
     x <- x * nv_array(c(1, 2, 3, 4), shape = c(2, 2), dtype = "f64")
-    y <- nvl_pad(x, nv_scalar(0, "f64"), c(0L, 0L), c(0L, 0L), c(1L, 1L))
+    y <- prim_pad(x, nv_scalar(0, "f64"), c(0L, 0L), c(0L, 0L), c(1L, 1L))
     nv_reduce_sum(y, dims = c(1L, 2L), drop = TRUE)
   }))
   x3 <- nv_array(matrix(1:4, 2, 2), dtype = "f64")
@@ -435,7 +435,7 @@ test_that("p_pad reverse with interior padding", {
 
   # Test 2D with different edge padding on each dimension
   f4 <- jit(gradient(function(x) {
-    y <- nvl_pad(x, nv_scalar(0, "f64"), c(1L, 2L), c(2L, 1L), c(0L, 0L))
+    y <- prim_pad(x, nv_scalar(0, "f64"), c(1L, 2L), c(2L, 1L), c(0L, 0L))
     nv_reduce_sum(y, dims = c(1L, 2L), drop = TRUE)
   }))
   x4 <- nv_array(matrix(1:6, 2, 3), dtype = "f64")
@@ -443,11 +443,11 @@ test_that("p_pad reverse with interior padding", {
   expect_equal(g4[[1L]], nv_array(matrix(rep(1, 6), 2, 3), dtype = "f64"))
 })
 
-test_that("p_dynamic_slice reverse", {
+test_that("prim_dynamic_slice reverse", {
   # Gradient should scatter the incoming gradient back to the operand position
   f <- jit(gradient(
     function(x, start_i) {
-      sliced <- nvl_dynamic_slice(x, start_i, slice_sizes = 3L)
+      sliced <- prim_dynamic_slice(x, start_i, slice_sizes = 3L)
       nv_reduce_sum(sliced, dims = 1L, drop = TRUE)
     },
     wrt = "x"
@@ -463,7 +463,7 @@ test_that("p_dynamic_slice reverse", {
   # Test 2D case
   f2d <- jit(gradient(
     function(x, start_i, start_j) {
-      sliced <- nvl_dynamic_slice(x, start_i, start_j, slice_sizes = c(2L, 2L))
+      sliced <- prim_dynamic_slice(x, start_i, start_j, slice_sizes = c(2L, 2L))
       nv_reduce_sum(sliced, dims = c(1L, 2L), drop = TRUE)
     },
     wrt = "x"
@@ -478,11 +478,11 @@ test_that("p_dynamic_slice reverse", {
   expect_equal(grad2d, nv_array(c(0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0), dtype = "f64", shape = c(3, 4)))
 })
 
-test_that("p_dynamic_slice reverse with out-of-bounds", {
+test_that("prim_dynamic_slice reverse with out-of-bounds", {
   # Test that gradient works correctly when indices are clamped
   f <- jit(gradient(
     function(x, start_i) {
-      sliced <- nvl_dynamic_slice(x, start_i, slice_sizes = c(5L))
+      sliced <- prim_dynamic_slice(x, start_i, slice_sizes = c(5L))
       nv_reduce_sum(sliced, dims = 1L, drop = TRUE)
     },
     wrt = "x"
@@ -497,11 +497,11 @@ test_that("p_dynamic_slice reverse with out-of-bounds", {
   expect_equal(grad, nv_array(c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1), dtype = "f64", shape = 10L))
 })
 
-test_that("p_dynamic_update_slice reverse", {
+test_that("prim_dynamic_update_slice reverse", {
   # Test gradient for operand (zero out the updated region)
   f_operand <- jit(gradient(
     function(x, update, start_i) {
-      updated <- nvl_dynamic_update_slice(x, update, start_i)
+      updated <- prim_dynamic_update_slice(x, update, start_i)
       nv_reduce_sum(updated, dims = 1L, drop = TRUE)
     },
     wrt = "x"
@@ -518,7 +518,7 @@ test_that("p_dynamic_update_slice reverse", {
   # Test gradient for update (slice out the corresponding region from grad)
   f_update <- jit(gradient(
     function(x, update, start_i) {
-      updated <- nvl_dynamic_update_slice(x, update, start_i)
+      updated <- prim_dynamic_update_slice(x, update, start_i)
       nv_reduce_sum(updated, dims = 1L, drop = TRUE)
     },
     wrt = "update"
@@ -530,11 +530,11 @@ test_that("p_dynamic_update_slice reverse", {
   expect_equal(grad_update, nv_array(c(1, 1, 1), dtype = "f64", shape = 3L))
 })
 
-test_that("p_dynamic_update_slice reverse with out-of-bounds", {
+test_that("prim_dynamic_update_slice reverse with out-of-bounds", {
   # Test that gradient works correctly when indices are clamped
   f_operand <- jit(gradient(
     function(x, update, start_i) {
-      updated <- nvl_dynamic_update_slice(x, update, start_i)
+      updated <- prim_dynamic_update_slice(x, update, start_i)
       nv_reduce_sum(updated, dims = 1L, drop = TRUE)
     },
     wrt = "x"
@@ -552,7 +552,7 @@ test_that("p_dynamic_update_slice reverse with out-of-bounds", {
   # Test gradient for update with out-of-bounds
   f_update <- jit(gradient(
     function(x, update, start_i) {
-      updated <- nvl_dynamic_update_slice(x, update, start_i)
+      updated <- prim_dynamic_update_slice(x, update, start_i)
       nv_reduce_sum(updated, dims = 1L, drop = TRUE)
     },
     wrt = "update"
@@ -564,40 +564,40 @@ test_that("p_dynamic_update_slice reverse with out-of-bounds", {
   expect_equal(grad_update, nv_array(c(1, 1, 1, 1, 1), dtype = "f64", shape = 5L))
 })
 
-test_that("p_is_finite", {
+test_that("prim_is_finite", {
   x <- nv_array(c(1.0, Inf, -Inf, NaN, 0.5, -0.5), dtype = "f32")
-  verify_zero_grad_unary(nvl_is_finite, x)
+  verify_zero_grad_unary(prim_is_finite, x)
 })
 
-test_that("p_popcnt", {
+test_that("prim_popcnt", {
   x <- nv_array(c(0L, 1L, 3L, 7L, 15L), dtype = "i32")
-  verify_zero_grad_unary(nvl_popcnt, x)
+  verify_zero_grad_unary(prim_popcnt, x)
 })
 
 describe("shift ops", {
-  it("p_shift_left returns zero gradients", {
+  it("prim_shift_left returns zero gradients", {
     x <- nv_array(c(1L, 2L, 4L, 8L), dtype = "i32")
     y <- nv_array(c(1L, 1L, 1L, 1L), dtype = "i32")
-    verify_zero_grad_binary(nvl_shift_left, x, y)
+    verify_zero_grad_binary(prim_shift_left, x, y)
   })
 
-  it("p_shift_right_arithmetic returns zero gradients", {
+  it("prim_shift_right_arithmetic returns zero gradients", {
     x <- nv_array(c(8L, 16L, 32L, -8L), dtype = "i32")
     y <- nv_array(c(1L, 2L, 1L, 1L), dtype = "i32")
-    verify_zero_grad_binary(nvl_shift_right_arithmetic, x, y)
+    verify_zero_grad_binary(prim_shift_right_arithmetic, x, y)
   })
 
-  it("p_shift_right_logical returns zero gradients", {
+  it("prim_shift_right_logical returns zero gradients", {
     x <- nv_array(c(8L, 16L, 32L, 64L), dtype = "i32")
     y <- nv_array(c(1L, 2L, 1L, 2L), dtype = "i32")
-    verify_zero_grad_binary(nvl_shift_right_logical, x, y)
+    verify_zero_grad_binary(prim_shift_right_logical, x, y)
   })
 })
 
-test_that("p_bitcast_convert", {
+test_that("prim_bitcast_convert", {
   x <- nv_array(c(1.0, 2.0, 3.0, 4.0), dtype = "f32")
-  verify_zero_grad_unary(nvl_bitcast_convert, x, f_wrapper = function(x) {
-    out <- nvl_bitcast_convert(x, dtype = "i32")
+  verify_zero_grad_unary(prim_bitcast_convert, x, f_wrapper = function(x) {
+    out <- prim_bitcast_convert(x, dtype = "i32")
     out <- nv_convert(out, "f32")
     nv_reduce_sum(out, dims = 1L, drop = TRUE)
   })
@@ -606,57 +606,57 @@ test_that("p_bitcast_convert", {
 describe("boolean ops", {
   expected_zeros <- nv_array(rep(0, 4), dtype = "f32")
 
-  verify_bool_binary <- function(nvl_fn) {
+  verify_bool_binary <- function(prim_fn) {
     x <- nv_array(c(1, 0, 0, 1))
     y <- nv_array(c(1, 1, 0, 0))
     f <- function(x, y) {
       x <- nv_convert(x, "bool")
       y <- nv_convert(y, "bool")
-      out <- nvl_fn(x, y)
+      out <- prim_fn(x, y)
       nv_convert(out, "f32")
     }
     verify_zero_grad_binary(f, x, y)
   }
 
-  verify_bool_reduce <- function(nvl_fn) {
+  verify_bool_reduce <- function(prim_fn) {
     x <- nv_array(c(1.0, 1.0, 0.0, 0.0), dtype = "f32")
     f <- function(x) {
       x_pred <- nv_convert(x, "bool")
-      out <- nvl_fn(x_pred, dims = 1L, drop = TRUE)
+      out <- prim_fn(x_pred, dims = 1L, drop = TRUE)
       nv_convert(out, "f32")
     }
     grads <- jit(gradient(f))(x)
     testthat::expect_equal(grads[[1L]], expected_zeros)
   }
 
-  it("p_and returns zero gradients", {
-    verify_bool_binary(nvl_and)
+  it("prim_and returns zero gradients", {
+    verify_bool_binary(prim_and)
   })
-  it("p_or returns zero gradients", {
-    verify_bool_binary(nvl_or)
+  it("prim_or returns zero gradients", {
+    verify_bool_binary(prim_or)
   })
-  it("p_xor returns zero gradients", {
-    verify_bool_binary(nvl_xor)
+  it("prim_xor returns zero gradients", {
+    verify_bool_binary(prim_xor)
   })
-  it("p_not returns zero gradients", {
+  it("prim_not returns zero gradients", {
     x <- nv_array(c(1.0, 0.0, 1.0, 0.0), dtype = "f32")
     f <- function(x) {
       x_pred <- nv_convert(x, "bool")
-      out <- nvl_not(x_pred)
+      out <- prim_not(x_pred)
       out <- nv_convert(out, "f32")
       nv_reduce_sum(out, dims = 1L, drop = TRUE)
     }
-    verify_zero_grad_unary(nvl_not, x, f_wrapper = f)
+    verify_zero_grad_unary(prim_not, x, f_wrapper = f)
   })
-  it("p_reduce_all returns zero gradients", {
-    verify_bool_reduce(nvl_reduce_all)
+  it("prim_reduce_all returns zero gradients", {
+    verify_bool_reduce(prim_reduce_all)
   })
-  it("p_reduce_any returns zero gradients", {
-    verify_bool_reduce(nvl_reduce_any)
+  it("prim_reduce_any returns zero gradients", {
+    verify_bool_reduce(prim_reduce_any)
   })
 })
 
-describe("p_gather", {
+describe("prim_gather", {
   it("out of bounds", {
     out <- jit_eval({
       x <- nv_array(1:4, "f32")
@@ -684,7 +684,7 @@ describe("p_gather", {
   })
 })
 
-describe("p_scatter", {
+describe("prim_scatter", {
   it("non-unique indices: only winning update gets gradient", {
     update <- nv_array(1:10, dtype = "f32")
     f <- function(update) {
@@ -704,7 +704,7 @@ describe("p_scatter", {
   it("errors for non-simple replacement update_computation", {
     expect_error(
       jit(gradient(function(x) {
-        out <- nvl_scatter(
+        out <- prim_scatter(
           input = x,
           scatter_indices = nv_array(2L, dtype = "i64"),
           update = nv_scalar(10, dtype = "f32"),
@@ -716,7 +716,7 @@ describe("p_scatter", {
           index_vector_dim = 1L,
           indices_are_sorted = TRUE,
           unique_indices = TRUE,
-          update_computation = function(old, new) nvl_add(old, new)
+          update_computation = function(old, new) prim_add(old, new)
         )
         nv_reduce_sum(out, dims = 1L, drop = TRUE)
       }))(nv_array(1:5, dtype = "f32")),
@@ -821,5 +821,5 @@ describe("gather/scatter reverse via subset operators", {
 })
 
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvil"))
+  source(system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvl"))
 }

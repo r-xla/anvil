@@ -27,5 +27,5 @@ x * y
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_mul]{nvl_mul()}} for the underlying primitive.
+\code{\link[=prim_mul]{prim_mul()}} for the underlying primitive.
 }

@@ -24,5 +24,5 @@ sqrt(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_sqrt]{nvl_sqrt()}} for the underlying primitive.
+\code{\link[=prim_sqrt]{prim_sqrt()}} for the underlying primitive.
 }

@@ -1,6 +1,6 @@
 test_that("basic reverse test", {
   f <- function(x, y) {
-    nvl_add(x, y)
+    prim_add(x, y)
   }
   f_grad <- jit(gradient(f))
   out <- f_grad(nv_scalar(1.0), nv_scalar(2.0))
@@ -9,7 +9,7 @@ test_that("basic reverse test", {
 })
 
 test_that("simple function works (scalar)", {
-  f_grad <- jit(gradient(nvl_mul))
+  f_grad <- jit(gradient(prim_mul))
 
   out <- f_grad(
     nv_scalar(1.0),
@@ -22,7 +22,7 @@ test_that("simple function works (scalar)", {
 
 test_that("chain rule works (scalar)", {
   f <- function(x, y) {
-    nvl_add(nvl_mul(x, y), x)
+    prim_add(prim_mul(x, y), x)
   }
 
   f_grad <- jit(gradient(f))
@@ -40,7 +40,7 @@ test_that("gradient does not have to depend on input", {
   # This is special, because the input has no influence
   # on the gradient, because the gradient is constant
   f <- function(x, y) {
-    nvl_add(x, y)
+    prim_add(x, y)
   }
 
   f_grad <- jit(gradient(f))
@@ -56,7 +56,7 @@ test_that("gradient does not have to depend on input", {
 
 test_that("nested inputs", {
   f <- jit(gradient(function(x) {
-    nvl_mul(x[[1]][[1]], x[[1]][[1]])
+    prim_mul(x[[1]][[1]], x[[1]][[1]])
   }))
   expect_equal(
     f(list(list(nv_scalar(1)))),
@@ -71,7 +71,7 @@ test_that("no nested outpus", {
 
 test_that("constants work (scalar)", {
   f <- jit(gradient(function(x) {
-    nvl_mul(x, nv_scalar(2))
+    prim_mul(x, nv_scalar(2))
   }))
   expect_equal(f(nv_scalar(1)), list(x = nv_scalar(2.0)))
 })
@@ -84,7 +84,7 @@ test_that("second order gradient (scalar)", {
   # this works only for scalar functions, so this is primarily a stress
   # test for out transformation implementation, not because it's useful in itself.
   f <- function(x) {
-    nvl_mul(x, x)
+    prim_mul(x, x)
   }
   fg2 <- jit(gradient(\(x) gradient(f)(x)[[1L]]))
   expect_equal(
@@ -94,7 +94,7 @@ test_that("second order gradient (scalar)", {
 })
 
 test_that("neg works", {
-  g <- jit(gradient(nvl_negate))
+  g <- jit(gradient(prim_negate))
   expect_equal(g(nv_scalar(1))[[1L]], nv_scalar(-1))
 })
 
@@ -121,7 +121,7 @@ test_that("names for grad: function", {
 
 test_that("partial gradient simple", {
   f <- function(lhs, rhs) {
-    nvl_add(lhs, rhs)
+    prim_add(lhs, rhs)
   }
   g <- jit(gradient(f, wrt = "lhs"))
   out <- g(nv_scalar(1.0), nv_scalar(2.0))[[1L]]
@@ -130,7 +130,7 @@ test_that("partial gradient simple", {
 
 test_that("gradient accepts integer positions for wrt", {
   f <- function(lhs, rhs) {
-    nvl_add(lhs, rhs)
+    prim_add(lhs, rhs)
   }
   g <- jit(gradient(f, wrt = 1L))
   out <- g(nv_scalar(1.0), nv_scalar(2.0))[[1L]]
@@ -208,7 +208,7 @@ test_that("wrt non-existent argument", {
 
 test_that("gradient: simple example", {
   f <- function(x, y) {
-    nvl_mul(x, y)
+    prim_mul(x, y)
   }
   g <- jit(gradient(f))
   out <- g(nv_scalar(1.0), nv_scalar(2.0))
@@ -218,7 +218,7 @@ test_that("gradient: simple example", {
 
 test_that("gradient: does not depend on input", {
   f <- function(x, y) {
-    nvl_add(x, y)
+    prim_add(x, y)
   }
   g <- jit(gradient(f))
   out <- g(nv_scalar(1.0), nv_scalar(2.0))
@@ -242,7 +242,7 @@ test_that("wrt for non-array input: value_and_gradient", {
 
 test_that("wrt for nested non-array input: gradient", {
   f <- function(x) {
-    nvl_mul(x[[1]], x[[2]])
+    prim_mul(x[[1]], x[[2]])
   }
   expect_snapshot(error = TRUE, {
     g <- gradient(f, wrt = "x")
@@ -252,7 +252,7 @@ test_that("wrt for nested non-array input: gradient", {
 
 test_that("wrt for nested non-array input: value_and_gradient", {
   f <- function(x) {
-    nvl_mul(x[[1]], x[[2]])
+    prim_mul(x[[1]], x[[2]])
   }
   expect_snapshot(error = TRUE, {
     g <- value_and_gradient(f, wrt = "x")
@@ -269,7 +269,7 @@ test_that("can only compute gradient w.r.t. float arrays", {
 test_that("can differentiate through integer/bool functions", {
   f <- function(x) {
     x1 <- nv_convert(x, "i32")
-    x2 <- nvl_popcnt(x1)
+    x2 <- prim_popcnt(x1)
     x3 <- nv_convert(x2, "f32")
     mean(x3)
   }
@@ -316,7 +316,7 @@ test_that("Can propagate ambiguous float32 through integer/bool functions", {
   f <- function(x) {
     x1 <- nv_convert(x, "i32")
     x2 <- nv_convert(x1, "bool")
-    x3 <- nvl_not(x1)
+    x3 <- prim_not(x1)
     x4 <- nv_convert(x3, "f32")
     mean(x4)
   }
@@ -325,7 +325,7 @@ test_that("Can propagate ambiguous float32 through integer/bool functions", {
 })
 
 test_that("trace_fn matches args with formals", {
-  graph1 <- trace_fn(nvl_add, list(nv_aval("f32", c()), nv_aval("f32", c())))
-  graph2 <- trace_fn(nvl_add, list(lhs = nv_aval("f32", c()), rhs = nv_aval("f32", c())))
+  graph1 <- trace_fn(prim_add, list(nv_aval("f32", c()), nv_aval("f32", c())))
+  graph2 <- trace_fn(prim_add, list(lhs = nv_aval("f32", c()), rhs = nv_aval("f32", c())))
   expect_equal(graph1$in_tree, graph2$in_tree)
 })

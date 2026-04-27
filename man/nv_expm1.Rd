@@ -24,5 +24,5 @@ nv_expm1(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_expm1]{nvl_expm1()}} for the underlying primitive.
+\code{\link[=prim_expm1]{prim_expm1()}} for the underlying primitive.
 }

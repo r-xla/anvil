@@ -8,7 +8,7 @@ xla(f, args, donate = character(), device = NULL)
 }
 \arguments{
 \item{f}{(\code{function})\cr
-Function to compile. Must accept and return \code{\link{AnvilArray}}s.}
+Function to compile. Must accept and return \code{\link{AnvlArray}}s.}
 
 \item{args}{(\code{list})\cr
 List of abstract array specifications (e.g. from \code{\link[=nv_aval]{nv_aval()}}) describing the
@@ -22,8 +22,8 @@ Target device such as \code{"cpu"} (default) or \code{"cuda"}.}
 }
 \value{
 (\code{function})\cr
-A function that accepts \code{\link{AnvilArray}} arguments (matching the flat inputs)
-and returns the result as \code{\link{AnvilArray}}s.
+A function that accepts \code{\link{AnvlArray}} arguments (matching the flat inputs)
+and returns the result as \code{\link{AnvlArray}}s.
 }
 \description{
 Compiles a function to an XLA executable via tracing.

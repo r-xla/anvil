@@ -16,6 +16,6 @@ Backend to use (\code{"xla"} or \code{"quickr"}).}
 The previous value of the option (invisibly).
 }
 \description{
-Sets the \code{anvil.default_backend} option for the duration of the
+Sets the \code{anvl.default_backend} option for the duration of the
 calling scope. This affects \code{nv_array()}, \code{nv_scalar()}, and \code{jit()}.
 }

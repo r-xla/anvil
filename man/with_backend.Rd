@@ -16,6 +16,6 @@ Backend to use (\code{"xla"} or \code{"quickr"}).}
 The result of evaluating \code{code}.
 }
 \description{
-Sets the \code{anvil.default_backend} option for the duration of the
+Sets the \code{anvl.default_backend} option for the duration of the
 expression. This affects \code{\link[=jit]{jit()}} and data construction (e.g. via \code{\link{nv_array}}).
 }

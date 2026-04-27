@@ -36,7 +36,7 @@ prepare_gradient_args <- function(args, wrt) {
 #' @title Transform a graph to its gradient
 #' @description
 #' Low-level graph transformation that appends the reverse pass to a
-#' traced [`AnvilGraph`]. The function `f` represented by `graph` must return a single
+#' traced [`AnvlGraph`]. The function `f` represented by `graph` must return a single
 #' float scalar. The resulting graph computes the gradients of that scalar with respect
 #' to the inputs specified by `wrt`.
 #'
@@ -44,15 +44,15 @@ prepare_gradient_args <- function(args, wrt) {
 #'
 #' This is the building block used by [`gradient()`] and [`value_and_gradient()`]; prefer
 #' those higher-level wrappers unless you need to operate on graphs directly.
-#' @param graph ([`AnvilGraph`])\cr
+#' @param graph ([`AnvlGraph`])\cr
 #'   The graph to transform. Must produce a single scalar float output.
 #' @param wrt (`character`)\cr
 #'   Names of the graph inputs to differentiate with respect to.
-#' @return An [`AnvilGraph`] whose outputs are the requested gradients.
+#' @return An [`AnvlGraph`] whose outputs are the requested gradients.
 #' @seealso [`gradient()`], [`value_and_gradient()`]
 #' @export
 #' @examples
-#' graph <- trace_fn(nvl_mul, list(nv_aval("f32", c()), nv_aval("f32", c())))
+#' graph <- trace_fn(prim_mul, list(nv_aval("f32", c()), nv_aval("f32", c())))
 #' graph
 #' transform_gradient(graph, "lhs")
 transform_gradient <- function(graph, wrt) {
@@ -120,7 +120,7 @@ transform_gradient <- function(graph, wrt) {
     if (is.null(grad1)) {
       return(grad2)
     }
-    nvl_add(grad1, grad2)
+    prim_add(grad1, grad2)
   }
 
   # We need to initialize the descriptor with the forward graph's structure,
@@ -151,7 +151,7 @@ transform_gradient <- function(graph, wrt) {
       grad <- grad_env[[output]]
       if (is.null(grad)) {
         # output grad might be NULL if there is dead code
-        nvl_fill(0L, dtype = dtype(output), shape = shape(output))
+        prim_fill(0L, dtype = dtype(output), shape = shape(output))
       } else {
         grad
       }
@@ -212,9 +212,6 @@ transform_gradient <- function(graph, wrt) {
 }
 
 
-# A non-lowering transformation builds a graph and inserts it into the parent graph.
-# This is fine, because such a parent graph always exists.
-
 #' @title Gradient
 #' @description
 #' Returns a new function that computes the gradient of `f` via reverse-mode automatic
@@ -222,7 +219,7 @@ transform_gradient <- function(graph, wrt) {
 #' same signature as `f` and returns the gradients in the same structure as the inputs
 #' (or the subset selected by `wrt`).
 #' @param f (`function`)\cr
-#'   Function to differentiate. Arguments can be arrayish ([`AnvilArray`]) or
+#'   Function to differentiate. Arguments can be arrayish ([`AnvlArray`]) or
 #'   static (non-array) values. Must return a single scalar float array.
 #' @param wrt (`character` | `integer` | `NULL`)\cr
 #'   Names or positions of the arguments to compute the gradient with respect to.
@@ -259,7 +256,10 @@ gradient <- function(f, wrt = NULL) {
 
     parent_desc <- .current_descriptor(silent = TRUE)
     if (is.null(parent_desc)) {
-      parent_desc <- local_descriptor()
+      cli_abort(c(
+        "{.fn gradient} can only be called inside a {.fn jit}-compiled function.",
+        i = "Wrap the result of {.fn gradient} in {.fn jit}, e.g. {.code jit(gradient(f))}."
+      ))
     }
     fwd_graph <- trace_fn(f, args_flat = prep$args_flat, in_tree = prep$in_tree)
     grad_graph <- transform_gradient(fwd_graph, wrt)
@@ -299,7 +299,10 @@ value_and_gradient <- function(f, wrt = NULL) {
 
     parent_desc <- .current_descriptor(silent = TRUE)
     if (is.null(parent_desc)) {
-      parent_desc <- local_descriptor()
+      cli_abort(c(
+        "{.fn value_and_gradient} can only be called inside a {.fn jit}-compiled function.",
+        i = "Wrap the result of {.fn value_and_gradient} in {.fn jit}, e.g. {.code jit(value_and_gradient(f))}."
+      ))
     }
     fwd_graph <- trace_fn(f, args_flat = prep$args_flat, in_tree = prep$in_tree)
     grad_graph <- transform_gradient(fwd_graph, wrt)

@@ -22,7 +22,7 @@ SPEC.md
 ^Makefile$
 ^air.toml$
 ^TODO.md$
-anvil.Rproj
+anvl.Rproj
 ^benchmarks/
 ^\.claude$
 ^primitives\.md$

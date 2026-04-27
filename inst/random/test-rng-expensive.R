@@ -1,7 +1,7 @@
 # Expensive RNG tests for statistical verification
 # They are slow, so we don't run them in the normal CI suite
 
-library(anvil)
+library(anvl)
 
 test_rnorm_statistical <- function() {
   cat("Testing rnorm statistical properties...\n")

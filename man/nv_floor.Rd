@@ -24,5 +24,5 @@ floor(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nvl_floor]{nvl_floor()}} for the underlying primitive.
+\code{\link[=prim_floor]{prim_floor()}} for the underlying primitive.
 }
