@@ -115,7 +115,7 @@ Here, we only compile once for input size 32 and then reuse the compiled executa
 One common strategy is to split up the varying lengths into buckets of size `2^n` to balance recompilation with wasted computation.
 The example above only works because the padded zeros are the *neutral value* of the performed computation (addition).
 For computations where the pad value is not neutral -- e.g. the mean, where the padded positions would skew the average -- the padded entries have to be masked out explicitly.
-See the [Working Around Static Shapes](static_shapes.html) vignette for the masking patterns and a table of neutral values for common reductions.
+See the [Static Shape Restriction](static_shapes.html) vignette for the masking patterns and a table of neutral values for common reductions.
 
 ## Asynchronous execution
 

@@ -262,9 +262,9 @@ You can now use the primitive, both eagerly and inside a larger JIT-compiled fun
 
 ```{r}
 x <- nv_array(c(1, 2, 3), shape = c(3, 1))
-# Eager call -- works because prim_repeat_along is itself jit()ted.
+# Eager call -- works because prim_repeat_along is itself jit-compiled.
 prim_repeat_along(x, times = 2L, dim = 2L)
-# Traced into the outer graph when composed with another jit()ted function.
+# Traced into the outer graph when composed with another jit-compiled function.
 jit(function(x) prim_repeat_along(x, times = 2L, dim = 2L))(x)
 ```
 

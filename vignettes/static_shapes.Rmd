@@ -1,8 +1,8 @@
 ---
-title: "Working Around Static Shapes"
+title: "Static Shape Restriction"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Working Around Static Shapes}
+  %\VignetteIndexEntry{Static Shape Restriction}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,19 +18,16 @@ This vignette covers the static shape restriction within `jit()`.
 First, we describe what this means and then we discuss how to work around it.
 
 Whenever the XLA compiler that underpins `jit()` compiles a program, it must know the shape of every intermediate value at compile time.
-This means that functions such as `unique()` cannot be part of a `jit()`ted function, because their output shape depends on the runtime values (`unique(c(1, 1))` outputs a length-1 vector, but `unique(c(1, 2))` outputs a length-2 vector).
+This means that functions such as `unique()` cannot be part of a jit-compiled function, because their output shape depends on the runtime values (`unique(c(1, 1))` outputs a length-1 vector, but `unique(c(1, 2))` outputs a length-2 vector).
 Other examples are `which(x > 0)` or `x[x > 0]`.
 
-While this is less ergonomic to use, it means the compiler knows more about your program and your compiled executable will run faster!
-However, it requires some rethinking to express certain operations.
-In some cases, it will even mean having to offload specific operations outside of `jit()`.
-Eventually, we aim to add functions like `which()` or `unique()` to {anvl}'s eager API, but we are not there yet.
-So if you really need such operations, you need to convert the `AnvlArray` back to R, apply the operation there, and then convert the result back to an `AnvlArray` to continue with your heavy algorithm.
-However, for certain operations you can work around this restriction, and we will now cover some common patterns.
-Note that this idea is essentially the same as the one presented in the *Padding* section of the efficiency vignette!
+While this restriction is less ergonomic, it means the compiler knows more about your program and your compiled executable will run faster.
+The cost is that some operations require rethinking, and a few cannot currently be expressed inside `jit()` at all.
 
-
-We hope to lift the static-shape restriction in the long term to make {anvl} more ergonomic to use.
+For many operations, you can work around the restriction by keeping shapes fixed and using a logical mask -- the same idea presented in the *Padding* section of the efficiency vignette.
+We cover some common patterns below.
+For operations we cannot yet handle in-graph (such as `which()` or `unique()`), you currently need to convert the `AnvlArray` back to R, apply the operation there, and then convert the result back to an `AnvlArray` to resume the computation.
+We hope to lift the static-shape restriction in the long term and add functions like `which()` and `unique()` to {anvl}'s eager API to make this more ergonomic.
 
 ## The masking pattern
 
@@ -58,7 +55,7 @@ sum_positive(x)
 ```
 
 This trick works because `0` is the *neutral value* of addition.
-The same idea generalises to any reduction whose operation has such a neutral value:
+The same idea generalizes to any reduction whose operation has such a neutral value:
 
 | Operation                              | Neutral value                   |
 | -------------------------------------- | ------------------------------- |

@@ -15,10 +15,10 @@ knitr::opts_chunk$set(
 ```
 
 This vignette explains what actually happens when you wrap a function with `jit()`.
-Understanding this is what lets you avoid the classic pitfalls that come with tracing-based compilation.
+Understanding this is what lets you avoid common pitfals on tracing-based compilers.
 If you haven't yet, read the [Get Started](anvl.html) vignette first.
 
-We will use a single tiny `linear` function as the running example throughout, extending it as we go:
+We will use the simple `linear` function as the running example.
 
 ```{r}
 library(anvl)
@@ -26,8 +26,6 @@ set.seed(42)
 
 linear <- function(x, w, b) nv_add(nv_mul(x, w), b)
 ```
-
-We spell the operations out as `nv_add()` / `nv_mul()` for clarity; `x * w + b` would be equivalent because the standard arithmetic operators are overloaded for `AnvlArray`s and dispatch to the same `nv_*` functions.
 
 ## How `jit()` works
 
@@ -53,7 +51,7 @@ jit <- function(f, static = character()) {
 
 Three things happen:
 
-1. **Trace** the R code once with placeholder values (except for `static` arguments; c.f. next section), recording the sequence of primitive operations into an intermediate representation called an `AnvlGraph`.
+1. **Trace** the R code once with placeholder values (except for `static` arguments covered below), recording the sequence of primitive operations into an intermediate representation called an `AnvlGraph`.
 1. **Compile** that graph to an XLA executable and cache it under a key derived from the inputs, which uses abstract types for `AnvlArray`s and the actual values for static inputs.
 1. On subsequent calls with a cache hit, **skip tracing and compilation** and run the cached executable directly.
 
@@ -87,8 +85,7 @@ cache_size(linear_jit)
 Each input to the function contributes to the cache key differently, depending on whether it is *dynamic* (an arrayish value, the default) or *static* (marked via the `static =` argument of `jit()`):
 
 - **Dynamic inputs** contribute their *abstract value* -- the `nv_aval(dtype, shape, ambiguous)` triple.
-  The concrete data inside the array is ignored, which is why calls with the same shape and dtype hit the same cache entry no matter what values they carry.
-  During tracing (next section) these are replaced by type-only placeholders.
+  Two arrays with the same abstract value but different data hit the same cache entry.
 - **Static inputs** contribute their *exact R value*, compared with `identical()`.
   They stay as regular R values during the compilation, but their value is fixed for a compiled program.
   Two calls with `flag = TRUE` and `flag = FALSE` therefore land on different cache entries.
@@ -121,55 +118,37 @@ Two important notes to be aware of:
 
 ## Tracing
 
-*Tracing* is what we call running your R function once with special values and recording every primitive operation it performs into an `AnvlGraph`.
+*Tracing* is how the R code is translated into a form that the XLA compiler can understand.
+It works by replacing the dynamic inputs with special (`GraphBox`) values and runnig it.
+Instead of doing the array computations, this will instead record every primitive operation in an `AnvlGraph`, which represents the *evaluation trace*.
 For the purposes of this vignette you can think of tracing and the subsequent XLA compilation as a single phase that runs once per cache miss.
 Note that this is different from R's `trace()` function, which lets you insert code into functions.
-Tracing is how we leave R behind: the graph is a self-contained, language-agnostic description of the computation that anvl can hand off to the XLA compiler.
-It's much simpler than R code, which also enables differentiating it.
-The graph is the evaluation trace, and most of what follows in this vignette is about understanding which type of programs can properly be captured this way (taking into account the caching mechanism discussed above).
-
-`trace_fn()` is the lower-level building block that `jit()` uses internally.
+In {anvl}, this tracing machinery is available via `trace_fn()`.
 Although you will probably never need to use this function directly, we will use it to show what's happening under the hood.
-Tracing only needs to know the *type* of each dynamic input -- its shape, dtype, and ambiguity flag -- not its concrete value (except for `static` inputs).
-We describe such a type-only placeholder with `nv_aval()` (short for *abstract value*):
-
-```{r}
-nv_aval("f32", integer())                    # an f32 scalar
-nv_aval("f32", c(2, 3))                      # a 2x3 f32 matrix
-nv_aval("f32", integer(), ambiguous = TRUE)  # ambiguous f32 (printed as `f32?`)
-```
-
-An abstract value carries no data; it just stands in for "any array of this shape, dtype, and ambiguity" during the trace.
-Concrete `AnvlArray`s also work as `trace_fn` arguments -- their shape, dtype, and ambiguity are read off and the data is ignored -- but `nv_aval()` makes it explicit that we only care about the type.
-(See `vignette("type-promotion")` for a refresher on what ambiguity means.)
-
-Let's trace `linear` with a length-3 vector for `x` and scalars for `w` and `b`:
+Below, we trace `linear` with a length-3 vector for `x` and scalars for `w` and `b`:
 
 ```{r}
 f32_scalar <- nv_aval("f32", integer())
+f32_scalar
 f32_vec3   <- nv_aval("f32", 3)
+f32_vec3
 trace_fn(linear, args = list(x = f32_vec3, w = f32_scalar, b = f32_scalar))
 ```
 
-A few things to notice:
+The printed `AnvlGraph` is like an R function: it has inputs, a body and outputs.
+However, the content is more structured:
 
-- The R-level *expression structure* is flattened. The nested call `nv_add(nv_mul(x, w), b)` becomes a sequence of separately-named intermediate values; each operation produces a new graph value, so the IR is single-assignment and purely functional.
-- The shape and dtype of every value are part of the graph. You can see the inputs come in with their abstract types attached, and the types propagate through the operations.
-- The function call boundary is gone: if `linear` had called another R function, that function's body would have been inlined into the same graph.
-- A single `nv_*` call can lower to *several* primitives. The `nv_mul(x, w)` here doesn't appear as one `mul` op -- the scalar `w` first goes through a broadcast primitive that lifts it to the shape of `x`, and only then is the actual element-wise `mul` recorded. Same for `nv_add(..., b)`.
+- There are only calls into primitives and not closures; i.e., function calls are inlined.
+- Types are fully specified.
+- Every variable is assigned to once, i.e. the program is in SSA (Single Static Assignment) form.
 
 Crucially, only `prim_*` calls (and the `nv_*` API functions or overloaded operators that delegate to them) get recorded.
 Any other R code in the body might influence what the evaluation trace is, but is not present in the traced graph itself.
 
 ### The Tracing Contract
 
-Tracing only produces correct results for *pure* functions -- functions whose output depends on their arguments and nothing else, and that have no side effects.
-This means, there should be:
-
-- **No hidden inputs.** If the function reads anything outside its arguments -- a closed-over R value, the random-number generator, the system clock, a global option -- the trace silently bakes in whatever it observed during the single tracing call, and subsequent calls don't re-observe.
-- **No side effects.** Any R-level mutation or I/O (printing, `<<-`, mutating an enclosing environment, writing to a file) fires only while the trace is being built; the cached executable contains only `prim_*` operations, so on subsequent calls the side effect simply doesn't happen.
-
-This contract is a consequence of how the caching works: re-tracing on every call would defeat the point of compilation, so the cache key captures only the abstract type of each dynamic input and the exact value of each static input.
+Tracing only produces correct results for *pure* functions -- functions whose output depends on their arguments and nothing else, and that have no R-level side effects.
+This contract is a consequence of both how the caching works and that the compiled program runs outside of R and only communicates back to the R interpreter via it's return values.
 Concretely, the function's execution path -- the specific sequence of primitive calls it performs -- must depend only on:
 
 1. The *abstract* representation (shape, dtype, ambiguity) of each dynamic input, and
@@ -180,7 +159,7 @@ The next subsections each show what tracing does to particular R code and where 
 ### R loops are unrolled
 
 Tracing runs your R code and records primitive operations in the graph.
-Because `for` is not an anvil primitive, it will be executed as usual and all the primitive calls encountered will be recorded in the graph.
+Because `for` is not an anvl primitive, it will be executed as usual and all the primitive calls encountered will be recorded in the graph.
 Here we apply the `linear` function `n` times.
 
 ```{r}
@@ -214,7 +193,7 @@ trace_fn(
 ```
 
 The graph contains one `mul` and one `add` operation, but no conditional.
-Tracing with `use_bias = FALSE` would produce a different graph.
+Tracing with `use_bias = FALSE` would produce a graph containing the other branch.
 
 Where things go wrong is if the evaluation trace depends on something that does not influence the cache key, such as a value from the enclosing environment:
 
@@ -264,7 +243,7 @@ new_model <- function(beta) {
 }
 ```
 
-One would expect each call to `model$grad_step()` to nudge `model$beta` one step further along the gradient.
+If this was executed in "standard R", every call to `model$grad_step()` would nudge `model$beta` one step further along the gradient.
 But wrapping `grad_step` with `jit()` breaks the function on two levels:
 
 ```{r}

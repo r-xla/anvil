@@ -69,7 +69,6 @@ For ops needing custom logic, write a function that normalizes its array inputs 
 - `as_anvl_arrays(...)` for multiple array inputs (infers a common device, errors on mismatched backends/devices).
 
 After conversion, use `shape()`, `ndims()`, and `dtype()` directly -- they work on both concrete `AnvlArray`s and the `GraphBox` tracers that appear under `jit()`.
-Do **not** call `device()` on an arrayish input directly; it fails under tracing. Instead, rely on the `_like` pattern below.
 
 ### Constants and the `_like` pattern
 
