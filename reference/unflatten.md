@@ -2,7 +2,7 @@
 
 Reconstructs a nested structure from a flat list by using a tree
 previously created with
-[`build_tree()`](https://r-xla.github.io/anvil/reference/build_tree.md).
+[`build_tree()`](https://r-xla.github.io/anvl/reference/build_tree.md).
 Each `LeafNode` in the tree selects the corresponding element from `x`
 by index, and `ListNode`s restore the original nesting and names.
 
@@ -18,13 +18,13 @@ unflatten(node, x)
 
   (`Node`)  
   Tree describing the target structure, as returned by
-  [`build_tree()`](https://r-xla.github.io/anvil/reference/build_tree.md).
+  [`build_tree()`](https://r-xla.github.io/anvl/reference/build_tree.md).
 
 - x:
 
   (list)  
   Flat list of leaf values, typically produced by
-  [`flatten()`](https://r-xla.github.io/anvil/reference/flatten.md).
+  [`flatten()`](https://r-xla.github.io/anvl/reference/flatten.md).
 
 ## Value
 
@@ -32,8 +32,8 @@ The reconstructed nested structure (list or single value).
 
 ## See also
 
-[`flatten()`](https://r-xla.github.io/anvil/reference/flatten.md),
-[`build_tree()`](https://r-xla.github.io/anvil/reference/build_tree.md)
+[`flatten()`](https://r-xla.github.io/anvl/reference/flatten.md),
+[`build_tree()`](https://r-xla.github.io/anvl/reference/build_tree.md)
 
 ## Examples
 

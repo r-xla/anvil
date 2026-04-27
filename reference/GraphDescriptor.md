@@ -1,8 +1,8 @@
 # Graph Descriptor
 
 Descriptor of an
-[`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md).
-This is a mutable class.
+[`AnvlGraph`](https://r-xla.github.io/anvl/reference/AnvlGraph.md). This
+is a mutable class.
 
 ## Usage
 
@@ -17,6 +17,7 @@ GraphDescriptor(
   inputs = list(),
   outputs = list(),
   is_static_flat = NULL,
+  static_args_flat = NULL,
   devices = character()
 )
 ```
@@ -31,7 +32,7 @@ GraphDescriptor(
 - tensor_to_gval:
 
   (`hashtab`)  
-  Mapping: `AnvilTensor` -\> `GraphValue`
+  Mapping: `AnvlArray` -\> `GraphValue`
 
 - gval_to_box:
 
@@ -46,8 +47,8 @@ GraphDescriptor(
 - in_tree:
 
   (`NULL | Node`)  
-  The tree of inputs. May contain leaves for both tensor inputs and
-  static (non-tensor) arguments. Only the tensor leaves correspond to
+  The tree of inputs. May contain leaves for both array inputs and
+  static (non-array) arguments. Only the array leaves correspond to
   entries in `inputs`; use `is_static_flat` to distinguish them.
 
 - out_tree:
@@ -58,7 +59,7 @@ GraphDescriptor(
 - inputs:
 
   (`list(GraphValue)`)  
-  The inputs to the graph (tensor arguments only).
+  The inputs to the graph (array arguments only).
 
 - outputs:
 
@@ -69,13 +70,19 @@ GraphDescriptor(
 
   (`NULL | logical()`)  
   Boolean mask indicating which flat positions in `in_tree` are static
-  (non-tensor) args. `NULL` when all args are tensor inputs.
+  (non-array) args. `NULL` when all args are array inputs.
+
+- static_args_flat:
+
+  (`NULL | list()`)  
+  Flattened traced values for the static arguments indicated by
+  `is_static_flat`.
 
 - devices:
 
   ([`character()`](https://rdrr.io/r/base/character.html))  
   Device platforms encountered during tracing (e.g. `"cpu"`, `"cuda"`).
-  Populated automatically as tensors are registered.
+  Populated automatically as arrays are registered.
 
 ## Value
 

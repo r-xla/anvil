@@ -1,7 +1,7 @@
 # Conditional Branching
 
 Conditional execution of two branches. Unlike
-[`nv_ifelse()`](https://r-xla.github.io/anvil/reference/nv_ifelse.md),
+[`nv_ifelse()`](https://r-xla.github.io/anvl/reference/nv_ifelse.md),
 which selects elements, this executes only one of the two branches
 depending on a scalar predicate.
 
@@ -15,20 +15,20 @@ nv_if(pred, true, false)
 
 - pred:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)
-  of boolean type, scalar)  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md) of
+  boolean type, scalar)  
   Predicate.
 
 - true:
 
-  (`expression`)  
-  Expression for the true branch (non-standard evaluation).
+  (`function()`)  
+  Zero-argument function for the true branch.
 
 - false:
 
-  (`expression`)  
-  Expression for the false branch (non-standard evaluation). Must return
-  outputs with the same shapes as the true branch.
+  (`function()`)  
+  Zero-argument function for the false branch. Must return outputs with
+  the same shapes as the true branch.
 
 ## Value
 
@@ -36,16 +36,16 @@ Result of the executed branch.
 
 ## See also
 
-[`nvl_if()`](https://r-xla.github.io/anvil/reference/nvl_if.md) for the
+[`prim_if()`](https://r-xla.github.io/anvl/reference/prim_if.md) for the
 underlying primitive,
-[`nv_ifelse()`](https://r-xla.github.io/anvil/reference/nv_ifelse.md)
-for element-wise selection.
+[`nv_ifelse()`](https://r-xla.github.io/anvl/reference/nv_ifelse.md) for
+element-wise selection.
 
 ## Examples
 
 ``` r
-jit_eval(nv_if(nv_scalar(TRUE), nv_scalar(1), nv_scalar(2)))
-#> AnvilTensor
+nv_if(nv_scalar(TRUE), \() nv_scalar(1), \() nv_scalar(2))
+#> AnvlArray
 #>  1
 #> [ CPUf32{} ] 
 ```

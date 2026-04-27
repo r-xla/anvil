@@ -1,4 +1,4 @@
-# Get the platform of a tensor or buffer
+# Get the platform of an array or buffer
 
 Returns the platform name (e.g. `"cpu"`, `"cuda"`) identifying the
 compute backend.
@@ -6,6 +6,9 @@ compute backend.
 ## Usage
 
 ``` r
+# S3 method for class 'AnvlArray'
+platform(x, ...)
+
 platform(x, ...)
 ```
 
@@ -13,8 +16,8 @@ platform(x, ...)
 
 - x:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  A tensor-like object.
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
+  An array-like object.
 
 - ...:
 
@@ -36,7 +39,7 @@ Implemented via the generic
 ## Examples
 
 ``` r
-x <- nv_tensor(1:4, dtype = "f32")
+x <- nv_array(1:4, dtype = "f32")
 platform(x)
 #> [1] "cpu"
 ```

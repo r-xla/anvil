@@ -13,27 +13,25 @@ nv_tanh(operand)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md)  
 Has the same shape and data type as the input.
 
 ## See also
 
-[`nvl_tanh()`](https://r-xla.github.io/anvil/reference/nvl_tanh.md) for
+[`prim_tanh()`](https://r-xla.github.io/anvl/reference/prim_tanh.md) for
 the underlying primitive.
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(c(-1, 0, 1))
-  tanh(x)
-})
-#> AnvilTensor
+x <- nv_array(c(-1, 0, 1))
+tanh(x)
+#> AnvlArray
 #>  -0.7616
 #>   0.0000
 #>   0.7616

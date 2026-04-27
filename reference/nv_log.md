@@ -13,27 +13,25 @@ nv_log(operand)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md)  
 Has the same shape and data type as the input.
 
 ## See also
 
-[`nvl_log()`](https://r-xla.github.io/anvil/reference/nvl_log.md) for
+[`prim_log()`](https://r-xla.github.io/anvl/reference/prim_log.md) for
 the underlying primitive.
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(c(1, 2.718, 7.389))
-  log(x)
-})
-#> AnvilTensor
+x <- nv_array(c(1, 2.718, 7.389))
+log(x)
+#> AnvlArray
 #>  0.0000
 #>  0.9999
 #>  2.0000

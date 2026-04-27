@@ -33,29 +33,27 @@ Final state after the loop terminates (same structure as `init`).
 
 ## See also
 
-[`nvl_while()`](https://r-xla.github.io/anvil/reference/nvl_while.md)
+[`prim_while()`](https://r-xla.github.io/anvl/reference/prim_while.md)
 for the underlying primitive.
 
 ## Examples
 
 ``` r
-jit_eval({
-  nv_while(
-    init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
-    cond = function(i, total) i < 5L,
-    body = function(i, total) list(
-      i = i + 1L,
-      total = total + i
-    )
+nv_while(
+  init = list(i = nv_scalar(0L), total = nv_scalar(0L)),
+  cond = function(i, total) i < 5L,
+  body = function(i, total) list(
+    i = i + 1L,
+    total = total + i
   )
-})
+)
 #> $i
-#> AnvilTensor
+#> AnvlArray
 #>  5
 #> [ CPUi32{} ] 
 #> 
 #> $total
-#> AnvilTensor
+#> AnvlArray
 #>  10
 #> [ CPUi32{} ] 
 #> 

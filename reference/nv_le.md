@@ -13,34 +13,32 @@ nv_le(lhs, rhs)
 
 - lhs, rhs:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
   Left and right operand. Operands are [promoted to a common data
-  type](https://r-xla.github.io/anvil/reference/nv_promote_to_common.md).
+  type](https://r-xla.github.io/anvl/reference/nv_promote_to_common.md).
   Scalars are
-  [broadcast](https://r-xla.github.io/anvil/reference/nv_broadcast_scalars.md)
+  [broadcast](https://r-xla.github.io/anvl/reference/nv_broadcast_scalars.md)
   to the shape of the other operand.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md)  
 Has the same shape as the inputs and boolean data type.
 
 ## See also
 
-[`nvl_le()`](https://r-xla.github.io/anvil/reference/nvl_le.md) for the
+[`prim_le()`](https://r-xla.github.io/anvl/reference/prim_le.md) for the
 underlying primitive.
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
-  y <- nv_tensor(c(3, 2, 1))
-  x <= y
-})
-#> AnvilTensor
+x <- nv_array(c(1, 2, 3))
+y <- nv_array(c(3, 2, 1))
+x <= y
+#> AnvlArray
 #>  1
 #>  1
 #>  0
-#> [ CPUi1{3} ] 
+#> [ CPUbool{3} ] 
 ```

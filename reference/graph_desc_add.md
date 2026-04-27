@@ -1,31 +1,29 @@
 # Add a Primitive Call to a Graph Descriptor
 
-Add a primitive call to a graph descriptor.
+Add a primitive call to a graph descriptor. Inside a primitive body
+created with
+[`new_primitive()`](https://r-xla.github.io/anvl/reference/new_primitive.md),
+pass the lexically-bound `self` as the primitive argument.
 
 ## Usage
 
 ``` r
-graph_desc_add(
-  prim,
-  args,
-  params = list(),
-  infer_fn,
-  desc = NULL,
-  debug_mode = NULL
-)
+graph_desc_add(primitive, args, params = list(), infer_fn, desc = NULL)
 ```
 
 ## Arguments
 
-- prim:
+- primitive:
 
-  ([`AnvilPrimitive`](https://r-xla.github.io/anvil/reference/AnvilPrimitive.md))  
-  The primitive to add.
+  ([`AnvlPrimitive`](https://r-xla.github.io/anvl/reference/AnvlPrimitive.md)
+  \| `JitPrimitive`)  
+  The primitive the call is for. A `JitPrimitive` is accepted and
+  unwrapped to its underlying `AnvlPrimitive` metadata.
 
 - args:
 
   (`list` of
-  [`GraphNode`](https://r-xla.github.io/anvil/reference/GraphNode.md))  
+  [`GraphNode`](https://r-xla.github.io/anvl/reference/GraphNode.md))  
   The arguments to the primitive.
 
 - params:
@@ -37,23 +35,17 @@ graph_desc_add(
 
   (`function`)  
   The inference function to use. Must output a list of
-  [`AbstractTensor`](https://r-xla.github.io/anvil/reference/AbstractTensor.md)s.
+  [`AbstractArray`](https://r-xla.github.io/anvl/reference/AbstractArray.md)s.
 
 - desc:
 
-  ([`GraphDescriptor`](https://r-xla.github.io/anvil/reference/GraphDescriptor.md)
+  ([`GraphDescriptor`](https://r-xla.github.io/anvl/reference/GraphDescriptor.md)
   \| `NULL`)  
   The graph descriptor to add the primitive call to. Uses the [current
-  descriptor](https://r-xla.github.io/anvil/reference/dot-current_descriptor.md)
+  descriptor](https://r-xla.github.io/anvl/reference/dot-current_descriptor.md)
   if `NULL`.
-
-- debug_mode:
-
-  (`logical(1)`)  
-  Whether to just perform abstract evaluation for debugging.
 
 ## Value
 
-(`list` of `Box`)  
-Either `GraphBox` objects or `DebugBox` objects, depending on
-`debug_mode`.
+(`list` of
+[`GraphBox`](https://r-xla.github.io/anvl/reference/GraphBox.md))

@@ -1,9 +1,7 @@
 # Primitive Call
 
 Call of a primitive in an
-[`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md)
-Note that a primitive call also be a call into another graph
-(`p_graph`).
+[`AnvlGraph`](https://r-xla.github.io/anvl/reference/AnvlGraph.md).
 
 ## Usage
 
@@ -15,13 +13,13 @@ PrimitiveCall(primitive, inputs, params, outputs)
 
 - primitive:
 
-  (`AnvilPrimitive`)  
+  (`AnvlPrimitive`)  
   The function.
 
 - inputs:
 
   (`list(GraphValue)`)  
-  The (tensor) inputs to the primitive.
+  The (array) inputs to the primitive.
 
 - params:
 
@@ -31,7 +29,7 @@ PrimitiveCall(primitive, inputs, params, outputs)
 - outputs:
 
   (`list(GraphValue)`)  
-  The (tensor) outputs of the primitive.
+  The (array) outputs of the primitive.
 
 ## Value
 

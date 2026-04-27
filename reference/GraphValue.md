@@ -1,8 +1,8 @@
 # Graph Value
 
 Value in an
-[`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md).
-This is a mutable class.
+[`AnvlGraph`](https://r-xla.github.io/anvl/reference/AnvlGraph.md). This
+is a mutable class.
 
 ## Usage
 
@@ -14,7 +14,7 @@ GraphValue(aval)
 
 - aval:
 
-  ([`AbstractTensor`](https://r-xla.github.io/anvil/reference/AbstractTensor.md))  
+  ([`AbstractArray`](https://r-xla.github.io/anvl/reference/AbstractArray.md))  
   The abstract value of the variable.
 
 ## Value

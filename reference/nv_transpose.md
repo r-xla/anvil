@@ -1,6 +1,6 @@
 # Transpose
 
-Permutes the dimensions of a tensor. You can also use
+Permutes the dimensions of an array. You can also use
 [`t()`](https://rdrr.io/r/base/t.html) for matrices.
 
 ## Usage
@@ -8,7 +8,7 @@ Permutes the dimensions of a tensor. You can also use
 ``` r
 nv_transpose(x, permutation = NULL)
 
-# S3 method for class 'AnvilBox'
+# S3 method for class 'AnvlBox'
 t(x)
 ```
 
@@ -16,8 +16,8 @@ t(x)
 
 - x:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Tensor to transpose.
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
+  Array to transpose.
 
 - permutation:
 
@@ -27,22 +27,20 @@ t(x)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md)  
 Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
 
 ## See also
 
-[`nvl_transpose()`](https://r-xla.github.io/anvil/reference/nvl_transpose.md)
+[`prim_transpose()`](https://r-xla.github.io/anvl/reference/prim_transpose.md)
 for the underlying primitive.
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(matrix(1:6, nrow = 2))
-  t(x)
-})
-#> AnvilTensor
+x <- nv_array(matrix(1:6, nrow = 2))
+t(x)
+#> AnvlArray
 #>  1 2
 #>  3 4
 #>  5 6

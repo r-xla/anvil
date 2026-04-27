@@ -1,6 +1,6 @@
 # Negation
 
-Negates a tensor element-wise. You can also use the unary `-` operator.
+Negates an array element-wise. You can also use the unary `-` operator.
 
 ## Usage
 
@@ -12,27 +12,25 @@ nv_negate(operand)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md)  
 Has the same shape and data type as the input.
 
 ## See also
 
-[`nvl_negate()`](https://r-xla.github.io/anvil/reference/nvl_negate.md)
+[`prim_negate()`](https://r-xla.github.io/anvl/reference/prim_negate.md)
 for the underlying primitive.
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(c(1, -2, 3))
-  -x
-})
-#> AnvilTensor
+x <- nv_array(c(1, -2, 3))
+-x
+#> AnvlArray
 #>  -1
 #>   2
 #>  -3

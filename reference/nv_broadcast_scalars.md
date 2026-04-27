@@ -1,7 +1,7 @@
 # Broadcast Scalars to Common Shape
 
-Broadcast scalar tensors to match the shape of non-scalar tensors. All
-non-scalar tensors must have the same shape.
+Broadcast scalar arrays to match the shape of non-scalar arrays. All
+non-scalar arrays must have the same shape.
 
 ## Usage
 
@@ -13,36 +13,34 @@ nv_broadcast_scalars(...)
 
 - ...:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Tensors to broadcast. Scalars will be broadcast to the common
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
+  Arrays to broadcast. Scalars will be broadcast to the common
   non-scalar shape.
 
 ## Value
 
 ([`list()`](https://rdrr.io/r/base/list.html) of
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-List of broadcasted tensors.
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
+List of broadcasted arrays.
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
-  # scalar 1 is broadcast to shape [3]
-  nv_broadcast_scalars(x, 1)
-})
+x <- nv_array(c(1, 2, 3))
+# scalar 1 is broadcast to shape [3]
+nv_broadcast_scalars(x, nv_scalar(1))
 #> [[1]]
-#> AnvilTensor
+#> AnvlArray
 #>  1
 #>  2
 #>  3
 #> [ CPUf32{3} ] 
 #> 
 #> [[2]]
-#> AnvilTensor
+#> AnvlArray
 #>  1
 #>  1
 #>  1
-#> [ CPUf32?{3} ] 
+#> [ CPUf32{3} ] 
 #> 
 ```

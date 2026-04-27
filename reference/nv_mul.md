@@ -1,6 +1,6 @@
 # Multiplication
 
-Multiplies two tensors element-wise. You can also use the `*` operator.
+Multiplies two arrays element-wise. You can also use the `*` operator.
 
 ## Usage
 
@@ -12,32 +12,30 @@ nv_mul(lhs, rhs)
 
 - lhs, rhs:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
   Left and right operand. Operands are [promoted to a common data
-  type](https://r-xla.github.io/anvil/reference/nv_promote_to_common.md).
+  type](https://r-xla.github.io/anvl/reference/nv_promote_to_common.md).
   Scalars are
-  [broadcast](https://r-xla.github.io/anvil/reference/nv_broadcast_scalars.md)
+  [broadcast](https://r-xla.github.io/anvl/reference/nv_broadcast_scalars.md)
   to the shape of the other operand.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md)  
 Has the same shape and the promoted common data type of the inputs.
 
 ## See also
 
-[`nvl_mul()`](https://r-xla.github.io/anvil/reference/nvl_mul.md) for
+[`prim_mul()`](https://r-xla.github.io/anvl/reference/prim_mul.md) for
 the underlying primitive.
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
-  y <- nv_tensor(c(4, 5, 6))
-  x * y
-})
-#> AnvilTensor
+x <- nv_array(c(1, 2, 3))
+y <- nv_array(c(4, 5, 6))
+x * y
+#> AnvlArray
 #>   4
 #>  10
 #>  18

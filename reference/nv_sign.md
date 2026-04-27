@@ -13,27 +13,25 @@ nv_sign(operand)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md)  
 Has the same shape and data type as the input.
 
 ## See also
 
-[`nvl_sign()`](https://r-xla.github.io/anvil/reference/nvl_sign.md) for
+[`prim_sign()`](https://r-xla.github.io/anvl/reference/prim_sign.md) for
 the underlying primitive.
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(c(-3, 0, 5))
-  sign(x)
-})
-#> AnvilTensor
+x <- nv_array(c(-3, 0, 5))
+sign(x)
+#> AnvlArray
 #>  -1
 #>   0
 #>   1

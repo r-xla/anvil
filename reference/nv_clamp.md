@@ -13,17 +13,17 @@ nv_clamp(min_val, operand, max_val)
 
 - min_val, max_val:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
   Minimum and maximum values (scalar or same shape as `operand`).
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md)  
 Has the same shape and data type as the input.
 
 ## Details
@@ -33,17 +33,15 @@ to broadcast manually.
 
 ## See also
 
-[`nvl_clamp()`](https://r-xla.github.io/anvil/reference/nvl_clamp.md)
+[`prim_clamp()`](https://r-xla.github.io/anvl/reference/prim_clamp.md)
 for the underlying primitive.
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(c(-1, 0.5, 2))
-  nv_clamp(nv_scalar(0), x, nv_scalar(1))
-})
-#> AnvilTensor
+x <- nv_array(c(-1, 0.5, 2))
+nv_clamp(nv_scalar(0), x, nv_scalar(1))
+#> AnvlArray
 #>  0.0000
 #>  0.5000
 #>  1.0000

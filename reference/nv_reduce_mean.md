@@ -12,7 +12,7 @@ nv_reduce_mean(operand, dims, drop = TRUE)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
   Operand.
 
 - dims:
@@ -27,7 +27,7 @@ nv_reduce_mean(operand, dims, drop = TRUE)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md)  
 Has the same data type as the input. When `drop = TRUE`, the reduced
 dimensions are removed. When `drop = FALSE`, the reduced dimensions are
 set to 1.
@@ -39,16 +39,14 @@ product of the reduced dimension sizes.
 
 ## See also
 
-[`nv_reduce_sum()`](https://r-xla.github.io/anvil/reference/nv_reduce_sum.md)
+[`nv_reduce_sum()`](https://r-xla.github.io/anvl/reference/nv_reduce_sum.md)
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(matrix(1:6, nrow = 2))
-  nv_reduce_mean(x, dims = 1L)
-})
-#> AnvilTensor
+x <- nv_array(matrix(1:6, nrow = 2))
+nv_reduce_mean(x, dims = 1L)
+#> AnvlArray
 #>  1.5000
 #>  3.5000
 #>  5.5000

@@ -1,7 +1,7 @@
 # Metropolis-Hastings
 
 In this vignette, we show how to implement a random-walk
-Metropolis-Hastings sampler using {anvil} (Hastings 1970).
+Metropolis-Hastings sampler using {anvl} (Hastings 1970).
 Metropolis-Hastings is a well known MCMC algorithm that generates
 samples from a target distribution by proposing moves and accepting or
 rejecting them based on the density ratio.
@@ -24,7 +24,7 @@ will use later to verify the correctness of our implementation. We set
 the hyperparameter \\b\\ to 0.01.
 
 ``` r
-library(anvil)
+library(anvl)
 b_param <- 0.01
 ```
 
@@ -54,8 +54,8 @@ The log-density of the banana distribution (up to a constant) is:
 \\\log p(\theta_1, \theta_2) = -\frac{\theta_1^2}{200} -
 \frac{\bigl(\theta_2 - b\theta_1^2 + 100b\bigr)^2}{2}\\
 
-We implement this in {anvil} and convert the parameter to an `f64`
-tensor for maximal precision.
+We implement this in {anvl} and convert the parameter to an `f64` array
+for maximal precision.
 
 ``` r
 b_t <- nv_scalar(b_param, dtype = "f64")
@@ -70,8 +70,8 @@ log_density <- function(theta, b) {
 There are a few things to note in the code below:
 
 1.  the accept/reject decision uses the primitive
-    [`nv_if()`](https://r-xla.github.io/anvil/reference/nv_if.md) and
-    not a native R conditional.
+    [`nv_if()`](https://r-xla.github.io/anvl/reference/nv_if.md) and not
+    a native R conditional.
 2.  we sample a scalar uniform random number by setting
     `shape = integer()`
 3.  the RNG state is passed around explicitly.
@@ -91,14 +91,14 @@ mh_step <- function(theta, rng_state, b, proposal_sd) {
   u <- rng_out[[2L]]
 
   accept <- log(u) < log_accept
-  new_theta <- nv_if(accept, proposal, theta)
+  new_theta <- nv_if(accept, \() proposal, \() theta)
   list(theta = new_theta, rng_state = rng_state)
 }
 ```
 
 Because subsequent samples are autocorrelated, we thin the output by
 keeping every nth sample. We implement this loop via
-[`nv_while()`](https://r-xla.github.io/anvil/reference/nv_while.md)
+[`nv_while()`](https://r-xla.github.io/anvl/reference/nv_while.md)
 below, avoiding R loop overhead.
 
 ``` r
@@ -123,8 +123,8 @@ n_samples <- 20000L
 n_warmup <- 5000L
 thin <- nv_scalar(200L)
 
-theta <- nv_tensor(c(0, 0), dtype = "f64")
-rng_state <- nv_rng_state(seed = 42L)
+theta <- nv_array(c(0, 0), dtype = "f64")
+rng_state <- nv_rng_state(42L)
 proposal_sd <- nv_scalar(3, dtype = "f64")
 
 result <- mh_sample(theta, rng_state, b_t, proposal_sd, thin)
@@ -171,8 +171,8 @@ The banana distribution has known analytical moments. Since \\\theta_1
 &nbsp;
 
     ##   Parameter     MH_Mean True_Mean    MH_SD   True_SD
-    ## 1    theta1 0.032508472         0 9.977817 10.000000
-    ## 2    theta2 0.008427101         0 1.720547  1.732051
+    ## 1    theta1  0.03383964         0 9.928612 10.000000
+    ## 2    theta2 -0.01169006         0 1.703516  1.732051
 
 The Metropolis-Hastings estimates closely match the analytical moments,
 confirming the correctness of our implementation.

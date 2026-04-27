@@ -1,7 +1,7 @@
 # Concatenate
 
-Concatenates tensors along a dimension. Operands are promoted to a
-common data type and scalars are broadcast before concatenation.
+Concatenates arrays along a dimension. Operands are promoted to a common
+data type and scalars are broadcast before concatenation.
 
 ## Usage
 
@@ -13,8 +13,8 @@ nv_concatenate(..., dimension = NULL)
 
 - ...:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
-  Tensors to concatenate. Must have the same shape except along
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
+  Arrays to concatenate. Must have the same shape except along
   `dimension`.
 
 - dimension:
@@ -25,24 +25,22 @@ nv_concatenate(..., dimension = NULL)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md)  
 Has the common data type and a shape matching the inputs in all
 dimensions except `dimension`, which is the sum of input sizes.
 
 ## See also
 
-[`nvl_concatenate()`](https://r-xla.github.io/anvil/reference/nvl_concatenate.md)
+[`prim_concatenate()`](https://r-xla.github.io/anvl/reference/prim_concatenate.md)
 for the underlying primitive.
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
-  y <- nv_tensor(c(4, 5, 6))
-  nv_concatenate(x, y)
-})
-#> AnvilTensor
+x <- nv_array(c(1, 2, 3))
+y <- nv_array(c(4, 5, 6))
+nv_concatenate(x, y)
+#> AnvlArray
 #>  1
 #>  2
 #>  3

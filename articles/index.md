@@ -2,18 +2,27 @@
 
 ### All vignettes
 
-- [Get Started](https://r-xla.github.io/anvil/articles/anvil.md):
-- [Debugging](https://r-xla.github.io/anvil/articles/debugging.md):
-- [Internals](https://r-xla.github.io/anvil/articles/internals.md):
-- [Logistic
-  Regression](https://r-xla.github.io/anvil/articles/logistic-regression.md):
-- [Metropolis-Hastings](https://r-xla.github.io/anvil/articles/metropolis-hastings.md):
+- [Get Started](https://r-xla.github.io/anvl/articles/anvl.md):
+- [Efficiency](https://r-xla.github.io/anvl/articles/efficiency.md):
+- [Extending the
+  API](https://r-xla.github.io/anvl/articles/extending_api.md):
 - [Adding a
-  Primitive](https://r-xla.github.io/anvil/articles/new_primitive.md):
+  Primitive](https://r-xla.github.io/anvl/articles/extending_primitive.md):
+- [FAQ](https://r-xla.github.io/anvl/articles/faq.md):
+- [Gaussian
+  Process](https://r-xla.github.io/anvl/articles/gaussian-process.md):
+- [Installation](https://r-xla.github.io/anvl/articles/installation.md):
+- [Internals](https://r-xla.github.io/anvl/articles/internals.md):
+- [JIT Deep Dive](https://r-xla.github.io/anvl/articles/jit.md):
+- [Logistic
+  Regression](https://r-xla.github.io/anvl/articles/logistic-regression.md):
+- [Metropolis-Hastings](https://r-xla.github.io/anvl/articles/metropolis-hastings.md):
 - [Primitives
-  Reference](https://r-xla.github.io/anvil/articles/primitives.md):
+  Reference](https://r-xla.github.io/anvl/articles/primitives.md):
 - [Random Number
-  Generation](https://r-xla.github.io/anvil/articles/random-numbers.md):
-- [Subsetting](https://r-xla.github.io/anvil/articles/subsetting.md):
+  Generation](https://r-xla.github.io/anvl/articles/random-numbers.md):
+- [Static Shape
+  Restriction](https://r-xla.github.io/anvl/articles/static_shapes.md):
+- [Subsetting](https://r-xla.github.io/anvl/articles/subsetting.md):
 - [Type
-  Promotion](https://r-xla.github.io/anvil/articles/type-promotion.md):
+  Promotion](https://r-xla.github.io/anvl/articles/type-promotion.md):

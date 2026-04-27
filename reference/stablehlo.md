@@ -1,10 +1,10 @@
 # Lower a graph to StableHLO
 
 Converts a traced
-[`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md)
-into the StableHLO intermediate representation (IR). Each graph
-operation is translated to its corresponding StableHLO op. The result
-can be serialized to MLIR text via
+[`AnvlGraph`](https://r-xla.github.io/anvl/reference/AnvlGraph.md) into
+the StableHLO intermediate representation (IR). Each graph operation is
+translated to its corresponding StableHLO op. The result can be
+serialized to MLIR text via
 [`stablehlo::repr()`](https://r-xla.github.io/stablehlo/reference/repr.html)
 and subsequently compiled to an XLA executable with
 [`pjrt::pjrt_compile()`](https://r-xla.github.io/pjrt/reference/pjrt_compile.html).
@@ -13,8 +13,8 @@ The rules for translating to stablehlo are stored in
 `$rules[["stablehlo"]]` of the primitives.
 
 This is a low-level function; most users should use
-[`jit()`](https://r-xla.github.io/anvil/reference/jit.md) or
-[`xla()`](https://r-xla.github.io/anvil/reference/xla.md) instead.
+[`jit()`](https://r-xla.github.io/anvl/reference/jit.md) or
+[`xla()`](https://r-xla.github.io/anvl/reference/xla.md) instead.
 
 ## Usage
 
@@ -26,9 +26,9 @@ stablehlo(graph, constants_as_inputs = TRUE, env = NULL, donate = character())
 
 - graph:
 
-  ([`AnvilGraph`](https://r-xla.github.io/anvil/reference/AnvilGraph.md))  
+  ([`AnvlGraph`](https://r-xla.github.io/anvl/reference/AnvlGraph.md))  
   The graph to lower (e.g. produced by
-  [`trace_fn()`](https://r-xla.github.io/anvil/reference/trace_fn.md)).
+  [`trace_fn()`](https://r-xla.github.io/anvl/reference/trace_fn.md)).
 
 - constants_as_inputs:
 
@@ -60,23 +60,23 @@ A `list` of length 2:
   [`stablehlo::Func`](https://r-xla.github.io/stablehlo/reference/Func.html)
 
 - The list of
-  [`GraphValue`](https://r-xla.github.io/anvil/reference/GraphValue.md)s
+  [`GraphValue`](https://r-xla.github.io/anvl/reference/GraphValue.md)s
   holding
-  [`ConcreteTensor`](https://r-xla.github.io/anvil/reference/ConcreteTensor.md)s.
+  [`ConcreteArray`](https://r-xla.github.io/anvl/reference/ConcreteArray.md)s.
 
 ## See also
 
-[`trace_fn()`](https://r-xla.github.io/anvil/reference/trace_fn.md),
-[`jit()`](https://r-xla.github.io/anvil/reference/jit.md),
-[`xla()`](https://r-xla.github.io/anvil/reference/xla.md)
+[`trace_fn()`](https://r-xla.github.io/anvl/reference/trace_fn.md),
+[`jit()`](https://r-xla.github.io/anvl/reference/jit.md),
+[`xla()`](https://r-xla.github.io/anvl/reference/xla.md)
 
 ## Examples
 
 ``` r
-x <- nv_tensor(c(1, 2))
-graph <- trace_fn(function(y) y + x, list(y = nv_aten("f32", shape = c())))
+x <- nv_array(c(1, 2))
+graph <- trace_fn(function(y) y + x, list(y = nv_aval("f32", shape = c())))
 graph
-#> <AnvilGraph>
+#> <AnvlGraph>
 #>   Inputs:
 #>     %x1: f32[]
 #>   Constants:
@@ -92,13 +92,13 @@ stablehlo(graph)
 #> %2 = "stablehlo.broadcast_in_dim" (%1) {
 #> broadcast_dimensions = array<i64>
 #> }: (tensor<f32>) -> (tensor<2xf32>)
-#> %3 = "stablehlo.add" (%2, %0): (tensor<2xf32>, tensor<2xf32>) -> (tensor<2xf32>)
-#> "func.return"(%3): (tensor<2xf32>) -> ()
+#> %3 = stablehlo.add %2, %0 : tensor<2xf32>
+#> return %3 : tensor<2xf32>
 #> }
 #> 
 #> [[2]]
 #> [[2]][[1]]
-#> GraphValue(ConcreteTensor(f32, (2))) 
+#> GraphValue(ConcreteArray(f32, (2))) 
 #> 
 #> 
 ```

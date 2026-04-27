@@ -1,6 +1,6 @@
 # Pad
 
-Pads a tensor with a given value at the edges and optionally between
+Pads an array with a given value at the edges and optionally between
 elements.
 
 ## Usage
@@ -19,12 +19,12 @@ nv_pad(
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
   Operand.
 
 - padding_value:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
   Scalar value to use for padding. Must have the same dtype as
   `operand`.
 
@@ -46,22 +46,20 @@ nv_pad(
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md)  
 Has the same data type as `operand`.
 
 ## See also
 
-[`nvl_pad()`](https://r-xla.github.io/anvil/reference/nvl_pad.md) for
+[`prim_pad()`](https://r-xla.github.io/anvl/reference/prim_pad.md) for
 the underlying primitive.
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(c(1, 2, 3))
-  nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
-})
-#> AnvilTensor
+x <- nv_array(c(1, 2, 3))
+nv_pad(x, nv_scalar(0), edge_padding_low = 2L, edge_padding_high = 1L)
+#> AnvlArray
 #>  0
 #>  0
 #>  1

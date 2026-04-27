@@ -13,27 +13,25 @@ nv_exp(operand)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
   Operand.
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md)  
 Has the same shape and data type as the input.
 
 ## See also
 
-[`nvl_exp()`](https://r-xla.github.io/anvil/reference/nvl_exp.md) for
+[`prim_exp()`](https://r-xla.github.io/anvl/reference/prim_exp.md) for
 the underlying primitive.
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(c(0, 1, 2))
-  exp(x)
-})
-#> AnvilTensor
+x <- nv_array(c(0, 1, 2))
+exp(x)
+#> AnvlArray
 #>  1.0000
 #>  2.7183
 #>  7.3891

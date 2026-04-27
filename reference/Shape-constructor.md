@@ -1,6 +1,6 @@
 # Create a Shape object
 
-Constructs a `Shape` representing tensor dimensions.
+Constructs a `Shape` representing array dimensions.
 
 ## Usage
 
@@ -21,7 +21,7 @@ A `Shape` object.
 
 ## See also
 
-[`shape()`](https://r-xla.github.io/anvil/reference/shape.md),
+[`shape()`](https://r-xla.github.io/anvl/reference/shape.md),
 [`stablehlo::Shape()`](https://r-xla.github.io/stablehlo/reference/Shape.html)
 
 ## Examples

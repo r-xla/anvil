@@ -1,6 +1,6 @@
-# Check if an object is a TensorDataType
+# Check if an object is a DataType
 
-Tests whether `x` is a `TensorDataType` object.
+Tests whether `x` is a `DataType` object.
 
 ## Usage
 
@@ -20,8 +20,8 @@ is_dtype(x)
 
 ## See also
 
-[`as_dtype()`](https://r-xla.github.io/anvil/reference/as_dtype.md),
-[`stablehlo::is_dtype()`](https://r-xla.github.io/stablehlo/reference/is_dtype.html)
+[`as_dtype()`](https://r-xla.github.io/anvl/reference/as_dtype.md),
+[`tengen::is_dtype()`](https://r-xla.github.io/tengen/reference/is_dtype.html)
 
 ## Examples
 

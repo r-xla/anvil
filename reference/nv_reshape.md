@@ -1,6 +1,6 @@
 # Reshape
 
-Reshapes a tensor to a new shape without changing the underlying data.
+Reshapes an array to a new shape without changing the underlying data.
 Returns the input unchanged if it already has the target shape.
 
 ## Usage
@@ -13,7 +13,7 @@ nv_reshape(operand, shape)
 
 - operand:
 
-  ([`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md))  
+  ([`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md))  
   Operand.
 
 - shape:
@@ -23,7 +23,7 @@ nv_reshape(operand, shape)
 
 ## Value
 
-[`tensorish`](https://r-xla.github.io/anvil/reference/tensorish.md)  
+[`arrayish`](https://r-xla.github.io/anvl/reference/arrayish.md)  
 Has the given `shape` and the same data type as `operand`.
 
 ## Details
@@ -33,17 +33,15 @@ order.
 
 ## See also
 
-[`nvl_reshape()`](https://r-xla.github.io/anvil/reference/nvl_reshape.md)
+[`prim_reshape()`](https://r-xla.github.io/anvl/reference/prim_reshape.md)
 for the underlying primitive.
 
 ## Examples
 
 ``` r
-jit_eval({
-  x <- nv_tensor(1:6)
-  nv_reshape(x, c(2, 3))
-})
-#> AnvilTensor
+x <- nv_array(1:6)
+nv_reshape(x, c(2, 3))
+#> AnvlArray
 #>  1 2 3
 #>  4 5 6
 #> [ CPUi32{2,3} ] 

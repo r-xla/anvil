@@ -1,4 +1,4 @@
 # License
 
     YEAR: 2025
-    COPYRIGHT HOLDER: anvil authors
+    COPYRIGHT HOLDER: anvl authors

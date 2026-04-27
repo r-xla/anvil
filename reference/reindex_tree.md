@@ -3,7 +3,7 @@
 Reassigns leaf indices so they form a contiguous sequence starting from
 the current counter value. This is used internally after filtering nodes
 from a tree (e.g. via
-[`filter_list_node()`](https://r-xla.github.io/anvil/reference/filter_list_node.md))
+[`filter_list_node()`](https://r-xla.github.io/anvl/reference/filter_list_node.md))
 to ensure leaf indices still map correctly to positions in a flat list.
 Not intended for direct use.
 

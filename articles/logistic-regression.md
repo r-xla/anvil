@@ -26,7 +26,7 @@ object is a contingency table, so we first expand it into individual
 observations.
 
 ``` r
-library(anvil)
+library(anvl)
 set.seed(42)
 
 # Expand contingency table to individual observations
@@ -66,11 +66,11 @@ summary(titanic)
 
 The general survival rate was 32.30%.
 
-Now we convert the data to `AnvilTensor`s.
+Now we convert the data to `AnvlArray`s.
 
 ``` r
-X_tensor <- nv_tensor(X, dtype = "f32")
-y_tensor <- nv_tensor(y, dtype = "f32", shape = c(n, 1L))
+X_tensor <- nv_array(X, dtype = "f32")
+y_tensor <- nv_array(y, dtype = "f32", shape = c(n, 1L))
 ```
 
 ## Model
@@ -112,8 +112,8 @@ model_loss <- function(X, y, beta, alpha) {
 }
 ```
 
-Using {anvil}’s automatic differentiation, we can obtain the gradients
-of the loss with respect to the model parameters.
+Using {anvl}’s automatic differentiation, we can obtain the gradients of
+the loss with respect to the model parameters.
 
 ``` r
 model_loss_grad <- gradient(model_loss, wrt = c("beta", "alpha"))
@@ -122,10 +122,10 @@ model_loss_grad <- gradient(model_loss, wrt = c("beta", "alpha"))
 ## Training
 
 We will implement the training loop using
-[`nv_while()`](https://r-xla.github.io/anvil/reference/nv_while.md).
-This keeps the entire training loop within a single compiled function,
-which is more efficient than repeatedly calling a JIT-compiled function
-from R, especially for small models.
+[`nv_while()`](https://r-xla.github.io/anvl/reference/nv_while.md). This
+keeps the entire training loop within a single compiled function, which
+is more efficient than repeatedly calling a JIT-compiled function from
+R, especially for small models.
 
 ``` r
 fit_logreg <- jit(function(X, y, beta, alpha, n_epochs, lr) {
@@ -149,7 +149,7 @@ We initialize the parameters and train the model with a single function
 call.
 
 ``` r
-beta_init <- nv_tensor(rnorm(p), dtype = "f32", shape = c(p, 1L))
+beta_init <- nv_array(rnorm(p), dtype = "f32", shape = c(p, 1L))
 alpha_init <- nv_scalar(0, dtype = "f32")
 
 result <- fit_logreg(
@@ -163,7 +163,7 @@ result
 ```
 
     ## $beta
-    ## AnvilTensor
+    ## AnvlArray
     ##  -0.3419
     ##  -0.8300
     ##  -0.4206
@@ -172,7 +172,7 @@ result
     ## [ CPUf32{5,1} ] 
     ## 
     ## $alpha
-    ## AnvilTensor
+    ## AnvlArray
     ##  -0.8538
     ## [ CPUf32{} ]
 
@@ -185,7 +185,7 @@ glm_fit <- glm(y ~ X, family = binomial)
 
 Now let’s compare the coefficients:
 
-    ##     Parameter      anvil        glm
+    ##     Parameter       anvl        glm
     ## 1 (Intercept) -0.8538059 -0.8538077
     ## 2    Class2nd -0.3418888 -0.3418906
     ## 3    Class3rd -0.8299901 -0.8299946

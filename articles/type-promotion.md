@@ -2,20 +2,20 @@
 
 ## Type Promotion Rules
 
-When combining tensors of different types (e.g., adding an `f32` to an
-`i32`), {anvil} needs to determine a common type. For example, below we
+When combining arrays of different types (e.g., adding an `f32` to an
+`i32`), {anvl} needs to determine a common type. For example, below we
 are adding an `f32` to an `f64`, where the former is promoted to the
 latter’s type, because it’s more expressive.
 
 ``` r
-library(anvil)
+library(anvl)
 jit(nv_add)(
   nv_scalar(1.0, dtype = "f32"),
   nv_scalar(1.0, dtype = "f64")
 )
 ```
 
-    ## AnvilTensor
+    ## AnvlArray
     ##  2
     ## [ CPUf64{} ]
 
@@ -24,7 +24,7 @@ execution on accelerators like GPUs, where one often wants speed instead
 of precision.
 
 The rules are defined by the
-[`common_dtype()`](https://r-xla.github.io/anvil/reference/common_dtype.md)
+[`common_dtype()`](https://r-xla.github.io/anvl/reference/common_dtype.md)
 function. It returns a [`list()`](https://rdrr.io/r/base/list.html) with
 two values: the common dtype and a flag indicating whether the result is
 ambiguous, which we will cover later.
@@ -43,9 +43,9 @@ common_dtype("i64", "f32")$dtype
 
 A table with the promotion rules is below.
 
-|      | i1   | i8  | i16 | i32 | i64 | ui8  | ui16 | ui32 | ui64 | f32 | f64 |
+|      | bool | i8  | i16 | i32 | i64 | ui8  | ui16 | ui32 | ui64 | f32 | f64 |
 |:-----|:-----|:----|:----|:----|:----|:-----|:-----|:-----|:-----|:----|:----|
-| i1   | i1   | i8  | i16 | i32 | i64 | ui8  | ui16 | ui32 | ui64 | f32 | f64 |
+| bool | i1   | i8  | i16 | i32 | i64 | ui8  | ui16 | ui32 | ui64 | f32 | f64 |
 | i8   | i8   | i8  | i16 | i32 | i64 | i16  | i32  | i64  | i64  | f32 | f64 |
 | i16  | i16  | i16 | i16 | i32 | i64 | i16  | i32  | i64  | i64  | f32 | f64 |
 | i32  | i32  | i32 | i32 | i32 | i64 | i32  | i32  | i64  | i64  | f32 | f64 |
@@ -61,7 +61,7 @@ Type promotion rules (row × column)
 
 ## Literals as Ambiguous Types
 
-Usually, the types in an {anvil} program can be deterministically
+Usually, the types in an {anvl} program can be deterministically
 inferred from the input types. The only case where this is not possible
 is when you use R literals. The default types for literals are as
 follows:
@@ -75,25 +75,25 @@ jit(\() list(1L, 1.0, TRUE))()
 ```
 
     ## [[1]]
-    ## AnvilTensor
+    ## AnvlArray
     ##  1
     ## [ CPUi32?{} ] 
     ## 
     ## [[2]]
-    ## AnvilTensor
+    ## AnvlArray
     ##  1
     ## [ CPUf32?{} ] 
     ## 
     ## [[3]]
-    ## AnvilTensor
+    ## AnvlArray
     ##  1
-    ## [ CPUi1{} ]
+    ## [ CPUbool{} ]
 
 However, because this is just a guess, they behave differently than
 known types during promotion. Therefore, the `common_dtype` function has
 two arguments indicating which of the data types are ambiguous. Below,
 the first type is a known `f64` and the second is an ambiguous `f32`.
-Within anvil, we denote the latter as `i32?`. The result is an `f64`,
+Within anvl, we denote the latter as `i32?`. The result is an `f64`,
 although we would promote to an `f64` if both were known. If both types
 are ambiguous, the result is generally the same as if both were known.
 
@@ -138,9 +138,9 @@ In both case, we promote the known type to the default type of the
 ambiguous type. The table below shows the promotion rules, where the
 rows are ambiguous and the columns are known.
 
-|      | i1   | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |
+|      | bool | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |
 |:-----|:-----|:----|:----|:----|:----|:----|:-----|:-----|:-----|:----|:----|
-| i1   | i1   | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |
+| bool | i1   | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |
 | i8   | i8   | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |
 | i16  | i16  | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |
 | i32  | i32  | i8  | i16 | i32 | i64 | ui8 | ui16 | ui32 | ui64 | f32 | f64 |
@@ -157,10 +157,9 @@ Promotion rules: ambiguous (row) × known (column)
 ## Creating Tensors with Different Ambiguity
 
 Both
-[`nv_scalar()`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
-and
-[`nv_tensor()`](https://r-xla.github.io/anvil/reference/AnvilTensor.md)
-create **non-ambiguous** tensors by default. You can explicitly control
+[`nv_scalar()`](https://r-xla.github.io/anvl/reference/AnvlArray.md) and
+[`nv_array()`](https://r-xla.github.io/anvl/reference/AnvlArray.md)
+create **non-ambiguous** arrays by default. You can explicitly control
 ambiguity using the `ambiguous` parameter:
 
 ``` r
@@ -178,14 +177,14 @@ ambiguous(s2)
     ## [1] TRUE
 
 ``` r
-t1 <- nv_tensor(c(1.0, 2.0, 3.0))
+t1 <- nv_array(c(1.0, 2.0, 3.0))
 ambiguous(t1)
 ```
 
     ## [1] FALSE
 
 ``` r
-t2 <- nv_tensor(c(1.0, 2.0, 3.0), ambiguous = TRUE)
+t2 <- nv_array(c(1.0, 2.0, 3.0), ambiguous = TRUE)
 ambiguous(t2)
 ```
 
@@ -204,7 +203,7 @@ f <- jit(function(x, y) {
 f(nv_scalar(TRUE), nv_scalar(2L, dtype = "i16"))
 ```
 
-    ## AnvilTensor
+    ## AnvlArray
     ##  4
     ## [ CPUi16{} ]
 

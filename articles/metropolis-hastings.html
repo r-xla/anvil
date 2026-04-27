@@ -5,7 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Metropolis-Hastings • anvil</title>
+<title>Metropolis-Hastings • anvl</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -24,9 +29,9 @@
 
     <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">anvil</a>
+    <a class="navbar-brand me-2" href="../index.html">anvl</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.9000</small>
+    <small class="nav-text text-default me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,29 +43,39 @@
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
 <li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/anvil.html">Get Started</a></li>
-    <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
-    <li><a class="dropdown-item" href="../articles/subsetting.html">Subsetting</a></li>
-    <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
-    <li><a class="dropdown-item" href="../articles/debugging.html">Debugging</a></li>
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-get-started" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Get started</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-get-started">
+<li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
+    <li><a class="dropdown-item" href="../articles/anvl.html">Get Started</a></li>
   </ul>
 </li>
 <li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-user-guide" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">User guide</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-user-guide">
+<li><a class="dropdown-item" href="../articles/jit.html">JIT Deep Dive</a></li>
+    <li><a class="dropdown-item" href="../articles/static_shapes.html">Static Shape Restriction</a></li>
+    <li><a class="dropdown-item" href="../articles/subsetting.html">Subsetting</a></li>
+    <li><a class="dropdown-item" href="../articles/random-numbers.html">Random Number Generation</a></li>
+    <li><a class="dropdown-item" href="../articles/type-promotion.html">Type Promotion</a></li>
+    <li><a class="dropdown-item" href="../articles/efficiency.html">Efficiency</a></li>
+    <li><a class="dropdown-item" href="../articles/faq.html">FAQ</a></li>
+  </ul>
+</li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-developers" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Developers</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-developers">
+<li><a class="dropdown-item" href="../articles/extending_primitive.html">Adding a Primitive</a></li>
+    <li><a class="dropdown-item" href="../articles/extending_primitive.html">Extending the API</a></li>
+    <li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
+    <li><a class="dropdown-item" href="../articles/primitives.html">Available Primitives</a></li>
+  </ul>
+</li>
+<li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-examples" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Examples</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-examples">
 <li><a class="dropdown-item" href="../articles/logistic-regression.html">Logistic Regression</a></li>
-    <li><a class="dropdown-item" href="../articles/mcmc.html">Hamiltonian Monte Carlo</a></li>
-  </ul>
-</li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-technical" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Technical</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-technical">
-<li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
-    <li><a class="dropdown-item" href="../articles/primitives.html">Primitives Overview</a></li>
-    <li><h6 class="dropdown-header" data-toc-skip>Extending</h6></li>
-    <li><a class="dropdown-item" href="../articles/contributing.html">Adding a Primitive</a></li>
+    <li><a class="dropdown-item" href="../articles/metropolis-hastings.html">Metropolis Hastings</a></li>
+    <li><a class="dropdown-item" href="../articles/gaussian-process.html">Gaussian Process</a></li>
   </ul>
 </li>
       </ul>
@@ -68,7 +83,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvil/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/r-xla/anvl/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
@@ -89,18 +104,17 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Metropolis-Hastings</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>Metropolis-Hastings</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvil/blob/main/vignettes/metropolis-hastings.Rmd" class="external-link"><code>vignettes/metropolis-hastings.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvl/blob/main/vignettes/metropolis-hastings.Rmd" class="external-link"><code>vignettes/metropolis-hastings.Rmd</code></a></small>
       <div class="d-none name"><code>metropolis-hastings.Rmd</code></div>
     </div>
 
     
     
 <p>In this vignette, we show how to implement a random-walk
-Metropolis-Hastings sampler using {anvil} <span class="citation">(Hastings 1970)</span>. Metropolis-Hastings is a well
+Metropolis-Hastings sampler using {anvl} <span class="citation">(Hastings 1970)</span>. Metropolis-Hastings is a well
 known MCMC algorithm that generates samples from a target distribution
 by proposing moves and accepting or rejecting them based on the density
 ratio.</p>
@@ -122,7 +136,7 @@ implementation. The distribution has known analytical moments which we
 will use later to verify the correctness of our implementation. We set
 the hyperparameter <span class="math inline">\(b\)</span> to 0.01.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvil/">anvil</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvl/">anvl</a></span><span class="op">)</span></span>
 <span><span class="va">b_param</span> <span class="op">&lt;-</span> <span class="fl">0.01</span></span></code></pre></div>
 <p><img src="metropolis-hastings_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="672"></p>
 </div>
@@ -156,10 +170,10 @@ need to know the log-density up to an additive constant.</p>
 <p><span class="math display">\[\log p(\theta_1, \theta_2) =
 -\frac{\theta_1^2}{200} - \frac{\bigl(\theta_2 - b\theta_1^2 +
 100b\bigr)^2}{2}\]</span></p>
-<p>We implement this in {anvil} and convert the parameter to an
-<code>f64</code> tensor for maximal precision.</p>
+<p>We implement this in {anvl} and convert the parameter to an
+<code>f64</code> array for maximal precision.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">b_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="va">b_param</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">b_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="va">b_param</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">log_density</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">theta</span>, <span class="va">b</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">theta1</span> <span class="op">&lt;-</span> <span class="va">theta</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
@@ -190,7 +204,7 @@ and not a native R conditional.</li>
 <span>  <span class="va">u</span> <span class="op">&lt;-</span> <span class="va">rng_out</span><span class="op">[[</span><span class="fl">2L</span><span class="op">]</span><span class="op">]</span></span>
 <span></span>
 <span>  <span class="va">accept</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">u</span><span class="op">)</span> <span class="op">&lt;</span> <span class="va">log_accept</span></span>
-<span>  <span class="va">new_theta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_if.html">nv_if</a></span><span class="op">(</span><span class="va">accept</span>, <span class="va">proposal</span>, <span class="va">theta</span><span class="op">)</span></span>
+<span>  <span class="va">new_theta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_if.html">nv_if</a></span><span class="op">(</span><span class="va">accept</span>, \<span class="op">(</span><span class="op">)</span> <span class="va">proposal</span>, \<span class="op">(</span><span class="op">)</span> <span class="va">theta</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>theta <span class="op">=</span> <span class="va">new_theta</span>, rng_state <span class="op">=</span> <span class="va">rng_state</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Because subsequent samples are autocorrelated, we thin the output by
@@ -199,7 +213,7 @@ keeping every nth sample. We implement this loop via
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mh_sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jit.html">jit</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">theta</span>, <span class="va">rng_state</span>, <span class="va">b</span>, <span class="va">proposal_sd</span>, <span class="va">thin</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_while.html">nv_while</a></span><span class="op">(</span></span>
-<span>    init <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>theta <span class="op">=</span> <span class="va">theta</span>, rng_state <span class="op">=</span> <span class="va">rng_state</span>, i <span class="op">=</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    init <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>theta <span class="op">=</span> <span class="va">theta</span>, rng_state <span class="op">=</span> <span class="va">rng_state</span>, i <span class="op">=</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    cond <span class="op">=</span> \<span class="op">(</span><span class="va">theta</span>, <span class="va">rng_state</span>, <span class="va">i</span><span class="op">)</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="va">thin</span>,</span>
 <span>    body <span class="op">=</span> \<span class="op">(</span><span class="va">theta</span>, <span class="va">rng_state</span>, <span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu">mh_step</span><span class="op">(</span><span class="va">theta</span>, <span class="va">rng_state</span>, <span class="va">b</span>, <span class="va">proposal_sd</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>i <span class="op">=</span> <span class="va">i</span> <span class="op">+</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span></span>
@@ -215,11 +229,11 @@ that we are passing around the RNG state explicitly.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">n_samples</span> <span class="op">&lt;-</span> <span class="fl">20000L</span></span>
 <span><span class="va">n_warmup</span> <span class="op">&lt;-</span> <span class="fl">5000L</span></span>
-<span><span class="va">thin</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">200L</span><span class="op">)</span></span>
+<span><span class="va">thin</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">200L</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">theta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_tensor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>
-<span><span class="va">rng_state</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_rng_state.html">nv_rng_state</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="fl">42L</span><span class="op">)</span></span>
-<span><span class="va">proposal_sd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvilTensor.html">nv_scalar</a></span><span class="op">(</span><span class="fl">3</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>
+<span><span class="va">theta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>
+<span><span class="va">rng_state</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_rng_state.html">nv_rng_state</a></span><span class="op">(</span><span class="fl">42L</span><span class="op">)</span></span>
+<span><span class="va">proposal_sd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_scalar</a></span><span class="op">(</span><span class="fl">3</span>, dtype <span class="op">=</span> <span class="st">"f64"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">mh_sample</span><span class="op">(</span><span class="va">theta</span>, <span class="va">rng_state</span>, <span class="va">b_t</span>, <span class="va">proposal_sd</span>, <span class="va">thin</span><span class="op">)</span></span>
 <span><span class="va">theta</span> <span class="op">&lt;-</span> <span class="va">result</span><span class="op">$</span><span class="va">theta</span></span>
@@ -264,8 +278,8 @@ successive draws are nearly independent:</p>
 </li>
 </ul>
 <pre><code><span><span class="co">##   Parameter     MH_Mean True_Mean    MH_SD   True_SD</span></span>
-<span><span class="co">## 1    theta1 0.032508472         0 9.977817 10.000000</span></span>
-<span><span class="co">## 2    theta2 0.008427101         0 1.720547  1.732051</span></span></code></pre>
+<span><span class="co">## 1    theta1  0.03383964         0 9.928612 10.000000</span></span>
+<span><span class="co">## 2    theta2 -0.01169006         0 1.703516  1.732051</span></span></code></pre>
 <p>The Metropolis-Hastings estimates closely match the analytical
 moments, confirming the correctness of our implementation.</p>
 <p>We can visualize the samples against the true density contours:</p>
@@ -292,7 +306,7 @@ Markov Chains and Their Applications.”</span>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sebastian Fischer, Daniel Falbel, Nikolai German.</p>
+  <p>Developed by Sebastian Fischer, Daniel Falbel, Tomasz Kalinowski, Nikolai German.</p>
 </div>
 
 <div class="pkgdown-footer-right">
