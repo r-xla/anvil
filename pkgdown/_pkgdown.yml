@@ -247,7 +247,6 @@ reference:
       - nv_rdunif
       - nv_rng_state
 
-<<<<<<< HEAD
   - title: Array
     desc: Constructing and working with AnvlArrays
 
@@ -292,8 +291,6 @@ reference:
       - nv_serialize
       - nv_unserialize
 
-=======
->>>>>>> main
   - title: Transformations
     desc: Code transformations
     contents:
