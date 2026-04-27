@@ -2,10 +2,12 @@
 
 ## anvl (development version)
 
+## anvl 0.2.0
+
 ### Breaking Changes
 
-- The package was renamed from `anvl` to `anvl` to avoid a conflict with
-  the Bioconductor package `AnVIL`.
+- The package was renamed from `anvil` to `anvl` to avoid a conflict
+  with the Bioconductor package `AnVIL`.
 - `AnvilTensor`/`nv_tensor` were renamed to `AnvlArray` and `nv_array`
   to be more in line with R’s
   [`array()`](https://rdrr.io/r/base/array.html). Also, `nv_aten()` was
@@ -43,7 +45,7 @@
   - `nvl_cholesky()` to compute the Cholesky decomposition of a matrix.
   - `nvl_triangular_solve()` to solve a system of linear equations with
     a triangular matrix.
-- New API functions:
+- New API functions (+ corresponding R generic implementations):
   - [`nv_diag()`](https://r-xla.github.io/anvl/dev/reference/nv_diag.md)
     to create a diagonal matrix from a 1-D tensor.
   - [`nv_eye()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
@@ -59,6 +61,35 @@
     [`nv_fill()`](https://r-xla.github.io/anvl/dev/reference/nv_fill.md)
     or
     [`nv_iota()`](https://r-xla.github.io/anvl/dev/reference/nv_iota.md).
+  - [`nv_crossprod()`](https://r-xla.github.io/anvl/dev/reference/nv_crossprod.md)
+    and
+    [`nv_tcrossprod()`](https://r-xla.github.io/anvl/dev/reference/nv_tcrossprod.md)
+    for matrix cross-products.
+  - [`nv_outer()`](https://r-xla.github.io/anvl/dev/reference/nv_outer.md)
+    for the outer product.
+  - [`nv_extract_diag()`](https://r-xla.github.io/anvl/dev/reference/nv_extract_diag.md)
+    to extract the diagonal of a matrix.
+  - [`nv_trace()`](https://r-xla.github.io/anvl/dev/reference/nv_trace.md)
+    to compute the trace of a matrix.
+  - [`nv_tril()`](https://r-xla.github.io/anvl/dev/reference/nv_tril.md)
+    and
+    [`nv_triu()`](https://r-xla.github.io/anvl/dev/reference/nv_triu.md)
+    to extract lower/upper triangular parts.
+  - [`nv_squeeze()`](https://r-xla.github.io/anvl/dev/reference/nv_squeeze.md)
+    and
+    [`nv_unsqueeze()`](https://r-xla.github.io/anvl/dev/reference/nv_unsqueeze.md)
+    to drop or add length-1 dimensions.
+  - [`nv_log2()`](https://r-xla.github.io/anvl/dev/reference/nv_log2.md)
+    and
+    [`nv_log10()`](https://r-xla.github.io/anvl/dev/reference/nv_log10.md).
+  - [`nv_is_infinite()`](https://r-xla.github.io/anvl/dev/reference/nv_is_infinite.md)
+    and
+    [`nv_is_nan()`](https://r-xla.github.io/anvl/dev/reference/nv_is_nan.md).
+  - [`nv_sd()`](https://r-xla.github.io/anvl/dev/reference/nv_sd.md) and
+    [`nv_var()`](https://r-xla.github.io/anvl/dev/reference/nv_var.md)
+    for standard deviation and variance.
+- [`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md) now
+  accepts integer positions for the `static` argument.
 - New S3 methods [`dim()`](https://rdrr.io/r/base/dim.html),
   [`nrow()`](https://rdrr.io/r/base/nrow.html),
   [`ncol()`](https://rdrr.io/r/base/nrow.html), and
@@ -88,6 +119,11 @@
 - Fix check that `wrt` arguments in
   [`gradient()`](https://r-xla.github.io/anvl/dev/reference/gradient.md)
   must be floats.
+- [`nv_subset()`](https://r-xla.github.io/anvl/dev/reference/nv_subset.md)
+  and
+  [`nv_subset_assign()`](https://r-xla.github.io/anvl/dev/reference/nv_subset_assign.md)
+  now error on trailing-comma subscripts
+  ([\#273](https://github.com/r-xla/anvl/issues/273)).
 
 ### Documentation
 
