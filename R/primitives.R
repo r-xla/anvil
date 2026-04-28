@@ -786,19 +786,20 @@ prim_reduce_all <- new_primitive("reduce_all", make_reduce_op(infer_reduce_boole
 
 # cumulative (scan) primitives -------------------------------------------------
 
+infer_cum <- function(operand, dim) {
+  if (!checkmate::test_integerish(dim, lower = 1, upper = max(1L, length(shape(operand))), len = 1L)) {
+    cli_abort("{.arg dim} must be a single integer in 1..{length(shape(operand))}, but is {.val {dim}}")
+  }
+  list(AbstractArray(
+    dtype = dtype(operand),
+    shape = Shape(shape(operand)),
+    ambiguous = operand$ambiguous
+  ))
+}
+
 make_cum_op <- function() {
   function(operand, dim) {
-    infer_fn <- function(operand, dim) {
-      if (!checkmate::test_integerish(dim, lower = 1, upper = max(1L, length(shape(operand))), len = 1L)) {
-        cli_abort("{.arg dim} must be a single integer in 1..{length(shape(operand))}, but is {.val {dim}}")
-      }
-      list(AbstractArray(
-        dtype = dtype(operand),
-        shape = Shape(shape(operand)),
-        ambiguous = operand$ambiguous
-      ))
-    }
-    graph_desc_add(self, list(operand = operand), params = list(dim = dim), infer_fn = infer_fn)[[1L]]
+    graph_desc_add(self, list(operand = operand), params = list(dim = dim), infer_fn = infer_cum)[[1L]]
   }
 }
 
