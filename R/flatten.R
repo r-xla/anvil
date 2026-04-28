@@ -201,6 +201,36 @@ MarkedListNode <- function(nodes, names, marked) {
   )
 }
 
+#' @export
+format.LeafNode <- function(x, ...) "*"
+
+#' @export
+format.ListNode <- function(x, ...) {
+  if (length(x$nodes) == 0L) {
+    return("list()")
+  }
+  child_strs <- vapply(x$nodes, format, character(1L), ...)
+  parts <- if (is.null(x$names)) {
+    child_strs
+  } else {
+    has_name <- nzchar(x$names)
+    ifelse(has_name, paste0(x$names, " = ", child_strs), child_strs)
+  }
+  paste0("list(", paste(parts, collapse = ", "), ")")
+}
+
+#' @export
+print.LeafNode <- function(x, ...) {
+  cat(format(x, ...), "\n", sep = "")
+  invisible(x)
+}
+
+#' @export
+print.ListNode <- function(x, ...) {
+  cat(format(x, ...), "\n", sep = "")
+  invisible(x)
+}
+
 #' @title Tree Size
 #' @description
 #' Counts the number of leaf nodes in a tree. This equals the length of the
@@ -340,6 +370,159 @@ reindex_tree.LeafNode <- function(x, counter) {
 reindex_tree.ListNode <- function(x, counter) {
   reindexed <- lapply(x$nodes, reindex_tree, counter = counter)
   ListNode(reindexed, x$names)
+}
+
+#' @title Map Over a Tree
+#' @description
+#' Apply a function to each leaf of a (possibly nested) list, preserving the
+#' tree structure. Equivalent to flattening `.x` with [flatten()], applying
+#' `.f` to each leaf, and reassembling with [unflatten()]. The argument order
+#' matches [`purrr::map()`].
+#' @param .f (`function`)\cr
+#'   Function to apply to each leaf of `.x`.
+#' @param .x (any)\cr
+#'   A leaf or a (nested) list of leaves.
+#' @param ... Additional arguments passed to `.f`.
+#' @return An object with the same nesting structure as `.x`, where each leaf
+#'   is the result of `.f(leaf, ...)`.
+#' @seealso [flatten()], [build_tree()], [unflatten()], [await()]
+#' @examples
+#' map_tree(\(x) x + 1, list(a = 1, b = list(c = 2, d = 3)))
+#'
+#' # Awaiting a tree of outputs (e.g. for benchmarking)
+#' \dontrun{
+#' map_tree(await, outputs)
+#' }
+#' @export
+map_tree <- function(.f, .x, ...) {
+  tree <- build_tree(.x)
+  flat <- flatten(.x)
+  result <- lapply(seq_along(flat), function(i) {
+    tryCatch(
+      .f(flat[[i]], ...),
+      error = function(e) {
+        path <- tree_path(tree, i)
+        loc <- if (nzchar(path)) path else "<root>"
+        cli_abort(
+          "Error applying {.arg .f} to leaf at {.code {loc}}.",
+          parent = e,
+          call = NULL
+        )
+      }
+    )
+  })
+  unflatten(tree, result)
+}
+
+#' @title Map Over Multiple Trees in Parallel
+#' @description
+#' Apply a function leaf-wise over several trees with the same structure.
+#' All trees in `.l` must have identical structure (same nesting, same names,
+#' same lengths); the structure is taken from `.l[[1]]`. The argument order
+#' matches [`purrr::pmap()`].
+#' @param .l (`list`)\cr
+#'   A non-empty list of trees, all with the same structure.
+#' @param .f (`function`)\cr
+#'   Function to call with one leaf from each tree (positional arguments, in
+#'   the order given by `.l`).
+#' @param ... Additional arguments passed to `.f` after the per-tree leaves.
+#' @return A tree with the same structure as `.l[[1]]`, where each leaf is
+#'   `.f(leaf_1, leaf_2, ..., ...)`.
+#' @seealso [map_tree()], [flatten()], [unflatten()]
+#' @examples
+#' pmap_tree(list(list(a = 1, b = 2), list(a = 10, b = 20)), `+`)
+#'
+#' # Three trees, with an extra scalar argument forwarded to .f
+#' pmap_tree(
+#'   list(list(1, 2), list(3, 4), list(5, 6)),
+#'   \(x, y, z, scale) (x + y + z) * scale,
+#'   scale = 10
+#' )
+#' @export
+pmap_tree <- function(.l, .f, ...) {
+  if (!is.list(.l) || length(.l) == 0L) {
+    cli_abort("{.arg .l} must be a non-empty list of trees.")
+  }
+  tree <- build_tree(.l[[1L]])
+  for (i in seq_along(.l)[-1L]) {
+    other <- build_tree(.l[[i]])
+    if (!identical(tree, other)) {
+      diff <- tree_diff(tree, other)
+      header <- if (nzchar(diff$prefix)) {
+        "First mismatch at {.code {diff$prefix}}:"
+      } else {
+        "Trees differ at the root:"
+      }
+      fmt_a <- format(diff$a)
+      fmt_b <- format(diff$b)
+      cli_abort(c(
+        "All trees in {.arg .l} must have the same structure.",
+        "x" = header,
+        "*" = "{.code .l[[1]]}: {fmt_a}",
+        "*" = "{.code .l[[{i}]]}: {fmt_b}"
+      ))
+    }
+  }
+  flats <- lapply(.l, flatten)
+  n <- length(flats[[1L]])
+  result <- lapply(seq_len(n), function(i) {
+    tryCatch(
+      do.call(.f, c(lapply(flats, `[[`, i), list(...))),
+      error = function(e) {
+        path <- tree_path(tree, i)
+        loc <- if (nzchar(path)) path else "<root>"
+        cli_abort(
+          "Error applying {.arg .f} to leaves at {.code {loc}}.",
+          parent = e,
+          call = NULL
+        )
+      }
+    )
+  })
+  unflatten(tree, result)
+}
+
+# Walks two trees in parallel and returns the first path/subtree pair where
+# they diverge, or NULL if they are structurally identical. Returned `prefix`
+# follows tree_path() syntax. Class mismatches are handled in the generic
+# (before dispatch); per-class divergence is handled in the methods.
+tree_diff <- function(a, b, prefix = "") {
+  if (identical(a, b)) {
+    return(NULL)
+  }
+  if (!identical(class(a), class(b))) {
+    return(list(prefix = prefix, a = a, b = b))
+  }
+  UseMethod("tree_diff")
+}
+
+# Same class as `b` (both leaves) but not identical → indices differ, which
+# means an ancestor already diverged. Defensively report this leaf.
+#' @export
+tree_diff.LeafNode <- function(a, b, prefix = "") {
+  list(prefix = prefix, a = a, b = b)
+}
+
+#' @export
+tree_diff.ListNode <- function(a, b, prefix = "") {
+  if (!identical(a$names, b$names) || length(a$nodes) != length(b$nodes)) {
+    return(list(prefix = prefix, a = a, b = b))
+  }
+  for (j in seq_along(a$nodes)) {
+    nm <- if (!is.null(a$names)) a$names[j] else ""
+    suffix <- if (nzchar(nm)) {
+      if (nzchar(prefix)) paste0("$", nm) else nm
+    } else {
+      paste0("[[", j, "]]")
+    }
+    d <- tree_diff(a$nodes[[j]], b$nodes[[j]], paste0(prefix, suffix))
+    if (!is.null(d)) {
+      return(d)
+    }
+  }
+  # Unreachable when identical() short-circuits in the generic, but kept as a
+  # safe fallback rather than an internal-error abort.
+  list(prefix = prefix, a = a, b = b)
 }
 
 flat_mask_from_names <- function(tree, names) {

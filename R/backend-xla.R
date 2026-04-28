@@ -333,7 +333,8 @@ AnvlBackendXla <- function() {
         cli_abort("{.val {common}} cannot be both in {.arg donate} and {.arg static}.")
       }
       jit_xla_impl(f, static, cache, donate, device)
-    }
+    },
+    await_data = function(x) pjrt::await(x$data)
   )
   class(backend) <- c("AnvlBackendXla", class(backend))
   backend

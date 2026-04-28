@@ -100,6 +100,7 @@ reference:
       - as_dtype
       - is_dtype
       - as-AnvlArray
+      - await
 
   - subtitle: Serialization
     desc: Functions for serializing and deserializing arrays
@@ -344,6 +345,8 @@ reference:
       - reindex_tree
       - tree_size
       - tree_path
+      - map_tree
+      - pmap_tree
       - filter_list_node
 
   - title: Primitives

@@ -6,6 +6,11 @@
   `as.integer` and `as.logical`
 * New API functions `nv_rbind()` and `nv_cbind()` and corresponding
   `rbind()`/`cbind()` generics.
+* Re-exported `pjrt::await()` and added an `AnvlArray` method that blocks
+  until the underlying buffer is ready. Useful for benchmarking, where
+  asynchronous dispatch should not be confused with execution time.
+* New tree utilities `map_tree()` and `pmap_tree()` for applying functions
+  leaf-wise over (possibly nested) lists.
 
 # anvl 0.2.0
 

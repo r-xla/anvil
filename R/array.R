@@ -308,6 +308,12 @@ as_raw.AnvlArray <- function(x, row_major = FALSE, ...) {
   globals$backends[[x$backend]]$as_raw(x, row_major)
 }
 
+#' @export
+await.AnvlArray <- function(x, ...) {
+  globals$backends[[x$backend]]$await_data(x)
+  invisible(x)
+}
+
 #' @title Coerce AnvlArray to an R Vector
 #' @description
 #' Convert an [`AnvlArray`] to a bare R vector.
