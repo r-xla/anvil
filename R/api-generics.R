@@ -16,6 +16,7 @@ Ops.AnvlBox <- function(e1, e2) {
     "/" = nv_div(e1, e2),
     "^" = nv_pow(e1, e2),
     "%%" = nv_remainder(e1, e2),
+    "%/%" = nv_floor(nv_div(e1, e2)),
     "==" = nv_eq(e1, e2),
     "!=" = nv_ne(e1, e2),
     ">" = nv_gt(e1, e2),
@@ -104,6 +105,15 @@ Summary.AnvlBox <- function(..., na.rm) {
     "sum" = nv_reduce_sum(x, dims = dims, drop = TRUE),
     "any" = nv_reduce_any(x, dims = dims, drop = TRUE),
     "all" = nv_reduce_all(x, dims = dims, drop = TRUE),
+    "range" = {
+      mn <- nv_reduce_min(x, dims = dims, drop = TRUE)
+      mx <- nv_reduce_max(x, dims = dims, drop = TRUE)
+      nv_concatenate(
+        prim_reshape(mn, shape = 1L),
+        prim_reshape(mx, shape = 1L),
+        dimension = 1L
+      )
+    },
     cli_abort("invalid method: {(.Generic)}")
   )
 }
@@ -118,6 +128,140 @@ mean.AnvlBox <- function(x, ...) {
 
 #' @export
 mean.AnvlArray <- mean.AnvlBox
+
+#' @title Variance
+#' @description S3 generic dispatching to [nv_var()] for [`arrayish`] inputs and
+#'   [stats::var()] otherwise.
+#' @param x Object.
+#' @param ... Further arguments passed to methods.
+#' @export
+var <- function(x, ...) {
+  UseMethod("var")
+}
+
+#' @export
+var.default <- function(x, ...) {
+  stats::var(x, ...)
+}
+
+#' @export
+var.AnvlBox <- function(x, ...) {
+  nv_var(x, dims = seq_along(shape(x)), drop = TRUE)
+}
+
+#' @export
+var.AnvlArray <- var.AnvlBox
+
+#' @title Standard Deviation
+#' @description S3 generic dispatching to [nv_sd()] for [`arrayish`] inputs and
+#'   [stats::sd()] otherwise.
+#' @param x Object.
+#' @param ... Further arguments passed to methods.
+#' @export
+sd <- function(x, ...) {
+  UseMethod("sd")
+}
+
+#' @export
+sd.default <- function(x, ...) {
+  stats::sd(x, ...)
+}
+
+#' @export
+sd.AnvlBox <- function(x, ...) {
+  nv_sd(x, dims = seq_along(shape(x)), drop = TRUE)
+}
+
+#' @export
+sd.AnvlArray <- sd.AnvlBox
+
+#' @export
+solve.AnvlBox <- function(a, b, ...) {
+  if (missing(b)) {
+    cli_abort("solve.AnvlBox requires `b`; matrix inverse is not supported")
+  }
+  nv_solve(a, b)
+}
+
+#' @export
+solve.AnvlArray <- solve.AnvlBox
+
+#' @title Matrix Diagonals
+#' @description S3 generic dispatching to [nv_diag()] (1-D operand) or
+#'   [nv_extract_diag()] (2-D operand) for [`arrayish`] inputs, and
+#'   [base::diag()] otherwise.
+#' @param x Object.
+#' @param ... Further arguments passed to methods.
+#' @export
+diag <- function(x = 1, ...) {
+  UseMethod("diag")
+}
+
+#' @export
+diag.default <- function(x = 1, ...) {
+  base::diag(x, ...)
+}
+
+#' @export
+diag.AnvlBox <- function(x, ...) {
+  rank <- length(shape(x))
+  if (rank == 1L) {
+    nv_diag(x)
+  } else if (rank == 2L) {
+    nv_extract_diag(x)
+  } else {
+    cli_abort("diag() is only defined for 1-D and 2-D arrayish, got rank {rank}")
+  }
+}
+
+#' @export
+diag.AnvlArray <- diag.AnvlBox
+
+#' @export
+rev.AnvlBox <- function(x) {
+  rank <- length(shape(x))
+  if (rank > 1L) {
+    cli_abort("rev() is only defined for 1-D arrayish, got rank {rank}")
+  }
+  nv_reverse(x, dims = 1L)
+}
+
+#' @export
+rev.AnvlArray <- rev.AnvlBox
+
+#' @export
+aperm.AnvlBox <- function(a, perm = NULL, ...) {
+  nv_transpose(a, permutation = perm)
+}
+
+#' @export
+aperm.AnvlArray <- aperm.AnvlBox
+
+#' @export
+head.AnvlBox <- function(x, n = 6L, ...) {
+  if (length(n) != 1L) {
+    cli_abort("head.AnvlBox: vector `n` is not supported; use a single integer")
+  }
+  len <- shape(x)[1L]
+  k <- if (n < 0L) max(len + n, 0L) else min(n, len)
+  nv_subset(x, array(seq_len(k)))
+}
+
+#' @export
+head.AnvlArray <- head.AnvlBox
+
+#' @export
+tail.AnvlBox <- function(x, n = 6L, ...) {
+  if (length(n) != 1L) {
+    cli_abort("tail.AnvlBox: vector `n` is not supported; use a single integer")
+  }
+  len <- shape(x)[1L]
+  k <- if (n < 0L) max(len + n, 0L) else min(n, len)
+  nv_subset(x, array(seq.int(to = len, length.out = k)))
+}
+
+#' @export
+tail.AnvlArray <- tail.AnvlBox
 
 #' @rdname nv_is_nan
 #' @param x ([`arrayish`])\cr Operand.

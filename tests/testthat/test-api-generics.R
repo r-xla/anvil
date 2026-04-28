@@ -158,6 +158,155 @@ describe("dim", {
   })
 })
 
+describe("var", {
+  it("computes variance over all dimensions", {
+    vals <- c(1, 2, 3, 4, 5)
+    expect_jit_equal(
+      var(nv_array(vals, dtype = "f32")),
+      nv_scalar(stats::var(vals), dtype = "f32"),
+      tolerance = 1e-6
+    )
+  })
+  it("default method delegates to stats::var", {
+    expect_equal(var(c(1, 2, 3, 4, 5)), stats::var(c(1, 2, 3, 4, 5)))
+  })
+})
+
+describe("sd", {
+  it("computes standard deviation over all dimensions", {
+    vals <- c(1, 2, 3, 4, 5)
+    expect_jit_equal(
+      sd(nv_array(vals, dtype = "f32")),
+      nv_scalar(stats::sd(vals), dtype = "f32"),
+      tolerance = 1e-6
+    )
+  })
+  it("default method delegates to stats::sd", {
+    expect_equal(sd(c(1, 2, 3, 4, 5)), stats::sd(c(1, 2, 3, 4, 5)))
+  })
+})
+
+describe("solve", {
+  it("solves a linear system", {
+    a_mat <- matrix(c(4, 2, 2, 3), nrow = 2)
+    b_mat <- matrix(c(1, 2), nrow = 2)
+    expect_jit_equal(
+      solve(nv_array(a_mat, dtype = "f32"), nv_array(b_mat, dtype = "f32")),
+      nv_array(base::solve(a_mat, b_mat), dtype = "f32"),
+      tolerance = 1e-5
+    )
+  })
+})
+
+describe("diag", {
+  it("creates a diagonal matrix from a 1-D arrayish", {
+    expect_jit_equal(
+      diag(nv_array(c(1, 2, 3), dtype = "f32")),
+      nv_array(base::diag(c(1, 2, 3)), dtype = "f32")
+    )
+  })
+  it("extracts the diagonal of a 2-D arrayish", {
+    m <- matrix(seq_len(9), nrow = 3)
+    expect_jit_equal(
+      diag(nv_array(m, dtype = "f32")),
+      nv_array(base::diag(m), dtype = "f32")
+    )
+  })
+  it("errors for arrayish with rank > 2", {
+    x <- nv_array(array(seq_len(24), dim = c(2, 3, 4)), dtype = "f32")
+    expect_error(diag(x), "only defined for 1-D and 2-D")
+  })
+  it("default method delegates to base::diag", {
+    expect_equal(diag(3), base::diag(3))
+  })
+})
+
+describe("rev", {
+  it("reverses a 1-D arrayish", {
+    vals <- c(1, 2, 3, 4, 5)
+    expect_jit_equal(
+      rev(nv_array(vals, dtype = "f32")),
+      nv_array(rev(vals), dtype = "f32")
+    )
+  })
+  it("errors for arrayish with rank > 1", {
+    x <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
+    expect_error(rev(x), "only defined for 1-D")
+  })
+})
+
+describe("%/%", {
+  it("computes integer (floor) division", {
+    a <- c(7, -7, 6, -6)
+    b <- c(2, 2, 3, 3)
+    expect_jit_equal(
+      nv_array(a, dtype = "f32") %/% nv_array(b, dtype = "f32"),
+      nv_array(a %/% b, dtype = "f32")
+    )
+  })
+})
+
+describe("range", {
+  it("returns c(min, max) over all dimensions", {
+    vals <- c(3, 1, 4, 1, 5, 9, 2, 6)
+    expect_jit_equal(
+      range(nv_array(vals, dtype = "f32")),
+      nv_array(range(vals), dtype = "f32")
+    )
+  })
+})
+
+describe("head", {
+  it("takes the first n elements of a 1-D arrayish", {
+    vals <- 1:10
+    expect_jit_equal(
+      head(nv_array(vals, dtype = "f32"), n = 3L),
+      nv_array(head(vals, 3L), dtype = "f32")
+    )
+  })
+  it("takes the first n rows of a 2-D arrayish", {
+    m <- matrix(1:12, nrow = 4)
+    expect_jit_equal(
+      head(nv_array(m, dtype = "f32"), n = 2L),
+      nv_array(head(m, 2L), dtype = "f32")
+    )
+  })
+})
+
+describe("tail", {
+  it("takes the last n elements of a 1-D arrayish", {
+    vals <- 1:10
+    expect_jit_equal(
+      tail(nv_array(vals, dtype = "f32"), n = 3L),
+      nv_array(tail(vals, 3L), dtype = "f32")
+    )
+  })
+  it("takes the last n rows of a 2-D arrayish", {
+    m <- matrix(1:12, nrow = 4)
+    expect_jit_equal(
+      tail(nv_array(m, dtype = "f32"), n = 2L),
+      nv_array(tail(m, 2L), dtype = "f32")
+    )
+  })
+})
+
+describe("aperm", {
+  it("permutes dims with explicit perm", {
+    arr <- array(seq_len(24), dim = c(2, 3, 4))
+    expect_jit_equal(
+      aperm(nv_array(arr, dtype = "f32"), perm = c(3L, 1L, 2L)),
+      nv_array(aperm(arr, perm = c(3L, 1L, 2L)), dtype = "f32")
+    )
+  })
+  it("reverses dims when perm is NULL", {
+    arr <- array(seq_len(24), dim = c(2, 3, 4))
+    expect_jit_equal(
+      aperm(nv_array(arr, dtype = "f32")),
+      nv_array(aperm(arr), dtype = "f32")
+    )
+  })
+})
+
 describe("as.double", {
   it("returns a bare double vector and discards shape", {
     x <- nv_array(c(1, 2, 3, 4, 5, 6), dtype = "f32", shape = c(2L, 3L))
