@@ -7,6 +7,38 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+## Why is my function slow?
+
+If a jitted `anvl` function feels sluggish, the cause is usually compilation
+or startup overhead rather than the computation itself.
+
+- **First-call compilation.** The first call with a given combination of input
+  types and shapes traces the function and compiles it through XLA. This can
+  take anywhere from milliseconds to seconds (or more for large functions).
+  Subsequent calls with matching inputs hit the compilation cache and skip
+  this step -- see [The compilation cache](jit.html#the-compilation-cache)
+  in the JIT Deep Dive.
+- **Recompilation on every call.** If the input shapes vary between calls,
+  every new shape combination triggers a fresh recompile and you can end up
+  spending more time compiling than computing. Padding inputs up to fixed
+  bucket sizes lets all calls share one cache entry; see
+  [Padding inputs to avoid recompilation](efficiency.html#padding-inputs-to-avoid-recompilation)
+  in the Efficiency vignette.
+- **Eager mode.** Running outside `jit()` compiles many tiny XLA programs --
+  one per primitive call -- which adds per-call overhead and gives the
+  compiler no room for whole-program optimization. See
+  [Eager vs. JIT](efficiency.html#eager-vs-jit) for the trade-off.
+- **Startup costs.** Loading `anvl` initializes the PJRT runtime and the
+  selected backend (CPU, CUDA, ...). This is a one-time cost per R session,
+  but it shows up if you benchmark a script that only runs the function once.
+- **Misleading benchmarks.** Compiled calls return asynchronously, so timing
+  a single call without forcing the result (e.g. via `as_array()` or
+  `print()`) measures dispatch, not computation. See
+  [Asynchronous execution](efficiency.html#asynchronous-execution).
+
+The [Efficiency](efficiency.html) vignette gathers the rest of the levers
+(CUDA, data types, memory donation) in one place.
+
 ## How do I control the number of threads used by XLA?
 
 XLA (the compiler backend used by `anvl`) may use multiple CPU threads for
