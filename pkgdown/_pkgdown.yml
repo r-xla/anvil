@@ -130,6 +130,8 @@ reference:
       - nv_reshape
       - nv_transpose
       - nv_concatenate
+      - nv_rbind
+      - nv_cbind
       - nv_static_slice
       - nv_pad
       - nv_reverse

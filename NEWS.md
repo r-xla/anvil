@@ -4,6 +4,8 @@
 
 * Added `AnvlArray` -> R `vector` converters `as.numeric`, `as.double`,
   `as.integer` and `as.logical`
+* New API functions `nv_rbind()` and `nv_cbind()` and corresponding
+  `rbind()`/`cbind()` generics.
 
 # anvl 0.2.0
 

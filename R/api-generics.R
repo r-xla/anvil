@@ -254,3 +254,29 @@ length.AnvlBox <- function(x) {
 #' @method length AnvlArray
 #' @export
 length.AnvlArray <- length.AnvlBox
+
+#' @rdname nv_bind
+#' @param deparse.level Ignored. Kept for compatibility with [base::rbind()]
+#'   and [base::cbind()].
+#' @method rbind AnvlBox
+#' @export
+rbind.AnvlBox <- function(..., deparse.level = 1) {
+  nv_rbind(...)
+}
+
+#' @rdname nv_bind
+#' @method rbind AnvlArray
+#' @export
+rbind.AnvlArray <- rbind.AnvlBox
+
+#' @rdname nv_bind
+#' @method cbind AnvlBox
+#' @export
+cbind.AnvlBox <- function(..., deparse.level = 1) {
+  nv_cbind(...)
+}
+
+#' @rdname nv_bind
+#' @method cbind AnvlArray
+#' @export
+cbind.AnvlArray <- cbind.AnvlBox
