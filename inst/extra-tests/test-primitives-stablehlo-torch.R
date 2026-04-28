@@ -331,6 +331,24 @@ test_that("prim_polygamma", {
   }
 })
 
+# erf / erfc / erf_inv take values everywhere; erf_inv only on (-1, 1).
+
+test_that("prim_erf", {
+  expect_jit_torch_unary(prim_erf, torch::torch_erf, c(2, 3))
+})
+
+test_that("prim_erfc", {
+  expect_jit_torch_unary(prim_erfc, torch::torch_erfc, c(2, 3))
+})
+
+test_that("prim_erf_inv", {
+  expect_jit_torch_unary(prim_erf_inv, torch::torch_erfinv, c(2, 3), gen = gen_in_minus1_1)
+})
+
+test_that("prim_square", {
+  expect_jit_torch_unary(prim_square, torch::torch_square, c(2, 3))
+})
+
 describe("prim_cholesky", {
   it("lower = TRUE", {
     A <- crossprod(matrix(rnorm(9), 3, 3)) + diag(3)

@@ -10,6 +10,13 @@ test_that("prim_cosine", {
   expect_equal(c(out), c(1, 0, -1, 0), tolerance = 1e-15)
 })
 
+test_that("prim_bessel_i1e", {
+  vals <- c(0, 0.5, 1, 2, 5)
+  x <- nv_array(vals, dtype = "f64")
+  out <- as_array(jit(prim_bessel_i1e)(x))
+  expect_equal(c(out), besselI(vals, nu = 1, expon.scaled = TRUE), tolerance = 1e-6)
+})
+
 test_that("prim_rng_bit_generator", {
   f <- function() {
     prim_rng_bit_generator(nv_array(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))

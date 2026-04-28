@@ -346,6 +346,26 @@ prim_polygamma[["stablehlo"]] <- function(n, x) {
   list(stablehlo::hlo_polygamma(n, x))
 }
 
+prim_erf[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_erf(operand))
+}
+
+prim_erf_inv[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_erf_inv(operand))
+}
+
+prim_erfc[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_erfc(operand))
+}
+
+prim_square[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_square(operand))
+}
+
+prim_bessel_i1e[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_bessel_i1e(operand))
+}
+
 prim_is_finite[["stablehlo"]] <- function(operand) {
   list(stablehlo::hlo_is_finite(operand))
 }

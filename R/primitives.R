@@ -1610,6 +1610,87 @@ prim_polygamma <- new_primitive(
   }
 )
 
+#' @title Primitive Error Function
+#' @description
+#' Element-wise error function `erf(x) = (2 / sqrt(pi)) * integral_0^x exp(-t^2) dt`.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id erf
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_erf()].
+#' @seealso [nv_erf()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' prim_erf(x)
+#' @export
+prim_erf <- new_primitive("erf", make_unary_op(stablehlo::infer_types_erf))
+
+#' @title Primitive Inverse Error Function
+#' @description
+#' Element-wise inverse error function (the inverse of `erf` on `(-1, 1)`).
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id erf_inv
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_erf_inv()].
+#' @seealso [nv_erf_inv()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-0.5, 0, 0.5))
+#' prim_erf_inv(x)
+#' @export
+prim_erf_inv <- new_primitive("erf_inv", make_unary_op(stablehlo::infer_types_erf_inv))
+
+#' @title Primitive Complementary Error Function
+#' @description
+#' Element-wise complementary error function `erfc(x) = 1 - erf(x)`.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id erfc
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_erfc()].
+#' @seealso [nv_erfc()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' prim_erfc(x)
+#' @export
+prim_erfc <- new_primitive("erfc", make_unary_op(stablehlo::infer_types_erfc))
+
+#' @title Primitive Square
+#' @description
+#' Element-wise square `x^2`.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id square
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_square()].
+#' @seealso [nv_square()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-2, 0, 3))
+#' prim_square(x)
+#' @export
+prim_square <- new_primitive("square", make_unary_op(stablehlo::infer_types_square))
+
+#' @title Primitive Exponentially Scaled Modified Bessel I_1
+#' @description
+#' Element-wise exponentially scaled modified Bessel function of the
+#' first kind, order 1: `bessel_i1e(x) = bessel_i1(x) * exp(-abs(x))`.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id bessel_i1e
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_bessel_i1e()].
+#' @seealso [nv_bessel_i1e()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1, 5))
+#' prim_bessel_i1e(x)
+#' @export
+prim_bessel_i1e <- new_primitive("bessel_i1e", make_unary_op(stablehlo::infer_types_bessel_i1e))
+
 #' @title Primitive Is Finite
 #' @description
 #' Element-wise check if values are finite (not Inf, -Inf, or NaN).

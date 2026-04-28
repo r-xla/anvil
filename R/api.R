@@ -1145,6 +1145,69 @@ nv_lgamma <- prim_lgamma
 #' @export
 nv_polygamma <- make_do_binary(prim_polygamma)
 
+#' @title Error Function
+#' @description
+#' Element-wise error function `erf(x) = (2 / sqrt(pi)) * integral_0^x exp(-t^2) dt`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_erf()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' nv_erf(x)
+#' @export
+nv_erf <- prim_erf
+
+#' @title Inverse Error Function
+#' @description
+#' Element-wise inverse error function (the inverse of `erf` on `(-1, 1)`).
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_erf_inv()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-0.5, 0, 0.5))
+#' nv_erf_inv(x)
+#' @export
+nv_erf_inv <- prim_erf_inv
+
+#' @title Complementary Error Function
+#' @description
+#' Element-wise complementary error function `erfc(x) = 1 - erf(x)`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_erfc()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' nv_erfc(x)
+#' @export
+nv_erfc <- prim_erfc
+
+#' @title Square
+#' @description
+#' Element-wise square `x^2`. A direct alternative to `x^2` /
+#' [nv_pow()] when the exponent is exactly two.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_square()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-2, 0, 3))
+#' nv_square(x)
+#' @export
+nv_square <- prim_square
+
+#' @title Exponentially Scaled Modified Bessel I_1
+#' @description
+#' Element-wise exponentially scaled modified Bessel function of the
+#' first kind, order 1: `bessel_i1e(x) = bessel_i1(x) * exp(-abs(x))`.
+#' Currently does not support automatic differentiation.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_bessel_i1e()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1, 5))
+#' nv_bessel_i1e(x)
+#' @export
+nv_bessel_i1e <- prim_bessel_i1e
+
 #' @title Is Finite
 #' @description
 #' Element-wise check if values are finite (not `Inf`, `-Inf`, or `NaN`).
