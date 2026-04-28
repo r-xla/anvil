@@ -1,5 +1,16 @@
 #' @include api.R
 
+.nv_cum_math <- function(x, prim) {
+  shp <- shape_abstract(x)
+  if (length(shp) <= 1L) {
+    return(prim(x, dim = 1L))
+  }
+  cli_abort(c(
+    "{.fn cumsum}/{.fn cumprod}/{.fn cummax}/{.fn cummin} on a multi-dimensional anvl array is ambiguous.",
+    i = "Use {.fn nv_cumsum} (or the matching {.fn nv_cum*}) with an explicit {.arg dim} argument."
+  ))
+}
+
 #' @export
 Ops.AnvlBox <- function(e1, e2) {
   switch(
@@ -62,6 +73,10 @@ Math.AnvlBox <- function(x, ...) {
     "expm1" = nv_expm1(x),
     "log1p" = nv_log1p(x),
     "round" = nv_round(x),
+    "cumsum" = .nv_cum_math(x, nv_cumsum),
+    "cumprod" = .nv_cum_math(x, nv_cumprod),
+    "cummax" = .nv_cum_math(x, nv_cummax),
+    "cummin" = .nv_cum_math(x, nv_cummin),
     cli_abort("invalid method: {(.Generic)}")
   )
 }

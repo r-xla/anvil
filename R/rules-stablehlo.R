@@ -156,6 +156,63 @@ prim_reduce_all[["stablehlo"]] <- function(operand, dims, drop) {
   .stablehlo_apply_reduce(stablehlo::hlo_and, operand, init, dims, drop)
 }
 
+.stablehlo_apply_cum <- function(reductor, operand, init, dim) {
+  shp <- shape(operand)
+  rank <- length(shp)
+  s_d <- shp[[dim]]
+  window_dimensions <- rep(1L, rank)
+  window_dimensions[[dim]] <- s_d
+  ones <- rep(1L, rank)
+  padding <- matrix(0L, nrow = rank, ncol = 2L)
+  padding[dim, 1L] <- s_d - 1L
+
+  local_func("")
+  dt <- as.character(operand$value_type$type$dtype)
+  body <- hlo_return(reductor(
+    hlo_input("x", dt),
+    hlo_input("y", dt)
+  ))
+
+  list(stablehlo::hlo_reduce_window(
+    inputs = operand,
+    init_values = init(operand),
+    window_dimensions = window_dimensions,
+    window_strides = ones,
+    base_dilations = ones,
+    window_dilations = ones,
+    padding = padding,
+    body = body
+  ))
+}
+
+prim_cumsum[["stablehlo"]] <- function(operand, dim) {
+  init <- function(operand) {
+    hlo_scalar(0, dtype = dtype(operand), func = operand$func)
+  }
+  .stablehlo_apply_cum(stablehlo::hlo_add, operand, init, dim)
+}
+
+prim_cumprod[["stablehlo"]] <- function(operand, dim) {
+  init <- function(operand) {
+    hlo_scalar(1, dtype = dtype(operand), func = operand$func)
+  }
+  .stablehlo_apply_cum(stablehlo::hlo_multiply, operand, init, dim)
+}
+
+prim_cummax[["stablehlo"]] <- function(operand, dim) {
+  init <- function(operand) {
+    hlo_scalar(nv_minval(dtype(operand), "cpu"))
+  }
+  .stablehlo_apply_cum(stablehlo::hlo_maximum, operand, init, dim)
+}
+
+prim_cummin[["stablehlo"]] <- function(operand, dim) {
+  init <- function(operand) {
+    hlo_scalar(nv_maxval(dtype(operand), "cpu"))
+  }
+  .stablehlo_apply_cum(stablehlo::hlo_minimum, operand, init, dim)
+}
+
 # comparison jit rules ----------------------------------------------------------
 
 .compare_type_for <- function(vt) {

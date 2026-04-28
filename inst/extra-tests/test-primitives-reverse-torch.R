@@ -428,6 +428,62 @@ test_that("prim_transpose", {
   })
 })
 
+describe("prim_cumsum", {
+  it("vector gradient", {
+    verify_grad_uni_tensor(
+      prim_cumsum,
+      torch::torch_cumsum,
+      shape = 5L,
+      args_f = \(shp, dtype) list(list(dim = 1L), list(dim = 1L))
+    )
+  })
+  it("matrix gradient along each dim", {
+    for (d in 1:2) {
+      verify_grad_uni_tensor(
+        prim_cumsum,
+        torch::torch_cumsum,
+        shape = c(3L, 4L),
+        args_f = local({
+          dl <- d
+          \(shp, dtype) list(list(dim = dl), list(dim = dl))
+        })
+      )
+    }
+  })
+})
+
+describe("prim_cumprod", {
+  it("vector gradient (non-zero values)", {
+    # cumprod gradient is undefined at zeros; sample non-zero values.
+    gen_nz <- function(shp, dtype) {
+      n <- if (!length(shp)) 1L else prod(shp)
+      vals <- sample(c(-1, 1), n, replace = TRUE) * (0.5 + abs(rnorm(n)))
+      if (!length(shp)) vals else array(vals, shp)
+    }
+    verify_grad_uni_tensor(
+      prim_cumprod,
+      torch::torch_cumprod,
+      shape = 4L,
+      args_f = \(shp, dtype) list(list(dim = 1L), list(dim = 1L)),
+      gen = gen_nz
+    )
+  })
+  it("matrix gradient", {
+    gen_nz <- function(shp, dtype) {
+      n <- if (!length(shp)) 1L else prod(shp)
+      vals <- sample(c(-1, 1), n, replace = TRUE) * (0.5 + abs(rnorm(n)))
+      if (!length(shp)) vals else array(vals, shp)
+    }
+    verify_grad_uni_tensor(
+      prim_cumprod,
+      torch::torch_cumprod,
+      shape = c(3L, 3L),
+      args_f = \(shp, dtype) list(list(dim = 2L), list(dim = 2L)),
+      gen = gen_nz
+    )
+  })
+})
+
 test_that("prim_broadcast_in_dim", {
   input_shape <- c(2L, 1L, 3L)
   target_shape <- c(4L, 2L, 5L, 3L)

@@ -784,6 +784,100 @@ prim_reduce_any <- new_primitive("reduce_any", make_reduce_op(infer_reduce_boole
 #' @export
 prim_reduce_all <- new_primitive("reduce_all", make_reduce_op(infer_reduce_boolean), static = 2:3)
 
+# cumulative (scan) primitives -------------------------------------------------
+
+make_cum_op <- function() {
+  function(operand, dim) {
+    infer_fn <- function(operand, dim) {
+      if (!checkmate::test_integerish(dim, lower = 1, upper = max(1L, length(shape(operand))), len = 1L)) {
+        cli_abort("{.arg dim} must be a single integer in 1..{length(shape(operand))}, but is {.val {dim}}")
+      }
+      list(AbstractArray(
+        dtype = dtype(operand),
+        shape = Shape(shape(operand)),
+        ambiguous = operand$ambiguous
+      ))
+    }
+    graph_desc_add(self, list(operand = operand), params = list(dim = dim), infer_fn = infer_fn)[[1L]]
+  }
+}
+
+#' @title Primitive Cumulative Sum
+#' @description
+#' Cumulative sum of array elements along a single dimension.
+#' Output position `j` along `dim` equals the sum of input positions `1..j`.
+#' @template param_prim_operand_any
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which to accumulate (1-indexed).
+#' @template return_prim_unary
+#' @templateVar primitive_id cumsum
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_reduce_window()] with [stablehlo::hlo_add()] as the reducer.
+#' @seealso [nv_cumsum()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' prim_cumsum(x, dim = 1L)
+#' @export
+prim_cumsum <- new_primitive("cumsum", make_cum_op(), static = 2L)
+
+#' @title Primitive Cumulative Product
+#' @description
+#' Cumulative product of array elements along a single dimension.
+#' Output position `j` along `dim` equals the product of input positions `1..j`.
+#' @template param_prim_operand_any
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which to accumulate (1-indexed).
+#' @template return_prim_unary
+#' @templateVar primitive_id cumprod
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_reduce_window()] with [stablehlo::hlo_multiply()] as the reducer.
+#' @seealso [nv_cumprod()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' prim_cumprod(x, dim = 1L)
+#' @export
+prim_cumprod <- new_primitive("cumprod", make_cum_op(), static = 2L)
+
+#' @title Primitive Cumulative Maximum
+#' @description
+#' Running maximum of array elements along a single dimension.
+#' Output position `j` along `dim` equals `max(input[1..j])`.
+#' @template param_prim_operand_any
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which to accumulate (1-indexed).
+#' @template return_prim_unary
+#' @templateVar primitive_id cummax
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_reduce_window()] with [stablehlo::hlo_maximum()] as the reducer.
+#' @seealso [nv_cummax()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+#' prim_cummax(x, dim = 1L)
+#' @export
+prim_cummax <- new_primitive("cummax", make_cum_op(), static = 2L)
+
+#' @title Primitive Cumulative Minimum
+#' @description
+#' Running minimum of array elements along a single dimension.
+#' Output position `j` along `dim` equals `min(input[1..j])`.
+#' @template param_prim_operand_any
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which to accumulate (1-indexed).
+#' @template return_prim_unary
+#' @templateVar primitive_id cummin
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_reduce_window()] with [stablehlo::hlo_minimum()] as the reducer.
+#' @seealso [nv_cummin()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+#' prim_cummin(x, dim = 1L)
+#' @export
+prim_cummin <- new_primitive("cummin", make_cum_op(), static = 2L)
+
 # comparison primitives --------------------------------------------------------
 
 infer_compare <- function(lhs, rhs, comparison_direction) {
