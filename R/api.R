@@ -1445,6 +1445,79 @@ nv_reduce_any <- prim_reduce_any
 #' nv_reduce_all(x, dims = 1L)
 #' @export
 nv_reduce_all <- prim_reduce_all
+
+#' @title Cumulative Sum
+#' @description
+#' Cumulative sum along a single dimension. You can also use [base::cumsum()]
+#' (which flattens to a vector first, like base R).
+#' @template param_operand
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which to accumulate (1-indexed).
+#' @template return_unary
+#' @seealso [prim_cumsum()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nv_cumsum(x, dim = 1L)
+#' @export
+nv_cumsum <- function(operand, dim = 1L) {
+  operand <- as_anvl_array(operand)
+  prim_cumsum(operand, dim = as.integer(dim))
+}
+
+#' @title Cumulative Product
+#' @description
+#' Cumulative product along a single dimension. You can also use
+#' [base::cumprod()] (which flattens to a vector first, like base R).
+#' @template param_operand
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which to accumulate (1-indexed).
+#' @template return_unary
+#' @seealso [prim_cumprod()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' nv_cumprod(x, dim = 1L)
+#' @export
+nv_cumprod <- function(operand, dim = 1L) {
+  operand <- as_anvl_array(operand)
+  prim_cumprod(operand, dim = as.integer(dim))
+}
+
+#' @title Cumulative Maximum
+#' @description
+#' Running maximum along a single dimension. You can also use
+#' [base::cummax()] (which flattens to a vector first, like base R).
+#' @template param_operand
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which to accumulate (1-indexed).
+#' @template return_unary
+#' @seealso [prim_cummax()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+#' nv_cummax(x, dim = 1L)
+#' @export
+nv_cummax <- function(operand, dim = 1L) {
+  operand <- as_anvl_array(operand)
+  prim_cummax(operand, dim = as.integer(dim))
+}
+
+#' @title Cumulative Minimum
+#' @description
+#' Running minimum along a single dimension. You can also use
+#' [base::cummin()] (which flattens to a vector first, like base R).
+#' @template param_operand
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which to accumulate (1-indexed).
+#' @template return_unary
+#' @seealso [prim_cummin()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+#' nv_cummin(x, dim = 1L)
+#' @export
+nv_cummin <- function(operand, dim = 1L) {
+  operand <- as_anvl_array(operand)
+  prim_cummin(operand, dim = as.integer(dim))
+}
+
 # Higher order primitives
 
 #' @title Conditional Branching

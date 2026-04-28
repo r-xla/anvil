@@ -612,6 +612,33 @@ prim_reduce_prod[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .r
     }
   )
 }
+
+# cumulative (scan) reverse rules ----------------------------------------------
+
+prim_cumsum[["reverse"]] <- function(inputs, outputs, grads, dim, .required) {
+  grad <- grads[[1L]]
+  list(
+    # d/dx_i sum_{k<=j} x_k = 1[i<=j], so grad_i = sum_{j>=i} grad_out_j
+    # which is reverse-cumsum of grad_out along dim.
+    if (.required[[1L]]) prim_reverse(prim_cumsum(prim_reverse(grad, dim), dim), dim)
+  )
+}
+
+prim_cumprod[["reverse"]] <- function(inputs, outputs, grads, dim, .required) {
+  operand <- inputs[[1L]]
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d y_j / d x_i = y_j / x_i for i <= j, so
+    # grad_i = (1 / x_i) * sum_{j>=i} grad_out_j * y_j (= reverse-cumsum of grad*y)
+    # NB: undefined when x_i == 0 (matches the simple non-zero PyTorch case).
+    if (.required[[1L]]) {
+      gy <- prim_mul(grad, y)
+      prim_div(prim_reverse(prim_cumsum(prim_reverse(gy, dim), dim), dim), operand)
+    }
+  )
+}
+
 # slice reverse: pad with zeros
 prim_static_slice[["reverse"]] <- function(inputs, outputs, grads, start_indices, limit_indices, strides, .required) {
   operand <- inputs[[1L]]
