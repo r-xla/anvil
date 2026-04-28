@@ -116,6 +116,13 @@ Functions for reshaping and rearranging arrays
   : Transpose
 - [`nv_concatenate()`](https://r-xla.github.io/anvl/dev/reference/nv_concatenate.md)
   : Concatenate
+- [`nv_rbind()`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
+  [`nv_cbind()`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
+  [`rbind(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
+  [`rbind(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
+  [`cbind(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
+  [`cbind(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
+  : Combine arrays by rows or columns
 - [`nv_static_slice()`](https://r-xla.github.io/anvl/dev/reference/nv_static_slice.md)
   : Static Slice
 - [`nv_pad()`](https://r-xla.github.io/anvl/dev/reference/nv_pad.md) :

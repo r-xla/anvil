@@ -6,6 +6,13 @@
 
 - Added `AnvlArray` -\> R `vector` converters `as.numeric`, `as.double`,
   `as.integer` and `as.logical`
+- New API functions
+  [`nv_rbind()`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
+  and
+  [`nv_cbind()`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
+  and corresponding
+  [`rbind()`](https://rdrr.io/r/base/cbind.html)/[`cbind()`](https://rdrr.io/r/base/cbind.html)
+  generics.
 
 ## anvl 0.2.0
 
