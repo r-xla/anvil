@@ -12,6 +12,11 @@
   `prim_digamma()`, `prim_lgamma()`, and `prim_polygamma()`.
   All support automatic differentiation; `prim_polygamma()` is
   non-differentiable w.r.t. its first argument `n`.
+* Matching `nv_*` API wrappers for the new primitives plus `Math`
+  group dispatch, so `acos()`, `acosh()`, `asin()`, `asinh()`,
+  `atan()`, `atanh()`, `cosh()`, `sinh()`, `digamma()`, `lgamma()`,
+  and `trigamma()` now work directly on `AnvlArray`s. `nv_polygamma()`
+  broadcasts a scalar order `n` against `x`.
 
 # anvl 0.2.0
 

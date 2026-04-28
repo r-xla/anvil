@@ -90,6 +90,43 @@ describe("log1p", {
   })
 })
 
+describe("CHLO Math generics", {
+  it("acos / asin / atan dispatch through Math", {
+    vals <- c(-0.5, 0, 0.5)
+    expect_jit_equal({ x <- nv_array(vals); acos(x) }, nv_array(acos(vals)), tolerance = 1e-6)
+    expect_jit_equal({ x <- nv_array(vals); asin(x) }, nv_array(asin(vals)), tolerance = 1e-6)
+    expect_jit_equal({ x <- nv_array(vals); atan(x) }, nv_array(atan(vals)), tolerance = 1e-6)
+  })
+
+  it("acosh / asinh / atanh dispatch through Math", {
+    expect_jit_equal({ x <- nv_array(c(1, 2, 3)); acosh(x) }, nv_array(acosh(c(1, 2, 3))), tolerance = 1e-6)
+    expect_jit_equal({ x <- nv_array(c(-1, 0, 1)); asinh(x) }, nv_array(asinh(c(-1, 0, 1))), tolerance = 1e-6)
+    expect_jit_equal({ x <- nv_array(c(-0.5, 0, 0.5)); atanh(x) }, nv_array(atanh(c(-0.5, 0, 0.5))), tolerance = 1e-6)
+  })
+
+  it("cosh / sinh dispatch through Math", {
+    vals <- c(-1, 0, 1)
+    expect_jit_equal({ x <- nv_array(vals); cosh(x) }, nv_array(cosh(vals)), tolerance = 1e-6)
+    expect_jit_equal({ x <- nv_array(vals); sinh(x) }, nv_array(sinh(vals)), tolerance = 1e-6)
+  })
+
+  it("digamma / lgamma / trigamma dispatch through Math", {
+    vals <- c(0.5, 1, 2, 5)
+    expect_jit_equal({ x <- nv_array(vals); digamma(x) }, nv_array(digamma(vals)), tolerance = 1e-5)
+    expect_jit_equal({ x <- nv_array(vals); lgamma(x) }, nv_array(lgamma(vals)), tolerance = 1e-5)
+    expect_jit_equal({ x <- nv_array(vals); trigamma(x) }, nv_array(trigamma(vals)), tolerance = 1e-5)
+  })
+
+  it("nv_polygamma broadcasts a scalar n", {
+    vals <- c(0.5, 1, 2, 5)
+    expect_jit_equal(
+      { x <- nv_array(vals); nv_polygamma(2, x) },
+      nv_array(psigamma(vals, 2)),
+      tolerance = 1e-5
+    )
+  })
+})
+
 describe("[<-", {
   # main tests are in test-api-subset.R
   it("updates single element", {

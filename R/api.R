@@ -999,6 +999,152 @@ nv_cbrt <- prim_cbrt
 #' @export
 nv_logistic <- prim_logistic
 
+#' @title Arc Cosine
+#' @description
+#' Element-wise inverse cosine. You can also use `acos()`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_acos()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' acos(x)
+#' @export
+nv_acos <- prim_acos
+
+#' @title Inverse Hyperbolic Cosine
+#' @description
+#' Element-wise inverse hyperbolic cosine. You can also use `acosh()`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_acosh()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(1, 2, 10))
+#' acosh(x)
+#' @export
+nv_acosh <- prim_acosh
+
+#' @title Arc Sine
+#' @description
+#' Element-wise inverse sine. You can also use `asin()`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_asin()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' asin(x)
+#' @export
+nv_asin <- prim_asin
+
+#' @title Inverse Hyperbolic Sine
+#' @description
+#' Element-wise inverse hyperbolic sine. You can also use `asinh()`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_asinh()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' asinh(x)
+#' @export
+nv_asinh <- prim_asinh
+
+#' @title Arc Tangent
+#' @description
+#' Element-wise inverse tangent. You can also use `atan()`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_atan()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' atan(x)
+#' @export
+nv_atan <- prim_atan
+
+#' @title Inverse Hyperbolic Tangent
+#' @description
+#' Element-wise inverse hyperbolic tangent. You can also use `atanh()`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_atanh()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-0.5, 0, 0.5))
+#' atanh(x)
+#' @export
+nv_atanh <- prim_atanh
+
+#' @title Hyperbolic Cosine
+#' @description
+#' Element-wise hyperbolic cosine. You can also use `cosh()`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_cosh()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' cosh(x)
+#' @export
+nv_cosh <- prim_cosh
+
+#' @title Hyperbolic Sine
+#' @description
+#' Element-wise hyperbolic sine. You can also use `sinh()`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_sinh()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' sinh(x)
+#' @export
+nv_sinh <- prim_sinh
+
+#' @title Digamma
+#' @description
+#' Element-wise digamma function (logarithmic derivative of the gamma
+#' function). You can also use `digamma()`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_digamma()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(0.5, 1, 2, 5))
+#' digamma(x)
+#' @export
+nv_digamma <- prim_digamma
+
+#' @title Log-Gamma
+#' @description
+#' Element-wise natural logarithm of the absolute value of the gamma
+#' function. You can also use `lgamma()`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [prim_lgamma()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(0.5, 1, 2, 5))
+#' lgamma(x)
+#' @export
+nv_lgamma <- prim_lgamma
+
+#' @title Polygamma
+#' @description
+#' Element-wise polygamma function: the `(n+1)`-th derivative of the
+#' log-gamma function. The order `n` is broadcast against `x` (so
+#' `nv_polygamma(1, x)` works for any `x`). For `n = 0` this is the
+#' digamma function; for `n = 1`, `trigamma()` dispatches here.
+#'
+#' Inputs are
+#' [promoted to a common floating data type][nv_promote_to_common()] and
+#' scalar arguments are
+#' [broadcast][nv_broadcast_scalars()] to the shape of the non-scalar
+#' arguments.
+#' @param n,x ([`arrayish`])\cr
+#'   Floating-point arrayish values. After promotion and broadcasting,
+#'   `n` and `x` must have the same shape; `n` typically holds
+#'   non-negative integer values.
+#' @template return_binary
+#' @seealso [prim_polygamma()] for the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(0.5, 1, 2, 5))
+#' nv_polygamma(1, x) # trigamma
+#' @export
+nv_polygamma <- make_do_binary(prim_polygamma)
+
 #' @title Is Finite
 #' @description
 #' Element-wise check if values are finite (not `Inf`, `-Inf`, or `NaN`).
