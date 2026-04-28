@@ -630,6 +630,31 @@ describe("nv_sort", {
   })
 })
 
+describe("nv_argsort", {
+  it("returns indices that sort the array", {
+    x <- nv_array(c(3, 1, 4, 1, 5))
+    perm <- as.vector(as_array(nv_argsort(x)))
+    expect_equal(as.vector(as_array(x))[perm], c(1, 1, 3, 4, 5))
+  })
+
+  it("supports decreasing", {
+    x <- nv_array(c(3, 1, 4, 1, 5))
+    perm <- as.vector(as_array(nv_argsort(x, decreasing = TRUE)))
+    expect_equal(as.vector(as_array(x))[perm], c(5, 4, 3, 1, 1))
+  })
+
+  it("returns i64 dtype", {
+    expect_equal(as.character(dtype(nv_argsort(nv_array(c(1, 2))))), "i64")
+  })
+
+  it("works inside jit", {
+    f <- jit(function(x) nv_argsort(x))
+    x <- nv_array(c(3, 1, 4, 1, 5))
+    perm <- as.vector(as_array(f(x)))
+    expect_equal(as.vector(as_array(x))[perm], c(1, 1, 3, 4, 5))
+  })
+})
+
 describe("nv_top_k", {
   it("returns the k largest values along the last dim", {
     expect_jit_equal(
@@ -888,6 +913,7 @@ describe("cross-device eager (check_eager)", {
     sortable <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
     sortable_even <- nv_array(c(1, 2, 3, 4))
     check_eager(nv_sort, sortable)
+    check_eager(nv_argsort, sortable)
     check_eager(function(x) nv_top_k(x, k = 3L), sortable)
     check_eager(nv_median, sortable)
     check_eager(nv_median, sortable_even)

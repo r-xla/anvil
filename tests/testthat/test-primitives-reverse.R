@@ -825,7 +825,7 @@ describe("prim_sort", {
     # f(x) = sum(sort(x) * weights). df/dx[k] = weights[sigma[k]] where sigma = argsort(pi).
     weights <- nv_array(c(1, 2, 3, 4, 5))
     f <- function(x) {
-      sorted <- prim_sort(x, dim = 1L)[[1L]]
+      sorted <- prim_sort(x, dim = 1L)
       nv_reduce_sum(sorted * weights, dims = 1L)
     }
     x <- nv_array(c(3, 1, 4, 1.5, 5))
@@ -838,7 +838,7 @@ describe("prim_sort", {
   it("handles descending sort", {
     weights <- nv_array(c(1, 2, 3, 4, 5))
     f <- function(x) {
-      sorted <- prim_sort(x, dim = 1L, descending = TRUE)[[1L]]
+      sorted <- prim_sort(x, dim = 1L, descending = TRUE)
       nv_reduce_sum(sorted * weights, dims = 1L)
     }
     x <- nv_array(c(3, 1, 4, 1.5, 5))
@@ -851,7 +851,7 @@ describe("prim_sort", {
   it("operates per-row on a matrix (dim = 2)", {
     weights <- nv_array(matrix(c(1, 2, 3, 1, 2, 3), nrow = 2, byrow = TRUE))
     f <- function(m) {
-      s <- prim_sort(m, dim = 2L)[[1L]]
+      s <- prim_sort(m, dim = 2L)
       nv_reduce_sum(s * weights, dims = c(1L, 2L))
     }
     m <- nv_array(matrix(c(3, 1, 4, 1.5, 5, 2), nrow = 2, byrow = TRUE))
@@ -887,7 +887,7 @@ describe("prim_sort", {
       nv_reduce_sum(out[[1L]] * weights, dims = 1L)
     }
     fx <- function(x) {
-      s <- prim_sort(x, dim = 1L)[[1L]]
+      s <- prim_sort(x, dim = 1L)
       nv_reduce_sum(s * weights, dims = 1L)
     }
     x <- nv_array(c(3, 1, 4, 1.5, 5))

@@ -235,6 +235,7 @@ reference:
     desc: Sorting arrays and finding extrema
     contents:
       - nv_sort
+      - nv_argsort
       - nv_top_k
       - nv_median
       - nv_argmax

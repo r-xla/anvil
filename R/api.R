@@ -1780,7 +1780,38 @@ nv_sort <- function(x, dim = NULL, decreasing = FALSE, stable = FALSE) {
     cli_abort("Cannot sort a 0-dimensional array")
   }
   dim <- dim %||% ndims(x)
-  prim_sort(x, dim = as.integer(dim), descending = decreasing, is_stable = stable)[[1L]]
+  prim_sort(x, dim = as.integer(dim), descending = decreasing, is_stable = stable)
+}
+
+#' @title Argsort
+#' @description
+#' Returns the indices that would sort the array along a dimension.
+#' @param x ([`arrayish`])\cr
+#'   The array.
+#' @param dim (`integer(1)` | `NULL`)\cr
+#'   Dimension along which to compute the sort permutation. If `NULL`
+#'   (default), uses the last dimension.
+#' @param decreasing (`logical(1)`)\cr
+#'   If `TRUE`, indices that produce a decreasing sort. Default `FALSE`.
+#' @param stable (`logical(1)`)\cr
+#'   If `TRUE`, the sort is stable: indices for equal values keep their
+#'   original relative order. Default `FALSE`.
+#' @return [`arrayish`] of dtype `i64`\cr
+#'   Same shape as `x`. `as_array(x)[as_array(nv_argsort(x))]` reproduces
+#'   the sorted array (for 1-D inputs).
+#' @seealso [nv_sort()], [prim_sort()].
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(3, 1, 4, 1, 5))
+#' nv_argsort(x)
+#' @export
+nv_argsort <- function(x, dim = NULL, decreasing = FALSE, stable = FALSE) {
+  x <- as_anvl_array(x)
+  if (ndims(x) == 0L) {
+    cli_abort("Cannot argsort a 0-dimensional array")
+  }
+  dim <- as.integer(dim %||% ndims(x))
+  idx <- nv_iota_like(x, dim = dim, dtype = "i64", start = 1L)
+  prim_sort(x, idx, dim = dim, descending = decreasing, is_stable = stable)[[2L]]
 }
 
 #' @title Top-K Elements
@@ -1813,7 +1844,7 @@ nv_top_k <- function(x, k, dim = NULL) {
   k <- as.integer(k)
   shp <- shape(x)
   assert_int(k, lower = 1L, upper = shp[dim])
-  sorted <- prim_sort(x, dim = dim, descending = TRUE)[[1L]]
+  sorted <- prim_sort(x, dim = dim, descending = TRUE)
   start_indices <- rep(1L, length(shp))
   limit_indices <- shp
   strides <- rep(1L, length(shp))
@@ -1855,7 +1886,7 @@ nv_median <- function(x, dim = NULL) {
   dim <- as.integer(dim %||% ndims(x))
   shp <- shape(x)
   n <- shp[dim]
-  sorted <- prim_sort(x, dim = dim)[[1L]]
+  sorted <- prim_sort(x, dim = dim)
   if (n %% 2L == 1L) {
     .take_at(sorted, dim, (n + 1L) %/% 2L)
   } else {

@@ -4,54 +4,45 @@
 \alias{prim_sort}
 \title{Primitive Sort}
 \usage{
-prim_sort(..., dim, descending = FALSE, is_stable = FALSE)
+prim_sort(key, value = NULL, dim = 1L, descending = FALSE, is_stable = FALSE)
 }
 \arguments{
-\item{...}{(\code{\link{arrayish}})\cr
-One or more arrays to sort. \strong{The first is the sort key}; the
-remaining operands are carried along under the same permutation.
-All must share the same shape.}
+\item{key}{(\code{\link{arrayish}})\cr
+The array whose values determine the sort order.}
+
+\item{value}{(\code{\link{arrayish}} | \code{NULL})\cr
+Optional second array, reordered with the same permutation as \code{key}.
+Must have the same shape as \code{key}. Default \code{NULL}.}
 
 \item{dim}{(\code{integer(1)})\cr
 Dimension along which to sort.}
 
 \item{descending}{(\code{logical(1)})\cr
 If \code{TRUE}, sort the key in descending order (largest first). Default
-\code{FALSE}. Carried operands are reordered by the same permutation
-regardless.}
+\code{FALSE}. \code{value} is reordered by the same permutation regardless.}
 
 \item{is_stable}{(\code{logical(1)})\cr
 If \code{TRUE}, the sort is stable: the relative order of equal \emph{keys} is
 preserved. Default \code{FALSE}.}
 }
 \value{
-\code{list} of \code{\link{arrayish}}\cr
-One sorted output per input, in the same order. Each has the same
-shape, data type, and ambiguity as the corresponding input.
+If \code{value} is \code{NULL}, a single \code{\link{arrayish}} (the sorted key).
+Otherwise a \code{list} of two \code{\link{arrayish}} values
+\verb{(sorted_key, sorted_value)}. Each output has the same shape, data
+type, and ambiguity as the corresponding input.
 }
 \description{
-Sorts arrays along the given dimension.
+Sorts an array along the given dimension.
 
-Sorting is determined by the \emph{first operand} only: it is treated as the
-sort key, and any additional operands are reordered under the same
-permutation that sorts the first. This enables idioms like \emph{argsort}
+If \code{value} is supplied, both arrays are reordered with the same
+permutation that sorts \code{key}. This enables idioms like \emph{argsort}
 (sort \code{x} paired with an \code{iota} and read off the second output) and
 key-value sorts (sort \code{keys} paired with \code{values}).
 
-All operands must have the same shape; their dtypes may differ.
+\code{key} and \code{value} must have the same shape; their dtypes may differ.
 1-dimensional slices along \code{dim} are sorted independently; other
 dimensions are preserved.
 }
-\section{Gradient}{
-
-The reverse rule routes each upstream output gradient back to the
-original positions of the corresponding input via the inverse
-permutation. The carried operands are differentiable independently;
-the key's gradient is unaffected by the carried operands (small
-perturbations of the key change values but not the permutation, except
-on the measure-zero tie set).
-}
-
 \section{Implemented Rules}{
 
 \itemize{
@@ -64,20 +55,22 @@ on the measure-zero tie set).
 
 Lowers to \code{\link[stablehlo:hlo_sort]{stablehlo::hlo_sort()}} with a comparator that uses
 \code{\link[stablehlo:hlo_compare]{stablehlo::hlo_compare()}} (\code{LT} for ascending, \code{GT} for descending) on
-the first key.
+the key.
 }
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(3, 1, 4, 1, 5))
-prim_sort(x, dim = 1L)[[1L]]
+prim_sort(x, dim = 1L)
 
 # Sort indices by the values (argsort): pair x with iota and read off
 # the second result.
 idx <- nv_iota(dim = 1L, dtype = "i64", shape = 5L)
-prim_sort(x, idx, dim = 1L)[[2L]]
+out <- prim_sort(x, idx, dim = 1L)
+out[[1L]] # sorted x
+out[[2L]] # permutation indices
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_sort]{nv_sort()}}, \code{\link[=nv_top_k]{nv_top_k()}}, \code{\link[=nv_median]{nv_median()}}
+\code{\link[=nv_sort]{nv_sort()}}, \code{\link[=nv_argsort]{nv_argsort()}}, \code{\link[=nv_top_k]{nv_top_k()}}, \code{\link[=nv_median]{nv_median()}}
 }
