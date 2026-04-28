@@ -600,6 +600,246 @@ test_that("prim_print", {
   expect_equal(x, out)
 })
 
+describe("prim_sort", {
+  it("returns a list of one for a single-operand sort", {
+    out <- prim_sort(list(nv_array(c(3, 1, 2))), dim = 1L)
+    expect_type(out, "list")
+    expect_length(out, 1L)
+    expect_s3_class(out[[1L]], "AnvlArray")
+    expect_equal(as.vector(as_array(out[[1L]])), c(1, 2, 3))
+  })
+
+  it("returns a list of two when a second operand is supplied", {
+    x <- nv_array(c(3, 1, 2))
+    idx <- nv_iota(dim = 1L, dtype = "i64", shape = 3L)
+    out <- prim_sort(list(x, idx), dim = 1L)
+    expect_length(out, 2L)
+    expect_s3_class(out[[1L]], "AnvlArray")
+    expect_s3_class(out[[2L]], "AnvlArray")
+  })
+
+  it("sorts a 1D float vector ascending by default", {
+    f <- jit(function(x) prim_sort(list(x), dim = 1L)[[1L]])
+    x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
+    expect_equal(as.vector(as_array(f(x))), c(1, 1, 2, 3, 4, 5, 6, 9))
+  })
+
+  it("sorts descending when descending = TRUE", {
+    f <- jit(function(x) prim_sort(list(x), dim = 1L, descending = TRUE)[[1L]])
+    x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
+    expect_equal(as.vector(as_array(f(x))), c(9, 6, 5, 4, 3, 2, 1, 1))
+  })
+
+  it("sorts integer arrays", {
+    f <- jit(function(x) prim_sort(list(x), dim = 1L)[[1L]])
+    x <- nv_array(c(5L, 2L, 8L, 1L, 4L), dtype = "i32")
+    expect_equal(as.vector(as_array(f(x))), c(1L, 2L, 4L, 5L, 8L))
+  })
+
+  it("sorts each row (dim = 2) of a matrix", {
+    f <- jit(function(x) prim_sort(list(x), dim = 2L)[[1L]])
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    expected <- matrix(c(1, 3, 5, 0, 2, 4), nrow = 2, byrow = TRUE)
+    expect_equal(as_array(f(m)), expected)
+  })
+
+  it("sorts each column (dim = 1) of a matrix", {
+    f <- jit(function(x) prim_sort(list(x), dim = 1L)[[1L]])
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    expected <- matrix(c(2, 1, 0, 3, 4, 5), nrow = 2, byrow = TRUE)
+    expect_equal(as_array(f(m)), expected)
+  })
+
+  it("preserves shape and dtype", {
+    f <- jit(function(x) prim_sort(list(x), dim = 1L)[[1L]])
+    x <- nv_array(c(2.5, -1.5, 0), dtype = "f32")
+    out <- f(x)
+    expect_equal(shape(out), 3L)
+    expect_equal(as.character(dtype(out)), "f32")
+  })
+
+  it("works eagerly (outside jit)", {
+    x <- nv_array(c(3, 1, 2))
+    expect_equal(as.vector(as_array(prim_sort(list(x), dim = 1L)[[1L]])), c(1, 2, 3))
+  })
+
+  it("variadic: argsort idiom (key + iota)", {
+    f <- jit(function(x, idx) prim_sort(list(x, idx), dim = 1L))
+    x <- nv_array(c(3, 1, 4, 1, 5))
+    idx <- nv_iota(dim = 1L, dtype = "i64", shape = 5L)
+    out <- f(x, idx)
+    expect_length(out, 2L)
+    perm <- as.vector(as_array(out[[2L]]))
+    sorted_vals <- as.vector(as_array(out[[1L]]))
+    xv <- as.vector(as_array(x))
+    expect_equal(xv[perm], sorted_vals)
+  })
+
+  it("variadic: 3 operands all permuted by the first key", {
+    x <- nv_array(c(3, 1, 4, 1, 5))
+    idx <- nv_iota(dim = 1L, dtype = "i64", shape = 5L)
+    y <- nv_array(c(10, 20, 30, 40, 50))
+    out <- prim_sort(list(x, idx, y), dim = 1L)
+    expect_length(out, 3L)
+    perm <- as.vector(as_array(out[[2L]]))
+    yv <- as.vector(as_array(y))
+    expect_equal(as.vector(as_array(out[[3L]])), yv[perm])
+  })
+
+  it("dtypes of operands can differ", {
+    x <- nv_array(c(3, 1, 4, 1, 5))
+    idx <- nv_iota(dim = 1L, dtype = "i64", shape = 5L)
+    out <- prim_sort(list(x, idx), dim = 1L)
+    expect_equal(as.character(dtype(out[[1L]])), "f32")
+    expect_equal(as.character(dtype(out[[2L]])), "i64")
+  })
+
+  it("rejects out-of-bounds dim", {
+    expect_error(
+      jit(function(x) prim_sort(list(x), dim = 3L)[[1L]])(nv_array(c(1, 2, 3))),
+      "valid range"
+    )
+  })
+
+  it("errors when operands have mismatched shapes", {
+    expect_error(
+      prim_sort(list(nv_array(c(1, 2, 3)), nv_array(c(1, 2))), dim = 1L),
+      "same shape"
+    )
+  })
+
+  it("errors on empty operands list", {
+    expect_error(prim_sort(list(), dim = 1L), "non-empty")
+  })
+})
+
+describe("prim_argmax", {
+  it("returns the 1-based index of the max along a 1D array", {
+    f <- jit(function(x) prim_argmax(x, dim = 1L))
+    expect_equal(as_array(f(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))), 6L)
+  })
+
+  it("breaks ties with the smallest index", {
+    f <- jit(function(x) prim_argmax(x, dim = 1L))
+    expect_equal(as_array(f(nv_array(c(1, 5, 5, 3)))), 2L)
+  })
+
+  it("operates per-row on a matrix", {
+    f <- jit(function(x) prim_argmax(x, dim = 2L))
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    expect_equal(as.vector(as_array(f(m))), c(3L, 2L))
+  })
+
+  it("supports drop = FALSE", {
+    f <- jit(function(x) prim_argmax(x, dim = 2L, drop = FALSE))
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    out <- f(m)
+    expect_equal(shape(out), c(2L, 1L))
+    expect_equal(as.vector(as_array(out)), c(3L, 2L))
+  })
+
+  it("returns dtype i64", {
+    out <- prim_argmax(nv_array(c(1, 2, 3)), dim = 1L)
+    expect_equal(as.character(dtype(out)), "i64")
+  })
+
+  it("works with integer operand", {
+    out <- prim_argmax(nv_array(c(5L, 2L, 8L, 1L), dtype = "i32"), dim = 1L)
+    expect_equal(as_array(out), 3L)
+  })
+
+  it("errors at trace time when reducing along a size-0 axis", {
+    expect_error(
+      prim_argmax(nv_array(numeric(0), shape = 0L), dim = 1L),
+      "undefined for an empty axis"
+    )
+    expect_error(
+      prim_argmax(nv_array(array(numeric(0), dim = c(3, 0))), dim = 2L),
+      "undefined for an empty axis"
+    )
+    # Inside jit too.
+    expect_error(
+      jit(function(x) prim_argmax(x, dim = 1L))(nv_array(numeric(0), shape = 0L)),
+      "undefined for an empty axis"
+    )
+  })
+
+  it("permits reducing along a non-empty axis when another axis is size 0", {
+    # 2D with shape (0, 3): reducing along dim 2 (size 3) is well-defined and
+    # produces an empty (length-0) i64 vector.
+    m <- nv_array(array(numeric(0), dim = c(0, 3)))
+    out <- prim_argmax(m, dim = 2L)
+    expect_equal(shape(out), 0L)
+    expect_equal(as.character(dtype(out)), "i64")
+  })
+})
+
+describe("prim_argmin", {
+  it("returns the 1-based index of the min along a 1D array", {
+    f <- jit(function(x) prim_argmin(x, dim = 1L))
+    expect_equal(as_array(f(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))), 2L)
+  })
+
+  it("breaks ties with the smallest index", {
+    f <- jit(function(x) prim_argmin(x, dim = 1L))
+    expect_equal(as_array(f(nv_array(c(3, 1, 4, 1, 5)))), 2L)
+  })
+
+  it("operates per-column on a matrix (dim = 1)", {
+    f <- jit(function(x) prim_argmin(x, dim = 1L))
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    expect_equal(as.vector(as_array(f(m))), c(2L, 1L, 2L))
+  })
+
+  it("errors at trace time when reducing along a size-0 axis", {
+    expect_error(
+      prim_argmin(nv_array(numeric(0), shape = 0L), dim = 1L),
+      "undefined for an empty axis"
+    )
+  })
+})
+
+describe("prim_reduce", {
+  it("sum via prim_add", {
+    f <- jit(function(x) prim_reduce(x, init = nv_scalar(0), dims = 1L, reductor = prim_add))
+    expect_equal(as_array(f(nv_array(c(1, 2, 3, 4)))), 10)
+  })
+
+  it("product via prim_mul", {
+    f <- jit(function(x) prim_reduce(x, init = nv_scalar(1), dims = 1L, reductor = prim_mul))
+    expect_equal(as_array(f(nv_array(c(1, 2, 3, 4)))), 24)
+  })
+
+  it("custom max via prim_max with -Inf init", {
+    f <- jit(function(x) prim_reduce(x, init = nv_scalar(-Inf), dims = 1L, reductor = prim_max))
+    expect_equal(as_array(f(nv_array(c(3, 1, 4, 1, 5, 9, 2)))), 9)
+  })
+
+  it("supports drop = FALSE", {
+    f <- jit(
+      function(x) prim_reduce(x, init = nv_scalar(0), dims = 2L, drop = FALSE, reductor = prim_add)
+    )
+    m <- nv_array(matrix(c(1, 2, 3, 4, 5, 6), nrow = 2))
+    out <- f(m)
+    expect_equal(shape(out), c(2L, 1L))
+    expect_equal(as.vector(as_array(out)), c(9, 12))
+  })
+
+  it("rejects mismatched init dtype", {
+    expect_error(
+      prim_reduce(nv_array(c(1, 2, 3)), init = nv_scalar(0L, dtype = "i32"), dims = 1L, reductor = prim_add),
+      "same dtype"
+    )
+  })
+
+  it("rejects non-scalar init", {
+    expect_error(
+      prim_reduce(nv_array(c(1, 2, 3)), init = nv_array(c(0, 0)), dims = 1L, reductor = prim_add),
+      "scalar"
+    )
+  })
+})
+
 # we don't want to include torch in Suggests just for the tests, as it's a relatively
 # heavy dependency
 # We have a CI job that installs torch, so it's at least tested once

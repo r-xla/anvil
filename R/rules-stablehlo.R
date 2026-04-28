@@ -156,6 +156,95 @@ prim_reduce_all[["stablehlo"]] <- function(operand, dims, drop) {
   .stablehlo_apply_reduce(stablehlo::hlo_and, operand, init, dims, drop)
 }
 
+prim_reduce[["stablehlo"]] <- function(operand, init, dims, drop, reductor_graph, .env) {
+  red_func <- stablehlo(reductor_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
+  out <- stablehlo::hlo_reduce(
+    inputs = list(operand),
+    init_values = list(init),
+    dimensions = dims - 1L,
+    body = red_func
+  )
+  if (drop) {
+    return(list(out))
+  }
+  shape_out <- shape(operand$value_type)
+  shape_out[dims] <- 1L
+  list(stablehlo::hlo_reshape(out, shape_out))
+}
+
+# Build the (lhs_v, lhs_i, rhs_v, rhs_i) -> (best_v, best_i) selector body.
+# Picks the value where `direction` (GT for argmax, LT for argmin) holds, with
+# smaller-index tie-break.
+.stablehlo_arg_extreme_body <- function(value_dtype, direction, idx_compare_type) {
+  local_func("")
+  v_dt <- as.character(value_dtype)
+  lhs_v <- stablehlo::hlo_input("lhs_v", v_dt)
+  lhs_i <- stablehlo::hlo_input("lhs_i", "i64")
+  rhs_v <- stablehlo::hlo_input("rhs_v", v_dt)
+  rhs_i <- stablehlo::hlo_input("rhs_i", "i64")
+  v_compare_type <- if (inherits(value_dtype, "FloatType")) {
+    "FLOAT"
+  } else if (inherits(value_dtype, "IntegerType")) {
+    "SIGNED"
+  } else if (inherits(value_dtype, "UIntegerType") || inherits(value_dtype, "BooleanType")) {
+    "UNSIGNED"
+  } else {
+    cli_abort("Unsupported dtype for argmax/argmin: {repr(value_dtype)}")
+  }
+  v_better <- stablehlo::hlo_compare(lhs_v, rhs_v, comparison_direction = direction, compare_type = v_compare_type)
+  v_equal <- stablehlo::hlo_compare(lhs_v, rhs_v, comparison_direction = "EQ", compare_type = v_compare_type)
+  i_smaller <- stablehlo::hlo_compare(lhs_i, rhs_i, comparison_direction = "LT", compare_type = idx_compare_type)
+  tie_better <- stablehlo::hlo_and(v_equal, i_smaller)
+  is_lhs_better <- stablehlo::hlo_or(v_better, tie_better)
+  best_v <- stablehlo::hlo_select(is_lhs_better, lhs_v, rhs_v)
+  best_i <- stablehlo::hlo_select(is_lhs_better, lhs_i, rhs_i)
+  hlo_return(best_v, best_i)
+}
+
+.stablehlo_arg_extreme <- function(operand, dim, drop, direction, init_v_fn) {
+  shp <- shape(operand$value_type)
+  v_dtype <- operand$value_type$type$dtype
+  iota <- stablehlo::hlo_iota(iota_dimension = dim - 1L, dtype = "i64", shape = shp)
+  init_v <- hlo_scalar(init_v_fn(v_dtype, "cpu"))
+  # init_i = 0 is safe even though it equals the smallest real iota index:
+  # the comparator only "flips" to lhs when (v_better) OR (v_equal AND
+  # lhs_i < rhs_i). When init participates in a tie with a real entry,
+  # both have non-greater values (the init sentinel is +/-Inf for floats,
+  # int min/max for integers, so v_better against a real entry always
+  # reflects the real value being preferred). The only tie-on-index case
+  # is `body(init, init)` (which trivially returns init). Real-vs-real
+  # tie-breaking is unaffected because real iota indices are 0..n-1 and
+  # always distinct.
+  init_i <- hlo_scalar(0L, dtype = "i64", func = operand$func)
+  body <- .stablehlo_arg_extreme_body(v_dtype, direction, "SIGNED")
+  out <- stablehlo::hlo_reduce(
+    inputs = list(operand, iota),
+    init_values = list(init_v, init_i),
+    dimensions = dim - 1L,
+    body = body
+  )
+  # out is list(best_values, best_indices); we only need indices, with a +1
+  # shift so that we return 1-based indices to match anvl's convention.
+  result <- out[[2L]]
+  one <- stablehlo::hlo_scalar(1L, dtype = "i64", func = result$func)
+  one_bc <- stablehlo::hlo_broadcast_in_dim(one, integer(0), shape(result$value_type))
+  result <- stablehlo::hlo_add(result, one_bc)
+  if (drop) {
+    return(list(result))
+  }
+  shape_out <- shp
+  shape_out[dim] <- 1L
+  list(stablehlo::hlo_reshape(result, shape_out))
+}
+
+prim_argmax[["stablehlo"]] <- function(operand, dim, drop) {
+  .stablehlo_arg_extreme(operand, dim, drop, direction = "GT", init_v_fn = nv_minval)
+}
+
+prim_argmin[["stablehlo"]] <- function(operand, dim, drop) {
+  .stablehlo_arg_extreme(operand, dim, drop, direction = "LT", init_v_fn = nv_maxval)
+}
+
 # comparison jit rules ----------------------------------------------------------
 
 .compare_type_for <- function(vt) {
@@ -389,6 +478,19 @@ prim_while[["stablehlo"]] <- function(..., cond_graph, body_graph, .env) {
   body_func <- stablehlo(body_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
   cond_func <- stablehlo(cond_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
   stablehlo::hlo_while(..., cond = cond_func, body = body_func, simplify = FALSE)
+}
+
+prim_sort[["stablehlo"]] <- function(..., dim, descending, is_stable, comparator_graph, .env) {
+  cmp_func <- stablehlo(comparator_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
+  result <- stablehlo::hlo_sort(
+    ...,
+    dimension = dim - 1L,
+    is_stable = is_stable,
+    comparator = cmp_func
+  )
+  # hlo_sort auto-simplifies to a bare FuncValue for single-input; the rule
+  # must always return a list of outputs.
+  if (inherits(result, "FuncValue")) list(result) else result
 }
 
 prim_scatter[["stablehlo"]] <- function(

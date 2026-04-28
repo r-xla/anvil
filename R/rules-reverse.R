@@ -419,6 +419,14 @@ prim_round[["reverse"]] <- function(inputs, outputs, grads, method, .required) {
   reverse_zero_uni(inputs, outputs, grads, .required)
 }
 
+# argmax / argmin map reals to integer indices and are locally constant almost
+# everywhere — the index only changes on the measure-zero set of exact ties.
+# Zero-gradient is the standard convention (matches PyTorch, JAX).
+prim_argmax[["reverse"]] <- function(inputs, outputs, grads, dim, drop, .required) {
+  reverse_zero_uni(inputs, outputs, grads, .required)
+}
+prim_argmin[["reverse"]] <- prim_argmax[["reverse"]]
+
 prim_cbrt[["reverse"]] <- function(inputs, outputs, grads, .required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
@@ -568,6 +576,58 @@ prim_atan2[["reverse"]] <- function(inputs, outputs, grads, .required) {
     if (.required[[1L]]) prim_div(prim_mul(grad, rhs), denom),
     if (.required[[2L]]) prim_div(prim_mul(grad, prim_negate(lhs)), denom)
   )
+}
+
+# sort reverse: route each upstream gradient back to original positions via
+# the inverse permutation.
+#
+# For y = sort(key)[forward perm π], we have y[i] = key[π[i]], so the gradient
+# satisfies dkey[k] = dy[σ[k]] where σ = π^{-1} (= argsort(π)).
+#
+# Implementation trick: instead of computing σ explicitly and gathering, sort
+# (π, grad) ascending — the second output is grad permuted by argsort(π) = σ,
+# which is exactly the input gradient.
+prim_sort[["reverse"]] <- function(
+  inputs,
+  outputs,
+  grads,
+  dim,
+  descending,
+  is_stable,
+  comparator_graph,
+  .required
+) {
+  required <- as.logical(.required)
+  if (!any(required)) {
+    return(rep(list(NULL), length(inputs)))
+  }
+
+  key <- inputs[[1L]]
+  iota <- prim_iota(dim = dim, dtype = "i64", shape = shape(key), start = 1L)
+  perm <- prim_sort(
+    list(key, iota),
+    dim = dim,
+    descending = descending,
+    is_stable = is_stable
+  )[[2L]]
+
+  # Route all required gradients through a single argsort-by-perm: sort
+  # (perm, grad_1, ..., grad_K) ascending. Each carried output is then
+  # `grad_j` permuted by argsort(perm) = sigma, which is exactly the
+  # gradient for the j-th input.
+  required_idx <- which(required)
+  inv <- prim_sort(
+    c(list(perm), grads[required_idx]),
+    dim = dim,
+    descending = FALSE,
+    is_stable = FALSE
+  )
+
+  out <- vector("list", length(inputs))
+  for (k in seq_along(required_idx)) {
+    out[[required_idx[[k]]]] <- inv[[k + 1L]]
+  }
+  out
 }
 
 # concatenate reverse: split the gradient back along the concatenation dimension

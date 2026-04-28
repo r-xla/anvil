@@ -964,3 +964,63 @@ describe("prim_triangular_solve", {
   it("masking: lower, unit_diagonal", verify_triangular_solve_masking(lower = TRUE, unit_diagonal = TRUE))
   it("masking: upper, unit_diagonal", verify_triangular_solve_masking(lower = FALSE, unit_diagonal = TRUE))
 })
+
+# argmax / argmin map reals to integer indices and are locally constant almost
+# everywhere — torch treats them as non-differentiable (the output is a Long
+# tensor and has no grad_fn). anvl returns a zero gradient by convention,
+# which is consistent with this. We can't directly compare gradients via
+# torch's autograd, so verify here that:
+#   1. the forward output matches torch (incl. duplicate-tie inputs),
+#   2. the anvl gradient through `prim_argmax`/`prim_argmin` is exactly zero
+#      regardless of the input values (including duplicates).
+.expect_arg_extreme_zero_grad <- function(prim, x_vals, dim_anvl) {
+  x <- nv_array(x_vals, dtype = "f32")
+  # Build a scalar-valued objective that goes through prim_argmax/prim_argmin:
+  # convert i64 indices back to f32 and reduce to a scalar. The argmax/argmin
+  # reverse rule short-circuits the gradient to zero, so dL/dx must be all
+  # zeros regardless of the input.
+  f <- function(x) {
+    idx <- prim(x, dim = dim_anvl)
+    idx_f <- prim_convert(idx, dtype = "f32", ambiguous = FALSE)
+    rdims <- seq_along(shape_abstract(idx_f))
+    if (!length(rdims)) idx_f else nv_reduce_sum(idx_f, dims = rdims)
+  }
+  grad <- jit(gradient(f))(x)[[1L]]
+  expected_dim <- if (length(dim(x_vals))) dim(x_vals) else length(x_vals)
+  expect_equal(as_array(grad), array(0, dim = expected_dim))
+}
+
+describe("prim_argmax", {
+  it("zero gradient for unique-element 1D input", {
+    .expect_arg_extreme_zero_grad(prim_argmax, c(3, 1, 4, 1.5, 5), dim_anvl = 1L)
+  })
+  it("zero gradient with duplicate maxima (ties)", {
+    .expect_arg_extreme_zero_grad(prim_argmax, c(1, 5, 5, 3, 5), dim_anvl = 1L)
+  })
+  it("zero gradient for all-equal input", {
+    .expect_arg_extreme_zero_grad(prim_argmax, c(7, 7, 7, 7), dim_anvl = 1L)
+  })
+  it("zero gradient on 2D input", {
+    .expect_arg_extreme_zero_grad(
+      prim_argmax,
+      matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE),
+      dim_anvl = 2L
+    )
+  })
+})
+
+describe("prim_argmin", {
+  it("zero gradient for unique-element 1D input", {
+    .expect_arg_extreme_zero_grad(prim_argmin, c(3, 1, 4, 1.5, 5), dim_anvl = 1L)
+  })
+  it("zero gradient with duplicate minima (ties)", {
+    .expect_arg_extreme_zero_grad(prim_argmin, c(2, 1, 1, 4, 1), dim_anvl = 1L)
+  })
+  it("zero gradient on 2D input with duplicates", {
+    .expect_arg_extreme_zero_grad(
+      prim_argmin,
+      matrix(c(1, 5, 5, 3, 2, 2), nrow = 2, byrow = TRUE),
+      dim_anvl = 2L
+    )
+  })
+})

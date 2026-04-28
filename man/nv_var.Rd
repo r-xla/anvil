@@ -39,5 +39,5 @@ nv_var(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_sd]{nv_sd()}}, \code{\link[=nv_reduce_mean]{nv_reduce_mean()}}
+\code{\link[=nv_sd]{nv_sd()}}, \code{\link[=nv_mean]{nv_mean()}}
 }

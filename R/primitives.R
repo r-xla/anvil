@@ -784,6 +784,236 @@ prim_reduce_any <- new_primitive("reduce_any", make_reduce_op(infer_reduce_boole
 #' @export
 prim_reduce_all <- new_primitive("reduce_all", make_reduce_op(infer_reduce_boolean), static = 2:3)
 
+#' @title Primitive Generic Reduce
+#' @description
+#' Reduces an array along the specified dimensions using a user-supplied
+#' associative reducer.
+#' @section Associativity Requirement:
+#' The order in which `reductor` is applied across the reduction window is
+#' implementation-defined. If the reductor is not associative, the result
+#' is ill-defined.
+#' Furthermore, `init` must be the neutral element for this reductor.
+#' Because floating point math is non-associative, the output of
+#' the reduction can differ between backends (GPU, CPU), even if the underlying mathematical
+#' function (like `+`) is associative.
+#'
+#' @template param_prim_operand_any
+#' @param init ([`arrayish`])\cr
+#'   Scalar (0-dimensional) initial value. Must have the same data type as
+#'   `operand` and be the neutral element of the group formed by the `reductor`.
+#' @param dims (`integer()`)\cr
+#'   Dimensions to reduce over.
+#' @param drop (`logical(1)`)\cr
+#'   If `TRUE` (default) the reduced dimensions are removed; if `FALSE`
+#'   they are kept with size 1.
+#' @param reductor (`function(lhs, rhs)`)\cr
+#'   Binary reducer producing a scalar of the same dtype as `operand`.
+#'   Must be associative (see "Associativity Requirement").
+#' @return [`arrayish`]\cr
+#'   Same data type as `operand`. Shape is `operand` with `dims` removed
+#'   (or set to 1 if `drop = FALSE`).
+#' @templateVar primitive_id reduce
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_reduce()] with `reductor` as the body.
+#' @seealso [prim_reduce_sum()], [prim_reduce_max()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(1, 2, 3, 4))
+#' prim_reduce(x, init = nv_scalar(0), dims = 1L, reductor = prim_add)
+#' prim_reduce(x, init = nv_scalar(1), dims = 1L, reductor = prim_mul)
+#' @export
+prim_reduce <- new_primitive(
+  "reduce",
+  function(operand, init, dims, drop = TRUE, reductor) {
+    force(operand)
+    force(init)
+    force(reductor)
+
+    if (!checkmate::test_integerish(dims, lower = 1)) {
+      cli_abort("{.arg dims} must be a positive integer vector")
+    }
+    if (!checkmate::test_flag(drop)) {
+      cli_abort("{.arg drop} must be a flag")
+    }
+    if (!is.function(reductor)) {
+      cli_abort("{.arg reductor} must be a function")
+    }
+
+    op_dtype <- dtype_abstract(operand)
+    init_dtype <- dtype_abstract(init)
+    if (init_dtype != op_dtype) {
+      cli_abort(c(
+        "{.arg init} must have the same dtype as {.arg operand}.",
+        x = "Got operand dtype {.field {repr(op_dtype)}} and init dtype {.field {repr(init_dtype)}}."
+      ))
+    }
+    if (length(shape_abstract(init)) != 0L) {
+      cli_abort("{.arg init} must be a scalar (0-dimensional)")
+    }
+
+    current_desc <- .current_descriptor(silent = TRUE)
+    desc_red <- local_descriptor()
+
+    dummy_args <- list(
+      lhs = AbstractArray(dtype = op_dtype, shape = Shape(integer()), ambiguous = FALSE),
+      rhs = AbstractArray(dtype = op_dtype, shape = Shape(integer()), ambiguous = FALSE)
+    )
+    reductor_graph <- trace_fn(reductor, dummy_args, desc = desc_red, lit_to_array = TRUE)
+
+    if (length(reductor_graph$outputs) != 1L) {
+      cli_abort(c(
+        "{.arg reductor} must return exactly one value.",
+        x = "Got {length(reductor_graph$outputs)} outputs."
+      ))
+    }
+    out_aval <- reductor_graph$outputs[[1L]]$aval
+    if (out_aval$dtype != op_dtype) {
+      cli_abort(c(
+        "{.arg reductor} must return a value with the same dtype as {.arg operand}.",
+        x = "Got reductor output dtype {.field {repr(out_aval$dtype)}}."
+      ))
+    }
+
+    for (const in reductor_graph$constants) {
+      get_box_or_register_const(current_desc, const)
+    }
+
+    infer_fn <- function(operand, init, dims, drop, reductor_graph) {
+      shp <- shape(operand)
+      if (any(dims > length(shp))) {
+        cli_abort(c(
+          "{.arg dims} out of bounds.",
+          x = "Operand has {length(shp)} dims, got {.arg dims} = {dims}."
+        ))
+      }
+      if (drop) {
+        new_shape <- shp[-dims]
+      } else {
+        new_shape <- shp
+        new_shape[dims] <- 1L
+      }
+      list(AbstractArray(
+        dtype = dtype(operand),
+        shape = Shape(new_shape),
+        ambiguous = operand$ambiguous
+      ))
+    }
+
+    graph_desc_add(
+      self,
+      args = list(operand = operand, init = init),
+      params = list(dims = dims, drop = drop, reductor_graph = reductor_graph),
+      infer_fn = infer_fn,
+      desc = current_desc
+    )[[1L]]
+  },
+  subgraphs = "reductor_graph",
+  static = c("dims", "drop", "reductor")
+)
+
+# Shared shape inference for prim_argmax / prim_argmin: operand -> i64
+# with `dim` dropped (or kept as size 1).
+infer_fn_arg_extreme <- function(operand, dim, drop) {
+  shp <- shape(operand)
+  if (dim > length(shp)) {
+    cli_abort(c(
+      "{.arg dim} is out of bounds.",
+      x = "Operand has {length(shp)} dims, got {.arg dim} = {dim}."
+    ))
+  }
+  # The reduction lowering uses `init_v = +/-Inf` and `init_i = 0`. Reducing
+  # along a size-0 axis would silently emit those sentinels (i.e. index 1)
+  # rather than failing. Argmax/argmin of an empty axis is undefined, so
+  # reject it here at trace time.
+  if (shp[dim] == 0L) {
+    cli_abort(c(
+      "argmax/argmin is undefined for an empty axis.",
+      x = "Operand has shape {xlamisc::shapevec_repr(shp)}; {.arg dim} = {dim} has size 0."
+    ))
+  }
+  if (drop) {
+    new_shape <- shp[-dim]
+  } else {
+    new_shape <- shp
+    new_shape[dim] <- 1L
+  }
+  list(AbstractArray(
+    dtype = "i64",
+    shape = Shape(new_shape),
+    ambiguous = FALSE
+  ))
+}
+
+#' @title Primitive Argmax
+#' @description
+#' Returns the index of the maximum value along a single dimension. Ties
+#' are broken by returning the smallest index.
+#' @template param_prim_operand_any
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which to find the index of the maximum.
+#' @param drop (`logical(1)`)\cr
+#'   If `TRUE` (default) the reduced dimension is removed; if `FALSE` it is
+#'   kept with size 1.
+#' @return [`arrayish`] of dtype `i64`\cr
+#'   Same shape as `operand` with `dim` removed (or set to 1 if
+#'   `drop = FALSE`).
+#' @templateVar primitive_id argmax
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to a variadic [stablehlo::hlo_reduce()] over `(values, indices)`
+#' with a (value > value | (value == value & idx < idx)) selector.
+#' @seealso [prim_argmin()], [nv_argmax()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' prim_argmax(nv_array(c(3, 1, 4, 1, 5)), dim = 1L)
+#' @export
+prim_argmax <- new_primitive(
+  "argmax",
+  function(operand, dim, drop = TRUE) {
+    assert_integerish(dim, lower = 1, len = 1L)
+    assert_flag(drop)
+    graph_desc_add(
+      self,
+      args = list(operand = operand),
+      params = list(dim = dim, drop = drop),
+      infer_fn = infer_fn_arg_extreme
+    )[[1L]]
+  },
+  static = 2:3
+)
+
+#' @title Primitive Argmin
+#' @description
+#' Returns the index of the minimum value along a single dimension. Ties
+#' are broken by returning the smallest index.
+#' @template param_prim_operand_any
+#' @inheritParams prim_argmax
+#' @return [`arrayish`] of dtype `i64`\cr
+#'   Same shape as `operand` with `dim` removed (or set to 1 if
+#'   `drop = FALSE`).
+#' @templateVar primitive_id argmin
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to a variadic [stablehlo::hlo_reduce()] over `(values, indices)`
+#' with a (value < value | (value == value & idx < idx)) selector.
+#' @seealso [prim_argmax()], [nv_argmin()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' prim_argmin(nv_array(c(3, 1, 4, 1, 5)), dim = 1L)
+#' @export
+prim_argmin <- new_primitive(
+  "argmin",
+  function(operand, dim, drop = TRUE) {
+    assert_integerish(dim, lower = 1, len = 1L)
+    assert_flag(drop)
+    graph_desc_add(
+      self,
+      args = list(operand = operand),
+      params = list(dim = dim, drop = drop),
+      infer_fn = infer_fn_arg_extreme
+    )[[1L]]
+  },
+  static = 2:3
+)
+
 # comparison primitives --------------------------------------------------------
 
 infer_compare <- function(lhs, rhs, comparison_direction) {
@@ -1973,6 +2203,140 @@ prim_while <- new_primitive(
   },
   subgraphs = c("cond_graph", "body_graph"),
   static = 2:3
+)
+
+#' @title Primitive Sort
+#' @description
+#' Sorts arrays along the given dimension.
+#'
+#' Sorting is determined by the *first operand* only: it is the sort key,
+#' and any additional operands are reordered with the same permutation
+#' that sorts the first. This enables idioms like *argsort* (sort `x`
+#' paired with an `iota` and read off the second output) and key-value
+#' sorts (sort `keys` paired with `values`).
+#'
+#' All operands must have the same shape; their dtypes may differ.
+#' 1-dimensional slices along `dim` are sorted independently; other
+#' dimensions are preserved.
+#' @param operands (`list` of [`arrayish`])\cr
+#'   One or more arrays to sort. The first is the sort key; the rest are
+#'   carried along under the same permutation. All must share the same shape.
+#' @param dim (`integer(1)`)\cr
+#'   Dimension along which to sort.
+#' @param descending (`logical(1)`)\cr
+#'   If `TRUE`, sort the key in descending order (largest first). Default
+#'   `FALSE`. Additional operands are reordered by the same permutation
+#'   regardless.
+#' @param is_stable (`logical(1)`)\cr
+#'   If `TRUE`, the sort is stable: the relative order of equal *keys* is
+#'   preserved. Default `FALSE`.
+#' @return `list` of [`arrayish`]\cr
+#'   One sorted output per element of `operands`, in the same order. Each
+#'   output has the same shape, data type, and ambiguity as the
+#'   corresponding input.
+#' @templateVar primitive_id sort
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_sort()] with a comparator that uses
+#' [stablehlo::hlo_compare()] (`LT` for ascending, `GT` for descending) on
+#' the first operand.
+#' @seealso [nv_sort()], [nv_argsort()], [nv_top_k()], [nv_median()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(3, 1, 4, 1, 5))
+#' prim_sort(list(x), dim = 1L)[[1L]]
+#'
+#' # Sort indices by the values (argsort): pair x with iota and read off
+#' # the second result.
+#' idx <- nv_iota(dim = 1L, dtype = "i64", shape = 5L)
+#' out <- prim_sort(list(x, idx), dim = 1L)
+#' out[[1L]] # sorted x
+#' out[[2L]] # permutation indices
+#' @export
+prim_sort <- new_primitive(
+  "sort",
+  function(operands, dim = 1L, descending = FALSE, is_stable = FALSE) {
+    force(operands)
+    assert_integerish(dim, lower = 1, len = 1)
+    assert_flag(descending)
+    assert_flag(is_stable)
+    if (!is.list(operands) || !length(operands)) {
+      cli_abort("{.arg operands} must be a non-empty list of arrayish values")
+    }
+
+    current_desc <- .current_descriptor(silent = TRUE)
+    desc_cmp <- local_descriptor()
+
+    # Comparator takes 2*N scalars; only compares the first key pair.
+    op_dtypes <- lapply(operands, dtype_abstract)
+    dummy_args <- unlist(
+      lapply(op_dtypes, function(dt) {
+        list(
+          nv_aval(dtype = dt, shape = integer()),
+          nv_aval(dtype = dt, shape = integer())
+        )
+      }),
+      recursive = FALSE
+    )
+    cmp_fn <- if (descending) prim_gt else prim_lt
+    comparator <- function(...) {
+      args <- list(...)
+      cmp_fn(args[[1L]], args[[2L]])
+    }
+
+    comparator_graph <- trace_fn(comparator, dummy_args, desc = desc_cmp, lit_to_array = TRUE)
+
+    infer_fn <- function(..., dim, descending, is_stable, comparator_graph) {
+      ops <- list(...)
+      ref_shape <- shape(ops[[1L]])
+      for (i in seq_along(ops)[-1L]) {
+        if (!identical(shape(ops[[i]]), ref_shape)) {
+          cli_abort(c(
+            "All operands of {.fn prim_sort} must have the same shape.",
+            x = "Got {xlamisc::shapevec_repr(ref_shape)} and {xlamisc::shapevec_repr(shape(ops[[i]]))}."
+          ))
+        }
+      }
+      dim_const <- stablehlo::r_to_constant(
+        as.integer(dim - 1L),
+        dtype = "i64",
+        shape = integer(0)
+      )
+      is_stable_const <- stablehlo::r_to_constant(
+        is_stable,
+        dtype = "i1",
+        shape = integer(0)
+      )
+      cmp_func <- stablehlo(comparator_graph, constants_as_inputs = FALSE)[[1L]]
+      vts_in <- lapply(ops, at2vt)
+      vts_out <- rlang::exec(
+        stablehlo::infer_types_sort,
+        !!!vts_in,
+        dimension = dim_const,
+        is_stable = is_stable_const,
+        comparator = cmp_func
+      )
+      lapply(seq_along(ops), function(i) {
+        out <- vt2at(vts_out[[i]])
+        out$ambiguous <- ops[[i]]$ambiguous
+        out
+      })
+    }
+
+    graph_desc_add(
+      self,
+      args = operands,
+      params = list(
+        dim = dim,
+        descending = descending,
+        is_stable = is_stable,
+        comparator_graph = comparator_graph
+      ),
+      infer_fn = infer_fn,
+      desc = current_desc
+    )
+  },
+  subgraphs = "comparator_graph",
+  static = c("dim", "descending", "is_stable")
 )
 
 # Print primitive

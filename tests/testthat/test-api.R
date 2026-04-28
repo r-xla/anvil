@@ -620,6 +620,294 @@ describe("nv_seq_like", {
   })
 })
 
+describe("nv_select", {
+  it("selects a row of a matrix and drops the dim", {
+    m <- nv_array(matrix(1:6, nrow = 2))
+    expect_jit_equal(nv_select(m, dim = 1L, index = 1L), nv_array(c(1L, 3L, 5L)))
+    expect_jit_equal(nv_select(m, dim = 1L, index = 2L), nv_array(c(2L, 4L, 6L)))
+  })
+
+  it("selects a column of a matrix and drops the dim", {
+    m <- nv_array(matrix(1:6, nrow = 2))
+    expect_jit_equal(nv_select(m, dim = 2L, index = 2L), nv_array(c(3L, 4L)))
+  })
+
+  it("works on a 3D array", {
+    arr <- nv_array(array(1:24, dim = c(2, 3, 4)))
+    out <- jit(function(x) nv_select(x, dim = 3L, index = 2L))(arr)
+    expect_equal(shape(out), c(2L, 3L))
+    expect_equal(as_array(out), array(7:12, dim = c(2, 3)))
+  })
+
+  it("errors when dim is out of bounds", {
+    expect_error(nv_select(nv_array(c(1, 2, 3)), dim = 2L, index = 1L))
+  })
+
+  it("errors when index is out of bounds", {
+    expect_error(nv_select(nv_array(c(1, 2, 3)), dim = 1L, index = 5L))
+  })
+
+  it("errors on a 0-dimensional input", {
+    expect_error(nv_select(nv_scalar(1), dim = 1L, index = 1L), "0-dimensional")
+  })
+})
+
+describe("nv_sort", {
+  it("defaults dim to the last dimension", {
+    expect_jit_equal(
+      nv_sort(nv_array(c(3, 1, 4, 1, 5))),
+      nv_array(c(1, 1, 3, 4, 5))
+    )
+  })
+
+  it("sorts decreasing", {
+    expect_jit_equal(
+      nv_sort(nv_array(c(3, 1, 4, 1, 5)), decreasing = TRUE),
+      nv_array(c(5, 4, 3, 1, 1))
+    )
+  })
+
+  it("defaults to last dim for matrices (rows)", {
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    expected <- nv_array(matrix(c(1, 3, 5, 0, 2, 4), nrow = 2, byrow = TRUE))
+    expect_jit_equal(nv_sort(m), expected)
+  })
+
+  it("errors on a 0-dimensional input", {
+    expect_error(nv_sort(nv_scalar(1)), "0-dimensional")
+  })
+
+  it("dispatches via the sort() generic", {
+    x <- nv_array(c(3, 1, 4, 1, 5))
+    expect_equal(as.vector(as_array(sort(x))), c(1, 1, 3, 4, 5))
+    expect_equal(as.vector(as_array(sort(x, decreasing = TRUE))), c(5, 4, 3, 1, 1))
+    expect_equal(as.vector(as_array(jit(function(x) sort(x))(x))), c(1, 1, 3, 4, 5))
+  })
+})
+
+describe("nv_argsort", {
+  it("returns indices that sort the array", {
+    x <- nv_array(c(3, 1, 4, 1, 5))
+    perm <- as.vector(as_array(nv_argsort(x)))
+    expect_equal(as.vector(as_array(x))[perm], c(1, 1, 3, 4, 5))
+  })
+
+  it("supports decreasing", {
+    x <- nv_array(c(3, 1, 4, 1, 5))
+    perm <- as.vector(as_array(nv_argsort(x, decreasing = TRUE)))
+    expect_equal(as.vector(as_array(x))[perm], c(5, 4, 3, 1, 1))
+  })
+
+  it("returns i64 dtype", {
+    expect_equal(as.character(dtype(nv_argsort(nv_array(c(1, 2))))), "i64")
+  })
+
+  it("works inside jit", {
+    f <- jit(function(x) nv_argsort(x))
+    x <- nv_array(c(3, 1, 4, 1, 5))
+    perm <- as.vector(as_array(f(x)))
+    expect_equal(as.vector(as_array(x))[perm], c(1, 1, 3, 4, 5))
+  })
+})
+
+describe("nv_top_k", {
+  it("returns the k largest values along the last dim", {
+    expect_jit_equal(
+      nv_top_k(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)), k = 3L),
+      nv_array(c(9, 6, 5))
+    )
+  })
+
+  it("operates per-row on a matrix when dim is the last dim", {
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    out <- jit(nv_top_k, static = "k")(m, k = 2L)
+    expect_equal(shape(out), c(2L, 2L))
+    expect_equal(as_array(out), matrix(c(5, 3, 4, 2), nrow = 2, byrow = TRUE))
+  })
+
+  it("errors when k > size of dim", {
+    expect_error(nv_top_k(nv_array(c(1, 2, 3)), k = 5L))
+  })
+})
+
+describe("nv_median", {
+  it("returns the middle element for odd length", {
+    expect_jit_equal(
+      nv_median(nv_array(c(3, 1, 4, 1, 5))),
+      nv_scalar(3)
+    )
+  })
+
+  it("averages the two middle elements for even length", {
+    expect_jit_equal(
+      nv_median(nv_array(c(1, 2, 3, 4))),
+      nv_scalar(2.5)
+    )
+  })
+
+  it("operates row-wise by default on a matrix", {
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    out <- jit(nv_median)(m)
+    expect_equal(as.vector(as_array(out)), c(3, 2))
+  })
+
+  it("dispatches via the median() generic", {
+    expect_equal(as_array(median(nv_array(c(1, 2, 3, 4)))), as_array(nv_scalar(2.5)))
+    expect_equal(
+      as_array(jit(function(x) median(x))(nv_array(c(1, 2, 3, 4, 5)))),
+      as_array(nv_scalar(3))
+    )
+  })
+
+  it("errors when na.rm = TRUE", {
+    x <- nv_array(c(1, 2, 3, 4))
+    expect_error(median(x, na.rm = TRUE), "na.rm = TRUE")
+  })
+})
+
+describe("nv_quantile", {
+  it("matches base R quantile (default linear / type 7) for scalar probs", {
+    xr <- c(3, 1, 4, 1, 5, 9, 2, 6)
+    x <- nv_array(xr)
+    for (q in c(0, 0.25, 0.5, 0.75, 1)) {
+      expect_equal(
+        as_array(nv_quantile(x, q)),
+        unname(quantile(xr, q)),
+        info = paste("q =", q)
+      )
+    }
+  })
+
+  it("vector probs prepends a leading dim of length(probs)", {
+    xr <- c(3, 1, 4, 1, 5, 9, 2, 6)
+    x <- nv_array(xr)
+    out <- nv_quantile(x, c(0.25, 0.5, 0.75))
+    expect_equal(shape(out), 3L)
+    expect_equal(as.vector(as_array(out)), unname(quantile(xr, c(0.25, 0.5, 0.75))))
+  })
+
+  it("interpolation = 'lower' returns sorted[floor((n-1)*q)+1]", {
+    # Note: this matches NumPy's "lower" semantics; it does NOT match
+    # base R's quantile(type = 1), which uses ceiling(n * q) instead.
+    xr <- c(3, 1, 4, 1, 5, 9, 2, 6)
+    sorted_r <- sort(xr)
+    x <- nv_array(xr)
+    n <- length(xr)
+    for (q in c(0, 0.25, 0.4, 0.6, 0.75, 1)) {
+      expected <- sorted_r[floor((n - 1) * q) + 1L]
+      expect_equal(
+        as_array(nv_quantile(x, q, interpolation = "lower")),
+        expected,
+        info = paste("q =", q)
+      )
+    }
+  })
+
+  it("interpolation = 'higher' picks the upper neighbour", {
+    x <- nv_array(c(1, 2, 3, 4))
+    expect_equal(as_array(nv_quantile(x, 0.25, interpolation = "higher")), 2)
+    expect_equal(as_array(nv_quantile(x, 0.5, interpolation = "higher")), 3)
+  })
+
+  it("interpolation = 'nearest' picks the nearer index by frac", {
+    x <- nv_array(c(1, 2, 3, 4))
+    # n = 4, q = 0.4 -> h = 1.2 -> lo = 2, hi = 3, frac = 0.2 < 0.5 -> lower (2)
+    expect_equal(as_array(nv_quantile(x, 0.4, interpolation = "nearest")), 2)
+    # q = 0.5 -> h = 1.5 -> frac = 0.5 -> NOT < 0.5 -> higher (3)
+    expect_equal(as_array(nv_quantile(x, 0.5, interpolation = "nearest")), 3)
+  })
+
+  it("interpolation = 'midpoint' averages neighbours", {
+    x <- nv_array(c(1, 2, 3, 4))
+    expect_equal(as_array(nv_quantile(x, 0.5, interpolation = "midpoint")), 2.5)
+  })
+
+  it("operates along a chosen dim of a matrix", {
+    m_raw <- matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
+    m <- nv_array(m_raw)
+    out <- nv_quantile(m, 0.5, dim = 2L)
+    expect_equal(as.vector(as_array(out)), c(3, 2))
+  })
+
+  it("rejects probs outside [0, 1]", {
+    expect_error(nv_quantile(nv_array(c(1, 2)), -0.1))
+    expect_error(nv_quantile(nv_array(c(1, 2)), 1.5))
+  })
+
+  it("errors on a 0-dimensional input", {
+    expect_error(nv_quantile(nv_scalar(1), 0.5), "0-dimensional")
+  })
+})
+
+describe("mean()", {
+  it("errors when na.rm = TRUE", {
+    x <- nv_array(c(1, 2, 3, 4))
+    expect_error(mean(x, na.rm = TRUE), "na.rm = TRUE")
+  })
+
+  it("errors when trim is non-zero", {
+    x <- nv_array(c(1, 2, 3, 4))
+    expect_error(mean(x, trim = 0.1), "trim")
+  })
+})
+
+describe("nv_argmax / nv_argmin", {
+  it("returns the index (1-based) of the maximum", {
+    expect_jit_equal(
+      nv_argmax(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))),
+      nv_scalar(6L, dtype = "i64")
+    )
+  })
+
+  it("returns the index of the minimum", {
+    expect_jit_equal(
+      nv_argmin(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))),
+      nv_scalar(2L, dtype = "i64")
+    )
+  })
+
+  it("breaks ties by returning the smallest index", {
+    expect_jit_equal(
+      nv_argmax(nv_array(c(1, 5, 5, 3))),
+      nv_scalar(2L, dtype = "i64")
+    )
+  })
+
+  it("operates per-row on a matrix by default", {
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    out <- jit(nv_argmax)(m)
+    expect_equal(as.vector(as_array(out)), c(3L, 2L))
+  })
+
+  it("supports an explicit dim", {
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    out <- jit(nv_argmax, static = "dim")(m, dim = 1L)
+    expect_equal(as.vector(as_array(out)), c(1L, 2L, 1L))
+  })
+
+  it("supports drop = FALSE to keep the reduced dim", {
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    out_max <- jit(nv_argmax, static = "drop")(m, drop = FALSE)
+    expect_equal(shape(out_max), c(2L, 1L))
+    expect_equal(as.vector(as_array(out_max)), c(3L, 2L))
+
+    out_min <- jit(nv_argmin, static = "drop")(m, drop = FALSE)
+    expect_equal(shape(out_min), c(2L, 1L))
+    expect_equal(as.vector(as_array(out_min)), c(2L, 3L))
+  })
+
+  it("errors when the reduction axis has size 0", {
+    expect_error(
+      nv_argmax(nv_array(numeric(0), shape = 0L)),
+      "undefined for an empty axis"
+    )
+    expect_error(
+      nv_argmin(nv_array(numeric(0), shape = 0L)),
+      "undefined for an empty axis"
+    )
+  })
+})
+
 describe("cross-device eager (check_eager)", {
   # Test data
   vec_f <- nv_array(c(1, 2, 3))
@@ -719,11 +1007,12 @@ describe("cross-device eager (check_eager)", {
     check_eager(function(x) nv_squeeze(x), nv_array(1:6, shape = c(1, 6, 1)))
     check_eager(function(x) nv_unsqueeze(x, dim = 1L), vec_f)
     check_eager(function(x) nv_reverse(x, dims = 1L), vec_f)
+    check_eager(function(x) nv_select(x, dim = 1L, index = 1L), mat_2x3)
   })
 
   it("reductions", {
     check_eager(function(x) nv_reduce_sum(x, dims = 1L), mat_2x3)
-    check_eager(function(x) nv_reduce_mean(x, dims = 1L), nv_array(matrix(1:6, 2), dtype = "f32"))
+    check_eager(function(x) nv_mean(x, dims = 1L), nv_array(matrix(1:6, 2), dtype = "f32"))
     check_eager(function(x) nv_reduce_prod(x, dims = 1L), mat_2x3)
     check_eager(function(x) nv_reduce_max(x, dims = 1L), mat_2x3)
     check_eager(function(x) nv_reduce_min(x, dims = 1L), mat_2x3)
@@ -770,5 +1059,19 @@ describe("cross-device eager (check_eager)", {
     check_eager(function(like) nv_array_like(like, c(7L, 8L, 9L)), vec_i)
     check_eager(function(like) nv_scalar_like(like, 7L), vec_i)
     check_eager(function(like) nv_empty_like(like, shape = c(2, 2)), vec_f)
+  })
+
+  it("sorting / searching", {
+    sortable <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
+    sortable_even <- nv_array(c(1, 2, 3, 4))
+    check_eager(nv_sort, sortable)
+    check_eager(nv_argsort, sortable)
+    check_eager(function(x) nv_top_k(x, k = 3L), sortable)
+    check_eager(nv_median, sortable)
+    check_eager(nv_median, sortable_even)
+    check_eager(function(x) nv_quantile(x, 0.5), sortable)
+    check_eager(function(x) nv_quantile(x, c(0.25, 0.75)), sortable)
+    check_eager(nv_argmax, sortable)
+    check_eager(nv_argmin, sortable)
   })
 })
