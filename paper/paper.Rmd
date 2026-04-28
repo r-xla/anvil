@@ -92,6 +92,8 @@ Final iteration
 
 TODOs:
 
+
+* [x] randomized matrix algorithms: https://arxiv.org/pdf/1608.02148 could be a nice use case
 * [x] mention R's vectorize() --> similar functional spirit as {anvl}
 * [x] stress that {quickr} is experimental and not really useable yet.
 * [x] mention interoperability: pjrt can run other {stablehlo} programs
