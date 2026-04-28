@@ -23,7 +23,7 @@ Imports:
     pjrt (>= 0.3.0),
     rlang,
     safetensors (>= 0.2.0),
-    stablehlo (>= 0.2.0),
+    stablehlo (>= 0.2.0.9000),
     tengen (>= 0.2.0),
     withr,
     xlamisc (>= 0.2.0)
@@ -35,6 +35,8 @@ Suggests:
     testthat (>= 3.0.0)
 Additional_repositories:
     https://r-xla.r-universe.dev
+Remotes:
+    r-xla/stablehlo
 VignetteBuilder:
     knitr
 Config/testthat/edition: 3
