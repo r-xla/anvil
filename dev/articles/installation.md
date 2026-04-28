@@ -48,7 +48,6 @@ can install it from GitHub or r-universe:
 
 ``` r
 pak::pak("mlverse/cudatoolkit/cuda12.8")
-``````r
 install.packages("cuda12.8", repos = "https://mlverse.r-universe.dev")
 ```
 
