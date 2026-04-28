@@ -345,10 +345,6 @@ test_that("prim_erf_inv", {
   expect_jit_torch_unary(prim_erf_inv, torch::torch_erfinv, c(2, 3), gen = gen_in_minus1_1)
 })
 
-test_that("prim_square", {
-  expect_jit_torch_unary(prim_square, torch::torch_square, c(2, 3))
-})
-
 describe("prim_cholesky", {
   it("lower = TRUE", {
     A <- crossprod(matrix(rnorm(9), 3, 3)) + diag(3)

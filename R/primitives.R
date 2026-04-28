@@ -1658,39 +1658,6 @@ prim_erf_inv <- new_primitive("erf_inv", make_unary_op(stablehlo::infer_types_er
 #' @export
 prim_erfc <- new_primitive("erfc", make_unary_op(stablehlo::infer_types_erfc))
 
-#' @title Primitive Square
-#' @description
-#' Element-wise square `x^2`.
-#' @template param_prim_operand_float
-#' @template return_prim_unary
-#' @templateVar primitive_id square
-#' @template section_rules
-#' @section StableHLO:
-#' Lowers to [stablehlo::hlo_square()].
-#' @seealso [nv_square()]
-#' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(c(-2, 0, 3))
-#' prim_square(x)
-#' @export
-prim_square <- new_primitive("square", make_unary_op(stablehlo::infer_types_square))
-
-#' @title Primitive Exponentially Scaled Modified Bessel I_1
-#' @description
-#' Element-wise exponentially scaled modified Bessel function of the
-#' first kind, order 1: `bessel_i1e(x) = bessel_i1(x) * exp(-abs(x))`.
-#' @template param_prim_operand_float
-#' @template return_prim_unary
-#' @templateVar primitive_id bessel_i1e
-#' @template section_rules
-#' @section StableHLO:
-#' Lowers to [stablehlo::hlo_bessel_i1e()].
-#' @seealso [nv_bessel_i1e()]
-#' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(c(-1, 0, 1, 5))
-#' prim_bessel_i1e(x)
-#' @export
-prim_bessel_i1e <- new_primitive("bessel_i1e", make_unary_op(stablehlo::infer_types_bessel_i1e))
-
 #' @title Primitive Is Finite
 #' @description
 #' Element-wise check if values are finite (not Inf, -Inf, or NaN).

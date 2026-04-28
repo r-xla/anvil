@@ -293,7 +293,7 @@ prim_erf[["reverse"]] <- function(inputs, outputs, grads, .required) {
     # d/dx erf(x) = (2 / sqrt(pi)) * exp(-x^2)
     if (.required[[1L]]) {
       coef <- prim_fill(2 / sqrt(pi), dtype = dtype(operand), shape = shape(operand))
-      prim_mul(grad, prim_mul(coef, prim_exp(prim_negate(prim_square(operand)))))
+      prim_mul(grad, prim_mul(coef, prim_exp(prim_negate(prim_mul(operand, operand)))))
     }
   )
 }
@@ -305,7 +305,7 @@ prim_erfc[["reverse"]] <- function(inputs, outputs, grads, .required) {
     # d/dx erfc(x) = -(2 / sqrt(pi)) * exp(-x^2)
     if (.required[[1L]]) {
       coef <- prim_fill(-2 / sqrt(pi), dtype = dtype(operand), shape = shape(operand))
-      prim_mul(grad, prim_mul(coef, prim_exp(prim_negate(prim_square(operand)))))
+      prim_mul(grad, prim_mul(coef, prim_exp(prim_negate(prim_mul(operand, operand)))))
     }
   )
 }
@@ -317,25 +317,10 @@ prim_erf_inv[["reverse"]] <- function(inputs, outputs, grads, .required) {
     # d/dx erf_inv(x) = sqrt(pi)/2 * exp(erf_inv(x)^2)
     if (.required[[1L]]) {
       coef <- prim_fill(sqrt(pi) / 2, dtype = dtype(y), shape = shape(y))
-      prim_mul(grad, prim_mul(coef, prim_exp(prim_square(y))))
+      prim_mul(grad, prim_mul(coef, prim_exp(prim_mul(y, y))))
     }
   )
 }
-
-prim_square[["reverse"]] <- function(inputs, outputs, grads, .required) {
-  operand <- inputs[[1L]]
-  grad <- grads[[1L]]
-  list(
-    # d/dx x^2 = 2x
-    if (.required[[1L]]) {
-      two <- prim_fill(2, dtype = dtype(operand), shape = shape(operand))
-      prim_mul(grad, prim_mul(two, operand))
-    }
-  )
-}
-
-# prim_bessel_i1e: no reverse rule — the derivative needs bessel_i0e,
-# which is not yet exposed in stablehlo. Add one when it lands.
 
 prim_abs[["reverse"]] <- function(inputs, outputs, grads, .required) {
   operand <- inputs[[1L]]

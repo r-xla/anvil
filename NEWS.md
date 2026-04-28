@@ -18,11 +18,8 @@
   and `trigamma()` now work directly on `AnvlArray`s. `nv_polygamma()`
   broadcasts a scalar order `n` against `x`.
 * More CHLO primitives and `nv_*` wrappers: `prim_erf()` / `nv_erf()`,
-  `prim_erf_inv()` / `nv_erf_inv()`, `prim_erfc()` / `nv_erfc()`,
-  `prim_square()` / `nv_square()`, and `prim_bessel_i1e()` /
-  `nv_bessel_i1e()`. The first four support automatic differentiation;
-  `prim_bessel_i1e()` does not (its derivative needs `bessel_i0e`,
-  not yet exposed in stablehlo).
+  `prim_erf_inv()` / `nv_erf_inv()`, and `prim_erfc()` / `nv_erfc()`.
+  All support automatic differentiation.
 
 # anvl 0.2.0
 

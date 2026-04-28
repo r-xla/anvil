@@ -631,10 +631,6 @@ test_that("prim_erf_inv", {
   verify_grad_uni(prim_erf_inv, torch::torch_erfinv, tol = 1e-4, gen = gen_in_minus1_1_rev)
 })
 
-test_that("prim_square", {
-  verify_grad_uni(prim_square, torch::torch_square, tol = 1e-5)
-})
-
 test_that("prim_abs", {
   verify_grad_uni_tensor(
     prim_abs,

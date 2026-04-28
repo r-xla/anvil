@@ -358,14 +358,6 @@ prim_erfc[["stablehlo"]] <- function(operand) {
   list(stablehlo::hlo_erfc(operand))
 }
 
-prim_square[["stablehlo"]] <- function(operand) {
-  list(stablehlo::hlo_square(operand))
-}
-
-prim_bessel_i1e[["stablehlo"]] <- function(operand) {
-  list(stablehlo::hlo_bessel_i1e(operand))
-}
-
 prim_is_finite[["stablehlo"]] <- function(operand) {
   list(stablehlo::hlo_is_finite(operand))
 }
