@@ -254,6 +254,83 @@ test_that("prim_logistic", {
   expect_jit_torch_unary(prim_logistic, torch::torch_sigmoid, c(2, 3))
 })
 
+# CHLO ops: inverse trig, hyperbolic, gamma family.
+
+# Map random noise into the open interval (-1, 1) for acos/asin/atanh.
+gen_in_minus1_1 <- function(shp, dtype) {
+  n <- if (length(shp)) prod(shp) else 1L
+  vals <- tanh(rnorm(n))
+  if (length(shp)) array(vals, shp) else vals
+}
+
+# Values >= 1 + epsilon for acosh.
+gen_at_least_1 <- function(shp, dtype) {
+  n <- if (length(shp)) prod(shp) else 1L
+  vals <- 1 + abs(rnorm(n))
+  if (length(shp)) array(vals, shp) else vals
+}
+
+# Strictly positive values away from 0 for digamma/lgamma.
+gen_positive <- function(shp, dtype) {
+  n <- if (length(shp)) prod(shp) else 1L
+  vals <- 0.5 + abs(rnorm(n))
+  if (length(shp)) array(vals, shp) else vals
+}
+
+test_that("prim_acos", {
+  expect_jit_torch_unary(prim_acos, torch::torch_acos, c(2, 3), gen = gen_in_minus1_1)
+})
+
+test_that("prim_acosh", {
+  expect_jit_torch_unary(prim_acosh, torch::torch_acosh, c(2, 3), gen = gen_at_least_1)
+})
+
+test_that("prim_asin", {
+  expect_jit_torch_unary(prim_asin, torch::torch_asin, c(2, 3), gen = gen_in_minus1_1)
+})
+
+test_that("prim_asinh", {
+  expect_jit_torch_unary(prim_asinh, torch::torch_asinh, c(2, 3))
+})
+
+test_that("prim_atan", {
+  expect_jit_torch_unary(prim_atan, torch::torch_atan, c(2, 3))
+})
+
+test_that("prim_atanh", {
+  expect_jit_torch_unary(prim_atanh, torch::torch_atanh, c(2, 3), gen = gen_in_minus1_1)
+})
+
+test_that("prim_cosh", {
+  expect_jit_torch_unary(prim_cosh, torch::torch_cosh, c(2, 3))
+})
+
+test_that("prim_sinh", {
+  expect_jit_torch_unary(prim_sinh, torch::torch_sinh, c(2, 3))
+})
+
+test_that("prim_digamma", {
+  expect_jit_torch_unary(prim_digamma, torch::torch_digamma, c(2, 3), gen = gen_positive)
+})
+
+test_that("prim_lgamma", {
+  expect_jit_torch_unary(prim_lgamma, torch::torch_lgamma, c(2, 3), gen = gen_positive)
+})
+
+test_that("prim_polygamma", {
+  shp <- c(2, 3)
+  x <- gen_positive(shp, "f32")
+  for (n_val in c(0L, 1L, 2L)) {
+    n_arr <- array(rep(n_val, prod(shp)), shp)
+    out_nv <- jit(prim_polygamma)(
+      nv_array(n_arr, dtype = "f32"),
+      nv_array(x, dtype = "f32")
+    )
+    out_th <- torch::torch_polygamma(n_val, torch::torch_tensor(x, dtype = torch::torch_float32()))
+    expect_equal(as_array(out_nv), as_array_torch(out_th), tolerance = 1e-5)
+  }
+})
+
 describe("prim_cholesky", {
   it("lower = TRUE", {
     A <- crossprod(matrix(rnorm(9), 3, 3)) + diag(3)

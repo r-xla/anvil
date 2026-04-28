@@ -6,6 +6,12 @@
   `as.integer` and `as.logical`
 * New API functions `nv_rbind()` and `nv_cbind()` and corresponding
   `rbind()`/`cbind()` generics.
+* New primitives wrapping the CHLO ops added in stablehlo 0.2.0.9000:
+  `prim_acos()`, `prim_acosh()`, `prim_asin()`, `prim_asinh()`,
+  `prim_atan()`, `prim_atanh()`, `prim_cosh()`, `prim_sinh()`,
+  `prim_digamma()`, `prim_lgamma()`, and `prim_polygamma()`.
+  All support automatic differentiation; `prim_polygamma()` is
+  non-differentiable w.r.t. its first argument `n`.
 
 # anvl 0.2.0
 

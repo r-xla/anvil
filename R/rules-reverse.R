@@ -155,6 +155,137 @@ prim_cosine[["reverse"]] <- function(inputs, outputs, grads, .required) {
   )
 }
 
+prim_acos[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx acos(x) = -1 / sqrt(1 - x^2)
+    if (.required[[1L]]) {
+      one <- prim_fill(1, dtype = dtype(operand), shape = shape(operand))
+      denom <- prim_sqrt(prim_sub(one, prim_mul(operand, operand)))
+      prim_negate(prim_div(grad, denom))
+    }
+  )
+}
+
+prim_acosh[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx acosh(x) = 1 / sqrt(x^2 - 1)
+    if (.required[[1L]]) {
+      one <- prim_fill(1, dtype = dtype(operand), shape = shape(operand))
+      denom <- prim_sqrt(prim_sub(prim_mul(operand, operand), one))
+      prim_div(grad, denom)
+    }
+  )
+}
+
+prim_asin[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx asin(x) = 1 / sqrt(1 - x^2)
+    if (.required[[1L]]) {
+      one <- prim_fill(1, dtype = dtype(operand), shape = shape(operand))
+      denom <- prim_sqrt(prim_sub(one, prim_mul(operand, operand)))
+      prim_div(grad, denom)
+    }
+  )
+}
+
+prim_asinh[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx asinh(x) = 1 / sqrt(1 + x^2)
+    if (.required[[1L]]) {
+      one <- prim_fill(1, dtype = dtype(operand), shape = shape(operand))
+      denom <- prim_sqrt(prim_add(one, prim_mul(operand, operand)))
+      prim_div(grad, denom)
+    }
+  )
+}
+
+prim_atan[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx atan(x) = 1 / (1 + x^2)
+    if (.required[[1L]]) {
+      one <- prim_fill(1, dtype = dtype(operand), shape = shape(operand))
+      prim_div(grad, prim_add(one, prim_mul(operand, operand)))
+    }
+  )
+}
+
+prim_atanh[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx atanh(x) = 1 / (1 - x^2)
+    if (.required[[1L]]) {
+      one <- prim_fill(1, dtype = dtype(operand), shape = shape(operand))
+      prim_div(grad, prim_sub(one, prim_mul(operand, operand)))
+    }
+  )
+}
+
+prim_cosh[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx cosh(x) = sinh(x)
+    if (.required[[1L]]) prim_mul(grad, prim_sinh(operand))
+  )
+}
+
+prim_sinh[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx sinh(x) = cosh(x)
+    if (.required[[1L]]) prim_mul(grad, prim_cosh(operand))
+  )
+}
+
+prim_digamma[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx digamma(x) = trigamma(x) = polygamma(1, x)
+    if (.required[[1L]]) {
+      n_one <- prim_fill(1, dtype = dtype(operand), shape = shape(operand))
+      prim_mul(grad, prim_polygamma(n_one, operand))
+    }
+  )
+}
+
+prim_lgamma[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  operand <- inputs[[1L]]
+  grad <- grads[[1L]]
+  list(
+    # d/dx lgamma(x) = digamma(x)
+    if (.required[[1L]]) prim_mul(grad, prim_digamma(operand))
+  )
+}
+
+prim_polygamma[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  n <- inputs[[1L]]
+  x <- inputs[[2L]]
+  grad <- grads[[1L]]
+  list(
+    # gradient w.r.t. n: polygamma is typically called with integer n,
+    # which is not differentiable; follow torch and refuse.
+    if (.required[[1L]]) cli_abort("Gradient for {.arg n} of {.fn prim_polygamma} not implemented"),
+    # d/dx polygamma(n, x) = polygamma(n + 1, x)
+    if (.required[[2L]]) {
+      one <- prim_fill(1, dtype = dtype(n), shape = shape(n))
+      prim_mul(grad, prim_polygamma(prim_add(n, one), x))
+    }
+  )
+}
+
 prim_abs[["reverse"]] <- function(inputs, outputs, grads, .required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]

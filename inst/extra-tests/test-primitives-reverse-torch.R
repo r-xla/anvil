@@ -534,6 +534,91 @@ test_that("prim_cosine", {
   verify_grad_uni(prim_cosine, torch::torch_cos, tol = 1e-5)
 })
 
+# CHLO ops: inverse trig, hyperbolic, gamma family.
+
+gen_in_minus1_1_rev <- function(shp, dtype) {
+  n <- if (length(shp)) prod(shp) else 1L
+  vals <- tanh(rnorm(n))
+  if (length(shp)) array(vals, shp) else vals
+}
+
+gen_at_least_1_rev <- function(shp, dtype) {
+  n <- if (length(shp)) prod(shp) else 1L
+  vals <- 1.5 + abs(rnorm(n))
+  if (length(shp)) array(vals, shp) else vals
+}
+
+gen_positive_rev <- function(shp, dtype) {
+  n <- if (length(shp)) prod(shp) else 1L
+  vals <- 0.5 + abs(rnorm(n))
+  if (length(shp)) array(vals, shp) else vals
+}
+
+test_that("prim_acos", {
+  verify_grad_uni(prim_acos, torch::torch_acos, tol = 1e-4, gen = gen_in_minus1_1_rev)
+})
+
+test_that("prim_acosh", {
+  verify_grad_uni(prim_acosh, torch::torch_acosh, tol = 1e-4, gen = gen_at_least_1_rev)
+})
+
+test_that("prim_asin", {
+  verify_grad_uni(prim_asin, torch::torch_asin, tol = 1e-4, gen = gen_in_minus1_1_rev)
+})
+
+test_that("prim_asinh", {
+  verify_grad_uni(prim_asinh, torch::torch_asinh, tol = 1e-5)
+})
+
+test_that("prim_atan", {
+  verify_grad_uni(prim_atan, torch::torch_atan, tol = 1e-5)
+})
+
+test_that("prim_atanh", {
+  verify_grad_uni(prim_atanh, torch::torch_atanh, tol = 1e-4, gen = gen_in_minus1_1_rev)
+})
+
+test_that("prim_cosh", {
+  verify_grad_uni(prim_cosh, torch::torch_cosh, tol = 1e-4)
+})
+
+test_that("prim_sinh", {
+  verify_grad_uni(prim_sinh, torch::torch_sinh, tol = 1e-4)
+})
+
+test_that("prim_digamma", {
+  verify_grad_uni(prim_digamma, torch::torch_digamma, tol = 1e-4, gen = gen_positive_rev)
+})
+
+test_that("prim_lgamma", {
+  verify_grad_uni(prim_lgamma, torch::torch_lgamma, tol = 1e-4, gen = gen_positive_rev)
+})
+
+test_that("prim_polygamma", {
+  # Verify gradient w.r.t. x against torch::torch_polygamma (n is a Python int there).
+  shp <- c(2, 3)
+  for (n_val in c(1L, 2L)) {
+    x <- gen_positive_rev(shp, "f32")
+    n_arr <- array(rep(n_val, prod(shp)), shp)
+
+    f_nv <- function(x_t) {
+      n_t <- prim_fill(as.numeric(n_val), dtype = dtype(x_t), shape = shape(x_t))
+      out <- prim_polygamma(n_t, x_t)
+      nv_reduce_sum(out, dims = seq_along(shape(out)), drop = TRUE)
+    }
+    grad_nv <- jit(gradient(f_nv))(nv_array(x, dtype = "f32"))[[1L]]
+
+    x_th <- torch::torch_tensor(x, requires_grad = TRUE, dtype = torch::torch_float32())
+    torch::torch_sum(torch::torch_polygamma(n_val, x_th))$backward()
+
+    testthat::expect_equal(
+      tengen::as_array(grad_nv),
+      as_array_torch(x_th$grad),
+      tolerance = 1e-4
+    )
+  }
+})
+
 test_that("prim_abs", {
   verify_grad_uni_tensor(
     prim_abs,
