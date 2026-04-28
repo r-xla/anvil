@@ -39,6 +39,36 @@ or startup overhead rather than the computation itself.
 The [Efficiency](efficiency.html) vignette gathers the rest of the levers
 (CUDA, data types, memory donation) in one place.
 
+## Why does timing my function show suspiciously fast results?
+
+If `system.time()` or a single `Sys.time()` delta reports microseconds for
+a computation you expected to take much longer, you are most likely measuring
+dispatch instead of execution. Calls into a compiled `anvl` function return
+*before* the computation has finished -- XLA schedules the work on the
+device (CPU threads or GPU) and hands control back to R immediately. The
+returned `AnvlArray` is essentially a promise.
+
+To get a real timing, force the result before stopping the clock so R has to
+wait for the device to finish. `as_array()` and `print()` both trigger this
+synchronization; querying metadata like `dtype()`, `shape()`, or `device()`
+does not.
+
+```{r, eval = FALSE}
+# Misleading: returns once the work is queued, not once it's done.
+system.time(y <- f(x))
+
+# Correct: as_array() blocks until the computation is finished.
+system.time({
+  y <- f(x)
+  as_array(y)
+})
+```
+
+See [Asynchronous execution](efficiency.html#asynchronous-execution) in the
+Efficiency vignette for why this design is desirable (it lets the CPU prepare
+the next batch while the GPU is still computing the previous one) and how to
+avoid accidentally synchronizing inside hot loops.
+
 ## How do I control the number of threads used by XLA?
 
 XLA (the compiler backend used by `anvl`) may use multiple CPU threads for
