@@ -797,10 +797,8 @@ infer_cum <- function(operand, dim) {
   ))
 }
 
-make_cum_op <- function() {
-  function(operand, dim) {
-    graph_desc_add(self, list(operand = operand), params = list(dim = dim), infer_fn = infer_cum)[[1L]]
-  }
+cum_op <- function(operand, dim) {
+  graph_desc_add(self, list(operand = operand), params = list(dim = dim), infer_fn = infer_cum)[[1L]]
 }
 
 #' @title Primitive Cumulative Sum
@@ -820,7 +818,7 @@ make_cum_op <- function() {
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' prim_cumsum(x, dim = 1L)
 #' @export
-prim_cumsum <- new_primitive("cumsum", make_cum_op(), static = 2L)
+prim_cumsum <- new_primitive("cumsum", cum_op, static = 2L)
 
 #' @title Primitive Cumulative Product
 #' @description
@@ -839,7 +837,7 @@ prim_cumsum <- new_primitive("cumsum", make_cum_op(), static = 2L)
 #' x <- nv_array(matrix(1:6, nrow = 2))
 #' prim_cumprod(x, dim = 1L)
 #' @export
-prim_cumprod <- new_primitive("cumprod", make_cum_op(), static = 2L)
+prim_cumprod <- new_primitive("cumprod", cum_op, static = 2L)
 
 #' @title Primitive Cumulative Maximum
 #' @description
@@ -858,7 +856,7 @@ prim_cumprod <- new_primitive("cumprod", make_cum_op(), static = 2L)
 #' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
 #' prim_cummax(x, dim = 1L)
 #' @export
-prim_cummax <- new_primitive("cummax", make_cum_op(), static = 2L)
+prim_cummax <- new_primitive("cummax", cum_op, static = 2L)
 
 #' @title Primitive Cumulative Minimum
 #' @description
@@ -877,7 +875,7 @@ prim_cummax <- new_primitive("cummax", make_cum_op(), static = 2L)
 #' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
 #' prim_cummin(x, dim = 1L)
 #' @export
-prim_cummin <- new_primitive("cummin", make_cum_op(), static = 2L)
+prim_cummin <- new_primitive("cummin", cum_op, static = 2L)
 
 # comparison primitives --------------------------------------------------------
 
