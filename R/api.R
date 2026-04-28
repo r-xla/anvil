@@ -306,6 +306,114 @@ nv_concatenate <- function(..., dimension = NULL) {
   rlang::exec(prim_concatenate, !!!args, dimension = dimension)
 }
 
+#' @title Combine arrays by rows or columns
+#' @name nv_bind
+#' @description
+#' Combine arrays along the row (`nv_rbind`) or column (`nv_cbind`) dimension.
+#' Arguments are first promoted to a common data type
+#' (see [nv_promote_to_common()]).
+#'
+#' Each input is then handled according to its rank:
+#'
+#' * 0-D: broadcast to match the non-stacked dimensions of the other inputs.
+#' * 1-D: treated as a single row/column.
+#' * Other: used as-is.
+#'
+#' # Differences from base R
+#'
+#' [base::rbind()] and [base::cbind()] applied to an [array()] of rank > 2
+#' flatten the trailing dimensions into the column axis (so a `c(2, 3, 4)`
+#' array becomes a `2 x 12` matrix). `nv_rbind` and `nv_cbind` instead
+#' preserve all non-stacked dimensions: combining two `c(2, 3, 4)` arrays
+#' with `nv_rbind` produces a `c(4, 3, 4)` array, and with `nv_cbind` a
+#' `c(2, 6, 4)` array.
+#'
+#' @param ... ([`arrayish`])\cr
+#'   Arrays to combine. Inputs are promoted to a common data type.
+#' @return [`arrayish`]\cr
+#' @seealso [nv_concatenate()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' # Vectors as rows / columns
+#' nv_rbind(nv_array(1:3), nv_array(4:6))
+#' nv_cbind(nv_array(1:3), nv_array(4:6))
+#'
+#' # Scalar broadcasting
+#' nv_rbind(nv_array(matrix(1:6, nrow = 2)), nv_scalar(0))
+#'
+#' # Rank-3 arrays preserve trailing dimensions
+#' a <- nv_array(array(1:24, dim = c(2, 3, 4)))
+#' shape(nv_rbind(a, a)) # c(4, 3, 4)
+NULL
+
+# Find the broadcast target shape for scalar (rank 0) inputs and verify
+# that all non-scalar inputs are compatible (same rank and same size in
+# every non-stacked dimension). Rank-1 args are conceptually reshaped to
+# a row/column for the comparison. Returns NULL when every arg is a
+# scalar.
+bind_target_shape <- function(args, stack_dim, fn_name) {
+  shapes <- lapply(args, shape)
+  non_scalar_idx <- which(lengths(shapes) > 0L)
+  if (!length(non_scalar_idx)) {
+    return(NULL)
+  }
+
+  reshape_for_compare <- function(s) {
+    if (length(s) == 1L) {
+      if (stack_dim == 1L) c(1L, s) else c(s, 1L)
+    } else {
+      s
+    }
+  }
+  reshaped <- lapply(shapes[non_scalar_idx], reshape_for_compare)
+
+  ranks <- lengths(reshaped)
+  if (length(unique(ranks)) != 1L) {
+    cli_abort(c(
+      "{.fn {fn_name}} inputs must all have the same rank (treating rank-1 inputs as a row or column)", # nolint
+      x = "Got shapes {shapes2string(shapes)}"
+    ))
+  }
+  non_stack <- lapply(reshaped, \(s) s[-stack_dim])
+  if (length(unique(non_stack)) != 1L) {
+    cli_abort(c(
+      "{.fn {fn_name}} inputs must agree on every non-stacked dimension",
+      x = "Got shapes {shapes2string(shapes)}"
+    ))
+  }
+  reshaped[[1L]]
+}
+
+bind_reshape <- function(arg, stack_dim, target_shape) {
+  s <- shape(arg)
+  if (length(s) == 0L) {
+    target <- target_shape %||% c(1L, 1L)
+    target[stack_dim] <- 1L
+    nv_broadcast_to(arg, target)
+  } else if (length(s) == 1L) {
+    nv_reshape(arg, if (stack_dim == 1L) c(1L, s) else c(s, 1L))
+  } else {
+    arg
+  }
+}
+
+#' @rdname nv_bind
+#' @export
+nv_rbind <- function(...) {
+  args <- lapply(list(...), as_anvl_array)
+  target_shape <- bind_target_shape(args, stack_dim = 1L, fn_name = "nv_rbind")
+  args <- lapply(args, bind_reshape, stack_dim = 1L, target_shape = target_shape)
+  rlang::exec(nv_concatenate, !!!args, dimension = 1L)
+}
+
+#' @rdname nv_bind
+#' @export
+nv_cbind <- function(...) {
+  args <- lapply(list(...), as_anvl_array)
+  target_shape <- bind_target_shape(args, stack_dim = 2L, fn_name = "nv_cbind")
+  args <- lapply(args, bind_reshape, stack_dim = 2L, target_shape = target_shape)
+  rlang::exec(nv_concatenate, !!!args, dimension = 2L)
+}
+
 #' @title Static Slice
 #' @description
 #' Extracts a slice from an array using static (compile-time) indices.

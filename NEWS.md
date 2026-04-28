@@ -4,10 +4,8 @@
 
 * Added `AnvlArray` -> R `vector` converters `as.numeric`, `as.double`,
   `as.integer` and `as.logical`
-* New API functions `nv_rbind()` and `nv_cbind()` (with `rbind()`/`cbind()`
-  S3 methods for `AnvlBox` and `AnvlArray`) for combining arrays along the
-  row or column dimension. Single-element inputs are broadcast to match
-  the non-stacked dimensions of the other inputs, including for rank >= 3.
+* New API functions `nv_rbind()` and `nv_cbind()` and corresponding
+  `rbind()`/`cbind()` generics.
 
 # anvl 0.2.0
 
