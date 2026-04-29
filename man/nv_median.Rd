@@ -6,7 +6,7 @@
 \alias{median.AnvlArray}
 \title{Median}
 \usage{
-nv_median(x, dim = NULL)
+nv_median(x, dim = NULL, interpolation = "linear")
 
 \method{median}{AnvlBox}(x, na.rm = FALSE, ...)
 
@@ -20,6 +20,10 @@ The array.}
 Dimension along which to compute the median. If \code{NULL} (default),
 uses the last dimension.}
 
+\item{interpolation}{(\code{character(1)})\cr
+Forwarded to \code{\link[=nv_quantile]{nv_quantile()}}. One of \code{"linear"} (default), \code{"lower"},
+\code{"higher"}, \code{"nearest"}, \code{"midpoint"}.}
+
 \item{na.rm}{Included for compatibility with the \code{\link[stats:median]{stats::median()}} generic.
 anvl arrays do not carry \code{NA}s; passing \code{na.rm = TRUE} raises an error.}
 
@@ -31,11 +35,12 @@ Same shape as \code{x} with \code{dim} removed.
 }
 \description{
 Computes the median along a dimension. Equivalent to
-\code{nv_quantile(x, 0.5, dim, interpolation = "linear")}; for an
-even-length axis the average of the two middle values is returned,
-matching base R's \code{median()}.
+\code{nv_quantile(x, 0.5, dim, interpolation)}; for an even-length axis with
+the default \code{"linear"} interpolation, the average of the two middle
+values is returned, matching base R's \code{median()}.
 
-You can also use \code{median()} directly on an \code{\link{AnvlArray}} or \code{\link{AnvlBox}}.
+You can also use \code{median()} directly on an \code{\link{AnvlArray}} or \code{\link{AnvlBox}};
+extra arguments (e.g. \code{interpolation}) are forwarded via \code{...}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
@@ -44,6 +49,8 @@ median(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
 nv_median(nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)),
   dim = 2L
 )
+# forwards through the S3 generic via `...`
+median(nv_array(c(1, 2, 3, 4)), interpolation = "lower")
 \dontshow{\}) # examplesIf}
 }
 \seealso{

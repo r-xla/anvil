@@ -6,7 +6,7 @@
 \alias{sort.AnvlArray}
 \title{Sort}
 \usage{
-nv_sort(x, dim = NULL, decreasing = FALSE, stable = FALSE)
+nv_sort(x, dim = NULL, decreasing = FALSE)
 
 \method{sort}{AnvlBox}(x, decreasing = FALSE, ...)
 
@@ -22,23 +22,15 @@ dimension.}
 
 \item{decreasing}{(\code{logical(1)})\cr
 If \code{TRUE}, sort in decreasing order. Default \code{FALSE}.}
-
-\item{stable}{(\code{logical(1)})\cr
-If \code{TRUE}, the sort is stable. Default \code{FALSE}.}
-
-\item{...}{Forwarded to \code{nv_sort()}.}
 }
 \value{
 \code{\link{arrayish}}\cr
-Sorted along \code{dim}. Same shape and data type as \code{x}.
+Same shape and data type as \code{x}.
 }
 \description{
 Sorts an array along a dimension.
 
-You can also use \code{sort()} directly on an \code{\link{AnvlArray}} or \code{\link{AnvlBox}} —
-the S3 method forwards \code{decreasing} (and \code{...}) to \code{nv_sort()}. The
-\code{dim} defaults to the last dimension, matching base R's \code{sort()} for
-vectors.
+You can also use \code{sort()} directly.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
@@ -53,5 +45,6 @@ nv_sort(m, dim = 2L)
 }
 \seealso{
 \code{\link[=prim_sort]{prim_sort()}} for the underlying primitive,
+\code{\link[=nv_argsort]{nv_argsort()}} (where sort stability is observable),
 \code{\link[=nv_top_k]{nv_top_k()}}, \code{\link[=nv_median]{nv_median()}}, \code{\link[=nv_argmax]{nv_argmax()}}, \code{\link[=nv_argmin]{nv_argmin()}}.
 }

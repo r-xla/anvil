@@ -913,31 +913,29 @@ describe("prim_sort", {
     expect_equal(as.vector(as_array(grads[[2L]])), c(3, 1, 4, 2, 5))
   })
 
-  it("propagates gradient through nv_median (odd length)", {
-    f <- function(x) nv_median(x)
-    x <- nv_array(c(3, 1, 4, 1.5, 5))
-    grad <- jit(gradient(f))(x)[[1L]]
-    # Median = 3 = x[1] (sorted pos 3, original pos 1). Grad has 1 at pos 1.
-    expect_equal(as.vector(as_array(grad)), c(1, 0, 0, 0, 0))
+  it("propagates gradient through prim_top_k along the last dim of a matrix", {
+    f <- function(x) nv_reduce_sum(prim_top_k(x, k = 2L)[[1L]], dims = c(1L, 2L))
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    grad <- jit(gradient(f))(m)[[1L]]
+    # Per-row top 2: row 1 picks (5, 3) at cols (3, 1); row 2 picks (4, 2)
+    # at cols (2, 1). Selected positions get 1, the rest get 0.
+    expect_equal(
+      as_array(grad),
+      matrix(c(1, 0, 1, 1, 1, 0), nrow = 2, byrow = TRUE)
+    )
   })
+})
 
-  it("propagates gradient through nv_median (even length: average of two middles)", {
-    f <- function(x) nv_median(x)
-    x <- nv_array(c(1, 4, 2, 3))
+# argmax / argmin reverse rule short-circuits the gradient to zero, so a
+# single sanity check is enough.
+test_that("prim_argmax / prim_argmin have zero gradient", {
+  x <- nv_array(c(3, 1, 4), dtype = "f32")
+  expected <- nv_fill(0, shape = 3L, dtype = "f32")
+  for (prim in list(prim_argmax, prim_argmin)) {
+    f <- function(x) prim_convert(prim(x, dim = 1L), dtype = "f32", ambiguous = FALSE)
     grad <- jit(gradient(f))(x)[[1L]]
-    # Sorted = (1, 2, 3, 4); median = (2 + 3) / 2 = 2.5; positions 2 and 3
-    # of sorted come from x[3] and x[4] respectively. Each gets 0.5.
-    expect_equal(as.vector(as_array(grad)), c(0, 0, 0.5, 0.5))
-  })
-
-  it("propagates gradient through nv_top_k", {
-    f <- function(x) nv_reduce_sum(nv_top_k(x, k = 3L), dims = 1L)
-    x <- nv_array(c(3, 1, 4, 1.5, 5))
-    grad <- jit(gradient(f))(x)[[1L]]
-    # Top 3 = (5, 4, 3); each contributes 1 to the sum. Original positions
-    # (5, 3, 1) get 1, others get 0.
-    expect_equal(as.vector(as_array(grad)), c(1, 0, 1, 0, 1))
-  })
+    expect_equal(grad, expected)
+  }
 })
 
 if (nzchar(system.file(package = "torch"))) {

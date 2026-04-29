@@ -12,7 +12,7 @@ Arrayish value of any data type.}
 
 \item{init}{(\code{\link{arrayish}})\cr
 Scalar (0-dimensional) initial value. Must have the same data type as
-\code{operand} and be the neutral element of the group formed by the \code{reductor}.}
+\code{operand} and be the neutral element w.r.t. \code{reductor}.}
 
 \item{dims}{(\code{integer()})\cr
 Dimensions to reduce over.}

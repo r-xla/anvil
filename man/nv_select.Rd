@@ -2,7 +2,7 @@
 % Please edit documentation in R/api.R
 \name{nv_select}
 \alias{nv_select}
-\title{Select Slab Along a Dimension}
+\title{Select Elements Along a Dimension}
 \usage{
 nv_select(x, dim, index)
 }
@@ -11,28 +11,26 @@ nv_select(x, dim, index)
 The array.}
 
 \item{dim}{(\code{integer(1)})\cr
-Dimension to select along.}
+Dimension to index into.}
 
-\item{index}{(\code{integer(1)})\cr
-1-based index along \code{dim}. Must satisfy \verb{1 <= index <= shape(x)[dim]}.}
+\item{index}{(\code{\link{arrayish}})\cr
+Scalar or 1D arrayish input (integer).}
 }
 \value{
 \code{\link{arrayish}}\cr
-Same data type as \code{x}, with \code{dim} removed (output rank is
-\code{ndims(x) - 1}).
+Same data type as \code{x}. \code{dim} is dropped if \code{index} was scalar.
 }
 \description{
-Returns the slab of \code{x} at position \code{index} along dimension \code{dim},
-dropping that dimension from the result. Equivalent to indexing
-\code{x[, ..., index, ...]} along \code{dim} with \code{drop = TRUE} — but with the
-axis chosen programmatically. Comparable to \code{torch.select} /
-\code{jax.lax.index_in_dim}.
+Picks one or more elements along dimension \code{dim} of \code{x}.
+Use this instead of \code{[} or \code{nv_subset} when the index to select is provided
+programatically.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 m <- nv_array(matrix(1:6, nrow = 2))
-nv_select(m, dim = 2L, index = 2L) # 2nd column -> (3, 4)
-nv_select(m, dim = 1L, index = 1L) # 1st row    -> (1, 3, 5)
+nv_select(m, dim = 2L, index = 2L)
+nv_select(m, dim = 1L, index = 1L)
+nv_select(m, dim = 2L, index = array(c(1L, 3L)))
 \dontshow{\}) # examplesIf}
 }
 \seealso{

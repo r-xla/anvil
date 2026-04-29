@@ -95,15 +95,14 @@ Summary.AnvlBox <- function(..., na.rm) {
   }
   x <- ...elt(1L)
 
-  dims <- seq_along(shape(x))
   switch(
     .Generic, # nolint
-    "max" = nv_reduce_max(x, dims = dims, drop = TRUE),
-    "min" = nv_reduce_min(x, dims = dims, drop = TRUE),
-    "prod" = nv_reduce_prod(x, dims = dims, drop = TRUE),
-    "sum" = nv_reduce_sum(x, dims = dims, drop = TRUE),
-    "any" = nv_reduce_any(x, dims = dims, drop = TRUE),
-    "all" = nv_reduce_all(x, dims = dims, drop = TRUE),
+    "max" = nv_reduce_max(x),
+    "min" = nv_reduce_min(x),
+    "prod" = nv_reduce_prod(x),
+    "sum" = nv_reduce_sum(x),
+    "any" = nv_reduce_any(x),
+    "all" = nv_reduce_all(x),
     cli_abort("invalid method: {(.Generic)}")
   )
 }
@@ -120,7 +119,7 @@ mean.AnvlBox <- function(x, trim = 0, na.rm = FALSE, ...) {
   if (!identical(trim, 0)) {
     cli_abort("{.arg trim} is not supported by {.fn mean} for anvl arrays.")
   }
-  nv_mean(x, dims = seq_along(shape(x)), drop = TRUE)
+  nv_mean(x)
 }
 
 #' @rdname nv_mean

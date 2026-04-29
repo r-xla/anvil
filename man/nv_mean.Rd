@@ -6,7 +6,7 @@
 \alias{mean.AnvlArray}
 \title{Mean}
 \usage{
-nv_mean(operand, dims, drop = TRUE)
+nv_mean(operand, dims = NULL, drop = TRUE)
 
 \method{mean}{AnvlBox}(x, trim = 0, na.rm = FALSE, ...)
 
@@ -16,8 +16,9 @@ nv_mean(operand, dims, drop = TRUE)
 \item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
-\item{dims}{(\code{integer()})\cr
-Dimensions to reduce.}
+\item{dims}{(\code{integer()} | \code{NULL})\cr
+Dimensions to reduce. If \code{NULL} (default), reduces over all
+dimensions, returning a scalar.}
 
 \item{drop}{(\code{logical(1)})\cr
 Whether to drop reduced dimensions.}
@@ -30,7 +31,7 @@ When \code{drop = FALSE}, the reduced dimensions are set to 1.
 }
 \description{
 Computes the arithmetic mean along the specified dimensions. You can also
-use \code{mean()} (which reduces over all dimensions, like base R).
+use \code{mean()}.
 }
 \details{
 Implemented as \code{nv_reduce_sum(operand, dims, drop) / n} where \code{n} is the
@@ -39,6 +40,7 @@ product of the reduced dimension sizes.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(matrix(1:6, nrow = 2))
+nv_mean(x)            # all dims -> scalar
 nv_mean(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }

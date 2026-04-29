@@ -316,10 +316,9 @@ test_that("prim_pad", {
   expect_equal(as_array(out_nv), as_array_torch(out_th))
 })
 
-# torch returns 0-based indices and breaks ties on the first occurrence
-# (smallest index). anvl's prim_argmax returns 1-based indices with the same
-# tie-break, so torch + 1 should equal anvl on every input — including
-# inputs with duplicates.
+# R torch is 1-based for both dim args and returned indices, matching
+# anvl's convention. Both break ties on the smallest index, so direct
+# equality holds.
 .argmax_argmin_compare <- function(arr, dtype, dim_anvl) {
   arr_nv <- nv_array(arr, dtype = dtype)
   arr_th <- torch::torch_tensor(arr, dtype = str_to_torch_dtype(dtype))
@@ -327,35 +326,37 @@ test_that("prim_pad", {
     list(anvl = prim_argmax, torch = torch::torch_argmax),
     list(anvl = prim_argmin, torch = torch::torch_argmin)
   )) {
-    out_nv <- jit(function(x) op$anvl(x, dim = dim_anvl))(arr_nv)
-    out_th <- op$torch(arr_th, dim = dim_anvl - 1L)
-    expect_equal(as_array(out_nv), as_array_torch(out_th) + 1L)
+    out_nv <- op$anvl(arr_nv, dim = dim_anvl)
+    out_th <- op$torch(arr_th, dim = dim_anvl)
+    expect_equal(as_array(out_nv), as_array_torch(out_th))
   }
 }
 
-test_that("prim_argmax / prim_argmin (forward) match torch on 1D", {
-  .argmax_argmin_compare(c(3, 1, 4, 1.5, 5), "f32", dim_anvl = 1L)
-})
+describe("prim_argmax / prim_argmin", {
+  it("(forward) match torch on 1D", {
+    .argmax_argmin_compare(c(3, 1, 4, 1.5, 5), "f32", dim_anvl = 1L)
+  })
 
-test_that("prim_argmax / prim_argmin tie-break: smallest index wins", {
-  # All-equal: both anvl and torch should pick index 1.
-  .argmax_argmin_compare(c(7, 7, 7, 7), "f32", dim_anvl = 1L)
-  # Duplicate max in middle.
-  .argmax_argmin_compare(c(1, 5, 5, 3, 5), "f32", dim_anvl = 1L)
-  # Duplicate min at multiple positions.
-  .argmax_argmin_compare(c(2, 1, 1, 4, 1), "f32", dim_anvl = 1L)
-})
+  it("tie-break: smallest index wins", {
+    # All-equal: both anvl and torch should pick index 1.
+    .argmax_argmin_compare(c(7, 7, 7, 7), "f32", dim_anvl = 1L)
+    # Duplicate max in middle.
+    .argmax_argmin_compare(c(1, 5, 5, 3, 5), "f32", dim_anvl = 1L)
+    # Duplicate min at multiple positions.
+    .argmax_argmin_compare(c(2, 1, 1, 4, 1), "f32", dim_anvl = 1L)
+  })
 
-test_that("prim_argmax / prim_argmin match torch on 2D inputs", {
-  m <- matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
-  .argmax_argmin_compare(m, "f32", dim_anvl = 2L)
-  .argmax_argmin_compare(m, "f32", dim_anvl = 1L)
+  it("match torch on 2D inputs", {
+    m <- matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
+    .argmax_argmin_compare(m, "f32", dim_anvl = 2L)
+    .argmax_argmin_compare(m, "f32", dim_anvl = 1L)
 
-  # 2D with duplicates per row/column.
-  m2 <- matrix(c(1, 5, 5, 3, 2, 2), nrow = 2, byrow = TRUE)
-  .argmax_argmin_compare(m2, "f32", dim_anvl = 2L)
-})
+    # 2D with duplicates per row/column.
+    m2 <- matrix(c(1, 5, 5, 3, 2, 2), nrow = 2, byrow = TRUE)
+    .argmax_argmin_compare(m2, "f32", dim_anvl = 2L)
+  })
 
-test_that("prim_argmax / prim_argmin match torch on integer inputs", {
-  .argmax_argmin_compare(c(5L, 2L, 8L, 1L, 8L), "i32", dim_anvl = 1L)
+  it("match torch on integer inputs", {
+    .argmax_argmin_compare(c(5L, 2L, 8L, 1L, 8L), "i32", dim_anvl = 1L)
+  })
 })

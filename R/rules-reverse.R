@@ -404,7 +404,7 @@ prim_le[["reverse"]] <- reverse_zero_bin
 
 # zero-grads (ignores the non-differentiable points)
 
-reverse_zero_uni <- function(inputs, outputs, grads, .required) {
+reverse_zero_uni <- function(inputs, outputs, grads, .required, ...) {
   operand <- inputs[[1L]]
   list(
     if (.required[[1L]]) prim_fill(0L, dtype = dtype(operand), shape = shape(operand))
@@ -415,17 +415,9 @@ reverse_zero_uni <- function(inputs, outputs, grads, .required) {
 prim_floor[["reverse"]] <- reverse_zero_uni
 prim_ceil[["reverse"]] <- reverse_zero_uni
 prim_sign[["reverse"]] <- reverse_zero_uni
-prim_round[["reverse"]] <- function(inputs, outputs, grads, method, .required) {
-  reverse_zero_uni(inputs, outputs, grads, .required)
-}
-
-# argmax / argmin map reals to integer indices and are locally constant almost
-# everywhere — the index only changes on the measure-zero set of exact ties.
-# Zero-gradient is the standard convention (matches PyTorch, JAX).
-prim_argmax[["reverse"]] <- function(inputs, outputs, grads, dim, drop, .required) {
-  reverse_zero_uni(inputs, outputs, grads, .required)
-}
-prim_argmin[["reverse"]] <- prim_argmax[["reverse"]]
+prim_round[["reverse"]] <- reverse_zero_uni
+prim_argmax[["reverse"]] <- reverse_zero_uni
+prim_argmin[["reverse"]] <- reverse_zero_uni
 
 prim_cbrt[["reverse"]] <- function(inputs, outputs, grads, .required) {
   y <- outputs[[1L]]
@@ -628,6 +620,56 @@ prim_sort[["reverse"]] <- function(
     out[[required_idx[[k]]]] <- inv[[k + 1L]]
   }
   out
+}
+
+# top_k reverse: pad the values gradient with zeros to the original length
+# along the last dim, then route back through the inverse permutation of
+# argsort(operand, descending) — same trick as prim_sort's reverse rule.
+prim_top_k[["reverse"]] <- function(inputs, outputs, grads, k, .required) {
+  if (!.required[[1L]]) {
+    return(list(NULL))
+  }
+  operand <- inputs[[1L]]
+  grad_values <- grads[[1L]]
+  full_shape <- shape(operand)
+  dim <- length(full_shape)
+  remaining <- full_shape[dim] - k
+
+  if (remaining > 0L) {
+    pad_shape <- full_shape
+    pad_shape[dim] <- remaining
+    zero_pad <- prim_fill(
+      0L,
+      dtype = dtype(grad_values),
+      shape = pad_shape,
+      ambiguous = FALSE
+    )
+    grad_padded <- prim_concatenate(
+      grad_values,
+      zero_pad,
+      dimension = as.integer(dim)
+    )
+  } else {
+    grad_padded <- grad_values
+  }
+
+  iota <- prim_iota(
+    dim = as.integer(dim),
+    dtype = "i64",
+    shape = full_shape,
+    start = 1L
+  )
+  perm <- prim_sort(
+    list(operand, iota),
+    dim = as.integer(dim),
+    descending = TRUE
+  )[[2L]]
+  inv <- prim_sort(
+    list(perm, grad_padded),
+    dim = as.integer(dim),
+    descending = FALSE
+  )
+  inv[2L]
 }
 
 # concatenate reverse: split the gradient back along the concatenation dimension

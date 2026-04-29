@@ -35,5 +35,5 @@ nv_top_k(m, k = 2L, dim = 2L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_sort]{nv_sort()}}, \code{\link[=prim_sort]{prim_sort()}} for the underlying primitive.
+\code{\link[=prim_top_k]{prim_top_k()}} for the underlying primitive, \code{\link[=nv_sort]{nv_sort()}}.
 }

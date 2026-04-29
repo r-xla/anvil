@@ -20,6 +20,12 @@ Primitives are `JitPrimitive` callables constructed by `new_primitive()` (define
 - **`reverse`** -- Autodiff rules in `R/rules-reverse.R`. Signature: `function(inputs, outputs, grads, .required)`. `grads` contains the upstream gradients (one per output). Return a list of gradients w.r.t. each input, using `NULL` (via `if (.required[[i]])`) for inputs that don't need gradients.
 - **`quickr`** -- R-native lowering rules in `R/rules-quickr.R` for the quickr backend.
 
+## Broadcasting
+
+Anvl's elementwise binary operators (`+`, `-`, `*`, `/`, `nv_add`, `nv_mul`, …) only **auto-broadcast scalars** — i.e. operands with `shape = integer()`. They do **not** do general numpy-style broadcasting; mixing two non-scalar arrays of different (but broadcastable) shapes raises `nv_broadcast_scalars()` errors like *"All non-scalar arrays must have the same shape, ... Use `nv_broadcast_arrays()` for general broadcasting."*
+
+When two non-scalar arrays need to be combined and only differ by size-1 dimensions (e.g. `[2, 3] * [1, 3]`), explicitly broadcast first via `nv_broadcast_arrays(a, b)` (or `nv_broadcast_to(operand, target_shape)` / `prim_broadcast_in_dim()` for a one-sided broadcast).
+
 ## Graph Tracing
 
 When a function is JIT-compiled, anvl traces it by executing with `GraphBox` objects instead of real data. Operations record themselves into an `AnvlGraph` (see `R/graph.R`). The graph is then lowered to StableHLO IR or quickr code for compilation.
@@ -28,7 +34,7 @@ Key types: `GraphValue` (traced variable), `GraphLiteral` (embedded constant), `
 
 ## NSE and Tracing
 
-When combining non-standard evaluation (NSE) with sub-graph tracing, `force()` all arrayish inputs so they are not accidentally captured as unevaluated promises in the sub-graph descriptor. R's lazy evaluation of function arguments causes hard-to-debug errors otherwise.
+`force()` is only needed in higher-order primitives that trace R functions internally (e.g. `prim_sort` traces a comparator, `prim_scatter` traces an update computation). In those cases, force all arrayish inputs first so they aren't accidentally captured as unevaluated promises in the sub-graph descriptor — R's lazy evaluation otherwise causes hard-to-debug errors. Plain primitives that don't open a sub-descriptor don't need `force()`.
 
 ## Testing
 

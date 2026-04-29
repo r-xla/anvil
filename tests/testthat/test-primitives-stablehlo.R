@@ -713,6 +713,40 @@ describe("prim_sort", {
   })
 })
 
+describe("prim_top_k", {
+  it("returns values and 1-based indices along the last dim", {
+    out <- prim_top_k(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)), k = 3L)
+    expect_length(out, 2L)
+    expect_equal(as.vector(as_array(out[[1L]])), c(9, 6, 5))
+    expect_equal(as.vector(as_array(out[[2L]])), c(6L, 8L, 5L))
+    expect_equal(as.character(dtype(out[[2L]])), "i32")
+  })
+
+  it("operates per-row on a matrix", {
+    f <- jit(function(x) prim_top_k(x, k = 2L))
+    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    out <- f(m)
+    expect_equal(as_array(out[[1L]]), matrix(c(5, 3, 4, 2), nrow = 2, byrow = TRUE))
+    expect_equal(as_array(out[[2L]]), matrix(c(3L, 1L, 2L, 1L), nrow = 2, byrow = TRUE))
+  })
+
+  it("breaks ties with the smaller index", {
+    out <- prim_top_k(nv_array(c(1, 5, 5, 3)), k = 2L)
+    expect_equal(as.vector(as_array(out[[1L]])), c(5, 5))
+    expect_equal(as.vector(as_array(out[[2L]])), c(2L, 3L))
+  })
+
+  it("preserves operand dtype on values output", {
+    out <- prim_top_k(nv_array(c(5L, 2L, 8L, 1L), dtype = "i32"), k = 2L)
+    expect_equal(as.character(dtype(out[[1L]])), "i32")
+    expect_equal(as.vector(as_array(out[[1L]])), c(8L, 5L))
+  })
+
+  it("rejects k larger than the last dim", {
+    expect_error(prim_top_k(nv_array(c(1, 2, 3)), k = 5L))
+  })
+})
+
 describe("prim_argmax", {
   it("returns the 1-based index of the max along a 1D array", {
     f <- jit(function(x) prim_argmax(x, dim = 1L))

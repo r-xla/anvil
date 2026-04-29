@@ -10,8 +10,11 @@ nv_quantile(x, probs, dim = NULL, interpolation = "linear")
 \item{x}{(\code{\link{arrayish}})\cr
 The array.}
 
-\item{probs}{(\code{numeric()})\cr
-One or more probabilities in \verb{[0, 1]}.}
+\item{probs}{(\code{numeric(1)} | 1-D \code{array})\cr
+One or more probabilities in \verb{[0, 1]}. Either a length-1 numeric
+(scalar; \code{dim} is dropped) or a 1-D \code{array} (a leading dim of size
+\code{length(probs)} is prepended). Plain length-K (K > 1) vectors are
+rejected — wrap with \code{array()}.}
 
 \item{dim}{(\code{integer(1)} | \code{NULL})\cr
 Dimension along which to compute the quantile. If \code{NULL} (default),
@@ -24,15 +27,23 @@ One of \code{"linear"} (default), \code{"lower"}, \code{"higher"}, \code{"neares
 \value{
 \code{\link{arrayish}}\cr
 For scalar \code{probs}: same shape as \code{x} with \code{dim} removed. For
-length-\code{K} \code{probs}: a leading dimension of size \code{K} is prepended.
+array \code{probs}: a \strong{leading} dimension of size \code{length(probs)} is
+prepended.
 }
 \description{
 Computes the \code{probs} quantile(s) of an array along a dimension.
 
-For a single scalar \code{probs}, the output has \code{dim} removed (same shape
-as a reduction). For a length-\code{K} \code{probs} vector, an additional leading
-dimension of length \code{K} is prepended (matching \code{numpy.quantile()}'s
-default).
+\code{probs} follows the same scalar-vs-array convention as \code{\link[=nv_select]{nv_select()}}'s
+\code{index}:
+\itemize{
+\item a length-1 numeric (e.g. \code{0.5}) treats \code{probs} as scalar — the output
+has \code{dim} removed, like a reduction;
+\item a 1-D R array (e.g. \code{array(c(0.25, 0.5, 0.75))}) prepends a leading
+dimension of size \code{length(probs)}.
+}
+
+Plain length-K (K > 1) vectors are rejected; wrap with \code{array()} to
+make the array intent explicit.
 }
 \section{Interpolation modes}{
 
@@ -41,7 +52,6 @@ length \code{n} and probability \code{q}, with \code{lo = floor(h)}, \code{hi = 
 \code{frac = h - lo}. Then:
 \itemize{
 \item \code{"linear"} (default): \code{(1 - frac) * sorted[lo] + frac * sorted[hi]}.
-Matches base R \code{quantile(..., type = 7)} and \code{median()}.
 \item \code{"lower"}: \code{sorted[lo]} — the lower bracket of \code{linear}.
 \item \code{"higher"}: \code{sorted[hi]} — the upper bracket of \code{linear}.
 \item \code{"nearest"}: \code{sorted[lo]} if \code{frac < 0.5} else \code{sorted[hi]}.
@@ -53,7 +63,7 @@ Matches base R \code{quantile(..., type = 7)} and \code{median()}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
 nv_quantile(x, 0.5) # = nv_median(x)
-nv_quantile(x, c(0.25, 0.5, 0.75))
+nv_quantile(x, array(c(0.25, 0.5, 0.75)))
 nv_quantile(x, 0.5, interpolation = "lower")
 \dontshow{\}) # examplesIf}
 }

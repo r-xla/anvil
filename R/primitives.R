@@ -800,7 +800,7 @@ prim_reduce_all <- new_primitive("reduce_all", make_reduce_op(infer_reduce_boole
 #' @template param_prim_operand_any
 #' @param init ([`arrayish`])\cr
 #'   Scalar (0-dimensional) initial value. Must have the same data type as
-#'   `operand` and be the neutral element of the group formed by the `reductor`.
+#'   `operand` and be the neutral element w.r.t. `reductor`.
 #' @param dims (`integer()`)\cr
 #'   Dimensions to reduce over.
 #' @param drop (`logical(1)`)\cr
@@ -839,15 +839,15 @@ prim_reduce <- new_primitive(
       cli_abort("{.arg reductor} must be a function")
     }
 
-    op_dtype <- dtype_abstract(operand)
-    init_dtype <- dtype_abstract(init)
+    op_dtype <- dtype(operand)
+    init_dtype <- dtype(init)
     if (init_dtype != op_dtype) {
       cli_abort(c(
         "{.arg init} must have the same dtype as {.arg operand}.",
         x = "Got operand dtype {.field {repr(op_dtype)}} and init dtype {.field {repr(init_dtype)}}."
       ))
     }
-    if (length(shape_abstract(init)) != 0L) {
+    if (ndims(init) != 0L) {
       cli_abort("{.arg init} must be a scalar (0-dimensional)")
     }
 
@@ -855,8 +855,8 @@ prim_reduce <- new_primitive(
     desc_red <- local_descriptor()
 
     dummy_args <- list(
-      lhs = AbstractArray(dtype = op_dtype, shape = Shape(integer()), ambiguous = FALSE),
-      rhs = AbstractArray(dtype = op_dtype, shape = Shape(integer()), ambiguous = FALSE)
+      lhs = nv_aval(op_dtype, integer()),
+      rhs = nv_aval(op_dtype, integer())
     )
     reductor_graph <- trace_fn(reductor, dummy_args, desc = desc_red, lit_to_array = TRUE)
 
@@ -879,24 +879,37 @@ prim_reduce <- new_primitive(
     }
 
     infer_fn <- function(operand, init, dims, drop, reductor_graph) {
-      shp <- shape(operand)
-      if (any(dims > length(shp))) {
-        cli_abort(c(
-          "{.arg dims} out of bounds.",
-          x = "Operand has {length(shp)} dims, got {.arg dims} = {dims}."
+      body_out_dtype <- reductor_graph$outputs[[1L]]$aval$dtype
+      stub_body <- stablehlo::Func(
+        outputs = stablehlo::FuncOutputs(list(
+          stablehlo::FuncOutput(stablehlo::ValueType(
+            stablehlo::TensorType(body_out_dtype, stablehlo::Shape(integer()))
+          ))
         ))
-      }
-      if (drop) {
-        new_shape <- shp[-dims]
-      } else {
-        new_shape <- shp
+      )
+      dims0 <- as.integer(dims) - 1L
+      vts <- stablehlo::infer_types_reduce(
+        inputs = list(at2vt(operand)),
+        init_values = list(at2vt(init)),
+        body = stub_body,
+        dimensions = stablehlo::r_to_constant(
+          dims0,
+          dtype = "i64",
+          shape = length(dims0)
+        )
+      )
+      out <- vt2at(vts[[1L]])
+      out$ambiguous <- operand$ambiguous
+      if (!drop) {
+        new_shape <- shape(operand)
         new_shape[dims] <- 1L
+        out <- AbstractArray(
+          dtype = out$dtype,
+          shape = Shape(new_shape),
+          ambiguous = out$ambiguous
+        )
       }
-      list(AbstractArray(
-        dtype = dtype(operand),
-        shape = Shape(new_shape),
-        ambiguous = operand$ambiguous
-      ))
+      list(out)
     }
 
     graph_desc_add(
@@ -2255,88 +2268,104 @@ prim_while <- new_primitive(
 prim_sort <- new_primitive(
   "sort",
   function(operands, dim = 1L, descending = FALSE, is_stable = FALSE) {
-    force(operands)
     assert_integerish(dim, lower = 1, len = 1)
     assert_flag(descending)
     assert_flag(is_stable)
     if (!is.list(operands) || !length(operands)) {
       cli_abort("{.arg operands} must be a non-empty list of arrayish values")
     }
-
-    current_desc <- .current_descriptor(silent = TRUE)
-    desc_cmp <- local_descriptor()
-
-    # Comparator takes 2*N scalars; only compares the first key pair.
-    op_dtypes <- lapply(operands, dtype_abstract)
-    dummy_args <- unlist(
-      lapply(op_dtypes, function(dt) {
-        list(
-          nv_aval(dtype = dt, shape = integer()),
-          nv_aval(dtype = dt, shape = integer())
-        )
-      }),
-      recursive = FALSE
-    )
-    cmp_fn <- if (descending) prim_gt else prim_lt
-    comparator <- function(...) {
-      args <- list(...)
-      cmp_fn(args[[1L]], args[[2L]])
+    ref_shape <- shape(operands[[1L]])
+    for (i in seq_along(operands)[-1L]) {
+      if (!identical(shape(operands[[i]]), ref_shape)) {
+        cli_abort(c(
+          "All operands of {.fn prim_sort} must have the same shape.",
+          x = "Operand 1 has shape {xlamisc::shapevec_repr(ref_shape)}, operand {i} has shape {xlamisc::shapevec_repr(shape(operands[[i]]))}."
+        ))
+      }
+    }
+    if (dim > length(ref_shape)) {
+      cli_abort(c(
+        "{.arg dim} not in valid range.",
+        x = "Operand has {length(ref_shape)} dim(s), got {.arg dim} = {dim}."
+      ))
     }
 
-    comparator_graph <- trace_fn(comparator, dummy_args, desc = desc_cmp, lit_to_array = TRUE)
-
-    infer_fn <- function(..., dim, descending, is_stable, comparator_graph) {
+    # Output shape/dtype mirrors each input — sort only permutes along `dim`.
+    infer_fn <- function(..., dim, descending, is_stable) {
       ops <- list(...)
-      ref_shape <- shape(ops[[1L]])
-      for (i in seq_along(ops)[-1L]) {
-        if (!identical(shape(ops[[i]]), ref_shape)) {
-          cli_abort(c(
-            "All operands of {.fn prim_sort} must have the same shape.",
-            x = "Got {xlamisc::shapevec_repr(ref_shape)} and {xlamisc::shapevec_repr(shape(ops[[i]]))}."
-          ))
-        }
-      }
-      dim_const <- stablehlo::r_to_constant(
-        as.integer(dim - 1L),
-        dtype = "i64",
-        shape = integer(0)
-      )
-      is_stable_const <- stablehlo::r_to_constant(
-        is_stable,
-        dtype = "i1",
-        shape = integer(0)
-      )
-      cmp_func <- stablehlo(comparator_graph, constants_as_inputs = FALSE)[[1L]]
-      vts_in <- lapply(ops, at2vt)
-      vts_out <- rlang::exec(
-        stablehlo::infer_types_sort,
-        !!!vts_in,
-        dimension = dim_const,
-        is_stable = is_stable_const,
-        comparator = cmp_func
-      )
-      lapply(seq_along(ops), function(i) {
-        out <- vt2at(vts_out[[i]])
-        out$ambiguous <- ops[[i]]$ambiguous
-        out
+      lapply(ops, function(op) {
+        AbstractArray(
+          dtype = dtype(op),
+          shape = Shape(shape(op)),
+          ambiguous = op$ambiguous
+        )
       })
     }
 
     graph_desc_add(
       self,
       args = operands,
-      params = list(
-        dim = dim,
-        descending = descending,
-        is_stable = is_stable,
-        comparator_graph = comparator_graph
-      ),
-      infer_fn = infer_fn,
-      desc = current_desc
+      params = list(dim = dim, descending = descending, is_stable = is_stable),
+      infer_fn = infer_fn
     )
   },
-  subgraphs = "comparator_graph",
   static = c("dim", "descending", "is_stable")
+)
+
+#' @title Primitive Top-K
+#' @description
+#' Returns the `k` largest values along the last dimension, sorted in
+#' descending order, together with their indices into that dimension.
+#'
+#' For other dimensions, transpose so the target dimension is last, call
+#' `prim_top_k()`, then transpose back. [nv_top_k()] does this.
+#' @param operand ([`arrayish`])\cr
+#'   Tensor of integer, unsigned integer, or floating-point dtype with rank >= 1.
+#' @param k (`integer(1)`)\cr
+#'   Number of top elements. Must satisfy
+#'   `1 <= k <= shape(operand)[ndims(operand)]`.
+#' @return `list` of two [`arrayish`] values:\cr
+#'   The top-`k` values (same dtype as `operand`) and their indices along
+#'   the last dimension (dtype `i32`, matching JAX). Both have the same
+#'   shape as `operand` with the last dimension replaced by `k`. Ties are
+#'   broken by lower index first.
+#' @templateVar primitive_id top_k
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_top_k()].
+#' @seealso [nv_top_k()], [prim_sort()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
+#' prim_top_k(x, k = 3L)
+#' @export
+prim_top_k <- new_primitive(
+  "top_k",
+  function(operand, k) {
+    assert_integerish(k, lower = 1L, len = 1L)
+    k <- as.integer(k)
+
+    infer_fn <- function(operand, k) {
+      k_const <- stablehlo::r_to_constant(
+        k,
+        dtype = "i64",
+        shape = integer()
+      )
+      vts <- stablehlo::infer_types_top_k(at2vt(operand), k = k_const)
+      values <- vt2at(vts[[1L]])
+      values$ambiguous <- operand$ambiguous
+      indices <- vt2at(vts[[2L]])
+      indices$ambiguous <- FALSE
+      list(values, indices)
+    }
+
+    graph_desc_add(
+      self,
+      args = list(operand = operand),
+      params = list(k = k),
+      infer_fn = infer_fn
+    )
+  },
+  static = "k"
 )
 
 # Print primitive

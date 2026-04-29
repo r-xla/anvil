@@ -316,11 +316,16 @@ as_raw.AnvlArray <- function(x, row_major = FALSE, ...) {
 #' * `as.double()` / `as.numeric()`: float or (signed/unsigned) integer dtypes.
 #' * `as.integer()`: signed or unsigned integer dtypes.
 #' * `as.logical()`: `bool`.
+#' * `as.vector()`: any dtype; the R type is chosen by the dtype, or
+#'   forced via `mode` (e.g. `"integer"`, `"double"`, `"logical"`, `"list"`).
 #'
 #' Use [`as_array()`] to obtain an R array that preserves the shape, or
 #' [`nv_convert()`] to change the dtype of an [`AnvlArray`] before coercing.
 #' @param x ([`AnvlArray`])\cr
 #'   Array to coerce.
+#' @param mode (`character(1)`)\cr
+#'   For `as.vector()` only. See [base::as.vector()]. Defaults to `"any"`,
+#'   meaning the natural R type for the array's dtype.
 #' @param ... Unused.
 #' @return An R vector of the corresponding type (`double`, `integer`, or `logical`).
 #' @examplesIf pjrt::plugins_downloaded()
@@ -328,6 +333,7 @@ as_raw.AnvlArray <- function(x, row_major = FALSE, ...) {
 #' as.numeric(x)
 #' as.integer(nv_array(1:6, shape = c(2L, 3L)))
 #' as.logical(nv_array(c(TRUE, FALSE), dtype = "bool"))
+#' as.vector(x)
 #' @name as-AnvlArray
 NULL
 
@@ -361,6 +367,13 @@ as.logical.AnvlArray <- function(x, ...) {
     cli_abort("{.fn as.logical} requires a {.val bool} dtype, but got {.val {as.character(dtype(x))}}.")
   }
   as.logical(as_array(x))
+}
+
+#' @rdname as-AnvlArray
+#' @method as.vector AnvlArray
+#' @export
+as.vector.AnvlArray <- function(x, mode = "any") {
+  as.vector(as_array(x), mode = mode)
 }
 
 #' @rdname platform

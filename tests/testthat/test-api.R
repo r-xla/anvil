@@ -632,6 +632,12 @@ describe("nv_select", {
     expect_jit_equal(nv_select(m, dim = 2L, index = 2L), nv_array(c(3L, 4L)))
   })
 
+  it("array(i) keeps the dim with size 1", {
+    x <- nv_array(1:6, shape = c(2L, 3L))
+    out <- nv_select(x, dim = 2L, index = array(1L))
+    expect_equal(shape(out), c(2L, 1L))
+  })
+
   it("works on a 3D array", {
     arr <- nv_array(array(1:24, dim = c(2, 3, 4)))
     out <- jit(function(x) nv_select(x, dim = 3L, index = 2L))(arr)
@@ -698,8 +704,8 @@ describe("nv_argsort", {
     expect_equal(as.vector(as_array(x))[perm], c(5, 4, 3, 1, 1))
   })
 
-  it("returns i64 dtype", {
-    expect_equal(as.character(dtype(nv_argsort(nv_array(c(1, 2))))), "i64")
+  it("returns i32 dtype", {
+    expect_equal(as.character(dtype(nv_argsort(nv_array(c(1, 2))))), "i32")
   })
 
   it("works inside jit", {
@@ -759,6 +765,15 @@ describe("nv_median", {
     )
   })
 
+  it("forwards interpolation through nv_median and median()", {
+    x <- nv_array(c(1, 2, 3, 4))
+    expect_equal(as_array(nv_median(x, interpolation = "lower")), as_array(nv_scalar(2)))
+    expect_equal(as_array(nv_median(x, interpolation = "higher")), as_array(nv_scalar(3)))
+    # S3 method forwards `interpolation` via `...`
+    expect_equal(as_array(median(x, interpolation = "lower")), as_array(nv_scalar(2)))
+    expect_equal(as_array(median(x, interpolation = "higher")), as_array(nv_scalar(3)))
+  })
+
   it("errors when na.rm = TRUE", {
     x <- nv_array(c(1, 2, 3, 4))
     expect_error(median(x, na.rm = TRUE), "na.rm = TRUE")
@@ -781,9 +796,21 @@ describe("nv_quantile", {
   it("vector probs prepends a leading dim of length(probs)", {
     xr <- c(3, 1, 4, 1, 5, 9, 2, 6)
     x <- nv_array(xr)
-    out <- nv_quantile(x, c(0.25, 0.5, 0.75))
+    out <- nv_quantile(x, array(c(0.25, 0.5, 0.75)))
     expect_equal(shape(out), 3L)
     expect_equal(as.vector(as_array(out)), unname(quantile(xr, c(0.25, 0.5, 0.75))))
+  })
+
+  it("vector probs work for >1-D inputs (frac broadcast)", {
+    mr <- matrix(c(3, 1, 4, 1, 5, 9, 2, 6, 7, 0, 5, 4), nrow = 3)
+    m <- nv_array(mr)
+    out <- nv_quantile(m, array(c(0.25, 0.75)))
+    expect_equal(shape(out), c(2L, 3L))
+    # apply(., 1, quantile) returns shape [length(probs), nrow(mr)] —
+    # rows are quantile probs, cols are original rows — matching anvl's
+    # leading-K layout.
+    expected <- apply(mr, 1L, quantile, probs = c(0.25, 0.75))
+    expect_equal(as_array(out), unname(expected), ignore_attr = TRUE)
   })
 
   it("interpolation = 'lower' returns sorted[floor((n-1)*q)+1]", {
@@ -1070,7 +1097,7 @@ describe("cross-device eager (check_eager)", {
     check_eager(nv_median, sortable)
     check_eager(nv_median, sortable_even)
     check_eager(function(x) nv_quantile(x, 0.5), sortable)
-    check_eager(function(x) nv_quantile(x, c(0.25, 0.75)), sortable)
+    check_eager(function(x) nv_quantile(x, array(c(0.25, 0.75))), sortable)
     check_eager(nv_argmax, sortable)
     check_eager(nv_argmin, sortable)
   })
