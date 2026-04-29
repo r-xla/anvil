@@ -9,8 +9,11 @@
 * New cumulative primitives and API functions:
   `nv_cumsum()`, `nv_cumprod()`, `nv_cummax()`, `nv_cummin()` (and
   the corresponding `prim_*` primitives).
-  The reverse rules for `prim_cumprod()` and `prim_reduce_prod()` now
-  avoid NaN gradients at zero inputs (returning 0 instead of `0/0`);
+  The `prim_cumprod()` reverse rule no longer produces NaN gradients
+  at zero inputs (returns 0 instead of `0/0`).
+  The `prim_reduce_prod()` reverse rule now also returns the exact
+  gradient when a reduce group contains exactly one zero (product of
+  the remaining elements at that position, 0 elsewhere in the group).
   `prim_cummax()`/`prim_cummin()` use a constant-zero reverse rule.
 
 # anvl 0.2.0

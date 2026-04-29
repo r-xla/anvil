@@ -596,7 +596,6 @@ prim_concatenate[["reverse"]] <- function(inputs, outputs, grads, dimension, .re
 
 prim_reduce_prod[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .required) {
   operand <- inputs[[1L]]
-  y <- outputs[[1L]]
   grad <- grads[[1L]]
 
   list(
@@ -606,17 +605,32 @@ prim_reduce_prod[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .r
       } else {
         seq_along(shape(grad))
       }
-      # Replace x_i == 0 by 1 in the denominator to avoid 0/0. The numerator is
-      # already 0 at any zero position because y == 0 in any reduce group that
-      # contains a zero, so the result is 0. NB: this is only the "true"
-      # gradient when there are zero or two-or-more zeros per reduce group; the
-      # exact single-zero case (gradient = product of remaining elements) is
-      # not handled.
+      # Per reduce group:
+      #   0 zeros: dy/dx_i = y / x_i (regular formula).
+      #   1 zero at position i: dy/dx_i = product of other elements (= y_safe);
+      #                         dy/dx_j = 0 for j != i.
+      #   >= 2 zeros: dy/dx = 0 everywhere.
+      # Compute over operand with zeros replaced by 1 (safe_operand) and mask
+      # out the positions that should be 0. At a single-zero position the
+      # division by safe_operand == 1 leaves grad * y_safe as required.
       is_zero <- prim_eq(operand, zeros_like(operand))
       safe_operand <- prim_ifelse(is_zero, ones_like(operand), operand)
-      y_bc <- prim_broadcast_in_dim(y, shape(operand), bdims)
+      y_safe <- prim_reduce_prod(safe_operand, dims = dims, drop = drop)
+
+      is_zero_num <- prim_convert(is_zero, dtype = dtype(operand))
+      zero_count <- prim_reduce_sum(is_zero_num, dims = dims, drop = drop)
+
+      y_safe_bc <- prim_broadcast_in_dim(y_safe, shape(operand), bdims)
+      zero_count_bc <- prim_broadcast_in_dim(zero_count, shape(operand), bdims)
       grad_bc <- prim_broadcast_in_dim(grad, shape(operand), bdims)
-      prim_div(prim_mul(grad_bc, y_bc), safe_operand)
+
+      no_zeros <- prim_eq(zero_count_bc, zeros_like(zero_count_bc))
+      one_count <- prim_fill(1, dtype = dtype(operand), shape = shape(operand))
+      single_zero_here <- prim_and(is_zero, prim_eq(zero_count_bc, one_count))
+      use_safe <- prim_or(no_zeros, single_zero_here)
+
+      raw <- prim_div(prim_mul(grad_bc, y_safe_bc), safe_operand)
+      prim_ifelse(use_safe, raw, zeros_like(raw))
     }
   )
 }

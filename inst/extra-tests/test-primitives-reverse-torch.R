@@ -742,7 +742,7 @@ test_that("prim_concatenate", {
   verify_grad_concatenate(list(c(1, 3), c(2, 3)), 1L)
 })
 
-test_that("prim_reduce_prod", {
+describe("prim_reduce_prod", {
   # Test with non-zero values to avoid division by zero in gradient
   gen_nonzero <- function(shp, dtype) {
     vals <- generate_test_data(shp, dtype = dtype)
@@ -755,25 +755,34 @@ test_that("prim_reduce_prod", {
     if (length(shp) == 0L) vals else array(vals, shp)
   }
 
-  shp <- c(2L, 3L)
-  dtype <- "f32"
+  verify_against_torch <- function(x_arr) {
+    dtype <- "f32"
+    x_nv <- nv_array(x_arr, dtype = dtype)
+    x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
-  x_arr <- gen_nonzero(shp, dtype)
-  x_nv <- nv_array(x_arr, dtype = dtype)
-  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+    f_nv <- function(x) {
+      y <- prim_reduce_prod(x, dims = 2L, drop = TRUE)
+      nv_reduce_sum(y, dims = 1L, drop = TRUE)
+    }
+    grads_nv <- jit(gradient(f_nv))(x_nv)
 
-  # Test reduce along one dimension
-  f_nv <- function(x) {
-    y <- prim_reduce_prod(x, dims = 2L, drop = TRUE)
-    nv_reduce_sum(y, dims = 1L, drop = TRUE)
+    out_th <- torch::torch_prod(x_th, dim = 2, keepdim = FALSE)
+    torch::torch_sum(out_th)$backward()
+
+    expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
   }
 
-  grads_nv <- jit(gradient(f_nv))(x_nv)
+  it("non-zero inputs", verify_against_torch(gen_nonzero(c(2L, 3L), "f32")))
 
-  out_th <- torch::torch_prod(x_th, dim = 2, keepdim = FALSE)
-  torch::torch_sum(out_th)$backward()
+  it("exactly one zero per row", {
+    # row 1 has no zeros, row 2 has exactly one zero -> exact gradient is the
+    # product of the remaining row entries at the zero position, 0 elsewhere.
+    verify_against_torch(matrix(c(2, 0, 3, 4, 5, 6), nrow = 2))
+  })
 
-  expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
+  it("multiple zeros per row -> zero gradient", {
+    verify_against_torch(matrix(c(2, 0, 3, 0, 5, 6), nrow = 2))
+  })
 })
 
 describe("prim_static_slice", {
