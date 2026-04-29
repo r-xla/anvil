@@ -6,6 +6,12 @@
   `as.integer` and `as.logical`
 * New API functions `nv_rbind()` and `nv_cbind()` and corresponding
   `rbind()`/`cbind()` generics.
+* New cumulative primitives and API functions:
+  `nv_cumsum()`, `nv_cumprod()`, `nv_cummax()`, `nv_cummin()` (and
+  the corresponding `prim_*` primitives).
+  The reverse rules for `prim_cumprod()` and `prim_reduce_prod()` now
+  avoid NaN gradients at zero inputs (returning 0 instead of `0/0`);
+  `prim_cummax()`/`prim_cummin()` use a constant-zero reverse rule.
 
 # anvl 0.2.0
 

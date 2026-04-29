@@ -606,9 +606,17 @@ prim_reduce_prod[["reverse"]] <- function(inputs, outputs, grads, dims, drop, .r
       } else {
         seq_along(shape(grad))
       }
+      # Replace x_i == 0 by 1 in the denominator to avoid 0/0. The numerator is
+      # already 0 at any zero position because y == 0 in any reduce group that
+      # contains a zero, so the result is 0. NB: this is only the "true"
+      # gradient when there are zero or two-or-more zeros per reduce group; the
+      # exact single-zero case (gradient = product of remaining elements) is
+      # not handled.
+      is_zero <- prim_eq(operand, zeros_like(operand))
+      safe_operand <- prim_ifelse(is_zero, ones_like(operand), operand)
       y_bc <- prim_broadcast_in_dim(y, shape(operand), bdims)
       grad_bc <- prim_broadcast_in_dim(grad, shape(operand), bdims)
-      prim_div(prim_mul(grad_bc, y_bc), operand)
+      prim_div(prim_mul(grad_bc, y_bc), safe_operand)
     }
   )
 }
@@ -630,12 +638,23 @@ prim_cumprod[["reverse"]] <- function(inputs, outputs, grads, dim, .required) {
   grad <- grads[[1L]]
   list(
     # d y_j / d x_i = y_j / x_i for i <= j, so
-    # grad_i = (1 / x_i) * sum_{j>=i} grad_out_j * y_j (= reverse-cumsum of grad*y)
-    # NB: undefined when x_i == 0 (matches the simple non-zero PyTorch case).
+    # grad_i = (1 / x_i) * sum_{j>=i} grad_out_j * y_j (= reverse-cumsum of grad*y).
+    # Replace x_i == 0 by 1 in the denominator to avoid 0/0; the numerator is
+    # also 0 there since y_j == 0 for all j >= i, so the result is 0. This is
+    # not the "true" gradient when x_i is the only zero in the prefix.
     if (.required[[1L]]) {
+      is_zero <- prim_eq(operand, zeros_like(operand))
+      safe_operand <- prim_ifelse(is_zero, ones_like(operand), operand)
       gy <- prim_mul(grad, y)
-      prim_div(prim_reverse(prim_cumsum(prim_reverse(gy, dim), dim), dim), operand)
+      prim_div(prim_reverse(prim_cumsum(prim_reverse(gy, dim), dim), dim), safe_operand)
     }
+  )
+}
+
+prim_cummax[["reverse"]] <- prim_cummin[["reverse"]] <- function(inputs, outputs, grads, dim, .required) {
+  operand <- inputs[[1L]]
+  list(
+    if (.required[[1L]]) prim_fill(0L, dtype = dtype(operand), shape = shape(operand))
   )
 }
 
