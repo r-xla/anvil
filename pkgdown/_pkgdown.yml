@@ -174,14 +174,14 @@ reference:
       - nv_log1p
       - nv_log2
       - nv_log10
-      - nv_sine
-      - nv_cosine
+      - nv_sin
+      - nv_cos
       - nv_tan
       - nv_tanh
       - nv_atan2
       - nv_sign
       - nv_floor
-      - nv_ceil
+      - nv_ceiling
       - nv_round
       - nv_logistic
       - nv_is_finite
@@ -205,7 +205,7 @@ reference:
     desc: Linear algebra operations
     contents:
       - nv_matmul
-      - nv_cholesky
+      - nv_chol
       - nv_solve
       - nv_crossprod
       - nv_tcrossprod
