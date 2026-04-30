@@ -507,31 +507,16 @@ get_box_or_register_const <- function(desc, x) {
   return(new_box)
 }
 
-init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
-  for (input in graph$inputs) {
+register_inputs <- function(desc, inputs) {
+  for (input in inputs) {
     register_input(desc, input)
   }
-  for (const in graph$constants) {
+}
+
+register_consts <- function(desc, consts) {
+  for (const in consts) {
     get_box_or_register_const(desc, const)
   }
-  for (call in graph$calls) {
-    for (input in c(call$inputs, call$outputs)) {
-      if (is.null(desc$gval_to_box[[input]])) {
-        desc$gval_to_box[[input]] <- GraphBox(input, desc)
-      }
-    }
-  }
-
-  desc$calls <- graph$calls
-  desc$in_tree <- graph$in_tree
-  if (outputs) {
-    desc$outputs <- graph$outputs
-  }
-  desc$out_tree <- graph$out_tree
-  desc$is_static_flat <- graph$is_static_flat
-  desc$static_args_flat <- graph$static_args_flat
-
-  graph
 }
 
 match_args_to_formals <- function(f, args) {
@@ -773,18 +758,12 @@ print_call_repr <- function(prim) {
 
 
 inline_graph_into_desc <- function(desc, graph) {
-  for (const in graph$constants) {
-    # The following can happen:
-    # 1. a constant is already present in the parent descriptor -> do nothing
-    # 2. the constant is not present in the parent descriptor -> register it
-    get_box_or_register_const(desc, const)
-  }
-  for (input in graph$inputs) {
-    if (is.null(desc$gval_to_box[[input]])) {
-      #
-    }
-    get_box_or_register_const(desc, input)
-  }
+  # The graph's constants and inputs are both treated like constants in the
+  # parent: if already present, reuse; otherwise register. (The inlined
+  # graph's "inputs" are values the parent supplies, not new top-level
+  # inputs.)
+  register_consts(desc, graph$constants)
+  register_consts(desc, graph$inputs)
 
   desc$calls <- c(desc$calls, graph$calls)
 

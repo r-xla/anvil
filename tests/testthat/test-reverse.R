@@ -329,3 +329,41 @@ test_that("trace_fn matches args with formals", {
   graph2 <- trace_fn(prim_add, list(lhs = nv_aval("f32", c()), rhs = nv_aval("f32", c())))
   expect_equal(graph1$in_tree, graph2$in_tree)
 })
+
+test_that("gradient works through graph with primitives that have no reverse rule", {
+  # `prim_fill` has no reverse rule; the call should be skipped during the
+  # backward pass because its inputs (all static params) don't require grad.
+  f <- function(x) {
+    y <- prim_fill(2, dtype = "f64", shape = c(3L))
+    sum(prim_mul(x, y))
+  }
+  g <- jit(gradient(f))
+  out <- g(nv_array(c(1, 2, 3), dtype = "f64"))
+  expect_equal(out[[1L]], nv_array(c(2, 2, 2), dtype = "f64"))
+})
+
+test_that("reverse_rule(forward = ...) emits multiple primitives and captures an intermediate", {
+  infer <- function(x) list(x)
+  my_exp <- new_primitive(
+    "my_exp_test",
+    function(x) graph_desc_add(self, list(x = x), infer_fn = infer)[[1L]],
+    register = FALSE
+  )
+
+  my_exp[["reverse"]] <- reverse_rule(forward = function(inputs, params) {
+    x <- inputs[[1L]]
+    y <- prim_exp(x)
+    neg_y <- prim_negate(y)
+    list(
+      outputs = list(y),
+      backward = function(inputs, outputs, grads, params, required) {
+        list(if (required[[1L]]) prim_negate(prim_mul(grads[[1L]], neg_y)))
+      }
+    )
+  })
+
+  f <- function(x) sum(my_exp(x))
+  g <- jit(gradient(f))
+  out <- g(nv_array(c(0, 1), dtype = "f64"))
+  expect_equal(out[[1L]], nv_array(c(exp(0), exp(1)), dtype = "f64"))
+})

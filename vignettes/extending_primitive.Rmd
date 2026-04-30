@@ -178,20 +178,22 @@ Also note that in `graph_desc_add()` we are converting the error messages from s
 
 ### Step 3: Add the Reverse Rule
 
-If the operation should support automatic differentiation, add a reverse rule.
+If the operation should support automatic differentiation, attach a reverse rule built with `reverse_rule()`.
 The idea here is the following, where we assume the input `operand` has shape `(s_1, ..., s_n)`, which means that the output (and therefore it's gradient) has shape `(s_1, ..., s_{dim-1}, s_dim * times, s_{dim+1}, ..., s_n)`.
 
 1. Reshape the gradient to `(s_1, ..., s_{dim-1}, s_dim, times, s_{dim+1}, ..., s_n)`.
 2. Sum over the `times` dimension and drop the `times` dimension.
 
 ```{r}
-prim_repeat_along[["reverse"]] <- function(inputs, outputs, grads, dim, times, .required) {
-  if (!.required[[1L]]) {
+prim_repeat_along[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+  if (!required[[1L]]) {
     return(list(NULL))
   }
 
   grad <- grads[[1L]]
   operand <- inputs[[1L]]
+  dim <- params$dim
+  times <- params$times
 
   old_shape <- shape(operand)
   grad_shape <- shape(grad)
@@ -203,18 +205,45 @@ prim_repeat_along[["reverse"]] <- function(inputs, outputs, grads, dim, times, .
   grad_reshaped <- prim_reshape(grad, new_shape)
   grad_summed <- prim_reduce_sum(grad_reshaped, dims = dim, drop = TRUE)
   list(grad_summed)
-}
+})
 ```
 
-The reverse rule receives:
+The wrapped backward receives:
 
 - `inputs`: Input `GraphValue`s from the forward pass
 - `outputs`: Output `GraphValue`s from the forward pass
 - `grads`: Gradients flowing back from downstream (one per output)
-- Static parameters by name (here: `dim`, `times`)
-- `.required`: Logical vector indicating which input gradients are needed
+- `params`: Named list of the call's static parameters (here: `params$dim`, `params$times`)
+- `required`: Logical vector indicating which input gradients are needed
 
 It returns a list with one gradient per input (or `NULL` if not required).
+
+#### Optional: alternative-forward rule
+
+For most primitives the backward-only form above is enough.
+If the gradient computation can be made significantly more efficient by emitting a *different* forward pass that exposes intermediate values for reuse, use the alternative-forward form: `reverse_rule(forward = ...)`.
+The forward hook receives `(inputs, params)`, emits whatever forward primitives it likes via the normal `prim_*` callables, and returns a list with the primal outputs and a `backward` closure.
+Intermediates flow from forward to backward via R's lexical scoping:
+
+```r
+prim_<name>[["reverse"]] <- reverse_rule(forward = function(inputs, params) {
+  x <- inputs[[1L]]
+  y <- prim_some_op(x)        # forward emit 1
+  z <- prim_other_op(x, y)    # forward emit 2; both `x` and `y` captured
+  list(
+    outputs  = list(z),       # one box per original call output
+    backward = function(inputs, outputs, grads, params, required) {
+      # `x` is also available via `inputs`; what lexical capture buys us is
+      # access to intermediates like `y` that the framework doesn't pass in.
+      ...
+    }
+  )
+})
+```
+
+The `backward` closure shares the same signature as the backward-only form.
+Intermediates that aren't passed in (like `y` above) flow in via lexical capture.
+The forward must return one output box per original call output, with matching shape/dtype.
 
 #### Optional: a quickr rule
 
