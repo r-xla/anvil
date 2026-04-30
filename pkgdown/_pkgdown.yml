@@ -80,6 +80,7 @@ reference:
       - nv_seq
       - nv_diag
       - nv_eye
+      - arr
 
   - subtitle: Attributes
     desc: Functions for querying array properties
