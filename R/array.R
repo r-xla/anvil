@@ -894,3 +894,29 @@ is_arrayish <- function(x, convert_ok = TRUE) {
   }
   is_valid_r(x)
 }
+
+
+#' @title Create an R array
+#' @description
+#' Create an R array without having to wrap data in `c()`
+#' @param ... (any)\cr
+#'   Values of new array.
+#' @param shape (`NULL` | `integer()`)\cr
+#'   Shape of new array. If `NULL` (default), uses length of elements to create a 1D array.
+#' @export
+#' @examples
+#' arr(1, 2, 3)
+#' arr(1, 2, 3, 4, shape = c(2, 2))
+arr <- function(..., shape = NULL) {
+  vals <- c(...)
+  if (is.null(vals)) {
+    cli_abort("Invalid input values")
+  }
+  assert_integerish(shape, null.ok = TRUE)
+  assert_vector(vals, min.len = 1L)
+  nvals <- length(vals)
+  if (!is.null(shape) && (nvals != 1) && (prod(shape) != nvals)) {
+    cli_abort("Number of elements is {nvals}, but {.arg shape} is {shape}")
+  }
+  array(vals, dim = shape %||% length(vals))
+}
