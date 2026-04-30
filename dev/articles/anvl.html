@@ -189,12 +189,9 @@ exception we cover later) never modified in-place.</p>
 <p>Note that such subset assignment always copies – unlike plain R,
 where <code>y[i] &lt;- val</code> can be done in place when
 <code>y</code> has only one reference. This only applies to
-<em>eager</em> execution; inside a <code><a href="../reference/jit.html">jit()</a></code>-compiled function
-(covered in the <a href="#just-in-time-compilation">Just In Time
-Compilation</a> section below) the XLA compiler can fuse the update with
-surrounding operations and elide the copy entirely. See the <a href="efficiency.html#eager-mode-subset-assignment-always-copies">Eager-mode
-subset-assignment always copies</a> section of the efficiency vignette
-for the implications and how to work around it.</p>
+<em>eager</em> execution. Inside a jit-compiled function (covered
+later), the compiler can optimize reallocations away, similar to R’s
+copy-on-write.</p>
 <p>The <code><a href="../reference/as_array.html">as_array()</a></code> function allows to convert
 <code>AnvlArray</code>s back to R objects, which involves copying the
 data. Note that for 0-dimensional arrays, the result is an R vector of

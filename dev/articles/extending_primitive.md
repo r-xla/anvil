@@ -337,7 +337,7 @@ prim_repeat_along
 #>     }
 #>     do.call(jit_fns[[be]], args)
 #> }
-#> <environment: 0x55ab30b59b08>
+#> <environment: 0x565262cd9070>
 #> attr(,"class")
 #> [1] "JitPrimitive" "JitFunction" 
 #> attr(,"backend")

@@ -103,15 +103,9 @@ y[1, 1]
 
 Note that such subset assignment always copies – unlike plain R, where
 `y[i] <- val` can be done in place when `y` has only one reference. This
-only applies to *eager* execution; inside a
-[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md)-compiled
-function (covered in the [Just In Time
-Compilation](#just-in-time-compilation) section below) the XLA compiler
-can fuse the update with surrounding operations and elide the copy
-entirely. See the [Eager-mode subset-assignment always
-copies](https://r-xla.github.io/anvl/dev/articles/efficiency.html#eager-mode-subset-assignment-always-copies)
-section of the efficiency vignette for the implications and how to work
-around it.
+only applies to *eager* execution. Inside a jit-compiled function
+(covered later), the compiler can optimize reallocations away, similar
+to R’s copy-on-write.
 
 The
 [`as_array()`](https://r-xla.github.io/anvl/dev/reference/as_array.md)

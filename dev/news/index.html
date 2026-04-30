@@ -74,6 +74,10 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="anvl-development-version">anvl (development version)<a class="anchor" aria-label="anchor" href="#anvl-development-version"></a></h2>
 <div class="section level3">
+<h3 id="breaking-changes-development-version">Breaking Changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
+<ul><li>Renamed user-facing API functions to match base R names: <code>nv_sine()</code> -&gt; <code><a href="../reference/nv_sin.html">nv_sin()</a></code>, <code>nv_cosine()</code> -&gt; <code><a href="../reference/nv_cos.html">nv_cos()</a></code>, <code>nv_ceil()</code> -&gt; <code><a href="../reference/nv_ceiling.html">nv_ceiling()</a></code>, <code>nv_cholesky()</code> -&gt; <code><a href="../reference/nv_chol.html">nv_chol()</a></code>. The underlying <code>prim_*</code> primitives keep their StableHLO-aligned names.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
 <ul><li>Added <code>AnvlArray</code> -&gt; R <code>vector</code> converters <code>as.numeric</code>, <code>as.double</code>, <code>as.integer</code> and <code>as.logical</code>
 </li>
