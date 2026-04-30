@@ -9,39 +9,19 @@
 Arguments are first promoted to a common data type
 (see nv_promote_to_common()).
 Each input is then handled according to its rank:
-Rank 0 (scalar, shape integer()): broadcast to match the
-non-stacked dimensions of the other inputs, with size 1 along the
-stacked dimension. If every input is a scalar, scalars become
-c(1, 1) (so nv_rbind(s1, s2) returns a c(2, 1) matrix and
-nv_cbind(s1, s2) returns a c(1, 2) matrix).
-Rank 1 (vector): treated as a single row by nv_rbind
-(reshaped to c(1, length(x))) or a single column by nv_cbind
-(reshaped to c(length(x), 1)).
-Rank &amp;gt;= 2: used as-is. Inputs are concatenated along dimension 1
-(nv_rbind) or dimension 2 (nv_cbind); their other dimensions
-must match.
+0-D: broadcast to match the non-stacked dimensions of the other inputs.
+1-D: treated as a single row/column.
+Other: used as-is.
 
-
-Only scalars are broadcast; non-scalar inputs must already have
-compatible shapes."><meta property="og:description" content="Combine arrays along the row (nv_rbind) or column (nv_cbind) dimension.
+"><meta property="og:description" content="Combine arrays along the row (nv_rbind) or column (nv_cbind) dimension.
 Arguments are first promoted to a common data type
 (see nv_promote_to_common()).
 Each input is then handled according to its rank:
-Rank 0 (scalar, shape integer()): broadcast to match the
-non-stacked dimensions of the other inputs, with size 1 along the
-stacked dimension. If every input is a scalar, scalars become
-c(1, 1) (so nv_rbind(s1, s2) returns a c(2, 1) matrix and
-nv_cbind(s1, s2) returns a c(1, 2) matrix).
-Rank 1 (vector): treated as a single row by nv_rbind
-(reshaped to c(1, length(x))) or a single column by nv_cbind
-(reshaped to c(length(x), 1)).
-Rank &amp;gt;= 2: used as-is. Inputs are concatenated along dimension 1
-(nv_rbind) or dimension 2 (nv_cbind); their other dimensions
-must match.
+0-D: broadcast to match the non-stacked dimensions of the other inputs.
+1-D: treated as a single row/column.
+Other: used as-is.
 
-
-Only scalars are broadcast; non-scalar inputs must already have
-compatible shapes."><meta property="og:image" content="https://r-xla.github.io/anvl/logo.svg"><meta name="robots" content="noindex"></head><body>
+"><meta property="og:image" content="https://r-xla.github.io/anvl/logo.svg"><meta name="robots" content="noindex"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -112,20 +92,10 @@ compatible shapes."><meta property="og:image" content="https://r-xla.github.io/a
     <p>Combine arrays along the row (<code>nv_rbind</code>) or column (<code>nv_cbind</code>) dimension.
 Arguments are first promoted to a common data type
 (see <code><a href="nv_promote_to_common.html">nv_promote_to_common()</a></code>).</p>
-<p>Each input is then handled according to its rank:</p><ul><li><p><strong>Rank 0 (scalar, shape <code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>):</strong> broadcast to match the
-non-stacked dimensions of the other inputs, with size 1 along the
-stacked dimension. If every input is a scalar, scalars become
-<code>c(1, 1)</code> (so <code>nv_rbind(s1, s2)</code> returns a <code>c(2, 1)</code> matrix and
-<code>nv_cbind(s1, s2)</code> returns a <code>c(1, 2)</code> matrix).</p></li>
-<li><p><strong>Rank 1 (vector):</strong> treated as a single row by <code>nv_rbind</code>
-(reshaped to <code>c(1, length(x))</code>) or a single column by <code>nv_cbind</code>
-(reshaped to <code>c(length(x), 1)</code>).</p></li>
-<li><p><strong>Rank &gt;= 2:</strong> used as-is. Inputs are concatenated along dimension 1
-(<code>nv_rbind</code>) or dimension 2 (<code>nv_cbind</code>); their other dimensions
-must match.</p></li>
-</ul><p>Only scalars are broadcast; non-scalar inputs must already have
-compatible shapes.</p>
-    </div>
+<p>Each input is then handled according to its rank:</p><ul><li><p>0-D: broadcast to match the non-stacked dimensions of the other inputs.</p></li>
+<li><p>1-D: treated as a single row/column.</p></li>
+<li><p>Other: used as-is.</p></li>
+</ul></div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
@@ -162,10 +132,7 @@ and <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">base
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code><a href="arrayish.html">arrayish</a></code><br>
-An array of rank <code>max(2, max_rank(inputs))</code>. The stacked dimension
-has size equal to the sum of stacked-dimension sizes (counting
-scalars as 1); the other dimensions match the non-scalar inputs.</p>
+    <p><code><a href="arrayish.html">arrayish</a></code><br></p>
     </div>
     <div class="section level2">
     <h2 id="differences-from-base-r">Differences from base R<a class="anchor" aria-label="anchor" href="#differences-from-base-r"></a></h2>
@@ -175,13 +142,10 @@ array becomes a <code>2 x 12</code> matrix). <code>nv_rbind</code> and <code>nv_
 preserve all non-stacked dimensions: combining two <code>c(2, 3, 4)</code> arrays
 with <code>nv_rbind</code> produces a <code>c(4, 3, 4)</code> array, and with <code>nv_cbind</code> a
 <code>c(2, 6, 4)</code> array.</p>
-<p>Base R also recycles shorter inputs to fill the result; <code>nv_rbind</code> and
-<code>nv_cbind</code> only broadcast scalars, never longer non-scalar inputs.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="nv_concatenate.html">nv_concatenate()</a></code> for concatenation along an arbitrary
-dimension without the rank-1 row/column reshape.</p></div>
+    <div class="dont-index"><p><code><a href="nv_concatenate.html">nv_concatenate()</a></code></p></div>
     </div>
 
     <div class="section level2">

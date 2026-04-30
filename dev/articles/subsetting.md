@@ -72,8 +72,14 @@ x
 
 - Static & Keep:
 
+  Here we use
+  [`arr()`](https://r-xla.github.io/anvl/dev/reference/arr.md), a
+  convenience helper that builds an R array without having to wrap the
+  values in [`c()`](https://rdrr.io/r/base/c.html) (so `arr(2L)` is
+  equivalent to `array(2L)`, and `arr(1, 2, 3)` to `array(c(1, 2, 3))`).
+
   ``` r
-  x[array(2L)]
+  x[arr(2L)]
   ```
 
       ## AnvlArray
@@ -114,7 +120,7 @@ between static and dynamic indices.
 - Static
 
   ``` r
-  x[array(c(2, 4, 6))]
+  x[arr(2, 4, 6)]
   ```
 
       ## AnvlArray
@@ -135,11 +141,11 @@ between static and dynamic indices.
       ##  6
       ## [ CPUi32{3} ]
 
-We use [`array()`](https://rdrr.io/r/base/array.html) (wrapping a
-length-1 or longer integer vector) instead of a bare R vector, because
-otherwise the case where we use a length-1 vector would be ambiguous (do
-we drop or keep the dimension?). This allows us to do without a `drop`
-parameter.
+We use [`arr()`](https://r-xla.github.io/anvl/dev/reference/arr.md) (or
+equivalently [`array()`](https://rdrr.io/r/base/array.html)) instead of
+a bare R vector, because otherwise the case where we use a length-1
+vector would be ambiguous (do we drop or keep the dimension?). This
+allows us to do without a `drop` parameter.
 
 We can also use a range that can be specified either canonically via
 `a:b` or using
@@ -228,7 +234,7 @@ x[1, 2]
     ## [ CPUi32{} ]
 
 ``` r
-x[array(1), 2:3]
+x[arr(1), 2:3]
 ```
 
     ## AnvlArray
@@ -237,7 +243,7 @@ x[array(1), 2:3]
     ## [ CPUi32{2} ]
 
 ``` r
-x[array(c(1, 3)), 2:3]
+x[arr(1, 3), 2:3]
 ```
 
     ## AnvlArray
@@ -264,7 +270,7 @@ x[1, 2:3]
     ## [ CPUi32{2} ]
 
 ``` r
-x[array(c(2, 2)), ]
+x[arr(2, 2), ]
 ```
 
     ## AnvlArray
@@ -273,7 +279,7 @@ x[array(c(2, 2)), ]
     ## [ CPUi32{2,4} ]
 
 ``` r
-x[array(c(2, 2))]
+x[arr(2, 2)]
 ```
 
     ## AnvlArray
@@ -397,7 +403,7 @@ backends (CPU vs. GPU).
 
 ``` r
 x <- nv_array(1:5)
-x[array(c(1L, 1L, 1L))] <- nv_array(c(10L, 20L, 30L))
+x[arr(1L, 1L, 1L)] <- nv_array(c(10L, 20L, 30L))
 x
 ```
 

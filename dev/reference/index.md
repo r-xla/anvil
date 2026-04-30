@@ -29,6 +29,8 @@ Functions for creating and initializing arrays
 - [`nv_eye()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
   [`nv_eye_like()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
   : Identity Matrix
+- [`arr()`](https://r-xla.github.io/anvl/dev/reference/arr.md) : Create
+  an R array
 
 ### Attributes
 

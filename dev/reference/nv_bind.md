@@ -6,23 +6,12 @@ dimension. Arguments are first promoted to a common data type (see
 
 Each input is then handled according to its rank:
 
-- **Rank 0 (scalar, shape
-  [`integer()`](https://rdrr.io/r/base/integer.html)):** broadcast to
-  match the non-stacked dimensions of the other inputs, with size 1
-  along the stacked dimension. If every input is a scalar, scalars
-  become `c(1, 1)` (so `nv_rbind(s1, s2)` returns a `c(2, 1)` matrix and
-  `nv_cbind(s1, s2)` returns a `c(1, 2)` matrix).
+- 0-D: broadcast to match the non-stacked dimensions of the other
+  inputs.
 
-- **Rank 1 (vector):** treated as a single row by `nv_rbind` (reshaped
-  to `c(1, length(x))`) or a single column by `nv_cbind` (reshaped to
-  `c(length(x), 1)`).
+- 1-D: treated as a single row/column.
 
-- **Rank \>= 2:** used as-is. Inputs are concatenated along dimension 1
-  (`nv_rbind`) or dimension 2 (`nv_cbind`); their other dimensions must
-  match.
-
-Only scalars are broadcast; non-scalar inputs must already have
-compatible shapes.
+- Other: used as-is.
 
 ## Usage
 
@@ -60,9 +49,6 @@ cbind(..., deparse.level = 1)
 ## Value
 
 [`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
-An array of rank `max(2, max_rank(inputs))`. The stacked dimension has
-size equal to the sum of stacked-dimension sizes (counting scalars as
-1); the other dimensions match the non-scalar inputs.
 
 ## Differences from base R
 
@@ -75,14 +61,9 @@ all non-stacked dimensions: combining two `c(2, 3, 4)` arrays with
 `nv_rbind` produces a `c(4, 3, 4)` array, and with `nv_cbind` a
 `c(2, 6, 4)` array.
 
-Base R also recycles shorter inputs to fill the result; `nv_rbind` and
-`nv_cbind` only broadcast scalars, never longer non-scalar inputs.
-
 ## See also
 
 [`nv_concatenate()`](https://r-xla.github.io/anvl/dev/reference/nv_concatenate.md)
-for concatenation along an arbitrary dimension without the rank-1
-row/column reshape.
 
 ## Examples
 
