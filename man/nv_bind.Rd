@@ -31,9 +31,6 @@ and \code{\link[base:cbind]{base::cbind()}}.}
 }
 \value{
 \code{\link{arrayish}}\cr
-An array of rank \code{max(2, max_rank(inputs))}. The stacked dimension
-has size equal to the sum of stacked-dimension sizes (counting
-scalars as 1); the other dimensions match the non-scalar inputs.
 }
 \description{
 Combine arrays along the row (\code{nv_rbind}) or column (\code{nv_cbind}) dimension.
@@ -42,21 +39,10 @@ Arguments are first promoted to a common data type
 
 Each input is then handled according to its rank:
 \itemize{
-\item \strong{Rank 0 (scalar, shape \code{integer()}):} broadcast to match the
-non-stacked dimensions of the other inputs, with size 1 along the
-stacked dimension. If every input is a scalar, scalars become
-\code{c(1, 1)} (so \code{nv_rbind(s1, s2)} returns a \code{c(2, 1)} matrix and
-\code{nv_cbind(s1, s2)} returns a \code{c(1, 2)} matrix).
-\item \strong{Rank 1 (vector):} treated as a single row by \code{nv_rbind}
-(reshaped to \code{c(1, length(x))}) or a single column by \code{nv_cbind}
-(reshaped to \code{c(length(x), 1)}).
-\item \strong{Rank >= 2:} used as-is. Inputs are concatenated along dimension 1
-(\code{nv_rbind}) or dimension 2 (\code{nv_cbind}); their other dimensions
-must match.
+\item 0-D: broadcast to match the non-stacked dimensions of the other inputs.
+\item 1-D: treated as a single row/column.
+\item Other: used as-is.
 }
-
-Only scalars are broadcast; non-scalar inputs must already have
-compatible shapes.
 }
 \section{Differences from base R}{
 \code{\link[base:cbind]{base::rbind()}} and \code{\link[base:cbind]{base::cbind()}} applied to an \code{\link[=array]{array()}} of rank > 2
@@ -65,9 +51,6 @@ array becomes a \verb{2 x 12} matrix). \code{nv_rbind} and \code{nv_cbind} inste
 preserve all non-stacked dimensions: combining two \code{c(2, 3, 4)} arrays
 with \code{nv_rbind} produces a \code{c(4, 3, 4)} array, and with \code{nv_cbind} a
 \code{c(2, 6, 4)} array.
-
-Base R also recycles shorter inputs to fill the result; \code{nv_rbind} and
-\code{nv_cbind} only broadcast scalars, never longer non-scalar inputs.
 }
 
 \examples{
@@ -85,6 +68,5 @@ shape(nv_rbind(a, a)) # c(4, 3, 4)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_concatenate]{nv_concatenate()}} for concatenation along an arbitrary
-dimension without the rank-1 row/column reshape.
+\code{\link[=nv_concatenate]{nv_concatenate()}}
 }
