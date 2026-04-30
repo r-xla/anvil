@@ -17,14 +17,14 @@ Names of the graph inputs to differentiate with respect to.}
 An \code{\link{AnvlGraph}} whose outputs are the requested gradients.
 }
 \description{
-Low-level graph transformation that transforms a graph into it's gradient.
+Low-level graph transformation that transforms a graph into its gradient.
 The function \code{f} represented by \code{graph} must return a single
 float scalar. The resulting graph computes the gradients of that scalar with respect
 to the inputs specified by \code{wrt}.
 }
 \details{
-Because execute alternative forward passes for more efficient backward passes, we need
-to replay and possibly rewrite the graph into a new descriptor.
+To support alternative forward passes for more efficient backward passes, we
+replay and possibly rewrite the graph into a new descriptor.
 Afterwards, we traverse it backwards and call the gradient rules where necessary.
 
 See \code{\link[=reverse_rule]{reverse_rule()}} for more information.

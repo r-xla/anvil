@@ -369,58 +369,75 @@ maybe_box_arrayish <- function(x) {
 }
 
 # this function is on the inputs of trace_fn()
-maybe_box_input <- function(x, desc, toplevel, lit_to_array, inline) {
-  if (lit_to_array && test_scalar(x)) {
-    # so we can accept literals as inputs to higher-order primitives like if and while
-    ambiguous <- !is.logical(x)
-    gval <- GraphValue(
-      aval = AbstractArray(
-        dtype = default_dtype(x),
-        shape = integer(),
-        ambiguous = ambiguous
-      )
-    )
-    return(register_input(desc, gval))
+maybe_box_input <- function(x, desc, mode) {
+  parent_desc <- maybe_previous_descriptor()
+  # Subgraph contract is only meaningful when a parent exists. Without a
+  # parent (jit's outermost trace, or a standalone test) `mode` is
+  # effectively ignored -- both modes produce abstract input gvals and
+  # pass non-arrayish values through as statics.
+  in_subgraph <- mode == "subgraph" && !is.null(parent_desc)
+
+  # In subgraph mode the caller (prim_while/prim_if/...) has promised
+  # that all args are arrayish, so promote R arrays/scalars to AnvlArrays.
+  # Scalars become 0-d arrays (shape ()) via `nv_scalar`; multi-element
+  # values become n-d arrays via `nv_array`. In toplevel/inline modes,
+  # non-arrayish R values are legitimate static parameters (devices,
+  # flags, ...) and must be left alone.
+  if (in_subgraph) {
+    if (is_valid_r_lit(x)) {
+      x <- nv_scalar(x, ambiguous = !is.logical(x))
+    } else if (is_valid_r_array(x)) {
+      x <- nv_array(x, ambiguous = !is.logical(x))
+    }
   }
+
   if (is_anvl_array(x)) {
     if (backend(x) != "plain") {
       desc$devices <- c(desc$devices, device(x))
     }
-    if (toplevel) {
-      # user-provided inputs are simply unknown
-      gval <- GraphValue(aval = to_abstract(x, pure = TRUE))
-      return(register_input(desc, gval))
-    }
-    if (inline) {
-      # The child graph will be inlined into the parent graph (e.g. by
-      # `gradient()` / `value_and_gradient()`). Register `x` in the parent
-      # now and share the resulting gval as the child input -- after
-      # inlining, every gval the spliced calls reference is already known
-      # to the parent, and the (transient) child graph is discarded. We
-      # cannot do this for sub-graph primitives like `prim_if`/`prim_while`,
-      # because their child graphs survive in the final graph and graph
-      # passes rely on the invariant that a gval doesn't simultaneously
-      # play "parent constant" and "sub-graph parameter" roles.
-      parent_box <- get_box_or_register_const(maybe_previous_descriptor(), x)
+    if (mode == "inline" && !is.null(parent_desc)) {
+      # The traced graph will be spliced into the parent and discarded
+      # (gradient/value_and_gradient). Share the parent gval as the child
+      # input so the spliced calls already resolve in the parent.
+      parent_box <- get_box_or_register_const(parent_desc, x)
       return(register_input(desc, parent_box$gnode))
     }
-    gval <- GraphValue(aval = ConcreteArray(x))
-    register_input(desc, gval)
-  } else if (is_graph_box(x)) {
-    # Nested trace_fn call
-    # Because we will inline the child graph into the parent graph, we re-use
-    # the same GraphValue, because this will make the inlining straightforward.
-    register_input(desc, x$gnode)
-  } else if (is_abstract_tensor(x)) {
-    # Needed to be able to pass abstract arrays to trace_fn()
-    gval <- GraphValue(aval = x)
-    register_input(desc, gval)
-  } else {
-    if (lit_to_array) {
-      cli_abort("Expected only arrayish values, but got {.cls {class(x)[1]}}")
+    # Subgraph (or no-parent) case: a fresh AbstractArray-typed gval as a
+    # clean parameter slot. The caller is responsible for separately
+    # boxing the corresponding value in the parent and passing it as the
+    # matching arg of the higher-order primitive call (typically via
+    # `maybe_box_arrayish` at the call site).
+    gval <- GraphValue(aval = to_abstract(x, pure = TRUE))
+    return(register_input(desc, gval))
+  }
+
+  if (is_graph_box(x)) {
+    if (in_subgraph) {
+      gval <- GraphValue(aval = abstract_aval(x$gnode$aval))
+      return(register_input(desc, gval))
     }
-    # parameter
-    x
+    return(register_input(desc, x$gnode))
+  }
+
+  if (is_abstract_tensor(x)) {
+    gval <- GraphValue(aval = x)
+    return(register_input(desc, gval))
+  }
+
+  if (in_subgraph) {
+    cli_abort("In subgraph mode, all args must be arrayish; got {.cls {class(x)[1]}}")
+  }
+  # Static parameter passthrough.
+  x
+}
+
+# Strip data from a (possibly concrete) array aval, returning a pure
+# AbstractArray with the same dtype/shape/ambiguity.
+abstract_aval <- function(aval) {
+  if (is_concrete_tensor(aval)) {
+    AbstractArray(dtype = aval$dtype, shape = aval$shape, ambiguous = aval$ambiguous)
+  } else {
+    aval
   }
 }
 
@@ -542,34 +559,28 @@ match_args_to_formals <- function(f, args) {
 #'   `args_flat`/`in_tree` pair.
 #' @param desc (`NULL` | `GraphDescriptor`)\cr
 #'   Optional descriptor. When `NULL` (default), a new descriptor is created.
-#' @param toplevel (`logical(1)`)\cr
-#'   If `TRUE`, concrete [`AnvlArray`] inputs are treated as unknown (traced) values.
-#'   If `FALSE` (default), they are treated as known constants.
-#' @param lit_to_array (`logical(1)`)\cr
-#'   Whether to convert literal inputs to arrays. Used internally by higher-order
-#'   primitives such as `nv_if` and `nv_while`.
-#' @param inline (`logical(1)`)\cr
-#'   Set to `TRUE` when the resulting graph will be **inlined** into the
-#'   parent graph (i.e. its `$calls` will be spliced into the parent's
-#'   `$calls` and the graph object discarded). This is the case for
-#'   `gradient()` / `value_and_gradient()`, which call `trace_fn` to
-#'   build a forward graph and then inline a transformed version via
-#'   [`inline_graph_into_desc()`].
+#' @param mode (`character(1)`)\cr
+#'   Controls how arrayish inputs of nested `trace_fn` calls are wired up:
+#'   - `"subgraph"` (default): the traced graph survives as a sub-program of
+#'     a higher-order primitive (`prim_while` / `prim_if` / `prim_scatter`).
+#'     Each arrayish input becomes a fresh `AbstractArray`-typed gval --
+#'     a clean parameter slot. The caller is responsible for separately
+#'     boxing the corresponding parent-side value (typically via
+#'     `maybe_box_arrayish()`) and passing it as the matching arg of the
+#'     higher-order primitive call.
+#'   - `"inline"`: the traced graph will be spliced into the parent and
+#'     discarded (`gradient()` / `value_and_gradient()`). Arrayish inputs
+#'     are registered as parent constants and the *same* gval is reused as
+#'     the child input, so once spliced the calls already resolve. The
+#'     transient child graph never needs to satisfy the
+#'     parameter-vs-constant disjointness invariant.
 #'
-#'   When `inline = TRUE`, arrayish args of the nested `trace_fn` call
-#'   are registered as constants in the *parent* descriptor at trace time
-#'   and the resulting parent gval is reused as this graph's input gval.
-#'   That guarantees every gval the spliced calls reference is already
-#'   known to the parent, so `inline_graph_into_desc` doesn't have to
-#'   register anything afterwards.
+#'   When there is no parent descriptor on the stash (e.g. `jit`'s outermost
+#'   trace, or a standalone test call), both modes produce the same result:
+#'   abstract input gvals, no parent registration.
 #'
-#'   Leave at the default `FALSE` for **sub-graph** primitives like
-#'   `prim_if` / `prim_while` / `prim_scatter`, whose traced graphs are
-#'   stored as sub-programs in the call's `$params` and survive into the
-#'   final graph. Those graphs must keep distinct gvals for their inputs
-#'   (parameter slots) and the parent's constants (compile-time values),
-#'   because graph passes recurse into them and rely on the invariant
-#'   that a gval plays only one role per scope.
+#'   Subgraph mode rejects non-arrayish args; inline (and parentless) modes
+#'   pass them through as static parameters.
 #' @param args_flat (`list`)\cr
 #'   Flattened arguments. Must be accompanied by `in_tree`.
 #' @param in_tree (`Node`)\cr
@@ -587,12 +598,11 @@ trace_fn <- function(
   f,
   args = NULL,
   desc = NULL,
-  toplevel = FALSE,
-  lit_to_array = FALSE,
-  inline = FALSE,
+  mode = c("subgraph", "inline"),
   args_flat = NULL,
   in_tree = NULL
 ) {
+  mode <- match.arg(mode)
   if (is.null(args)) {
     if (is.null(args_flat) || is.null(in_tree)) {
       cli_abort("args or args_flat and in_tree must be provided")
@@ -614,14 +624,7 @@ trace_fn <- function(
   }
 
   # box arrays and add them as inputs to the current graph
-  inputs_flat <- lapply(
-    args_flat,
-    maybe_box_input,
-    desc = desc,
-    toplevel = toplevel,
-    lit_to_array = lit_to_array,
-    inline = inline
-  )
+  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc, mode = mode)
   # Track which flat args are static (non-array) values vs. graph inputs
   desc$is_static_flat <- vapply(inputs_flat, Negate(is_graph_box), logical(1L))
   output <- do.call(f_flat, inputs_flat)
@@ -793,7 +796,7 @@ print_call_repr <- function(prim) {
 
 
 inline_graph_into_desc <- function(desc, graph) {
-  # By contract, `graph` was produced by `trace_fn(..., inline = TRUE)` so
+  # By contract, `graph` was produced by `trace_fn(..., mode = "inline")` so
   # every input gval was registered in `desc` at trace time and is already
   # known to the parent. Only sub-graph constants (closed-over values
   # registered via `maybe_box_arrayish`) still need to be propagated up.

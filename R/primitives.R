@@ -1822,11 +1822,11 @@ prim_if <- new_primitive(
     current_desc <- .current_descriptor(silent = TRUE)
 
     desc_true <- local_descriptor()
-    true_graph <- trace_fn(true, list(), desc = desc_true, lit_to_array = TRUE)
+    true_graph <- trace_fn(true, list(), desc = desc_true, mode = "subgraph")
     desc_false <- local_descriptor()
 
     ensure_consts_registered(desc_false, desc_true$constants)
-    false_graph <- trace_fn(false, list(), desc = desc_false, lit_to_array = TRUE)
+    false_graph <- trace_fn(false, list(), desc = desc_false, mode = "subgraph")
 
     ensure_consts_registered(current_desc, desc_false$constants)
 
@@ -1918,14 +1918,14 @@ prim_while <- new_primitive(
 
     desc_cond <- local_descriptor()
 
-    cond_graph <- trace_fn(cond, init, desc = desc_cond, lit_to_array = TRUE)
+    cond_graph <- trace_fn(cond, init, desc = desc_cond, mode = "subgraph")
 
     desc_body <- local_descriptor()
 
     # ensure that constant ids are the same between cond and body
     # inputs don't matter, because we don't inline the sub-graphs into the parent graph
     ensure_consts_registered(desc_body, desc_cond$constants)
-    body_graph <- trace_fn(body, init, desc_body, lit_to_array = TRUE)
+    body_graph <- trace_fn(body, init, desc_body, mode = "subgraph")
 
     if (!identical(cond_graph$in_tree, body_graph$in_tree)) {
       cli_abort("cond and body must have the same input structure")

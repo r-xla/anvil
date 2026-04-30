@@ -70,7 +70,7 @@ jit_quickr_impl <- function(f, static, cache, unwrap) {
 
 compile_quickr <- function(f, args_flat, in_tree, arg_devices = list(), unwrap = FALSE, flat = FALSE) {
   desc <- local_descriptor()
-  graph <- trace_fn(f, desc = desc, toplevel = TRUE, args_flat = args_flat, in_tree = in_tree)
+  graph <- trace_fn(f, desc = desc, args_flat = args_flat, in_tree = in_tree)
   check_single_backend(graph, arg_devices = arg_devices, expected = "quickr")
   list(fun = graph_to_quickr_function(graph, unwrap = unwrap, flat = flat))
 }

@@ -73,14 +73,14 @@ reverse_rule <- function(backward = NULL, forward = NULL) {
 
 #' @title Transform a graph to its gradient
 #' @description
-#' Low-level graph transformation that transforms a graph into it's gradient.
+#' Low-level graph transformation that transforms a graph into its gradient.
 #' The function `f` represented by `graph` must return a single
 #' float scalar. The resulting graph computes the gradients of that scalar with respect
 #' to the inputs specified by `wrt`.
 #'
 #' @details
-#' Because execute alternative forward passes for more efficient backward passes, we need
-#' to replay and possibly rewrite the graph into a new descriptor.
+#' To support alternative forward passes for more efficient backward passes, we
+#' replay and possibly rewrite the graph into a new descriptor.
 #' Afterwards, we traverse it backwards and call the gradient rules where necessary.
 #'
 #' See [`reverse_rule()`] for more information.
@@ -105,7 +105,8 @@ transform_gradient <- function(graph, wrt) {
 # Internal worker. Returns list(graph, fwd_translation) where fwd_translation
 # is a hashtab mapping each original forward gval (call output) to its cloned
 # counterpart in `graph`. `value_and_gradient` uses it to translate the
-# original forward outputs to gvals that exist in the gradient graph.
+# original forward outputs to gvals that exist in the gradient graph;
+# `gradient()` deliberately discards it.
 transform_gradient_impl <- function(graph, wrt) {
   out <- validate_gradient_output(graph$outputs)
   reqs <- compute_requirements(graph, wrt)
@@ -262,10 +263,16 @@ rebuild_forward_pass <- function(graph, envir = parent.frame()) {
       } else {
         PrimitiveCall(call$primitive, new_inputs, call$params, call$outputs)
       }
-      desc$calls <- c(desc$calls, list(new_call))
+      # Index-extend instead of `c()` to avoid O(N^2) list copying as the
+      # rebuilt graph grows.
+      desc$calls[[length(desc$calls) + 1L]] <- new_call
       for (g in call$outputs) {
         register_gval(desc, g)
       }
+      # If `rule` is NULL `backwards[[i]]` stays NULL. `run_backward_pass`
+      # treats that as "skip if no input requires grad, otherwise abort":
+      # primitives like `prim_fill` whose inputs are all static parameters
+      # never reach the abort branch, so they don't need a reverse rule.
       if (!is.null(rule)) {
         backwards[[i]] <- list(
           fn = rule$backward,
@@ -435,7 +442,7 @@ gradient <- function(f, wrt = NULL) {
       f,
       args_flat = prep$args_flat,
       in_tree = prep$in_tree,
-      inline = TRUE
+      mode = "inline"
     )
     grad_graph <- transform_gradient(fwd_graph, wrt)
     # parent_desc is modified in place
@@ -483,7 +490,7 @@ value_and_gradient <- function(f, wrt = NULL) {
       f,
       args_flat = prep$args_flat,
       in_tree = prep$in_tree,
-      inline = TRUE
+      mode = "inline"
     )
     res <- transform_gradient_impl(fwd_graph, wrt)
     grad_graph <- res$graph
