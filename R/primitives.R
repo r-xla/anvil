@@ -1825,10 +1825,10 @@ prim_if <- new_primitive(
     true_graph <- trace_fn(true, list(), desc = desc_true, lit_to_array = TRUE)
     desc_false <- local_descriptor()
 
-    register_consts(desc_false, desc_true$constants)
+    ensure_consts_registered(desc_false, desc_true$constants)
     false_graph <- trace_fn(false, list(), desc = desc_false, lit_to_array = TRUE)
 
-    register_consts(current_desc, desc_false$constants)
+    ensure_consts_registered(current_desc, desc_false$constants)
 
     if (!identical(true_graph$out_tree, false_graph$out_tree)) {
       cli_abort("true and false branches must have the same output structure")
@@ -1924,7 +1924,7 @@ prim_while <- new_primitive(
 
     # ensure that constant ids are the same between cond and body
     # inputs don't matter, because we don't inline the sub-graphs into the parent graph
-    register_consts(desc_body, desc_cond$constants)
+    ensure_consts_registered(desc_body, desc_cond$constants)
     body_graph <- trace_fn(body, init, desc_body, lit_to_array = TRUE)
 
     if (!identical(cond_graph$in_tree, body_graph$in_tree)) {
@@ -1936,7 +1936,7 @@ prim_while <- new_primitive(
     }
 
     # now we register the constants of both sub-graphs (body includes cond's constants) into the graph
-    register_consts(current_desc, body_graph$constants)
+    ensure_consts_registered(current_desc, body_graph$constants)
 
     infer_fn <- function(..., cond_graph, body_graph) {
       outs <- list(...)
@@ -2169,7 +2169,7 @@ prim_scatter <- new_primitive(
     update_computation_graph <- trace_fn(update_computation, dummy_args, desc = desc_update)
 
     # Register constants from the update computation graph
-    register_consts(current_desc, update_computation_graph$constants)
+    ensure_consts_registered(current_desc, update_computation_graph$constants)
 
     infer_fn <- function(
       input,

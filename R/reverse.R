@@ -223,7 +223,7 @@ rebuild_forward_pass <- function(graph, envir = parent.frame()) {
   # consts and inputs keep their identity, only GraphValues created by PrimitiveCalls
   # get new identifier
   register_inputs(desc, graph$inputs)
-  register_consts(desc, graph$constants)
+  ensure_consts_registered(desc, graph$constants)
 
   trans <- hashtab()
   translate_gnode <- function(g) {
@@ -431,7 +431,12 @@ gradient <- function(f, wrt = NULL) {
         i = "Wrap the result of {.fn gradient} in {.fn jit}, e.g. {.code jit(gradient(f))}."
       ))
     }
-    fwd_graph <- trace_fn(f, args_flat = prep$args_flat, in_tree = prep$in_tree)
+    fwd_graph <- trace_fn(
+      f,
+      args_flat = prep$args_flat,
+      in_tree = prep$in_tree,
+      inline = TRUE
+    )
     grad_graph <- transform_gradient(fwd_graph, wrt)
     # parent_desc is modified in place
     inline_graph_into_desc(parent_desc, grad_graph)
@@ -474,7 +479,12 @@ value_and_gradient <- function(f, wrt = NULL) {
         i = "Wrap the result of {.fn value_and_gradient} in {.fn jit}, e.g. {.code jit(value_and_gradient(f))}."
       ))
     }
-    fwd_graph <- trace_fn(f, args_flat = prep$args_flat, in_tree = prep$in_tree)
+    fwd_graph <- trace_fn(
+      f,
+      args_flat = prep$args_flat,
+      in_tree = prep$in_tree,
+      inline = TRUE
+    )
     res <- transform_gradient_impl(fwd_graph, wrt)
     grad_graph <- res$graph
     trans <- res$fwd_translation
