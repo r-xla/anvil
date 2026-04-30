@@ -44,5 +44,5 @@ nv_solve(a, b)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_cholesky]{nv_cholesky()}}, \code{\link[=prim_cholesky]{prim_cholesky()}}, \code{\link[=prim_triangular_solve]{prim_triangular_solve()}}
+\code{\link[=nv_chol]{nv_chol()}}, \code{\link[=prim_cholesky]{prim_cholesky()}}, \code{\link[=prim_triangular_solve]{prim_triangular_solve()}}
 }

@@ -39,5 +39,5 @@ prim_ceil(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_ceil]{nv_ceil()}}, \code{\link[=ceiling]{ceiling()}}
+\code{\link[=nv_ceiling]{nv_ceiling()}}, \code{\link[=ceiling]{ceiling()}}
 }

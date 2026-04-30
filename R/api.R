@@ -889,7 +889,7 @@ nv_tan <- prim_tan
 #' x <- nv_array(c(0, pi / 2, pi))
 #' sin(x)
 #' @export
-nv_sine <- prim_sine
+nv_sin <- prim_sine
 
 #' @title Cosine
 #' @description
@@ -901,7 +901,7 @@ nv_sine <- prim_sine
 #' x <- nv_array(c(0, pi / 2, pi))
 #' cos(x)
 #' @export
-nv_cosine <- prim_cosine
+nv_cos <- prim_cosine
 
 #' @title Floor
 #' @description
@@ -925,7 +925,7 @@ nv_floor <- prim_floor
 #' x <- nv_array(c(1.2, 2.7, -1.5))
 #' ceiling(x)
 #' @export
-nv_ceil <- prim_ceil
+nv_ceiling <- prim_ceil
 
 #' @title Sign
 #' @description
@@ -1247,9 +1247,9 @@ nv_matmul <- function(lhs, rhs) {
 #' @seealso [nv_solve()], [prim_cholesky()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-#' nv_cholesky(a)
+#' nv_chol(a)
 #' @export
-nv_cholesky <- function(a, lower = TRUE) {
+nv_chol <- function(a, lower = TRUE) {
   a <- as_anvl_array(a)
   prim_cholesky(a, lower = lower)
 }
@@ -1274,7 +1274,7 @@ nv_cholesky <- function(a, lower = TRUE) {
 #'   dimensions as `a`.
 #' @return [`arrayish`]\cr
 #'   The solution `x` such that `a %*% x = b`.
-#' @seealso [nv_cholesky()], [prim_cholesky()], [prim_triangular_solve()]
+#' @seealso [nv_chol()], [prim_cholesky()], [prim_triangular_solve()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
 #' b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")

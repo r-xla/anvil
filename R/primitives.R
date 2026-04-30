@@ -1266,7 +1266,7 @@ prim_tan <- new_primitive("tan", make_unary_op(stablehlo::infer_types_tan))
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_sine()].
-#' @seealso [nv_sine()], [sin()]
+#' @seealso [nv_sin()], [sin()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, pi / 2, pi))
 #' prim_sine(x)
@@ -1282,7 +1282,7 @@ prim_sine <- new_primitive("sine", make_unary_op(stablehlo::infer_types_sine))
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_cosine()].
-#' @seealso [nv_cosine()], [cos()]
+#' @seealso [nv_cos()], [cos()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, pi / 2, pi))
 #' prim_cosine(x)
@@ -1314,7 +1314,7 @@ prim_floor <- new_primitive("floor", make_unary_op(stablehlo::infer_types_floor)
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_ceil()].
-#' @seealso [nv_ceil()], [ceiling()]
+#' @seealso [nv_ceiling()], [ceiling()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1.2, 2.7, -1.5))
 #' prim_ceil(x)
