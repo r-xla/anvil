@@ -7,7 +7,7 @@ batch dimensions.
 ## Usage
 
 ``` r
-nv_cholesky(a, lower = TRUE)
+nv_chol(a, lower = TRUE)
 ```
 
 ## Arguments
@@ -40,7 +40,7 @@ Triangular matrix with the same shape and data type as the input.
 
 ``` r
 a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-nv_cholesky(a)
+nv_chol(a)
 #> AnvlArray
 #>  2.0000 0.0000
 #>  1.0000 1.4142

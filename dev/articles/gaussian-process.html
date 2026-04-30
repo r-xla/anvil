@@ -332,7 +332,7 @@ out the constant term because we don’t need it for optimization.</p>
 <span>  <span class="va">eye</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_eye.html">nv_eye</a></span><span class="op">(</span><span class="va">n</span>, dtype <span class="op">=</span> <span class="fu"><a href="../reference/dtype.html">dtype</a></span><span class="op">(</span><span class="va">K</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">K_y</span> <span class="op">&lt;-</span> <span class="va">K</span> <span class="op">+</span> <span class="va">noise_var</span> <span class="op">*</span> <span class="va">eye</span></span>
 <span></span>
-<span>  <span class="va">L</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_cholesky.html">nv_cholesky</a></span><span class="op">(</span><span class="va">K_y</span>, lower <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="va">L</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_chol.html">nv_chol</a></span><span class="op">(</span><span class="va">K_y</span>, lower <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co"># alpha = K_y^{-1} y</span></span>
 <span>  <span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nv_solve.html">nv_solve</a></span><span class="op">(</span><span class="va">K_y</span>, <span class="va">y</span><span class="op">)</span></span>

@@ -36,7 +36,7 @@ Lowers to
 
 ## See also
 
-[`nv_sine()`](https://r-xla.github.io/anvl/dev/reference/nv_sine.md),
+[`nv_sin()`](https://r-xla.github.io/anvl/dev/reference/nv_sin.md),
 [`sin()`](https://rdrr.io/r/base/Trig.html)
 
 ## Examples

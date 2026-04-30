@@ -64,8 +64,7 @@
     to create an identity matrix.
   - [`nv_solve()`](https://r-xla.github.io/anvl/dev/reference/nv_solve.md)
     to solve a system of linear equations.
-  - [`nv_cholesky()`](https://r-xla.github.io/anvl/dev/reference/nv_cholesky.md)
-    to compute the Cholesky decomposition of a matrix.
+  - `nv_cholesky()` to compute the Cholesky decomposition of a matrix.
   - [`nv_device()`](https://r-xla.github.io/anvl/dev/reference/nv_device.md)
     constructs a backend-specific device object
     (e.g. `nv_device("cpu")`) that can be passed as `device` to array

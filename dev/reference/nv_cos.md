@@ -1,12 +1,12 @@
-# Sine
+# Cosine
 
-Element-wise sine. You can also use
-[`sin()`](https://rdrr.io/r/base/Trig.html).
+Element-wise cosine. You can also use
+[`cos()`](https://rdrr.io/r/base/Trig.html).
 
 ## Usage
 
 ``` r
-nv_sine(operand)
+nv_cos(operand)
 ```
 
 ## Arguments
@@ -23,17 +23,17 @@ Has the same shape and data type as the input.
 
 ## See also
 
-[`prim_sine()`](https://r-xla.github.io/anvl/dev/reference/prim_sine.md)
+[`prim_cosine()`](https://r-xla.github.io/anvl/dev/reference/prim_cosine.md)
 for the underlying primitive.
 
 ## Examples
 
 ``` r
 x <- nv_array(c(0, pi / 2, pi))
-sin(x)
+cos(x)
 #> AnvlArray
-#>   0.0000e+00
 #>   1.0000e+00
-#>  -8.7423e-08
+#>  -4.3711e-08
+#>  -1.0000e+00
 #> [ CPUf32{3} ] 
 ```

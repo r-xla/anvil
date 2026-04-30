@@ -202,10 +202,10 @@ Mathematical and trigonometric functions
   Base-2 Logarithm
 - [`nv_log10()`](https://r-xla.github.io/anvl/dev/reference/nv_log10.md)
   : Base-10 Logarithm
-- [`nv_sine()`](https://r-xla.github.io/anvl/dev/reference/nv_sine.md) :
+- [`nv_sin()`](https://r-xla.github.io/anvl/dev/reference/nv_sin.md) :
   Sine
-- [`nv_cosine()`](https://r-xla.github.io/anvl/dev/reference/nv_cosine.md)
-  : Cosine
+- [`nv_cos()`](https://r-xla.github.io/anvl/dev/reference/nv_cos.md) :
+  Cosine
 - [`nv_tan()`](https://r-xla.github.io/anvl/dev/reference/nv_tan.md) :
   Tangent
 - [`nv_tanh()`](https://r-xla.github.io/anvl/dev/reference/nv_tanh.md) :
@@ -216,8 +216,8 @@ Mathematical and trigonometric functions
   Sign
 - [`nv_floor()`](https://r-xla.github.io/anvl/dev/reference/nv_floor.md)
   : Floor
-- [`nv_ceil()`](https://r-xla.github.io/anvl/dev/reference/nv_ceil.md) :
-  Ceiling
+- [`nv_ceiling()`](https://r-xla.github.io/anvl/dev/reference/nv_ceiling.md)
+  : Ceiling
 - [`nv_round()`](https://r-xla.github.io/anvl/dev/reference/nv_round.md)
   : Round
 - [`nv_logistic()`](https://r-xla.github.io/anvl/dev/reference/nv_logistic.md)
@@ -261,8 +261,8 @@ Linear algebra operations
 
 - [`nv_matmul()`](https://r-xla.github.io/anvl/dev/reference/nv_matmul.md)
   : Matrix Multiplication
-- [`nv_cholesky()`](https://r-xla.github.io/anvl/dev/reference/nv_cholesky.md)
-  : Cholesky Decomposition
+- [`nv_chol()`](https://r-xla.github.io/anvl/dev/reference/nv_chol.md) :
+  Cholesky Decomposition
 - [`nv_solve()`](https://r-xla.github.io/anvl/dev/reference/nv_solve.md)
   : Solve Linear System
 - [`nv_crossprod()`](https://r-xla.github.io/anvl/dev/reference/nv_crossprod.md)

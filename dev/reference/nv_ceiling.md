@@ -6,7 +6,7 @@ Element-wise ceiling (round toward positive infinity). You can also use
 ## Usage
 
 ``` r
-nv_ceil(operand)
+nv_ceiling(operand)
 ```
 
 ## Arguments

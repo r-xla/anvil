@@ -36,7 +36,7 @@ Lowers to
 
 ## See also
 
-[`nv_cosine()`](https://r-xla.github.io/anvl/dev/reference/nv_cosine.md),
+[`nv_cos()`](https://r-xla.github.io/anvl/dev/reference/nv_cos.md),
 [`cos()`](https://rdrr.io/r/base/Trig.html)
 
 ## Examples

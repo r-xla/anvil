@@ -42,7 +42,7 @@ where `...` are zero or more batch dimensions that must match between
 
 ## See also
 
-[`nv_cholesky()`](https://r-xla.github.io/anvl/dev/reference/nv_cholesky.md),
+[`nv_chol()`](https://r-xla.github.io/anvl/dev/reference/nv_chol.md),
 [`prim_cholesky()`](https://r-xla.github.io/anvl/dev/reference/prim_cholesky.md),
 [`prim_triangular_solve()`](https://r-xla.github.io/anvl/dev/reference/prim_triangular_solve.md)
 

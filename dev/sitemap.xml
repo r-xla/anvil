@@ -88,12 +88,12 @@
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_broadcast_scalars.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_broadcast_to.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_cbrt.html</loc></url>
-<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_ceil.html</loc></url>
-<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_cholesky.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_ceiling.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_chol.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_clamp.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_concatenate.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_convert.html</loc></url>
-<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_cosine.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_cos.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_crossprod.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_device.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_diag.html</loc></url>
@@ -160,7 +160,7 @@
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_shift_right_arithmetic.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_shift_right_logical.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_sign.html</loc></url>
-<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_sine.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_sin.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_solve.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_sqrt.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_squeeze.html</loc></url>
