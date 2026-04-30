@@ -924,6 +924,19 @@ describe("prim_sort", {
       matrix(c(1, 0, 1, 1, 1, 0), nrow = 2, byrow = TRUE)
     )
   })
+
+  it("top_k reverse routes gradients via the forward indices (handles ties)", {
+    # Ties in operand: top_k breaks ties on the smallest index, so for
+    # x = (3, 5, 5, 5, 1) with k = 2 the picked positions are (2, 3) and
+    # the gradient must land there — not at any other equal-valued slot.
+    weights <- nv_array(c(1, 10))
+    f <- function(x) {
+      nv_reduce_sum(prim_top_k(x, k = 2L)[[1L]] * weights, dims = 1L)
+    }
+    x <- nv_array(c(3, 5, 5, 5, 1))
+    grad <- jit(gradient(f))(x)[[1L]]
+    expect_equal(as.vector(as_array(grad)), c(0, 1, 10, 0, 0))
+  })
 })
 
 # argmax / argmin reverse rule short-circuits the gradient to zero, so a

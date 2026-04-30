@@ -22,6 +22,8 @@ dimension.}
 
 \item{decreasing}{(\code{logical(1)})\cr
 If \code{TRUE}, sort in decreasing order. Default \code{FALSE}.}
+
+\item{...}{Forwarded to \code{nv_sort()}.}
 }
 \value{
 \code{\link{arrayish}}\cr

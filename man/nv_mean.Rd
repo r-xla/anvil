@@ -22,6 +22,16 @@ dimensions, returning a scalar.}
 
 \item{drop}{(\code{logical(1)})\cr
 Whether to drop reduced dimensions.}
+
+\item{x}{(\code{\link{arrayish}})\cr Operand.}
+
+\item{trim}{Included for compatibility with the \code{\link[base:mean]{base::mean()}} generic.
+Only \code{trim = 0} is supported; passing any other value raises an error.}
+
+\item{na.rm}{Included for compatibility with the \code{\link[base:mean]{base::mean()}} generic.
+anvl arrays do not carry \code{NA}s; passing \code{na.rm = TRUE} raises an error.}
+
+\item{...}{Unused.}
 }
 \value{
 \code{\link{arrayish}}\cr

@@ -111,6 +111,12 @@ Summary.AnvlBox <- function(..., na.rm) {
 Summary.AnvlArray <- Summary.AnvlBox
 
 #' @rdname nv_mean
+#' @param x ([`arrayish`])\cr Operand.
+#' @param trim Included for compatibility with the [base::mean()] generic.
+#'   Only `trim = 0` is supported; passing any other value raises an error.
+#' @param na.rm Included for compatibility with the [base::mean()] generic.
+#'   anvl arrays do not carry `NA`s; passing `na.rm = TRUE` raises an error.
+#' @param ... Unused.
 #' @export
 mean.AnvlBox <- function(x, trim = 0, na.rm = FALSE, ...) {
   if (isTRUE(na.rm)) {
@@ -200,6 +206,7 @@ median.AnvlBox <- function(x, na.rm = FALSE, ...) {
 median.AnvlArray <- median.AnvlBox
 
 #' @rdname nv_sort
+#' @param ... Forwarded to `nv_sort()`.
 #' @export
 sort.AnvlBox <- function(x, decreasing = FALSE, ...) {
   nv_sort(x, decreasing = decreasing, ...)

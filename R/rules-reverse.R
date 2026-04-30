@@ -622,54 +622,41 @@ prim_sort[["reverse"]] <- function(
   out
 }
 
-# top_k reverse: pad the values gradient with zeros to the original length
-# along the last dim, then route back through the inverse permutation of
-# argsort(operand, descending) — same trick as prim_sort's reverse rule.
+# top_k reverse: scatter the values gradient at the forward indices into a
+# zero buffer of operand shape. Using the actual forward indices (rather
+# than recomputing a permutation) is correct by construction even when
+# `operand` has duplicate values — top-k indices are pairwise unique along
+# the last dim.
 prim_top_k[["reverse"]] <- function(inputs, outputs, grads, k, .required) {
   if (!.required[[1L]]) {
     return(list(NULL))
   }
   operand <- inputs[[1L]]
   grad_values <- grads[[1L]]
+  indices <- outputs[[2L]]
   full_shape <- shape(operand)
-  dim <- length(full_shape)
-  remaining <- full_shape[dim] - k
+  rank <- length(full_shape)
+  batching <- if (rank > 1L) seq_len(rank - 1L) else integer(0)
 
-  if (remaining > 0L) {
-    pad_shape <- full_shape
-    pad_shape[dim] <- remaining
-    zero_pad <- prim_fill(
-      0L,
-      dtype = dtype(grad_values),
-      shape = pad_shape,
-      ambiguous = FALSE
-    )
-    grad_padded <- prim_concatenate(
-      grad_values,
-      zero_pad,
-      dimension = as.integer(dim)
-    )
-  } else {
-    grad_padded <- grad_values
-  }
-
-  iota <- prim_iota(
-    dim = as.integer(dim),
-    dtype = "i64",
+  zero_input <- prim_fill(
+    0,
+    dtype = dtype(grad_values),
     shape = full_shape,
-    start = 1L
+    ambiguous = FALSE
   )
-  perm <- prim_sort(
-    list(operand, iota),
-    dim = as.integer(dim),
-    descending = TRUE
-  )[[2L]]
-  inv <- prim_sort(
-    list(perm, grad_padded),
-    dim = as.integer(dim),
-    descending = FALSE
-  )
-  inv[2L]
+
+  list(prim_scatter(
+    input = zero_input,
+    scatter_indices = indices,
+    update = grad_values,
+    update_window_dims = integer(0),
+    inserted_window_dims = rank,
+    input_batching_dims = batching,
+    scatter_indices_batching_dims = batching,
+    scatter_dims_to_operand_dims = rank,
+    index_vector_dim = rank + 1L,
+    unique_indices = TRUE
+  ))
 }
 
 # concatenate reverse: split the gradient back along the concatenation dimension
