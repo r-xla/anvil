@@ -1,5 +1,12 @@
 # anvl (development version)
 
+## Breaking Changes
+
+* Renamed user-facing API functions to match base R names:
+  `nv_sine()` -> `nv_sin()`, `nv_cosine()` -> `nv_cos()`,
+  `nv_ceil()` -> `nv_ceiling()`, `nv_cholesky()` -> `nv_chol()`.
+  The underlying `prim_*` primitives keep their StableHLO-aligned names.
+
 ## New Features
 
 * Added `AnvlArray` -> R `vector` converters `as.numeric`, `as.double`,
