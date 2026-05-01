@@ -456,6 +456,8 @@ Internal data structures and functions
   : Trace an R function into a Graph
 - [`transform_gradient()`](https://r-xla.github.io/anvl/dev/reference/transform_gradient.md)
   : Transform a graph to its gradient
+- [`rule_reverse()`](https://r-xla.github.io/anvl/dev/reference/rule_reverse.md)
+  : Reverse Rule
 - [`graph_to_quickr_r_function()`](https://r-xla.github.io/anvl/dev/reference/graph_to_quickr_r_function.md)
   : Convert an AnvlGraph to a plain R function
 - [`jit_eval()`](https://r-xla.github.io/anvl/dev/reference/jit_eval.md)

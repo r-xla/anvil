@@ -71,7 +71,7 @@ dtype(x)
 #> <i32>
 # How it appears during tracing:
 # 1. via R literals
-graph <- trace_fn(function() 1, list())
+graph <- trace_fn(function() 1, list(), mode = "toplevel")
 graph
 #> <AnvlGraph>
 #>   Inputs: (none)
@@ -81,7 +81,7 @@ graph
 graph$outputs[[1]]$aval
 #> LiteralArray(1, f32?, ()) 
 # 2. via nv_fill()
-graph <- trace_fn(function() nv_fill(2L, shape = c(2, 2)), list())
+graph <- trace_fn(function() nv_fill(2L, shape = c(2, 2)), list(), mode = "toplevel")
 graph
 #> <AnvlGraph>
 #>   Inputs: (none)

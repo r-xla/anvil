@@ -6,6 +6,7 @@ uses a global state (`.Random.seed`) that is automatically updated after
 each call:
 
 ``` r
+
 set.seed(42)
 .Random.seed[2:4]
 #> [1]        624  507561766 1260545903
@@ -33,6 +34,7 @@ using
 [`nv_rng_state()`](https://r-xla.github.io/anvl/dev/reference/nv_rng_state.md):
 
 ``` r
+
 library(anvl)
 state <- nv_rng_state(42L)
 state
@@ -57,6 +59,7 @@ All those functions return a list with two elements:
 Let’s generate some uniform random numbers:
 
 ``` r
+
 f <- jit(function(state) {
   nv_runif(state, dtype = "f32", shape = c(2, 3))
 })
@@ -77,6 +80,7 @@ result[[2]]  # random numbers
 For normally distributed random numbers:
 
 ``` r
+
 g <- jit(function(state) {
   nv_rnorm(state, dtype = "f32", shape = c(2, 3), mu = 0, sigma = 1)
 })
@@ -93,6 +97,7 @@ One thing to avoid is to reuse the same state for multiple calls as done
 in the example below:
 
 ``` r
+
 h <- jit(function(state) {
   result1 <- nv_runif(state, dtype = "f32", shape = 3L)
   result2 <- nv_runif(state, dtype = "f32", shape = 3L)
@@ -121,6 +126,7 @@ subsequent calls, you need to pass the **new** state returned by the
 previous call:
 
 ``` r
+
 proper_rng <- jit(function(state) {
   result1 <- nv_runif(state, dtype = "f32", shape = c(3))
   new_state <- result1[[1]]

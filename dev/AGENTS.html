@@ -91,7 +91,7 @@
 <ul><li>
 <strong><code>stablehlo</code></strong> – JIT lowering rules in <code>R/rules-stablehlo.R</code>. These convert traced operations into StableHLO IR. Since stablehlo uses 0-based indexing, convert indices by subtracting 1.</li>
 <li>
-<strong><code>reverse</code></strong> – Autodiff rules in <code>R/rules-reverse.R</code>. Signature: <code>function(inputs, outputs, grads, .required)</code>. <code>grads</code> contains the upstream gradients (one per output). Return a list of gradients w.r.t. each input, using <code>NULL</code> (via <code>if (.required[[i]])</code>) for inputs that don’t need gradients.</li>
+<strong><code>reverse</code></strong> – Autodiff rules in <code>R/rules-reverse.R</code>, built with <code><a href="reference/rule_reverse.html">rule_reverse()</a></code>.</li>
 <li>
 <strong><code>quickr</code></strong> – R-native lowering rules in <code>R/rules-quickr.R</code> for the quickr backend.</li>
 </ul></div>

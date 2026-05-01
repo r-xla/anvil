@@ -55,6 +55,7 @@ section of the installation vignette for setup; once that’s done, any
 `device = "cuda"`:
 
 ``` r
+
 library(anvl)
 x <- nv_array(1:8, dtype = "f32", device = "cuda")
 y <- nv_array(9:16, dtype = "f32", device = "cuda")
@@ -114,6 +115,7 @@ For example, suppose we want to sum a vector whose length varies between
 calls:
 
 ``` r
+
 sum_jit <- jit(function(x) {
   cat("compiling for length ", shape(x), "\n", sep = "")
   nv_reduce_sum(x, dims = 1L)
@@ -133,6 +135,7 @@ next multiple of 32 with zeros, all four calls share one compiled
 function:
 
 ``` r
+
 pad_to_multiple <- function(x, m) {
   n <- length(x)
   c(x, rep(0, ceiling(n / m) * m - n))
@@ -196,6 +199,7 @@ at this point. This is exactly the situation we want to be in, as we
 don’t want the GPU to idle.
 
 ``` r
+
 for (i in seq_len(n_steps)) {
   batch   <- prepare_batch(i)                # CPU-work
   weights <- step(batch$X, weights, batch$y) # GPU-work
@@ -206,6 +210,7 @@ One way to make this slower is to always print the result after each
 [`step()`](https://rdrr.io/r/stats/step.html):
 
 ``` r
+
 # Bad: blocks every step to print the loss.
 for (i in seq_len(n_steps)) {
   batch <- prepare_batch(i)                # CPU-work
@@ -239,6 +244,7 @@ pass its name to `donate` so XLA is free to reuse its memory for the
 output:
 
 ``` r
+
 update <- jit(function(x, delta) x + delta, donate = "x")
 
 x <- nv_array(c(1, 2, 3), dtype = "f32")

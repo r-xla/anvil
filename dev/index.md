@@ -11,12 +11,13 @@ including CPU and GPU.
 
 ## Installation
 
-{anvl}[¹](#fn1) can be installed from GitHub or
+{anvl}[^1] can be installed from GitHub or
 [r-universe](https://r-xla.r-universe.dev/builds). During runtime, we
 require `libprotobuf`. Source installation requires a `C++20` compiler
 and `protoc` (protobuf compiler).
 
 ``` r
+
 # Install release
 # from r-universe (prebuilt binary)
 install.packages("anvl", repos = c("https://r-xla.r-universe.dev", getOption("repos")))
@@ -41,6 +42,7 @@ compiled into a single kernel via
 [`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md)).
 
 ``` r
+
 library(anvl)
 f <- function(a, b, x) {
   a * x + b
@@ -68,6 +70,7 @@ Through automatic differentiation, we can also obtain the gradient of
 the above function.
 
 ``` r
+
 g_jit <- jit(gradient(f, wrt = c("a", "b")))
 g_jit(a, b, x)
 #> $a
@@ -132,9 +135,7 @@ the package website.
 - For JIT compilation, we leverage the [OpenXLA](https://openxla.org/)
   project.
 
-------------------------------------------------------------------------
-
-1.  A real anvil is a tool blacksmiths use to reshape metal; this
+[^1]: A real anvil is a tool blacksmiths use to reshape metal; this
     package reshapes R code in a similar spirit. We spell the package
     name `anvl` (without the `i`) because `AnVIL` is already taken by a
     Bioconductor package.

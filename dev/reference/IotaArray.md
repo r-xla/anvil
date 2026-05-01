@@ -72,7 +72,7 @@ ndims(x)
 dtype(x)
 #> <i32>
 # How it appears during tracing:
-graph <- trace_fn(function() nv_iota(dim = 1L, dtype = "i32", shape = 4L), list())
+graph <- trace_fn(function() nv_iota(dim = 1L, dtype = "i32", shape = 4L), list(), mode = "toplevel")
 graph
 #> <AnvlGraph>
 #>   Inputs: (none)

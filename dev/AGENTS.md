@@ -50,11 +50,8 @@ Interpretation rules are accessed via `prim_<name>[["<rule_type>"]]`:
 - **`stablehlo`** – JIT lowering rules in `R/rules-stablehlo.R`. These
   convert traced operations into StableHLO IR. Since stablehlo uses
   0-based indexing, convert indices by subtracting 1.
-- **`reverse`** – Autodiff rules in `R/rules-reverse.R`. Signature:
-  `function(inputs, outputs, grads, .required)`. `grads` contains the
-  upstream gradients (one per output). Return a list of gradients w.r.t.
-  each input, using `NULL` (via `if (.required[[i]])`) for inputs that
-  don’t need gradients.
+- **`reverse`** – Autodiff rules in `R/rules-reverse.R`, built with
+  [`rule_reverse()`](https://r-xla.github.io/anvl/dev/reference/rule_reverse.md).
 - **`quickr`** – R-native lowering rules in `R/rules-quickr.R` for the
   quickr backend.
 

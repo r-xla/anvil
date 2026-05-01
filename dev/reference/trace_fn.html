@@ -91,8 +91,7 @@ an <code><a href="AnvlGraph.html">AnvlGraph</a></code>.</p>
 <span>  <span class="va">f</span>,</span>
 <span>  args <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  desc <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  toplevel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  lit_to_array <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  mode <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  args_flat <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  in_tree <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -118,16 +117,14 @@ The (unflattened) arguments to the function. Mutually exclusive with the
 Optional descriptor. When <code>NULL</code> (default), a new descriptor is created.</p></dd>
 
 
-<dt id="arg-toplevel">toplevel<a class="anchor" aria-label="anchor" href="#arg-toplevel"></a></dt>
-<dd><p>(<code>logical(1)</code>)<br>
-If <code>TRUE</code>, concrete <code><a href="AnvlArray.html">AnvlArray</a></code> inputs are treated as unknown (traced) values.
-If <code>FALSE</code> (default), they are treated as known constants.</p></dd>
-
-
-<dt id="arg-lit-to-array">lit_to_array<a class="anchor" aria-label="anchor" href="#arg-lit-to-array"></a></dt>
-<dd><p>(<code>logical(1)</code>)<br>
-Whether to convert literal inputs to arrays. Used internally by higher-order
-primitives such as <code>nv_if</code> and <code>nv_while</code>.</p></dd>
+<dt id="arg-mode">mode<a class="anchor" aria-label="anchor" href="#arg-mode"></a></dt>
+<dd><p>(<code>character(1)</code>)<br>
+How to handle the inputs.
+Options are:</p><ul><li><p><code>"toplevel"</code>: Used for jit(). Default.</p></li>
+<li><p><code>"subgraph"</code>: Use for tracing subgraphs in higher-order primitives like <code><a href="prim_while.html">prim_while()</a></code>.</p></li>
+<li><p><code>"inline"</code>: Use for transformations like jit, where the graph is later inlined
+into the parent graph.</p></li>
+</ul></dd>
 
 
 <dt id="arg-args-flat">args_flat<a class="anchor" aria-label="anchor" href="#arg-args-flat"></a></dt>
@@ -153,8 +150,8 @@ compilation.</p></div>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu">trace_fn</span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="va">y</span>,</span></span>
-<span class="r-in"><span>  args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fl">2</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span>  args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fl">1</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fl">2</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  mode <span class="op">=</span> <span class="st">"toplevel"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">graph</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;AnvlGraph&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Inputs:</span>

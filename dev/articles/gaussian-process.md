@@ -36,6 +36,7 @@ we implement a function that computes the kernel matrix for two sets of
 points:
 
 ``` r
+
 library(anvl)
 
 # X1: (n, d) array
@@ -120,6 +121,7 @@ bump:
 \\f(x) = \sin(x) + 0.3\\x + \exp\\\left(-2\\(x - 2)^2\right)\\
 
 ``` r
+
 set.seed(42)
 
 true_fn <- function(x) sin(x) + 0.3 * x + exp(-2 * (x - 2)^2)
@@ -141,6 +143,7 @@ using `nv_solve` to solve the linear systems involving \\\mathbf{K}\_y\\
 rather than explicitly inverting the kernel matrix.
 
 ``` r
+
 predict_gp <- jit(function(kernel, X_train, y_train, X_test, lengthscale, signal_var, noise_var) {
   n <- shape(X_train)[1L]
 
@@ -166,6 +169,7 @@ We apply this with \\\ell = 0.5\\, \\\sigma_f^2 = 2\\, and \\\sigma^2 =
 0.04\\:
 
 ``` r
+
 X_t <- nv_array(matrix(X_train, ncol = 1))
 y_t <- nv_array(matrix(y_train, ncol = 1))
 X_test_t <- nv_array(matrix(X_test, ncol = 1))
@@ -224,6 +228,7 @@ Below, we implement the negative log marginal likelihood but leave out
 the constant term because we don’t need it for optimization.
 
 ``` r
+
 neg_log_marginal_likelihood <- function(kernel, X, y, lengthscale, signal_var, noise_var) {
   n <- shape(y)[1L]
 
@@ -257,6 +262,7 @@ via
 and the entire training loop is JIT-compiled with `nv_while`.
 
 ``` r
+
 params <- c("log_lengthscale", "log_signal_var", "log_noise_var")
 nll_grad <- gradient(\(X, y, log_lengthscale, log_signal_var, log_noise_var) {
   neg_log_marginal_likelihood(
@@ -294,6 +300,7 @@ train_gp <- jit(function(X, y, lengthscale, signal_var, noise_var,
 ```
 
 ``` r
+
 result <- train_gp(
   X_t, y_t,
   lengthscale = nv_scalar(1),

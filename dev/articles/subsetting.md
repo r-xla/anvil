@@ -42,6 +42,7 @@ from a 1-dimensional array. The index can be either static or dynamic
 and we can drop or keep the dimension:
 
 ``` r
+
 library(anvl)
 x <- nv_array(1:10)
 x
@@ -63,6 +64,7 @@ x
 - Static & Drop:
 
   ``` r
+
   x[2]
   ```
 
@@ -79,6 +81,7 @@ x
   equivalent to `array(2L)`, and `arr(1, 2, 3)` to `array(c(1, 2, 3))`).
 
   ``` r
+
   x[arr(2L)]
   ```
 
@@ -89,6 +92,7 @@ x
 - Dynamic & Drop:
 
   ``` r
+
   x[nv_scalar(2L)]
   ```
 
@@ -107,6 +111,7 @@ x
   0D.
 
   ``` r
+
   x[nv_array(2L)]
   ```
 
@@ -120,6 +125,7 @@ between static and dynamic indices.
 - Static
 
   ``` r
+
   x[arr(2, 4, 6)]
   ```
 
@@ -132,6 +138,7 @@ between static and dynamic indices.
 - Dynamic
 
   ``` r
+
   x[nv_array(c(2L, 4L, 6L))]
   ```
 
@@ -152,6 +159,7 @@ We can also use a range that can be specified either canonically via
 [`nv_seq()`](https://r-xla.github.io/anvl/dev/reference/nv_seq.md).
 
 ``` r
+
 x[2:5]
 ```
 
@@ -163,6 +171,7 @@ x[2:5]
     ## [ CPUi32{4} ]
 
 ``` r
+
 x[nv_seq(2, 5)]
 ```
 
@@ -181,6 +190,7 @@ It is also possible to select the whole range by omitting the
 specification altogether.
 
 ``` r
+
 x[]
 ```
 
@@ -202,6 +212,7 @@ x[]
 We start by creating a 2-dimensional array.
 
 ``` r
+
 x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
 x
 ```
@@ -215,6 +226,7 @@ x
 Combining subsets just works like one would expect.
 
 ``` r
+
 x[1, ]
 ```
 
@@ -226,6 +238,7 @@ x[1, ]
     ## [ CPUi32{4} ]
 
 ``` r
+
 x[1, 2]
 ```
 
@@ -234,6 +247,7 @@ x[1, 2]
     ## [ CPUi32{} ]
 
 ``` r
+
 x[arr(1), 2:3]
 ```
 
@@ -243,6 +257,7 @@ x[arr(1), 2:3]
     ## [ CPUi32{2} ]
 
 ``` r
+
 x[arr(1, 3), 2:3]
 ```
 
@@ -252,6 +267,7 @@ x[arr(1, 3), 2:3]
     ## [ CPUi32{2,2} ]
 
 ``` r
+
 x[1:2, 2:3]
 ```
 
@@ -261,6 +277,7 @@ x[1:2, 2:3]
     ## [ CPUi32{2,2} ]
 
 ``` r
+
 x[1, 2:3]
 ```
 
@@ -270,6 +287,7 @@ x[1, 2:3]
     ## [ CPUi32{2} ]
 
 ``` r
+
 x[arr(2, 2), ]
 ```
 
@@ -279,6 +297,7 @@ x[arr(2, 2), ]
     ## [ CPUi32{2,4} ]
 
 ``` r
+
 x[arr(2, 2)]
 ```
 
@@ -295,6 +314,7 @@ backend that {anvl} compiles to does not throw errors for out-of-bounds
 dynamic indices, but instead clamps them to the valid range:
 
 ``` r
+
 x[nv_array(-1L), nv_array(100L)]
 ```
 
@@ -303,6 +323,7 @@ x[nv_array(-1L), nv_array(100L)]
     ## [ CPUi32{1,1} ]
 
 ``` r
+
 x[nv_array(1L), nv_array(4L)]
 ```
 
@@ -319,6 +340,7 @@ Updating subsets supports the same syntax as subsetting. The value to
 write must either have the shape of the subset, or be a scalar.
 
 ``` r
+
 x
 ```
 
@@ -329,6 +351,7 @@ x
     ## [ CPUi32{3,4} ]
 
 ``` r
+
 x[, 3] <- nv_array(-(1:3))
 x
 ```
@@ -340,6 +363,7 @@ x
     ## [ CPUi32{3,4} ]
 
 ``` r
+
 x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
 x[, 3] <- -99L
 x
@@ -355,6 +379,7 @@ Also, it must have a data type that is convertible to the data type of
 the array.
 
 ``` r
+
 x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
 x[, 3] <- nv_array(c(1.5, 2.5, 3.5))
 ```
@@ -363,6 +388,7 @@ x[, 3] <- nv_array(c(1.5, 2.5, 3.5))
     ## ! Value type f32 is not promotable to left-hand side type i32
 
 ``` r
+
 x
 ```
 
@@ -379,6 +405,7 @@ static values. For dynamic indices, out-of-bounds writes are simply
 ignored:
 
 ``` r
+
 x <- nv_array(1:5)
 x[nv_array(c(1L, 100L, 3L))] <- nv_array(c(-1L, -2L, -3L))
 x
@@ -402,6 +429,7 @@ which value will be written. Specifically, this might differ between
 backends (CPU vs. GPU).
 
 ``` r
+
 x <- nv_array(1:5)
 x[arr(1L, 1L, 1L)] <- nv_array(c(10L, 20L, 30L))
 x
@@ -423,6 +451,7 @@ which can perform the update in place when its reference count for `x`
 is 1.
 
 ``` r
+
 x <- nv_array(1:5)
 x[1] <- -1L  # allocates a new length-5 buffer, even though x has only one reference
 x

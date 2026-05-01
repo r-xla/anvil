@@ -286,7 +286,7 @@ the hood. Below, we trace <code>linear</code> with a length-3 vector for
 <span><span class="va">f32_vec3</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AbstractArray.html">nv_aval</a></span><span class="op">(</span><span class="st">"f32"</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="va">f32_vec3</span></span>
 <span><span class="co">#&gt; AbstractArray(dtype=f32, shape=3)</span></span>
-<span><span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">linear</span>, args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">f32_vec3</span>, w <span class="op">=</span> <span class="va">f32_scalar</span>, b <span class="op">=</span> <span class="va">f32_scalar</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">linear</span>, args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">f32_vec3</span>, w <span class="op">=</span> <span class="va">f32_scalar</span>, b <span class="op">=</span> <span class="va">f32_scalar</span><span class="op">)</span>, mode <span class="op">=</span> <span class="st">"toplevel"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;AnvlGraph&gt;</span></span>
 <span><span class="co">#&gt;   Inputs:</span></span>
 <span><span class="co">#&gt;     %x1: f32[3]</span></span>
@@ -343,7 +343,7 @@ recorded in the graph. Here we apply the <code>linear</code> function
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">linear</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span>, <span class="va">b</span><span class="op">)</span></span>
 <span>  <span class="va">x</span></span>
 <span><span class="op">}</span></span>
-<span><span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">linear_repeated</span>, args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">f32_scalar</span>, w <span class="op">=</span> <span class="va">f32_vec3</span>, b <span class="op">=</span> <span class="va">f32_vec3</span>, n <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">linear_repeated</span>, args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">f32_scalar</span>, w <span class="op">=</span> <span class="va">f32_vec3</span>, b <span class="op">=</span> <span class="va">f32_vec3</span>, n <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span>, mode <span class="op">=</span> <span class="st">"toplevel"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;AnvlGraph&gt;</span></span>
 <span><span class="co">#&gt;   Inputs:</span></span>
 <span><span class="co">#&gt;     %x1: f32[]</span></span>
@@ -383,6 +383,8 @@ on a static input flag:</p>
 <span><span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span></span>
 <span>  <span class="va">linear_maybe</span>,</span>
 <span>  args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">f32_scalar</span>, w <span class="op">=</span> <span class="va">f32_scalar</span>, b <span class="op">=</span> <span class="va">f32_scalar</span>, use_bias <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>,</span>
+<span>  mode <span class="op">=</span> <span class="st">"toplevel"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;AnvlGraph&gt;</span></span>
 <span><span class="co">#&gt;   Inputs:</span></span>
@@ -406,7 +408,7 @@ enclosing environment:</p>
 <span><span class="va">h</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="va">threshold</span> <span class="op">&gt;</span> <span class="fl">0.5</span><span class="op">)</span> <span class="va">x</span> <span class="op">*</span> <span class="fl">2</span> <span class="kw">else</span> <span class="va">x</span> <span class="op">+</span> <span class="fl">1</span></span>
 <span><span class="op">}</span></span>
-<span><span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">h</span>, args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">f32_scalar</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">h</span>, args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">f32_scalar</span><span class="op">)</span>, mode <span class="op">=</span> <span class="st">"toplevel"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;AnvlGraph&gt;</span></span>
 <span><span class="co">#&gt;   Inputs:</span></span>
 <span><span class="co">#&gt;     %x1: f32[]</span></span>
@@ -436,7 +438,7 @@ argument:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">default_b</span> <span class="op">&lt;-</span> <span class="fl">5</span></span>
 <span><span class="va">linear_default_b</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span><span class="op">)</span> <span class="fu">linear</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span>, <span class="va">default_b</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">linear_default_b</span>, args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">f32_scalar</span>, w <span class="op">=</span> <span class="va">f32_scalar</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/trace_fn.html">trace_fn</a></span><span class="op">(</span><span class="va">linear_default_b</span>, args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">f32_scalar</span>, w <span class="op">=</span> <span class="va">f32_scalar</span><span class="op">)</span>, mode <span class="op">=</span> <span class="st">"toplevel"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;AnvlGraph&gt;</span></span>
 <span><span class="co">#&gt;   Inputs:</span></span>
 <span><span class="co">#&gt;     %x1: f32[]</span></span>
