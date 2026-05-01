@@ -173,6 +173,18 @@ compute_requirements <- function(graph, wrt) {
   # `graph$inputs`; filter them out. `gradient()` already rejects static
   # `wrt` entries, so this drop is safe.
   is_static <- graph$is_static_flat
+  if (!is.null(is_static) && any(requires_grad_all & is_static)) {
+    flat_argnames <- rep(
+      graph$in_tree$names,
+      times = vapply(graph$in_tree$nodes, tree_size, integer(1L))
+    )
+    bad <- unique(flat_argnames[requires_grad_all & is_static])
+    cli_abort(c(
+      "Cannot compute gradient with respect to {.arg {bad}}.",
+      x = "{cli::qty(length(bad))}{?It was/They were} passed as {?a plain R value/plain R values} and embedded as {?a constant/constants} in the traced graph, so {?it has/they have} no graph input to differentiate.",
+      i = "{cli::qty(length(bad))}Pass {?it/them} as an {.cls AnvlArray}, e.g. {.code nv_array(1, dtype = \"f32\")}."
+    ))
+  }
   requires_grad <- if (is.null(is_static)) {
     requires_grad_all
   } else {
