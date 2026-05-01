@@ -8,7 +8,7 @@ trace_fn(
   f,
   args = NULL,
   desc = NULL,
-  mode = c("subgraph", "inline"),
+  mode = NULL,
   args_flat = NULL,
   in_tree = NULL
 )
@@ -25,29 +25,14 @@ The (unflattened) arguments to the function. Mutually exclusive with the
 Optional descriptor. When \code{NULL} (default), a new descriptor is created.}
 
 \item{mode}{(\code{character(1)})\cr
-Controls how arrayish inputs of nested \code{trace_fn} calls are wired up:
+How to handle the inputs.
+Options are:
 \itemize{
-\item \code{"subgraph"} (default): the traced graph survives as a sub-program of
-a higher-order primitive (\code{prim_while} / \code{prim_if} / \code{prim_scatter}).
-Each arrayish input becomes a fresh \code{AbstractArray}-typed gval --
-a clean parameter slot. The caller is responsible for separately
-boxing the corresponding parent-side value (typically via
-\code{maybe_box_arrayish()}) and passing it as the matching arg of the
-higher-order primitive call.
-\item \code{"inline"}: the traced graph will be spliced into the parent and
-discarded (\code{gradient()} / \code{value_and_gradient()}). Arrayish inputs
-are registered as parent constants and the \emph{same} gval is reused as
-the child input, so once spliced the calls already resolve. The
-transient child graph never needs to satisfy the
-parameter-vs-constant disjointness invariant.
-}
-
-When there is no parent descriptor on the stash (e.g. \code{jit}'s outermost
-trace, or a standalone test call), both modes produce the same result:
-abstract input gvals, no parent registration.
-
-Subgraph mode rejects non-arrayish args; inline (and parentless) modes
-pass them through as static parameters.}
+\item \code{"toplevel"}: Used for jit(). Default.
+\item \code{"subgraph"}: Use for tracing subgraphs in higher-order primitives like \code{\link[=prim_while]{prim_while()}}.
+\item \code{"inline"}: Use for transformations like jit, where the graph is later inlined
+into the parent graph.
+}}
 
 \item{args_flat}{(\code{list})\cr
 Flattened arguments. Must be accompanied by \code{in_tree}.}
@@ -68,8 +53,8 @@ The resulting graph can be lowered to StableHLO (via \code{\link[=stablehlo]{sta
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 graph <- trace_fn(function(x, y) x + y,
-  args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32"))
-)
+  args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32")),
+  mode = "toplevel")
 graph
 \dontshow{\}) # examplesIf}
 }

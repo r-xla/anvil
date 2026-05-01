@@ -27,16 +27,16 @@ To support alternative forward passes for more efficient backward passes, we
 replay and possibly rewrite the graph into a new descriptor.
 Afterwards, we traverse it backwards and call the gradient rules where necessary.
 
-See \code{\link[=reverse_rule]{reverse_rule()}} for more information.
+See \code{\link[=rule_reverse]{rule_reverse()}} for more information.
 
 This is the building block used by \code{\link[=gradient]{gradient()}} and \code{\link[=value_and_gradient]{value_and_gradient()}}; prefer
 those higher-level wrappers unless you need to operate on graphs directly.
 }
 \examples{
-graph <- trace_fn(prim_mul, list(nv_aval("f32", c()), nv_aval("f32", c())))
+graph <- trace_fn(prim_mul, list(nv_aval("f32", c()), nv_aval("f32", c())), mode = "toplevel")
 graph
 transform_gradient(graph, "lhs")
 }
 \seealso{
-\code{\link[=gradient]{gradient()}}, \code{\link[=value_and_gradient]{value_and_gradient()}}, \code{\link[=reverse_rule]{reverse_rule()}}
+\code{\link[=gradient]{gradient()}}, \code{\link[=value_and_gradient]{value_and_gradient()}}, \code{\link[=rule_reverse]{rule_reverse()}}
 }

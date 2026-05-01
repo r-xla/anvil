@@ -49,11 +49,11 @@ ndims(x)
 dtype(x)
 # How it appears during tracing:
 # 1. via R literals
-graph <- trace_fn(function() 1, list())
+graph <- trace_fn(function() 1, list(), mode = "toplevel")
 graph
 graph$outputs[[1]]$aval
 # 2. via nv_fill()
-graph <- trace_fn(function() nv_fill(2L, shape = c(2, 2)), list())
+graph <- trace_fn(function() nv_fill(2L, shape = c(2, 2)), list(), mode = "toplevel")
 graph
 graph$outputs[[1]]$aval
 \dontshow{\}) # examplesIf}

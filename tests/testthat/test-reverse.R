@@ -342,7 +342,7 @@ test_that("gradient works through graph with primitives that have no reverse rul
   expect_equal(out[[1L]], nv_array(c(2, 2, 2), dtype = "f64"))
 })
 
-test_that("reverse_rule(forward = ...) emits multiple primitives and captures an intermediate", {
+test_that("rule_reverse(forward = ...) emits multiple primitives and captures an intermediate", {
   infer <- function(x) list(x)
   my_exp <- new_primitive(
     "my_exp_test",
@@ -350,7 +350,7 @@ test_that("reverse_rule(forward = ...) emits multiple primitives and captures an
     register = FALSE
   )
 
-  my_exp[["reverse"]] <- reverse_rule(forward = function(inputs, params) {
+  my_exp[["reverse"]] <- rule_reverse(forward = function(inputs, params) {
     x <- inputs[[1L]]
     y <- prim_exp(x)
     neg_y <- prim_negate(y)

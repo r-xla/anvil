@@ -1825,10 +1825,10 @@ prim_if <- new_primitive(
     true_graph <- trace_fn(true, list(), desc = desc_true, mode = "subgraph")
     desc_false <- local_descriptor()
 
-    ensure_consts_registered(desc_false, desc_true$constants)
+    register_consts(desc_false, desc_true$constants)
     false_graph <- trace_fn(false, list(), desc = desc_false, mode = "subgraph")
 
-    ensure_consts_registered(current_desc, desc_false$constants)
+    register_consts(current_desc, desc_false$constants)
 
     if (!identical(true_graph$out_tree, false_graph$out_tree)) {
       cli_abort("true and false branches must have the same output structure")
@@ -1924,7 +1924,7 @@ prim_while <- new_primitive(
 
     # ensure that constant ids are the same between cond and body
     # inputs don't matter, because we don't inline the sub-graphs into the parent graph
-    ensure_consts_registered(desc_body, desc_cond$constants)
+    register_consts(desc_body, desc_cond$constants)
     body_graph <- trace_fn(body, init, desc_body, mode = "subgraph")
 
     if (!identical(cond_graph$in_tree, body_graph$in_tree)) {
@@ -1936,7 +1936,7 @@ prim_while <- new_primitive(
     }
 
     # now we register the constants of both sub-graphs (body includes cond's constants) into the graph
-    ensure_consts_registered(current_desc, body_graph$constants)
+    register_consts(current_desc, body_graph$constants)
 
     infer_fn <- function(..., cond_graph, body_graph) {
       outs <- list(...)
@@ -1955,7 +1955,7 @@ prim_while <- new_primitive(
 
     out <- graph_desc_add(
       self,
-      args = lapply(flatten(init), maybe_box_arrayish),
+      args = flatten(init),
       params = list(cond_graph = cond_graph, body_graph = body_graph),
       infer_fn = infer_fn,
       desc = current_desc
@@ -2166,10 +2166,10 @@ prim_scatter <- new_primitive(
       AbstractArray(dtype = input_dtype, shape = Shape(integer()), ambiguous = ambiguous_abstract(update))
     )
 
-    update_computation_graph <- trace_fn(update_computation, dummy_args, desc = desc_update)
+    update_computation_graph <- trace_fn(update_computation, dummy_args, desc = desc_update, mode = "subgraph")
 
     # Register constants from the update computation graph
-    ensure_consts_registered(current_desc, update_computation_graph$constants)
+    register_consts(current_desc, update_computation_graph$constants)
 
     infer_fn <- function(
       input,

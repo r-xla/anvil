@@ -50,13 +50,13 @@ prepare_gradient_args <- function(args, wrt) {
 #' It can make use of intermediate values computed in the forward pass via lexical scoping.
 #'
 #' @param backward (`function`)\cr
-#'   Backward hook for the cloned-forward form. See `Description`.
+#'   Backward hook for default case.
 #' @param forward (`function`)\cr
-#'   Alternative-forward hook that returns its own backward closure.
-#' @return An `anvl_reverse_rule` object.
+#'   Alternative-forward hook that returns both primals and backward closure.
+#' @return An `anvl_rule_reverse` object.
 #' @seealso [`transform_gradient()`]
 #' @export
-reverse_rule <- function(backward = NULL, forward = NULL) {
+rule_reverse <- function(backward = NULL, forward = NULL) {
   if (is.null(backward) == is.null(forward)) {
     cli_abort("Provide exactly one of {.arg backward} or {.arg forward}.")
   }
@@ -67,7 +67,7 @@ reverse_rule <- function(backward = NULL, forward = NULL) {
   }
   structure(
     list(forward = forward, backward = backward),
-    class = "anvl_reverse_rule"
+    class = "anvl_rule_reverse"
   )
 }
 
@@ -83,7 +83,7 @@ reverse_rule <- function(backward = NULL, forward = NULL) {
 #' replay and possibly rewrite the graph into a new descriptor.
 #' Afterwards, we traverse it backwards and call the gradient rules where necessary.
 #'
-#' See [`reverse_rule()`] for more information.
+#' See [`rule_reverse()`] for more information.
 #'
 #' This is the building block used by [`gradient()`] and [`value_and_gradient()`]; prefer
 #' those higher-level wrappers unless you need to operate on graphs directly.
@@ -92,10 +92,10 @@ reverse_rule <- function(backward = NULL, forward = NULL) {
 #' @param wrt (`character`)\cr
 #'   Names of the graph inputs to differentiate with respect to.
 #' @return An [`AnvlGraph`] whose outputs are the requested gradients.
-#' @seealso [`gradient()`], [`value_and_gradient()`], [`reverse_rule()`]
+#' @seealso [`gradient()`], [`value_and_gradient()`], [`rule_reverse()`]
 #' @export
 #' @examples
-#' graph <- trace_fn(prim_mul, list(nv_aval("f32", c()), nv_aval("f32", c())))
+#' graph <- trace_fn(prim_mul, list(nv_aval("f32", c()), nv_aval("f32", c())), mode = "toplevel")
 #' graph
 #' transform_gradient(graph, "lhs")
 transform_gradient <- function(graph, wrt) {
@@ -224,8 +224,12 @@ rebuild_forward_pass <- function(graph, envir = parent.frame()) {
   # consts and inputs keep their identity, only GraphValues created by PrimitiveCalls
   # get new identifier
   register_inputs(desc, graph$inputs)
-  ensure_consts_registered(desc, graph$constants)
+  register_consts(desc, graph$constants)
 
+  # Existing GraphValues are reused where possible to minimize cloning.
+  # If an alternative forward pass is called, this possibly invalidates
+  # inputs to subsequent PrimitiveCalls, so we have to look up the translated gnode every time
+  # (we could actually delay this lookup until
   trans <- hashtab()
   translate_gnode <- function(g) {
     if (is_graph_literal(g)) {
@@ -247,7 +251,9 @@ rebuild_forward_pass <- function(graph, envir = parent.frame()) {
 
   # We store the backward rules in a list so we can just traverse it backwards afterwards
 
+  # backwards be longer than graph$calls, but never shorter
   backwards <- vector("list", length(graph$calls))
+
   for (i in seq_along(graph$calls)) {
     call <- graph$calls[[i]]
     rule <- call$primitive[["reverse"]]
@@ -258,17 +264,11 @@ rebuild_forward_pass <- function(graph, envir = parent.frame()) {
       # PrimitiveCall if an upstream alt-forward replaced one of our inputs;
       # otherwise share the original call object verbatim.
       new_inputs <- lapply(call$inputs, translate_gnode)
-      new_call <- if (identical(new_inputs, call$inputs)) {
-        call
-      } else {
-        PrimitiveCall(call$primitive, new_inputs, call$params, call$outputs)
-      }
-      # Index-extend instead of `c()` to avoid O(N^2) list copying as the
-      # rebuilt graph grows.
+      new_call <- PrimitiveCall(call$primitive, new_inputs, call$params, call$outputs)
+
       desc$calls[[length(desc$calls) + 1L]] <- new_call
-      for (g in call$outputs) {
-        register_gval(desc, g)
-      }
+      register_gvals(desc, call$outputs)
+
       # If `rule` is NULL `backwards[[i]]` stays NULL. `run_backward_pass`
       # treats that as "skip if no input requires grad, otherwise abort":
       # primitives like `prim_fill` whose inputs are all static parameters
@@ -276,17 +276,15 @@ rebuild_forward_pass <- function(graph, envir = parent.frame()) {
       if (!is.null(rule)) {
         backwards[[i]] <- list(
           fn = rule$backward,
-          inputs = lapply(call$inputs, box_for),
-          outputs = lapply(call$outputs, \(g) desc$gval_to_box[[g]]),
+          inputs = lapply(new_call$inputs, GraphBox, desc = desc),
+          outputs = lapply(call$outputs, GraphBox, desc = desc),
           params = call$params
         )
       }
     } else {
-      # Alternative-forward form: rule emits its own forward via prim_*
-      # (each emit goes through graph_desc_add and creates fresh
-      # PrimitiveCalls + gvals) and returns the primal output boxes plus
-      # a backward closure that captures any intermediates lexically. The
-      # closure shares the standard backward signature.
+      # Alternative-forward path
+      # Here, new GraphValue outputs are generated and subsequent PrimitiveCalls that
+      # referenced the old ones need to be rewired
       input_boxes <- lapply(call$inputs, box_for)
       fwd_result <- rule$forward(input_boxes, call$params)
       for (j in seq_along(call$outputs)) {

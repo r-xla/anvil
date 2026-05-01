@@ -1,5 +1,5 @@
 # length(grads) == length(outputs)
-prim_add[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_add[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   grad <- grads[[1L]]
   list(
     if (required[[1L]]) grad,
@@ -7,7 +7,7 @@ prim_add[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, r
   )
 })
 
-prim_mul[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_mul[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
   grad <- grads[[1L]]
@@ -17,7 +17,7 @@ prim_mul[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, r
   )
 })
 
-prim_sub[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_sub[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   grad <- grads[[1L]]
   list(
     if (required[[1L]]) grad,
@@ -25,14 +25,14 @@ prim_sub[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, r
   )
 })
 
-prim_negate[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_negate[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   grad <- grads[[1L]]
   list(
     if (required[[1L]]) prim_negate(grad)
   )
 })
 
-prim_div[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_div[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   rhs <- inputs[[2L]]
   y <- outputs[[1L]]
   grad <- grads[[1L]]
@@ -42,7 +42,7 @@ prim_div[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, r
   )
 })
 
-prim_remainder[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_remainder[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   # we follow pytorch here and ignore non-differentiable parts
   # the function is locally linear, i.e., y = lhs - k * rhs, where k = floor(lhs / rhs)
   # so the gradient is 1 for lhs and -k for rhs
@@ -55,7 +55,7 @@ prim_remainder[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, par
   )
 })
 
-prim_pow[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_pow[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
   y <- outputs[[1L]]
@@ -71,7 +71,7 @@ prim_pow[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, r
   )
 })
 
-prim_log[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_log[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -79,7 +79,7 @@ prim_log[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, r
   )
 })
 
-prim_exp[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_exp[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -87,7 +87,7 @@ prim_exp[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, r
   )
 })
 
-prim_sqrt[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_sqrt[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -99,7 +99,7 @@ prim_sqrt[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, 
   )
 })
 
-prim_rsqrt[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_rsqrt[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -111,7 +111,7 @@ prim_rsqrt[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params,
   )
 })
 
-prim_tanh[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_tanh[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -123,7 +123,7 @@ prim_tanh[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, 
   )
 })
 
-prim_tan[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_tan[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -135,7 +135,7 @@ prim_tan[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, r
   )
 })
 
-prim_sine[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_sine[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -144,7 +144,7 @@ prim_sine[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, 
   )
 })
 
-prim_cosine[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_cosine[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -153,7 +153,7 @@ prim_cosine[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params
   )
 })
 
-prim_abs[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_abs[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -162,7 +162,7 @@ prim_abs[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, r
   )
 })
 
-prim_max[["reverse"]] <- prim_min[["reverse"]] <- reverse_rule(function(
+prim_max[["reverse"]] <- prim_min[["reverse"]] <- rule_reverse(function(
   inputs,
   outputs,
   grads,
@@ -186,7 +186,7 @@ prim_max[["reverse"]] <- prim_min[["reverse"]] <- reverse_rule(function(
   )
 })
 
-prim_dot_general[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_dot_general[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
   grad <- grads[[1L]]
@@ -251,7 +251,7 @@ prim_dot_general[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, p
   )
 })
 
-prim_transpose[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_transpose[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   permutation <- params$permutation
   grad <- grads[[1L]]
   inv <- integer(length(permutation))
@@ -263,7 +263,7 @@ prim_transpose[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, par
   )
 })
 
-prim_reshape[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_reshape[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -271,7 +271,7 @@ prim_reshape[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, param
   )
 })
 
-prim_reduce_sum[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_reduce_sum[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   dims <- params$dims
   drop <- params$drop
   operand <- inputs[[1L]]
@@ -288,7 +288,7 @@ prim_reduce_sum[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, pa
   )
 })
 
-prim_reduce_max[["reverse"]] <- prim_reduce_min[["reverse"]] <- reverse_rule(function(
+prim_reduce_max[["reverse"]] <- prim_reduce_min[["reverse"]] <- rule_reverse(function(
   inputs,
   outputs,
   grads,
@@ -323,7 +323,7 @@ prim_reduce_max[["reverse"]] <- prim_reduce_min[["reverse"]] <- reverse_rule(fun
   )
 })
 
-prim_broadcast_in_dim[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_broadcast_in_dim[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   shape <- params$shape
   broadcast_dimensions <- params$broadcast_dimensions
   operand <- inputs[[1L]]
@@ -358,7 +358,7 @@ prim_broadcast_in_dim[["reverse"]] <- reverse_rule(function(inputs, outputs, gra
 
 # control flow reverse ---------------------------------------------------------
 
-prim_ifelse[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_ifelse[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   pred <- inputs[[1L]]
   true_value <- inputs[[2L]]
   grad <- grads[[1L]]
@@ -373,13 +373,13 @@ prim_ifelse[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params
   )
 })
 
-prim_if[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_if[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   cli_abort("Not yet implemented")
 })
 
 # convert reverse -----------------
 
-prim_convert[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_convert[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   # the ambiguity is determined by the input, not the `ambiguous` parameter
@@ -396,7 +396,7 @@ prim_convert[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, param
 # so it's okay if the dtype of the gradient does not match the operand type
 # Instead, we just return ambiguous zeros, that will be promoted to any dtype required
 
-reverse_zero_bin <- reverse_rule(function(inputs, outputs, grads, params, required) {
+reverse_zero_bin <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   grad_in <- if (required[[1L]] || required[[2L]]) {
     grad_in <- nv_fill(0L, dtype = dtype(operand), shape = shape(operand))
@@ -417,7 +417,7 @@ prim_le[["reverse"]] <- reverse_zero_bin
 
 # zero-grads (ignores the non-differentiable points)
 
-reverse_zero_uni <- reverse_rule(function(inputs, outputs, grads, params, required) {
+reverse_zero_uni <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   list(
     if (required[[1L]]) prim_fill(0L, dtype = dtype(operand), shape = shape(operand))
@@ -430,7 +430,7 @@ prim_ceil[["reverse"]] <- reverse_zero_uni
 prim_sign[["reverse"]] <- reverse_zero_uni
 prim_round[["reverse"]] <- reverse_zero_uni
 
-prim_cbrt[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_cbrt[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -442,7 +442,7 @@ prim_cbrt[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, 
   )
 })
 
-prim_expm1[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_expm1[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -451,7 +451,7 @@ prim_expm1[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params,
   )
 })
 
-prim_log1p[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_log1p[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -463,7 +463,7 @@ prim_log1p[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params,
   )
 })
 
-prim_logistic[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_logistic[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
@@ -475,7 +475,7 @@ prim_logistic[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, para
   )
 })
 
-prim_clamp[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_clamp[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   min_val <- inputs[[1L]]
   operand <- inputs[[2L]]
   max_val <- inputs[[3L]]
@@ -503,7 +503,7 @@ prim_clamp[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params,
   )
 })
 
-prim_reverse[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_reverse[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   dims <- params$dims
   grad <- grads[[1L]]
   list(
@@ -512,7 +512,7 @@ prim_reverse[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, param
   )
 })
 
-prim_pad[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_pad[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   edge_padding_low <- params$edge_padding_low
   edge_padding_high <- params$edge_padding_high
   interior_padding <- params$interior_padding
@@ -548,7 +548,7 @@ prim_shift_right_logical[["reverse"]] <- reverse_zero_bin
 prim_is_finite[["reverse"]] <- reverse_zero_uni
 prim_popcnt[["reverse"]] <- reverse_zero_uni
 
-prim_reduce_all[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_reduce_all[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   list(
     if (required[[1L]]) prim_fill(FALSE, dtype = dtype(operand), shape = shape(operand))
@@ -557,14 +557,14 @@ prim_reduce_all[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, pa
 
 prim_reduce_any[["reverse"]] <- prim_reduce_all[["reverse"]]
 
-prim_bitcast_convert[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_bitcast_convert[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   list(
     if (required[[1L]]) prim_fill(0L, dtype = dtype(operand), shape = shape(operand))
   )
 })
 
-prim_atan2[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_atan2[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
   grad <- grads[[1L]]
@@ -578,7 +578,7 @@ prim_atan2[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params,
 })
 
 # concatenate reverse: split the gradient back along the concatenation dimension
-prim_concatenate[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_concatenate[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   dimension <- params$dimension
   grad <- grads[[1L]]
   n_inputs <- length(inputs)
@@ -602,7 +602,7 @@ prim_concatenate[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, p
 })
 
 
-prim_reduce_prod[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_reduce_prod[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   dims <- params$dims
   drop <- params$drop
   operand <- inputs[[1L]]
@@ -623,7 +623,7 @@ prim_reduce_prod[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, p
   )
 })
 # slice reverse: pad with zeros
-prim_static_slice[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_static_slice[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   start_indices <- params$start_indices
   limit_indices <- params$limit_indices
   strides <- params$strides
@@ -647,7 +647,7 @@ prim_static_slice[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, 
   )
 })
 
-prim_dynamic_slice[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_dynamic_slice[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   start_indices <- inputs[-1L]
   grad <- grads[[1L]]
@@ -664,7 +664,7 @@ prim_dynamic_slice[["reverse"]] <- reverse_rule(function(inputs, outputs, grads,
   result
 })
 
-prim_dynamic_update_slice[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_dynamic_update_slice[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   update <- inputs[[2L]]
   start_indices <- inputs[-(1:2)]
   grad <- grads[[1L]]
@@ -685,7 +685,7 @@ prim_dynamic_update_slice[["reverse"]] <- reverse_rule(function(inputs, outputs,
   result
 })
 
-prim_gather[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_gather[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   slice_sizes <- params$slice_sizes
   offset_dims <- params$offset_dims
   collapsed_slice_dims <- params$collapsed_slice_dims
@@ -745,7 +745,7 @@ prim_gather[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params
 })
 
 
-prim_scatter[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_scatter[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   update_window_dims <- params$update_window_dims
   inserted_window_dims <- params$inserted_window_dims
   input_batching_dims <- params$input_batching_dims
@@ -924,7 +924,7 @@ triangular_mask <- function(n, dt, lower, unit_diagonal) {
 #' @rdname prim_cholesky
 #' @references
 #' `r xlamisc::format_bib("murray2016differentiation", "walter2012structured")`
-prim_cholesky[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_cholesky[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   lower <- params$lower
   if (!required[[1L]]) {
     return(list(NULL))
@@ -986,7 +986,7 @@ prim_cholesky[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, para
 #' @rdname prim_triangular_solve
 #' @references
 #' `r xlamisc::format_bib("giles2008extended")`
-prim_triangular_solve[["reverse"]] <- reverse_rule(function(inputs, outputs, grads, params, required) {
+prim_triangular_solve[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   left_side <- params$left_side
   lower <- params$lower
   unit_diagonal <- params$unit_diagonal
