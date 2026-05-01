@@ -455,7 +455,7 @@ AbstractArray <- function(dtype, shape, ambiguous = FALSE) {
   )
 }
 
-is_abstract_tensor <- function(x) {
+is_abstract_array <- function(x) {
   inherits(x, "AbstractArray")
 }
 
@@ -499,7 +499,7 @@ shape.AbstractArray <- function(x, ...) {
 #' dtype(x)
 #'
 #' # How it appears during tracing
-#' graph <- trace_fn(function() y, list())
+#' graph <- trace_fn(function() y, list(), mode = "toplevel")
 #' graph
 #' graph$outputs[[1]]$aval
 #' @export
@@ -551,11 +551,11 @@ ConcreteArray <- function(data) {
 #' dtype(x)
 #' # How it appears during tracing:
 #' # 1. via R literals
-#' graph <- trace_fn(function() 1, list())
+#' graph <- trace_fn(function() 1, list(), mode = "toplevel")
 #' graph
 #' graph$outputs[[1]]$aval
 #' # 2. via nv_fill()
-#' graph <- trace_fn(function() nv_fill(2L, shape = c(2, 2)), list())
+#' graph <- trace_fn(function() nv_fill(2L, shape = c(2, 2)), list(), mode = "toplevel")
 #' graph
 #' graph$outputs[[1]]$aval
 #' @export
@@ -612,7 +612,7 @@ LiteralArray <- function(data, shape, dtype = default_dtype(data), ambiguous) {
 #' ndims(x)
 #' dtype(x)
 #' # How it appears during tracing:
-#' graph <- trace_fn(function() nv_iota(dim = 1L, dtype = "i32", shape = 4L), list())
+#' graph <- trace_fn(function() nv_iota(dim = 1L, dtype = "i32", shape = 4L), list(), mode = "toplevel")
 #' graph
 #' graph$outputs[[1]]$aval
 #' @export
@@ -805,7 +805,7 @@ compare_proxy.AnvlArray <- function(x, path) { # nolint
 to_abstract <- function(x, pure = FALSE) {
   x <- if (is_anvl_array(x)) {
     ConcreteArray(x)
-  } else if (is_abstract_tensor(x)) {
+  } else if (is_abstract_array(x)) {
     x
   } else if (test_atomic(x) && (is.logical(x) || is.numeric(x))) {
     # logicals are not ambiguous

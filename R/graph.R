@@ -368,59 +368,94 @@ maybe_box_arrayish <- function(x) {
   cli_abort("Expected arrayish value, but got {.cls {class(x)[1]}}")
 }
 
-# this function is on the inputs of trace_fn()
-maybe_box_input <- function(x, desc, toplevel, lit_to_array) {
-  if (lit_to_array && test_scalar(x)) {
-    # so we can accept literals as inputs to higher-order primitives like if and while
-    ambiguous <- !is.logical(x)
-    gval <- GraphValue(
-      aval = AbstractArray(
-        dtype = default_dtype(x),
-        shape = integer(),
-        ambiguous = ambiguous
-      )
-    )
-    return(register_input(desc, gval))
+# Called only by trace_fn() to wire up each flat arg as an input of `desc`.
+# Behavior is fully determined by `mode`:
+# - "toplevel": jit's outermost trace. No parent descriptor exists. Arrayish
+#   args become fresh input gvals; non-arrayish args pass through as static
+#   parameters.
+# - "subgraph": traced body of a higher-order primitive (prim_if/prim_while/...).
+#   The caller promises all args are arrayish, so R lits/arrays are promoted
+#   to AnvlArrays. Each arrayish arg becomes a fresh AbstractArray-typed
+#   gval -- a clean parameter slot for the subgraph. Non-arrayish args are
+#   an error.
+# - "inline": traced graph that will be later be inlined into the paren
+#   (gradient/value_and_gradient). Inputs that are not already boxed
+#   are registered in the parent graph and then the inputs alias them
+#   which simplified subsequent inlining
+maybe_box_input <- function(x, desc, mode) {
+  if (mode == "subgraph") {
+    # e.g.: prim_while(list(i = 1), ...)
+    # we know which inputs are dynamic/static -> convert
+    if (is_valid_r_lit(x)) {
+      x <- nv_scalar(x, ambiguous = !is.logical(x))
+    } else if (is_valid_r_array(x)) {
+      x <- nv_array(x, ambiguous = !is.logical(x))
+    }
+    # e.g.: prim_while(list(i = nv_scalar(1)), ...)
+    if (is_anvl_array(x)) {
+      if (backend(x) != "plain") {
+        desc$devices <- c(desc$devices, device(x))
+      }
+      gval <- GraphValue(aval = to_abstract(x, pure = TRUE))
+      return(register_input(desc, gval))
+    }
+    # e.g.: \(x) prim_while(list(i = x), ...)
+    if (is_graph_box(x)) {
+      gval <- GraphValue(aval = abstract_aval(x$gnode$aval))
+      return(register_input(desc, gval))
+    }
+    # is used internally by prim_scatter() to trace `update_computation()` with avals
+    if (is_abstract_array(x)) {
+      gval <- GraphValue(aval = x)
+      return(register_input(desc, gval))
+    }
+    cli_abort("In subgraph mode, all args must be arrayish; got {.cls {class(x)[1]}}")
   }
+
+  if (mode == "inline") {
+    # gradient(f)(nv_scalar(1))
+    if (is_anvl_array(x)) {
+      if (backend(x) != "plain") {
+        desc$devices <- c(desc$devices, device(x))
+      }
+      parent_desc <- maybe_previous_descriptor()
+      parent_box <- get_box_or_register_const(parent_desc, x)
+      return(register_input(desc, parent_box$gnode))
+    }
+    # \(x) gradient(f)(x)
+    if (is_graph_box(x)) {
+      return(register_input(desc, x$gnode))
+    }
+    # don't convert R values because they might be static.
+    # We don't know because gradient() does not annotate static
+    return(x)
+  }
+
+  # mode == "toplevel"
   if (is_anvl_array(x)) {
-    # cases:
-    # 1. top-level trace_fn call
-    # 2. a constant is passed to a nested trace_fn call
-    #    this constant can be a closed-over constant or defined in the environment of the nested trace_fn call
-    # For the first scenario, it would be sufficient to create a AbstractArray,
-    # because the input will be provided by the user
-    # For the second scenario, we will inline the descriptor into the parent descriptor,
-    # but it the input to the nested trace_fn call does not become an input to the parent graph,
-    # but is simply an existing value, that is a value from the parent graph
-    # however, if the value does not exist in the parent graph, we need to add it as a constant
-    # for that, we need to keep the value of the actual array, so we can later register it
-    # see test: "can pass constant to nested trace_fn call if it ..." in test-graph.R
     if (backend(x) != "plain") {
       desc$devices <- c(desc$devices, device(x))
     }
-    gval <- if (toplevel) {
-      # user-provided inputs are simply unknown
-      GraphValue(aval = to_abstract(x, pure = TRUE))
-    } else {
-      # nested trace_fn call might receive known constants from the parent graph as input
-      GraphValue(aval = ConcreteArray(x))
-    }
-    register_input(desc, gval)
-  } else if (is_graph_box(x)) {
-    # Nested trace_fn call
-    # Because we will inline the child graph into the parent graph, we re-use
-    # the same GraphValue, because this will make the inlining straightforward.
-    register_input(desc, x$gnode)
-  } else if (is_abstract_tensor(x)) {
-    # Needed to be able to pass abstract arrays to trace_fn()
+    gval <- GraphValue(aval = to_abstract(x, pure = TRUE))
+    return(register_input(desc, gval))
+  }
+  if (is_graph_box(x)) {
+    return(register_input(desc, x$gnode))
+  }
+  if (is_abstract_array(x)) {
     gval <- GraphValue(aval = x)
-    register_input(desc, gval)
+    return(register_input(desc, gval))
+  }
+  x
+}
+
+# Strip data from a (possibly concrete) array aval, returning a pure
+# AbstractArray with the same dtype/shape/ambiguity.
+abstract_aval <- function(aval) {
+  if (is_concrete_tensor(aval)) {
+    AbstractArray(dtype = aval$dtype, shape = aval$shape, ambiguous = aval$ambiguous)
   } else {
-    if (lit_to_array) {
-      cli_abort("Expected only arrayish values, but got {.cls {class(x)[1]}}")
-    }
-    # parameter
-    x
+    aval
   }
 }
 
@@ -435,6 +470,10 @@ register_input <- function(desc, x) {
   box <- GraphBox(x, desc)
   desc$gval_to_box[[x]] <- box
   box
+}
+
+register_gvals <- function(desc, gvals) {
+  lapply(gvals, register_gval, desc = desc)
 }
 
 register_gval <- function(desc, x) {
@@ -507,31 +546,16 @@ get_box_or_register_const <- function(desc, x) {
   return(new_box)
 }
 
-init_desc_from_graph <- function(desc, graph, outputs = TRUE) {
-  for (input in graph$inputs) {
+register_inputs <- function(desc, inputs) {
+  for (input in inputs) {
     register_input(desc, input)
   }
-  for (const in graph$constants) {
+}
+
+register_consts <- function(desc, consts) {
+  for (const in consts) {
     get_box_or_register_const(desc, const)
   }
-  for (call in graph$calls) {
-    for (input in c(call$inputs, call$outputs)) {
-      if (is.null(desc$gval_to_box[[input]])) {
-        desc$gval_to_box[[input]] <- GraphBox(input, desc)
-      }
-    }
-  }
-
-  desc$calls <- graph$calls
-  desc$in_tree <- graph$in_tree
-  if (outputs) {
-    desc$outputs <- graph$outputs
-  }
-  desc$out_tree <- graph$out_tree
-  desc$is_static_flat <- graph$is_static_flat
-  desc$static_args_flat <- graph$static_args_flat
-
-  graph
 }
 
 match_args_to_formals <- function(f, args) {
@@ -557,12 +581,13 @@ match_args_to_formals <- function(f, args) {
 #'   `args_flat`/`in_tree` pair.
 #' @param desc (`NULL` | `GraphDescriptor`)\cr
 #'   Optional descriptor. When `NULL` (default), a new descriptor is created.
-#' @param toplevel (`logical(1)`)\cr
-#'   If `TRUE`, concrete [`AnvlArray`] inputs are treated as unknown (traced) values.
-#'   If `FALSE` (default), they are treated as known constants.
-#' @param lit_to_array (`logical(1)`)\cr
-#'   Whether to convert literal inputs to arrays. Used internally by higher-order
-#'   primitives such as `nv_if` and `nv_while`.
+#' @param mode (`character(1)`)\cr
+#'   How to handle the inputs.
+#'   Options are:
+#'   - `"toplevel"`: Used for jit(). Default.
+#'   - `"subgraph"`: Use for tracing subgraphs in higher-order primitives like [`prim_while()`].
+#'   - `"inline"`: Use for transformations like jit, where the graph is later inlined
+#'     into the parent graph.
 #' @param args_flat (`list`)\cr
 #'   Flattened arguments. Must be accompanied by `in_tree`.
 #' @param in_tree (`Node`)\cr
@@ -573,18 +598,21 @@ match_args_to_formals <- function(f, args) {
 #' @export
 #' @examplesIf pjrt::plugins_downloaded()
 #' graph <- trace_fn(function(x, y) x + y,
-#'   args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32"))
-#' )
+#'   args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32")),
+#'   mode = "toplevel")
 #' graph
 trace_fn <- function(
   f,
   args = NULL,
   desc = NULL,
-  toplevel = FALSE,
-  lit_to_array = FALSE,
+  mode = NULL,
   args_flat = NULL,
   in_tree = NULL
 ) {
+  if (is.null(mode) && !currently_tracing()) {
+    mode <- "toplevel"
+  }
+  mode <- assert_choice(mode, c("toplevel", "subgraph", "inline"))
   if (is.null(args)) {
     if (is.null(args_flat) || is.null(in_tree)) {
       cli_abort("args or args_flat and in_tree must be provided")
@@ -605,8 +633,16 @@ trace_fn <- function(
     desc$in_tree <- in_tree
   }
 
+  parent_desc <- maybe_previous_descriptor()
+  if (mode == "toplevel" && !is.null(parent_desc)) {
+    cli_abort('Internal error: trace_fn(mode = "toplevel") must not have a parent descriptor')
+  }
+  if (mode != "toplevel" && is.null(parent_desc)) {
+    cli_abort('Internal error: trace_fn(mode = "{mode}") requires a parent descriptor')
+  }
+
   # box arrays and add them as inputs to the current graph
-  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc, toplevel = toplevel, lit_to_array = lit_to_array)
+  inputs_flat <- lapply(args_flat, maybe_box_input, desc = desc, mode = mode)
   # Track which flat args are static (non-array) values vs. graph inputs
   desc$is_static_flat <- vapply(inputs_flat, Negate(is_graph_box), logical(1L))
   output <- do.call(f_flat, inputs_flat)
@@ -621,10 +657,6 @@ trace_fn <- function(
     desc$static_args_flat <- args_flat[desc$is_static_flat]
   } else {
     desc$static_args_flat <- NULL
-  }
-
-  if (any(vapply(outputs_flat, \(x) !is_graph_box(x), logical(1L)))) {
-    cli_abort("Function .f must return only objects of type `GraphBox`.")
   }
 
   graph <- descriptor_to_graph(desc)
@@ -672,6 +704,15 @@ maybe_restore_previous_desc <- function(desc = NULL) {
 
 currently_tracing <- function() {
   !is.null(.current_descriptor(silent = TRUE))
+}
+
+maybe_previous_descriptor <- function() {
+  stash <- globals[["DESCRIPTOR_STASH"]]
+  n <- length(stash)
+  if (!n) {
+    return(NULL)
+  }
+  stash[[n]]
 }
 
 #' @title Create a graph
@@ -773,18 +814,11 @@ print_call_repr <- function(prim) {
 
 
 inline_graph_into_desc <- function(desc, graph) {
-  for (const in graph$constants) {
-    # The following can happen:
-    # 1. a constant is already present in the parent descriptor -> do nothing
-    # 2. the constant is not present in the parent descriptor -> register it
-    get_box_or_register_const(desc, const)
-  }
-  for (input in graph$inputs) {
-    if (is.null(desc$gval_to_box[[input]])) {
-      #
-    }
-    get_box_or_register_const(desc, input)
-  }
+  # By contract, `graph` was produced by `trace_fn(..., mode = "inline")` so
+  # every input gval was registered in `desc` at trace time and is already
+  # known to the parent. Only sub-graph constants (closed-over values
+  # registered via `maybe_box_arrayish`) still need to be propagated up.
+  register_consts(desc, graph$constants)
 
   desc$calls <- c(desc$calls, graph$calls)
 

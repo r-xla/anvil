@@ -33,7 +33,7 @@ ndims(x)
 dtype(x)
 
 # How it appears during tracing
-graph <- trace_fn(function() y, list())
+graph <- trace_fn(function() y, list(), mode = "toplevel")
 graph
 graph$outputs[[1]]$aval
 \dontshow{\}) # examplesIf}

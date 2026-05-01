@@ -322,6 +322,7 @@ reference:
       - xla
       - trace_fn
       - transform_gradient
+      - rule_reverse
       - graph_to_quickr_r_function
       - jit_eval
       - compile_xla
