@@ -5,7 +5,7 @@ Multiplies array elements along the specified dimensions.
 ## Usage
 
 ``` r
-nv_reduce_prod(operand, dims, drop = TRUE)
+nv_reduce_prod(operand, dims = NULL, drop = TRUE)
 ```
 
 ## Arguments
@@ -17,8 +17,9 @@ nv_reduce_prod(operand, dims, drop = TRUE)
 
 - dims:
 
-  ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Dimensions to reduce.
+  ([`integer()`](https://rdrr.io/r/base/integer.html) \| `NULL`)  
+  Dimensions to reduce. If `NULL` (default), reduces over all
+  dimensions, returning a scalar.
 
 - drop:
 
@@ -41,6 +42,10 @@ for the underlying primitive.
 
 ``` r
 x <- nv_array(matrix(1:6, nrow = 2))
+nv_reduce_prod(x)            # all dims -> scalar
+#> AnvlArray
+#>  720
+#> [ CPUi32{} ] 
 nv_reduce_prod(x, dims = 1L)
 #> AnvlArray
 #>   2

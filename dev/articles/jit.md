@@ -184,7 +184,7 @@ f32_scalar
 f32_vec3   <- nv_aval("f32", 3)
 f32_vec3
 #> AbstractArray(dtype=f32, shape=3)
-trace_fn(linear, args = list(x = f32_vec3, w = f32_scalar, b = f32_scalar), mode = "toplevel")
+trace_fn(linear, args = list(x = f32_vec3, w = f32_scalar, b = f32_scalar))
 #> <AnvlGraph>
 #>   Inputs:
 #>     %x1: f32[3]
@@ -243,7 +243,7 @@ linear_repeated <- function(x, w, b, n) {
   for (i in seq_len(n)) x <- linear(x, w, b)
   x
 }
-trace_fn(linear_repeated, args = list(x = f32_scalar, w = f32_vec3, b = f32_vec3, n = 2L), mode = "toplevel")
+trace_fn(linear_repeated, args = list(x = f32_scalar, w = f32_vec3, b = f32_vec3, n = 2L))
 #> <AnvlGraph>
 #>   Inputs:
 #>     %x1: f32[]
@@ -285,8 +285,6 @@ linear_maybe <- function(x, w, b, use_bias) {
 trace_fn(
   linear_maybe,
   args = list(x = f32_scalar, w = f32_scalar, b = f32_scalar, use_bias = TRUE)
-,
-  mode = "toplevel"
 )
 #> <AnvlGraph>
 #>   Inputs:
@@ -314,7 +312,7 @@ threshold <- 0.5
 h <- function(x) {
   if (threshold > 0.5) x * 2 else x + 1
 }
-trace_fn(h, args = list(x = f32_scalar), mode = "toplevel")
+trace_fn(h, args = list(x = f32_scalar))
 #> <AnvlGraph>
 #>   Inputs:
 #>     %x1: f32[]
@@ -346,7 +344,7 @@ Here we close over a default bias instead of taking it as an argument:
 
 default_b <- 5
 linear_default_b <- function(x, w) linear(x, w, default_b)
-trace_fn(linear_default_b, args = list(x = f32_scalar, w = f32_scalar), mode = "toplevel")
+trace_fn(linear_default_b, args = list(x = f32_scalar, w = f32_scalar))
 #> <AnvlGraph>
 #>   Inputs:
 #>     %x1: f32[]

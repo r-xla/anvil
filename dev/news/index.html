@@ -76,12 +76,37 @@
 <div class="section level3">
 <h3 id="breaking-changes-development-version">Breaking Changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
 <ul><li>Renamed user-facing API functions to match base R names: <code>nv_sine()</code> -&gt; <code><a href="../reference/nv_sin.html">nv_sin()</a></code>, <code>nv_cosine()</code> -&gt; <code><a href="../reference/nv_cos.html">nv_cos()</a></code>, <code>nv_ceil()</code> -&gt; <code><a href="../reference/nv_ceiling.html">nv_ceiling()</a></code>, <code>nv_cholesky()</code> -&gt; <code><a href="../reference/nv_chol.html">nv_chol()</a></code>. The underlying <code>prim_*</code> primitives keep their StableHLO-aligned names.</li>
+<li>
+<code>nv_reduce_mean()</code> was renamed to <code><a href="../reference/nv_mean.html">nv_mean()</a></code>.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
-<ul><li>Added <code>AnvlArray</code> -&gt; R <code>vector</code> converters <code>as.numeric</code>, <code>as.double</code>, <code>as.integer</code> and <code>as.logical</code>
-</li>
+<ul><li>Added <code>AnvlArray</code> -&gt; R <code>vector</code> converters <code>as.numeric</code>, <code>as.double</code>, <code>as.integer</code>, <code>as.logical</code> and <code>as.vector</code>.</li>
 <li>New API functions <code><a href="../reference/nv_bind.html">nv_rbind()</a></code> and <code><a href="../reference/nv_bind.html">nv_cbind()</a></code> and corresponding <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code>/<code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind()</a></code> generics.</li>
+<li>New primitives: <code><a href="../reference/prim_sort.html">prim_sort()</a></code>, <code><a href="../reference/prim_top_k.html">prim_top_k()</a></code>, <code><a href="../reference/prim_reduce.html">prim_reduce()</a></code>, <code><a href="../reference/prim_argmax.html">prim_argmax()</a></code>, <code><a href="../reference/prim_argmin.html">prim_argmin()</a></code>.</li>
+<li>New API functions:
+<ul><li>
+<code><a href="../reference/nv_sort.html">nv_sort()</a></code> to sort along a dimension.</li>
+<li>
+<code><a href="../reference/nv_argsort.html">nv_argsort()</a></code> to return the indices that would sort the array.</li>
+<li>
+<code><a href="../reference/nv_top_k.html">nv_top_k()</a></code> to return the <code>k</code> largest values along a dimension.</li>
+<li>
+<code><a href="../reference/nv_median.html">nv_median()</a></code> to compute the median along a dimension. Also dispatches from base R’s <code><a href="https://rdrr.io/r/stats/median.html" class="external-link">median()</a></code>.</li>
+<li>
+<code><a href="../reference/nv_quantile.html">nv_quantile()</a></code> to compute quantiles along a dimension.</li>
+<li>
+<code><a href="../reference/nv_argmax.html">nv_argmax()</a></code> and <code><a href="../reference/nv_argmin.html">nv_argmin()</a></code> to find the index of the maximum/minimum along a dimension. Ties are broken by returning the smallest index.</li>
+<li>
+<code><a href="../reference/nv_select.html">nv_select()</a></code> to select a slice along a dimension by index.</li>
+</ul></li>
+<li>
+<code><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean()</a></code> and <code><a href="https://rdrr.io/r/stats/median.html" class="external-link">median()</a></code> now error when called with <code>na.rm = TRUE</code>, since anvl arrays do not carry <code>NA</code>s. <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean()</a></code> also rejects non-zero <code>trim</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="other-development-version">Other<a class="anchor" aria-label="anchor" href="#other-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/nv_reduce_sum.html">nv_reduce_sum()</a></code>, <code><a href="../reference/nv_reduce_prod.html">nv_reduce_prod()</a></code>, <code><a href="../reference/nv_reduce_max.html">nv_reduce_max()</a></code>, <code><a href="../reference/nv_reduce_min.html">nv_reduce_min()</a></code>, <code><a href="../reference/nv_reduce_any.html">nv_reduce_any()</a></code>, <code><a href="../reference/nv_reduce_all.html">nv_reduce_all()</a></code> and <code><a href="../reference/nv_mean.html">nv_mean()</a></code> now default <code>dims = NULL</code>, which reduces over all dimensions and returns a scalar. Previously, <code>dims</code> was required.</li>
 </ul></div>
 </div>
     <div class="section level2">

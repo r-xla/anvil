@@ -231,7 +231,7 @@
 
         <dt>
 
-          <code><a href="as-AnvlArray.html">as.double(<i>&lt;AnvlArray&gt;</i>)</a></code> <code><a href="as-AnvlArray.html">as.integer(<i>&lt;AnvlArray&gt;</i>)</a></code> <code><a href="as-AnvlArray.html">as.logical(<i>&lt;AnvlArray&gt;</i>)</a></code>
+          <code><a href="as-AnvlArray.html">as.double(<i>&lt;AnvlArray&gt;</i>)</a></code> <code><a href="as-AnvlArray.html">as.integer(<i>&lt;AnvlArray&gt;</i>)</a></code> <code><a href="as-AnvlArray.html">as.logical(<i>&lt;AnvlArray&gt;</i>)</a></code> <code><a href="as-AnvlArray.html">as.vector(<i>&lt;AnvlArray&gt;</i>)</a></code>
 
         </dt>
         <dd>Coerce AnvlArray to an R Vector</dd>
@@ -386,6 +386,13 @@
 
         </dt>
         <dd>Static Slice</dd>
+
+        <dt>
+
+          <code><a href="nv_select.html">nv_select()</a></code>
+
+        </dt>
+        <dd>Select Elements Along a Dimension</dd>
 
         <dt>
 
@@ -726,13 +733,6 @@
 
         <dt>
 
-          <code><a href="nv_reduce_mean.html">nv_reduce_mean()</a></code>
-
-        </dt>
-        <dd>Mean Reduction</dd>
-
-        <dt>
-
           <code><a href="nv_reduce_prod.html">nv_reduce_prod()</a></code>
 
         </dt>
@@ -765,6 +765,36 @@
 
         </dt>
         <dd>All Reduction</dd>
+      </dl></div><div class="section level2">
+
+      <h3 id="statistical-summaries">Statistical Summaries<a class="anchor" aria-label="anchor" href="#statistical-summaries"></a></h3>
+      <div class="section-desc"><p>Summary statistics over array dimensions</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nv_mean.html">nv_mean()</a></code> <code><a href="nv_mean.html">mean(<i>&lt;AnvlBox&gt;</i>)</a></code> <code><a href="nv_mean.html">mean(<i>&lt;AnvlArray&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Mean</dd>
+
+        <dt>
+
+          <code><a href="nv_median.html">nv_median()</a></code> <code><a href="nv_median.html">median(<i>&lt;AnvlBox&gt;</i>)</a></code> <code><a href="nv_median.html">median(<i>&lt;AnvlArray&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Median</dd>
+
+        <dt>
+
+          <code><a href="nv_quantile.html">nv_quantile()</a></code>
+
+        </dt>
+        <dd>Quantile</dd>
 
         <dt>
 
@@ -953,6 +983,50 @@
 
         </dt>
         <dd>Clamp</dd>
+      </dl></div><div class="section level2">
+
+      <h3 id="sorting-and-searching">Sorting and Searching<a class="anchor" aria-label="anchor" href="#sorting-and-searching"></a></h3>
+      <div class="section-desc"><p>Sorting arrays and finding extrema</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nv_sort.html">nv_sort()</a></code> <code><a href="nv_sort.html">sort(<i>&lt;AnvlBox&gt;</i>)</a></code> <code><a href="nv_sort.html">sort(<i>&lt;AnvlArray&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Sort</dd>
+
+        <dt>
+
+          <code><a href="nv_argsort.html">nv_argsort()</a></code>
+
+        </dt>
+        <dd>Argsort</dd>
+
+        <dt>
+
+          <code><a href="nv_top_k.html">nv_top_k()</a></code>
+
+        </dt>
+        <dd>Top-K Elements</dd>
+
+        <dt>
+
+          <code><a href="nv_argmax.html">nv_argmax()</a></code>
+
+        </dt>
+        <dd>Index of the Maximum</dd>
+
+        <dt>
+
+          <code><a href="nv_argmin.html">nv_argmin()</a></code>
+
+        </dt>
+        <dd>Index of the Minimum</dd>
       </dl></div><div class="section level2">
 
       <h3 id="control-flow">Control Flow<a class="anchor" aria-label="anchor" href="#control-flow"></a></h3>
@@ -1545,6 +1619,20 @@
 
         <dt>
 
+          <code><a href="prim_argmax.html">prim_argmax()</a></code>
+
+        </dt>
+        <dd>Primitive Argmax</dd>
+
+        <dt>
+
+          <code><a href="prim_argmin.html">prim_argmin()</a></code>
+
+        </dt>
+        <dd>Primitive Argmin</dd>
+
+        <dt>
+
           <code><a href="prim_atan2.html">prim_atan2()</a></code>
 
         </dt>
@@ -1839,6 +1927,13 @@
 
         <dt>
 
+          <code><a href="prim_reduce.html">prim_reduce()</a></code>
+
+        </dt>
+        <dd>Primitive Generic Reduce</dd>
+
+        <dt>
+
           <code><a href="prim_reduce_all.html">prim_reduce_all()</a></code>
 
         </dt>
@@ -1965,6 +2060,13 @@
 
         <dt>
 
+          <code><a href="prim_sort.html">prim_sort()</a></code>
+
+        </dt>
+        <dd>Primitive Sort</dd>
+
+        <dt>
+
           <code><a href="prim_sqrt.html">prim_sqrt()</a></code>
 
         </dt>
@@ -1997,6 +2099,13 @@
 
         </dt>
         <dd>Primitive Hyperbolic Tangent</dd>
+
+        <dt>
+
+          <code><a href="prim_top_k.html">prim_top_k()</a></code>
+
+        </dt>
+        <dd>Primitive Top-K</dd>
 
         <dt>
 

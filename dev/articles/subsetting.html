@@ -211,7 +211,7 @@ array without having to wrap the values in <code><a href="https://rdrr.io/r/base
 <code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/arr.html">arr</a></span><span class="op">(</span><span class="fl">2L</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvlArray</span></span>
 <span><span class="co">##  2</span></span>
-<span><span class="co">## [ CPUi32{} ]</span></span></code></pre>
+<span><span class="co">## [ CPUi32{1} ]</span></span></code></pre>
 </li>
 <li>
 <p>Dynamic &amp; Drop:</p>
@@ -333,9 +333,8 @@ specification altogether.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/arr.html">arr</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvlArray</span></span>
-<span><span class="co">##  2</span></span>
-<span><span class="co">##  3</span></span>
-<span><span class="co">## [ CPUi32{2} ]</span></span></code></pre>
+<span><span class="co">##  2 3</span></span>
+<span><span class="co">## [ CPUi32{1,2} ]</span></span></code></pre>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="../reference/arr.html">arr</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## AnvlArray</span></span>

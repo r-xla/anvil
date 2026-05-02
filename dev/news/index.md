@@ -14,11 +14,13 @@
   `nv_cholesky()` -\>
   [`nv_chol()`](https://r-xla.github.io/anvl/dev/reference/nv_chol.md).
   The underlying `prim_*` primitives keep their StableHLO-aligned names.
+- `nv_reduce_mean()` was renamed to
+  [`nv_mean()`](https://r-xla.github.io/anvl/dev/reference/nv_mean.md).
 
 ### New Features
 
 - Added `AnvlArray` -\> R `vector` converters `as.numeric`, `as.double`,
-  `as.integer` and `as.logical`
+  `as.integer`, `as.logical` and `as.vector`.
 - New API functions
   [`nv_rbind()`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
   and
@@ -26,6 +28,49 @@
   and corresponding
   [`rbind()`](https://rdrr.io/r/base/cbind.html)/[`cbind()`](https://rdrr.io/r/base/cbind.html)
   generics.
+- New primitives:
+  [`prim_sort()`](https://r-xla.github.io/anvl/dev/reference/prim_sort.md),
+  [`prim_top_k()`](https://r-xla.github.io/anvl/dev/reference/prim_top_k.md),
+  [`prim_reduce()`](https://r-xla.github.io/anvl/dev/reference/prim_reduce.md),
+  [`prim_argmax()`](https://r-xla.github.io/anvl/dev/reference/prim_argmax.md),
+  [`prim_argmin()`](https://r-xla.github.io/anvl/dev/reference/prim_argmin.md).
+- New API functions:
+  - [`nv_sort()`](https://r-xla.github.io/anvl/dev/reference/nv_sort.md)
+    to sort along a dimension.
+  - [`nv_argsort()`](https://r-xla.github.io/anvl/dev/reference/nv_argsort.md)
+    to return the indices that would sort the array.
+  - [`nv_top_k()`](https://r-xla.github.io/anvl/dev/reference/nv_top_k.md)
+    to return the `k` largest values along a dimension.
+  - [`nv_median()`](https://r-xla.github.io/anvl/dev/reference/nv_median.md)
+    to compute the median along a dimension. Also dispatches from base
+    R’s [`median()`](https://rdrr.io/r/stats/median.html).
+  - [`nv_quantile()`](https://r-xla.github.io/anvl/dev/reference/nv_quantile.md)
+    to compute quantiles along a dimension.
+  - [`nv_argmax()`](https://r-xla.github.io/anvl/dev/reference/nv_argmax.md)
+    and
+    [`nv_argmin()`](https://r-xla.github.io/anvl/dev/reference/nv_argmin.md)
+    to find the index of the maximum/minimum along a dimension. Ties are
+    broken by returning the smallest index.
+  - [`nv_select()`](https://r-xla.github.io/anvl/dev/reference/nv_select.md)
+    to select a slice along a dimension by index.
+- [`mean()`](https://rdrr.io/r/base/mean.html) and
+  [`median()`](https://rdrr.io/r/stats/median.html) now error when
+  called with `na.rm = TRUE`, since anvl arrays do not carry `NA`s.
+  [`mean()`](https://rdrr.io/r/base/mean.html) also rejects non-zero
+  `trim`.
+
+### Other
+
+- [`nv_reduce_sum()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_sum.md),
+  [`nv_reduce_prod()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_prod.md),
+  [`nv_reduce_max()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_max.md),
+  [`nv_reduce_min()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_min.md),
+  [`nv_reduce_any()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_any.md),
+  [`nv_reduce_all()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_all.md)
+  and
+  [`nv_mean()`](https://r-xla.github.io/anvl/dev/reference/nv_mean.md)
+  now default `dims = NULL`, which reduces over all dimensions and
+  returns a scalar. Previously, `dims` was required.
 
 ## anvl 0.2.0
 

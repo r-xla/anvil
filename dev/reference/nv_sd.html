@@ -91,8 +91,9 @@ Operand.</p></dd>
 
 
 <dt id="arg-dims">dims<a class="anchor" aria-label="anchor" href="#arg-dims"></a></dt>
-<dd><p>(<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>)<br>
-Dimensions to reduce.</p></dd>
+<dd><p>(<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code> | <code>NULL</code>)<br>
+Dimensions to reduce. If <code>NULL</code> (default), reduces over all
+dimensions, returning a scalar.</p></dd>
 
 
 <dt id="arg-drop">drop<a class="anchor" aria-label="anchor" href="#arg-drop"></a></dt>
@@ -119,7 +120,7 @@ Set <code>correction = 0</code> for population standard deviation.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="nv_var.html">nv_var()</a></code>, <code><a href="nv_reduce_mean.html">nv_reduce_mean()</a></code></p></div>
+    <div class="dont-index"><p><code><a href="nv_var.html">nv_var()</a></code>, <code><a href="nv_mean.html">nv_mean()</a></code></p></div>
     </div>
 
     <div class="section level2">

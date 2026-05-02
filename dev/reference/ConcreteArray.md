@@ -45,7 +45,7 @@ dtype(x)
 #> <f32>
 
 # How it appears during tracing
-graph <- trace_fn(function() y, list(), mode = "toplevel")
+graph <- trace_fn(function() y, list())
 graph
 #> <AnvlGraph>
 #>   Inputs: (none)

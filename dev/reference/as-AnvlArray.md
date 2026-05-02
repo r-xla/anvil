@@ -14,6 +14,10 @@ a flat vector. Each method requires a compatible dtype:
 
 - [`as.logical()`](https://rdrr.io/r/base/logical.html): `bool`.
 
+- [`as.vector()`](https://rdrr.io/r/base/vector.html): any dtype; the R
+  type is chosen by the dtype, or forced via `mode` (e.g. `"integer"`,
+  `"double"`, `"logical"`, `"list"`).
+
 Use
 [`as_array()`](https://r-xla.github.io/anvl/dev/reference/as_array.md)
 to obtain an R array that preserves the shape, or
@@ -33,6 +37,9 @@ as.integer(x, ...)
 
 # S3 method for class 'AnvlArray'
 as.logical(x, ...)
+
+# S3 method for class 'AnvlArray'
+as.vector(x, mode = "any")
 ```
 
 ## Arguments
@@ -45,6 +52,13 @@ as.logical(x, ...)
 - ...:
 
   Unused.
+
+- mode:
+
+  (`character(1)`)  
+  For [`as.vector()`](https://rdrr.io/r/base/vector.html) only. See
+  [`base::as.vector()`](https://rdrr.io/r/base/vector.html). Defaults to
+  `"any"`, meaning the natural R type for the array's dtype.
 
 ## Value
 
@@ -61,4 +75,6 @@ as.integer(nv_array(1:6, shape = c(2L, 3L)))
 #> [1] 1 2 3 4 5 6
 as.logical(nv_array(c(TRUE, FALSE), dtype = "bool"))
 #> [1]  TRUE FALSE
+as.vector(x)
+#> [1] 1.5 2.5 3.5 4.5
 ```

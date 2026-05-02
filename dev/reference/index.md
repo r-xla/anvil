@@ -66,6 +66,7 @@ Functions for converting arrays
 - [`as.double(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/as-AnvlArray.md)
   [`as.integer(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/as-AnvlArray.md)
   [`as.logical(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/as-AnvlArray.md)
+  [`as.vector(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/as-AnvlArray.md)
   : Coerce AnvlArray to an R Vector
 
 ### Serialization
@@ -127,6 +128,8 @@ Functions for reshaping and rearranging arrays
   : Combine arrays by rows or columns
 - [`nv_static_slice()`](https://r-xla.github.io/anvl/dev/reference/nv_static_slice.md)
   : Static Slice
+- [`nv_select()`](https://r-xla.github.io/anvl/dev/reference/nv_select.md)
+  : Select Elements Along a Dimension
 - [`nv_pad()`](https://r-xla.github.io/anvl/dev/reference/nv_pad.md) :
   Pad
 - [`nv_reverse()`](https://r-xla.github.io/anvl/dev/reference/nv_reverse.md)
@@ -240,8 +243,6 @@ Operations that reduce array dimensions
 
 - [`nv_reduce_sum()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_sum.md)
   : Sum Reduction
-- [`nv_reduce_mean()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_mean.md)
-  : Mean Reduction
 - [`nv_reduce_prod()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_prod.md)
   : Product Reduction
 - [`nv_reduce_max()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_max.md)
@@ -252,6 +253,21 @@ Operations that reduce array dimensions
   : Any Reduction
 - [`nv_reduce_all()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_all.md)
   : All Reduction
+
+### Statistical Summaries
+
+Summary statistics over array dimensions
+
+- [`nv_mean()`](https://r-xla.github.io/anvl/dev/reference/nv_mean.md)
+  [`mean(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_mean.md)
+  [`mean(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_mean.md)
+  : Mean
+- [`nv_median()`](https://r-xla.github.io/anvl/dev/reference/nv_median.md)
+  [`median(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_median.md)
+  [`median(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_median.md)
+  : Median
+- [`nv_quantile()`](https://r-xla.github.io/anvl/dev/reference/nv_quantile.md)
+  : Quantile
 - [`nv_var()`](https://r-xla.github.io/anvl/dev/reference/nv_var.md) :
   Variance Reduction
 - [`nv_sd()`](https://r-xla.github.io/anvl/dev/reference/nv_sd.md) :
@@ -315,6 +331,23 @@ Other element-wise array operations
   Maximum
 - [`nv_clamp()`](https://r-xla.github.io/anvl/dev/reference/nv_clamp.md)
   : Clamp
+
+### Sorting and Searching
+
+Sorting arrays and finding extrema
+
+- [`nv_sort()`](https://r-xla.github.io/anvl/dev/reference/nv_sort.md)
+  [`sort(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_sort.md)
+  [`sort(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_sort.md)
+  : Sort
+- [`nv_argsort()`](https://r-xla.github.io/anvl/dev/reference/nv_argsort.md)
+  : Argsort
+- [`nv_top_k()`](https://r-xla.github.io/anvl/dev/reference/nv_top_k.md)
+  : Top-K Elements
+- [`nv_argmax()`](https://r-xla.github.io/anvl/dev/reference/nv_argmax.md)
+  : Index of the Maximum
+- [`nv_argmin()`](https://r-xla.github.io/anvl/dev/reference/nv_argmin.md)
+  : Index of the Minimum
 
 ### Control Flow
 
@@ -510,6 +543,10 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Addition
 - [`prim_and()`](https://r-xla.github.io/anvl/dev/reference/prim_and.md)
   : Primitive And
+- [`prim_argmax()`](https://r-xla.github.io/anvl/dev/reference/prim_argmax.md)
+  : Primitive Argmax
+- [`prim_argmin()`](https://r-xla.github.io/anvl/dev/reference/prim_argmin.md)
+  : Primitive Argmin
 - [`prim_atan2()`](https://r-xla.github.io/anvl/dev/reference/prim_atan2.md)
   : Primitive Atan2
 - [`prim_bitcast_convert()`](https://r-xla.github.io/anvl/dev/reference/prim_bitcast_convert.md)
@@ -594,6 +631,8 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Power
 - [`prim_print()`](https://r-xla.github.io/anvl/dev/reference/prim_print.md)
   : Primitive Print
+- [`prim_reduce()`](https://r-xla.github.io/anvl/dev/reference/prim_reduce.md)
+  : Primitive Generic Reduce
 - [`prim_reduce_all()`](https://r-xla.github.io/anvl/dev/reference/prim_reduce_all.md)
   : Primitive All Reduction
 - [`prim_reduce_any()`](https://r-xla.github.io/anvl/dev/reference/prim_reduce_any.md)
@@ -630,6 +669,8 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Sign
 - [`prim_sine()`](https://r-xla.github.io/anvl/dev/reference/prim_sine.md)
   : Primitive Sine
+- [`prim_sort()`](https://r-xla.github.io/anvl/dev/reference/prim_sort.md)
+  : Primitive Sort
 - [`prim_sqrt()`](https://r-xla.github.io/anvl/dev/reference/prim_sqrt.md)
   : Primitive Square Root
 - [`prim_static_slice()`](https://r-xla.github.io/anvl/dev/reference/prim_static_slice.md)
@@ -640,6 +681,8 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Tangent
 - [`prim_tanh()`](https://r-xla.github.io/anvl/dev/reference/prim_tanh.md)
   : Primitive Hyperbolic Tangent
+- [`prim_top_k()`](https://r-xla.github.io/anvl/dev/reference/prim_top_k.md)
+  : Primitive Top-K
 - [`prim_transpose()`](https://r-xla.github.io/anvl/dev/reference/prim_transpose.md)
   : Primitive Transpose
 - [`prim_triangular_solve()`](https://r-xla.github.io/anvl/dev/reference/prim_triangular_solve.md)

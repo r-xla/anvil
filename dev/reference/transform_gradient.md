@@ -56,7 +56,7 @@ directly.
 ## Examples
 
 ``` r
-graph <- trace_fn(prim_mul, list(nv_aval("f32", c()), nv_aval("f32", c())), mode = "toplevel")
+graph <- trace_fn(prim_mul, list(nv_aval("f32", c()), nv_aval("f32", c())))
 graph
 #> <AnvlGraph>
 #>   Inputs:

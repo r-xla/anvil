@@ -71,7 +71,7 @@ aten
 
 ``` r
 
-graph <- trace_fn(f, list(x = aten, y = aten, op = "mul"), mode = "toplevel")
+graph <- trace_fn(f, list(x = aten, y = aten, op = "mul"))
 graph
 ```
 
@@ -485,7 +485,7 @@ Constants are handled specially in {anvl}. Consider the program below:
 y <- nv_array(rnorm(1000000L))
 graph <- trace_fn(function(x) {
   x + y + 1
-}, list(x = nv_scalar(1L)), mode = "toplevel")
+}, list(x = nv_scalar(1L)))
 graph
 ```
 
@@ -562,7 +562,7 @@ the gradient of the function w.r.t. `x` does not depend on the captured
 f <- function(x) {
 x + y
 }
-transform_gradient(trace_fn(f, list(x = nv_scalar(1)), mode = "toplevel"))
+transform_gradient(trace_fn(f, list(x = nv_scalar(1))))
 ```
 
 In principle, the compiler is able to do this itself, but because we

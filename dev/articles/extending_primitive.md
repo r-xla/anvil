@@ -299,6 +299,9 @@ The wrapped backward receives:
 It returns a list with one gradient per input (or `NULL` if not
 required).
 
+Note that the reverse rule will only be called if at least one input
+gradient is required, so this can be assumed.
+
 #### Optional: alternative-forward rule
 
 For most primitives the backward-only form above is enough. If the
@@ -379,7 +382,7 @@ prim_repeat_along
 #>     }
 #>     do.call(jit_fns[[be]], args)
 #> }
-#> <environment: 0x563b546099e0>
+#> <environment: 0x55eceff433d8>
 #> attr(,"class")
 #> [1] "JitPrimitive" "JitFunction" 
 #> attr(,"backend")

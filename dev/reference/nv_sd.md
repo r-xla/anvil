@@ -17,8 +17,9 @@ nv_sd(operand, dims, drop = TRUE, correction = 1L)
 
 - dims:
 
-  ([`integer()`](https://rdrr.io/r/base/integer.html))  
-  Dimensions to reduce.
+  ([`integer()`](https://rdrr.io/r/base/integer.html) \| `NULL`)  
+  Dimensions to reduce. If `NULL` (default), reduces over all
+  dimensions, returning a scalar.
 
 - drop:
 
@@ -46,7 +47,7 @@ population standard deviation.
 ## See also
 
 [`nv_var()`](https://r-xla.github.io/anvl/dev/reference/nv_var.md),
-[`nv_reduce_mean()`](https://r-xla.github.io/anvl/dev/reference/nv_reduce_mean.md)
+[`nv_mean()`](https://r-xla.github.io/anvl/dev/reference/nv_mean.md)
 
 ## Examples
 

@@ -1,6 +1,6 @@
 # Primitives Reference
 
-The table below shows all 72 primitives and which rules they implement.
+The table below shows all 77 primitives and which rules they implement.
 Note that a rule might be missing because it was just not added yet, or
 because it does not apply for a specific primitive.
 
@@ -9,6 +9,8 @@ because it does not apply for a specific primitive.
 | abs                    |     ✓     |   ✓    |    ✓    |
 | add                    |     ✓     |   ✓    |    ✓    |
 | and                    |     ✓     |   ✓    |    ✓    |
+| argmax                 |     ✓     |   ✗    |    ✓    |
+| argmin                 |     ✓     |   ✗    |    ✓    |
 | atan2                  |     ✓     |   ✗    |    ✓    |
 | bitcast_convert        |     ✓     |   ✗    |    ✓    |
 | broadcast_in_dim       |     ✓     |   ✓    |    ✓    |
@@ -50,6 +52,7 @@ because it does not apply for a specific primitive.
 | popcnt                 |     ✓     |   ✗    |    ✓    |
 | power                  |     ✓     |   ✓    |    ✓    |
 | print                  |     ✓     |   ✗    |    ✗    |
+| reduce                 |     ✓     |   ✗    |    ✗    |
 | reduce_all             |     ✓     |   ✓    |    ✓    |
 | reduce_any             |     ✓     |   ✓    |    ✓    |
 | reduce_max             |     ✓     |   ✓    |    ✓    |
@@ -69,11 +72,13 @@ because it does not apply for a specific primitive.
 | shift_right_logical    |     ✓     |   ✗    |    ✓    |
 | sign                   |     ✓     |   ✗    |    ✓    |
 | sine                   |     ✓     |   ✓    |    ✓    |
+| sort                   |     ✓     |   ✗    |    ✓    |
 | sqrt                   |     ✓     |   ✓    |    ✓    |
 | static_slice           |     ✓     |   ✓    |    ✓    |
 | sub                    |     ✓     |   ✓    |    ✓    |
 | tan                    |     ✓     |   ✓    |    ✓    |
 | tanh                   |     ✓     |   ✓    |    ✓    |
+| top_k                  |     ✓     |   ✗    |    ✓    |
 | transpose              |     ✓     |   ✓    |    ✓    |
 | triangular_solve       |     ✓     |   ✗    |    ✓    |
 | while                  |     ✓     |   ✓    |    ✗    |

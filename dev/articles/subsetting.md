@@ -87,7 +87,7 @@ x
 
       ## AnvlArray
       ##  2
-      ## [ CPUi32{} ]
+      ## [ CPUi32{1} ]
 
 - Dynamic & Drop:
 
@@ -252,9 +252,8 @@ x[arr(1), 2:3]
 ```
 
     ## AnvlArray
-    ##  2
-    ##  3
-    ## [ CPUi32{2} ]
+    ##  2 3
+    ## [ CPUi32{1,2} ]
 
 ``` r
 

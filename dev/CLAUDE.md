@@ -55,6 +55,25 @@ Interpretation rules are accessed via `prim_<name>[["<rule_type>"]]`:
 - **`quickr`** – R-native lowering rules in `R/rules-quickr.R` for the
   quickr backend.
 
+## Broadcasting
+
+Anvl’s elementwise binary operators (`+`, `-`, `*`, `/`, `nv_add`,
+`nv_mul`, …) only **auto-broadcast scalars** — i.e. operands with
+`shape = integer()`. They do **not** do general numpy-style
+broadcasting; mixing two non-scalar arrays of different (but
+broadcastable) shapes raises
+[`nv_broadcast_scalars()`](https://r-xla.github.io/anvl/dev/reference/nv_broadcast_scalars.md)
+errors like *“All non-scalar arrays must have the same shape, … Use
+[`nv_broadcast_arrays()`](https://r-xla.github.io/anvl/dev/reference/nv_broadcast_arrays.md)
+for general broadcasting.”*
+
+When two non-scalar arrays need to be combined and only differ by size-1
+dimensions (e.g. `[2, 3] * [1, 3]`), explicitly broadcast first via
+`nv_broadcast_arrays(a, b)` (or `nv_broadcast_to(operand, target_shape)`
+/
+[`prim_broadcast_in_dim()`](https://r-xla.github.io/anvl/dev/reference/prim_broadcast_in_dim.md)
+for a one-sided broadcast).
+
 ## Graph Tracing
 
 When a function is JIT-compiled, anvl traces it by executing with
@@ -67,11 +86,14 @@ constant), `AbstractArray` (shape + dtype metadata), `AnvlGraph`.
 
 ## NSE and Tracing
 
-When combining non-standard evaluation (NSE) with sub-graph tracing,
-[`force()`](https://rdrr.io/r/base/force.html) all arrayish inputs so
-they are not accidentally captured as unevaluated promises in the
-sub-graph descriptor. R’s lazy evaluation of function arguments causes
-hard-to-debug errors otherwise.
+[`force()`](https://rdrr.io/r/base/force.html) is only needed in
+higher-order primitives that trace R functions internally
+(e.g. `prim_sort` traces a comparator, `prim_scatter` traces an update
+computation). In those cases, force all arrayish inputs first so they
+aren’t accidentally captured as unevaluated promises in the sub-graph
+descriptor — R’s lazy evaluation otherwise causes hard-to-debug errors.
+Plain primitives that don’t open a sub-descriptor don’t need
+[`force()`](https://rdrr.io/r/base/force.html).
 
 ## Testing
 
