@@ -156,6 +156,79 @@ prim_reduce_all[["stablehlo"]] <- function(operand, dims, drop) {
   .stablehlo_apply_reduce(stablehlo::hlo_and, operand, init, dims, drop)
 }
 
+prim_reduce[["stablehlo"]] <- function(operand, init, dims, drop, reductor_graph, .env) {
+  red_func <- stablehlo(reductor_graph)[[1L]]
+  out <- stablehlo::hlo_reduce(
+    inputs = list(operand),
+    init_values = list(init),
+    dimensions = dims - 1L,
+    body = red_func
+  )
+  if (drop) {
+    return(list(out))
+  }
+  shape_out <- shape(operand$value_type)
+  shape_out[dims] <- 1L
+  list(stablehlo::hlo_reshape(out, shape_out))
+}
+
+.r_reductor_to_hlo_func <- function(fn, dummy_args) {
+  graph <- trace_fn(fn, dummy_args, desc = local_descriptor())
+  stablehlo(graph, constants_as_inputs = FALSE)[[1L]]
+}
+
+.stablehlo_arg_extreme <- function(operand, dim, drop, direction, init_v_fn) {
+  shp <- shape(operand$value_type)
+  v_dtype <- operand$value_type$type$dtype
+  iota <- stablehlo::hlo_iota(iota_dimension = dim - 1L, dtype = "i32", shape = shp)
+  init_v <- hlo_scalar(init_v_fn(v_dtype, "cpu"))
+  init_i <- hlo_scalar(0L, dtype = "i32", func = operand$func)
+
+  # Reductor: pick lhs unless rhs is strictly better.
+  # For ties, we pick li (which we know is < ri, although reductor is applied in random order and
+  # thus assumed to be associative, it does not have to be commutative)
+  cmp <- if (direction == "GT") prim_gt else prim_lt
+  reductor <- function(lv, li, rv, ri) {
+    rhs_better <- cmp(rv, lv)
+    list(nv_ifelse(rhs_better, rv, lv), nv_ifelse(rhs_better, ri, li))
+  }
+  body <- .r_reductor_to_hlo_func(
+    reductor,
+    list(
+      lv = nv_aval(v_dtype, integer()),
+      li = nv_aval("i32", integer()),
+      rv = nv_aval(v_dtype, integer()),
+      ri = nv_aval("i32", integer())
+    )
+  )
+
+  out <- stablehlo::hlo_reduce(
+    inputs = list(operand, iota),
+    init_values = list(init_v, init_i),
+    dimensions = dim - 1L,
+    body = body
+  )
+  # convert to 1-based
+  result <- out[[2L]]
+  one <- stablehlo::hlo_scalar(1L, dtype = "i32", func = result$func)
+  one_bc <- stablehlo::hlo_broadcast_in_dim(one, integer(0), shape(result$value_type))
+  result <- stablehlo::hlo_add(result, one_bc)
+  if (drop) {
+    return(list(result))
+  }
+  shape_out <- shp
+  shape_out[dim] <- 1L
+  list(stablehlo::hlo_reshape(result, shape_out))
+}
+
+prim_argmax[["stablehlo"]] <- function(operand, dim, drop) {
+  .stablehlo_arg_extreme(operand, dim, drop, direction = "GT", init_v_fn = nv_minval)
+}
+
+prim_argmin[["stablehlo"]] <- function(operand, dim, drop) {
+  .stablehlo_arg_extreme(operand, dim, drop, direction = "LT", init_v_fn = nv_maxval)
+}
+
 # comparison jit rules ----------------------------------------------------------
 
 .compare_type_for <- function(vt) {
@@ -389,6 +462,47 @@ prim_while[["stablehlo"]] <- function(..., cond_graph, body_graph, .env) {
   body_func <- stablehlo(body_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
   cond_func <- stablehlo(cond_graph, constants_as_inputs = FALSE, env = .env)[[1L]]
   stablehlo::hlo_while(..., cond = cond_func, body = body_func, simplify = FALSE)
+}
+
+prim_sort[["stablehlo"]] <- function(..., dim, descending, is_stable) {
+  ops <- list(...)
+  cmp <- if (descending) `>` else `<`
+  # Comparator takes 2*N scalars (one pair per operand) but only ranks by
+  # the first key pair; the remaining operands ride along.
+  comparator <- function(...) {
+    args <- list(...)
+    cmp(args[[1L]], args[[2L]])
+  }
+  dummy_args <- unlist(
+    lapply(ops, function(op) {
+      dt <- op$value_type$type$dtype
+      list(
+        nv_aval(dtype = dt, shape = integer()),
+        nv_aval(dtype = dt, shape = integer())
+      )
+    }),
+    recursive = FALSE
+  )
+  cmp_func <- .r_reductor_to_hlo_func(comparator, dummy_args)
+  stablehlo::hlo_sort(
+    ...,
+    dimension = dim - 1L,
+    is_stable = is_stable,
+    comparator = cmp_func
+  )
+}
+
+prim_top_k[["stablehlo"]] <- function(operand, k) {
+  out <- stablehlo::hlo_top_k(operand, k = k)
+  values <- out[[1L]]
+  indices <- out[[2L]]
+
+  # to 1-based
+  one <- stablehlo::hlo_scalar(1L, dtype = "i32", func = indices$func)
+  one_bc <- stablehlo::hlo_broadcast_in_dim(one, integer(0), shape(indices$value_type))
+  indices <- stablehlo::hlo_add(indices, one_bc)
+
+  list(values, indices)
 }
 
 prim_scatter[["stablehlo"]] <- function(

@@ -33,7 +33,7 @@ This is the building block used by \code{\link[=gradient]{gradient()}} and \code
 those higher-level wrappers unless you need to operate on graphs directly.
 }
 \examples{
-graph <- trace_fn(prim_mul, list(nv_aval("f32", c()), nv_aval("f32", c())), mode = "toplevel")
+graph <- trace_fn(prim_mul, list(nv_aval("f32", c()), nv_aval("f32", c())))
 graph
 transform_gradient(graph, "lhs")
 }

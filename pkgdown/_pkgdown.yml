@@ -134,6 +134,7 @@ reference:
       - nv_rbind
       - nv_cbind
       - nv_static_slice
+      - nv_select
       - nv_pad
       - nv_reverse
       - nv_squeeze
@@ -193,12 +194,18 @@ reference:
     desc: Operations that reduce array dimensions
     contents:
       - nv_reduce_sum
-      - nv_reduce_mean
       - nv_reduce_prod
       - nv_reduce_max
       - nv_reduce_min
       - nv_reduce_any
       - nv_reduce_all
+
+  - subtitle: Statistical Summaries
+    desc: Summary statistics over array dimensions
+    contents:
+      - nv_mean
+      - nv_median
+      - nv_quantile
       - nv_var
       - nv_sd
 
@@ -234,6 +241,15 @@ reference:
       - nv_min
       - nv_max
       - nv_clamp
+
+  - subtitle: Sorting and Searching
+    desc: Sorting arrays and finding extrema
+    contents:
+      - nv_sort
+      - nv_argsort
+      - nv_top_k
+      - nv_argmax
+      - nv_argmin
 
   - subtitle: Control Flow
     desc: Control flow operations

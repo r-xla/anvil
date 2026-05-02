@@ -820,6 +820,17 @@ describe("gather/scatter reverse via subset operators", {
   })
 })
 
+# argmax / argmin reverse rule short-circuits the gradient to zero.
+test_that("prim_argmax / prim_argmin have zero gradient", {
+  x <- nv_array(c(3, 1, 4), dtype = "f32")
+  for (prim in list(prim_argmax, prim_argmin)) {
+    verify_zero_grad_unary(prim, x, f_wrapper = function(x) {
+      out <- prim(x, dim = 1L)
+      prim_convert(out, "f32", ambiguous = FALSE)
+    })
+  }
+})
+
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvl"))
 }

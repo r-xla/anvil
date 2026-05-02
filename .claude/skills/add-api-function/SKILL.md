@@ -157,7 +157,7 @@ The `nv_*` function must be added to the appropriate semantic section in `_pkgdo
 
 ## Write Tests (in `tests/testthat/test-api.R`)
 
-Add a **forward-pass-only** test for the `nv_*` wrapper. Focus on what makes the wrapper different from the primitive — the convenience behavior it adds. No need to test gradients (those are covered by the primitive tests).
+Add a **forward-pass-only** test for the `nv_*` wrapper. **Only test functionality not already covered by the primitive tests** — the convenience the wrapper adds on top of the primitive (e.g. type promotion, scalar broadcasting, default-arg behavior, R-operator dispatch). Do not re-test core correctness of the operation, edge cases like empty axes, dtype handling, or gradients — those belong with the primitive. If the wrapper is a thin alias (`nv_foo <- prim_foo`), a single sanity test is enough; often a default-argument check is the only thing worth asserting.
 
 Every API function also needs a `check_eager()` entry in the "cross-device eager (check_eager)" `describe` block at the bottom of `test-api.R`. `check_eager()` (defined in `tests/testthat/helper.R`) runs the function both in eager mode on `cpu:1` and jit-compiled on `cpu:0`, and asserts:
 
