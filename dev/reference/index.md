@@ -29,8 +29,9 @@ Functions for creating and initializing arrays
 - [`nv_eye()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
   [`nv_eye_like()`](https://r-xla.github.io/anvl/dev/reference/nv_eye.md)
   : Identity Matrix
-- [`arr()`](https://r-xla.github.io/anvl/dev/reference/arr.md) : Create
-  an R array
+- [`as_anvl_array()`](https://r-xla.github.io/anvl/dev/reference/as_anvl_array.md)
+  [`as_anvl_arrays()`](https://r-xla.github.io/anvl/dev/reference/as_anvl_array.md)
+  : Convert to AnvlArray
 
 ### Attributes
 
@@ -94,9 +95,6 @@ Functions for type conversion, promotion, and broadcasting
   : Convert Data Type
 - [`nv_bitcast_convert()`](https://r-xla.github.io/anvl/dev/reference/nv_bitcast_convert.md)
   : Bitcast Conversion
-- [`as_anvl_array()`](https://r-xla.github.io/anvl/dev/reference/as_anvl_array.md)
-  [`as_anvl_arrays()`](https://r-xla.github.io/anvl/dev/reference/as_anvl_array.md)
-  : Convert to AnvlArray
 - [`nv_promote_to_common()`](https://r-xla.github.io/anvl/dev/reference/nv_promote_to_common.md)
   : Promote Arrays to a Common Dtype
 - [`nv_broadcast_scalars()`](https://r-xla.github.io/anvl/dev/reference/nv_broadcast_scalars.md)
@@ -422,6 +420,16 @@ Backend-related functionality and implementations
 - [`AnvlBackendQuickr()`](https://r-xla.github.io/anvl/dev/reference/AnvlBackendQuickr.md)
   : Quickr backend
 
+## Miscellaneous
+
+General-purpose helpers
+
+- [`arr()`](https://r-xla.github.io/anvl/dev/reference/arr.md) : Create
+  an R array
+- [`eq_type()`](https://r-xla.github.io/anvl/dev/reference/eq_type.md)
+  [`neq_type()`](https://r-xla.github.io/anvl/dev/reference/eq_type.md)
+  : Compare AbstractArray Types
+
 ## Internals
 
 Internal data structures and functions
@@ -500,21 +508,7 @@ Internal data structures and functions
 - [`stablehlo()`](https://r-xla.github.io/anvl/dev/reference/stablehlo.md)
   : Lower a graph to StableHLO
 
-### Miscellaneous
-
-- [`eq_type()`](https://r-xla.github.io/anvl/dev/reference/eq_type.md)
-  [`neq_type()`](https://r-xla.github.io/anvl/dev/reference/eq_type.md)
-  : Compare AbstractArray Types
-- [`at2vt()`](https://r-xla.github.io/anvl/dev/reference/at2vt.md) :
-  Convert AbstractArray to ValueType
-- [`vt2at()`](https://r-xla.github.io/anvl/dev/reference/vt2at.md) :
-  Convert ValueType to AbstractArray
-- [`is_arrayish()`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)
-  : Array-like Objects
-- [`Shape()`](https://r-xla.github.io/anvl/dev/reference/Shape-constructor.md)
-  : Create a Shape object
-
-## Tree utilities
+### Tree
 
 Utilities for working with nested structures
 
@@ -532,6 +526,17 @@ Utilities for working with nested structures
   : Tree Path
 - [`filter_list_node()`](https://r-xla.github.io/anvl/dev/reference/filter_list_node.md)
   : Filter List Node
+
+### Miscellaneous
+
+- [`at2vt()`](https://r-xla.github.io/anvl/dev/reference/at2vt.md) :
+  Convert AbstractArray to ValueType
+- [`vt2at()`](https://r-xla.github.io/anvl/dev/reference/vt2at.md) :
+  Convert ValueType to AbstractArray
+- [`is_arrayish()`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)
+  : Array-like Objects
+- [`Shape()`](https://r-xla.github.io/anvl/dev/reference/Shape-constructor.md)
+  : Create a Shape object
 
 ## Primitives
 
