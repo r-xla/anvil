@@ -75,6 +75,10 @@ describe("nv_subset and nv_subset_assign", {
     check(c(10L), array(c(1L, 4L, 7L)))
   })
 
+  it("1D: array(i) keeps the dimension", {
+    check(c(10L), array(3L))
+  })
+
   it("2D: single element in both dims", {
     check(c(4L, 5L), 2L, 3L)
   })

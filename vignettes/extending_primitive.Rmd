@@ -218,6 +218,8 @@ The wrapped backward receives:
 
 It returns a list with one gradient per input (or `NULL` if not required).
 
+Note that the reverse rule will only be called if at least one input gradient is required, so this can be assumed.
+
 #### Optional: alternative-forward rule
 
 For most primitives the backward-only form above is enough.

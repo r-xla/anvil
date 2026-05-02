@@ -598,8 +598,7 @@ match_args_to_formals <- function(f, args) {
 #' @export
 #' @examplesIf pjrt::plugins_downloaded()
 #' graph <- trace_fn(function(x, y) x + y,
-#'   args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32")),
-#'   mode = "toplevel")
+#'   args = list(x = nv_array(1, dtype = "f32"), y = nv_array(2, dtype = "f32")))
 #' graph
 trace_fn <- function(
   f,

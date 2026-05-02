@@ -5,6 +5,7 @@
 \alias{as.double.AnvlArray}
 \alias{as.integer.AnvlArray}
 \alias{as.logical.AnvlArray}
+\alias{as.vector.AnvlArray}
 \title{Coerce AnvlArray to an R Vector}
 \usage{
 \method{as.double}{AnvlArray}(x, ...)
@@ -12,12 +13,18 @@
 \method{as.integer}{AnvlArray}(x, ...)
 
 \method{as.logical}{AnvlArray}(x, ...)
+
+\method{as.vector}{AnvlArray}(x, mode = "any")
 }
 \arguments{
 \item{x}{(\code{\link{AnvlArray}})\cr
 Array to coerce.}
 
 \item{...}{Unused.}
+
+\item{mode}{(\code{character(1)})\cr
+For \code{as.vector()} only. See \code{\link[base:vector]{base::as.vector()}}. Defaults to \code{"any"},
+meaning the natural R type for the array's dtype.}
 }
 \value{
 An R vector of the corresponding type (\code{double}, \code{integer}, or \code{logical}).
@@ -30,6 +37,8 @@ Each method requires a compatible dtype:
 \item \code{as.double()} / \code{as.numeric()}: float or (signed/unsigned) integer dtypes.
 \item \code{as.integer()}: signed or unsigned integer dtypes.
 \item \code{as.logical()}: \code{bool}.
+\item \code{as.vector()}: any dtype; the R type is chosen by the dtype, or
+forced via \code{mode} (e.g. \code{"integer"}, \code{"double"}, \code{"logical"}, \code{"list"}).
 }
 
 Use \code{\link[=as_array]{as_array()}} to obtain an R array that preserves the shape, or
@@ -41,5 +50,6 @@ x <- nv_array(c(1.5, 2.5, 3.5, 4.5), shape = c(2L, 2L))
 as.numeric(x)
 as.integer(nv_array(1:6, shape = c(2L, 3L)))
 as.logical(nv_array(c(TRUE, FALSE), dtype = "bool"))
+as.vector(x)
 \dontshow{\}) # examplesIf}
 }
