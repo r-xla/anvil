@@ -522,11 +522,86 @@ p_qr[["stablehlo"]] <- function(operand) {
 
   stablehlo::hlo_custom_call(
     operand,
-    call_target_name = "anvil_qr",
+    call_target_name = "qr",
     api_version = 4L,
     has_side_effect = FALSE,
     output_types = list(q_type, r_type),
     operand_layouts = list(col_major_layout(2L)),
     result_layouts = list(col_major_layout(2L), col_major_layout(2L))
+  )
+}
+
+p_lu[["stablehlo"]] <- function(operand) {
+  vt <- operand$value_type
+  tt <- vt$type
+  dt <- tt$dtype
+  dims <- as.integer(tt$shape$dims)
+  m <- dims[1L]
+  n <- dims[2L]
+  k <- min(m, n)
+
+  lu_type <- stablehlo::ValueType(stablehlo::TensorType(dt, Shape(c(m, n))))
+  piv_type <- stablehlo::ValueType(stablehlo::TensorType(as_dtype("i32"), Shape(k)))
+
+  stablehlo::hlo_custom_call(
+    operand,
+    call_target_name = "lu",
+    api_version = 4L,
+    has_side_effect = FALSE,
+    output_types = list(lu_type, piv_type),
+    operand_layouts = list(col_major_layout(2L)),
+    # pivots is 1-D; the layout vector is c(0L) -- a single dim is trivially
+    # both row- and column-major but we still pass it explicitly because
+    # the custom_call op requires layouts on every result whenever any are set.
+    result_layouts = list(col_major_layout(2L), col_major_layout(1L))
+  )
+}
+
+p_svd[["stablehlo"]] <- function(operand) {
+  vt <- operand$value_type
+  tt <- vt$type
+  dt <- tt$dtype
+  dims <- as.integer(tt$shape$dims)
+  m <- dims[1L]
+  n <- dims[2L]
+  k <- min(m, n)
+
+  u_type <- stablehlo::ValueType(stablehlo::TensorType(dt, Shape(c(m, k))))
+  s_type <- stablehlo::ValueType(stablehlo::TensorType(dt, Shape(k)))
+  vt_type <- stablehlo::ValueType(stablehlo::TensorType(dt, Shape(c(k, n))))
+
+  stablehlo::hlo_custom_call(
+    operand,
+    call_target_name = "svd",
+    api_version = 4L,
+    has_side_effect = FALSE,
+    output_types = list(u_type, s_type, vt_type),
+    operand_layouts = list(col_major_layout(2L)),
+    result_layouts = list(
+      col_major_layout(2L),
+      col_major_layout(1L),
+      col_major_layout(2L)
+    )
+  )
+}
+
+p_eigh[["stablehlo"]] <- function(operand) {
+  vt <- operand$value_type
+  tt <- vt$type
+  dt <- tt$dtype
+  dims <- as.integer(tt$shape$dims)
+  n <- dims[1L]
+
+  v_type <- stablehlo::ValueType(stablehlo::TensorType(dt, Shape(c(n, n))))
+  w_type <- stablehlo::ValueType(stablehlo::TensorType(dt, Shape(n)))
+
+  stablehlo::hlo_custom_call(
+    operand,
+    call_target_name = "eigh",
+    api_version = 4L,
+    has_side_effect = FALSE,
+    output_types = list(v_type, w_type),
+    operand_layouts = list(col_major_layout(2L)),
+    result_layouts = list(col_major_layout(2L), col_major_layout(1L))
   )
 }

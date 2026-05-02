@@ -20,16 +20,12 @@ Imports:
     cli,
     methods,
     pjrt,
-    Rcpp,
     rlang,
     safetensors (>= 0.2.0),
     stablehlo,
     tengen,
     withr,
     xlamisc
-LinkingTo:
-    pjrt,
-    Rcpp
 Suggests:
     knitr,
     quarto,
@@ -40,7 +36,7 @@ Remotes:
     r-xla/stablehlo,
     r-xla/tengen,
     r-xla/xlamisc,
-    r-xla/pjrt,
+    r-xla/pjrt@feat-builtin-linalg,
     t-kalinowski/quickr
 Additional_repositories:
     https://r-xla.r-universe.dev
@@ -51,7 +47,6 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Collate:
-    'RcppExports.R'
     'aaa.R'
     'primitive.R'
     'type-converters.R'

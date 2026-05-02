@@ -497,3 +497,278 @@ describe("nv_tcrossprod", {
     )
   })
 })
+
+describe("nv_solve", {
+  # nv_solve switched from Cholesky (SPD-only) to LU (general non-singular).
+  # The LU path goes via nvl_lu + an in-graph permutation loop +
+  # two triangular solves, so these tests exercise that whole pipeline.
+
+  it("solves an SPD system (regression: old Cholesky path)", {
+    A <- matrix(c(4, 2, 2, 3), nrow = 2)
+    b <- c(1, 2)
+    expected <- nv_array(as.numeric(solve(A, b)), dtype = "f64")
+    expect_jit_equal(
+      nv_solve(nv_array(A, dtype = "f64"), nv_array(b, dtype = "f64")),
+      expected,
+      tolerance = 1e-12
+    )
+  })
+
+  it("solves a general (non-symmetric) system", {
+    set.seed(1)
+    A <- matrix(rnorm(9), nrow = 3)
+    b <- c(1, 2, 3)
+    expected <- nv_array(as.numeric(solve(A, b)), dtype = "f64")
+    expect_jit_equal(
+      nv_solve(nv_array(A, dtype = "f64"), nv_array(b, dtype = "f64")),
+      expected,
+      tolerance = 1e-12
+    )
+  })
+
+  it("solves a system that requires row pivoting", {
+    # Zero in [1,1] forces getrf to swap rows on the first elimination step.
+    A <- matrix(c(0, 1, 1, 1), nrow = 2)
+    b <- c(1, 2)
+    expected <- nv_array(as.numeric(solve(A, b)), dtype = "f64")
+    expect_jit_equal(
+      nv_solve(nv_array(A, dtype = "f64"), nv_array(b, dtype = "f64")),
+      expected,
+      tolerance = 1e-12
+    )
+  })
+
+  it("solves with multiple right-hand sides", {
+    set.seed(2)
+    A <- matrix(rnorm(9), nrow = 3)
+    B <- matrix(rnorm(6), nrow = 3)
+    expected <- nv_array(solve(A, B), dtype = "f64")
+    expect_jit_equal(
+      nv_solve(nv_array(A, dtype = "f64"), nv_array(B, dtype = "f64")),
+      expected,
+      tolerance = 1e-12
+    )
+  })
+
+  it("solves a larger system", {
+    set.seed(3)
+    n <- 10L
+    A <- matrix(rnorm(n * n), nrow = n) + diag(n) * 0.1
+    b <- rnorm(n)
+    expected <- nv_array(as.numeric(solve(A, b)), dtype = "f64")
+    expect_jit_equal(
+      nv_solve(nv_array(A, dtype = "f64"), nv_array(b, dtype = "f64")),
+      expected,
+      tolerance = 1e-10
+    )
+  })
+
+  it("works in f32", {
+    set.seed(4)
+    A <- matrix(rnorm(9), nrow = 3)
+    b <- rnorm(3)
+    expected <- nv_array(as.numeric(solve(A, b)), dtype = "f32")
+    expect_jit_equal(
+      nv_solve(nv_array(A, dtype = "f32"), nv_array(b, dtype = "f32")),
+      expected,
+      tolerance = 1e-4
+    )
+  })
+
+  it("rejects non-square a", {
+    A <- nv_array(matrix(rnorm(6), nrow = 2), dtype = "f64")
+    b <- nv_array(c(1, 2), dtype = "f64")
+    expect_error(nv_solve(A, b), "square")
+  })
+
+  it("rejects b with mismatched first dimension", {
+    A <- nv_array(matrix(rnorm(9), nrow = 3), dtype = "f64")
+    b <- nv_array(c(1, 2), dtype = "f64")
+    expect_error(nv_solve(A, b), "length 3|3 rows")
+  })
+})
+
+describe("nv_det / nv_logdet / nv_inv", {
+  # All three are pure-R compositions on top of the new nvl_lu primitive.
+  # We compare against base R's det() / determinant() / solve() respectively.
+  # The det/logdet outputs are 0-D scalars, so unwrap with as.numeric()
+  # before comparing.
+
+  scalar_jit <- function(.expr) {
+    expr <- substitute(.expr)
+    eval_env <- new.env(parent = parent.frame())
+    as.numeric(as_array(jit(\() eval(expr, envir = eval_env))()))
+  }
+
+  it("nv_det matches base::det on random matrices", {
+    set.seed(1)
+    for (n in c(2L, 3L, 5L)) {
+      A <- matrix(rnorm(n * n), nrow = n) + diag(n) * 0.5
+      expect_equal(
+        scalar_jit(nv_det(nv_array(A, dtype = "f64"))),
+        det(A),
+        tolerance = 1e-12,
+        info = paste0("n = ", n)
+      )
+    }
+  })
+
+  it("nv_det handles a forced row pivot (negative determinant)", {
+    # getrf swaps rows here; the implementation must multiply by sign(P).
+    A <- matrix(c(0, 1, 1, 1), nrow = 2)
+    expect_equal(
+      scalar_jit(nv_det(nv_array(A, dtype = "f64"))),
+      det(A),
+      tolerance = 1e-12
+    )
+  })
+
+  it("nv_det matches base::det in f32", {
+    set.seed(2)
+    A <- matrix(rnorm(16), 4) + diag(4) * 0.5
+    expect_equal(
+      scalar_jit(nv_det(nv_array(A, dtype = "f32"))),
+      det(A),
+      tolerance = 1e-4
+    )
+  })
+
+  it("nv_logdet matches base::determinant", {
+    set.seed(3)
+    for (n in c(2L, 3L, 5L)) {
+      # Add diagonal to avoid near-zero determinants where log is unstable.
+      A <- matrix(rnorm(n * n), nrow = n) + diag(n) * 1.5
+      expected <- as.numeric(determinant(A, logarithm = TRUE)$modulus)
+      expect_equal(
+        scalar_jit(nv_logdet(nv_array(A, dtype = "f64"))),
+        expected,
+        tolerance = 1e-12,
+        info = paste0("n = ", n)
+      )
+    }
+  })
+
+  it("nv_inv matches base::solve", {
+    set.seed(4)
+    for (n in c(2L, 3L, 5L)) {
+      A <- matrix(rnorm(n * n), nrow = n) + diag(n) * 0.5
+      expected <- nv_array(solve(A), dtype = "f64")
+      expect_jit_equal(
+        nv_inv(nv_array(A, dtype = "f64")),
+        expected,
+        tolerance = 1e-10,
+        info = paste0("n = ", n)
+      )
+    }
+  })
+
+  it("rejects non-square inputs", {
+    A <- nv_array(matrix(rnorm(6), nrow = 2), dtype = "f64")
+    expect_error(nv_det(A), "square")
+    expect_error(nv_logdet(A), "square")
+    expect_error(nv_inv(A), "square")
+  })
+})
+
+describe("S3 linalg generics on AnvilArray", {
+  # These cover the dispatch wiring from base R's S3 generics
+  # (solve, qr, chol, determinant) to our nv_* implementations.
+
+  set.seed(1)
+  A_r <- matrix(rnorm(9), 3) + diag(3) * 0.5
+  b_r <- c(1, 2, 3)
+  spd_r <- crossprod(A_r)
+
+  it("solve(A, b) calls nv_solve", {
+    expect_jit_equal(
+      solve(nv_array(A_r, dtype = "f64"), nv_array(b_r, dtype = "f64")),
+      nv_array(as.numeric(solve(A_r, b_r)), dtype = "f64"),
+      tolerance = 1e-12
+    )
+  })
+
+  it("solve(A) (missing b) returns the inverse", {
+    expect_jit_equal(
+      solve(nv_array(A_r, dtype = "f64")),
+      nv_array(solve(A_r), dtype = "f64"),
+      tolerance = 1e-10
+    )
+  })
+
+  it("qr(A) returns named (Q, R) and reconstructs A", {
+    res <- jit_eval(qr(nv_array(A_r, dtype = "f64")))
+    expect_named(res, c("Q", "R"))
+    expect_equal(as_array(res$Q) %*% as_array(res$R), A_r, tolerance = 1e-12)
+  })
+
+  it("chol(SPD) matches base::chol (upper triangular)", {
+    expect_jit_equal(
+      chol(nv_array(spd_r, dtype = "f64")),
+      nv_array(chol(spd_r), dtype = "f64"),
+      tolerance = 1e-10
+    )
+  })
+
+  it("determinant(A) matches base::determinant", {
+    res <- jit_eval(determinant(nv_array(A_r, dtype = "f64"), logarithm = TRUE))
+    base_d <- determinant(A_r, logarithm = TRUE)
+    expect_equal(as.numeric(as_array(res$modulus)),
+                 as.numeric(base_d$modulus), tolerance = 1e-12)
+    expect_equal(as.numeric(as_array(res$sign)),
+                 as.numeric(base_d$sign))
+  })
+
+  it("determinant(logarithm = FALSE) returns the absolute determinant", {
+    res <- jit_eval(determinant(nv_array(A_r, dtype = "f64"), logarithm = FALSE))
+    expect_equal(as.numeric(as_array(res$modulus)),
+                 abs(det(A_r)), tolerance = 1e-12)
+  })
+
+  it("solve generic composes with %*% and t() in a single trace", {
+    # Smoke check: a sequence of base R linalg generics all go through our
+    # methods when given AnvilArray inputs. Use matrix RHS to keep matmul
+    # in 2D.
+    B_r <- matrix(b_r, ncol = 1L)
+    expect_jit_equal(
+      {
+        a <- nv_array(spd_r, dtype = "f64")
+        solve(a, t(a) %*% nv_array(B_r, dtype = "f64"))
+      },
+      nv_array(solve(spd_r, t(spd_r) %*% B_r), dtype = "f64"),
+      tolerance = 1e-10
+    )
+  })
+
+  it("nv_eigen() on a symmetric matrix matches base::eigen", {
+    set.seed(20)
+    M <- matrix(rnorm(16), 4)
+    A <- (M + t(M)) / 2 + diag(seq_len(4))
+    res <- jit_eval(nv_eigen(nv_array(A, dtype = "f64")))
+    base_e <- base::eigen(A, symmetric = TRUE)
+    expect_equal(as.numeric(as_array(res$values)),
+                 base_e$values, tolerance = 1e-10)
+    # Eigenvectors only match up to a sign per column; compare absolute
+    # values column-wise.
+    expect_equal(abs(as_array(res$vectors)),
+                 abs(base_e$vectors), tolerance = 1e-10)
+  })
+
+  it("nv_eigen() returns descending-ordered eigenvalues (matches base R)", {
+    A <- matrix(c(2, 1, 1, 2), 2)  # eigenvalues 1, 3
+    res <- jit_eval(nv_eigen(nv_array(A, dtype = "f64")))
+    expect_equal(as.numeric(as_array(res$values)), c(3, 1), tolerance = 1e-12)
+  })
+
+  it("nv_eigen(symmetric = FALSE) errors clearly", {
+    A <- nv_array(matrix(c(1, 2, 3, 4), 2), dtype = "f64")
+    expect_error(
+      nv_eigen(A, symmetric = FALSE),
+      "only supports.*symmetric = TRUE"
+    )
+  })
+
+  it("nv_eigen(only.values = TRUE) errors clearly", {
+    A <- nv_array(matrix(c(2, 1, 1, 2), 2), dtype = "f64")
+    expect_error(nv_eigen(A, only.values = TRUE), "only.values")
+  })
+})

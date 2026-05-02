@@ -655,6 +655,151 @@ test_that("p_qr wide matrix (m < n)", {
   expect_equal(t(Q) %*% Q, diag(2), tolerance = 1e-5)
 })
 
+test_that("p_lu f64", {
+  # 2x2, no pivot needed
+  A <- matrix(c(4, 3, 6, 3), nrow = 2)
+  result <- jit_eval({
+    x <- nv_array(A, dtype = "f64")
+    nvl_lu(x)
+  })
+  LU <- as_array(result[[1L]])
+  pivots <- as_array(result[[2L]])
+
+  # Expected from base::solve internals: factor 4 -> first column is 4 above,
+  # multiplier 3/4 = 0.75 below. Second column: 6 above, 3 - 0.75*6 = -1.5 below.
+  expect_equal(LU, matrix(c(4, 0.75, 6, -1.5), nrow = 2), tolerance = 1e-12)
+  expect_equal(as.integer(pivots), c(1L, 2L))
+})
+
+test_that("p_lu pivoting", {
+  # First row has zero in column 1: getrf must swap rows.
+  A <- matrix(c(0, 1, 1, 1), nrow = 2)
+  result <- jit_eval({
+    x <- nv_array(A, dtype = "f64")
+    nvl_lu(x)
+  })
+  pivots <- as_array(result[[2L]])
+  # First step swaps row 1 with row 2.
+  expect_equal(pivots[[1L]], 2L)
+
+  # Reconstruct A by applying row swaps to LU = (L * U) and inverting them.
+  LU <- as_array(result[[1L]])
+  k <- min(dim(A))
+  L <- diag(nrow(A))[, seq_len(k)]
+  L[lower.tri(L, diag = FALSE)] <- LU[lower.tri(LU, diag = FALSE)]
+  U <- LU
+  U[lower.tri(U)] <- 0
+  PA <- L %*% U
+  perm <- seq_len(nrow(A))
+  for (i in seq_along(pivots)) {
+    j <- pivots[[i]]
+    if (j != i) perm[c(i, j)] <- perm[c(j, i)]
+  }
+  expect_equal(PA[order(perm), ], A, tolerance = 1e-12)
+})
+
+test_that("p_lu rectangular", {
+  # tall and wide
+  for (A in list(matrix(c(1, 2, 3, 4, 5, 6), nrow = 3), matrix(c(1, 2, 3, 4, 5, 6), nrow = 2))) {
+    result <- jit_eval({
+      x <- nv_array(A, dtype = "f64")
+      nvl_lu(x)
+    })
+    LU <- as_array(result[[1L]])
+    expect_equal(dim(LU), dim(A))
+    expect_equal(length(as_array(result[[2L]])), min(dim(A)))
+  }
+})
+
+test_that("p_svd square f64", {
+  set.seed(1)
+  A <- matrix(rnorm(9), nrow = 3)
+  result <- jit_eval({
+    x <- nv_array(A, dtype = "f64")
+    nvl_svd(x)
+  })
+  U <- as_array(result[[1L]])
+  S <- as_array(result[[2L]])
+  Vt <- as_array(result[[3L]])
+
+  expect_equal(dim(U), c(3L, 3L))
+  expect_equal(length(S), 3L)
+  expect_equal(dim(Vt), c(3L, 3L))
+
+  # Reconstruction
+  expect_equal(U %*% diag(S) %*% Vt, A, tolerance = 1e-12)
+  # Orthonormal U, V
+  expect_equal(t(U) %*% U, diag(3), tolerance = 1e-12)
+  expect_equal(Vt %*% t(Vt), diag(3), tolerance = 1e-12)
+  # S in non-increasing order, all non-negative
+  expect_true(all(S >= 0))
+  expect_true(all(diff(S) <= 1e-12))
+})
+
+test_that("p_svd tall f32", {
+  A <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 3)
+  result <- jit_eval({
+    x <- nv_array(A, dtype = "f32")
+    nvl_svd(x)
+  })
+  U <- as_array(result[[1L]])
+  S <- as_array(result[[2L]])
+  Vt <- as_array(result[[3L]])
+  expect_equal(dim(U), c(3L, 2L))
+  expect_equal(length(S), 2L)
+  expect_equal(dim(Vt), c(2L, 2L))
+  expect_equal(U %*% diag(S) %*% Vt, A, tolerance = 1e-5)
+})
+
+test_that("p_svd wide f64 (m < n; host only)", {
+  A <- matrix(c(1, 0, 0, 1, 0, 1), nrow = 2)
+  result <- jit_eval({
+    x <- nv_array(A, dtype = "f64")
+    nvl_svd(x)
+  })
+  U <- as_array(result[[1L]])
+  S <- as_array(result[[2L]])
+  Vt <- as_array(result[[3L]])
+  expect_equal(dim(U), c(2L, 2L))
+  expect_equal(length(S), 2L)
+  expect_equal(dim(Vt), c(2L, 3L))
+  expect_equal(U %*% diag(S) %*% Vt, A, tolerance = 1e-12)
+})
+
+test_that("p_eigh f64", {
+  A <- matrix(c(2, 1, 1, 2), nrow = 2)
+  result <- jit_eval({
+    x <- nv_array(A, dtype = "f64")
+    nvl_eigh(x)
+  })
+  V <- as_array(result[[1L]])
+  W <- as_array(result[[2L]])
+
+  # Eigenvalues of [[2,1],[1,2]] are 1, 3 (ascending)
+  expect_equal(as.numeric(W), c(1, 3), tolerance = 1e-12)
+  # Reconstruction
+  expect_equal(V %*% diag(W) %*% t(V), A, tolerance = 1e-12)
+  # V orthonormal
+  expect_equal(t(V) %*% V, diag(2), tolerance = 1e-12)
+})
+
+test_that("p_eigh f32", {
+  set.seed(2)
+  raw <- matrix(rnorm(16), nrow = 4)
+  A <- raw %*% t(raw) # symmetric positive-definite
+  result <- jit_eval({
+    x <- nv_array(A, dtype = "f32")
+    nvl_eigh(x)
+  })
+  V <- as_array(result[[1L]])
+  W <- as_array(result[[2L]])
+  # All eigenvalues real positive (PD), ascending
+  expect_true(all(W > 0))
+  expect_true(all(diff(W) >= -1e-5))
+  # Reconstruction
+  expect_equal(V %*% diag(W) %*% t(V), A, tolerance = 1e-4)
+})
+
 # we don't want to include torch in Suggests just for the tests, as it's a relatively
 # heavy dependency
 # We have a CI job that installs torch, so it's at least tested once

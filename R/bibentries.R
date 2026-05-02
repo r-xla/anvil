@@ -20,6 +20,21 @@ bibentries <- c(
     author = "Walter, Sebastian",
     year = "2012",
     school = "Mathematisch-Naturwissenschaftliche Fakult{\"a}t II"
+  ),
+  townsend2016differentiating = bibentry(
+    bibtype = "techreport",
+    title = "Differentiating the singular value decomposition",
+    author = "Townsend, James",
+    year = "2016",
+    institution = "Imperial College London"
+  ),
+  magnus2007matrix = bibentry(
+    bibtype = "book",
+    title = "Matrix differential calculus with applications in statistics and econometrics",
+    author = "Magnus, Jan R. and Neudecker, Heinz",
+    year = "2007",
+    publisher = "John Wiley & Sons",
+    edition = "3rd"
   )
 )
 # nolint end

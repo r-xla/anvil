@@ -1206,25 +1206,22 @@ nv_cholesky <- function(a, lower = TRUE) {
 
 #' @title Solve Linear System
 #' @description
-#' Solves the linear system `a %*% x = b` for `x`, where `a` is a symmetric
-#' positive-definite matrix. Uses Cholesky decomposition internally.
-#' Supports batched inputs: `a` and `b` must have the same batch dimensions
-#' (all dimensions before the last two).
+#' Solves the linear system `a %*% x = b` for `x`. Uses LU decomposition
+#' with partial pivoting internally, so `a` need only be square and
+#' non-singular (it does not have to be symmetric or positive-definite).
 #' @section Shapes:
-#' - `a`: `(..., n, n)`
-#' - `b`: `(..., n, k)`
+#' - `a`: `(n, n)`
+#' - `b`: `(n,)` or `(n, k)`
 #' - output: same shape as `b`
 #'
-#' where `...` are zero or more batch dimensions that must match between
-#' `a` and `b`.
 #' @param a ([`arrayish`])\cr
-#'   Symmetric positive-definite matrix.
+#'   Square non-singular matrix.
 #' @param b ([`arrayish`])\cr
-#'   Right-hand side matrix or vector. Must have the same data type and batch
-#'   dimensions as `a`.
+#'   Right-hand side, vector of length `n` or matrix with `n` rows. Must
+#'   have the same data type as `a`.
 #' @return [`arrayish`]\cr
 #'   The solution `x` such that `a %*% x = b`.
-#' @seealso [nv_cholesky()], [nvl_cholesky()], [nvl_triangular_solve()]
+#' @seealso [nvl_lu()], [nvl_triangular_solve()]
 #' @examplesIf pjrt::plugin_is_downloaded()
 #' jit_eval({
 #'   a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
@@ -1233,11 +1230,170 @@ nv_cholesky <- function(a, lower = TRUE) {
 #' })
 #' @export
 nv_solve <- function(a, b) {
-  L <- nvl_cholesky(a, lower = TRUE)
-  # Solve L @ y = b
-  y <- nvl_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
-  # Solve L^T @ x = y
-  nvl_triangular_solve(L, y, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
+  a_shape <- shape(a)
+  if (length(a_shape) != 2L || a_shape[[1L]] != a_shape[[2L]]) {
+    cli_abort("{.arg a} must be a square 2-D matrix")
+  }
+  n <- a_shape[[1L]]
+
+  b_shape <- shape(b)
+  b_is_vector <- length(b_shape) == 1L
+  if (b_is_vector) {
+    if (b_shape[[1L]] != n) {
+      cli_abort("{.arg b} must have length {n} to match {.arg a}")
+    }
+    b <- nvl_reshape(b, shape = c(n, 1L))
+  } else if (length(b_shape) != 2L || b_shape[[1L]] != n) {
+    cli_abort("{.arg b} must be a vector of length {n} or a matrix with {n} rows")
+  }
+
+  k <- shape(b)[[2L]]
+
+  factored <- nvl_lu(a)
+  LU <- factored[[1L]]
+  pivots <- factored[[2L]]
+
+  # Apply the row permutation P encoded by `pivots` (a sequence of 1-based
+  # row swaps from getrf) to b in place: for i = 1..n, swap rows i and
+  # pivots[i] of b. After this loop `b` holds P b.
+  loop_state <- nvl_while(
+    init = list(i = nv_scalar(1L, dtype = "i32"), b = b),
+    cond = function(i, b) i <= as.integer(n),
+    body = function(i, b) {
+      # j = pivots[i]  -- length-1 array, then squeezed to scalar.
+      j_arr <- nvl_dynamic_slice(pivots, i, slice_sizes = 1L)
+      j <- nv_squeeze(j_arr, dims = 1L)
+      # Read rows i and j of b (each shape (1, k)).
+      zero <- nv_scalar(0L, dtype = "i32")
+      row_i <- nvl_dynamic_slice(b, i, zero, slice_sizes = c(1L, k))
+      row_j <- nvl_dynamic_slice(b, j, zero, slice_sizes = c(1L, k))
+      # Write swapped rows back.
+      b <- nvl_dynamic_update_slice(b, row_j, i, zero)
+      b <- nvl_dynamic_update_slice(b, row_i, j, zero)
+      list(i = i + 1L, b = b)
+    }
+  )
+  pb <- loop_state$b
+
+  # Forward solve L y = P b. L is unit-lower-triangular, packed into the
+  # strict-lower part of LU (diagonal of LU holds U's diagonal, ignored
+  # because unit_diagonal = TRUE).
+  y <- nvl_triangular_solve(
+    LU, pb,
+    left_side = TRUE, lower = TRUE, unit_diagonal = TRUE,
+    transpose_a = "NO_TRANSPOSE"
+  )
+  # Back solve U x = y. U is upper-triangular, packed into the upper part
+  # (including diagonal) of LU.
+  x <- nvl_triangular_solve(
+    LU, y,
+    left_side = TRUE, lower = FALSE, unit_diagonal = FALSE,
+    transpose_a = "NO_TRANSPOSE"
+  )
+
+  if (b_is_vector) x <- nvl_reshape(x, shape = n)
+  x
+}
+
+# Helper: sign of the row permutation `pivots` returned by getrf.
+# The sign of a single swap (i, pivots[i]) is -1 if pivots[i] != i, else +1.
+# Multiplying these gives the sign of the full permutation P, which is what
+# det(A) = sign(P)^{-1} * prod(diag(U)) needs (P inverse has the same
+# sign as P).
+lu_pivot_sign <- function(pivots, n, dtype) {
+  iota_1n <- nvl_iota(dim = 1L, dtype = "i32", shape = n, start = 1L)
+  is_swap <- nvl_ne(pivots, iota_1n)
+  signs <- nvl_ifelse(is_swap,
+                      nvl_fill(-1L, dtype = "i32", shape = n),
+                      nvl_fill(1L, dtype = "i32", shape = n))
+  sign_int <- nv_reduce_prod(signs, dims = 1L)
+  nv_convert(sign_int, dtype = dtype)
+}
+
+#' @title Determinant
+#' @description
+#' Computes the determinant of a square matrix using its LU decomposition:
+#' `det(A) = sign(P) * prod(diag(U))` where `P A = L U`.
+#' @param a ([`arrayish`])\cr
+#'   Square matrix of floating-point data type.
+#' @return Scalar [`arrayish`] with the same dtype as `a`.
+#' @seealso [nv_logdet()], [nv_solve()], [nvl_lu()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#'   nv_det(a)
+#' })
+#' @export
+nv_det <- function(a) {
+  shp <- shape(a)
+  if (length(shp) != 2L || shp[[1L]] != shp[[2L]]) {
+    cli_abort("{.arg a} must be a square 2-D matrix")
+  }
+  n <- shp[[1L]]
+  factored <- nvl_lu(a)
+  LU <- factored[[1L]]
+  pivots <- factored[[2L]]
+  diag_U <- nv_extract_diag(LU)
+  prod_diag <- nv_reduce_prod(diag_U, dims = 1L)
+  nvl_mul(lu_pivot_sign(pivots, n, dtype(a)), prod_diag)
+}
+
+#' @title Log Absolute Determinant
+#' @description
+#' Computes `log(abs(det(a)))` of a square matrix in a numerically stable
+#' way, using the LU decomposition. Returns `-Inf` for singular matrices.
+#' This is the analogue of `determinant(a, logarithm = TRUE)$modulus` in
+#' base R.
+#' @param a ([`arrayish`])\cr
+#'   Square matrix of floating-point data type.
+#' @return Scalar [`arrayish`] with the same dtype as `a`.
+#' @seealso [nv_det()], [nv_solve()], [nvl_lu()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#'   nv_logdet(a)
+#' })
+#' @export
+nv_logdet <- function(a) {
+  shp <- shape(a)
+  if (length(shp) != 2L || shp[[1L]] != shp[[2L]]) {
+    cli_abort("{.arg a} must be a square 2-D matrix")
+  }
+  factored <- nvl_lu(a)
+  LU <- factored[[1L]]
+  diag_U <- nv_extract_diag(LU)
+  # log(prod|d_i|) = sum(log|d_i|). Done element-wise so a zero pivot
+  # produces -Inf naturally rather than corrupting the whole product.
+  nv_reduce_sum(nvl_log(nvl_abs(diag_U)), dims = 1L)
+}
+
+#' @title Matrix Inverse
+#' @description
+#' Computes `a^-1`, the inverse of a square non-singular matrix, by
+#' solving `a x = I`. Numerically equivalent to `solve(a)` in base R.
+#'
+#' For most use cases prefer [nv_solve()] directly: forming the explicit
+#' inverse is both slower and less numerically stable than solving against
+#' a right-hand side.
+#' @param a ([`arrayish`])\cr
+#'   Square non-singular matrix.
+#' @return [`arrayish`]\cr
+#'   The inverse, same shape and dtype as `a`.
+#' @seealso [nv_solve()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#'   nv_inv(a)
+#' })
+#' @export
+nv_inv <- function(a) {
+  shp <- shape(a)
+  if (length(shp) != 2L || shp[[1L]] != shp[[2L]]) {
+    cli_abort("{.arg a} must be a square 2-D matrix")
+  }
+  n <- shp[[1L]]
+  identity <- nvl_convert(nv_eye(n), dtype = dtype(a))
+  nv_solve(a, identity)
 }
 
 #' @title QR Decomposition
@@ -1265,6 +1421,130 @@ nv_solve <- function(a, b) {
 nv_qr <- function(a) {
   qr <- nvl_qr(a)
   list(Q = qr[[1L]], R = qr[[2L]])
+}
+
+#' @title LU Decomposition
+#' @description
+#' Computes the partial-pivoted LU decomposition of a matrix.
+#' Factors a matrix `a` of shape `(m, n)` into a packed `LU` of the same
+#' shape and a vector of `pivots` of length `k = min(m, n)`, such that
+#' `P a = L U`, where `L` is lower-unit-triangular `(m, k)`, `U` is upper-
+#' triangular `(k, n)`, and `P` is the row permutation encoded by `pivots`
+#' (1-based row swaps applied during elimination).
+#'
+#' Uses a LAPACK / cuSOLVER custom call via the XLA FFI.
+#' @param a ([`arrayish`])\cr
+#'   Matrix of data type floating-point with exactly 2 dimensions.
+#' @return Named `list` with elements `LU` (shape `(m, n)`, same dtype as
+#'   `a`) and `pivots` (length `k`, dtype `i32`).
+#' @seealso [nvl_lu()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#'   nv_lu(x)
+#' })
+#' @export
+nv_lu <- function(a) {
+  out <- nvl_lu(a)
+  list(LU = out[[1L]], pivots = out[[2L]])
+}
+
+#' @title Singular Value Decomposition
+#' @description
+#' Computes the reduced ("economy") SVD of a matrix.
+#' Factors a matrix `a` of shape `(m, n)` into `U` of shape `(m, k)`, a
+#' vector of singular values `S` of length `k`, and `Vt` of shape `(k, n)`,
+#' where `k = min(m, n)`, such that `a = U %*% diag(S) %*% Vt`.
+#'
+#' Uses a LAPACK / cuSOLVER custom call via the XLA FFI. The CUDA backend
+#' currently requires `m >= n` (cuSOLVER `gesvd` restriction); the host
+#' backend supports any shape.
+#' @param a ([`arrayish`])\cr
+#'   Matrix of data type floating-point with exactly 2 dimensions.
+#' @return Named `list` with elements `U`, `S`, `Vt` of the shapes above.
+#' @seealso [nvl_svd()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_array(matrix(c(1, 0, 0, 1, 0, 1), nrow = 3), dtype = "f64")
+#'   nv_svd(x)
+#' })
+#' @export
+nv_svd <- function(a) {
+  out <- nvl_svd(a)
+  list(U = out[[1L]], S = out[[2L]], Vt = out[[3L]])
+}
+
+#' @title Symmetric Eigendecomposition
+#' @description
+#' Computes the eigendecomposition of a symmetric (or Hermitian) matrix `a`
+#' of shape `(n, n)`. Only the lower triangle of `a` is read.
+#' Returns eigenvectors as columns of `V` and eigenvalues `W` in ascending
+#' order, such that `a = V %*% diag(W) %*% t(V)`.
+#'
+#' Uses a LAPACK / cuSOLVER custom call via the XLA FFI.
+#' @param a ([`arrayish`])\cr
+#'   Symmetric square matrix of floating-point data type.
+#' @return Named `list` with elements `V` (shape `(n, n)`) and `W`
+#'   (length `n`).
+#' @seealso [nvl_eigh()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_array(matrix(c(2, 1, 1, 2), nrow = 2), dtype = "f64")
+#'   nv_eigh(x)
+#' })
+#' @export
+nv_eigh <- function(a) {
+  out <- nvl_eigh(a)
+  list(V = out[[1L]], W = out[[2L]])
+}
+
+#' @title Eigendecomposition (base-R-style wrapper)
+#' @description
+#' Convenience wrapper around [nv_eigh()] that returns its result in the
+#' shape of base R's [base::eigen()]: a `list(values, vectors)` with
+#' eigenvalues in **descending** order and eigenvector columns reordered
+#' to match.
+#'
+#' Unlike `base::eigen()`, this only supports the symmetric / Hermitian
+#' case (no `symmetric = FALSE` path). General non-symmetric
+#' eigendecomposition would need complex-dtype outputs throughout the
+#' anvl stack and is not yet supported. If `symmetric = FALSE` is passed
+#' explicitly, an error is raised.
+#' @param a ([`arrayish`])\cr
+#'   Symmetric square matrix.
+#' @param symmetric (`logical(1)`)\cr
+#'   Must be `TRUE` (the default). Passing `FALSE` raises an error.
+#' @param only.values (`logical(1)`)\cr
+#'   Must be `FALSE` (no fast values-only path yet). Passing `TRUE`
+#'   raises an error.
+#' @return Named `list` with elements `values` (length `n`, descending)
+#'   and `vectors` (`(n, n)`, columns are eigenvectors). Both have the
+#'   same dtype as `a`.
+#' @seealso [nv_eigh()], [base::eigen()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   a <- nv_array(matrix(c(2, 1, 1, 2), nrow = 2), dtype = "f64")
+#'   nv_eigen(a)
+#' })
+#' @export
+nv_eigen <- function(a, symmetric = TRUE, only.values = FALSE) {
+  if (!isTRUE(symmetric)) {
+    cli_abort(c(
+      "{.fn nv_eigen} only supports {.code symmetric = TRUE}.",
+      "i" = "General (non-symmetric) eigendecomposition would return complex eigenvalues, which anvl does not yet support.",
+      "i" = "Use {.fn nv_eigh} directly, or transpose / symmetrize your matrix first."
+    ))
+  }
+  if (!isFALSE(only.values)) {
+    cli_abort(c(
+      "{.code only.values = TRUE} is not yet supported.",
+      "i" = "Use {.fn nv_eigh} and discard the returned eigenvectors."
+    ))
+  }
+  res <- nv_eigh(a)
+  # nv_eigh returns ascending; flip to match base R's descending convention.
+  list(values = nv_reverse(res$W, dims = 1L),
+       vectors = nv_reverse(res$V, dims = 2L))
 }
 
 #' @title Diagonal Matrix

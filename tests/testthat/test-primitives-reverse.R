@@ -820,6 +820,99 @@ describe("gather/scatter reverse via subset operators", {
   })
 })
 
+# Finite-difference checks for the LU/SVD/eigh reverse rules. These run
+# without a torch dependency; the more demanding torch-based comparisons
+# live in inst/extra-tests/test-primitives-reverse-torch.R.
+
+# Compute a finite-difference Jacobian of a scalar-valued anvl function
+# with respect to a 2D matrix input. Returns the same-shape gradient
+# matrix.
+fd_grad_matrix <- function(f, A, eps = 1e-6) {
+  out <- matrix(0, nrow = nrow(A), ncol = ncol(A))
+  for (i in seq_len(nrow(A))) {
+    for (j in seq_len(ncol(A))) {
+      Ap <- A; Ap[i, j] <- Ap[i, j] + eps
+      Am <- A; Am[i, j] <- Am[i, j] - eps
+      fp <- as.numeric(as_array(jit(f)(nv_array(Ap, dtype = "f64"))))
+      fm <- as.numeric(as_array(jit(f)(nv_array(Am, dtype = "f64"))))
+      out[i, j] <- (fp - fm) / (2 * eps)
+    }
+  }
+  out
+}
+
+test_that("p_eigh reverse rule matches finite differences", {
+  set.seed(101)
+  M <- matrix(rnorm(16), 4)
+  A <- (M + t(M)) / 2 + diag(seq_len(4))  # well-separated eigenvalues
+
+  f <- function(A) {
+    res <- nvl_eigh(A)
+    V <- res[[1L]]; W <- res[[2L]]
+    recon <- nv_matmul(nv_matmul(V, nv_diag(W)), t(V))
+    nv_reduce_sum(nvl_mul(recon, recon), dims = c(1L, 2L))
+  }
+  g_anvl <- as_array(jit(gradient(f))(nv_array(A, dtype = "f64"))[[1L]])
+  # Finite-diff is "asymmetric" since each entry is perturbed
+  # independently; symmetrize for comparison (matches the rule's
+  # symmetric-projection convention -- the forward only reads the lower
+  # triangle of A).
+  fd <- fd_grad_matrix(f, A)
+  fd_sym <- (fd + t(fd)) / 2
+
+  expect_equal(g_anvl, fd_sym, tolerance = 1e-5)
+})
+
+test_that("p_svd reverse rule matches finite differences (square / tall / wide)", {
+  set.seed(102)
+  for (dims in list(c(4L, 4L), c(5L, 3L), c(3L, 5L))) {
+    A <- matrix(rnorm(prod(dims)), nrow = dims[[1L]], ncol = dims[[2L]])
+    f <- function(A) {
+      res <- nvl_svd(A)
+      U <- res[[1L]]; S <- res[[2L]]; Vt <- res[[3L]]
+      recon <- nv_matmul(nv_matmul(U, nv_diag(S)), Vt)
+      nv_reduce_sum(nvl_mul(recon, recon), dims = c(1L, 2L))
+    }
+    g_anvl <- as_array(jit(gradient(f))(nv_array(A, dtype = "f64"))[[1L]])
+    fd <- fd_grad_matrix(f, A)
+    expect_equal(g_anvl, fd, tolerance = 1e-5,
+                 info = paste0("shape ", dims[[1L]], "x", dims[[2L]]))
+  }
+})
+
+test_that("p_lu reverse rule matches finite differences (square)", {
+  set.seed(103)
+  for (n in c(3L, 5L)) {
+    A <- matrix(rnorm(n * n), nrow = n) + diag(n) * 0.5  # well-conditioned
+    f <- function(A) {
+      res <- nvl_lu(A)
+      LU <- res[[1L]]
+      nv_reduce_sum(nvl_mul(LU, LU), dims = c(1L, 2L))
+    }
+    g_anvl <- as_array(jit(gradient(f))(nv_array(A, dtype = "f64"))[[1L]])
+    fd <- fd_grad_matrix(f, A)
+    expect_equal(g_anvl, fd, tolerance = 1e-5,
+                 info = paste0("n = ", n))
+  }
+})
+
+test_that("nv_solve gradient flows through (LU + permute + tri-solve)", {
+  # nv_solve composes nvl_lu (with the new reverse rule above) and
+  # nvl_triangular_solve (existing rule). End-to-end check that the
+  # composite gradient w.r.t. A matches finite differences.
+  set.seed(104)
+  A <- matrix(rnorm(9), nrow = 3) + diag(3)
+  b <- rnorm(3)
+
+  f <- function(A) {
+    x <- nv_solve(A, nv_array(b, dtype = "f64"))
+    nv_reduce_sum(nvl_mul(x, x), dims = 1L)
+  }
+  g_anvl <- as_array(jit(gradient(f))(nv_array(A, dtype = "f64"))[[1L]])
+  fd <- fd_grad_matrix(f, A)
+  expect_equal(g_anvl, fd, tolerance = 1e-5)
+})
+
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvil"))
 }

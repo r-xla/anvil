@@ -1130,3 +1130,229 @@ p_qr[["reverse"]] <- function(inputs, outputs, grads, .required) {
 
   list(grad_A)
 }
+
+# Helpers for eigh / SVD reverse rules ---------------------------------------
+
+# Embed a length-n vector as the diagonal of an n x n matrix, with zeros
+# elsewhere. Equivalent to `diag(v)` in base R, expressed in primitives.
+diag_embed <- function(v) {
+  n <- shape(v)[[1L]]
+  dt <- dtype(v)
+  v_diag <- nvl_broadcast_in_dim(v, shape = c(n, n), broadcast_dimensions = 1L)
+  mask <- diag_mask(n)
+  nvl_ifelse(mask, v_diag, nvl_fill(0, dtype = dt, shape = c(n, n)))
+}
+
+# Pairwise difference matrix D[i, j] = v[j] - v[i] for v of length n.
+# Used in the eigh / SVD reverse rules to build the F-matrix.
+pairwise_diff <- function(v) {
+  n <- shape(v)[[1L]]
+  v_row <- nvl_broadcast_in_dim(v, shape = c(n, n), broadcast_dimensions = 2L)
+  v_col <- nvl_broadcast_in_dim(v, shape = c(n, n), broadcast_dimensions = 1L)
+  nvl_sub(v_row, v_col)
+}
+
+#' @name nvl_eigh
+#' @rdname nvl_eigh
+#' @references
+#' `r xlamisc::format_bib("giles2008extended", "magnus2007matrix")`
+p_eigh[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  if (!.required[[1L]]) {
+    return(list(NULL))
+  }
+  V <- outputs[[1L]]
+  W <- outputs[[2L]]
+  grad_V <- grads[[1L]]
+  grad_W <- grads[[2L]]
+
+  n <- shape(W)[[1L]]
+  dt <- dtype(V)
+
+  # F[i, j] = 1 / (W[j] - W[i]) for i != j, else 0.
+  # Use the (eye + diff) trick to avoid dividing by zero on the diagonal:
+  # on the diagonal denom = 1 + 0 = 1, so 1/denom - 1 = 0; off-diagonal
+  # eye is 0 so the result is 1/(W[j] - W[i]). See Giles (2008), eq. (4),
+  # and JAX's `_eigh_jvp_rule` for the same idiom.
+  eye <- nvl_convert(diag_mask(n), dtype = dt)
+  denom <- nvl_add(eye, pairwise_diff(W))
+  F <- nvl_sub(nvl_div(nvl_fill(1, dtype = dt, shape = c(n, n)), denom), eye)
+
+  # A_grad = V (diag(grad_W) + F * (V^T grad_V)) V^T
+  inner <- nvl_add(diag_embed(grad_W),
+                   nvl_mul(F, nv_matmul(t(V), grad_V)))
+  grad_A <- nv_matmul(V, nv_matmul(inner, t(V)))
+
+  # The forward only reads the lower triangle, so the gradient w.r.t. the
+  # upper triangle is technically not constrained. Symmetrize to match the
+  # convention used by torch / JAX (the cotangent of a "use lower triangle"
+  # operator is the symmetric projection).
+  grad_A <- nvl_mul(nvl_add(grad_A, t(grad_A)),
+                    nvl_fill(0.5, dtype = dt, shape = c(n, n)))
+
+  list(grad_A)
+}
+
+#' @name nvl_svd
+#' @rdname nvl_svd
+#' @references
+#' `r xlamisc::format_bib("townsend2016differentiating", "walter2012structured")`
+p_svd[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  if (!.required[[1L]]) {
+    return(list(NULL))
+  }
+  U <- outputs[[1L]]
+  S <- outputs[[2L]]
+  Vt <- outputs[[3L]]
+  grad_U <- grads[[1L]]
+  grad_S <- grads[[2L]]
+  grad_Vt <- grads[[3L]]
+
+  shp <- shape(inputs[[1L]])
+  if (length(shp) > 2L) {
+    cli_abort("Batched svd gradient is not yet supported.")
+  }
+  m <- shp[[1L]]
+  n <- shp[[2L]]
+  k <- min(m, n)
+  dt <- dtype(U)
+
+  V <- t(Vt)
+  grad_V <- t(grad_Vt)
+
+  # E[i, j] = S[j]^2 - S[i]^2  (off-diagonal); on the diagonal we add 1 so
+  # the reciprocal is finite (the F-matrix construction below masks the
+  # diagonal away anyway). See Townsend (2016) and PyTorch `svd_backward`
+  # for the same idiom.
+  s_sq <- nvl_mul(S, S)
+  diff <- pairwise_diff(s_sq) # diff[i, j] = s_j^2 - s_i^2
+  eye_k <- nvl_convert(diag_mask(k), dtype = dt)
+  denom <- nvl_add(diff, eye_k)
+  Finv <- nvl_sub(nvl_div(nvl_fill(1, dtype = dt, shape = c(k, k)), denom),
+                   eye_k)
+
+  # Skew-symmetric parts of U^T grad_U and V^T grad_V.
+  UhgU <- nv_matmul(t(U), grad_U)
+  UhgU_skew <- nvl_sub(UhgU, t(UhgU))
+  VhgV <- nv_matmul(t(V), grad_V)
+  VhgV_skew <- nvl_sub(VhgV, t(VhgV))
+
+  # M = (UhgU_skew * S[None, :] + S[:, None] * VhgV_skew) * Finv + diag(g_S)
+  s_row <- nvl_broadcast_in_dim(S, shape = c(k, k), broadcast_dimensions = 2L)
+  s_col <- nvl_broadcast_in_dim(S, shape = c(k, k), broadcast_dimensions = 1L)
+  num <- nvl_add(nvl_mul(UhgU_skew, s_row), nvl_mul(s_col, VhgV_skew))
+  M <- nvl_add(nvl_mul(num, Finv), diag_embed(grad_S))
+
+  grad_A <- nv_matmul(U, nv_matmul(M, t(V)))
+
+  # Rectangular corrections: the reduced SVD's outputs do not span the full
+  # row/column space when m != n. The "outside" contribution lands through
+  # grad_U or grad_V respectively. Cf. PyTorch `svd_backward` lines 3799+.
+  # These divisions by S require full rank.
+  if (m > n) {
+    # k = n. Add (I_m - U U^T) (grad_U / S[None, :]) V^T.
+    inv_s <- nvl_div(nvl_fill(1, dtype = dt, shape = k), S)
+    inv_s_row <- nvl_broadcast_in_dim(inv_s, shape = c(m, k),
+                                       broadcast_dimensions = 2L)
+    grad_U_scaled <- nvl_mul(grad_U, inv_s_row)
+    correction <- nvl_sub(
+      nv_matmul(grad_U_scaled, t(V)),
+      nv_matmul(U, nv_matmul(t(U), nv_matmul(grad_U_scaled, t(V))))
+    )
+    grad_A <- nvl_add(grad_A, correction)
+  } else if (n > m) {
+    # k = m. Add U (grad_V / S[:, None])^T (I_n - V V^T).
+    inv_s <- nvl_div(nvl_fill(1, dtype = dt, shape = k), S)
+    inv_s_col <- nvl_broadcast_in_dim(inv_s, shape = c(n, k),
+                                       broadcast_dimensions = 2L)
+    grad_V_scaled <- nvl_mul(grad_V, inv_s_col)
+    correction <- nvl_sub(
+      nv_matmul(U, t(grad_V_scaled)),
+      nv_matmul(U, nv_matmul(t(grad_V_scaled), nv_matmul(V, t(V))))
+    )
+    grad_A <- nvl_add(grad_A, correction)
+  }
+
+  list(grad_A)
+}
+
+#' @name nvl_lu
+#' @rdname nvl_lu
+#' @references
+#' `r xlamisc::format_bib("walter2012structured")`
+p_lu[["reverse"]] <- function(inputs, outputs, grads, .required) {
+  if (!.required[[1L]]) {
+    return(list(NULL))
+  }
+
+  shp <- shape(inputs[[1L]])
+  if (length(shp) > 2L) {
+    cli_abort("Batched lu gradient is not yet supported.")
+  }
+  m <- shp[[1L]]
+  n <- shp[[2L]]
+  if (m != n) {
+    cli_abort("Reverse rule for nvl_lu is only implemented for square matrices.")
+  }
+
+  LU <- outputs[[1L]]
+  pivots <- outputs[[2L]]
+  grad_LU <- grads[[1L]]
+  # grad_pivots is non-differentiable (integer output) -- ignore it.
+  dt <- dtype(LU)
+
+  # Reconstruct L (unit-lower-triangular) and U (upper-triangular) from the
+  # packed LU. The forward returns LU = strict-lower(L) + upper(U).
+  eye <- nvl_convert(diag_mask(n), dtype = dt)
+  strict_lower_mask <- nvl_convert(
+    nvl_sub(
+      nvl_convert(tril_mask(n, dt), dtype = "i32"),
+      nvl_convert(diag_mask(n), dtype = "i32")
+    ),
+    dtype = "bool"
+  )
+  zero_mat <- nvl_fill(0, dtype = dt, shape = c(n, n))
+  L <- nvl_add(nvl_ifelse(strict_lower_mask, LU, zero_mat), eye)
+  U <- nvl_ifelse(triu_mask(n, dt), LU, zero_mat)
+
+  grad_L <- nvl_ifelse(strict_lower_mask, grad_LU, zero_mat)
+  grad_U <- nvl_ifelse(triu_mask(n, dt), grad_LU, zero_mat)
+
+  # Square-case formula (cf. PyTorch `linalg_lu_backward`):
+  #   B   = strict_lower(L^T grad_L) + upper(grad_U U^T)
+  #   X   = L^{-T} B U^{-T}
+  # so (P A)_grad = X. To get A_grad we apply P^T -- replay the pivot
+  # swaps in reverse order on the rows of X.
+  B_lower <- nvl_ifelse(strict_lower_mask, nv_matmul(t(L), grad_L), zero_mat)
+  B_upper <- nvl_ifelse(triu_mask(n, dt), nv_matmul(grad_U, t(U)), zero_mat)
+  B <- nvl_add(B_lower, B_upper)
+
+  X <- nvl_triangular_solve(L, B,
+                              left_side = TRUE, lower = TRUE,
+                              unit_diagonal = TRUE,
+                              transpose_a = "TRANSPOSE")
+  X <- nvl_triangular_solve(U, X,
+                              left_side = FALSE, lower = FALSE,
+                              unit_diagonal = FALSE,
+                              transpose_a = "TRANSPOSE")
+
+  # Apply P^T by replaying the swaps in reverse: for i from n down to 1,
+  # swap rows i and pivots[i]. This inverts the forward sequence applied
+  # during getrf.
+  loop_state <- nvl_while(
+    init = list(i = nv_scalar(as.integer(n), dtype = "i32"), b = X),
+    cond = function(i, b) i >= 1L,
+    body = function(i, b) {
+      j_arr <- nvl_dynamic_slice(pivots, i, slice_sizes = 1L)
+      j <- nv_squeeze(j_arr, dims = 1L)
+      zero <- nv_scalar(0L, dtype = "i32")
+      row_i <- nvl_dynamic_slice(b, i, zero, slice_sizes = c(1L, n))
+      row_j <- nvl_dynamic_slice(b, j, zero, slice_sizes = c(1L, n))
+      b <- nvl_dynamic_update_slice(b, row_j, i, zero)
+      b <- nvl_dynamic_update_slice(b, row_i, j, zero)
+      list(i = i - 1L, b = b)
+    }
+  )
+  grad_A <- loop_state$b
+
+  list(grad_A)
+}

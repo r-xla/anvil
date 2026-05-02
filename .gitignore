@@ -57,8 +57,3 @@ TODO.md
 
 # Local coverage snapshots
 covr-*.rds
-
-# Compiled code
-src/*.o
-src/*.so
-src/*.dll

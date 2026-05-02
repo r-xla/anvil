@@ -2669,3 +2669,140 @@ nvl_qr <- function(operand) {
     infer_fn = infer_fn
   )
 }
+
+p_lu <- AnvilPrimitive("lu")
+#' @title Primitive LU Decomposition
+#' @description
+#' Computes the partial-pivoted LU decomposition of a matrix.
+#' Factors a matrix `operand` of shape `(m, n)` into a packed `LU` of the
+#' same shape (lower-unit-triangular `L` strictly below the diagonal, upper-
+#' triangular `U` on and above) plus a vector of `pivots` of length
+#' `k = min(m, n)` such that `P %*% operand = L %*% U`, where `P` is the
+#' permutation given by `pivots`.
+#'
+#' Both `L` (with implicit unit diagonal) and `U` are stored in the single
+#' `LU` output so the layout matches LAPACK's `getrf`. Use [nv_lu()] for an
+#' R-friendly wrapper that splits them out.
+#' @param operand ([`arrayish`])\cr
+#'   Matrix of data type floating-point with exactly 2 dimensions.
+#' @return `list` of two [`arrayish`] values:\cr
+#'   `LU` has shape `(m, n)` with the same dtype as the input;
+#'   `pivots` has shape `(k,)` and dtype `i32` (1-based row swaps).
+#' @templateVar primitive_id lu
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_custom_call()] with target `"anvil_lu"`.
+#' @seealso [nv_lu()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#'   nvl_lu(x)
+#' })
+#' @export
+nvl_lu <- function(operand) {
+  infer_fn <- function(operand) {
+    dt <- dtype(operand)
+    s <- as.integer(shape(operand))
+    m <- s[1L]
+    n <- s[2L]
+    k <- min(m, n)
+    list(
+      AbstractArray(dtype = dt, shape = Shape(c(m, n))),
+      AbstractArray(dtype = "i32", shape = Shape(k))
+    )
+  }
+  graph_desc_add(
+    p_lu,
+    list(operand = operand),
+    params = list(),
+    infer_fn = infer_fn
+  )
+}
+
+p_svd <- AnvilPrimitive("svd")
+#' @title Primitive Singular Value Decomposition
+#' @description
+#' Computes the reduced ("economy") SVD of a matrix.
+#' Factors a matrix `operand` of shape `(m, n)` into `U` of shape `(m, k)`,
+#' a vector of singular values `S` of length `k`, and `Vt` of shape
+#' `(k, n)`, where `k = min(m, n)`, such that
+#' `operand = U %*% diag(S) %*% Vt`.
+#'
+#' On the CUDA backend this primitive currently requires `m >= n` (cuSOLVER's
+#' `gesvd` restriction). The host (LAPACK) backend supports any shape.
+#' @param operand ([`arrayish`])\cr
+#'   Matrix of data type floating-point with exactly 2 dimensions.
+#' @return `list` of three [`arrayish`] values: `U` `(m, k)`, `S` `(k,)`,
+#'   `Vt` `(k, n)`. All have the same dtype as the input.
+#' @templateVar primitive_id svd
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_custom_call()] with target `"anvil_svd"`.
+#' @seealso [nv_svd()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_array(matrix(c(1, 0, 0, 1, 0, 1), nrow = 3), dtype = "f64")
+#'   nvl_svd(x)
+#' })
+#' @export
+nvl_svd <- function(operand) {
+  infer_fn <- function(operand) {
+    dt <- dtype(operand)
+    s <- as.integer(shape(operand))
+    m <- s[1L]
+    n <- s[2L]
+    k <- min(m, n)
+    list(
+      AbstractArray(dtype = dt, shape = Shape(c(m, k))),
+      AbstractArray(dtype = dt, shape = Shape(k)),
+      AbstractArray(dtype = dt, shape = Shape(c(k, n)))
+    )
+  }
+  graph_desc_add(
+    p_svd,
+    list(operand = operand),
+    params = list(),
+    infer_fn = infer_fn
+  )
+}
+
+p_eigh <- AnvilPrimitive("eigh")
+#' @title Primitive Symmetric Eigendecomposition
+#' @description
+#' Computes the eigendecomposition of a symmetric (or Hermitian) matrix
+#' `operand` of shape `(n, n)`. Only the lower triangle is read.
+#' Returns eigenvectors `V` (`(n, n)`, columns are eigenvectors) and
+#' eigenvalues `W` (`(n,)`, ascending) such that
+#' `operand = V %*% diag(W) %*% t(V)`.
+#' @param operand ([`arrayish`])\cr
+#'   Symmetric square matrix of floating-point data type.
+#' @return `list` of two [`arrayish`] values: `V` `(n, n)` and `W` `(n,)`,
+#'   both with the same dtype as the input.
+#' @templateVar primitive_id eigh
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_custom_call()] with target `"anvil_eigh"`.
+#' @seealso [nv_eigh()]
+#' @examplesIf pjrt::plugin_is_downloaded()
+#' jit_eval({
+#'   x <- nv_array(matrix(c(2, 1, 1, 2), nrow = 2), dtype = "f64")
+#'   nvl_eigh(x)
+#' })
+#' @export
+nvl_eigh <- function(operand) {
+  infer_fn <- function(operand) {
+    dt <- dtype(operand)
+    s <- as.integer(shape(operand))
+    n <- s[1L]
+    list(
+      AbstractArray(dtype = dt, shape = Shape(c(n, n))),
+      AbstractArray(dtype = dt, shape = Shape(n))
+    )
+  }
+  graph_desc_add(
+    p_eigh,
+    list(operand = operand),
+    params = list(),
+    infer_fn = infer_fn
+  )
+}

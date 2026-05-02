@@ -1004,3 +1004,121 @@ describe("p_qr", {
   it("tall (m > n)", verify_qr_grad(4L, 2L))
   it("wide (m < n)", verify_qr_grad(2L, 4L))
 })
+
+describe("p_eigh", {
+  # Compare anvl's reverse rule against torch on a symmetric matrix with a
+  # well-separated eigen-spectrum (the rule has a 1/(w_j - w_i) term that
+  # blows up when eigenvalues coalesce). The loss is symmetric in the
+  # eigenvector signs so we can compare component-wise.
+  verify_eigh_grad <- function(n) {
+    set.seed(31 + n)
+    M <- matrix(rnorm(n * n), nrow = n)
+    A_r <- (M + t(M)) / 2 + diag(seq_len(n))  # spread eigenvalues
+
+    A_anvil <- nv_array(A_r, dtype = "f64")
+    A_torch <- torch::torch_tensor(A_r, requires_grad = TRUE,
+                                    dtype = torch::torch_float64())
+
+    f_anvil <- function(A) {
+      res <- nvl_eigh(A)
+      V <- res[[1L]]; W <- res[[2L]]
+      recon <- nv_matmul(nv_matmul(V, nv_diag(W)), t(V))
+      nv_reduce_sum(nvl_mul(recon, recon), dims = c(1L, 2L))
+    }
+    grad_anvil <- as_array(jit(gradient(f_anvil))(A_anvil)[[1L]])
+
+    e <- torch::linalg_eigh(A_torch, UPLO = "L")
+    V_t <- e[[2L]]; W_t <- e[[1L]]
+    recon <- torch::torch_matmul(
+      torch::torch_matmul(V_t, torch::torch_diag(W_t)), V_t$transpose(1, 2)
+    )
+    torch::torch_sum(recon * recon)$backward()
+    # torch returns the "natural" gradient which already has the symmetry
+    # convention (cotangent of the symmetric projection). Compare directly.
+    grad_torch <- as_array_torch(A_torch$grad)
+
+    expect_equal(grad_anvil, grad_torch, tolerance = 1e-6)
+  }
+
+  it("2x2", verify_eigh_grad(2L))
+  it("4x4", verify_eigh_grad(4L))
+  it("6x6", verify_eigh_grad(6L))
+})
+
+describe("p_svd", {
+  # Compare anvl's reverse rule against torch. Use a loss invariant under
+  # the sign ambiguity of the singular vectors (sum of squared
+  # reconstruction). Pad the singular values away from each other so the
+  # 1/(s_j^2 - s_i^2) terms stay numerically tame.
+  verify_svd_grad <- function(m, n) {
+    set.seed(40 + 10 * m + n)
+    A_r <- matrix(rnorm(m * n), nrow = m, ncol = n)
+
+    A_anvil <- nv_array(A_r, dtype = "f64")
+    A_torch <- torch::torch_tensor(A_r, requires_grad = TRUE,
+                                    dtype = torch::torch_float64())
+
+    f_anvil <- function(A) {
+      res <- nvl_svd(A)
+      U <- res[[1L]]; S <- res[[2L]]; Vt <- res[[3L]]
+      recon <- nv_matmul(nv_matmul(U, nv_diag(S)), Vt)
+      nv_reduce_sum(nvl_mul(recon, recon), dims = c(1L, 2L))
+    }
+    grad_anvil <- as_array(jit(gradient(f_anvil))(A_anvil)[[1L]])
+
+    svd_t <- torch::linalg_svd(A_torch, full_matrices = FALSE)
+    U_t <- svd_t[[1L]]; S_t <- svd_t[[2L]]; Vh_t <- svd_t[[3L]]
+    recon <- torch::torch_matmul(
+      torch::torch_matmul(U_t, torch::torch_diag(S_t)), Vh_t
+    )
+    torch::torch_sum(recon * recon)$backward()
+    grad_torch <- as_array_torch(A_torch$grad)
+
+    expect_equal(grad_anvil, grad_torch, tolerance = 1e-5)
+  }
+
+  it("square (m == n)", verify_svd_grad(4L, 4L))
+  it("tall (m > n)", verify_svd_grad(5L, 3L))
+  it("wide (m < n)", verify_svd_grad(3L, 5L))
+})
+
+describe("p_lu", {
+  # Square only: the rectangular cases have additional code paths that
+  # haven't been implemented. Use a loss on the packed LU output (the
+  # forward returns LU and pivots; pivots are non-differentiable so we
+  # don't include them in the loss).
+  verify_lu_grad <- function(n) {
+    set.seed(50 + n)
+    A_r <- matrix(rnorm(n * n), nrow = n) + diag(n) * 0.5
+
+    A_anvil <- nv_array(A_r, dtype = "f64")
+    A_torch <- torch::torch_tensor(A_r, requires_grad = TRUE,
+                                    dtype = torch::torch_float64())
+
+    f_anvil <- function(A) {
+      res <- nvl_lu(A)
+      LU <- res[[1L]]
+      nv_reduce_sum(nvl_mul(LU, LU), dims = c(1L, 2L))
+    }
+    grad_anvil <- as_array(jit(gradient(f_anvil))(A_anvil)[[1L]])
+
+    # torch's linalg_lu returns (P, L, U) -- the packed LU = strict_lower(L)
+    # + upper(U). Build it explicitly to match anvl's convention.
+    plu <- torch::linalg_lu(A_torch)
+    L_t <- plu[[2L]]; U_t <- plu[[3L]]
+    # L_t is m x k unit-lower-triangular, U_t is k x n upper-triangular.
+    # Packed form: copy L's strict-lower into U's strict-lower slot.
+    LU_t <- U_t$clone()
+    n_t <- L_t$size(1L)
+    for (i in seq_len(n_t)) {
+      if (i > 1L) LU_t[i, 1:(i - 1L)] <- L_t[i, 1:(i - 1L)]
+    }
+    torch::torch_sum(LU_t * LU_t)$backward()
+    grad_torch <- as_array_torch(A_torch$grad)
+
+    expect_equal(grad_anvil, grad_torch, tolerance = 1e-6)
+  }
+
+  it("3x3", verify_lu_grad(3L))
+  it("5x5", verify_lu_grad(5L))
+})

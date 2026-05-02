@@ -3,8 +3,6 @@ NULL
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @useDynLib anvil, .registration = TRUE
-#' @importFrom Rcpp sourceCpp
 #' @importFrom stablehlo repr Shape FuncId Func FuncValue
 #' @importFrom stablehlo local_func hlo_input hlo_return hlo_tensor hlo_scalar
 #' @importFrom stablehlo TensorType
