@@ -29,7 +29,7 @@ original return value of \code{f}) and \code{grad} (the gradients, structured li
 the \code{wrt} subset).
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 loss_fn <- function(x) sum(x^2L)
 vg <- jit(value_and_gradient(loss_fn))
 result <- vg(nv_array(c(3, 4), dtype = "f32"))

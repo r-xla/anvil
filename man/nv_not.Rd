@@ -18,7 +18,7 @@ Has the same shape and data type as the input.
 Element-wise logical NOT. You can also use the \code{!} operator.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(c(TRUE, FALSE, TRUE))
   !x

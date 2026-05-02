@@ -23,7 +23,7 @@ order, such that \code{a = V \%*\% diag(W) \%*\% t(V)}.
 Uses a LAPACK / cuSOLVER custom call via the XLA FFI.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(matrix(c(2, 1, 1, 2), nrow = 2), dtype = "f64")
   nv_eigh(x)

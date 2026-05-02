@@ -26,7 +26,7 @@ invoking the result.
 Useful if you want to evaluate an expression once.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1, 2, 3), dtype = "f32")
 jit_eval(x + x)
 \dontshow{\}) # examplesIf}

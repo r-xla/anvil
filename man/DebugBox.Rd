@@ -33,7 +33,7 @@ The convenience constructor \code{\link[=debug_box]{debug_box()}} creates a \cod
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(1:4)
 y <- nv_array(5:8)
 result <- nv_add(x, y)

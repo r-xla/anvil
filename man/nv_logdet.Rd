@@ -12,6 +12,12 @@ nv_logdet(a)
 \arguments{
 \item{a}{(\code{\link{arrayish}})\cr
 Square matrix of floating-point data type.}
+
+\item{x}{Same as \code{a} -- present for S3 method consistency with \code{\link[base:det]{base::determinant()}}.}
+
+\item{logarithm}{(\code{logical(1)}) If \code{TRUE} (default), return the natural log of \verb{|det(x)|}; if \code{FALSE}, return \verb{|det(x)|} directly.}
+
+\item{...}{Ignored; present for S3 method consistency with \code{\link[base:det]{base::determinant()}}.}
 }
 \value{
 Scalar \code{\link{arrayish}} with the same dtype as \code{a}.
@@ -23,7 +29,7 @@ This is the analogue of \code{determinant(a, logarithm = TRUE)$modulus} in
 base R.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
   nv_logdet(a)

@@ -12,6 +12,10 @@ nv_qr(a)
 \arguments{
 \item{a}{(\code{\link{arrayish}})\cr
 Matrix of data type floating-point with exactly 2 dimensions.}
+
+\item{x}{Same as \code{a} -- present for S3 method consistency with \code{\link[base:qr]{base::qr()}}.}
+
+\item{...}{Ignored; present for S3 method consistency with \code{\link[base:qr]{base::qr()}}.}
 }
 \value{
 Named \code{list} with elements \code{Q} and \code{R}:\cr
@@ -27,7 +31,7 @@ where \code{k = min(m, n)}, such that \code{a = Q \%*\% R}.
 Uses a LAPACK-based custom call via the XLA FFI.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(matrix(c(1, 2, 3, 4, 5, 6), nrow = 3), dtype = "f32")
   result <- nv_qr(x)

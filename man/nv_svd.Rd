@@ -24,7 +24,7 @@ currently requires \code{m >= n} (cuSOLVER \code{gesvd} restriction); the host
 backend supports any shape.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(matrix(c(1, 0, 0, 1, 0, 1), nrow = 3), dtype = "f64")
   nv_svd(x)

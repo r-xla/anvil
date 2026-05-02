@@ -35,7 +35,7 @@ anvl stack and is not yet supported. If \code{symmetric = FALSE} is passed
 explicitly, an error is raised.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   a <- nv_array(matrix(c(2, 1, 1, 2), nrow = 2), dtype = "f64")
   nv_eigen(a)

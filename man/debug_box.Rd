@@ -26,7 +26,7 @@ Convenience constructor that creates a \code{\link{DebugBox}} from a data type a
 without having to manually construct an \code{\link{AbstractArray}} first.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # Create a debug box representing a 2x3 f32 array
 db <- debug_box("f32", c(2L, 3L))
 db

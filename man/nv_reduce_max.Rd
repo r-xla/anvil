@@ -26,7 +26,7 @@ When \code{drop = FALSE}, the reduced dimensions are set to 1.
 Finds the maximum of array elements along the specified dimensions.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(matrix(1:6, nrow = 2))
   nv_reduce_max(x, dims = 1L)

@@ -39,7 +39,7 @@ via \code{\link[=stablehlo]{stablehlo()}} and then compiles it to an XLA executa
 and compiles it to an XLA executable immediately.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 f_compiled <- xla(function(x, y) x + y,
   args = list(x = nv_abstract("f32", c(2, 2)), y = nv_abstract("f32", c(2, 2)))
 )

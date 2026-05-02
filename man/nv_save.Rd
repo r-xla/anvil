@@ -25,7 +25,7 @@ This is a convenience wrapper around \code{\link[=nv_serialize]{nv_serialize()}}
 a file connection.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded("cpu")) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded("cpu")) withAutoprint(\{ # examplesIf}
 x <- nv_array(array(1:6, dim = c(2, 3)))
 x
 path <- tempfile(fileext = ".safetensors")

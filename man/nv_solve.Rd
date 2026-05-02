@@ -16,6 +16,8 @@ Square non-singular matrix.}
 \item{b}{(\code{\link{arrayish}})\cr
 Right-hand side, vector of length \code{n} or matrix with \code{n} rows. Must
 have the same data type as \code{a}.}
+
+\item{...}{Ignored; present for S3 method consistency with \code{\link[base:solve]{base::solve()}}.}
 }
 \value{
 \code{\link{arrayish}}\cr
@@ -36,7 +38,7 @@ non-singular (it does not have to be symmetric or positive-definite).
 }
 
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
   b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")

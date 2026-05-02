@@ -25,7 +25,7 @@ triangular \verb{(k, n)}, and \code{P} is the row permutation encoded by \code{p
 Uses a LAPACK / cuSOLVER custom call via the XLA FFI.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   x <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
   nv_lu(x)

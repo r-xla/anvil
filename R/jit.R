@@ -32,7 +32,7 @@
 #' @seealso [`xla()`] for ahead-of-time compilation, [`jit_eval()`] for evaluating an expression once.
 #' @return (`function`)
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' f <- jit(function(x, y) x + y)
 #' f(nv_array(1), nv_array(2))
 #'
@@ -384,7 +384,7 @@ compile_to_quickr <- function(f, args_flat, in_tree) {
 #'   and returns the result as [`AnvilArray`]s.
 #' @seealso [`jit()`] for lazy compilation, [`compile_to_xla()`] for the lower-level API.
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' f_compiled <- xla(function(x, y) x + y,
 #'   args = list(x = nv_abstract("f32", c(2, 2)), y = nv_abstract("f32", c(2, 2)))
 #' )
@@ -439,7 +439,7 @@ xla <- function(f, args, donate = character(), device = NULL) {
 #' @return (`any`)\cr
 #'   Result of the compiled and evaluated expression.
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3), dtype = "f32")
 #' jit_eval(x + x)
 jit_eval <- function(expr, device = NULL) {

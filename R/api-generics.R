@@ -168,7 +168,7 @@ is.finite.AnvilArray <- is.finite.AnvilBox
 #' @return [`arrayish`]\cr
 #'   Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
 #' @seealso [nvl_transpose()] for the underlying primitive.
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' jit_eval({
 #'   x <- nv_array(matrix(1:6, nrow = 2))
 #'   t(x)
@@ -233,6 +233,7 @@ tcrossprod.AnvilArray <- tcrossprod.AnvilBox
 # nv_eigh() directly.
 
 #' @rdname nv_solve
+#' @param ... Ignored; present for S3 method consistency with [base::solve()].
 #' @method solve AnvilBox
 #' @export
 solve.AnvilBox <- function(a, b, ...) {
@@ -244,6 +245,8 @@ solve.AnvilBox <- function(a, b, ...) {
 solve.AnvilArray <- solve.AnvilBox
 
 #' @rdname nv_qr
+#' @param x Same as `a` -- present for S3 method consistency with [base::qr()].
+#' @param ... Ignored; present for S3 method consistency with [base::qr()].
 #' @method qr AnvilBox
 #' @export
 qr.AnvilBox <- function(x, ...) {
@@ -255,6 +258,8 @@ qr.AnvilBox <- function(x, ...) {
 qr.AnvilArray <- qr.AnvilBox
 
 #' @rdname nv_cholesky
+#' @param x Same as `a` -- present for S3 method consistency with [base::chol()].
+#' @param ... Ignored; present for S3 method consistency with [base::chol()].
 #' @method chol AnvilBox
 #' @export
 chol.AnvilBox <- function(x, ...) {
@@ -268,6 +273,9 @@ chol.AnvilBox <- function(x, ...) {
 chol.AnvilArray <- chol.AnvilBox
 
 #' @rdname nv_logdet
+#' @param x Same as `a` -- present for S3 method consistency with [base::determinant()].
+#' @param logarithm (`logical(1)`) If `TRUE` (default), return the natural log of `|det(x)|`; if `FALSE`, return `|det(x)|` directly.
+#' @param ... Ignored; present for S3 method consistency with [base::determinant()].
 #' @method determinant AnvilBox
 #' @export
 determinant.AnvilBox <- function(x, logarithm = TRUE, ...) {

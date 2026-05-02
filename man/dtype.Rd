@@ -22,7 +22,7 @@ Returns the data type of an array (e.g. \code{f32}, \code{i64}).
 This is implemented via the generic \code{\link[tengen:dtype]{tengen::dtype()}}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(1:4, dtype = "f32")
 dtype(x)
 \dontshow{\}) # examplesIf}

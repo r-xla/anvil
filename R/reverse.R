@@ -233,7 +233,7 @@ transform_gradient <- function(graph, wrt) {
 #' @seealso [`value_and_gradient()`] to get both the output and gradients,
 #'   [`transform_gradient()`] for the low-level graph transformation.
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' f <- function(x, y) sum(x * y)
 #' g <- jit(gradient(f))
 #' g(nv_array(c(1, 2), dtype = "f32"), nv_array(c(3, 4), dtype = "f32"))
@@ -283,7 +283,7 @@ gradient <- function(f, wrt = NULL) {
 #'   `list(value = ..., grad = ...)`.
 #' @seealso [`gradient()`]
 #' @export
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' loss_fn <- function(x) sum(x^2L)
 #' vg <- jit(value_and_gradient(loss_fn))
 #' result <- vg(nv_array(c(3, 4), dtype = "f32"))

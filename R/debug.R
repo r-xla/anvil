@@ -21,7 +21,7 @@
 #'   The abstract array representing the value.
 #' @seealso [AnvilBox], [GraphBox], [debug_box()], [AbstractArray]
 #' @return (`DebugBox`)
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(1:4)
 #' y <- nv_array(5:8)
 #' result <- nv_add(x, y)
@@ -87,7 +87,7 @@ print.DebugBox <- function(x, ...) {
 #' @template param_ambiguous
 #' @seealso [DebugBox], [AbstractArray], [trace_fn()]
 #' @return ([`DebugBox`])
-#' @examplesIf pjrt::plugin_is_downloaded()
+#' @examplesIf pjrt::plugins_downloaded()
 #' # Create a debug box representing a 2x3 f32 array
 #' db <- debug_box("f32", c(2L, 3L))
 #' db

@@ -18,7 +18,7 @@ Computes the determinant of a square matrix using its LU decomposition:
 \code{det(A) = sign(P) * prod(diag(U))} where \verb{P A = L U}.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
   nv_det(a)

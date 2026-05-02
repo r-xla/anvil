@@ -19,6 +19,10 @@ are batch dimensions.}
 If \code{TRUE} (default), compute the lower triangular factor \code{L} such that
 \code{a = L \%*\% t(L)}. If \code{FALSE}, compute the upper triangular factor \code{U}
 such that \code{a = t(U) \%*\% U}.}
+
+\item{x}{Same as \code{a} -- present for S3 method consistency with \code{\link[base:chol]{base::chol()}}.}
+
+\item{...}{Ignored; present for S3 method consistency with \code{\link[base:chol]{base::chol()}}.}
 }
 \value{
 \code{\link{arrayish}}\cr
@@ -29,7 +33,7 @@ Computes the Cholesky decomposition of a symmetric positive-definite matrix.
 Supports batched inputs: dimensions before the last two are batch dimensions.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 jit_eval({
   a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
   nv_cholesky(a)

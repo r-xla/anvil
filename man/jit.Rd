@@ -55,7 +55,7 @@ skip recompilation. Unlike \code{\link[=xla]{xla()}}, the compiled executable is
 eagerly but lazily on the first invocation.
 }
 \examples{
-\dontshow{if (pjrt::plugin_is_downloaded()) withAutoprint(\{ # examplesIf}
+\dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 f <- jit(function(x, y) x + y)
 f(nv_array(1), nv_array(2))
 
