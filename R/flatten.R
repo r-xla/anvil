@@ -472,10 +472,6 @@ pmap_tree <- function(.l, .f, ...) {
 #' Walks two trees in parallel and returns the first path/subtree pair where
 #' they diverge, or `NULL` if they are structurally identical. The returned
 #' `prefix` follows [tree_path()] syntax.
-#'
-#' `identical()` is called once on the full trees as a fast equality
-#' short-circuit; recursion below uses structural comparison only, so the cost
-#' is linear in tree size.
 #' @param a,b (`Node`)\cr
 #'   Trees to compare, as returned by [build_tree()].
 #' @param prefix (`character(1)`)\cr

@@ -22,10 +22,6 @@ diverging subtrees).
 Walks two trees in parallel and returns the first path/subtree pair where
 they diverge, or \code{NULL} if they are structurally identical. The returned
 \code{prefix} follows \code{\link[=tree_path]{tree_path()}} syntax.
-
-\code{identical()} is called once on the full trees as a fast equality
-short-circuit; recursion below uses structural comparison only, so the cost
-is linear in tree size.
 }
 \seealso{
 \code{\link[=build_tree]{build_tree()}}, \code{\link[=tree_path]{tree_path()}}
