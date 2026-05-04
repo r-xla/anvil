@@ -26,6 +26,7 @@ Output position \code{j} along \code{dim} equals \verb{max(input[1..j])}.
 
 \itemize{
 \item \code{stablehlo}
+\item \code{reverse}
 }
 }
 

@@ -18,9 +18,15 @@ Dimension along which to accumulate (1-indexed).}
 Has the same shape and data type as the input.
 }
 \description{
-Cumulative product along a single dimension. You can also use
-\code{\link[base:cumsum]{base::cumprod()}} (which flattens to a vector first, like base R).
+Cumulative product along a single dimension.
 }
+\section{Relation to base R}{
+
+Base R's \code{\link[base:cumsum]{base::cumprod()}} flattens to a vector first; \code{nv_cumprod()}
+requires an explicit \code{dim}. The \code{cumprod(x)} S3 method on an \code{\link{AnvlBox}} /
+\code{\link{AnvlArray}} only works for 1-dimensional inputs.
+}
+
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(matrix(1:6, nrow = 2))

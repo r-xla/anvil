@@ -18,9 +18,17 @@ Dimension along which to accumulate (1-indexed).}
 Has the same shape and data type as the input.
 }
 \description{
-Cumulative sum along a single dimension. You can also use \code{\link[base:cumsum]{base::cumsum()}}
-(which flattens to a vector first, like base R).
+Cumulative sum along a single dimension.
 }
+\section{Relation to base R}{
+
+Base R's \code{\link[base:cumsum]{base::cumsum()}} flattens a matrix or array to a vector before
+accumulating. \code{nv_cumsum()} requires an explicit \code{dim} and never flattens.
+The S3 method \code{cumsum(x)} dispatched on an \code{\link{AnvlBox}} / \code{\link{AnvlArray}}
+accepts only 1-dimensional inputs (and uses \code{dim = 1L}); on a higher-rank
+input it raises an error directing users to \code{nv_cumsum()}.
+}
+
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(matrix(1:6, nrow = 2))

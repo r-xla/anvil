@@ -1448,12 +1448,17 @@ nv_reduce_all <- prim_reduce_all
 
 #' @title Cumulative Sum
 #' @description
-#' Cumulative sum along a single dimension. You can also use [base::cumsum()]
-#' (which flattens to a vector first, like base R).
+#' Cumulative sum along a single dimension.
 #' @template param_operand
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which to accumulate (1-indexed).
 #' @template return_unary
+#' @section Relation to base R:
+#' Base R's [base::cumsum()] flattens a matrix or array to a vector before
+#' accumulating. `nv_cumsum()` requires an explicit `dim` and never flattens.
+#' The S3 method `cumsum(x)` dispatched on an [`AnvlBox`] / [`AnvlArray`]
+#' accepts only 1-dimensional inputs (and uses `dim = 1L`); on a higher-rank
+#' input it raises an error directing users to `nv_cumsum()`.
 #' @seealso [prim_cumsum()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
@@ -1466,12 +1471,15 @@ nv_cumsum <- function(operand, dim = 1L) {
 
 #' @title Cumulative Product
 #' @description
-#' Cumulative product along a single dimension. You can also use
-#' [base::cumprod()] (which flattens to a vector first, like base R).
+#' Cumulative product along a single dimension.
 #' @template param_operand
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which to accumulate (1-indexed).
 #' @template return_unary
+#' @section Relation to base R:
+#' Base R's [base::cumprod()] flattens to a vector first; `nv_cumprod()`
+#' requires an explicit `dim`. The `cumprod(x)` S3 method on an [`AnvlBox`] /
+#' [`AnvlArray`] only works for 1-dimensional inputs.
 #' @seealso [prim_cumprod()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2))
@@ -1484,12 +1492,15 @@ nv_cumprod <- function(operand, dim = 1L) {
 
 #' @title Cumulative Maximum
 #' @description
-#' Running maximum along a single dimension. You can also use
-#' [base::cummax()] (which flattens to a vector first, like base R).
+#' Running maximum along a single dimension.
 #' @template param_operand
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which to accumulate (1-indexed).
 #' @template return_unary
+#' @section Relation to base R:
+#' Base R's [base::cummax()] flattens to a vector first; `nv_cummax()`
+#' requires an explicit `dim`. The `cummax(x)` S3 method on an [`AnvlBox`] /
+#' [`AnvlArray`] only works for 1-dimensional inputs.
 #' @seealso [prim_cummax()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
@@ -1502,12 +1513,15 @@ nv_cummax <- function(operand, dim = 1L) {
 
 #' @title Cumulative Minimum
 #' @description
-#' Running minimum along a single dimension. You can also use
-#' [base::cummin()] (which flattens to a vector first, like base R).
+#' Running minimum along a single dimension.
 #' @template param_operand
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which to accumulate (1-indexed).
 #' @template return_unary
+#' @section Relation to base R:
+#' Base R's [base::cummin()] flattens to a vector first; `nv_cummin()`
+#' requires an explicit `dim`. The `cummin(x)` S3 method on an [`AnvlBox`] /
+#' [`AnvlArray`] only works for 1-dimensional inputs.
 #' @seealso [prim_cummin()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))

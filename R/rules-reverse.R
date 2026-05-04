@@ -648,28 +648,96 @@ prim_cumsum[["reverse"]] <- function(inputs, outputs, grads, dim, .required) {
 
 prim_cumprod[["reverse"]] <- function(inputs, outputs, grads, dim, .required) {
   operand <- inputs[[1L]]
-  y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
-    # d y_j / d x_i = y_j / x_i for i <= j, so
-    # grad_i = (1 / x_i) * sum_{j>=i} grad_out_j * y_j (= reverse-cumsum of grad*y).
-    # Replace x_i == 0 by 1 in the denominator to avoid 0/0; the numerator is
-    # also 0 there since y_j == 0 for all j >= i, so the result is 0. This is
-    # not the "true" gradient when x_i is the only zero in the prefix.
+    # Per cumprod prefix [1..j] (zc[j] = number of zeros in the prefix):
+    #   zc[j] == 0: dy_j/dx_i = y_safe[j] / x_i for all i <= j.
+    #   zc[j] == 1 with the zero at position i: dy_j/dx_i = y_safe[j].
+    #   zc[j] == 1 with the zero at position k != i, or zc[j] >= 2: dy_j/dx_i = 0.
+    # Compute over y_safe = cumprod(safe_operand) and split the rev-cumsum
+    # contributions by zc[j] depending on whether x_i is itself a zero.
     if (.required[[1L]]) {
       is_zero <- prim_eq(operand, zeros_like(operand))
       safe_operand <- prim_ifelse(is_zero, ones_like(operand), operand)
-      gy <- prim_mul(grad, y)
-      prim_div(prim_reverse(prim_cumsum(prim_reverse(gy, dim), dim), dim), safe_operand)
+      y_safe <- prim_cumprod(safe_operand, dim = dim)
+
+      is_zero_num <- prim_convert(is_zero, dtype = dtype(operand))
+      zero_count <- prim_cumsum(is_zero_num, dim = dim)
+
+      gy_safe <- prim_mul(grad, y_safe)
+      zeros_dt <- zeros_like(zero_count)
+      one_dt <- prim_fill(1, dtype = dtype(operand), shape = shape(operand))
+
+      no_zeros <- prim_eq(zero_count, zeros_dt)
+      one_zero <- prim_eq(zero_count, one_dt)
+
+      zeros_g <- zeros_like(gy_safe)
+      h_no_zeros <- prim_ifelse(no_zeros, gy_safe, zeros_g)
+      h_one_zero <- prim_ifelse(one_zero, gy_safe, zeros_g)
+
+      rev_cum_no_zeros <- prim_reverse(prim_cumsum(prim_reverse(h_no_zeros, dim), dim), dim)
+      rev_cum_one_zero <- prim_reverse(prim_cumsum(prim_reverse(h_one_zero, dim), dim), dim)
+
+      prim_ifelse(is_zero, rev_cum_one_zero, prim_div(rev_cum_no_zeros, safe_operand))
     }
   )
 }
 
-prim_cummax[["reverse"]] <- prim_cummin[["reverse"]] <- function(inputs, outputs, grads, dim, .required) {
+.cum_extreme_reverse <- function(inputs, outputs, grads, dim, .required, is_max) {
+  if (!.required[[1L]]) {
+    return(list(NULL))
+  }
   operand <- inputs[[1L]]
-  list(
-    if (.required[[1L]]) prim_fill(0L, dtype = dtype(operand), shape = shape(operand))
-  )
+  y <- outputs[[1L]]
+  grad <- grads[[1L]]
+  shp <- shape(operand)
+  rank <- length(shp)
+  n <- shp[[dim]]
+  dt <- dtype(operand)
+
+  # arg_run[j] = the input index that holds the running extreme at output j,
+  # using first-occurrence tiebreak (matches torch.cummax/cummin). Computed
+  # by marking strict-ascent positions and taking a running max of the marker.
+  edge_low <- integer(rank)
+  edge_low[[dim]] <- 1L
+  edge_zero <- integer(rank)
+  pad_value <- prim_fill(0, dtype = dt, shape = integer())
+  y_padded <- prim_pad(y, pad_value, edge_low, edge_zero, edge_zero)
+  start <- rep(1L, rank)
+  strides <- rep(1L, rank)
+  y_prev <- prim_static_slice(y_padded, start, shp, strides)
+
+  iota_dim <- prim_iota(dim = dim, dtype = "i32", shape = shp, start = 1L)
+  is_first <- prim_eq(iota_dim, prim_fill(1L, dtype = "i32", shape = shp))
+  strict_ascent <- if (is_max) prim_gt(operand, y_prev) else prim_lt(operand, y_prev)
+  is_ascent <- prim_or(is_first, strict_ascent)
+
+  zero_iota <- prim_fill(0L, dtype = "i32", shape = shp)
+  ascent_marker <- prim_ifelse(is_ascent, iota_dim, zero_iota)
+  arg_run <- prim_cummax(ascent_marker, dim = dim)
+
+  # Insert an "output position" axis at position dim+1 in the augmented shape
+  # so that mask[i, j] = (arg_run[j] == i) along dim, then reduce out j.
+  shp_aug <- append(shp, n, after = dim)
+  tail_aug <- if (dim < rank) seq.int(dim + 2L, rank + 1L) else integer()
+  bd_input <- c(seq_len(dim), tail_aug)
+  bd_output <- c(seq_len(dim - 1L), dim + 1L, tail_aug)
+
+  iota_aug <- prim_broadcast_in_dim(iota_dim, shp_aug, bd_input)
+  arg_run_aug <- prim_broadcast_in_dim(arg_run, shp_aug, bd_output)
+  grad_aug <- prim_broadcast_in_dim(grad, shp_aug, bd_output)
+
+  mask_dt <- prim_convert(prim_eq(iota_aug, arg_run_aug), dtype = dt)
+  contrib <- prim_mul(mask_dt, grad_aug)
+  list(prim_reduce_sum(contrib, dims = dim + 1L, drop = TRUE))
+}
+
+prim_cummax[["reverse"]] <- function(inputs, outputs, grads, dim, .required) {
+  .cum_extreme_reverse(inputs, outputs, grads, dim, .required, is_max = TRUE)
+}
+
+prim_cummin[["reverse"]] <- function(inputs, outputs, grads, dim, .required) {
+  .cum_extreme_reverse(inputs, outputs, grads, dim, .required, is_max = FALSE)
 }
 
 # slice reverse: pad with zeros

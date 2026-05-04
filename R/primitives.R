@@ -787,8 +787,12 @@ prim_reduce_all <- new_primitive("reduce_all", make_reduce_op(infer_reduce_boole
 # cumulative (scan) primitives -------------------------------------------------
 
 infer_cum <- function(operand, dim) {
-  if (!checkmate::test_integerish(dim, lower = 1, upper = max(1L, length(shape(operand))), len = 1L)) {
-    cli_abort("{.arg dim} must be a single integer in 1..{length(shape(operand))}, but is {.val {dim}}")
+  rank <- length(shape(operand))
+  if (rank == 0L) {
+    cli_abort("cumulative ops require at least a 1-dimensional operand, but operand is a scalar")
+  }
+  if (!checkmate::test_integerish(dim, lower = 1, upper = rank, len = 1L)) {
+    cli_abort("{.arg dim} must be a single integer in 1..{rank}, but is {.val {dim}}")
   }
   list(AbstractArray(
     dtype = dtype(operand),
