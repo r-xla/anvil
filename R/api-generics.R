@@ -65,10 +65,10 @@ Math.AnvlBox <- function(x, ...) {
     "log10" = nv_log10(x),
     "tanh" = nv_tanh(x),
     "tan" = nv_tan(x),
-    "cos" = nv_cosine(x),
-    "sin" = nv_sine(x),
+    "cos" = nv_cos(x),
+    "sin" = nv_sin(x),
     "floor" = nv_floor(x),
-    "ceiling" = nv_ceil(x),
+    "ceiling" = nv_ceiling(x),
     "sign" = nv_sign(x),
     "expm1" = nv_expm1(x),
     "log1p" = nv_log1p(x),
@@ -110,15 +110,14 @@ Summary.AnvlBox <- function(..., na.rm) {
   }
   x <- ...elt(1L)
 
-  dims <- seq_along(shape(x))
   switch(
     .Generic, # nolint
-    "max" = nv_reduce_max(x, dims = dims, drop = TRUE),
-    "min" = nv_reduce_min(x, dims = dims, drop = TRUE),
-    "prod" = nv_reduce_prod(x, dims = dims, drop = TRUE),
-    "sum" = nv_reduce_sum(x, dims = dims, drop = TRUE),
-    "any" = nv_reduce_any(x, dims = dims, drop = TRUE),
-    "all" = nv_reduce_all(x, dims = dims, drop = TRUE),
+    "max" = nv_reduce_max(x),
+    "min" = nv_reduce_min(x),
+    "prod" = nv_reduce_prod(x),
+    "sum" = nv_reduce_sum(x),
+    "any" = nv_reduce_any(x),
+    "all" = nv_reduce_all(x),
     cli_abort("invalid method: {(.Generic)}")
   )
 }
@@ -126,11 +125,25 @@ Summary.AnvlBox <- function(..., na.rm) {
 #' @export
 Summary.AnvlArray <- Summary.AnvlBox
 
+#' @rdname nv_mean
+#' @param x ([`arrayish`])\cr Operand.
+#' @param trim Included for compatibility with the [base::mean()] generic.
+#'   Only `trim = 0` is supported; passing any other value raises an error.
+#' @param na.rm Included for compatibility with the [base::mean()] generic.
+#'   anvl arrays do not carry `NA`s; passing `na.rm = TRUE` raises an error.
+#' @param ... Unused.
 #' @export
-mean.AnvlBox <- function(x, ...) {
-  nv_reduce_mean(x, dims = seq_along(shape(x)), drop = TRUE)
+mean.AnvlBox <- function(x, trim = 0, na.rm = FALSE, ...) {
+  if (isTRUE(na.rm)) {
+    cli_abort("{.code na.rm = TRUE} is not supported: anvl arrays do not carry {.code NA}s.")
+  }
+  if (!identical(trim, 0)) {
+    cli_abort("{.arg trim} is not supported by {.fn mean} for anvl arrays.")
+  }
+  nv_mean(x)
 }
 
+#' @rdname nv_mean
 #' @export
 mean.AnvlArray <- mean.AnvlBox
 
@@ -193,6 +206,30 @@ t.AnvlBox <- function(x) {
 
 #' @export
 t.AnvlArray <- t.AnvlBox
+
+#' @rdname nv_median
+#' @export
+median.AnvlBox <- function(x, na.rm = FALSE, ...) {
+  if (isTRUE(na.rm)) {
+    cli_abort("{.code na.rm = TRUE} is not supported: anvl arrays do not carry {.code NA}s.")
+  }
+  nv_median(x, ...)
+}
+
+#' @rdname nv_median
+#' @export
+median.AnvlArray <- median.AnvlBox
+
+#' @rdname nv_sort
+#' @param ... Forwarded to `nv_sort()`.
+#' @export
+sort.AnvlBox <- function(x, decreasing = FALSE, ...) {
+  nv_sort(x, decreasing = decreasing, ...)
+}
+
+#' @rdname nv_sort
+#' @export
+sort.AnvlArray <- sort.AnvlBox
 
 #' @rdname nv_subset
 #' @export

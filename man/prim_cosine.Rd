@@ -39,5 +39,5 @@ prim_cosine(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_cosine]{nv_cosine()}}, \code{\link[=cos]{cos()}}
+\code{\link[=nv_cos]{nv_cos()}}, \code{\link[=cos]{cos()}}
 }

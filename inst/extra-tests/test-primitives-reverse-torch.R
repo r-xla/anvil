@@ -1115,3 +1115,52 @@ describe("prim_triangular_solve", {
   it("masking: lower, unit_diagonal", verify_triangular_solve_masking(lower = TRUE, unit_diagonal = TRUE))
   it("masking: upper, unit_diagonal", verify_triangular_solve_masking(lower = FALSE, unit_diagonal = TRUE))
 })
+
+test_that("prim_sort", {
+  # 2D descending sort with duplicates and is_stable = TRUE.
+  # Hits: descending direction, dim != 1, ties broken stably.
+  set.seed(42)
+  x_arr <- matrix(as.double(sample(1:5, 4 * 6, replace = TRUE)), nrow = 4)
+  w_arr <- matrix(as.double(seq_len(4 * 6)), nrow = 4)
+
+  x_nv <- nv_array(x_arr)
+  w_nv <- nv_array(w_arr)
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE)
+  w_th <- torch::torch_tensor(w_arr)
+
+  f_nv <- function(x) {
+    sorted <- prim_sort(list(x), dim = 2L, descending = TRUE, is_stable = TRUE)[[1L]]
+    nv_reduce_sum(sorted * w_nv, dims = c(1L, 2L))
+  }
+  grad_nv <- jit(gradient(f_nv))(x_nv)[[1L]]
+
+  sorted_th <- torch::torch_sort(x_th, dim = 2L, descending = TRUE, stable = TRUE)[[1L]]
+  (sorted_th * w_th)$sum()$backward()
+
+  expect_equal(tengen::as_array(grad_nv), as_array_torch(x_th$grad), tolerance = 1e-5)
+})
+
+test_that("prim_top_k", {
+  # 2D top-k along the last dim. Use distinct values so ties don't matter
+  # (torch_topk has no `stable` parameter).
+  set.seed(42)
+  x_arr <- matrix(rnorm(4 * 6), nrow = 4)
+  k <- 3L
+  w_arr <- matrix(as.double(seq_len(4 * k)), nrow = 4)
+
+  x_nv <- nv_array(x_arr)
+  w_nv <- nv_array(w_arr)
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE)
+  w_th <- torch::torch_tensor(w_arr)
+
+  f_nv <- function(x) {
+    top <- prim_top_k(x, k = k)[[1L]]
+    nv_reduce_sum(top * w_nv, dims = c(1L, 2L))
+  }
+  grad_nv <- jit(gradient(f_nv))(x_nv)[[1L]]
+
+  top_th <- torch::torch_topk(x_th, k = k, dim = 2L, largest = TRUE, sorted = TRUE)[[1L]]
+  (top_th * w_th)$sum()$backward()
+
+  expect_equal(tengen::as_array(grad_nv), as_array_torch(x_th$grad), tolerance = 1e-5)
+})

@@ -194,3 +194,61 @@ test_that("error handling", {
 test_that("can print GraphLiteral if it holds scalar array", {
   expect_snapshot(GraphLiteral(LiteralArray(nv_scalar(1L), dtype = "i32", shape = integer(), ambiguous = TRUE)))
 })
+
+test_that("trace_fn(mode = 'toplevel') errors when called inside an existing descriptor", {
+  parent <- local_descriptor()
+  expect_error(
+    trace_fn(function(x) x, list(x = nv_scalar(1)), mode = "toplevel"),
+    "must not have a parent descriptor"
+  )
+})
+
+test_that("trace_fn(mode = 'subgraph') errors without a parent descriptor", {
+  expect_error(
+    trace_fn(function(x) x, list(x = nv_scalar(1)), mode = "subgraph"),
+    "requires a parent descriptor"
+  )
+})
+
+test_that("trace_fn(mode = 'inline') errors without a parent descriptor", {
+  expect_error(
+    trace_fn(function(x) x, list(x = nv_scalar(1)), mode = "inline"),
+    "requires a parent descriptor"
+  )
+})
+
+test_that("trace_fn(mode = 'toplevel') passes non-arrayish R values through as static args", {
+  f <- function(x, flag) x
+  graph <- trace_fn(f, list(x = nv_scalar(1), flag = TRUE))
+  expect_equal(length(graph$inputs), 1L)
+  expect_equal(graph$is_static_flat, c(FALSE, TRUE))
+  expect_equal(graph$static_args_flat, list(TRUE))
+})
+
+test_that("trace_fn(mode = 'subgraph') promotes R lits/arrays to AnvlArray inputs", {
+  parent <- local_descriptor()
+  desc <- local_descriptor()
+  graph <- trace_fn(
+    function(x, y) list(x, y),
+    list(x = 1, y = array(c(2, 3))),
+    desc = desc,
+    mode = "subgraph"
+  )
+  expect_equal(length(graph$inputs), 2L)
+  expect_equal(shape(graph$inputs[[1L]]), integer())
+  expect_equal(shape(graph$inputs[[2L]]), 2L)
+})
+
+test_that("trace_fn(mode = 'subgraph') errors on non-arrayish args", {
+  parent <- local_descriptor()
+  desc <- local_descriptor()
+  expect_error(
+    trace_fn(
+      function(x) x,
+      list(x = "string"),
+      desc = desc,
+      mode = "subgraph"
+    ),
+    "all args must be arrayish"
+  )
+})

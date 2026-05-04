@@ -6,7 +6,7 @@ describe("inline_scalarish_constants", {
     expected_constants_after = NULL,
     check_literals = NULL
   ) {
-    graph <- do.call(trace_fn, c(list(f = graph_fun), args, list(toplevel = TRUE)))
+    graph <- do.call(trace_fn, c(list(f = graph_fun), args))
 
     if (!is.null(expected_constants_before)) {
       expect_length(graph$constants, expected_constants_before)
@@ -196,7 +196,7 @@ describe("inline_scalarish_constants", {
       )
     }
 
-    g1 <- trace_fn(f, list(x = nv_scalar(TRUE), y = nv_scalar(TRUE)), toplevel = TRUE)
+    g1 <- trace_fn(f, list(x = nv_scalar(TRUE), y = nv_scalar(TRUE)))
     g2 <- inline_scalarish_constants(g1)
 
     check_inlining(
