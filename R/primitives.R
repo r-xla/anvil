@@ -2488,6 +2488,121 @@ prim_top_k <- new_primitive(
   static = "k"
 )
 
+#' @title Primitive Scan
+#' @description
+#' Applies `body(carry, x)` sequentially over the leading dimension of `xs`,
+#' threading the `carry` state through each iteration and stacking the
+#' per-iteration `y` outputs along a new leading dimension. This is the
+#' analog of [Reduce()] with `accumulate = TRUE`, and of JAX's `lax.scan`.
+#' @param init ([`arrayish`])\cr
+#'   Initial carry value.
+#' @param xs ([`arrayish`])\cr
+#'   Per-step inputs. Iterated along the leading dimension; must have
+#'   non-zero rank.
+#' @param body (`function(carry, x)`)\cr
+#'   Function called once per step. Receives the current `carry` and the
+#'   current row `x` of `xs` (with the leading dimension removed) and must
+#'   return `list(carry = ..., y = ...)`. The returned `carry` must match
+#'   `init` in dtype and shape.
+#' @return Named list with two elements:
+#'   - `carry`: final carry, same dtype and shape as `init`.
+#'   - `y`: per-step outputs stacked along a new leading dimension of size
+#'     `nv_shape(xs)[[1]]`.
+#' @templateVar primitive_id scan
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to a [stablehlo::hlo_while()] loop that uses
+#' [stablehlo::hlo_dynamic_slice()] to read each row of `xs` and
+#' [stablehlo::hlo_dynamic_update_slice()] to write each row of `y`. The
+#' body is lowered to a sub-function and invoked via [stablehlo::hlo_call()].
+#' @seealso [prim_while()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' prim_scan(
+#'   init = nv_scalar(0L),
+#'   xs = nv_array(1:5),
+#'   body = function(carry, x) {
+#'     s <- carry + x
+#'     list(carry = s, y = s)
+#'   }
+#' )
+#' @export
+prim_scan <- new_primitive(
+  "scan",
+  function(init, xs, body) {
+    force(init)
+    force(xs)
+    if (!is.function(body)) {
+      cli_abort("{.arg body} must be a function")
+    }
+
+    xs_shape <- shape(xs)
+    if (length(xs_shape) == 0L) {
+      cli_abort("{.arg xs} must have non-zero rank (need a leading dimension to scan over)")
+    }
+    n <- xs_shape[[1L]]
+
+    current_desc <- .current_descriptor(silent = TRUE)
+    desc_body <- local_descriptor()
+
+    x_slice_aval <- nv_aval(dtype(xs), xs_shape[-1L], ambiguous = ambiguous(xs))
+
+    body_graph <- trace_fn(
+      body,
+      list(carry = init, x = x_slice_aval),
+      desc = desc_body,
+      mode = "subgraph"
+    )
+
+    out_tree <- body_graph$out_tree
+    if (
+      length(body_graph$outputs) != 2L ||
+        !inherits(out_tree, "ListNode") ||
+        !identical(out_tree$names, c("carry", "y"))
+    ) {
+      cli_abort("{.arg body} must return {.code list(carry = ..., y = ...)}.")
+    }
+
+    body_carry_aval <- body_graph$outputs[[1L]]$aval
+    init_aval <- AbstractArray(
+      dtype = dtype(init),
+      shape = shape(init),
+      ambiguous = ambiguous(init)
+    )
+    if (!eq_type(body_carry_aval, init_aval, ambiguity = FALSE)) {
+      cli_abort(
+        "{.arg body} carry output must match {.arg init} in dtype and shape."
+      )
+    }
+
+    for (const in body_graph$constants) {
+      get_box_or_register_const(current_desc, const)
+    }
+
+    infer_fn <- function(init, xs, body_graph, length) {
+      carry_out <- body_graph$outputs[[1L]]$aval
+      y_per_step <- body_graph$outputs[[2L]]$aval
+      y_out <- AbstractArray(
+        dtype = y_per_step$dtype,
+        shape = c(length, shape(y_per_step)),
+        ambiguous = y_per_step$ambiguous
+      )
+      list(carry_out, y_out)
+    }
+
+    out <- graph_desc_add(
+      self,
+      args = list(init = init, xs = xs),
+      params = list(body_graph = body_graph, length = n),
+      infer_fn = infer_fn,
+      desc = current_desc
+    )
+
+    list(carry = out[[1L]], y = out[[2L]])
+  },
+  subgraphs = "body_graph",
+  static = 3L
+)
+
 # Print primitive
 #' @title Primitive Print
 #' @description

@@ -607,6 +607,164 @@ prim_top_k[["stablehlo"]] <- function(operand, k) {
   list(values, indices)
 }
 
+# Inlines `graph`'s ops into the currently-active stablehlo Func. `input_fvals`
+# are the FuncValues to bind to `graph$inputs` (in order). Constants are looked
+# up via `parent_env` (they were registered in the parent descriptor when the
+# higher-order primitive was traced), or materialized as literals if missing.
+# Returns the FuncValues corresponding to `graph$outputs`.
+.inline_graph_into_current_func <- function(graph, input_fvals, parent_env) {
+  env <- HloEnv(parent = parent_env)
+  for (i in seq_along(graph$inputs)) {
+    env_add(env, graph$inputs[[i]], input_fvals[[i]])
+  }
+
+  current_func <- stablehlo::.current_func()
+  gnode_to_fval <- function(gnode) {
+    fval <- env_get(env, gnode)
+    if (!identical(fval$func, current_func)) {
+      stablehlo::FuncValue(fval$value_id, fval$value_type, current_func)
+    } else {
+      fval
+    }
+  }
+
+  for (call in graph$calls) {
+    prim <- call$primitive
+    params <- call$params
+    inputs <- lapply(call$inputs, function(x) {
+      if (is_graph_literal(x)) {
+        fval <- stablehlo::hlo_tensor(
+          value = unwrap_if_array(x$aval$data),
+          dtype = x$aval$dtype,
+          shape = x$aval$shape$dims,
+          func = current_func
+        )
+        env_add(env, x, fval)
+        fval
+      } else {
+        gnode_to_fval(x)
+      }
+    })
+    if (is_higher_order_primitive(prim)) {
+      params <- c(params, list(.env = env))
+    }
+    fvals_out <- rlang::exec(prim[["stablehlo"]], !!!c(inputs, params))
+    if (length(call$outputs) != length(fvals_out)) {
+      cli_abort("Internal: expected {length(call$outputs)} outputs, got {length(fvals_out)}")
+    }
+    for (i in seq_along(fvals_out)) {
+      env_add(env, call$outputs[[i]], fvals_out[[i]])
+    }
+  }
+
+  lapply(graph$outputs, function(o) {
+    if (is_graph_literal(o)) {
+      stablehlo::hlo_tensor(
+        value = o$aval$data,
+        dtype = o$aval$dtype,
+        shape = o$aval$shape$dims,
+        func = current_func
+      )
+    } else {
+      gnode_to_fval(o)
+    }
+  })
+}
+
+prim_scan[["stablehlo"]] <- function(init, xs, body_graph, length, .env) {
+  parent_func <- init$func
+
+  carry_vt <- init$value_type
+  carry_dtype <- as.character(dtype(init))
+  carry_shape <- shape(carry_vt)
+
+  xs_vt <- xs$value_type
+  xs_dtype <- as.character(dtype(xs))
+  xs_shape <- shape(xs_vt)
+  x_slice_shape <- xs_shape[-1L]
+
+  y_per_step_aval <- body_graph$outputs[[2L]]$aval
+  y_dtype <- as.character(y_per_step_aval$dtype)
+  y_per_step_shape <- y_per_step_aval$shape$dims
+  ys_shape <- c(length, y_per_step_shape)
+
+  i_dtype <- "i32"
+
+  i_init <- stablehlo::hlo_scalar(0L, dtype = i_dtype, func = parent_func)
+  ys_init <- stablehlo::hlo_tensor(
+    value = 0L,
+    dtype = y_dtype,
+    shape = ys_shape,
+    func = parent_func
+  )
+
+  # cond Func: (i, carry, ys, xs) -> i < length
+  stablehlo::local_func("scan_cond")
+  cond_i <- stablehlo::hlo_input("i", dtype = i_dtype, shape = integer())
+  stablehlo::hlo_input("carry", dtype = carry_dtype, shape = carry_shape)
+  stablehlo::hlo_input("ys", dtype = y_dtype, shape = ys_shape)
+  stablehlo::hlo_input("xs", dtype = xs_dtype, shape = xs_shape)
+  cond_n <- stablehlo::hlo_scalar(length, dtype = i_dtype)
+  cond_pred <- stablehlo::hlo_compare(
+    cond_i,
+    cond_n,
+    comparison_direction = "LT",
+    compare_type = "SIGNED"
+  )
+  cond_func <- stablehlo::hlo_return(cond_pred)
+
+  # body Func: (i, carry, ys, xs) -> (i+1, new_carry, new_ys, xs)
+  stablehlo::local_func("scan_body")
+  bi <- stablehlo::hlo_input("i", dtype = i_dtype, shape = integer())
+  bcarry <- stablehlo::hlo_input("carry", dtype = carry_dtype, shape = carry_shape)
+  bys <- stablehlo::hlo_input("ys", dtype = y_dtype, shape = ys_shape)
+  bxs <- stablehlo::hlo_input("xs", dtype = xs_dtype, shape = xs_shape)
+
+  zero_idx <- stablehlo::hlo_scalar(0L, dtype = i_dtype)
+  starts_x <- c(list(bi), rep(list(zero_idx), length(x_slice_shape)))
+  x_block <- rlang::exec(
+    stablehlo::hlo_dynamic_slice,
+    bxs,
+    !!!starts_x,
+    slice_sizes = c(1L, x_slice_shape)
+  )
+  x_slice <- stablehlo::hlo_reshape(x_block, shape = x_slice_shape)
+
+  body_outs <- .inline_graph_into_current_func(
+    body_graph,
+    input_fvals = list(bcarry, x_slice),
+    parent_env = .env
+  )
+  new_carry <- body_outs[[1L]]
+  body_y <- body_outs[[2L]]
+
+  y_unsq <- stablehlo::hlo_reshape(body_y, shape = c(1L, y_per_step_shape))
+  starts_y <- c(list(bi), rep(list(zero_idx), length(y_per_step_shape)))
+  new_ys <- rlang::exec(
+    stablehlo::hlo_dynamic_update_slice,
+    bys,
+    y_unsq,
+    !!!starts_y
+  )
+
+  one <- stablehlo::hlo_scalar(1L, dtype = i_dtype)
+  new_i <- stablehlo::hlo_add(bi, one)
+
+  body_func <- stablehlo::hlo_return(new_i, new_carry, new_ys, bxs)
+
+  result <- stablehlo::hlo_while(
+    i_init,
+    init,
+    ys_init,
+    xs,
+    cond = cond_func,
+    body = body_func,
+    simplify = FALSE
+  )
+
+  list(result[[2L]], result[[3L]])
+}
+
 prim_scatter[["stablehlo"]] <- function(
   input,
   scatter_indices,

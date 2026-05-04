@@ -550,6 +550,96 @@ describe("prim_while", {
   })
 })
 
+describe("prim_scan", {
+  it("computes a cumulative sum", {
+    f <- jit(function(init, xs) {
+      prim_scan(init, xs, function(carry, x) {
+        s <- carry + x
+        list(carry = s, y = s)
+      })
+    })
+    res <- f(nv_scalar(0L), nv_array(1:5))
+    expect_equal(res$carry, nv_scalar(15L))
+    expect_equal(res$y, nv_array(c(1L, 3L, 6L, 10L, 15L)))
+  })
+
+  it("works with floats and a multi-dim xs", {
+    f <- jit(function(init, xs) {
+      prim_scan(init, xs, function(carry, x) {
+        s <- carry + x
+        list(carry = s, y = s)
+      })
+    })
+    init <- nv_array(c(0, 0), dtype = "f32")
+    xs <- nv_array(matrix(c(1, 2, 3, 4, 5, 6), nrow = 3, byrow = TRUE), dtype = "f32")
+    res <- f(init, xs)
+    expect_equal(as_array(res$carry), array(c(9, 12)))
+    expect_equal(
+      as_array(res$y),
+      array(c(1, 4, 9, 2, 6, 12), dim = c(3, 2))
+    )
+  })
+
+  it("supports y with shape different from carry", {
+    f <- jit(function(init, xs, template) {
+      prim_scan(init, xs, function(carry, x) {
+        s <- carry + x
+        list(carry = s, y = template + s)
+      })
+    })
+    res <- f(
+      nv_scalar(0, dtype = "f32"),
+      nv_array(c(1, 2, 3, 4), dtype = "f32"),
+      nv_array(c(0, 0), dtype = "f32")
+    )
+    expect_equal(as_array(res$carry), 10)
+    expect_equal(
+      as_array(res$y),
+      array(c(1, 3, 6, 10, 1, 3, 6, 10), dim = c(4, 2))
+    )
+  })
+
+  it("matches Reduce(accumulate = TRUE) for an arbitrary scan", {
+    f <- jit(function(init, xs) {
+      prim_scan(init, xs, function(carry, x) {
+        # carry_i = carry_{i-1} * 2 + x_i
+        s <- carry * nv_scalar(2L) + x
+        list(carry = s, y = s)
+      })
+    })
+    init <- 0L
+    xs_r <- c(1L, 2L, 3L, 4L, 5L)
+    res <- f(nv_scalar(init), nv_array(xs_r))
+    expected <- Reduce(function(c, x) c * 2L + x, xs_r, init, accumulate = TRUE)[-1L]
+    expect_equal(as_array(res$y), array(expected))
+    expect_equal(as_array(res$carry), expected[length(expected)])
+  })
+
+  it("errors when body does not return list(carry, y)", {
+    expect_error(
+      jit(function(init, xs) {
+        prim_scan(init, xs, function(carry, x) carry + x)
+      })(nv_scalar(0L), nv_array(1:3)),
+      "must return"
+    )
+    expect_error(
+      jit(function(init, xs) {
+        prim_scan(init, xs, function(carry, x) list(z = carry + x, y = carry + x))
+      })(nv_scalar(0L), nv_array(1:3)),
+      "must return"
+    )
+  })
+
+  it("errors when xs has rank 0", {
+    expect_error(
+      jit(function(init, xs) {
+        prim_scan(init, xs, function(carry, x) list(carry = carry, y = carry))
+      })(nv_scalar(0L), nv_scalar(1L)),
+      "non-zero rank"
+    )
+  })
+})
+
 test_that("prim_cholesky", {
   A <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
   L <- as_array(jit(function(A) prim_cholesky(A, lower = TRUE))(A))
