@@ -746,37 +746,40 @@ prim_cumsum[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params
 prim_cumprod[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   dim <- params$dim
   operand <- inputs[[1L]]
+  y <- outputs[[1L]]
   grad <- grads[[1L]]
   list(
-    # Per cumprod prefix [1..j] (zc[j] = number of zeros in the prefix):
-    #   zc[j] == 0: dy_j/dx_i = y_safe[j] / x_i for all i <= j.
-    #   zc[j] == 1 with the zero at position i: dy_j/dx_i = y_safe[j].
-    #   zc[j] == 1 with the zero at position k != i, or zc[j] >= 2: dy_j/dx_i = 0.
-    # Compute over y_safe = cumprod(safe_operand) and split the rev-cumsum
-    # contributions by zc[j] depending on whether x_i is itself a zero.
+    # grad_x = term_1 + term_2 where:
+    #   term_1 (the standard formula): rev_cumsum(grad * y) / safe_operand.
+    #     `grad * y` is automatically `grad * y_safe * I[zc == 0]` since
+    #     y_j = 0 whenever the prefix [1..j] contains any zero, so no zc==0
+    #     mask is needed. Dividing by safe_operand replaces 0/0 with 0 at
+    #     zero positions; term_1 is also 0 there because every j >= i has
+    #     y_j = 0, so the rev_cumsum is 0.
+    #   term_2 (the single-zero correction): contributes only at the FIRST
+    #     zero position per slice, since any later zero has zc[j] >= 2 for
+    #     all j >= it. We compute rev_cumsum(grad * y_safe * I[zc == 1])
+    #     and select it at positions where (is_zero & zc == 1) — the
+    #     unique-first-zero indicator.
     if (required[[1L]]) {
       is_zero <- prim_eq(operand, zeros_like(operand))
       safe_operand <- prim_ifelse(is_zero, ones_like(operand), operand)
+
+      gy <- prim_mul(grad, y)
+      term_1 <- prim_div(
+        prim_reverse(prim_cumsum(prim_reverse(gy, dim), dim), dim),
+        safe_operand
+      )
+
       y_safe <- prim_cumprod(safe_operand, dim = dim)
+      zero_count <- prim_cumsum(prim_convert(is_zero, dtype = dtype(operand)), dim = dim)
+      one_zero <- prim_eq(zero_count, ones_like(zero_count))
+      h_one <- prim_ifelse(one_zero, prim_mul(grad, y_safe), zeros_like(grad))
+      rev_cum_one <- prim_reverse(prim_cumsum(prim_reverse(h_one, dim), dim), dim)
+      is_first_zero <- prim_and(is_zero, one_zero)
+      term_2 <- prim_ifelse(is_first_zero, rev_cum_one, zeros_like(rev_cum_one))
 
-      is_zero_num <- prim_convert(is_zero, dtype = dtype(operand))
-      zero_count <- prim_cumsum(is_zero_num, dim = dim)
-
-      gy_safe <- prim_mul(grad, y_safe)
-      zeros_dt <- zeros_like(zero_count)
-      one_dt <- prim_fill(1, dtype = dtype(operand), shape = shape(operand))
-
-      no_zeros <- prim_eq(zero_count, zeros_dt)
-      one_zero <- prim_eq(zero_count, one_dt)
-
-      zeros_g <- zeros_like(gy_safe)
-      h_no_zeros <- prim_ifelse(no_zeros, gy_safe, zeros_g)
-      h_one_zero <- prim_ifelse(one_zero, gy_safe, zeros_g)
-
-      rev_cum_no_zeros <- prim_reverse(prim_cumsum(prim_reverse(h_no_zeros, dim), dim), dim)
-      rev_cum_one_zero <- prim_reverse(prim_cumsum(prim_reverse(h_one_zero, dim), dim), dim)
-
-      prim_ifelse(is_zero, rev_cum_one_zero, prim_div(rev_cum_no_zeros, safe_operand))
+      prim_add(term_1, term_2)
     }
   )
 })
