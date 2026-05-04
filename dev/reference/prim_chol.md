@@ -6,7 +6,7 @@ matrix. Dimensions before the last two are batch dimensions.
 ## Usage
 
 ``` r
-prim_cholesky(operand, lower)
+prim_chol(operand, lower)
 ```
 
 ## Arguments
@@ -62,7 +62,7 @@ Mathematisch-Naturwissenschaftliche Fakult"at II.
 ``` r
 # Create a positive-definite matrix
 x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-prim_cholesky(x, lower = TRUE)
+prim_chol(x, lower = TRUE)
 #> AnvlArray
 #>  2.0000 0.0000
 #>  1.0000 1.4142

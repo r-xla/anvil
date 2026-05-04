@@ -203,11 +203,11 @@
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_broadcast_in_dim.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_cbrt.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_ceil.html</loc></url>
-<url><loc>https://r-xla.github.io/anvl/dev/reference/prim_cholesky.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/prim_chol.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_clamp.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_concatenate.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_convert.html</loc></url>
-<url><loc>https://r-xla.github.io/anvl/dev/reference/prim_cosine.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/prim_cos.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_div.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_dot_general.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_dynamic_slice.html</loc></url>
@@ -258,7 +258,7 @@
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_shift_right_arithmetic.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_shift_right_logical.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_sign.html</loc></url>
-<url><loc>https://r-xla.github.io/anvl/dev/reference/prim_sine.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/prim_sin.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_sort.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_sqrt.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_static_slice.html</loc></url>

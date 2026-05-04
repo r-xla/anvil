@@ -23,7 +23,7 @@ Has the same shape and data type as the input.
 
 ## See also
 
-[`prim_sine()`](https://r-xla.github.io/anvl/dev/reference/prim_sine.md)
+[`prim_sin()`](https://r-xla.github.io/anvl/dev/reference/prim_sin.md)
 for the underlying primitive.
 
 ## Examples

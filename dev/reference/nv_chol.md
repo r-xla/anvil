@@ -34,7 +34,7 @@ Triangular matrix with the same shape and data type as the input.
 ## See also
 
 [`nv_solve()`](https://r-xla.github.io/anvl/dev/reference/nv_solve.md),
-[`prim_cholesky()`](https://r-xla.github.io/anvl/dev/reference/prim_cholesky.md)
+[`prim_chol()`](https://r-xla.github.io/anvl/dev/reference/prim_chol.md)
 
 ## Examples
 

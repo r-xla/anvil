@@ -23,7 +23,7 @@ Has the same shape and data type as the input.
 
 ## See also
 
-[`prim_cosine()`](https://r-xla.github.io/anvl/dev/reference/prim_cosine.md)
+[`prim_cos()`](https://r-xla.github.io/anvl/dev/reference/prim_cos.md)
 for the underlying primitive.
 
 ## Examples

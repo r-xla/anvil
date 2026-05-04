@@ -710,7 +710,7 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Cube Root
 - [`prim_ceil()`](https://r-xla.github.io/anvl/dev/reference/prim_ceil.md)
   : Primitive Ceiling
-- [`prim_cholesky()`](https://r-xla.github.io/anvl/dev/reference/prim_cholesky.md)
+- [`prim_chol()`](https://r-xla.github.io/anvl/dev/reference/prim_chol.md)
   : Primitive Cholesky Decomposition
 - [`prim_clamp()`](https://r-xla.github.io/anvl/dev/reference/prim_clamp.md)
   : Primitive Clamp
@@ -718,7 +718,7 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Concatenate
 - [`prim_convert()`](https://r-xla.github.io/anvl/dev/reference/prim_convert.md)
   : Primitive Convert
-- [`prim_cosine()`](https://r-xla.github.io/anvl/dev/reference/prim_cosine.md)
+- [`prim_cos()`](https://r-xla.github.io/anvl/dev/reference/prim_cos.md)
   : Primitive Cosine
 - [`prim_div()`](https://r-xla.github.io/anvl/dev/reference/prim_div.md)
   : Primitive Division
@@ -820,7 +820,7 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Logical Shift Right
 - [`prim_sign()`](https://r-xla.github.io/anvl/dev/reference/prim_sign.md)
   : Primitive Sign
-- [`prim_sine()`](https://r-xla.github.io/anvl/dev/reference/prim_sine.md)
+- [`prim_sin()`](https://r-xla.github.io/anvl/dev/reference/prim_sin.md)
   : Primitive Sine
 - [`prim_sort()`](https://r-xla.github.io/anvl/dev/reference/prim_sort.md)
   : Primitive Sort

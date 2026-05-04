@@ -36,8 +36,8 @@ nv_argsort(x, dim = NULL, decreasing = FALSE, stable = FALSE)
 ## Value
 
 [`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md) of
-dtype `i64`  
-Same shape as `x`. For a size-0 axis, the output is an empty `i64` array
+dtype `i32`  
+Same shape as `x`. For a size-0 axis, the output is an empty `i32` array
 of the same shape (a valid empty permutation).
 `as_array(x)[as_array(nv_argsort(x))]` reproduces the sorted array (for
 1-D inputs).

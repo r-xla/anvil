@@ -1,11 +1,11 @@
-# Primitive Cosine
+# Primitive Sine
 
-Element-wise cosine.
+Element-wise sine.
 
 ## Usage
 
 ``` r
-prim_cosine(operand)
+prim_sin(operand)
 ```
 
 ## Arguments
@@ -32,21 +32,21 @@ input is ambiguous.
 ## StableHLO
 
 Lowers to
-[`stablehlo::hlo_cosine()`](https://r-xla.github.io/stablehlo/reference/hlo_cosine.html).
+[`stablehlo::hlo_sine()`](https://r-xla.github.io/stablehlo/reference/hlo_sine.html).
 
 ## See also
 
-[`nv_cos()`](https://r-xla.github.io/anvl/dev/reference/nv_cos.md),
-[`cos()`](https://rdrr.io/r/base/Trig.html)
+[`nv_sin()`](https://r-xla.github.io/anvl/dev/reference/nv_sin.md),
+[`sin()`](https://rdrr.io/r/base/Trig.html)
 
 ## Examples
 
 ``` r
 x <- nv_array(c(0, pi / 2, pi))
-prim_cosine(x)
+prim_sin(x)
 #> AnvlArray
+#>   0.0000e+00
 #>   1.0000e+00
-#>  -4.3711e-08
-#>  -1.0000e+00
+#>  -8.7423e-08
 #> [ CPUf32{3} ] 
 ```

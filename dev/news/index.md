@@ -13,7 +13,12 @@
   [`nv_ceiling()`](https://r-xla.github.io/anvl/dev/reference/nv_ceiling.md),
   `nv_cholesky()` -\>
   [`nv_chol()`](https://r-xla.github.io/anvl/dev/reference/nv_chol.md).
-  The underlying `prim_*` primitives keep their StableHLO-aligned names.
+  The corresponding primitives were renamed in step: `prim_sine()` -\>
+  [`prim_sin()`](https://r-xla.github.io/anvl/dev/reference/prim_sin.md),
+  `prim_cosine()` -\>
+  [`prim_cos()`](https://r-xla.github.io/anvl/dev/reference/prim_cos.md),
+  `prim_cholesky()` -\>
+  [`prim_chol()`](https://r-xla.github.io/anvl/dev/reference/prim_chol.md).
 - `nv_reduce_mean()` was renamed to
   [`nv_mean()`](https://r-xla.github.io/anvl/dev/reference/nv_mean.md).
 
