@@ -376,8 +376,7 @@ reindex_tree.ListNode <- function(x, counter) {
 #' @description
 #' Apply a function to each leaf of a (possibly nested) list, preserving the
 #' tree structure. Equivalent to flattening `.x` with [flatten()], applying
-#' `.f` to each leaf, and reassembling with [unflatten()]. The argument order
-#' matches [`purrr::map()`].
+#' `.f` to each leaf, and reassembling with [unflatten()].
 #' @param .f (`function`)\cr
 #'   Function to apply to each leaf of `.x`.
 #' @param .x (any)\cr
@@ -388,11 +387,6 @@ reindex_tree.ListNode <- function(x, counter) {
 #' @seealso [flatten()], [build_tree()], [unflatten()], [await()]
 #' @examples
 #' map_tree(\(x) x + 1, list(a = 1, b = list(c = 2, d = 3)))
-#'
-#' # Awaiting a tree of outputs (e.g. for benchmarking)
-#' \dontrun{
-#' map_tree(await, outputs)
-#' }
 #' @export
 map_tree <- function(.f, .x, ...) {
   tree <- build_tree(.x)
@@ -414,12 +408,10 @@ map_tree <- function(.f, .x, ...) {
   unflatten(tree, result)
 }
 
-#' @title Map Over Multiple Trees in Parallel
+#' @title Map Over Multiple Trees
 #' @description
 #' Apply a function leaf-wise over several trees with the same structure.
-#' All trees in `.l` must have identical structure (same nesting, same names,
-#' same lengths); the structure is taken from `.l[[1]]`. The argument order
-#' matches [`purrr::pmap()`].
+#' All trees in `.l` must have identical structure.
 #' @param .l (`list`)\cr
 #'   A non-empty list of trees, all with the same structure.
 #' @param .f (`function`)\cr
@@ -427,17 +419,10 @@ map_tree <- function(.f, .x, ...) {
 #'   the order given by `.l`).
 #' @param ... Additional arguments passed to `.f` after the per-tree leaves.
 #' @return A tree with the same structure as `.l[[1]]`, where each leaf is
-#'   `.f(leaf_1, leaf_2, ..., ...)`.
+#'   `.f(leaf_1, leaf_2, ..., leaf_n ...)`.
 #' @seealso [map_tree()], [flatten()], [unflatten()]
 #' @examples
 #' pmap_tree(list(list(a = 1, b = 2), list(a = 10, b = 20)), `+`)
-#'
-#' # Three trees, with an extra scalar argument forwarded to .f
-#' pmap_tree(
-#'   list(list(1, 2), list(3, 4), list(5, 6)),
-#'   \(x, y, z, scale) (x + y + z) * scale,
-#'   scale = 10
-#' )
 #' @export
 pmap_tree <- function(.l, .f, ...) {
   if (!is.list(.l) || length(.l) == 0L) {
@@ -482,29 +467,52 @@ pmap_tree <- function(.l, .f, ...) {
   unflatten(tree, result)
 }
 
-# Walks two trees in parallel and returns the first path/subtree pair where
-# they diverge, or NULL if they are structurally identical. Returned `prefix`
-# follows tree_path() syntax. Class mismatches are handled in the generic
-# (before dispatch); per-class divergence is handled in the methods.
+#' @title Difference Between Trees
+#' @description
+#' Walks two trees in parallel and returns the first path/subtree pair where
+#' they diverge, or `NULL` if they are structurally identical. The returned
+#' `prefix` follows [tree_path()] syntax.
+#'
+#' `identical()` is called once on the full trees as a fast equality
+#' short-circuit; recursion below uses structural comparison only, so the cost
+#' is linear in tree size.
+#' @param a,b (`Node`)\cr
+#'   Trees to compare, as returned by [build_tree()].
+#' @param prefix (`character(1)`)\cr
+#'   Path prefix accumulated during recursion; callers should leave as `""`.
+#' @return `NULL` if `a` and `b` are structurally identical, otherwise a list
+#'   with elements `prefix` (the path to the divergence), `a`, and `b` (the
+#'   diverging subtrees).
+#' @seealso [build_tree()], [tree_path()]
+#' @keywords internal
 tree_diff <- function(a, b, prefix = "") {
   if (identical(a, b)) {
     return(NULL)
   }
+  tree_diff_impl(a, b, prefix)
+}
+
+# Recursive helper: assumes a and b are not identical and walks structurally
+# without re-calling identical() at each level.
+tree_diff_impl <- function(a, b, prefix) {
+  # Handle class mismatch here so methods can assume `b` has the same class
+  # as `a` -- UseMethod() only dispatches on `a`.
   if (!identical(class(a), class(b))) {
     return(list(prefix = prefix, a = a, b = b))
   }
-  UseMethod("tree_diff")
+  UseMethod("tree_diff_impl")
 }
 
-# Same class as `b` (both leaves) but not identical → indices differ, which
-# means an ancestor already diverged. Defensively report this leaf.
 #' @export
-tree_diff.LeafNode <- function(a, b, prefix = "") {
+tree_diff_impl.LeafNode <- function(a, b, prefix) {
+  if (a$i == b$i) {
+    return(NULL)
+  }
   list(prefix = prefix, a = a, b = b)
 }
 
 #' @export
-tree_diff.ListNode <- function(a, b, prefix = "") {
+tree_diff_impl.ListNode <- function(a, b, prefix) {
   if (!identical(a$names, b$names) || length(a$nodes) != length(b$nodes)) {
     return(list(prefix = prefix, a = a, b = b))
   }
@@ -515,14 +523,12 @@ tree_diff.ListNode <- function(a, b, prefix = "") {
     } else {
       paste0("[[", j, "]]")
     }
-    d <- tree_diff(a$nodes[[j]], b$nodes[[j]], paste0(prefix, suffix))
+    d <- tree_diff_impl(a$nodes[[j]], b$nodes[[j]], paste0(prefix, suffix))
     if (!is.null(d)) {
       return(d)
     }
   }
-  # Unreachable when identical() short-circuits in the generic, but kept as a
-  # safe fallback rather than an internal-error abort.
-  list(prefix = prefix, a = a, b = b)
+  NULL
 }
 
 flat_mask_from_names <- function(tree, names) {

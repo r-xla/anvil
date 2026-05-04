@@ -22,16 +22,10 @@ is the result of \code{.f(leaf, ...)}.
 \description{
 Apply a function to each leaf of a (possibly nested) list, preserving the
 tree structure. Equivalent to flattening \code{.x} with \code{\link[=flatten]{flatten()}}, applying
-\code{.f} to each leaf, and reassembling with \code{\link[=unflatten]{unflatten()}}. The argument order
-matches \code{\link[purrr:map]{purrr::map()}}.
+\code{.f} to each leaf, and reassembling with \code{\link[=unflatten]{unflatten()}}.
 }
 \examples{
 map_tree(\(x) x + 1, list(a = 1, b = list(c = 2, d = 3)))
-
-# Awaiting a tree of outputs (e.g. for benchmarking)
-\dontrun{
-map_tree(await, outputs)
-}
 }
 \seealso{
 \code{\link[=flatten]{flatten()}}, \code{\link[=build_tree]{build_tree()}}, \code{\link[=unflatten]{unflatten()}}, \code{\link[=await]{await()}}

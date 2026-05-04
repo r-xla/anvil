@@ -2,7 +2,7 @@
 % Please edit documentation in R/flatten.R
 \name{pmap_tree}
 \alias{pmap_tree}
-\title{Map Over Multiple Trees in Parallel}
+\title{Map Over Multiple Trees}
 \usage{
 pmap_tree(.l, .f, ...)
 }
@@ -18,23 +18,14 @@ the order given by \code{.l}).}
 }
 \value{
 A tree with the same structure as \code{.l[[1]]}, where each leaf is
-\code{.f(leaf_1, leaf_2, ..., ...)}.
+\verb{.f(leaf_1, leaf_2, ..., leaf_n ...)}.
 }
 \description{
 Apply a function leaf-wise over several trees with the same structure.
-All trees in \code{.l} must have identical structure (same nesting, same names,
-same lengths); the structure is taken from \code{.l[[1]]}. The argument order
-matches \code{\link[purrr:pmap]{purrr::pmap()}}.
+All trees in \code{.l} must have identical structure.
 }
 \examples{
 pmap_tree(list(list(a = 1, b = 2), list(a = 10, b = 20)), `+`)
-
-# Three trees, with an extra scalar argument forwarded to .f
-pmap_tree(
-  list(list(1, 2), list(3, 4), list(5, 6)),
-  \(x, y, z, scale) (x + y + z) * scale,
-  scale = 10
-)
 }
 \seealso{
 \code{\link[=map_tree]{map_tree()}}, \code{\link[=flatten]{flatten()}}, \code{\link[=unflatten]{unflatten()}}
