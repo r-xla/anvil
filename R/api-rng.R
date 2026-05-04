@@ -162,8 +162,8 @@ nv_rnorm <- function(shape, initial_state, dtype = "f32", mu = 0, sigma = 1) {
 
   # compute cos(2 * pi * u2) / sin(2 * pi * u2)
   Theta[[2]] <- nv_mul(Theta[[2]], 2 * pi)
-  sin_Theta <- nv_sine(Theta[[2]])
-  cos_Theta <- nv_cosine(Theta[[2]])
+  sin_Theta <- nv_sin(Theta[[2]])
+  cos_Theta <- nv_cos(Theta[[2]])
 
   # compute z1, z2
   Z1 <- nv_mul(sqrt_R, sin_Theta)

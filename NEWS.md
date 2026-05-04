@@ -1,16 +1,44 @@
 # anvl (development version)
 
+## Breaking Changes
+
+* Renamed user-facing API functions to match base R names:
+  `nv_sine()` -> `nv_sin()`, `nv_cosine()` -> `nv_cos()`,
+  `nv_ceil()` -> `nv_ceiling()`, `nv_cholesky()` -> `nv_chol()`.
+  The underlying `prim_*` primitives keep their StableHLO-aligned names.
+* `nv_reduce_mean()` was renamed to `nv_mean()`.
+
 ## New Features
 
 * Added `AnvlArray` -> R `vector` converters `as.numeric`, `as.double`,
-  `as.integer` and `as.logical`
+  `as.integer`, `as.logical` and `as.vector`.
 * New API functions `nv_rbind()` and `nv_cbind()` and corresponding
   `rbind()`/`cbind()` generics.
-* Re-exported `pjrt::await()` and added an `AnvlArray` method that blocks
-  until the underlying buffer is ready. Useful for benchmarking, where
-  asynchronous dispatch should not be confused with execution time.
+* Added new function `await()` that blocks until the underlying computation
+  has finished.
 * New tree utilities `map_tree()` and `pmap_tree()` for applying functions
   leaf-wise over (possibly nested) lists.
+* New primitives: `prim_sort()`, `prim_top_k()`, `prim_reduce()`,
+  `prim_argmax()`, `prim_argmin()`.
+* New API functions:
+  * `nv_sort()` to sort along a dimension.
+  * `nv_argsort()` to return the indices that would sort the array.
+  * `nv_top_k()` to return the `k` largest values along a dimension.
+  * `nv_median()` to compute the median along a dimension. Also dispatches
+    from base R's `median()`.
+  * `nv_quantile()` to compute quantiles along a dimension.
+  * `nv_argmax()` and `nv_argmin()` to find the index of the maximum/minimum
+    along a dimension. Ties are broken by returning the smallest index.
+  * `nv_select()` to select a slice along a dimension by index.
+* `mean()` and `median()` now error when called with `na.rm = TRUE`, since
+  anvl arrays do not carry `NA`s. `mean()` also rejects non-zero `trim`.
+
+## Other
+
+* `nv_reduce_sum()`, `nv_reduce_prod()`, `nv_reduce_max()`, `nv_reduce_min()`,
+  `nv_reduce_any()`, `nv_reduce_all()` and `nv_mean()` now default
+  `dims = NULL`, which reduces over all dimensions and returns a scalar.
+  Previously, `dims` was required.
 
 # anvl 0.2.0
 

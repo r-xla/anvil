@@ -397,3 +397,42 @@ describe("as_anvl_arrays", {
     expect_equal(as.integer(as_array(out)), c(5L, 7L, 9L))
   })
 })
+
+describe("arr", {
+  it("creates 1D vector when no shape is specified", {
+    expect_equal(
+      arr(1, 2, 3),
+      array(c(1, 2, 3))
+    )
+    expect_equal(arr(1), array(1))
+  })
+
+  it("creates an array with the requested shape", {
+    expect_equal(
+      arr(1, 2, 3, 4, shape = c(2, 2)),
+      array(1:4, dim = c(2, 2))
+    )
+  })
+
+  it("recycles a single value to fill the requested shape", {
+    expect_equal(
+      arr(1, shape = c(2, 2)),
+      array(1, dim = c(2, 2))
+    )
+  })
+
+  it("errors when number of values does not match shape", {
+    expect_error(
+      arr(1, 2, shape = c(2, 2)),
+      "Number of elements is 2"
+    )
+  })
+
+  it("errors when no values are supplied", {
+    expect_error(arr(), "Invalid input values")
+  })
+
+  it("errors when shape is not integerish", {
+    expect_error(arr(1, 2, shape = "foo"))
+  })
+})

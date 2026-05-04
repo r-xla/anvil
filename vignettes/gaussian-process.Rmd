@@ -239,7 +239,7 @@ neg_log_marginal_likelihood <- function(kernel, X, y, lengthscale, signal_var, n
   eye <- nv_eye(n, dtype = dtype(K))
   K_y <- K + noise_var * eye
 
-  L <- nv_cholesky(K_y, lower = TRUE)
+  L <- nv_chol(K_y, lower = TRUE)
 
   # alpha = K_y^{-1} y
   alpha <- nv_solve(K_y, y)

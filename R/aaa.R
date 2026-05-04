@@ -15,6 +15,7 @@ NULL
 #' @importFrom cli cli_abort
 #' @importFrom methods Math2 formalArgs
 #' @importFrom utils capture.output
+#' @importFrom stats median
 ## usethis namespace: end
 NULL
 

@@ -10,8 +10,9 @@ nv_sd(operand, dims, drop = TRUE, correction = 1L)
 \item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
-\item{dims}{(\code{integer()})\cr
-Dimensions to reduce.}
+\item{dims}{(\code{integer()} | \code{NULL})\cr
+Dimensions to reduce. If \code{NULL} (default), reduces over all
+dimensions, returning a scalar.}
 
 \item{drop}{(\code{logical(1)})\cr
 Whether to drop reduced dimensions.}
@@ -39,5 +40,5 @@ nv_sd(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_var]{nv_var()}}, \code{\link[=nv_reduce_mean]{nv_reduce_mean()}}
+\code{\link[=nv_var]{nv_var()}}, \code{\link[=nv_mean]{nv_mean()}}
 }

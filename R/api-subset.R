@@ -343,7 +343,9 @@ parse_subset_specs <- function(quos, operand_shape) {
 #' @return A SubsetSpec object (SubsetFull, SubsetRange, or SubsetIndices)
 #' @noRd
 parse_subset_spec <- function(quo, dim_size) {
-  is_integerish <- function(x) test_integerish(x, len = 1L, any.missing = FALSE)
+  is_integerish <- function(x) {
+    is.null(dim(x)) && test_integerish(x, len = 1L, any.missing = FALSE)
+  }
 
   # Missing argument - select all
   if (rlang::quo_is_missing(quo)) {
@@ -375,7 +377,8 @@ parse_subset_spec <- function(quo, dim_size) {
   # Evaluate the quosure
   e <- rlang::eval_tidy(quo)
 
-  # Single integer - drops dimension
+  # Single integer - drops dimension. `array(i)` (length-1, with dim attr)
+  # falls through to the array branch below so the dim is kept.
   if (is_integerish(e)) {
     idx <- as.integer(e)
     if (idx < 1L || idx > dim_size) {
