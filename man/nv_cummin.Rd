@@ -4,7 +4,7 @@
 \alias{nv_cummin}
 \title{Cumulative Minimum}
 \usage{
-nv_cummin(operand, dim = 1L)
+nv_cummin(operand, dim = 1L, with_indices = FALSE)
 }
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr
@@ -12,10 +12,16 @@ Operand.}
 
 \item{dim}{(\code{integer(1)})\cr
 Dimension along which to accumulate (1-indexed).}
+
+\item{with_indices}{(\code{logical(1)})\cr
+If \code{FALSE} (default), returns the running-minimum array. If \code{TRUE},
+returns \code{list(values = ..., indices = ...)} where \code{indices} is the
+1-based index of the first occurrence of the running minimum at each
+position (dtype \code{i32}).}
 }
 \value{
-\code{\link{arrayish}}\cr
-Has the same shape and data type as the input.
+\code{\link{arrayish}} (when \code{with_indices = FALSE}) or named list of two
+arrays (when \code{with_indices = TRUE}).
 }
 \description{
 Running minimum along a single dimension.
@@ -31,6 +37,7 @@ requires an explicit \code{dim}. The \code{cummin(x)} S3 method on an \code{\lin
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
 nv_cummin(x, dim = 1L)
+nv_cummin(x, dim = 1L, with_indices = TRUE)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

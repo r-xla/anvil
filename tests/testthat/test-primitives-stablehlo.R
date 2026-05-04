@@ -285,33 +285,42 @@ describe("prim_cumprod", {
 describe("prim_cummax", {
   it("works for vectors", {
     x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6), dtype = "f32")
-    out <- as_array(jit(function(a) prim_cummax(a, dim = 1L))(x))
-    expect_equal(c(out), c(3, 3, 4, 4, 5, 9, 9, 9))
+    out <- jit(function(a) prim_cummax(a, dim = 1L))(x)
+    expect_equal(c(as_array(out[[1L]])), c(3, 3, 4, 4, 5, 9, 9, 9))
+    expect_equal(c(as_array(out[[2L]])), c(1L, 1L, 3L, 3L, 5L, 6L, 6L, 6L))
   })
   it("works along dim 1 of a matrix", {
     x_arr <- array(c(3, 1, 4, 1, 5, 9), c(2, 3))
     f <- jit(function(a) prim_cummax(a, dim = 1L))
-    out <- as_array(f(nv_array(x_arr, dtype = "f32")))
-    expect_equal(out, apply(x_arr, 2, cummax))
+    out <- f(nv_array(x_arr, dtype = "f32"))
+    expect_equal(as_array(out[[1L]]), apply(x_arr, 2, cummax))
   })
   it("integer dtype", {
     x <- nv_array(c(3L, -1L, 4L, -1L, 5L), dtype = "i32")
-    out <- as_array(jit(function(a) prim_cummax(a, dim = 1L))(x))
-    expect_equal(c(out), c(3L, 3L, 4L, 4L, 5L))
+    out <- jit(function(a) prim_cummax(a, dim = 1L))(x)
+    expect_equal(c(as_array(out[[1L]])), c(3L, 3L, 4L, 4L, 5L))
+    expect_equal(c(as_array(out[[2L]])), c(1L, 1L, 3L, 3L, 5L))
+  })
+  it("plateaus break ties to first occurrence", {
+    x <- nv_array(c(1, 3, 3, 2), dtype = "f32")
+    out <- jit(function(a) prim_cummax(a, dim = 1L))(x)
+    expect_equal(c(as_array(out[[1L]])), c(1, 3, 3, 3))
+    expect_equal(c(as_array(out[[2L]])), c(1L, 2L, 2L, 2L))
   })
 })
 
 describe("prim_cummin", {
   it("works for vectors", {
     x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6), dtype = "f32")
-    out <- as_array(jit(function(a) prim_cummin(a, dim = 1L))(x))
-    expect_equal(c(out), c(3, 1, 1, 1, 1, 1, 1, 1))
+    out <- jit(function(a) prim_cummin(a, dim = 1L))(x)
+    expect_equal(c(as_array(out[[1L]])), c(3, 1, 1, 1, 1, 1, 1, 1))
+    expect_equal(c(as_array(out[[2L]])), c(1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L))
   })
   it("works along dim 2 of a matrix", {
     x_arr <- array(c(3, 1, 4, 1, 5, 9), c(2, 3))
     f <- jit(function(a) prim_cummin(a, dim = 2L))
-    out <- as_array(f(nv_array(x_arr, dtype = "f32")))
-    expect_equal(out, t(apply(x_arr, 1, cummin)))
+    out <- f(nv_array(x_arr, dtype = "f32"))
+    expect_equal(as_array(out[[1L]]), t(apply(x_arr, 1, cummin)))
   })
 })
 

@@ -1527,7 +1527,13 @@ nv_cumprod <- function(operand, dim = 1L) {
 #' @template param_operand
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which to accumulate (1-indexed).
-#' @template return_unary
+#' @param with_indices (`logical(1)`)\cr
+#'   If `FALSE` (default), returns the running-maximum array. If `TRUE`,
+#'   returns `list(values = ..., indices = ...)` where `indices` is the
+#'   1-based index of the first occurrence of the running maximum at each
+#'   position (dtype `i32`).
+#' @return [`arrayish`] (when `with_indices = FALSE`) or named list of two
+#'   arrays (when `with_indices = TRUE`).
 #' @section Relation to base R:
 #' Base R's [base::cummax()] flattens to a vector first; `nv_cummax()`
 #' requires an explicit `dim`. The `cummax(x)` S3 method on an [`AnvlBox`] /
@@ -1536,10 +1542,12 @@ nv_cumprod <- function(operand, dim = 1L) {
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
 #' nv_cummax(x, dim = 1L)
+#' nv_cummax(x, dim = 1L, with_indices = TRUE)
 #' @export
-nv_cummax <- function(operand, dim = 1L) {
+nv_cummax <- function(operand, dim = 1L, with_indices = FALSE) {
   operand <- as_anvl_array(operand)
-  prim_cummax(operand, dim = as.integer(dim))
+  out <- prim_cummax(operand, dim = as.integer(dim))
+  if (with_indices) list(values = out[[1L]], indices = out[[2L]]) else out[[1L]]
 }
 
 #' @title Cumulative Minimum
@@ -1548,7 +1556,13 @@ nv_cummax <- function(operand, dim = 1L) {
 #' @template param_operand
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which to accumulate (1-indexed).
-#' @template return_unary
+#' @param with_indices (`logical(1)`)\cr
+#'   If `FALSE` (default), returns the running-minimum array. If `TRUE`,
+#'   returns `list(values = ..., indices = ...)` where `indices` is the
+#'   1-based index of the first occurrence of the running minimum at each
+#'   position (dtype `i32`).
+#' @return [`arrayish`] (when `with_indices = FALSE`) or named list of two
+#'   arrays (when `with_indices = TRUE`).
 #' @section Relation to base R:
 #' Base R's [base::cummin()] flattens to a vector first; `nv_cummin()`
 #' requires an explicit `dim`. The `cummin(x)` S3 method on an [`AnvlBox`] /
@@ -1557,10 +1571,12 @@ nv_cummax <- function(operand, dim = 1L) {
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
 #' nv_cummin(x, dim = 1L)
+#' nv_cummin(x, dim = 1L, with_indices = TRUE)
 #' @export
-nv_cummin <- function(operand, dim = 1L) {
+nv_cummin <- function(operand, dim = 1L, with_indices = FALSE) {
   operand <- as_anvl_array(operand)
-  prim_cummin(operand, dim = as.integer(dim))
+  out <- prim_cummin(operand, dim = as.integer(dim))
+  if (with_indices) list(values = out[[1L]], indices = out[[2L]]) else out[[1L]]
 }
 
 # Higher order primitives
@@ -2083,18 +2099,23 @@ nv_argsort <- function(x, dim = NULL, decreasing = FALSE, stable = FALSE) {
 #' @param dim (`integer(1)` | `NULL`)\cr
 #'   Dimension along which to take the top `k`. If `NULL` (default),
 #'   uses the last dimension.
-#' @return [`arrayish`]\cr
-#'   Same shape as `x` except `dim` has size `k`. Values are sorted
-#'   in decreasing order along `dim`.
+#' @param with_indices (`logical(1)`)\cr
+#'   If `FALSE` (default), returns just the top-`k` values. If `TRUE`,
+#'   returns `list(values = ..., indices = ...)` where `indices` is the
+#'   1-based position of each top-`k` value along `dim` (dtype `i32`).
+#' @return [`arrayish`] (when `with_indices = FALSE`) or named list of two
+#'   arrays (when `with_indices = TRUE`). Output shape matches `x` with
+#'   `dim` resized to `k`; values are sorted decreasing along `dim`.
 #' @seealso [prim_top_k()] for the underlying primitive, [nv_sort()].
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
 #' nv_top_k(x, k = 3L)
+#' nv_top_k(x, k = 3L, with_indices = TRUE)
 #'
 #' m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
 #' nv_top_k(m, k = 2L, dim = 2L)
 #' @export
-nv_top_k <- function(x, k, dim = NULL) {
+nv_top_k <- function(x, k, dim = NULL, with_indices = FALSE) {
   x <- as_anvl_array(x)
   rank <- ndims(x)
   if (rank == 0L) {
@@ -2108,11 +2129,17 @@ nv_top_k <- function(x, k, dim = NULL) {
   if (dim != rank) {
     perm <- seq_len(rank)
     perm[c(dim, rank)] <- c(rank, dim)
-    x <- prim_transpose(x, permutation = perm)
-    values <- prim_top_k(x, k = k)[[1L]]
-    prim_transpose(values, permutation = perm)
+    out <- prim_top_k(prim_transpose(x, permutation = perm), k = k)
+    values <- prim_transpose(out[[1L]], permutation = perm)
+    if (with_indices) {
+      indices <- prim_transpose(out[[2L]], permutation = perm)
+      list(values = values, indices = indices)
+    } else {
+      values
+    }
   } else {
-    prim_top_k(x, k = k)[[1L]]
+    out <- prim_top_k(x, k = k)
+    if (with_indices) list(values = out[[1L]], indices = out[[2L]]) else out[[1L]]
   }
 }
 

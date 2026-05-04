@@ -4,7 +4,7 @@
 \alias{nv_top_k}
 \title{Top-K Elements}
 \usage{
-nv_top_k(x, k, dim = NULL)
+nv_top_k(x, k, dim = NULL, with_indices = FALSE)
 }
 \arguments{
 \item{x}{(\code{\link{arrayish}})\cr
@@ -16,11 +16,16 @@ Number of top elements to return. Must satisfy \verb{1 <= k <= shape(x)[dim]}.}
 \item{dim}{(\code{integer(1)} | \code{NULL})\cr
 Dimension along which to take the top \code{k}. If \code{NULL} (default),
 uses the last dimension.}
+
+\item{with_indices}{(\code{logical(1)})\cr
+If \code{FALSE} (default), returns just the top-\code{k} values. If \code{TRUE},
+returns \code{list(values = ..., indices = ...)} where \code{indices} is the
+1-based position of each top-\code{k} value along \code{dim} (dtype \code{i32}).}
 }
 \value{
-\code{\link{arrayish}}\cr
-Same shape as \code{x} except \code{dim} has size \code{k}. Values are sorted
-in decreasing order along \code{dim}.
+\code{\link{arrayish}} (when \code{with_indices = FALSE}) or named list of two
+arrays (when \code{with_indices = TRUE}). Output shape matches \code{x} with
+\code{dim} resized to \code{k}; values are sorted decreasing along \code{dim}.
 }
 \description{
 Returns the \code{k} largest values along a dimension, sorted in decreasing order.
@@ -29,6 +34,7 @@ Returns the \code{k} largest values along a dimension, sorted in decreasing orde
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
 nv_top_k(x, k = 3L)
+nv_top_k(x, k = 3L, with_indices = TRUE)
 
 m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
 nv_top_k(m, k = 2L, dim = 2L)

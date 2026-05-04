@@ -805,6 +805,32 @@ cum_op <- function(operand, dim) {
   graph_desc_add(self, list(operand = operand), params = list(dim = dim), infer_fn = infer_cum)[[1L]]
 }
 
+infer_cum_extreme <- function(operand, dim) {
+  rank <- length(shape(operand))
+  if (rank == 0L) {
+    cli_abort("cumulative ops require at least a 1-dimensional operand, but operand is a scalar")
+  }
+  if (!checkmate::test_integerish(dim, lower = 1, upper = rank, len = 1L)) {
+    cli_abort("{.arg dim} must be a single integer in 1..{rank}, but is {.val {dim}}")
+  }
+  list(
+    AbstractArray(
+      dtype = dtype(operand),
+      shape = Shape(shape(operand)),
+      ambiguous = operand$ambiguous
+    ),
+    AbstractArray(
+      dtype = "i32",
+      shape = Shape(shape(operand)),
+      ambiguous = FALSE
+    )
+  )
+}
+
+cum_extreme_op <- function(operand, dim) {
+  graph_desc_add(self, list(operand = operand), params = list(dim = dim), infer_fn = infer_cum_extreme)
+}
+
 #' @title Primitive Cumulative Sum
 #' @description
 #' Cumulative sum of array elements along a single dimension.
@@ -845,41 +871,53 @@ prim_cumprod <- new_primitive("cumprod", cum_op, static = 2L)
 
 #' @title Primitive Cumulative Maximum
 #' @description
-#' Running maximum of array elements along a single dimension.
-#' Output position `j` along `dim` equals `max(input[1..j])`.
+#' Running maximum of array elements along a single dimension along with
+#' the index of the first occurrence of the running maximum.
+#' At output position `j`, the values output is `max(input[1..j])` and the
+#' indices output is the smallest `i` in `1..j` with
+#' `input[i] == values[j]` (first-occurrence tiebreak, matching torch).
 #' @template param_prim_operand_any
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which to accumulate (1-indexed).
-#' @template return_prim_unary
+#' @return `list` of two [`arrayish`] values:\cr
+#'   The running maximum (same dtype as `operand`) and the running argmax
+#'   (dtype `i32`, 1-based). Both have the same shape as `operand`.
 #' @templateVar primitive_id cummax
 #' @template section_rules
 #' @section StableHLO:
-#' Lowers to [stablehlo::hlo_reduce_window()] with [stablehlo::hlo_maximum()] as the reducer.
+#' Lowers to a variadic [stablehlo::hlo_reduce_window()] over `(values, iota)`
+#' with a `(value > value | (value == value & idx < idx))` selector.
 #' @seealso [nv_cummax()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
 #' prim_cummax(x, dim = 1L)
 #' @export
-prim_cummax <- new_primitive("cummax", cum_op, static = 2L)
+prim_cummax <- new_primitive("cummax", cum_extreme_op, static = 2L)
 
 #' @title Primitive Cumulative Minimum
 #' @description
-#' Running minimum of array elements along a single dimension.
-#' Output position `j` along `dim` equals `min(input[1..j])`.
+#' Running minimum of array elements along a single dimension along with
+#' the index of the first occurrence of the running minimum.
+#' At output position `j`, the values output is `min(input[1..j])` and the
+#' indices output is the smallest `i` in `1..j` with
+#' `input[i] == values[j]` (first-occurrence tiebreak, matching torch).
 #' @template param_prim_operand_any
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which to accumulate (1-indexed).
-#' @template return_prim_unary
+#' @return `list` of two [`arrayish`] values:\cr
+#'   The running minimum (same dtype as `operand`) and the running argmin
+#'   (dtype `i32`, 1-based). Both have the same shape as `operand`.
 #' @templateVar primitive_id cummin
 #' @template section_rules
 #' @section StableHLO:
-#' Lowers to [stablehlo::hlo_reduce_window()] with [stablehlo::hlo_minimum()] as the reducer.
+#' Lowers to a variadic [stablehlo::hlo_reduce_window()] over `(values, iota)`
+#' with a `(value < value | (value == value & idx < idx))` selector.
 #' @seealso [nv_cummin()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
 #' prim_cummin(x, dim = 1L)
 #' @export
-prim_cummin <- new_primitive("cummin", cum_op, static = 2L)
+prim_cummin <- new_primitive("cummin", cum_extreme_op, static = 2L)
 
 #' @title Primitive Generic Reduce
 #' @description

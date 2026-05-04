@@ -14,13 +14,16 @@ Arrayish value of any data type.}
 Dimension along which to accumulate (1-indexed).}
 }
 \value{
-\code{\link{arrayish}}\cr
-Has the same shape and data type as the input.
-It is ambiguous if the input is ambiguous.
+\code{list} of two \code{\link{arrayish}} values:\cr
+The running maximum (same dtype as \code{operand}) and the running argmax
+(dtype \code{i32}, 1-based). Both have the same shape as \code{operand}.
 }
 \description{
-Running maximum of array elements along a single dimension.
-Output position \code{j} along \code{dim} equals \verb{max(input[1..j])}.
+Running maximum of array elements along a single dimension along with
+the index of the first occurrence of the running maximum.
+At output position \code{j}, the values output is \verb{max(input[1..j])} and the
+indices output is the smallest \code{i} in \verb{1..j} with
+\code{input[i] == values[j]} (first-occurrence tiebreak, matching torch).
 }
 \section{Implemented Rules}{
 
@@ -32,7 +35,8 @@ Output position \code{j} along \code{dim} equals \verb{max(input[1..j])}.
 
 \section{StableHLO}{
 
-Lowers to \code{\link[stablehlo:hlo_reduce_window]{stablehlo::hlo_reduce_window()}} with \code{\link[stablehlo:hlo_maximum]{stablehlo::hlo_maximum()}} as the reducer.
+Lowers to a variadic \code{\link[stablehlo:hlo_reduce_window]{stablehlo::hlo_reduce_window()}} over \verb{(values, iota)}
+with a \code{(value > value | (value == value & idx < idx))} selector.
 }
 
 \examples{

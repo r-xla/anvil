@@ -199,18 +199,63 @@ prim_cumprod[["stablehlo"]] <- function(operand, dim) {
   .stablehlo_apply_cum(stablehlo::hlo_multiply, operand, init, dim)
 }
 
-prim_cummax[["stablehlo"]] <- function(operand, dim) {
-  init <- function(operand) {
-    hlo_scalar(nv_minval(dtype(operand), "cpu"))
+.stablehlo_apply_cum_extreme <- function(operand, dim, is_max) {
+  shp <- shape(operand)
+  rank <- length(shp)
+  s_d <- shp[[dim]]
+  window_dimensions <- rep(1L, rank)
+  window_dimensions[[dim]] <- s_d
+  ones <- rep(1L, rank)
+  padding <- matrix(0L, nrow = rank, ncol = 2L)
+  padding[dim, 1L] <- s_d - 1L
+
+  v_dtype <- as.character(operand$value_type$type$dtype)
+  iota <- stablehlo::hlo_iota(iota_dimension = dim - 1L, dtype = "i32", shape = shp)
+
+  init_v_fn <- if (is_max) nv_minval else nv_maxval
+  init_v <- hlo_scalar(init_v_fn(v_dtype, "cpu"))
+  init_i <- hlo_scalar(0L, dtype = "i32", func = operand$func)
+
+  cmp <- if (is_max) prim_gt else prim_lt
+  # Pick the side with the strictly better value; on ties, the smaller index
+  # wins (first-occurrence tiebreak). The op is associative + commutative.
+  reductor <- function(lv, li, rv, ri) {
+    lhs_wins <- prim_or(cmp(lv, rv), prim_and(prim_eq(lv, rv), prim_lt(li, ri)))
+    list(nv_ifelse(lhs_wins, lv, rv), nv_ifelse(lhs_wins, li, ri))
   }
-  .stablehlo_apply_cum(stablehlo::hlo_maximum, operand, init, dim)
+  body <- .r_reductor_to_hlo_func(
+    reductor,
+    list(
+      lv = nv_aval(v_dtype, integer()),
+      li = nv_aval("i32", integer()),
+      rv = nv_aval(v_dtype, integer()),
+      ri = nv_aval("i32", integer())
+    )
+  )
+
+  out <- stablehlo::hlo_reduce_window(
+    inputs = list(operand, iota),
+    init_values = list(init_v, init_i),
+    window_dimensions = window_dimensions,
+    window_strides = ones,
+    base_dilations = ones,
+    window_dilations = ones,
+    padding = padding,
+    body = body
+  )
+  values <- out[[1L]]
+  indices_0 <- out[[2L]]
+  one <- stablehlo::hlo_scalar(1L, dtype = "i32", func = indices_0$func)
+  one_bc <- stablehlo::hlo_broadcast_in_dim(one, integer(0), shape(indices_0$value_type))
+  list(values, stablehlo::hlo_add(indices_0, one_bc))
+}
+
+prim_cummax[["stablehlo"]] <- function(operand, dim) {
+  .stablehlo_apply_cum_extreme(operand, dim, is_max = TRUE)
 }
 
 prim_cummin[["stablehlo"]] <- function(operand, dim) {
-  init <- function(operand) {
-    hlo_scalar(nv_maxval(dtype(operand), "cpu"))
-  }
-  .stablehlo_apply_cum(stablehlo::hlo_minimum, operand, init, dim)
+  .stablehlo_apply_cum_extreme(operand, dim, is_max = FALSE)
 }
 
 prim_reduce[["stablehlo"]] <- function(operand, init, dims, drop, reductor_graph, .env) {

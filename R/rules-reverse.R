@@ -781,38 +781,19 @@ prim_cumprod[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, param
   )
 })
 
-.cum_extreme_reverse <- function(inputs, outputs, grads, params, required, is_max) {
+.cum_extreme_reverse <- function(inputs, outputs, grads, params, required) {
   if (!required[[1L]]) {
     return(list(NULL))
   }
   dim <- params$dim
   operand <- inputs[[1L]]
-  y <- outputs[[1L]]
+  arg_run <- outputs[[2L]]   # 1-based running argmax / argmin (i32, from forward)
   grad <- grads[[1L]]
-  shp <- shape(operand)
-  rank <- length(shp)
-  dt <- dtype(operand)
-
-  # arg_run[j] = the input index that holds the running extreme at output j,
-  # using first-occurrence tiebreak (matches torch.cummax/cummin). Computed
-  # by marking strict-ascent positions and taking a running max of the marker.
-  edge_low <- integer(rank)
-  edge_low[[dim]] <- 1L
-  edge_zero <- integer(rank)
-  pad_value <- prim_fill(0, dtype = dt, shape = integer())
-  y_padded <- prim_pad(y, pad_value, edge_low, edge_zero, edge_zero)
-  y_prev <- prim_static_slice(y_padded, rep(1L, rank), shp, rep(1L, rank))
-
-  iota_dim <- prim_iota(dim = dim, dtype = "i32", shape = shp, start = 1L)
-  is_first <- prim_eq(iota_dim, prim_fill(1L, dtype = "i32", shape = shp))
-  strict_ascent <- if (is_max) prim_gt(operand, y_prev) else prim_lt(operand, y_prev)
-  is_ascent <- prim_or(is_first, strict_ascent)
-  ascent_marker <- prim_ifelse(is_ascent, iota_dim, prim_fill(0L, dtype = "i32", shape = shp))
-  arg_run <- prim_cummax(ascent_marker, dim = dim)
+  rank <- length(shape(operand))
 
   # Scatter-add grad into operand-shaped zeros at the arg_run indices along
-  # `dim`. Multiple j's may share the same arg_run value (plateaus); the
-  # add-update accumulates them. Other dims are pure batch dims.
+  # `dim`. Plateaus produce duplicate indices, which prim_add accumulates.
+  # Other dims are pure batch dims.
   batching <- seq_len(rank)[-dim]
   list(prim_scatter(
     input = zeros_like(operand),
@@ -829,13 +810,8 @@ prim_cumprod[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, param
   ))
 }
 
-prim_cummax[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
-  .cum_extreme_reverse(inputs, outputs, grads, params, required, is_max = TRUE)
-})
-
-prim_cummin[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
-  .cum_extreme_reverse(inputs, outputs, grads, params, required, is_max = FALSE)
-})
+prim_cummax[["reverse"]] <- rule_reverse(.cum_extreme_reverse)
+prim_cummin[["reverse"]] <- rule_reverse(.cum_extreme_reverse)
 
 # slice reverse: pad with zeros
 prim_static_slice[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {

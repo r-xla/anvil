@@ -510,7 +510,7 @@ describe("prim_cummax", {
     x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
     f_nv <- function(x) {
-      y <- prim_cummax(x, dim = dim)
+      y <- nv_cummax(x, dim = dim)
       nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
     }
     grads_nv <- jit(gradient(f_nv))(x_nv)
@@ -544,7 +544,7 @@ describe("prim_cummin", {
     x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
     f_nv <- function(x) {
-      y <- prim_cummin(x, dim = dim)
+      y <- nv_cummin(x, dim = dim)
       nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
     }
     grads_nv <- jit(gradient(f_nv))(x_nv)
