@@ -14,6 +14,9 @@
 #'   object from a device type string (e.g. `"cpu"`). Called by [`nv_device()`].
 #' @param print_data (`function`)\cr Prints the array data with a footer.
 #' @param jit (`function`)\cr Creates a JIT-compiled function implementation.
+#' @param await_data (`function`)\cr Blocks until the array's underlying data
+#'   is ready. Called by [`await()`] for `AnvlArray`s; a no-op for backends
+#'   without async execution.
 #' @return An `AnvlBackend` object.
 #' @keywords internal
 #' @export
@@ -28,7 +31,8 @@ AnvlBackend <- function(
   device,
   new_device,
   print_data,
-  jit
+  jit,
+  await_data
 ) {
   structure(
     list(
@@ -42,7 +46,8 @@ AnvlBackend <- function(
       device = device,
       new_device = new_device,
       print_data = print_data,
-      jit = jit
+      jit = jit,
+      await_data = await_data
     ),
     class = "AnvlBackend"
   )
@@ -149,7 +154,8 @@ register_backend(
     },
     jit = function(f, static, cache, ...) {
       cli_abort("JIT compilation is not supported for the {.val plain} backend.")
-    }
+    },
+    await_data = function(x) invisible(NULL)
   )
 )
 

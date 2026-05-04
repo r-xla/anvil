@@ -217,3 +217,33 @@ NULL
 #' @importFrom pjrt platform
 #' @export
 pjrt::platform
+
+#' @title Block until an async operation completes
+#'
+#' @description
+#' Block until the array's underlying computation has finished, and return the
+#' object invisibly. Useful for benchmarking, where the dispatch of an
+#' asynchronous operation should not be confused with its execution.
+#'
+#' @details
+#' Implemented via the generic [`pjrt::await()`]. For backends without
+#' asynchronous execution (e.g. `"quickr"`), this is a no-op.
+#'
+#' @param x ([`AnvlArray`] or other awaitable)\cr
+#'   An object with an [`await()`] method.
+#' @param ... Additional arguments passed to methods (unused).
+#' @returns `x`, invisibly.
+#' @seealso [pjrt::await()], [map_tree()] (to await a tree of outputs)
+#' @name await
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(1:4, dtype = "f32")
+#' await(x)
+#'
+#' # Await all leaves of a (possibly nested) list of arrays.
+#' map_tree(await, list(x, list(y = x)))
+NULL
+
+#' @rdname await
+#' @importFrom pjrt await
+#' @export
+pjrt::await

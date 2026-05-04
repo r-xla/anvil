@@ -15,7 +15,8 @@ AnvlBackend(
   device,
   new_device,
   print_data,
-  jit
+  jit,
+  await_data
 )
 }
 \arguments{
@@ -43,6 +44,10 @@ object from a device type string (e.g. \code{"cpu"}). Called by \code{\link[=nv_
 \item{print_data}{(\code{function})\cr Prints the array data with a footer.}
 
 \item{jit}{(\code{function})\cr Creates a JIT-compiled function implementation.}
+
+\item{await_data}{(\code{function})\cr Blocks until the array's underlying data
+is ready. Called by \code{\link[=await]{await()}} for \code{AnvlArray}s; a no-op for backends
+without async execution.}
 }
 \value{
 An \code{AnvlBackend} object.

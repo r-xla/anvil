@@ -14,6 +14,10 @@
   `as.integer`, `as.logical` and `as.vector`.
 * New API functions `nv_rbind()` and `nv_cbind()` and corresponding
   `rbind()`/`cbind()` generics.
+* Added new function `await()` that blocks until the underlying computation
+  has finished.
+* New tree utilities `map_tree()` and `pmap_tree()` for applying functions
+  leaf-wise over (possibly nested) lists.
 * New primitives: `prim_sort()`, `prim_top_k()`, `prim_reduce()`,
   `prim_argmax()`, `prim_argmin()`.
 * New API functions:

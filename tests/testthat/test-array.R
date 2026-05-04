@@ -12,6 +12,13 @@ test_that("device returns the pjrt device", {
   expect_true(device(x) == pjrt::as_pjrt_device("cpu"))
 })
 
+test_that("await on an AnvlArray returns the array invisibly", {
+  x <- nv_array(1:4, dtype = "i32", device = "cpu")
+  out <- withVisible(await(x))
+  expect_false(out$visible)
+  expect_identical(out$value, x)
+})
+
 test_that("nv_scalar", {
   x <- nv_scalar(1L, dtype = "f32", device = "cpu")
   x
