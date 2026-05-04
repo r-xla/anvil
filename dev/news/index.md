@@ -28,6 +28,14 @@
   and corresponding
   [`rbind()`](https://rdrr.io/r/base/cbind.html)/[`cbind()`](https://rdrr.io/r/base/cbind.html)
   generics.
+- Added new function
+  [`await()`](https://r-xla.github.io/anvl/dev/reference/await.md) that
+  blocks until the underlying computation has finished.
+- New tree utilities
+  [`map_tree()`](https://r-xla.github.io/anvl/dev/reference/map_tree.md)
+  and
+  [`pmap_tree()`](https://r-xla.github.io/anvl/dev/reference/pmap_tree.md)
+  for applying functions leaf-wise over (possibly nested) lists.
 - New primitives:
   [`prim_sort()`](https://r-xla.github.io/anvl/dev/reference/prim_sort.md),
   [`prim_top_k()`](https://r-xla.github.io/anvl/dev/reference/prim_top_k.md),

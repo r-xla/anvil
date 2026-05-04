@@ -69,6 +69,8 @@ Functions for converting arrays
   [`as.logical(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/as-AnvlArray.md)
   [`as.vector(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/as-AnvlArray.md)
   : Coerce AnvlArray to an R Vector
+- [`await()`](https://r-xla.github.io/anvl/dev/reference/await.md) :
+  Block until an async operation completes
 
 ### Serialization
 
@@ -524,6 +526,10 @@ Utilities for working with nested structures
   : Tree Size
 - [`tree_path()`](https://r-xla.github.io/anvl/dev/reference/tree_path.md)
   : Tree Path
+- [`map_tree()`](https://r-xla.github.io/anvl/dev/reference/map_tree.md)
+  : Map Over a Tree
+- [`pmap_tree()`](https://r-xla.github.io/anvl/dev/reference/pmap_tree.md)
+  : Map Over Multiple Trees
 - [`filter_list_node()`](https://r-xla.github.io/anvl/dev/reference/filter_list_node.md)
   : Filter List Node
 

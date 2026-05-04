@@ -53,6 +53,7 @@
 <url><loc>https://r-xla.github.io/anvl/dev/reference/as_raw.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/assert_shapevec.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/at2vt.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/await.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/backend.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/build_tree.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/common_dtype.html</loc></url>
@@ -77,6 +78,7 @@
 <url><loc>https://r-xla.github.io/anvl/dev/reference/jit_eval.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/local_backend.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/local_descriptor.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/map_tree.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/ndims.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/new_primitive.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_abs.html</loc></url>
@@ -190,6 +192,7 @@
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_while.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_xor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/platform.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/pmap_tree.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_abs.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_add.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_and.html</loc></url>
@@ -276,6 +279,7 @@
 <url><loc>https://r-xla.github.io/anvl/dev/reference/to_abstract.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/trace_fn.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/transform_gradient.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/tree_diff.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/tree_path.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/tree_size.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/unflatten.html</loc></url>
