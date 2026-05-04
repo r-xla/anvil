@@ -23,8 +23,8 @@ If \code{TRUE}, the sort is stable: indices for equal values keep their
 original relative order. Default \code{FALSE}.}
 }
 \value{
-\code{\link{arrayish}} of dtype \code{i64}\cr
-Same shape as \code{x}. For a size-0 axis, the output is an empty \code{i64}
+\code{\link{arrayish}} of dtype \code{i32}\cr
+Same shape as \code{x}. For a size-0 axis, the output is an empty \code{i32}
 array of the same shape (a valid empty permutation).
 \code{as_array(x)[as_array(nv_argsort(x))]} reproduces the sorted array
 (for 1-D inputs).

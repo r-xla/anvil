@@ -884,24 +884,24 @@ nv_tan <- prim_tan
 #' Element-wise sine. You can also use `sin()`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [prim_sine()] for the underlying primitive.
+#' @seealso [prim_sin()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, pi / 2, pi))
 #' sin(x)
 #' @export
-nv_sin <- prim_sine
+nv_sin <- prim_sin
 
 #' @title Cosine
 #' @description
 #' Element-wise cosine. You can also use `cos()`.
 #' @template param_operand
 #' @template return_unary
-#' @seealso [prim_cosine()] for the underlying primitive.
+#' @seealso [prim_cos()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, pi / 2, pi))
 #' cos(x)
 #' @export
-nv_cos <- prim_cosine
+nv_cos <- prim_cos
 
 #' @title Floor
 #' @description
@@ -1244,14 +1244,14 @@ nv_matmul <- function(lhs, rhs) {
 #'   such that `a = t(U) %*% U`.
 #' @return [`arrayish`]\cr
 #'   Triangular matrix with the same shape and data type as the input.
-#' @seealso [nv_solve()], [prim_cholesky()]
+#' @seealso [nv_solve()], [prim_chol()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
 #' nv_chol(a)
 #' @export
 nv_chol <- function(a, lower = TRUE) {
   a <- as_anvl_array(a)
-  prim_cholesky(a, lower = lower)
+  prim_chol(a, lower = lower)
 }
 
 #' @title Solve Linear System
@@ -1274,7 +1274,7 @@ nv_chol <- function(a, lower = TRUE) {
 #'   dimensions as `a`.
 #' @return [`arrayish`]\cr
 #'   The solution `x` such that `a %*% x = b`.
-#' @seealso [nv_chol()], [prim_cholesky()], [prim_triangular_solve()]
+#' @seealso [nv_chol()], [prim_chol()], [prim_triangular_solve()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
 #' b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
@@ -1284,7 +1284,7 @@ nv_solve <- function(a, b) {
   args <- as_anvl_arrays(a, b)
   a <- args[[1L]]
   b <- args[[2L]]
-  L <- prim_cholesky(a, lower = TRUE)
+  L <- prim_chol(a, lower = TRUE)
   # Solve L @ y = b
   y <- prim_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
   # Solve L^T @ x = y

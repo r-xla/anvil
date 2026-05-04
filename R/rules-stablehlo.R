@@ -335,11 +335,11 @@ prim_tan[["stablehlo"]] <- function(operand) {
   list(stablehlo::hlo_tan(operand))
 }
 
-prim_sine[["stablehlo"]] <- function(operand) {
+prim_sin[["stablehlo"]] <- function(operand) {
   list(stablehlo::hlo_sine(operand))
 }
 
-prim_cosine[["stablehlo"]] <- function(operand) {
+prim_cos[["stablehlo"]] <- function(operand) {
   list(stablehlo::hlo_cosine(operand))
 }
 
@@ -584,7 +584,7 @@ prim_gather[["stablehlo"]] <- function(
   list(result)
 }
 
-prim_cholesky[["stablehlo"]] <- function(operand, lower) {
+prim_chol[["stablehlo"]] <- function(operand, lower) {
   L <- stablehlo::hlo_cholesky(operand, lower = lower)
   # The non-triangular part of the output is implementation-defined.
   # Zero it out so downstream code (including reverse rules) never sees garbage.
