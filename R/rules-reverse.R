@@ -791,7 +791,6 @@ prim_cumprod[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, param
   grad <- grads[[1L]]
   shp <- shape(operand)
   rank <- length(shp)
-  n <- shp[[dim]]
   dt <- dtype(operand)
 
   # arg_run[j] = the input index that holds the running extreme at output j,
@@ -802,33 +801,32 @@ prim_cumprod[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, param
   edge_zero <- integer(rank)
   pad_value <- prim_fill(0, dtype = dt, shape = integer())
   y_padded <- prim_pad(y, pad_value, edge_low, edge_zero, edge_zero)
-  start <- rep(1L, rank)
-  strides <- rep(1L, rank)
-  y_prev <- prim_static_slice(y_padded, start, shp, strides)
+  y_prev <- prim_static_slice(y_padded, rep(1L, rank), shp, rep(1L, rank))
 
   iota_dim <- prim_iota(dim = dim, dtype = "i32", shape = shp, start = 1L)
   is_first <- prim_eq(iota_dim, prim_fill(1L, dtype = "i32", shape = shp))
   strict_ascent <- if (is_max) prim_gt(operand, y_prev) else prim_lt(operand, y_prev)
   is_ascent <- prim_or(is_first, strict_ascent)
-
-  zero_iota <- prim_fill(0L, dtype = "i32", shape = shp)
-  ascent_marker <- prim_ifelse(is_ascent, iota_dim, zero_iota)
+  ascent_marker <- prim_ifelse(is_ascent, iota_dim, prim_fill(0L, dtype = "i32", shape = shp))
   arg_run <- prim_cummax(ascent_marker, dim = dim)
 
-  # Insert an "output position" axis at position dim+1 in the augmented shape
-  # so that mask[i, j] = (arg_run[j] == i) along dim, then reduce out j.
-  shp_aug <- append(shp, n, after = dim)
-  tail_aug <- if (dim < rank) seq.int(dim + 2L, rank + 1L) else integer()
-  bd_input <- c(seq_len(dim), tail_aug)
-  bd_output <- c(seq_len(dim - 1L), dim + 1L, tail_aug)
-
-  iota_aug <- prim_broadcast_in_dim(iota_dim, shp_aug, bd_input)
-  arg_run_aug <- prim_broadcast_in_dim(arg_run, shp_aug, bd_output)
-  grad_aug <- prim_broadcast_in_dim(grad, shp_aug, bd_output)
-
-  mask_dt <- prim_convert(prim_eq(iota_aug, arg_run_aug), dtype = dt)
-  contrib <- prim_mul(mask_dt, grad_aug)
-  list(prim_reduce_sum(contrib, dims = dim + 1L, drop = TRUE))
+  # Scatter-add grad into operand-shaped zeros at the arg_run indices along
+  # `dim`. Multiple j's may share the same arg_run value (plateaus); the
+  # add-update accumulates them. Other dims are pure batch dims.
+  batching <- seq_len(rank)[-dim]
+  list(prim_scatter(
+    input = zeros_like(operand),
+    scatter_indices = arg_run,
+    update = grad,
+    update_window_dims = integer(0),
+    inserted_window_dims = dim,
+    input_batching_dims = batching,
+    scatter_indices_batching_dims = batching,
+    scatter_dims_to_operand_dims = dim,
+    index_vector_dim = rank + 1L,
+    unique_indices = FALSE,
+    update_computation = prim_add
+  ))
 }
 
 prim_cummax[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
