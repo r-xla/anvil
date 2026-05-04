@@ -526,12 +526,12 @@ test_that("prim_tan", {
   )
 })
 
-test_that("prim_sine", {
-  verify_grad_uni(prim_sine, torch::torch_sin, tol = 1e-5)
+test_that("prim_sin", {
+  verify_grad_uni(prim_sin, torch::torch_sin, tol = 1e-5)
 })
 
-test_that("prim_cosine", {
-  verify_grad_uni(prim_cosine, torch::torch_cos, tol = 1e-5)
+test_that("prim_cos", {
+  verify_grad_uni(prim_cos, torch::torch_cos, tol = 1e-5)
 })
 
 test_that("prim_abs", {
@@ -802,7 +802,7 @@ gen_tri_matrix <- function(n, lower, unit_diagonal) {
   M
 }
 
-describe("prim_cholesky", {
+describe("prim_chol", {
   verify_cholesky_grad <- function(lower) {
     n <- sample(2:4, 1L)
     A_r <- gen_spd_matrix(n)
@@ -811,7 +811,7 @@ describe("prim_cholesky", {
     A_torch <- torch::torch_tensor(A_r, requires_grad = TRUE, dtype = torch::torch_float64())
 
     f_anvl <- function(A) {
-      L <- prim_cholesky(A, lower = lower)
+      L <- prim_chol(A, lower = lower)
       nv_reduce_sum(L, dims = c(1L, 2L))
     }
     grad_anvl <- as_array(jit(gradient(f_anvl))(A_anvl)[[1L]])

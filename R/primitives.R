@@ -1505,9 +1505,9 @@ prim_tan <- new_primitive("tan", make_unary_op(stablehlo::infer_types_tan))
 #' @seealso [nv_sin()], [sin()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, pi / 2, pi))
-#' prim_sine(x)
+#' prim_sin(x)
 #' @export
-prim_sine <- new_primitive("sine", make_unary_op(stablehlo::infer_types_sine))
+prim_sin <- new_primitive("sine", make_unary_op(stablehlo::infer_types_sine))
 
 #' @title Primitive Cosine
 #' @description
@@ -1521,9 +1521,9 @@ prim_sine <- new_primitive("sine", make_unary_op(stablehlo::infer_types_sine))
 #' @seealso [nv_cos()], [cos()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(0, pi / 2, pi))
-#' prim_cosine(x)
+#' prim_cos(x)
 #' @export
-prim_cosine <- new_primitive("cosine", make_unary_op(stablehlo::infer_types_cosine))
+prim_cos <- new_primitive("cosine", make_unary_op(stablehlo::infer_types_cosine))
 
 #' @title Primitive Floor
 #' @description
@@ -2798,9 +2798,9 @@ prim_gather <- new_primitive(
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Create a positive-definite matrix
 #' x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-#' prim_cholesky(x, lower = TRUE)
+#' prim_chol(x, lower = TRUE)
 #' @export
-prim_cholesky <- new_primitive(
+prim_chol <- new_primitive(
   "cholesky",
   function(operand, lower) {
     infer_fn <- function(operand, lower) {

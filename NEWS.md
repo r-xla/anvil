@@ -5,7 +5,9 @@
 * Renamed user-facing API functions to match base R names:
   `nv_sine()` -> `nv_sin()`, `nv_cosine()` -> `nv_cos()`,
   `nv_ceil()` -> `nv_ceiling()`, `nv_cholesky()` -> `nv_chol()`.
-  The underlying `prim_*` primitives keep their StableHLO-aligned names.
+  The corresponding primitives were renamed in step:
+  `prim_sine()` -> `prim_sin()`, `prim_cosine()` -> `prim_cos()`,
+  `prim_cholesky()` -> `prim_chol()`.
 * `nv_reduce_mean()` was renamed to `nv_mean()`.
 
 ## New Features
