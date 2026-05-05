@@ -4,14 +4,15 @@
 \alias{nv_reduce_min}
 \title{Min Reduction}
 \usage{
-nv_reduce_min(operand, dims, drop = TRUE)
+nv_reduce_min(operand, dims = NULL, drop = TRUE)
 }
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
-\item{dims}{(\code{integer()})\cr
-Dimensions to reduce.}
+\item{dims}{(\code{integer()} | \code{NULL})\cr
+Dimensions to reduce. If \code{NULL} (default), reduces over all
+dimensions, returning a scalar.}
 
 \item{drop}{(\code{logical(1)})\cr
 Whether to drop reduced dimensions.}
@@ -28,6 +29,7 @@ Finds the minimum of array elements along the specified dimensions.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(matrix(1:6, nrow = 2))
+nv_reduce_min(x)            # all dims -> scalar
 nv_reduce_min(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }

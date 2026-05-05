@@ -316,11 +316,16 @@ as_raw.AnvlArray <- function(x, row_major = FALSE, ...) {
 #' * `as.double()` / `as.numeric()`: float or (signed/unsigned) integer dtypes.
 #' * `as.integer()`: signed or unsigned integer dtypes.
 #' * `as.logical()`: `bool`.
+#' * `as.vector()`: any dtype; the R type is chosen by the dtype, or
+#'   forced via `mode` (e.g. `"integer"`, `"double"`, `"logical"`, `"list"`).
 #'
 #' Use [`as_array()`] to obtain an R array that preserves the shape, or
 #' [`nv_convert()`] to change the dtype of an [`AnvlArray`] before coercing.
 #' @param x ([`AnvlArray`])\cr
 #'   Array to coerce.
+#' @param mode (`character(1)`)\cr
+#'   For `as.vector()` only. See [base::as.vector()]. Defaults to `"any"`,
+#'   meaning the natural R type for the array's dtype.
 #' @param ... Unused.
 #' @return An R vector of the corresponding type (`double`, `integer`, or `logical`).
 #' @examplesIf pjrt::plugins_downloaded()
@@ -328,6 +333,7 @@ as_raw.AnvlArray <- function(x, row_major = FALSE, ...) {
 #' as.numeric(x)
 #' as.integer(nv_array(1:6, shape = c(2L, 3L)))
 #' as.logical(nv_array(c(TRUE, FALSE), dtype = "bool"))
+#' as.vector(x)
 #' @name as-AnvlArray
 NULL
 
@@ -361,6 +367,13 @@ as.logical.AnvlArray <- function(x, ...) {
     cli_abort("{.fn as.logical} requires a {.val bool} dtype, but got {.val {as.character(dtype(x))}}.")
   }
   as.logical(as_array(x))
+}
+
+#' @rdname as-AnvlArray
+#' @method as.vector AnvlArray
+#' @export
+as.vector.AnvlArray <- function(x, mode = "any") {
+  as.vector(as_array(x), mode = mode)
 }
 
 #' @rdname platform
@@ -455,7 +468,7 @@ AbstractArray <- function(dtype, shape, ambiguous = FALSE) {
   )
 }
 
-is_abstract_tensor <- function(x) {
+is_abstract_array <- function(x) {
   inherits(x, "AbstractArray")
 }
 
@@ -805,7 +818,7 @@ compare_proxy.AnvlArray <- function(x, path) { # nolint
 to_abstract <- function(x, pure = FALSE) {
   x <- if (is_anvl_array(x)) {
     ConcreteArray(x)
-  } else if (is_abstract_tensor(x)) {
+  } else if (is_abstract_array(x)) {
     x
   } else if (test_atomic(x) && (is.logical(x) || is.numeric(x))) {
     # logicals are not ambiguous
@@ -893,4 +906,30 @@ is_arrayish <- function(x, convert_ok = TRUE) {
     return(FALSE)
   }
   is_valid_r(x)
+}
+
+
+#' @title Create an R array
+#' @description
+#' Create an R array without having to wrap data in `c()`
+#' @param ... (any)\cr
+#'   Values of new array.
+#' @param shape (`NULL` | `integer()`)\cr
+#'   Shape of new array. If `NULL` (default), uses length of elements to create a 1D array.
+#' @export
+#' @examples
+#' arr(1, 2, 3)
+#' arr(1, 2, 3, 4, shape = c(2, 2))
+arr <- function(..., shape = NULL) {
+  vals <- c(...)
+  if (is.null(vals)) {
+    cli_abort("Invalid input values")
+  }
+  assert_integerish(shape, null.ok = TRUE)
+  assert_vector(vals, min.len = 1L)
+  nvals <- length(vals)
+  if (!is.null(shape) && (nvals != 1) && (prod(shape) != nvals)) {
+    cli_abort("Number of elements is {nvals}, but {.arg shape} is {shape}")
+  }
+  array(vals, dim = shape %||% length(vals))
 }

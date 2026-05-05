@@ -39,5 +39,5 @@ prim_sine(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_sine]{nv_sine()}}, \code{\link[=sin]{sin()}}
+\code{\link[=nv_sin]{nv_sin()}}, \code{\link[=sin]{sin()}}
 }

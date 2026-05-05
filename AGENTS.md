@@ -17,8 +17,14 @@ When adding new functionality, decide which layer it belongs to. Most new operat
 Primitives are `JitPrimitive` callables constructed by `new_primitive()` (defined in `R/primitive.R`). The returned object is both callable (it wraps `fn` with `jit()`) and carries an `AnvlPrimitive` metadata object via `attr(., "primitive")`. Primitives are stored as `prim_<name>` variables. `new_primitive()` lexically binds `self` (the `AnvlPrimitive`) into the body's enclosing environment, so inside a primitive body you write `graph_desc_add(self, ...)` — never the primitive name as a string. Interpretation rules are accessed via `prim_<name>[["<rule_type>"]]`:
 
 - **`stablehlo`** -- JIT lowering rules in `R/rules-stablehlo.R`. These convert traced operations into StableHLO IR. Since stablehlo uses 0-based indexing, convert indices by subtracting 1.
-- **`reverse`** -- Autodiff rules in `R/rules-reverse.R`. Signature: `function(inputs, outputs, grads, .required)`. `grads` contains the upstream gradients (one per output). Return a list of gradients w.r.t. each input, using `NULL` (via `if (.required[[i]])`) for inputs that don't need gradients.
+- **`reverse`** -- Autodiff rules in `R/rules-reverse.R`, built with `rule_reverse()`.
 - **`quickr`** -- R-native lowering rules in `R/rules-quickr.R` for the quickr backend.
+
+## Broadcasting
+
+Anvl's elementwise binary operators (`+`, `-`, `*`, `/`, `nv_add`, `nv_mul`, …) only **auto-broadcast scalars** — i.e. operands with `shape = integer()`. They do **not** do general numpy-style broadcasting; mixing two non-scalar arrays of different (but broadcastable) shapes raises `nv_broadcast_scalars()` errors like *"All non-scalar arrays must have the same shape, ... Use `nv_broadcast_arrays()` for general broadcasting."*
+
+When two non-scalar arrays need to be combined and only differ by size-1 dimensions (e.g. `[2, 3] * [1, 3]`), explicitly broadcast first via `nv_broadcast_arrays(a, b)` (or `nv_broadcast_to(operand, target_shape)` / `prim_broadcast_in_dim()` for a one-sided broadcast).
 
 ## Graph Tracing
 
@@ -28,7 +34,7 @@ Key types: `GraphValue` (traced variable), `GraphLiteral` (embedded constant), `
 
 ## NSE and Tracing
 
-When combining non-standard evaluation (NSE) with sub-graph tracing, `force()` all arrayish inputs so they are not accidentally captured as unevaluated promises in the sub-graph descriptor. R's lazy evaluation of function arguments causes hard-to-debug errors otherwise.
+`force()` is only needed in higher-order primitives that trace R functions internally (e.g. `prim_sort` traces a comparator, `prim_scatter` traces an update computation). In those cases, force all arrayish inputs first so they aren't accidentally captured as unevaluated promises in the sub-graph descriptor — R's lazy evaluation otherwise causes hard-to-debug errors. Plain primitives that don't open a sub-descriptor don't need `force()`.
 
 ## Testing
 
