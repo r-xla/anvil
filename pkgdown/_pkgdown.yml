@@ -209,6 +209,14 @@ reference:
       - nv_var
       - nv_sd
 
+  - subtitle: Cumulative Operations
+    desc: Cumulative (scan) operations along a single dimension
+    contents:
+      - nv_cumsum
+      - nv_cumprod
+      - nv_cummax
+      - nv_cummin
+
   - subtitle: Linear Algebra
     desc: Linear algebra operations
     contents:

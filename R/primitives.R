@@ -784,6 +784,137 @@ prim_reduce_any <- new_primitive("reduce_any", make_reduce_op(infer_reduce_boole
 #' @export
 prim_reduce_all <- new_primitive("reduce_all", make_reduce_op(infer_reduce_boolean), static = 2:3)
 
+# cumulative (scan) primitives -------------------------------------------------
+
+infer_cum <- function(operand, dim) {
+  rank <- length(shape(operand))
+  if (rank == 0L) {
+    cli_abort("cumulative ops require at least a 1-dimensional operand, but operand is a scalar")
+  }
+  if (!checkmate::test_integerish(dim, lower = 1, upper = rank, len = 1L)) {
+    cli_abort("{.arg dim} must be a single integer in 1..{rank}, but is {.val {dim}}")
+  }
+  list(AbstractArray(
+    dtype = dtype(operand),
+    shape = Shape(shape(operand)),
+    ambiguous = operand$ambiguous
+  ))
+}
+
+cum_op <- function(operand, dim) {
+  graph_desc_add(self, list(operand = operand), params = list(dim = dim), infer_fn = infer_cum)[[1L]]
+}
+
+infer_cum_extreme <- function(operand, dim) {
+  rank <- length(shape(operand))
+  if (rank == 0L) {
+    cli_abort("cumulative ops require at least a 1-dimensional operand, but operand is a scalar")
+  }
+  if (!checkmate::test_integerish(dim, lower = 1, upper = rank, len = 1L)) {
+    cli_abort("{.arg dim} must be a single integer in 1..{rank}, but is {.val {dim}}")
+  }
+  list(
+    AbstractArray(
+      dtype = dtype(operand),
+      shape = Shape(shape(operand)),
+      ambiguous = operand$ambiguous
+    ),
+    AbstractArray(
+      dtype = "i32",
+      shape = Shape(shape(operand)),
+      ambiguous = FALSE
+    )
+  )
+}
+
+cum_extreme_op <- function(operand, dim) {
+  graph_desc_add(self, list(operand = operand), params = list(dim = dim), infer_fn = infer_cum_extreme)
+}
+
+#' @title Primitive Cumulative Sum
+#' @description
+#' Cumulative sum of array elements along a single dimension.
+#' Output position `j` along `dim` equals the sum of input positions `1..j`.
+#' @template param_prim_operand_any
+#' @template param_prim_cum_dim
+#' @template return_prim_unary
+#' @templateVar primitive_id cumsum
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_reduce_window()] with [stablehlo::hlo_add()] as the reducer.
+#' @seealso [nv_cumsum()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' prim_cumsum(x, dim = 1L)
+#' @export
+prim_cumsum <- new_primitive("cumsum", cum_op, static = 2L)
+
+#' @title Primitive Cumulative Product
+#' @description
+#' Cumulative product of array elements along a single dimension.
+#' Output position `j` along `dim` equals the product of input positions `1..j`.
+#' @template param_prim_operand_any
+#' @template param_prim_cum_dim
+#' @template return_prim_unary
+#' @templateVar primitive_id cumprod
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_reduce_window()] with [stablehlo::hlo_multiply()] as the reducer.
+#' @seealso [nv_cumprod()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(1:6, nrow = 2))
+#' prim_cumprod(x, dim = 1L)
+#' @export
+prim_cumprod <- new_primitive("cumprod", cum_op, static = 2L)
+
+#' @title Primitive Cumulative Maximum
+#' @description
+#' Running maximum of array elements along a single dimension along with
+#' the index of the last occurrence of the running maximum.
+#' At output position `j`, the values output is `max(input[1..j])` and the
+#' indices output is the largest `i` in `1..j` with
+#' `input[i] == values[j]` (last-occurrence tiebreak, matching torch).
+#' @template param_prim_operand_any
+#' @template param_prim_cum_dim
+#' @templateVar cum_extreme_name maximum
+#' @templateVar cum_extreme_arg argmax
+#' @template return_prim_cum_extreme
+#' @templateVar primitive_id cummax
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to a variadic [stablehlo::hlo_reduce_window()] over `(values, iota)`
+#' with a `(value > value | (value == value & idx > idx))` selector.
+#' @seealso [nv_cummax()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+#' prim_cummax(x, dim = 1L)
+#' @export
+prim_cummax <- new_primitive("cummax", cum_extreme_op, static = 2L)
+
+#' @title Primitive Cumulative Minimum
+#' @description
+#' Running minimum of array elements along a single dimension along with
+#' the index of the last occurrence of the running minimum.
+#' At output position `j`, the values output is `min(input[1..j])` and the
+#' indices output is the largest `i` in `1..j` with
+#' `input[i] == values[j]` (last-occurrence tiebreak, matching torch).
+#' @template param_prim_operand_any
+#' @template param_prim_cum_dim
+#' @templateVar cum_extreme_name minimum
+#' @templateVar cum_extreme_arg argmin
+#' @template return_prim_cum_extreme
+#' @templateVar primitive_id cummin
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to a variadic [stablehlo::hlo_reduce_window()] over `(values, iota)`
+#' with a `(value < value | (value == value & idx > idx))` selector.
+#' @seealso [nv_cummin()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+#' prim_cummin(x, dim = 1L)
+#' @export
+prim_cummin <- new_primitive("cummin", cum_extreme_op, static = 2L)
+
 #' @title Primitive Generic Reduce
 #' @description
 #' Reduces an array along the specified dimensions using a user-supplied

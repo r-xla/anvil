@@ -62,6 +62,10 @@ Math.AnvlBox <- function(x, ...) {
     "expm1" = nv_expm1(x),
     "log1p" = nv_log1p(x),
     "round" = nv_round(x),
+    "cumsum" = nv_cumsum(x),
+    "cumprod" = nv_cumprod(x),
+    "cummax" = nv_cummax(x),
+    "cummin" = nv_cummin(x),
     cli_abort("invalid method: {(.Generic)}")
   )
 }

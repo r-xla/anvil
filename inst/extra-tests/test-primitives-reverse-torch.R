@@ -428,6 +428,104 @@ test_that("prim_transpose", {
   })
 })
 
+describe("prim_cumsum", {
+  it("vector gradient", {
+    verify_grad_uni_tensor(
+      prim_cumsum,
+      torch::torch_cumsum,
+      shape = 5L,
+      args_f = \(shp, dtype) list(list(dim = 1L), list(dim = 1L))
+    )
+  })
+  it("matrix gradient along each dim", {
+    for (d in 1:2) {
+      verify_grad_uni_tensor(
+        prim_cumsum,
+        torch::torch_cumsum,
+        shape = c(3L, 4L),
+        args_f = local({
+          dl <- d
+          \(shp, dtype) list(list(dim = dl), list(dim = dl))
+        })
+      )
+    }
+  })
+})
+
+# torch.cummax / torch.cummin return (values, indices); take [[1L]] for the
+# values tensor, on which backward is well-defined.
+torch_cummax_values <- function(x, dim) torch::torch_cummax(x, dim = dim)[[1L]]
+torch_cummin_values <- function(x, dim) torch::torch_cummin(x, dim = dim)[[1L]]
+
+describe("prim_cummax", {
+  verify_against_torch <- function(x_arr, dim) {
+    dtype <- "f32"
+    x_nv <- nv_array(x_arr, dtype = dtype)
+    x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+
+    f_nv <- function(x) {
+      y <- nv_cummax(x, dim = dim)
+      nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
+    }
+    grads_nv <- jit(gradient(f_nv))(x_nv)
+
+    out_th <- torch_cummax_values(x_th, dim = dim)
+    torch::torch_sum(out_th)$backward()
+
+    expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
+  }
+  it("strictly increasing -> each element receives its own grad", {
+    verify_against_torch(c(1, 2, 3, 4), dim = 1L)
+  })
+  it("plateau uses last occurrence", {
+    # x = [1, 3, 3, 2]: y = [1, 3, 3, 3]. arg_run = [1, 2, 3, 3]. grad = [1, 1, 2, 0].
+    verify_against_torch(c(1, 3, 3, 2), dim = 1L)
+  })
+  it("non-monotone vector", {
+    # x = [3, 1, 4, 1, 5, 9, 2, 6]: arg_run = [1, 1, 3, 3, 5, 6, 6, 6] (no ties).
+    # grad = [2, 0, 2, 0, 1, 3, 0, 0].
+    verify_against_torch(c(3, 1, 4, 1, 5, 9, 2, 6), dim = 1L)
+  })
+  it("matrix gradient along dim 2", {
+    verify_against_torch(matrix(c(1, 4, 3, 2, 2, 1), nrow = 2), dim = 2L)
+  })
+})
+
+describe("prim_cummin", {
+  verify_against_torch <- function(x_arr, dim) {
+    dtype <- "f32"
+    x_nv <- nv_array(x_arr, dtype = dtype)
+    x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+
+    f_nv <- function(x) {
+      y <- nv_cummin(x, dim = dim)
+      nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
+    }
+    grads_nv <- jit(gradient(f_nv))(x_nv)
+
+    out_th <- torch_cummin_values(x_th, dim = dim)
+    torch::torch_sum(out_th)$backward()
+
+    expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
+  }
+  it("strictly decreasing -> each element receives its own grad", {
+    verify_against_torch(c(4, 3, 2, 1), dim = 1L)
+  })
+  it("plateau uses last occurrence", {
+    # x = [4, 2, 2, 3]: y = [4, 2, 2, 2]. arg_run = [1, 2, 3, 3]. grad = [1, 1, 2, 0].
+    verify_against_torch(c(4, 2, 2, 3), dim = 1L)
+  })
+  it("non-monotone vector", {
+    # x = [3, 1, 4, 1, 5, 9, 2, 6]: arg_run = [1, 2, 2, 4, 4, 4, 4, 4]
+    # (tie at j=4 picks the later index, then carries forward).
+    # grad = [1, 2, 0, 5, 0, 0, 0, 0].
+    verify_against_torch(c(3, 1, 4, 1, 5, 9, 2, 6), dim = 1L)
+  })
+  it("matrix gradient along dim 1", {
+    verify_against_torch(matrix(c(3, 1, 4, 1, 5, 9), nrow = 3), dim = 1L)
+  })
+})
+
 test_that("prim_broadcast_in_dim", {
   input_shape <- c(2L, 1L, 3L)
   target_shape <- c(4L, 2L, 5L, 3L)

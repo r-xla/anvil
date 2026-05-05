@@ -156,6 +156,109 @@ prim_reduce_all[["stablehlo"]] <- function(operand, dims, drop) {
   .stablehlo_apply_reduce(stablehlo::hlo_and, operand, init, dims, drop)
 }
 
+.stablehlo_apply_cum <- function(reductor, operand, init, dim) {
+  shp <- shape(operand)
+  rank <- length(shp)
+  s_d <- shp[[dim]]
+  window_dimensions <- rep(1L, rank)
+  window_dimensions[[dim]] <- s_d
+  ones <- rep(1L, rank)
+  padding <- matrix(0L, nrow = rank, ncol = 2L)
+  padding[dim, 1L] <- s_d - 1L
+
+  local_func("")
+  dt <- as.character(operand$value_type$type$dtype)
+  body <- hlo_return(reductor(
+    hlo_input("x", dt),
+    hlo_input("y", dt)
+  ))
+
+  list(stablehlo::hlo_reduce_window(
+    inputs = operand,
+    init_values = init(operand),
+    window_dimensions = window_dimensions,
+    window_strides = ones,
+    base_dilations = ones,
+    window_dilations = ones,
+    padding = padding,
+    body = body
+  ))
+}
+
+prim_cumsum[["stablehlo"]] <- function(operand, dim) {
+  init <- function(operand) {
+    hlo_scalar(0, dtype = dtype(operand), func = operand$func)
+  }
+  .stablehlo_apply_cum(stablehlo::hlo_add, operand, init, dim)
+}
+
+prim_cumprod[["stablehlo"]] <- function(operand, dim) {
+  init <- function(operand) {
+    hlo_scalar(1, dtype = dtype(operand), func = operand$func)
+  }
+  .stablehlo_apply_cum(stablehlo::hlo_multiply, operand, init, dim)
+}
+
+.stablehlo_apply_cum_extreme <- function(operand, dim, is_max) {
+  shp <- shape(operand)
+  rank <- length(shp)
+  s_d <- shp[[dim]]
+  window_dimensions <- rep(1L, rank)
+  window_dimensions[[dim]] <- s_d
+  ones <- rep(1L, rank)
+  padding <- matrix(0L, nrow = rank, ncol = 2L)
+  padding[dim, 1L] <- s_d - 1L
+
+  v_dtype <- as.character(operand$value_type$type$dtype)
+  iota <- stablehlo::hlo_iota(iota_dimension = dim - 1L, dtype = "i32", shape = shp)
+
+  init_v_fn <- if (is_max) nv_minval else nv_maxval
+  init_v <- hlo_scalar(init_v_fn(v_dtype, "cpu"))
+  init_i <- hlo_scalar(0L, dtype = "i32", func = operand$func)
+
+  cmp <- if (is_max) prim_gt else prim_lt
+  # Pick the side with the strictly better value; on ties, the larger index
+  # wins (last-occurrence tiebreak, matching torch). The op is associative
+  # + commutative.
+  reductor <- function(lv, li, rv, ri) {
+    lhs_wins <- prim_or(cmp(lv, rv), prim_and(prim_eq(lv, rv), prim_gt(li, ri)))
+    list(nv_ifelse(lhs_wins, lv, rv), nv_ifelse(lhs_wins, li, ri))
+  }
+  body <- .r_reductor_to_hlo_func(
+    reductor,
+    list(
+      lv = nv_aval(v_dtype, integer()),
+      li = nv_aval("i32", integer()),
+      rv = nv_aval(v_dtype, integer()),
+      ri = nv_aval("i32", integer())
+    )
+  )
+
+  out <- stablehlo::hlo_reduce_window(
+    inputs = list(operand, iota),
+    init_values = list(init_v, init_i),
+    window_dimensions = window_dimensions,
+    window_strides = ones,
+    base_dilations = ones,
+    window_dilations = ones,
+    padding = padding,
+    body = body
+  )
+  values <- out[[1L]]
+  indices_0 <- out[[2L]]
+  one <- stablehlo::hlo_scalar(1L, dtype = "i32", func = indices_0$func)
+  one_bc <- stablehlo::hlo_broadcast_in_dim(one, integer(0), shape(indices_0$value_type))
+  list(values, stablehlo::hlo_add(indices_0, one_bc))
+}
+
+prim_cummax[["stablehlo"]] <- function(operand, dim) {
+  .stablehlo_apply_cum_extreme(operand, dim, is_max = TRUE)
+}
+
+prim_cummin[["stablehlo"]] <- function(operand, dim) {
+  .stablehlo_apply_cum_extreme(operand, dim, is_max = FALSE)
+}
+
 prim_reduce[["stablehlo"]] <- function(operand, init, dims, drop, reductor_graph, .env) {
   red_func <- stablehlo(reductor_graph)[[1L]]
   out <- stablehlo::hlo_reduce(
@@ -503,6 +606,70 @@ prim_top_k[["stablehlo"]] <- function(operand, k) {
   indices <- stablehlo::hlo_add(indices, one_bc)
 
   list(values, indices)
+}
+
+# Inlines `graph`'s ops into the currently-active stablehlo Func. `input_fvals`
+# are the FuncValues to bind to `graph$inputs` (in order). Constants are looked
+# up via `parent_env` (they were registered in the parent descriptor when the
+# higher-order primitive was traced), or materialized as literals if missing.
+# Returns the FuncValues corresponding to `graph$outputs`.
+.inline_graph_into_current_func <- function(graph, input_fvals, parent_env) {
+  env <- HloEnv(parent = parent_env)
+  for (i in seq_along(graph$inputs)) {
+    env_add(env, graph$inputs[[i]], input_fvals[[i]])
+  }
+
+  current_func <- stablehlo::.current_func()
+  gnode_to_fval <- function(gnode) {
+    fval <- env_get(env, gnode)
+    if (!identical(fval$func, current_func)) {
+      stablehlo::FuncValue(fval$value_id, fval$value_type, current_func)
+    } else {
+      fval
+    }
+  }
+
+  for (call in graph$calls) {
+    prim <- call$primitive
+    params <- call$params
+    inputs <- lapply(call$inputs, function(x) {
+      if (is_graph_literal(x)) {
+        fval <- stablehlo::hlo_tensor(
+          value = unwrap_if_array(x$aval$data),
+          dtype = x$aval$dtype,
+          shape = x$aval$shape$dims,
+          func = current_func
+        )
+        env_add(env, x, fval)
+        fval
+      } else {
+        gnode_to_fval(x)
+      }
+    })
+    if (is_higher_order_primitive(prim)) {
+      params <- c(params, list(.env = env))
+    }
+    fvals_out <- rlang::exec(prim[["stablehlo"]], !!!c(inputs, params))
+    if (length(call$outputs) != length(fvals_out)) {
+      cli_abort("Internal: expected {length(call$outputs)} outputs, got {length(fvals_out)}")
+    }
+    for (i in seq_along(fvals_out)) {
+      env_add(env, call$outputs[[i]], fvals_out[[i]])
+    }
+  }
+
+  lapply(graph$outputs, function(o) {
+    if (is_graph_literal(o)) {
+      stablehlo::hlo_tensor(
+        value = o$aval$data,
+        dtype = o$aval$dtype,
+        shape = o$aval$shape$dims,
+        func = current_func
+      )
+    } else {
+      gnode_to_fval(o)
+    }
+  })
 }
 
 prim_scatter[["stablehlo"]] <- function(

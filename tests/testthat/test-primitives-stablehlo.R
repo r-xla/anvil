@@ -241,6 +241,74 @@ test_that("prim_reduce_all", {
   expect_equal(out, array(rep(FALSE, 3), c(1, 3)))
 })
 
+describe("cumulative ops", {
+  # Common semantics across cumsum / cumprod / cummax / cummin.
+  # cummax / cummin return list(values, indices); the helper picks values.
+  verify_cum <- function(prim_fn, nv_fn, base_fn, has_indices = FALSE) {
+    pick <- if (has_indices) function(o) o[[1L]] else function(o) o
+
+    # 1-D: matches base R directly.
+    v <- c(3, 1, 4, 1, 5, 9, 2, 6)
+    x <- nv_array(v, dtype = "f32")
+    out <- jit(function(a) pick(prim_fn(a, dim = 1L)))(x)
+    expect_equal(as.numeric(as_array(out)), as.numeric(base_fn(v)))
+
+    # 2-D dim = 1 (down columns) and dim = 2 (across rows) match
+    # `apply` along the corresponding margin.
+    M <- matrix(c(3, 1, 4, 1, 5, 9), nrow = 2)
+    xm <- nv_array(M, dtype = "f32")
+
+    out <- jit(function(a) pick(prim_fn(a, dim = 1L)))(xm)
+    expect_equal(as_array(out), apply(M, 2, base_fn))
+
+    out <- jit(function(a) pick(prim_fn(a, dim = 2L)))(xm)
+    expect_equal(as_array(out), t(apply(M, 1, base_fn)))
+
+    # nv_*() without `dim` flattens (row-major in anvl). Base R flattens
+    # column-major, so the apples-to-apples comparison is against
+    # base_fn(t(M)).
+    out <- jit(nv_fn)(xm)
+    expect_equal(as.numeric(as_array(out)), as.numeric(base_fn(t(M))))
+  }
+
+  it("prim_cumsum matches base R", verify_cum(prim_cumsum, nv_cumsum, base::cumsum))
+  it("prim_cumprod matches base R", verify_cum(prim_cumprod, nv_cumprod, base::cumprod))
+  it("prim_cummax matches base R", verify_cum(prim_cummax, nv_cummax, base::cummax, has_indices = TRUE))
+  it("prim_cummin matches base R", verify_cum(prim_cummin, nv_cummin, base::cummin, has_indices = TRUE))
+
+  it("prim_cumsum rejects out-of-range dim", {
+    x <- nv_array(1:4, dtype = "f32")
+    expect_error(prim_cumsum(x, dim = 2L), "dim")
+    expect_error(prim_cumsum(x, dim = 0L), "dim")
+  })
+
+  # Index outputs are unique to cummax / cummin -- not covered by the
+  # values-only helper. Plateaus break ties to the last occurrence
+  # (matching torch).
+  it("prim_cummax returns running argmax indices", {
+    x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6), dtype = "f32")
+    out <- jit(function(a) prim_cummax(a, dim = 1L))(x)
+    expect_equal(c(as_array(out[[2L]])), c(1L, 1L, 3L, 3L, 5L, 6L, 6L, 6L))
+  })
+  it("prim_cummin returns running argmin indices with last-occurrence tiebreak", {
+    # Tie at j=4 (x_4 == y_3 == 1): last-occurrence picks 4, then carries forward.
+    x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6), dtype = "f32")
+    out <- jit(function(a) prim_cummin(a, dim = 1L))(x)
+    expect_equal(c(as_array(out[[2L]])), c(1L, 2L, 2L, 4L, 4L, 4L, 4L, 4L))
+  })
+  it("prim_cummax plateau breaks ties to last occurrence", {
+    x <- nv_array(c(1, 3, 3, 2), dtype = "f32")
+    out <- jit(function(a) prim_cummax(a, dim = 1L))(x)
+    expect_equal(c(as_array(out[[2L]])), c(1L, 2L, 3L, 3L))
+  })
+  it("prim_cummax integer dtype", {
+    x <- nv_array(c(3L, -1L, 4L, -1L, 5L), dtype = "i32")
+    out <- jit(function(a) prim_cummax(a, dim = 1L))(x)
+    expect_equal(c(as_array(out[[1L]])), c(3L, 3L, 4L, 4L, 5L))
+    expect_equal(c(as_array(out[[2L]])), c(1L, 1L, 3L, 3L, 5L))
+  })
+})
+
 test_that("prim_broadcast_in_dim", {
   x <- 1L
   f <- jit(prim_broadcast_in_dim, static = c("shape", "broadcast_dimensions"))

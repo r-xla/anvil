@@ -16,6 +16,10 @@
   `as.integer`, `as.logical` and `as.vector`.
 * New API functions `nv_rbind()` and `nv_cbind()` and corresponding
   `rbind()`/`cbind()` generics.
+* New cumulative primitives and API functions:
+  `nv_cumsum()`, `nv_cumprod()`, `nv_cummax()`, `nv_cummin()` (and
+  the corresponding `prim_*` primitives).
+  `prim_cumprod()` does not yet have a reverse rule.
 * Added new function `await()` that blocks until the underlying computation
   has finished.
 * New tree utilities `map_tree()` and `pmap_tree()` for applying functions
