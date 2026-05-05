@@ -1967,7 +1967,7 @@ prim_polygamma <- new_primitive(
   function(n, x) {
     infer_fn <- function(n, x) {
       both_ambiguous <- n$ambiguous && x$ambiguous
-      out <- stablehlo::infer_types_polygamma(at2vt(n), at2vt(x))
+      out <- stablehlo::infer_types_polygamma(at2vt(n), at2vt(x))[[1L]]
       out <- vt2at(out)
       out$ambiguous <- both_ambiguous
       list(out)
