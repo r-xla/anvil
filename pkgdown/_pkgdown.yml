@@ -181,14 +181,28 @@ reference:
       - nv_sin
       - nv_cos
       - nv_tan
-      - nv_tanh
+      - nv_asin
+      - nv_acos
+      - nv_atan
       - nv_atan2
+      - nv_sinh
+      - nv_cosh
+      - nv_tanh
+      - nv_asinh
+      - nv_acosh
+      - nv_atanh
       - nv_sign
       - nv_floor
       - nv_ceiling
       - nv_trunc
       - nv_round
       - nv_logistic
+      - nv_erf
+      - nv_erfc
+      - nv_erf_inv
+      - nv_digamma
+      - nv_lgamma
+      - nv_polygamma
       - nv_is_finite
       - nv_is_nan
       - nv_is_infinite

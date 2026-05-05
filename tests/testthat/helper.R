@@ -87,6 +87,7 @@ if (nzchar(system.file(package = "torch"))) {
 # against torch (e.g. `acos` only accepts values in (-1, 1)).  Each returns a
 # `function(shp, dtype)` matching the shape expected by `expect_jit_torch_unary()`
 # / `verify_grad_uni()`.
+# jarl-ignore unused_function: used from inst/extra-tests
 sampler_unif <- function(lower, upper) {
   function(shp, dtype) {
     n <- if (length(shp)) prod(shp) else 1L
@@ -95,6 +96,7 @@ sampler_unif <- function(lower, upper) {
   }
 }
 
+# jarl-ignore unused_function: used from inst/extra-tests
 sampler_rnorm <- function(mean = 0, sd = 1) {
   function(shp, dtype) {
     n <- if (length(shp)) prod(shp) else 1L
@@ -106,6 +108,7 @@ sampler_rnorm <- function(mean = 0, sd = 1) {
 # Sample values bounded away from zero (|v| >= min_abs). Useful when a
 # primitive's gradient or domain blows up at 0, e.g. division, `atan2` at the
 # origin, or `reduce_prod`'s per-element gradient.
+# jarl-ignore unused_function: used from inst/extra-tests
 sampler_nonzero <- function(min_abs = 0.5) {
   function(shp, dtype) {
     n <- if (length(shp)) prod(shp) else 1L

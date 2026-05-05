@@ -67,8 +67,6 @@ Math.AnvlBox <- function(x, ...) {
     "digamma" = nv_digamma(x),
     "lgamma" = nv_lgamma(x),
     "trigamma" = nv_polygamma(1, x),
-    "cos" = nv_cos(x),
-    "sin" = nv_sin(x),
     "floor" = nv_floor(x),
     "ceiling" = nv_ceiling(x),
     "trunc" = nv_trunc(x),
