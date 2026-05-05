@@ -129,6 +129,7 @@ reference:
     desc: Functions for reshaping and rearranging arrays
     contents:
       - nv_reshape
+      - nv_flatten
       - nv_transpose
       - nv_concatenate
       - nv_rbind
@@ -210,6 +211,14 @@ reference:
       - nv_quantile
       - nv_var
       - nv_sd
+
+  - subtitle: Cumulative Operations
+    desc: Cumulative (scan) operations along a single dimension
+    contents:
+      - nv_cumsum
+      - nv_cumprod
+      - nv_cummax
+      - nv_cummin
 
   - subtitle: Linear Algebra
     desc: Linear algebra operations

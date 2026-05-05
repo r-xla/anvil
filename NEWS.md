@@ -16,6 +16,10 @@
   `as.integer`, `as.logical` and `as.vector`.
 * New API functions `nv_rbind()` and `nv_cbind()` and corresponding
   `rbind()`/`cbind()` generics.
+* New cumulative primitives and API functions:
+  `nv_cumsum()`, `nv_cumprod()`, `nv_cummax()`, `nv_cummin()` (and
+  the corresponding `prim_*` primitives).
+  `prim_cumprod()` does not yet have a reverse rule.
 * Added new function `await()` that blocks until the underlying computation
   has finished.
 * New tree utilities `map_tree()` and `pmap_tree()` for applying functions
@@ -32,7 +36,11 @@
   * `nv_argmax()` and `nv_argmin()` to find the index of the maximum/minimum
     along a dimension. Ties are broken by returning the smallest index.
   * `nv_select()` to select a slice along a dimension by index.
+<<<<<<< final-cumulative
+  * `nv_flatten()` for flattening a vector
+=======
   * `nv_mod()` for Module / flooring remainder and `nv_trunc()` for truncation
+>>>>>>> main
 * `mean()` and `median()` now error when called with `na.rm = TRUE`, since
   anvl arrays do not carry `NA`s. `mean()` also rejects non-zero `trim`.
 
@@ -47,6 +55,11 @@
   
 * The overloaded `%%` operator now calls the new `nv_mod()` to be consistent
   with base R.
+
+## Bug Fixes
+
+* The CI now actually runs the torch-comparison tests
+
 
 # anvl 0.2.0
 

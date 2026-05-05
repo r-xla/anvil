@@ -715,6 +715,51 @@ prim_reduce_prod[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, p
     }
   )
 })
+
+# cumulative (scan) reverse rules ----------------------------------------------
+
+prim_cumsum[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
+  dim <- params$dim
+  grad <- grads[[1L]]
+  list(
+    # d/dx_i sum_{k<=j} x_k = 1[i<=j], so grad_i = sum_{j>=i} grad_out_j
+    # which is reverse-cumsum of grad_out along dim.
+    if (required[[1L]]) prim_reverse(prim_cumsum(prim_reverse(grad, dim), dim), dim)
+  )
+})
+
+# Because we compute indices in the forward pass, we simply scatter
+# into the zeros
+# This is also how PyTorch does it
+.cum_extreme_reverse <- function(inputs, outputs, grads, params, required) {
+  if (!required[[1L]]) {
+    return(list(NULL))
+  }
+  dim <- params$dim
+  operand <- inputs[[1L]]
+  indices <- outputs[[2L]]
+  grad <- grads[[1L]]
+  rank <- length(shape(operand))
+
+  batching <- seq_len(rank)[-dim]
+  list(prim_scatter(
+    input = zeros_like(operand),
+    scatter_indices = indices,
+    update = grad,
+    update_window_dims = integer(0),
+    inserted_window_dims = dim,
+    input_batching_dims = batching,
+    scatter_indices_batching_dims = batching,
+    scatter_dims_to_operand_dims = dim,
+    index_vector_dim = rank + 1L,
+    unique_indices = FALSE,
+    update_computation = prim_add
+  ))
+}
+
+prim_cummax[["reverse"]] <- rule_reverse(.cum_extreme_reverse)
+prim_cummin[["reverse"]] <- rule_reverse(.cum_extreme_reverse)
+
 # slice reverse: pad with zeros
 prim_static_slice[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   start_indices <- params$start_indices

@@ -1265,6 +1265,32 @@ describe("cross-device eager (check_eager)", {
   })
 })
 
+describe("nv_flatten", {
+  it("works for 2D input", {
+    x <- matrix(1:4, nrow = 2)
+    expect_equal(
+      nv_flatten(nv_array(x)),
+      nv_array(as.vector(t(x)))
+    )
+  })
+  it("works for 1D input", {
+    x <- nv_array(1:3)
+    expect_equal(
+      nv_flatten(x),
+      x
+    )
+  })
+  it("fails for 0D input", {
+    expect_error(nv_flatten(1), "scalar")
+  })
+  it("works with empty input", {
+    expect_equal(
+      nv_flatten(nv_empty("f32", c(2, 0))),
+      nv_empty("f32", 0L)
+    )
+  })
+})
+
 test_that("nv_mod and `%%` follow base R flooring semantics across sign combos", {
   expect_equal(
     as.vector(nv_mod(1, -3)),
