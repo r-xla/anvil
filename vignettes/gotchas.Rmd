@@ -1,5 +1,5 @@
 ---
-title: "Differences from base R"
+title: "Gotchas"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Differences from base R}
@@ -7,7 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-This vignette lists major behavioral differences between {anvl} and base R that R users should be aware of when working with `AnvlArray`s.
+This vignette lists various things to be aware of, specifically in relation to base R.
 
 ```{r}
 library(anvl)
@@ -117,3 +117,33 @@ as.logical(nv_scalar(NA))
 ```
 
 If your data contains missing values, decide how to handle them *before* converting to an `AnvlArray`.
+To opt into a runtime check, pass `scan_na = TRUE` to `nv_array()` / `nv_scalar()`, which errors if the input contains any `NA`:
+
+```{r, error = TRUE}
+nv_array(c(1, NA, 3), scan_na = TRUE)
+```
+
+The same flag is available on `as_array()` for the `i32` round-trip case, where it errors if the materialized integer vector contains any `NA` (i.e. any `-2147483648`):
+
+```{r, error = TRUE}
+as_array(nv_scalar(NA_integer_), scan_na = TRUE)
+```
+
+## No unsigned integers
+
+R's `integer` type is signed 32-bit (range `-2147483648` to `2147483647`).
+{anvl} also exposes unsigned integer dtypes (`ui8`, `ui16`, `ui32`, `ui64`) backed by XLA, but R has no native counterpart.
+For values that fit into R's signed integer range, the round-trip works as expected:
+
+```{r}
+as_array(nv_array(c(0L, 200L, 255L), dtype = "ui8"))
+```
+
+For larger device-side values, however, materialization back into an R integer vector silently produces `NA`:
+
+```{r}
+big <- nv_array(2147483647L, dtype = "ui32") + 1L
+as_array(big)
+```
+
+The device-side value is `2147483648` -- a perfectly valid `ui32` -- but it falls outside R's signed integer range, so it collides with the `NA_integer_` sentinel on materialization. The same caveat applies to all values `>= 2^31` in any unsigned dtype, including the much larger range of `ui64`. If you need to consume large unsigned values in R, convert the dtype on the device side first (e.g. `nv_convert(x, "f64")`).

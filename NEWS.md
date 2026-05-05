@@ -34,6 +34,9 @@
   * `nv_select()` to select a slice along a dimension by index.
 * `mean()` and `median()` now error when called with `na.rm = TRUE`, since
   anvl arrays do not carry `NA`s. `mean()` also rejects non-zero `trim`.
+* `nv_array()`, `nv_scalar()`, and `as_array()` gained a `scan_na` argument
+  that opts into checking for `NA` values during host -> device and
+  device -> host transfers. See the "Differences from base R" vignette.
 
 ## Other
 

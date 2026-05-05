@@ -16,10 +16,18 @@ nv_array(
   device = NULL,
   shape = NULL,
   ambiguous = NULL,
-  backend = NULL
+  backend = NULL,
+  scan_na = FALSE
 )
 
-nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL)
+nv_scalar(
+  data,
+  dtype = NULL,
+  device = NULL,
+  ambiguous = NULL,
+  backend = NULL,
+  scan_na = FALSE
+)
 
 nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
 
@@ -79,6 +87,13 @@ Defaults to \code{FALSE} for new arrays.}
 Backend to use (\code{"xla"} or \code{"quickr"}).
 Defaults to \code{default_backend()}.
 Must not be specified inside \code{\link[=jit]{jit()}}.}
+
+\item{scan_na}{(\code{logical(1)})\cr
+If \code{TRUE}, error when \code{data} contains any \code{NA} values. XLA has no
+representation for missing values, so they are otherwise silently
+coerced to the closest available value of the target dtype (e.g. \code{NaN}
+for floats, the bit pattern \code{-2147483648} for \code{i32}, \code{TRUE} for
+\code{bool}). Defaults to \code{FALSE}.}
 
 \item{like}{(\code{\link{AnvlArray}})\cr
 An existing array. Any of \code{dtype}, \code{device}, \code{shape}, \code{ambiguous}, and

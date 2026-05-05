@@ -44,6 +44,12 @@
 #'   Backend to use (`"xla"` or `"quickr"`).
 #'   Defaults to `default_backend()`.
 #'   Must not be specified inside [`jit()`].
+#' @param scan_na (`logical(1)`)\cr
+#'   If `TRUE`, error when `data` contains any `NA` values. XLA has no
+#'   representation for missing values, so they are otherwise silently
+#'   coerced to the closest available value of the target dtype (e.g. `NaN`
+#'   for floats, the bit pattern `-2147483648` for `i32`, `TRUE` for
+#'   `bool`). Defaults to `FALSE`.
 #' @return ([`AnvlArray`])
 #' @examplesIf pjrt::plugins_downloaded()
 #' # A 1-d array (vector) with shape (4). Default type for integers is `i32`
@@ -82,7 +88,23 @@ NULL
 
 #' @rdname AnvlArray
 #' @export
-nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL, backend = NULL) {
+nv_array <- function(
+  data,
+  dtype = NULL,
+  device = NULL,
+  shape = NULL,
+  ambiguous = NULL,
+  backend = NULL,
+  scan_na = FALSE
+) {
+  assert_flag(scan_na)
+  if (scan_na && !is_anvl_array(data) && anyNA(data)) {
+    n_na <- sum(is.na(data))
+    cli_abort(c(
+      "Input {.arg data} contains {n_na} {.val NA} value{?s}, which {?has/have} no representation at the XLA level.",
+      i = "Replace or drop missing values before transferring, or set {.code scan_na = FALSE} to skip this check."
+    ))
+  }
   if (is_anvl_array(data)) {
     if (!is.null(device) && !eq_device(device(data), nv_device(device, backend))) {
       cli_abort("Cannot change device of existing AnvlArray from {.val {device(data)}} to {.val {device}}")
@@ -241,8 +263,16 @@ unwrap_if_array <- function(x) {
 
 #' @rdname AnvlArray
 #' @export
-nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL) {
-  nv_array(data, dtype = dtype, device = device, shape = integer(), ambiguous = ambiguous, backend = backend)
+nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL, scan_na = FALSE) {
+  nv_array(
+    data,
+    dtype = dtype,
+    device = device,
+    shape = integer(),
+    ambiguous = ambiguous,
+    backend = backend,
+    scan_na = scan_na
+  )
 }
 
 #' @rdname AnvlArray
@@ -298,9 +328,24 @@ shape.AnvlArray <- function(x, ...) {
   globals$backends[[x$backend]]$shape(x)
 }
 
+#' @rdname as_array
+#' @param scan_na (`logical(1)`)\cr
+#'   If `TRUE` and the array's dtype is `i32`, error when the materialized
+#'   R integer vector contains any `NA_integer_` values. R reserves the bit
+#'   pattern `-2147483648` as the `NA_integer_` sentinel, so a genuine
+#'   device-side `i32` value of `-2147483648` is silently turned into `NA`
+#'   on transfer. No-op for other dtypes. Defaults to `FALSE`.
 #' @export
-as_array.AnvlArray <- function(x, ...) {
-  globals$backends[[x$backend]]$as_array(x)
+as_array.AnvlArray <- function(x, scan_na = FALSE, ...) {
+  assert_flag(scan_na)
+  result <- globals$backends[[x$backend]]$as_array(x)
+  if (scan_na && (dtype(x) == as_dtype("i32")) && anyNA(result)) {
+    cli_abort(c(
+      "Materialized R integer vector contains {.val NA} values from device-side {.val -2147483648}.",
+      i = "This collision is irrecoverable: the device value and {.val NA} are indistinguishable in R. Set {.code scan_na = FALSE} to skip this check."
+    ))
+  }
+  result
 }
 
 #' @export
