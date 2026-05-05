@@ -602,7 +602,7 @@ test_that("prim_lgamma", {
 })
 
 test_that("prim_polygamma", {
-  # Verify gradient w.r.t. x against torch::torch_polygamma (n is a Python int there).
+  # Verify gradient w.r.t. x against torch::torch_polygamma
   shp <- c(2, 3)
   for (n_val in c(1L, 2L)) {
     x <- sampler_unif(0.5, 5)(shp, "f32")
