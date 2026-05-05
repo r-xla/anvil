@@ -64,19 +64,24 @@ test_that("prim_min", {
 })
 
 test_that("prim_remainder", {
-  pos_int_nz <- function(shp, dtype) {
+  # prim_remainder is IEEE-754 truncating (sign of dividend), so compare against
+  # torch_fmod, not torch_remainder. Use mixed-sign nonzero divisors to exercise
+  # the case where flooring would silently disagree.
+  signed_int_nz <- function(shp, dtype) {
     nelts <- if (!length(shp)) 1L else prod(shp)
-    vals <- sample(10, size = nelts, replace = TRUE)
+    mag <- sample(1:10, size = nelts, replace = TRUE)
+    sgn <- sample(c(-1L, 1L), size = nelts, replace = TRUE)
+    vals <- as.integer(mag * sgn)
     if (!length(shp)) vals else array(vals, shp)
   }
   expect_jit_torch_binary(
     prim_remainder,
-    torch::torch_remainder,
+    torch::torch_fmod,
     c(2, 3),
     c(2, 3),
     dtype = "i32",
-    gen_x = pos_int_nz,
-    gen_y = pos_int_nz
+    gen_x = signed_int_nz,
+    gen_y = signed_int_nz
   )
 })
 

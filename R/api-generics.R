@@ -15,7 +15,7 @@ Ops.AnvlBox <- function(e1, e2) {
     "*" = nv_mul(e1, e2),
     "/" = nv_div(e1, e2),
     "^" = nv_pow(e1, e2),
-    "%%" = nv_remainder(e1, e2),
+    "%%" = nv_mod(e1, e2),
     "==" = nv_eq(e1, e2),
     "!=" = nv_ne(e1, e2),
     ">" = nv_gt(e1, e2),

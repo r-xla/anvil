@@ -1185,14 +1185,19 @@ prim_min <- new_primitive("minimum", make_binary_op(stablehlo::infer_types_minim
 
 #' @title Primitive Remainder
 #' @description
-#' Element-wise remainder of division.
+#' Element-wise IEEE-754 remainder of division: the sign of the result equals
+#' the sign of the dividend, matching C `fmod`, JAX `lax.rem`, and StableHLO
+#' `remainder`. This is **not** the same as base R's `%%` (which floors and
+#' takes the sign of the divisor); for example,
+#' `prim_remainder(nv_array(1), nv_array(-3))` is `1`, while `1 %% -3` in
+#' base R is `-2`.
 #' @template params_prim_lhs_rhs_numeric
 #' @template return_prim_binary
 #' @templateVar primitive_id remainder
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to [stablehlo::hlo_remainder()].
-#' @seealso [nv_remainder()], `%%`
+#' @seealso [nv_remainder()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(7, 10, 15))
 #' y <- nv_array(c(3, 4, 6))

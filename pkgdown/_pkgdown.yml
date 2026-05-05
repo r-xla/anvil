@@ -152,6 +152,7 @@ reference:
       - nv_pow
       - nv_negate
       - nv_remainder
+      - nv_mod
 
   - subtitle: Comparison Operations
     desc: Element-wise comparison operations

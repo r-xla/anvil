@@ -831,6 +831,37 @@ test_that("prim_argmax / prim_argmin have zero gradient", {
   }
 })
 
+# Regression: gradient of prim_remainder must follow the (truncating) forward
+# semantics, including for inputs of opposite sign. We compare anvl's autodiff
+# against finite differences on the actual forward op so this test catches
+# forward/backward divergence regardless of any external reference.
+test_that("prim_remainder gradient matches finite differences (incl. mixed signs)", {
+  f <- function(a, b) prim_remainder(a, b)
+  fwd <- function(a, b) {
+    as.numeric(as_array(prim_remainder(
+      nv_scalar(a, dtype = "f32"),
+      nv_scalar(b, dtype = "f32")
+    )))
+  }
+  ad <- function(a, b) {
+    out <- jit(gradient(f))(nv_scalar(a, dtype = "f32"), nv_scalar(b, dtype = "f32"))
+    c(da = as.numeric(as_array(out[[1L]])), db = as.numeric(as_array(out[[2L]])))
+  }
+  eps <- 1e-3
+  cases <- list(
+    c(2.7, 3.0), c(-2.7, 3.0), c(2.7, -3.0), c(-2.7, -3.0),
+    c(7.0, 3.0), c(-7.0, 3.0), c(7.0, -3.0), c(-7.0, -3.0),
+    c(13.5, 4.0), c(-13.5, 4.0), c(13.5, -4.0), c(-13.5, -4.0)
+  )
+  for (p in cases) {
+    a <- p[1L]; b <- p[2L]
+    g <- ad(a, b)
+    db_fd <- (fwd(a, b + eps) - fwd(a, b - eps)) / (2 * eps)
+    expect_equal(g[["da"]], 1, tolerance = 1e-4, info = sprintf("(%g,%g) da", a, b))
+    expect_equal(g[["db"]], db_fd, tolerance = 1e-4, info = sprintf("(%g,%g) db", a, b))
+  }
+})
+
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvl"))
 }

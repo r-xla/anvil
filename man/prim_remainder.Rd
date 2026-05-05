@@ -17,7 +17,12 @@ Has the same shape and data type as the inputs.
 It is ambiguous if both inputs are ambiguous.
 }
 \description{
-Element-wise remainder of division.
+Element-wise IEEE-754 remainder of division: the sign of the result equals
+the sign of the dividend, matching C \code{fmod}, JAX \code{lax.rem}, and StableHLO
+\code{remainder}. This is \strong{not} the same as base R's \code{\%\%} (which floors and
+takes the sign of the divisor); for example,
+\code{prim_remainder(nv_array(1), nv_array(-3))} is \code{1}, while \code{1 \%\% -3} in
+base R is \code{-2}.
 }
 \section{Implemented Rules}{
 
@@ -40,5 +45,5 @@ prim_remainder(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_remainder]{nv_remainder()}}, \code{\%\%}
+\code{\link[=nv_remainder]{nv_remainder()}}
 }

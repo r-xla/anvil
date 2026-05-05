@@ -2,7 +2,7 @@
 % Please edit documentation in R/api.R
 \name{nv_remainder}
 \alias{nv_remainder}
-\title{Remainder}
+\title{Remainder (Truncating)}
 \usage{
 nv_remainder(lhs, rhs)
 }
@@ -17,15 +17,20 @@ Scalars are \link[=nv_broadcast_scalars]{broadcast} to the shape of the other op
 Has the same shape and the promoted common data type of the inputs.
 }
 \description{
-Element-wise remainder of division. You can also use the \code{\%\%} operator.
+Element-wise IEEE-754 remainder of division: the sign of the result equals
+the sign of \code{lhs}, matching C \code{fmod}, JAX \code{lax.rem}, and StableHLO
+\code{remainder}.  For the flooring remainder (sign of the divisor, matching
+base R \code{\%\%} and Python \verb{\%}), use \code{\link[=nv_mod]{nv_mod()}} — that is also what \code{\%\%} on
+\code{AnvlArray} operands dispatches to.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(7, 8, 9))
 y <- nv_array(c(3, 3, 4))
-x \%\% y
+nv_remainder(x, y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=prim_remainder]{prim_remainder()}} for the underlying primitive.
+\code{\link[=nv_mod]{nv_mod()}} for the flooring remainder, \code{\link[=prim_remainder]{prim_remainder()}} for the
+underlying primitive.
 }

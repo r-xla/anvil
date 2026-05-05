@@ -43,15 +43,22 @@ prim_div[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, r
 })
 
 prim_remainder[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
-  # we follow pytorch here and ignore non-differentiable parts
-  # the function is locally linear, i.e., y = lhs - k * rhs, where k = floor(lhs / rhs)
-  # so the gradient is 1 for lhs and -k for rhs
+  # prim_remainder lowers to StableHLO `remainder`, which uses IEEE-754 truncating
+  # semantics: y = lhs - trunc(lhs / rhs) * rhs (sign of result follows lhs). Match
+  # that here — using floor() would silently disagree with the forward op for inputs
+  # of opposite sign. Non-differentiable points (rhs == 0, lhs an integer multiple
+  # of rhs) are ignored.
   lhs <- inputs[[1L]]
   rhs <- inputs[[2L]]
   grad <- grads[[1L]]
   list(
     if (required[[1L]]) grad,
-    if (required[[2L]]) prim_mul(grad, prim_negate(prim_floor(prim_div(lhs, rhs))))
+    if (required[[2L]]) {
+      q <- prim_div(lhs, rhs)
+      # trunc(q) = sign(q) * floor(|q|); valid at q == 0 too (sign(0) = 0).
+      k <- prim_mul(prim_sign(q), prim_floor(prim_abs(q)))
+      prim_mul(grad, prim_negate(k))
+    }
   )
 })
 
