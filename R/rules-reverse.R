@@ -863,24 +863,65 @@ prim_concatenate[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, p
 
 
 prim_reduce_prod[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
+  if (!required[[1L]]) {
+    return(list(NULL))
+  }
   dims <- params$dims
   drop <- params$drop
   operand <- inputs[[1L]]
-  y <- outputs[[1L]]
   grad <- grads[[1L]]
 
-  list(
-    if (required[[1L]]) {
-      bdims <- if (drop) {
-        without(seq_along(shape(operand)), dims)
-      } else {
-        seq_along(shape(grad))
-      }
-      y_bc <- prim_broadcast_in_dim(y, shape(operand), bdims)
-      grad_bc <- prim_broadcast_in_dim(grad, shape(operand), bdims)
-      prim_div(prim_mul(grad_bc, y_bc), operand)
-    }
-  )
+  # Move reduced axes to the end and collapse them, so the safe formula
+  # below operates along a single trailing axis.
+  s <- shape(operand)
+  non_reduced <- without(seq_along(s), dims)
+  perm <- c(non_reduced, dims)
+  reduced_size <- as.integer(prod(s[dims]))
+  collapsed_shape <- c(s[non_reduced], reduced_size)
+  rank <- length(collapsed_shape)
+
+  operand_c <- prim_reshape(prim_transpose(operand, perm), collapsed_shape)
+  grad_squeezed <- if (drop) grad else prim_reshape(grad, s[non_reduced])
+  grad_bc <- prim_broadcast_in_dim(grad_squeezed, collapsed_shape, seq_len(rank - 1L))
+
+  out_c <- if (reduced_size <= 1L) {
+    grad_bc
+  } else {
+    # PyTorch's prod_safe_zeros_backward: the gradient at position k along the
+    # reduced axis is the product of all *other* elements along that axis,
+    # decomposed as (exclusive cumprod left) * (exclusive cumprod right). No
+    # division, smooth in the inputs, hence safe at zeros and twice-differentiable.
+    n <- reduced_size
+    ones_shape <- collapsed_shape
+    ones_shape[rank] <- 1L
+    ones <- prim_fill(1, dtype = dtype(operand), shape = ones_shape)
+    full_strides <- rep(1L, rank)
+
+    starts_n <- rep(1L, rank)
+    limits_n <- collapsed_shape
+    limits_n[rank] <- n - 1L
+    narrow_n <- prim_static_slice(operand_c, starts_n, limits_n, full_strides)
+    exclusive_normal <- prim_cumprod(
+      prim_concatenate(ones, narrow_n, dimension = rank),
+      dim = rank
+    )
+
+    starts_r <- rep(1L, rank)
+    starts_r[rank] <- 2L
+    narrow_r <- prim_reverse(
+      prim_static_slice(operand_c, starts_r, collapsed_shape, full_strides),
+      dims = rank
+    )
+    exclusive_reverse <- prim_reverse(
+      prim_cumprod(prim_concatenate(ones, narrow_r, dimension = rank), dim = rank),
+      dims = rank
+    )
+
+    prim_mul(grad_bc, prim_mul(exclusive_normal, exclusive_reverse))
+  }
+
+  out <- prim_transpose(prim_reshape(out_c, s[perm]), order(perm))
+  list(out)
 })
 
 # cumulative (scan) reverse rules ----------------------------------------------

@@ -784,22 +784,40 @@ test_that("prim_reduce_prod", {
   shp <- c(2L, 3L)
   dtype <- "f32"
 
-  x_arr <- sampler_nonzero(0.5)(shp, dtype)
-  x_nv <- nv_array(x_arr, dtype = dtype)
-  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+  check_against_torch <- function(x_arr, dim) {
+    x_nv <- nv_array(x_arr, dtype = "f32")
+    x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
-  # Test reduce along one dimension
-  f_nv <- function(x) {
-    y <- prim_reduce_prod(x, dims = 2L, drop = TRUE)
-    nv_reduce_sum(y, dims = 1L, drop = TRUE)
+    f_nv <- function(x) {
+      y <- prim_reduce_prod(x, dims = dim, drop = TRUE)
+      nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
+    }
+    grads_nv <- jit(gradient(f_nv))(x_nv)
+
+    out_th <- torch::torch_prod(x_th, dim = dim, keepdim = FALSE)
+    torch::torch_sum(out_th)$backward()
+
+    expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
   }
 
-  grads_nv <- jit(gradient(f_nv))(x_nv)
+  x <- array(runif(6), dim = c(2, 3))
+  check_against_torch(x, 1)
 
-  out_th <- torch::torch_prod(x_th, dim = 2, keepdim = FALSE)
-  torch::torch_sum(out_th)$backward()
+  # Safe at zeros: matches PyTorch's prod_safe_zeros_backward.
+  x_zero <- array(c(2, 0, 5, 1, 4, 6), dim = c(2L, 3L))
+  check_against_torch(x_zero, 2L)
 
-  expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
+  x_two_zeros <- array(c(2, 0, 0, 1, 4, 6), dim = c(2L, 3L))
+  check_against_torch(x_two_zeros, 2L)
+
+  # Reducing multiple dims at once is not supported by torch::torch_prod,
+  # so check against a hand-crafted expected gradient.
+  x_multi <- array(c(1, 2, 3, 4, 5, 6), dim = c(2L, 3L))
+  x_nv <- nv_array(x_multi, dtype = "f32")
+  f_multi <- function(x) prim_reduce_prod(x, dims = c(1L, 2L), drop = TRUE)
+  grads_nv <- jit(gradient(f_multi))(x_nv)
+  expected <- array(prod(x_multi) / x_multi, dim = dim(x_multi))
+  expect_equal(tengen::as_array(grads_nv[[1L]]), expected, tolerance = 1e-4)
 })
 
 describe("prim_static_slice", {
