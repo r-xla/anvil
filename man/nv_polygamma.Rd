@@ -4,7 +4,7 @@
 \alias{nv_polygamma}
 \title{Polygamma}
 \usage{
-nv_polygamma(lhs, rhs)
+nv_polygamma(n, x)
 }
 \arguments{
 \item{n, x}{(\code{\link{arrayish}})\cr

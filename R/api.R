@@ -1201,7 +1201,11 @@ nv_lgamma <- prim_lgamma
 #' x <- nv_array(c(0.5, 1, 2, 5))
 #' nv_polygamma(1, x) # trigamma
 #' @export
-nv_polygamma <- make_do_binary(prim_polygamma)
+nv_polygamma <- function(n, x) {
+  args <- nv_promote_to_common(n, x)
+  args <- nv_broadcast_scalars(args[[1L]], args[[2L]])
+  do.call(prim_polygamma, args)
+}
 
 #' @title Error Function
 #' @description
