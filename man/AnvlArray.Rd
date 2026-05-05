@@ -16,7 +16,8 @@ nv_array(
   device = NULL,
   shape = NULL,
   ambiguous = NULL,
-  backend = NULL
+  backend = NULL,
+  byrow = FALSE
 )
 
 nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL)
@@ -80,6 +81,13 @@ Backend to use (\code{"xla"} or \code{"quickr"}).
 Defaults to \code{default_backend()}.
 Must not be specified inside \code{\link[=jit]{jit()}}.}
 
+\item{byrow}{(\code{logical(1)})\cr
+When constructing from an R object and the result has at least two
+dimensions, fill the array in row-major order rather than the
+default column-major order, mirroring \code{\link[base:matrix]{base::matrix()}}'s \code{byrow}.
+Only allowed when \code{data} is an R object — passing an existing
+\code{AnvlArray} together with \code{byrow = TRUE} is an error.}
+
 \item{like}{(\code{\link{AnvlArray}})\cr
 An existing array. Any of \code{dtype}, \code{device}, \code{shape}, \code{ambiguous}, and
 \code{backend} that are \code{NULL} (the default) are taken from \code{like}.}
@@ -125,6 +133,9 @@ nv_array(c(1.5, 2.5, 3.5), dtype = "f64")
 
 # A 2x3 matrix
 nv_array(1:6, shape = c(2L, 3L))
+
+# A 2x3 matrix filled by row, like `matrix(1:6, 2, 3, byrow = TRUE)`.
+nv_array(1:6, shape = c(2L, 3L), byrow = TRUE)
 
 # A scalar array.
 nv_scalar(3.14)
