@@ -153,6 +153,7 @@ reference:
       - nv_pow
       - nv_negate
       - nv_remainder
+      - nv_mod
 
   - subtitle: Comparison Operations
     desc: Element-wise comparison operations
@@ -185,6 +186,7 @@ reference:
       - nv_sign
       - nv_floor
       - nv_ceiling
+      - nv_trunc
       - nv_round
       - nv_logistic
       - nv_is_finite

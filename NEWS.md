@@ -36,7 +36,11 @@
   * `nv_argmax()` and `nv_argmin()` to find the index of the maximum/minimum
     along a dimension. Ties are broken by returning the smallest index.
   * `nv_select()` to select a slice along a dimension by index.
+<<<<<<< final-cumulative
   * `nv_flatten()` for flattening a vector
+=======
+  * `nv_mod()` for Module / flooring remainder and `nv_trunc()` for truncation
+>>>>>>> main
 * `mean()` and `median()` now error when called with `na.rm = TRUE`, since
   anvl arrays do not carry `NA`s. `mean()` also rejects non-zero `trim`.
 
@@ -46,6 +50,11 @@
   `nv_reduce_any()`, `nv_reduce_all()` and `nv_mean()` now default
   `dims = NULL`, which reduces over all dimensions and returns a scalar.
   Previously, `dims` was required.
+  
+## Bug Fixes
+  
+* The overloaded `%%` operator now calls the new `nv_mod()` to be consistent
+  with base R.
 
 ## Bug Fixes
 

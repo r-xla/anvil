@@ -674,18 +674,43 @@ nv_max <- make_do_binary(prim_max)
 #' @export
 nv_min <- make_do_binary(prim_min)
 
-#' @title Remainder
+#' @title Remainder (Truncating)
 #' @description
-#' Element-wise remainder of division. You can also use the `%%` operator.
+#' Element-wise remainder.
+#' This differs from base R's `%%`, use [`nv_mod()`]/`%%` instead.
 #' @template params_lhs_rhs
 #' @template return_binary
-#' @seealso [prim_remainder()] for the underlying primitive.
+#' @seealso [nv_mod()] for the flooring remainder, [prim_remainder()] for the
+#'   underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(7, 8, 9))
 #' y <- nv_array(c(3, 3, 4))
-#' x %% y
+#' nv_remainder(x, y)
 #' @export
 nv_remainder <- make_do_binary(prim_remainder)
+
+#' @title Modulo (Flooring Remainder)
+#' @description
+#' Element-wise flooring remainder of division. The sign of the result equals
+#' the sign of `rhs`, matching base R's `%%` operator.
+#'
+#' @template params_lhs_rhs
+#' @template return_binary
+#' @seealso [nv_remainder()] for truncating remainder, [prim_remainder()] for
+#'   the underlying primitive.
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(1L, -1L))
+#' y <- nv_array(c(-3L, 3L))
+#' nv_mod(x, y)
+#' as.vector(x) %% as.vector(y)
+#' @export
+nv_mod <- function(lhs, rhs) {
+  args <- nv_promote_to_common(lhs, rhs)
+  args <- nv_broadcast_scalars(args[[1L]], args[[2L]])
+  lhs <- args[[1L]]
+  rhs <- args[[2L]]
+  nv_remainder(nv_remainder(lhs, rhs) + rhs, rhs)
+}
 
 #' @title Logical And
 #' @description
@@ -944,6 +969,21 @@ nv_floor <- prim_floor
 #' ceiling(x)
 #' @export
 nv_ceiling <- prim_ceil
+
+#' @title Truncate
+#' @description
+#' Element-wise truncation (round toward zero). You can also use `trunc()`.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [nv_floor()], [nv_ceiling()], [nv_round()].
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(1.2, 2.7, -1.5))
+#' trunc(x)
+#' @export
+nv_trunc <- function(operand) {
+  operand <- as_anvl_array(operand)
+  nv_mul(nv_sign(operand), nv_floor(nv_abs(operand)))
+}
 
 #' @title Sign
 #' @description
