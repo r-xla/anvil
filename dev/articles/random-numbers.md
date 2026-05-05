@@ -60,11 +60,7 @@ Let’s generate some uniform random numbers:
 
 ``` r
 
-f <- jit(function(state) {
-  nv_runif(state, dtype = "f32", shape = c(2, 3))
-})
-
-result <- f(state)
+result <- nv_runif(state, dtype = "f32", shape = c(2, 3))
 result[[1]]  # new state
 #> AnvlArray
 #>  42
@@ -81,11 +77,7 @@ For normally distributed random numbers:
 
 ``` r
 
-g <- jit(function(state) {
-  nv_rnorm(state, dtype = "f32", shape = c(2, 3), mu = 0, sigma = 1)
-})
-
-result <- g(state)
+result <- nv_rnorm(state, dtype = "f32", shape = c(2, 3), mu = 0, sigma = 1)
 result[[2]]
 #> AnvlArray
 #>  -0.0675  0.9489  1.9457
@@ -98,13 +90,9 @@ in the example below:
 
 ``` r
 
-h <- jit(function(state) {
-  result1 <- nv_runif(state, dtype = "f32", shape = 3L)
-  result2 <- nv_runif(state, dtype = "f32", shape = 3L)
-  list(first = result1[[2]], second = result2[[2]])
-})
-
-h(state)
+result1 <- nv_runif(state, dtype = "f32", shape = 3L)
+result2 <- nv_runif(state, dtype = "f32", shape = 3L)
+list(first = result1[[2]], second = result2[[2]])
 #> $first
 #> AnvlArray
 #>  0.8690
@@ -127,14 +115,10 @@ previous call:
 
 ``` r
 
-proper_rng <- jit(function(state) {
-  result1 <- nv_runif(state, dtype = "f32", shape = c(3))
-  new_state <- result1[[1]]
-  result2 <- nv_runif(new_state, dtype = "f32", shape = c(3))
-  list(first = result1[[2]], second = result2[[2]])
-})
-
-proper_rng(state)
+result1 <- nv_runif(state, dtype = "f32", shape = 3L)
+new_state <- result1[[1]]
+result2 <- nv_runif(new_state, dtype = "f32", shape = 3L)
+list(first = result1[[2]], second = result2[[2]])
 #> $first
 #> AnvlArray
 #>  0.8690
