@@ -61,7 +61,7 @@ more details.
 We define an R function operating on `AnvlArray`s – the primary data
 type of {anvl}. It can be executed in either *eager* mode (each
 operation is performed immediately) or *jit* mode (the whole function is
-compiled into a single kernel via `jit()`).
+compiled into a single executable via `jit()`).
 
 ``` r
 library(anvl)
