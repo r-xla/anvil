@@ -873,7 +873,7 @@ prim_cumprod <- new_primitive("cumprod", cum_op, static = 2L)
 #' the index of the last occurrence of the running maximum.
 #' At output position `j`, the values output is `max(input[1..j])` and the
 #' indices output is the largest `i` in `1..j` with
-#' `input[i] == values[j]` (last-occurrence tiebreak, matching torch).
+#' `input[i] == values[j]` (last-occurrence tiebreak).
 #' @template param_prim_operand_any
 #' @template param_prim_cum_dim
 #' @templateVar cum_extreme_name maximum
@@ -882,8 +882,7 @@ prim_cumprod <- new_primitive("cumprod", cum_op, static = 2L)
 #' @templateVar primitive_id cummax
 #' @template section_rules
 #' @section StableHLO:
-#' Lowers to a variadic [stablehlo::hlo_reduce_window()] over `(values, iota)`
-#' with a `(value > value | (value == value & idx > idx))` selector.
+#' Lowers to a variadic [stablehlo::hlo_reduce_window()] over `(values, iota)`.
 #' @seealso [nv_cummax()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
@@ -897,7 +896,7 @@ prim_cummax <- new_primitive("cummax", cum_extreme_op, static = 2L)
 #' the index of the last occurrence of the running minimum.
 #' At output position `j`, the values output is `min(input[1..j])` and the
 #' indices output is the largest `i` in `1..j` with
-#' `input[i] == values[j]` (last-occurrence tiebreak, matching torch).
+#' `input[i] == values[j]` (last-occurrence tiebreak).
 #' @template param_prim_operand_any
 #' @template param_prim_cum_dim
 #' @templateVar cum_extreme_name minimum
@@ -906,8 +905,7 @@ prim_cummax <- new_primitive("cummax", cum_extreme_op, static = 2L)
 #' @templateVar primitive_id cummin
 #' @template section_rules
 #' @section StableHLO:
-#' Lowers to a variadic [stablehlo::hlo_reduce_window()] over `(values, iota)`
-#' with a `(value < value | (value == value & idx > idx))` selector.
+#' Lowers to a variadic [stablehlo::hlo_reduce_window()] over `(values, iota)`.
 #' @seealso [nv_cummin()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))

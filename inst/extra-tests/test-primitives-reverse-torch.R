@@ -452,11 +452,6 @@ describe("prim_cumsum", {
   })
 })
 
-# torch.cummax / torch.cummin return (values, indices); take [[1L]] for the
-# values tensor, on which backward is well-defined.
-torch_cummax_values <- function(x, dim) torch::torch_cummax(x, dim = dim)[[1L]]
-torch_cummin_values <- function(x, dim) torch::torch_cummin(x, dim = dim)[[1L]]
-
 describe("prim_cummax", {
   verify_against_torch <- function(x_arr, dim) {
     dtype <- "f32"
@@ -469,7 +464,7 @@ describe("prim_cummax", {
     }
     grads_nv <- jit(gradient(f_nv))(x_nv)
 
-    out_th <- torch_cummax_values(x_th, dim = dim)
+    out_th <- torch_cummax(x_th, dim = dim)[[1L]]
     torch::torch_sum(out_th)$backward()
 
     expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
@@ -503,7 +498,7 @@ describe("prim_cummin", {
     }
     grads_nv <- jit(gradient(f_nv))(x_nv)
 
-    out_th <- torch_cummin_values(x_th, dim = dim)
+    out_th <- torch_cummin(x_th, dim = dim)[[1L]]
     torch::torch_sum(out_th)$backward()
 
     expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
@@ -1064,9 +1059,9 @@ describe("prim_triangular_solve", {
 })
 
 test_that("prim_sort", {
+  withr::local_seed(42)
   # 2D descending sort with duplicates and is_stable = TRUE.
   # Hits: descending direction, dim != 1, ties broken stably.
-  set.seed(42)
   x_arr <- matrix(as.double(sample(1:5, 4 * 6, replace = TRUE)), nrow = 4)
   w_arr <- matrix(as.double(seq_len(4 * 6)), nrow = 4)
 
@@ -1090,7 +1085,7 @@ test_that("prim_sort", {
 test_that("prim_top_k", {
   # 2D top-k along the last dim. Use distinct values so ties don't matter
   # (torch_topk has no `stable` parameter).
-  set.seed(42)
+  withr::local_seed(42)
   x_arr <- matrix(rnorm(4 * 6), nrow = 4)
   k <- 3L
   w_arr <- matrix(as.double(seq_len(4 * k)), nrow = 4)

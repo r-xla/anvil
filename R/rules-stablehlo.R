@@ -156,6 +156,8 @@ prim_reduce_all[["stablehlo"]] <- function(operand, dims, drop) {
   .stablehlo_apply_reduce(stablehlo::hlo_and, operand, init, dims, drop)
 }
 
+# XLA compiler optimizes this according to JAX comment
+# (there apparently were differences between {C,G,T}PU backend, not no longer it seems)
 .stablehlo_apply_cum <- function(reductor, operand, init, dim) {
   shp <- shape(operand)
   rank <- length(shp)
@@ -199,6 +201,7 @@ prim_cumprod[["stablehlo"]] <- function(operand, dim) {
   .stablehlo_apply_cum(stablehlo::hlo_multiply, operand, init, dim)
 }
 
+# Here we also return the indices to simplify reverse rule
 .stablehlo_apply_cum_extreme <- function(operand, dim, is_max) {
   shp <- shape(operand)
   rank <- length(shp)
@@ -606,70 +609,6 @@ prim_top_k[["stablehlo"]] <- function(operand, k) {
   indices <- stablehlo::hlo_add(indices, one_bc)
 
   list(values, indices)
-}
-
-# Inlines `graph`'s ops into the currently-active stablehlo Func. `input_fvals`
-# are the FuncValues to bind to `graph$inputs` (in order). Constants are looked
-# up via `parent_env` (they were registered in the parent descriptor when the
-# higher-order primitive was traced), or materialized as literals if missing.
-# Returns the FuncValues corresponding to `graph$outputs`.
-.inline_graph_into_current_func <- function(graph, input_fvals, parent_env) {
-  env <- HloEnv(parent = parent_env)
-  for (i in seq_along(graph$inputs)) {
-    env_add(env, graph$inputs[[i]], input_fvals[[i]])
-  }
-
-  current_func <- stablehlo::.current_func()
-  gnode_to_fval <- function(gnode) {
-    fval <- env_get(env, gnode)
-    if (!identical(fval$func, current_func)) {
-      stablehlo::FuncValue(fval$value_id, fval$value_type, current_func)
-    } else {
-      fval
-    }
-  }
-
-  for (call in graph$calls) {
-    prim <- call$primitive
-    params <- call$params
-    inputs <- lapply(call$inputs, function(x) {
-      if (is_graph_literal(x)) {
-        fval <- stablehlo::hlo_tensor(
-          value = unwrap_if_array(x$aval$data),
-          dtype = x$aval$dtype,
-          shape = x$aval$shape$dims,
-          func = current_func
-        )
-        env_add(env, x, fval)
-        fval
-      } else {
-        gnode_to_fval(x)
-      }
-    })
-    if (is_higher_order_primitive(prim)) {
-      params <- c(params, list(.env = env))
-    }
-    fvals_out <- rlang::exec(prim[["stablehlo"]], !!!c(inputs, params))
-    if (length(call$outputs) != length(fvals_out)) {
-      cli_abort("Internal: expected {length(call$outputs)} outputs, got {length(fvals_out)}")
-    }
-    for (i in seq_along(fvals_out)) {
-      env_add(env, call$outputs[[i]], fvals_out[[i]])
-    }
-  }
-
-  lapply(graph$outputs, function(o) {
-    if (is_graph_literal(o)) {
-      stablehlo::hlo_tensor(
-        value = o$aval$data,
-        dtype = o$aval$dtype,
-        shape = o$aval$shape$dims,
-        func = current_func
-      )
-    } else {
-      gnode_to_fval(o)
-    }
-  })
 }
 
 prim_scatter[["stablehlo"]] <- function(

@@ -721,23 +721,23 @@ prim_cumsum[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params
   )
 })
 
+# Because we compute indices in the forward pass, we simply scatter
+# into the zeros
+# This is also how PyTorch does it
 .cum_extreme_reverse <- function(inputs, outputs, grads, params, required) {
   if (!required[[1L]]) {
     return(list(NULL))
   }
   dim <- params$dim
   operand <- inputs[[1L]]
-  arg_run <- outputs[[2L]] # 1-based running argmax / argmin (i32, from forward)
+  indices <- outputs[[2L]]
   grad <- grads[[1L]]
   rank <- length(shape(operand))
 
-  # Scatter-add grad into operand-shaped zeros at the arg_run indices along
-  # `dim`. Plateaus produce duplicate indices, which prim_add accumulates.
-  # Other dims are pure batch dims.
   batching <- seq_len(rank)[-dim]
   list(prim_scatter(
     input = zeros_like(operand),
-    scatter_indices = arg_run,
+    scatter_indices = indices,
     update = grad,
     update_window_dims = integer(0),
     inserted_window_dims = dim,

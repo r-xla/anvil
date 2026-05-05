@@ -251,7 +251,7 @@ describe("cumulative ops", {
     v <- c(3, 1, 4, 1, 5, 9, 2, 6)
     x <- nv_array(v, dtype = "f32")
     out <- jit(function(a) pick(prim_fn(a, dim = 1L)))(x)
-    expect_equal(as.numeric(as_array(out)), as.numeric(base_fn(v)))
+    expect_equal(as_array(out), array(base_fn(v)))
 
     # 2-D dim = 1 (down columns) and dim = 2 (across rows) match
     # `apply` along the corresponding margin.
@@ -264,11 +264,9 @@ describe("cumulative ops", {
     out <- jit(function(a) pick(prim_fn(a, dim = 2L)))(xm)
     expect_equal(as_array(out), t(apply(M, 1, base_fn)))
 
-    # nv_*() without `dim` flattens (row-major in anvl). Base R flattens
-    # column-major, so the apples-to-apples comparison is against
-    # base_fn(t(M)).
+    # row vs column major ordering
     out <- jit(nv_fn)(xm)
-    expect_equal(as.numeric(as_array(out)), as.numeric(base_fn(t(M))))
+    expect_equal(as_array(out), array(base_fn(t(M))))
   }
 
   it("prim_cumsum matches base R", verify_cum(prim_cumsum, nv_cumsum, base::cumsum))

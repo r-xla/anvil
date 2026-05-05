@@ -36,6 +36,7 @@
   * `nv_argmax()` and `nv_argmin()` to find the index of the maximum/minimum
     along a dimension. Ties are broken by returning the smallest index.
   * `nv_select()` to select a slice along a dimension by index.
+  * `nv_flatten()` for flattening a vector
 * `mean()` and `median()` now error when called with `na.rm = TRUE`, since
   anvl arrays do not carry `NA`s. `mean()` also rejects non-zero `trim`.
 

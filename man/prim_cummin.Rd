@@ -24,7 +24,7 @@ Running minimum of array elements along a single dimension along with
 the index of the last occurrence of the running minimum.
 At output position \code{j}, the values output is \verb{min(input[1..j])} and the
 indices output is the largest \code{i} in \verb{1..j} with
-\code{input[i] == values[j]} (last-occurrence tiebreak, matching torch).
+\code{input[i] == values[j]} (last-occurrence tiebreak).
 }
 \section{Implemented Rules}{
 
@@ -36,8 +36,7 @@ indices output is the largest \code{i} in \verb{1..j} with
 
 \section{StableHLO}{
 
-Lowers to a variadic \code{\link[stablehlo:hlo_reduce_window]{stablehlo::hlo_reduce_window()}} over \verb{(values, iota)}
-with a \code{(value < value | (value == value & idx > idx))} selector.
+Lowers to a variadic \code{\link[stablehlo:hlo_reduce_window]{stablehlo::hlo_reduce_window()}} over \verb{(values, iota)}.
 }
 
 \examples{

@@ -250,6 +250,24 @@ nv_reshape <- function(operand, shape) {
   }
 }
 
+#' @title Flatte
+#' @description
+#' Flattens an N-dimensional array into a 1-dimensional array.
+#' Fails with scalar inputs.
+#' @template param_operand
+#' @return ([`arrayish`])\cr
+#'   1-D array.
+#' @export
+#' @examples
+#' nv_flatten(matrix(1:4, nrow = 2))
+nv_flatten <- function(operand) {
+  operand <- as_anvl_array(operand)
+  if (ndims(operand) == 0) {
+    cli_abort("Cannot flatten a scalar array.")
+  }
+  nv_reshape(operand, prod(shape(operand)))
+}
+
 #' @title Concatenate
 #' @description
 #' Concatenates arrays along a dimension. Operands are promoted to a common
