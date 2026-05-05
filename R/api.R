@@ -955,8 +955,6 @@ nv_ceiling <- prim_ceil
 #' @title Truncate
 #' @description
 #' Element-wise truncation (round toward zero). You can also use `trunc()`.
-#'
-#' Computed as `sign(x) * floor(abs(x))`; there is no dedicated primitive.
 #' @template param_operand
 #' @template return_unary
 #' @seealso [nv_floor()], [nv_ceiling()], [nv_round()].

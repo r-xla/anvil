@@ -16,8 +16,6 @@ Has the same shape and data type as the input.
 }
 \description{
 Element-wise truncation (round toward zero). You can also use \code{trunc()}.
-
-Computed as \code{sign(x) * floor(abs(x))}; there is no dedicated primitive.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}

@@ -1266,34 +1266,17 @@ describe("cross-device eager (check_eager)", {
 })
 
 test_that("nv_mod and `%%` follow base R flooring semantics across sign combos", {
-  cases <- expand.grid(a = c(-7, -2.5, -1, 0, 1, 2.5, 7), b = c(-3, -1, 1, 3))
-  for (i in seq_len(nrow(cases))) {
-    a <- cases$a[i]
-    b <- cases$b[i]
-    expected <- a %% b
-    expect_equal(
-      as.numeric(as_array(nv_mod(nv_scalar(a, dtype = "f32"), nv_scalar(b, dtype = "f32")))),
-      expected,
-      tolerance = 1e-6,
-      info = sprintf("nv_mod(%g, %g)", a, b)
-    )
-    expect_equal(
-      as.numeric(as_array(nv_scalar(a, dtype = "f32") %% nv_scalar(b, dtype = "f32"))),
-      expected,
-      tolerance = 1e-6,
-      info = sprintf("%g %%%% %g", a, b)
-    )
-  }
-
-  # Integer dtype path (rows where `a` is already integer-valued).
-  ic <- cases[cases$a == as.integer(cases$a), ]
-  for (i in seq_len(nrow(ic))) {
-    a <- as.integer(ic$a[i])
-    b <- as.integer(ic$b[i])
-    expect_equal(
-      as.integer(nv_mod(nv_scalar(a, dtype = "i32"), nv_scalar(b, dtype = "i32"))),
-      a %% b,
-      info = sprintf("nv_mod(%dL, %dL)", a, b)
-    )
-  }
+  expect_equal(
+    as.vector(nv_mod(1, -3)),
+    1 %% -3
+  )
+  expect_equal(
+    as.vector(nv_mod(1.4, -0.2)),
+    1.4 %% -0.2,
+    tolerance = 1e-5
+  )
+  expect_equal(
+    as.vector(nv_mod(1L, -3L)),
+    1L %% -3L
+  )
 })

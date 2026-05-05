@@ -17,12 +17,9 @@ Has the same shape and data type as the inputs.
 It is ambiguous if both inputs are ambiguous.
 }
 \description{
-Element-wise IEEE-754 remainder of division: the sign of the result equals
-the sign of the dividend, matching C \code{fmod}, JAX \code{lax.rem}, and StableHLO
-\code{remainder}. This is \strong{not} the same as base R's \code{\%\%} (which floors and
-takes the sign of the divisor); for example,
-\code{prim_remainder(nv_array(1), nv_array(-3))} is \code{1}, while \code{1 \%\% -3} in
-base R is \code{-2}.
+Element-wise remainder.
+Result has sign of the divident, which differs from base R's \code{\%\%}, which is available
+via \code{\link[=nv_mod]{nv_mod()}} and has sign of divisor.
 }
 \section{Implemented Rules}{
 
@@ -39,9 +36,8 @@ Lowers to \code{\link[stablehlo:hlo_remainder]{stablehlo::hlo_remainder()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(c(7, 10, 15))
-y <- nv_array(c(3, 4, 6))
-prim_remainder(x, y)
+prim_remainder(1, -3)
+1 \%\% -3
 \dontshow{\}) # examplesIf}
 }
 \seealso{
