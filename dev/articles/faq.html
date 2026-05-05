@@ -146,18 +146,18 @@ finisehd.</li>
 <span><span class="co"># returns immediately</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1e8</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Ensure buffer creation is finished </span></span>
+<span><span class="co"># Ensure buffer creation is finished</span></span>
 <span><span class="fu"><a href="../reference/await.html">await</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Bad (only measures kernel launch):</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="fu">mul_n</span><span class="op">(</span><span class="va">x</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="fu">mul_n</span><span class="op">(</span><span class="va">x</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##   0.150   0.049   0.119</span></span></code></pre>
+<span><span class="co">##   0.309   0.113   0.193</span></span></code></pre>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Good (also measures actual computation):</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="fu"><a href="../reference/await.html">await</a></span><span class="op">(</span><span class="fu">mul_n</span><span class="op">(</span><span class="va">x</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="fu"><a href="../reference/await.html">await</a></span><span class="op">(</span><span class="fu">mul_n</span><span class="op">(</span><span class="va">x</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##   0.150   0.141   0.139</span></span></code></pre>
+<span><span class="co">##   0.756   0.779   0.748</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="how-do-i-control-the-number-of-threads-used-by-xla">How do I control the number of threads used by XLA?<a class="anchor" aria-label="anchor" href="#how-do-i-control-the-number-of-threads-used-by-xla"></a>
