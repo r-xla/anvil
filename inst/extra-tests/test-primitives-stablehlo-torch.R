@@ -255,38 +255,18 @@ test_that("prim_logistic", {
 })
 
 # CHLO ops: inverse trig, hyperbolic, gamma family.
-
-# Map random noise into the open interval (-1, 1) for acos/asin/atanh.
-gen_in_minus1_1 <- function(shp, dtype) {
-  n <- if (length(shp)) prod(shp) else 1L
-  vals <- tanh(rnorm(n))
-  if (length(shp)) array(vals, shp) else vals
-}
-
-# Values >= 1 + epsilon for acosh.
-gen_at_least_1 <- function(shp, dtype) {
-  n <- if (length(shp)) prod(shp) else 1L
-  vals <- 1 + abs(rnorm(n))
-  if (length(shp)) array(vals, shp) else vals
-}
-
-# Strictly positive values away from 0 for digamma/lgamma.
-gen_positive <- function(shp, dtype) {
-  n <- if (length(shp)) prod(shp) else 1L
-  vals <- 0.5 + abs(rnorm(n))
-  if (length(shp)) array(vals, shp) else vals
-}
+# `sampler_unif()` comes from `tests/testthat/helper.R`.
 
 test_that("prim_acos", {
-  expect_jit_torch_unary(prim_acos, torch::torch_acos, c(2, 3), gen = gen_in_minus1_1)
+  expect_jit_torch_unary(prim_acos, torch::torch_acos, c(2, 3), gen = sampler_unif(-0.95, 0.95))
 })
 
 test_that("prim_acosh", {
-  expect_jit_torch_unary(prim_acosh, torch::torch_acosh, c(2, 3), gen = gen_at_least_1)
+  expect_jit_torch_unary(prim_acosh, torch::torch_acosh, c(2, 3), gen = sampler_unif(1.5, 5))
 })
 
 test_that("prim_asin", {
-  expect_jit_torch_unary(prim_asin, torch::torch_asin, c(2, 3), gen = gen_in_minus1_1)
+  expect_jit_torch_unary(prim_asin, torch::torch_asin, c(2, 3), gen = sampler_unif(-0.95, 0.95))
 })
 
 test_that("prim_asinh", {
@@ -298,7 +278,7 @@ test_that("prim_atan", {
 })
 
 test_that("prim_atanh", {
-  expect_jit_torch_unary(prim_atanh, torch::torch_atanh, c(2, 3), gen = gen_in_minus1_1)
+  expect_jit_torch_unary(prim_atanh, torch::torch_atanh, c(2, 3), gen = sampler_unif(-0.95, 0.95))
 })
 
 test_that("prim_cosh", {
@@ -310,16 +290,16 @@ test_that("prim_sinh", {
 })
 
 test_that("prim_digamma", {
-  expect_jit_torch_unary(prim_digamma, torch::torch_digamma, c(2, 3), gen = gen_positive)
+  expect_jit_torch_unary(prim_digamma, torch::torch_digamma, c(2, 3), gen = sampler_unif(0.5, 5))
 })
 
 test_that("prim_lgamma", {
-  expect_jit_torch_unary(prim_lgamma, torch::torch_lgamma, c(2, 3), gen = gen_positive)
+  expect_jit_torch_unary(prim_lgamma, torch::torch_lgamma, c(2, 3), gen = sampler_unif(0.5, 5))
 })
 
 test_that("prim_polygamma", {
   shp <- c(2, 3)
-  x <- gen_positive(shp, "f32")
+  x <- sampler_unif(0.5, 5)(shp, "f32")
   for (n_val in c(0L, 1L, 2L)) {
     n_arr <- array(rep(n_val, prod(shp)), shp)
     out_nv <- jit(prim_polygamma)(
@@ -342,7 +322,7 @@ test_that("prim_erfc", {
 })
 
 test_that("prim_erf_inv", {
-  expect_jit_torch_unary(prim_erf_inv, torch::torch_erfinv, c(2, 3), gen = gen_in_minus1_1)
+  expect_jit_torch_unary(prim_erf_inv, torch::torch_erfinv, c(2, 3), gen = sampler_unif(-0.95, 0.95))
 })
 
 describe("prim_cholesky", {

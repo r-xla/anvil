@@ -535,35 +535,18 @@ test_that("prim_cosine", {
 })
 
 # CHLO ops: inverse trig, hyperbolic, gamma family.
-
-gen_in_minus1_1_rev <- function(shp, dtype) {
-  n <- if (length(shp)) prod(shp) else 1L
-  vals <- tanh(rnorm(n))
-  if (length(shp)) array(vals, shp) else vals
-}
-
-gen_at_least_1_rev <- function(shp, dtype) {
-  n <- if (length(shp)) prod(shp) else 1L
-  vals <- 1.5 + abs(rnorm(n))
-  if (length(shp)) array(vals, shp) else vals
-}
-
-gen_positive_rev <- function(shp, dtype) {
-  n <- if (length(shp)) prod(shp) else 1L
-  vals <- 0.5 + abs(rnorm(n))
-  if (length(shp)) array(vals, shp) else vals
-}
+# `sampler_unif()` comes from `tests/testthat/helper.R`.
 
 test_that("prim_acos", {
-  verify_grad_uni(prim_acos, torch::torch_acos, tol = 1e-4, gen = gen_in_minus1_1_rev)
+  verify_grad_uni(prim_acos, torch::torch_acos, tol = 1e-4, gen = sampler_unif(-0.95, 0.95))
 })
 
 test_that("prim_acosh", {
-  verify_grad_uni(prim_acosh, torch::torch_acosh, tol = 1e-4, gen = gen_at_least_1_rev)
+  verify_grad_uni(prim_acosh, torch::torch_acosh, tol = 1e-4, gen = sampler_unif(1.5, 5))
 })
 
 test_that("prim_asin", {
-  verify_grad_uni(prim_asin, torch::torch_asin, tol = 1e-4, gen = gen_in_minus1_1_rev)
+  verify_grad_uni(prim_asin, torch::torch_asin, tol = 1e-4, gen = sampler_unif(-0.95, 0.95))
 })
 
 test_that("prim_asinh", {
@@ -575,7 +558,7 @@ test_that("prim_atan", {
 })
 
 test_that("prim_atanh", {
-  verify_grad_uni(prim_atanh, torch::torch_atanh, tol = 1e-4, gen = gen_in_minus1_1_rev)
+  verify_grad_uni(prim_atanh, torch::torch_atanh, tol = 1e-4, gen = sampler_unif(-0.95, 0.95))
 })
 
 test_that("prim_cosh", {
@@ -587,18 +570,18 @@ test_that("prim_sinh", {
 })
 
 test_that("prim_digamma", {
-  verify_grad_uni(prim_digamma, torch::torch_digamma, tol = 1e-4, gen = gen_positive_rev)
+  verify_grad_uni(prim_digamma, torch::torch_digamma, tol = 1e-4, gen = sampler_unif(0.5, 5))
 })
 
 test_that("prim_lgamma", {
-  verify_grad_uni(prim_lgamma, torch::torch_lgamma, tol = 1e-4, gen = gen_positive_rev)
+  verify_grad_uni(prim_lgamma, torch::torch_lgamma, tol = 1e-4, gen = sampler_unif(0.5, 5))
 })
 
 test_that("prim_polygamma", {
   # Verify gradient w.r.t. x against torch::torch_polygamma (n is a Python int there).
   shp <- c(2, 3)
   for (n_val in c(1L, 2L)) {
-    x <- gen_positive_rev(shp, "f32")
+    x <- sampler_unif(0.5, 5)(shp, "f32")
     n_arr <- array(rep(n_val, prod(shp)), shp)
 
     f_nv <- function(x_t) {
@@ -628,7 +611,7 @@ test_that("prim_erfc", {
 })
 
 test_that("prim_erf_inv", {
-  verify_grad_uni(prim_erf_inv, torch::torch_erfinv, tol = 1e-4, gen = gen_in_minus1_1_rev)
+  verify_grad_uni(prim_erf_inv, torch::torch_erfinv, tol = 1e-4, gen = sampler_unif(-0.95, 0.95))
 })
 
 test_that("prim_abs", {
@@ -731,24 +714,13 @@ test_that("prim_reverse", {
 })
 
 test_that("prim_atan2", {
-  # Generator that avoids (0, 0) which is undefined
-  gen_nonzero <- function(shp, dtype) {
-    vals <- generate_test_data(shp, dtype = dtype)
-    # Ensure we don't have both values near zero
-    if (length(shp) == 0L) {
-      if (abs(vals) < 0.1) vals <- vals + sign(vals + 0.1) * 0.5
-    } else {
-      vals[abs(vals) < 0.1] <- vals[abs(vals) < 0.1] + 0.5
-    }
-    if (length(shp) == 0L) vals else array(vals, shp)
-  }
-
+  # Avoid (0, 0) which is undefined.
   verify_grad_biv(
     prim_atan2,
     torch::torch_atan2,
     tol = 1e-5,
-    gen_lhs = gen_nonzero,
-    gen_rhs = gen_nonzero
+    gen_lhs = sampler_nonzero(0.5),
+    gen_rhs = sampler_nonzero(0.5)
   )
 })
 
@@ -784,22 +756,11 @@ test_that("prim_concatenate", {
 })
 
 test_that("prim_reduce_prod", {
-  # Test with non-zero values to avoid division by zero in gradient
-  gen_nonzero <- function(shp, dtype) {
-    vals <- generate_test_data(shp, dtype = dtype)
-    # Shift values away from zero
-    if (length(shp) == 0L) {
-      if (abs(vals) < 0.5) vals <- vals + sign(vals + 0.1) * 1
-    } else {
-      vals[abs(vals) < 0.5] <- vals[abs(vals) < 0.5] + sign(vals[abs(vals) < 0.5] + 0.1) * 1
-    }
-    if (length(shp) == 0L) vals else array(vals, shp)
-  }
-
+  # Avoid division by zero in the per-element gradient.
   shp <- c(2L, 3L)
   dtype <- "f32"
 
-  x_arr <- gen_nonzero(shp, dtype)
+  x_arr <- sampler_nonzero(0.5)(shp, dtype)
   x_nv <- nv_array(x_arr, dtype = dtype)
   x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
@@ -860,23 +821,11 @@ describe("prim_static_slice", {
 })
 
 test_that("prim_remainder", {
-  # Generator that avoids zero divisors and values near discontinuities
-  gen_nonzero <- function(shp, dtype) {
-    vals <- generate_test_data(shp, dtype = dtype)
-    # Shift values away from zero to avoid division by zero
-    if (length(shp) == 0L) {
-      if (abs(vals) < 0.5) vals <- vals + sign(vals + 0.1) * 1
-    } else {
-      vals[abs(vals) < 0.5] <- vals[abs(vals) < 0.5] + sign(vals[abs(vals) < 0.5] + 0.1) * 1
-    }
-    if (length(shp) == 0L) vals else array(vals, shp)
-  }
-
   verify_grad_biv(
     prim_remainder,
     torch::torch_remainder,
     tol = 1e-5,
-    gen_rhs = gen_nonzero # Avoid zero divisors
+    gen_rhs = sampler_nonzero(0.5) # avoid zero divisors
   )
 })
 
