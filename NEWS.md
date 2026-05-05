@@ -52,15 +52,13 @@
   `nv_reduce_any()`, `nv_reduce_all()` and `nv_mean()` now default
   `dims = NULL`, which reduces over all dimensions and returns a scalar.
   Previously, `dims` was required.
-  
+
 ## Bug Fixes
-  
+
 * The overloaded `%%` operator now calls the new `nv_mod()` to be consistent
   with base R.
 * The reverse rule for `prim_reduce_prod()` no longer produces `NaN`/`Inf`
-  gradients when the input contains zeros. It now uses the safe formulation
-  (exclusive cumulative products from both sides), matching PyTorch's
-  `prod_safe_zeros_backward`.
+  gradients when the input contains zeros.
 
 ## Bug Fixes
 
