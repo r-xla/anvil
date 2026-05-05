@@ -85,6 +85,44 @@ test_that("format", {
   expect_equal(format(nv_array(1:4, shape = c(4, 1))), "AnvlArray(dtype=i32, shape=4x1)")
 })
 
+test_that("nv_array(byrow = TRUE) fills row-major from a flat vector", {
+  expect_equal(
+    as_array(nv_array(1:6, shape = c(2L, 3L), byrow = TRUE)),
+    matrix(1:6, nrow = 2, ncol = 3, byrow = TRUE)
+  )
+})
+
+test_that("nv_array(byrow = TRUE) extends to higher-rank shapes", {
+  # data values fill last axis fastest, mirroring row-major storage
+  x <- nv_array(1:24, shape = c(2L, 3L, 4L), byrow = TRUE)
+  expected <- aperm(array(1:24, dim = c(4L, 3L, 2L)), 3:1)
+  expect_equal(as_array(x), expected)
+  expect_equal(shape(x), c(2, 3, 4))
+})
+
+test_that("nv_array(byrow = TRUE) is a no-op for shapes with < 2 dims", {
+  expect_equal(
+    as_array(nv_array(1:4, byrow = TRUE)),
+    as_array(nv_array(1:4))
+  )
+  expect_equal(
+    as_array(nv_array(1L, shape = integer(), byrow = TRUE)),
+    as_array(nv_array(1L, shape = integer()))
+  )
+})
+
+test_that("nv_array(byrow = TRUE) re-fills a matrix input row-major", {
+  # input is column-major matrix(1:6, 2, 3) but byrow re-interprets values
+  expect_equal(
+    as_array(nv_array(matrix(1:6, nrow = 2L), byrow = TRUE)),
+    matrix(1:6, nrow = 2L, ncol = 3L, byrow = TRUE)
+  )
+})
+
+test_that("nv_array(byrow = TRUE) errors when data is an AnvlArray", {
+  x <- nv_array(1:6, shape = c(2L, 3L))
+  expect_error(nv_array(x, byrow = TRUE), "byrow")
+})
 test_that("eq_type and neq_type respect ambiguity argument", {
   # With ambiguity = TRUE, different ambiguity means not equal
   expect_true(

@@ -12,6 +12,8 @@
 
 ## New Features
 
+* `nv_array()` gained a `byrow` argument that fills the array from an R
+  object in row-major order, mirroring `matrix(byrow = TRUE)` (#165).
 * Added `AnvlArray` -> R `vector` converters `as.numeric`, `as.double`,
   `as.integer`, `as.logical` and `as.vector`.
 * New API functions `nv_rbind()` and `nv_cbind()` and corresponding
