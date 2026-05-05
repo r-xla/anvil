@@ -129,6 +129,7 @@ reference:
     desc: Functions for reshaping and rearranging arrays
     contents:
       - nv_reshape
+      - nv_flatten
       - nv_transpose
       - nv_concatenate
       - nv_rbind
