@@ -711,10 +711,8 @@ test_that("prim_concatenate", {
 })
 
 test_that("prim_reduce_prod", {
-  # Test with non-zero values to avoid division by zero in gradient
   gen_nonzero <- function(shp, dtype) {
     vals <- generate_test_data(shp, dtype = dtype)
-    # Shift values away from zero
     if (length(shp) == 0L) {
       if (abs(vals) < 0.5) vals <- vals + sign(vals + 0.1) * 1
     } else {
@@ -723,25 +721,30 @@ test_that("prim_reduce_prod", {
     if (length(shp) == 0L) vals else array(vals, shp)
   }
 
-  shp <- c(2L, 3L)
-  dtype <- "f32"
+  check_against_torch <- function(x_arr, dim) {
+    x_nv <- nv_array(x_arr, dtype = "f32")
+    x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
-  x_arr <- gen_nonzero(shp, dtype)
-  x_nv <- nv_array(x_arr, dtype = dtype)
-  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+    f_nv <- function(x) {
+      y <- prim_reduce_prod(x, dims = dim, drop = TRUE)
+      nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
+    }
+    grads_nv <- jit(gradient(f_nv))(x_nv)
 
-  # Test reduce along one dimension
-  f_nv <- function(x) {
-    y <- prim_reduce_prod(x, dims = 2L, drop = TRUE)
-    nv_reduce_sum(y, dims = 1L, drop = TRUE)
+    out_th <- torch::torch_prod(x_th, dim = dim, keepdim = FALSE)
+    torch::torch_sum(out_th)$backward()
+
+    expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
   }
 
-  grads_nv <- jit(gradient(f_nv))(x_nv)
+  check_against_torch(gen_nonzero(c(2L, 3L), "f32"), 2L)
 
-  out_th <- torch::torch_prod(x_th, dim = 2, keepdim = FALSE)
-  torch::torch_sum(out_th)$backward()
+  # Safe at zeros: matches PyTorch's prod_safe_zeros_backward.
+  x_zero <- array(c(2, 0, 5, 1, 4, 6), dim = c(2L, 3L))
+  check_against_torch(x_zero, 2L)
 
-  expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
+  x_two_zeros <- array(c(2, 0, 0, 1, 4, 6), dim = c(2L, 3L))
+  check_against_torch(x_two_zeros, 2L)
 })
 
 describe("prim_static_slice", {
