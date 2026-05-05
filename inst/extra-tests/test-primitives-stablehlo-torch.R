@@ -254,17 +254,17 @@ test_that("prim_logistic", {
   expect_jit_torch_unary(prim_logistic, torch::torch_sigmoid, c(2, 3))
 })
 
-describe("prim_cholesky", {
+describe("prim_chol", {
   it("lower = TRUE", {
     A <- crossprod(matrix(rnorm(9), 3, 3)) + diag(3)
-    out_nv <- as_array(jit(function(a) prim_cholesky(a, lower = TRUE))(nv_array(A, dtype = "f64")))
+    out_nv <- as_array(jit(function(a) prim_chol(a, lower = TRUE))(nv_array(A, dtype = "f64")))
     out_th <- as_array_torch(torch::linalg_cholesky(torch::torch_tensor(A, dtype = torch::torch_float64())))
     expect_equal(out_nv, out_th, tolerance = 1e-6)
   })
 
   it("lower = FALSE", {
     A <- crossprod(matrix(rnorm(9), 3, 3)) + diag(3)
-    out_nv <- as_array(jit(function(a) prim_cholesky(a, lower = FALSE))(nv_array(A, dtype = "f64")))
+    out_nv <- as_array(jit(function(a) prim_chol(a, lower = FALSE))(nv_array(A, dtype = "f64")))
     out_th <- as_array_torch(torch::linalg_cholesky(torch::torch_tensor(A, dtype = torch::torch_float64()))$t())
     expect_equal(out_nv, out_th, tolerance = 1e-6)
   })

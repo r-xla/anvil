@@ -135,21 +135,21 @@ prim_tan[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, r
   )
 })
 
-prim_sine[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
+prim_sin[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
     # d/dx sin(x) = cos(x)
-    if (required[[1L]]) prim_mul(grad, prim_cosine(operand))
+    if (required[[1L]]) prim_mul(grad, prim_cos(operand))
   )
 })
 
-prim_cosine[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
+prim_cos[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
     # d/dx cos(x) = -sin(x)
-    if (required[[1L]]) prim_mul(grad, prim_negate(prim_sine(operand)))
+    if (required[[1L]]) prim_mul(grad, prim_negate(prim_sin(operand)))
   )
 })
 
@@ -1006,11 +1006,11 @@ triangular_mask <- function(n, dt, lower, unit_diagonal) {
   }
 }
 
-#' @name prim_cholesky
-#' @rdname prim_cholesky
+#' @name prim_chol
+#' @rdname prim_chol
 #' @references
 #' `r xlamisc::format_bib("murray2016differentiation", "walter2012structured")`
-prim_cholesky[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
+prim_chol[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
   lower <- params$lower
   if (length(shape(outputs[[1L]])) > 2L) {
     cli_abort("Batched cholesky gradient is not yet supported.")

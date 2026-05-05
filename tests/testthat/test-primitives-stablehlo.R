@@ -1,12 +1,12 @@
-test_that("prim_sine", {
+test_that("prim_sin", {
   x <- nv_array(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
-  out <- as_array(jit(prim_sine)(x))
+  out <- as_array(jit(prim_sin)(x))
   expect_equal(c(out), c(0, 1, 0, -1), tolerance = 1e-15)
 })
 
-test_that("prim_cosine", {
+test_that("prim_cos", {
   x <- nv_array(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
-  out <- as_array(jit(prim_cosine)(x))
+  out <- as_array(jit(prim_cos)(x))
   expect_equal(c(out), c(1, 0, -1, 0), tolerance = 1e-15)
 })
 
@@ -467,9 +467,9 @@ describe("prim_while", {
   })
 })
 
-test_that("prim_cholesky", {
+test_that("prim_chol", {
   A <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
-  L <- as_array(jit(function(A) prim_cholesky(A, lower = TRUE))(A))
+  L <- as_array(jit(function(A) prim_chol(A, lower = TRUE))(A))
   expect_equal(L[1, 1], 2)
   expect_equal(L[2, 1], 1)
   expect_equal(L[2, 2], sqrt(2), tolerance = 1e-10)
@@ -477,12 +477,12 @@ test_that("prim_cholesky", {
   expect_equal(L %*% t(L), matrix(c(4, 2, 2, 3), nrow = 2), tolerance = 1e-10)
 })
 
-test_that("prim_cholesky zeros out non-triangular part", {
+test_that("prim_chol zeros out non-triangular part", {
   A <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
-  L <- as_array(jit(function(A) prim_cholesky(A, lower = TRUE))(A))
+  L <- as_array(jit(function(A) prim_chol(A, lower = TRUE))(A))
   expect_equal(L[1, 2], 0)
 
-  U <- as_array(jit(function(A) prim_cholesky(A, lower = FALSE))(A))
+  U <- as_array(jit(function(A) prim_chol(A, lower = FALSE))(A))
   expect_equal(U[2, 1], 0)
 })
 

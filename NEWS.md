@@ -5,7 +5,9 @@
 * Renamed user-facing API functions to match base R names:
   `nv_sine()` -> `nv_sin()`, `nv_cosine()` -> `nv_cos()`,
   `nv_ceil()` -> `nv_ceiling()`, `nv_cholesky()` -> `nv_chol()`.
-  The underlying `prim_*` primitives keep their StableHLO-aligned names.
+  The corresponding primitives were renamed in step:
+  `prim_sine()` -> `prim_sin()`, `prim_cosine()` -> `prim_cos()`,
+  `prim_cholesky()` -> `prim_chol()`.
 * `nv_reduce_mean()` was renamed to `nv_mean()`.
 
 ## New Features
@@ -14,6 +16,10 @@
   `as.integer`, `as.logical` and `as.vector`.
 * New API functions `nv_rbind()` and `nv_cbind()` and corresponding
   `rbind()`/`cbind()` generics.
+* Added new function `await()` that blocks until the underlying computation
+  has finished.
+* New tree utilities `map_tree()` and `pmap_tree()` for applying functions
+  leaf-wise over (possibly nested) lists.
 * New primitives: `prim_sort()`, `prim_top_k()`, `prim_reduce()`,
   `prim_argmax()`, `prim_argmin()`.
 * New API functions:
