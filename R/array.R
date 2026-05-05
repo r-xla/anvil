@@ -44,6 +44,12 @@
 #'   Backend to use (`"xla"` or `"quickr"`).
 #'   Defaults to `default_backend()`.
 #'   Must not be specified inside [`jit()`].
+#' @param byrow (`logical(1)`)\cr
+#'   When constructing from an R object and the result has at least two
+#'   dimensions, fill the array in row-major order rather than the
+#'   default column-major order, mirroring [`base::matrix()`]'s `byrow`.
+#'   Only allowed when `data` is an R object — passing an existing
+#'   `AnvlArray` together with `byrow = TRUE` is an error.
 #' @return ([`AnvlArray`])
 #' @examplesIf pjrt::plugins_downloaded()
 #' # A 1-d array (vector) with shape (4). Default type for integers is `i32`
@@ -54,6 +60,9 @@
 #'
 #' # A 2x3 matrix
 #' nv_array(1:6, shape = c(2L, 3L))
+#'
+#' # A 2x3 matrix filled by row, like `matrix(1:6, 2, 3, byrow = TRUE)`.
+#' nv_array(1:6, shape = c(2L, 3L), byrow = TRUE)
 #'
 #' # A scalar array.
 #' nv_scalar(3.14)
@@ -82,8 +91,12 @@ NULL
 
 #' @rdname AnvlArray
 #' @export
-nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL, backend = NULL) {
+nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous = NULL, backend = NULL, byrow = FALSE) {
+  assert_flag(byrow)
   if (is_anvl_array(data)) {
+    if (byrow) {
+      cli_abort("{.arg byrow} only applies when constructing an {.cls AnvlArray} from an R object.")
+    }
     if (!is.null(device) && !eq_device(device(data), nv_device(device, backend))) {
       cli_abort("Cannot change device of existing AnvlArray from {.val {device(data)}} to {.val {device}}")
     }
@@ -108,6 +121,14 @@ nv_array <- function(data, dtype = NULL, device = NULL, shape = NULL, ambiguous 
   }
   if (!is.null(shape)) {
     shape <- as.integer(shape)
+  }
+  if (byrow) {
+    fill_shape <- shape %||% (if (!is.null(dim(data))) as.integer(dim(data)) else as.integer(length(data)))
+    if (length(fill_shape) >= 2L) {
+      # Fill column-major into the reversed shape, then permute axes back —
+      # this is equivalent to placing `data` row-major into `fill_shape`.
+      data <- aperm(array(data, dim = rev(fill_shape)), rev(seq_along(fill_shape)))
+    }
   }
   if (currently_tracing() && is.null(device)) {
     # The functions we jit should be backend-agnostic
