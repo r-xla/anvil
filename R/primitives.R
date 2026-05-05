@@ -872,10 +872,10 @@ prim_cumprod <- new_primitive("cumprod", cum_op, static = 2L)
 #' @title Primitive Cumulative Maximum
 #' @description
 #' Running maximum of array elements along a single dimension along with
-#' the index of the first occurrence of the running maximum.
+#' the index of the last occurrence of the running maximum.
 #' At output position `j`, the values output is `max(input[1..j])` and the
-#' indices output is the smallest `i` in `1..j` with
-#' `input[i] == values[j]` (first-occurrence tiebreak, matching torch).
+#' indices output is the largest `i` in `1..j` with
+#' `input[i] == values[j]` (last-occurrence tiebreak, matching torch).
 #' @template param_prim_operand_any
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which to accumulate (1-indexed).
@@ -886,7 +886,7 @@ prim_cumprod <- new_primitive("cumprod", cum_op, static = 2L)
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to a variadic [stablehlo::hlo_reduce_window()] over `(values, iota)`
-#' with a `(value > value | (value == value & idx < idx))` selector.
+#' with a `(value > value | (value == value & idx > idx))` selector.
 #' @seealso [nv_cummax()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
@@ -897,10 +897,10 @@ prim_cummax <- new_primitive("cummax", cum_extreme_op, static = 2L)
 #' @title Primitive Cumulative Minimum
 #' @description
 #' Running minimum of array elements along a single dimension along with
-#' the index of the first occurrence of the running minimum.
+#' the index of the last occurrence of the running minimum.
 #' At output position `j`, the values output is `min(input[1..j])` and the
-#' indices output is the smallest `i` in `1..j` with
-#' `input[i] == values[j]` (first-occurrence tiebreak, matching torch).
+#' indices output is the largest `i` in `1..j` with
+#' `input[i] == values[j]` (last-occurrence tiebreak, matching torch).
 #' @template param_prim_operand_any
 #' @param dim (`integer(1)`)\cr
 #'   Dimension along which to accumulate (1-indexed).
@@ -911,7 +911,7 @@ prim_cummax <- new_primitive("cummax", cum_extreme_op, static = 2L)
 #' @template section_rules
 #' @section StableHLO:
 #' Lowers to a variadic [stablehlo::hlo_reduce_window()] over `(values, iota)`
-#' with a `(value < value | (value == value & idx < idx))` selector.
+#' with a `(value < value | (value == value & idx > idx))` selector.
 #' @seealso [nv_cummin()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))

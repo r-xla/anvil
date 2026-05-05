@@ -16,8 +16,8 @@ Dimension along which to accumulate (1-indexed).}
 \item{with_indices}{(\code{logical(1)})\cr
 If \code{FALSE} (default), returns the running-maximum array. If \code{TRUE},
 returns \code{list(values = ..., indices = ...)} where \code{indices} is the
-1-based index of the first occurrence of the running maximum at each
-position (dtype \code{i32}).}
+1-based index of the last occurrence of the running maximum at each
+position (dtype \code{i32}, matching torch).}
 }
 \value{
 \code{\link{arrayish}} (when \code{with_indices = FALSE}) or named list of two

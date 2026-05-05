@@ -1530,8 +1530,8 @@ nv_cumprod <- function(operand, dim = 1L) {
 #' @param with_indices (`logical(1)`)\cr
 #'   If `FALSE` (default), returns the running-maximum array. If `TRUE`,
 #'   returns `list(values = ..., indices = ...)` where `indices` is the
-#'   1-based index of the first occurrence of the running maximum at each
-#'   position (dtype `i32`).
+#'   1-based index of the last occurrence of the running maximum at each
+#'   position (dtype `i32`, matching torch).
 #' @return [`arrayish`] (when `with_indices = FALSE`) or named list of two
 #'   arrays (when `with_indices = TRUE`).
 #' @section Relation to base R:
@@ -1559,8 +1559,8 @@ nv_cummax <- function(operand, dim = 1L, with_indices = FALSE) {
 #' @param with_indices (`logical(1)`)\cr
 #'   If `FALSE` (default), returns the running-minimum array. If `TRUE`,
 #'   returns `list(values = ..., indices = ...)` where `indices` is the
-#'   1-based index of the first occurrence of the running minimum at each
-#'   position (dtype `i32`).
+#'   1-based index of the last occurrence of the running minimum at each
+#'   position (dtype `i32`, matching torch).
 #' @return [`arrayish`] (when `with_indices = FALSE`) or named list of two
 #'   arrays (when `with_indices = TRUE`).
 #' @section Relation to base R:

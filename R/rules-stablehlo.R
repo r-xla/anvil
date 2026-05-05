@@ -217,10 +217,11 @@ prim_cumprod[["stablehlo"]] <- function(operand, dim) {
   init_i <- hlo_scalar(0L, dtype = "i32", func = operand$func)
 
   cmp <- if (is_max) prim_gt else prim_lt
-  # Pick the side with the strictly better value; on ties, the smaller index
-  # wins (first-occurrence tiebreak). The op is associative + commutative.
+  # Pick the side with the strictly better value; on ties, the larger index
+  # wins (last-occurrence tiebreak, matching torch). The op is associative
+  # + commutative.
   reductor <- function(lv, li, rv, ri) {
-    lhs_wins <- prim_or(cmp(lv, rv), prim_and(prim_eq(lv, rv), prim_lt(li, ri)))
+    lhs_wins <- prim_or(cmp(lv, rv), prim_and(prim_eq(lv, rv), prim_gt(li, ri)))
     list(nv_ifelse(lhs_wins, lv, rv), nv_ifelse(lhs_wins, li, ri))
   }
   body <- .r_reductor_to_hlo_func(

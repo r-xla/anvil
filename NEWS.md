@@ -17,13 +17,7 @@
 * New cumulative primitives and API functions:
   `nv_cumsum()`, `nv_cumprod()`, `nv_cummax()`, `nv_cummin()` (and
   the corresponding `prim_*` primitives).
-  The `prim_cumprod()` and `prim_reduce_prod()` reverse rules
-  return the exact gradient when a prefix / reduce group contains
-  exactly one zero (product of the remaining elements at the zero
-  position, 0 elsewhere); for two or more zeros they return 0.
-  The `prim_cummax()` / `prim_cummin()` reverse rules route the
-  upstream gradient at output position `j` to the running argmax /
-  argmin position (with first-occurrence tiebreak, matching torch).
+  `prim_cumprod()` does not yet have a reverse rule.
 * New primitives: `prim_sort()`, `prim_top_k()`, `prim_reduce()`,
   `prim_argmax()`, `prim_argmin()`.
 * New API functions:

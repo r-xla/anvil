@@ -692,6 +692,7 @@ prim_reduce_prod[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, p
   dims <- params$dims
   drop <- params$drop
   operand <- inputs[[1L]]
+  y <- outputs[[1L]]
   grad <- grads[[1L]]
 
   list(
@@ -701,32 +702,9 @@ prim_reduce_prod[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, p
       } else {
         seq_along(shape(grad))
       }
-      # Per reduce group:
-      #   0 zeros: dy/dx_i = y / x_i (regular formula).
-      #   1 zero at position i: dy/dx_i = product of other elements (= y_safe);
-      #                         dy/dx_j = 0 for j != i.
-      #   >= 2 zeros: dy/dx = 0 everywhere.
-      # Compute over operand with zeros replaced by 1 (safe_operand) and mask
-      # out the positions that should be 0. At a single-zero position the
-      # division by safe_operand == 1 leaves grad * y_safe as required.
-      is_zero <- prim_eq(operand, zeros_like(operand))
-      safe_operand <- prim_ifelse(is_zero, ones_like(operand), operand)
-      y_safe <- prim_reduce_prod(safe_operand, dims = dims, drop = drop)
-
-      is_zero_num <- prim_convert(is_zero, dtype = dtype(operand))
-      zero_count <- prim_reduce_sum(is_zero_num, dims = dims, drop = drop)
-
-      y_safe_bc <- prim_broadcast_in_dim(y_safe, shape(operand), bdims)
-      zero_count_bc <- prim_broadcast_in_dim(zero_count, shape(operand), bdims)
+      y_bc <- prim_broadcast_in_dim(y, shape(operand), bdims)
       grad_bc <- prim_broadcast_in_dim(grad, shape(operand), bdims)
-
-      no_zeros <- prim_eq(zero_count_bc, zeros_like(zero_count_bc))
-      one_count <- prim_fill(1, dtype = dtype(operand), shape = shape(operand))
-      single_zero_here <- prim_and(is_zero, prim_eq(zero_count_bc, one_count))
-      use_safe <- prim_or(no_zeros, single_zero_here)
-
-      raw <- prim_div(prim_mul(grad_bc, y_safe_bc), safe_operand)
-      prim_ifelse(use_safe, raw, zeros_like(raw))
+      prim_div(prim_mul(grad_bc, y_bc), operand)
     }
   )
 })
@@ -743,54 +721,13 @@ prim_cumsum[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params
   )
 })
 
-prim_cumprod[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, required) {
-  dim <- params$dim
-  operand <- inputs[[1L]]
-  y <- outputs[[1L]]
-  grad <- grads[[1L]]
-  list(
-    # grad_x = term_1 + term_2 where:
-    #   term_1 (the standard formula): rev_cumsum(grad * y) / safe_operand.
-    #     `grad * y` is automatically `grad * y_safe * I[zc == 0]` since
-    #     y_j = 0 whenever the prefix [1..j] contains any zero, so no zc==0
-    #     mask is needed. Dividing by safe_operand replaces 0/0 with 0 at
-    #     zero positions; term_1 is also 0 there because every j >= i has
-    #     y_j = 0, so the rev_cumsum is 0.
-    #   term_2 (the single-zero correction): contributes only at the FIRST
-    #     zero position per slice, since any later zero has zc[j] >= 2 for
-    #     all j >= it. We compute rev_cumsum(grad * y_safe * I[zc == 1])
-    #     and select it at positions where (is_zero & zc == 1) — the
-    #     unique-first-zero indicator.
-    if (required[[1L]]) {
-      is_zero <- prim_eq(operand, zeros_like(operand))
-      safe_operand <- prim_ifelse(is_zero, ones_like(operand), operand)
-
-      gy <- prim_mul(grad, y)
-      term_1 <- prim_div(
-        prim_reverse(prim_cumsum(prim_reverse(gy, dim), dim), dim),
-        safe_operand
-      )
-
-      y_safe <- prim_cumprod(safe_operand, dim = dim)
-      zero_count <- prim_cumsum(prim_convert(is_zero, dtype = dtype(operand)), dim = dim)
-      one_zero <- prim_eq(zero_count, ones_like(zero_count))
-      h_one <- prim_ifelse(one_zero, prim_mul(grad, y_safe), zeros_like(grad))
-      rev_cum_one <- prim_reverse(prim_cumsum(prim_reverse(h_one, dim), dim), dim)
-      is_first_zero <- prim_and(is_zero, one_zero)
-      term_2 <- prim_ifelse(is_first_zero, rev_cum_one, zeros_like(rev_cum_one))
-
-      prim_add(term_1, term_2)
-    }
-  )
-})
-
 .cum_extreme_reverse <- function(inputs, outputs, grads, params, required) {
   if (!required[[1L]]) {
     return(list(NULL))
   }
   dim <- params$dim
   operand <- inputs[[1L]]
-  arg_run <- outputs[[2L]]   # 1-based running argmax / argmin (i32, from forward)
+  arg_run <- outputs[[2L]] # 1-based running argmax / argmin (i32, from forward)
   grad <- grads[[1L]]
   rank <- length(shape(operand))
 

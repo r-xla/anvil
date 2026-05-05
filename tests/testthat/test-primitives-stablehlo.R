@@ -301,11 +301,11 @@ describe("prim_cummax", {
     expect_equal(c(as_array(out[[1L]])), c(3L, 3L, 4L, 4L, 5L))
     expect_equal(c(as_array(out[[2L]])), c(1L, 1L, 3L, 3L, 5L))
   })
-  it("plateaus break ties to first occurrence", {
+  it("plateaus break ties to last occurrence", {
     x <- nv_array(c(1, 3, 3, 2), dtype = "f32")
     out <- jit(function(a) prim_cummax(a, dim = 1L))(x)
     expect_equal(c(as_array(out[[1L]])), c(1, 3, 3, 3))
-    expect_equal(c(as_array(out[[2L]])), c(1L, 2L, 2L, 2L))
+    expect_equal(c(as_array(out[[2L]])), c(1L, 2L, 3L, 3L))
   })
 })
 
@@ -314,7 +314,8 @@ describe("prim_cummin", {
     x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6), dtype = "f32")
     out <- jit(function(a) prim_cummin(a, dim = 1L))(x)
     expect_equal(c(as_array(out[[1L]])), c(3, 1, 1, 1, 1, 1, 1, 1))
-    expect_equal(c(as_array(out[[2L]])), c(1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L))
+    # Tie at j=4 (x_4 == y_3 == 1): last-occurrence picks 4, then carries forward.
+    expect_equal(c(as_array(out[[2L]])), c(1L, 2L, 2L, 4L, 4L, 4L, 4L, 4L))
   })
   it("works along dim 2 of a matrix", {
     x_arr <- array(c(3, 1, 4, 1, 5, 9), c(2, 3))

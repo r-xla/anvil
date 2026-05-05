@@ -26,7 +26,6 @@ Output position \code{j} along \code{dim} equals the product of input positions 
 
 \itemize{
 \item \code{stablehlo}
-\item \code{reverse}
 }
 }
 

@@ -452,52 +452,6 @@ describe("prim_cumsum", {
   })
 })
 
-describe("prim_cumprod", {
-  verify_against_torch <- function(x_arr, dim) {
-    dtype <- "f32"
-    x_nv <- nv_array(x_arr, dtype = dtype)
-    x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
-
-    f_nv <- function(x) {
-      y <- prim_cumprod(x, dim = dim)
-      nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
-    }
-    grads_nv <- jit(gradient(f_nv))(x_nv)
-
-    out_th <- torch::torch_cumprod(x_th, dim = dim)
-    torch::torch_sum(out_th)$backward()
-
-    expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
-  }
-  it("vector gradient", {
-    verify_grad_uni_tensor(
-      prim_cumprod,
-      torch::torch_cumprod,
-      shape = 4L,
-      args_f = \(shp, dtype) list(list(dim = 1L), list(dim = 1L))
-    )
-  })
-  it("matrix gradient", {
-    verify_grad_uni_tensor(
-      prim_cumprod,
-      torch::torch_cumprod,
-      shape = c(3L, 3L),
-      args_f = \(shp, dtype) list(list(dim = 2L), list(dim = 2L))
-    )
-  })
-  it("single zero in prefix -> exact gradient at the zero position", {
-    # x = [1, 0, 2, 3]: zero only at i=2, so dy_j/dx_2 = product of remaining
-    # prefix entries; with sum-of-cumprod loss the gradient is
-    # [1, 1 + 1*2 + 1*2*3, 0, 0] = [1, 9, 0, 0].
-    verify_against_torch(c(1, 0, 2, 3), dim = 1L)
-  })
-  it("two zeros -> gradient zeroes out from second zero onwards", {
-    # x = [1, 0, 2, 0]: zeros at i=2 and i=4. Gradient is
-    # [1, 1 + 1*2, 0, 0] = [1, 3, 0, 0].
-    verify_against_torch(c(1, 0, 2, 0), dim = 1L)
-  })
-})
-
 # torch.cummax / torch.cummin return (values, indices); take [[1L]] for the
 # values tensor, on which backward is well-defined.
 torch_cummax_values <- function(x, dim) torch::torch_cummax(x, dim = dim)[[1L]]
@@ -523,12 +477,12 @@ describe("prim_cummax", {
   it("strictly increasing -> each element receives its own grad", {
     verify_against_torch(c(1, 2, 3, 4), dim = 1L)
   })
-  it("plateau uses first occurrence", {
-    # x = [1, 3, 3, 2]: y = [1, 3, 3, 3]. arg_run = [1, 2, 2, 2]. grad = [1, 3, 0, 0].
+  it("plateau uses last occurrence", {
+    # x = [1, 3, 3, 2]: y = [1, 3, 3, 3]. arg_run = [1, 2, 3, 3]. grad = [1, 1, 2, 0].
     verify_against_torch(c(1, 3, 3, 2), dim = 1L)
   })
   it("non-monotone vector", {
-    # x = [3, 1, 4, 1, 5, 9, 2, 6]: arg_run = [1, 1, 3, 3, 5, 6, 6, 6].
+    # x = [3, 1, 4, 1, 5, 9, 2, 6]: arg_run = [1, 1, 3, 3, 5, 6, 6, 6] (no ties).
     # grad = [2, 0, 2, 0, 1, 3, 0, 0].
     verify_against_torch(c(3, 1, 4, 1, 5, 9, 2, 6), dim = 1L)
   })
@@ -557,13 +511,14 @@ describe("prim_cummin", {
   it("strictly decreasing -> each element receives its own grad", {
     verify_against_torch(c(4, 3, 2, 1), dim = 1L)
   })
-  it("plateau uses first occurrence", {
-    # x = [4, 2, 2, 3]: y = [4, 2, 2, 2]. arg_run = [1, 2, 2, 2]. grad = [1, 3, 0, 0].
+  it("plateau uses last occurrence", {
+    # x = [4, 2, 2, 3]: y = [4, 2, 2, 2]. arg_run = [1, 2, 3, 3]. grad = [1, 1, 2, 0].
     verify_against_torch(c(4, 2, 2, 3), dim = 1L)
   })
   it("non-monotone vector", {
-    # x = [3, 1, 4, 1, 5, 9, 2, 6]: arg_run = [1, 2, 2, 2, 2, 2, 2, 2].
-    # grad = [1, 7, 0, 0, 0, 0, 0, 0].
+    # x = [3, 1, 4, 1, 5, 9, 2, 6]: arg_run = [1, 2, 2, 4, 4, 4, 4, 4]
+    # (tie at j=4 picks the later index, then carries forward).
+    # grad = [1, 2, 0, 5, 0, 0, 0, 0].
     verify_against_torch(c(3, 1, 4, 1, 5, 9, 2, 6), dim = 1L)
   })
   it("matrix gradient along dim 1", {
@@ -829,7 +784,8 @@ test_that("prim_concatenate", {
   verify_grad_concatenate(list(c(1, 3), c(2, 3)), 1L)
 })
 
-describe("prim_reduce_prod", {
+test_that("prim_reduce_prod", {
+  # Test with non-zero values to avoid division by zero in gradient
   gen_nonzero <- function(shp, dtype) {
     vals <- generate_test_data(shp, dtype = dtype)
     # Shift values away from zero
@@ -841,34 +797,25 @@ describe("prim_reduce_prod", {
     if (length(shp) == 0L) vals else array(vals, shp)
   }
 
-  verify_against_torch <- function(x_arr) {
-    dtype <- "f32"
-    x_nv <- nv_array(x_arr, dtype = dtype)
-    x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+  shp <- c(2L, 3L)
+  dtype <- "f32"
 
-    f_nv <- function(x) {
-      y <- prim_reduce_prod(x, dims = 2L, drop = TRUE)
-      nv_reduce_sum(y, dims = 1L, drop = TRUE)
-    }
-    grads_nv <- jit(gradient(f_nv))(x_nv)
+  x_arr <- gen_nonzero(shp, dtype)
+  x_nv <- nv_array(x_arr, dtype = dtype)
+  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
-    out_th <- torch::torch_prod(x_th, dim = 2, keepdim = FALSE)
-    torch::torch_sum(out_th)$backward()
-
-    expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
+  # Test reduce along one dimension
+  f_nv <- function(x) {
+    y <- prim_reduce_prod(x, dims = 2L, drop = TRUE)
+    nv_reduce_sum(y, dims = 1L, drop = TRUE)
   }
 
-  it("non-zero inputs", verify_against_torch(gen_nonzero(c(2L, 3L), "f32")))
+  grads_nv <- jit(gradient(f_nv))(x_nv)
 
-  it("exactly one zero per row", {
-    # row 1 has no zeros, row 2 has exactly one zero -> exact gradient is the
-    # product of the remaining row entries at the zero position, 0 elsewhere.
-    verify_against_torch(matrix(c(2, 0, 3, 4, 5, 6), nrow = 2))
-  })
+  out_th <- torch::torch_prod(x_th, dim = 2, keepdim = FALSE)
+  torch::torch_sum(out_th)$backward()
 
-  it("multiple zeros per row -> zero gradient", {
-    verify_against_torch(matrix(c(2, 0, 3, 0, 5, 6), nrow = 2))
-  })
+  expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
 })
 
 describe("prim_static_slice", {
