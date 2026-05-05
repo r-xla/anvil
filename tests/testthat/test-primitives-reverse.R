@@ -968,6 +968,36 @@ test_that("prim_top_k", {
   expect_equal(as_array(grad_nv), expected_grad, tolerance = 1e-5)
 })
 
+test_that("prim_reduce_prod: gradient is safe at zeros", {
+  # The safe rule: gradient at position i = product of all *other* elements
+  # along the reduced axis. With one zero, only the zero position has a
+  # non-zero gradient; with two or more zeros, the gradient is zero everywhere.
+  f1 <- jit(gradient(function(x) prim_reduce_prod(x, dims = 1L, drop = TRUE)))
+
+  expect_equal(as.numeric(as_array(f1(nv_array(c(2, 3, 5)))[[1L]])), c(15, 10, 6))
+  expect_equal(as.numeric(as_array(f1(nv_array(c(2, 0, 5)))[[1L]])), c(0, 10, 0))
+  expect_equal(as.numeric(as_array(f1(nv_array(c(2, 0, 0)))[[1L]])), c(0, 0, 0))
+})
+
+test_that("prim_reduce_prod: multi-axis reduction with a zero", {
+  x <- matrix(c(2, 3, 0, 4, 5, 6), nrow = 3, byrow = TRUE)
+  f <- jit(gradient(function(x) prim_reduce_prod(x, dims = c(1L, 2L), drop = TRUE)))
+  expected <- matrix(0, nrow = 3, ncol = 2)
+  expected[2, 1] <- prod(x[x != 0])
+  expect_equal(as_array(f(nv_array(x))[[1L]]), expected)
+})
+
+test_that("prim_reduce_prod: drop = FALSE matches drop = TRUE", {
+  x <- nv_array(matrix(c(2, 3, 0, 4, 5, 6), nrow = 3, byrow = TRUE))
+  f_drop <- jit(gradient(function(x) {
+    nv_reduce_sum(prim_reduce_prod(x, dims = 2L, drop = TRUE), dims = 1L, drop = TRUE)
+  }))
+  f_keep <- jit(gradient(function(x) {
+    nv_reduce_sum(prim_reduce_prod(x, dims = 2L, drop = FALSE), dims = c(1L, 2L), drop = TRUE)
+  }))
+  expect_equal(as_array(f_drop(x)[[1L]]), as_array(f_keep(x)[[1L]]))
+})
+
 if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvl"))
 }
