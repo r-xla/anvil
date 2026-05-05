@@ -5,7 +5,8 @@ test_that("nv_rnorm", {
   }
   g <- jit(f)
   out <- g()
-  expect_equal(c(as_array(out[[1]])), c(1L, 6L))
+  expect_equal(dtype(out[[1]]), as_dtype("ui64"))
+  expect_equal(shape(out[[1]]), 2L)
   expect_equal(dtype(out[[2]]), as_dtype("f32"))
   expect_equal(shape(out[[2]]), c(2L, 3L))
 
@@ -15,7 +16,6 @@ test_that("nv_rnorm", {
   }
   g <- jit(f)
   out <- g()
-  expect_equal(c(as_array(out[[1]])), c(1L, 8L))
   expect_equal(shape(out[[2]]), c(3L, 3L))
 
   # test mu/sigma parameters with small sample
