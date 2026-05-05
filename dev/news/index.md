@@ -116,6 +116,10 @@
 - The overloaded `%%` operator now calls the new
   [`nv_mod()`](https://r-xla.github.io/anvl/dev/reference/nv_mod.md) to
   be consistent with base R.
+- The reverse rule for
+  [`prim_reduce_prod()`](https://r-xla.github.io/anvl/dev/reference/prim_reduce_prod.md)
+  no longer produces `NaN`/`Inf` gradients when the input contains
+  zeros.
 
 ### Bug Fixes
 
