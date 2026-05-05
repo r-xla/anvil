@@ -58,6 +58,7 @@ Math.AnvlBox <- function(x, ...) {
     "sin" = nv_sin(x),
     "floor" = nv_floor(x),
     "ceiling" = nv_ceiling(x),
+    "trunc" = nv_trunc(x),
     "sign" = nv_sign(x),
     "expm1" = nv_expm1(x),
     "log1p" = nv_log1p(x),

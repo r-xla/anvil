@@ -31,15 +31,24 @@ including CPU and GPU.
 require `libprotobuf`. Source installation requires a `C++20` compiler
 and `protoc` (protobuf compiler).
 
+You can install the latest release from r-universe (prebuilt binary) or
+GitHub:
+
 ``` r
-# Install release
-# from r-universe (prebuilt binary)
 install.packages("anvl", repos = c("https://r-xla.r-universe.dev", getOption("repos")))
-# from GitHub (installation from source)
 pak::pak("r-xla/anvl@*release")
-# Install dev version
+```
+
+To get the latest dev version, run:
+
+``` r
 pak::pak("r-xla/anvl")
-# Install CUDA support (linux x86_64): only requires a compatible driver
+```
+
+In order to install CUDA support (linux amd64 only), requiring only a
+compatible driver, run:
+
+``` r
 install.packages("cuda12.8", repos = "https://mlverse.r-universe.dev")
 ```
 

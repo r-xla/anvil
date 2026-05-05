@@ -17,11 +17,8 @@ Scalars are \link[=nv_broadcast_scalars]{broadcast} to the shape of the other op
 Has the same shape and the promoted common data type of the inputs.
 }
 \description{
-Element-wise IEEE-754 remainder of division: the sign of the result equals
-the sign of \code{lhs}, matching C \code{fmod}, JAX \code{lax.rem}, and StableHLO
-\code{remainder}.  For the flooring remainder (sign of the divisor, matching
-base R \code{\%\%} and Python \verb{\%}), use \code{\link[=nv_mod]{nv_mod()}} — that is also what \code{\%\%} on
-\code{AnvlArray} operands dispatches to.
+Element-wise remainder.
+This differs from base R's \code{\%\%}, use \code{\link[=nv_mod]{nv_mod()}}/\code{\%\%} instead.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}

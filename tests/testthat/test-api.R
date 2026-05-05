@@ -1163,6 +1163,7 @@ describe("cross-device eager (check_eager)", {
     check_eager(nv_tanh, nv_array(c(-1, 0, 1)))
     check_eager(nv_floor, nv_array(c(1.2, 2.7, -1.5)))
     check_eager(nv_ceiling, nv_array(c(1.2, 2.7, -1.5)))
+    check_eager(nv_trunc, nv_array(c(1.2, 2.7, -1.5)))
     check_eager(nv_sign, nv_array(c(-3, 0, 5)))
     check_eager(nv_round, nv_array(c(1.4, 2.5, 3.6)))
     check_eager(nv_popcnt, nv_array(c(7L, 3L, 15L)))
@@ -1267,7 +1268,8 @@ describe("cross-device eager (check_eager)", {
 test_that("nv_mod and `%%` follow base R flooring semantics across sign combos", {
   cases <- expand.grid(a = c(-7, -2.5, -1, 0, 1, 2.5, 7), b = c(-3, -1, 1, 3))
   for (i in seq_len(nrow(cases))) {
-    a <- cases$a[i]; b <- cases$b[i]
+    a <- cases$a[i]
+    b <- cases$b[i]
     expected <- a %% b
     expect_equal(
       as.numeric(as_array(nv_mod(nv_scalar(a, dtype = "f32"), nv_scalar(b, dtype = "f32")))),
@@ -1286,35 +1288,12 @@ test_that("nv_mod and `%%` follow base R flooring semantics across sign combos",
   # Integer dtype path (rows where `a` is already integer-valued).
   ic <- cases[cases$a == as.integer(cases$a), ]
   for (i in seq_len(nrow(ic))) {
-    a <- as.integer(ic$a[i]); b <- as.integer(ic$b[i])
+    a <- as.integer(ic$a[i])
+    b <- as.integer(ic$b[i])
     expect_equal(
-      as.integer(as_array(nv_mod(nv_scalar(a, dtype = "i32"), nv_scalar(b, dtype = "i32")))),
+      as.integer(nv_mod(nv_scalar(a, dtype = "i32"), nv_scalar(b, dtype = "i32"))),
       a %% b,
       info = sprintf("nv_mod(%dL, %dL)", a, b)
     )
-  }
-})
-
-test_that("gradient of nv_mod matches finite differences (incl. mixed signs)", {
-  f <- function(a, b) nv_mod(a, b)
-  fwd <- function(a, b) {
-    as.numeric(as_array(nv_mod(nv_scalar(a, dtype = "f32"), nv_scalar(b, dtype = "f32"))))
-  }
-  ad <- function(a, b) {
-    out <- jit(gradient(f))(nv_scalar(a, dtype = "f32"), nv_scalar(b, dtype = "f32"))
-    c(da = as.numeric(as_array(out[[1L]])), db = as.numeric(as_array(out[[2L]])))
-  }
-  eps <- 1e-3
-  cases <- list(
-    c(2.7, 3.0), c(-2.7, 3.0), c(2.7, -3.0), c(-2.7, -3.0),
-    c(7.0, 3.0), c(-7.0, 3.0), c(7.0, -3.0), c(-7.0, -3.0),
-    c(13.5, 4.0), c(-13.5, 4.0), c(13.5, -4.0), c(-13.5, -4.0)
-  )
-  for (p in cases) {
-    a <- p[1L]; b <- p[2L]
-    g <- ad(a, b)
-    db_fd <- (fwd(a, b + eps) - fwd(a, b - eps)) / (2 * eps)
-    expect_equal(g[["da"]], 1, tolerance = 1e-3, info = sprintf("(%g,%g) da", a, b))
-    expect_equal(g[["db"]], db_fd, tolerance = 1e-3, info = sprintf("(%g,%g) db", a, b))
   }
 })

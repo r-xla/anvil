@@ -658,11 +658,8 @@ nv_min <- make_do_binary(prim_min)
 
 #' @title Remainder (Truncating)
 #' @description
-#' Element-wise IEEE-754 remainder of division: the sign of the result equals
-#' the sign of `lhs`, matching C `fmod`, JAX `lax.rem`, and StableHLO
-#' `remainder`.  For the flooring remainder (sign of the divisor, matching
-#' base R `%%` and Python `%`), use [nv_mod()] — that is also what `%%` on
-#' `AnvlArray` operands dispatches to.
+#' Element-wise remainder.
+#' This differs from base R's `%%`, use [`nv_mod()`]/`%%` instead.
 #' @template params_lhs_rhs
 #' @template return_binary
 #' @seealso [nv_mod()] for the flooring remainder, [prim_remainder()] for the
@@ -677,14 +674,8 @@ nv_remainder <- make_do_binary(prim_remainder)
 #' @title Modulo (Flooring Remainder)
 #' @description
 #' Element-wise flooring remainder of division. The sign of the result equals
-#' the sign of `rhs`, matching base R's `%%` operator (which dispatches here
-#' for `AnvlArray` operands), Python's `%`, and `jax.numpy.mod`. For the
-#' truncating remainder (sign of the dividend, matching C `fmod` and StableHLO
-#' `remainder`), use [nv_remainder()].
+#' the sign of `rhs`, matching base R's `%%` operator.
 #'
-#' Built on top of `prim_remainder` plus a sign-correction step, so it works
-#' for both integer and floating-point dtypes and is fully differentiable
-#' w.r.t. both arguments via the chain rule.
 #' @template params_lhs_rhs
 #' @template return_binary
 #' @seealso [nv_remainder()] for truncating remainder, [prim_remainder()] for
@@ -692,22 +683,15 @@ nv_remainder <- make_do_binary(prim_remainder)
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1L, -1L))
 #' y <- nv_array(c(-3L, 3L))
-#' nv_mod(x, y) # matches `c(1L, -1L) %% c(-3L, 3L)` in base R
+#' nv_mod(x, y)
+#' as.vector(x) %% as.vector(y)
 #' @export
 nv_mod <- function(lhs, rhs) {
   args <- nv_promote_to_common(lhs, rhs)
   args <- nv_broadcast_scalars(args[[1L]], args[[2L]])
   lhs <- args[[1L]]
   rhs <- args[[2L]]
-  r <- prim_remainder(lhs, rhs)
-  zero <- nv_fill_like(r, 0)
-  # Adjustment indicator: 1 when r and rhs have opposite signs (and r != 0),
-  # else 0. Cast to the working dtype so we can fold into arithmetic — this
-  # avoids `prim_ifelse`'s non-differentiable predicate path so the chain rule
-  # flows through naturally for both inputs.
-  needs_adj <- nv_and(nv_ne(r, zero), nv_ne(nv_sign(r), nv_sign(rhs)))
-  adj <- nv_convert(needs_adj, dtype(r))
-  nv_add(r, nv_mul(rhs, adj))
+  nv_remainder(nv_remainder(lhs, rhs) + rhs, rhs)
 }
 
 #' @title Logical And
@@ -967,6 +951,23 @@ nv_floor <- prim_floor
 #' ceiling(x)
 #' @export
 nv_ceiling <- prim_ceil
+
+#' @title Truncate
+#' @description
+#' Element-wise truncation (round toward zero). You can also use `trunc()`.
+#'
+#' Computed as `sign(x) * floor(abs(x))`; there is no dedicated primitive.
+#' @template param_operand
+#' @template return_unary
+#' @seealso [nv_floor()], [nv_ceiling()], [nv_round()].
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(1.2, 2.7, -1.5))
+#' trunc(x)
+#' @export
+nv_trunc <- function(operand) {
+  operand <- as_anvl_array(operand)
+  nv_mul(nv_sign(operand), nv_floor(nv_abs(operand)))
+}
 
 #' @title Sign
 #' @description

@@ -185,6 +185,7 @@ reference:
       - nv_sign
       - nv_floor
       - nv_ceiling
+      - nv_trunc
       - nv_round
       - nv_logistic
       - nv_is_finite

@@ -38,6 +38,18 @@ describe("!", {
   })
 })
 
+describe("trunc", {
+  it("rounds toward zero", {
+    expect_jit_equal(
+      {
+        x <- nv_array(c(1.2, 2.7, -1.5, -0.3, 0))
+        trunc(x)
+      },
+      nv_array(c(1, 2, -1, 0, 0))
+    )
+  })
+})
+
 describe("log2", {
   it("computes base-2 logarithm", {
     expect_jit_equal(

@@ -18,20 +18,14 @@ Has the same shape and the promoted common data type of the inputs.
 }
 \description{
 Element-wise flooring remainder of division. The sign of the result equals
-the sign of \code{rhs}, matching base R's \code{\%\%} operator (which dispatches here
-for \code{AnvlArray} operands), Python's \verb{\%}, and \code{jax.numpy.mod}. For the
-truncating remainder (sign of the dividend, matching C \code{fmod} and StableHLO
-\code{remainder}), use \code{\link[=nv_remainder]{nv_remainder()}}.
-
-Built on top of \code{prim_remainder} plus a sign-correction step, so it works
-for both integer and floating-point dtypes and is fully differentiable
-w.r.t. both arguments via the chain rule.
+the sign of \code{rhs}, matching base R's \code{\%\%} operator.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 x <- nv_array(c(1L, -1L))
 y <- nv_array(c(-3L, 3L))
-nv_mod(x, y) # matches `c(1L, -1L) \%\% c(-3L, 3L)` in base R
+nv_mod(x, y)
+as.vector(x) \%\% as.vector(y)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

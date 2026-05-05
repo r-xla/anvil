@@ -83,6 +83,23 @@ test_that("prim_remainder", {
     gen_x = signed_int_nz,
     gen_y = signed_int_nz
   )
+
+  signed_float_nz <- function(shp, dtype) {
+    nelts <- if (!length(shp)) 1L else prod(shp)
+    mag <- runif(nelts, min = 0.1, max = 10)
+    sgn <- sample(c(-1, 1), size = nelts, replace = TRUE)
+    vals <- mag * sgn
+    if (!length(shp)) vals else array(vals, shp)
+  }
+  expect_jit_torch_binary(
+    prim_remainder,
+    torch::torch_fmod,
+    c(2, 3),
+    c(2, 3),
+    dtype = "f32",
+    gen_x = signed_float_nz,
+    gen_y = signed_float_nz
+  )
 })
 
 test_that("prim_and", {

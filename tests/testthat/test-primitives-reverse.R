@@ -849,12 +849,22 @@ test_that("prim_remainder gradient matches finite differences (incl. mixed signs
   }
   eps <- 1e-3
   cases <- list(
-    c(2.7, 3.0), c(-2.7, 3.0), c(2.7, -3.0), c(-2.7, -3.0),
-    c(7.0, 3.0), c(-7.0, 3.0), c(7.0, -3.0), c(-7.0, -3.0),
-    c(13.5, 4.0), c(-13.5, 4.0), c(13.5, -4.0), c(-13.5, -4.0)
+    c(2.7, 3.0),
+    c(-2.7, 3.0),
+    c(2.7, -3.0),
+    c(-2.7, -3.0),
+    c(7.0, 3.0),
+    c(-7.0, 3.0),
+    c(7.0, -3.0),
+    c(-7.0, -3.0),
+    c(13.5, 4.0),
+    c(-13.5, 4.0),
+    c(13.5, -4.0),
+    c(-13.5, -4.0)
   )
   for (p in cases) {
-    a <- p[1L]; b <- p[2L]
+    a <- p[1L]
+    b <- p[2L]
     g <- ad(a, b)
     db_fd <- (fwd(a, b + eps) - fwd(a, b - eps)) / (2 * eps)
     expect_equal(g[["da"]], 1, tolerance = 1e-4, info = sprintf("(%g,%g) da", a, b))
