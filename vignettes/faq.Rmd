@@ -37,13 +37,13 @@ mul_n <- function(x, n) {
 # returns immediately
 x <- nv_array(rnorm(1e8))
 
-# Ensure buffer creation is finished 
+# Ensure buffer creation is finished
 await(x)
 
 # Bad (only measures kernel launch):
-system.time(mul_n(x, 5))
+system.time(mul_n(x, 20))
 # Good (also measures actual computation):
-system.time(await(mul_n(x, 5)))
+system.time(await(mul_n(x, 20)))
 ```
 
 ## How do I control the number of threads used by XLA?
