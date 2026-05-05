@@ -6,7 +6,7 @@ order.
 ## Usage
 
 ``` r
-nv_top_k(x, k, dim = NULL)
+nv_top_k(x, k, dim = NULL, with_indices = FALSE)
 ```
 
 ## Arguments
@@ -28,11 +28,19 @@ nv_top_k(x, k, dim = NULL)
   Dimension along which to take the top `k`. If `NULL` (default), uses
   the last dimension.
 
+- with_indices:
+
+  (`logical(1)`)  
+  If `FALSE` (default), returns just the top-`k` values. If `TRUE`,
+  returns `list(values = ..., indices = ...)` where `indices` is the
+  1-based position of each top-`k` value along `dim` (dtype `i32`).
+
 ## Value
 
-[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
-Same shape as `x` except `dim` has size `k`. Values are sorted in
-decreasing order along `dim`.
+[`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)
+(when `with_indices = FALSE`) or named list of two arrays (when
+`with_indices = TRUE`). Output shape matches `x` with `dim` resized to
+`k`; values are sorted decreasing along `dim`.
 
 ## See also
 
@@ -50,6 +58,21 @@ nv_top_k(x, k = 3L)
 #>  6
 #>  5
 #> [ CPUf32{3} ] 
+nv_top_k(x, k = 3L, with_indices = TRUE)
+#> $values
+#> AnvlArray
+#>  9
+#>  6
+#>  5
+#> [ CPUf32{3} ] 
+#> 
+#> $indices
+#> AnvlArray
+#>  6
+#>  8
+#>  5
+#> [ CPUi32{3} ] 
+#> 
 
 m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
 nv_top_k(m, k = 2L, dim = 2L)

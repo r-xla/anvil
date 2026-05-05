@@ -33,6 +33,14 @@
   and corresponding
   [`rbind()`](https://rdrr.io/r/base/cbind.html)/[`cbind()`](https://rdrr.io/r/base/cbind.html)
   generics.
+- New cumulative primitives and API functions:
+  [`nv_cumsum()`](https://r-xla.github.io/anvl/dev/reference/nv_cumsum.md),
+  [`nv_cumprod()`](https://r-xla.github.io/anvl/dev/reference/nv_cumprod.md),
+  [`nv_cummax()`](https://r-xla.github.io/anvl/dev/reference/nv_cummax.md),
+  [`nv_cummin()`](https://r-xla.github.io/anvl/dev/reference/nv_cummin.md)
+  (and the corresponding `prim_*` primitives).
+  [`prim_cumprod()`](https://r-xla.github.io/anvl/dev/reference/prim_cumprod.md)
+  does not yet have a reverse rule.
 - Added new function
   [`await()`](https://r-xla.github.io/anvl/dev/reference/await.md) that
   blocks until the underlying computation has finished.
@@ -50,26 +58,36 @@
 - New API functions:
   - [`nv_sort()`](https://r-xla.github.io/anvl/dev/reference/nv_sort.md)
     to sort along a dimension.
+
   - [`nv_argsort()`](https://r-xla.github.io/anvl/dev/reference/nv_argsort.md)
     to return the indices that would sort the array.
+
   - [`nv_top_k()`](https://r-xla.github.io/anvl/dev/reference/nv_top_k.md)
     to return the `k` largest values along a dimension.
+
   - [`nv_median()`](https://r-xla.github.io/anvl/dev/reference/nv_median.md)
     to compute the median along a dimension. Also dispatches from base
     R’s [`median()`](https://rdrr.io/r/stats/median.html).
+
   - [`nv_quantile()`](https://r-xla.github.io/anvl/dev/reference/nv_quantile.md)
     to compute quantiles along a dimension.
+
   - [`nv_argmax()`](https://r-xla.github.io/anvl/dev/reference/nv_argmax.md)
     and
     [`nv_argmin()`](https://r-xla.github.io/anvl/dev/reference/nv_argmin.md)
     to find the index of the maximum/minimum along a dimension. Ties are
     broken by returning the smallest index.
+
   - [`nv_select()`](https://r-xla.github.io/anvl/dev/reference/nv_select.md)
-    to select a slice along a dimension by index.
+    to select a slice along a dimension by index. \<\<\<\<\<\<\<
+    final-cumulative
+
+  - ## `nv_flatten()` for flattening a vector
+
   - [`nv_mod()`](https://r-xla.github.io/anvl/dev/reference/nv_mod.md)
     for Module / flooring remainder and
     [`nv_trunc()`](https://r-xla.github.io/anvl/dev/reference/nv_trunc.md)
-    for truncation
+    for truncation \>\>\>\>\>\>\> main
 - [`mean()`](https://rdrr.io/r/base/mean.html) and
   [`median()`](https://rdrr.io/r/stats/median.html) now error when
   called with `na.rm = TRUE`, since anvl arrays do not carry `NA`s.
@@ -94,6 +112,10 @@
 - The overloaded `%%` operator now calls the new
   [`nv_mod()`](https://r-xla.github.io/anvl/dev/reference/nv_mod.md) to
   be consistent with base R.
+
+### Bug Fixes
+
+- The CI now actually runs the torch-comparison tests
 
 ## anvl 0.2.0
 

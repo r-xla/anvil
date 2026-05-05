@@ -101,6 +101,10 @@
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_convert.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_cos.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_crossprod.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_cummax.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_cummin.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_cumprod.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_cumsum.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_device.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_diag.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_div.html</loc></url>
@@ -110,6 +114,7 @@
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_extract_diag.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_eye.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_fill.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_flatten.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_floor.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_ge.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_gt.html</loc></url>
@@ -210,6 +215,10 @@
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_concatenate.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_convert.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_cos.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/prim_cummax.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/prim_cummin.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/prim_cumprod.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/prim_cumsum.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_div.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_dot_general.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/prim_dynamic_slice.html</loc></url>

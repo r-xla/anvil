@@ -1,6 +1,6 @@
 # Primitives Reference
 
-The table below shows all 77 primitives and which rules they implement.
+The table below shows all 81 primitives and which rules they implement.
 Note that a rule might be missing because it was just not added yet, or
 because it does not apply for a specific primitive.
 
@@ -21,6 +21,10 @@ because it does not apply for a specific primitive.
 | concatenate            |     ✓     |   ✓    |    ✓    |
 | convert                |     ✓     |   ✓    |    ✓    |
 | cosine                 |     ✓     |   ✓    |    ✓    |
+| cummax                 |     ✓     |   ✗    |    ✓    |
+| cummin                 |     ✓     |   ✗    |    ✓    |
+| cumprod                |     ✓     |   ✗    |    ✗    |
+| cumsum                 |     ✓     |   ✗    |    ✓    |
 | divide                 |     ✓     |   ✓    |    ✓    |
 | dot_general            |     ✓     |   ✓    |    ✓    |
 | dynamic_slice          |     ✓     |   ✓    |    ✓    |

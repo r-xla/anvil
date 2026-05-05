@@ -83,6 +83,7 @@
 <h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
 <ul><li>Added <code>AnvlArray</code> -&gt; R <code>vector</code> converters <code>as.numeric</code>, <code>as.double</code>, <code>as.integer</code>, <code>as.logical</code> and <code>as.vector</code>.</li>
 <li>New API functions <code><a href="../reference/nv_bind.html">nv_rbind()</a></code> and <code><a href="../reference/nv_bind.html">nv_cbind()</a></code> and corresponding <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code>/<code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind()</a></code> generics.</li>
+<li>New cumulative primitives and API functions: <code><a href="../reference/nv_cumsum.html">nv_cumsum()</a></code>, <code><a href="../reference/nv_cumprod.html">nv_cumprod()</a></code>, <code><a href="../reference/nv_cummax.html">nv_cummax()</a></code>, <code><a href="../reference/nv_cummin.html">nv_cummin()</a></code> (and the corresponding <code>prim_*</code> primitives). <code><a href="../reference/prim_cumprod.html">prim_cumprod()</a></code> does not yet have a reverse rule.</li>
 <li>Added new function <code><a href="../reference/await.html">await()</a></code> that blocks until the underlying computation has finished.</li>
 <li>New tree utilities <code><a href="../reference/map_tree.html">map_tree()</a></code> and <code><a href="../reference/pmap_tree.html">pmap_tree()</a></code> for applying functions leaf-wise over (possibly nested) lists.</li>
 <li>New primitives: <code><a href="../reference/prim_sort.html">prim_sort()</a></code>, <code><a href="../reference/prim_top_k.html">prim_top_k()</a></code>, <code><a href="../reference/prim_reduce.html">prim_reduce()</a></code>, <code><a href="../reference/prim_argmax.html">prim_argmax()</a></code>, <code><a href="../reference/prim_argmin.html">prim_argmin()</a></code>.</li>
@@ -100,9 +101,11 @@
 <li>
 <code><a href="../reference/nv_argmax.html">nv_argmax()</a></code> and <code><a href="../reference/nv_argmin.html">nv_argmin()</a></code> to find the index of the maximum/minimum along a dimension. Ties are broken by returning the smallest index.</li>
 <li>
-<code><a href="../reference/nv_select.html">nv_select()</a></code> to select a slice along a dimension by index.</li>
+<code><a href="../reference/nv_select.html">nv_select()</a></code> to select a slice along a dimension by index. &lt;&lt;&lt;&lt;&lt;&lt;&lt; final-cumulative</li>
+<li><h2 id="nv_flatten-for-flattening-a-vector" class="pkg-version" data-toc-text="development version">
+<code>nv_flatten()</code> for flattening a vector</h2></li>
 <li>
-<code><a href="../reference/nv_mod.html">nv_mod()</a></code> for Module / flooring remainder and <code><a href="../reference/nv_trunc.html">nv_trunc()</a></code> for truncation</li>
+<code><a href="../reference/nv_mod.html">nv_mod()</a></code> for Module / flooring remainder and <code><a href="../reference/nv_trunc.html">nv_trunc()</a></code> for truncation &gt;&gt;&gt;&gt;&gt;&gt;&gt; main</li>
 </ul></li>
 <li>
 <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean()</a></code> and <code><a href="https://rdrr.io/r/stats/median.html" class="external-link">median()</a></code> now error when called with <code>na.rm = TRUE</code>, since anvl arrays do not carry <code>NA</code>s. <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean()</a></code> also rejects non-zero <code>trim</code>.</li>
@@ -115,6 +118,10 @@
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li>The overloaded <code>%%</code> operator now calls the new <code><a href="../reference/nv_mod.html">nv_mod()</a></code> to be consistent with base R.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-development-version-1">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version-1"></a></h3>
+<ul><li>The CI now actually runs the torch-comparison tests</li>
 </ul></div>
 </div>
     <div class="section level2">

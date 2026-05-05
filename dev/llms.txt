@@ -267,6 +267,8 @@ Functions for reshaping and rearranging arrays
 
 - [`nv_reshape()`](https://r-xla.github.io/anvl/dev/reference/nv_reshape.md)
   : Reshape
+- [`nv_flatten()`](https://r-xla.github.io/anvl/dev/reference/nv_flatten.md)
+  : Flatte
 - [`nv_transpose()`](https://r-xla.github.io/anvl/dev/reference/nv_transpose.md)
   [`t(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_transpose.md)
   : Transpose
@@ -429,6 +431,19 @@ Summary statistics over array dimensions
   Variance Reduction
 - [`nv_sd()`](https://r-xla.github.io/anvl/dev/reference/nv_sd.md) :
   Standard Deviation Reduction
+
+### Cumulative Operations
+
+Cumulative (scan) operations along a single dimension
+
+- [`nv_cumsum()`](https://r-xla.github.io/anvl/dev/reference/nv_cumsum.md)
+  : Cumulative Sum
+- [`nv_cumprod()`](https://r-xla.github.io/anvl/dev/reference/nv_cumprod.md)
+  : Cumulative Product
+- [`nv_cummax()`](https://r-xla.github.io/anvl/dev/reference/nv_cummax.md)
+  : Cumulative Maximum
+- [`nv_cummin()`](https://r-xla.github.io/anvl/dev/reference/nv_cummin.md)
+  : Cumulative Minimum
 
 ### Linear Algebra
 
@@ -735,6 +750,14 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Convert
 - [`prim_cos()`](https://r-xla.github.io/anvl/dev/reference/prim_cos.md)
   : Primitive Cosine
+- [`prim_cummax()`](https://r-xla.github.io/anvl/dev/reference/prim_cummax.md)
+  : Primitive Cumulative Maximum
+- [`prim_cummin()`](https://r-xla.github.io/anvl/dev/reference/prim_cummin.md)
+  : Primitive Cumulative Minimum
+- [`prim_cumprod()`](https://r-xla.github.io/anvl/dev/reference/prim_cumprod.md)
+  : Primitive Cumulative Product
+- [`prim_cumsum()`](https://r-xla.github.io/anvl/dev/reference/prim_cumsum.md)
+  : Primitive Cumulative Sum
 - [`prim_div()`](https://r-xla.github.io/anvl/dev/reference/prim_div.md)
   : Primitive Division
 - [`prim_dot_general()`](https://r-xla.github.io/anvl/dev/reference/prim_dot_general.md)
