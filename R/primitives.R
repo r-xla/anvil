@@ -792,7 +792,7 @@ infer_cum <- function(operand, dim) {
     cli_abort("cumulative ops require at least a 1-dimensional operand, but operand is a scalar")
   }
   if (!checkmate::test_integerish(dim, lower = 1, upper = rank, len = 1L)) {
-    cli_abort("{.arg dim} must be a single integer in 1..{rank}, but is {.val {dim}}")
+    cli_abort("{.arg dim} must be a single integer in 1:{rank}, but is {.val {dim}}")
   }
   list(AbstractArray(
     dtype = dtype(operand),
@@ -811,7 +811,7 @@ infer_cum_extreme <- function(operand, dim) {
     cli_abort("cumulative ops require at least a 1-dimensional operand, but operand is a scalar")
   }
   if (!checkmate::test_integerish(dim, lower = 1, upper = rank, len = 1L)) {
-    cli_abort("{.arg dim} must be a single integer in 1..{rank}, but is {.val {dim}}")
+    cli_abort("{.arg dim} must be a single integer in 1:{rank}, but is {.val {dim}}")
   }
   list(
     AbstractArray(
@@ -834,7 +834,7 @@ cum_extreme_op <- function(operand, dim) {
 #' @title Primitive Cumulative Sum
 #' @description
 #' Cumulative sum of array elements along a single dimension.
-#' Output position `j` along `dim` equals the sum of input positions `1..j`.
+#' Output position `j` along `dim` equals the sum of input positions `1:j`.
 #' @template param_prim_operand_any
 #' @template param_prim_cum_dim
 #' @template return_prim_unary
@@ -852,7 +852,7 @@ prim_cumsum <- new_primitive("cumsum", cum_op, static = 2L)
 #' @title Primitive Cumulative Product
 #' @description
 #' Cumulative product of array elements along a single dimension.
-#' Output position `j` along `dim` equals the product of input positions `1..j`.
+#' Output position `j` along `dim` equals the product of input positions `1:j`.
 #' @template param_prim_operand_any
 #' @template param_prim_cum_dim
 #' @template return_prim_unary
@@ -871,8 +871,8 @@ prim_cumprod <- new_primitive("cumprod", cum_op, static = 2L)
 #' @description
 #' Running maximum of array elements along a single dimension along with
 #' the index of the last occurrence of the running maximum.
-#' At output position `j`, the values output is `max(input[1..j])` and the
-#' indices output is the largest `i` in `1..j` with
+#' At output position `j`, the values output is `max(input[1:j])` and the
+#' indices output is the largest `i` in `1:j` with
 #' `input[i] == values[j]` (last-occurrence tiebreak).
 #' @template param_prim_operand_any
 #' @template param_prim_cum_dim
@@ -894,8 +894,8 @@ prim_cummax <- new_primitive("cummax", cum_extreme_op, static = 2L)
 #' @description
 #' Running minimum of array elements along a single dimension along with
 #' the index of the last occurrence of the running minimum.
-#' At output position `j`, the values output is `min(input[1..j])` and the
-#' indices output is the largest `i` in `1..j` with
+#' At output position `j`, the values output is `min(input[1:j])` and the
+#' indices output is the largest `i` in `1:j` with
 #' `input[i] == values[j]` (last-occurrence tiebreak).
 #' @template param_prim_operand_any
 #' @template param_prim_cum_dim

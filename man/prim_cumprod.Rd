@@ -20,7 +20,7 @@ It is ambiguous if the input is ambiguous.
 }
 \description{
 Cumulative product of array elements along a single dimension.
-Output position \code{j} along \code{dim} equals the product of input positions \verb{1..j}.
+Output position \code{j} along \code{dim} equals the product of input positions \code{1:j}.
 }
 \section{Implemented Rules}{
 

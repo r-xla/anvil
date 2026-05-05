@@ -22,8 +22,8 @@ the same shape as \code{operand}.
 \description{
 Running maximum of array elements along a single dimension along with
 the index of the last occurrence of the running maximum.
-At output position \code{j}, the values output is \verb{max(input[1..j])} and the
-indices output is the largest \code{i} in \verb{1..j} with
+At output position \code{j}, the values output is \code{max(input[1:j])} and the
+indices output is the largest \code{i} in \code{1:j} with
 \code{input[i] == values[j]} (last-occurrence tiebreak).
 }
 \section{Implemented Rules}{
