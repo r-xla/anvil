@@ -39,6 +39,8 @@ navbar:
         href: articles/random-numbers.html
       - text: Type Promotion
         href: articles/type-promotion.html
+      - text: Differences from base R
+        href: articles/differences-from-base-r.html
       - text: Efficiency
         href: articles/efficiency.html
       - text: FAQ

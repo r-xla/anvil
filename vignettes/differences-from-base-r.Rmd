@@ -1,0 +1,119 @@
+---
+title: "Differences from base R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Differences from base R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette lists major behavioral differences between {anvl} and base R that R users should be aware of when working with `AnvlArray`s.
+
+```{r}
+library(anvl)
+```
+
+## Row-major vs column-major ordering
+
+R stores matrices and arrays in *column-major* order, while {anvl} (following XLA) uses *row-major* order.
+This makes no difference when you only use shape-aware operations (subsetting, matrix multiplication, etc.) -- the indices are the same in both.
+The difference shows up when you flatten an array, because the underlying data is then traversed in a different order.
+
+Consider the 2x2 matrix below:
+
+```{r}
+m <- matrix(1:4, nrow = 2)
+m
+```
+
+In base R, `as.vector()` flattens it column-by-column, so we get `1, 2, 3, 4`:
+
+```{r}
+as.vector(m)
+```
+
+In {anvl}, reshaping to a length-4 vector traverses the data row-by-row, so we get `1, 3, 2, 4`:
+
+```{r}
+nv_reshape(m, shape = 4)
+```
+
+If you need column-major flattening in {anvl}, transpose first:
+
+```{r}
+nv_reshape(nv_transpose(m), shape = 4)
+```
+
+## No recycling
+
+Base R *recycles* the shorter operand when two vectors of different lengths are combined elementwise:
+
+```{r}
+c(1, 2, 3, 4) + c(1, 2)
+```
+
+{anvl} only auto-broadcasts *scalars* (operands with shape `integer()`).
+Adding a scalar to an array works as you would expect:
+
+```{r}
+nv_array(1:4) + 10L
+```
+
+But combining two non-scalar arrays of different shapes errors, even when one shape is a "tile" of the other:
+
+```{r, error = TRUE}
+nv_array(1:4) + nv_array(1:2)
+```
+
+When two non-scalar arrays differ only by size-1 dimensions (numpy-style broadcasting, e.g. shape `(2, 3)` and `(1, 3)`), use `nv_broadcast_arrays()` to align them explicitly first:
+
+```{r}
+a <- nv_array(matrix(1:6, nrow = 2))
+b <- nv_array(matrix(c(10, 20, 30), nrow = 1))
+xs <- nv_broadcast_arrays(a, b)
+xs[[1]] + xs[[2]]
+```
+
+Note that even `nv_broadcast_arrays()` cannot replicate R's recycling for shapes like `(4)` and `(2)` -- the shapes must be broadcast-compatible in the numpy sense.
+
+## No `NA`s
+
+R has a dedicated missing-value marker (`NA`) for every atomic type.
+{anvl} arrays do not -- there is no representation of "missing" at the XLA level.
+When you convert R values containing `NA` into an `AnvlArray`, the `NA`s are silently turned into the closest available value of the target dtype.
+For floating-point dtypes, that value is `NaN`:
+
+```{r}
+nv_array(NA_real_)
+```
+
+```{r}
+nv_array(c(1, NA, 3))
+```
+
+Round-tripping back to R produces `NaN`, not `NA`:
+
+```{r}
+as_array(nv_array(c(1, NA, 3)))
+```
+
+Integer dtypes have no `NaN`, but `NA_integer_` does *appear* to round-trip:
+
+```{r}
+nv_scalar(NA_integer_) |> as.integer()
+```
+
+This is misleading.
+R represents `NA_integer_` by reserving one specific 32-bit integer value (`-2^31 = -2147483648`) as a sentinel for missingness, leaving only `2^32 - 1` valid integers.
+{anvl} has no notion of missing values and just stores that bit pattern as a regular `i32`.
+The round-trip "works" only because R interprets the same bit pattern back as `NA` -- but inside {anvl} the value behaves like the integer `-2147483648`, and any computation on it (e.g. addition, comparison) will treat it as such rather than propagating missingness.
+The same caveat applies in reverse: if a genuine {anvl} computation produces `-2147483648`, converting back to R will silently turn it into `NA`.
+
+For logical (`bool`) dtype the situation is worst: there is no spare bit pattern at all, so a bare `NA` (which is logical) is silently turned into `TRUE`:
+
+```{r}
+nv_scalar(NA)
+as.logical(nv_scalar(NA))
+```
+
+If your data contains missing values, decide how to handle them *before* converting to an `AnvlArray`.
