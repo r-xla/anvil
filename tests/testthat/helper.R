@@ -83,6 +83,43 @@ if (nzchar(system.file(package = "torch"))) {
   source(system.file("extra-tests", "torch-helpers.R", package = "anvl"))
 }
 
+# Sampler factories used to constrain the input domain when comparing primitives
+# against torch (e.g. `acos` only accepts values in (-1, 1)).  Each returns a
+# `function(shp, dtype)` matching the shape expected by `expect_jit_torch_unary()`
+# / `verify_grad_uni()`.
+# jarl-ignore unused_function: used from inst/extra-tests
+sampler_unif <- function(lower, upper) {
+  function(shp, dtype) {
+    n <- if (length(shp)) prod(shp) else 1L
+    vals <- runif(n, lower, upper)
+    if (length(shp)) array(vals, shp) else vals
+  }
+}
+
+# jarl-ignore unused_function: used from inst/extra-tests
+sampler_rnorm <- function(mean = 0, sd = 1) {
+  function(shp, dtype) {
+    n <- if (length(shp)) prod(shp) else 1L
+    vals <- rnorm(n, mean, sd)
+    if (length(shp)) array(vals, shp) else vals
+  }
+}
+
+# Sample values bounded away from zero (|v| >= min_abs). Useful when a
+# primitive's gradient or domain blows up at 0, e.g. division, `atan2` at the
+# origin, or `reduce_prod`'s per-element gradient.
+# jarl-ignore unused_function: used from inst/extra-tests
+sampler_nonzero <- function(min_abs = 0.5) {
+  function(shp, dtype) {
+    n <- if (length(shp)) prod(shp) else 1L
+    vals <- rnorm(n)
+    small <- abs(vals) < min_abs
+    sgn <- ifelse(vals[small] >= 0, 1, -1)
+    vals[small] <- sgn * (abs(vals[small]) + min_abs)
+    if (length(shp) == 0L) vals else array(vals, shp)
+  }
+}
+
 verify_zero_grad_unary <- function(prim_fn, x, f_wrapper = NULL) {
   # We can only take gradients w.r.t. float arrays, so the outer input is f32
   # and the actual dtype is restored inside the function before calling prim_fn.

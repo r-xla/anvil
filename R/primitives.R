@@ -1783,6 +1783,247 @@ prim_cbrt <- new_primitive("cbrt", make_unary_op(stablehlo::infer_types_cbrt))
 #' @export
 prim_logistic <- new_primitive("logistic", make_unary_op(stablehlo::infer_types_logistic))
 
+#' @title Primitive Arc Cosine
+#' @description
+#' Element-wise inverse cosine.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id acos
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_acos()].
+#' @seealso [nv_acos()], [acos()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' prim_acos(x)
+#' @export
+prim_acos <- new_primitive("acos", make_unary_op(stablehlo::infer_types_acos))
+
+#' @title Primitive Inverse Hyperbolic Cosine
+#' @description
+#' Element-wise inverse hyperbolic cosine.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id acosh
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_acosh()].
+#' @seealso [nv_acosh()], [acosh()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(1, 2, 10))
+#' prim_acosh(x)
+#' @export
+prim_acosh <- new_primitive("acosh", make_unary_op(stablehlo::infer_types_acosh))
+
+#' @title Primitive Arc Sine
+#' @description
+#' Element-wise inverse sine.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id asin
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_asin()].
+#' @seealso [nv_asin()], [asin()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' prim_asin(x)
+#' @export
+prim_asin <- new_primitive("asin", make_unary_op(stablehlo::infer_types_asin))
+
+#' @title Primitive Inverse Hyperbolic Sine
+#' @description
+#' Element-wise inverse hyperbolic sine.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id asinh
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_asinh()].
+#' @seealso [nv_asinh()], [asinh()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' prim_asinh(x)
+#' @export
+prim_asinh <- new_primitive("asinh", make_unary_op(stablehlo::infer_types_asinh))
+
+#' @title Primitive Arc Tangent
+#' @description
+#' Element-wise inverse tangent.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id atan
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_atan()].
+#' @seealso [nv_atan()], [atan()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' prim_atan(x)
+#' @export
+prim_atan <- new_primitive("atan", make_unary_op(stablehlo::infer_types_atan))
+
+#' @title Primitive Inverse Hyperbolic Tangent
+#' @description
+#' Element-wise inverse hyperbolic tangent.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id atanh
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_atanh()].
+#' @seealso [nv_atanh()], [atanh()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-0.5, 0, 0.5))
+#' prim_atanh(x)
+#' @export
+prim_atanh <- new_primitive("atanh", make_unary_op(stablehlo::infer_types_atanh))
+
+#' @title Primitive Hyperbolic Cosine
+#' @description
+#' Element-wise hyperbolic cosine.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id cosh
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_cosh()].
+#' @seealso [nv_cosh()], [cosh()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' prim_cosh(x)
+#' @export
+prim_cosh <- new_primitive("cosh", make_unary_op(stablehlo::infer_types_cosh))
+
+#' @title Primitive Hyperbolic Sine
+#' @description
+#' Element-wise hyperbolic sine.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id sinh
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_sinh()].
+#' @seealso [nv_sinh()], [sinh()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' prim_sinh(x)
+#' @export
+prim_sinh <- new_primitive("sinh", make_unary_op(stablehlo::infer_types_sinh))
+
+#' @title Primitive Digamma
+#' @description
+#' Element-wise digamma function (logarithmic derivative of the gamma function).
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id digamma
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_digamma()].
+#' @seealso [nv_digamma()], [digamma()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(0.5, 1, 2, 5))
+#' prim_digamma(x)
+#' @export
+prim_digamma <- new_primitive("digamma", make_unary_op(stablehlo::infer_types_digamma))
+
+#' @title Primitive Log-Gamma
+#' @description
+#' Element-wise natural logarithm of the absolute value of the gamma function.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id lgamma
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_lgamma()].
+#' @seealso [nv_lgamma()], [lgamma()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(0.5, 1, 2, 5))
+#' prim_lgamma(x)
+#' @export
+prim_lgamma <- new_primitive("lgamma", make_unary_op(stablehlo::infer_types_lgamma))
+
+#' @title Primitive Polygamma
+#' @description
+#' Element-wise polygamma function: the `(n+1)`-th derivative of the
+#' log-gamma function. Both `n` and `x` must have the same shape; `n`
+#' typically holds non-negative integer values.
+#' @param n,x ([`arrayish`])\cr
+#'   Arrayish values of data type floating-point.
+#'   Must have the same shape.
+#' @template return_prim_binary
+#' @templateVar primitive_id polygamma
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_polygamma()].
+#' @seealso [nv_polygamma()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' n <- nv_array(c(1, 1, 2))
+#' x <- nv_array(c(0.5, 1, 2))
+#' prim_polygamma(n, x)
+#' @export
+prim_polygamma <- new_primitive(
+  "polygamma",
+  function(n, x) {
+    infer_fn <- function(n, x) {
+      both_ambiguous <- n$ambiguous && x$ambiguous
+      out <- stablehlo::infer_types_polygamma(at2vt(n), at2vt(x))[[1L]]
+      out <- vt2at(out)
+      out$ambiguous <- both_ambiguous
+      list(out)
+    }
+    graph_desc_add(self, list(n = n, x = x), infer_fn = infer_fn)[[1L]]
+  }
+)
+
+#' @title Primitive Error Function
+#' @description
+#' Element-wise error function `erf(x) = (2 / sqrt(pi)) * integral_0^x exp(-t^2) dt`.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id erf
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_erf()].
+#' @seealso [nv_erf()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' prim_erf(x)
+#' @export
+prim_erf <- new_primitive("erf", make_unary_op(stablehlo::infer_types_erf))
+
+#' @title Primitive Inverse Error Function
+#' @description
+#' Element-wise inverse error function (the inverse of `erf` on `(-1, 1)`).
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id erf_inv
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_erf_inv()].
+#' @seealso [nv_erf_inv()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-0.5, 0, 0.5))
+#' prim_erf_inv(x)
+#' @export
+prim_erf_inv <- new_primitive("erf_inv", make_unary_op(stablehlo::infer_types_erf_inv))
+
+#' @title Primitive Complementary Error Function
+#' @description
+#' Element-wise complementary error function `erfc(x) = 1 - erf(x)`.
+#' @template param_prim_operand_float
+#' @template return_prim_unary
+#' @templateVar primitive_id erfc
+#' @template section_rules
+#' @section StableHLO:
+#' Lowers to [stablehlo::hlo_erfc()].
+#' @seealso [nv_erfc()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(c(-1, 0, 1))
+#' prim_erfc(x)
+#' @export
+prim_erfc <- new_primitive("erfc", make_unary_op(stablehlo::infer_types_erfc))
+
 #' @title Primitive Is Finite
 #' @description
 #' Element-wise check if values are finite (not Inf, -Inf, or NaN).

@@ -481,6 +481,62 @@ prim_logistic[["stablehlo"]] <- function(operand) {
   list(stablehlo::hlo_logistic(operand))
 }
 
+prim_acos[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_acos(operand))
+}
+
+prim_acosh[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_acosh(operand))
+}
+
+prim_asin[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_asin(operand))
+}
+
+prim_asinh[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_asinh(operand))
+}
+
+prim_atan[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_atan(operand))
+}
+
+prim_atanh[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_atanh(operand))
+}
+
+prim_cosh[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_cosh(operand))
+}
+
+prim_sinh[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_sinh(operand))
+}
+
+prim_digamma[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_digamma(operand))
+}
+
+prim_lgamma[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_lgamma(operand))
+}
+
+prim_polygamma[["stablehlo"]] <- function(n, x) {
+  list(stablehlo::hlo_polygamma(n, x))
+}
+
+prim_erf[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_erf(operand))
+}
+
+prim_erf_inv[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_erf_inv(operand))
+}
+
+prim_erfc[["stablehlo"]] <- function(operand) {
+  list(stablehlo::hlo_erfc(operand))
+}
+
 prim_is_finite[["stablehlo"]] <- function(operand) {
   list(stablehlo::hlo_is_finite(operand))
 }

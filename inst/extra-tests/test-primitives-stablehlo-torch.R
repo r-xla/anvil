@@ -276,6 +276,81 @@ test_that("prim_logistic", {
   expect_jit_torch_unary(prim_logistic, torch::torch_sigmoid, c(2, 3))
 })
 
+# CHLO ops: inverse trig, hyperbolic, gamma family.
+# `sampler_unif()` comes from `tests/testthat/helper.R`.
+
+test_that("prim_acos", {
+  expect_jit_torch_unary(prim_acos, torch::torch_acos, c(2, 3), gen = sampler_unif(-0.95, 0.95))
+})
+
+test_that("prim_acosh", {
+  expect_jit_torch_unary(prim_acosh, torch::torch_acosh, c(2, 3), gen = sampler_unif(1.5, 5))
+})
+
+test_that("prim_asin", {
+  expect_jit_torch_unary(prim_asin, torch::torch_asin, c(2, 3), gen = sampler_unif(-0.95, 0.95))
+})
+
+test_that("prim_asinh", {
+  expect_jit_torch_unary(prim_asinh, torch::torch_asinh, c(2, 3))
+})
+
+test_that("prim_atan", {
+  expect_jit_torch_unary(prim_atan, torch::torch_atan, c(2, 3))
+})
+
+test_that("prim_atanh", {
+  expect_jit_torch_unary(prim_atanh, torch::torch_atanh, c(2, 3), gen = sampler_unif(-0.95, 0.95))
+})
+
+test_that("prim_cosh", {
+  expect_jit_torch_unary(prim_cosh, torch::torch_cosh, c(2, 3))
+})
+
+test_that("prim_sinh", {
+  expect_jit_torch_unary(prim_sinh, torch::torch_sinh, c(2, 3))
+})
+
+test_that("prim_digamma", {
+  expect_jit_torch_unary(prim_digamma, torch::torch_digamma, c(2, 3), gen = sampler_unif(0.5, 5))
+})
+
+test_that("prim_lgamma", {
+  shp <- c(2, 3)
+  x <- sampler_unif(0.5, 5)(shp, "f32")
+  out_nv <- jit(prim_lgamma)(nv_array(x, dtype = "f32"))
+  out_th <- torch::torch_lgamma(torch::torch_tensor(x, dtype = torch::torch_float32()))
+  expect_equal(as_array(out_nv), as_array_torch(out_th), tolerance = 1e-5)
+})
+
+test_that("prim_polygamma", {
+  shp <- c(2, 3)
+  x <- sampler_unif(0.5, 5)(shp, "f32")
+  for (n_val in c(0L, 1L, 2L)) {
+    n_arr <- array(rep(n_val, prod(shp)), shp)
+    out_nv <- jit(prim_polygamma)(
+      nv_array(n_arr, dtype = "f32"),
+      nv_array(x, dtype = "f32")
+    )
+    out_th <- torch::torch_polygamma(n_val, torch::torch_tensor(x, dtype = torch::torch_float32()))
+    expect_equal(as_array(out_nv), as_array_torch(out_th), tolerance = 1e-5)
+  }
+})
+
+# erf / erfc / erf_inv take values everywhere; erf_inv only on (-1, 1).
+
+test_that("prim_erf", {
+  expect_jit_torch_unary(prim_erf, torch::torch_erf, c(2, 3))
+})
+
+test_that("prim_erfc", {
+  expect_jit_torch_unary(prim_erfc, torch::torch_erfc, c(2, 3))
+})
+
+test_that("prim_erf_inv", {
+  expect_jit_torch_unary(prim_erf_inv, torch::torch_erfinv, c(2, 3), gen = sampler_unif(-0.95, 0.95))
+})
+
 describe("prim_chol", {
   it("lower = TRUE", {
     A <- crossprod(matrix(rnorm(9), 3, 3)) + diag(3)
