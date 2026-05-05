@@ -66,6 +66,10 @@
     broken by returning the smallest index.
   - [`nv_select()`](https://r-xla.github.io/anvl/dev/reference/nv_select.md)
     to select a slice along a dimension by index.
+  - [`nv_mod()`](https://r-xla.github.io/anvl/dev/reference/nv_mod.md)
+    for Module / flooring remainder and
+    [`nv_trunc()`](https://r-xla.github.io/anvl/dev/reference/nv_trunc.md)
+    for truncation
 - [`mean()`](https://rdrr.io/r/base/mean.html) and
   [`median()`](https://rdrr.io/r/stats/median.html) now error when
   called with `na.rm = TRUE`, since anvl arrays do not carry `NA`s.
@@ -84,6 +88,12 @@
   [`nv_mean()`](https://r-xla.github.io/anvl/dev/reference/nv_mean.md)
   now default `dims = NULL`, which reduces over all dimensions and
   returns a scalar. Previously, `dims` was required.
+
+### Bug Fixes
+
+- The overloaded `%%` operator now calls the new
+  [`nv_mod()`](https://r-xla.github.io/anvl/dev/reference/nv_mod.md) to
+  be consistent with base R.
 
 ## anvl 0.2.0
 

@@ -131,6 +131,7 @@
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_mean.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_median.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_min.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_mod.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_mul.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_ne.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_negate.html</loc></url>
@@ -186,6 +187,7 @@
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_transpose.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_tril.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_triu.html</loc></url>
+<url><loc>https://r-xla.github.io/anvl/dev/reference/nv_trunc.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_unserialize.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_unsqueeze.html</loc></url>
 <url><loc>https://r-xla.github.io/anvl/dev/reference/nv_var.html</loc></url>

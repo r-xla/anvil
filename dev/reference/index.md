@@ -164,7 +164,9 @@ Basic arithmetic operations on arrays
 - [`nv_negate()`](https://r-xla.github.io/anvl/dev/reference/nv_negate.md)
   : Negation
 - [`nv_remainder()`](https://r-xla.github.io/anvl/dev/reference/nv_remainder.md)
-  : Remainder
+  : Remainder (Truncating)
+- [`nv_mod()`](https://r-xla.github.io/anvl/dev/reference/nv_mod.md) :
+  Modulo (Flooring Remainder)
 
 ### Comparison Operations
 
@@ -223,6 +225,8 @@ Mathematical and trigonometric functions
   : Floor
 - [`nv_ceiling()`](https://r-xla.github.io/anvl/dev/reference/nv_ceiling.md)
   : Ceiling
+- [`nv_trunc()`](https://r-xla.github.io/anvl/dev/reference/nv_trunc.md)
+  : Truncate
 - [`nv_round()`](https://r-xla.github.io/anvl/dev/reference/nv_round.md)
   : Round
 - [`nv_logistic()`](https://r-xla.github.io/anvl/dev/reference/nv_logistic.md)

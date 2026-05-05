@@ -1,13 +1,12 @@
-# Remainder (Truncating)
+# Modulo (Flooring Remainder)
 
-Element-wise remainder. This differs from base R's `%%`, use
-[`nv_mod()`](https://r-xla.github.io/anvl/dev/reference/nv_mod.md)/`%%`
-instead.
+Element-wise flooring remainder of division. The sign of the result
+equals the sign of `rhs`, matching base R's `%%` operator.
 
 ## Usage
 
 ``` r
-nv_remainder(lhs, rhs)
+nv_mod(lhs, rhs)
 ```
 
 ## Arguments
@@ -28,20 +27,21 @@ Has the same shape and the promoted common data type of the inputs.
 
 ## See also
 
-[`nv_mod()`](https://r-xla.github.io/anvl/dev/reference/nv_mod.md) for
-the flooring remainder,
+[`nv_remainder()`](https://r-xla.github.io/anvl/dev/reference/nv_remainder.md)
+for truncating remainder,
 [`prim_remainder()`](https://r-xla.github.io/anvl/dev/reference/prim_remainder.md)
 for the underlying primitive.
 
 ## Examples
 
 ``` r
-x <- nv_array(c(7, 8, 9))
-y <- nv_array(c(3, 3, 4))
-nv_remainder(x, y)
+x <- nv_array(c(1L, -1L))
+y <- nv_array(c(-3L, 3L))
+nv_mod(x, y)
 #> AnvlArray
-#>  1
-#>  2
-#>  1
-#> [ CPUf32{3} ] 
+#>  -2
+#>   2
+#> [ CPUi32{2} ] 
+as.vector(x) %% as.vector(y)
+#> [1] -2  2
 ```

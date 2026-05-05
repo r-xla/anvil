@@ -101,6 +101,8 @@
 <code><a href="../reference/nv_argmax.html">nv_argmax()</a></code> and <code><a href="../reference/nv_argmin.html">nv_argmin()</a></code> to find the index of the maximum/minimum along a dimension. Ties are broken by returning the smallest index.</li>
 <li>
 <code><a href="../reference/nv_select.html">nv_select()</a></code> to select a slice along a dimension by index.</li>
+<li>
+<code><a href="../reference/nv_mod.html">nv_mod()</a></code> for Module / flooring remainder and <code><a href="../reference/nv_trunc.html">nv_trunc()</a></code> for truncation</li>
 </ul></li>
 <li>
 <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean()</a></code> and <code><a href="https://rdrr.io/r/stats/median.html" class="external-link">median()</a></code> now error when called with <code>na.rm = TRUE</code>, since anvl arrays do not carry <code>NA</code>s. <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean()</a></code> also rejects non-zero <code>trim</code>.</li>
@@ -109,6 +111,10 @@
 <h3 id="other-development-version">Other<a class="anchor" aria-label="anchor" href="#other-development-version"></a></h3>
 <ul><li>
 <code><a href="../reference/nv_reduce_sum.html">nv_reduce_sum()</a></code>, <code><a href="../reference/nv_reduce_prod.html">nv_reduce_prod()</a></code>, <code><a href="../reference/nv_reduce_max.html">nv_reduce_max()</a></code>, <code><a href="../reference/nv_reduce_min.html">nv_reduce_min()</a></code>, <code><a href="../reference/nv_reduce_any.html">nv_reduce_any()</a></code>, <code><a href="../reference/nv_reduce_all.html">nv_reduce_all()</a></code> and <code><a href="../reference/nv_mean.html">nv_mean()</a></code> now default <code>dims = NULL</code>, which reduces over all dimensions and returns a scalar. Previously, <code>dims</code> was required.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-development-version">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<ul><li>The overloaded <code>%%</code> operator now calls the new <code><a href="../reference/nv_mod.html">nv_mod()</a></code> to be consistent with base R.</li>
 </ul></div>
 </div>
     <div class="section level2">
