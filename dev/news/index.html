@@ -81,7 +81,9 @@
 </ul></div>
 <div class="section level3">
 <h3 id="new-features-development-version">New Features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
-<ul><li>Added <code>AnvlArray</code> -&gt; R <code>vector</code> converters <code>as.numeric</code>, <code>as.double</code>, <code>as.integer</code>, <code>as.logical</code> and <code>as.vector</code>.</li>
+<ul><li>
+<code><a href="../reference/AnvlArray.html">nv_array()</a></code> gained a <code>byrow</code> argument that fills the array from an R object in row-major order, mirroring <code>matrix(byrow = TRUE)</code> (<a href="https://github.com/r-xla/anvl/issues/165" class="external-link">#165</a>).</li>
+<li>Added <code>AnvlArray</code> -&gt; R <code>vector</code> converters <code>as.numeric</code>, <code>as.double</code>, <code>as.integer</code>, <code>as.logical</code> and <code>as.vector</code>.</li>
 <li>New API functions <code><a href="../reference/nv_bind.html">nv_rbind()</a></code> and <code><a href="../reference/nv_bind.html">nv_cbind()</a></code> and corresponding <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code>/<code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind()</a></code> generics.</li>
 <li>New cumulative primitives and API functions: <code><a href="../reference/nv_cumsum.html">nv_cumsum()</a></code>, <code><a href="../reference/nv_cumprod.html">nv_cumprod()</a></code>, <code><a href="../reference/nv_cummax.html">nv_cummax()</a></code>, <code><a href="../reference/nv_cummin.html">nv_cummin()</a></code> (and the corresponding <code>prim_*</code> primitives). <code><a href="../reference/prim_cumprod.html">prim_cumprod()</a></code> does not yet have a reverse rule.</li>
 <li>Added new function <code><a href="../reference/await.html">await()</a></code> that blocks until the underlying computation has finished.</li>

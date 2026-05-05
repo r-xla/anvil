@@ -87,7 +87,8 @@ Its type is determined by a data type and a shape.</p>
 <span>  device <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  shape <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ambiguous <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  backend <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  backend <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  byrow <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">nv_scalar</span><span class="op">(</span><span class="va">data</span>, dtype <span class="op">=</span> <span class="cn">NULL</span>, device <span class="op">=</span> <span class="cn">NULL</span>, ambiguous <span class="op">=</span> <span class="cn">NULL</span>, backend <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
@@ -166,6 +167,15 @@ Defaults to <code><a href="default_backend.html">default_backend()</a></code>.
 Must not be specified inside <code><a href="jit.html">jit()</a></code>.</p></dd>
 
 
+<dt id="arg-byrow">byrow<a class="anchor" aria-label="anchor" href="#arg-byrow"></a></dt>
+<dd><p>(<code>logical(1)</code>)<br>
+When constructing from an R object and the result has at least two
+dimensions, fill the array in row-major order rather than the
+default column-major order, mirroring <code><a href="https://rdrr.io/r/base/matrix.html" class="external-link">base::matrix()</a></code>'s <code>byrow</code>.
+Only allowed when <code>data</code> is an R object — passing an existing
+<code>AnvlArray</code> together with <code>byrow = TRUE</code> is an error.</p></dd>
+
+
 <dt id="arg-like">like<a class="anchor" aria-label="anchor" href="#arg-like"></a></dt>
 <dd><p>(<code>AnvlArray</code>)<br>
 An existing array. Any of <code>dtype</code>, <code>device</code>, <code>shape</code>, <code>ambiguous</code>, and
@@ -225,6 +235,13 @@ Serialize/deserialize arrays to/from raw vectors.</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span> AnvlArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1 3 5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  2 4 6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{2,3} ] </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># A 2x3 matrix filled by row, like `matrix(1:6, 2, 3, byrow = TRUE)`.</span></span></span>
+<span class="r-in"><span><span class="fu">nv_array</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">3L</span><span class="op">)</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AnvlArray</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1 2 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4 5 6</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [ CPUi32{2,3} ] </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A scalar array.</span></span></span>

@@ -24,6 +24,10 @@
 
 ### New Features
 
+- [`nv_array()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  gained a `byrow` argument that fills the array from an R object in
+  row-major order, mirroring `matrix(byrow = TRUE)`
+  ([\#165](https://github.com/r-xla/anvl/issues/165)).
 - Added `AnvlArray` -\> R `vector` converters `as.numeric`, `as.double`,
   `as.integer`, `as.logical` and `as.vector`.
 - New API functions

@@ -12,7 +12,8 @@ nv_array(
   device = NULL,
   shape = NULL,
   ambiguous = NULL,
-  backend = NULL
+  backend = NULL,
+  byrow = FALSE
 )
 
 nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL)
@@ -97,6 +98,16 @@ nv_empty_like(
   Must not be specified inside
   [`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md).
 
+- byrow:
+
+  (`logical(1)`)  
+  When constructing from an R object and the result has at least two
+  dimensions, fill the array in row-major order rather than the default
+  column-major order, mirroring
+  [`base::matrix()`](https://rdrr.io/r/base/matrix.html)'s `byrow`. Only
+  allowed when `data` is an R object — passing an existing `AnvlArray`
+  together with `byrow = TRUE` is an error.
+
 - like:
 
   (`AnvlArray`)  
@@ -177,6 +188,13 @@ nv_array(1:6, shape = c(2L, 3L))
 #> AnvlArray
 #>  1 3 5
 #>  2 4 6
+#> [ CPUi32{2,3} ] 
+
+# A 2x3 matrix filled by row, like `matrix(1:6, 2, 3, byrow = TRUE)`.
+nv_array(1:6, shape = c(2L, 3L), byrow = TRUE)
+#> AnvlArray
+#>  1 2 3
+#>  4 5 6
 #> [ CPUi32{2,3} ] 
 
 # A scalar array.
