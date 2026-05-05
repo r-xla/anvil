@@ -9,65 +9,42 @@ vignette: >
 
 ## Why is my function slow?
 
-If a jitted `anvl` function feels sluggish, the cause is usually compilation
-or startup overhead rather than the computation itself.
-
-- **First-call compilation.** The first call with a given combination of input
-  types and shapes traces the function and compiles it through XLA. This can
-  take anywhere from milliseconds to seconds (or more for large functions).
-  Subsequent calls with matching inputs hit the compilation cache and skip
-  this step -- see [The compilation cache](jit.html#the-compilation-cache)
-  in the JIT Deep Dive.
-- **Recompilation on every call.** If the input shapes vary between calls,
-  every new shape combination triggers a fresh recompile and you can end up
-  spending more time compiling than computing. Padding inputs up to fixed
-  bucket sizes lets all calls share one cache entry; see
-  [Padding inputs to avoid recompilation](efficiency.html#padding-inputs-to-avoid-recompilation)
-  in the Efficiency vignette.
-- **Eager mode.** Running outside `jit()` compiles many tiny XLA programs --
-  one per primitive call -- which adds per-call overhead and gives the
-  compiler no room for whole-program optimization. See
-  [Eager vs. JIT](efficiency.html#eager-vs-jit) for the trade-off.
-- **Startup costs.** Loading `anvl` initializes the PJRT runtime and the
-  selected backend (CPU, CUDA, ...). This is a one-time cost per R session,
-  but it shows up if you benchmark a script that only runs the function once.
-- **Misleading benchmarks.** Compiled calls return asynchronously, so timing
-  a single call without forcing the result (e.g. via `as_array()` or
-  `print()`) measures dispatch, not computation. See
-  [Asynchronous execution](efficiency.html#asynchronous-execution).
-
-The [Efficiency](efficiency.html) vignette gathers the rest of the levers
-(CUDA, data types, memory donation) in one place.
+There can be many reasons why an {anvl} program is not as fast as one might
+expect.
+See the [Efficiency](efficiency.html) vignette which explains various
+pitfals and levers for optimizing program runtime.
 
 ## Why does timing my function show suspiciously fast results?
 
-If `system.time()` or a single `Sys.time()` delta reports microseconds for
-a computation you expected to take much longer, you are most likely measuring
-dispatch instead of execution. Calls into a compiled `anvl` function return
-*before* the computation has finished -- XLA schedules the work on the
-device (CPU threads or GPU) and hands control back to R immediately. The
-returned `AnvlArray` is essentially a promise.
+Many operations {anvl} happen asynchronously under the hood (c.f.
+[Asynchronous execution](efficiency.html#asynchronous-execution)).
+In order to properly time an {anvl} program, you therefore need to ensure that:
 
-To get a real timing, force the result before stopping the clock so R has to
-wait for the device to finish. `as_array()` and `print()` both trigger this
-synchronization; querying metadata like `dtype()`, `shape()`, or `device()`
-does not.
+1. All creation of buffers used in the benchmark function have finisehd.
+2. The results of the computation are awaited.
 
-```{r, eval = FALSE}
-# Misleading: returns once the work is queued, not once it's done.
-system.time(y <- f(x))
 
-# Correct: as_array() blocks until the computation is finished.
-system.time({
-  y <- f(x)
-  as_array(y)
-})
+```{r}
+library(anvl)
+
+mul_n <- function(x, n) {
+  for (i in 1:n) {
+    x <- x * x
+  }
+  return(x)
+}
+
+# returns immediately
+x <- nv_array(rnorm(1e8))
+
+# Ensure buffer creation is finished 
+await(x)
+
+# Bad (only measures kernel launch):
+system.time(mul_n(x, 5))
+# Good (also measures actual computation):
+system.time(await(mul_n(x, 5)))
 ```
-
-See [Asynchronous execution](efficiency.html#asynchronous-execution) in the
-Efficiency vignette for why this design is desirable (it lets the CPU prepare
-the next batch while the GPU is still computing the previous one) and how to
-avoid accidentally synchronizing inside hot loops.
 
 ## How do I control the number of threads used by XLA?
 
