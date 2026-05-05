@@ -217,10 +217,26 @@ Mathematical and trigonometric functions
   Cosine
 - [`nv_tan()`](https://r-xla.github.io/anvl/dev/reference/nv_tan.md) :
   Tangent
-- [`nv_tanh()`](https://r-xla.github.io/anvl/dev/reference/nv_tanh.md) :
-  Hyperbolic Tangent
+- [`nv_asin()`](https://r-xla.github.io/anvl/dev/reference/nv_asin.md) :
+  Arc Sine
+- [`nv_acos()`](https://r-xla.github.io/anvl/dev/reference/nv_acos.md) :
+  Arc Cosine
+- [`nv_atan()`](https://r-xla.github.io/anvl/dev/reference/nv_atan.md) :
+  Arc Tangent
 - [`nv_atan2()`](https://r-xla.github.io/anvl/dev/reference/nv_atan2.md)
   : Arctangent 2
+- [`nv_sinh()`](https://r-xla.github.io/anvl/dev/reference/nv_sinh.md) :
+  Hyperbolic Sine
+- [`nv_cosh()`](https://r-xla.github.io/anvl/dev/reference/nv_cosh.md) :
+  Hyperbolic Cosine
+- [`nv_tanh()`](https://r-xla.github.io/anvl/dev/reference/nv_tanh.md) :
+  Hyperbolic Tangent
+- [`nv_asinh()`](https://r-xla.github.io/anvl/dev/reference/nv_asinh.md)
+  : Inverse Hyperbolic Sine
+- [`nv_acosh()`](https://r-xla.github.io/anvl/dev/reference/nv_acosh.md)
+  : Inverse Hyperbolic Cosine
+- [`nv_atanh()`](https://r-xla.github.io/anvl/dev/reference/nv_atanh.md)
+  : Inverse Hyperbolic Tangent
 - [`nv_sign()`](https://r-xla.github.io/anvl/dev/reference/nv_sign.md) :
   Sign
 - [`nv_floor()`](https://r-xla.github.io/anvl/dev/reference/nv_floor.md)
@@ -233,6 +249,18 @@ Mathematical and trigonometric functions
   : Round
 - [`nv_logistic()`](https://r-xla.github.io/anvl/dev/reference/nv_logistic.md)
   : Logistic (Sigmoid)
+- [`nv_erf()`](https://r-xla.github.io/anvl/dev/reference/nv_erf.md) :
+  Error Function
+- [`nv_erfc()`](https://r-xla.github.io/anvl/dev/reference/nv_erfc.md) :
+  Complementary Error Function
+- [`nv_erf_inv()`](https://r-xla.github.io/anvl/dev/reference/nv_erf_inv.md)
+  : Inverse Error Function
+- [`nv_digamma()`](https://r-xla.github.io/anvl/dev/reference/nv_digamma.md)
+  : Digamma
+- [`nv_lgamma()`](https://r-xla.github.io/anvl/dev/reference/nv_lgamma.md)
+  : Log-Gamma
+- [`nv_polygamma()`](https://r-xla.github.io/anvl/dev/reference/nv_polygamma.md)
+  : Polygamma
 - [`nv_is_finite()`](https://r-xla.github.io/anvl/dev/reference/nv_is_finite.md)
   [`is.finite(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_is_finite.md)
   : Is Finite
@@ -569,6 +597,10 @@ Low-level primitive operations (prim\_\* functions)
 
 - [`prim_abs()`](https://r-xla.github.io/anvl/dev/reference/prim_abs.md)
   : Primitive Absolute Value
+- [`prim_acos()`](https://r-xla.github.io/anvl/dev/reference/prim_acos.md)
+  : Primitive Arc Cosine
+- [`prim_acosh()`](https://r-xla.github.io/anvl/dev/reference/prim_acosh.md)
+  : Primitive Inverse Hyperbolic Cosine
 - [`prim_add()`](https://r-xla.github.io/anvl/dev/reference/prim_add.md)
   : Primitive Addition
 - [`prim_and()`](https://r-xla.github.io/anvl/dev/reference/prim_and.md)
@@ -577,8 +609,16 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Argmax
 - [`prim_argmin()`](https://r-xla.github.io/anvl/dev/reference/prim_argmin.md)
   : Primitive Argmin
+- [`prim_asin()`](https://r-xla.github.io/anvl/dev/reference/prim_asin.md)
+  : Primitive Arc Sine
+- [`prim_asinh()`](https://r-xla.github.io/anvl/dev/reference/prim_asinh.md)
+  : Primitive Inverse Hyperbolic Sine
+- [`prim_atan()`](https://r-xla.github.io/anvl/dev/reference/prim_atan.md)
+  : Primitive Arc Tangent
 - [`prim_atan2()`](https://r-xla.github.io/anvl/dev/reference/prim_atan2.md)
   : Primitive Atan2
+- [`prim_atanh()`](https://r-xla.github.io/anvl/dev/reference/prim_atanh.md)
+  : Primitive Inverse Hyperbolic Tangent
 - [`prim_bitcast_convert()`](https://r-xla.github.io/anvl/dev/reference/prim_bitcast_convert.md)
   : Primitive Bitcast Convert
 - [`prim_broadcast_in_dim()`](https://r-xla.github.io/anvl/dev/reference/prim_broadcast_in_dim.md)
@@ -597,6 +637,8 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Convert
 - [`prim_cos()`](https://r-xla.github.io/anvl/dev/reference/prim_cos.md)
   : Primitive Cosine
+- [`prim_cosh()`](https://r-xla.github.io/anvl/dev/reference/prim_cosh.md)
+  : Primitive Hyperbolic Cosine
 - [`prim_cummax()`](https://r-xla.github.io/anvl/dev/reference/prim_cummax.md)
   : Primitive Cumulative Maximum
 - [`prim_cummin()`](https://r-xla.github.io/anvl/dev/reference/prim_cummin.md)
@@ -605,6 +647,8 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Cumulative Product
 - [`prim_cumsum()`](https://r-xla.github.io/anvl/dev/reference/prim_cumsum.md)
   : Primitive Cumulative Sum
+- [`prim_digamma()`](https://r-xla.github.io/anvl/dev/reference/prim_digamma.md)
+  : Primitive Digamma
 - [`prim_div()`](https://r-xla.github.io/anvl/dev/reference/prim_div.md)
   : Primitive Division
 - [`prim_dot_general()`](https://r-xla.github.io/anvl/dev/reference/prim_dot_general.md)
@@ -615,6 +659,12 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Dynamic Update Slice
 - [`prim_eq()`](https://r-xla.github.io/anvl/dev/reference/prim_eq.md) :
   Primitive Equal
+- [`prim_erf()`](https://r-xla.github.io/anvl/dev/reference/prim_erf.md)
+  : Primitive Error Function
+- [`prim_erf_inv()`](https://r-xla.github.io/anvl/dev/reference/prim_erf_inv.md)
+  : Primitive Inverse Error Function
+- [`prim_erfc()`](https://r-xla.github.io/anvl/dev/reference/prim_erfc.md)
+  : Primitive Complementary Error Function
 - [`prim_exp()`](https://r-xla.github.io/anvl/dev/reference/prim_exp.md)
   : Primitive Exponential
 - [`prim_expm1()`](https://r-xla.github.io/anvl/dev/reference/prim_expm1.md)
@@ -639,6 +689,8 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Is Finite
 - [`prim_le()`](https://r-xla.github.io/anvl/dev/reference/prim_le.md) :
   Primitive Less Equal
+- [`prim_lgamma()`](https://r-xla.github.io/anvl/dev/reference/prim_lgamma.md)
+  : Primitive Log-Gamma
 - [`prim_log()`](https://r-xla.github.io/anvl/dev/reference/prim_log.md)
   : Primitive Logarithm
 - [`prim_log1p()`](https://r-xla.github.io/anvl/dev/reference/prim_log1p.md)
@@ -663,6 +715,8 @@ Low-level primitive operations (prim\_\* functions)
   Primitive Or
 - [`prim_pad()`](https://r-xla.github.io/anvl/dev/reference/prim_pad.md)
   : Primitive Pad
+- [`prim_polygamma()`](https://r-xla.github.io/anvl/dev/reference/prim_polygamma.md)
+  : Primitive Polygamma
 - [`prim_popcnt()`](https://r-xla.github.io/anvl/dev/reference/prim_popcnt.md)
   : Primitive Population Count
 - [`prim_pow()`](https://r-xla.github.io/anvl/dev/reference/prim_pow.md)
@@ -707,6 +761,8 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive Sign
 - [`prim_sin()`](https://r-xla.github.io/anvl/dev/reference/prim_sin.md)
   : Primitive Sine
+- [`prim_sinh()`](https://r-xla.github.io/anvl/dev/reference/prim_sinh.md)
+  : Primitive Hyperbolic Sine
 - [`prim_sort()`](https://r-xla.github.io/anvl/dev/reference/prim_sort.md)
   : Primitive Sort
 - [`prim_sqrt()`](https://r-xla.github.io/anvl/dev/reference/prim_sqrt.md)

@@ -37,6 +37,9 @@
   and corresponding
   [`rbind()`](https://rdrr.io/r/base/cbind.html)/[`cbind()`](https://rdrr.io/r/base/cbind.html)
   generics.
+- New functionality (primitives and corresponding `nv_<op>` functions:
+  `acos`, `acosh`, `asin`, `asinh`, `atan`, `atanh`, `cosh`, `sinh`,
+  `digamma`, `lgamma`, `polygamma`, `erf`, `erf_inv`, `erfc`.
 - New cumulative primitives and API functions:
   [`nv_cumsum()`](https://r-xla.github.io/anvl/dev/reference/nv_cumsum.md),
   [`nv_cumprod()`](https://r-xla.github.io/anvl/dev/reference/nv_cumprod.md),
@@ -62,36 +65,28 @@
 - New API functions:
   - [`nv_sort()`](https://r-xla.github.io/anvl/dev/reference/nv_sort.md)
     to sort along a dimension.
-
   - [`nv_argsort()`](https://r-xla.github.io/anvl/dev/reference/nv_argsort.md)
     to return the indices that would sort the array.
-
   - [`nv_top_k()`](https://r-xla.github.io/anvl/dev/reference/nv_top_k.md)
     to return the `k` largest values along a dimension.
-
   - [`nv_median()`](https://r-xla.github.io/anvl/dev/reference/nv_median.md)
     to compute the median along a dimension. Also dispatches from base
     R’s [`median()`](https://rdrr.io/r/stats/median.html).
-
   - [`nv_quantile()`](https://r-xla.github.io/anvl/dev/reference/nv_quantile.md)
     to compute quantiles along a dimension.
-
   - [`nv_argmax()`](https://r-xla.github.io/anvl/dev/reference/nv_argmax.md)
     and
     [`nv_argmin()`](https://r-xla.github.io/anvl/dev/reference/nv_argmin.md)
     to find the index of the maximum/minimum along a dimension. Ties are
     broken by returning the smallest index.
-
   - [`nv_select()`](https://r-xla.github.io/anvl/dev/reference/nv_select.md)
-    to select a slice along a dimension by index. \<\<\<\<\<\<\<
-    final-cumulative
-
-  - ## `nv_flatten()` for flattening a vector
-
+    to select a slice along a dimension by index.
+  - [`nv_flatten()`](https://r-xla.github.io/anvl/dev/reference/nv_flatten.md)
+    for flattening a vector
   - [`nv_mod()`](https://r-xla.github.io/anvl/dev/reference/nv_mod.md)
     for Module / flooring remainder and
     [`nv_trunc()`](https://r-xla.github.io/anvl/dev/reference/nv_trunc.md)
-    for truncation \>\>\>\>\>\>\> main
+    for truncation
 - [`mean()`](https://rdrr.io/r/base/mean.html) and
   [`median()`](https://rdrr.io/r/stats/median.html) now error when
   called with `na.rm = TRUE`, since anvl arrays do not carry `NA`s.
