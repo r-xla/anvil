@@ -1115,6 +1115,7 @@ describe("cross-device eager (check_eager)", {
     check_eager(nv_div, vec_f, vec_f2)
     check_eager(nv_pow, vec_f, vec_f2)
     check_eager(nv_remainder, nv_array(c(7, 8, 9)), nv_array(c(3, 3, 4)))
+    check_eager(nv_mod, nv_array(c(7, -7, 7)), nv_array(c(3, 3, -3)))
     check_eager(nv_max, vec_f, vec_f2)
     check_eager(nv_min, vec_f, vec_f2)
     check_eager(nv_atan2, vec_f, vec_f2)
@@ -1162,6 +1163,7 @@ describe("cross-device eager (check_eager)", {
     check_eager(nv_tanh, nv_array(c(-1, 0, 1)))
     check_eager(nv_floor, nv_array(c(1.2, 2.7, -1.5)))
     check_eager(nv_ceiling, nv_array(c(1.2, 2.7, -1.5)))
+    check_eager(nv_trunc, nv_array(c(1.2, 2.7, -1.5)))
     check_eager(nv_sign, nv_array(c(-3, 0, 5)))
     check_eager(nv_round, nv_array(c(1.4, 2.5, 3.6)))
     check_eager(nv_popcnt, nv_array(c(7L, 3L, 15L)))
@@ -1261,4 +1263,20 @@ describe("cross-device eager (check_eager)", {
     check_eager(nv_argmax, sortable)
     check_eager(nv_argmin, sortable)
   })
+})
+
+test_that("nv_mod and `%%` follow base R flooring semantics across sign combos", {
+  expect_equal(
+    as.vector(nv_mod(1, -3)),
+    1 %% -3
+  )
+  expect_equal(
+    as.vector(nv_mod(1.4, -0.2)),
+    1.4 %% -0.2,
+    tolerance = 1e-5
+  )
+  expect_equal(
+    as.vector(nv_mod(1L, -3L)),
+    1L %% -3L
+  )
 })

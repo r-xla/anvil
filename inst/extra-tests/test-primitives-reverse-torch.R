@@ -763,7 +763,9 @@ describe("prim_static_slice", {
 })
 
 test_that("prim_remainder", {
-  # Generator that avoids zero divisors and values near discontinuities
+  # Compare against torch_fmod (truncating, sign-of-dividend) which matches
+  # StableHLO `remainder` semantics. torch_remainder is flooring and would only
+  # agree with us on same-sign inputs.
   gen_nonzero <- function(shp, dtype) {
     vals <- generate_test_data(shp, dtype = dtype)
     # Shift values away from zero to avoid division by zero
@@ -777,7 +779,7 @@ test_that("prim_remainder", {
 
   verify_grad_biv(
     prim_remainder,
-    torch::torch_remainder,
+    torch::torch_fmod,
     tol = 1e-5,
     gen_rhs = gen_nonzero # Avoid zero divisors
   )
