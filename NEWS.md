@@ -18,6 +18,9 @@
   `as.integer`, `as.logical` and `as.vector`.
 * New API functions `nv_rbind()` and `nv_cbind()` and corresponding
   `rbind()`/`cbind()` generics.
+* New functionality (primitives and corresponding `nv_<op>` functions:
+  `acos`, `acosh`, `asin`, `asinh`, `atan`, `atanh`, `cosh`, `sinh`,
+  `digamma`, `lgamma`, `polygamma`, `erf`, `erf_inv`, `erfc`.
 * New cumulative primitives and API functions:
   `nv_cumsum()`, `nv_cumprod()`, `nv_cummax()`, `nv_cummin()` (and
   the corresponding `prim_*` primitives).
@@ -38,11 +41,8 @@
   * `nv_argmax()` and `nv_argmin()` to find the index of the maximum/minimum
     along a dimension. Ties are broken by returning the smallest index.
   * `nv_select()` to select a slice along a dimension by index.
-<<<<<<< final-cumulative
   * `nv_flatten()` for flattening a vector
-=======
   * `nv_mod()` for Module / flooring remainder and `nv_trunc()` for truncation
->>>>>>> main
 * `mean()` and `median()` now error when called with `na.rm = TRUE`, since
   anvl arrays do not carry `NA`s. `mean()` also rejects non-zero `trim`.
 
