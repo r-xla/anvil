@@ -47,6 +47,11 @@
   `dims = NULL`, which reduces over all dimensions and returns a scalar.
   Previously, `dims` was required.
 
+## Bug Fixes
+
+* The CI now actually runs the torch-comparison tests
+
+
 # anvl 0.2.0
 
 ## Breaking Changes
