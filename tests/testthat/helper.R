@@ -80,7 +80,7 @@ is_cpu <- function() {
 }
 
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "torch-helpers.R", package = "anvl"))
+  source(system.file("extra-tests", "torch-helpers.R", package = "anvl"), local = TRUE)
 }
 
 # Sampler factories used to constrain the input domain when comparing primitives

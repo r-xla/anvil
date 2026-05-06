@@ -999,5 +999,5 @@ test_that("prim_reduce_prod: drop = FALSE matches drop = TRUE", {
 })
 
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvl"))
+  source(system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvl"), local = TRUE)
 }
