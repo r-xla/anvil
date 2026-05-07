@@ -125,14 +125,26 @@ runtime.</p>
 <div class="section level2">
 <h2 id="why-does-timing-my-function-show-suspiciously-fast-results">Why does timing my function show suspiciously fast results?<a class="anchor" aria-label="anchor" href="#why-does-timing-my-function-show-suspiciously-fast-results"></a>
 </h2>
-<p>Many operations {anvl} happen asynchronously under the hood (c.f. <a href="efficiency.html#asynchronous-execution">Asynchronous
+<p>Many operations in {anvl} happen asynchronously under the hood (c.f.
+<a href="efficiency.html#asynchronous-execution">Asynchronous
 execution</a>). In order to properly time an {anvl} program, you
 therefore need to ensure that:</p>
 <ol style="list-style-type: decimal">
 <li>All creation of buffers used in the benchmark function have
-finisehd.</li>
+finished.</li>
 <li>The results of the computation are awaited.</li>
 </ol>
+<p>This is especially relevant on GPU, where almost all work is
+dispatched asynchronously and the call into the compiled function
+returns essentially immediately. On CPU, whether an operation runs
+asynchronously depends on the FLOPs of the operation: XLA may execute
+small operations synchronously and only dispatch larger ones to a
+background thread. As a result, the same benchmarking mistake may
+produce realistic numbers for some CPU ops and wildly optimistic ones
+for others – so always <code><a href="../reference/await.html">await()</a></code> the result regardless of the
+device.</p>
+<p>See also <a href="https://github.com/jax-ml/jax/discussions/4218" class="external-link">jax#4218</a> for a
+related discussion in JAX.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-xla.github.io/anvl/">anvl</a></span><span class="op">)</span></span>
 <span></span>
@@ -149,15 +161,15 @@ finisehd.</li>
 <span><span class="co"># Ensure buffer creation is finished</span></span>
 <span><span class="fu"><a href="../reference/await.html">await</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Bad (only measures kernel launch):</span></span>
+<span><span class="co"># Bad (does not capture the whole computation):</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="fu">mul_n</span><span class="op">(</span><span class="va">x</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##    0.37    0.17    0.24</span></span></code></pre>
+<span><span class="co">##   0.287   0.140   0.184</span></span></code></pre>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Good (also measures actual computation):</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="fu"><a href="../reference/await.html">await</a></span><span class="op">(</span><span class="fu">mul_n</span><span class="op">(</span><span class="va">x</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##   0.642   0.465   0.507</span></span></code></pre>
+<span><span class="co">##   1.780   1.689   1.745</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="how-do-i-control-the-number-of-threads-used-by-xla">How do I control the number of threads used by XLA?<a class="anchor" aria-label="anchor" href="#how-do-i-control-the-number-of-threads-used-by-xla"></a>

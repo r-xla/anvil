@@ -10,15 +10,29 @@ program runtime.
 
 ## Why does timing my function show suspiciously fast results?
 
-Many operations {anvl} happen asynchronously under the hood (c.f.
+Many operations in {anvl} happen asynchronously under the hood (c.f.
 [Asynchronous
 execution](https://r-xla.github.io/anvl/dev/articles/efficiency.html#asynchronous-execution)).
 In order to properly time an {anvl} program, you therefore need to
 ensure that:
 
 1.  All creation of buffers used in the benchmark function have
-    finisehd.
+    finished.
 2.  The results of the computation are awaited.
+
+This is especially relevant on GPU, where almost all work is dispatched
+asynchronously and the call into the compiled function returns
+essentially immediately. On CPU, whether an operation runs
+asynchronously depends on the FLOPs of the operation: XLA may execute
+small operations synchronously and only dispatch larger ones to a
+background thread. As a result, the same benchmarking mistake may
+produce realistic numbers for some CPU ops and wildly optimistic ones
+for others – so always
+[`await()`](https://r-xla.github.io/anvl/dev/reference/await.md) the
+result regardless of the device.
+
+See also [jax#4218](https://github.com/jax-ml/jax/discussions/4218) for
+a related discussion in JAX.
 
 ``` r
 
@@ -37,12 +51,12 @@ x <- nv_array(rnorm(1e8))
 # Ensure buffer creation is finished
 await(x)
 
-# Bad (only measures kernel launch):
+# Bad (does not capture the whole computation):
 system.time(mul_n(x, 20))
 ```
 
     ##    user  system elapsed 
-    ##    0.37    0.17    0.24
+    ##   0.287   0.140   0.184
 
 ``` r
 
@@ -51,7 +65,7 @@ system.time(await(mul_n(x, 20)))
 ```
 
     ##    user  system elapsed 
-    ##   0.642   0.465   0.507
+    ##   1.780   1.689   1.745
 
 ## How do I control the number of threads used by XLA?
 
