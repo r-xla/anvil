@@ -600,13 +600,18 @@ prim_print[["stablehlo"]] <- function(operand, footer) {
     stablehlo::StringAttr(name = "print_footer", value = footer)
   ))
 
+  # row-major layout in minor-to-major order: [N-1, ..., 1, 0]
+  row_major <- rev(seq_len(length(shape(operand))) - 1L)
+
   # has side-effect
   stablehlo::hlo_custom_call(
     operand,
     call_target_name = "print_tensor",
     api_version = 4L,
     has_side_effect = TRUE,
-    backend_config = backend_config
+    backend_config = backend_config,
+    operand_layouts = list(row_major),
+    result_layouts = list()
   )
   # we just return the input
   list(operand)
