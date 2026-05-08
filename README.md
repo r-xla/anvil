@@ -8,8 +8,6 @@ Package website: [release](https://r-xla.github.io/anvl/) \|
 
 <!-- badges: start -->
 
-[![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 ![R-CMD-check](https://github.com/r-xla/anvl/actions/workflows/R-CMD-check.yaml/badge.svg)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/anvl)](https://CRAN.R-project.org/package=anvl)
@@ -18,43 +16,49 @@ status](https://www.r-pkg.org/badges/version/anvl)](https://CRAN.R-project.org/p
 ![CUDA 12.8](https://img.shields.io/badge/CUDA-12.8-green.svg)
 <!-- badges: end -->
 
-Composable code transformation framework for R, allowing you to run
-numerical programs at the speed of light. It currently implements JIT
-compilation for very fast execution and reverse-mode automatic
-differentiation. Programs can run on various hardware backends,
-including CPU and GPU.
+Accelerated array computing and code transformations for R, allowing you
+to run numerical programs at the speed of light. The package supports
+JIT compilation for very fast execution and reverse-mode automatic
+differentiation. Programs can run on CPU and NVIDIA GPU.
 
 ## Installation
 
-{anvl}[^1] can be installed from GitHub or
-[r-universe](https://r-xla.r-universe.dev/builds). During runtime, we
-require `libprotobuf`. Source installation requires a `C++20` compiler
-and `protoc` (protobuf compiler).
-
-You can install the latest release from r-universe (prebuilt binary) or
-GitHub:
-
 ``` r
 install.packages("anvl", repos = c("https://r-xla.r-universe.dev", getOption("repos")))
-pak::pak("r-xla/anvl@*release")
 ```
 
-To get the latest dev version, run:
-
-``` r
-pak::pak("r-xla/anvl")
-```
-
-In order to install CUDA support (linux amd64 only), requiring only a
-compatible driver, run:
+Install CUDA support on linux amd64:
 
 ``` r
 install.packages("cuda12.8", repos = "https://mlverse.r-universe.dev")
 ```
 
-Prebuilt [Docker images](https://github.com/r-xla/docker) are also
-available. See the *Installation* vignette on the package website for
-more details.
+See the [Installation
+guide](https://r-xla.github.io/anvl/articles/installation.html) for more
+details, including prebuilt Docker images.
+
+## Why anvl
+
+anvl makes numerical R code run fast on CPUs and GPUs, and computes
+gradients of your functions automatically. It serves the same role for R
+that JAX serves for Python.
+
+There are three ideas:
+
+- **Compilation.** Wrap any R function in `jit()`. anvl converts the R
+  function into an optimized program via XLA – the same compiler that
+  powers JAX and TensorFlow.
+- **Function transformation.** Programmatically derive new functions
+  from existing ones. Currently the only available transformation is
+  reverse-mode automatic differentiation via `gradient()`, which returns
+  the derivative of a function as another R function.
+- **Hardware portability.** The same code runs on CPU or NVIDIA CUDA
+  GPU.
+
+Compared to R [`torch`](https://torch.mlverse.org), anvl is built around
+compilation: `jit()` sees the *whole function* at once and compiles it.
+The resulting programs can therefore be considerably faster and custom
+operations can be implemented more easily.
 
 ## Quick Start
 
@@ -109,42 +113,32 @@ the package website.
 
 ## Main Features
 
-- Automatic Differentiation:
-  - Gradients for functions with scalar outputs are supported.
-- Eager and JIT mode:
-  - Run operations eagerly for interactive use, or `jit()` entire
-    functions into a single fused kernel for performance.
-- Fast:
-  - Code is JIT compiled into a single kernel.
-  - Runs on different hardware backends, including CPU and GPU.
-  - Asyncronous allocation and execution, allowing the accelerator to do
-    it’s job while R interpretes.
-- Extendable:
-  - It is possible to add new primitives, transformations, and (with
-    some effort) new backends.
-  - The package is written almost entirely in R.
-- Multi-backend:
-  - The backend supports execution via XLA as well as an experimental
-    {quickr}-based Fortran backend (CPU only).
+- **JIT and eager modes** – compile whole functions with `jit()` for
+  performance, or run operations eagerly for interactive use and
+  debugging.
+- **Reverse-mode autodiff** – `gradient()` and `value_and_gradient()`
+  for functions with scalar outputs.
+- **Asynchronous execution** – compiled calls return immediately and run
+  on the accelerator while R prepares the next call, keeping CPU and
+  device busy in parallel.
+- **Extensible** – the package is written almost entirely in R; new
+  primitives and transformations can be added without leaving R.
+- **Multiple backends** – compiled programs run via XLA on CPU or GPU,
+  with an experimental
+  [`quickr`](https://CRAN.R-project.org/package=quickr)-based Fortran
+  backend for CPU-only workloads.
 
 ## Platform Support
 
-- **Linux (x86_64)**
-  - :white_check_mark: CPU backend is fully supported.
-  - :white_check_mark: CUDA (NVIDIA GPU) backend is fully supported.
-- **Linux (ARM)**
-  - :white_check_mark: CPU backend is fully supported.
-  - :x: GPU is not supported.
-- **Windows**
-  - :white_check_mark: CPU backend is fully supported.
-  - :warning: GPU is only supported via Windows Subsystem for Linux
-    (WSL2).
-- **macOS (ARM)**
-  - :white_check_mark: CPU backend is supported.
-  - :warning: Metal (Apple GPU) backend is available but not fully
-    functional.
-- **macOS (x86_64)**
-  - :x: Not supported.
+| Platform              | CPU |        GPU         |
+|-----------------------|:---:|:------------------:|
+| Linux (x86_64)        |  ✓  |       ✓ CUDA       |
+| Linux (ARM)           |  ✓  |         ✗          |
+| Windows               |  ✓  | ◐ WSL2 only (CUDA) |
+| macOS (Apple Silicon) |  ✓  |         ✗          |
+| macOS (Intel)         |  ✗  |         ✗          |
+
+✓ fully supported  ·  ◐ limited support  ·  ✗ not supported
 
 ## Acknowledgments
 
@@ -155,8 +149,3 @@ the package website.
   - The [microjax](https://github.com/joey00072/microjax) project.
 - For JIT compilation, we leverage the [OpenXLA](https://openxla.org/)
   project.
-
-[^1]: A real anvil is a tool blacksmiths use to reshape metal; this
-    package reshapes R code in a similar spirit. We spell the package
-    name `anvl` (without the `i`) because `AnVIL` is already taken by a
-    Bioconductor package.
