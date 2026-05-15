@@ -372,7 +372,7 @@ describe("prim_triangular_solve", {
     L <- matrix(c(3, 1, 0, 2), nrow = 2)
     b <- matrix(c(6, 5), nrow = 2)
     out_nv <- as_array(jit(function(a, b) {
-      prim_triangular_solve(a, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+      prim_triangular_solve(a, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = FALSE)
     })(nv_array(L, dtype = "f64"), nv_array(b, dtype = "f64")))
     out_th <- as_array_torch(torch::linalg_solve_triangular(
       torch::torch_tensor(L, dtype = torch::torch_float64()),
@@ -387,7 +387,7 @@ describe("prim_triangular_solve", {
     U <- matrix(c(3, 0, 1, 2), nrow = 2)
     b <- matrix(c(6, 5, 4, 3), nrow = 2)
     out_nv <- as_array(jit(function(a, b) {
-      prim_triangular_solve(a, b, left_side = FALSE, lower = FALSE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+      prim_triangular_solve(a, b, left_side = FALSE, lower = FALSE, unit_diagonal = FALSE, transpose_a = FALSE)
     })(nv_array(U, dtype = "f64"), nv_array(b, dtype = "f64")))
     out_th <- as_array_torch(torch::linalg_solve_triangular(
       torch::torch_tensor(U, dtype = torch::torch_float64()),

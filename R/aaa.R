@@ -4,8 +4,11 @@ NULL
 
 ## usethis namespace: start
 #' @importFrom stablehlo repr Shape FuncId Func FuncValue
-#' @importFrom stablehlo local_func hlo_input hlo_return hlo_tensor hlo_scalar
-#' @importFrom stablehlo TensorType
+#' @importFrom stablehlo local_func TensorType
+# `hlo_scalar` and `hlo_tensor` are imported statically because we
+# register S3 methods for them
+#' @importFrom stablehlo hlo_scalar hlo_tensor
+#' @evalNamespace paste0("importFrom(stablehlo,", setdiff(grep("^hlo_", getNamespaceExports("stablehlo"), value = TRUE), c("hlo_scalar", "hlo_tensor")), ")")
 #' @import checkmate
 #' @import tengen
 #' @importFrom pjrt pjrt_buffer pjrt_scalar pjrt_execute pjrt_compile pjrt_program elt_type

@@ -55,10 +55,12 @@ navbar:
     developers:
       text: Developers
       menu:
-      - text: Adding a Primitive
+      - text: Extending
+      - text: "Adding a Primitive"
         href: articles/extending_primitive.html
-      - text: Extending the API
-        href: articles/extending_primitive.html
+      - text: "Adding an API Function"
+        href: articles/extending_api.html
+      - text: Other
       - text: Internals
         href: articles/internals.html
       - text: Available Primitives
@@ -239,7 +241,15 @@ reference:
     contents:
       - nv_matmul
       - nv_chol
+      - nv_qr
+      - nv_lu
+      - nv_svd
+      - nv_eigh
       - nv_solve
+      - nv_triangular_solve
+      - nv_inv
+      - nv_det
+      - nv_determinant
       - nv_crossprod
       - nv_tcrossprod
       - nv_outer
@@ -392,6 +402,7 @@ reference:
     contents:
       - at2vt
       - vt2at
+      - vt
       - is_arrayish
       - Shape
 

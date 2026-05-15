@@ -1228,11 +1228,26 @@ describe("cross-device eager (check_eager)", {
   it("linear algebra", {
     a <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
     b <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
+    sq <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+    rect <- nv_array(matrix(c(1, 2, 3, 4, 5, 6), nrow = 3), dtype = "f64")
+    sym <- nv_array(matrix(c(2, 1, 1, 2), nrow = 2), dtype = "f64")
+    L <- nv_array(matrix(c(2, 1, 0, 3), nrow = 2), dtype = "f32")
+    rhs <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
     check_eager(nv_matmul, a, b)
     check_eager(nv_crossprod, a)
     check_eager(nv_tcrossprod, a)
     check_eager(nv_chol, sym_pd)
-    check_eager(nv_solve, sym_pd, rhs_mat)
+    check_eager(nv_solve, sq, nv_array(matrix(c(1, 2), nrow = 2), dtype = "f64"))
+    check_eager(nv_solve, sq, nv_array(c(1, 2), dtype = "f64"))
+    check_eager(nv_triangular_solve, L, rhs)
+    check_eager(nv_qr, rect)
+    check_eager(nv_lu, sq)
+    check_eager(nv_svd, rect)
+    check_eager(nv_eigh, sym)
+    check_eager(nv_det, sq)
+    check_eager(nv_determinant, sq)
+    check_eager(function(x) nv_determinant(x, logarithm = FALSE), sq)
+    check_eager(nv_inv, sq)
     check_eager(nv_diag, vec_f)
     check_eager(nv_extract_diag, mat_3x3)
     check_eager(nv_trace, mat_3x3)
@@ -1262,6 +1277,175 @@ describe("cross-device eager (check_eager)", {
     check_eager(function(x) nv_quantile(x, array(c(0.25, 0.75))), sortable)
     check_eager(nv_argmax, sortable)
     check_eager(nv_argmin, sortable)
+  })
+})
+
+describe("nv_solve", {
+  it("matches base R for matrix b (output stays a 2-D matrix)", {
+    A_mat <- matrix(c(4, 3, 6, 3), nrow = 2)
+    b_mat <- matrix(c(1, 2), nrow = 2)
+    x <- nv_solve(nv_array(A_mat, dtype = "f64"), nv_array(b_mat, dtype = "f64"))
+    expect_equal(shape(x), c(2L, 1L))
+    expect_equal(as_array(x), solve(A_mat, b_mat), tolerance = 1e-5)
+  })
+
+  it("matches base R for vector b (output stays a 1-D vector)", {
+    A_mat <- matrix(c(4, 3, 6, 3), nrow = 2)
+    x <- nv_solve(nv_array(A_mat, dtype = "f64"), nv_array(c(1, 2), dtype = "f64"))
+    expect_equal(shape(x), 2L)
+    expect_equal(as_array(x), array(solve(A_mat, c(1, 2))), tolerance = 1e-5)
+  })
+})
+
+describe("nv_triangular_solve", {
+  it("matches base R (lower, vector b)", {
+    L_mat <- matrix(c(3, 1, 0, 2), nrow = 2)
+    expect_equal(
+      as_array(nv_triangular_solve(
+        nv_array(L_mat, dtype = "f64"),
+        nv_array(c(6, 5), dtype = "f64")
+      )),
+      array(solve(L_mat, c(6, 5))),
+      tolerance = 1e-5
+    )
+  })
+
+  it("respects transpose_a = TRUE", {
+    L_mat <- matrix(c(3, 1, 0, 2), nrow = 2)
+    b <- c(6, 5)
+    expect_equal(
+      as_array(nv_triangular_solve(
+        nv_array(L_mat, dtype = "f64"),
+        nv_array(b, dtype = "f64"),
+        transpose_a = TRUE
+      )),
+      array(solve(t(L_mat), b)),
+      tolerance = 1e-5
+    )
+  })
+})
+
+describe("nv_lu", {
+  it("returns L, U, pivots, permutation with the right shapes and factorization (square)", {
+    A_mat <- matrix(c(4, 3, 6, 3), nrow = 2)
+    out <- nv_lu(nv_array(A_mat, dtype = "f64"))
+    expect_named(out, c("L", "U", "pivots", "permutation"))
+    expect_equal(shape(out$L), c(2L, 2L))
+    expect_equal(shape(out$U), c(2L, 2L))
+    expect_equal(shape(out$pivots), 2L)
+    expect_equal(shape(out$permutation), 2L)
+    L <- as_array(out$L)
+    U <- as_array(out$U)
+    permutation <- as_array(out$permutation)
+    # L is unit lower-triangular, U is upper-triangular.
+    expect_equal(L[upper.tri(L)], rep(0, sum(upper.tri(L))))
+    expect_equal(diag(L), c(1, 1))
+    expect_equal(U[lower.tri(U)], rep(0, sum(lower.tri(U))))
+    # Factorization identity: P %*% A == L %*% U.
+    expect_equal(L %*% U, A_mat[permutation, , drop = FALSE], tolerance = 1e-5)
+  })
+
+  it("handles a tall (m > n) matrix", {
+    m <- 3L
+    n <- 2L
+    k <- min(m, n)
+    A_mat <- matrix(c(1, 2, 3, 4, 5, 6), nrow = m)
+    out <- nv_lu(nv_array(A_mat, dtype = "f64"))
+    expect_equal(shape(out$L), c(m, k))
+    expect_equal(shape(out$U), c(k, n))
+    L <- as_array(out$L)
+    U <- as_array(out$U)
+    permutation <- as_array(out$permutation)
+    # L: unit diagonal on the first k rows, zeros above the diagonal.
+    expect_equal(L[upper.tri(L[seq_len(k), , drop = FALSE])], numeric(0))
+    expect_equal(diag(L[seq_len(k), , drop = FALSE]), c(1, 1))
+    expect_equal(L %*% U, A_mat[permutation, , drop = FALSE], tolerance = 1e-5)
+  })
+
+  it("handles a wide (m < n) matrix", {
+    skip_if(is_cuda(), "m < n not supported on CUDA yet")
+    m <- 2L
+    n <- 3L
+    k <- min(m, n)
+    A_mat <- matrix(c(1, 2, 3, 4, 5, 6), nrow = m)
+    out <- nv_lu(nv_array(A_mat, dtype = "f64"))
+    expect_equal(shape(out$L), c(m, k))
+    expect_equal(shape(out$U), c(k, n))
+    L <- as_array(out$L)
+    U <- as_array(out$U)
+    permutation <- as_array(out$permutation)
+    expect_equal(diag(L), c(1, 1))
+    expect_equal(L %*% U, A_mat[permutation, , drop = FALSE], tolerance = 1e-5)
+  })
+})
+
+describe("nv_chol", {
+  it("returns the upper-triangular factor matching base R", {
+    A_mat <- matrix(c(4, 2, 2, 3), nrow = 2)
+    U <- as_array(nv_chol(nv_array(A_mat, dtype = "f64")))
+    expect_equal(t(U) %*% U, A_mat, tolerance = 1e-5)
+    # `lower = TRUE` should give the corresponding lower-triangular factor.
+    L <- as_array(nv_chol(nv_array(A_mat, dtype = "f64"), lower = TRUE))
+    expect_equal(L %*% t(L), A_mat, tolerance = 1e-5)
+  })
+})
+
+describe("nv_det", {
+  it("matches base R det()", {
+    A_mat <- matrix(c(4, 3, 6, 3), nrow = 2)
+    expect_equal(
+      as_array(nv_det(nv_array(A_mat, dtype = "f64"))),
+      det(A_mat),
+      tolerance = 1e-5
+    )
+  })
+
+  it("returns 1 for the empty 0x0 matrix", {
+    empty <- nv_array(matrix(numeric(0), 0, 0), dtype = "f64")
+    expect_equal(as_array(nv_det(empty)), 1)
+  })
+})
+
+describe("nv_determinant", {
+  it("logarithm = TRUE matches base::determinant()", {
+    A_mat <- matrix(c(4, 3, 6, 3), nrow = 2)
+    out <- nv_determinant(nv_array(A_mat, dtype = "f64"), logarithm = TRUE)
+    expect_equal(as_array(out$modulus), log(abs(det(A_mat))), tolerance = 1e-5)
+    expect_equal(as_array(out$sign), sign(det(A_mat)), tolerance = 1e-5)
+  })
+
+  it("logarithm = FALSE returns abs(det) and the same sign", {
+    A_mat <- matrix(c(4, 3, 6, 3), nrow = 2)
+    out <- nv_determinant(nv_array(A_mat, dtype = "f64"), logarithm = FALSE)
+    expect_equal(as_array(out$modulus), abs(det(A_mat)), tolerance = 1e-5)
+    expect_equal(as_array(out$sign), sign(det(A_mat)), tolerance = 1e-5)
+  })
+
+  it("handles the empty 0x0 matrix (det = 1)", {
+    empty <- nv_array(matrix(numeric(0), 0, 0), dtype = "f64")
+    out_log <- nv_determinant(empty, logarithm = TRUE)
+    expect_equal(as_array(out_log$modulus), 0)
+    expect_equal(as_array(out_log$sign), 1)
+    out_lin <- nv_determinant(empty, logarithm = FALSE)
+    expect_equal(as_array(out_lin$modulus), 1)
+    expect_equal(as_array(out_lin$sign), 1)
+  })
+})
+
+describe("nv_inv", {
+  it("matches base R solve()", {
+    A_mat <- matrix(c(4, 3, 6, 3), nrow = 2)
+    expect_equal(
+      as_array(nv_inv(nv_array(A_mat, dtype = "f64"))),
+      solve(A_mat),
+      tolerance = 1e-5
+    )
+  })
+
+  it("returns the empty matrix for a 0x0 input", {
+    empty <- nv_array(matrix(numeric(0), 0, 0), dtype = "f64")
+    out <- nv_inv(empty)
+    expect_equal(shape(out), c(0L, 0L))
   })
 })
 

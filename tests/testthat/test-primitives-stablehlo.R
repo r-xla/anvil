@@ -526,7 +526,7 @@ describe("prim_while", {
 
 test_that("prim_chol", {
   A <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
-  L <- as_array(jit(function(A) prim_chol(A, lower = TRUE))(A))
+  L <- as_array(prim_chol(A, lower = TRUE))
   expect_equal(L[1, 1], 2)
   expect_equal(L[2, 1], 1)
   expect_equal(L[2, 2], sqrt(2), tolerance = 1e-10)
@@ -536,10 +536,10 @@ test_that("prim_chol", {
 
 test_that("prim_chol zeros out non-triangular part", {
   A <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
-  L <- as_array(jit(function(A) prim_chol(A, lower = TRUE))(A))
+  L <- as_array(prim_chol(A, lower = TRUE))
   expect_equal(L[1, 2], 0)
 
-  U <- as_array(jit(function(A) prim_chol(A, lower = FALSE))(A))
+  U <- as_array(prim_chol(A, lower = FALSE))
   expect_equal(U[2, 1], 0)
 })
 
@@ -547,18 +547,163 @@ test_that("prim_triangular_solve", {
   # Solve L %*% x = b where L = [[3, 0], [1, 2]]
   L <- nv_array(matrix(c(3, 1, 0, 2), nrow = 2), dtype = "f64")
   b <- nv_array(matrix(c(6, 5), nrow = 2), dtype = "f64")
-  x <- as_array(jit(function(L, b) {
-    prim_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
-  })(L, b))
+  x <- as_array(prim_triangular_solve(
+    L,
+    b,
+    left_side = TRUE,
+    lower = TRUE,
+    unit_diagonal = FALSE,
+    transpose_a = FALSE
+  ))
   # x = L^{-1} b: 3*x1 = 6 -> x1 = 2; x1 + 2*x2 = 5 -> x2 = 1.5
   expect_equal(c(x), c(2, 1.5), tolerance = 1e-10)
 
-  # Verify: solve with TRANSPOSE
-  x2 <- as_array(jit(function(L, b) {
-    prim_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
-  })(L, b))
+  # Verify: solve with transpose_a = TRUE
+  x2 <- as_array(prim_triangular_solve(
+    L,
+    b,
+    left_side = TRUE,
+    lower = TRUE,
+    unit_diagonal = FALSE,
+    transpose_a = TRUE
+  ))
   # L^T x = b: [[3,1],[0,2]] x = [6,5] -> 2*x2=5 -> x2=2.5; 3*x1+x2=6 -> x1=7/6
   expect_equal(c(x2), c(7 / 6, 2.5), tolerance = 1e-10)
+})
+
+# Sanity smoke tests for the linalg primitives.
+# All of these custom calls are already properly tested in pjrt.
+# Here we just test the anvl wiring.
+
+describe("prim_qr", {
+  it("decomposes a tall matrix", {
+    # Use a rectangular (m > n) matrix so the reduced-QR shapes (m, k) and
+    # (k, n) with k = min(m, n) are visibly different and worth checking.
+    m <- 4L
+    n <- 2L
+    k <- min(m, n)
+    A <- nv_array(matrix(c(12, 6, -4, 1, -51, 167, 24, 5), nrow = m), dtype = "f64")
+    out <- prim_qr(A)
+    expect_named(out, c("Q", "R"))
+    Q <- as_array(out$Q)
+    R <- as_array(out$R)
+    expect_equal(dim(Q), c(m, k))
+    expect_equal(dim(R), c(k, n))
+    expect_equal(Q %*% R, as_array(A), tolerance = 1e-10)
+    # Documented: Q has orthonormal columns, R is upper triangular.
+    expect_equal(t(Q) %*% Q, diag(k), tolerance = 1e-10)
+    expect_equal(R[lower.tri(R)], rep(0, sum(lower.tri(R))))
+  })
+
+  it("rejects invalid inputs", {
+    vec <- nv_array(c(1, 2, 3), dtype = "f32")
+    expect_error(prim_qr(vec), "must be a 2-D matrix")
+    empty <- nv_array(matrix(numeric(0), nrow = 0, ncol = 2), dtype = "f32")
+    expect_error(prim_qr(empty), "zero-sized")
+    int_mat <- nv_array(matrix(1:4, nrow = 2), dtype = "i32")
+    expect_error(prim_qr(int_mat), "floating-point")
+  })
+})
+
+describe("prim_lu", {
+  it("decomposes a square matrix", {
+    A <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+    out <- prim_lu(A)
+    expect_named(out, c("LU", "pivots", "permutation"))
+    expect_equal(shape(out$LU), c(2L, 2L))
+    expect_equal(shape(out$pivots), 2L)
+    expect_equal(shape(out$permutation), 2L)
+    LU <- as_array(out$LU)
+    pivots <- as_array(out$pivots)
+    permutation <- as_array(out$permutation)
+    # Documented: pivots are 1-based, each in 1..m; permutation is a 1-based
+    # permutation of 1..m such that (P %*% A)[i, ] == A[permutation[i], ].
+    expect_true(all(pivots >= 1L & pivots <= nrow(LU)))
+    expect_setequal(permutation, seq_len(nrow(LU)))
+    # Reconstruct: L unit-lower-triangular, U upper-triangular; P A == L U.
+    L <- LU
+    L[upper.tri(L)] <- 0
+    diag(L) <- 1
+    U <- LU
+    U[lower.tri(U)] <- 0
+    A_mat <- as_array(A)
+    expect_equal(L %*% U, A_mat[permutation, , drop = FALSE], tolerance = 1e-10)
+  })
+
+  it("rejects invalid inputs", {
+    vec <- nv_array(c(1, 2, 3), dtype = "f32")
+    expect_error(prim_lu(vec), "must be a 2-D matrix")
+    empty <- nv_array(matrix(numeric(0), nrow = 0, ncol = 2), dtype = "f32")
+    expect_error(prim_lu(empty), "zero-sized")
+    int_mat <- nv_array(matrix(1:4, nrow = 2), dtype = "i32")
+    expect_error(prim_lu(int_mat), "floating-point")
+  })
+})
+
+describe("prim_svd", {
+  it("decomposes a tall matrix", {
+    m <- 3L
+    n <- 2L
+    k <- min(m, n)
+    A <- nv_array(matrix(c(1, 0, 0, 1, 0, 1), nrow = m), dtype = "f64")
+    out <- prim_svd(A)
+    # Returns `vt` (LAPACK form, shape (k, n)) — not `v` like base::svd().
+    expect_named(out, c("d", "u", "vt"))
+    d <- as_array(out$d)
+    u <- as_array(out$u)
+    vt <- as_array(out$vt)
+    expect_equal(dim(u), c(m, k))
+    expect_equal(length(d), k)
+    expect_equal(dim(vt), c(k, n))
+    expect_equal(u %*% diag(d) %*% vt, as_array(A), tolerance = 1e-10)
+    # Documented: d non-negative and in descending order;
+    # u has orthonormal columns; vt has orthonormal rows.
+    expect_true(all(d >= 0))
+    expect_equal(d, sort(d, decreasing = TRUE))
+    expect_equal(t(u) %*% u, diag(k), tolerance = 1e-10)
+    expect_equal(vt %*% t(vt), diag(k), tolerance = 1e-10)
+  })
+
+  it("rejects invalid inputs", {
+    vec <- nv_array(c(1, 2, 3), dtype = "f32")
+    expect_error(prim_svd(vec), "must be a 2-D matrix")
+    empty <- nv_array(matrix(numeric(0), nrow = 0, ncol = 2), dtype = "f32")
+    expect_error(prim_svd(empty), "zero-sized")
+    int_mat <- nv_array(matrix(1:4, nrow = 2), dtype = "i32")
+    expect_error(prim_svd(int_mat), "floating-point")
+  })
+})
+
+describe("prim_eigh", {
+  it("decomposes a symmetric matrix", {
+    A <- nv_array(matrix(c(2, 1, 1, 2), nrow = 2), dtype = "f64")
+    out <- prim_eigh(A)
+    # Names and order match base::eigen(): values, vectors.
+    expect_named(out, c("values", "vectors"))
+    values <- as_array(out$values)
+    vectors <- as_array(out$vectors)
+    expect_equal(length(values), 2L)
+    expect_equal(dim(vectors), c(2L, 2L))
+    expect_equal(
+      vectors %*% diag(values) %*% t(vectors),
+      as_array(A),
+      tolerance = 1e-10
+    )
+    # Documented: values in ascending order; vectors has orthonormal columns.
+    expect_equal(values, sort(values))
+    expect_equal(t(vectors) %*% vectors, diag(ncol(vectors)), tolerance = 1e-10)
+  })
+
+  it("rejects invalid inputs", {
+    vec <- nv_array(c(1, 2, 3), dtype = "f32")
+    expect_error(prim_eigh(vec), "must be a 2-D matrix")
+    empty <- nv_array(matrix(numeric(0), nrow = 0, ncol = 0), dtype = "f32")
+    expect_error(prim_eigh(empty), "zero-sized")
+    int_mat <- nv_array(matrix(1:4, nrow = 2), dtype = "i32")
+    expect_error(prim_eigh(int_mat), "floating-point")
+    rect <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
+    expect_error(prim_eigh(rect), "square")
+  })
 })
 
 

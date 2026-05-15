@@ -1478,14 +1478,15 @@ nv_matmul <- function(lhs, rhs) {
 #' @description
 #' Computes the Cholesky decomposition of a symmetric positive-definite matrix.
 #' Supports batched inputs: dimensions before the last two are batch dimensions.
-#' @param a ([`arrayish`])\cr
+#' @param operand ([`arrayish`])\cr
 #'   Symmetric positive-definite matrix with at least 2 dimensions.
 #'   The last two dimensions form the square matrix; any leading dimensions
 #'   are batch dimensions.
 #' @param lower (`logical(1)`)\cr
-#'   If `TRUE` (default), compute the lower triangular factor `L` such that
-#'   `a = L %*% t(L)`. If `FALSE`, compute the upper triangular factor `U`
-#'   such that `a = t(U) %*% U`.
+#'   If `FALSE` (default, matching base R's [base::chol()]), compute the
+#'   upper triangular factor `U` such that `operand = t(U) %*% U`. If
+#'   `TRUE`, compute the lower triangular factor `L` such that
+#'   `operand = L %*% t(L)`.
 #' @return [`arrayish`]\cr
 #'   Triangular matrix with the same shape and data type as the input.
 #' @seealso [nv_solve()], [prim_chol()]
@@ -1493,47 +1494,391 @@ nv_matmul <- function(lhs, rhs) {
 #' a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
 #' nv_chol(a)
 #' @export
-nv_chol <- function(a, lower = TRUE) {
-  a <- as_anvl_array(a)
-  prim_chol(a, lower = lower)
-}
+nv_chol <- prim_chol
 
 #' @title Solve Linear System
 #' @description
-#' Solves the linear system `a %*% x = b` for `x`, where `a` is a symmetric
-#' positive-definite matrix. Uses Cholesky decomposition internally.
-#' Supports batched inputs: `a` and `b` must have the same batch dimensions
-#' (all dimensions before the last two).
+#' Solves the linear system `a %*% x = b` for `x`. Uses LU decomposition
+#' with partial pivoting internally, so `a` need only be square and
+#' non-singular.
+#' @details
+#' \deqn{A x = b}
+#' \deqn{P A = L U}
+#' \deqn{L U x = P b}
+#' \deqn{L y = P b}
+#' \deqn{U x = y}
 #' @section Shapes:
-#' - `a`: `(..., n, n)`
-#' - `b`: `(..., n, k)`
+#' - `a`: `(n, n)`
+#' - `b`: `(n,)` or `(n, k)`
 #' - output: same shape as `b`
 #'
-#' where `...` are zero or more batch dimensions that must match between
-#' `a` and `b`.
 #' @param a ([`arrayish`])\cr
-#'   Symmetric positive-definite matrix.
+#'   Square non-singular matrix.
 #' @param b ([`arrayish`])\cr
-#'   Right-hand side matrix or vector. Must have the same data type and batch
-#'   dimensions as `a`.
+#'   Right-hand side, vector of length `n` or matrix with `n` rows. Must
+#'   have the same data type as `a`.
 #' @return [`arrayish`]\cr
 #'   The solution `x` such that `a %*% x = b`.
-#' @seealso [nv_chol()], [prim_chol()], [prim_triangular_solve()]
+#' @seealso [nv_chol()], [nv_triangular_solve()], [prim_lu()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-#' b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
+#' a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#' b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f64")
 #' nv_solve(a, b)
 #' @export
 nv_solve <- function(a, b) {
   args <- as_anvl_arrays(a, b)
   a <- args[[1L]]
   b <- args[[2L]]
-  L <- prim_chol(a, lower = TRUE)
-  # Solve L @ y = b
-  y <- prim_triangular_solve(L, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
-  # Solve L^T @ x = y
-  prim_triangular_solve(L, y, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
+  a_shape <- shape(a)
+  if (length(a_shape) != 2L || a_shape[1L] != a_shape[2L]) {
+    cli_abort("{.arg a} must be a square 2-D matrix")
+  }
+  n <- a_shape[1L]
+  b_shape <- shape(b)
+  if (b_shape[1L] != n) {
+    cli_abort("{.arg b} must have {n} rows to match {.arg a}")
+  }
+  if (length(b_shape) > 2L) {
+    cli_abort("{.arg b} must be a vector of length {n} or a matrix with {n} rows")
+  }
+
+  factored <- prim_lu(a)
+  LU <- factored$LU
+  permutation <- factored$permutation
+
+  # Apply the row permutation P encoded by `permutation`: gather rows of b
+  # so that (P b)[i, ...] == b[permutation[i], ...].
+  pb <- nv_select(b, dim = 1L, index = permutation)
+
+  # Forward then back solve via nv_triangular_solve, which handles a
+  # vector `b` internally by reshaping to a column matrix and back.
+  y <- nv_triangular_solve(LU, pb, lower = TRUE, unit_diagonal = TRUE)
+  nv_triangular_solve(LU, y, lower = FALSE)
 }
+
+#' @title Triangular Solve
+#' @description
+#' Solves a triangular system of linear equations. When `left_side = TRUE`,
+#' returns `x` such that `op(a) %*% x = b`. When `left_side = FALSE`,
+#' returns `x` such that `x %*% op(a) = b`. Here `op` is `a` or `t(a)`
+#' depending on `transpose_a`.
+#' @details
+#' As a convenience, `b` may have one fewer dimension than `a` (a single
+#' right-hand side per batch, shape `(B..., n)` for `a` of shape
+#' `(B..., n, n)`). It is reshaped internally to a column (`left_side =
+#' TRUE`) or row (`left_side = FALSE`) and reshaped back on the way out.
+#' Because we don't broadcast, this is not ambiguous (as it would be for NumPy).
+#' @param a ([`arrayish`])\cr
+#'   Triangular coefficient matrix with at least 2 dimensions. The last two
+#'   dimensions must be equal; any leading dimensions are batch dimensions.
+#' @param b ([`arrayish`])\cr
+#'   Right-hand side. For `a` of shape `(B..., n, n)`, `b` may be either:
+#'   * full rank — shape `(B..., n, k)` when `left_side = TRUE`, or
+#'     `(B..., k, n)` when `left_side = FALSE`;
+#'   * one rank less, shape `(B..., n)`, meaning a single column
+#'     (`left_side = TRUE`) or row (`left_side = FALSE`) per batch — it
+#'     is reshaped internally and the reshape is undone on the result so
+#'     the output rank matches `b`.
+#'
+#'   `b`'s batch dimensions (`B...`) must match `a`'s exactly.
+#' @param left_side (`logical(1)`)\cr
+#'   If `TRUE` (default), solve `op(a) %*% x = b`; if `FALSE`,
+#'   solve `x %*% op(a) = b`.
+#' @param lower (`logical(1)`)\cr
+#'   Whether `a` is lower or upper triangular. Defaults to `TRUE`.
+#' @param unit_diagonal (`logical(1)`)\cr
+#'   If `TRUE`, the diagonal of `a` is treated as all ones (and the actual
+#'   values on the diagonal are ignored). Defaults to `FALSE`.
+#' @param transpose_a (`logical(1)`)\cr
+#'   If `TRUE`, solve with `t(a)` in place of `a`. Defaults to `FALSE`.
+#' @return [`arrayish`]\cr
+#'   The solution `x`, with the same shape and dtype as `b`.
+#' @seealso [nv_solve()], [nv_chol()], [prim_triangular_solve()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' L <- nv_array(matrix(c(2, 1, 0, 3), nrow = 2), dtype = "f32")
+#' b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
+#' nv_triangular_solve(L, b)
+#' @export
+nv_triangular_solve <- function(
+  a,
+  b,
+  left_side = TRUE,
+  lower = TRUE,
+  unit_diagonal = FALSE,
+  transpose_a = FALSE
+) {
+  args <- as_anvl_arrays(a, b)
+  a <- args[[1L]]
+  b <- args[[2L]]
+
+  a_shape <- shape(a)
+  b_shape <- shape(b)
+  rank_a <- length(a_shape)
+  rank_b <- length(b_shape)
+  if (rank_a < 2L) {
+    cli_abort("{.arg a} must have at least 2 dimensions, got rank {rank_a}.")
+  }
+  if (rank_b < rank_a - 1L || rank_b > rank_a) {
+    cli_abort(c(
+      "{.arg b} must have rank {rank_a - 1L} or {rank_a} to match {.arg a}.",
+      "x" = "Got rank {rank_b}."
+    ))
+  }
+
+  # Convenience: accept a `b` whose rank is one less than `a`'s. The
+  # primitive requires rank(b) == rank(a); for left_side = TRUE we append
+  # a trailing 1 (column vector per batch), for left_side = FALSE we
+  # insert a 1 before the last dim (row vector per batch). The shape is
+  # restored on the way out. There's no ambiguity from broadcasting since
+  # we require exact shape match for the batch dims.
+  b_is_vector <- rank_b == rank_a - 1L
+  if (b_is_vector) {
+    n <- if (left_side) a_shape[rank_a - 1L] else a_shape[rank_a]
+    if (b_shape[length(b_shape)] != n) {
+      cli_abort("{.arg b} must have length {n} in its last dimension to match {.arg a}")
+    }
+    b <- if (left_side) {
+      prim_reshape(b, shape = c(b_shape, 1L))
+    } else {
+      prim_reshape(b, shape = c(b_shape[-length(b_shape)], 1L, n))
+    }
+  }
+
+  x <- prim_triangular_solve(
+    a,
+    b,
+    left_side = left_side,
+    lower = lower,
+    unit_diagonal = unit_diagonal,
+    transpose_a = transpose_a
+  )
+
+  if (b_is_vector) {
+    x <- prim_reshape(x, shape = b_shape)
+  }
+  x
+}
+
+# Helper: sign of the row permutation `pivots` returned by getrf.
+# The sign of a single swap (i, pivots[i]) is -1 if pivots[i] != i, else +1.
+# Multiplying these gives the sign of the full permutation P, which is what
+# det(A) = sign(P)^{-1} * prod(diag(U)) needs (P inverse has the same
+# sign as P).
+lu_pivot_sign <- function(pivots, n, dt) {
+  iota_1n <- nv_iota_like(pivots, dim = 1L, shape = n, start = 1L, dtype = "i32")
+  is_swap <- prim_ne(pivots, iota_1n)
+  signs <- prim_ifelse(
+    is_swap,
+    nv_fill_like(pivots, -1L, shape = n, dtype = "i32"),
+    nv_fill_like(pivots, 1L, shape = n, dtype = "i32")
+  )
+  sign_int <- nv_reduce_prod(signs, dims = 1L)
+  nv_convert(sign_int, dtype = dt)
+}
+
+#' @title Determinant
+#' @description
+#' Computes the determinant of a square matrix via [`nv_determinant()`].
+#' @param operand ([`arrayish`])\cr
+#'   Square matrix of floating-point data type.
+#' @return Scalar [`arrayish`] with the same dtype as `operand`.
+#' @seealso [nv_determinant()], [nv_solve()], [prim_lu()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#' nv_det(a)
+#' @export
+nv_det <- function(operand) {
+  d <- nv_determinant(operand, logarithm = FALSE)
+  prim_mul(d$sign, d$modulus)
+}
+
+#' @title Determinant in modulus/sign form
+#' @description
+#' Computes the determinant of a square matrix in the modulus / sign
+#' decomposition matching base R's [base::determinant()]. For the plain
+#' scalar determinant, use [nv_det()].
+#' @details
+#' For computing the determinant, we use:
+#' \deqn{P A = L U}
+#' \deqn{\det(L) = 1}
+#' \deqn{\det(A) = \det(U) / \det(P) = \mathrm{sign}(P^{-1}) \, \prod_i U_{ii}
+#'   = \mathrm{sign}(P) \, \prod_i U_{ii}}
+#' \deqn{\log|\det(A)| = \sum_i \log|U_{ii}|}
+#' @param operand ([`arrayish`])\cr
+#'   Square matrix of floating-point data type.
+#' @param logarithm (`logical(1)`)\cr
+#'   If `TRUE` (default, matching base R), `modulus` is
+#'   `log(abs(det(operand)))`. If `FALSE`, `modulus` is `abs(det(operand))`.
+#' @return Named `list` with elements `modulus` and `sign`, both scalar
+#'   [`arrayish`] with the same dtype as `operand`. The full determinant
+#'   is `sign * exp(modulus)` (with `logarithm = TRUE`) or
+#'   `sign * modulus` (with `logarithm = FALSE`).
+#' @seealso [nv_det()], [nv_solve()], [prim_lu()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#' nv_determinant(a)
+#' nv_determinant(a, logarithm = FALSE)
+#' @export
+nv_determinant <- function(operand, logarithm = TRUE) {
+  operand <- as_anvl_array(operand)
+  shp <- shape(operand)
+  if (length(shp) != 2L || shp[[1L]] != shp[[2L]]) {
+    cli_abort("{.arg operand} must be a square 2-D matrix")
+  }
+  n <- shp[[1L]]
+  dt <- dtype(operand)
+  # Empty matrix: det of the 0x0 matrix is the empty product = 1, so
+  # log|det| = 0 and sign(det) = +1. This matches `base::determinant()`
+  # and short-circuits since prim_lu rejects zero-sized inputs.
+  if (n == 0L) {
+    one <- nv_scalar_like(operand, 1)
+    modulus <- if (logarithm) nv_scalar_like(operand, 0) else one
+    return(list(modulus = modulus, sign = one))
+  }
+  factored <- prim_lu(operand)
+  LU <- factored$LU
+  pivots <- factored$pivots
+  diag_U <- nv_extract_diag(LU)
+
+  # Always accumulate the magnitude in log space:
+  #   log|det| = sum(log|diag(U)|)
+  # This avoids over/underflow in the intermediate product even when
+  # `logarithm = FALSE`; in that case we only `exp` at the very end. The
+  # final `exp` can still overflow if `|det|` itself is unrepresentable,
+  # but that is unavoidable.
+  log_abs_det <- nv_reduce_sum(prim_log(prim_abs(diag_U)), dims = 1L)
+  diag_sign <- nv_reduce_prod(nv_sign(diag_U), dims = 1L)
+  sign <- prim_mul(lu_pivot_sign(pivots, n, dt), diag_sign)
+  modulus <- if (logarithm) log_abs_det else prim_exp(log_abs_det)
+
+  list(modulus = modulus, sign = sign)
+}
+
+#' @title Matrix Inverse
+#' @description
+#' Computes `operand^-1`, the inverse of a square non-singular matrix, by
+#' solving `operand %*% x = I`.
+#'
+#' For most use cases prefer [nv_solve()] directly: forming the explicit
+#' inverse is both slower and less numerically stable than solving against
+#' a right-hand side.
+#' @param operand ([`arrayish`])\cr
+#'   Square non-singular matrix.
+#' @return [`arrayish`]\cr
+#'   The inverse, same shape and dtype as `operand`.
+#' @seealso [nv_solve()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#' nv_inv(a)
+#' @export
+nv_inv <- function(operand) {
+  operand <- as_anvl_array(operand)
+  shp <- shape(operand)
+  if (length(shp) != 2L || shp[[1L]] != shp[[2L]]) {
+    cli_abort("{.arg operand} must be a square 2-D matrix")
+  }
+  n <- shp[[1L]]
+  # The inverse of the 0x0 matrix is itself; short-circuit since prim_lu
+  # rejects zero-sized inputs.
+  if (n == 0L) {
+    return(operand)
+  }
+  identity <- nv_eye_like(operand, n, dtype = dtype(operand))
+  nv_solve(operand, identity)
+}
+
+#' @title QR Decomposition
+#' @inherit prim_qr description params return details
+#' @seealso [prim_qr()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(c(1, 2, 3, 4, 5, 6), nrow = 3), dtype = "f32")
+#' nv_qr(x)
+#' @export
+nv_qr <- prim_qr
+
+#' @title LU Decomposition
+#' @description
+#' Computes the partial-pivoted LU decomposition of a matrix `operand`:
+#' \deqn{P A = L U,}
+#' where \eqn{P} is a permutation matrix, \eqn{L} is unit lower
+#' triangular, and \eqn{U} is upper triangular.
+#'
+#' Returns `L` and `U` as separate matrices — analogous to
+#' `expand(Matrix::lu(A))` in the **Matrix** package. Use [prim_lu()] if
+#' you want the raw LAPACK-style packed `LU` buffer.
+#' @inheritParams prim_lu
+#' @return Named `list`:
+#'   * `L` -- unit lower-triangular factor of shape `(m, k)`, where
+#'     `(m, n) = shape(operand)` and `k = min(m, n)`.
+#'   * `U` -- upper-triangular factor of shape `(k, n)`.
+#'   * `pivots` -- length `k`, dtype `i32`. LAPACK-style sequential
+#'     1-based row swaps as returned by `getrf`.
+#'   * `permutation` -- length `m`, dtype `i32`. A 1-based permutation
+#'     vector representing \eqn{P}.
+#' @seealso [prim_lu()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#' nv_lu(x)
+#' @export
+nv_lu <- function(operand) {
+  operand <- as_anvl_array(operand)
+  out <- prim_lu(operand)
+  LU <- out$LU
+  shp <- shape(LU)
+  m <- shp[[1L]]
+  n <- shp[[2L]]
+  k <- min(m, n)
+  dt <- dtype(operand)
+
+  # L = strict lower triangle of LU (shape (m, k)) + unit diagonal.
+  L_strict_full <- nv_tril(LU, diagonal = -1L) # (m, n)
+  L_strict <- if (n > k) {
+    nv_static_slice(L_strict_full,
+      start_indices = c(1L, 1L),
+      limit_indices = c(m, k),
+      strides = c(1L, 1L)
+    )
+  } else {
+    L_strict_full
+  }
+  rows <- nv_iota_like(operand, dim = 1L, shape = c(m, k), dtype = "i32")
+  cols <- nv_iota_like(operand, dim = 2L, shape = c(m, k), dtype = "i32")
+  one <- nv_fill_like(operand, 1L, shape = c(m, k), dtype = dt)
+  zero <- nv_fill_like(operand, 0L, shape = c(m, k), dtype = dt)
+  L <- L_strict + nv_ifelse(rows == cols, one, zero)
+
+  # U = upper triangle of the first k rows of LU.
+  U_full <- nv_triu(LU, diagonal = 0L) # (m, n)
+  U <- if (m > k) {
+    nv_static_slice(U_full,
+      start_indices = c(1L, 1L),
+      limit_indices = c(k, n),
+      strides = c(1L, 1L)
+    )
+  } else {
+    U_full
+  }
+
+  list(L = L, U = U, pivots = out$pivots, permutation = out$permutation)
+}
+
+#' @title Singular Value Decomposition
+#' @inherit prim_svd description params return details
+#' @seealso [prim_svd()], [base::svd()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(c(1, 0, 0, 1, 0, 1), nrow = 3), dtype = "f64")
+#' nv_svd(x)
+#' @export
+nv_svd <- prim_svd
+
+#' @title Symmetric Eigendecomposition
+#' @inherit prim_eigh description params return details
+#' @seealso [prim_eigh()], [base::eigen()]
+#' @examplesIf pjrt::plugins_downloaded()
+#' x <- nv_array(matrix(c(2, 1, 1, 2), nrow = 2), dtype = "f64")
+#' nv_eigh(x)
+#' @export
+nv_eigh <- prim_eigh
 
 #' @title Diagonal Matrix
 #' @description

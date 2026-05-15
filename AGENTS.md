@@ -12,6 +12,10 @@ It provides JIT compilation (`jit()`, `xla()`) and automatic differentiation (`g
 
 When adding new functionality, decide which layer it belongs to. Most new operations need both: a `prim_*` primitive with rules, and an `nv_*` wrapper with R-idiomatic semantics.
 
+## Supported dtypes
+
+Anvl currently does **not** support complex numbers — every primitive and API function works on real (and integer/logical) dtypes only. Linalg ops that conceptually produce complex outputs in the general case (e.g. non-symmetric eigendecomposition) are intentionally omitted; only the real-only variants (`prim_eigh` / `nv_eigh` for symmetric matrices) are exposed.
+
 ## Primitive System
 
 Primitives are `JitPrimitive` callables constructed by `new_primitive()` (defined in `R/primitive.R`). The returned object is both callable (it wraps `fn` with `jit()`) and carries an `AnvlPrimitive` metadata object via `attr(., "primitive")`. Primitives are stored as `prim_<name>` variables. `new_primitive()` lexically binds `self` (the `AnvlPrimitive`) into the body's enclosing environment, so inside a primitive body you write `graph_desc_add(self, ...)` — never the primitive name as a string. Interpretation rules are accessed via `prim_<name>[["<rule_type>"]]`:
