@@ -107,7 +107,7 @@ nv_runif <- function(
   # shift to interval
   Y <- U + lower
 
-  return(list(Unif[[1]], U))
+  return(list(Unif[[1]], Y))
 }
 
 #' @title Sample from a Normal Distribution
