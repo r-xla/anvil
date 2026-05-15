@@ -258,10 +258,25 @@ prim_digamma[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, param
   operand <- inputs[[1L]]
   grad <- grads[[1L]]
   list(
-    # d/dx digamma(x) = trigamma(x) = polygamma(1, x)
     if (required[[1L]]) {
-      n_one <- prim_fill(1, dtype = dtype(operand), shape = shape(operand))
-      prim_mul(grad, prim_polygamma(n_one, operand))
+      # d/dx digamma(x) = trigamma(x) = polygamma(1, x).
+      # CHLO's polygamma is inaccurate for x < 0.5, so apply the reflection
+      # formula trigamma(x) = pi^2 / sin(pi*x)^2 - trigamma(1 - x), ensuring
+      # the call to polygamma always sees an argument >= 0.5.
+      # See https://github.com/jax-ml/jax/issues/37635.
+      dt <- dtype(operand)
+      sh <- shape(operand)
+      one <- prim_fill(1, dtype = dt, shape = sh)
+      reflect <- prim_lt(operand, prim_fill(0.5, dtype = dt, shape = sh))
+      safe_x <- prim_ifelse(reflect, prim_sub(one, operand), operand)
+      tg_safe <- prim_polygamma(one, safe_x)
+      sin_pi_x <- prim_sin(prim_mul(prim_fill(pi, dtype = dt, shape = sh), operand))
+      reflection_term <- prim_div(
+        prim_fill(pi * pi, dtype = dt, shape = sh),
+        prim_mul(sin_pi_x, sin_pi_x)
+      )
+      trigamma <- prim_ifelse(reflect, prim_sub(reflection_term, tg_safe), tg_safe)
+      prim_mul(grad, trigamma)
     }
   )
 })
@@ -539,7 +554,13 @@ prim_ifelse[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params
   }
 
   list(
-    if (required[[1L]]) cli_abort("Predicate cannot be differentiated"),
+    # The predicate is boolean; conventionally `ifelse` is treated as locally
+    # constant in pred so gradient flow stops here. `required[[1L]]` can be
+    # TRUE whenever pred transitively depends on a differentiable input
+    # (e.g. via a comparison) -- returning ambiguous zeros lets the engine
+    # propagate that no-op gradient back through the comparison's own
+    # zero-returning reverse rule.
+    if (required[[1L]]) zeros_like(pred, ambiguous = TRUE),
     if (required[[2L]]) prim_ifelse(pred, grad, zero),
     if (required[[3L]]) prim_ifelse(prim_not(pred), grad, zero)
   )

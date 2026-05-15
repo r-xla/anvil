@@ -597,6 +597,43 @@ test_that("prim_digamma", {
   verify_grad_uni(prim_digamma, torch::torch_digamma, tol = 1e-4, gen = sampler_unif(0.5, 5))
 })
 
+test_that("prim_ifelse: second-order grad with differentiable predicate", {
+  # `prim_ifelse[["reverse"]]` must not abort when the predicate transitively
+  # depends on a differentiable input -- the predicate's "gradient" is
+  # conventionally zero (the select is locally constant in pred), and this
+  # comes up whenever a reverse rule branches on its operand, e.g. the
+  # reflection-formula in `prim_digamma[["reverse"]]`.
+  vals <- c(-16.5, 2.5)
+  f1 <- gradient(function(x) nv_reduce_sum(nv_digamma(x)))
+  f2 <- jit(gradient(function(x) nv_reduce_sum(f1(x)[[1L]])))
+  # d^2/dx^2 digamma(x) = polygamma(2, x); torch as ground truth.
+  # Use f64 because the f32 reflection formula amplifies float error at
+  # half-integer poles (cos(pi*x)~0 cancels poorly in single precision).
+  out <- f2(nv_array(vals, dtype = "f64"))[[1L]]
+  x_th <- torch::torch_tensor(vals, requires_grad = TRUE, dtype = torch::torch_float64())
+  expected <- as_array_torch(torch::torch_polygamma(2L, x_th))
+  testthat::expect_equal(tengen::as_array(out), expected, tolerance = 1e-6)
+})
+
+test_that("prim_digamma gradient at negative half-integers (reflection)", {
+  # Regression test for https://github.com/jax-ml/jax/issues/37635
+  # CHLO's polygamma is wrong for x < 0.5, so the digamma reverse rule must
+  # apply the reflection formula trigamma(x) = pi^2/sin(pi*x)^2 - trigamma(1-x).
+  vals <- c(-16.5, -19.5, -22.5, -0.5, 0.25)
+  x_th <- torch::torch_tensor(vals, requires_grad = TRUE, dtype = torch::torch_float32())
+  torch::torch_sum(torch::torch_digamma(x_th))$backward()
+  expected <- as_array_torch(x_th$grad)
+
+  f <- function(x) nv_reduce_sum(prim_digamma(x), dims = seq_along(shape(x)), drop = TRUE)
+  grad_anvl <- jit(gradient(f))(nv_array(vals, dtype = "f32"))[[1L]]
+
+  testthat::expect_equal(
+    tengen::as_array(grad_anvl),
+    expected,
+    tolerance = 1e-4
+  )
+})
+
 test_that("prim_lgamma", {
   verify_grad_uni(prim_lgamma, torch::torch_lgamma, tol = 1e-4, gen = sampler_unif(0.5, 5))
 })
