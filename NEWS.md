@@ -55,13 +55,11 @@
 
 ## Bug Fixes
 
+* `nv_runif()` not properly respects the `lower` argument.
 * The overloaded `%%` operator now calls the new `nv_mod()` to be consistent
   with base R.
 * The reverse rule for `prim_reduce_prod()` no longer produces `NaN`/`Inf`
   gradients when the input contains zeros.
-
-## Bug Fixes
-
 * The CI now actually runs the torch-comparison tests
 
 
