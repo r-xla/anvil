@@ -1280,6 +1280,37 @@ describe("cross-device eager (check_eager)", {
   })
 })
 
+# Regression for r-xla/anvl#343: R literals must adopt the device of their
+# AnvlArray siblings rather than being placed on the default device.
+describe("literals adopt device of array siblings", {
+  dev1 <- nv_device("cpu:1", "xla")
+
+  it("nv_ifelse with literal branches", {
+    pred <- nv_array(c(TRUE, FALSE), device = dev1)
+    out <- nv_ifelse(pred, 1, 2)
+    expect_true(eq_device(device(out), dev1))
+  })
+
+  it("nv_ifelse with literal pred", {
+    tv <- nv_array(c(1, 2), device = dev1)
+    fv <- nv_array(c(3, 4), device = dev1)
+    out <- nv_ifelse(arr(TRUE, FALSE), tv, fv)
+    expect_true(eq_device(device(out), dev1))
+  })
+
+  it("nv_rbind with literal", {
+    x <- nv_array(c(1, 2), device = dev1)
+    out <- nv_rbind(x, arr(3, 4))
+    expect_true(eq_device(device(out), dev1))
+  })
+
+  it("nv_cbind with literal", {
+    x <- nv_array(c(1, 2), device = dev1)
+    out <- nv_cbind(x, arr(3, 4))
+    expect_true(eq_device(device(out), dev1))
+  })
+})
+
 describe("nv_solve", {
   it("matches base R for matrix b (output stays a 2-D matrix)", {
     A_mat <- matrix(c(4, 3, 6, 3), nrow = 2)

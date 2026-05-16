@@ -417,7 +417,7 @@ bind_reshape <- function(arg, stack_dim, target_shape) {
 #' @rdname nv_bind
 #' @export
 nv_rbind <- function(...) {
-  args <- lapply(list(...), as_anvl_array)
+  args <- as_anvl_arrays(...)
   target_shape <- bind_target_shape(args, stack_dim = 1L, fn_name = "nv_rbind")
   args <- lapply(args, bind_reshape, stack_dim = 1L, target_shape = target_shape)
   rlang::exec(nv_concatenate, !!!args, dimension = 1L)
@@ -426,7 +426,7 @@ nv_rbind <- function(...) {
 #' @rdname nv_bind
 #' @export
 nv_cbind <- function(...) {
-  args <- lapply(list(...), as_anvl_array)
+  args <- as_anvl_arrays(...)
   target_shape <- bind_target_shape(args, stack_dim = 2L, fn_name = "nv_cbind")
   args <- lapply(args, bind_reshape, stack_dim = 2L, target_shape = target_shape)
   rlang::exec(nv_concatenate, !!!args, dimension = 2L)
@@ -490,8 +490,13 @@ nv_print <- prim_print
 #' nv_ifelse(pred, nv_scalar(1L), nv_scalar(0.5))
 #' @export
 nv_ifelse <- function(pred, true_value, false_value) {
-  promoted <- nv_promote_to_common(true_value, false_value)
-  args <- nv_broadcast_scalars(pred, promoted[[1L]], promoted[[2L]])
+  # Canonicalize all three inputs together so an R literal `true_value` /
+  # `false_value` inherits the device of `pred` (and vice versa). Doing the
+  # `nv_promote_to_common` step first would convert literals on the default
+  # device and then conflict with a non-default-device `pred`.
+  args <- as_anvl_arrays(pred, true_value, false_value)
+  promoted <- nv_promote_to_common(args[[2L]], args[[3L]])
+  args <- nv_broadcast_scalars(args[[1L]], promoted[[1L]], promoted[[2L]])
   prim_ifelse(args[[1L]], args[[2L]], args[[3L]])
 }
 
