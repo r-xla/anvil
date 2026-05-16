@@ -3,14 +3,16 @@
 
 # S3 methods for stablehlo functions to handle AnvlArray
 
+#' @method hlo_scalar AnvlArray
 #' @export
 hlo_scalar.AnvlArray <- function(value, ..., func = NULL) {
-  stablehlo::hlo_scalar(value$data, ..., func = func)
+  hlo_scalar(value$data, ..., func = func)
 }
 
+#' @method hlo_tensor AnvlArray
 #' @export
 hlo_tensor.AnvlArray <- function(value, ..., func = NULL) {
-  stablehlo::hlo_tensor(value$data, ..., func = func)
+  hlo_tensor(value$data, ..., func = func)
 }
 
 #' @title HloEnv
@@ -199,7 +201,7 @@ stablehlo <- function(graph, constants_as_inputs = TRUE, env = NULL, donate = ch
       gnode_to_fval(x)
     }
   })
-  func <- do.call(stablehlo::hlo_return, outputs)
+  func <- do.call(hlo_return, outputs)
 
   constants <- graph$constants
 

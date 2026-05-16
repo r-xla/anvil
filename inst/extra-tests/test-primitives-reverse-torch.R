@@ -958,8 +958,8 @@ describe("prim_triangular_solve", {
     }
     grads_anvl <- jit(gradient(f_anvl))(a_anvl, b_anvl)
 
-    is_upper <- if (transpose_a == "TRANSPOSE") lower else !lower
-    a_effective <- if (transpose_a == "TRANSPOSE") a_torch$t() else a_torch
+    is_upper <- if (transpose_a) lower else !lower
+    a_effective <- if (transpose_a) a_torch$t() else a_torch
     x_torch <- torch::linalg_solve_triangular(
       a_effective,
       b_torch,
@@ -978,7 +978,7 @@ describe("prim_triangular_solve", {
     verify_triangular_solve_grad(
       left_side = TRUE,
       lower = TRUE,
-      transpose_a = "NO_TRANSPOSE",
+      transpose_a = FALSE,
       unit_diagonal = FALSE
     )
   )
@@ -987,7 +987,7 @@ describe("prim_triangular_solve", {
     verify_triangular_solve_grad(
       left_side = TRUE,
       lower = TRUE,
-      transpose_a = "TRANSPOSE",
+      transpose_a = TRUE,
       unit_diagonal = FALSE
     )
   )
@@ -996,7 +996,7 @@ describe("prim_triangular_solve", {
     verify_triangular_solve_grad(
       left_side = TRUE,
       lower = FALSE,
-      transpose_a = "NO_TRANSPOSE",
+      transpose_a = FALSE,
       unit_diagonal = FALSE
     )
   )
@@ -1005,7 +1005,7 @@ describe("prim_triangular_solve", {
     verify_triangular_solve_grad(
       left_side = FALSE,
       lower = TRUE,
-      transpose_a = "NO_TRANSPOSE",
+      transpose_a = FALSE,
       unit_diagonal = FALSE
     )
   )
@@ -1014,7 +1014,7 @@ describe("prim_triangular_solve", {
     verify_triangular_solve_grad(
       left_side = FALSE,
       lower = FALSE,
-      transpose_a = "TRANSPOSE",
+      transpose_a = TRUE,
       unit_diagonal = FALSE
     )
   )
@@ -1023,7 +1023,7 @@ describe("prim_triangular_solve", {
     verify_triangular_solve_grad(
       left_side = TRUE,
       lower = TRUE,
-      transpose_a = "NO_TRANSPOSE",
+      transpose_a = FALSE,
       unit_diagonal = TRUE
     )
   )
@@ -1045,7 +1045,7 @@ describe("prim_triangular_solve", {
         left_side = TRUE,
         lower = lower,
         unit_diagonal = unit_diagonal,
-        transpose_a = "NO_TRANSPOSE"
+        transpose_a = FALSE
       )
       nv_reduce_sum(x, dims = c(1L, 2L))
     }

@@ -333,3 +333,47 @@ cbind.AnvlBox <- function(..., deparse.level = 1) {
 #' @method cbind AnvlArray
 #' @export
 cbind.AnvlArray <- cbind.AnvlBox
+
+#' @method solve AnvlBox
+#' @export
+solve.AnvlBox <- function(a, b, ...) {
+  rlang::check_dots_empty()
+  if (missing(b)) nv_inv(a) else nv_solve(a, b)
+}
+
+#' @method solve AnvlArray
+#' @export
+solve.AnvlArray <- solve.AnvlBox
+
+#' @method qr AnvlBox
+#' @export
+qr.AnvlBox <- function(x, ...) {
+  rlang::check_dots_empty()
+  nv_qr(x)
+}
+
+#' @method qr AnvlArray
+#' @export
+qr.AnvlArray <- qr.AnvlBox
+
+#' @method chol AnvlBox
+#' @export
+chol.AnvlBox <- function(x, ..., lower = FALSE) {
+  rlang::check_dots_empty()
+  nv_chol(x, lower = lower)
+}
+
+#' @method chol AnvlArray
+#' @export
+chol.AnvlArray <- chol.AnvlBox
+
+#' @method determinant AnvlBox
+#' @export
+determinant.AnvlBox <- function(x, logarithm = TRUE, ...) {
+  rlang::check_dots_empty()
+  nv_determinant(x, logarithm = logarithm)
+}
+
+#' @method determinant AnvlArray
+#' @export
+determinant.AnvlArray <- determinant.AnvlBox

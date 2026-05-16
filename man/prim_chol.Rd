@@ -4,7 +4,7 @@
 \alias{prim_chol}
 \title{Primitive Cholesky Decomposition}
 \usage{
-prim_chol(operand, lower)
+prim_chol(operand, lower = FALSE)
 }
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr
@@ -13,9 +13,10 @@ The last two dimensions must be equal (square matrix); any leading
 dimensions are batch dimensions.}
 
 \item{lower}{(\code{logical(1)})\cr
-If \code{TRUE}, compute the lower triangular factor \code{L} such that
-\code{operand = L \%*\% t(L)}. If \code{FALSE}, compute the upper triangular
-factor \code{U} such that \code{operand = t(U) \%*\% U}.}
+If \code{FALSE} (default, matching base R's \code{\link[base:chol]{base::chol()}}), compute the
+upper triangular factor \code{U} such that \code{operand = t(U) \%*\% U}. If
+\code{TRUE}, compute the lower triangular factor \code{L} such that
+\code{operand = L \%*\% t(L)}.}
 }
 \value{
 \code{\link{arrayish}}\cr
