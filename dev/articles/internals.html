@@ -73,8 +73,10 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-developers" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Developers</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-developers">
-<li><a class="dropdown-item" href="../articles/extending_primitive.html">Adding a Primitive</a></li>
-    <li><a class="dropdown-item" href="../articles/extending_primitive.html">Extending the API</a></li>
+<li><h6 class="dropdown-header" data-toc-skip>Extending</h6></li>
+    <li><a class="dropdown-item" href="../articles/extending_primitive.html">Adding a Primitive</a></li>
+    <li><a class="dropdown-item" href="../articles/extending_api.html">Adding an API Function</a></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Other</h6></li>
     <li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
     <li><a class="dropdown-item" href="../articles/primitives.html">Available Primitives</a></li>
   </ul>
@@ -324,7 +326,7 @@ transformation are attached to each primitive.</p>
 <code class="sourceCode R"><span><span class="va">prim_mul</span><span class="op">[[</span><span class="st">"stablehlo"</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## function (lhs, rhs) </span></span>
 <span><span class="co">## {</span></span>
-<span><span class="co">##     list(stablehlo::hlo_multiply(lhs, rhs))</span></span>
+<span><span class="co">##     list(hlo_multiply(lhs, rhs))</span></span>
 <span><span class="co">## }</span></span>
 <span><span class="co">## &lt;environment: namespace:anvl&gt;</span></span></code></pre>
 <p>The <code><a href="../reference/stablehlo.html">anvl::stablehlo</a></code> function will create a

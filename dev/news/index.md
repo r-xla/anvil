@@ -21,42 +21,63 @@
   [`prim_chol()`](https://r-xla.github.io/anvl/dev/reference/prim_chol.md).
 - `nv_reduce_mean()` was renamed to
   [`nv_mean()`](https://r-xla.github.io/anvl/dev/reference/nv_mean.md).
+- [`nv_solve()`](https://r-xla.github.io/anvl/dev/reference/nv_solve.md)
+  no longer requires `a` to be symmetric positive-definite as it uses LU
+  instead of Cholesky decomposition. Because of this, it is no longer
+  differentiable, as the reverse rule for LU is not implemented yet.
+- [`nv_chol()`](https://r-xla.github.io/anvl/dev/reference/nv_chol.md) /
+  [`prim_chol()`](https://r-xla.github.io/anvl/dev/reference/prim_chol.md)
+  now default to `lower = FALSE` (upper-triangular factor), matching
+  base R’s [`chol()`](https://rdrr.io/r/base/chol.html). Previously
+  defaulted to `lower = TRUE`.
 
 ### New Features
 
-- [`nv_array()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
-  gained a `byrow` argument that fills the array from an R object in
-  row-major order, mirroring `matrix(byrow = TRUE)`
-  ([\#165](https://github.com/r-xla/anvl/issues/165)).
-- Added `AnvlArray` -\> R `vector` converters `as.numeric`, `as.double`,
-  `as.integer`, `as.logical` and `as.vector`.
-- New API functions
-  [`nv_rbind()`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
+#### Linear algebra
+
+- New matrix-decomposition primitives and corresponding `nv_*()`
+  functions: `qr`, `lu`, `svd`, `eigh`. None of them implement a reverse
+  rule yet.
+- New API functions:
+  - [`nv_triangular_solve()`](https://r-xla.github.io/anvl/dev/reference/nv_triangular_solve.md)
+    (wraps the already-existing
+    [`prim_triangular_solve()`](https://r-xla.github.io/anvl/dev/reference/prim_triangular_solve.md)).
+  - [`nv_det()`](https://r-xla.github.io/anvl/dev/reference/nv_det.md)
+    and
+    [`nv_determinant()`](https://r-xla.github.io/anvl/dev/reference/nv_determinant.md).
+    The latter can also be called via the
+    [`determinant()`](https://rdrr.io/r/base/det.html) generic.
+  - [`nv_inv()`](https://r-xla.github.io/anvl/dev/reference/nv_inv.md),
+    which can also be called via `solve(operand)` (missing second
+    argument).
+- `qr`, `chol`, and `solve` from base R now dispatch to
+  [`nv_qr()`](https://r-xla.github.io/anvl/dev/reference/nv_qr.md),
+  [`nv_chol()`](https://r-xla.github.io/anvl/dev/reference/nv_chol.md),
   and
-  [`nv_cbind()`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
-  and corresponding
-  [`rbind()`](https://rdrr.io/r/base/cbind.html)/[`cbind()`](https://rdrr.io/r/base/cbind.html)
-  generics.
-- New functionality (primitives and corresponding `nv_<op>` functions:
-  `acos`, `acosh`, `asin`, `asinh`, `atan`, `atanh`, `cosh`, `sinh`,
-  `digamma`, `lgamma`, `polygamma`, `erf`, `erf_inv`, `erfc`.
-- New cumulative primitives and API functions:
-  [`nv_cumsum()`](https://r-xla.github.io/anvl/dev/reference/nv_cumsum.md),
-  [`nv_cumprod()`](https://r-xla.github.io/anvl/dev/reference/nv_cumprod.md),
-  [`nv_cummax()`](https://r-xla.github.io/anvl/dev/reference/nv_cummax.md),
-  [`nv_cummin()`](https://r-xla.github.io/anvl/dev/reference/nv_cummin.md)
-  (and the corresponding `prim_*` primitives).
+  [`nv_solve()`](https://r-xla.github.io/anvl/dev/reference/nv_solve.md)
+  on `AnvlArray` / `AnvlBox` inputs.
+
+#### Element-wise math
+
+- New unary primitives and corresponding `nv_*()` functions: `acos`,
+  `acosh`, `asin`, `asinh`, `atan`, `atanh`, `cosh`, `sinh`, `digamma`,
+  `lgamma`, `polygamma`, `erf`, `erf_inv`, `erfc`.
+- New API functions
+  [`nv_mod()`](https://r-xla.github.io/anvl/dev/reference/nv_mod.md)
+  (flooring remainder) and
+  [`nv_trunc()`](https://r-xla.github.io/anvl/dev/reference/nv_trunc.md)
+  (truncation toward zero).
+
+#### Cumulative reductions
+
+- New primitives and corresponding `nv_*()` functions: `cumsum`,
+  `cumprod`, `cummax`, `cummin`.
   [`prim_cumprod()`](https://r-xla.github.io/anvl/dev/reference/prim_cumprod.md)
   does not yet have a reverse rule.
-- Added new function
-  [`await()`](https://r-xla.github.io/anvl/dev/reference/await.md) that
-  blocks until the underlying computation has finished.
-- New tree utilities
-  [`map_tree()`](https://r-xla.github.io/anvl/dev/reference/map_tree.md)
-  and
-  [`pmap_tree()`](https://r-xla.github.io/anvl/dev/reference/pmap_tree.md)
-  for applying functions leaf-wise over (possibly nested) lists.
-- New primitives:
+
+#### Sorting and searching
+
+- New primitives
   [`prim_sort()`](https://r-xla.github.io/anvl/dev/reference/prim_sort.md),
   [`prim_top_k()`](https://r-xla.github.io/anvl/dev/reference/prim_top_k.md),
   [`prim_reduce()`](https://r-xla.github.io/anvl/dev/reference/prim_reduce.md),
@@ -64,29 +85,57 @@
   [`prim_argmin()`](https://r-xla.github.io/anvl/dev/reference/prim_argmin.md).
 - New API functions:
   - [`nv_sort()`](https://r-xla.github.io/anvl/dev/reference/nv_sort.md)
-    to sort along a dimension.
-  - [`nv_argsort()`](https://r-xla.github.io/anvl/dev/reference/nv_argsort.md)
-    to return the indices that would sort the array.
+    /
+    [`nv_argsort()`](https://r-xla.github.io/anvl/dev/reference/nv_argsort.md)
+    – sort along a dimension, or return the permutation that does.
   - [`nv_top_k()`](https://r-xla.github.io/anvl/dev/reference/nv_top_k.md)
-    to return the `k` largest values along a dimension.
+    – the `k` largest values along a dimension.
   - [`nv_median()`](https://r-xla.github.io/anvl/dev/reference/nv_median.md)
-    to compute the median along a dimension. Also dispatches from base
-    R’s [`median()`](https://rdrr.io/r/stats/median.html).
-  - [`nv_quantile()`](https://r-xla.github.io/anvl/dev/reference/nv_quantile.md)
-    to compute quantiles along a dimension.
+    /
+    [`nv_quantile()`](https://r-xla.github.io/anvl/dev/reference/nv_quantile.md)
+    – median / quantiles along a dimension.
+    [`median()`](https://rdrr.io/r/stats/median.html) dispatches to
+    [`nv_median()`](https://r-xla.github.io/anvl/dev/reference/nv_median.md).
   - [`nv_argmax()`](https://r-xla.github.io/anvl/dev/reference/nv_argmax.md)
-    and
+    /
     [`nv_argmin()`](https://r-xla.github.io/anvl/dev/reference/nv_argmin.md)
-    to find the index of the maximum/minimum along a dimension. Ties are
-    broken by returning the smallest index.
+    – index of the maximum / minimum along a dimension (ties broken by
+    smallest index).
   - [`nv_select()`](https://r-xla.github.io/anvl/dev/reference/nv_select.md)
-    to select a slice along a dimension by index.
-  - [`nv_flatten()`](https://r-xla.github.io/anvl/dev/reference/nv_flatten.md)
-    for flattening a vector
-  - [`nv_mod()`](https://r-xla.github.io/anvl/dev/reference/nv_mod.md)
-    for Module / flooring remainder and
-    [`nv_trunc()`](https://r-xla.github.io/anvl/dev/reference/nv_trunc.md)
-    for truncation
+    – select a slice along a dimension by index.
+
+#### Array construction / shape
+
+- [`nv_array()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  gained a `byrow` argument that fills the array from an R object in
+  row-major order, mirroring `matrix(byrow = TRUE)`
+  ([\#165](https://github.com/r-xla/anvl/issues/165)).
+- New API functions
+  [`nv_rbind()`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
+  and
+  [`nv_cbind()`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
+  and corresponding [`rbind()`](https://rdrr.io/r/base/cbind.html) /
+  [`cbind()`](https://rdrr.io/r/base/cbind.html) generics.
+- New API function
+  [`nv_flatten()`](https://r-xla.github.io/anvl/dev/reference/nv_flatten.md)
+  for flattening to 1-D.
+
+#### Misc
+
+- New `AnvlArray` -\> R `vector` converters:
+  [`as.numeric()`](https://rdrr.io/r/base/numeric.html),
+  [`as.double()`](https://rdrr.io/r/base/double.html),
+  [`as.integer()`](https://rdrr.io/r/base/integer.html),
+  [`as.logical()`](https://rdrr.io/r/base/logical.html),
+  [`as.vector()`](https://rdrr.io/r/base/vector.html).
+- New function
+  [`await()`](https://r-xla.github.io/anvl/dev/reference/await.md) that
+  blocks until the underlying computation has finished.
+- New tree utilities
+  [`map_tree()`](https://r-xla.github.io/anvl/dev/reference/map_tree.md)
+  and
+  [`pmap_tree()`](https://r-xla.github.io/anvl/dev/reference/pmap_tree.md)
+  for applying functions leaf-wise over (possibly nested) lists.
 - [`mean()`](https://rdrr.io/r/base/mean.html) and
   [`median()`](https://rdrr.io/r/stats/median.html) now error when
   called with `na.rm = TRUE`, since anvl arrays do not carry `NA`s.
@@ -108,6 +157,14 @@
 
 ### Bug Fixes
 
+- The overloaded `%%` operator now calls the new
+  [`nv_mod()`](https://r-xla.github.io/anvl/dev/reference/nv_mod.md) to
+  be consistent with base R.
+- The reverse rule for
+  [`prim_reduce_prod()`](https://r-xla.github.io/anvl/dev/reference/prim_reduce_prod.md)
+  no longer produces `NaN` / `Inf` gradients when the input contains
+  zeros.
+- The CI now actually runs the torch-comparison tests.
 - [`nv_runif()`](https://r-xla.github.io/anvl/dev/reference/nv_runif.md)
   not properly respects the `lower` argument.
 - The overloaded `%%` operator now calls the new

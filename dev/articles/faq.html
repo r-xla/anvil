@@ -73,8 +73,10 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-developers" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Developers</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-developers">
-<li><a class="dropdown-item" href="../articles/extending_primitive.html">Adding a Primitive</a></li>
-    <li><a class="dropdown-item" href="../articles/extending_primitive.html">Extending the API</a></li>
+<li><h6 class="dropdown-header" data-toc-skip>Extending</h6></li>
+    <li><a class="dropdown-item" href="../articles/extending_primitive.html">Adding a Primitive</a></li>
+    <li><a class="dropdown-item" href="../articles/extending_api.html">Adding an API Function</a></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Other</h6></li>
     <li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
     <li><a class="dropdown-item" href="../articles/primitives.html">Available Primitives</a></li>
   </ul>
@@ -164,12 +166,12 @@ related discussion in JAX.</p>
 <span><span class="co"># Bad (does not capture the whole computation):</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="fu">mul_n</span><span class="op">(</span><span class="va">x</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##   0.276   0.135   0.186</span></span></code></pre>
+<span><span class="co">##   0.304   0.111   0.190</span></span></code></pre>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Good (also measures actual computation):</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="fu"><a href="../reference/await.html">await</a></span><span class="op">(</span><span class="fu">mul_n</span><span class="op">(</span><span class="va">x</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##    user  system elapsed </span></span>
-<span><span class="co">##   0.749   0.830   0.777</span></span></code></pre>
+<span><span class="co">##   0.745   0.629   0.677</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="how-do-i-control-the-number-of-threads-used-by-xla">How do I control the number of threads used by XLA?<a class="anchor" aria-label="anchor" href="#how-do-i-control-the-number-of-threads-used-by-xla"></a>

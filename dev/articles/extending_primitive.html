@@ -73,8 +73,10 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-developers" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Developers</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-developers">
-<li><a class="dropdown-item" href="../articles/extending_primitive.html">Adding a Primitive</a></li>
-    <li><a class="dropdown-item" href="../articles/extending_primitive.html">Extending the API</a></li>
+<li><h6 class="dropdown-header" data-toc-skip>Extending</h6></li>
+    <li><a class="dropdown-item" href="../articles/extending_primitive.html">Adding a Primitive</a></li>
+    <li><a class="dropdown-item" href="../articles/extending_api.html">Adding an API Function</a></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Other</h6></li>
     <li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
     <li><a class="dropdown-item" href="../articles/primitives.html">Available Primitives</a></li>
   </ul>
@@ -489,7 +491,7 @@ machinery, so no separate registration step is needed:</p>
 <span><span class="co">#&gt;     }</span></span>
 <span><span class="co">#&gt;     do.call(jit_fns[[be]], args)</span></span>
 <span><span class="co">#&gt; }</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x55916668e4a8&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x55d1709df880&gt;</span></span>
 <span><span class="co">#&gt; attr(,"class")</span></span>
 <span><span class="co">#&gt; [1] "JitPrimitive" "JitFunction" </span></span>
 <span><span class="co">#&gt; attr(,"backend")</span></span>

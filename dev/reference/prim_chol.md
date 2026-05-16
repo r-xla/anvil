@@ -6,7 +6,7 @@ matrix. Dimensions before the last two are batch dimensions.
 ## Usage
 
 ``` r
-prim_chol(operand, lower)
+prim_chol(operand, lower = FALSE)
 ```
 
 ## Arguments
@@ -21,9 +21,11 @@ prim_chol(operand, lower)
 - lower:
 
   (`logical(1)`)  
-  If `TRUE`, compute the lower triangular factor `L` such that
-  `operand = L %*% t(L)`. If `FALSE`, compute the upper triangular
-  factor `U` such that `operand = t(U) %*% U`.
+  If `FALSE` (default, matching base R's
+  [`base::chol()`](https://rdrr.io/r/base/chol.html)), compute the upper
+  triangular factor `U` such that `operand = t(U) %*% U`. If `TRUE`,
+  compute the lower triangular factor `L` such that
+  `operand = L %*% t(L)`.
 
 ## Value
 

@@ -217,7 +217,7 @@ prim_mul[["stablehlo"]]
 
     ## function (lhs, rhs) 
     ## {
-    ##     list(stablehlo::hlo_multiply(lhs, rhs))
+    ##     list(hlo_multiply(lhs, rhs))
     ## }
     ## <environment: namespace:anvl>
 

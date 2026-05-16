@@ -46,8 +46,10 @@
   </ul></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-developers" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Developers</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-developers"><li><a class="dropdown-item" href="articles/extending_primitive.html">Adding a Primitive</a></li>
-    <li><a class="dropdown-item" href="articles/extending_primitive.html">Extending the API</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-developers"><li><h6 class="dropdown-header" data-toc-skip>Extending</h6></li>
+    <li><a class="dropdown-item" href="articles/extending_primitive.html">Adding a Primitive</a></li>
+    <li><a class="dropdown-item" href="articles/extending_api.html">Adding an API Function</a></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Other</h6></li>
     <li><a class="dropdown-item" href="articles/internals.html">Internals</a></li>
     <li><a class="dropdown-item" href="articles/primitives.html">Available Primitives</a></li>
   </ul></li>
@@ -84,6 +86,10 @@
 <li>
 <strong><code>prim_*</code> functions</strong> (e.g. <code><a href="reference/prim_fill.html">prim_fill()</a></code>, <code><a href="reference/prim_mul.html">prim_mul()</a></code>) – low-level primitives in <code>R/primitives.R</code>, exported directly under their <code>prim_&lt;name&gt;</code> R symbols. Calling a primitive records an operation into the computation graph during tracing (or executes it eagerly).</li>
 </ul><p>When adding new functionality, decide which layer it belongs to. Most new operations need both: a <code>prim_*</code> primitive with rules, and an <code>nv_*</code> wrapper with R-idiomatic semantics.</p>
+</div>
+<div class="section level2">
+<h2 id="supported-dtypes">Supported dtypes<a class="anchor" aria-label="anchor" href="#supported-dtypes"></a></h2>
+<p>Anvl currently does <strong>not</strong> support complex numbers — every primitive and API function works on real (and integer/logical) dtypes only. Linalg ops that conceptually produce complex outputs in the general case (e.g. non-symmetric eigendecomposition) are intentionally omitted; only the real-only variants (<code>prim_eigh</code> / <code>nv_eigh</code> for symmetric matrices) are exposed.</p>
 </div>
 <div class="section level2">
 <h2 id="primitive-system">Primitive System<a class="anchor" aria-label="anchor" href="#primitive-system"></a></h2>

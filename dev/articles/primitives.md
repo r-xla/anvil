@@ -1,6 +1,6 @@
 # Primitives Reference
 
-The table below shows all 95 primitives and which rules they implement.
+The table below shows all 99 primitives and which rules they implement.
 Note that a rule might be missing because it was just not added yet, or
 because it does not apply for a specific primitive.
 
@@ -37,6 +37,7 @@ because it does not apply for a specific primitive.
 | dot_general            |     ✓     |   ✓    |    ✓    |
 | dynamic_slice          |     ✓     |   ✓    |    ✓    |
 | dynamic_update_slice   |     ✓     |   ✓    |    ✓    |
+| eigh                   |     ✓     |   ✗    |    ✗    |
 | equal                  |     ✓     |   ✓    |    ✓    |
 | erf                    |     ✓     |   ✗    |    ✓    |
 | erf_inv                |     ✓     |   ✗    |    ✓    |
@@ -57,6 +58,7 @@ because it does not apply for a specific primitive.
 | log                    |     ✓     |   ✓    |    ✓    |
 | log1p                  |     ✓     |   ✓    |    ✓    |
 | logistic               |     ✓     |   ✓    |    ✓    |
+| lu                     |     ✓     |   ✗    |    ✗    |
 | maximum                |     ✓     |   ✓    |    ✓    |
 | minimum                |     ✓     |   ✓    |    ✓    |
 | mul                    |     ✓     |   ✓    |    ✓    |
@@ -69,6 +71,7 @@ because it does not apply for a specific primitive.
 | popcnt                 |     ✓     |   ✗    |    ✓    |
 | power                  |     ✓     |   ✓    |    ✓    |
 | print                  |     ✓     |   ✗    |    ✗    |
+| qr                     |     ✓     |   ✗    |    ✗    |
 | reduce                 |     ✓     |   ✗    |    ✗    |
 | reduce_all             |     ✓     |   ✓    |    ✓    |
 | reduce_any             |     ✓     |   ✓    |    ✓    |
@@ -94,6 +97,7 @@ because it does not apply for a specific primitive.
 | sqrt                   |     ✓     |   ✓    |    ✓    |
 | static_slice           |     ✓     |   ✓    |    ✓    |
 | sub                    |     ✓     |   ✓    |    ✓    |
+| svd                    |     ✓     |   ✗    |    ✗    |
 | tan                    |     ✓     |   ✓    |    ✓    |
 | tanh                   |     ✓     |   ✓    |    ✓    |
 | top_k                  |     ✓     |   ✗    |    ✓    |

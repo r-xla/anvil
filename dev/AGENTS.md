@@ -32,6 +32,15 @@ When adding new functionality, decide which layer it belongs to. Most
 new operations need both: a `prim_*` primitive with rules, and an `nv_*`
 wrapper with R-idiomatic semantics.
 
+## Supported dtypes
+
+Anvl currently does **not** support complex numbers — every primitive
+and API function works on real (and integer/logical) dtypes only. Linalg
+ops that conceptually produce complex outputs in the general case
+(e.g. non-symmetric eigendecomposition) are intentionally omitted; only
+the real-only variants (`prim_eigh` / `nv_eigh` for symmetric matrices)
+are exposed.
+
 ## Primitive System
 
 Primitives are `JitPrimitive` callables constructed by

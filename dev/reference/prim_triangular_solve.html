@@ -56,8 +56,10 @@ Here op is A or A^T depending on transpose_a."><meta property="og:image" content
   </ul></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-developers" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Developers</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-developers"><li><a class="dropdown-item" href="../articles/extending_primitive.html">Adding a Primitive</a></li>
-    <li><a class="dropdown-item" href="../articles/extending_primitive.html">Extending the API</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-developers"><li><h6 class="dropdown-header" data-toc-skip>Extending</h6></li>
+    <li><a class="dropdown-item" href="../articles/extending_primitive.html">Adding a Primitive</a></li>
+    <li><a class="dropdown-item" href="../articles/extending_api.html">Adding an API Function</a></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Other</h6></li>
     <li><a class="dropdown-item" href="../articles/internals.html">Internals</a></li>
     <li><a class="dropdown-item" href="../articles/primitives.html">Available Primitives</a></li>
   </ul></li>
@@ -109,8 +111,10 @@ leading dimensions are batch dimensions.</p></dd>
 
 <dt id="arg-b">b<a class="anchor" aria-label="anchor" href="#arg-b"></a></dt>
 <dd><p>(<code><a href="arrayish.html">arrayish</a></code>)<br>
-Right-hand side array. Must have the same data type, rank, and batch
-dimensions as <code>a</code>.</p></dd>
+Right-hand side. Same data type and rank as <code>a</code> (rank &gt;= 2), with
+matching leading batch dimensions. The size of <code>a</code>'s last two (square)
+dimensions must equal <code>b</code>'s second-to-last dimension when
+<code>left_side = TRUE</code>, or <code>b</code>'s last dimension when <code>left_side = FALSE</code>.</p></dd>
 
 
 <dt id="arg-left-side">left_side<a class="anchor" aria-label="anchor" href="#arg-left-side"></a></dt>
@@ -129,8 +133,8 @@ If <code>TRUE</code>, assume diagonal elements of <code>a</code> are 1.</p></dd>
 
 
 <dt id="arg-transpose-a">transpose_a<a class="anchor" aria-label="anchor" href="#arg-transpose-a"></a></dt>
-<dd><p>(<code>character(1)</code>)<br>
-One of <code>"NO_TRANSPOSE"</code>, <code>"TRANSPOSE"</code>, or <code>"ADJOINT"</code>.</p></dd>
+<dd><p>(<code>logical(1)</code>)<br>
+If <code>TRUE</code>, solve with <code>t(a)</code> in place of <code>a</code>. Defaults to <code>FALSE</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -170,7 +174,7 @@ Oxford University Computing Laboratory.</p>
 <span class="r-in"><span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="AnvlArray.html">nv_array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">3</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, dtype <span class="op">=</span> <span class="st">"f32"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">prim_triangular_solve</span><span class="op">(</span><span class="va">L</span>, <span class="va">b</span>,</span></span>
 <span class="r-in"><span>  left_side <span class="op">=</span> <span class="cn">TRUE</span>, lower <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>  unit_diagonal <span class="op">=</span> <span class="cn">FALSE</span>, transpose_a <span class="op">=</span> <span class="st">"NO_TRANSPOSE"</span></span></span>
+<span class="r-in"><span>  unit_diagonal <span class="op">=</span> <span class="cn">FALSE</span>, transpose_a <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> AnvlArray</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  2</span>
