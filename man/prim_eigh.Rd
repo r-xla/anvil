@@ -17,12 +17,12 @@ Named \code{list} with elements \code{values} (length \code{n}) and \code{vector
 \description{
 Computes the eigendecomposition of a symmetric matrix \code{operand} of
 shape \verb{(n, n)}:
-\deqn{A = V \Lambda V^\top,}
-where the columns of \eqn{V} are the (orthonormal) eigenvectors and
-\eqn{\Lambda = \mathrm{diag}(\lambda_1, \ldots, \lambda_n)} is the
-diagonal matrix of (real) eigenvalues in ascending order. Only the
-lower triangle of \code{operand} is read. Returned as \code{list(values, vectors)} with names and order matching \code{\link[base:eigen]{base::eigen()}} — \code{values}
-holds \eqn{\lambda_i} and \code{vectors} holds \eqn{V}.
+\deqn{A = \mathrm{vectors} \, \mathrm{diag}(\mathrm{values}) \,
+  \mathrm{vectors}^\top.}
+Only the lower triangle of \code{operand} is read. The columns of \code{vectors}
+are the (orthonormal) eigenvectors and \code{values} is the length-\code{n}
+vector of (real) eigenvalues in ascending order. Output names and
+order match \code{\link[base:eigen]{base::eigen()}}.
 }
 \section{Implemented Rules}{
 

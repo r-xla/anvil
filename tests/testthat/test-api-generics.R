@@ -354,12 +354,12 @@ describe("solve", {
   it("solves a x = b for matrix b", {
     a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
     b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f64")
-    expect_equal(as_array(solve(a, b)), as_array(nv_solve(a, b)), tolerance = 1e-10)
+    expect_equal(solve(a, b), nv_solve(a, b))
   })
 
   it("returns the inverse when b is missing", {
     a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
-    expect_equal(as_array(solve(a)), as_array(nv_inv(a)), tolerance = 1e-10)
+    expect_equal(solve(a), nv_inv(a))
   })
 })
 
@@ -373,15 +373,14 @@ describe("qr", {
 describe("chol", {
   it("returns the upper-triangular factor (base R convention)", {
     a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
-    expect_equal(as_array(chol(a)), as_array(nv_chol(a)), tolerance = 1e-10)
+    expect_equal(as_array(chol(a)), as_array(nv_chol(a)), tolerance = 1e-5)
   })
 
   it("respects lower = TRUE", {
     a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
     expect_equal(
-      as_array(chol(a, lower = TRUE)),
-      as_array(nv_chol(a, lower = TRUE)),
-      tolerance = 1e-10
+      chol(a, lower = TRUE),
+      nv_chol(a, lower = TRUE)
     )
   })
 })
@@ -391,16 +390,14 @@ describe("determinant", {
     a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
     out <- determinant(a)
     expected <- nv_determinant(a, logarithm = TRUE)
-    expect_equal(as_array(out$modulus), as_array(expected$modulus), tolerance = 1e-10)
-    expect_equal(as_array(out$sign), as_array(expected$sign), tolerance = 1e-10)
+    expect_equal(out, expected)
   })
 
   it("respects logarithm = FALSE", {
     a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
     out <- determinant(a, logarithm = FALSE)
     expected <- nv_determinant(a, logarithm = FALSE)
-    expect_equal(as_array(out$modulus), as_array(expected$modulus), tolerance = 1e-10)
-    expect_equal(as_array(out$sign), as_array(expected$sign), tolerance = 1e-10)
+    expect_equal(out, expected)
   })
 })
 

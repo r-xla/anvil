@@ -3272,9 +3272,11 @@ prim_triangular_solve <- new_primitive(
 #' @title Primitive QR Decomposition
 #' @description
 #' Computes the reduced QR decomposition of a matrix `operand`:
-#' \deqn{A = Q_1 R_1,}
-#' where \eqn{Q_1} has orthonormal columns (\eqn{Q_1^\top Q_1 = I}) and
-#' \eqn{R_1} is upper triangular.
+#' \deqn{A = Q R,}
+#' where \eqn{Q} has orthonormal columns (\eqn{Q^\top Q = I}) and
+#' \eqn{R} is upper triangular.
+#' For an \eqn{m \times n} input with \eqn{k = \min(m, n)}, \eqn{Q} has
+#' shape \eqn{m \times k} and \eqn{R} has shape \eqn{k \times n}.
 #' @param operand ([`arrayish`])\cr
 #'   Matrix of data type floating-point with exactly 2 dimensions.
 #' @return Named `list` with elements `Q` (shape `(m, k)`) and `R`

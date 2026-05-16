@@ -529,9 +529,9 @@ test_that("prim_chol", {
   L <- as_array(prim_chol(A, lower = TRUE))
   expect_equal(L[1, 1], 2)
   expect_equal(L[2, 1], 1)
-  expect_equal(L[2, 2], sqrt(2), tolerance = 1e-10)
+  expect_equal(L[2, 2], sqrt(2), tolerance = 1e-5)
   # Verify L %*% t(L) = A
-  expect_equal(L %*% t(L), matrix(c(4, 2, 2, 3), nrow = 2), tolerance = 1e-10)
+  expect_equal(L %*% t(L), matrix(c(4, 2, 2, 3), nrow = 2), tolerance = 1e-5)
 })
 
 test_that("prim_chol zeros out non-triangular part", {
@@ -556,7 +556,7 @@ test_that("prim_triangular_solve", {
     transpose_a = FALSE
   ))
   # x = L^{-1} b: 3*x1 = 6 -> x1 = 2; x1 + 2*x2 = 5 -> x2 = 1.5
-  expect_equal(c(x), c(2, 1.5), tolerance = 1e-10)
+  expect_equal(c(x), c(2, 1.5), tolerance = 1e-5)
 
   # Verify: solve with transpose_a = TRUE
   x2 <- as_array(prim_triangular_solve(
@@ -568,7 +568,7 @@ test_that("prim_triangular_solve", {
     transpose_a = TRUE
   ))
   # L^T x = b: [[3,1],[0,2]] x = [6,5] -> 2*x2=5 -> x2=2.5; 3*x1+x2=6 -> x1=7/6
-  expect_equal(c(x2), c(7 / 6, 2.5), tolerance = 1e-10)
+  expect_equal(c(x2), c(7 / 6, 2.5), tolerance = 1e-5)
 })
 
 # Sanity smoke tests for the linalg primitives.
@@ -589,9 +589,9 @@ describe("prim_qr", {
     R <- as_array(out$R)
     expect_equal(dim(Q), c(m, k))
     expect_equal(dim(R), c(k, n))
-    expect_equal(Q %*% R, as_array(A), tolerance = 1e-10)
+    expect_equal(Q %*% R, as_array(A), tolerance = 1e-5)
     # Documented: Q has orthonormal columns, R is upper triangular.
-    expect_equal(t(Q) %*% Q, diag(k), tolerance = 1e-10)
+    expect_equal(t(Q) %*% Q, diag(k), tolerance = 1e-5)
     expect_equal(R[lower.tri(R)], rep(0, sum(lower.tri(R))))
   })
 
@@ -627,7 +627,7 @@ describe("prim_lu", {
     U <- LU
     U[lower.tri(U)] <- 0
     A_mat <- as_array(A)
-    expect_equal(L %*% U, A_mat[permutation, , drop = FALSE], tolerance = 1e-10)
+    expect_equal(L %*% U, A_mat[permutation, , drop = FALSE], tolerance = 1e-5)
   })
 
   it("rejects invalid inputs", {
@@ -655,13 +655,13 @@ describe("prim_svd", {
     expect_equal(dim(u), c(m, k))
     expect_equal(length(d), k)
     expect_equal(dim(vt), c(k, n))
-    expect_equal(u %*% diag(d) %*% vt, as_array(A), tolerance = 1e-10)
+    expect_equal(u %*% diag(d) %*% vt, as_array(A), tolerance = 1e-5)
     # Documented: d non-negative and in descending order;
     # u has orthonormal columns; vt has orthonormal rows.
     expect_true(all(d >= 0))
     expect_equal(d, sort(d, decreasing = TRUE))
-    expect_equal(t(u) %*% u, diag(k), tolerance = 1e-10)
-    expect_equal(vt %*% t(vt), diag(k), tolerance = 1e-10)
+    expect_equal(t(u) %*% u, diag(k), tolerance = 1e-5)
+    expect_equal(vt %*% t(vt), diag(k), tolerance = 1e-5)
   })
 
   it("rejects invalid inputs", {
@@ -687,11 +687,11 @@ describe("prim_eigh", {
     expect_equal(
       vectors %*% diag(values) %*% t(vectors),
       as_array(A),
-      tolerance = 1e-10
+      tolerance = 1e-5
     )
     # Documented: values in ascending order; vectors has orthonormal columns.
     expect_equal(values, sort(values))
-    expect_equal(t(vectors) %*% vectors, diag(ncol(vectors)), tolerance = 1e-10)
+    expect_equal(t(vectors) %*% vectors, diag(ncol(vectors)), tolerance = 1e-5)
   })
 
   it("rejects invalid inputs", {

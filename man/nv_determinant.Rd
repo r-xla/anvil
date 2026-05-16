@@ -31,7 +31,10 @@ For computing the determinant, we use:
 \deqn{\det(L) = 1}
 \deqn{\det(A) = \det(U) / \det(P) = \mathrm{sign}(P^{-1}) \, \prod_i U_{ii}
   = \mathrm{sign}(P) \, \prod_i U_{ii}}
-\deqn{\log|\det(A)| = \sum_i \log|U_{ii}|}
+
+Matching base R's \code{det_ge_real}, the magnitude is computed in log
+space when \code{logarithm = TRUE} (\eqn{\sum_i \log|U_{ii}|}) and as a
+direct product when \code{logarithm = FALSE} (\eqn{\prod_i |U_{ii}|}).
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}

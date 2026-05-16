@@ -1659,21 +1659,14 @@ nv_triangular_solve <- function(
   x
 }
 
-# Helper: sign of the row permutation `pivots` returned by getrf.
-# The sign of a single swap (i, pivots[i]) is -1 if pivots[i] != i, else +1.
-# Multiplying these gives the sign of the full permutation P, which is what
-# det(A) = sign(P)^{-1} * prod(diag(U)) needs (P inverse has the same
-# sign as P).
+# If we took a logarithm in nv_determinant(), the pivot sign is only part of the story
+# and we also have to compute the sign from taking the absolute values before the log
+# Every proper swap flips the sign
 lu_pivot_sign <- function(pivots, n, dt) {
-  iota_1n <- nv_iota_like(pivots, dim = 1L, shape = n, start = 1L, dtype = "i32")
-  is_swap <- prim_ne(pivots, iota_1n)
-  signs <- prim_ifelse(
-    is_swap,
-    nv_fill_like(pivots, -1L, shape = n, dtype = "i32"),
-    nv_fill_like(pivots, 1L, shape = n, dtype = "i32")
-  )
-  sign_int <- nv_reduce_prod(signs, dims = 1L)
-  nv_convert(sign_int, dtype = dt)
+  iota <- nv_seq_like(pivots, 1L, n)
+  # Should be simpler after: https://github.com/r-xla/anvl/issues/343
+  flips <- nv_ifelse(pivots != iota, nv_fill_like(pivots, -1L), nv_fill_like(pivots, 1L))
+  nv_convert(nv_reduce_prod(flips, dims = 1L), dtype = dt)
 }
 
 #' @title Determinant
@@ -1703,7 +1696,10 @@ nv_det <- function(operand) {
 #' \deqn{\det(L) = 1}
 #' \deqn{\det(A) = \det(U) / \det(P) = \mathrm{sign}(P^{-1}) \, \prod_i U_{ii}
 #'   = \mathrm{sign}(P) \, \prod_i U_{ii}}
-#' \deqn{\log|\det(A)| = \sum_i \log|U_{ii}|}
+#'
+#' Matching base R's `det_ge_real`, the magnitude is computed in log
+#' space when `logarithm = TRUE` (\eqn{\sum_i \log|U_{ii}|}) and as a
+#' direct product when `logarithm = FALSE` (\eqn{\prod_i |U_{ii}|}).
 #' @param operand ([`arrayish`])\cr
 #'   Square matrix of floating-point data type.
 #' @param logarithm (`logical(1)`)\cr
@@ -1721,6 +1717,7 @@ nv_det <- function(operand) {
 #' @export
 nv_determinant <- function(operand, logarithm = TRUE) {
   operand <- as_anvl_array(operand)
+  # Adopted from: https://github.com/wch/r-source/blob/ed837b19e0a90df72cedb007583dd4d7604aea2d/src/modules/lapack/Lapack.c#L1408-L1464
   shp <- shape(operand)
   if (length(shp) != 2L || shp[[1L]] != shp[[2L]]) {
     cli_abort("{.arg operand} must be a square 2-D matrix")
@@ -1739,17 +1736,20 @@ nv_determinant <- function(operand, logarithm = TRUE) {
   LU <- factored$LU
   pivots <- factored$pivots
   diag_U <- nv_extract_diag(LU)
+  pivot_sign <- lu_pivot_sign(pivots, n, dt)
 
-  # Always accumulate the magnitude in log space:
-  #   log|det| = sum(log|diag(U)|)
-  # This avoids over/underflow in the intermediate product even when
-  # `logarithm = FALSE`; in that case we only `exp` at the very end. The
-  # final `exp` can still overflow if `|det|` itself is unrepresentable,
-  # but that is unavoidable.
-  log_abs_det <- nv_reduce_sum(prim_log(prim_abs(diag_U)), dims = 1L)
-  diag_sign <- nv_reduce_prod(nv_sign(diag_U), dims = 1L)
-  sign <- prim_mul(lu_pivot_sign(pivots, n, dt), diag_sign)
-  modulus <- if (logarithm) log_abs_det else prim_exp(log_abs_det)
+  if (logarithm) {
+    # log|x| discards the sign of each diagonal entry, so accumulate
+    # it separately as prod(sign(diag(U))).
+    diag_sign <- nv_reduce_prod(nv_sign(diag_U), dims = 1L)
+    sign <- prim_mul(pivot_sign, diag_sign)
+    modulus <- nv_reduce_sum(prim_log(prim_abs(diag_U)), dims = 1L)
+  } else {
+    # The signed product carries both magnitude and sign; split at the end.
+    signed_prod <- nv_reduce_prod(diag_U, dims = 1L)
+    sign <- prim_mul(pivot_sign, nv_sign(signed_prod))
+    modulus <- prim_abs(signed_prod)
+  }
 
   list(modulus = modulus, sign = sign)
 }
@@ -1803,9 +1803,8 @@ nv_qr <- prim_qr
 #' where \eqn{P} is a permutation matrix, \eqn{L} is unit lower
 #' triangular, and \eqn{U} is upper triangular.
 #'
-#' Returns `L` and `U` as separate matrices — analogous to
-#' `expand(Matrix::lu(A))` in the **Matrix** package. Use [prim_lu()] if
-#' you want the raw LAPACK-style packed `LU` buffer.
+#' This function returns `L` and `U` as separate matrices.
+#' Use [`prim_lu()`] to get them in packed `LU` form.
 #' @inheritParams prim_lu
 #' @return Named `list`:
 #'   * `L` -- unit lower-triangular factor of shape `(m, k)`, where
@@ -1833,11 +1832,7 @@ nv_lu <- function(operand) {
   # L = strict lower triangle of LU (shape (m, k)) + unit diagonal.
   L_strict_full <- nv_tril(LU, diagonal = -1L) # (m, n)
   L_strict <- if (n > k) {
-    nv_static_slice(L_strict_full,
-      start_indices = c(1L, 1L),
-      limit_indices = c(m, k),
-      strides = c(1L, 1L)
-    )
+    L_strict_full[1:m, 1:k]
   } else {
     L_strict_full
   }
@@ -1850,11 +1845,7 @@ nv_lu <- function(operand) {
   # U = upper triangle of the first k rows of LU.
   U_full <- nv_triu(LU, diagonal = 0L) # (m, n)
   U <- if (m > k) {
-    nv_static_slice(U_full,
-      start_indices = c(1L, 1L),
-      limit_indices = c(k, n),
-      strides = c(1L, 1L)
-    )
+    U_full[1:k, 1:n]
   } else {
     U_full
   }

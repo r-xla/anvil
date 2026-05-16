@@ -1357,8 +1357,9 @@ describe("nv_lu", {
     U <- as_array(out$U)
     permutation <- as_array(out$permutation)
     # L: unit diagonal on the first k rows, zeros above the diagonal.
-    expect_equal(L[upper.tri(L[seq_len(k), , drop = FALSE])], numeric(0))
-    expect_equal(diag(L[seq_len(k), , drop = FALSE]), c(1, 1))
+    L_top <- L[seq_len(k), , drop = FALSE]
+    expect_equal(L_top[upper.tri(L_top)], rep(0, sum(upper.tri(L_top))))
+    expect_equal(diag(L_top), c(1, 1))
     expect_equal(L %*% U, A_mat[permutation, , drop = FALSE], tolerance = 1e-5)
   })
 

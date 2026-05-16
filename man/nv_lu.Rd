@@ -28,9 +28,8 @@ Computes the partial-pivoted LU decomposition of a matrix \code{operand}:
 where \eqn{P} is a permutation matrix, \eqn{L} is unit lower
 triangular, and \eqn{U} is upper triangular.
 
-Returns \code{L} and \code{U} as separate matrices — analogous to
-\code{expand(Matrix::lu(A))} in the \strong{Matrix} package. Use \code{\link[=prim_lu]{prim_lu()}} if
-you want the raw LAPACK-style packed \code{LU} buffer.
+This function returns \code{L} and \code{U} as separate matrices.
+Use \code{\link[=prim_lu]{prim_lu()}} to get them in packed \code{LU} form.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
