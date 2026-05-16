@@ -103,6 +103,11 @@ already canonicalize their inputs, so if you are only wrapping
 primitives (or other `nv_<op>` functions that already canonicalize), you
 might not have to do this yourself.
 
+When a function takes multiple arrayish inputs, normalize them in a
+single `as_anvl_arrays(...)` call covering all of them, so R
+literals/arrays adopt the device of their AnvlArray siblings instead of
+landing on the default device.
+
 ## Arbitrary Devices
 
 In order to ensure that your function works with inputs from arbitrary

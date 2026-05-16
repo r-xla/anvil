@@ -204,6 +204,10 @@ instead of (as intended) an <code>AnvlArray</code>.</p>
 already canonicalize their inputs, so if you are only wrapping
 primitives (or other <code>nv_&lt;op&gt;</code> functions that already
 canonicalize), you might not have to do this yourself.</p>
+<p>When a function takes multiple arrayish inputs, normalize them in a
+single <code>as_anvl_arrays(...)</code> call covering all of them, so R
+literals/arrays adopt the device of their AnvlArray siblings instead of
+landing on the default device.</p>
 </div>
 <div class="section level2">
 <h2 id="arbitrary-devices">Arbitrary Devices<a class="anchor" aria-label="anchor" href="#arbitrary-devices"></a>
