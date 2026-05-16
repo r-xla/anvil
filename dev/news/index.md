@@ -108,6 +108,8 @@
 
 ### Bug Fixes
 
+- [`nv_runif()`](https://r-xla.github.io/anvl/dev/reference/nv_runif.md)
+  not properly respects the `lower` argument.
 - The overloaded `%%` operator now calls the new
   [`nv_mod()`](https://r-xla.github.io/anvl/dev/reference/nv_mod.md) to
   be consistent with base R.
@@ -115,9 +117,6 @@
   [`prim_reduce_prod()`](https://r-xla.github.io/anvl/dev/reference/prim_reduce_prod.md)
   no longer produces `NaN`/`Inf` gradients when the input contains
   zeros.
-
-### Bug Fixes
-
 - The CI now actually runs the torch-comparison tests
 
 ## anvl 0.2.0
