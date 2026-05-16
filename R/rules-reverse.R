@@ -1312,14 +1312,14 @@ prim_chol[["reverse"]] <- rule_reverse(function(inputs, outputs, grads, params, 
   P <- phi(nv_matmul(t(L), grad))
   half <- prim_fill(0.5, dtype = dtype(P), shape = shape(P))
   S <- prim_mul(prim_add(P, t(P)), half)
-  S <- prim_triangular_solve(L, S, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "TRANSPOSE")
+  S <- prim_triangular_solve(L, S, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = TRUE)
   grad_A <- prim_triangular_solve(
     L,
     S,
     left_side = FALSE,
     lower = TRUE,
     unit_diagonal = FALSE,
-    transpose_a = "NO_TRANSPOSE"
+    transpose_a = FALSE
   )
 
   list(grad_A)
@@ -1344,7 +1344,7 @@ prim_triangular_solve[["reverse"]] <- rule_reverse(function(inputs, outputs, gra
   }
 
   # op(A) is A or A^T depending on transpose_a
-  adj_transpose <- if (transpose_a == "TRANSPOSE") "NO_TRANSPOSE" else "TRANSPOSE"
+  adj_transpose <- !transpose_a
 
   if (left_side) {
     # From the paper: grad_b = op(A)^{-1} * grad
@@ -1369,7 +1369,7 @@ prim_triangular_solve[["reverse"]] <- rule_reverse(function(inputs, outputs, gra
       raw <- prim_negate(nv_matmul(grad_b, t(x)))
       n <- shape(a)[length(shape(a))]
       mask <- triangular_mask(n, dtype(a), lower, unit_diagonal)
-      if (transpose_a != "NO_TRANSPOSE") {
+      if (transpose_a) {
         raw <- t(raw)
       }
       prim_ifelse(mask, raw, zeros_like(raw))
@@ -1390,7 +1390,7 @@ prim_triangular_solve[["reverse"]] <- rule_reverse(function(inputs, outputs, gra
       raw <- prim_negate(nv_matmul(t(x), grad_b))
       n <- shape(a)[length(shape(a))]
       mask <- triangular_mask(n, dtype(a), lower, unit_diagonal)
-      if (transpose_a != "NO_TRANSPOSE") {
+      if (transpose_a) {
         raw <- t(raw)
       }
       prim_ifelse(mask, raw, zeros_like(raw))

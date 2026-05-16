@@ -246,6 +246,14 @@ scatter_to_gather_slice_sizes <- function(
   slice_sizes
 }
 
+col_major_layout <- function(ndim) {
+  as.integer(seq.int(0L, ndim - 1L))
+}
+
+col_major_layouts <- function(...) {
+  lapply(list(...), col_major_layout)
+}
+
 is_device_arg <- function(x) {
   inherits(x, "AnvlDeviceArg")
 }

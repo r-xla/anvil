@@ -13,8 +13,10 @@ dimensions. The last two dimensions must be equal (square matrix); any
 leading dimensions are batch dimensions.}
 
 \item{b}{(\code{\link{arrayish}})\cr
-Right-hand side array. Must have the same data type, rank, and batch
-dimensions as \code{a}.}
+Right-hand side. Same data type and rank as \code{a} (rank >= 2), with
+matching leading batch dimensions. The size of \code{a}'s last two (square)
+dimensions must equal \code{b}'s second-to-last dimension when
+\code{left_side = TRUE}, or \code{b}'s last dimension when \code{left_side = FALSE}.}
 
 \item{left_side}{(\code{logical(1)})\cr
 If \code{TRUE}, solve \code{op(a) \%*\% x = b}. If \code{FALSE}, solve \code{x \%*\% op(a) = b}.}
@@ -25,8 +27,8 @@ If \code{TRUE}, \code{a} is lower triangular. If \code{FALSE}, \code{a} is upper
 \item{unit_diagonal}{(\code{logical(1)})\cr
 If \code{TRUE}, assume diagonal elements of \code{a} are 1.}
 
-\item{transpose_a}{(\code{character(1)})\cr
-One of \code{"NO_TRANSPOSE"}, \code{"TRANSPOSE"}, or \code{"ADJOINT"}.}
+\item{transpose_a}{(\code{logical(1)})\cr
+If \code{TRUE}, solve with \code{t(a)} in place of \code{a}. Defaults to \code{FALSE}.}
 }
 \value{
 \code{\link{arrayish}}\cr
@@ -61,7 +63,7 @@ L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
 b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
 prim_triangular_solve(L, b,
   left_side = TRUE, lower = TRUE,
-  unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE"
+  unit_diagonal = FALSE, transpose_a = FALSE
 )
 \dontshow{\}) # examplesIf}
 }

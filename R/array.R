@@ -571,7 +571,7 @@ ConcreteArray <- function(data) {
 #'
 #' @section Lowering:
 #' `LiteralArray`s become constants inlined into the stableHLO program.
-#' I.e., they lower to [`stablehlo::hlo_tensor()`].
+#' I.e., they lower to [`hlo_tensor()`].
 #'
 #' @param data (`double(1)` | `integer(1)` | `logical(1)` | [`AnvlArray`])\cr
 #'   The scalar value or scalarish AnvlArray (contains 1 element).
@@ -631,8 +631,8 @@ LiteralArray <- function(data, shape, dtype = default_dtype(data), ambiguous) {
 #' @section Lowering:
 #' When lowering to stableHLO, these become `iota` operations that generate the integer sequence
 #' so they do not need to actually hold the data in the executable, similar to `ALTREP`s in R.
-#' It lowers to [`stablehlo::hlo_iota()`], optionally shifting the starting value via
-#' [`stablehlo::hlo_add()`].
+#' It lowers to [`hlo_iota()`], optionally shifting the starting value via
+#' [`hlo_add()`].
 #'
 #' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
 #'   The shape of the array.

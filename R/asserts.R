@@ -26,3 +26,32 @@ assert_shapevec <- function(x, min_len = 0L, var_name = rlang::caller_arg(x)) {
   }
   as.integer(x)
 }
+
+assert_linalg_matrix <- function(operand, arg, square = FALSE) {
+  s <- shape(operand)
+  if (length(s) != 2L) {
+    cli_abort(c(
+      "{.arg {arg}} must be a 2-D matrix.",
+      "x" = "Got shape {xlamisc::shapevec_repr(s)}."
+    ))
+  }
+  if (any(s == 0L)) {
+    cli_abort(c(
+      "{.arg {arg}} must not have any zero-sized dimension.",
+      "x" = "Got shape {xlamisc::shapevec_repr(s)}."
+    ))
+  }
+  if (square && s[[1L]] != s[[2L]]) {
+    cli_abort(c(
+      "{.arg {arg}} must be a square matrix.",
+      "x" = "Got shape {xlamisc::shapevec_repr(s)}."
+    ))
+  }
+  if (!inherits(dtype(operand), "FloatType")) {
+    cli_abort(c(
+      "{.arg {arg}} must have a floating-point dtype.",
+      "x" = "Got dtype {.val {as.character(dtype(operand))}}."
+    ))
+  }
+  invisible(NULL)
+}
