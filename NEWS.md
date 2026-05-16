@@ -60,9 +60,6 @@
   with base R.
 * The reverse rule for `prim_reduce_prod()` no longer produces `NaN`/`Inf`
   gradients when the input contains zeros.
-
-## Bug Fixes
-
 * The CI now actually runs the torch-comparison tests
 
 
