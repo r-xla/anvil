@@ -1308,6 +1308,9 @@ describe("literals adopt device of array siblings", {
     x <- nv_array(c(1, 2), device = dev1)
     out <- nv_cbind(x, arr(3, 4))
     expect_true(eq_device(device(out), dev1))
+  })
+})
+
 describe("nv_solve", {
   it("matches base R for matrix b (output stays a 2-D matrix)", {
     A_mat <- matrix(c(4, 3, 6, 3), nrow = 2)
