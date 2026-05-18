@@ -29,31 +29,25 @@ details, including prebuilt Docker images.
 ## Why anvl
 
 anvl makes numerical R code run fast on CPUs and GPUs, and computes
-gradients of your functions automatically. It serves the same role for R
-that JAX serves for Python.
+gradients of your functions automatically. It aspires to be for R what
+JAX is for Python.
 
 There are three ideas:
 
-- **Compilation.** Wrap any R function in
-  [`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md). anvl
-  converts the R function into an optimized program via XLA – the same
-  compiler that powers JAX and TensorFlow.
+- **Compilation.** {anvl} converts R functions into an optimized program
+  via XLA – the same compiler that powers JAX and TensorFlow. Due to the
+  compilation, resulting programs can be faster compared to implementing
+  them in [{torch}](https://torch.mlverse.org).
 - **Function transformation.** Programmatically derive new functions
   from existing ones. Currently the only available transformation is
   reverse-mode automatic differentiation via
   [`gradient()`](https://r-xla.github.io/anvl/dev/reference/gradient.md),
   which returns the derivative of a function as another R function.
-- **Hardware portability.** The same code runs on CPU or NVIDIA CUDA
-  GPU.
+- **Hardware portability.** The same code runs on CPU or GPU.
+- **Extensible.** The package is written almost entirely in R; new
+  primitives and transformations can be added without leaving R.
 
-Compared to R [`torch`](https://torch.mlverse.org), anvl is built around
-compilation:
-[`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md) sees the
-*whole function* at once and compiles it. The resulting programs can
-therefore be considerably faster and custom operations can be
-implemented more easily.
-
-## Quick Start
+## Usage
 
 We define an R function operating on `AnvlArray`s – the primary data
 type of {anvl}. It can be executed in either *eager* mode (each
@@ -106,27 +100,6 @@ g_jit(a, b, x)
 
 For more complex examples, such as implementing a Gaussian Process, see
 the package website.
-
-## Main Features
-
-- **JIT and eager modes** – compile whole functions with
-  [`jit()`](https://r-xla.github.io/anvl/dev/reference/jit.md) for
-  performance, or run operations eagerly for interactive use and
-  debugging.
-- **Reverse-mode autodiff** –
-  [`gradient()`](https://r-xla.github.io/anvl/dev/reference/gradient.md)
-  and
-  [`value_and_gradient()`](https://r-xla.github.io/anvl/dev/reference/value_and_gradient.md)
-  for functions with scalar outputs.
-- **Asynchronous execution** – compiled calls return immediately and run
-  on the accelerator while R prepares the next call, keeping CPU and
-  device busy in parallel.
-- **Extensible** – the package is written almost entirely in R; new
-  primitives and transformations can be added without leaving R.
-- **Multiple backends** – compiled programs run via XLA on CPU or GPU,
-  with an experimental
-  [`quickr`](https://CRAN.R-project.org/package=quickr)-based Fortran
-  backend for CPU-only workloads.
 
 ## Platform Support
 

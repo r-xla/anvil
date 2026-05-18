@@ -127,20 +127,21 @@
 <div class="section level2">
 <h2 id="why-anvl">Why anvl<a class="anchor" aria-label="anchor" href="#why-anvl"></a>
 </h2>
-<p>anvl makes numerical R code run fast on CPUs and GPUs, and computes gradients of your functions automatically. It serves the same role for R that JAX serves for Python.</p>
+<p>anvl makes numerical R code run fast on CPUs and GPUs, and computes gradients of your functions automatically. It aspires to be for R what JAX is for Python.</p>
 <p>There are three ideas:</p>
 <ul>
 <li>
-<strong>Compilation.</strong> Wrap any R function in <code><a href="reference/jit.html">jit()</a></code>. anvl converts the R function into an optimized program via XLA – the same compiler that powers JAX and TensorFlow.</li>
+<strong>Compilation.</strong> {anvl} converts R functions into an optimized program via XLA – the same compiler that powers JAX and TensorFlow. Due to the compilation, resulting programs can be faster compared to implementing them in <a href="https://torch.mlverse.org" class="external-link">{torch}</a>.</li>
 <li>
 <strong>Function transformation.</strong> Programmatically derive new functions from existing ones. Currently the only available transformation is reverse-mode automatic differentiation via <code><a href="reference/gradient.html">gradient()</a></code>, which returns the derivative of a function as another R function.</li>
 <li>
-<strong>Hardware portability.</strong> The same code runs on CPU or NVIDIA CUDA GPU.</li>
+<strong>Hardware portability.</strong> The same code runs on CPU or GPU.</li>
+<li>
+<strong>Extensible.</strong> The package is written almost entirely in R; new primitives and transformations can be added without leaving R.</li>
 </ul>
-<p>Compared to R <a href="https://torch.mlverse.org" class="external-link"><code>torch</code></a>, anvl is built around compilation: <code><a href="reference/jit.html">jit()</a></code> sees the <em>whole function</em> at once and compiles it. The resulting programs can therefore be considerably faster and custom operations can be implemented more easily.</p>
 </div>
 <div class="section level2">
-<h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
+<h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
 <p>We define an R function operating on <code>AnvlArray</code>s – the primary data type of {anvl}. It can be executed in either <em>eager</em> mode (each operation is performed immediately) or <em>jit</em> mode (the whole function is compiled into a single executable via <code><a href="reference/jit.html">jit()</a></code>).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -179,22 +180,6 @@
 <span><span class="co">#&gt;  1</span></span>
 <span><span class="co">#&gt; [ CPUf32{} ]</span></span></code></pre></div>
 <p>For more complex examples, such as implementing a Gaussian Process, see the package website.</p>
-</div>
-<div class="section level2">
-<h2 id="main-features">Main Features<a class="anchor" aria-label="anchor" href="#main-features"></a>
-</h2>
-<ul>
-<li>
-<strong>JIT and eager modes</strong> – compile whole functions with <code><a href="reference/jit.html">jit()</a></code> for performance, or run operations eagerly for interactive use and debugging.</li>
-<li>
-<strong>Reverse-mode autodiff</strong> – <code><a href="reference/gradient.html">gradient()</a></code> and <code><a href="reference/value_and_gradient.html">value_and_gradient()</a></code> for functions with scalar outputs.</li>
-<li>
-<strong>Asynchronous execution</strong> – compiled calls return immediately and run on the accelerator while R prepares the next call, keeping CPU and device busy in parallel.</li>
-<li>
-<strong>Extensible</strong> – the package is written almost entirely in R; new primitives and transformations can be added without leaving R.</li>
-<li>
-<strong>Multiple backends</strong> – compiled programs run via XLA on CPU or GPU, with an experimental <a href="https://CRAN.R-project.org/package=quickr" class="external-link"><code>quickr</code></a>-based Fortran backend for CPU-only workloads.</li>
-</ul>
 </div>
 <div class="section level2">
 <h2 id="platform-support">Platform Support<a class="anchor" aria-label="anchor" href="#platform-support"></a>
