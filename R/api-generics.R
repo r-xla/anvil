@@ -198,7 +198,7 @@ is.finite.AnvlArray <- is.finite.AnvlBox
 #'   Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
 #' @seealso [prim_transpose()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' t(x)
 #' @export
 t.AnvlBox <- function(x) {

@@ -41,7 +41,7 @@ Lowers to a variadic \code{\link[stablehlo:hlo_reduce_window]{stablehlo::hlo_red
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+x <- nv_matrix(c(3, 1, 4, 1, 5, 9), nrow = 2)
 prim_cummin(x, dim = 1L)
 \dontshow{\}) # examplesIf}
 }

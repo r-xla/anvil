@@ -38,7 +38,7 @@ direct product when \code{logarithm = FALSE} (\eqn{\prod_i |U_{ii}|}).
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
 nv_determinant(a)
 nv_determinant(a, logarithm = FALSE)
 \dontshow{\}) # examplesIf}

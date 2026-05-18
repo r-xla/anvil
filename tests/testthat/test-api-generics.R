@@ -282,7 +282,7 @@ describe("ncol", {
 
 describe("dim", {
   it("returns shape", {
-    x <- nv_array(array(1:24, dim = c(2, 3, 4)))
+    x <- nv_array(1:24, shape = c(2, 3, 4))
     expect_equal(dim(x), shape(x))
   })
 })
@@ -352,32 +352,32 @@ describe("as.integer", {
 
 describe("solve", {
   it("solves a x = b for matrix b", {
-    a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
-    b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f64")
+    a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
+    b <- nv_matrix(c(1, 2), nrow = 2, dtype = "f64")
     expect_equal(solve(a, b), nv_solve(a, b))
   })
 
   it("returns the inverse when b is missing", {
-    a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+    a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
     expect_equal(solve(a), nv_inv(a))
   })
 })
 
 describe("qr", {
   it("dispatches to nv_qr", {
-    a <- nv_array(matrix(c(1, 2, 3, 4, 5, 6), nrow = 3), dtype = "f64")
+    a <- nv_matrix(c(1, 2, 3, 4, 5, 6), nrow = 3, dtype = "f64")
     expect_equal(qr(a), nv_qr(a))
   })
 })
 
 describe("chol", {
   it("returns the upper-triangular factor (base R convention)", {
-    a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
+    a <- nv_matrix(c(4, 2, 2, 3), nrow = 2, dtype = "f64")
     expect_equal(as_array(chol(a)), as_array(nv_chol(a)), tolerance = 1e-5)
   })
 
   it("respects lower = TRUE", {
-    a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
+    a <- nv_matrix(c(4, 2, 2, 3), nrow = 2, dtype = "f64")
     expect_equal(
       chol(a, lower = TRUE),
       nv_chol(a, lower = TRUE)
@@ -387,14 +387,14 @@ describe("chol", {
 
 describe("determinant", {
   it("dispatches to nv_determinant (logarithm = TRUE by default)", {
-    a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+    a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
     out <- determinant(a)
     expected <- nv_determinant(a, logarithm = TRUE)
     expect_equal(out, expected)
   })
 
   it("respects logarithm = FALSE", {
-    a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+    a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
     out <- determinant(a, logarithm = FALSE)
     expected <- nv_determinant(a, logarithm = FALSE)
     expect_equal(out, expected)

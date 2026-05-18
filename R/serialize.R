@@ -17,7 +17,7 @@
 #' @seealso [nv_read()], [nv_serialize()], [nv_unserialize()]
 #' @export
 #' @examplesIf pjrt::plugins_downloaded("cpu")
-#' x <- nv_array(array(1:6, dim = c(2, 3)))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' x
 #' path <- tempfile(fileext = ".safetensors")
 #' nv_save(list(x = x), path)
@@ -55,7 +55,7 @@ nv_save <- function(arrays, path) {
 #' @seealso [nv_save()], [nv_serialize()], [nv_unserialize()]
 #' @export
 #' @examplesIf pjrt::plugins_downloaded("cpu")
-#' x <- nv_array(array(1:6, dim = c(2, 3)))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' x
 #' path <- tempfile(fileext = ".safetensors")
 #' nv_save(list(x = x), path)
@@ -87,7 +87,7 @@ nv_read <- function(path, device = NULL, backend = default_backend()) {
 #' @seealso [nv_unserialize()], [nv_save()], [nv_read()]
 #' @export
 #' @examplesIf pjrt::plugins_downloaded("cpu")
-#' x <- nv_array(array(1:6, dim = c(2, 3)))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' x
 #' raw_data <- nv_serialize(list(x = x))
 #' raw_data
@@ -143,7 +143,7 @@ nv_serialize <- function(arrays, con = NULL) {
 #' @seealso [nv_serialize()], [nv_save()], [nv_read()]
 #' @export
 #' @examplesIf pjrt::plugins_downloaded("cpu")
-#' x <- nv_array(array(1:6, dim = c(2, 3)))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' x
 #' raw_data <- nv_serialize(list(x = x))
 #' raw_data

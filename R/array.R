@@ -266,6 +266,80 @@ nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL, backe
   nv_array(data, dtype = dtype, device = device, shape = integer(), ambiguous = ambiguous, backend = backend)
 }
 
+infer_matrix_dim <- function(n, other, given) {
+  if (other == 0L) {
+    if (n != 0L) {
+      cli_abort("{.arg {given}} is 0 but {.arg data} has {n} element{?s}.")
+    }
+    return(0L)
+  }
+  if (n %% other != 0L) {
+    cli_abort("Data length ({n}) is not a multiple of {.arg {given}} ({other}).")
+  }
+  n %/% other
+}
+
+#' @rdname AnvlArray
+#' @param nrow (`NULL` | `integer(1)`)\cr
+#'   Number of rows. Inferred from `ncol` and the data length if `NULL`.
+#'   Defaults to `1` when `data` is a scalar.
+#' @param ncol (`NULL` | `integer(1)`)\cr
+#'   Number of columns. Inferred from `nrow` and the data length if `NULL`.
+#'   Defaults to `1` when `data` is a scalar.
+#' @export
+nv_matrix <- function(
+  data,
+  nrow = NULL,
+  ncol = NULL,
+  dtype = NULL,
+  device = NULL,
+  ambiguous = NULL,
+  backend = NULL,
+  byrow = FALSE
+) {
+  assert_int(nrow, lower = 0L, null.ok = TRUE)
+  assert_int(ncol, lower = 0L, null.ok = TRUE)
+  is_r_scalar <- !is_anvl_array(data) && is_valid_r_lit(data)
+  is_array_scalar <- is_anvl_array(data) && length(shape(data)) == 0L
+  if (is_r_scalar || is_array_scalar) {
+    nrow <- nrow %||% 1L
+    ncol <- ncol %||% 1L
+    if (is_array_scalar) {
+      data <- nv_broadcast_to(data, c(nrow, ncol))
+    } else {
+      data <- rep(data, nrow * ncol)
+    }
+    return(nv_array(
+      data,
+      dtype = dtype,
+      device = device,
+      shape = c(nrow, ncol),
+      ambiguous = ambiguous,
+      backend = backend
+    ))
+  }
+  if (is.null(nrow) && is.null(ncol)) {
+    cli_abort("At least one of {.arg nrow} and {.arg ncol} must be supplied.")
+  }
+  n <- if (is_anvl_array(data)) prod(shape(data)) else length(data)
+  if (is.null(nrow)) {
+    nrow <- infer_matrix_dim(n, ncol, given = "ncol")
+  } else if (is.null(ncol)) {
+    ncol <- infer_matrix_dim(n, nrow, given = "nrow")
+  } else if (nrow * ncol != n) {
+    cli_abort("Data length ({n}) does not match {.code nrow * ncol} ({nrow * ncol}).")
+  }
+  nv_array(
+    data,
+    dtype = dtype,
+    device = device,
+    shape = c(nrow, ncol),
+    ambiguous = ambiguous,
+    backend = backend,
+    byrow = byrow
+  )
+}
+
 #' @rdname AnvlArray
 #' @export
 nv_empty <- function(dtype, shape, device = NULL, ambiguous = FALSE) {

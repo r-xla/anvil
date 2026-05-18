@@ -34,7 +34,7 @@ On the CUDA backend this primitive currently requires \code{m >= n} (cuSOLVER's
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(c(1, 0, 0, 1, 0, 1), nrow = 3), dtype = "f64")
+x <- nv_matrix(c(1, 0, 0, 1, 0, 1), nrow = 3, dtype = "f64")
 nv_svd(x)
 \dontshow{\}) # examplesIf}
 }
