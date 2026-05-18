@@ -75,7 +75,7 @@ Math.AnvlArray <- function(x, ...) {
     "sign" = nv_sign(x, ...),
     "expm1" = nv_expm1(x, ...),
     "log1p" = nv_log1p(x, ...),
-    "round" = nv_round(x, ...),
+    "round" = nv_round(x, method = "nearest_even", ...),
     "cumsum" = nv_cumsum(x, ...),
     "cumprod" = nv_cumprod(x, ...),
     "cummax" = nv_cummax(x, ...),
@@ -124,8 +124,7 @@ mean.AnvlArray <- function(x, trim = 0, na.rm = FALSE, ..., dims = NULL, drop = 
   if (!identical(trim, 0)) {
     cli_abort("{.arg trim} is not supported by {.fn mean} for anvl arrays.")
   }
-  rlang::check_dots_empty()
-  nv_mean(x, dims = dims, drop = drop)
+  nv_mean(x, ..., dims = dims, drop = drop)
 }
 
 #' @method mean AnvlBox
@@ -222,8 +221,7 @@ median.AnvlBox <- median.AnvlArray
 #' @method sort AnvlArray
 #' @export
 sort.AnvlArray <- function(x, decreasing = FALSE, ..., dim = NULL) {
-  rlang::check_dots_empty()
-  nv_sort(x, decreasing = decreasing, dim = dim)
+  nv_sort(x, decreasing = decreasing, ..., dim = dim)
 }
 
 #' @method sort AnvlBox
@@ -274,8 +272,7 @@ sort.AnvlBox <- sort.AnvlArray
 #' @method crossprod AnvlArray
 #' @export
 crossprod.AnvlArray <- function(x, y = NULL, ...) {
-  rlang::check_dots_empty()
-  nv_crossprod(x, y)
+  nv_crossprod(x, y, ...)
 }
 
 #' @method crossprod AnvlBox
@@ -288,8 +285,7 @@ crossprod.AnvlBox <- crossprod.AnvlArray
 #' @method tcrossprod AnvlArray
 #' @export
 tcrossprod.AnvlArray <- function(x, y = NULL, ...) {
-  rlang::check_dots_empty()
-  nv_tcrossprod(x, y)
+  nv_tcrossprod(x, y, ...)
 }
 
 #' @method tcrossprod AnvlBox
