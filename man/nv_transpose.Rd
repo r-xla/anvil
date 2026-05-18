@@ -2,23 +2,26 @@
 % Please edit documentation in R/api.R, R/api-generics.R
 \name{nv_transpose}
 \alias{nv_transpose}
-\alias{t.AnvlBox}
+\alias{t.AnvlArray}
 \title{Transpose}
 \usage{
-nv_transpose(x, permutation = NULL)
+nv_transpose(operand, permutation = NULL)
 
-\method{t}{AnvlBox}(x)
+\method{t}{AnvlArray}(x)
 }
 \arguments{
-\item{x}{(\code{\link{arrayish}})\cr
-Array to transpose.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Operand.}
 
 \item{permutation}{(\code{integer()} | \code{NULL})\cr
 New ordering of dimensions. If \code{NULL} (default), reverses the dimensions.}
+
+\item{x}{(\code{\link{arrayish}})\cr
+Same as \code{operand}; this is the name used by the base R S3 generic.}
 }
 \value{
 \code{\link{arrayish}}\cr
-Has the same data type as \code{x} and shape \code{nv_shape(x)[permutation]}.
+Has the same data type as \code{operand} and shape \code{nv_shape(operand)[permutation]}.
 }
 \description{
 Permutes the dimensions of an array. You can also use \code{t()} for matrices.

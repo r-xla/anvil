@@ -2,18 +2,19 @@
 % Please edit documentation in R/api.R, R/api-generics.R
 \name{nv_is_infinite}
 \alias{nv_is_infinite}
-\alias{is.infinite.AnvlBox}
+\alias{is.infinite.AnvlArray}
 \title{Is Infinite}
 \usage{
 nv_is_infinite(operand)
 
-\method{is.infinite}{AnvlBox}(x)
+\method{is.infinite}{AnvlArray}(x)
 }
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
-\item{x}{(\code{\link{arrayish}})\cr Operand.}
+\item{x}{(\code{\link{arrayish}})\cr
+Same as \code{operand}; this is the name used by the base R S3 generic.}
 }
 \value{
 \code{\link{arrayish}}\cr

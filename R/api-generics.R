@@ -1,7 +1,7 @@
 #' @include api.R
 
 #' @export
-Ops.AnvlBox <- function(e1, e2) {
+Ops.AnvlArray <- function(e1, e2) {
   switch(
     .Generic, # nolint
     "+" = nv_add(e1, e2),
@@ -29,10 +29,10 @@ Ops.AnvlBox <- function(e1, e2) {
 }
 
 #' @export
-Ops.AnvlArray <- Ops.AnvlBox
+Ops.AnvlBox <- Ops.AnvlArray
 
 #' @export
-matrixOps.AnvlBox <- function(x, y) {
+matrixOps.AnvlArray <- function(x, y) {
   switch(
     .Generic, # nolint
     "%*%" = nv_matmul(x, y)
@@ -40,149 +40,132 @@ matrixOps.AnvlBox <- function(x, y) {
 }
 
 #' @export
-matrixOps.AnvlArray <- matrixOps.AnvlBox
+matrixOps.AnvlBox <- matrixOps.AnvlArray
 
 #' @export
-Math.AnvlBox <- function(x, ...) {
+Math.AnvlArray <- function(x, ...) {
+  # Forward `...` so extras like `log(x, base = 2)` surface as
+  # "unused argument" errors from the underlying nv_* function.
   switch(
     .Generic, # nolint
-    "abs" = nv_abs(x),
-    "exp" = nv_exp(x),
-    "sqrt" = nv_sqrt(x),
-    "log" = nv_log(x),
-    "log2" = nv_log2(x),
-    "log10" = nv_log10(x),
-    "tanh" = nv_tanh(x),
-    "tan" = nv_tan(x),
-    "cos" = nv_cos(x),
-    "sin" = nv_sin(x),
-    "acos" = nv_acos(x),
-    "acosh" = nv_acosh(x),
-    "asin" = nv_asin(x),
-    "asinh" = nv_asinh(x),
-    "atan" = nv_atan(x),
-    "atanh" = nv_atanh(x),
-    "cosh" = nv_cosh(x),
-    "sinh" = nv_sinh(x),
-    "digamma" = nv_digamma(x),
-    "lgamma" = nv_lgamma(x),
-    "trigamma" = nv_polygamma(1, x),
-    "floor" = nv_floor(x),
-    "ceiling" = nv_ceiling(x),
-    "trunc" = nv_trunc(x),
-    "sign" = nv_sign(x),
-    "expm1" = nv_expm1(x),
-    "log1p" = nv_log1p(x),
-    "round" = nv_round(x),
-    "cumsum" = nv_cumsum(x),
-    "cumprod" = nv_cumprod(x),
-    "cummax" = nv_cummax(x),
-    "cummin" = nv_cummin(x),
+    "abs" = nv_abs(x, ...),
+    "exp" = nv_exp(x, ...),
+    "sqrt" = nv_sqrt(x, ...),
+    "log" = nv_log(x, ...),
+    "log2" = nv_log2(x, ...),
+    "log10" = nv_log10(x, ...),
+    "tanh" = nv_tanh(x, ...),
+    "tan" = nv_tan(x, ...),
+    "cos" = nv_cos(x, ...),
+    "sin" = nv_sin(x, ...),
+    "acos" = nv_acos(x, ...),
+    "acosh" = nv_acosh(x, ...),
+    "asin" = nv_asin(x, ...),
+    "asinh" = nv_asinh(x, ...),
+    "atan" = nv_atan(x, ...),
+    "atanh" = nv_atanh(x, ...),
+    "cosh" = nv_cosh(x, ...),
+    "sinh" = nv_sinh(x, ...),
+    "digamma" = nv_digamma(x, ...),
+    "lgamma" = nv_lgamma(x, ...),
+    "trigamma" = nv_polygamma(1, x, ...),
+    "floor" = nv_floor(x, ...),
+    "ceiling" = nv_ceiling(x, ...),
+    "trunc" = nv_trunc(x, ...),
+    "sign" = nv_sign(x, ...),
+    "expm1" = nv_expm1(x, ...),
+    "log1p" = nv_log1p(x, ...),
+    "round" = nv_round(x, method = "nearest_even", ...),
+    "cumsum" = nv_cumsum(x, ...),
+    "cumprod" = nv_cumprod(x, ...),
+    "cummax" = nv_cummax(x, ...),
+    "cummin" = nv_cummin(x, ...),
     cli_abort("invalid method: {(.Generic)}")
   )
 }
 
 #' @export
-Math.AnvlArray <- Math.AnvlBox
-
-#' @export
-Math2.AnvlBox <- function(x, digits, ...) {
-  method <- list(...)$method
-  switch(
-    .Generic, # nolint
-    "round" = {
-      if (!missing(digits)) {
-        cli_abort("Cannot specify digits")
-      }
-      nv_round(x, method = method)
-    },
-    cli_abort("invalid method: {(.Generic)}")
-  )
-}
-
-#' @export
-Math2.AnvlArray <- Math2.AnvlBox
+Math.AnvlBox <- Math.AnvlArray
 
 
 #' @export
-Summary.AnvlBox <- function(..., na.rm) {
-  if (...length() != 1L) {
-    cli_abort("Currently only one argument is supported for Summary group generic")
+Summary.AnvlArray <- function(x, ..., na.rm = FALSE) {
+  if (isTRUE(na.rm)) {
+    cli_abort("{.code na.rm = TRUE} is not supported: anvl arrays do not carry {.code NA}s.")
   }
-  x <- ...elt(1L)
-
+  # Forward `...` so supported extras (e.g. `sum(x, dims = 1L)`) reach the
+  # underlying nv_reduce_* and unsupported ones error there as unused args.
   switch(
     .Generic, # nolint
-    "max" = nv_reduce_max(x),
-    "min" = nv_reduce_min(x),
-    "prod" = nv_reduce_prod(x),
-    "sum" = nv_reduce_sum(x),
-    "any" = nv_reduce_any(x),
-    "all" = nv_reduce_all(x),
+    "max" = nv_reduce_max(x, ...),
+    "min" = nv_reduce_min(x, ...),
+    "range" = nv_concatenate(nv_reduce_min(x, ...), nv_reduce_max(x, ...)),
+    "prod" = nv_reduce_prod(x, ...),
+    "sum" = nv_reduce_sum(x, ...),
+    "any" = nv_reduce_any(x, ...),
+    "all" = nv_reduce_all(x, ...),
     cli_abort("invalid method: {(.Generic)}")
   )
 }
 
 #' @export
-Summary.AnvlArray <- Summary.AnvlBox
+Summary.AnvlBox <- Summary.AnvlArray
 
 #' @rdname nv_mean
-#' @param x ([`arrayish`])\cr Operand.
-#' @param trim Included for compatibility with the [base::mean()] generic.
-#'   Only `trim = 0` is supported; passing any other value raises an error.
-#' @param na.rm Included for compatibility with the [base::mean()] generic.
-#'   anvl arrays do not carry `NA`s; passing `na.rm = TRUE` raises an error.
-#' @param ... Unused.
+#' @template param_x_operand
+#' @param trim,na.rm Currently not supported.
+#' @param ... No additional arguments.
+#' @method mean AnvlArray
 #' @export
-mean.AnvlBox <- function(x, trim = 0, na.rm = FALSE, ...) {
+mean.AnvlArray <- function(x, trim = 0, na.rm = FALSE, ..., dims = NULL, drop = TRUE) {
   if (isTRUE(na.rm)) {
     cli_abort("{.code na.rm = TRUE} is not supported: anvl arrays do not carry {.code NA}s.")
   }
   if (!identical(trim, 0)) {
     cli_abort("{.arg trim} is not supported by {.fn mean} for anvl arrays.")
   }
-  nv_mean(x)
+  nv_mean(x, ..., dims = dims, drop = drop)
 }
 
-#' @rdname nv_mean
+#' @method mean AnvlBox
 #' @export
-mean.AnvlArray <- mean.AnvlBox
+mean.AnvlBox <- mean.AnvlArray
 
 #' @rdname nv_is_nan
-#' @param x ([`arrayish`])\cr Operand.
-#' @method is.nan AnvlBox
+#' @template param_x_operand
+#' @method is.nan AnvlArray
 #' @export
-is.nan.AnvlBox <- function(x) {
+is.nan.AnvlArray <- function(x) {
   nv_is_nan(x)
 }
 
-#' @method is.nan AnvlArray
+#' @method is.nan AnvlBox
 #' @export
-is.nan.AnvlArray <- is.nan.AnvlBox
+is.nan.AnvlBox <- is.nan.AnvlArray
 
 #' @rdname nv_is_infinite
-#' @param x ([`arrayish`])\cr Operand.
-#' @method is.infinite AnvlBox
+#' @template param_x_operand
+#' @method is.infinite AnvlArray
 #' @export
-is.infinite.AnvlBox <- function(x) {
+is.infinite.AnvlArray <- function(x) {
   nv_is_infinite(x)
 }
 
-#' @method is.infinite AnvlArray
+#' @method is.infinite AnvlBox
 #' @export
-is.infinite.AnvlArray <- is.infinite.AnvlBox
+is.infinite.AnvlBox <- is.infinite.AnvlArray
 
 #' @rdname nv_is_finite
-#' @param x ([`arrayish`])\cr Operand.
-#' @method is.finite AnvlBox
+#' @template param_x_operand
+#' @method is.finite AnvlArray
 #' @export
-is.finite.AnvlBox <- function(x) {
+is.finite.AnvlArray <- function(x) {
   nv_is_finite(x)
 }
 
-#' @method is.finite AnvlArray
+#' @method is.finite AnvlBox
 #' @export
-is.finite.AnvlArray <- is.finite.AnvlBox
+is.finite.AnvlBox <- is.finite.AnvlArray
 
 # if we don't give it the name nv_transpose, pkgdown thinks t.anvl is a package
 
@@ -190,51 +173,66 @@ is.finite.AnvlArray <- is.finite.AnvlBox
 #' @name nv_transpose
 #' @description
 #' Permutes the dimensions of an array. You can also use `t()` for matrices.
-#' @param x ([`arrayish`])\cr
-#'   Array to transpose.
+#' @template param_x_operand
 #' @param permutation (`integer()` | `NULL`)\cr
 #'   New ordering of dimensions. If `NULL` (default), reverses the dimensions.
 #' @return [`arrayish`]\cr
-#'   Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
+#'   Has the same data type as `operand` and shape `nv_shape(operand)[permutation]`.
 #' @seealso [prim_transpose()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_matrix(1:6, nrow = 2)
 #' t(x)
+#' @method t AnvlArray
 #' @export
-t.AnvlBox <- function(x) {
+t.AnvlArray <- function(x) {
+  nd <- ndims(x)
+  if (nd != 2L) {
+    cli_abort("{.fn t} requires a 2-D array, but got a {nd}-D array.")
+  }
   nv_transpose(x)
 }
 
+#' @method t AnvlBox
 #' @export
-t.AnvlArray <- t.AnvlBox
+t.AnvlBox <- t.AnvlArray
 
 #' @rdname nv_median
+#' @template param_x_operand
+#' @param na.rm Currently not supported.
+#' @param ... No additional arguments.
+#' @method median AnvlArray
 #' @export
-median.AnvlBox <- function(x, na.rm = FALSE, ...) {
+median.AnvlArray <- function(x, na.rm = FALSE, ..., dim = NULL, interpolation = "linear") {
   if (isTRUE(na.rm)) {
     cli_abort("{.code na.rm = TRUE} is not supported: anvl arrays do not carry {.code NA}s.")
   }
-  nv_median(x, ...)
+  rlang::check_dots_empty()
+  nv_median(x, dim = dim, interpolation = interpolation)
 }
 
-#' @rdname nv_median
+#' @method median AnvlBox
 #' @export
-median.AnvlArray <- median.AnvlBox
+median.AnvlBox <- median.AnvlArray
 
 #' @rdname nv_sort
-#' @param ... Forwarded to `nv_sort()`.
+#' @template param_x_operand
+#' @param decreasing (`logical(1)`)\cr If `TRUE`, sort in decreasing order.
+#' @param ... No additional arguments.
+#' @method sort AnvlArray
 #' @export
-sort.AnvlBox <- function(x, decreasing = FALSE, ...) {
-  nv_sort(x, decreasing = decreasing, ...)
+sort.AnvlArray <- function(x, decreasing = FALSE, ..., dim = NULL) {
+  nv_sort(x, decreasing = decreasing, ..., dim = dim)
 }
 
-#' @rdname nv_sort
+#' @method sort AnvlBox
 #' @export
-sort.AnvlArray <- sort.AnvlBox
+sort.AnvlBox <- sort.AnvlArray
 
 #' @rdname nv_subset
+#' @template param_x_operand
+#' @method [ AnvlArray
 #' @export
-`[.AnvlBox` <- function(x, ...) {
+`[.AnvlArray` <- function(x, ...) {
   # nargs() sees trailing missing args (e.g. the last `,` in x[1:5, , ])
   # that rlang::enquos() silently drops.
   n_args <- nargs() - 1L
@@ -246,13 +244,15 @@ sort.AnvlArray <- sort.AnvlBox
   rlang::inject(nv_subset(x, !!!quos))
 }
 
-#' @rdname nv_subset
+#' @method [ AnvlBox
 #' @export
-`[.AnvlArray` <- `[.AnvlBox`
+`[.AnvlBox` <- `[.AnvlArray`
 
 #' @rdname nv_subset_assign
+#' @template param_x_operand
+#' @method [<- AnvlArray
 #' @export
-`[<-.AnvlBox` <- function(x, ..., value) {
+`[<-.AnvlArray` <- function(x, ..., value) {
   n_args <- nargs() - 2L
   rank <- length(shape_abstract(x))
   if (n_args > rank) {
@@ -262,118 +262,132 @@ sort.AnvlArray <- sort.AnvlBox
   rlang::inject(nv_subset_assign(x, !!!quos, value = value))
 }
 
-#' @rdname nv_subset_assign
+#' @method [<- AnvlBox
 #' @export
-`[<-.AnvlArray` <- `[<-.AnvlBox`
+`[<-.AnvlBox` <- `[<-.AnvlArray`
 
 #' @rdname nv_crossprod
-#' @method crossprod AnvlBox
-#' @export
-crossprod.AnvlBox <- function(x, y = NULL, ...) {
-  nv_crossprod(x, y)
-}
-
+#' @param x,y Same as `lhs` and `rhs`; the names used by the base R S3 generic.
+#' @param ... No additional arguments.
 #' @method crossprod AnvlArray
 #' @export
-crossprod.AnvlArray <- crossprod.AnvlBox
+crossprod.AnvlArray <- function(x, y = NULL, ...) {
+  nv_crossprod(x, y, ...)
+}
+
+#' @method crossprod AnvlBox
+#' @export
+crossprod.AnvlBox <- crossprod.AnvlArray
 
 #' @rdname nv_tcrossprod
-#' @method tcrossprod AnvlBox
-#' @export
-tcrossprod.AnvlBox <- function(x, y = NULL, ...) {
-  nv_tcrossprod(x, y)
-}
-
+#' @param x,y Same as `lhs` and `rhs`; the names used by the base R S3 generic.
+#' @param ... No additional arguments.
 #' @method tcrossprod AnvlArray
 #' @export
-tcrossprod.AnvlArray <- tcrossprod.AnvlBox
-
-#' @method dim AnvlBox
-#' @export
-dim.AnvlBox <- function(x) {
-  shape(x)
+tcrossprod.AnvlArray <- function(x, y = NULL, ...) {
+  nv_tcrossprod(x, y, ...)
 }
+
+#' @method tcrossprod AnvlBox
+#' @export
+tcrossprod.AnvlBox <- tcrossprod.AnvlArray
 
 #' @method dim AnvlArray
 #' @export
-dim.AnvlArray <- dim.AnvlBox
-
-#' @method length AnvlBox
-#' @export
-length.AnvlBox <- function(x) {
-  prod(shape(x))
+dim.AnvlArray <- function(x) {
+  shape(x)
 }
+
+#' @method dim AnvlBox
+#' @export
+dim.AnvlBox <- dim.AnvlArray
 
 #' @method length AnvlArray
 #' @export
-length.AnvlArray <- length.AnvlBox
+length.AnvlArray <- function(x) {
+  prod(shape(x))
+}
+
+#' @method length AnvlBox
+#' @export
+length.AnvlBox <- length.AnvlArray
 
 #' @rdname nv_bind
 #' @param deparse.level Ignored. Kept for compatibility with [base::rbind()]
 #'   and [base::cbind()].
-#' @method rbind AnvlBox
+#' @method rbind AnvlArray
 #' @export
-rbind.AnvlBox <- function(..., deparse.level = 1) {
+rbind.AnvlArray <- function(..., deparse.level = 1) {
   nv_rbind(...)
 }
 
-#' @rdname nv_bind
-#' @method rbind AnvlArray
+#' @method rbind AnvlBox
 #' @export
-rbind.AnvlArray <- rbind.AnvlBox
-
-#' @rdname nv_bind
-#' @method cbind AnvlBox
-#' @export
-cbind.AnvlBox <- function(..., deparse.level = 1) {
-  nv_cbind(...)
-}
+rbind.AnvlBox <- rbind.AnvlArray
 
 #' @rdname nv_bind
 #' @method cbind AnvlArray
 #' @export
-cbind.AnvlArray <- cbind.AnvlBox
+cbind.AnvlArray <- function(..., deparse.level = 1) {
+  nv_cbind(...)
+}
+
+#' @method cbind AnvlBox
+#' @export
+cbind.AnvlBox <- cbind.AnvlArray
+
+#' @rdname nv_solve
+#' @param a ([`arrayish`])\cr Coefficient matrix.
+#' @param b ([`arrayish`])\cr Right-hand side. If missing, returns [nv_inv()] of `a`.
+#' @param ... No additional arguments.
+#' @method solve AnvlArray
+#' @export
+solve.AnvlArray <- function(a, b, ...) {
+  if (missing(b)) nv_inv(a, ...) else nv_solve(a, b, ...)
+}
 
 #' @method solve AnvlBox
 #' @export
-solve.AnvlBox <- function(a, b, ...) {
-  rlang::check_dots_empty()
-  if (missing(b)) nv_inv(a) else nv_solve(a, b)
-}
+solve.AnvlBox <- solve.AnvlArray
 
-#' @method solve AnvlArray
+#' @rdname nv_qr
+#' @template param_x_operand
+#' @param ... No additional arguments.
+#' @method qr AnvlArray
 #' @export
-solve.AnvlArray <- solve.AnvlBox
+qr.AnvlArray <- function(x, ...) {
+  nv_qr(x, ...)
+}
 
 #' @method qr AnvlBox
 #' @export
-qr.AnvlBox <- function(x, ...) {
-  rlang::check_dots_empty()
-  nv_qr(x)
-}
+qr.AnvlBox <- qr.AnvlArray
 
-#' @method qr AnvlArray
+#' @rdname nv_chol
+#' @template param_x_operand
+#' @param lower (`logical(1)`)\cr If `TRUE`, return the lower-triangular factor.
+#' @param ... No additional arguments.
+#' @method chol AnvlArray
 #' @export
-qr.AnvlArray <- qr.AnvlBox
+chol.AnvlArray <- function(x, ..., lower = FALSE) {
+  nv_chol(x, lower = lower, ...)
+}
 
 #' @method chol AnvlBox
 #' @export
-chol.AnvlBox <- function(x, ..., lower = FALSE) {
-  rlang::check_dots_empty()
-  nv_chol(x, lower = lower)
-}
+chol.AnvlBox <- chol.AnvlArray
 
-#' @method chol AnvlArray
+#' @rdname nv_determinant
+#' @template param_x_operand
+#' @param logarithm (`logical(1)`)\cr If `TRUE` (default), return the log
+#'   of the absolute determinant.
+#' @param ... No additional arguments.
+#' @method determinant AnvlArray
 #' @export
-chol.AnvlArray <- chol.AnvlBox
+determinant.AnvlArray <- function(x, logarithm = TRUE, ...) {
+  nv_determinant(x, logarithm = logarithm, ...)
+}
 
 #' @method determinant AnvlBox
 #' @export
-determinant.AnvlBox <- function(x, logarithm = TRUE, ...) {
-  rlang::check_dots_empty()
-  nv_determinant(x, logarithm = logarithm)
-}
-
-#' @method determinant AnvlArray
-#' @export
-determinant.AnvlArray <- determinant.AnvlBox
+determinant.AnvlBox <- determinant.AnvlArray

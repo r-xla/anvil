@@ -4,11 +4,11 @@
 \alias{nv_quantile}
 \title{Quantile}
 \usage{
-nv_quantile(x, probs, dim = NULL, interpolation = "linear")
+nv_quantile(operand, probs, dim = NULL, interpolation = "linear")
 }
 \arguments{
-\item{x}{(\code{\link{arrayish}})\cr
-The array.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Operand.}
 
 \item{probs}{(\code{numeric(1)} | 1-D \code{array})\cr
 One or more probabilities in \verb{[0, 1]}. Either a length-1 numeric

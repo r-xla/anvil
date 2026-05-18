@@ -2,18 +2,19 @@
 % Please edit documentation in R/api.R, R/api-generics.R
 \name{nv_is_nan}
 \alias{nv_is_nan}
-\alias{is.nan.AnvlBox}
+\alias{is.nan.AnvlArray}
 \title{Is NaN}
 \usage{
 nv_is_nan(operand)
 
-\method{is.nan}{AnvlBox}(x)
+\method{is.nan}{AnvlArray}(x)
 }
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
-\item{x}{(\code{\link{arrayish}})\cr Operand.}
+\item{x}{(\code{\link{arrayish}})\cr
+Same as \code{operand}; this is the name used by the base R S3 generic.}
 }
 \value{
 \code{\link{arrayish}}\cr

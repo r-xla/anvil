@@ -38,6 +38,14 @@ describe("!", {
   })
 })
 
+describe("t", {
+  it("errors on non-2D arrays", {
+    expect_error(t(nv_scalar(1)), "requires a 2-D array")
+    expect_error(t(nv_array(1:3)), "requires a 2-D array")
+    expect_error(t(nv_array(array(1:24, dim = c(2, 3, 4)))), "requires a 2-D array")
+  })
+})
+
 describe("trunc", {
   it("rounds toward zero", {
     expect_equal(
@@ -47,6 +55,16 @@ describe("trunc", {
       },
       nv_array(c(1, 2, -1, 0, 0))
     )
+  })
+})
+
+describe("Math group generic rejects unsupported args", {
+  it("log(x, base) errors (base is not supported)", {
+    x <- nv_array(c(2, 4, 8))
+    expect_error(log(x, base = 2), "unused argument")
+  })
+  it("sqrt(x, foo) errors", {
+    expect_error(sqrt(nv_array(c(1, 4)), foo = "bar"), "sqrt")
   })
 })
 
@@ -216,6 +234,37 @@ describe("CHLO Math generics", {
       nv_array(psigamma(vals, 2)),
       tolerance = 1e-5
     )
+  })
+})
+
+describe("range", {
+  it("returns c(min, max) as a length-2 array", {
+    expect_equal(
+      {
+        x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
+        range(x)
+      },
+      nv_array(c(1, 9))
+    )
+  })
+})
+
+describe("Summary group generic", {
+  it("forwards ... to underlying nv_reduce_*", {
+    expect_equal(
+      {
+        x <- nv_array(matrix(1:6, 2))
+        sum(x, dims = 1L)
+      },
+      nv_array(c(3, 7, 11), dtype = "i32")
+    )
+  })
+  it("errors on na.rm = TRUE", {
+    expect_error(sum(nv_array(1:3), na.rm = TRUE), "na.rm = TRUE")
+    expect_error(max(nv_array(1:3), na.rm = TRUE), "na.rm = TRUE")
+  })
+  it("rejects unsupported args", {
+    expect_error(sum(nv_array(1:3), foo = "bar"), "unused argument")
   })
 })
 
