@@ -272,7 +272,7 @@ describe("nv_subset and nv_subset_assign", {
   })
 
   it("subset_assign broadcasts scalar rhs", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(1:3)
         x[1:3] <- -1L
@@ -362,70 +362,56 @@ describe("nv_subset and nv_subset_assign", {
 
 describe("subset_specs_start_indices", {
   it("returns all 1s for SubsetFull specs", {
-    result <- jit(function() {
-      subsets <- list(SubsetFull(5L), SubsetFull(3L))
-      subset_specs_start_indices(subsets)
-    })()
+    subsets <- list(SubsetFull(5L), SubsetFull(3L))
+    result <- subset_specs_start_indices(subsets)
     expect_equal(dtype(result), as_dtype("i32"))
     expect_equal(as.integer(as_array(result)), c(1L, 1L))
   })
 
   it("returns start values for SubsetRange specs", {
-    result <- jit(function() {
-      subsets <- list(SubsetRange(3L, 5L), SubsetRange(2L, 4L))
-      subset_specs_start_indices(subsets)
-    })()
+    subsets <- list(SubsetRange(3L, 5L), SubsetRange(2L, 4L))
+    result <- subset_specs_start_indices(subsets)
     expect_equal(dtype(result), as_dtype("i32"))
     expect_equal(as.integer(as_array(result)), c(3L, 2L))
   })
 
   it("returns the index for scalar SubsetIndices", {
-    result <- jit(function() {
-      subsets <- list(SubsetIndex(nv_scalar(4L, dtype = "i64")))
-      subset_specs_start_indices(subsets)
-    })()
+    subsets <- list(SubsetIndex(nv_scalar(4L, dtype = "i64")))
+    result <- subset_specs_start_indices(subsets)
     expect_equal(dtype(result), as_dtype("i64"))
     expect_equal(as.integer(as_array(result)), 4L)
   })
 
   it("handles mixed spec types", {
-    result <- jit(function() {
-      subsets <- list(
-        SubsetRange(2L, 5L),
-        SubsetFull(10L),
-        SubsetIndex(nv_scalar(3L, dtype = "i64"))
-      )
-      subset_specs_start_indices(subsets)
-    })()
+    subsets <- list(
+      SubsetRange(2L, 5L),
+      SubsetFull(10L),
+      SubsetIndex(nv_scalar(3L, dtype = "i64"))
+    )
+    result <- subset_specs_start_indices(subsets)
     expect_equal(dtype(result), as_dtype("i64"))
     expect_equal(as.integer(as_array(result)), c(2L, 1L, 3L))
   })
 
   it("uses i32 for all-static subsets", {
-    result <- jit(function() {
-      subsets <- list(SubsetFull(5L), SubsetRange(3L, 5L))
-      subset_specs_start_indices(subsets)
-    })()
+    subsets <- list(SubsetFull(5L), SubsetRange(3L, 5L))
+    result <- subset_specs_start_indices(subsets)
     expect_equal(dtype(result), as_dtype("i32"))
     expect_equal(as.integer(as_array(result)), c(1L, 3L))
   })
 
   it("uses max integer type when dynamic indices are present", {
-    result <- jit(function() {
-      subsets <- list(
-        SubsetIndex(nv_scalar(2L, dtype = "i16")),
-        SubsetRange(3L, 5L)
-      )
-      subset_specs_start_indices(subsets)
-    })()
+    subsets <- list(
+      SubsetIndex(nv_scalar(2L, dtype = "i16")),
+      SubsetRange(3L, 5L)
+    )
+    result <- subset_specs_start_indices(subsets)
     expect_equal(dtype(result), as_dtype("i32"))
   })
 
   it("works with a single dimension", {
-    result <- jit(function() {
-      subsets <- list(SubsetRange(2L, 7L))
-      subset_specs_start_indices(subsets)
-    })()
+    subsets <- list(SubsetRange(2L, 7L))
+    result <- subset_specs_start_indices(subsets)
     expect_equal(dtype(result), as_dtype("i32"))
     expect_equal(as.integer(as_array(result)), 2L)
   })

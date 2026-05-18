@@ -35,95 +35,84 @@ test_that("shape_abstract", {
 
 describe("gather_clamp_indices", {
   it("clamps indices that exceed upper bound (implicit index vector)", {
-    result <- jit(function() {
-      # operand dim=10, slice_size=3, so max valid start = 10-3+1 = 8
-      idx <- nv_array(c(9L, 10L, 5L), dtype = "i32")
-      gather_clamp_indices(
-        start_indices = idx,
-        operand_shape = c(10L),
-        slice_sizes = 3L,
-        start_index_map = 1L,
-        index_vector_dim = 2L # implicit
-      )
-    })()
+    # operand dim=10, slice_size=3, so max valid start = 10-3+1 = 8
+    idx <- nv_array(c(9L, 10L, 5L), dtype = "i32")
+    result <- gather_clamp_indices(
+      start_indices = idx,
+      operand_shape = c(10L),
+      slice_sizes = 3L,
+      start_index_map = 1L,
+      index_vector_dim = 2L # implicit
+    )
     expect_equal(as.integer(as_array(result)), c(8L, 8L, 5L))
   })
 
   it("clamps indices below 1 to 1 (implicit index vector)", {
-    result <- jit(function() {
-      idx <- nv_array(c(0L, -2L, 3L), dtype = "i32")
-      gather_clamp_indices(
-        start_indices = idx,
-        operand_shape = c(10L),
-        slice_sizes = 1L,
-        start_index_map = 1L,
-        index_vector_dim = 2L
-      )
-    })()
+    idx <- nv_array(c(0L, -2L, 3L), dtype = "i32")
+    result <- gather_clamp_indices(
+      start_indices = idx,
+      operand_shape = c(10L),
+      slice_sizes = 1L,
+      start_index_map = 1L,
+      index_vector_dim = 2L
+    )
     expect_equal(as.integer(as_array(result)), c(1L, 1L, 3L))
   })
 
   it("leaves valid indices unchanged (implicit index vector)", {
-    result <- jit(function() {
-      idx <- nv_array(c(1L, 5L, 8L), dtype = "i32")
-      gather_clamp_indices(
-        start_indices = idx,
-        operand_shape = c(10L),
-        slice_sizes = c(3L),
-        start_index_map = 1L,
-        index_vector_dim = 2L
-      )
-    })()
+    idx <- nv_array(c(1L, 5L, 8L), dtype = "i32")
+    result <- gather_clamp_indices(
+      start_indices = idx,
+      operand_shape = c(10L),
+      slice_sizes = c(3L),
+      start_index_map = 1L,
+      index_vector_dim = 2L
+    )
     expect_equal(as.integer(as_array(result)), c(1L, 5L, 8L))
   })
 
   it("clamps with explicit index vector dim (multiple coordinates)", {
-    result <- jit(function() {
-      # Shape [2]: two coordinates, one per operand dim
-      # operand_shape = c(5, 8), slice_sizes = c(2, 3)
-      # max for dim1 = 5-2+1 = 4, max for dim2 = 8-3+1 = 6
-      idx <- nv_array(c(10L, 10L), dtype = "i32")
-      gather_clamp_indices(
-        start_indices = idx,
-        operand_shape = c(5L, 8L),
-        slice_sizes = c(2L, 3L),
-        start_index_map = c(1L, 2L),
-        index_vector_dim = 1L
-      )
-    })()
+    # Shape [2]: two coordinates, one per operand dim
+    # operand_shape = c(5, 8), slice_sizes = c(2, 3)
+    # max for dim1 = 5-2+1 = 4, max for dim2 = 8-3+1 = 6
+    idx <- nv_array(c(10L, 10L), dtype = "i32")
+    result <- gather_clamp_indices(
+      start_indices = idx,
+      operand_shape = c(5L, 8L),
+      slice_sizes = c(2L, 3L),
+      start_index_map = c(1L, 2L),
+      index_vector_dim = 1L
+    )
     expect_equal(as.integer(as_array(result)), c(4L, 6L))
   })
 
   it("clamps batch of indices with explicit index vector dim and reverse start_index_map", {
-    # slice_sizes are in the order of the operand_shape
-    result <- jit(function() {
-      # operand_shape = c(8, 5), slice_sizes = c(2, 3)
-      # because we reverse the start_index_map, we clamp:
-      # clamp(1, coord_1, max(1, 5 - 3 + 1) = 3)
-      # clamp(1, coord_2, max(1, 8 - 2 + 1) = 7)
-      idx <- nv_array(
-        matrix(
-          c(
-            7L,
-            0L,
-            4L,
-            3L,
-            7L,
-            10L
-          ),
-          nrow = 3,
-          byrow = TRUE
+    # operand_shape = c(8, 5), slice_sizes = c(2, 3)
+    # because we reverse the start_index_map, we clamp:
+    # clamp(1, coord_1, max(1, 5 - 3 + 1) = 3)
+    # clamp(1, coord_2, max(1, 8 - 2 + 1) = 7)
+    idx <- nv_array(
+      matrix(
+        c(
+          7L,
+          0L,
+          4L,
+          3L,
+          7L,
+          10L
         ),
-        dtype = "i32"
-      )
-      gather_clamp_indices(
-        start_indices = idx,
-        operand_shape = c(8L, 5L),
-        slice_sizes = c(2L, 3L),
-        start_index_map = c(2L, 1L),
-        index_vector_dim = 2L
-      )
-    })()
+        nrow = 3,
+        byrow = TRUE
+      ),
+      dtype = "i32"
+    )
+    result <- gather_clamp_indices(
+      start_indices = idx,
+      operand_shape = c(8L, 5L),
+      slice_sizes = c(2L, 3L),
+      start_index_map = c(2L, 1L),
+      index_vector_dim = 2L
+    )
     expected <- matrix(
       c(
         3L,
@@ -140,17 +129,15 @@ describe("gather_clamp_indices", {
   })
 
   it("handles slice_size equal to dim size (max_bound = 1)", {
-    result <- jit(function() {
-      # slice covers the whole dim, so only valid start is 1
-      idx <- nv_array(c(0L, 5L), dtype = "i32")
-      gather_clamp_indices(
-        start_indices = idx,
-        operand_shape = 10L,
-        slice_sizes = 10L,
-        start_index_map = 1L,
-        index_vector_dim = 2L
-      )
-    })()
+    # slice covers the whole dim, so only valid start is 1
+    idx <- nv_array(c(0L, 5L), dtype = "i32")
+    result <- gather_clamp_indices(
+      start_indices = idx,
+      operand_shape = 10L,
+      slice_sizes = 10L,
+      start_index_map = 1L,
+      index_vector_dim = 2L
+    )
     expect_equal(nv_array(c(1L, 1L), dtype = "i32"), result)
   })
 })

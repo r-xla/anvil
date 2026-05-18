@@ -134,15 +134,15 @@ test_that("prim_fill", {
 
   # scalars
   expect_equal(
-    jit(\() nv_fill(1L, shape = c(), dtype = "f32"))(),
+    nv_fill(1L, shape = c(), dtype = "f32"),
     nv_scalar(1, dtype = "f32")
   )
   expect_equal(
-    jit(\() nv_fill(1L, shape = integer(), dtype = "f32"))(),
+    nv_fill(1L, shape = integer(), dtype = "f32"),
     nv_scalar(1, dtype = "f32")
   )
   expect_equal(
-    jit(\() nv_fill(1L, shape = 1L, dtype = "f32"))(),
+    nv_fill(1L, shape = 1L, dtype = "f32"),
     nv_array(1, shape = 1L, dtype = "f32")
   )
 })
