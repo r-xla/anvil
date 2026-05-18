@@ -4,11 +4,11 @@
 \alias{nv_argmax}
 \title{Index of the Maximum}
 \usage{
-nv_argmax(x, dim = NULL, drop = TRUE)
+nv_argmax(operand, dim = NULL, drop = TRUE)
 }
 \arguments{
-\item{x}{(\code{\link{arrayish}})\cr
-The array.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Operand.}
 
 \item{dim}{(\code{integer(1)} | \code{NULL})\cr
 Dimension along which to find the index. If \code{NULL} (default), uses
@@ -20,7 +20,7 @@ is kept with size 1.}
 }
 \value{
 \code{\link{arrayish}} of dtype \code{i32}\cr
-Same shape as \code{x} with \code{dim} removed (or set to 1 if \code{drop = FALSE}).
+Same shape as \code{operand} with \code{dim} removed (or set to 1 if \code{drop = FALSE}).
 }
 \description{
 Returns the index of the maximum value along a dimension. Ties are broken

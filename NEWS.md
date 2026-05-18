@@ -11,7 +11,7 @@
 * `nv_reduce_mean()` was renamed to `nv_mean()`.
 * `nv_solve()` no longer requires `a` to be symmetric positive-definite as it
   uses LU instead of Cholesky decomposition.
-  Because of this, it is no longer differentiable, as the reverse rule for 
+  Because of this, it is no longer differentiable, as the reverse rule for
   LU is not implemented yet.
 * `nv_chol()` / `prim_chol()` now default to `lower = FALSE`
   (upper-triangular factor), matching base R's `chol()`. Previously
@@ -81,6 +81,7 @@
 * `mean()` and `median()` now error when called with `na.rm = TRUE`,
   since anvl arrays do not carry `NA`s. `mean()` also rejects non-zero
   `trim`.
+* Added support for `range` generic.
 
 ## Other
 

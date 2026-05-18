@@ -2,15 +2,12 @@
 % Please edit documentation in R/api.R, R/api-generics.R
 \name{nv_mean}
 \alias{nv_mean}
-\alias{mean.AnvlBox}
 \alias{mean.AnvlArray}
 \title{Mean}
 \usage{
 nv_mean(operand, dims = NULL, drop = TRUE)
 
-\method{mean}{AnvlBox}(x, trim = 0, na.rm = FALSE, ...)
-
-\method{mean}{AnvlArray}(x, trim = 0, na.rm = FALSE, ...)
+\method{mean}{AnvlArray}(x, trim = 0, na.rm = FALSE, ..., dims = NULL, drop = TRUE)
 }
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr
@@ -23,15 +20,12 @@ dimensions, returning a scalar.}
 \item{drop}{(\code{logical(1)})\cr
 Whether to drop reduced dimensions.}
 
-\item{x}{(\code{\link{arrayish}})\cr Operand.}
+\item{x}{(\code{\link{arrayish}})\cr
+Same as \code{operand}; this is the name used by the base R S3 generic.}
 
-\item{trim}{Included for compatibility with the \code{\link[base:mean]{base::mean()}} generic.
-Only \code{trim = 0} is supported; passing any other value raises an error.}
+\item{trim, na.rm}{Currently not supported.}
 
-\item{na.rm}{Included for compatibility with the \code{\link[base:mean]{base::mean()}} generic.
-anvl arrays do not carry \code{NA}s; passing \code{na.rm = TRUE} raises an error.}
-
-\item{...}{Unused.}
+\item{...}{No additional arguments.}
 }
 \value{
 \code{\link{arrayish}}\cr

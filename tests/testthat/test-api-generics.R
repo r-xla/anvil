@@ -38,6 +38,14 @@ describe("!", {
   })
 })
 
+describe("t", {
+  it("errors on non-2D arrays", {
+    expect_error(t(nv_scalar(1)), "requires a 2-D array")
+    expect_error(t(nv_array(1:3)), "requires a 2-D array")
+    expect_error(t(nv_array(array(1:24, dim = c(2, 3, 4)))), "requires a 2-D array")
+  })
+})
+
 describe("trunc", {
   it("rounds toward zero", {
     expect_jit_equal(
@@ -215,6 +223,18 @@ describe("CHLO Math generics", {
       },
       nv_array(psigamma(vals, 2)),
       tolerance = 1e-5
+    )
+  })
+})
+
+describe("range", {
+  it("returns c(min, max) as a length-2 array", {
+    expect_jit_equal(
+      {
+        x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
+        range(x)
+      },
+      nv_array(c(1, 9))
     )
   })
 })

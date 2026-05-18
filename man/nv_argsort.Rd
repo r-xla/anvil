@@ -4,11 +4,11 @@
 \alias{nv_argsort}
 \title{Argsort}
 \usage{
-nv_argsort(x, dim = NULL, decreasing = FALSE, stable = FALSE)
+nv_argsort(operand, dim = NULL, decreasing = FALSE, stable = FALSE)
 }
 \arguments{
-\item{x}{(\code{\link{arrayish}})\cr
-The array.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Operand.}
 
 \item{dim}{(\code{integer(1)} | \code{NULL})\cr
 Dimension along which to compute the sort permutation. If \code{NULL}
@@ -24,10 +24,10 @@ original relative order. Default \code{FALSE}.}
 }
 \value{
 \code{\link{arrayish}} of dtype \code{i32}\cr
-Same shape as \code{x}. For a size-0 axis, the output is an empty \code{i32}
+Same shape as \code{operand}. For a size-0 axis, the output is an empty \code{i32}
 array of the same shape (a valid empty permutation).
-\code{as_array(x)[as_array(nv_argsort(x))]} reproduces the sorted array
-(for 1-D inputs).
+\code{as_array(operand)[as_array(nv_argsort(operand))]} reproduces the sorted
+array (for 1-D inputs).
 }
 \description{
 Returns the indices that would sort the array along a dimension.

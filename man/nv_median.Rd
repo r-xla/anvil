@@ -2,19 +2,16 @@
 % Please edit documentation in R/api.R, R/api-generics.R
 \name{nv_median}
 \alias{nv_median}
-\alias{median.AnvlBox}
 \alias{median.AnvlArray}
 \title{Median}
 \usage{
-nv_median(x, dim = NULL, interpolation = "linear")
+nv_median(operand, dim = NULL, interpolation = "linear")
 
-\method{median}{AnvlBox}(x, na.rm = FALSE, ...)
-
-\method{median}{AnvlArray}(x, na.rm = FALSE, ...)
+\method{median}{AnvlArray}(x, na.rm = FALSE, ..., dim = NULL, interpolation = "linear")
 }
 \arguments{
-\item{x}{(\code{\link{arrayish}})\cr
-The array.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Operand.}
 
 \item{dim}{(\code{integer(1)} | \code{NULL})\cr
 Dimension along which to compute the median. If \code{NULL} (default),
@@ -24,19 +21,21 @@ uses the last dimension.}
 Forwarded to \code{\link[=nv_quantile]{nv_quantile()}}. One of \code{"linear"} (default), \code{"lower"},
 \code{"higher"}, \code{"nearest"}, \code{"midpoint"}.}
 
-\item{na.rm}{Included for compatibility with the \code{\link[stats:median]{stats::median()}} generic.
-anvl arrays do not carry \code{NA}s; passing \code{na.rm = TRUE} raises an error.}
+\item{x}{(\code{\link{arrayish}})\cr
+Same as \code{operand}; this is the name used by the base R S3 generic.}
 
-\item{...}{Forwarded to \code{nv_median()}.}
+\item{na.rm}{Currently not supported.}
+
+\item{...}{No additional arguments.}
 }
 \value{
 \code{\link{arrayish}}\cr
-Same shape as \code{x} with \code{dim} removed.
+Same shape as \code{operand} with \code{dim} removed.
 }
 \description{
 Computes the median along a dimension. Equivalent to
-\code{nv_quantile(x, 0.5, dim, interpolation)}; for an even-length axis with
-the default \code{"linear"} interpolation, the average of the two middle
+\code{nv_quantile(operand, 0.5, dim, interpolation)}; for an even-length axis
+with the default \code{"linear"} interpolation, the average of the two middle
 values is returned, matching base R's \code{median()}.
 
 You can also use \code{median()} directly on an \code{\link{AnvlArray}} or \code{\link{AnvlBox}};

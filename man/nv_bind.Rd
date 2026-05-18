@@ -4,9 +4,7 @@
 \alias{nv_bind}
 \alias{nv_rbind}
 \alias{nv_cbind}
-\alias{rbind.AnvlBox}
 \alias{rbind.AnvlArray}
-\alias{cbind.AnvlBox}
 \alias{cbind.AnvlArray}
 \title{Combine arrays by rows or columns}
 \usage{
@@ -14,11 +12,7 @@ nv_rbind(...)
 
 nv_cbind(...)
 
-\method{rbind}{AnvlBox}(..., deparse.level = 1)
-
 \method{rbind}{AnvlArray}(..., deparse.level = 1)
-
-\method{cbind}{AnvlBox}(..., deparse.level = 1)
 
 \method{cbind}{AnvlArray}(..., deparse.level = 1)
 }

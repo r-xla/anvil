@@ -2,18 +2,19 @@
 % Please edit documentation in R/api.R, R/api-generics.R
 \name{nv_is_finite}
 \alias{nv_is_finite}
-\alias{is.finite.AnvlBox}
+\alias{is.finite.AnvlArray}
 \title{Is Finite}
 \usage{
 nv_is_finite(operand)
 
-\method{is.finite}{AnvlBox}(x)
+\method{is.finite}{AnvlArray}(x)
 }
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
-\item{x}{(\code{\link{arrayish}})\cr Operand.}
+\item{x}{(\code{\link{arrayish}})\cr
+Same as \code{operand}; this is the name used by the base R S3 generic.}
 }
 \value{
 \code{\link{arrayish}}\cr

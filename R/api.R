@@ -217,11 +217,12 @@ nv_convert <- function(operand, dtype) {
 }
 
 #' @rdname nv_transpose
+#' @template param_operand
 #' @export
-nv_transpose <- function(x, permutation = NULL) {
-  x <- as_anvl_array(x)
-  permutation <- permutation %||% rev(seq_len(ndims(x)))
-  prim_transpose(x, permutation)
+nv_transpose <- function(operand, permutation = NULL) {
+  operand <- as_anvl_array(operand)
+  permutation <- permutation %||% rev(seq_len(ndims(operand)))
+  prim_transpose(operand, permutation)
 }
 
 
@@ -2383,28 +2384,28 @@ nv_unsqueeze <- function(operand, dim) {
 #' @title Outer Product
 #' @description
 #' Computes the outer product of two 1-D arrays.
-#' @param x,y ([`arrayish`])\cr
+#' @param lhs,rhs ([`arrayish`])\cr
 #'   1-D arrays.
 #' @return [`arrayish`]\cr
-#'   A 2-D array of shape `(length(x), length(y))`.
+#'   A 2-D array of shape `(length(lhs), length(rhs))`.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(1, 2, 3))
 #' y <- nv_array(c(4, 5))
 #' nv_outer(x, y)
 #' @export
-nv_outer <- function(x, y) {
-  args <- nv_promote_to_common(x, y)
-  x <- args[[1L]]
-  y <- args[[2L]]
-  if (ndims(x) != 1L) {
-    cli_abort("x must be a 1-D array")
+nv_outer <- function(lhs, rhs) {
+  args <- nv_promote_to_common(lhs, rhs)
+  lhs <- args[[1L]]
+  rhs <- args[[2L]]
+  if (ndims(lhs) != 1L) {
+    cli_abort("lhs must be a 1-D array")
   }
-  if (ndims(y) != 1L) {
-    cli_abort("y must be a 1-D array")
+  if (ndims(rhs) != 1L) {
+    cli_abort("rhs must be a 1-D array")
   }
-  x_exp <- nv_unsqueeze(x, dim = 2L)
-  y_exp <- nv_unsqueeze(y, dim = 1L)
-  bcast <- nv_broadcast_arrays(x_exp, y_exp)
+  lhs_exp <- nv_unsqueeze(lhs, dim = 2L)
+  rhs_exp <- nv_unsqueeze(rhs, dim = 1L)
+  bcast <- nv_broadcast_arrays(lhs_exp, rhs_exp)
   prim_mul(bcast[[1L]], bcast[[2L]])
 }
 
@@ -2514,71 +2515,68 @@ nv_triu <- function(operand, diagonal = 0L) {
 
 #' @title Cross Product (Matrix)
 #' @description
-#' Computes `t(x) %*% y`. If `y` is missing, computes `t(x) %*% x`.
-#' @param x ([`arrayish`])\cr
+#' Computes `t(lhs) %*% rhs`. If `rhs` is missing, computes `t(lhs) %*% lhs`.
+#' @param lhs ([`arrayish`])\cr
 #'   An array with at least 2 dimensions.
-#' @param y ([`arrayish`] | `NULL`)\cr
-#'   Optional second array. If `NULL`, uses `x`.
-#' @param ... Unused.
+#' @param rhs ([`arrayish`] | `NULL`)\cr
+#'   Optional second array. If `NULL`, uses `lhs`.
 #' @return [`arrayish`]
 #' @seealso [nv_tcrossprod()], [nv_matmul()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
 #' nv_crossprod(x)
 #' @export
-nv_crossprod <- function(x, y = NULL) {
-  if (is.null(y)) {
-    x <- as_anvl_array(x)
-    y <- x
+nv_crossprod <- function(lhs, rhs = NULL) {
+  if (is.null(rhs)) {
+    lhs <- as_anvl_array(lhs)
+    rhs <- lhs
   } else {
-    args <- as_anvl_arrays(x, y)
-    x <- args[[1L]]
-    y <- args[[2L]]
+    args <- as_anvl_arrays(lhs, rhs)
+    lhs <- args[[1L]]
+    rhs <- args[[2L]]
   }
-  nv_matmul(nv_transpose(x), y)
+  nv_matmul(nv_transpose(lhs), rhs)
 }
 
 #' @title Transpose Cross Product (Matrix)
 #' @description
-#' Computes `x %*% t(y)`. If `y` is missing, computes `x %*% t(x)`.
-#' @param x ([`arrayish`])\cr
+#' Computes `lhs %*% t(rhs)`. If `rhs` is missing, computes `lhs %*% t(lhs)`.
+#' @param lhs ([`arrayish`])\cr
 #'   An array with at least 2 dimensions.
-#' @param y ([`arrayish`] | `NULL`)\cr
-#'   Optional second array. If `NULL`, uses `x`.
-#' @param ... Unused.
+#' @param rhs ([`arrayish`] | `NULL`)\cr
+#'   Optional second array. If `NULL`, uses `lhs`.
 #' @return [`arrayish`]
 #' @seealso [nv_crossprod()], [nv_matmul()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
 #' nv_tcrossprod(x)
 #' @export
-nv_tcrossprod <- function(x, y = NULL) {
-  if (is.null(y)) {
-    x <- as_anvl_array(x)
-    y <- x
+nv_tcrossprod <- function(lhs, rhs = NULL) {
+  if (is.null(rhs)) {
+    lhs <- as_anvl_array(lhs)
+    rhs <- lhs
   } else {
-    args <- as_anvl_arrays(x, y)
-    x <- args[[1L]]
-    y <- args[[2L]]
+    args <- as_anvl_arrays(lhs, rhs)
+    lhs <- args[[1L]]
+    rhs <- args[[2L]]
   }
-  nv_matmul(x, nv_transpose(y))
+  nv_matmul(lhs, nv_transpose(rhs))
 }
 
 # Sorting and searching --------------------------------------------------------
 
 #' @title Select Elements Along a Dimension
 #' @description
-#' Picks one or more elements along dimension `dim` of `x`.
+#' Picks one or more elements along dimension `dim` of `operand`.
 #' Use this instead of `[` or `nv_subset` when the index to select is provided
 #' programatically.
-#' @param x ([`arrayish`])\cr
-#'   The array.
+#' @template param_operand
 #' @param dim (`integer(1)`)\cr
 #'   Dimension to index into.
 #' @param index ([`arrayish`])\cr
 #'   Scalar or 1D arrayish input (integer).
 #' @return [`arrayish`]\cr
-#'   Same data type as `x`. `dim` is dropped if `index` was scalar.
+#'   Same data type as `operand`. `dim` is dropped if `index` was scalar.
 #' @seealso [nv_subset()] for general subsetting, [prim_static_slice()].
 #' @examplesIf pjrt::plugins_downloaded()
 #' m <- nv_array(matrix(1:6, nrow = 2))
@@ -2586,19 +2584,19 @@ nv_tcrossprod <- function(x, y = NULL) {
 #' nv_select(m, dim = 1L, index = 1L)
 #' nv_select(m, dim = 2L, index = array(c(1L, 3L)))
 #' @export
-nv_select <- function(x, dim, index) {
-  x <- as_anvl_array(x)
-  rank <- ndims(x)
+nv_select <- function(operand, dim, index) {
+  operand <- as_anvl_array(operand)
+  rank <- ndims(operand)
   if (rank == 0L) {
     cli_abort("Cannot select along a 0-dimensional array")
   }
   dim <- as.integer(dim)
-  shp <- shape(x)
+  shp <- shape(operand)
   assert_int(dim, lower = 1L, upper = rank)
 
   args <- rep(list(quote(expr = )), rank)
   args[[dim]] <- index
-  do.call(nv_subset, c(list(x), args))
+  do.call(nv_subset, c(list(operand), args))
 }
 
 #' @title Sort
@@ -2607,15 +2605,14 @@ nv_select <- function(x, dim, index) {
 #' Sorts an array along a dimension.
 #'
 #' You can also use `sort()` directly.
-#' @param x ([`arrayish`])\cr
-#'   The array to sort.
+#' @template param_operand
 #' @param dim (`integer(1)` | `NULL`)\cr
 #'   Dimension along which to sort. If `NULL` (default), uses the last
 #'   dimension.
 #' @param decreasing (`logical(1)`)\cr
 #'   If `TRUE`, sort in decreasing order. Default `FALSE`.
 #' @return [`arrayish`]\cr
-#'   Same shape and data type as `x`.
+#'   Same shape and data type as `operand`.
 #' @seealso [prim_sort()] for the underlying primitive,
 #'   [nv_argsort()] (where sort stability is observable),
 #'   [nv_top_k()], [nv_median()], [nv_argmax()], [nv_argmin()].
@@ -2628,20 +2625,19 @@ nv_select <- function(x, dim, index) {
 #' m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
 #' nv_sort(m, dim = 2L)
 #' @export
-nv_sort <- function(x, dim = NULL, decreasing = FALSE) {
-  x <- as_anvl_array(x)
-  if (ndims(x) == 0L) {
+nv_sort <- function(operand, dim = NULL, decreasing = FALSE) {
+  operand <- as_anvl_array(operand)
+  if (ndims(operand) == 0L) {
     cli_abort("Cannot sort a 0-dimensional array")
   }
-  dim <- dim %||% ndims(x)
-  prim_sort(list(x), dim = as.integer(dim), descending = decreasing, is_stable = FALSE)[[1L]]
+  dim <- dim %||% ndims(operand)
+  prim_sort(list(operand), dim = as.integer(dim), descending = decreasing, is_stable = FALSE)[[1L]]
 }
 
 #' @title Argsort
 #' @description
 #' Returns the indices that would sort the array along a dimension.
-#' @param x ([`arrayish`])\cr
-#'   The array.
+#' @template param_operand
 #' @param dim (`integer(1)` | `NULL`)\cr
 #'   Dimension along which to compute the sort permutation. If `NULL`
 #'   (default), uses the last dimension.
@@ -2652,32 +2648,32 @@ nv_sort <- function(x, dim = NULL, decreasing = FALSE) {
 #'   If `TRUE`, the sort is stable: indices for equal values keep their
 #'   original relative order. Default `FALSE`.
 #' @return [`arrayish`] of dtype `i32`\cr
-#'   Same shape as `x`. For a size-0 axis, the output is an empty `i32`
+#'   Same shape as `operand`. For a size-0 axis, the output is an empty `i32`
 #'   array of the same shape (a valid empty permutation).
-#'   `as_array(x)[as_array(nv_argsort(x))]` reproduces the sorted array
-#'   (for 1-D inputs).
+#'   `as_array(operand)[as_array(nv_argsort(operand))]` reproduces the sorted
+#'   array (for 1-D inputs).
 #' @seealso [nv_sort()], [prim_sort()].
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(c(3, 1, 4, 1, 5))
 #' nv_argsort(x)
 #' @export
-nv_argsort <- function(x, dim = NULL, decreasing = FALSE, stable = FALSE) {
-  x <- as_anvl_array(x)
-  if (ndims(x) == 0L) {
+nv_argsort <- function(operand, dim = NULL, decreasing = FALSE, stable = FALSE) {
+  operand <- as_anvl_array(operand)
+  if (ndims(operand) == 0L) {
     cli_abort("Cannot argsort a 0-dimensional array")
   }
-  dim <- as.integer(dim %||% ndims(x))
-  idx <- nv_iota_like(x, dim = dim, dtype = "i32")
-  prim_sort(list(x, idx), dim = dim, descending = decreasing, is_stable = stable)[[2L]]
+  dim <- as.integer(dim %||% ndims(operand))
+  idx <- nv_iota_like(operand, dim = dim, dtype = "i32")
+  prim_sort(list(operand, idx), dim = dim, descending = decreasing, is_stable = stable)[[2L]]
 }
 
 #' @title Top-K Elements
 #' @description
 #' Returns the `k` largest values along a dimension, sorted in decreasing order.
-#' @param x ([`arrayish`])\cr
-#'   The array.
+#' @template param_operand
 #' @param k (`integer(1)`)\cr
-#'   Number of top elements to return. Must satisfy `1 <= k <= shape(x)[dim]`.
+#'   Number of top elements to return. Must satisfy
+#'   `1 <= k <= shape(operand)[dim]`.
 #' @param dim (`integer(1)` | `NULL`)\cr
 #'   Dimension along which to take the top `k`. If `NULL` (default),
 #'   uses the last dimension.
@@ -2686,7 +2682,7 @@ nv_argsort <- function(x, dim = NULL, decreasing = FALSE, stable = FALSE) {
 #'   returns `list(values = ..., indices = ...)` where `indices` is the
 #'   1-based position of each top-`k` value along `dim` (dtype `i32`).
 #' @return [`arrayish`] (when `with_indices = FALSE`) or named list of two
-#'   arrays (when `with_indices = TRUE`). Output shape matches `x` with
+#'   arrays (when `with_indices = TRUE`). Output shape matches `operand` with
 #'   `dim` resized to `k`; values are sorted decreasing along `dim`.
 #' @seealso [prim_top_k()] for the underlying primitive, [nv_sort()].
 #' @examplesIf pjrt::plugins_downloaded()
@@ -2697,21 +2693,21 @@ nv_argsort <- function(x, dim = NULL, decreasing = FALSE, stable = FALSE) {
 #' m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
 #' nv_top_k(m, k = 2L, dim = 2L)
 #' @export
-nv_top_k <- function(x, k, dim = NULL, with_indices = FALSE) {
-  x <- as_anvl_array(x)
-  rank <- ndims(x)
+nv_top_k <- function(operand, k, dim = NULL, with_indices = FALSE) {
+  operand <- as_anvl_array(operand)
+  rank <- ndims(operand)
   if (rank == 0L) {
     cli_abort("Cannot take top-k of a 0-dimensional array")
   }
   dim <- as.integer(dim %||% rank)
   k <- as.integer(k)
-  assert_int(k, lower = 1L, upper = shape(x)[dim])
+  assert_int(k, lower = 1L, upper = shape(operand)[dim])
 
   # prim_top_k operates on the last dim; transpose dim to last and back.
   if (dim != rank) {
     perm <- seq_len(rank)
     perm[c(dim, rank)] <- c(rank, dim)
-    out <- prim_top_k(prim_transpose(x, permutation = perm), k = k)
+    out <- prim_top_k(prim_transpose(operand, permutation = perm), k = k)
     values <- prim_transpose(out[[1L]], permutation = perm)
     if (with_indices) {
       indices <- prim_transpose(out[[2L]], permutation = perm)
@@ -2720,7 +2716,7 @@ nv_top_k <- function(x, k, dim = NULL, with_indices = FALSE) {
       values
     }
   } else {
-    out <- prim_top_k(x, k = k)
+    out <- prim_top_k(operand, k = k)
     if (with_indices) list(values = out[[1L]], indices = out[[2L]]) else out[[1L]]
   }
 }
@@ -2749,8 +2745,7 @@ nv_top_k <- function(x, k, dim = NULL, with_indices = FALSE) {
 #' * `"higher"`: `sorted[hi]` — the upper bracket of `linear`.
 #' * `"nearest"`: `sorted[lo]` if `frac < 0.5` else `sorted[hi]`.
 #' * `"midpoint"`: `(sorted[lo] + sorted[hi]) / 2`.
-#' @param x ([`arrayish`])\cr
-#'   The array.
+#' @template param_operand
 #' @param probs (`numeric(1)` | 1-D `array`)\cr
 #'   One or more probabilities in `[0, 1]`. Either a length-1 numeric
 #'   (scalar; `dim` is dropped) or a 1-D `array` (a leading dim of size
@@ -2773,9 +2768,9 @@ nv_top_k <- function(x, k, dim = NULL, with_indices = FALSE) {
 #' nv_quantile(x, array(c(0.25, 0.5, 0.75)))
 #' nv_quantile(x, 0.5, interpolation = "lower")
 #' @export
-nv_quantile <- function(x, probs, dim = NULL, interpolation = "linear") {
-  x <- as_anvl_array(x)
-  rank <- ndims(x)
+nv_quantile <- function(operand, probs, dim = NULL, interpolation = "linear") {
+  operand <- as_anvl_array(operand)
+  rank <- ndims(operand)
   if (rank == 0L) {
     cli_abort("Cannot compute quantile of a 0-dimensional array")
   }
@@ -2787,7 +2782,7 @@ nv_quantile <- function(x, probs, dim = NULL, interpolation = "linear") {
 
   is_probs_array <- !is.null(dim(probs))
   dim <- as.integer(dim %||% rank)
-  shp <- shape(x)
+  shp <- shape(operand)
   n <- shp[dim]
   K <- length(probs)
   probs <- as.numeric(probs)
@@ -2800,7 +2795,7 @@ nv_quantile <- function(x, probs, dim = NULL, interpolation = "linear") {
   make_hi <- function() mk_idx(as.integer(ceiling(h)) + 1L)
   make_frac <- function() h - floor(h)
 
-  sorted <- prim_sort(list(x), dim = dim)[[1L]]
+  sorted <- prim_sort(list(operand), dim = dim)[[1L]]
 
   out <- switch(
     interpolation,
@@ -2862,25 +2857,21 @@ nv_quantile <- function(x, probs, dim = NULL, interpolation = "linear") {
 #' @name nv_median
 #' @description
 #' Computes the median along a dimension. Equivalent to
-#' `nv_quantile(x, 0.5, dim, interpolation)`; for an even-length axis with
-#' the default `"linear"` interpolation, the average of the two middle
+#' `nv_quantile(operand, 0.5, dim, interpolation)`; for an even-length axis
+#' with the default `"linear"` interpolation, the average of the two middle
 #' values is returned, matching base R's `median()`.
 #'
 #' You can also use `median()` directly on an [`AnvlArray`] or [`AnvlBox`];
 #' extra arguments (e.g. `interpolation`) are forwarded via `...`.
-#' @param x ([`arrayish`])\cr
-#'   The array.
+#' @template param_operand
 #' @param dim (`integer(1)` | `NULL`)\cr
 #'   Dimension along which to compute the median. If `NULL` (default),
 #'   uses the last dimension.
 #' @param interpolation (`character(1)`)\cr
 #'   Forwarded to [nv_quantile()]. One of `"linear"` (default), `"lower"`,
 #'   `"higher"`, `"nearest"`, `"midpoint"`.
-#' @param na.rm Included for compatibility with the [stats::median()] generic.
-#'   anvl arrays do not carry `NA`s; passing `na.rm = TRUE` raises an error.
-#' @param ... Forwarded to `nv_median()`.
 #' @return [`arrayish`]\cr
-#'   Same shape as `x` with `dim` removed.
+#'   Same shape as `operand` with `dim` removed.
 #' @seealso [nv_quantile()], [nv_sort()], [prim_sort()].
 #' @examplesIf pjrt::plugins_downloaded()
 #' nv_median(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
@@ -2891,16 +2882,15 @@ nv_quantile <- function(x, probs, dim = NULL, interpolation = "linear") {
 #' # forwards through the S3 generic via `...`
 #' median(nv_array(c(1, 2, 3, 4)), interpolation = "lower")
 #' @export
-nv_median <- function(x, dim = NULL, interpolation = "linear") {
-  nv_quantile(x, probs = 0.5, dim = dim, interpolation = interpolation)
+nv_median <- function(operand, dim = NULL, interpolation = "linear") {
+  nv_quantile(operand, probs = 0.5, dim = dim, interpolation = interpolation)
 }
 
 #' @title Index of the Maximum
 #' @description
 #' Returns the index of the maximum value along a dimension. Ties are broken
 #' by returning the smallest index.
-#' @param x ([`arrayish`])\cr
-#'   The array.
+#' @template param_operand
 #' @param dim (`integer(1)` | `NULL`)\cr
 #'   Dimension along which to find the index. If `NULL` (default), uses
 #'   the last dimension.
@@ -2908,7 +2898,7 @@ nv_median <- function(x, dim = NULL, interpolation = "linear") {
 #'   If `TRUE` (default) the reduced dimension is removed; if `FALSE` it
 #'   is kept with size 1.
 #' @return [`arrayish`] of dtype `i32`\cr
-#'   Same shape as `x` with `dim` removed (or set to 1 if `drop = FALSE`).
+#'   Same shape as `operand` with `dim` removed (or set to 1 if `drop = FALSE`).
 #' @seealso [nv_argmin()], [nv_reduce_max()].
 #' @examplesIf pjrt::plugins_downloaded()
 #' nv_argmax(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
@@ -2916,17 +2906,16 @@ nv_median <- function(x, dim = NULL, interpolation = "linear") {
 #'   dim = 2L
 #' )
 #' @export
-nv_argmax <- function(x, dim = NULL, drop = TRUE) {
-  x <- as_anvl_array(x)
-  prim_argmax(x, dim = as.integer(dim %||% ndims(x)), drop = drop)
+nv_argmax <- function(operand, dim = NULL, drop = TRUE) {
+  operand <- as_anvl_array(operand)
+  prim_argmax(operand, dim = as.integer(dim %||% ndims(operand)), drop = drop)
 }
 
 #' @title Index of the Minimum
 #' @description
 #' Returns the index of the minimum value along a dimension. Ties are broken
 #' by returning the smallest index.
-#' @param x ([`arrayish`])\cr
-#'   The array.
+#' @template param_operand
 #' @param dim (`integer(1)` | `NULL`)\cr
 #'   Dimension along which to find the index. If `NULL` (default), uses
 #'   the last dimension.
@@ -2934,12 +2923,12 @@ nv_argmax <- function(x, dim = NULL, drop = TRUE) {
 #'   If `TRUE` (default) the reduced dimension is removed; if `FALSE` it
 #'   is kept with size 1.
 #' @return [`arrayish`] of dtype `i32`\cr
-#'   Same shape as `x` with `dim` removed (or set to 1 if `drop = FALSE`).
+#'   Same shape as `operand` with `dim` removed (or set to 1 if `drop = FALSE`).
 #' @seealso [nv_argmax()], [nv_reduce_min()].
 #' @examplesIf pjrt::plugins_downloaded()
 #' nv_argmin(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
 #' @export
-nv_argmin <- function(x, dim = NULL, drop = TRUE) {
-  x <- as_anvl_array(x)
-  prim_argmin(x, dim = as.integer(dim %||% ndims(x)), drop = drop)
+nv_argmin <- function(operand, dim = NULL, drop = TRUE) {
+  operand <- as_anvl_array(operand)
+  prim_argmin(operand, dim = as.integer(dim %||% ndims(operand)), drop = drop)
 }

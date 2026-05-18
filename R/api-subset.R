@@ -443,8 +443,7 @@ parse_subset_spec <- function(quo, dim_size) {
 #' Supports R-style indexing including scalar indices (which drop dimensions),
 #' ranges (`a:b`), and `array(c(...))` for selecting multiple elements along a
 #' dimension.
-#' @param x ([`arrayish`])\cr
-#'   Array to subset.
+#' @template param_operand
 #' @param ... Subset specifications, one per dimension. Omitted trailing
 #'   dimensions select all elements. See `vignette("subsetting")` for details.
 #' @return [`arrayish`]
@@ -452,28 +451,28 @@ parse_subset_spec <- function(quo, dim_size) {
 #'   for a comprehensive guide.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:12, nrow = 3))
+#' x
 #' # Select row 2
 #' x[2, ]
 #'
-#' x <- nv_array(matrix(1:12, nrow = 3))
 #' # Select rows 1 to 2, all columns
 #' x[1:2, ]
 #' @export
-nv_subset <- function(x, ...) {
-  if (!is_arrayish(x)) {
+nv_subset <- function(operand, ...) {
+  if (!is_arrayish(operand)) {
     cli_abort(c(
-      "Argument x must be arrayish",
-      "x" = "Got {.cls {class(x)[1]}}"
+      "Argument operand must be arrayish",
+      "x" = "Got {.cls {class(operand)[1]}}"
     ))
   }
-  operand_shape <- shape_abstract(x)
+  operand_shape <- shape_abstract(operand)
   quos <- rlang::enquos(...)
 
   subsets <- parse_subset_specs(quos, operand_shape)
-  params <- subset_specs_to_gather(subsets, like = x)
+  params <- subset_specs_to_gather(subsets, like = operand)
 
   out <- prim_gather(
-    operand = x,
+    operand = operand,
     start_indices = params$start_indices,
     slice_sizes = params$slice_sizes,
     offset_dims = params$offset_dims,
@@ -493,15 +492,14 @@ nv_subset <- function(x, ...) {
 #' @description
 #' Updates elements of an array at specified positions, returning a new array.
 #' You can also use the `[<-` operator.
-#' @param x ([`arrayish`])\cr
-#'   Array to update.
+#' @template param_operand
 #' @param ... Subset specifications, one per dimension. See
 #'   `vignette("subsetting")` for details.
 #' @param value ([`arrayish`])\cr
 #'   Replacement values. Scalars are broadcast to the subset shape.
 #'   Non-scalar values must match the subset shape.
 #' @return [`arrayish`]\cr
-#'   A new array with the same shape as `x` and the subset replaced.
+#'   A new array with the same shape as `operand` and the subset replaced.
 #' @seealso [nv_subset()], `vignette("subsetting")` for a comprehensive guide.
 #' @examplesIf pjrt::plugins_downloaded()
 #' x <- nv_array(matrix(1:12, nrow = 3))
@@ -509,33 +507,33 @@ nv_subset <- function(x, ...) {
 #' x[1, ] <- nv_scalar(0L)
 #' x
 #' @export
-nv_subset_assign <- function(x, ..., value) {
-  if (!is_arrayish(x)) {
-    cli_abort("Expected arrayish `x`, but got {.cls {class(x)[1]}}")
+nv_subset_assign <- function(operand, ..., value) {
+  if (!is_arrayish(operand)) {
+    cli_abort("Expected arrayish `operand`, but got {.cls {class(operand)[1]}}")
   }
   if (!is_arrayish(value)) {
     cli_abort("Expected arrayish `value`, but got {.cls {class(value)[1]}}")
   }
-  aligned <- as_anvl_arrays(x, value)
-  x <- aligned[[1L]]
+  aligned <- as_anvl_arrays(operand, value)
+  operand <- aligned[[1L]]
   value <- aligned[[2L]]
-  if (dtype_abstract(x) != dtype_abstract(value)) {
-    dt_x <- dtype_abstract(x)
+  if (dtype_abstract(operand) != dtype_abstract(value)) {
+    dt_operand <- dtype_abstract(operand)
     dt_value <- dtype_abstract(value)
-    if (!promotable_to(dt_value, dt_x)) {
+    if (!promotable_to(dt_value, dt_operand)) {
       cli_abort(
-        "Value type {dtype2string(dt_value)} is not promotable to left-hand side type {dtype2string(dt_x)}"
+        "Value type {dtype2string(dt_value)} is not promotable to left-hand side type {dtype2string(dt_operand)}"
       )
     }
-    value <- nv_convert(value, dtype = dt_x)
+    value <- nv_convert(value, dtype = dt_operand)
   }
 
-  lhs_shape <- shape_abstract(x)
+  lhs_shape <- shape_abstract(operand)
   # because we do NSE to determine `:`-calls
   quos <- rlang::enquos(...)
 
   subsets <- parse_subset_specs(quos, lhs_shape)
-  params <- subset_specs_to_scatter(subsets, like = x)
+  params <- subset_specs_to_scatter(subsets, like = operand)
 
   if (!ndims_abstract(value)) {
     value <- nv_broadcast_to(value, params$update_shape)
@@ -550,7 +548,7 @@ nv_subset_assign <- function(x, ..., value) {
   }
 
   prim_scatter(
-    input = x,
+    input = operand,
     scatter_indices = params$scatter_indices,
     update = value,
     update_window_dims = params$update_window_dims,

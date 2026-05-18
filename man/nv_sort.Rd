@@ -2,32 +2,31 @@
 % Please edit documentation in R/api.R, R/api-generics.R
 \name{nv_sort}
 \alias{nv_sort}
-\alias{sort.AnvlBox}
 \alias{sort.AnvlArray}
 \title{Sort}
 \usage{
-nv_sort(x, dim = NULL, decreasing = FALSE)
+nv_sort(operand, dim = NULL, decreasing = FALSE)
 
-\method{sort}{AnvlBox}(x, decreasing = FALSE, ...)
-
-\method{sort}{AnvlArray}(x, decreasing = FALSE, ...)
+\method{sort}{AnvlArray}(x, decreasing = FALSE, ..., dim = NULL)
 }
 \arguments{
-\item{x}{(\code{\link{arrayish}})\cr
-The array to sort.}
+\item{operand}{(\code{\link{arrayish}})\cr
+Operand.}
 
 \item{dim}{(\code{integer(1)} | \code{NULL})\cr
 Dimension along which to sort. If \code{NULL} (default), uses the last
 dimension.}
 
-\item{decreasing}{(\code{logical(1)})\cr
-If \code{TRUE}, sort in decreasing order. Default \code{FALSE}.}
+\item{decreasing}{(\code{logical(1)})\cr If \code{TRUE}, sort in decreasing order.}
 
-\item{...}{Forwarded to \code{nv_sort()}.}
+\item{x}{(\code{\link{arrayish}})\cr
+Same as \code{operand}; this is the name used by the base R S3 generic.}
+
+\item{...}{No additional arguments.}
 }
 \value{
 \code{\link{arrayish}}\cr
-Same shape and data type as \code{x}.
+Same shape and data type as \code{operand}.
 }
 \description{
 Sorts an array along a dimension.
