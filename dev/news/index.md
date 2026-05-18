@@ -143,6 +143,7 @@
   called with `na.rm = TRUE`, since anvl arrays do not carry `NA`s.
   [`mean()`](https://rdrr.io/r/base/mean.html) also rejects non-zero
   `trim`.
+- Added support for `range` generic.
 
 ### Other
 

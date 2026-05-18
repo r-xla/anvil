@@ -74,7 +74,7 @@ scalar determinant, use nv_det()."><meta property="og:image" content="https://r-
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Determinant in modulus/sign form</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvl/blob/main/R/api.R" class="external-link"><code>R/api.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-xla/anvl/blob/main/R/api.R" class="external-link"><code>R/api.R</code></a>, <a href="https://github.com/r-xla/anvl/blob/main/R/api-generics.R" class="external-link"><code>R/api-generics.R</code></a></small>
       <div class="d-none name"><code>nv_determinant.Rd</code></div>
     </div>
 
@@ -86,7 +86,10 @@ scalar determinant, use <code><a href="nv_det.html">nv_det()</a></code>.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nv_determinant</span><span class="op">(</span><span class="va">operand</span>, logarithm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nv_determinant</span><span class="op">(</span><span class="va">operand</span>, logarithm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'AnvlArray'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/det.html" class="external-link">determinant</a></span><span class="op">(</span><span class="va">x</span>, logarithm <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -99,9 +102,17 @@ Square matrix of floating-point data type.</p></dd>
 
 
 <dt id="arg-logarithm">logarithm<a class="anchor" aria-label="anchor" href="#arg-logarithm"></a></dt>
-<dd><p>(<code>logical(1)</code>)<br>
-If <code>TRUE</code> (default, matching base R), <code>modulus</code> is
-<code>log(abs(det(operand)))</code>. If <code>FALSE</code>, <code>modulus</code> is <code>abs(det(operand))</code>.</p></dd>
+<dd><p>(<code>logical(1)</code>)<br> If <code>TRUE</code> (default), return the log
+of the absolute determinant.</p></dd>
+
+
+<dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
+<dd><p>(<code><a href="arrayish.html">arrayish</a></code>)<br>
+Same as <code>operand</code>; this is the name used by the base R S3 generic.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>No additional arguments.</p></dd>
 
 </dl></div>
     <div class="section level2">

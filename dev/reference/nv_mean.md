@@ -8,11 +8,8 @@ also use [`mean()`](https://rdrr.io/r/base/mean.html).
 ``` r
 nv_mean(operand, dims = NULL, drop = TRUE)
 
-# S3 method for class 'AnvlBox'
-mean(x, trim = 0, na.rm = FALSE, ...)
-
 # S3 method for class 'AnvlArray'
-mean(x, trim = 0, na.rm = FALSE, ...)
+mean(x, trim = 0, na.rm = FALSE, ..., dims = NULL, drop = TRUE)
 ```
 
 ## Arguments
@@ -36,23 +33,15 @@ mean(x, trim = 0, na.rm = FALSE, ...)
 - x:
 
   ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
-  Operand.
+  Same as `operand`; this is the name used by the base R S3 generic.
 
-- trim:
+- trim, na.rm:
 
-  Included for compatibility with the
-  [`base::mean()`](https://rdrr.io/r/base/mean.html) generic. Only
-  `trim = 0` is supported; passing any other value raises an error.
-
-- na.rm:
-
-  Included for compatibility with the
-  [`base::mean()`](https://rdrr.io/r/base/mean.html) generic. anvl
-  arrays do not carry `NA`s; passing `na.rm = TRUE` raises an error.
+  Currently not supported.
 
 - ...:
 
-  Unused.
+  No additional arguments.
 
 ## Value
 

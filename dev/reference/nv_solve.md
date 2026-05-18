@@ -8,6 +8,9 @@ non-singular.
 
 ``` r
 nv_solve(a, b)
+
+# S3 method for class 'AnvlArray'
+solve(a, b, ...)
 ```
 
 ## Arguments
@@ -15,13 +18,18 @@ nv_solve(a, b)
 - a:
 
   ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
-  Square non-singular matrix.
+  Coefficient matrix.
 
 - b:
 
   ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
-  Right-hand side, vector of length `n` or matrix with `n` rows. Must
-  have the same data type as `a`.
+  Right-hand side. If missing, returns
+  [`nv_inv()`](https://r-xla.github.io/anvl/dev/reference/nv_inv.md) of
+  `a`.
+
+- ...:
+
+  No additional arguments.
 
 ## Value
 

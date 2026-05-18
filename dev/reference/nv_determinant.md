@@ -10,6 +10,9 @@ scalar determinant, use
 
 ``` r
 nv_determinant(operand, logarithm = TRUE)
+
+# S3 method for class 'AnvlArray'
+determinant(x, logarithm = TRUE, ...)
 ```
 
 ## Arguments
@@ -22,9 +25,16 @@ nv_determinant(operand, logarithm = TRUE)
 - logarithm:
 
   (`logical(1)`)  
-  If `TRUE` (default, matching base R), `modulus` is
-  `log(abs(det(operand)))`. If `FALSE`, `modulus` is
-  `abs(det(operand))`.
+  If `TRUE` (default), return the log of the absolute determinant.
+
+- x:
+
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
+  Same as `operand`; this is the name used by the base R S3 generic.
+
+- ...:
+
+  No additional arguments.
 
 ## Value
 

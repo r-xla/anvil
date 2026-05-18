@@ -19,15 +19,15 @@ explicit.
 ## Usage
 
 ``` r
-nv_quantile(x, probs, dim = NULL, interpolation = "linear")
+nv_quantile(operand, probs, dim = NULL, interpolation = "linear")
 ```
 
 ## Arguments
 
-- x:
+- operand:
 
   ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
-  The array.
+  Operand.
 
 - probs:
 

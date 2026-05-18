@@ -9,6 +9,9 @@ n)\\, \\Q\\ has shape \\m \times k\\ and \\R\\ has shape \\k \times n\\.
 
 ``` r
 nv_qr(operand)
+
+# S3 method for class 'AnvlArray'
+qr(x, ...)
 ```
 
 ## Arguments
@@ -17,6 +20,15 @@ nv_qr(operand)
 
   ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
   Matrix of data type floating-point with exactly 2 dimensions.
+
+- x:
+
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
+  Same as `operand`; this is the name used by the base R S3 generic.
+
+- ...:
+
+  No additional arguments.
 
 ## Value
 

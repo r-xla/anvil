@@ -6,15 +6,15 @@ broken by returning the smallest index.
 ## Usage
 
 ``` r
-nv_argmax(x, dim = NULL, drop = TRUE)
+nv_argmax(operand, dim = NULL, drop = TRUE)
 ```
 
 ## Arguments
 
-- x:
+- operand:
 
   ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
-  The array.
+  Operand.
 
 - dim:
 
@@ -32,7 +32,8 @@ nv_argmax(x, dim = NULL, drop = TRUE)
 
 [`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md) of
 dtype `i32`  
-Same shape as `x` with `dim` removed (or set to 1 if `drop = FALSE`).
+Same shape as `operand` with `dim` removed (or set to 1 if
+`drop = FALSE`).
 
 ## See also
 

@@ -85,11 +85,8 @@ use <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean(
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nv_mean</span><span class="op">(</span><span class="va">operand</span>, dims <span class="op">=</span> <span class="cn">NULL</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for class 'AnvlBox'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>, trim <span class="op">=</span> <span class="fl">0</span>, na.rm <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
-<span></span>
 <span><span class="co"># S3 method for class 'AnvlArray'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>, trim <span class="op">=</span> <span class="fl">0</span>, na.rm <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>, trim <span class="op">=</span> <span class="fl">0</span>, na.rm <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span>, dims <span class="op">=</span> <span class="cn">NULL</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -113,21 +110,16 @@ Whether to drop reduced dimensions.</p></dd>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>(<code><a href="arrayish.html">arrayish</a></code>)<br> Operand.</p></dd>
+<dd><p>(<code><a href="arrayish.html">arrayish</a></code>)<br>
+Same as <code>operand</code>; this is the name used by the base R S3 generic.</p></dd>
 
 
-<dt id="arg-trim">trim<a class="anchor" aria-label="anchor" href="#arg-trim"></a></dt>
-<dd><p>Included for compatibility with the <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">base::mean()</a></code> generic.
-Only <code>trim = 0</code> is supported; passing any other value raises an error.</p></dd>
-
-
-<dt id="arg-na-rm">na.rm<a class="anchor" aria-label="anchor" href="#arg-na-rm"></a></dt>
-<dd><p>Included for compatibility with the <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">base::mean()</a></code> generic.
-anvl arrays do not carry <code>NA</code>s; passing <code>na.rm = TRUE</code> raises an error.</p></dd>
+<dt id="arg-trim-na-rm">trim, na.rm<a class="anchor" aria-label="anchor" href="#arg-trim-na-rm"></a></dt>
+<dd><p>Currently not supported.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Unused.</p></dd>
+<dd><p>No additional arguments.</p></dd>
 
 </dl></div>
     <div class="section level2">

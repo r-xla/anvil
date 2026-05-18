@@ -118,15 +118,13 @@ Functions for reshaping and rearranging arrays
 - [`nv_flatten()`](https://r-xla.github.io/anvl/dev/reference/nv_flatten.md)
   : Flatte
 - [`nv_transpose()`](https://r-xla.github.io/anvl/dev/reference/nv_transpose.md)
-  [`t(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_transpose.md)
+  [`t(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_transpose.md)
   : Transpose
 - [`nv_concatenate()`](https://r-xla.github.io/anvl/dev/reference/nv_concatenate.md)
   : Concatenate
 - [`nv_rbind()`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
   [`nv_cbind()`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
-  [`rbind(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
   [`rbind(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
-  [`cbind(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
   [`cbind(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
   : Combine arrays by rows or columns
 - [`nv_static_slice()`](https://r-xla.github.io/anvl/dev/reference/nv_static_slice.md)
@@ -141,12 +139,10 @@ Functions for reshaping and rearranging arrays
   : Squeeze
 - [`nv_unsqueeze()`](https://r-xla.github.io/anvl/dev/reference/nv_unsqueeze.md)
   : Unsqueeze
-- [`` `[`( ``*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_subset.md)
-  [`` `[`( ``*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_subset.md)
+- [`` `[`( ``*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_subset.md)
   [`nv_subset()`](https://r-xla.github.io/anvl/dev/reference/nv_subset.md)
   : Subset an Array
-- [`` `[<-`( ``*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_subset_assign.md)
-  [`` `[<-`( ``*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_subset_assign.md)
+- [`` `[<-`( ``*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_subset_assign.md)
   [`nv_subset_assign()`](https://r-xla.github.io/anvl/dev/reference/nv_subset_assign.md)
   : Update Subset
 
@@ -263,13 +259,13 @@ Mathematical and trigonometric functions
 - [`nv_polygamma()`](https://r-xla.github.io/anvl/dev/reference/nv_polygamma.md)
   : Polygamma
 - [`nv_is_finite()`](https://r-xla.github.io/anvl/dev/reference/nv_is_finite.md)
-  [`is.finite(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_is_finite.md)
+  [`is.finite(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_is_finite.md)
   : Is Finite
 - [`nv_is_nan()`](https://r-xla.github.io/anvl/dev/reference/nv_is_nan.md)
-  [`is.nan(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_is_nan.md)
+  [`is.nan(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_is_nan.md)
   : Is NaN
 - [`nv_is_infinite()`](https://r-xla.github.io/anvl/dev/reference/nv_is_infinite.md)
-  [`is.infinite(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_is_infinite.md)
+  [`is.infinite(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_is_infinite.md)
   : Is Infinite
 
 ### Reduction Operations
@@ -294,11 +290,9 @@ Operations that reduce array dimensions
 Summary statistics over array dimensions
 
 - [`nv_mean()`](https://r-xla.github.io/anvl/dev/reference/nv_mean.md)
-  [`mean(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_mean.md)
   [`mean(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_mean.md)
   : Mean
 - [`nv_median()`](https://r-xla.github.io/anvl/dev/reference/nv_median.md)
-  [`median(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_median.md)
   [`median(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_median.md)
   : Median
 - [`nv_quantile()`](https://r-xla.github.io/anvl/dev/reference/nv_quantile.md)
@@ -327,10 +321,12 @@ Linear algebra operations
 
 - [`nv_matmul()`](https://r-xla.github.io/anvl/dev/reference/nv_matmul.md)
   : Matrix Multiplication
-- [`nv_chol()`](https://r-xla.github.io/anvl/dev/reference/nv_chol.md) :
-  Cholesky Decomposition
-- [`nv_qr()`](https://r-xla.github.io/anvl/dev/reference/nv_qr.md) : QR
-  Decomposition
+- [`nv_chol()`](https://r-xla.github.io/anvl/dev/reference/nv_chol.md)
+  [`chol(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_chol.md)
+  : Cholesky Decomposition
+- [`nv_qr()`](https://r-xla.github.io/anvl/dev/reference/nv_qr.md)
+  [`qr(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_qr.md)
+  : QR Decomposition
 - [`nv_lu()`](https://r-xla.github.io/anvl/dev/reference/nv_lu.md) : LU
   Decomposition
 - [`nv_svd()`](https://r-xla.github.io/anvl/dev/reference/nv_svd.md) :
@@ -338,6 +334,7 @@ Linear algebra operations
 - [`nv_eigh()`](https://r-xla.github.io/anvl/dev/reference/nv_eigh.md) :
   Symmetric Eigendecomposition
 - [`nv_solve()`](https://r-xla.github.io/anvl/dev/reference/nv_solve.md)
+  [`solve(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_solve.md)
   : Solve Linear System
 - [`nv_triangular_solve()`](https://r-xla.github.io/anvl/dev/reference/nv_triangular_solve.md)
   : Triangular Solve
@@ -346,12 +343,13 @@ Linear algebra operations
 - [`nv_det()`](https://r-xla.github.io/anvl/dev/reference/nv_det.md) :
   Determinant
 - [`nv_determinant()`](https://r-xla.github.io/anvl/dev/reference/nv_determinant.md)
+  [`determinant(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_determinant.md)
   : Determinant in modulus/sign form
 - [`nv_crossprod()`](https://r-xla.github.io/anvl/dev/reference/nv_crossprod.md)
-  [`crossprod(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_crossprod.md)
+  [`crossprod(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_crossprod.md)
   : Cross Product (Matrix)
 - [`nv_tcrossprod()`](https://r-xla.github.io/anvl/dev/reference/nv_tcrossprod.md)
-  [`tcrossprod(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_tcrossprod.md)
+  [`tcrossprod(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_tcrossprod.md)
   : Transpose Cross Product (Matrix)
 - [`nv_outer()`](https://r-xla.github.io/anvl/dev/reference/nv_outer.md)
   : Outer Product
@@ -401,7 +399,6 @@ Other element-wise array operations
 Sorting arrays and finding extrema
 
 - [`nv_sort()`](https://r-xla.github.io/anvl/dev/reference/nv_sort.md)
-  [`sort(`*`<AnvlBox>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_sort.md)
   [`sort(`*`<AnvlArray>`*`)`](https://r-xla.github.io/anvl/dev/reference/nv_sort.md)
   : Sort
 - [`nv_argsort()`](https://r-xla.github.io/anvl/dev/reference/nv_argsort.md)

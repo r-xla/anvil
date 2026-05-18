@@ -8,6 +8,9 @@ batch dimensions.
 
 ``` r
 nv_chol(operand, lower = FALSE)
+
+# S3 method for class 'AnvlArray'
+chol(x, ..., lower = FALSE)
 ```
 
 ## Arguments
@@ -22,11 +25,16 @@ nv_chol(operand, lower = FALSE)
 - lower:
 
   (`logical(1)`)  
-  If `FALSE` (default, matching base R's
-  [`base::chol()`](https://rdrr.io/r/base/chol.html)), compute the upper
-  triangular factor `U` such that `operand = t(U) %*% U`. If `TRUE`,
-  compute the lower triangular factor `L` such that
-  `operand = L %*% t(L)`.
+  If `TRUE`, return the lower-triangular factor.
+
+- x:
+
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
+  Same as `operand`; this is the name used by the base R S3 generic.
+
+- ...:
+
+  No additional arguments.
 
 ## Value
 

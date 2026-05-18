@@ -1,21 +1,21 @@
 # Select Elements Along a Dimension
 
-Picks one or more elements along dimension `dim` of `x`. Use this
+Picks one or more elements along dimension `dim` of `operand`. Use this
 instead of `[` or `nv_subset` when the index to select is provided
 programatically.
 
 ## Usage
 
 ``` r
-nv_select(x, dim, index)
+nv_select(operand, dim, index)
 ```
 
 ## Arguments
 
-- x:
+- operand:
 
   ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
-  The array.
+  Operand.
 
 - dim:
 
@@ -30,7 +30,7 @@ nv_select(x, dim, index)
 ## Value
 
 [`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
-Same data type as `x`. `dim` is dropped if `index` was scalar.
+Same data type as `operand`. `dim` is dropped if `index` was scalar.
 
 ## See also
 

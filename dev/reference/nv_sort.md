@@ -7,21 +7,18 @@ You can also use [`sort()`](https://rdrr.io/r/base/sort.html) directly.
 ## Usage
 
 ``` r
-nv_sort(x, dim = NULL, decreasing = FALSE)
-
-# S3 method for class 'AnvlBox'
-sort(x, decreasing = FALSE, ...)
+nv_sort(operand, dim = NULL, decreasing = FALSE)
 
 # S3 method for class 'AnvlArray'
-sort(x, decreasing = FALSE, ...)
+sort(x, decreasing = FALSE, ..., dim = NULL)
 ```
 
 ## Arguments
 
-- x:
+- operand:
 
   ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
-  The array to sort.
+  Operand.
 
 - dim:
 
@@ -32,16 +29,21 @@ sort(x, decreasing = FALSE, ...)
 - decreasing:
 
   (`logical(1)`)  
-  If `TRUE`, sort in decreasing order. Default `FALSE`.
+  If `TRUE`, sort in decreasing order.
+
+- x:
+
+  ([`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md))  
+  Same as `operand`; this is the name used by the base R S3 generic.
 
 - ...:
 
-  Forwarded to `nv_sort()`.
+  No additional arguments.
 
 ## Value
 
 [`arrayish`](https://r-xla.github.io/anvl/dev/reference/arrayish.md)  
-Same shape and data type as `x`.
+Same shape and data type as `operand`.
 
 ## See also
 
