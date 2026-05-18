@@ -36,9 +36,7 @@ describe("nv_subset and nv_subset_assign", {
       dim(r_subset_result) <- value_shape
     }
 
-    static_subset <- as_array(jit(function(x) {
-      rlang::inject(nv_subset(x, !!!quos))
-    })(x))
+    static_subset <- as_array(rlang::inject(nv_subset(x, !!!quos)))
 
     expect_equal(static_subset, r_subset_result)
 
@@ -52,9 +50,7 @@ describe("nv_subset and nv_subset_assign", {
 
     v <- nv_array(value, shape = value_shape)
 
-    static_assign <- as_array(jit(function(x, v) {
-      rlang::inject(nv_subset_assign(x, !!!quos, value = v))
-    })(x, v))
+    static_assign <- as_array(rlang::inject(nv_subset_assign(x, !!!quos, value = v)))
 
     expect_equal(static_assign, r_assign_result)
   }
@@ -221,9 +217,7 @@ describe("nv_subset and nv_subset_assign", {
   # which specific one — that would be non-deterministic on GPU).
   it("scatter with all-colliding destination indices yields a valid write", {
     x <- nv_array(1:100)
-    result <- as_array(jit(function(x) {
-      nv_subset_assign(x, array(rep(1L, 100)), value = nv_array(101:200))
-    })(x))
+    result <- as_array(nv_subset_assign(x, array(rep(1L, 100)), value = nv_array(101:200)))
     expect_true(as.vector(result)[1L] %in% 101:200)
     expect_equal(as.vector(result)[-1L], 2:100)
   })
@@ -322,10 +316,10 @@ describe("nv_subset and nv_subset_assign", {
   it("works with all-static indices via [", {
     r_arr <- array(1:24, dim = c(2, 3, 4))
     x <- nv_array(r_arr)
-    result <- jit(function(x) x[2L, 1L, 3L])(x)
+    result <- x[2L, 1L, 3L]
     expect_equal(as_array(result), r_arr[2, 1, 3])
 
-    result2 <- jit(function(x) x[array(c(1L, 1L)), array(c(2L, 3L)), array(c(2L, 1L))])(x)
+    result2 <- x[array(c(1L, 1L)), array(c(2L, 3L)), array(c(2L, 1L))]
     expect_equal(as_array(result2), r_arr[c(1, 1), c(2, 3), c(2, 1)])
   })
 

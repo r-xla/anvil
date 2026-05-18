@@ -1,130 +1,95 @@
 test_that("prim_sin", {
   x <- nv_array(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
-  out <- as_array(jit(prim_sin)(x))
+  out <- as_array(prim_sin(x))
   expect_equal(c(out), c(0, 1, 0, -1), tolerance = 1e-15)
 })
 
 test_that("prim_cos", {
   x <- nv_array(c(0, pi / 2, pi, 3 / 2 * pi), dtype = "f64")
-  out <- as_array(jit(prim_cos)(x))
+  out <- as_array(prim_cos(x))
   expect_equal(c(out), c(1, 0, -1, 0), tolerance = 1e-15)
 })
 
 test_that("prim_rng_bit_generator", {
-  f <- function() {
-    prim_rng_bit_generator(nv_array(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
-  }
-  g <- jit(f)
-  out <- g()
+  out <- prim_rng_bit_generator(nv_array(c(1, 2), dtype = "ui64"), "THREE_FRY", "i64", c(2, 2))
   expect_equal(dtype(out[[1]]), as_dtype("ui64"))
   expect_equal(shape(out[[1]]), 2L)
   expect_equal(shape(out[[2]]), c(2L, 2L))
 })
 
 test_that("prim_bitcast_convert", {
-  f <- function() {
-    nv_bitcast_convert(
-      nv_array(seq(-1, 1, length.out = 6), dtype = "f64", shape = c(2, 3)),
-      dtype = "i32"
-    )
-  }
-  g <- jit(f)
-  out <- g()
+  out <- nv_bitcast_convert(
+    nv_array(seq(-1, 1, length.out = 6), dtype = "f64", shape = c(2, 3)),
+    dtype = "i32"
+  )
   expect_equal(dim(as_array(out)), c(2, 3, 2))
   expect_true(is.integer(as_array(out)))
 })
 
 test_that("prim_static_slice", {
-  f <- function() {
-    nv_static_slice(
-      nv_array(1:6, dtype = "ui64", shape = c(2, 3)),
-      start_indices = c(1, 1),
-      limit_indices = c(2, 2),
-      strides = c(1, 1)
-    )
-  }
-  g <- jit(f)
-  out <- g()
+  out <- nv_static_slice(
+    nv_array(1:6, dtype = "ui64", shape = c(2, 3)),
+    start_indices = c(1, 1),
+    limit_indices = c(2, 2),
+    strides = c(1, 1)
+  )
   expect_equal(as_array(out), matrix(c(1:4), nrow = 2))
 })
 
 test_that("prim_dynamic_slice", {
   # Basic dynamic slice with scalar indices
-  f <- function(start_i, start_j) {
-    x <- nv_array(1:12, dtype = "i32", shape = c(3, 4))
-    prim_dynamic_slice(x, start_i, start_j, slice_sizes = c(2L, 2L))
-  }
-  g <- jit(f)
+  x <- nv_array(1:12, dtype = "i32", shape = c(3, 4))
   # Slice starting at (1, 1) should give [[1, 4], [2, 5]]
-  out <- g(nv_scalar(1L, dtype = "i32"), nv_scalar(1L, dtype = "i32"))
+  out <- prim_dynamic_slice(x, nv_scalar(1L, dtype = "i32"), nv_scalar(1L, dtype = "i32"), slice_sizes = c(2L, 2L))
   expect_equal(out, nv_array(c(1L, 2L, 4L, 5L), dtype = "i32", shape = c(2, 2)))
 
   # Slice starting at (2, 2) should give [[5, 8], [6, 9]]
-  out <- g(nv_scalar(2L, dtype = "i32"), nv_scalar(2L, dtype = "i32"))
+  out <- prim_dynamic_slice(x, nv_scalar(2L, dtype = "i32"), nv_scalar(2L, dtype = "i32"), slice_sizes = c(2L, 2L))
   expect_equal(out, nv_array(c(5L, 6L, 8L, 9L), dtype = "i32", shape = c(2, 2)))
 
   # 1D case
-  f1d <- function(start_i) {
-    x <- nv_array(1:10, dtype = "i32", shape = c(10))
-    prim_dynamic_slice(x, start_i, slice_sizes = c(3L))
-  }
-  g1d <- jit(f1d)
-  out <- g1d(nv_scalar(3L, dtype = "i32"))
+  x1d <- nv_array(1:10, dtype = "i32", shape = c(10))
+  out <- prim_dynamic_slice(x1d, nv_scalar(3L, dtype = "i32"), slice_sizes = c(3L))
   expect_equal(out, nv_array(c(3L, 4L, 5L), dtype = "i32", shape = 3L))
 })
 
 test_that("prim_dynamic_update_slice", {
-  scalar <- jit(function(x, update) {
-    prim_dynamic_update_slice(x, update)
-  })
   expect_equal(
-    scalar(nv_scalar(1L, dtype = "i32"), nv_scalar(100L, dtype = "i32")),
+    prim_dynamic_update_slice(nv_scalar(1L, dtype = "i32"), nv_scalar(100L, dtype = "i32")),
     nv_scalar(100L, dtype = "i32")
   )
 
   # Basic dynamic update slice with scalar indices
-  f <- function(start_i, start_j) {
-    x <- nv_array(1:12, dtype = "i32", shape = c(3, 4))
-    update <- nv_array(c(100L, 200L, 300L, 400L), dtype = "i32", shape = c(2, 2))
-    prim_dynamic_update_slice(x, update, start_i, start_j)
-  }
-  g <- jit(f)
+  x <- nv_array(1:12, dtype = "i32", shape = c(3, 4))
+  update <- nv_array(c(100L, 200L, 300L, 400L), dtype = "i32", shape = c(2, 2))
 
   # Update at (1, 1) - top-left corner
-  out <- g(nv_scalar(1L, dtype = "i32"), nv_scalar(1L, dtype = "i32"))
+  out <- prim_dynamic_update_slice(x, update, nv_scalar(1L, dtype = "i32"), nv_scalar(1L, dtype = "i32"))
   expect_equal(
     out,
     nv_array(c(100L, 200L, 3L, 300L, 400L, 6L, 7L, 8L, 9L, 10L, 11L, 12L), dtype = "i32", shape = c(3, 4))
   )
 
   # Update at (2, 3) - bottom-right corner
-  out <- g(nv_scalar(2L, dtype = "i32"), nv_scalar(3L, dtype = "i32"))
+  out <- prim_dynamic_update_slice(x, update, nv_scalar(2L, dtype = "i32"), nv_scalar(3L, dtype = "i32"))
   expect_equal(
     out,
     nv_array(c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 100L, 200L, 10L, 300L, 400L), dtype = "i32", shape = c(3, 4))
   )
 
   # 1D case
-  f1d <- function(start_i) {
-    x <- nv_array(1:10, dtype = "i32", shape = c(10))
-    update <- nv_array(c(100L, 200L, 300L), dtype = "i32", shape = c(3))
-    prim_dynamic_update_slice(x, update, start_i)
-  }
-  g1d <- jit(f1d)
-  out <- g1d(nv_scalar(4L, dtype = "i32"))
+  x1d <- nv_array(1:10, dtype = "i32", shape = c(10))
+  update1d <- nv_array(c(100L, 200L, 300L), dtype = "i32", shape = c(3))
+  out <- prim_dynamic_update_slice(x1d, update1d, nv_scalar(4L, dtype = "i32"))
   expect_equal(out, nv_array(c(1L, 2L, 3L, 100L, 200L, 300L, 7L, 8L, 9L, 10L), dtype = "i32", shape = 10L))
 })
 
 test_that("prim_concatenate", {
-  f <- function() {
-    nv_concatenate(
-      nv_array(c(1:6), dtype = "ui64", shape = c(2, 3)),
-      nv_array(c(7:10), dtype = "ui64", shape = c(2, 2)),
-      dimension = 2L
-    )
-  }
-  g <- jit(f)
-  out <- g()
+  out <- nv_concatenate(
+    nv_array(c(1:6), dtype = "ui64", shape = c(2, 3)),
+    nv_array(c(7:10), dtype = "ui64", shape = c(2, 2)),
+    dimension = 2L
+  )
   expect_equal(dim(as_array(out)), c(2, 5))
 })
 test_that("prim_fill", {
@@ -150,21 +115,21 @@ test_that("prim_fill", {
 test_that("prim_shift_left", {
   x <- nv_array(as.integer(c(1L, 2L, 3L, 8L)), dtype = "i32")
   y <- nv_array(as.integer(c(0L, 1L, 2L, 3L)), dtype = "i32")
-  out <- as.integer(as_array(jit(prim_shift_left)(x, y)))
+  out <- as.integer(as_array(prim_shift_left(x, y)))
   expect_equal(out, as.integer(c(1L, 4L, 12L, 64L)))
 })
 
 test_that("prim_shift_right_logical", {
   x <- nv_array(as.integer(c(16L, 8L, 7L, 1L)), dtype = "i32")
   y <- nv_array(as.integer(c(0L, 1L, 2L, 0L)), dtype = "i32")
-  out <- as.integer(as_array(jit(prim_shift_right_logical)(x, y)))
+  out <- as.integer(as_array(prim_shift_right_logical(x, y)))
   expect_equal(out, as.integer(c(16L, 4L, 1L, 1L)))
 })
 
 test_that("prim_shift_right_arithmetic", {
   x <- nv_array(as.integer(c(-8L, -1L, 8L, -17L)), dtype = "i32")
   y <- nv_array(as.integer(c(1L, 3L, 2L, 4L)), dtype = "i32")
-  out <- as.integer(as_array(jit(prim_shift_right_arithmetic)(x, y)))
+  out <- as.integer(as_array(prim_shift_right_arithmetic(x, y)))
   expect_equal(out, as.integer(c(-4L, -1L, 2L, -2L)))
 })
 
@@ -172,22 +137,19 @@ test_that("prim_shift_right_arithmetic", {
 
 test_that("prim_reduce_sum", {
   x <- array(1:6, c(2, 3))
-  f <- jit(function(a) prim_reduce_sum(a, dims = 2L, drop = TRUE))
-  out <- as_array(f(nv_array(x, dtype = "f32")))
+  out <- as_array(prim_reduce_sum(nv_array(x, dtype = "f32"), dims = 2L, drop = TRUE))
   expect_equal(out, array(c(9, 12)))
 })
 
 test_that("prim_reduce_prod", {
   x <- array(1:6, c(2, 3))
-  f <- jit(function(a) prim_reduce_prod(a, dims = 1L, drop = FALSE))
-  out <- as_array(f(nv_array(x, dtype = "f32")))
+  out <- as_array(prim_reduce_prod(nv_array(x, dtype = "f32"), dims = 1L, drop = FALSE))
   expect_equal(out, array(c(2, 12, 30), c(1, 3)))
 })
 
 test_that("prim_reduce_max", {
   x <- array(c(-1, 4, 0, 2), c(2, 2))
-  f <- jit(function(a) prim_reduce_max(a, dims = 2L, drop = TRUE))
-  out <- as_array(f(nv_array(x, dtype = "f32")))
+  out <- as_array(prim_reduce_max(nv_array(x, dtype = "f32"), dims = 2L, drop = TRUE))
   expect_equal(out, array(c(0, 4)))
   # f64
   x <- nv_reduce_max(nv_array(c(1, 2, 3), dtype = "f64"), dims = 1L)
@@ -196,15 +158,13 @@ test_that("prim_reduce_max", {
 
 test_that("prim_reduce_max drop = FALSE", {
   x <- array(c(-1, 4, 0, 2), c(2, 2))
-  f <- jit(function(a) prim_reduce_max(a, dims = 2L, drop = FALSE))
-  out <- as_array(f(nv_array(x, dtype = "f32")))
+  out <- as_array(prim_reduce_max(nv_array(x, dtype = "f32"), dims = 2L, drop = FALSE))
   expect_equal(out, array(c(0, 4), c(2, 1)))
 })
 
 test_that("prim_reduce_min", {
   x <- array(c(-1, 4, 0, 2), c(2, 2))
-  f <- jit(function(a) prim_reduce_min(a, dims = 2L, drop = TRUE))
-  out <- as_array(f(nv_array(x, dtype = "f32")))
+  out <- as_array(prim_reduce_min(nv_array(x, dtype = "f32"), dims = 2L, drop = TRUE))
   expect_equal(out, array(c(-1, 2)))
   # f64
   x <- nv_reduce_min(nv_array(c(1, 2, 3), dtype = "f64"), dims = 1L)
@@ -213,22 +173,19 @@ test_that("prim_reduce_min", {
 
 test_that("prim_reduce_min drop = FALSE", {
   x <- array(c(-1, 4, 0, 2), c(2, 2))
-  f <- jit(function(a) prim_reduce_min(a, dims = 2L, drop = FALSE))
-  out <- as_array(f(nv_array(x, dtype = "f32")))
+  out <- as_array(prim_reduce_min(nv_array(x, dtype = "f32"), dims = 2L, drop = FALSE))
   expect_equal(out, array(c(-1, 2), c(2, 1)))
 })
 
 test_that("prim_reduce_any", {
   x <- array(c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE), c(2, 3))
-  f <- jit(function(a) prim_reduce_any(a, dims = 2L, drop = TRUE))
-  out <- as_array(f(nv_array(x, dtype = "bool")))
+  out <- as_array(prim_reduce_any(nv_array(x, dtype = "bool"), dims = 2L, drop = TRUE))
   expect_equal(out, array(c(TRUE, FALSE)))
 })
 
 test_that("prim_reduce_all", {
   x <- array(c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE), c(2, 3))
-  f <- jit(function(a) prim_reduce_all(a, dims = 1L, drop = FALSE))
-  out <- as_array(f(nv_array(x, dtype = "bool")))
+  out <- as_array(prim_reduce_all(nv_array(x, dtype = "bool"), dims = 1L, drop = FALSE))
   expect_equal(out, array(rep(FALSE, 3), c(1, 3)))
 })
 
@@ -241,23 +198,19 @@ describe("cumulative ops", {
     # 1-D: matches base R directly.
     v <- c(3, 1, 4, 1, 5, 9, 2, 6)
     x <- nv_array(v, dtype = "f32")
-    out <- jit(function(a) pick(prim_fn(a, dim = 1L)))(x)
-    expect_equal(as_array(out), array(base_fn(v)))
+    expect_equal(as_array(pick(prim_fn(x, dim = 1L))), array(base_fn(v)))
 
     # 2-D dim = 1 (down columns) and dim = 2 (across rows) match
     # `apply` along the corresponding margin.
     M <- matrix(c(3, 1, 4, 1, 5, 9), nrow = 2)
     xm <- nv_array(M, dtype = "f32")
 
-    out <- jit(function(a) pick(prim_fn(a, dim = 1L)))(xm)
-    expect_equal(as_array(out), apply(M, 2, base_fn))
+    expect_equal(as_array(pick(prim_fn(xm, dim = 1L))), apply(M, 2, base_fn))
 
-    out <- jit(function(a) pick(prim_fn(a, dim = 2L)))(xm)
-    expect_equal(as_array(out), t(apply(M, 1, base_fn)))
+    expect_equal(as_array(pick(prim_fn(xm, dim = 2L))), t(apply(M, 1, base_fn)))
 
     # row vs column major ordering
-    out <- jit(nv_fn)(xm)
-    expect_equal(as_array(out), array(base_fn(t(M))))
+    expect_equal(as_array(nv_fn(xm)), array(base_fn(t(M))))
   }
 
   it("prim_cumsum matches base R", verify_cum(prim_cumsum, nv_cumsum, base::cumsum))
@@ -276,23 +229,23 @@ describe("cumulative ops", {
   # (matching torch).
   it("prim_cummax returns running argmax indices", {
     x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6), dtype = "f32")
-    out <- jit(function(a) prim_cummax(a, dim = 1L))(x)
+    out <- prim_cummax(x, dim = 1L)
     expect_equal(c(as_array(out[[2L]])), c(1L, 1L, 3L, 3L, 5L, 6L, 6L, 6L))
   })
   it("prim_cummin returns running argmin indices with last-occurrence tiebreak", {
     # Tie at j=4 (x_4 == y_3 == 1): last-occurrence picks 4, then carries forward.
     x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6), dtype = "f32")
-    out <- jit(function(a) prim_cummin(a, dim = 1L))(x)
+    out <- prim_cummin(x, dim = 1L)
     expect_equal(c(as_array(out[[2L]])), c(1L, 2L, 2L, 4L, 4L, 4L, 4L, 4L))
   })
   it("prim_cummax plateau breaks ties to last occurrence", {
     x <- nv_array(c(1, 3, 3, 2), dtype = "f32")
-    out <- jit(function(a) prim_cummax(a, dim = 1L))(x)
+    out <- prim_cummax(x, dim = 1L)
     expect_equal(c(as_array(out[[2L]])), c(1L, 2L, 3L, 3L))
   })
   it("prim_cummax integer dtype", {
     x <- nv_array(c(3L, -1L, 4L, -1L, 5L), dtype = "i32")
-    out <- jit(function(a) prim_cummax(a, dim = 1L))(x)
+    out <- prim_cummax(x, dim = 1L)
     expect_equal(c(as_array(out[[1L]])), c(3L, 3L, 4L, 4L, 5L))
     expect_equal(c(as_array(out[[2L]])), c(1L, 1L, 3L, 3L, 5L))
   })
@@ -319,10 +272,9 @@ test_that("prim_reshape", {
 
 test_that("prim_transpose", {
   x <- array(1:4, c(2, 2))
-  f <- jit(\(x) prim_transpose(x, c(2, 1)))
   expect_equal(
     t(x),
-    as_array(f(nv_array(x)))
+    as_array(prim_transpose(nv_array(x), c(2, 1)))
   )
 })
 
@@ -718,72 +670,58 @@ test_that("error when multiplying lists in if-statement", {
 })
 
 test_that("prim_is_finite", {
-  f <- jit(function(x) prim_is_finite(x))
   x <- nv_array(c(1.0, Inf, -Inf, NaN), dtype = "f32")
-  expect_equal(f(x), nv_array(c(TRUE, FALSE, FALSE, FALSE), dtype = "bool"))
+  expect_equal(prim_is_finite(x), nv_array(c(TRUE, FALSE, FALSE, FALSE), dtype = "bool"))
 })
 
 test_that("prim_clamp", {
-  f <- jit(function(x) {
-    min_val <- nv_broadcast_to(nv_scalar(-1.0, "f32"), shape(x))
-    max_val <- nv_broadcast_to(nv_scalar(1.0, "f32"), shape(x))
-    prim_clamp(min_val, x, max_val)
-  })
   x <- nv_array(c(-2.0, -0.5, 0.5, 2.0), dtype = "f32")
-  expect_equal(f(x), nv_array(c(-1.0, -0.5, 0.5, 1.0), dtype = "f32"))
+  min_val <- nv_broadcast_to(nv_scalar(-1.0, "f32"), shape(x))
+  max_val <- nv_broadcast_to(nv_scalar(1.0, "f32"), shape(x))
+  expect_equal(prim_clamp(min_val, x, max_val), nv_array(c(-1.0, -0.5, 0.5, 1.0), dtype = "f32"))
 })
 
 test_that("prim_reverse", {
-  f <- jit(function(x) prim_reverse(x, 1L))
   x <- nv_array(1:5, dtype = "i32")
-  expect_equal(f(x), nv_array(5:1, dtype = "i32"))
+  expect_equal(prim_reverse(x, 1L), nv_array(5:1, dtype = "i32"))
 
   # 2D reverse
-  f2 <- jit(function(x) prim_reverse(x, 2L))
   x2 <- nv_matrix(1:6, nrow = 2, ncol = 3, dtype = "i32")
-  expect_equal(f2(x2), nv_matrix(c(5L, 6L, 3L, 4L, 1L, 2L), nrow = 2, ncol = 3, dtype = "i32"))
+  expect_equal(prim_reverse(x2, 2L), nv_matrix(c(5L, 6L, 3L, 4L, 1L, 2L), nrow = 2, ncol = 3, dtype = "i32"))
 })
 
 test_that("prim_iota", {
-  f <- jit(function() prim_iota(1L, "i32", 5L, start = 0L))
-  expect_equal(f(), nv_array(0:4, dtype = "i32"))
+  expect_equal(prim_iota(1L, "i32", 5L, start = 0L), nv_array(0:4, dtype = "i32"))
 
-  f <- jit(function() prim_iota(1L, "i32", 5L, start = 1L))
-  expect_equal(f(), nv_array(1:5, dtype = "i32"))
+  expect_equal(prim_iota(1L, "i32", 5L, start = 1L), nv_array(1:5, dtype = "i32"))
 
   # 2D along first dimension (default start = 1)
-  f2 <- jit(function() prim_iota(1L, "i32", c(3L, 2L)))
   expected <- matrix(c(1L, 2L, 3L, 1L, 2L, 3L), 3, 2)
-  expect_equal(f2(), nv_array(expected, dtype = "i32"))
+  expect_equal(prim_iota(1L, "i32", c(3L, 2L)), nv_array(expected, dtype = "i32"))
 })
 
 test_that("prim_popcnt", {
-  f <- jit(function(x) prim_popcnt(x))
   x <- nv_array(c(0L, 1L, 2L, 3L, 7L, 255L), dtype = "i32")
-  expect_equal(f(x), nv_array(c(0L, 1L, 1L, 2L, 3L, 8L), dtype = "i32"))
+  expect_equal(prim_popcnt(x), nv_array(c(0L, 1L, 1L, 2L, 3L, 8L), dtype = "i32"))
 })
 
 test_that("prim_gather", {
   # Simple 1D gather: select elements at specific indices
-  f <- jit(function(x, indices) {
-    prim_gather(
-      operand = x,
-      start_indices = indices,
-      slice_sizes = c(1L),
-      offset_dims = integer(),
-      collapsed_slice_dims = 1L,
-      operand_batching_dims = integer(),
-      start_indices_batching_dims = integer(),
-      start_index_map = 1L,
-      index_vector_dim = 2L,
-      indices_are_sorted = FALSE,
-      unique_indices = FALSE
-    )
-  })
-
   x <- nv_array(c(10L, 20L, 30L, 40L, 50L), dtype = "i32")
   indices <- nv_array(c(1L, 3L, 5L), dtype = "i64", shape = c(3, 1))
-  out <- f(x, indices)
+  out <- prim_gather(
+    operand = x,
+    start_indices = indices,
+    slice_sizes = c(1L),
+    offset_dims = integer(),
+    collapsed_slice_dims = 1L,
+    operand_batching_dims = integer(),
+    start_indices_batching_dims = integer(),
+    start_index_map = 1L,
+    index_vector_dim = 2L,
+    indices_are_sorted = FALSE,
+    unique_indices = FALSE
+  )
   expect_equal(out, nv_array(c(10L, 30L, 50L), dtype = "i32"))
 })
 
@@ -824,15 +762,13 @@ test_that("prim_print", {
 
 describe("prim_sort", {
   it("sorts a 1D vector", {
-    f <- jit(function(x) prim_sort(list(x), dim = 1L)[[1L]])
     x <- nv_array(c(3, 1, 4, 2, 5))
-    expect_equal(f(x), nv_array(c(1, 2, 3, 4, 5)))
+    expect_equal(prim_sort(list(x), dim = 1L)[[1L]], nv_array(c(1, 2, 3, 4, 5)))
   })
 
   it("sorts each row (dim = 2) of a matrix", {
-    f <- jit(function(x) prim_sort(list(x), dim = 2L)[[1L]])
     m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
-    expect_equal(f(m), nv_matrix(c(1, 3, 5, 0, 2, 4), nrow = 2, byrow = TRUE))
+    expect_equal(prim_sort(list(m), dim = 2L)[[1L]], nv_matrix(c(1, 3, 5, 0, 2, 4), nrow = 2, byrow = TRUE))
   })
 
   it("variadic: carried operand is permuted by the key", {
@@ -856,9 +792,8 @@ describe("prim_top_k", {
   })
 
   it("operates per-row on a matrix", {
-    f <- jit(function(x) prim_top_k(x, k = 2L))
     m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
-    out <- f(m)
+    out <- prim_top_k(m, k = 2L)
     expect_equal(as_array(out[[1L]]), matrix(c(5, 3, 4, 2), nrow = 2, byrow = TRUE))
     expect_equal(as_array(out[[2L]]), matrix(c(3L, 1L, 2L, 1L), nrow = 2, byrow = TRUE))
   })
@@ -882,25 +817,21 @@ describe("prim_top_k", {
 
 describe("prim_argmax", {
   it("returns the 1-based index of the max along a 1D array", {
-    f <- jit(function(x) prim_argmax(x, dim = 1L))
-    expect_equal(as_array(f(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))), 6L)
+    expect_equal(as_array(prim_argmax(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)), dim = 1L)), 6L)
   })
 
   it("breaks ties with the smallest index", {
-    f <- jit(function(x) prim_argmax(x, dim = 1L))
-    expect_equal(as_array(f(nv_array(c(1, 5, 5, 3)))), 2L)
+    expect_equal(as_array(prim_argmax(nv_array(c(1, 5, 5, 3)), dim = 1L)), 2L)
   })
 
   it("operates per-row on a matrix", {
-    f <- jit(function(x) prim_argmax(x, dim = 2L))
     m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
-    expect_equal(as.vector(f(m)), c(3L, 2L))
+    expect_equal(as.vector(prim_argmax(m, dim = 2L)), c(3L, 2L))
   })
 
   it("supports drop = FALSE", {
-    f <- jit(function(x) prim_argmax(x, dim = 2L, drop = FALSE))
     m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
-    out <- f(m)
+    out <- prim_argmax(m, dim = 2L, drop = FALSE)
     expect_equal(shape(out), c(2L, 1L))
     expect_equal(as.vector(out), c(3L, 2L))
   })
@@ -943,19 +874,16 @@ describe("prim_argmax", {
 
 describe("prim_argmin", {
   it("returns the 1-based index of the min along a 1D array", {
-    f <- jit(function(x) prim_argmin(x, dim = 1L))
-    expect_equal(as_array(f(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))), 2L)
+    expect_equal(as_array(prim_argmin(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)), dim = 1L)), 2L)
   })
 
   it("breaks ties with the smallest index", {
-    f <- jit(function(x) prim_argmin(x, dim = 1L))
-    expect_equal(as_array(f(nv_array(c(3, 1, 4, 1, 5)))), 2L)
+    expect_equal(as_array(prim_argmin(nv_array(c(3, 1, 4, 1, 5)), dim = 1L)), 2L)
   })
 
   it("operates per-column on a matrix (dim = 1)", {
-    f <- jit(function(x) prim_argmin(x, dim = 1L))
     m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
-    expect_equal(as.vector(f(m)), c(2L, 1L, 2L))
+    expect_equal(as.vector(prim_argmin(m, dim = 1L)), c(2L, 1L, 2L))
   })
 
   it("errors at trace time when reducing along a size-0 axis", {
@@ -968,26 +896,23 @@ describe("prim_argmin", {
 
 describe("prim_reduce", {
   it("sum via prim_add", {
-    f <- jit(function(x) prim_reduce(x, init = nv_scalar(0), dims = 1L, reductor = prim_add))
-    expect_equal(as_array(f(nv_array(c(1, 2, 3, 4)))), 10)
+    out <- prim_reduce(nv_array(c(1, 2, 3, 4)), init = nv_scalar(0), dims = 1L, reductor = prim_add)
+    expect_equal(as_array(out), 10)
   })
 
   it("product via prim_mul", {
-    f <- jit(function(x) prim_reduce(x, init = nv_scalar(1), dims = 1L, reductor = prim_mul))
-    expect_equal(as_array(f(nv_array(c(1, 2, 3, 4)))), 24)
+    out <- prim_reduce(nv_array(c(1, 2, 3, 4)), init = nv_scalar(1), dims = 1L, reductor = prim_mul)
+    expect_equal(as_array(out), 24)
   })
 
   it("custom max via prim_max with -Inf init", {
-    f <- jit(function(x) prim_reduce(x, init = nv_scalar(-Inf), dims = 1L, reductor = prim_max))
-    expect_equal(as_array(f(nv_array(c(3, 1, 4, 1, 5, 9, 2)))), 9)
+    out <- prim_reduce(nv_array(c(3, 1, 4, 1, 5, 9, 2)), init = nv_scalar(-Inf), dims = 1L, reductor = prim_max)
+    expect_equal(as_array(out), 9)
   })
 
   it("supports drop = FALSE", {
-    f <- jit(
-      function(x) prim_reduce(x, init = nv_scalar(0), dims = 2L, drop = FALSE, reductor = prim_add)
-    )
     m <- nv_matrix(c(1, 2, 3, 4, 5, 6), nrow = 2)
-    out <- f(m)
+    out <- prim_reduce(m, init = nv_scalar(0), dims = 2L, drop = FALSE, reductor = prim_add)
     expect_equal(shape(out), c(2L, 1L))
     expect_equal(as.vector(out), c(9, 12))
   })

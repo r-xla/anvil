@@ -2,7 +2,7 @@ test_that("auto-broadcasting higher-dimensional arrays is not supported (it's bu
   x <- nv_array(1:2, shape = c(2, 1))
   y <- nv_array(1:2, shape = c(1, 2))
   expect_error(
-    jit(nv_add)(x, y),
+    nv_add(x, y),
     "must have the same shape"
   )
 })
@@ -24,9 +24,8 @@ test_that("nv_fill rejects non-scalar-R value with a helpful message", {
 })
 
 test_that("broadcasting scalars", {
-  fjit <- jit(nv_add)
   expect_equal(
-    fjit(
+    nv_add(
       nv_scalar(1),
       nv_array(0, shape = c(2, 2))
     ),
@@ -35,14 +34,8 @@ test_that("broadcasting scalars", {
 })
 
 test_that("infix add", {
-  f <- jit(function(x, y) {
-    x + y
-  })
   expect_equal(
-    f(
-      nv_array(1, shape = c(2, 2)),
-      nv_array(0, shape = c(2, 2))
-    ),
+    nv_array(1, shape = c(2, 2)) + nv_array(0, shape = c(2, 2)),
     nv_array(1, shape = c(2, 2))
   )
 })
@@ -54,13 +47,11 @@ test_that("jit constant single return is bare array", {
 })
 
 test_that("Summary group generics", {
-  fsum <- jit(function(x) sum(x))
-  expect_equal(as_array(fsum(nv_array(1:10))), 55)
+  expect_equal(as_array(sum(nv_array(1:10))), 55)
 })
 
 test_that("mean", {
-  fmean <- jit(function(x) mean(x))
-  expect_equal(as_array(fmean(nv_array(1:10, "f32"))), 5.5)
+  expect_equal(as_array(mean(nv_array(1:10, "f32"))), 5.5)
 })
 
 test_that("constants can be lifted to the appropriate level", {
@@ -84,11 +75,8 @@ test_that("wrt non-existent argument", {
 })
 
 test_that("promote to common", {
-  f <- function(x, y) {
-    nv_add(x, y)
-  }
   expect_equal(
-    jit(f)(nv_array(1, dtype = "i32"), nv_array(1.0, dtype = "f32")),
+    nv_add(nv_array(1, dtype = "i32"), nv_array(1.0, dtype = "f32")),
     nv_array(2.0, dtype = "f32")
   )
 })
@@ -849,7 +837,7 @@ describe("nv_select", {
 
   it("works on a 3D array", {
     arr <- nv_array(1:24, shape = c(2, 3, 4))
-    out <- jit(function(x) nv_select(x, dim = 3L, index = 2L))(arr)
+    out <- nv_select(arr, dim = 3L, index = 2L)
     expect_equal(shape(out), c(2L, 3L))
     expect_equal(as_array(out), array(7:12, dim = c(2, 3)))
   })
@@ -962,14 +950,14 @@ describe("nv_median", {
 
   it("operates row-wise by default on a matrix", {
     m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
-    out <- jit(nv_median)(m)
+    out <- nv_median(m)
     expect_equal(as.vector(out), c(3, 2))
   })
 
   it("dispatches via the median() generic", {
     expect_equal(as_array(median(nv_array(c(1, 2, 3, 4)))), as_array(nv_scalar(2.5)))
     expect_equal(
-      as_array(jit(function(x) median(x))(nv_array(c(1, 2, 3, 4, 5)))),
+      as_array(median(nv_array(c(1, 2, 3, 4, 5)))),
       as_array(nv_scalar(3))
     )
   })

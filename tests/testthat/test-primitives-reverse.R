@@ -121,8 +121,8 @@ test_that("prim_dot_general: batched matmul gradient w.r.t both inputs", {
         batching_dims = list(integer(), integer())
       )
     }
-    expect_equal(jit(lin_A)(A), jit(l)(A, B))
-    expect_equal(jit(lin_B)(B), jit(l)(A, B))
+    expect_equal(lin_A(A), l(A, B))
+    expect_equal(lin_B(B), l(A, B))
   }
 
   # Case 1: Single contracting dim, no batching dims (existing baseline)
@@ -375,7 +375,7 @@ test_that("prim_eq, prim_ne, prim_gt, prim_ge, prim_lt, prim_le", {
   )
 
   for (cmp in comparators) {
-    out <- as_array(jit(cmp$fun)(a_nv, b_nv))
+    out <- as_array(cmp$fun(a_nv, b_nv))
     expect_identical(out, cmp$expected)
 
     g <- jit(gradient(function(a, b) {
