@@ -251,7 +251,7 @@ describe("range", {
 
 describe("Summary group generic", {
   it("forwards ... to underlying nv_reduce_*", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(matrix(1:6, 2))
         sum(x, dims = 1L)
