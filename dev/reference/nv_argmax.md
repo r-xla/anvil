@@ -46,7 +46,7 @@ nv_argmax(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
 #> AnvlArray
 #>  6
 #> [ CPUi32{} ] 
-nv_argmax(nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)),
+nv_argmax(nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE),
   dim = 2L
 )
 #> AnvlArray

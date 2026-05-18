@@ -33,7 +33,7 @@ The inverse, same shape and dtype as `operand`.
 ## Examples
 
 ``` r
-a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
 nv_inv(a)
 #> AnvlArray
 #>  -0.5000  1.0000

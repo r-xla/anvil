@@ -51,7 +51,7 @@ loop that converts `pivots` to `permutation` in-graph.
 ## Examples
 
 ``` r
-x <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+x <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
 prim_lu(x)
 #> $LU
 #> AnvlArray

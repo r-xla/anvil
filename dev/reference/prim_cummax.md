@@ -51,7 +51,7 @@ over `(values, iota)`.
 ## Examples
 
 ``` r
-x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+x <- nv_matrix(c(3, 1, 4, 1, 5, 9), nrow = 2)
 prim_cummax(x, dim = 1L)
 #> [[1]]
 #> AnvlArray

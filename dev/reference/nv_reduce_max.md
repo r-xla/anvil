@@ -41,7 +41,7 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-x <- nv_array(matrix(1:6, nrow = 2))
+x <- nv_matrix(1:6, nrow = 2)
 nv_reduce_max(x)            # all dims -> scalar
 #> AnvlArray
 #>  6

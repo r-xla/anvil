@@ -110,6 +110,8 @@
   gained a `byrow` argument that fills the array from an R object in
   row-major order, mirroring `matrix(byrow = TRUE)`
   ([\#165](https://github.com/r-xla/anvl/issues/165)).
+- New `nv_matrix(data, nrow, ncol, ...)` which works like R’s
+  [`matrix()`](https://rdrr.io/r/base/matrix.html).
 - New API functions
   [`nv_rbind()`](https://r-xla.github.io/anvl/dev/reference/nv_bind.md)
   and

@@ -213,7 +213,7 @@ We start by creating a 2-dimensional array.
 
 ``` r
 
-x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
+x <- nv_matrix(1:12, nrow = 3, byrow = TRUE)
 x
 ```
 
@@ -363,7 +363,7 @@ x
 
 ``` r
 
-x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
+x <- nv_matrix(1:12, nrow = 3, byrow = TRUE)
 x[, 3] <- -99L
 x
 ```
@@ -379,7 +379,7 @@ the array.
 
 ``` r
 
-x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
+x <- nv_matrix(1:12, nrow = 3, byrow = TRUE)
 x[, 3] <- nv_array(c(1.5, 2.5, 3.5))
 ```
 

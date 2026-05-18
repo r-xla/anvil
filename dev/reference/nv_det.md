@@ -31,7 +31,7 @@ with the same dtype as `operand`.
 ## Examples
 
 ``` r
-a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
 nv_det(a)
 #> AnvlArray
 #>  -6

@@ -42,7 +42,7 @@ Named `list` with elements `d` (length `k`), `u` (shape `(m, k)`), and
 ## Examples
 
 ``` r
-x <- nv_array(matrix(c(1, 0, 0, 1, 0, 1), nrow = 3), dtype = "f64")
+x <- nv_matrix(c(1, 0, 0, 1, 0, 1), nrow = 3, dtype = "f64")
 nv_svd(x)
 #> $d
 #> AnvlArray

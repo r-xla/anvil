@@ -41,7 +41,7 @@ Triangular matrix with the same shape and data type as the input.
 ## Examples
 
 ``` r
-a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+a <- nv_matrix(c(4, 2, 2, 3), nrow = 2, dtype = "f32")
 nv_chol(a)
 #> AnvlArray
 #>  2.0000 1.0000

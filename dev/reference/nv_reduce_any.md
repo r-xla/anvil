@@ -41,7 +41,7 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+x <- nv_matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2)
 nv_reduce_any(x)            # all dims -> scalar
 #> AnvlArray
 #>  1

@@ -34,7 +34,7 @@ Named `list` with elements `values` (length `n`) and `vectors` (shape
 ## Examples
 
 ``` r
-x <- nv_array(matrix(c(2, 1, 1, 2), nrow = 2), dtype = "f64")
+x <- nv_matrix(c(2, 1, 1, 2), nrow = 2, dtype = "f64")
 nv_eigh(x)
 #> $values
 #> AnvlArray

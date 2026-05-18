@@ -40,7 +40,7 @@ crossprod(x, y = NULL, ...)
 ## Examples
 
 ``` r
-x <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
+x <- nv_matrix(1:6, nrow = 3, dtype = "f32")
 nv_crossprod(x)
 #> AnvlArray
 #>  14 32

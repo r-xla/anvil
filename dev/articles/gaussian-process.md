@@ -186,9 +186,9 @@ We apply this with \\\ell = 0.5\\, \\\sigma_f^2 = 2\\, and \\\sigma^2 =
 
 ``` r
 
-X_t <- nv_array(matrix(X_train, ncol = 1))
-y_t <- nv_array(matrix(y_train, ncol = 1))
-X_test_t <- nv_array(matrix(X_test, ncol = 1))
+X_t <- nv_matrix(X_train, ncol = 1)
+y_t <- nv_matrix(y_train, ncol = 1)
+X_test_t <- nv_matrix(X_test, ncol = 1)
 
 pred <- predict_gp(
   rbf_kernel_matrix, X_t, y_t, X_test_t,

@@ -45,7 +45,7 @@ for a comprehensive guide.
 ## Examples
 
 ``` r
-x <- nv_array(matrix(1:12, nrow = 3))
+x <- nv_matrix(1:12, nrow = 3)
 # Select row 2
 x[2, ]
 #> AnvlArray
@@ -55,7 +55,7 @@ x[2, ]
 #>  11
 #> [ CPUi32{4} ] 
 
-x <- nv_array(matrix(1:12, nrow = 3))
+x <- nv_matrix(1:12, nrow = 3)
 # Select rows 1 to 2, all columns
 x[1:2, ]
 #> AnvlArray

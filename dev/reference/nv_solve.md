@@ -50,8 +50,8 @@ The solution `x` such that `a %*% x = b`.
 ## Examples
 
 ``` r
-a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
-b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f64")
+a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
+b <- nv_matrix(c(1, 2), nrow = 2, dtype = "f64")
 nv_solve(a, b)
 #> AnvlArray
 #>   1.5000

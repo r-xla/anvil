@@ -18,6 +18,17 @@ nv_array(
 
 nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL)
 
+nv_matrix(
+  data,
+  nrow = NULL,
+  ncol = NULL,
+  dtype = NULL,
+  device = NULL,
+  ambiguous = NULL,
+  backend = NULL,
+  byrow = FALSE
+)
+
 nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
 
 nv_array_like(
@@ -107,6 +118,18 @@ nv_empty_like(
   [`base::matrix()`](https://rdrr.io/r/base/matrix.html)'s `byrow`. Only
   allowed when `data` is an R object — passing an existing `AnvlArray`
   together with `byrow = TRUE` is an error.
+
+- nrow:
+
+  (`NULL` \| `integer(1)`)  
+  Number of rows. Inferred from `ncol` and the data length if `NULL`.
+  Defaults to `1` when `data` is a scalar.
+
+- ncol:
+
+  (`NULL` \| `integer(1)`)  
+  Number of columns. Inferred from `nrow` and the data length if `NULL`.
+  Defaults to `1` when `data` is a scalar.
 
 - like:
 

@@ -10,6 +10,7 @@ Functions for creating and initializing arrays
 
 - [`nv_array()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
   [`nv_scalar()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
+  [`nv_matrix()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
   [`nv_empty()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
   [`nv_array_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)
   [`nv_scalar_like()`](https://r-xla.github.io/anvl/dev/reference/AnvlArray.md)

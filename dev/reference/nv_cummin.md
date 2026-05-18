@@ -54,7 +54,7 @@ for the underlying primitive.
 ## Examples
 
 ``` r
-x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+x <- nv_matrix(c(3, 1, 4, 1, 5, 9), nrow = 2)
 nv_cummin(x)
 #> AnvlArray
 #>  3

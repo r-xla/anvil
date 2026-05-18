@@ -92,7 +92,7 @@ nv_sort(x, decreasing = TRUE)
 #>  1
 #> [ CPUf32{8} ] 
 
-m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
 nv_sort(m, dim = 2L)
 #> AnvlArray
 #>  1 3 5

@@ -63,7 +63,7 @@ Mathematisch-Naturwissenschaftliche Fakult"at II.
 
 ``` r
 # Create a positive-definite matrix
-x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+x <- nv_matrix(c(4, 2, 2, 3), nrow = 2, dtype = "f32")
 prim_chol(x, lower = TRUE)
 #> AnvlArray
 #>  2.0000 0.0000

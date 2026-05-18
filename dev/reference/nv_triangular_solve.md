@@ -86,8 +86,8 @@ would be for NumPy).
 ## Examples
 
 ``` r
-L <- nv_array(matrix(c(2, 1, 0, 3), nrow = 2), dtype = "f32")
-b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
+L <- nv_matrix(c(2, 1, 0, 3), nrow = 2, dtype = "f32")
+b <- nv_matrix(c(4, 3), nrow = 2, dtype = "f32")
 nv_triangular_solve(L, b)
 #> AnvlArray
 #>  2.0000

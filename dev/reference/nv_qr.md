@@ -31,7 +31,7 @@ have the same data type as `operand`.
 ## Examples
 
 ``` r
-x <- nv_array(matrix(c(1, 2, 3, 4, 5, 6), nrow = 3), dtype = "f32")
+x <- nv_matrix(c(1, 2, 3, 4, 5, 6), nrow = 3, dtype = "f32")
 nv_qr(x)
 #> $Q
 #> AnvlArray

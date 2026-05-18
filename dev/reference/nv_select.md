@@ -41,7 +41,7 @@ for general subsetting,
 ## Examples
 
 ``` r
-m <- nv_array(matrix(1:6, nrow = 2))
+m <- nv_matrix(1:6, nrow = 2)
 nv_select(m, dim = 2L, index = 2L)
 #> AnvlArray
 #>  3

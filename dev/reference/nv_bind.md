@@ -82,7 +82,7 @@ nv_cbind(nv_array(1:3), nv_array(4:6))
 #> [ CPUi32{3,2} ] 
 
 # Scalar broadcasting
-nv_rbind(nv_array(matrix(1:6, nrow = 2)), nv_scalar(0))
+nv_rbind(nv_matrix(1:6, nrow = 2), nv_scalar(0))
 #> AnvlArray
 #>  1 3 5
 #>  2 4 6
@@ -90,7 +90,7 @@ nv_rbind(nv_array(matrix(1:6, nrow = 2)), nv_scalar(0))
 #> [ CPUf32{3,3} ] 
 
 # Rank-3 arrays preserve trailing dimensions
-a <- nv_array(array(1:24, dim = c(2, 3, 4)))
+a <- nv_array(1:24, shape = c(2, 3, 4))
 shape(nv_rbind(a, a)) # c(4, 3, 4)
 #> [1] 4 3 4
 ```

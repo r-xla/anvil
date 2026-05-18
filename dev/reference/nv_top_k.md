@@ -74,7 +74,7 @@ nv_top_k(x, k = 3L, with_indices = TRUE)
 #> [ CPUi32{3} ] 
 #> 
 
-m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
 nv_top_k(m, k = 2L, dim = 2L)
 #> AnvlArray
 #>  5 3
