@@ -77,6 +77,31 @@ A few things to keep in mind when moving to GPU:
   operations on small arrays can actually be *slower* on GPU than on CPU
   because the per-call overhead dominates the actual work.
 
+### Writing GPU-friendly code
+
+GPUs get their speed from running thousands of operations in parallel,
+so they reward code that does a lot of work per call on large arrays. A
+few rules of thumb:
+
+- **Avoid R-level loops over array elements or rows.** Each iteration
+  launches a separate kernel with non-trivial overhead, and the kernels
+  run one after another instead of in parallel. Express the work as a
+  single vectorized operation on the whole array whenever possible
+  (e.g. `x * y` or `nv_reduce_sum(x)` instead of a `for` loop).
+- **Prefer batched operations.** Operations like
+  [`nv_matmul()`](https://r-xla.github.io/anvl/dev/reference/nv_matmul.md)
+  accept a full batch of matrices at once. Stacking many small inputs
+  into one larger array and processing them in a single call is
+  typically much faster than calling the same operation many times. This
+  mirrors plain R, where vectorized code beats a `for` loop – except
+  that on a GPU the win comes from running the batch entries in parallel
+  rather than from avoiding interpreter overhead.
+- **Sometimes the algorithm itself has to be rewritten.** Inherently
+  sequential formulations – e.g. a running update that depends on the
+  previous step – can leave most of the GPU idle. Reformulating the
+  computation to expose parallelism can be dramatically faster, even
+  when the parallel version does more total work.
+
 ## Data types
 
 The data type of an `AnvlArray` (`f32`, `f64`, `i32`, `i64`, …) affects
