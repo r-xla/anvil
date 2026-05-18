@@ -1,10 +1,3 @@
-expect_jit_equal <- function(.expr, .expected, ...) {
-  expr <- substitute(.expr)
-  eval_env <- new.env(parent = parent.frame())
-  observed <- jit(\() eval(expr, envir = eval_env))()
-  testthat::expect_equal(observed, .expected, ...)
-}
-
 # Cross-check an API function by running it in two configurations:
 #   - eager mode with every AnvlArray input on cpu:1
 #   - jit-compiled (static args forwarded) with every AnvlArray input on cpu:0
