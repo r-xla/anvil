@@ -54,8 +54,8 @@
     Condition
       Error in `compute_requirements()`:
       ! Cannot compute gradient with respect to `operand`.
-      x It was passed as a plain R value and embedded as a constant in the traced graph, so it has no graph input to differentiate.
-      i Pass it as an <AnvlArray>, e.g. `nv_array(1, dtype = "f32")`.
+      x It was passed as a plain R value
+      i Pass it as an <AnvlArray>.
 
 ---
 
@@ -64,6 +64,6 @@
     Condition
       Error in `compute_requirements()`:
       ! Cannot compute gradient with respect to `x` and `y`.
-      x They were passed as plain R values and embedded as constants in the traced graph, so they have no graph input to differentiate.
-      i Pass them as an <AnvlArray>, e.g. `nv_array(1, dtype = "f32")`.
+      x They were passed as plain R values
+      i Pass them as an <AnvlArray>.
 
