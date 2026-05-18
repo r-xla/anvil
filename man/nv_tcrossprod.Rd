@@ -28,7 +28,7 @@ Computes \code{lhs \%*\% t(rhs)}. If \code{rhs} is missing, computes \code{lhs \
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
+x <- nv_matrix(1:6, nrow = 2, dtype = "f32")
 nv_tcrossprod(x)
 \dontshow{\}) # examplesIf}
 }

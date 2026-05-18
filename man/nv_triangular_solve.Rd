@@ -63,8 +63,8 @@ Because we don't broadcast, this is not ambiguous (as it would be for NumPy).
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-L <- nv_array(matrix(c(2, 1, 0, 3), nrow = 2), dtype = "f32")
-b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
+L <- nv_matrix(c(2, 1, 0, 3), nrow = 2, dtype = "f32")
+b <- nv_matrix(c(4, 3), nrow = 2, dtype = "f32")
 nv_triangular_solve(L, b)
 \dontshow{\}) # examplesIf}
 }

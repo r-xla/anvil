@@ -66,6 +66,7 @@
 
 * `nv_array()` gained a `byrow` argument that fills the array from an R
   object in row-major order, mirroring `matrix(byrow = TRUE)` (#165).
+* New `nv_matrix(data, nrow, ncol, ...)` which works like R's `matrix()`.
 * New API functions `nv_rbind()` and `nv_cbind()` and corresponding
   `rbind()` / `cbind()` generics.
 * New API function `nv_flatten()` for flattening to 1-D.

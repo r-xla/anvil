@@ -278,8 +278,8 @@ prim_broadcast_in_dim <- new_primitive(
 #' Lowers to [hlo_dot_general()].
 #' @seealso [nv_matmul()], `%*%`
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
-#' y <- nv_array(matrix(1:6, nrow = 3))
+#' x <- nv_matrix(1:6, nrow = 2)
+#' y <- nv_matrix(1:6, nrow = 3)
 #' prim_dot_general(x, y,
 #'   contracting_dims = list(2L, 1L),
 #'   batching_dims = list(integer(0), integer(0))
@@ -322,7 +322,7 @@ prim_dot_general <- new_primitive(
 #' Lowers to [hlo_transpose()].
 #' @seealso [nv_transpose()], [t()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' prim_transpose(x, permutation = c(2L, 1L))
 #' @export
 prim_transpose <- new_primitive(
@@ -475,7 +475,7 @@ prim_concatenate <- new_primitive(
 #' prim_static_slice(x, start_indices = 1L, limit_indices = 10L, strides = 2L)
 #'
 #' # 2-D: extract a submatrix (rows 1-2, columns 2-3)
-#' x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
+#' x <- nv_matrix(1:12, nrow = 3, ncol = 4)
 #' prim_static_slice(x,
 #'   start_indices = c(1L, 2L),
 #'   limit_indices = c(3L, 4L),
@@ -546,7 +546,7 @@ prim_static_slice <- new_primitive(
 #' prim_dynamic_slice(x, start, slice_sizes = 3L)
 #'
 #' # 2-D: extract a 2x2 block from a matrix
-#' x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
+#' x <- nv_matrix(1:12, nrow = 3, ncol = 4)
 #' row_start <- nv_scalar(2L)
 #' col_start <- nv_scalar(1L)
 #' prim_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))
@@ -607,8 +607,8 @@ prim_dynamic_slice <- new_primitive(
 #' prim_dynamic_update_slice(x, update, start)
 #'
 #' # 2-D: write a 2x2 block into a 3x4 matrix
-#' x <- nv_array(matrix(0L, nrow = 3, ncol = 4))
-#' update <- nv_array(matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2))
+#' x <- nv_fill(0L, shape = c(3, 4))
+#' update <- nv_matrix(c(1L, 2L, 3L, 4L), nrow = 2, ncol = 2)
 #' row_start <- nv_scalar(2L)
 #' col_start <- nv_scalar(3L)
 #' prim_dynamic_update_slice(x, update, row_start, col_start)
@@ -669,7 +669,7 @@ make_reduce_op <- function(infer_fn = infer_reduce) {
 #' Lowers to [hlo_reduce()] with [hlo_add()] as the reducer.
 #' @seealso [nv_reduce_sum()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' prim_reduce_sum(x, dims = 1L)
 #' @export
 prim_reduce_sum <- new_primitive("reduce_sum", make_reduce_op(), static = 2:3)
@@ -691,7 +691,7 @@ prim_reduce_sum <- new_primitive("reduce_sum", make_reduce_op(), static = 2:3)
 #' Lowers to [hlo_reduce()] with [hlo_multiply()] as the reducer.
 #' @seealso [nv_reduce_prod()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' prim_reduce_prod(x, dims = 1L)
 #' @export
 prim_reduce_prod <- new_primitive("reduce_prod", make_reduce_op(), static = 2:3)
@@ -713,7 +713,7 @@ prim_reduce_prod <- new_primitive("reduce_prod", make_reduce_op(), static = 2:3)
 #' Lowers to [hlo_reduce()] with [hlo_maximum()] as the reducer.
 #' @seealso [nv_reduce_max()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' prim_reduce_max(x, dims = 1L)
 #' @export
 prim_reduce_max <- new_primitive("reduce_max", make_reduce_op(), static = 2:3)
@@ -735,7 +735,7 @@ prim_reduce_max <- new_primitive("reduce_max", make_reduce_op(), static = 2:3)
 #' Lowers to [hlo_reduce()] with [hlo_minimum()] as the reducer.
 #' @seealso [nv_reduce_min()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' prim_reduce_min(x, dims = 1L)
 #' @export
 prim_reduce_min <- new_primitive("reduce_min", make_reduce_op(), static = 2:3)
@@ -757,7 +757,7 @@ prim_reduce_min <- new_primitive("reduce_min", make_reduce_op(), static = 2:3)
 #' Lowers to [hlo_reduce()] with [hlo_or()] as the reducer.
 #' @seealso [nv_reduce_any()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#' x <- nv_matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2)
 #' prim_reduce_any(x, dims = 1L)
 #' @export
 prim_reduce_any <- new_primitive("reduce_any", make_reduce_op(infer_reduce_boolean), static = 2:3)
@@ -779,7 +779,7 @@ prim_reduce_any <- new_primitive("reduce_any", make_reduce_op(infer_reduce_boole
 #' Lowers to [hlo_reduce()] with [hlo_and()] as the reducer.
 #' @seealso [nv_reduce_all()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#' x <- nv_matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2)
 #' prim_reduce_all(x, dims = 1L)
 #' @export
 prim_reduce_all <- new_primitive("reduce_all", make_reduce_op(infer_reduce_boolean), static = 2:3)
@@ -844,7 +844,7 @@ cum_extreme_op <- function(operand, dim) {
 #' Lowers to [hlo_reduce_window()] with [hlo_add()] as the reducer.
 #' @seealso [nv_cumsum()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' prim_cumsum(x, dim = 1L)
 #' @export
 prim_cumsum <- new_primitive("cumsum", cum_op, static = 2L)
@@ -862,7 +862,7 @@ prim_cumsum <- new_primitive("cumsum", cum_op, static = 2L)
 #' Lowers to [hlo_reduce_window()] with [hlo_multiply()] as the reducer.
 #' @seealso [nv_cumprod()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' prim_cumprod(x, dim = 1L)
 #' @export
 prim_cumprod <- new_primitive("cumprod", cum_op, static = 2L)
@@ -885,7 +885,7 @@ prim_cumprod <- new_primitive("cumprod", cum_op, static = 2L)
 #' Lowers to a variadic [hlo_reduce_window()] over `(values, iota)`.
 #' @seealso [nv_cummax()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+#' x <- nv_matrix(c(3, 1, 4, 1, 5, 9), nrow = 2)
 #' prim_cummax(x, dim = 1L)
 #' @export
 prim_cummax <- new_primitive("cummax", cum_extreme_op, static = 2L)
@@ -908,7 +908,7 @@ prim_cummax <- new_primitive("cummax", cum_extreme_op, static = 2L)
 #' Lowers to a variadic [hlo_reduce_window()] over `(values, iota)`.
 #' @seealso [nv_cummin()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+#' x <- nv_matrix(c(3, 1, 4, 1, 5, 9), nrow = 2)
 #' prim_cummin(x, dim = 1L)
 #' @export
 prim_cummin <- new_primitive("cummin", cum_extreme_op, static = 2L)
@@ -2867,7 +2867,7 @@ prim_rng_bit_generator <- new_primitive(
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Scatter values 10 and 30 into positions 1 and 3 of a zero vector
 #' input <- nv_array(c(0, 0, 0, 0, 0))
-#' indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
+#' indices <- nv_matrix(c(1L, 3L), ncol = 1)
 #' updates <- nv_array(c(10, 30))
 #' prim_scatter(
 #'   input, indices, updates,
@@ -3060,8 +3060,8 @@ prim_scatter <- new_primitive(
 #' @seealso [prim_scatter()], [nv_subset()], [nv_subset_assign()], `[`, `[<-`
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Gather rows 1 and 3 from a 3x3 matrix
-#' operand <- nv_array(matrix(1:9, nrow = 3))
-#' indices <- nv_array(matrix(c(1L, 3L), ncol = 1))
+#' operand <- nv_matrix(1:9, nrow = 3)
+#' indices <- nv_matrix(c(1L, 3L), ncol = 1)
 #' prim_gather(
 #'   operand, indices,
 #'   slice_sizes = c(1L, 3L),
@@ -3169,7 +3169,7 @@ prim_gather <- new_primitive(
 #' @seealso [nv_solve()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Create a positive-definite matrix
-#' x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+#' x <- nv_matrix(c(4, 2, 2, 3), nrow = 2, dtype = "f32")
 #' prim_chol(x, lower = TRUE)
 #' @export
 prim_chol <- new_primitive(
@@ -3228,8 +3228,8 @@ prim_chol <- new_primitive(
 #' @seealso [nv_solve()]
 #' @examplesIf pjrt::plugins_downloaded()
 #' # Solve L %*% x = b where L is lower triangular
-#' L <- nv_array(matrix(c(2, 0, 1, 3), nrow = 2), dtype = "f32")
-#' b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
+#' L <- nv_matrix(c(2, 0, 1, 3), nrow = 2, dtype = "f32")
+#' b <- nv_matrix(c(4, 3), nrow = 2, dtype = "f32")
 #' prim_triangular_solve(L, b,
 #'   left_side = TRUE, lower = TRUE,
 #'   unit_diagonal = FALSE, transpose_a = FALSE
@@ -3344,7 +3344,7 @@ prim_qr <- new_primitive(
 #' in-graph.
 #' @seealso [nv_lu()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#' x <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
 #' prim_lu(x)
 #' @export
 prim_lu <- new_primitive(

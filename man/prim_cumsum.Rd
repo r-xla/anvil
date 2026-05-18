@@ -37,7 +37,7 @@ Lowers to \code{\link[stablehlo:hlo_reduce_window]{stablehlo::hlo_reduce_window(
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(1:6, nrow = 2))
+x <- nv_matrix(1:6, nrow = 2)
 prim_cumsum(x, dim = 1L)
 \dontshow{\}) # examplesIf}
 }

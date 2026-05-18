@@ -123,6 +123,104 @@ test_that("nv_array(byrow = TRUE) errors when data is an AnvlArray", {
   x <- nv_array(1:6, shape = c(2L, 3L))
   expect_error(nv_array(x, byrow = TRUE), "byrow")
 })
+
+test_that("nv_matrix() infers ncol from nrow and data length", {
+  expect_equal(
+    as_array(nv_matrix(1:6, nrow = 2L)),
+    matrix(1:6, nrow = 2L, ncol = 3L)
+  )
+})
+
+test_that("nv_matrix() infers nrow from ncol and data length", {
+  expect_equal(
+    as_array(nv_matrix(1:6, ncol = 3L)),
+    matrix(1:6, nrow = 2L, ncol = 3L)
+  )
+})
+
+test_that("nv_matrix() accepts both nrow and ncol when consistent", {
+  expect_equal(
+    as_array(nv_matrix(1:6, nrow = 2L, ncol = 3L)),
+    matrix(1:6, nrow = 2L, ncol = 3L)
+  )
+})
+
+test_that("nv_matrix() forwards byrow to nv_array", {
+  expect_equal(
+    as_array(nv_matrix(1:6, nrow = 2L, byrow = TRUE)),
+    matrix(1:6, nrow = 2L, ncol = 3L, byrow = TRUE)
+  )
+})
+
+test_that("nv_matrix() forwards dtype and ambiguous to nv_array", {
+  x <- nv_matrix(1:6, nrow = 2L, dtype = "f64", ambiguous = TRUE)
+  expect_equal(dtype(x), as_dtype("f64"))
+  expect_true(ambiguous(x))
+  expect_equal(shape(x), c(2, 3))
+})
+
+test_that("nv_matrix() errors when neither nrow nor ncol is supplied", {
+  expect_error(nv_matrix(1:6), "nrow.*ncol")
+})
+
+test_that("nv_matrix() errors when data length is not divisible by nrow/ncol", {
+  expect_error(nv_matrix(1:7, nrow = 2L), "not a multiple")
+  expect_error(nv_matrix(1:7, ncol = 2L), "not a multiple")
+})
+
+test_that("nv_matrix() errors when nrow * ncol does not match data length", {
+  expect_error(nv_matrix(1:6, nrow = 2L, ncol = 4L), "does not match")
+})
+
+test_that("nv_matrix() handles existing AnvlArray inputs", {
+  x <- nv_array(1:6, shape = c(2L, 3L))
+  expect_equal(as_array(nv_matrix(x, nrow = 2L)), as_array(x))
+  expect_error(nv_matrix(x, nrow = 3L), "Cannot change shape")
+})
+
+test_that("nv_matrix() handles zero-row / zero-column shapes", {
+  x0 <- nv_matrix(integer(0), nrow = 0L)
+  expect_equal(shape(x0), c(0, 0))
+  x1 <- nv_matrix(integer(0), ncol = 3L)
+  expect_equal(shape(x1), c(0, 3))
+})
+
+test_that("nv_matrix() recycles scalar data like base matrix()", {
+  expect_equal(
+    as_array(nv_matrix(1, nrow = 3L, ncol = 3L)),
+    matrix(1, nrow = 3L, ncol = 3L)
+  )
+  expect_equal(
+    as_array(nv_matrix(1L, nrow = 2L, ncol = 4L)),
+    matrix(1L, nrow = 2L, ncol = 4L)
+  )
+  expect_equal(
+    as_array(nv_matrix(TRUE, nrow = 2L, ncol = 2L)),
+    matrix(TRUE, nrow = 2L, ncol = 2L)
+  )
+})
+
+test_that("nv_matrix() with scalar data defaults missing dim to 1", {
+  expect_equal(
+    as_array(nv_matrix(1, nrow = 3L)),
+    matrix(1, nrow = 3L, ncol = 1L)
+  )
+  expect_equal(
+    as_array(nv_matrix(1, ncol = 3L)),
+    matrix(1, nrow = 1L, ncol = 3L)
+  )
+  expect_equal(
+    as_array(nv_matrix(1)),
+    matrix(1)
+  )
+})
+
+test_that("nv_matrix() broadcasts a scalar AnvlArray", {
+  expect_equal(
+    as_array(nv_matrix(nv_scalar(1), nrow = 3L, ncol = 3L)),
+    matrix(1, nrow = 3L, ncol = 3L)
+  )
+})
 test_that("eq_type and neq_type respect ambiguity argument", {
   # With ambiguity = TRUE, different ambiguity means not equal
   expect_true(

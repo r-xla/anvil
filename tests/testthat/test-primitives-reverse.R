@@ -121,8 +121,8 @@ test_that("prim_dot_general: batched matmul gradient w.r.t both inputs", {
         batching_dims = list(integer(), integer())
       )
     }
-    expect_equal(jit(lin_A)(A), jit(l)(A, B))
-    expect_equal(jit(lin_B)(B), jit(l)(A, B))
+    expect_equal(lin_A(A), l(A, B))
+    expect_equal(lin_B(B), l(A, B))
   }
 
   # Case 1: Single contracting dim, no batching dims (existing baseline)
@@ -375,7 +375,7 @@ test_that("prim_eq, prim_ne, prim_gt, prim_ge, prim_lt, prim_le", {
   )
 
   for (cmp in comparators) {
-    out <- as_array(jit(cmp$fun)(a_nv, b_nv))
+    out <- as_array(cmp$fun(a_nv, b_nv))
     expect_identical(out, cmp$expected)
 
     g <- jit(gradient(function(a, b) {
@@ -429,18 +429,18 @@ test_that("prim_pad reverse with interior padding", {
     y <- prim_pad(x, nv_scalar(0, "f64"), c(0L, 0L), c(0L, 0L), c(1L, 1L))
     nv_reduce_sum(y, dims = c(1L, 2L), drop = TRUE)
   }))
-  x3 <- nv_array(matrix(1:4, 2, 2), dtype = "f64")
+  x3 <- nv_matrix(1:4, nrow = 2, ncol = 2, dtype = "f64")
   g3 <- f3(x3)
-  expect_equal(g3[[1L]], nv_array(matrix(1:4, 2, 2), dtype = "f64"))
+  expect_equal(g3[[1L]], nv_matrix(1:4, nrow = 2, ncol = 2, dtype = "f64"))
 
   # Test 2D with different edge padding on each dimension
   f4 <- jit(gradient(function(x) {
     y <- prim_pad(x, nv_scalar(0, "f64"), c(1L, 2L), c(2L, 1L), c(0L, 0L))
     nv_reduce_sum(y, dims = c(1L, 2L), drop = TRUE)
   }))
-  x4 <- nv_array(matrix(1:6, 2, 3), dtype = "f64")
+  x4 <- nv_matrix(1:6, nrow = 2, ncol = 3, dtype = "f64")
   g4 <- f4(x4)
-  expect_equal(g4[[1L]], nv_array(matrix(rep(1, 6), 2, 3), dtype = "f64"))
+  expect_equal(g4[[1L]], nv_matrix(rep(1, 6), nrow = 2, ncol = 3, dtype = "f64"))
 })
 
 test_that("prim_dynamic_slice reverse", {
@@ -988,7 +988,7 @@ test_that("prim_reduce_prod: multi-axis reduction with a zero", {
 })
 
 test_that("prim_reduce_prod: drop = FALSE matches drop = TRUE", {
-  x <- nv_array(matrix(c(2, 3, 0, 4, 5, 6), nrow = 3, byrow = TRUE))
+  x <- nv_matrix(c(2, 3, 0, 4, 5, 6), nrow = 3, byrow = TRUE)
   f_drop <- jit(gradient(function(x) {
     nv_reduce_sum(prim_reduce_prod(x, dims = 2L, drop = TRUE), dims = 1L, drop = TRUE)
   }))

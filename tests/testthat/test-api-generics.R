@@ -1,7 +1,7 @@
 describe("[", {
   # main tests are in test-api-subset.R
   it("extracts single element", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(1:12, dtype = "f32", shape = c(3, 4))
         idx1 <- nv_scalar(1L, dtype = "i32")
@@ -13,7 +13,7 @@ describe("[", {
   })
 
   it("can use variables as indices", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(1:12, dtype = "f32", shape = c(3, 4))
         idx1 <- nv_scalar(2L, dtype = "i32")
@@ -28,7 +28,7 @@ describe("[", {
 
 describe("!", {
   it("negates boolean array", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(TRUE, FALSE, TRUE), dtype = "bool")
         !x
@@ -48,7 +48,7 @@ describe("t", {
 
 describe("trunc", {
   it("rounds toward zero", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1.2, 2.7, -1.5, -0.3, 0))
         trunc(x)
@@ -60,7 +60,7 @@ describe("trunc", {
 
 describe("log2", {
   it("computes base-2 logarithm", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 4, 8))
         log2(x)
@@ -73,7 +73,7 @@ describe("log2", {
 
 describe("log10", {
   it("computes base-10 logarithm", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 10, 100, 1000))
         log10(x)
@@ -86,7 +86,7 @@ describe("log10", {
 
 describe("expm1", {
   it("computes exp(x) - 1", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(0, 0.001, 1))
         expm1(x)
@@ -99,7 +99,7 @@ describe("expm1", {
 
 describe("log1p", {
   it("computes log(1 + x)", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(0, 0.001, 1))
         log1p(x)
@@ -113,7 +113,7 @@ describe("log1p", {
 describe("CHLO Math generics", {
   it("acos / asin / atan dispatch through Math", {
     vals <- c(-0.5, 0, 0.5)
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(vals)
         acos(x)
@@ -121,7 +121,7 @@ describe("CHLO Math generics", {
       nv_array(acos(vals)),
       tolerance = 1e-6
     )
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(vals)
         asin(x)
@@ -129,7 +129,7 @@ describe("CHLO Math generics", {
       nv_array(asin(vals)),
       tolerance = 1e-6
     )
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(vals)
         atan(x)
@@ -140,7 +140,7 @@ describe("CHLO Math generics", {
   })
 
   it("acosh / asinh / atanh dispatch through Math", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 3))
         acosh(x)
@@ -148,7 +148,7 @@ describe("CHLO Math generics", {
       nv_array(acosh(c(1, 2, 3))),
       tolerance = 1e-6
     )
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(-1, 0, 1))
         asinh(x)
@@ -156,7 +156,7 @@ describe("CHLO Math generics", {
       nv_array(asinh(c(-1, 0, 1))),
       tolerance = 1e-6
     )
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(-0.5, 0, 0.5))
         atanh(x)
@@ -168,7 +168,7 @@ describe("CHLO Math generics", {
 
   it("cosh / sinh dispatch through Math", {
     vals <- c(-1, 0, 1)
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(vals)
         cosh(x)
@@ -176,7 +176,7 @@ describe("CHLO Math generics", {
       nv_array(cosh(vals)),
       tolerance = 1e-6
     )
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(vals)
         sinh(x)
@@ -188,7 +188,7 @@ describe("CHLO Math generics", {
 
   it("digamma / lgamma / trigamma dispatch through Math", {
     vals <- c(0.5, 1, 2, 5)
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(vals)
         digamma(x)
@@ -196,7 +196,7 @@ describe("CHLO Math generics", {
       nv_array(digamma(vals)),
       tolerance = 1e-5
     )
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(vals)
         lgamma(x)
@@ -204,7 +204,7 @@ describe("CHLO Math generics", {
       nv_array(lgamma(vals)),
       tolerance = 1e-5
     )
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(vals)
         trigamma(x)
@@ -216,7 +216,7 @@ describe("CHLO Math generics", {
 
   it("nv_polygamma broadcasts a scalar n", {
     vals <- c(0.5, 1, 2, 5)
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(vals)
         nv_polygamma(2, x)
@@ -242,7 +242,7 @@ describe("range", {
 describe("[<-", {
   # main tests are in test-api-subset.R
   it("updates single element", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(1:12, dtype = "f32", shape = c(3, 4))
         idx1 <- nv_scalar(3L, dtype = "i32")
@@ -256,7 +256,7 @@ describe("[<-", {
   })
 
   it("can use variables as indices (NSE)", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(1:12, dtype = "f32", shape = c(3, 4))
         idx1 <- nv_scalar(1L, dtype = "i32")
@@ -302,7 +302,7 @@ describe("ncol", {
 
 describe("dim", {
   it("returns shape", {
-    x <- nv_array(array(1:24, dim = c(2, 3, 4)))
+    x <- nv_array(1:24, shape = c(2, 3, 4))
     expect_equal(dim(x), shape(x))
   })
 })
@@ -372,32 +372,32 @@ describe("as.integer", {
 
 describe("solve", {
   it("solves a x = b for matrix b", {
-    a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
-    b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f64")
+    a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
+    b <- nv_matrix(c(1, 2), nrow = 2, dtype = "f64")
     expect_equal(solve(a, b), nv_solve(a, b))
   })
 
   it("returns the inverse when b is missing", {
-    a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+    a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
     expect_equal(solve(a), nv_inv(a))
   })
 })
 
 describe("qr", {
   it("dispatches to nv_qr", {
-    a <- nv_array(matrix(c(1, 2, 3, 4, 5, 6), nrow = 3), dtype = "f64")
+    a <- nv_matrix(c(1, 2, 3, 4, 5, 6), nrow = 3, dtype = "f64")
     expect_equal(qr(a), nv_qr(a))
   })
 })
 
 describe("chol", {
   it("returns the upper-triangular factor (base R convention)", {
-    a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
+    a <- nv_matrix(c(4, 2, 2, 3), nrow = 2, dtype = "f64")
     expect_equal(as_array(chol(a)), as_array(nv_chol(a)), tolerance = 1e-5)
   })
 
   it("respects lower = TRUE", {
-    a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
+    a <- nv_matrix(c(4, 2, 2, 3), nrow = 2, dtype = "f64")
     expect_equal(
       chol(a, lower = TRUE),
       nv_chol(a, lower = TRUE)
@@ -407,14 +407,14 @@ describe("chol", {
 
 describe("determinant", {
   it("dispatches to nv_determinant (logarithm = TRUE by default)", {
-    a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+    a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
     out <- determinant(a)
     expected <- nv_determinant(a, logarithm = TRUE)
     expect_equal(out, expected)
   })
 
   it("respects logarithm = FALSE", {
-    a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+    a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
     out <- determinant(a, logarithm = FALSE)
     expected <- nv_determinant(a, logarithm = FALSE)
     expect_equal(out, expected)

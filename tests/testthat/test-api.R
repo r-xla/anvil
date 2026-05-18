@@ -2,7 +2,7 @@ test_that("auto-broadcasting higher-dimensional arrays is not supported (it's bu
   x <- nv_array(1:2, shape = c(2, 1))
   y <- nv_array(1:2, shape = c(1, 2))
   expect_error(
-    jit(nv_add)(x, y),
+    nv_add(x, y),
     "must have the same shape"
   )
 })
@@ -24,9 +24,8 @@ test_that("nv_fill rejects non-scalar-R value with a helpful message", {
 })
 
 test_that("broadcasting scalars", {
-  fjit <- jit(nv_add)
   expect_equal(
-    fjit(
+    nv_add(
       nv_scalar(1),
       nv_array(0, shape = c(2, 2))
     ),
@@ -35,14 +34,8 @@ test_that("broadcasting scalars", {
 })
 
 test_that("infix add", {
-  f <- jit(function(x, y) {
-    x + y
-  })
   expect_equal(
-    f(
-      nv_array(1, shape = c(2, 2)),
-      nv_array(0, shape = c(2, 2))
-    ),
+    nv_array(1, shape = c(2, 2)) + nv_array(0, shape = c(2, 2)),
     nv_array(1, shape = c(2, 2))
   )
 })
@@ -54,13 +47,11 @@ test_that("jit constant single return is bare array", {
 })
 
 test_that("Summary group generics", {
-  fsum <- jit(function(x) sum(x))
-  expect_equal(as_array(fsum(nv_array(1:10))), 55)
+  expect_equal(as_array(sum(nv_array(1:10))), 55)
 })
 
 test_that("mean", {
-  fmean <- jit(function(x) mean(x))
-  expect_equal(as_array(fmean(nv_array(1:10, "f32"))), 5.5)
+  expect_equal(as_array(mean(nv_array(1:10, "f32"))), 5.5)
 })
 
 test_that("constants can be lifted to the appropriate level", {
@@ -84,11 +75,8 @@ test_that("wrt non-existent argument", {
 })
 
 test_that("promote to common", {
-  f <- function(x, y) {
-    nv_add(x, y)
-  }
   expect_equal(
-    jit(f)(nv_array(1, dtype = "i32"), nv_array(1.0, dtype = "f32")),
+    nv_add(nv_array(1, dtype = "i32"), nv_array(1.0, dtype = "f32")),
     nv_array(2.0, dtype = "f32")
   )
 })
@@ -168,7 +156,7 @@ describe("nv_rbind", {
   })
 
   it("stacks two 1-D vectors as rows (jit)", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 3))
         y <- nv_array(c(4, 5, 6))
@@ -181,7 +169,7 @@ describe("nv_rbind", {
   it("stacks two matrices vertically", {
     a <- matrix(1:6, nrow = 2)
     b <- matrix(7:12, nrow = 2)
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(a)
         y <- nv_array(b)
@@ -194,7 +182,7 @@ describe("nv_rbind", {
   it("treats 1-D operand as a row when mixed with a matrix", {
     a <- matrix(1:6, nrow = 2)
     v <- c(7, 8, 9)
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(a)
         y <- nv_array(v)
@@ -205,7 +193,7 @@ describe("nv_rbind", {
   })
 
   it("accepts more than two arguments", {
-    expect_jit_equal(
+    expect_equal(
       {
         rbind(nv_array(c(1, 2)), nv_array(c(3, 4)), nv_array(c(5, 6)))
       },
@@ -274,7 +262,7 @@ describe("nv_cbind", {
   })
 
   it("stacks two 1-D vectors as columns (jit)", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 3))
         y <- nv_array(c(4, 5, 6))
@@ -287,7 +275,7 @@ describe("nv_cbind", {
   it("treats 1-D operand as a column when mixed with a matrix", {
     a <- matrix(1:6, nrow = 3)
     v <- c(7, 8, 9)
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(a)
         y <- nv_array(v)
@@ -305,7 +293,7 @@ describe("nv_cbind", {
   it("stacks two matrices horizontally", {
     a <- matrix(1:6, nrow = 3)
     b <- matrix(7:12, nrow = 3)
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(a)
         y <- nv_array(b)
@@ -319,7 +307,7 @@ describe("nv_cbind", {
     a <- matrix(c(1, 2), ncol = 1L)
     b <- matrix(c(3, 4), ncol = 1L)
     c <- matrix(c(5, 6), ncol = 1L)
-    expect_jit_equal(
+    expect_equal(
       cbind(nv_array(a), nv_array(b), nv_array(c)),
       nv_array(cbind(a, b, c))
     )
@@ -327,14 +315,14 @@ describe("nv_cbind", {
 
   it("errors when number of rows mismatch", {
     expect_error(cbind(
-      nv_array(matrix(c(1, 2), ncol = 1L)),
-      nv_array(matrix(c(3, 4, 5), ncol = 1L))
+      nv_matrix(c(1, 2), ncol = 1L),
+      nv_matrix(c(3, 4, 5), ncol = 1L)
     ))
   })
 
   it("nv_cbind matches cbind", {
-    x <- nv_array(matrix(1:3, ncol = 1L))
-    y <- nv_array(matrix(4:6, ncol = 1L))
+    x <- nv_matrix(1:3, ncol = 1L)
+    y <- nv_matrix(4:6, ncol = 1L)
     expect_equal(nv_cbind(x, y), cbind(x, y))
   })
 
@@ -368,14 +356,14 @@ describe("nv_cbind", {
 
 describe("nv_log2", {
   it("computes base-2 logarithm", {
-    expect_jit_equal(
+    expect_equal(
       nv_log2(nv_array(c(1, 2, 4, 8))),
       nv_array(log2(c(1, 2, 4, 8))),
       tolerance = 1e-6
     )
   })
   it("works on scalars", {
-    expect_jit_equal(
+    expect_equal(
       nv_log2(nv_scalar(16)),
       nv_scalar(4),
       tolerance = 1e-6
@@ -385,14 +373,14 @@ describe("nv_log2", {
 
 describe("nv_log10", {
   it("computes base-10 logarithm", {
-    expect_jit_equal(
+    expect_equal(
       nv_log10(nv_array(c(1, 10, 100, 1000))),
       nv_array(log10(c(1, 10, 100, 1000))),
       tolerance = 1e-6
     )
   })
   it("works on scalars", {
-    expect_jit_equal(
+    expect_equal(
       nv_log10(nv_scalar(1000)),
       nv_scalar(3),
       tolerance = 1e-6
@@ -402,13 +390,13 @@ describe("nv_log10", {
 
 describe("nv_is_finite", {
   it("detects finite values", {
-    expect_jit_equal(
+    expect_equal(
       nv_is_finite(nv_array(c(1, NaN, Inf, -Inf, 0))),
       nv_array(c(TRUE, FALSE, FALSE, FALSE, TRUE))
     )
   })
   it("works via is.finite() generic", {
-    expect_jit_equal(
+    expect_equal(
       is.finite(nv_array(c(1, NaN, Inf, -Inf, 0))),
       nv_array(c(TRUE, FALSE, FALSE, FALSE, TRUE))
     )
@@ -417,13 +405,13 @@ describe("nv_is_finite", {
 
 describe("nv_is_nan", {
   it("detects NaN values", {
-    expect_jit_equal(
+    expect_equal(
       nv_is_nan(nv_array(c(1, NaN, Inf, -Inf, 0))),
       nv_array(c(FALSE, TRUE, FALSE, FALSE, FALSE))
     )
   })
   it("works via is.nan() generic", {
-    expect_jit_equal(
+    expect_equal(
       is.nan(nv_array(c(1, NaN, Inf, -Inf, 0))),
       nv_array(c(FALSE, TRUE, FALSE, FALSE, FALSE))
     )
@@ -432,13 +420,13 @@ describe("nv_is_nan", {
 
 describe("nv_is_infinite", {
   it("detects infinite values", {
-    expect_jit_equal(
+    expect_equal(
       nv_is_infinite(nv_array(c(1, NaN, Inf, -Inf, 0))),
       nv_array(c(FALSE, FALSE, TRUE, TRUE, FALSE))
     )
   })
   it("works via is.infinite() generic", {
-    expect_jit_equal(
+    expect_equal(
       is.infinite(nv_array(c(1, NaN, Inf, -Inf, 0))),
       nv_array(c(FALSE, FALSE, TRUE, TRUE, FALSE))
     )
@@ -448,7 +436,7 @@ describe("nv_is_infinite", {
 describe("nv_var", {
   it("computes variance with Bessel's correction", {
     vals <- c(2, 4, 4, 4, 5, 5, 7, 9)
-    expect_jit_equal(
+    expect_equal(
       nv_var(nv_array(vals), dims = 1L),
       nv_scalar(var(vals)),
       tolerance = 1e-5
@@ -457,7 +445,7 @@ describe("nv_var", {
   it("computes population variance with correction = 0", {
     vals <- c(2, 4, 4, 4, 5, 5, 7, 9)
     expected <- mean((vals - mean(vals))^2)
-    expect_jit_equal(
+    expect_equal(
       nv_var(nv_array(vals), dims = 1L, correction = 0L),
       nv_scalar(expected),
       tolerance = 1e-5
@@ -466,7 +454,7 @@ describe("nv_var", {
   it("works along specific dimensions of a matrix", {
     vals <- c(1, 2, 3, 4, 5, 6)
     m <- matrix(vals, nrow = 2)
-    expect_jit_equal(
+    expect_equal(
       nv_var(nv_array(vals, shape = c(2, 3), dtype = "f32"), dims = 2L),
       nv_array(apply(m, 1, var), dtype = "f32"),
       tolerance = 1e-5
@@ -477,7 +465,7 @@ describe("nv_var", {
 describe("nv_sd", {
   it("computes standard deviation", {
     vals <- c(2, 4, 4, 4, 5, 5, 7, 9)
-    expect_jit_equal(
+    expect_equal(
       nv_sd(nv_array(vals), dims = 1L),
       nv_scalar(sd(vals)),
       tolerance = 1e-5
@@ -487,7 +475,7 @@ describe("nv_sd", {
 
 describe("nv_squeeze", {
   it("removes all size-1 dimensions by default", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(1:6, shape = c(1, 6, 1))
         nv_squeeze(x)
@@ -496,7 +484,7 @@ describe("nv_squeeze", {
     )
   })
   it("removes specific dimensions", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(1:6, shape = c(1, 6, 1))
         nv_squeeze(x, dims = 1L)
@@ -514,7 +502,7 @@ describe("nv_squeeze", {
 
 describe("nv_unsqueeze", {
   it("adds dimension at the beginning", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 3))
         nv_unsqueeze(x, dim = 1L)
@@ -523,7 +511,7 @@ describe("nv_unsqueeze", {
     )
   })
   it("adds dimension at the end", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 3))
         nv_unsqueeze(x, dim = 2L)
@@ -533,30 +521,30 @@ describe("nv_unsqueeze", {
   })
   it("adds dimension in the middle", {
     x <- nv_array(1:6, shape = c(2, 3))
-    result <- jit(\() nv_unsqueeze(x, dim = 2L))()
+    result <- nv_unsqueeze(x, dim = 2L)
     expect_equal(shape(result), c(2L, 1L, 3L))
-    roundtrip <- jit(\() nv_squeeze(nv_unsqueeze(x, dim = 2L), dims = 2L))()
+    roundtrip <- nv_squeeze(nv_unsqueeze(x, dim = 2L), dims = 2L)
     expect_equal(roundtrip, x)
   })
 })
 
 describe("nv_seq with steps", {
   it("creates evenly spaced values", {
-    expect_jit_equal(
+    expect_equal(
       nv_seq(0, 1, steps = 5L),
       nv_array(c(0, 0.25, 0.5, 0.75, 1)),
       tolerance = 1e-6
     )
   })
   it("handles single step", {
-    expect_jit_equal(
+    expect_equal(
       nv_seq(3, 7, steps = 1L),
       nv_array(3, shape = 1L),
       tolerance = 1e-6
     )
   })
   it("works with integer-like endpoints", {
-    expect_jit_equal(
+    expect_equal(
       nv_seq(0, 10, steps = 6L),
       nv_array(c(0, 2, 4, 6, 8, 10)),
       tolerance = 1e-6
@@ -566,7 +554,7 @@ describe("nv_seq with steps", {
 
 describe("nv_outer", {
   it("computes outer product", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 3))
         y <- nv_array(c(4, 5))
@@ -577,7 +565,7 @@ describe("nv_outer", {
     )
   })
   it("promotes types", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1L, 2L))
         y <- nv_array(c(1.5, 2.5))
@@ -591,7 +579,7 @@ describe("nv_outer", {
 
 describe("nv_extract_diag", {
   it("extracts diagonal from square matrix", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 3, 4, 5, 6, 7, 8, 9), shape = c(3, 3), dtype = "f32")
         nv_extract_diag(x)
@@ -600,7 +588,7 @@ describe("nv_extract_diag", {
     )
   })
   it("extracts diagonal from rectangular matrix", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(1:6, shape = c(2, 3), dtype = "f32")
         nv_extract_diag(x)
@@ -612,14 +600,14 @@ describe("nv_extract_diag", {
 
 describe("nv_trace", {
   it("computes trace of a matrix", {
-    expect_jit_equal(
+    expect_equal(
       nv_trace(nv_array(c(1, 0, 0, 0, 2, 0, 0, 0, 3), shape = c(3, 3))),
       nv_scalar(6),
       tolerance = 1e-6
     )
   })
   it("computes trace of identity", {
-    expect_jit_equal(
+    expect_equal(
       nv_trace(nv_eye(4L)),
       nv_scalar(4),
       tolerance = 1e-6
@@ -692,7 +680,7 @@ describe("nv_triu", {
 describe("nv_tril with quickr backend", {
   it("works when operand is quickr", {
     skip_if_no_quickr()
-    x <- nv_array(matrix(1, 3, 3), backend = "quickr")
+    x <- nv_matrix(1, nrow = 3, ncol = 3, backend = "quickr")
     result <- nv_tril(x)
     expected <- matrix(c(1, 1, 1, 0, 1, 1, 0, 0, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
@@ -702,7 +690,7 @@ describe("nv_tril with quickr backend", {
 describe("nv_triu with quickr backend", {
   it("works when operand is quickr", {
     skip_if_no_quickr()
-    x <- nv_array(matrix(1, 3, 3), backend = "quickr")
+    x <- nv_matrix(1, nrow = 3, ncol = 3, backend = "quickr")
     result <- nv_triu(x)
     expected <- matrix(c(1, 0, 0, 1, 1, 0, 1, 1, 1), nrow = 3, ncol = 3)
     expect_equal(as_array(result), expected, tolerance = 1e-6)
@@ -711,7 +699,7 @@ describe("nv_triu with quickr backend", {
 
 describe("nv_crossprod", {
   it("computes t(x) %*% y", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 3, 4, 5, 6), shape = c(3, 2), dtype = "f32")
         y <- nv_array(c(7, 8, 9, 10, 11, 12), shape = c(3, 2), dtype = "f32")
@@ -722,7 +710,7 @@ describe("nv_crossprod", {
     )
   })
   it("computes t(x) %*% x when y is NULL", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 3, 4, 5, 6), shape = c(3, 2), dtype = "f32")
         nv_crossprod(x)
@@ -732,7 +720,7 @@ describe("nv_crossprod", {
     )
   })
   it("works via S3 generic", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 3, 4, 5, 6), shape = c(3, 2), dtype = "f32")
         crossprod(x)
@@ -745,7 +733,7 @@ describe("nv_crossprod", {
 
 describe("nv_tcrossprod", {
   it("computes x %*% t(y)", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 3, 4, 5, 6), shape = c(2, 3), dtype = "f32")
         y <- nv_array(c(7, 8, 9, 10, 11, 12), shape = c(2, 3), dtype = "f32")
@@ -756,7 +744,7 @@ describe("nv_tcrossprod", {
     )
   })
   it("computes x %*% t(x) when y is NULL", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 3, 4, 5, 6), shape = c(2, 3), dtype = "f32")
         nv_tcrossprod(x)
@@ -766,7 +754,7 @@ describe("nv_tcrossprod", {
     )
   })
   it("works via S3 generic", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(1, 2, 3, 4, 5, 6), shape = c(2, 3), dtype = "f32")
         tcrossprod(x)
@@ -779,7 +767,7 @@ describe("nv_tcrossprod", {
 
 describe("nv_fill_like", {
   it("inherits shape, dtype, ambiguous, device from like", {
-    like <- nv_array(matrix(1:6, nrow = 2), dtype = "i16")
+    like <- nv_matrix(1:6, nrow = 2, dtype = "i16")
     out <- nv_fill_like(like, 0L)
     expect_equal(shape(out), shape(like))
     expect_equal(dtype(out), dtype(like))
@@ -788,7 +776,7 @@ describe("nv_fill_like", {
   })
 
   it("allows overriding the inherited attributes", {
-    like <- nv_array(matrix(1:6, nrow = 2), dtype = "i16")
+    like <- nv_matrix(1:6, nrow = 2, dtype = "i16")
     out <- nv_fill_like(like, 1, shape = 5L, dtype = "f32")
     expect_equal(shape(out), 5L)
     expect_equal(dtype(out), as_dtype("f32"))
@@ -797,7 +785,7 @@ describe("nv_fill_like", {
 
 describe("nv_iota_like", {
   it("inherits shape, dtype, ambiguous, device from like", {
-    like <- nv_array(matrix(0L, nrow = 2, ncol = 3), dtype = "i16")
+    like <- nv_fill(0L, shape = c(2, 3), dtype = "i16")
     out <- nv_iota_like(like, dim = 1L)
     expect_equal(shape(out), shape(like))
     expect_equal(dtype(out), dtype(like))
@@ -805,7 +793,7 @@ describe("nv_iota_like", {
   })
 
   it("allows overriding the inherited attributes", {
-    like <- nv_array(matrix(0L, nrow = 2, ncol = 3), dtype = "i16")
+    like <- nv_fill(0L, shape = c(2, 3), dtype = "i16")
     out <- nv_iota_like(like, dim = 1L, shape = 4L, dtype = "i32")
     expect_equal(shape(out), 4L)
     expect_equal(dtype(out), as_dtype("i32"))
@@ -831,14 +819,14 @@ describe("nv_seq_like", {
 
 describe("nv_select", {
   it("selects a row of a matrix and drops the dim", {
-    m <- nv_array(matrix(1:6, nrow = 2))
-    expect_jit_equal(nv_select(m, dim = 1L, index = 1L), nv_array(c(1L, 3L, 5L)))
-    expect_jit_equal(nv_select(m, dim = 1L, index = 2L), nv_array(c(2L, 4L, 6L)))
+    m <- nv_matrix(1:6, nrow = 2)
+    expect_equal(nv_select(m, dim = 1L, index = 1L), nv_array(c(1L, 3L, 5L)))
+    expect_equal(nv_select(m, dim = 1L, index = 2L), nv_array(c(2L, 4L, 6L)))
   })
 
   it("selects a column of a matrix and drops the dim", {
-    m <- nv_array(matrix(1:6, nrow = 2))
-    expect_jit_equal(nv_select(m, dim = 2L, index = 2L), nv_array(c(3L, 4L)))
+    m <- nv_matrix(1:6, nrow = 2)
+    expect_equal(nv_select(m, dim = 2L, index = 2L), nv_array(c(3L, 4L)))
   })
 
   it("array(i) keeps the dim with size 1", {
@@ -848,8 +836,8 @@ describe("nv_select", {
   })
 
   it("works on a 3D array", {
-    arr <- nv_array(array(1:24, dim = c(2, 3, 4)))
-    out <- jit(function(x) nv_select(x, dim = 3L, index = 2L))(arr)
+    arr <- nv_array(1:24, shape = c(2, 3, 4))
+    out <- nv_select(arr, dim = 3L, index = 2L)
     expect_equal(shape(out), c(2L, 3L))
     expect_equal(as_array(out), array(7:12, dim = c(2, 3)))
   })
@@ -869,23 +857,23 @@ describe("nv_select", {
 
 describe("nv_sort", {
   it("defaults dim to the last dimension", {
-    expect_jit_equal(
+    expect_equal(
       nv_sort(nv_array(c(3, 1, 4, 1, 5))),
       nv_array(c(1, 1, 3, 4, 5))
     )
   })
 
   it("sorts decreasing", {
-    expect_jit_equal(
+    expect_equal(
       nv_sort(nv_array(c(3, 1, 4, 1, 5)), decreasing = TRUE),
       nv_array(c(5, 4, 3, 1, 1))
     )
   })
 
   it("defaults to last dim for matrices (rows)", {
-    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
-    expected <- nv_array(matrix(c(1, 3, 5, 0, 2, 4), nrow = 2, byrow = TRUE))
-    expect_jit_equal(nv_sort(m), expected)
+    m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
+    expected <- nv_matrix(c(1, 3, 5, 0, 2, 4), nrow = 2, byrow = TRUE)
+    expect_equal(nv_sort(m), expected)
   })
 
   it("errors on a 0-dimensional input", {
@@ -894,23 +882,23 @@ describe("nv_sort", {
 
   it("dispatches via the sort() generic", {
     x <- nv_array(c(3, 1, 4, 1, 5))
-    expect_equal(as.vector(as_array(sort(x))), c(1, 1, 3, 4, 5))
-    expect_equal(as.vector(as_array(sort(x, decreasing = TRUE))), c(5, 4, 3, 1, 1))
-    expect_equal(as.vector(as_array(jit(function(x) sort(x))(x))), c(1, 1, 3, 4, 5))
+    expect_equal(as.vector(sort(x)), c(1, 1, 3, 4, 5))
+    expect_equal(as.vector(sort(x, decreasing = TRUE)), c(5, 4, 3, 1, 1))
+    expect_equal(as.vector(jit(function(x) sort(x))(x)), c(1, 1, 3, 4, 5))
   })
 })
 
 describe("nv_argsort", {
   it("returns indices that sort the array", {
     x <- nv_array(c(3, 1, 4, 1, 5))
-    perm <- as.vector(as_array(nv_argsort(x)))
-    expect_equal(as.vector(as_array(x))[perm], c(1, 1, 3, 4, 5))
+    perm <- as.vector(nv_argsort(x))
+    expect_equal(as.vector(x)[perm], c(1, 1, 3, 4, 5))
   })
 
   it("supports decreasing", {
     x <- nv_array(c(3, 1, 4, 1, 5))
-    perm <- as.vector(as_array(nv_argsort(x, decreasing = TRUE)))
-    expect_equal(as.vector(as_array(x))[perm], c(5, 4, 3, 1, 1))
+    perm <- as.vector(nv_argsort(x, decreasing = TRUE))
+    expect_equal(as.vector(x)[perm], c(5, 4, 3, 1, 1))
   })
 
   it("returns i32 dtype", {
@@ -920,21 +908,21 @@ describe("nv_argsort", {
   it("works inside jit", {
     f <- jit(function(x) nv_argsort(x))
     x <- nv_array(c(3, 1, 4, 1, 5))
-    perm <- as.vector(as_array(f(x)))
-    expect_equal(as.vector(as_array(x))[perm], c(1, 1, 3, 4, 5))
+    perm <- as.vector(f(x))
+    expect_equal(as.vector(x)[perm], c(1, 1, 3, 4, 5))
   })
 })
 
 describe("nv_top_k", {
   it("returns the k largest values along the last dim", {
-    expect_jit_equal(
+    expect_equal(
       nv_top_k(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)), k = 3L),
       nv_array(c(9, 6, 5))
     )
   })
 
   it("operates per-row on a matrix when dim is the last dim", {
-    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
     out <- jit(nv_top_k, static = "k")(m, k = 2L)
     expect_equal(shape(out), c(2L, 2L))
     expect_equal(as_array(out), matrix(c(5, 3, 4, 2), nrow = 2, byrow = TRUE))
@@ -947,29 +935,29 @@ describe("nv_top_k", {
 
 describe("nv_median", {
   it("returns the middle element for odd length", {
-    expect_jit_equal(
+    expect_equal(
       nv_median(nv_array(c(3, 1, 4, 1, 5))),
       nv_scalar(3)
     )
   })
 
   it("averages the two middle elements for even length", {
-    expect_jit_equal(
+    expect_equal(
       nv_median(nv_array(c(1, 2, 3, 4))),
       nv_scalar(2.5)
     )
   })
 
   it("operates row-wise by default on a matrix", {
-    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
-    out <- jit(nv_median)(m)
-    expect_equal(as.vector(as_array(out)), c(3, 2))
+    m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
+    out <- nv_median(m)
+    expect_equal(as.vector(out), c(3, 2))
   })
 
   it("dispatches via the median() generic", {
     expect_equal(as_array(median(nv_array(c(1, 2, 3, 4)))), as_array(nv_scalar(2.5)))
     expect_equal(
-      as_array(jit(function(x) median(x))(nv_array(c(1, 2, 3, 4, 5)))),
+      as_array(median(nv_array(c(1, 2, 3, 4, 5)))),
       as_array(nv_scalar(3))
     )
   })
@@ -1007,7 +995,7 @@ describe("nv_quantile", {
     x <- nv_array(xr)
     out <- nv_quantile(x, array(c(0.25, 0.5, 0.75)))
     expect_equal(shape(out), 3L)
-    expect_equal(as.vector(as_array(out)), unname(quantile(xr, c(0.25, 0.5, 0.75))))
+    expect_equal(as.vector(out), unname(quantile(xr, c(0.25, 0.5, 0.75))))
   })
 
   it("vector probs work for >1-D inputs (frac broadcast)", {
@@ -1062,7 +1050,7 @@ describe("nv_quantile", {
     m_raw <- matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
     m <- nv_array(m_raw)
     out <- nv_quantile(m, 0.5, dim = 2L)
-    expect_equal(as.vector(as_array(out)), c(3, 2))
+    expect_equal(as.vector(out), c(3, 2))
   })
 
   it("rejects probs outside [0, 1]", {
@@ -1089,7 +1077,7 @@ describe("mean()", {
 
 describe("nv_argmax / nv_argmin", {
   it("default dim is the last dimension", {
-    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
     expect_equal(nv_argmax(m), prim_argmax(m, dim = 2L))
     expect_equal(nv_argmin(m), prim_argmin(m, dim = 2L))
   })
@@ -1103,10 +1091,10 @@ describe("cross-device eager (check_eager)", {
   vec_i2 <- nv_array(c(3L, 2L, 1L))
   vec_b <- nv_array(c(TRUE, FALSE, TRUE))
   vec_b2 <- nv_array(c(FALSE, TRUE, TRUE))
-  mat_2x3 <- nv_array(matrix(1:6, nrow = 2))
-  mat_3x3 <- nv_array(matrix(c(4, 2, 1, 2, 5, 3, 1, 3, 6), nrow = 3), dtype = "f32")
-  sym_pd <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
-  rhs_mat <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f32")
+  mat_2x3 <- nv_matrix(1:6, nrow = 2)
+  mat_3x3 <- nv_matrix(c(4, 2, 1, 2, 5, 3, 1, 3, 6), nrow = 3, dtype = "f32")
+  sym_pd <- nv_matrix(c(4, 2, 2, 3), nrow = 2, dtype = "f32")
+  rhs_mat <- nv_matrix(c(1, 2), nrow = 2, dtype = "f32")
 
   it("binary arithmetic ops", {
     check_eager(nv_add, vec_f, vec_f2)
@@ -1183,7 +1171,7 @@ describe("cross-device eager (check_eager)", {
   })
 
   it("broadcasting / shape-returning helpers", {
-    check_eager(nv_broadcast_arrays, vec_f, nv_array(matrix(1:9, 3, 3)))
+    check_eager(nv_broadcast_arrays, vec_f, nv_matrix(1:9, nrow = 3, ncol = 3))
     check_eager(function(x) nv_broadcast_to(x, shape = c(2, 3)), vec_f)
     check_eager(function(x) nv_broadcast_scalars(x, 1), vec_f)
     check_eager(function(...) nv_concatenate(..., dimension = 1L), vec_f, vec_f2)
@@ -1201,12 +1189,12 @@ describe("cross-device eager (check_eager)", {
 
   it("reductions", {
     check_eager(function(x) nv_reduce_sum(x, dims = 1L), mat_2x3)
-    check_eager(function(x) nv_mean(x, dims = 1L), nv_array(matrix(1:6, 2), dtype = "f32"))
+    check_eager(function(x) nv_mean(x, dims = 1L), nv_matrix(1:6, nrow = 2, dtype = "f32"))
     check_eager(function(x) nv_reduce_prod(x, dims = 1L), mat_2x3)
     check_eager(function(x) nv_reduce_max(x, dims = 1L), mat_2x3)
     check_eager(function(x) nv_reduce_min(x, dims = 1L), mat_2x3)
-    check_eager(function(x) nv_reduce_any(x, dims = 1L), nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), 2)))
-    check_eager(function(x) nv_reduce_all(x, dims = 1L), nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), 2)))
+    check_eager(function(x) nv_reduce_any(x, dims = 1L), nv_matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+    check_eager(function(x) nv_reduce_all(x, dims = 1L), nv_matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
     check_eager(function(x) nv_var(x, dims = 1L), nv_array(c(1, 2, 3, 4, 5), dtype = "f32"))
     check_eager(function(x) nv_sd(x, dims = 1L), nv_array(c(1, 2, 3, 4, 5), dtype = "f32"))
   })
@@ -1226,18 +1214,18 @@ describe("cross-device eager (check_eager)", {
   })
 
   it("linear algebra", {
-    a <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
-    b <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
-    sq <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
-    rect <- nv_array(matrix(c(1, 2, 3, 4, 5, 6), nrow = 3), dtype = "f64")
-    sym <- nv_array(matrix(c(2, 1, 1, 2), nrow = 2), dtype = "f64")
-    L <- nv_array(matrix(c(2, 1, 0, 3), nrow = 2), dtype = "f32")
-    rhs <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
+    a <- nv_matrix(1:6, nrow = 2, dtype = "f32")
+    b <- nv_matrix(1:6, nrow = 3, dtype = "f32")
+    sq <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
+    rect <- nv_matrix(c(1, 2, 3, 4, 5, 6), nrow = 3, dtype = "f64")
+    sym <- nv_matrix(c(2, 1, 1, 2), nrow = 2, dtype = "f64")
+    L <- nv_matrix(c(2, 1, 0, 3), nrow = 2, dtype = "f32")
+    rhs <- nv_matrix(c(4, 3), nrow = 2, dtype = "f32")
     check_eager(nv_matmul, a, b)
     check_eager(nv_crossprod, a)
     check_eager(nv_tcrossprod, a)
     check_eager(nv_chol, sym_pd)
-    check_eager(nv_solve, sq, nv_array(matrix(c(1, 2), nrow = 2), dtype = "f64"))
+    check_eager(nv_solve, sq, nv_matrix(c(1, 2), nrow = 2, dtype = "f64"))
     check_eager(nv_solve, sq, nv_array(c(1, 2), dtype = "f64"))
     check_eager(nv_triangular_solve, L, rhs)
     check_eager(nv_qr, rect)
@@ -1277,6 +1265,37 @@ describe("cross-device eager (check_eager)", {
     check_eager(function(x) nv_quantile(x, array(c(0.25, 0.75))), sortable)
     check_eager(nv_argmax, sortable)
     check_eager(nv_argmin, sortable)
+  })
+})
+
+# Regression for r-xla/anvl#343: R literals must adopt the device of their
+# AnvlArray siblings rather than being placed on the default device.
+describe("literals adopt device of array siblings", {
+  dev1 <- nv_device("cpu:1", "xla")
+
+  it("nv_ifelse with literal branches", {
+    pred <- nv_array(c(TRUE, FALSE), device = dev1)
+    out <- nv_ifelse(pred, 1, 2)
+    expect_true(eq_device(device(out), dev1))
+  })
+
+  it("nv_ifelse with literal pred", {
+    tv <- nv_array(c(1, 2), device = dev1)
+    fv <- nv_array(c(3, 4), device = dev1)
+    out <- nv_ifelse(arr(TRUE, FALSE), tv, fv)
+    expect_true(eq_device(device(out), dev1))
+  })
+
+  it("nv_rbind with literal", {
+    x <- nv_array(c(1, 2), device = dev1)
+    out <- nv_rbind(x, arr(3, 4))
+    expect_true(eq_device(device(out), dev1))
+  })
+
+  it("nv_cbind with literal", {
+    x <- nv_array(c(1, 2), device = dev1)
+    out <- nv_cbind(x, arr(3, 4))
+    expect_true(eq_device(device(out), dev1))
   })
 })
 
@@ -1402,7 +1421,7 @@ describe("nv_det", {
   })
 
   it("returns 1 for the empty 0x0 matrix", {
-    empty <- nv_array(matrix(numeric(0), 0, 0), dtype = "f64")
+    empty <- nv_matrix(numeric(0), nrow = 0, ncol = 0, dtype = "f64")
     expect_equal(as_array(nv_det(empty)), 1)
   })
 })
@@ -1423,7 +1442,7 @@ describe("nv_determinant", {
   })
 
   it("handles the empty 0x0 matrix (det = 1)", {
-    empty <- nv_array(matrix(numeric(0), 0, 0), dtype = "f64")
+    empty <- nv_matrix(numeric(0), nrow = 0, ncol = 0, dtype = "f64")
     out_log <- nv_determinant(empty, logarithm = TRUE)
     expect_equal(as_array(out_log$modulus), 0)
     expect_equal(as_array(out_log$sign), 1)
@@ -1444,7 +1463,7 @@ describe("nv_inv", {
   })
 
   it("returns the empty matrix for a 0x0 input", {
-    empty <- nv_array(matrix(numeric(0), 0, 0), dtype = "f64")
+    empty <- nv_matrix(numeric(0), nrow = 0, ncol = 0, dtype = "f64")
     out <- nv_inv(empty)
     expect_equal(shape(out), c(0L, 0L))
   })

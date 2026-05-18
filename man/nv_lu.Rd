@@ -33,7 +33,7 @@ Use \code{\link[=prim_lu]{prim_lu()}} to get them in packed \code{LU} form.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+x <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
 nv_lu(x)
 \dontshow{\}) # examplesIf}
 }

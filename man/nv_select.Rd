@@ -27,7 +27,7 @@ programatically.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-m <- nv_array(matrix(1:6, nrow = 2))
+m <- nv_matrix(1:6, nrow = 2)
 nv_select(m, dim = 2L, index = 2L)
 nv_select(m, dim = 1L, index = 1L)
 nv_select(m, dim = 2L, index = array(c(1L, 3L)))

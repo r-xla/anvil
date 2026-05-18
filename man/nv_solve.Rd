@@ -43,8 +43,8 @@ non-singular.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
-b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f64")
+a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
+b <- nv_matrix(c(1, 2), nrow = 2, dtype = "f64")
 nv_solve(a, b)
 \dontshow{\}) # examplesIf}
 }

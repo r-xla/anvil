@@ -156,7 +156,7 @@ glm_fit <- glm(y ~ X, family = binomial)
 Now let's compare the coefficients:
 
 ```{r, echo = FALSE}
-anvl_coef <- c(as_array(result$alpha), as.vector(as_array(result$beta)))
+anvl_coef <- c(as_array(result$alpha), as.vector(result$beta))
 glm_coef <- coef(glm_fit)
 
 # Clean up parameter names (remove "X" prefix from glm output)

@@ -45,7 +45,7 @@ extra arguments (e.g. \code{interpolation}) are forwarded via \code{...}.
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 nv_median(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
 median(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
-nv_median(nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)),
+nv_median(nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE),
   dim = 2L
 )
 # forwards through the S3 generic via `...`

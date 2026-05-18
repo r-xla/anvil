@@ -95,10 +95,10 @@ test_that("quickr pipeline matches PJRT: core math + comparisons + reductions", 
   }
 
   templates <- list(
-    x_f64 = nv_array(array(0, dim = c(2L, 3L)), dtype = "f64", shape = c(2L, 3L)),
-    y_f64 = nv_array(array(0, dim = c(2L, 3L)), dtype = "f64", shape = c(2L, 3L)),
-    x_i32 = nv_array(array(0L, dim = c(2L, 3L)), dtype = "i32", shape = c(2L, 3L)),
-    y_i32 = nv_array(array(0L, dim = c(2L, 3L)), dtype = "i32", shape = c(2L, 3L)),
+    x_f64 = nv_matrix(0, nrow = 2L, ncol = 3L, dtype = "f64"),
+    y_f64 = nv_matrix(0, nrow = 2L, ncol = 3L, dtype = "f64"),
+    x_i32 = nv_matrix(0L, nrow = 2L, ncol = 3L, dtype = "i32"),
+    y_i32 = nv_matrix(0L, nrow = 2L, ncol = 3L, dtype = "i32"),
     p = nv_scalar(FALSE, dtype = "pred"),
     q = nv_scalar(FALSE, dtype = "pred")
   )
@@ -140,8 +140,8 @@ test_that("quickr pipeline matches PJRT: i32 divide truncates toward zero", {
   graph <- trace_fn(
     divide_i32,
     list(
-      x = nv_array(array(0L, dim = c(2L, 2L)), dtype = "i32", shape = c(2L, 2L)),
-      y = nv_array(array(1L, dim = c(2L, 2L)), dtype = "i32", shape = c(2L, 2L))
+      x = nv_matrix(0L, nrow = 2L, ncol = 2L, dtype = "i32"),
+      y = nv_matrix(1L, nrow = 2L, ncol = 2L, dtype = "i32")
     )
   )
 
@@ -167,7 +167,7 @@ test_that("quickr pipeline matches PJRT: reshape unboxes singleton arrays to sca
 
   graph <- trace_fn(
     reshape_to_scalar,
-    list(x = nv_array(matrix(0.0, nrow = 1L, ncol = 1L), dtype = "f64", shape = c(1L, 1L)))
+    list(x = nv_fill(0.0, shape = c(1L, 1L), dtype = "f64"))
   )
 
   x <- matrix(2.5, nrow = 1L, ncol = 1L)
@@ -219,11 +219,11 @@ test_that("quickr pipeline matches PJRT: select preserves array semantics in pla
     select_cases,
     list(
       pred_scalar = nv_scalar(FALSE, dtype = "pred"),
-      x = nv_array(array(0L, dim = 3L), dtype = "i32", shape = 3L),
-      y = nv_array(array(0L, dim = 3L), dtype = "i32", shape = 3L),
-      pred_empty = nv_array(array(FALSE, dim = 0L), dtype = "pred", shape = 0L),
-      x_empty = nv_array(array(0L, dim = 0L), dtype = "i32", shape = 0L),
-      y_empty = nv_array(array(0L, dim = 0L), dtype = "i32", shape = 0L)
+      x = nv_array(rep(0L, 3L), shape = 3L, dtype = "i32"),
+      y = nv_array(rep(0L, 3L), shape = 3L, dtype = "i32"),
+      pred_empty = nv_array(rep(FALSE, 0L), shape = 0L, dtype = "pred"),
+      x_empty = nv_array(rep(0L, 0L), shape = 0L, dtype = "i32"),
+      y_empty = nv_array(rep(0L, 0L), shape = 0L, dtype = "i32")
     )
   )
 
@@ -405,7 +405,7 @@ test_that("quickr pipeline matches PJRT: pad supports negative edge padding crop
 
   graph <- trace_fn(
     pad_crop,
-    list(x = nv_array(matrix(0L, nrow = 2L, ncol = 2L), dtype = "i32", shape = c(2L, 2L)))
+    list(x = nv_fill(0L, shape = c(2L, 2L), dtype = "i32"))
   )
 
   x <- matrix(c(1L, 2L, 3L, 4L), nrow = 2L, byrow = TRUE)
@@ -448,7 +448,7 @@ test_that("quickr pipeline matches PJRT: i32 reduce_prod preserves dtype in fast
     function(x2) {
       nv_reduce_prod(x2, dims = c(1L, 2L), drop = TRUE)
     },
-    list(x2 = nv_array(matrix(0L, nrow = 2L, ncol = 2L), dtype = "i32", shape = c(2L, 2L))),
+    list(x2 = nv_fill(0L, shape = c(2L, 2L), dtype = "i32")),
     list(x2 = matrix(c(2L, 3L, 4L, 5L), nrow = 2L, byrow = TRUE)),
     120L
   )
@@ -457,7 +457,7 @@ test_that("quickr pipeline matches PJRT: i32 reduce_prod preserves dtype in fast
     function(x3) {
       nv_reduce_prod(x3, dims = 1:3, drop = FALSE)
     },
-    list(x3 = nv_array(array(0L, dim = c(1L, 2L, 2L)), dtype = "i32", shape = c(1L, 2L, 2L))),
+    list(x3 = nv_array(rep(0L, prod(c(1L, 2L, 2L))), shape = c(1L, 2L, 2L), dtype = "i32")),
     list(x3 = array(c(1L, 2L, 3L, 4L), dim = c(1L, 2L, 2L))),
     array(24L, dim = c(1L, 1L, 1L))
   )
@@ -473,8 +473,8 @@ test_that("quickr pipeline matches PJRT: i32 power keeps integer semantics", {
   graph <- trace_fn(
     pow_i32,
     list(
-      x = nv_array(matrix(0L, nrow = 2L, ncol = 2L), dtype = "i32", shape = c(2L, 2L)),
-      y = nv_array(matrix(0L, nrow = 2L, ncol = 2L), dtype = "i32", shape = c(2L, 2L))
+      x = nv_fill(0L, shape = c(2L, 2L), dtype = "i32"),
+      y = nv_fill(0L, shape = c(2L, 2L), dtype = "i32")
     )
   )
 
@@ -568,13 +568,13 @@ test_that("quickr pipeline matches PJRT: fill/iota/reverse/concatenate/convert/b
 
   templates <- list(
     s = nv_scalar(0.0, dtype = "f64"),
-    v1 = nv_array(array(0L, dim = 3L), dtype = "i32", shape = 3L),
-    v2 = nv_array(array(0L, dim = 2L), dtype = "i32", shape = 2L),
-    x_i32 = nv_array(array(0L, dim = c(2L, 3L)), dtype = "i32", shape = c(2L, 3L)),
-    x21_i32 = nv_array(array(0L, dim = c(2L, 1L)), dtype = "i32", shape = c(2L, 1L)),
-    x13_i32 = nv_array(array(0L, dim = c(1L, 3L)), dtype = "i32", shape = c(1L, 3L)),
-    x3 = nv_array(array(0L, dim = c(2L, 2L, 3L)), dtype = "i32", shape = c(2L, 2L, 3L)),
-    x_pred = nv_array(array(FALSE, dim = c(2L, 3L)), dtype = "pred", shape = c(2L, 3L))
+    v1 = nv_array(rep(0L, 3L), shape = 3L, dtype = "i32"),
+    v2 = nv_array(rep(0L, 2L), shape = 2L, dtype = "i32"),
+    x_i32 = nv_matrix(0L, nrow = 2L, ncol = 3L, dtype = "i32"),
+    x21_i32 = nv_matrix(0L, nrow = 2L, ncol = 1L, dtype = "i32"),
+    x13_i32 = nv_matrix(0L, nrow = 1L, ncol = 3L, dtype = "i32"),
+    x3 = nv_array(rep(0L, prod(c(2L, 2L, 3L))), shape = c(2L, 2L, 3L), dtype = "i32"),
+    x_pred = nv_matrix(FALSE, nrow = 2L, ncol = 3L, dtype = "pred")
   )
 
   run <- list(
@@ -609,7 +609,7 @@ test_that("quickr pipeline matches PJRT: broadcast + iota slice assignments comp
     bx + nv_convert(ii, dtype = "f64")
   }
 
-  templates <- list(x21 = nv_array(array(0, dim = c(b, 1L, m)), dtype = "f64", shape = c(b, 1L, m)))
+  templates <- list(x21 = nv_array(rep(0, prod(c(b, 1L, m))), shape = c(b, 1L, m), dtype = "f64"))
 
   run <- list(
     args = list(x21 = array(rnorm(b * m), dim = c(b, 1L, m))),
@@ -651,9 +651,9 @@ test_that("quickr pipeline matches PJRT: zero-length dims (reverse/concatenate/b
   graph <- trace_fn(
     zero_dim_ops,
     list(
-      X = nv_array(array(0L, dim = c(2L, 3L)), dtype = "i32", shape = c(2L, 3L)),
-      empty_cols = nv_array(array(0L, dim = c(2L, 0L)), dtype = "i32", shape = c(2L, 0L)),
-      empty_rows = nv_array(array(0L, dim = c(0L, 3L)), dtype = "i32", shape = c(0L, 3L))
+      X = nv_matrix(0L, nrow = 2L, ncol = 3L, dtype = "i32"),
+      empty_cols = nv_matrix(0L, nrow = 2L, ncol = 0L, dtype = "i32"),
+      empty_rows = nv_matrix(0L, nrow = 0L, ncol = 3L, dtype = "i32")
     )
   )
 
@@ -690,9 +690,9 @@ test_that("quickr pipeline matches PJRT: zero-length dims for numeric sum/prod r
   graph <- trace_fn(
     reduce_empty_numeric,
     list(
-      v_empty = nv_array(array(0L, dim = 0L), dtype = "i32", shape = 0L),
-      empty_cols = nv_array(array(0L, dim = c(2L, 0L)), dtype = "i32", shape = c(2L, 0L)),
-      empty_rows = nv_array(array(0L, dim = c(0L, 3L)), dtype = "i32", shape = c(0L, 3L))
+      v_empty = nv_array(rep(0L, 0L), shape = 0L, dtype = "i32"),
+      empty_cols = nv_matrix(0L, nrow = 2L, ncol = 0L, dtype = "i32"),
+      empty_rows = nv_matrix(0L, nrow = 0L, ncol = 3L, dtype = "i32")
     )
   )
 
@@ -752,15 +752,15 @@ test_that("quickr pipeline matches PJRT: reduction branch coverage", {
   }
 
   templates <- list(
-    v_i32 = nv_array(array(0L, dim = 4L), dtype = "i32", shape = 4L),
-    v_pred = nv_array(array(FALSE, dim = 4L), dtype = "pred", shape = 4L),
-    x_i32 = nv_array(array(0L, dim = c(2L, 3L)), dtype = "i32", shape = c(2L, 3L)),
-    x_pred = nv_array(array(FALSE, dim = c(2L, 3L)), dtype = "pred", shape = c(2L, 3L)),
-    x3_i32 = nv_array(array(0L, dim = c(2L, 2L, 3L)), dtype = "i32", shape = c(2L, 2L, 3L)),
-    x3_pred = nv_array(array(FALSE, dim = c(2L, 2L, 3L)), dtype = "pred", shape = c(2L, 2L, 3L)),
-    v_f64 = nv_array(array(0, dim = 4L), dtype = "f64", shape = 4L),
-    x_f64 = nv_array(array(0, dim = c(2L, 3L)), dtype = "f64", shape = c(2L, 3L)),
-    x3_f64 = nv_array(array(0, dim = c(2L, 2L, 3L)), dtype = "f64", shape = c(2L, 2L, 3L))
+    v_i32 = nv_array(rep(0L, 4L), shape = 4L, dtype = "i32"),
+    v_pred = nv_array(rep(FALSE, 4L), shape = 4L, dtype = "pred"),
+    x_i32 = nv_matrix(0L, nrow = 2L, ncol = 3L, dtype = "i32"),
+    x_pred = nv_matrix(FALSE, nrow = 2L, ncol = 3L, dtype = "pred"),
+    x3_i32 = nv_array(rep(0L, prod(c(2L, 2L, 3L))), shape = c(2L, 2L, 3L), dtype = "i32"),
+    x3_pred = nv_array(rep(FALSE, prod(c(2L, 2L, 3L))), shape = c(2L, 2L, 3L), dtype = "pred"),
+    v_f64 = nv_array(rep(0, 4L), shape = 4L, dtype = "f64"),
+    x_f64 = nv_matrix(0, nrow = 2L, ncol = 3L, dtype = "f64"),
+    x3_f64 = nv_array(rep(0, prod(c(2L, 2L, 3L))), shape = c(2L, 2L, 3L), dtype = "f64")
   )
 
   run <- list(
@@ -858,9 +858,9 @@ test_that("quickr pipeline matches PJRT: indexing ops (slice/update/pad) + gathe
   }
 
   templates <- list(
-    x = nv_array(array(0L, dim = 6L), dtype = "i32", shape = 6L),
-    X = nv_array(array(0L, dim = c(2L, 3L)), dtype = "i32", shape = c(2L, 3L)),
-    X3 = nv_array(array(0L, dim = c(3L, 4L, 2L)), dtype = "i32", shape = c(3L, 4L, 2L)),
+    x = nv_array(rep(0L, 6L), shape = 6L, dtype = "i32"),
+    X = nv_matrix(0L, nrow = 2L, ncol = 3L, dtype = "i32"),
+    X3 = nv_array(rep(0L, prod(c(3L, 4L, 2L))), shape = c(3L, 4L, 2L), dtype = "i32"),
     s = nv_scalar(0L, dtype = "i32"),
     r = nv_scalar(0L, dtype = "i32"),
     c = nv_scalar(0L, dtype = "i32"),
@@ -868,11 +868,11 @@ test_that("quickr pipeline matches PJRT: indexing ops (slice/update/pad) + gathe
     b = nv_scalar(0L, dtype = "i32"),
     d = nv_scalar(0L, dtype = "i32"),
     upd_s = nv_scalar(0L, dtype = "i32"),
-    upd = nv_array(array(0L, dim = 2L), dtype = "i32", shape = 2L),
-    upd2 = nv_array(array(0L, dim = c(2L, 2L)), dtype = "i32", shape = c(2L, 2L)),
+    upd = nv_array(rep(0L, 2L), shape = 2L, dtype = "i32"),
+    upd2 = nv_matrix(0L, nrow = 2L, ncol = 2L, dtype = "i32"),
     padv = nv_scalar(0L, dtype = "i32"),
-    idx_vec = nv_array(array(0L, dim = 2L), dtype = "i32", shape = 2L),
-    sc_idx_vec = nv_array(array(0L, dim = 2L), dtype = "i32", shape = 2L)
+    idx_vec = nv_array(rep(0L, 2L), shape = 2L, dtype = "i32"),
+    sc_idx_vec = nv_array(rep(0L, 2L), shape = 2L, dtype = "i32")
   )
 
   X3 <- array(sample.int(100, 24, replace = TRUE), dim = c(3L, 4L, 2L))
@@ -925,8 +925,8 @@ test_that("quickr pipeline matches PJRT: gather can return a scalar", {
   }
 
   templates <- list(
-    x = nv_array(array(0L, dim = 5L), dtype = "i32", shape = 5L),
-    idx = nv_array(array(0L, dim = 1L), dtype = "i32", shape = 1L)
+    x = nv_array(rep(0L, 5L), shape = 5L, dtype = "i32"),
+    idx = nv_array(rep(0L, 1L), shape = 1L, dtype = "i32")
   )
 
   run_low <- list(args = list(x = 1:5, idx = 0L), info = "clamp_low")
@@ -962,16 +962,16 @@ test_that("quickr pipeline matches PJRT: dot_general variants", {
   templates <- list(
     a = nv_scalar(0.0, dtype = "f64"),
     b = nv_scalar(0.0, dtype = "f64"),
-    a1 = nv_array(array(0L, dim = 2L), dtype = "i32", shape = 2L),
-    b1 = nv_array(array(0L, dim = 3L), dtype = "i32", shape = 3L),
-    a_dot = nv_array(array(0L, dim = 3L), dtype = "i32", shape = 3L),
-    b_dot = nv_array(array(0L, dim = 3L), dtype = "i32", shape = 3L),
-    a_mv = nv_array(array(0L, dim = c(2L, 3L)), dtype = "i32", shape = c(2L, 3L)),
-    b_mv = nv_array(array(0L, dim = 3L), dtype = "i32", shape = 3L),
-    lhs = nv_array(array(0, dim = c(2L, 3L)), dtype = "f64", shape = c(2L, 3L)),
-    rhs = nv_array(array(0, dim = c(3L, 4L)), dtype = "f64", shape = c(3L, 4L)),
-    lhs_b = nv_array(array(0, dim = c(2L, 3L, 4L)), dtype = "f64", shape = c(2L, 3L, 4L)),
-    rhs_b = nv_array(array(0, dim = c(2L, 4L, 5L)), dtype = "f64", shape = c(2L, 4L, 5L))
+    a1 = nv_array(rep(0L, 2L), shape = 2L, dtype = "i32"),
+    b1 = nv_array(rep(0L, 3L), shape = 3L, dtype = "i32"),
+    a_dot = nv_array(rep(0L, 3L), shape = 3L, dtype = "i32"),
+    b_dot = nv_array(rep(0L, 3L), shape = 3L, dtype = "i32"),
+    a_mv = nv_matrix(0L, nrow = 2L, ncol = 3L, dtype = "i32"),
+    b_mv = nv_array(rep(0L, 3L), shape = 3L, dtype = "i32"),
+    lhs = nv_matrix(0, nrow = 2L, ncol = 3L, dtype = "f64"),
+    rhs = nv_matrix(0, nrow = 3L, ncol = 4L, dtype = "f64"),
+    lhs_b = nv_array(rep(0, prod(c(2L, 3L, 4L))), shape = c(2L, 3L, 4L), dtype = "f64"),
+    rhs_b = nv_array(rep(0, prod(c(2L, 4L, 5L))), shape = c(2L, 4L, 5L), dtype = "f64")
   )
 
   run <- list(

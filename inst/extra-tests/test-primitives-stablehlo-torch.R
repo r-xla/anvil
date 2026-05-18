@@ -230,7 +230,7 @@ test_that("prim_dot_general", {
   expect_equal(as_array(out), as.numeric(torch::torch_sum(tx * ty)), tolerance = 1e-5)
 
   # matrix-vector -> vector
-  A <- nv_array(matrix(rnorm(6), 3, 2), dtype = "f32")
+  A <- nv_matrix(rnorm(6), nrow = 3, ncol = 2, dtype = "f32")
   v <- nv_array(rnorm(2), dtype = "f32")
   out2 <- jit(function(a, b) {
     prim_dot_general(a, b, contracting_dims = list(2L, 1L), batching_dims = list(integer(), integer()))
@@ -240,8 +240,8 @@ test_that("prim_dot_general", {
   expect_equal(as_array(out2), as_array_torch(tA$matmul(tv)), tolerance = 1e-5)
 
   # batched matmul
-  X <- nv_array(array(rnorm(2 * 3 * 4), c(2, 3, 4)), dtype = "f32")
-  Y <- nv_array(array(rnorm(2 * 4 * 5), c(2, 4, 5)), dtype = "f32")
+  X <- nv_array(rnorm(2 * 3 * 4), shape = c(2, 3, 4), dtype = "f32")
+  Y <- nv_array(rnorm(2 * 4 * 5), shape = c(2, 4, 5), dtype = "f32")
   out3 <- jit(function(a, b) {
     prim_dot_general(a, b, contracting_dims = list(3L, 2L), batching_dims = list(1L, 1L))
   })(X, Y)

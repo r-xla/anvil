@@ -75,6 +75,7 @@ reference:
     contents:
       - AnvlArray
       - nv_array
+      - nv_matrix
       - nv_scalar
       - nv_empty
       - nv_fill

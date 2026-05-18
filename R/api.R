@@ -26,7 +26,7 @@
 #' @seealso [prim_fill()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' nv_fill(0, shape = c(2, 3))
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' nv_fill_like(x, 0)
 #' @export
 nv_fill <- function(value, shape, dtype = NULL, ambiguous = FALSE, device = NULL) {
@@ -159,7 +159,7 @@ nv_promote_to_common <- function(...) {
 #'   List of arrays, all with the same shape.
 #' @seealso [nv_broadcast_scalars()], [nv_broadcast_to()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' y <- nv_array(c(10, 20, 30))
 #' nv_broadcast_arrays(x, y)
 #' @export
@@ -357,10 +357,10 @@ nv_concatenate <- function(..., dimension = NULL) {
 #' nv_cbind(nv_array(1:3), nv_array(4:6))
 #'
 #' # Scalar broadcasting
-#' nv_rbind(nv_array(matrix(1:6, nrow = 2)), nv_scalar(0))
+#' nv_rbind(nv_matrix(1:6, nrow = 2), nv_scalar(0))
 #'
 #' # Rank-3 arrays preserve trailing dimensions
-#' a <- nv_array(array(1:24, dim = c(2, 3, 4)))
+#' a <- nv_array(1:24, shape = c(2, 3, 4))
 #' shape(nv_rbind(a, a)) # c(4, 3, 4)
 NULL
 
@@ -418,7 +418,7 @@ bind_reshape <- function(arg, stack_dim, target_shape) {
 #' @rdname nv_bind
 #' @export
 nv_rbind <- function(...) {
-  args <- lapply(list(...), as_anvl_array)
+  args <- as_anvl_arrays(...)
   target_shape <- bind_target_shape(args, stack_dim = 1L, fn_name = "nv_rbind")
   args <- lapply(args, bind_reshape, stack_dim = 1L, target_shape = target_shape)
   rlang::exec(nv_concatenate, !!!args, dimension = 1L)
@@ -427,7 +427,7 @@ nv_rbind <- function(...) {
 #' @rdname nv_bind
 #' @export
 nv_cbind <- function(...) {
-  args <- lapply(list(...), as_anvl_array)
+  args <- as_anvl_arrays(...)
   target_shape <- bind_target_shape(args, stack_dim = 2L, fn_name = "nv_cbind")
   args <- lapply(args, bind_reshape, stack_dim = 2L, target_shape = target_shape)
   rlang::exec(nv_concatenate, !!!args, dimension = 2L)
@@ -491,8 +491,13 @@ nv_print <- prim_print
 #' nv_ifelse(pred, nv_scalar(1L), nv_scalar(0.5))
 #' @export
 nv_ifelse <- function(pred, true_value, false_value) {
-  promoted <- nv_promote_to_common(true_value, false_value)
-  args <- nv_broadcast_scalars(pred, promoted[[1L]], promoted[[2L]])
+  # Canonicalize all three inputs together so an R literal `true_value` /
+  # `false_value` inherits the device of `pred` (and vice versa). Doing the
+  # `nv_promote_to_common` step first would convert literals on the default
+  # device and then conflict with a non-default-device `pred`.
+  args <- as_anvl_arrays(pred, true_value, false_value)
+  promoted <- nv_promote_to_common(args[[2L]], args[[3L]])
+  args <- nv_broadcast_scalars(args[[1L]], promoted[[1L]], promoted[[2L]])
   prim_ifelse(args[[1L]], args[[2L]], args[[3L]])
 }
 
@@ -1332,7 +1337,7 @@ nv_reverse <- prim_reverse
 #' @seealso [nv_seq()] for a simpler 1-D sequence, [prim_iota()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
 #' nv_iota(dim = 1L, dtype = "i32", shape = 5L)
-#' x <- nv_array(matrix(0L, nrow = 2, ncol = 3))
+#' x <- nv_fill(0L, shape = c(2, 3))
 #' nv_iota_like(x, dim = 1L)
 #' @export
 nv_iota <- prim_iota
@@ -1452,8 +1457,8 @@ nv_round <- prim_round
 #' @return [`arrayish`]
 #' @seealso [prim_dot_general()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
-#' y <- nv_array(matrix(1:6, nrow = 3))
+#' x <- nv_matrix(1:6, nrow = 2)
+#' y <- nv_matrix(1:6, nrow = 3)
 #' x %*% y
 #' @export
 nv_matmul <- function(lhs, rhs) {
@@ -1492,7 +1497,7 @@ nv_matmul <- function(lhs, rhs) {
 #'   Triangular matrix with the same shape and data type as the input.
 #' @seealso [nv_solve()], [prim_chol()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+#' a <- nv_matrix(c(4, 2, 2, 3), nrow = 2, dtype = "f32")
 #' nv_chol(a)
 #' @export
 nv_chol <- prim_chol
@@ -1522,8 +1527,8 @@ nv_chol <- prim_chol
 #'   The solution `x` such that `a %*% x = b`.
 #' @seealso [nv_chol()], [nv_triangular_solve()], [prim_lu()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
-#' b <- nv_array(matrix(c(1, 2), nrow = 2), dtype = "f64")
+#' a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
+#' b <- nv_matrix(c(1, 2), nrow = 2, dtype = "f64")
 #' nv_solve(a, b)
 #' @export
 nv_solve <- function(a, b) {
@@ -1596,8 +1601,8 @@ nv_solve <- function(a, b) {
 #'   The solution `x`, with the same shape and dtype as `b`.
 #' @seealso [nv_solve()], [nv_chol()], [prim_triangular_solve()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' L <- nv_array(matrix(c(2, 1, 0, 3), nrow = 2), dtype = "f32")
-#' b <- nv_array(matrix(c(4, 3), nrow = 2), dtype = "f32")
+#' L <- nv_matrix(c(2, 1, 0, 3), nrow = 2, dtype = "f32")
+#' b <- nv_matrix(c(4, 3), nrow = 2, dtype = "f32")
 #' nv_triangular_solve(L, b)
 #' @export
 nv_triangular_solve <- function(
@@ -1678,7 +1683,7 @@ lu_pivot_sign <- function(pivots, n, dt) {
 #' @return Scalar [`arrayish`] with the same dtype as `operand`.
 #' @seealso [nv_determinant()], [nv_solve()], [prim_lu()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#' a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
 #' nv_det(a)
 #' @export
 nv_det <- function(operand) {
@@ -1712,7 +1717,7 @@ nv_det <- function(operand) {
 #'   `sign * modulus` (with `logarithm = FALSE`).
 #' @seealso [nv_det()], [nv_solve()], [prim_lu()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#' a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
 #' nv_determinant(a)
 #' nv_determinant(a, logarithm = FALSE)
 #' @export
@@ -1769,7 +1774,7 @@ nv_determinant <- function(operand, logarithm = TRUE) {
 #'   The inverse, same shape and dtype as `operand`.
 #' @seealso [nv_solve()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#' a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
 #' nv_inv(a)
 #' @export
 nv_inv <- function(operand) {
@@ -1792,7 +1797,7 @@ nv_inv <- function(operand) {
 #' @inherit prim_qr description params return details
 #' @seealso [prim_qr()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(c(1, 2, 3, 4, 5, 6), nrow = 3), dtype = "f32")
+#' x <- nv_matrix(c(1, 2, 3, 4, 5, 6), nrow = 3, dtype = "f32")
 #' nv_qr(x)
 #' @export
 nv_qr <- prim_qr
@@ -1817,7 +1822,7 @@ nv_qr <- prim_qr
 #'     vector representing \eqn{P}.
 #' @seealso [prim_lu()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+#' x <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
 #' nv_lu(x)
 #' @export
 nv_lu <- function(operand) {
@@ -1858,7 +1863,7 @@ nv_lu <- function(operand) {
 #' @inherit prim_svd description params return details
 #' @seealso [prim_svd()], [base::svd()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(c(1, 0, 0, 1, 0, 1), nrow = 3), dtype = "f64")
+#' x <- nv_matrix(c(1, 0, 0, 1, 0, 1), nrow = 3, dtype = "f64")
 #' nv_svd(x)
 #' @export
 nv_svd <- prim_svd
@@ -1867,7 +1872,7 @@ nv_svd <- prim_svd
 #' @inherit prim_eigh description params return details
 #' @seealso [prim_eigh()], [base::eigen()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(c(2, 1, 1, 2), nrow = 2), dtype = "f64")
+#' x <- nv_matrix(c(2, 1, 1, 2), nrow = 2, dtype = "f64")
 #' nv_eigh(x)
 #' @export
 nv_eigh <- prim_eigh
@@ -1920,7 +1925,7 @@ nv_diag <- function(operand) {
 #' @seealso [nv_diag()] for general diagonal matrices.
 #' @examplesIf pjrt::plugins_downloaded()
 #' nv_eye(3L)
-#' x <- nv_array(matrix(0, nrow = 3, ncol = 3), dtype = "f64")
+#' x <- nv_fill(0, shape = c(3, 3), dtype = "f64")
 #' nv_eye_like(x, 3L)
 #' @export
 nv_eye <- function(n, dtype = "f32", device = NULL) {
@@ -1939,7 +1944,7 @@ nv_eye <- function(n, dtype = "f32", device = NULL) {
 #' @template return_reduce
 #' @seealso [prim_reduce_sum()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' nv_reduce_sum(x)            # all dims -> scalar
 #' nv_reduce_sum(x, dims = 1L)
 #' @export
@@ -1960,7 +1965,7 @@ nv_reduce_sum <- function(operand, dims = NULL, drop = TRUE) {
 #' @template return_reduce
 #' @seealso [nv_reduce_sum()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' nv_mean(x)            # all dims -> scalar
 #' nv_mean(x, dims = 1L)
 #' @export
@@ -1979,7 +1984,7 @@ nv_mean <- function(operand, dims = NULL, drop = TRUE) {
 #' @template return_reduce
 #' @seealso [prim_reduce_prod()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' nv_reduce_prod(x)            # all dims -> scalar
 #' nv_reduce_prod(x, dims = 1L)
 #' @export
@@ -1996,7 +2001,7 @@ nv_reduce_prod <- function(operand, dims = NULL, drop = TRUE) {
 #' @template return_reduce
 #' @seealso [prim_reduce_max()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' nv_reduce_max(x)            # all dims -> scalar
 #' nv_reduce_max(x, dims = 1L)
 #' @export
@@ -2013,7 +2018,7 @@ nv_reduce_max <- function(operand, dims = NULL, drop = TRUE) {
 #' @template return_reduce
 #' @seealso [prim_reduce_min()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' nv_reduce_min(x)            # all dims -> scalar
 #' nv_reduce_min(x, dims = 1L)
 #' @export
@@ -2031,7 +2036,7 @@ nv_reduce_min <- function(operand, dims = NULL, drop = TRUE) {
 #' @template return_reduce_boolean
 #' @seealso [prim_reduce_any()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#' x <- nv_matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2)
 #' nv_reduce_any(x)            # all dims -> scalar
 #' nv_reduce_any(x, dims = 1L)
 #' @export
@@ -2049,7 +2054,7 @@ nv_reduce_any <- function(operand, dims = NULL, drop = TRUE) {
 #' @template return_reduce_boolean
 #' @seealso [prim_reduce_all()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+#' x <- nv_matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2)
 #' nv_reduce_all(x)            # all dims -> scalar
 #' nv_reduce_all(x, dims = 1L)
 #' @export
@@ -2069,7 +2074,7 @@ nv_reduce_all <- function(operand, dims = NULL, drop = TRUE) {
 #' @template section_nv_cum_relation
 #' @seealso [prim_cumsum()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' nv_cumsum(x)              # row-major flatten, then accumulate
 #' nv_cumsum(x, dim = 1L)    # accumulate along rows
 #' @export
@@ -2093,7 +2098,7 @@ nv_cumsum <- function(operand, dim = NULL) {
 #' @template section_nv_cum_relation
 #' @seealso [prim_cumprod()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' nv_cumprod(x)              # row-major flatten, then accumulate
 #' nv_cumprod(x, dim = 1L)    # accumulate along rows
 #' @export
@@ -2119,7 +2124,7 @@ nv_cumprod <- function(operand, dim = NULL) {
 #' @template section_nv_cum_relation
 #' @seealso [prim_cummax()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+#' x <- nv_matrix(c(3, 1, 4, 1, 5, 9), nrow = 2)
 #' nv_cummax(x)
 #' nv_cummax(x, dim = 1L)
 #' nv_cummax(x, dim = 1L, with_indices = TRUE)
@@ -2147,7 +2152,7 @@ nv_cummax <- function(operand, dim = NULL, with_indices = FALSE) {
 #' @template section_nv_cum_relation
 #' @seealso [prim_cummin()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+#' x <- nv_matrix(c(3, 1, 4, 1, 5, 9), nrow = 2)
 #' nv_cummin(x)
 #' nv_cummin(x, dim = 1L)
 #' nv_cummin(x, dim = 1L, with_indices = TRUE)
@@ -2523,7 +2528,7 @@ nv_triu <- function(operand, diagonal = 0L) {
 #' @return [`arrayish`]
 #' @seealso [nv_tcrossprod()], [nv_matmul()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 3), dtype = "f32")
+#' x <- nv_matrix(1:6, nrow = 3, dtype = "f32")
 #' nv_crossprod(x)
 #' @export
 nv_crossprod <- function(lhs, rhs = NULL) {
@@ -2548,7 +2553,7 @@ nv_crossprod <- function(lhs, rhs = NULL) {
 #' @return [`arrayish`]
 #' @seealso [nv_crossprod()], [nv_matmul()]
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
+#' x <- nv_matrix(1:6, nrow = 2, dtype = "f32")
 #' nv_tcrossprod(x)
 #' @export
 nv_tcrossprod <- function(lhs, rhs = NULL) {
@@ -2579,7 +2584,7 @@ nv_tcrossprod <- function(lhs, rhs = NULL) {
 #'   Same data type as `operand`. `dim` is dropped if `index` was scalar.
 #' @seealso [nv_subset()] for general subsetting, [prim_static_slice()].
 #' @examplesIf pjrt::plugins_downloaded()
-#' m <- nv_array(matrix(1:6, nrow = 2))
+#' m <- nv_matrix(1:6, nrow = 2)
 #' nv_select(m, dim = 2L, index = 2L)
 #' nv_select(m, dim = 1L, index = 1L)
 #' nv_select(m, dim = 2L, index = array(c(1L, 3L)))
@@ -2622,7 +2627,7 @@ nv_select <- function(operand, dim, index) {
 #' sort(x) # via the S3 generic
 #' nv_sort(x, decreasing = TRUE)
 #'
-#' m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+#' m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
 #' nv_sort(m, dim = 2L)
 #' @export
 nv_sort <- function(operand, dim = NULL, decreasing = FALSE) {
@@ -2690,7 +2695,7 @@ nv_argsort <- function(operand, dim = NULL, decreasing = FALSE, stable = FALSE) 
 #' nv_top_k(x, k = 3L)
 #' nv_top_k(x, k = 3L, with_indices = TRUE)
 #'
-#' m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+#' m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
 #' nv_top_k(m, k = 2L, dim = 2L)
 #' @export
 nv_top_k <- function(operand, k, dim = NULL, with_indices = FALSE) {
@@ -2876,7 +2881,7 @@ nv_quantile <- function(operand, probs, dim = NULL, interpolation = "linear") {
 #' @examplesIf pjrt::plugins_downloaded()
 #' nv_median(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
 #' median(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
-#' nv_median(nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)),
+#' nv_median(nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE),
 #'   dim = 2L
 #' )
 #' # forwards through the S3 generic via `...`
@@ -2902,7 +2907,7 @@ nv_median <- function(operand, dim = NULL, interpolation = "linear") {
 #' @seealso [nv_argmin()], [nv_reduce_max()].
 #' @examplesIf pjrt::plugins_downloaded()
 #' nv_argmax(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)))
-#' nv_argmax(nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)),
+#' nv_argmax(nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE),
 #'   dim = 2L
 #' )
 #' @export
