@@ -14,7 +14,7 @@
 
 \method{as.logical}{AnvlArray}(x, check = FALSE, ...)
 
-\method{as.vector}{AnvlArray}(x, mode = "any", check = FALSE)
+\method{as.vector}{AnvlArray}(x, mode = "any")
 }
 \arguments{
 \item{x}{(\code{\link{AnvlArray}})\cr

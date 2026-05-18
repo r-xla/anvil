@@ -516,8 +516,8 @@ as.logical.AnvlArray <- function(x, check = FALSE, ...) {
 #' @rdname as-AnvlArray
 #' @method as.vector AnvlArray
 #' @export
-as.vector.AnvlArray <- function(x, mode = "any", check = FALSE) {
-  as.vector(as_array(x, check = check), mode = mode)
+as.vector.AnvlArray <- function(x, mode = "any") {
+  as.vector(as_array(x), mode = mode)
 }
 
 #' @rdname platform
