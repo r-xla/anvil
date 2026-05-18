@@ -34,7 +34,7 @@ test_that("jit: promotes scalar dtype against non-ambiguous typed scalar", {
 test_that("jit: autoconverts matrix via nv_array (ambiguous)", {
   f <- jit(identity)
   out <- f(matrix(1:4, 2, 2))
-  expect_equal(out, nv_array(matrix(1:4, 2, 2), ambiguous = TRUE))
+  expect_equal(out, nv_matrix(1:4, nrow = 2, ncol = 2, ambiguous = TRUE))
 })
 
 test_that("jit: autoconverts higher-dim array via nv_array", {
@@ -126,7 +126,7 @@ test_that("quickr: autoconverts matrix input", {
   out <- f(matrix(1:4, 2, 2))
   expect_equal(dtype(out), as_dtype("i32"))
   expect_equal(shape(out), c(2L, 2L))
-  expect_equal(out, nv_array(matrix(1:4, 2, 2), ambiguous = TRUE))
+  expect_equal(out, nv_matrix(1:4, nrow = 2, ncol = 2, ambiguous = TRUE))
 })
 
 test_that("quickr: nested input tree with mixed AnvlArray/scalar still works", {

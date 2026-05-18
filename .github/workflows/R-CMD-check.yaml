@@ -57,6 +57,7 @@ jobs:
       - uses: r-xla/actions/r-check@main
         with:
           install-torch: ${{ matrix.config.torch == true }}
+          as-cran: ${{ matrix.config.torch == true && 'false' || 'true' }}
 
   R-CMD-check-cuda:
     needs: R-CMD-check

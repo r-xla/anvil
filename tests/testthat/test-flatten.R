@@ -27,6 +27,107 @@ test_that("(un)flatten lists", {
   )
 })
 
+describe("map_tree", {
+  it("preserves structure and applies f to leaves", {
+    # leaf input
+    expect_equal(map_tree(\(x) x + 1, 1), 2)
+
+    # flat list
+    expect_equal(
+      map_tree(\(x) x * 2, list(a = 1, b = 2)),
+      list(a = 2, b = 4)
+    )
+
+    # nested
+    expect_equal(
+      map_tree(\(x) x + 1, list(a = 1, b = list(c = 2, d = 3))),
+      list(a = 2, b = list(c = 3, d = 4))
+    )
+
+    # extra args are forwarded to f
+    expect_equal(
+      map_tree(`+`, list(a = 1, b = list(c = 2)), 10),
+      list(a = 11, b = list(c = 12))
+    )
+  })
+
+  it("reports the leaf path on error", {
+    expect_snapshot(
+      map_tree(
+        \(x) if (x == 2) cli::cli_abort("boom") else x,
+        list(a = 1, b = list(c = 2))
+      ),
+      error = TRUE
+    )
+  })
+})
+
+describe("pmap_tree", {
+  it("applies .f leaf-wise across multiple trees", {
+    expect_equal(
+      pmap_tree(list(list(a = 1, b = 2), list(a = 10, b = 20)), `+`),
+      list(a = 11, b = 22)
+    )
+  })
+
+  it("errors when trees have different structure", {
+    expect_snapshot(
+      pmap_tree(
+        list(
+          list(model = list(weights = list(a = 1), bias = 2)),
+          list(model = list(weights = list(a = 1), bias = list(z = 9)))
+        ),
+        `+`
+      ),
+      error = TRUE
+    )
+  })
+})
+
+describe("tree node formatting", {
+  it("renders LeafNode and ListNode as R-idiomatic literals", {
+    expect_snapshot({
+      # leaf at root
+      build_tree(1)
+      # empty list
+      build_tree(list())
+      # anonymous flat list
+      build_tree(list(1, 2))
+      # named flat list
+      build_tree(list(a = 1, b = 2))
+      # mixed named/unnamed
+      build_tree(list(1, b = 2))
+      # nested
+      build_tree(list(a = list(b = 1, c = 2), d = 3))
+    })
+  })
+})
+
+describe("tree_diff", {
+  it("locates the first divergence", {
+    expect_snapshot({
+      # leaf vs list at root
+      tree_diff(build_tree(1), build_tree(list(1, 2)))
+      # names mismatch at root (no shared prefix)
+      tree_diff(build_tree(list(a = 1, b = 2)), build_tree(list(p = 1, q = 2)))
+      # length mismatch in unnamed lists
+      tree_diff(build_tree(list(1, 2)), build_tree(list(1, 2, 3)))
+      # divergence inside a positional list
+      tree_diff(
+        build_tree(list(list(a = 1), list(a = 1))),
+        build_tree(list(list(a = 1), list(a = 1, b = 2)))
+      )
+      # nested named-then-positional path
+      tree_diff(
+        build_tree(list(pair = list(list(a = 1), 0))),
+        build_tree(list(pair = list(list(a = 1), list(c = 0))))
+      )
+      # identical trees -> NULL
+      tree_diff(build_tree(list(a = 1, b = 2)), build_tree(list(a = 1, b = 2)))
+    })
+  })
+})
+
 test_that("tree_path", {
   expect_snapshot({
     tree_path(build_tree(list(x = 1)), 1L)

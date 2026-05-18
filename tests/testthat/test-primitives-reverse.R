@@ -121,8 +121,8 @@ test_that("prim_dot_general: batched matmul gradient w.r.t both inputs", {
         batching_dims = list(integer(), integer())
       )
     }
-    expect_equal(jit(lin_A)(A), jit(l)(A, B))
-    expect_equal(jit(lin_B)(B), jit(l)(A, B))
+    expect_equal(lin_A(A), l(A, B))
+    expect_equal(lin_B(B), l(A, B))
   }
 
   # Case 1: Single contracting dim, no batching dims (existing baseline)
@@ -375,7 +375,7 @@ test_that("prim_eq, prim_ne, prim_gt, prim_ge, prim_lt, prim_le", {
   )
 
   for (cmp in comparators) {
-    out <- as_array(jit(cmp$fun)(a_nv, b_nv))
+    out <- as_array(cmp$fun(a_nv, b_nv))
     expect_identical(out, cmp$expected)
 
     g <- jit(gradient(function(a, b) {
@@ -429,18 +429,18 @@ test_that("prim_pad reverse with interior padding", {
     y <- prim_pad(x, nv_scalar(0, "f64"), c(0L, 0L), c(0L, 0L), c(1L, 1L))
     nv_reduce_sum(y, dims = c(1L, 2L), drop = TRUE)
   }))
-  x3 <- nv_array(matrix(1:4, 2, 2), dtype = "f64")
+  x3 <- nv_matrix(1:4, nrow = 2, ncol = 2, dtype = "f64")
   g3 <- f3(x3)
-  expect_equal(g3[[1L]], nv_array(matrix(1:4, 2, 2), dtype = "f64"))
+  expect_equal(g3[[1L]], nv_matrix(1:4, nrow = 2, ncol = 2, dtype = "f64"))
 
   # Test 2D with different edge padding on each dimension
   f4 <- jit(gradient(function(x) {
     y <- prim_pad(x, nv_scalar(0, "f64"), c(1L, 2L), c(2L, 1L), c(0L, 0L))
     nv_reduce_sum(y, dims = c(1L, 2L), drop = TRUE)
   }))
-  x4 <- nv_array(matrix(1:6, 2, 3), dtype = "f64")
+  x4 <- nv_matrix(1:6, nrow = 2, ncol = 3, dtype = "f64")
   g4 <- f4(x4)
-  expect_equal(g4[[1L]], nv_array(matrix(rep(1, 6), 2, 3), dtype = "f64"))
+  expect_equal(g4[[1L]], nv_matrix(rep(1, 6), nrow = 2, ncol = 3, dtype = "f64"))
 })
 
 test_that("prim_dynamic_slice reverse", {
@@ -820,6 +820,184 @@ describe("gather/scatter reverse via subset operators", {
   })
 })
 
+# argmax / argmin reverse rule short-circuits the gradient to zero.
+test_that("prim_argmax / prim_argmin have zero gradient", {
+  x <- nv_array(c(3, 1, 4), dtype = "f32")
+  for (prim in list(prim_argmax, prim_argmin)) {
+    verify_zero_grad_unary(prim, x, f_wrapper = function(x) {
+      out <- prim(x, dim = 1L)
+      prim_convert(out, "f32", ambiguous = FALSE)
+    })
+  }
+})
+
+# prim_cummax / prim_cummin: tested manually because the R torch package's
+# `torch_cummax` / `torch_cummin` wrappers call into a missing lantern symbol
+# (`cpp_torch_namespace_cummax_self_Tensor`), so a torch comparison is not
+# available.
+describe("prim_cummax", {
+  verify_grad <- function(x_arr, dim, expected_grad) {
+    x_nv <- nv_array(x_arr, dtype = "f32")
+    f_nv <- function(x) {
+      y <- nv_cummax(x, dim = dim)
+      nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
+    }
+    grads_nv <- jit(gradient(f_nv))(x_nv)
+    expected <- if (length(dim(x_arr))) {
+      array(expected_grad, dim = dim(x_arr))
+    } else {
+      array(expected_grad, dim = length(x_arr))
+    }
+    expect_equal(as_array(grads_nv[[1L]]), expected, tolerance = 1e-4)
+  }
+  it("strictly increasing -> each element receives its own grad", {
+    verify_grad(c(1, 2, 3, 4), dim = 1L, c(1, 1, 1, 1))
+  })
+  it("plateau uses last occurrence", {
+    # x = [1, 3, 3, 2]: y = [1, 3, 3, 3]. arg_run = [1, 2, 3, 3]. grad = [1, 1, 2, 0].
+    verify_grad(c(1, 3, 3, 2), dim = 1L, c(1, 1, 2, 0))
+  })
+  it("non-monotone vector", {
+    # x = [3, 1, 4, 1, 5, 9, 2, 6]: arg_run = [1, 1, 3, 3, 5, 6, 6, 6] (no ties).
+    # grad = [2, 0, 2, 0, 1, 3, 0, 0].
+    verify_grad(c(3, 1, 4, 1, 5, 9, 2, 6), dim = 1L, c(2, 0, 2, 0, 1, 3, 0, 0))
+  })
+  it("matrix gradient along dim 2", {
+    # Matrix:  row 1 = c(1, 3, 2)  -> arg_run [1, 2, 2] -> grad [1, 2, 0]
+    #          row 2 = c(4, 2, 1)  -> arg_run [1, 1, 1] -> grad [3, 0, 0]
+    verify_grad(
+      matrix(c(1, 4, 3, 2, 2, 1), nrow = 2),
+      dim = 2L,
+      matrix(c(1, 3, 2, 0, 0, 0), nrow = 2)
+    )
+  })
+})
+
+describe("prim_cummin", {
+  verify_grad <- function(x_arr, dim, expected_grad) {
+    x_nv <- nv_array(x_arr, dtype = "f32")
+    f_nv <- function(x) {
+      y <- nv_cummin(x, dim = dim)
+      nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
+    }
+    grads_nv <- jit(gradient(f_nv))(x_nv)
+    expected <- if (length(dim(x_arr))) {
+      array(expected_grad, dim = dim(x_arr))
+    } else {
+      array(expected_grad, dim = length(x_arr))
+    }
+    expect_equal(as_array(grads_nv[[1L]]), expected, tolerance = 1e-4)
+  }
+  it("strictly decreasing -> each element receives its own grad", {
+    verify_grad(c(4, 3, 2, 1), dim = 1L, c(1, 1, 1, 1))
+  })
+  it("plateau uses last occurrence", {
+    # x = [4, 2, 2, 3]: y = [4, 2, 2, 2]. arg_run = [1, 2, 3, 3]. grad = [1, 1, 2, 0].
+    verify_grad(c(4, 2, 2, 3), dim = 1L, c(1, 1, 2, 0))
+  })
+  it("non-monotone vector", {
+    # x = [3, 1, 4, 1, 5, 9, 2, 6]: arg_run = [1, 2, 2, 4, 4, 4, 4, 4]
+    # (tie at j=4 picks the later index, then carries forward).
+    # grad = [1, 2, 0, 5, 0, 0, 0, 0].
+    verify_grad(c(3, 1, 4, 1, 5, 9, 2, 6), dim = 1L, c(1, 2, 0, 5, 0, 0, 0, 0))
+  })
+  it("matrix gradient along dim 1", {
+    # Matrix:  col 1 = c(3, 1, 4) -> arg_run [1, 2, 2] -> grad [1, 2, 0]
+    #          col 2 = c(1, 5, 9) -> arg_run [1, 1, 1] -> grad [3, 0, 0]
+    verify_grad(
+      matrix(c(3, 1, 4, 1, 5, 9), nrow = 3),
+      dim = 1L,
+      matrix(c(1, 2, 0, 3, 0, 0), nrow = 3)
+    )
+  })
+})
+
+# prim_sort / prim_top_k: gradient compared to a manual scatter reference.
+# torch's autograd raised a spurious "saved tensor modified inplace" version
+# mismatch on the indices tensor returned by torch_sort/torch_topk, so we do
+# not compare against torch here.
+test_that("prim_sort", {
+  withr::local_seed(42)
+  # 2D descending sort along dim != 1. Distinct values so the result is
+  # deterministic under the default is_stable = FALSE (tie-breaking unspecified).
+  x_arr <- matrix(rnorm(4 * 6), nrow = 4)
+  w_arr <- matrix(as.double(seq_len(4 * 6)), nrow = 4)
+
+  x_nv <- nv_array(x_arr)
+  w_nv <- nv_array(w_arr)
+
+  f_nv <- function(x) {
+    sorted <- prim_sort(list(x), dim = 2L, descending = TRUE)[[1L]]
+    nv_reduce_sum(sorted * w_nv, dims = c(1L, 2L))
+  }
+  grad_nv <- jit(gradient(f_nv))(x_nv)[[1L]]
+
+  # For each row, scatter w back along the descending sort indices:
+  # grad[i, sorted_idx[k]] = w[i, k].
+  expected_grad <- matrix(0, nrow = nrow(x_arr), ncol = ncol(x_arr))
+  for (i in seq_len(nrow(x_arr))) {
+    sorted_idx <- order(x_arr[i, ], decreasing = TRUE)
+    expected_grad[i, sorted_idx] <- w_arr[i, ]
+  }
+
+  expect_equal(as_array(grad_nv), expected_grad, tolerance = 1e-5)
+})
+
+test_that("prim_top_k", {
+  withr::local_seed(42)
+  x_arr <- matrix(rnorm(4 * 6), nrow = 4)
+  k <- 3L
+  w_arr <- matrix(as.double(seq_len(4 * k)), nrow = 4)
+
+  x_nv <- nv_array(x_arr)
+  w_nv <- nv_array(w_arr)
+
+  f_nv <- function(x) {
+    top <- prim_top_k(x, k = k)[[1L]]
+    nv_reduce_sum(top * w_nv, dims = c(1L, 2L))
+  }
+  grad_nv <- jit(gradient(f_nv))(x_nv)[[1L]]
+
+  # Scatter w along the top-k indices for each row.
+  expected_grad <- matrix(0, nrow = nrow(x_arr), ncol = ncol(x_arr))
+  for (i in seq_len(nrow(x_arr))) {
+    top_idx <- order(x_arr[i, ], decreasing = TRUE)[seq_len(k)]
+    expected_grad[i, top_idx] <- w_arr[i, ]
+  }
+
+  expect_equal(as_array(grad_nv), expected_grad, tolerance = 1e-5)
+})
+
+test_that("prim_reduce_prod: gradient is safe at zeros", {
+  # The safe rule: gradient at position i = product of all *other* elements
+  # along the reduced axis. With one zero, only the zero position has a
+  # non-zero gradient; with two or more zeros, the gradient is zero everywhere.
+  f1 <- jit(gradient(function(x) prim_reduce_prod(x, dims = 1L, drop = TRUE)))
+
+  expect_equal(as.numeric(as_array(f1(nv_array(c(2, 3, 5)))[[1L]])), c(15, 10, 6))
+  expect_equal(as.numeric(as_array(f1(nv_array(c(2, 0, 5)))[[1L]])), c(0, 10, 0))
+  expect_equal(as.numeric(as_array(f1(nv_array(c(2, 0, 0)))[[1L]])), c(0, 0, 0))
+})
+
+test_that("prim_reduce_prod: multi-axis reduction with a zero", {
+  x <- matrix(c(2, 3, 0, 4, 5, 6), nrow = 3, byrow = TRUE)
+  f <- jit(gradient(function(x) prim_reduce_prod(x, dims = c(1L, 2L), drop = TRUE)))
+  expected <- matrix(0, nrow = 3, ncol = 2)
+  expected[2, 1] <- prod(x[x != 0])
+  expect_equal(as_array(f(nv_array(x))[[1L]]), expected)
+})
+
+test_that("prim_reduce_prod: drop = FALSE matches drop = TRUE", {
+  x <- nv_matrix(c(2, 3, 0, 4, 5, 6), nrow = 3, byrow = TRUE)
+  f_drop <- jit(gradient(function(x) {
+    nv_reduce_sum(prim_reduce_prod(x, dims = 2L, drop = TRUE), dims = 1L, drop = TRUE)
+  }))
+  f_keep <- jit(gradient(function(x) {
+    nv_reduce_sum(prim_reduce_prod(x, dims = 2L, drop = FALSE), dims = c(1L, 2L), drop = TRUE)
+  }))
+  expect_equal(as_array(f_drop(x)[[1L]]), as_array(f_keep(x)[[1L]]))
+})
+
 if (nzchar(system.file(package = "torch"))) {
-  source(system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvl"))
+  source(system.file("extra-tests", "test-primitives-reverse-torch.R", package = "anvl"), local = TRUE)
 }

@@ -57,3 +57,6 @@ TODO.md
 
 # Local coverage snapshots
 covr-*.rds
+
+# Claude Code local settings
+.claude/settings.local.json

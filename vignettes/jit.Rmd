@@ -132,7 +132,7 @@ f32_scalar <- nv_aval("f32", integer())
 f32_scalar
 f32_vec3   <- nv_aval("f32", 3)
 f32_vec3
-trace_fn(linear, args = list(x = f32_vec3, w = f32_scalar, b = f32_scalar), mode = "toplevel")
+trace_fn(linear, args = list(x = f32_vec3, w = f32_scalar, b = f32_scalar))
 ```
 
 The printed `AnvlGraph` is like an R function: it has inputs, a body and outputs.
@@ -167,7 +167,7 @@ linear_repeated <- function(x, w, b, n) {
   for (i in seq_len(n)) x <- linear(x, w, b)
   x
 }
-trace_fn(linear_repeated, args = list(x = f32_scalar, w = f32_vec3, b = f32_vec3, n = 2L), mode = "toplevel")
+trace_fn(linear_repeated, args = list(x = f32_scalar, w = f32_vec3, b = f32_vec3, n = 2L))
 ```
 
 The graph contains a single `broadcast_in_dim` (lifting the scalar `x` to `f32[3]`) followed by two `mul`/`add` pairs in sequence -- not a loop construct.
@@ -189,8 +189,6 @@ linear_maybe <- function(x, w, b, use_bias) {
 trace_fn(
   linear_maybe,
   args = list(x = f32_scalar, w = f32_scalar, b = f32_scalar, use_bias = TRUE)
-,
-  mode = "toplevel"
 )
 ```
 
@@ -204,7 +202,7 @@ threshold <- 0.5
 h <- function(x) {
   if (threshold > 0.5) x * 2 else x + 1
 }
-trace_fn(h, args = list(x = f32_scalar), mode = "toplevel")
+trace_fn(h, args = list(x = f32_scalar))
 ```
 
 The trace itself runs correctly, but it becomes a problem in combination with `jit()`'s caching mechanism.
@@ -221,7 +219,7 @@ Here we close over a default bias instead of taking it as an argument:
 ```{r}
 default_b <- 5
 linear_default_b <- function(x, w) linear(x, w, default_b)
-trace_fn(linear_default_b, args = list(x = f32_scalar, w = f32_scalar), mode = "toplevel")
+trace_fn(linear_default_b, args = list(x = f32_scalar, w = f32_scalar))
 ```
 
 The graph contains `add(%1, 5:f32?)` -- the value `5` is hard-wired into the program.

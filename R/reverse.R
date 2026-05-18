@@ -95,7 +95,7 @@ rule_reverse <- function(backward = NULL, forward = NULL) {
 #' @seealso [`gradient()`], [`value_and_gradient()`], [`rule_reverse()`]
 #' @export
 #' @examples
-#' graph <- trace_fn(prim_mul, list(nv_aval("f32", c()), nv_aval("f32", c())), mode = "toplevel")
+#' graph <- trace_fn(prim_mul, list(nv_aval("f32", c()), nv_aval("f32", c())))
 #' graph
 #' transform_gradient(graph, "lhs")
 transform_gradient <- function(graph, wrt) {

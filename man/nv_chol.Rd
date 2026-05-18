@@ -4,18 +4,19 @@
 \alias{nv_chol}
 \title{Cholesky Decomposition}
 \usage{
-nv_chol(a, lower = TRUE)
+nv_chol(operand, lower = FALSE)
 }
 \arguments{
-\item{a}{(\code{\link{arrayish}})\cr
+\item{operand}{(\code{\link{arrayish}})\cr
 Symmetric positive-definite matrix with at least 2 dimensions.
 The last two dimensions form the square matrix; any leading dimensions
 are batch dimensions.}
 
 \item{lower}{(\code{logical(1)})\cr
-If \code{TRUE} (default), compute the lower triangular factor \code{L} such that
-\code{a = L \%*\% t(L)}. If \code{FALSE}, compute the upper triangular factor \code{U}
-such that \code{a = t(U) \%*\% U}.}
+If \code{FALSE} (default, matching base R's \code{\link[base:chol]{base::chol()}}), compute the
+upper triangular factor \code{U} such that \code{operand = t(U) \%*\% U}. If
+\code{TRUE}, compute the lower triangular factor \code{L} such that
+\code{operand = L \%*\% t(L)}.}
 }
 \value{
 \code{\link{arrayish}}\cr
@@ -27,10 +28,10 @@ Supports batched inputs: dimensions before the last two are batch dimensions.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-a <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+a <- nv_matrix(c(4, 2, 2, 3), nrow = 2, dtype = "f32")
 nv_chol(a)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=nv_solve]{nv_solve()}}, \code{\link[=prim_cholesky]{prim_cholesky()}}
+\code{\link[=nv_solve]{nv_solve()}}, \code{\link[=prim_chol]{prim_chol()}}
 }

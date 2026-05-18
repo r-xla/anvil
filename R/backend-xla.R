@@ -232,8 +232,8 @@ compile_graph_xla <- function(graph, donate = character(), device) {
 #' f_compiled <- xla(function(x, y) x + y,
 #'   args = list(x = nv_aval("f32", c(2, 2)), y = nv_aval("f32", c(2, 2)))
 #' )
-#' a <- nv_array(array(1:4, c(2, 2)), dtype = "f32")
-#' b <- nv_array(array(5:8, c(2, 2)), dtype = "f32")
+#' a <- nv_matrix(1:4, nrow = 2, dtype = "f32")
+#' b <- nv_matrix(5:8, nrow = 2, dtype = "f32")
 #' f_compiled(a, b)
 xla <- function(f, args, donate = character(), device = NULL) {
   # FIXME: Also use device inference from trace_fn
@@ -333,7 +333,8 @@ AnvlBackendXla <- function() {
         cli_abort("{.val {common}} cannot be both in {.arg donate} and {.arg static}.")
       }
       jit_xla_impl(f, static, cache, donate, device)
-    }
+    },
+    await_data = function(x) pjrt::await(x$data)
   )
   class(backend) <- c("AnvlBackendXla", class(backend))
   backend

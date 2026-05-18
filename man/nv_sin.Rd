@@ -24,5 +24,5 @@ sin(x)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=prim_sine]{prim_sine()}} for the underlying primitive.
+\code{\link[=prim_sin]{prim_sin()}} for the underlying primitive.
 }

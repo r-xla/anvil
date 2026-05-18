@@ -55,7 +55,7 @@ To do this, we use `anvl::trace_fn()`, which takes in an `R` function and a list
 ```{r}
 aten <- nv_aval("f32", c())
 aten
-graph <- trace_fn(f, list(x = aten, y = aten, op = "mul"), mode = "toplevel")
+graph <- trace_fn(f, list(x = aten, y = aten, op = "mul"))
 graph
 ```
 
@@ -257,7 +257,7 @@ Consider the program below:
 y <- nv_array(rnorm(1000000L))
 graph <- trace_fn(function(x) {
   x + y + 1
-}, list(x = nv_scalar(1L)), mode = "toplevel")
+}, list(x = nv_scalar(1L)))
 graph
 ```
 
@@ -285,7 +285,7 @@ Captured constants can become unused when we apply code transformations like bel
 f <- function(x) {
 x + y
 }
-transform_gradient(trace_fn(f, list(x = nv_scalar(1)), mode = "toplevel"))
+transform_gradient(trace_fn(f, list(x = nv_scalar(1))))
 ```
 
 In principle, the compiler is able to do this itself, but because we pass constants as inputs to the program, we need to handle it ourselves.

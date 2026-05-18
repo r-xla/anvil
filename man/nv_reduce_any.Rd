@@ -4,14 +4,15 @@
 \alias{nv_reduce_any}
 \title{Any Reduction}
 \usage{
-nv_reduce_any(operand, dims, drop = TRUE)
+nv_reduce_any(operand, dims = NULL, drop = TRUE)
 }
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr
 Operand.}
 
-\item{dims}{(\code{integer()})\cr
-Dimensions to reduce.}
+\item{dims}{(\code{integer()} | \code{NULL})\cr
+Dimensions to reduce. If \code{NULL} (default), reduces over all
+dimensions, returning a scalar.}
 
 \item{drop}{(\code{logical(1)})\cr
 Whether to drop reduced dimensions.}
@@ -28,7 +29,8 @@ Returns \code{TRUE} if any element is \code{TRUE}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+x <- nv_matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2)
+nv_reduce_any(x)            # all dims -> scalar
 nv_reduce_any(x, dims = 1L)
 \dontshow{\}) # examplesIf}
 }

@@ -42,7 +42,9 @@ There are various scenarios:
    2. It cannot be expressed or can only expressed inefficiently:
 
       $\rightarrow$ You can implement a stableHLO custom call, see the custom print operation in [pjrt](https://github.com/r-xla/pjrt).
-      This is currently not well documented, so you need to dig into the source code.
+      The {pjrt} package has a dedicated ["Adding Custom Calls"](https://r-xla.github.io/pjrt/dev/articles/ffi.html) tutorial.
+      This mechanism is used, for example, to implement some of the linear algebra primitives such as SVD: on CPU these call into LAPACK, and on GPU they use NVIDIA's cuSOLVER library.
+      In the future it will also be possible to call into user-provided custom CUDA kernels, but there is no infrastructure for this yet -- currently we only call into predefined kernels shipped with the CUDA toolkit.
 
 ## Adding a Primitive: Practical Example
 
@@ -217,6 +219,8 @@ The wrapped backward receives:
 - `required`: Logical vector indicating which input gradients are needed
 
 It returns a list with one gradient per input (or `NULL` if not required).
+
+Note that the reverse rule will only be called if at least one input gradient is required, so this can be assumed.
 
 #### Optional: alternative-forward rule
 

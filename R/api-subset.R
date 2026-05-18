@@ -343,7 +343,9 @@ parse_subset_specs <- function(quos, operand_shape) {
 #' @return A SubsetSpec object (SubsetFull, SubsetRange, or SubsetIndices)
 #' @noRd
 parse_subset_spec <- function(quo, dim_size) {
-  is_integerish <- function(x) test_integerish(x, len = 1L, any.missing = FALSE)
+  is_integerish <- function(x) {
+    is.null(dim(x)) && test_integerish(x, len = 1L, any.missing = FALSE)
+  }
 
   # Missing argument - select all
   if (rlang::quo_is_missing(quo)) {
@@ -375,7 +377,8 @@ parse_subset_spec <- function(quo, dim_size) {
   # Evaluate the quosure
   e <- rlang::eval_tidy(quo)
 
-  # Single integer - drops dimension
+  # Single integer - drops dimension. `array(i)` (length-1, with dim attr)
+  # falls through to the array branch below so the dim is kept.
   if (is_integerish(e)) {
     idx <- as.integer(e)
     if (idx < 1L || idx > dim_size) {
@@ -448,11 +451,11 @@ parse_subset_spec <- function(quo, dim_size) {
 #' @seealso [nv_subset_assign()] for updating subsets, `vignette("subsetting")`
 #'   for a comprehensive guide.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:12, nrow = 3))
+#' x <- nv_matrix(1:12, nrow = 3)
 #' # Select row 2
 #' x[2, ]
 #'
-#' x <- nv_array(matrix(1:12, nrow = 3))
+#' x <- nv_matrix(1:12, nrow = 3)
 #' # Select rows 1 to 2, all columns
 #' x[1:2, ]
 #' @export
@@ -501,7 +504,7 @@ nv_subset <- function(x, ...) {
 #'   A new array with the same shape as `x` and the subset replaced.
 #' @seealso [nv_subset()], `vignette("subsetting")` for a comprehensive guide.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:12, nrow = 3))
+#' x <- nv_matrix(1:12, nrow = 3)
 #' # Set row 1 to zeros
 #' x[1, ] <- nv_scalar(0L)
 #' x

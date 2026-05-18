@@ -5,14 +5,105 @@
 * Renamed user-facing API functions to match base R names:
   `nv_sine()` -> `nv_sin()`, `nv_cosine()` -> `nv_cos()`,
   `nv_ceil()` -> `nv_ceiling()`, `nv_cholesky()` -> `nv_chol()`.
-  The underlying `prim_*` primitives keep their StableHLO-aligned names.
+  The corresponding primitives were renamed in step:
+  `prim_sine()` -> `prim_sin()`, `prim_cosine()` -> `prim_cos()`,
+  `prim_cholesky()` -> `prim_chol()`.
+* `nv_reduce_mean()` was renamed to `nv_mean()`.
+* `nv_solve()` no longer requires `a` to be symmetric positive-definite as it
+  uses LU instead of Cholesky decomposition.
+  Because of this, it is no longer differentiable, as the reverse rule for 
+  LU is not implemented yet.
+* `nv_chol()` / `prim_chol()` now default to `lower = FALSE`
+  (upper-triangular factor), matching base R's `chol()`. Previously
+  defaulted to `lower = TRUE`.
 
 ## New Features
 
-* Added `AnvlArray` -> R `vector` converters `as.numeric`, `as.double`,
-  `as.integer` and `as.logical`
+### Linear algebra
+
+* New matrix-decomposition primitives and corresponding `nv_*()`
+  functions: `qr`, `lu`, `svd`, `eigh`. None of them implement a
+  reverse rule yet.
+* New API functions:
+  * `nv_triangular_solve()` (wraps the already-existing
+    `prim_triangular_solve()`).
+  * `nv_det()` and `nv_determinant()`. The latter can also be called
+    via the `determinant()` generic.
+  * `nv_inv()`, which can also be called via `solve(operand)` (missing
+    second argument).
+* `qr`, `chol`, and `solve` from base R now dispatch to `nv_qr()`,
+  `nv_chol()`, and `nv_solve()` on `AnvlArray` / `AnvlBox` inputs.
+
+### Element-wise math
+
+* New unary primitives and corresponding `nv_*()` functions:
+  `acos`, `acosh`, `asin`, `asinh`, `atan`, `atanh`, `cosh`, `sinh`,
+  `digamma`, `lgamma`, `polygamma`, `erf`, `erf_inv`, `erfc`.
+* New API functions `nv_mod()` (flooring remainder) and `nv_trunc()`
+  (truncation toward zero).
+
+### Cumulative reductions
+
+* New primitives and corresponding `nv_*()` functions: `cumsum`,
+  `cumprod`, `cummax`, `cummin`. `prim_cumprod()` does not yet have
+  a reverse rule.
+
+### Sorting and searching
+
+* New primitives `prim_sort()`, `prim_top_k()`, `prim_reduce()`,
+  `prim_argmax()`, `prim_argmin()`.
+* New API functions:
+  * `nv_sort()` / `nv_argsort()` -- sort along a dimension, or return
+    the permutation that does.
+  * `nv_top_k()` -- the `k` largest values along a dimension.
+  * `nv_median()` / `nv_quantile()` -- median / quantiles along a
+    dimension. `median()` dispatches to `nv_median()`.
+  * `nv_argmax()` / `nv_argmin()` -- index of the maximum / minimum
+    along a dimension (ties broken by smallest index).
+  * `nv_select()` -- select a slice along a dimension by index.
+
+### Array construction / shape
+
+* `nv_array()` gained a `byrow` argument that fills the array from an R
+  object in row-major order, mirroring `matrix(byrow = TRUE)` (#165).
+* New `nv_matrix(data, nrow, ncol, ...)` which works like R's `matrix()`.
 * New API functions `nv_rbind()` and `nv_cbind()` and corresponding
-  `rbind()`/`cbind()` generics.
+  `rbind()` / `cbind()` generics.
+* New API function `nv_flatten()` for flattening to 1-D.
+
+### Misc
+
+* New `AnvlArray` -> R `vector` converters: `as.numeric()`,
+  `as.double()`, `as.integer()`, `as.logical()`, `as.vector()`.
+* New function `await()` that blocks until the underlying computation
+  has finished.
+* New tree utilities `map_tree()` and `pmap_tree()` for applying
+  functions leaf-wise over (possibly nested) lists.
+* `mean()` and `median()` now error when called with `na.rm = TRUE`,
+  since anvl arrays do not carry `NA`s. `mean()` also rejects non-zero
+  `trim`.
+
+## Other
+
+* `nv_reduce_sum()`, `nv_reduce_prod()`, `nv_reduce_max()`,
+  `nv_reduce_min()`, `nv_reduce_any()`, `nv_reduce_all()` and
+  `nv_mean()` now default `dims = NULL`, which reduces over all
+  dimensions and returns a scalar. Previously, `dims` was required.
+
+## Bug Fixes
+
+* The overloaded `%%` operator now calls the new `nv_mod()` to be
+  consistent with base R.
+* The reverse rule for `prim_reduce_prod()` no longer produces
+  `NaN` / `Inf` gradients when the input contains zeros.
+* The CI now actually runs the torch-comparison tests.
+* `nv_runif()` not properly respects the `lower` argument.
+* The overloaded `%%` operator now calls the new `nv_mod()` to be consistent
+  with base R.
+* The reverse rule for `prim_reduce_prod()` no longer produces `NaN`/`Inf`
+  gradients when the input contains zeros.
+* The CI now actually runs the torch-comparison tests
+
 
 # anvl 0.2.0
 

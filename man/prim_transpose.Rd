@@ -38,7 +38,7 @@ Lowers to \code{\link[stablehlo:hlo_transpose]{stablehlo::hlo_transpose()}}.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(1:6, nrow = 2))
+x <- nv_matrix(1:6, nrow = 2)
 prim_transpose(x, permutation = c(2L, 1L))
 \dontshow{\}) # examplesIf}
 }

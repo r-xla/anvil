@@ -174,7 +174,8 @@ AnvlBackendQuickr <- function() {
     jit = function(f, static, cache, unwrap = FALSE, device = NULL) {
       assert_flag(unwrap)
       jit_quickr_impl(f, static, cache, unwrap)
-    }
+    },
+    await_data = function(x) invisible(NULL)
   )
   class(backend) <- c("AnvlBackendQuickr", class(backend))
   backend

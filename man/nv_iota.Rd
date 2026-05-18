@@ -56,7 +56,7 @@ starting from \code{start}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 nv_iota(dim = 1L, dtype = "i32", shape = 5L)
-x <- nv_array(matrix(0L, nrow = 2, ncol = 3))
+x <- nv_fill(0L, shape = c(2, 3))
 nv_iota_like(x, dim = 1L)
 \dontshow{\}) # examplesIf}
 }
