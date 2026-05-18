@@ -9,15 +9,15 @@ vignette: >
 
 This vignette lists various things to be aware of, specifically in relation to base R.
 
-```{r}
+```{r, include = FALSE}
 library(anvl)
 ```
 
 ## Row-major vs column-major ordering
 
 R stores matrices and arrays in *column-major* order, while {anvl} (following XLA) uses *row-major* order.
-This makes no difference when you only use shape-aware operations (subsetting, matrix multiplication, etc.) -- the indices are the same in both.
-The difference shows up when you flatten an array, because the underlying data is then traversed in a different order.
+For most operations, this is an internal implementation detail that does not change the semantics.
+However, for reshaping operations such as `nv_flatten()` there is a difference.
 
 Consider the 2x2 matrix below:
 
@@ -35,13 +35,13 @@ as.vector(m)
 In {anvl}, reshaping to a length-4 vector traverses the data row-by-row, so we get `1, 3, 2, 4`:
 
 ```{r}
-nv_reshape(m, shape = 4)
+nv_flatten(m)
 ```
 
 If you need column-major flattening in {anvl}, transpose first:
 
 ```{r}
-nv_reshape(nv_transpose(m), shape = 4)
+nv_flatten(t(m))
 ```
 
 ## No recycling
@@ -68,9 +68,12 @@ nv_array(1:4) + nv_array(1:2)
 When two non-scalar arrays differ only by size-1 dimensions (numpy-style broadcasting, e.g. shape `(2, 3)` and `(1, 3)`), use `nv_broadcast_arrays()` to align them explicitly first:
 
 ```{r}
-a <- nv_array(matrix(1:6, nrow = 2))
-b <- nv_array(matrix(c(10, 20, 30), nrow = 1))
+a <- nv_matrix(1:6, nrow = 2)
+shape(a)
+b <- nv_matrix(c(10, 20, 30), nrow = 1)
+shape(b)
 xs <- nv_broadcast_arrays(a, b)
+lapply(xs, shape)
 xs[[1]] + xs[[2]]
 ```
 
@@ -79,9 +82,8 @@ Note that even `nv_broadcast_arrays()` cannot replicate R's recycling for shapes
 ## No `NA`s
 
 R has a dedicated missing-value marker (`NA`) for every atomic type.
-{anvl} arrays do not -- there is no representation of "missing" at the XLA level.
-When you convert R values containing `NA` into an `AnvlArray`, the `NA`s are silently turned into the closest available value of the target dtype.
-For floating-point dtypes, that value is `NaN`:
+{anvl} arrays do not -- there is no representation of "missing" at the XLA level, only `NaN` for floating point numbers.
+When you convert R values containing `NA` into an `AnvlArray`, the `NA`s are silently turned into `NaN`s.
 
 ```{r}
 nv_array(NA_real_)
@@ -91,48 +93,42 @@ nv_array(NA_real_)
 nv_array(c(1, NA, 3))
 ```
 
-Round-tripping back to R produces `NaN`, not `NA`:
+Round-tripping back to R is not guaranteed to produce `NA`, but can also yield `NaN`:
 
 ```{r}
 as_array(nv_array(c(1, NA, 3)))
 ```
 
-Integer dtypes have no `NaN`, but `NA_integer_` does *appear* to round-trip:
+For other data types, the situation is even worse, especially for integers, where R uses the smallest possible value to represent missingness:
 
 ```{r}
-nv_scalar(NA_integer_) |> as.integer()
+nv_scalar(NA_integer_)
 ```
 
-This is misleading.
-R represents `NA_integer_` by reserving one specific 32-bit integer value (`-2^31 = -2147483648`) as a sentinel for missingness, leaving only `2^32 - 1` valid integers.
-{anvl} has no notion of missing values and just stores that bit pattern as a regular `i32`.
-The round-trip "works" only because R interprets the same bit pattern back as `NA` -- but inside {anvl} the value behaves like the integer `-2147483648`, and any computation on it (e.g. addition, comparison) will treat it as such rather than propagating missingness.
-The same caveat applies in reverse: if a genuine {anvl} computation produces `-2147483648`, converting back to R will silently turn it into `NA`.
+However, when you convert it back, you get a missing value again:
 
-For logical (`bool`) dtype the situation is worst: there is no spare bit pattern at all, so a bare `NA` (which is logical) is silently turned into `TRUE`:
+```{r}
+as.integer(nv_scalar(NA_integer_))
+```
+
+When creating logicals, `NA` will be interpreted as `TRUE`:
 
 ```{r}
 nv_scalar(NA)
 as.logical(nv_scalar(NA))
 ```
 
-If your data contains missing values, decide how to handle them *before* converting to an `AnvlArray`.
-To opt into a runtime check, pass `check = TRUE` to `nv_array()` / `nv_scalar()`, which errors if the input contains any `NA`:
+In order to avoid these pitfals, array creators such as `nv_array()` have a `check` argument to prevent the above problems.
+It is `FALSE` by default, because it needs to scan the complete data.
 
 ```{r, error = TRUE}
 nv_array(c(1, NA, 3), check = TRUE)
 ```
 
-The same flag is available on `as_array()` for the `i32` round-trip case, where it errors if the materialized integer vector contains any `NA` (i.e. any `-2147483648`):
+The same flag is available for converters like `as_array()`:
 
 ```{r, error = TRUE}
 as_array(nv_scalar(NA_integer_), check = TRUE)
-```
-
-It is also forwarded by the `as.integer()` / `as.double()` / `as.logical()` / `as.vector()` methods for `AnvlArray`, so the same scan is available when coercing directly to a bare R vector:
-
-```{r, error = TRUE}
-as.integer(nv_scalar(NA_integer_), check = TRUE)
 ```
 
 ## No unsigned integers
@@ -145,11 +141,19 @@ For values that fit into R's signed integer range, the round-trip works as expec
 as_array(nv_array(c(0L, 200L, 255L), dtype = "ui8"))
 ```
 
-For larger device-side values, however, materialization back into an R integer vector silently produces `NA`:
+Because `ui32` does not fit into R's native integer type, it will be converted to `bit64::integer64` data type:
+
 
 ```{r}
 big <- nv_array(2147483647L, dtype = "ui32") + 1L
 as_array(big)
 ```
 
-The device-side value is `2147483648` -- a perfectly valid `ui32` -- but it falls outside R's signed integer range, so it collides with the `NA_integer_` sentinel on materialization. The same caveat applies to all values `>= 2^31` in any unsigned dtype, including the much larger range of `ui64`. If you need to consume large unsigned values in R, convert the dtype on the device side first (e.g. `nv_convert(x, "f64")`).
+However, for `ui64`, we also convert to `integer64`, which does not cover the whole range, so overflow is possible, but can be detected via the `check` flag:
+
+```{r, error = TRUE}
+big <- nv_array(0L, dtype = "ui64") - 1L
+big
+as_array(big)
+as_array(big, check = TRUE)
+```

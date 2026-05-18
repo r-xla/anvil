@@ -426,23 +426,17 @@ shape.AnvlArray <- function(x, ...) {
 
 #' @rdname as_array
 #' @param check (`logical(1)`)\cr
-#'   If `TRUE` and the array's dtype is `i32`, error when the materialized
-#'   R integer vector contains any `NA_integer_` values. R reserves the bit
-#'   pattern `-2147483648` as the `NA_integer_` sentinel, so a genuine
-#'   device-side `i32` value of `-2147483648` is silently turned into `NA`
-#'   on transfer. No-op for other dtypes. Defaults to `FALSE`. See the
-#'   "Gotchas" vignette.
+#'   If `TRUE`, sanity-check the materialized R vector against losing
+#'   information across the device-to-host boundary, and abort if any
+#'   problematic value is detected. Forwarded to the backend; for the
+#'   `xla` backend the relevant cases are `i32`/`i64` values colliding
+#'   with the `NA` bit pattern and `ui64` values `>= 2^63` wrapping
+#'   through `bit64::integer64`. See [`pjrt::as_array.PJRTBuffer()`] for
+#'   the full list. Defaults to `FALSE`. See the "Gotchas" vignette.
 #' @export
 as_array.AnvlArray <- function(x, check = FALSE, ...) {
   assert_flag(check)
-  result <- globals$backends[[x$backend]]$as_array(x)
-  if (check && (dtype(x) == as_dtype("i32")) && anyNA(result)) {
-    cli_abort(c(
-      "Materialized R integer vector contains {.val NA} values from device-side {.val -2147483648}.",
-      i = "This collision is irrecoverable: the device value and {.val NA} are indistinguishable in R. Set {.code check = FALSE} to skip this check."
-    ))
-  }
-  result
+  globals$backends[[x$backend]]$as_array(x, check = check)
 }
 
 #' @export

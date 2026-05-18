@@ -14,12 +14,13 @@ as_array(x, ...)
 An array-like object.}
 
 \item{check}{(\code{logical(1)})\cr
-If \code{TRUE} and the array's dtype is \code{i32}, error when the materialized
-R integer vector contains any \code{NA_integer_} values. R reserves the bit
-pattern \code{-2147483648} as the \code{NA_integer_} sentinel, so a genuine
-device-side \code{i32} value of \code{-2147483648} is silently turned into \code{NA}
-on transfer. No-op for other dtypes. Defaults to \code{FALSE}. See the
-"Gotchas" vignette.}
+If \code{TRUE}, sanity-check the materialized R vector against losing
+information across the device-to-host boundary, and abort if any
+problematic value is detected. Forwarded to the backend; for the
+\code{xla} backend the relevant cases are \code{i32}/\code{i64} values colliding
+with the \code{NA} bit pattern and \code{ui64} values \verb{>= 2^63} wrapping
+through \code{bit64::integer64}. See \code{\link[pjrt:as_array.PJRTBuffer]{pjrt::as_array.PJRTBuffer()}} for
+the full list. Defaults to \code{FALSE}. See the "Gotchas" vignette.}
 
 \item{...}{Additional arguments passed to methods (unused).}
 }
