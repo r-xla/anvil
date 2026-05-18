@@ -268,7 +268,7 @@ test_that("graph_to_quickr_function preserves 1D output dims", {
     function(x) {
       x + 1L
     },
-    list(x = nv_array(array(0, dim = 3L), dtype = "f64", shape = 3L)),
+    list(x = nv_array(numeric(3), shape = 3L, dtype = "f64")),
     desc = local_descriptor()
   )
 
@@ -283,7 +283,7 @@ test_that("graph_to_quickr_function preserves empty 1D output dims without wrapp
     function(x) {
       x
     },
-    list(x = nv_array(array(0, dim = 0L), dtype = "f64", shape = 0L))
+    list(x = nv_array(numeric(0), shape = 0L, dtype = "f64"))
   )
 
   x <- array(numeric(), dim = 0L)
@@ -305,7 +305,7 @@ test_that("graph_to_quickr_function preserves rank-1 dims for direct quickr outp
     function(x) {
       nv_expm1(x)
     },
-    list(x = nv_array(array(0, dim = 3L), dtype = "f64", shape = 3L))
+    list(x = nv_array(numeric(3), shape = 3L, dtype = "f64"))
   )
 
   x <- array(c(0.1, 0.2, 0.3), dim = 3L)
@@ -332,7 +332,7 @@ test_that("graph_to_quickr_function preserves rank-1 dims for wrapped quickr out
       }
     },
     list(
-      x = nv_array(array(0, dim = 3L), dtype = "f64", shape = 3L),
+      x = nv_array(numeric(3), shape = 3L, dtype = "f64"),
       flag = TRUE
     )
   )

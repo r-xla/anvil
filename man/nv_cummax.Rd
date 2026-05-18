@@ -39,7 +39,7 @@ column-major (Fortran) order. The two agree on 1-D inputs.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(c(3, 1, 4, 1, 5, 9), nrow = 2))
+x <- nv_matrix(c(3, 1, 4, 1, 5, 9), nrow = 2)
 nv_cummax(x)
 nv_cummax(x, dim = 1L)
 nv_cummax(x, dim = 1L, with_indices = TRUE)

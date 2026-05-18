@@ -42,8 +42,8 @@ via \code{\link[=stablehlo]{stablehlo()}} and then compiles it to an XLA executa
 f_compiled <- xla(function(x, y) x + y,
   args = list(x = nv_aval("f32", c(2, 2)), y = nv_aval("f32", c(2, 2)))
 )
-a <- nv_array(array(1:4, c(2, 2)), dtype = "f32")
-b <- nv_array(array(5:8, c(2, 2)), dtype = "f32")
+a <- nv_matrix(1:4, nrow = 2, dtype = "f32")
+b <- nv_matrix(5:8, nrow = 2, dtype = "f32")
 f_compiled(a, b)
 \dontshow{\}) # examplesIf}
 }

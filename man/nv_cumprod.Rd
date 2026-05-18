@@ -32,7 +32,7 @@ column-major (Fortran) order. The two agree on 1-D inputs.
 
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(1:6, nrow = 2))
+x <- nv_matrix(1:6, nrow = 2)
 nv_cumprod(x)              # row-major flatten, then accumulate
 nv_cumprod(x, dim = 1L)    # accumulate along rows
 \dontshow{\}) # examplesIf}

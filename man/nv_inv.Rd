@@ -24,7 +24,7 @@ a right-hand side.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
 nv_inv(a)
 \dontshow{\}) # examplesIf}
 }

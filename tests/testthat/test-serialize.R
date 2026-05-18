@@ -1,7 +1,7 @@
 # the main tests are in {pjrt}, hence we keep them minimal here
 
 test_that("nv_serialize and nv_unserialize work for single array", {
-  x <- nv_array(array(rnorm(12), dim = c(3, 4)))
+  x <- nv_matrix(rnorm(12), nrow = 3)
   lst <- list(x = x)
   raw_data <- nv_serialize(lst)
   expect_type(raw_data, "raw")
@@ -10,7 +10,7 @@ test_that("nv_serialize and nv_unserialize work for single array", {
 })
 
 test_that("nv_save and nv_read works for a single array", {
-  x <- nv_array(array(rnorm(12), dim = c(3, 4)))
+  x <- nv_matrix(rnorm(12), nrow = 3)
   lst <- list(x = x)
   tmp <- tempfile(fileext = ".safetensors")
   nv_save(lst, tmp)
@@ -20,7 +20,7 @@ test_that("nv_save and nv_read works for a single array", {
 
 test_that("nv_serialize and nv_unserialize work for quickr backend", {
   skip_if_no_quickr()
-  x <- nv_array(array(1:6, dim = c(2, 3)), dtype = "i32", backend = "quickr")
+  x <- nv_matrix(1:6, nrow = 2, dtype = "i32", backend = "quickr")
   lst <- list(x = x)
   raw_data <- nv_serialize(lst)
   expect_type(raw_data, "raw")

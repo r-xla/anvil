@@ -26,7 +26,7 @@ order match \code{\link[base:eigen]{base::eigen()}}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(c(2, 1, 1, 2), nrow = 2), dtype = "f64")
+x <- nv_matrix(c(2, 1, 1, 2), nrow = 2, dtype = "f64")
 nv_eigh(x)
 \dontshow{\}) # examplesIf}
 }

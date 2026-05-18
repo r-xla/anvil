@@ -52,7 +52,7 @@ Creates an array filled with a scalar value. More memory-efficient than
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 nv_fill(0, shape = c(2, 3))
-x <- nv_array(matrix(1:6, nrow = 2))
+x <- nv_matrix(1:6, nrow = 2)
 nv_fill_like(x, 0)
 \dontshow{\}) # examplesIf}
 }

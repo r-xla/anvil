@@ -525,7 +525,7 @@ describe("prim_while", {
 })
 
 test_that("prim_chol", {
-  A <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
+  A <- nv_matrix(c(4, 2, 2, 3), nrow = 2, dtype = "f64")
   L <- as_array(prim_chol(A, lower = TRUE))
   expect_equal(L[1, 1], 2)
   expect_equal(L[2, 1], 1)
@@ -535,7 +535,7 @@ test_that("prim_chol", {
 })
 
 test_that("prim_chol zeros out non-triangular part", {
-  A <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f64")
+  A <- nv_matrix(c(4, 2, 2, 3), nrow = 2, dtype = "f64")
   L <- as_array(prim_chol(A, lower = TRUE))
   expect_equal(L[1, 2], 0)
 
@@ -545,8 +545,8 @@ test_that("prim_chol zeros out non-triangular part", {
 
 test_that("prim_triangular_solve", {
   # Solve L %*% x = b where L = [[3, 0], [1, 2]]
-  L <- nv_array(matrix(c(3, 1, 0, 2), nrow = 2), dtype = "f64")
-  b <- nv_array(matrix(c(6, 5), nrow = 2), dtype = "f64")
+  L <- nv_matrix(c(3, 1, 0, 2), nrow = 2, dtype = "f64")
+  b <- nv_matrix(c(6, 5), nrow = 2, dtype = "f64")
   x <- as_array(prim_triangular_solve(
     L,
     b,
@@ -582,7 +582,7 @@ describe("prim_qr", {
     m <- 4L
     n <- 2L
     k <- min(m, n)
-    A <- nv_array(matrix(c(12, 6, -4, 1, -51, 167, 24, 5), nrow = m), dtype = "f64")
+    A <- nv_matrix(c(12, 6, -4, 1, -51, 167, 24, 5), nrow = m, dtype = "f64")
     out <- prim_qr(A)
     expect_named(out, c("Q", "R"))
     Q <- as_array(out$Q)
@@ -598,16 +598,16 @@ describe("prim_qr", {
   it("rejects invalid inputs", {
     vec <- nv_array(c(1, 2, 3), dtype = "f32")
     expect_error(prim_qr(vec), "must be a 2-D matrix")
-    empty <- nv_array(matrix(numeric(0), nrow = 0, ncol = 2), dtype = "f32")
+    empty <- nv_matrix(numeric(0), nrow = 0, ncol = 2, dtype = "f32")
     expect_error(prim_qr(empty), "zero-sized")
-    int_mat <- nv_array(matrix(1:4, nrow = 2), dtype = "i32")
+    int_mat <- nv_matrix(1:4, nrow = 2, dtype = "i32")
     expect_error(prim_qr(int_mat), "floating-point")
   })
 })
 
 describe("prim_lu", {
   it("decomposes a square matrix", {
-    A <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+    A <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
     out <- prim_lu(A)
     expect_named(out, c("LU", "pivots", "permutation"))
     expect_equal(shape(out$LU), c(2L, 2L))
@@ -633,9 +633,9 @@ describe("prim_lu", {
   it("rejects invalid inputs", {
     vec <- nv_array(c(1, 2, 3), dtype = "f32")
     expect_error(prim_lu(vec), "must be a 2-D matrix")
-    empty <- nv_array(matrix(numeric(0), nrow = 0, ncol = 2), dtype = "f32")
+    empty <- nv_matrix(numeric(0), nrow = 0, ncol = 2, dtype = "f32")
     expect_error(prim_lu(empty), "zero-sized")
-    int_mat <- nv_array(matrix(1:4, nrow = 2), dtype = "i32")
+    int_mat <- nv_matrix(1:4, nrow = 2, dtype = "i32")
     expect_error(prim_lu(int_mat), "floating-point")
   })
 })
@@ -645,7 +645,7 @@ describe("prim_svd", {
     m <- 3L
     n <- 2L
     k <- min(m, n)
-    A <- nv_array(matrix(c(1, 0, 0, 1, 0, 1), nrow = m), dtype = "f64")
+    A <- nv_matrix(c(1, 0, 0, 1, 0, 1), nrow = m, dtype = "f64")
     out <- prim_svd(A)
     # Returns `vt` (LAPACK form, shape (k, n)) — not `v` like base::svd().
     expect_named(out, c("d", "u", "vt"))
@@ -667,16 +667,16 @@ describe("prim_svd", {
   it("rejects invalid inputs", {
     vec <- nv_array(c(1, 2, 3), dtype = "f32")
     expect_error(prim_svd(vec), "must be a 2-D matrix")
-    empty <- nv_array(matrix(numeric(0), nrow = 0, ncol = 2), dtype = "f32")
+    empty <- nv_matrix(numeric(0), nrow = 0, ncol = 2, dtype = "f32")
     expect_error(prim_svd(empty), "zero-sized")
-    int_mat <- nv_array(matrix(1:4, nrow = 2), dtype = "i32")
+    int_mat <- nv_matrix(1:4, nrow = 2, dtype = "i32")
     expect_error(prim_svd(int_mat), "floating-point")
   })
 })
 
 describe("prim_eigh", {
   it("decomposes a symmetric matrix", {
-    A <- nv_array(matrix(c(2, 1, 1, 2), nrow = 2), dtype = "f64")
+    A <- nv_matrix(c(2, 1, 1, 2), nrow = 2, dtype = "f64")
     out <- prim_eigh(A)
     # Names and order match base::eigen(): values, vectors.
     expect_named(out, c("values", "vectors"))
@@ -697,11 +697,11 @@ describe("prim_eigh", {
   it("rejects invalid inputs", {
     vec <- nv_array(c(1, 2, 3), dtype = "f32")
     expect_error(prim_eigh(vec), "must be a 2-D matrix")
-    empty <- nv_array(matrix(numeric(0), nrow = 0, ncol = 0), dtype = "f32")
+    empty <- nv_matrix(numeric(0), nrow = 0, ncol = 0, dtype = "f32")
     expect_error(prim_eigh(empty), "zero-sized")
-    int_mat <- nv_array(matrix(1:4, nrow = 2), dtype = "i32")
+    int_mat <- nv_matrix(1:4, nrow = 2, dtype = "i32")
     expect_error(prim_eigh(int_mat), "floating-point")
-    rect <- nv_array(matrix(1:6, nrow = 2), dtype = "f32")
+    rect <- nv_matrix(1:6, nrow = 2, dtype = "f32")
     expect_error(prim_eigh(rect), "square")
   })
 })
@@ -740,8 +740,8 @@ test_that("prim_reverse", {
 
   # 2D reverse
   f2 <- jit(function(x) prim_reverse(x, 2L))
-  x2 <- nv_array(matrix(1:6, 2, 3), dtype = "i32")
-  expect_equal(f2(x2), nv_array(matrix(c(5L, 6L, 3L, 4L, 1L, 2L), 2, 3), dtype = "i32"))
+  x2 <- nv_matrix(1:6, nrow = 2, ncol = 3, dtype = "i32")
+  expect_equal(f2(x2), nv_matrix(c(5L, 6L, 3L, 4L, 1L, 2L), nrow = 2, ncol = 3, dtype = "i32"))
 })
 
 test_that("prim_iota", {
@@ -831,8 +831,8 @@ describe("prim_sort", {
 
   it("sorts each row (dim = 2) of a matrix", {
     f <- jit(function(x) prim_sort(list(x), dim = 2L)[[1L]])
-    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
-    expect_equal(f(m), nv_array(matrix(c(1, 3, 5, 0, 2, 4), nrow = 2, byrow = TRUE)))
+    m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
+    expect_equal(f(m), nv_matrix(c(1, 3, 5, 0, 2, 4), nrow = 2, byrow = TRUE))
   })
 
   it("variadic: carried operand is permuted by the key", {
@@ -850,14 +850,14 @@ describe("prim_top_k", {
   it("returns values and 1-based indices along the last dim", {
     out <- prim_top_k(nv_array(c(3, 1, 4, 1, 5, 9, 2, 6)), k = 3L)
     expect_length(out, 2L)
-    expect_equal(as.vector(as_array(out[[1L]])), c(9, 6, 5))
-    expect_equal(as.vector(as_array(out[[2L]])), c(6L, 8L, 5L))
+    expect_equal(as.vector(out[[1L]]), c(9, 6, 5))
+    expect_equal(as.vector(out[[2L]]), c(6L, 8L, 5L))
     expect_equal(as.character(dtype(out[[2L]])), "i32")
   })
 
   it("operates per-row on a matrix", {
     f <- jit(function(x) prim_top_k(x, k = 2L))
-    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
     out <- f(m)
     expect_equal(as_array(out[[1L]]), matrix(c(5, 3, 4, 2), nrow = 2, byrow = TRUE))
     expect_equal(as_array(out[[2L]]), matrix(c(3L, 1L, 2L, 1L), nrow = 2, byrow = TRUE))
@@ -865,14 +865,14 @@ describe("prim_top_k", {
 
   it("breaks ties with the smaller index", {
     out <- prim_top_k(nv_array(c(1, 5, 5, 3)), k = 2L)
-    expect_equal(as.vector(as_array(out[[1L]])), c(5, 5))
-    expect_equal(as.vector(as_array(out[[2L]])), c(2L, 3L))
+    expect_equal(as.vector(out[[1L]]), c(5, 5))
+    expect_equal(as.vector(out[[2L]]), c(2L, 3L))
   })
 
   it("preserves operand dtype on values output", {
     out <- prim_top_k(nv_array(c(5L, 2L, 8L, 1L), dtype = "i32"), k = 2L)
     expect_equal(as.character(dtype(out[[1L]])), "i32")
-    expect_equal(as.vector(as_array(out[[1L]])), c(8L, 5L))
+    expect_equal(as.vector(out[[1L]]), c(8L, 5L))
   })
 
   it("rejects k larger than the last dim", {
@@ -893,16 +893,16 @@ describe("prim_argmax", {
 
   it("operates per-row on a matrix", {
     f <- jit(function(x) prim_argmax(x, dim = 2L))
-    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
-    expect_equal(as.vector(as_array(f(m))), c(3L, 2L))
+    m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
+    expect_equal(as.vector(f(m)), c(3L, 2L))
   })
 
   it("supports drop = FALSE", {
     f <- jit(function(x) prim_argmax(x, dim = 2L, drop = FALSE))
-    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+    m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
     out <- f(m)
     expect_equal(shape(out), c(2L, 1L))
-    expect_equal(as.vector(as_array(out)), c(3L, 2L))
+    expect_equal(as.vector(out), c(3L, 2L))
   })
 
   it("returns dtype i32", {
@@ -921,7 +921,7 @@ describe("prim_argmax", {
       "undefined for an empty axis"
     )
     expect_error(
-      prim_argmax(nv_array(array(numeric(0), dim = c(3, 0))), dim = 2L),
+      prim_argmax(nv_matrix(numeric(0), nrow = 3, ncol = 0), dim = 2L),
       "undefined for an empty axis"
     )
     # Inside jit too.
@@ -934,7 +934,7 @@ describe("prim_argmax", {
   it("permits reducing along a non-empty axis when another axis is size 0", {
     # 2D with shape (0, 3): reducing along dim 2 (size 3) is well-defined and
     # produces an empty (length-0) i32 vector.
-    m <- nv_array(array(numeric(0), dim = c(0, 3)))
+    m <- nv_matrix(numeric(0), nrow = 0, ncol = 3)
     out <- prim_argmax(m, dim = 2L)
     expect_equal(shape(out), 0L)
     expect_equal(as.character(dtype(out)), "i32")
@@ -954,8 +954,8 @@ describe("prim_argmin", {
 
   it("operates per-column on a matrix (dim = 1)", {
     f <- jit(function(x) prim_argmin(x, dim = 1L))
-    m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
-    expect_equal(as.vector(as_array(f(m))), c(2L, 1L, 2L))
+    m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
+    expect_equal(as.vector(f(m)), c(2L, 1L, 2L))
   })
 
   it("errors at trace time when reducing along a size-0 axis", {
@@ -986,10 +986,10 @@ describe("prim_reduce", {
     f <- jit(
       function(x) prim_reduce(x, init = nv_scalar(0), dims = 2L, drop = FALSE, reductor = prim_add)
     )
-    m <- nv_array(matrix(c(1, 2, 3, 4, 5, 6), nrow = 2))
+    m <- nv_matrix(c(1, 2, 3, 4, 5, 6), nrow = 2)
     out <- f(m)
     expect_equal(shape(out), c(2L, 1L))
-    expect_equal(as.vector(as_array(out)), c(9, 12))
+    expect_equal(as.vector(out), c(9, 12))
   })
 
   it("rejects mismatched init dtype", {

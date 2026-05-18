@@ -242,7 +242,7 @@ describe("nv_subset and nv_subset_assign", {
     expect_error(x[1:5, , ], "Too many subset specifications")
     expect_error(x[1:5, 1:3, ], "Too many subset specifications")
 
-    y <- nv_array(matrix(1:6, nrow = 2)) # 2-D
+    y <- nv_matrix(1:6, nrow = 2) # 2-D
     expect_error(y[1, 1, ], "Too many subset specifications")
     expect_error(y[1, 1, , ], "Too many subset specifications")
   })
@@ -262,7 +262,7 @@ describe("nv_subset and nv_subset_assign", {
       "Too many subset specifications"
     )
 
-    y <- nv_array(matrix(1:6, nrow = 2)) # 2-D
+    y <- nv_matrix(1:6, nrow = 2) # 2-D
     expect_error(
       {
         y[1, 1, ] <- 0L
@@ -285,7 +285,7 @@ describe("nv_subset and nv_subset_assign", {
   it("subset_assign errors when update shape doesn't match", {
     expect_error(
       {
-        x <- nv_array(matrix(1:6, nrow = 2))
+        x <- nv_matrix(1:6, nrow = 2)
         x[1:2, 1:2] <- nv_array(1:2)
         x
       },
@@ -445,10 +445,10 @@ describe("subset_specs_start_indices", {
 
 describe("subsetting cross-device eager (check_eager)", {
   it("nv_subset with static indices", {
-    check_eager(function(x) x[2L, 1L], nv_array(matrix(1:12, nrow = 3)))
-    check_eager(function(x) x[1:2, ], nv_array(matrix(1:12, nrow = 3)))
-    check_eager(function(x) x[, 1:2], nv_array(matrix(1:12, nrow = 3)))
-    check_eager(function(x) x[array(c(1L, 3L)), ], nv_array(matrix(1:12, nrow = 3)))
+    check_eager(function(x) x[2L, 1L], nv_matrix(1:12, nrow = 3))
+    check_eager(function(x) x[1:2, ], nv_matrix(1:12, nrow = 3))
+    check_eager(function(x) x[, 1:2], nv_matrix(1:12, nrow = 3))
+    check_eager(function(x) x[array(c(1L, 3L)), ], nv_matrix(1:12, nrow = 3))
     check_eager(function(x) x[], nv_array(1:10))
   })
 
@@ -465,7 +465,7 @@ describe("subsetting cross-device eager (check_eager)", {
     )
     check_eager(
       function(x, i, j) x[i, j],
-      nv_array(matrix(1:12, nrow = 3)),
+      nv_matrix(1:12, nrow = 3),
       nv_scalar(2L),
       nv_scalar(1L)
     )
@@ -477,7 +477,7 @@ describe("subsetting cross-device eager (check_eager)", {
         x[1, ] <- v
         x
       },
-      nv_array(matrix(1:12, nrow = 3)),
+      nv_matrix(1:12, nrow = 3),
       nv_array(c(0L, 0L, 0L, 0L))
     )
     check_eager(

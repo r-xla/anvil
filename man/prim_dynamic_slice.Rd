@@ -62,7 +62,7 @@ start <- nv_scalar(3L)
 prim_dynamic_slice(x, start, slice_sizes = 3L)
 
 # 2-D: extract a 2x2 block from a matrix
-x <- nv_array(matrix(1:12, nrow = 3, ncol = 4))
+x <- nv_matrix(1:12, nrow = 3, ncol = 4)
 row_start <- nv_scalar(2L)
 col_start <- nv_scalar(1L)
 prim_dynamic_slice(x, row_start, col_start, slice_sizes = c(2L, 2L))

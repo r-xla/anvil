@@ -4,6 +4,7 @@
 \alias{AnvlArray}
 \alias{nv_array}
 \alias{nv_scalar}
+\alias{nv_matrix}
 \alias{nv_empty}
 \alias{nv_array_like}
 \alias{nv_scalar_like}
@@ -21,6 +22,17 @@ nv_array(
 )
 
 nv_scalar(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL)
+
+nv_matrix(
+  data,
+  nrow = NULL,
+  ncol = NULL,
+  dtype = NULL,
+  device = NULL,
+  ambiguous = NULL,
+  backend = NULL,
+  byrow = FALSE
+)
 
 nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
 
@@ -87,6 +99,14 @@ dimensions, fill the array in row-major order rather than the
 default column-major order, mirroring \code{\link[base:matrix]{base::matrix()}}'s \code{byrow}.
 Only allowed when \code{data} is an R object — passing an existing
 \code{AnvlArray} together with \code{byrow = TRUE} is an error.}
+
+\item{nrow}{(\code{NULL} | \code{integer(1)})\cr
+Number of rows. Inferred from \code{ncol} and the data length if \code{NULL}.
+Defaults to \code{1} when \code{data} is a scalar.}
+
+\item{ncol}{(\code{NULL} | \code{integer(1)})\cr
+Number of columns. Inferred from \code{nrow} and the data length if \code{NULL}.
+Defaults to \code{1} when \code{data} is a scalar.}
 
 \item{like}{(\code{\link{AnvlArray}})\cr
 An existing array. Any of \code{dtype}, \code{device}, \code{shape}, \code{ambiguous}, and

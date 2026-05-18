@@ -26,7 +26,7 @@ The ambiguity of the arrays is stored in the metadata and preserved in write-rea
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded("cpu")) withAutoprint(\{ # examplesIf}
-x <- nv_array(array(1:6, dim = c(2, 3)))
+x <- nv_matrix(1:6, nrow = 2)
 x
 raw_data <- nv_serialize(list(x = x))
 raw_data

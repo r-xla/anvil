@@ -18,7 +18,7 @@ Computes the determinant of a square matrix via \code{\link[=nv_determinant]{nv_
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-a <- nv_array(matrix(c(4, 3, 6, 3), nrow = 2), dtype = "f64")
+a <- nv_matrix(c(4, 3, 6, 3), nrow = 2, dtype = "f64")
 nv_det(a)
 \dontshow{\}) # examplesIf}
 }
