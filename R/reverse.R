@@ -181,8 +181,8 @@ compute_requirements <- function(graph, wrt) {
     bad <- unique(flat_argnames[requires_grad_all & is_static])
     cli_abort(c(
       "Cannot compute gradient with respect to {.arg {bad}}.",
-      x = "{cli::qty(length(bad))}{?It was/They were} passed as {?a plain R value/plain R values} and embedded as {?a constant/constants} in the traced graph, so {?it has/they have} no graph input to differentiate.",
-      i = "{cli::qty(length(bad))}Pass {?it/them} as an {.cls AnvlArray}, e.g. {.code nv_array(1, dtype = \"f32\")}."
+      x = "{cli::qty(length(bad))}{?It was/They were} passed as {?a plain R value/plain R values}",
+      i = "{cli::qty(length(bad))}Pass {?it/them} as an {.cls AnvlArray}."
     ))
   }
   requires_grad <- if (is.null(is_static)) {
