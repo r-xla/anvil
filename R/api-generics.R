@@ -44,40 +44,42 @@ matrixOps.AnvlBox <- matrixOps.AnvlArray
 
 #' @export
 Math.AnvlArray <- function(x, ...) {
+  # Forward `...` so extras like `log(x, base = 2)` surface as
+  # "unused argument" errors from the underlying nv_* function.
   switch(
     .Generic, # nolint
-    "abs" = nv_abs(x),
-    "exp" = nv_exp(x),
-    "sqrt" = nv_sqrt(x),
-    "log" = nv_log(x),
-    "log2" = nv_log2(x),
-    "log10" = nv_log10(x),
-    "tanh" = nv_tanh(x),
-    "tan" = nv_tan(x),
-    "cos" = nv_cos(x),
-    "sin" = nv_sin(x),
-    "acos" = nv_acos(x),
-    "acosh" = nv_acosh(x),
-    "asin" = nv_asin(x),
-    "asinh" = nv_asinh(x),
-    "atan" = nv_atan(x),
-    "atanh" = nv_atanh(x),
-    "cosh" = nv_cosh(x),
-    "sinh" = nv_sinh(x),
-    "digamma" = nv_digamma(x),
-    "lgamma" = nv_lgamma(x),
-    "trigamma" = nv_polygamma(1, x),
-    "floor" = nv_floor(x),
-    "ceiling" = nv_ceiling(x),
-    "trunc" = nv_trunc(x),
-    "sign" = nv_sign(x),
-    "expm1" = nv_expm1(x),
-    "log1p" = nv_log1p(x),
-    "round" = nv_round(x),
-    "cumsum" = nv_cumsum(x),
-    "cumprod" = nv_cumprod(x),
-    "cummax" = nv_cummax(x),
-    "cummin" = nv_cummin(x),
+    "abs" = nv_abs(x, ...),
+    "exp" = nv_exp(x, ...),
+    "sqrt" = nv_sqrt(x, ...),
+    "log" = nv_log(x, ...),
+    "log2" = nv_log2(x, ...),
+    "log10" = nv_log10(x, ...),
+    "tanh" = nv_tanh(x, ...),
+    "tan" = nv_tan(x, ...),
+    "cos" = nv_cos(x, ...),
+    "sin" = nv_sin(x, ...),
+    "acos" = nv_acos(x, ...),
+    "acosh" = nv_acosh(x, ...),
+    "asin" = nv_asin(x, ...),
+    "asinh" = nv_asinh(x, ...),
+    "atan" = nv_atan(x, ...),
+    "atanh" = nv_atanh(x, ...),
+    "cosh" = nv_cosh(x, ...),
+    "sinh" = nv_sinh(x, ...),
+    "digamma" = nv_digamma(x, ...),
+    "lgamma" = nv_lgamma(x, ...),
+    "trigamma" = nv_polygamma(1, x, ...),
+    "floor" = nv_floor(x, ...),
+    "ceiling" = nv_ceiling(x, ...),
+    "trunc" = nv_trunc(x, ...),
+    "sign" = nv_sign(x, ...),
+    "expm1" = nv_expm1(x, ...),
+    "log1p" = nv_log1p(x, ...),
+    "round" = nv_round(x, ...),
+    "cumsum" = nv_cumsum(x, ...),
+    "cumprod" = nv_cumprod(x, ...),
+    "cummax" = nv_cummax(x, ...),
+    "cummin" = nv_cummin(x, ...),
     cli_abort("invalid method: {(.Generic)}")
   )
 }
@@ -85,41 +87,23 @@ Math.AnvlArray <- function(x, ...) {
 #' @export
 Math.AnvlBox <- Math.AnvlArray
 
-#' @export
-Math2.AnvlArray <- function(x, digits, ...) {
-  method <- list(...)$method
-  switch(
-    .Generic, # nolint
-    "round" = {
-      if (!missing(digits)) {
-        cli_abort("Cannot specify digits")
-      }
-      nv_round(x, method = method)
-    },
-    cli_abort("invalid method: {(.Generic)}")
-  )
-}
 
 #' @export
-Math2.AnvlBox <- Math2.AnvlArray
-
-
-#' @export
-Summary.AnvlArray <- function(..., na.rm) {
-  if (...length() != 1L) {
-    cli_abort("Currently only one argument is supported for Summary group generic")
+Summary.AnvlArray <- function(x, ..., na.rm = FALSE) {
+  if (isTRUE(na.rm)) {
+    cli_abort("{.code na.rm = TRUE} is not supported: anvl arrays do not carry {.code NA}s.")
   }
-  x <- ...elt(1L)
-
+  # Forward `...` so supported extras (e.g. `sum(x, dims = 1L)`) reach the
+  # underlying nv_reduce_* and unsupported ones error there as unused args.
   switch(
     .Generic, # nolint
-    "max" = nv_reduce_max(x),
-    "min" = nv_reduce_min(x),
-    "range" = nv_concatenate(nv_reduce_min(x), nv_reduce_max(x)),
-    "prod" = nv_reduce_prod(x),
-    "sum" = nv_reduce_sum(x),
-    "any" = nv_reduce_any(x),
-    "all" = nv_reduce_all(x),
+    "max" = nv_reduce_max(x, ...),
+    "min" = nv_reduce_min(x, ...),
+    "range" = nv_concatenate(nv_reduce_min(x, ...), nv_reduce_max(x, ...)),
+    "prod" = nv_reduce_prod(x, ...),
+    "sum" = nv_reduce_sum(x, ...),
+    "any" = nv_reduce_any(x, ...),
+    "all" = nv_reduce_all(x, ...),
     cli_abort("invalid method: {(.Generic)}")
   )
 }

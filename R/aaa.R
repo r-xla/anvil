@@ -16,7 +16,7 @@ NULL
 #' @importFrom xlamisc seq_len0 seq_along0
 #' @importFrom utils head tail
 #' @importFrom cli cli_abort
-#' @importFrom methods Math2 formalArgs
+#' @importFrom methods formalArgs
 #' @importFrom utils capture.output
 #' @importFrom stats median
 ## usethis namespace: end

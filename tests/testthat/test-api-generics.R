@@ -58,6 +58,16 @@ describe("trunc", {
   })
 })
 
+describe("Math group generic rejects unsupported args", {
+  it("log(x, base) errors (base is not supported)", {
+    x <- nv_array(c(2, 4, 8))
+    expect_error(log(x, base = 2), "unused argument")
+  })
+  it("sqrt(x, foo) errors", {
+    expect_error(sqrt(nv_array(c(1, 4)), foo = "bar"), "sqrt")
+  })
+})
+
 describe("log2", {
   it("computes base-2 logarithm", {
     expect_equal(
@@ -229,13 +239,32 @@ describe("CHLO Math generics", {
 
 describe("range", {
   it("returns c(min, max) as a length-2 array", {
-    expect_jit_equal(
+    expect_equal(
       {
         x <- nv_array(c(3, 1, 4, 1, 5, 9, 2, 6))
         range(x)
       },
       nv_array(c(1, 9))
     )
+  })
+})
+
+describe("Summary group generic", {
+  it("forwards ... to underlying nv_reduce_*", {
+    expect_jit_equal(
+      {
+        x <- nv_array(matrix(1:6, 2))
+        sum(x, dims = 1L)
+      },
+      nv_array(c(3, 7, 11), dtype = "i32")
+    )
+  })
+  it("errors on na.rm = TRUE", {
+    expect_error(sum(nv_array(1:3), na.rm = TRUE), "na.rm = TRUE")
+    expect_error(max(nv_array(1:3), na.rm = TRUE), "na.rm = TRUE")
+  })
+  it("rejects unsupported args", {
+    expect_error(sum(nv_array(1:3), foo = "bar"), "unused argument")
   })
 })
 
