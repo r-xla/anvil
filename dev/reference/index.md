@@ -812,3 +812,9 @@ Low-level primitive operations (prim\_\* functions)
   : Primitive While Loop
 - [`prim_xor()`](https://r-xla.github.io/anvl/dev/reference/prim_xor.md)
   : Primitive Xor
+
+## Package
+
+- [`anvl`](https://r-xla.github.io/anvl/dev/reference/anvl-package.md)
+  [`anvl-package`](https://r-xla.github.io/anvl/dev/reference/anvl-package.md)
+  : anvl: Framework for R code transformations

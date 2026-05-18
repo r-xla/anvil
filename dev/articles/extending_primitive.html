@@ -160,8 +160,14 @@ e.g. via a second, dynamic Fortran backend.</p>
 <li>
 <p>It cannot be expressed or can only expressed inefficiently:</p>
 <p><span class="math inline">\(\rightarrow\)</span> You can implement a
-stableHLO custom call, see the custom print operation in <a href="https://github.com/r-xla/pjrt" class="external-link">pjrt</a>. This is currently not
-well documented, so you need to dig into the source code.</p>
+stableHLO custom call, see the custom print operation in <a href="https://github.com/r-xla/pjrt" class="external-link">pjrt</a>. The {pjrt} package has a
+dedicated <a href="https://r-xla.github.io/pjrt/dev/articles/ffi.html" class="external-link">“Adding Custom
+Calls”</a> tutorial. This mechanism is used, for example, to implement
+some of the linear algebra primitives such as SVD: on CPU these call
+into LAPACK, and on GPU they use NVIDIA’s cuSOLVER library. In the
+future it will also be possible to call into user-provided custom CUDA
+kernels, but there is no infrastructure for this yet – currently we only
+call into predefined kernels shipped with the CUDA toolkit.</p>
 </li>
 </ol>
 </li>
@@ -491,7 +497,7 @@ machinery, so no separate registration step is needed:</p>
 <span><span class="co">#&gt;     }</span></span>
 <span><span class="co">#&gt;     do.call(jit_fns[[be]], args)</span></span>
 <span><span class="co">#&gt; }</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x564097627e68&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x556607bf8d38&gt;</span></span>
 <span><span class="co">#&gt; attr(,"class")</span></span>
 <span><span class="co">#&gt; [1] "JitPrimitive" "JitFunction" </span></span>
 <span><span class="co">#&gt; attr(,"backend")</span></span>

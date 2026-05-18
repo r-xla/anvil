@@ -44,8 +44,16 @@ are various scenarios:
 
         \\\rightarrow\\ You can implement a stableHLO custom call, see
         the custom print operation in
-        [pjrt](https://github.com/r-xla/pjrt). This is currently not
-        well documented, so you need to dig into the source code.
+        [pjrt](https://github.com/r-xla/pjrt). The {pjrt} package has a
+        dedicated [“Adding Custom
+        Calls”](https://r-xla.github.io/pjrt/dev/articles/ffi.html)
+        tutorial. This mechanism is used, for example, to implement some
+        of the linear algebra primitives such as SVD: on CPU these call
+        into LAPACK, and on GPU they use NVIDIA’s cuSOLVER library. In
+        the future it will also be possible to call into user-provided
+        custom CUDA kernels, but there is no infrastructure for this yet
+        – currently we only call into predefined kernels shipped with
+        the CUDA toolkit.
 
 ## Adding a Primitive: Practical Example
 
@@ -382,7 +390,7 @@ prim_repeat_along
 #>     }
 #>     do.call(jit_fns[[be]], args)
 #> }
-#> <environment: 0x564097627e68>
+#> <environment: 0x556607bf8d38>
 #> attr(,"class")
 #> [1] "JitPrimitive" "JitFunction" 
 #> attr(,"backend")
