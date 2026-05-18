@@ -47,3 +47,23 @@
       ! Can only compute gradient with respect to float arrays.
       x Got i32
 
+# wrt arg passed as plain R literal errors clearly
+
+    Code
+      jit(function() gradient(nv_log, wrt = "operand")(1))()
+    Condition
+      Error in `compute_requirements()`:
+      ! Cannot compute gradient with respect to `operand`.
+      x It was passed as a plain R value
+      i Pass it as an <AnvlArray>.
+
+---
+
+    Code
+      jit(function() gradient(function(x, y) prim_add(x, y))(1, 2))()
+    Condition
+      Error in `compute_requirements()`:
+      ! Cannot compute gradient with respect to `x` and `y`.
+      x They were passed as plain R values
+      i Pass them as an <AnvlArray>.
+

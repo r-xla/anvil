@@ -266,6 +266,15 @@ test_that("can only compute gradient w.r.t. float arrays", {
   })
 })
 
+test_that("wrt arg passed as plain R literal errors clearly", {
+  expect_snapshot(error = TRUE, {
+    jit(function() gradient(nv_log, wrt = "operand")(1))()
+  })
+  expect_snapshot(error = TRUE, {
+    jit(function() gradient(function(x, y) prim_add(x, y))(1, 2))()
+  })
+})
+
 test_that("can differentiate through integer/bool functions", {
   f <- function(x) {
     x1 <- nv_convert(x, "i32")
