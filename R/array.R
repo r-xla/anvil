@@ -44,12 +44,18 @@
 #'   Backend to use (`"xla"` or `"quickr"`).
 #'   Defaults to `default_backend()`.
 #'   Must not be specified inside [`jit()`].
-#' @param scan_na (`logical(1)`)\cr
+#' @param byrow (`logical(1)`)\cr
+#'   When constructing from an R object and the result has at least two
+#'   dimensions, fill the array in row-major order rather than the
+#'   default column-major order, mirroring [`base::matrix()`]'s `byrow`.
+#'   Only allowed when `data` is an R object — passing an existing
+#'   `AnvlArray` together with `byrow = TRUE` is an error.
+#' @param check (`logical(1)`)\cr
 #'   If `TRUE`, error when `data` contains any `NA` values. XLA has no
 #'   representation for missing values, so they are otherwise silently
 #'   coerced to the closest available value of the target dtype (e.g. `NaN`
 #'   for floats, the bit pattern `-2147483648` for `i32`, `TRUE` for
-#'   `bool`). Defaults to `FALSE`.
+#'   `bool`). Defaults to `FALSE`. See the "Gotchas" vignette.
 #' @return ([`AnvlArray`])
 #' @examplesIf pjrt::plugins_downloaded()
 #' # A 1-d array (vector) with shape (4). Default type for integers is `i32`
@@ -60,6 +66,9 @@
 #'
 #' # A 2x3 matrix
 #' nv_array(1:6, shape = c(2L, 3L))
+#'
+#' # A 2x3 matrix filled by row, like `matrix(1:6, 2, 3, byrow = TRUE)`.
+#' nv_array(1:6, shape = c(2L, 3L), byrow = TRUE)
 #'
 #' # A scalar array.
 #' nv_scalar(3.14)
@@ -95,17 +104,22 @@ nv_array <- function(
   shape = NULL,
   ambiguous = NULL,
   backend = NULL,
-  scan_na = FALSE
+  byrow = FALSE,
+  check = FALSE
 ) {
-  assert_flag(scan_na)
-  if (scan_na && !is_anvl_array(data) && anyNA(data)) {
+  assert_flag(byrow)
+  assert_flag(check)
+  if (check && !is_anvl_array(data) && anyNA(data)) {
     n_na <- sum(is.na(data))
     cli_abort(c(
       "Input {.arg data} contains {n_na} {.val NA} value{?s}, which {?has/have} no representation at the XLA level.",
-      i = "Replace or drop missing values before transferring, or set {.code scan_na = FALSE} to skip this check."
+      i = "Replace or drop missing values before transferring, or set {.code check = FALSE} to skip this check."
     ))
   }
   if (is_anvl_array(data)) {
+    if (byrow) {
+      cli_abort("{.arg byrow} only applies when constructing an {.cls AnvlArray} from an R object.")
+    }
     if (!is.null(device) && !eq_device(device(data), nv_device(device, backend))) {
       cli_abort("Cannot change device of existing AnvlArray from {.val {device(data)}} to {.val {device}}")
     }
@@ -130,6 +144,14 @@ nv_array <- function(
   }
   if (!is.null(shape)) {
     shape <- as.integer(shape)
+  }
+  if (byrow) {
+    fill_shape <- shape %||% (if (!is.null(dim(data))) as.integer(dim(data)) else as.integer(length(data)))
+    if (length(fill_shape) >= 2L) {
+      # Fill column-major into the reversed shape, then permute axes back —
+      # this is equivalent to placing `data` row-major into `fill_shape`.
+      data <- aperm(array(data, dim = rev(fill_shape)), rev(seq_along(fill_shape)))
+    }
   }
   if (currently_tracing() && is.null(device)) {
     # The functions we jit should be backend-agnostic
@@ -263,7 +285,7 @@ unwrap_if_array <- function(x) {
 
 #' @rdname AnvlArray
 #' @export
-nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL, scan_na = FALSE) {
+nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL, backend = NULL, check = FALSE) {
   nv_array(
     data,
     dtype = dtype,
@@ -271,7 +293,81 @@ nv_scalar <- function(data, dtype = NULL, device = NULL, ambiguous = NULL, backe
     shape = integer(),
     ambiguous = ambiguous,
     backend = backend,
-    scan_na = scan_na
+    check = check
+  )
+}
+
+infer_matrix_dim <- function(n, other, given) {
+  if (other == 0L) {
+    if (n != 0L) {
+      cli_abort("{.arg {given}} is 0 but {.arg data} has {n} element{?s}.")
+    }
+    return(0L)
+  }
+  if (n %% other != 0L) {
+    cli_abort("Data length ({n}) is not a multiple of {.arg {given}} ({other}).")
+  }
+  n %/% other
+}
+
+#' @rdname AnvlArray
+#' @param nrow (`NULL` | `integer(1)`)\cr
+#'   Number of rows. Inferred from `ncol` and the data length if `NULL`.
+#'   Defaults to `1` when `data` is a scalar.
+#' @param ncol (`NULL` | `integer(1)`)\cr
+#'   Number of columns. Inferred from `nrow` and the data length if `NULL`.
+#'   Defaults to `1` when `data` is a scalar.
+#' @export
+nv_matrix <- function(
+  data,
+  nrow = NULL,
+  ncol = NULL,
+  dtype = NULL,
+  device = NULL,
+  ambiguous = NULL,
+  backend = NULL,
+  byrow = FALSE
+) {
+  assert_int(nrow, lower = 0L, null.ok = TRUE)
+  assert_int(ncol, lower = 0L, null.ok = TRUE)
+  is_r_scalar <- !is_anvl_array(data) && is_valid_r_lit(data)
+  is_array_scalar <- is_anvl_array(data) && length(shape(data)) == 0L
+  if (is_r_scalar || is_array_scalar) {
+    nrow <- nrow %||% 1L
+    ncol <- ncol %||% 1L
+    if (is_array_scalar) {
+      data <- nv_broadcast_to(data, c(nrow, ncol))
+    } else {
+      data <- rep(data, nrow * ncol)
+    }
+    return(nv_array(
+      data,
+      dtype = dtype,
+      device = device,
+      shape = c(nrow, ncol),
+      ambiguous = ambiguous,
+      backend = backend
+    ))
+  }
+  if (is.null(nrow) && is.null(ncol)) {
+    cli_abort("At least one of {.arg nrow} and {.arg ncol} must be supplied.")
+  }
+  n <- if (is_anvl_array(data)) prod(shape(data)) else length(data)
+  if (is.null(nrow)) {
+    nrow <- infer_matrix_dim(n, ncol, given = "ncol")
+  } else if (is.null(ncol)) {
+    ncol <- infer_matrix_dim(n, nrow, given = "nrow")
+  } else if (nrow * ncol != n) {
+    cli_abort("Data length ({n}) does not match {.code nrow * ncol} ({nrow * ncol}).")
+  }
+  nv_array(
+    data,
+    dtype = dtype,
+    device = device,
+    shape = c(nrow, ncol),
+    ambiguous = ambiguous,
+    backend = backend,
+    byrow = byrow
   )
 }
 
@@ -329,20 +425,21 @@ shape.AnvlArray <- function(x, ...) {
 }
 
 #' @rdname as_array
-#' @param scan_na (`logical(1)`)\cr
+#' @param check (`logical(1)`)\cr
 #'   If `TRUE` and the array's dtype is `i32`, error when the materialized
 #'   R integer vector contains any `NA_integer_` values. R reserves the bit
 #'   pattern `-2147483648` as the `NA_integer_` sentinel, so a genuine
 #'   device-side `i32` value of `-2147483648` is silently turned into `NA`
-#'   on transfer. No-op for other dtypes. Defaults to `FALSE`.
+#'   on transfer. No-op for other dtypes. Defaults to `FALSE`. See the
+#'   "Gotchas" vignette.
 #' @export
-as_array.AnvlArray <- function(x, scan_na = FALSE, ...) {
-  assert_flag(scan_na)
+as_array.AnvlArray <- function(x, check = FALSE, ...) {
+  assert_flag(check)
   result <- globals$backends[[x$backend]]$as_array(x)
-  if (scan_na && (dtype(x) == as_dtype("i32")) && anyNA(result)) {
+  if (check && (dtype(x) == as_dtype("i32")) && anyNA(result)) {
     cli_abort(c(
       "Materialized R integer vector contains {.val NA} values from device-side {.val -2147483648}.",
-      i = "This collision is irrecoverable: the device value and {.val NA} are indistinguishable in R. Set {.code scan_na = FALSE} to skip this check."
+      i = "This collision is irrecoverable: the device value and {.val NA} are indistinguishable in R. Set {.code check = FALSE} to skip this check."
     ))
   }
   result
@@ -377,6 +474,8 @@ await.AnvlArray <- function(x, ...) {
 #' @param mode (`character(1)`)\cr
 #'   For `as.vector()` only. See [base::as.vector()]. Defaults to `"any"`,
 #'   meaning the natural R type for the array's dtype.
+#' @param check (`logical(1)`)\cr
+#'   Forwarded to [`as_array()`]; see there for details.
 #' @param ... Unused.
 #' @return An R vector of the corresponding type (`double`, `integer`, or `logical`).
 #' @examplesIf pjrt::plugins_downloaded()
@@ -391,40 +490,40 @@ NULL
 #' @rdname as-AnvlArray
 #' @method as.double AnvlArray
 #' @export
-as.double.AnvlArray <- function(x, ...) {
+as.double.AnvlArray <- function(x, check = FALSE, ...) {
   dt <- dtype(x)
   if (!(inherits(dt, "FloatType") || inherits(dt, "IntegerType") || inherits(dt, "UIntegerType"))) {
     cli_abort("{.fn as.double} requires a float or integer dtype, but got {.val {as.character(dt)}}.")
   }
-  as.double(as_array(x))
+  as.double(as_array(x, check = check))
 }
 
 #' @rdname as-AnvlArray
 #' @method as.integer AnvlArray
 #' @export
-as.integer.AnvlArray <- function(x, ...) {
+as.integer.AnvlArray <- function(x, check = FALSE, ...) {
   dt <- dtype(x)
   if (!(inherits(dt, "IntegerType") || inherits(dt, "UIntegerType"))) {
     cli_abort("{.fn as.integer} requires a (signed or unsigned) integer dtype, but got {.val {as.character(dt)}}.")
   }
-  as.integer(as_array(x))
+  as.integer(as_array(x, check = check))
 }
 
 #' @rdname as-AnvlArray
 #' @method as.logical AnvlArray
 #' @export
-as.logical.AnvlArray <- function(x, ...) {
+as.logical.AnvlArray <- function(x, check = FALSE, ...) {
   if (!inherits(dtype(x), "BooleanType")) {
     cli_abort("{.fn as.logical} requires a {.val bool} dtype, but got {.val {as.character(dtype(x))}}.")
   }
-  as.logical(as_array(x))
+  as.logical(as_array(x, check = check))
 }
 
 #' @rdname as-AnvlArray
 #' @method as.vector AnvlArray
 #' @export
-as.vector.AnvlArray <- function(x, mode = "any") {
-  as.vector(as_array(x), mode = mode)
+as.vector.AnvlArray <- function(x, mode = "any", check = FALSE) {
+  as.vector(as_array(x, check = check), mode = mode)
 }
 
 #' @rdname platform
@@ -595,7 +694,7 @@ ConcreteArray <- function(data) {
 #'
 #' @section Lowering:
 #' `LiteralArray`s become constants inlined into the stableHLO program.
-#' I.e., they lower to [`stablehlo::hlo_tensor()`].
+#' I.e., they lower to [`hlo_tensor()`].
 #'
 #' @param data (`double(1)` | `integer(1)` | `logical(1)` | [`AnvlArray`])\cr
 #'   The scalar value or scalarish AnvlArray (contains 1 element).
@@ -655,8 +754,8 @@ LiteralArray <- function(data, shape, dtype = default_dtype(data), ambiguous) {
 #' @section Lowering:
 #' When lowering to stableHLO, these become `iota` operations that generate the integer sequence
 #' so they do not need to actually hold the data in the executable, similar to `ALTREP`s in R.
-#' It lowers to [`stablehlo::hlo_iota()`], optionally shifting the starting value via
-#' [`stablehlo::hlo_add()`].
+#' It lowers to [`hlo_iota()`], optionally shifting the starting value via
+#' [`hlo_add()`].
 #'
 #' @param shape ([`stablehlo::Shape`] | `integer()`)\cr
 #'   The shape of the array.

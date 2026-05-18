@@ -110,7 +110,7 @@ x[]
 We start by creating a 2-dimensional array.
 
 ```{r}
-x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
+x <- nv_matrix(1:12, nrow = 3, byrow = TRUE)
 x
 ```
 
@@ -148,7 +148,7 @@ The value to write must either have the shape of the subset, or be a scalar.
 x
 x[, 3] <- nv_array(-(1:3))
 x
-x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
+x <- nv_matrix(1:12, nrow = 3, byrow = TRUE)
 x[, 3] <- -99L
 x
 ```
@@ -156,7 +156,7 @@ x
 Also, it must have a data type that is convertible to the data type of the array.
 
 ```{r, error = TRUE}
-x <- nv_array(matrix(1:12, nrow = 3, byrow = TRUE))
+x <- nv_matrix(1:12, nrow = 3, byrow = TRUE)
 x[, 3] <- nv_array(c(1.5, 2.5, 3.5))
 x
 ```

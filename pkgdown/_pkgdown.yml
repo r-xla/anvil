@@ -57,10 +57,12 @@ navbar:
     developers:
       text: Developers
       menu:
-      - text: Adding a Primitive
+      - text: Extending
+      - text: "Adding a Primitive"
         href: articles/extending_primitive.html
-      - text: Extending the API
-        href: articles/extending_primitive.html
+      - text: "Adding an API Function"
+        href: articles/extending_api.html
+      - text: Other
       - text: Internals
         href: articles/internals.html
       - text: Available Primitives
@@ -75,6 +77,7 @@ reference:
     contents:
       - AnvlArray
       - nv_array
+      - nv_matrix
       - nv_scalar
       - nv_empty
       - nv_fill
@@ -131,6 +134,7 @@ reference:
     desc: Functions for reshaping and rearranging arrays
     contents:
       - nv_reshape
+      - nv_flatten
       - nv_transpose
       - nv_concatenate
       - nv_rbind
@@ -154,6 +158,7 @@ reference:
       - nv_pow
       - nv_negate
       - nv_remainder
+      - nv_mod
 
   - subtitle: Comparison Operations
     desc: Element-wise comparison operations
@@ -181,13 +186,28 @@ reference:
       - nv_sin
       - nv_cos
       - nv_tan
-      - nv_tanh
+      - nv_asin
+      - nv_acos
+      - nv_atan
       - nv_atan2
+      - nv_sinh
+      - nv_cosh
+      - nv_tanh
+      - nv_asinh
+      - nv_acosh
+      - nv_atanh
       - nv_sign
       - nv_floor
       - nv_ceiling
+      - nv_trunc
       - nv_round
       - nv_logistic
+      - nv_erf
+      - nv_erfc
+      - nv_erf_inv
+      - nv_digamma
+      - nv_lgamma
+      - nv_polygamma
       - nv_is_finite
       - nv_is_nan
       - nv_is_infinite
@@ -211,12 +231,28 @@ reference:
       - nv_var
       - nv_sd
 
+  - subtitle: Cumulative Operations
+    desc: Cumulative (scan) operations along a single dimension
+    contents:
+      - nv_cumsum
+      - nv_cumprod
+      - nv_cummax
+      - nv_cummin
+
   - subtitle: Linear Algebra
     desc: Linear algebra operations
     contents:
       - nv_matmul
       - nv_chol
+      - nv_qr
+      - nv_lu
+      - nv_svd
+      - nv_eigh
       - nv_solve
+      - nv_triangular_solve
+      - nv_inv
+      - nv_det
+      - nv_determinant
       - nv_crossprod
       - nv_tcrossprod
       - nv_outer
@@ -369,6 +405,7 @@ reference:
     contents:
       - at2vt
       - vt2at
+      - vt
       - is_arrayish
       - Shape
 
@@ -376,3 +413,7 @@ reference:
     desc: Low-level primitive operations (prim_* functions)
     contents:
       - starts_with("prim_")
+
+  - title: Package
+    contents:
+      - anvl-package

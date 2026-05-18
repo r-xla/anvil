@@ -64,19 +64,41 @@ test_that("prim_min", {
 })
 
 test_that("prim_remainder", {
-  pos_int_nz <- function(shp, dtype) {
+  # prim_remainder is IEEE-754 truncating (sign of dividend), so compare against
+  # torch_fmod, not torch_remainder. Use mixed-sign nonzero divisors to exercise
+  # the case where flooring would silently disagree.
+  signed_int_nz <- function(shp, dtype) {
     nelts <- if (!length(shp)) 1L else prod(shp)
-    vals <- sample(10, size = nelts, replace = TRUE)
+    mag <- sample(1:10, size = nelts, replace = TRUE)
+    sgn <- sample(c(-1L, 1L), size = nelts, replace = TRUE)
+    vals <- as.integer(mag * sgn)
     if (!length(shp)) vals else array(vals, shp)
   }
   expect_jit_torch_binary(
     prim_remainder,
-    torch::torch_remainder,
+    torch::torch_fmod,
     c(2, 3),
     c(2, 3),
     dtype = "i32",
-    gen_x = pos_int_nz,
-    gen_y = pos_int_nz
+    gen_x = signed_int_nz,
+    gen_y = signed_int_nz
+  )
+
+  signed_float_nz <- function(shp, dtype) {
+    nelts <- if (!length(shp)) 1L else prod(shp)
+    mag <- runif(nelts, min = 0.1, max = 10)
+    sgn <- sample(c(-1, 1), size = nelts, replace = TRUE)
+    vals <- mag * sgn
+    if (!length(shp)) vals else array(vals, shp)
+  }
+  expect_jit_torch_binary(
+    prim_remainder,
+    torch::torch_fmod,
+    c(2, 3),
+    c(2, 3),
+    dtype = "f32",
+    gen_x = signed_float_nz,
+    gen_y = signed_float_nz
   )
 })
 
@@ -208,7 +230,7 @@ test_that("prim_dot_general", {
   expect_equal(as_array(out), as.numeric(torch::torch_sum(tx * ty)), tolerance = 1e-5)
 
   # matrix-vector -> vector
-  A <- nv_array(matrix(rnorm(6), 3, 2), dtype = "f32")
+  A <- nv_matrix(rnorm(6), nrow = 3, ncol = 2, dtype = "f32")
   v <- nv_array(rnorm(2), dtype = "f32")
   out2 <- jit(function(a, b) {
     prim_dot_general(a, b, contracting_dims = list(2L, 1L), batching_dims = list(integer(), integer()))
@@ -218,8 +240,8 @@ test_that("prim_dot_general", {
   expect_equal(as_array(out2), as_array_torch(tA$matmul(tv)), tolerance = 1e-5)
 
   # batched matmul
-  X <- nv_array(array(rnorm(2 * 3 * 4), c(2, 3, 4)), dtype = "f32")
-  Y <- nv_array(array(rnorm(2 * 4 * 5), c(2, 4, 5)), dtype = "f32")
+  X <- nv_array(rnorm(2 * 3 * 4), shape = c(2, 3, 4), dtype = "f32")
+  Y <- nv_array(rnorm(2 * 4 * 5), shape = c(2, 4, 5), dtype = "f32")
   out3 <- jit(function(a, b) {
     prim_dot_general(a, b, contracting_dims = list(3L, 2L), batching_dims = list(1L, 1L))
   })(X, Y)
@@ -254,6 +276,81 @@ test_that("prim_logistic", {
   expect_jit_torch_unary(prim_logistic, torch::torch_sigmoid, c(2, 3))
 })
 
+# CHLO ops: inverse trig, hyperbolic, gamma family.
+# `sampler_unif()` comes from `tests/testthat/helper.R`.
+
+test_that("prim_acos", {
+  expect_jit_torch_unary(prim_acos, torch::torch_acos, c(2, 3), gen = sampler_unif(-0.95, 0.95))
+})
+
+test_that("prim_acosh", {
+  expect_jit_torch_unary(prim_acosh, torch::torch_acosh, c(2, 3), gen = sampler_unif(1.5, 5))
+})
+
+test_that("prim_asin", {
+  expect_jit_torch_unary(prim_asin, torch::torch_asin, c(2, 3), gen = sampler_unif(-0.95, 0.95))
+})
+
+test_that("prim_asinh", {
+  expect_jit_torch_unary(prim_asinh, torch::torch_asinh, c(2, 3))
+})
+
+test_that("prim_atan", {
+  expect_jit_torch_unary(prim_atan, torch::torch_atan, c(2, 3))
+})
+
+test_that("prim_atanh", {
+  expect_jit_torch_unary(prim_atanh, torch::torch_atanh, c(2, 3), gen = sampler_unif(-0.95, 0.95))
+})
+
+test_that("prim_cosh", {
+  expect_jit_torch_unary(prim_cosh, torch::torch_cosh, c(2, 3))
+})
+
+test_that("prim_sinh", {
+  expect_jit_torch_unary(prim_sinh, torch::torch_sinh, c(2, 3))
+})
+
+test_that("prim_digamma", {
+  expect_jit_torch_unary(prim_digamma, torch::torch_digamma, c(2, 3), gen = sampler_unif(0.5, 5))
+})
+
+test_that("prim_lgamma", {
+  shp <- c(2, 3)
+  x <- sampler_unif(0.5, 5)(shp, "f32")
+  out_nv <- jit(prim_lgamma)(nv_array(x, dtype = "f32"))
+  out_th <- torch::torch_lgamma(torch::torch_tensor(x, dtype = torch::torch_float32()))
+  expect_equal(as_array(out_nv), as_array_torch(out_th), tolerance = 1e-5)
+})
+
+test_that("prim_polygamma", {
+  shp <- c(2, 3)
+  x <- sampler_unif(0.5, 5)(shp, "f32")
+  for (n_val in c(0L, 1L, 2L)) {
+    n_arr <- array(rep(n_val, prod(shp)), shp)
+    out_nv <- jit(prim_polygamma)(
+      nv_array(n_arr, dtype = "f32"),
+      nv_array(x, dtype = "f32")
+    )
+    out_th <- torch::torch_polygamma(n_val, torch::torch_tensor(x, dtype = torch::torch_float32()))
+    expect_equal(as_array(out_nv), as_array_torch(out_th), tolerance = 1e-5)
+  }
+})
+
+# erf / erfc / erf_inv take values everywhere; erf_inv only on (-1, 1).
+
+test_that("prim_erf", {
+  expect_jit_torch_unary(prim_erf, torch::torch_erf, c(2, 3))
+})
+
+test_that("prim_erfc", {
+  expect_jit_torch_unary(prim_erfc, torch::torch_erfc, c(2, 3))
+})
+
+test_that("prim_erf_inv", {
+  expect_jit_torch_unary(prim_erf_inv, torch::torch_erfinv, c(2, 3), gen = sampler_unif(-0.95, 0.95))
+})
+
 describe("prim_chol", {
   it("lower = TRUE", {
     A <- crossprod(matrix(rnorm(9), 3, 3)) + diag(3)
@@ -275,7 +372,7 @@ describe("prim_triangular_solve", {
     L <- matrix(c(3, 1, 0, 2), nrow = 2)
     b <- matrix(c(6, 5), nrow = 2)
     out_nv <- as_array(jit(function(a, b) {
-      prim_triangular_solve(a, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+      prim_triangular_solve(a, b, left_side = TRUE, lower = TRUE, unit_diagonal = FALSE, transpose_a = FALSE)
     })(nv_array(L, dtype = "f64"), nv_array(b, dtype = "f64")))
     out_th <- as_array_torch(torch::linalg_solve_triangular(
       torch::torch_tensor(L, dtype = torch::torch_float64()),
@@ -290,7 +387,7 @@ describe("prim_triangular_solve", {
     U <- matrix(c(3, 0, 1, 2), nrow = 2)
     b <- matrix(c(6, 5, 4, 3), nrow = 2)
     out_nv <- as_array(jit(function(a, b) {
-      prim_triangular_solve(a, b, left_side = FALSE, lower = FALSE, unit_diagonal = FALSE, transpose_a = "NO_TRANSPOSE")
+      prim_triangular_solve(a, b, left_side = FALSE, lower = FALSE, unit_diagonal = FALSE, transpose_a = FALSE)
     })(nv_array(U, dtype = "f64"), nv_array(b, dtype = "f64")))
     out_th <- as_array_torch(torch::linalg_solve_triangular(
       torch::torch_tensor(U, dtype = torch::torch_float64()),

@@ -33,7 +33,7 @@ You can also use the \verb{[<-} operator.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(1:12, nrow = 3))
+x <- nv_matrix(1:12, nrow = 3)
 # Set row 1 to zeros
 x[1, ] <- nv_scalar(0L)
 x

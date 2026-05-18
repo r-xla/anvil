@@ -29,7 +29,7 @@ Returns \code{TRUE} only if all elements are \code{TRUE}.
 }
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
-x <- nv_array(matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2))
+x <- nv_matrix(c(TRUE, FALSE, TRUE, TRUE), nrow = 2)
 nv_reduce_all(x)            # all dims -> scalar
 nv_reduce_all(x, dims = 1L)
 \dontshow{\}) # examplesIf}

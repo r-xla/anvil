@@ -4,7 +4,7 @@
 \alias{prim_chol}
 \title{Primitive Cholesky Decomposition}
 \usage{
-prim_chol(operand, lower)
+prim_chol(operand, lower = FALSE)
 }
 \arguments{
 \item{operand}{(\code{\link{arrayish}})\cr
@@ -13,9 +13,10 @@ The last two dimensions must be equal (square matrix); any leading
 dimensions are batch dimensions.}
 
 \item{lower}{(\code{logical(1)})\cr
-If \code{TRUE}, compute the lower triangular factor \code{L} such that
-\code{operand = L \%*\% t(L)}. If \code{FALSE}, compute the upper triangular
-factor \code{U} such that \code{operand = t(U) \%*\% U}.}
+If \code{FALSE} (default, matching base R's \code{\link[base:chol]{base::chol()}}), compute the
+upper triangular factor \code{U} such that \code{operand = t(U) \%*\% U}. If
+\code{TRUE}, compute the lower triangular factor \code{L} such that
+\code{operand = L \%*\% t(L)}.}
 }
 \value{
 \code{\link{arrayish}}\cr
@@ -43,7 +44,7 @@ Lowers to \code{\link[stablehlo:hlo_cholesky]{stablehlo::hlo_cholesky()}}.
 \examples{
 \dontshow{if (pjrt::plugins_downloaded()) withAutoprint(\{ # examplesIf}
 # Create a positive-definite matrix
-x <- nv_array(matrix(c(4, 2, 2, 3), nrow = 2), dtype = "f32")
+x <- nv_matrix(c(4, 2, 2, 3), nrow = 2, dtype = "f32")
 prim_chol(x, lower = TRUE)
 \dontshow{\}) # examplesIf}
 }

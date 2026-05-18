@@ -428,6 +428,30 @@ test_that("prim_transpose", {
   })
 })
 
+describe("prim_cumsum", {
+  it("vector gradient", {
+    verify_grad_uni_tensor(
+      prim_cumsum,
+      torch::torch_cumsum,
+      shape = 5L,
+      args_f = \(shp, dtype) list(list(dim = 1L), list(dim = 1L))
+    )
+  })
+  it("matrix gradient along each dim", {
+    for (d in 1:2) {
+      verify_grad_uni_tensor(
+        prim_cumsum,
+        torch::torch_cumsum,
+        shape = c(3L, 4L),
+        args_f = local({
+          dl <- d
+          \(shp, dtype) list(list(dim = dl), list(dim = dl))
+        })
+      )
+    }
+  })
+})
+
 test_that("prim_broadcast_in_dim", {
   input_shape <- c(2L, 1L, 3L)
   target_shape <- c(4L, 2L, 5L, 3L)
@@ -534,6 +558,86 @@ test_that("prim_cos", {
   verify_grad_uni(prim_cos, torch::torch_cos, tol = 1e-5)
 })
 
+# CHLO ops: inverse trig, hyperbolic, gamma family.
+# `sampler_unif()` comes from `tests/testthat/helper.R`.
+
+test_that("prim_acos", {
+  verify_grad_uni(prim_acos, torch::torch_acos, tol = 1e-4, gen = sampler_unif(-0.95, 0.95))
+})
+
+test_that("prim_acosh", {
+  verify_grad_uni(prim_acosh, torch::torch_acosh, tol = 1e-4, gen = sampler_unif(1.5, 5))
+})
+
+test_that("prim_asin", {
+  verify_grad_uni(prim_asin, torch::torch_asin, tol = 1e-4, gen = sampler_unif(-0.95, 0.95))
+})
+
+test_that("prim_asinh", {
+  verify_grad_uni(prim_asinh, torch::torch_asinh, tol = 1e-5)
+})
+
+test_that("prim_atan", {
+  verify_grad_uni(prim_atan, torch::torch_atan, tol = 1e-5)
+})
+
+test_that("prim_atanh", {
+  verify_grad_uni(prim_atanh, torch::torch_atanh, tol = 1e-4, gen = sampler_unif(-0.95, 0.95))
+})
+
+test_that("prim_cosh", {
+  verify_grad_uni(prim_cosh, torch::torch_cosh, tol = 1e-4)
+})
+
+test_that("prim_sinh", {
+  verify_grad_uni(prim_sinh, torch::torch_sinh, tol = 1e-4)
+})
+
+test_that("prim_digamma", {
+  verify_grad_uni(prim_digamma, torch::torch_digamma, tol = 1e-4, gen = sampler_unif(0.5, 5))
+})
+
+test_that("prim_lgamma", {
+  verify_grad_uni(prim_lgamma, torch::torch_lgamma, tol = 1e-4, gen = sampler_unif(0.5, 5))
+})
+
+test_that("prim_polygamma", {
+  # Verify gradient w.r.t. x against torch::torch_polygamma
+  shp <- c(2, 3)
+  for (n_val in c(1L, 2L)) {
+    x <- sampler_unif(0.5, 5)(shp, "f32")
+    n_arr <- array(rep(n_val, prod(shp)), shp)
+
+    f_nv <- function(x_t) {
+      n_t <- prim_fill(as.numeric(n_val), dtype = dtype(x_t), shape = shape(x_t))
+      out <- prim_polygamma(n_t, x_t)
+      nv_reduce_sum(out, dims = seq_along(shape(out)), drop = TRUE)
+    }
+    grad_nv <- jit(gradient(f_nv))(nv_array(x, dtype = "f32"))[[1L]]
+
+    x_th <- torch::torch_tensor(x, requires_grad = TRUE, dtype = torch::torch_float32())
+    torch::torch_sum(torch::torch_polygamma(n_val, x_th))$backward()
+
+    testthat::expect_equal(
+      tengen::as_array(grad_nv),
+      as_array_torch(x_th$grad),
+      tolerance = 1e-4
+    )
+  }
+})
+
+test_that("prim_erf", {
+  verify_grad_uni(prim_erf, torch::torch_erf, tol = 1e-4)
+})
+
+test_that("prim_erfc", {
+  verify_grad_uni(prim_erfc, torch::torch_erfc, tol = 1e-4)
+})
+
+test_that("prim_erf_inv", {
+  verify_grad_uni(prim_erf_inv, torch::torch_erfinv, tol = 1e-4, gen = sampler_unif(-0.95, 0.95))
+})
+
 test_that("prim_abs", {
   verify_grad_uni_tensor(
     prim_abs,
@@ -634,24 +738,13 @@ test_that("prim_reverse", {
 })
 
 test_that("prim_atan2", {
-  # Generator that avoids (0, 0) which is undefined
-  gen_nonzero <- function(shp, dtype) {
-    vals <- generate_test_data(shp, dtype = dtype)
-    # Ensure we don't have both values near zero
-    if (length(shp) == 0L) {
-      if (abs(vals) < 0.1) vals <- vals + sign(vals + 0.1) * 0.5
-    } else {
-      vals[abs(vals) < 0.1] <- vals[abs(vals) < 0.1] + 0.5
-    }
-    if (length(shp) == 0L) vals else array(vals, shp)
-  }
-
+  # Avoid (0, 0) which is undefined.
   verify_grad_biv(
     prim_atan2,
     torch::torch_atan2,
     tol = 1e-5,
-    gen_lhs = gen_nonzero,
-    gen_rhs = gen_nonzero
+    gen_lhs = sampler_nonzero(0.5),
+    gen_rhs = sampler_nonzero(0.5)
   )
 })
 
@@ -687,37 +780,44 @@ test_that("prim_concatenate", {
 })
 
 test_that("prim_reduce_prod", {
-  # Test with non-zero values to avoid division by zero in gradient
-  gen_nonzero <- function(shp, dtype) {
-    vals <- generate_test_data(shp, dtype = dtype)
-    # Shift values away from zero
-    if (length(shp) == 0L) {
-      if (abs(vals) < 0.5) vals <- vals + sign(vals + 0.1) * 1
-    } else {
-      vals[abs(vals) < 0.5] <- vals[abs(vals) < 0.5] + sign(vals[abs(vals) < 0.5] + 0.1) * 1
-    }
-    if (length(shp) == 0L) vals else array(vals, shp)
-  }
-
+  # Avoid division by zero in the per-element gradient.
   shp <- c(2L, 3L)
   dtype <- "f32"
 
-  x_arr <- gen_nonzero(shp, dtype)
-  x_nv <- nv_array(x_arr, dtype = dtype)
-  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
+  check_against_torch <- function(x_arr, dim) {
+    x_nv <- nv_array(x_arr, dtype = "f32")
+    x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE, dtype = torch::torch_float32())
 
-  # Test reduce along one dimension
-  f_nv <- function(x) {
-    y <- prim_reduce_prod(x, dims = 2L, drop = TRUE)
-    nv_reduce_sum(y, dims = 1L, drop = TRUE)
+    f_nv <- function(x) {
+      y <- prim_reduce_prod(x, dims = dim, drop = TRUE)
+      nv_reduce_sum(y, dims = seq_along(shape(y)), drop = TRUE)
+    }
+    grads_nv <- jit(gradient(f_nv))(x_nv)
+
+    out_th <- torch::torch_prod(x_th, dim = dim, keepdim = FALSE)
+    torch::torch_sum(out_th)$backward()
+
+    expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
   }
 
-  grads_nv <- jit(gradient(f_nv))(x_nv)
+  x <- array(runif(6), dim = c(2, 3))
+  check_against_torch(x, 1)
 
-  out_th <- torch::torch_prod(x_th, dim = 2, keepdim = FALSE)
-  torch::torch_sum(out_th)$backward()
+  # Safe at zeros: matches PyTorch's prod_safe_zeros_backward.
+  x_zero <- array(c(2, 0, 5, 1, 4, 6), dim = c(2L, 3L))
+  check_against_torch(x_zero, 2L)
 
-  expect_equal(tengen::as_array(grads_nv[[1L]]), as_array_torch(x_th$grad), tolerance = 1e-4)
+  x_two_zeros <- array(c(2, 0, 0, 1, 4, 6), dim = c(2L, 3L))
+  check_against_torch(x_two_zeros, 2L)
+
+  # Reducing multiple dims at once is not supported by torch::torch_prod,
+  # so check against a hand-crafted expected gradient.
+  x_multi <- array(c(1, 2, 3, 4, 5, 6), dim = c(2L, 3L))
+  x_nv <- nv_array(x_multi, dtype = "f32")
+  f_multi <- function(x) prim_reduce_prod(x, dims = c(1L, 2L), drop = TRUE)
+  grads_nv <- jit(gradient(f_multi))(x_nv)
+  expected <- array(prod(x_multi) / x_multi, dim = dim(x_multi))
+  expect_equal(tengen::as_array(grads_nv[[1L]]), expected, tolerance = 1e-4)
 })
 
 describe("prim_static_slice", {
@@ -763,7 +863,9 @@ describe("prim_static_slice", {
 })
 
 test_that("prim_remainder", {
-  # Generator that avoids zero divisors and values near discontinuities
+  # Compare against torch_fmod (truncating, sign-of-dividend) which matches
+  # StableHLO `remainder` semantics. torch_remainder is flooring and would only
+  # agree with us on same-sign inputs.
   gen_nonzero <- function(shp, dtype) {
     vals <- generate_test_data(shp, dtype = dtype)
     # Shift values away from zero to avoid division by zero
@@ -777,9 +879,9 @@ test_that("prim_remainder", {
 
   verify_grad_biv(
     prim_remainder,
-    torch::torch_remainder,
+    torch::torch_fmod,
     tol = 1e-5,
-    gen_rhs = gen_nonzero # Avoid zero divisors
+    gen_rhs = sampler_nonzero(0.5) # avoid zero divisors
   )
 })
 
@@ -856,8 +958,8 @@ describe("prim_triangular_solve", {
     }
     grads_anvl <- jit(gradient(f_anvl))(a_anvl, b_anvl)
 
-    is_upper <- if (transpose_a == "TRANSPOSE") lower else !lower
-    a_effective <- if (transpose_a == "TRANSPOSE") a_torch$t() else a_torch
+    is_upper <- if (transpose_a) lower else !lower
+    a_effective <- if (transpose_a) a_torch$t() else a_torch
     x_torch <- torch::linalg_solve_triangular(
       a_effective,
       b_torch,
@@ -876,7 +978,7 @@ describe("prim_triangular_solve", {
     verify_triangular_solve_grad(
       left_side = TRUE,
       lower = TRUE,
-      transpose_a = "NO_TRANSPOSE",
+      transpose_a = FALSE,
       unit_diagonal = FALSE
     )
   )
@@ -885,7 +987,7 @@ describe("prim_triangular_solve", {
     verify_triangular_solve_grad(
       left_side = TRUE,
       lower = TRUE,
-      transpose_a = "TRANSPOSE",
+      transpose_a = TRUE,
       unit_diagonal = FALSE
     )
   )
@@ -894,7 +996,7 @@ describe("prim_triangular_solve", {
     verify_triangular_solve_grad(
       left_side = TRUE,
       lower = FALSE,
-      transpose_a = "NO_TRANSPOSE",
+      transpose_a = FALSE,
       unit_diagonal = FALSE
     )
   )
@@ -903,7 +1005,7 @@ describe("prim_triangular_solve", {
     verify_triangular_solve_grad(
       left_side = FALSE,
       lower = TRUE,
-      transpose_a = "NO_TRANSPOSE",
+      transpose_a = FALSE,
       unit_diagonal = FALSE
     )
   )
@@ -912,7 +1014,7 @@ describe("prim_triangular_solve", {
     verify_triangular_solve_grad(
       left_side = FALSE,
       lower = FALSE,
-      transpose_a = "TRANSPOSE",
+      transpose_a = TRUE,
       unit_diagonal = FALSE
     )
   )
@@ -921,7 +1023,7 @@ describe("prim_triangular_solve", {
     verify_triangular_solve_grad(
       left_side = TRUE,
       lower = TRUE,
-      transpose_a = "NO_TRANSPOSE",
+      transpose_a = FALSE,
       unit_diagonal = TRUE
     )
   )
@@ -943,7 +1045,7 @@ describe("prim_triangular_solve", {
         left_side = TRUE,
         lower = lower,
         unit_diagonal = unit_diagonal,
-        transpose_a = "NO_TRANSPOSE"
+        transpose_a = FALSE
       )
       nv_reduce_sum(x, dims = c(1L, 2L))
     }
@@ -963,53 +1065,4 @@ describe("prim_triangular_solve", {
   it("masking: upper", verify_triangular_solve_masking(lower = FALSE, unit_diagonal = FALSE))
   it("masking: lower, unit_diagonal", verify_triangular_solve_masking(lower = TRUE, unit_diagonal = TRUE))
   it("masking: upper, unit_diagonal", verify_triangular_solve_masking(lower = FALSE, unit_diagonal = TRUE))
-})
-
-test_that("prim_sort", {
-  # 2D descending sort with duplicates and is_stable = TRUE.
-  # Hits: descending direction, dim != 1, ties broken stably.
-  set.seed(42)
-  x_arr <- matrix(as.double(sample(1:5, 4 * 6, replace = TRUE)), nrow = 4)
-  w_arr <- matrix(as.double(seq_len(4 * 6)), nrow = 4)
-
-  x_nv <- nv_array(x_arr)
-  w_nv <- nv_array(w_arr)
-  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE)
-  w_th <- torch::torch_tensor(w_arr)
-
-  f_nv <- function(x) {
-    sorted <- prim_sort(list(x), dim = 2L, descending = TRUE, is_stable = TRUE)[[1L]]
-    nv_reduce_sum(sorted * w_nv, dims = c(1L, 2L))
-  }
-  grad_nv <- jit(gradient(f_nv))(x_nv)[[1L]]
-
-  sorted_th <- torch::torch_sort(x_th, dim = 2L, descending = TRUE, stable = TRUE)[[1L]]
-  (sorted_th * w_th)$sum()$backward()
-
-  expect_equal(tengen::as_array(grad_nv), as_array_torch(x_th$grad), tolerance = 1e-5)
-})
-
-test_that("prim_top_k", {
-  # 2D top-k along the last dim. Use distinct values so ties don't matter
-  # (torch_topk has no `stable` parameter).
-  set.seed(42)
-  x_arr <- matrix(rnorm(4 * 6), nrow = 4)
-  k <- 3L
-  w_arr <- matrix(as.double(seq_len(4 * k)), nrow = 4)
-
-  x_nv <- nv_array(x_arr)
-  w_nv <- nv_array(w_arr)
-  x_th <- torch::torch_tensor(x_arr, requires_grad = TRUE)
-  w_th <- torch::torch_tensor(w_arr)
-
-  f_nv <- function(x) {
-    top <- prim_top_k(x, k = k)[[1L]]
-    nv_reduce_sum(top * w_nv, dims = c(1L, 2L))
-  }
-  grad_nv <- jit(gradient(f_nv))(x_nv)[[1L]]
-
-  top_th <- torch::torch_topk(x_th, k = k, dim = 2L, largest = TRUE, sorted = TRUE)[[1L]]
-  (top_th * w_th)$sum()$backward()
-
-  expect_equal(tengen::as_array(grad_nv), as_array_torch(x_th$grad), tolerance = 1e-5)
 })

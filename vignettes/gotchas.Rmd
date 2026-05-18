@@ -2,7 +2,7 @@
 title: "Gotchas"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Differences from base R}
+  %\VignetteIndexEntry{Gotchas}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -117,16 +117,22 @@ as.logical(nv_scalar(NA))
 ```
 
 If your data contains missing values, decide how to handle them *before* converting to an `AnvlArray`.
-To opt into a runtime check, pass `scan_na = TRUE` to `nv_array()` / `nv_scalar()`, which errors if the input contains any `NA`:
+To opt into a runtime check, pass `check = TRUE` to `nv_array()` / `nv_scalar()`, which errors if the input contains any `NA`:
 
 ```{r, error = TRUE}
-nv_array(c(1, NA, 3), scan_na = TRUE)
+nv_array(c(1, NA, 3), check = TRUE)
 ```
 
 The same flag is available on `as_array()` for the `i32` round-trip case, where it errors if the materialized integer vector contains any `NA` (i.e. any `-2147483648`):
 
 ```{r, error = TRUE}
-as_array(nv_scalar(NA_integer_), scan_na = TRUE)
+as_array(nv_scalar(NA_integer_), check = TRUE)
+```
+
+It is also forwarded by the `as.integer()` / `as.double()` / `as.logical()` / `as.vector()` methods for `AnvlArray`, so the same scan is available when coercing directly to a bare R vector:
+
+```{r, error = TRUE}
+as.integer(nv_scalar(NA_integer_), check = TRUE)
 ```
 
 ## No unsigned integers

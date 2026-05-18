@@ -133,13 +133,13 @@ test_that("graph_to_quickr_function rejects unsupported reduce_sum variants", {
 
   graph <- trace_fn(
     function(x) prim_reduce_sum(x, dims = 3L, drop = TRUE),
-    list(x = nv_array(matrix(1:6, nrow = 2, ncol = 3), dtype = "i32", shape = c(2L, 3L)))
+    list(x = nv_matrix(1:6, nrow = 2, ncol = 3, dtype = "i32"))
   )
   expect_error(graph_to_quickr_function(graph), "sum: unsupported reduction dims for rank-2 array", fixed = FALSE)
 
   graph <- trace_fn(
     function(x) prim_reduce_sum(x, dims = 2L, drop = TRUE),
-    list(x = nv_array(array(1:8, dim = c(2L, 2L, 2L)), dtype = "i32", shape = c(2L, 2L, 2L)))
+    list(x = nv_array(1:8, shape = c(2L, 2L, 2L), dtype = "i32"))
   )
   expect_error(graph_to_quickr_function(graph), "for rank > 2, only full reductions", fixed = FALSE)
 })

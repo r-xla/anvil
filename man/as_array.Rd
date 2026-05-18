@@ -5,7 +5,7 @@
 \alias{as_array}
 \title{Convert to an R array}
 \usage{
-\method{as_array}{AnvlArray}(x, scan_na = FALSE, ...)
+\method{as_array}{AnvlArray}(x, check = FALSE, ...)
 
 as_array(x, ...)
 }
@@ -13,12 +13,13 @@ as_array(x, ...)
 \item{x}{(\code{\link{arrayish}})\cr
 An array-like object.}
 
-\item{scan_na}{(\code{logical(1)})\cr
+\item{check}{(\code{logical(1)})\cr
 If \code{TRUE} and the array's dtype is \code{i32}, error when the materialized
 R integer vector contains any \code{NA_integer_} values. R reserves the bit
 pattern \code{-2147483648} as the \code{NA_integer_} sentinel, so a genuine
 device-side \code{i32} value of \code{-2147483648} is silently turned into \code{NA}
-on transfer. No-op for other dtypes. Defaults to \code{FALSE}.}
+on transfer. No-op for other dtypes. Defaults to \code{FALSE}. See the
+"Gotchas" vignette.}
 
 \item{...}{Additional arguments passed to methods (unused).}
 }

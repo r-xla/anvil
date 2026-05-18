@@ -15,7 +15,7 @@ Ops.AnvlBox <- function(e1, e2) {
     "*" = nv_mul(e1, e2),
     "/" = nv_div(e1, e2),
     "^" = nv_pow(e1, e2),
-    "%%" = nv_remainder(e1, e2),
+    "%%" = nv_mod(e1, e2),
     "==" = nv_eq(e1, e2),
     "!=" = nv_ne(e1, e2),
     ">" = nv_gt(e1, e2),
@@ -56,12 +56,28 @@ Math.AnvlBox <- function(x, ...) {
     "tan" = nv_tan(x),
     "cos" = nv_cos(x),
     "sin" = nv_sin(x),
+    "acos" = nv_acos(x),
+    "acosh" = nv_acosh(x),
+    "asin" = nv_asin(x),
+    "asinh" = nv_asinh(x),
+    "atan" = nv_atan(x),
+    "atanh" = nv_atanh(x),
+    "cosh" = nv_cosh(x),
+    "sinh" = nv_sinh(x),
+    "digamma" = nv_digamma(x),
+    "lgamma" = nv_lgamma(x),
+    "trigamma" = nv_polygamma(1, x),
     "floor" = nv_floor(x),
     "ceiling" = nv_ceiling(x),
+    "trunc" = nv_trunc(x),
     "sign" = nv_sign(x),
     "expm1" = nv_expm1(x),
     "log1p" = nv_log1p(x),
     "round" = nv_round(x),
+    "cumsum" = nv_cumsum(x),
+    "cumprod" = nv_cumprod(x),
+    "cummax" = nv_cummax(x),
+    "cummin" = nv_cummin(x),
     cli_abort("invalid method: {(.Generic)}")
   )
 }
@@ -182,7 +198,7 @@ is.finite.AnvlArray <- is.finite.AnvlBox
 #'   Has the same data type as `x` and shape `nv_shape(x)[permutation]`.
 #' @seealso [prim_transpose()] for the underlying primitive.
 #' @examplesIf pjrt::plugins_downloaded()
-#' x <- nv_array(matrix(1:6, nrow = 2))
+#' x <- nv_matrix(1:6, nrow = 2)
 #' t(x)
 #' @export
 t.AnvlBox <- function(x) {
@@ -317,3 +333,47 @@ cbind.AnvlBox <- function(..., deparse.level = 1) {
 #' @method cbind AnvlArray
 #' @export
 cbind.AnvlArray <- cbind.AnvlBox
+
+#' @method solve AnvlBox
+#' @export
+solve.AnvlBox <- function(a, b, ...) {
+  rlang::check_dots_empty()
+  if (missing(b)) nv_inv(a) else nv_solve(a, b)
+}
+
+#' @method solve AnvlArray
+#' @export
+solve.AnvlArray <- solve.AnvlBox
+
+#' @method qr AnvlBox
+#' @export
+qr.AnvlBox <- function(x, ...) {
+  rlang::check_dots_empty()
+  nv_qr(x)
+}
+
+#' @method qr AnvlArray
+#' @export
+qr.AnvlArray <- qr.AnvlBox
+
+#' @method chol AnvlBox
+#' @export
+chol.AnvlBox <- function(x, ..., lower = FALSE) {
+  rlang::check_dots_empty()
+  nv_chol(x, lower = lower)
+}
+
+#' @method chol AnvlArray
+#' @export
+chol.AnvlArray <- chol.AnvlBox
+
+#' @method determinant AnvlBox
+#' @export
+determinant.AnvlBox <- function(x, logarithm = TRUE, ...) {
+  rlang::check_dots_empty()
+  nv_determinant(x, logarithm = logarithm)
+}
+
+#' @method determinant AnvlArray
+#' @export
+determinant.AnvlArray <- determinant.AnvlBox

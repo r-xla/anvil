@@ -41,7 +41,7 @@ nv_sort(x)
 sort(x) # via the S3 generic
 nv_sort(x, decreasing = TRUE)
 
-m <- nv_array(matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE))
+m <- nv_matrix(c(3, 1, 5, 2, 4, 0), nrow = 2, byrow = TRUE)
 nv_sort(m, dim = 2L)
 \dontshow{\}) # examplesIf}
 }

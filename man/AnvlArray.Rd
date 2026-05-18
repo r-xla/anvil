@@ -4,6 +4,7 @@
 \alias{AnvlArray}
 \alias{nv_array}
 \alias{nv_scalar}
+\alias{nv_matrix}
 \alias{nv_empty}
 \alias{nv_array_like}
 \alias{nv_scalar_like}
@@ -17,7 +18,8 @@ nv_array(
   shape = NULL,
   ambiguous = NULL,
   backend = NULL,
-  scan_na = FALSE
+  byrow = FALSE,
+  check = FALSE
 )
 
 nv_scalar(
@@ -26,7 +28,18 @@ nv_scalar(
   device = NULL,
   ambiguous = NULL,
   backend = NULL,
-  scan_na = FALSE
+  check = FALSE
+)
+
+nv_matrix(
+  data,
+  nrow = NULL,
+  ncol = NULL,
+  dtype = NULL,
+  device = NULL,
+  ambiguous = NULL,
+  backend = NULL,
+  byrow = FALSE
 )
 
 nv_empty(dtype, shape, device = NULL, ambiguous = FALSE)
@@ -88,12 +101,27 @@ Backend to use (\code{"xla"} or \code{"quickr"}).
 Defaults to \code{default_backend()}.
 Must not be specified inside \code{\link[=jit]{jit()}}.}
 
-\item{scan_na}{(\code{logical(1)})\cr
+\item{byrow}{(\code{logical(1)})\cr
+When constructing from an R object and the result has at least two
+dimensions, fill the array in row-major order rather than the
+default column-major order, mirroring \code{\link[base:matrix]{base::matrix()}}'s \code{byrow}.
+Only allowed when \code{data} is an R object — passing an existing
+\code{AnvlArray} together with \code{byrow = TRUE} is an error.}
+
+\item{check}{(\code{logical(1)})\cr
 If \code{TRUE}, error when \code{data} contains any \code{NA} values. XLA has no
 representation for missing values, so they are otherwise silently
 coerced to the closest available value of the target dtype (e.g. \code{NaN}
 for floats, the bit pattern \code{-2147483648} for \code{i32}, \code{TRUE} for
-\code{bool}). Defaults to \code{FALSE}.}
+\code{bool}). Defaults to \code{FALSE}. See the "Gotchas" vignette.}
+
+\item{nrow}{(\code{NULL} | \code{integer(1)})\cr
+Number of rows. Inferred from \code{ncol} and the data length if \code{NULL}.
+Defaults to \code{1} when \code{data} is a scalar.}
+
+\item{ncol}{(\code{NULL} | \code{integer(1)})\cr
+Number of columns. Inferred from \code{nrow} and the data length if \code{NULL}.
+Defaults to \code{1} when \code{data} is a scalar.}
 
 \item{like}{(\code{\link{AnvlArray}})\cr
 An existing array. Any of \code{dtype}, \code{device}, \code{shape}, \code{ambiguous}, and
@@ -140,6 +168,9 @@ nv_array(c(1.5, 2.5, 3.5), dtype = "f64")
 
 # A 2x3 matrix
 nv_array(1:6, shape = c(2L, 3L))
+
+# A 2x3 matrix filled by row, like `matrix(1:6, 2, 3, byrow = TRUE)`.
+nv_array(1:6, shape = c(2L, 3L), byrow = TRUE)
 
 # A scalar array.
 nv_scalar(3.14)
